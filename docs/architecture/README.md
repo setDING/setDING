@@ -184,6 +184,7 @@ See "Open points" in the individual ADRs. The most important:
 10. ~~PDF details?~~ → All attachments on every device, max. 20 MB per PDF, PDF-only songs allowed, local PDFs in the MVP (ADR-0009)
 11. Server details: OS, Docker, public domain/HTTPS – also needed for deep links of invitation links (ADR-0004, ADR-0005)
 12. App name and domain – "BandChords" is a working title; candidates in [`docs/app-name-candidates.md`](../app-name-candidates.md)
+13. ~~May agents merge their own PRs?~~ → Yes, from the start, but only when all tests pass (test gate, ADR-0010). Open: repository host and name
 
 ## 10. ADR index
 
@@ -198,5 +199,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0007](adr/0007-live-mode.md) | Live mode, no leader sync | Accepted |
 | [0008](adr/0008-localization.md) | Localization (German/English) | Accepted |
 | [0009](adr/0009-pdf-attachments.md) | PDF sheet music attachments | Accepted |
+| [0010](adr/0010-git-workflow.md) | Git workflow for autonomous agents | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.

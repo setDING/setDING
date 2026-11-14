@@ -29,6 +29,17 @@ The documentation must always reflect the current state of the project:
 - **Always update the README** together with the ADR: the solution strategy table, the domain model, the roadmap, the open questions and the ADR index (number, title, status).
 - Status values: `Proposed`, `Accepted`, `Rejected`, `Superseded by ADR-XXXX`. Only the user can accept or reject an ADR; agents create ADRs as `Proposed`.
 
+## Git workflow (mandatory)
+
+Every change follows [`docs/development/git-workflow.md`](docs/development/git-workflow.md) (ADR-0010). In short:
+
+- Work on an issue; one issue = one branch (`<type>/<issue>-<slug>`) = one PR. **Never commit directly to `main`.**
+- Conventional Commits in English, with a `Co-Authored-By` trailer for agents.
+- Before marking a PR ready: rebase on `main`, run the checks, update ADRs/docs, complete both ARB files, self-review.
+- **Test gate: all tests must pass before every merge**, run on the final branch state rebased on `main`. Never skip, delete or weaken tests to get green. New or changed behaviour comes with tests.
+- Squash merge only. An agent may merge its own PR when the test gate is satisfied, CI is green and no "human must decide" rule applies; otherwise label `needs-human`.
+- Never end a session with unpushed work: commit, push, and leave a handover comment on the PR.
+
 ## Language
 
 - **Project language is English**: code, identifiers, comments, documentation, ADRs, commit messages, pull requests, issues and file names.
