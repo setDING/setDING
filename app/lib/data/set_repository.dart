@@ -205,6 +205,16 @@ class SetRepository {
         SetItemsCompanion(transpose: Value(transpose)),
       );
 
+  /// Set-specific song sequence; null or empty restores the song's own.
+  Future<void> setItemSequence(String itemId, String? sequence) {
+    final value = sequence?.trim();
+    return (db.update(db.setItems)..where((i) => i.id.equals(itemId))).write(
+      SetItemsCompanion(
+        sequence: Value(value == null || value.isEmpty ? null : value),
+      ),
+    );
+  }
+
   /// A set is "offline ready" when all its songs and their attachment files
   /// are available locally (ADR-0001).
   Future<bool> isOfflineReady(String setId) async {

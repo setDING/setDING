@@ -2,6 +2,8 @@ import 'package:chordpro/chordpro.dart' as cp;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../render/song_header.dart';
+import 'sequence_dialog.dart';
 import '../../data/database.dart';
 import '../../data/set_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
@@ -251,6 +253,10 @@ class _SetItemTile extends ConsumerWidget {
     }
 
     final settings = ref.watch(settingsProvider);
+    final originalSequence = song == null
+        ? null
+        : cp.findSequence(song.chordproSource);
+    final sequence = item.sequence ?? originalSequence;
     final songKey = song?.songKey == null
         ? null
         : cp.Key.tryParse(song!.songKey!);
@@ -267,7 +273,24 @@ class _SetItemTile extends ConsumerWidget {
             ? l10n.songMissing
             : (song.title.isEmpty ? l10n.untitled : song.title),
       ),
-      subtitle: song?.artist == null ? null : Text(song!.artist!),
+      subtitle: switch ((song?.artist, sequence)) {
+        (null, null) => null,
+        (final artist, final sequence) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ?artist == null ? null : Text(artist),
+            if (sequence != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: SongSequenceView(
+                  cp.parseSequence(sequence),
+                  compact: true,
+                  fromSet: item.sequence != null,
+                ),
+              ),
+          ],
+        ),
+      },
       onTap: song == null
           ? null
           : () => Navigator.push(
@@ -286,6 +309,23 @@ class _SetItemTile extends ConsumerWidget {
               transpose: item.transpose,
               notation: settings.notation,
               onChanged: (value) => repo.setItemTranspose(item.id, value),
+            ),
+          if (song != null)
+            IconButton(
+              tooltip: l10n.sequenceEdit,
+              isSelected: item.sequence != null,
+              icon: const Icon(Icons.format_list_numbered),
+              selectedIcon: const Icon(Icons.playlist_play),
+              onPressed: () async {
+                final choice = await editSetSequence(
+                  context,
+                  original: originalSequence,
+                  current: item.sequence,
+                );
+                if (choice != null) {
+                  await repo.setItemSequence(item.id, choice.value);
+                }
+              },
             ),
           IconButton(
             tooltip: l10n.removeFromSet,

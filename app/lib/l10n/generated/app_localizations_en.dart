@@ -747,4 +747,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get insertNewSong => 'Next song in the same file';
+
+  @override
+  String get sequenceEdit => 'Song sequence for this set';
+
+  @override
+  String get sequenceFromSet => 'Sequence changed for this set';
+
+  @override
+  String sequenceOriginal(Object sequence) {
+    return 'In the song: $sequence';
+  }
+
+  @override
+  String get sequenceNoneInSong => 'The song has no sequence.';
+
+  @override
+  String get sequenceRestore => 'Use the song\'s sequence';
+
+  @override
+  String get sequenceHint => 'e.g. I, V1, C, V2, PC, C x2, B, O';
+
+  @override
+  String get sequenceAbbreviations =>
+      'I Intro · V Verse · PC Pre-chorus · C Chorus · B Bridge · Int Interlude · Solo · T Tag · O Outro · C x2 = twice';
 }

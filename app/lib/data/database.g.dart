@@ -2161,6 +2161,17 @@ class $SetItemsTable extends SetItems
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _sequenceMeta = const VerificationMeta(
+    'sequence',
+  );
+  @override
+  late final GeneratedColumn<String> sequence = GeneratedColumn<String>(
+    'sequence',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _noteMeta = const VerificationMeta('note');
   @override
   late final GeneratedColumn<String> note = GeneratedColumn<String>(
@@ -2186,6 +2197,7 @@ class $SetItemsTable extends SetItems
     songId,
     position,
     transpose,
+    sequence,
     note,
     type,
   ];
@@ -2234,6 +2246,12 @@ class $SetItemsTable extends SetItems
         transpose.isAcceptableOrUnknown(data['transpose']!, _transposeMeta),
       );
     }
+    if (data.containsKey('sequence')) {
+      context.handle(
+        _sequenceMeta,
+        sequence.isAcceptableOrUnknown(data['sequence']!, _sequenceMeta),
+      );
+    }
     if (data.containsKey('note')) {
       context.handle(
         _noteMeta,
@@ -2269,6 +2287,10 @@ class $SetItemsTable extends SetItems
         DriftSqlType.int,
         data['${effectivePrefix}transpose'],
       )!,
+      sequence: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sequence'],
+      ),
       note: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}note'],
@@ -2300,6 +2322,10 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
   /// Set-specific transposition in semitones (layer 2, ADR-0006).
   final int transpose;
 
+  /// Set-specific song sequence (`{x_sequence}` syntax, layer 2,
+  /// ADR-0006); null = as in the song.
+  final String? sequence;
+
   /// Label of a pause or text item.
   final String? note;
   final SetItemType type;
@@ -2309,6 +2335,7 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
     this.songId,
     required this.position,
     required this.transpose,
+    this.sequence,
     this.note,
     required this.type,
   });
@@ -2322,6 +2349,9 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
     }
     map['position'] = Variable<int>(position);
     map['transpose'] = Variable<int>(transpose);
+    if (!nullToAbsent || sequence != null) {
+      map['sequence'] = Variable<String>(sequence);
+    }
     if (!nullToAbsent || note != null) {
       map['note'] = Variable<String>(note);
     }
@@ -2340,6 +2370,9 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
           : Value(songId),
       position: Value(position),
       transpose: Value(transpose),
+      sequence: sequence == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sequence),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
       type: Value(type),
     );
@@ -2356,6 +2389,7 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
       songId: serializer.fromJson<String?>(json['songId']),
       position: serializer.fromJson<int>(json['position']),
       transpose: serializer.fromJson<int>(json['transpose']),
+      sequence: serializer.fromJson<String?>(json['sequence']),
       note: serializer.fromJson<String?>(json['note']),
       type: $SetItemsTable.$convertertype.fromJson(
         serializer.fromJson<String>(json['type']),
@@ -2371,6 +2405,7 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
       'songId': serializer.toJson<String?>(songId),
       'position': serializer.toJson<int>(position),
       'transpose': serializer.toJson<int>(transpose),
+      'sequence': serializer.toJson<String?>(sequence),
       'note': serializer.toJson<String?>(note),
       'type': serializer.toJson<String>(
         $SetItemsTable.$convertertype.toJson(type),
@@ -2384,6 +2419,7 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
     Value<String?> songId = const Value.absent(),
     int? position,
     int? transpose,
+    Value<String?> sequence = const Value.absent(),
     Value<String?> note = const Value.absent(),
     SetItemType? type,
   }) => SetItemEntry(
@@ -2392,6 +2428,7 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
     songId: songId.present ? songId.value : this.songId,
     position: position ?? this.position,
     transpose: transpose ?? this.transpose,
+    sequence: sequence.present ? sequence.value : this.sequence,
     note: note.present ? note.value : this.note,
     type: type ?? this.type,
   );
@@ -2402,6 +2439,7 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
       songId: data.songId.present ? data.songId.value : this.songId,
       position: data.position.present ? data.position.value : this.position,
       transpose: data.transpose.present ? data.transpose.value : this.transpose,
+      sequence: data.sequence.present ? data.sequence.value : this.sequence,
       note: data.note.present ? data.note.value : this.note,
       type: data.type.present ? data.type.value : this.type,
     );
@@ -2415,6 +2453,7 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
           ..write('songId: $songId, ')
           ..write('position: $position, ')
           ..write('transpose: $transpose, ')
+          ..write('sequence: $sequence, ')
           ..write('note: $note, ')
           ..write('type: $type')
           ..write(')'))
@@ -2423,7 +2462,7 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
 
   @override
   int get hashCode =>
-      Object.hash(id, setId, songId, position, transpose, note, type);
+      Object.hash(id, setId, songId, position, transpose, sequence, note, type);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2433,6 +2472,7 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
           other.songId == this.songId &&
           other.position == this.position &&
           other.transpose == this.transpose &&
+          other.sequence == this.sequence &&
           other.note == this.note &&
           other.type == this.type);
 }
@@ -2443,6 +2483,7 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
   final Value<String?> songId;
   final Value<int> position;
   final Value<int> transpose;
+  final Value<String?> sequence;
   final Value<String?> note;
   final Value<SetItemType> type;
   final Value<int> rowid;
@@ -2452,6 +2493,7 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
     this.songId = const Value.absent(),
     this.position = const Value.absent(),
     this.transpose = const Value.absent(),
+    this.sequence = const Value.absent(),
     this.note = const Value.absent(),
     this.type = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2462,6 +2504,7 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
     this.songId = const Value.absent(),
     required int position,
     this.transpose = const Value.absent(),
+    this.sequence = const Value.absent(),
     this.note = const Value.absent(),
     required SetItemType type,
     this.rowid = const Value.absent(),
@@ -2475,6 +2518,7 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
     Expression<String>? songId,
     Expression<int>? position,
     Expression<int>? transpose,
+    Expression<String>? sequence,
     Expression<String>? note,
     Expression<String>? type,
     Expression<int>? rowid,
@@ -2485,6 +2529,7 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
       if (songId != null) 'song_id': songId,
       if (position != null) 'position': position,
       if (transpose != null) 'transpose': transpose,
+      if (sequence != null) 'sequence': sequence,
       if (note != null) 'note': note,
       if (type != null) 'type': type,
       if (rowid != null) 'rowid': rowid,
@@ -2497,6 +2542,7 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
     Value<String?>? songId,
     Value<int>? position,
     Value<int>? transpose,
+    Value<String?>? sequence,
     Value<String?>? note,
     Value<SetItemType>? type,
     Value<int>? rowid,
@@ -2507,6 +2553,7 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
       songId: songId ?? this.songId,
       position: position ?? this.position,
       transpose: transpose ?? this.transpose,
+      sequence: sequence ?? this.sequence,
       note: note ?? this.note,
       type: type ?? this.type,
       rowid: rowid ?? this.rowid,
@@ -2531,6 +2578,9 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
     if (transpose.present) {
       map['transpose'] = Variable<int>(transpose.value);
     }
+    if (sequence.present) {
+      map['sequence'] = Variable<String>(sequence.value);
+    }
     if (note.present) {
       map['note'] = Variable<String>(note.value);
     }
@@ -2553,6 +2603,7 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
           ..write('songId: $songId, ')
           ..write('position: $position, ')
           ..write('transpose: $transpose, ')
+          ..write('sequence: $sequence, ')
           ..write('note: $note, ')
           ..write('type: $type, ')
           ..write('rowid: $rowid')
@@ -5066,6 +5117,7 @@ typedef $$SetItemsTableCreateCompanionBuilder = SetItemsCompanion Function({
   Value<String?> songId,
   required int position,
   Value<int> transpose,
+  Value<String?> sequence,
   Value<String?> note,
   required SetItemType type,
   Value<int> rowid,
@@ -5076,6 +5128,7 @@ typedef $$SetItemsTableUpdateCompanionBuilder = SetItemsCompanion Function({
   Value<String?> songId,
   Value<int> position,
   Value<int> transpose,
+  Value<String?> sequence,
   Value<String?> note,
   Value<SetItemType> type,
   Value<int> rowid,
@@ -5141,6 +5194,11 @@ class $$SetItemsTableFilterComposer
 
   ColumnFilters<int> get transpose => $composableBuilder(
     column: $table.transpose,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sequence => $composableBuilder(
+    column: $table.sequence,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5226,6 +5284,11 @@ class $$SetItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get sequence => $composableBuilder(
+    column: $table.sequence,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get note => $composableBuilder(
     column: $table.note,
     builder: (column) => ColumnOrderings(column),
@@ -5300,6 +5363,9 @@ class $$SetItemsTableAnnotationComposer
 
   GeneratedColumn<int> get transpose =>
       $composableBuilder(column: $table.transpose, builder: (column) => column);
+
+  GeneratedColumn<String> get sequence =>
+      $composableBuilder(column: $table.sequence, builder: (column) => column);
 
   GeneratedColumn<String> get note =>
       $composableBuilder(column: $table.note, builder: (column) => column);
@@ -5387,6 +5453,7 @@ class $$SetItemsTableTableManager
                 Value<String?> songId = const Value.absent(),
                 Value<int> position = const Value.absent(),
                 Value<int> transpose = const Value.absent(),
+                Value<String?> sequence = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<SetItemType> type = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -5396,6 +5463,7 @@ class $$SetItemsTableTableManager
                 songId: songId,
                 position: position,
                 transpose: transpose,
+                sequence: sequence,
                 note: note,
                 type: type,
                 rowid: rowid,
@@ -5407,6 +5475,7 @@ class $$SetItemsTableTableManager
                 Value<String?> songId = const Value.absent(),
                 required int position,
                 Value<int> transpose = const Value.absent(),
+                Value<String?> sequence = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 required SetItemType type,
                 Value<int> rowid = const Value.absent(),
@@ -5416,6 +5485,7 @@ class $$SetItemsTableTableManager
                 songId: songId,
                 position: position,
                 transpose: transpose,
+                sequence: sequence,
                 note: note,
                 type: type,
                 rowid: rowid,

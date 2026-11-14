@@ -113,3 +113,15 @@ SequenceItem _parseItem(String code) {
     repeat: int.tryParse(m.group(1) ?? m.group(4) ?? m.group(5) ?? ''),
   );
 }
+
+final _directive = RegExp(
+  r'^[ \t]*\{[ \t]*x_sequence[ \t]*:[ \t]*([^}\n]*)\}',
+  multiLine: true,
+);
+
+/// The raw value of the first `{x_sequence}` in a ChordPro [source], without
+/// parsing the whole song (e.g. for list views). Null when there is none.
+String? findSequence(String source) {
+  final value = _directive.firstMatch(source)?.group(1)?.trim();
+  return value == null || value.isEmpty ? null : value;
+}

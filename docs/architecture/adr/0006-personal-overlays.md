@@ -20,7 +20,8 @@ The shared ChordPro text is **never modified** by them.
 Layers (applied in this order):
 
 1. **Song** (ChordPro, shared) – original key
-2. **Set item** (shared, set by an admin) – e.g. "tonight −2 semitones"
+2. **Set item** (shared, set by an admin) – e.g. "tonight −2 semitones", or a
+   different song sequence for this set
 3. **Personal overlay per song** – transposition/capo, instrument transposition,
    text notes, font size, optionally Nashville display for this song
 4. **Personal device settings** – display mode (lyrics + chords, lyrics only),
@@ -56,6 +57,7 @@ size/zoom setting is relevant.
 - 2026-11-14: Overlay model accepted. Freehand annotations are postponed to a later phase. A dedicated chords-only display mode is not planned.
 - 2026-11-14: The key is chosen from a dropdown of the twelve keys (or semitone offsets for songs without a key). In a set – in the set list and in live mode started from a set – the chosen key is stored on the **set item** (layer 2); the song itself is never changed. Outside a set, the dropdown sets the personal transposition (layer 3).
 - 2026-11-14: The personal capo distinguishes "as written in the song" (`{capo}`, default) from an explicit fret including "no capo" (ADR-0012).
+- 2026-11-15: The song sequence (`{x_sequence}`, ADR-0012) can be overridden per **set item** (layer 2, column `set_items.sequence`, database schema 3, same syntax; null = as in the song). It is edited in the set list and shown in the set list and in live mode started from the set, marked as set-specific; the song itself is never changed. Opening the song on its own shows its original sequence.
 
 ## Open points
 

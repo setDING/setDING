@@ -116,7 +116,7 @@ erDiagram
     MEMBERSHIP { uuid band_id uuid user_id enum role "admin|member" }
     SONG { uuid id string chordpro_source string title string artist string key int tempo int revision timestamp updated_at bool deleted }
     SETLIST { uuid id string name date gig_date string venue int revision }
-    SET_ITEM { uuid id uuid set_id uuid song_id int position int transpose string note string type "song|break|text" }
+    SET_ITEM { uuid id uuid set_id uuid song_id int position int transpose string sequence string note string type "song|break|text" }
     PERSONAL_OVERLAY { uuid user_id uuid song_id int transpose int capo float font_scale string notes bool nashville string live_view "chordpro|attachment_id" }
     ATTACHMENT { uuid id uuid song_id string name file pdf int pages int size_bytes int revision bool deleted }
     INVITATION { uuid id uuid band_id string token_hash uuid created_by timestamp expires_at int used_count bool revoked }

@@ -92,6 +92,10 @@ class SetItems extends Table {
   /// Set-specific transposition in semitones (layer 2, ADR-0006).
   IntColumn get transpose => integer().withDefault(const Constant(0))();
 
+  /// Set-specific song sequence (`{x_sequence}` syntax, layer 2,
+  /// ADR-0006); null = as in the song.
+  TextColumn get sequence => text().nullable()();
+
   /// Label of a pause or text item.
   TextColumn get note => text().nullable()();
   TextColumn get type => textEnum<SetItemType>()();
@@ -132,7 +136,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   /// Called after an upgrade to fill new columns from the ChordPro source.
   Future<void> Function(AppDatabase db)? afterUpgrade;
@@ -148,6 +152,9 @@ class AppDatabase extends _$AppDatabase {
         await customStatement(
           'UPDATE personal_overlays SET capo_fret = capo WHERE capo > 0',
         );
+      }
+      if (from < 3) {
+        await m.addColumn(setItems, setItems.sequence);
       }
     },
     beforeOpen: (details) async {

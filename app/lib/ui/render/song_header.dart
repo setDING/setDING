@@ -13,6 +13,7 @@ class SongHeader extends StatelessWidget {
     required this.formatter,
     this.capo = 0,
     this.compact = false,
+    this.setSequence,
   });
 
   final String title;
@@ -22,10 +23,16 @@ class SongHeader extends StatelessWidget {
   final int capo;
   final bool compact;
 
+  /// Set-specific sequence (layer 2, ADR-0006); replaces the song's own.
+  final String? setSequence;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final sequence = setSequence == null
+        ? song.sequence
+        : parseSequence(setSequence!);
     final info = <String>[
       if (formatter.formatKey() case final key?) l10n.keyLabel(key),
       if (capo > 0) l10n.capoValue(capo),
@@ -57,10 +64,14 @@ class SongHeader extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-        if (song.sequence case final sequence when sequence.isNotEmpty)
+        if (sequence.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 4),
-            child: SongSequenceView(sequence, compact: compact),
+            child: SongSequenceView(
+              sequence,
+              compact: compact,
+              fromSet: setSequence != null,
+            ),
           ),
         if (info.isNotEmpty)
           Padding(
@@ -79,10 +90,18 @@ class SongHeader extends StatelessWidget {
 
 /// The song sequence from `{x_sequence: …}` as a row of small chips.
 class SongSequenceView extends StatelessWidget {
-  const SongSequenceView(this.sequence, {super.key, this.compact = false});
+  const SongSequenceView(
+    this.sequence, {
+    super.key,
+    this.compact = false,
+    this.fromSet = false,
+  });
 
   final List<SequenceItem> sequence;
   final bool compact;
+
+  /// Marks a set-specific sequence (layer 2, ADR-0006).
+  final bool fromSet;
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +114,18 @@ class SongSequenceView extends StatelessWidget {
       child: Wrap(
         spacing: 4,
         runSpacing: 4,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
+          if (fromSet)
+            Tooltip(
+              message: l10n.sequenceFromSet,
+              child: Icon(
+                Icons.playlist_play,
+                key: const ValueKey('sequence-from-set'),
+                size: compact ? 18 : 20,
+                color: scheme.primary,
+              ),
+            ),
           for (final item in sequence)
             Tooltip(
               message: _partName(l10n, item),

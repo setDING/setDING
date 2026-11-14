@@ -751,4 +751,28 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get insertNewSong => 'Nächster Song in derselben Datei';
+
+  @override
+  String get sequenceEdit => 'Songablauf für dieses Set';
+
+  @override
+  String get sequenceFromSet => 'Ablauf für dieses Set angepasst';
+
+  @override
+  String sequenceOriginal(Object sequence) {
+    return 'Im Song: $sequence';
+  }
+
+  @override
+  String get sequenceNoneInSong => 'Der Song hat keinen Ablauf.';
+
+  @override
+  String get sequenceRestore => 'Ablauf des Songs verwenden';
+
+  @override
+  String get sequenceHint => 'z. B. I, V1, C, V2, PC, C x2, B, O';
+
+  @override
+  String get sequenceAbbreviations =>
+      'I Intro · V Strophe · PC Pre-Chorus · C Refrain · B Bridge · Int Zwischenspiel · Solo · T Tag · O Outro · C x2 = zweimal';
 }

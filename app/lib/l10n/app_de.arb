@@ -336,5 +336,12 @@
   "insertImage": "Bild",
   "insertAbc": "ABC-Notation",
   "insertTextblock": "Textblock",
-  "insertNewSong": "Nächster Song in derselben Datei"
+  "insertNewSong": "Nächster Song in derselben Datei",
+  "sequenceEdit": "Songablauf für dieses Set",
+  "sequenceFromSet": "Ablauf für dieses Set angepasst",
+  "sequenceOriginal": "Im Song: {sequence}",
+  "sequenceNoneInSong": "Der Song hat keinen Ablauf.",
+  "sequenceRestore": "Ablauf des Songs verwenden",
+  "sequenceHint": "z. B. I, V1, C, V2, PC, C x2, B, O",
+  "sequenceAbbreviations": "I Intro · V Strophe · PC Pre-Chorus · C Refrain · B Bridge · Int Zwischenspiel · Solo · T Tag · O Outro · C x2 = zweimal"
 }

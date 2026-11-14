@@ -47,4 +47,13 @@ void main() {
   test('no sequence', () {
     expect(parseChordPro('[C]x').sequence, isEmpty);
   });
+
+  test('findSequence reads the raw value from the source', () {
+    expect(
+      findSequence('{title: X}\n  {x_sequence: V, C x2 }\n[C]la'),
+      'V, C x2',
+    );
+    expect(findSequence('{title: X}'), isNull);
+    expect(findSequence('{x_sequence: }'), isNull);
+  });
 }

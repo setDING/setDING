@@ -1429,6 +1429,48 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Nächster Song in derselben Datei'**
   String get insertNewSong;
+
+  /// No description provided for @sequenceEdit.
+  ///
+  /// In de, this message translates to:
+  /// **'Songablauf für dieses Set'**
+  String get sequenceEdit;
+
+  /// No description provided for @sequenceFromSet.
+  ///
+  /// In de, this message translates to:
+  /// **'Ablauf für dieses Set angepasst'**
+  String get sequenceFromSet;
+
+  /// No description provided for @sequenceOriginal.
+  ///
+  /// In de, this message translates to:
+  /// **'Im Song: {sequence}'**
+  String sequenceOriginal(Object sequence);
+
+  /// No description provided for @sequenceNoneInSong.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Song hat keinen Ablauf.'**
+  String get sequenceNoneInSong;
+
+  /// No description provided for @sequenceRestore.
+  ///
+  /// In de, this message translates to:
+  /// **'Ablauf des Songs verwenden'**
+  String get sequenceRestore;
+
+  /// No description provided for @sequenceHint.
+  ///
+  /// In de, this message translates to:
+  /// **'z. B. I, V1, C, V2, PC, C x2, B, O'**
+  String get sequenceHint;
+
+  /// No description provided for @sequenceAbbreviations.
+  ///
+  /// In de, this message translates to:
+  /// **'I Intro · V Strophe · PC Pre-Chorus · C Refrain · B Bridge · Int Zwischenspiel · Solo · T Tag · O Outro · C x2 = zweimal'**
+  String get sequenceAbbreviations;
 }
 
 class _AppLocalizationsDelegate

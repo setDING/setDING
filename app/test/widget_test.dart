@@ -349,6 +349,68 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('song sequence can be changed per set item', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    const source = '{title: Seq}\n{x_sequence: V, C}\n[C]la';
+    final ids = await tester.runAsync(() async {
+      final songId = await app.songs.createSong(source: source);
+      final setId = await app.sets.createSet(name: 'Gig');
+      await app.sets.addSongs(setId, [songId]);
+      return (songId, setId);
+    });
+    final (songId, setId) = ids!;
+    await tester.pumpWidget(app.build(home: SetScreen(setId: setId)));
+    await tester.pumpAndSettle();
+    final chips = find.byKey(const ValueKey('sequence-chip'));
+    expect(chips, findsNWidgets(2)); // the song's sequence
+
+    await tester.tap(find.byTooltip('Song sequence for this set'));
+    await tester.pumpAndSettle();
+    expect(find.text('In the song: V, C'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), 'I, V, C x2, O');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    final stored = await tester.runAsync(
+      () async => (
+        (await app.sets.getItems(setId)).single.item.sequence,
+        (await app.songs.getSong(songId))!.chordproSource,
+      ),
+    );
+    expect(stored!.$1, 'I, V, C x2, O');
+    expect(stored.$2, source); // the song itself is unchanged
+    expect(chips, findsNWidgets(4));
+    expect(find.byKey(const ValueKey('sequence-from-set')), findsOneWidget);
+
+    // Live mode from the set shows the set's sequence.
+    final items = await tester.runAsync(
+      () async => [
+        for (final v in await app.sets.getItems(setId))
+          LiveItem.song(v.song!, setSequence: v.item.sequence),
+      ],
+    );
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items!)));
+    await tester.pumpAndSettle();
+    expect(find.text('C x2'), findsOneWidget);
+    expect(find.byKey(const ValueKey('sequence-from-set')), findsOneWidget);
+
+    // Back to the song's sequence.
+    await tester.pumpWidget(app.build(home: SetScreen(setId: setId)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Song sequence for this set'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text("Use the song's sequence"));
+    await tester.pumpAndSettle();
+    final reset = await tester.runAsync(
+      () async => (await app.sets.getItems(setId)).single.item.sequence,
+    );
+    expect(reset, isNull);
+    expect(chips, findsNWidgets(2));
+    expect(find.byKey(const ValueKey('sequence-from-set')), findsNothing);
+    await app.dispose(tester);
+  });
+
   testWidgets('key chosen in live mode is stored on the set item', (
     tester,
   ) async {

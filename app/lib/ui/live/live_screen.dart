@@ -26,6 +26,7 @@ class LiveItem {
   const LiveItem.song(
     SongEntry this.song, {
     this.setTranspose = 0,
+    this.setSequence,
     this.setItemId,
   }) : type = SetItemType.song,
        label = null;
@@ -33,6 +34,7 @@ class LiveItem {
   const LiveItem.marker(this.type, this.label)
     : song = null,
       setTranspose = 0,
+      setSequence = null,
       setItemId = null;
 
   final SetItemType type;
@@ -41,12 +43,19 @@ class LiveItem {
   /// Transposition from the set item (layer 2, ADR-0006).
   final int setTranspose;
 
+  /// Song sequence from the set item (layer 2, ADR-0006).
+  final String? setSequence;
+
   /// The set item this entry comes from; null when a single song is played.
   final String? setItemId;
   final String? label;
 
-  LiveItem withSetTranspose(int value) =>
-      LiveItem.song(song!, setTranspose: value, setItemId: setItemId);
+  LiveItem withSetTranspose(int value) => LiveItem.song(
+    song!,
+    setTranspose: value,
+    setSequence: setSequence,
+    setItemId: setItemId,
+  );
 
   String title(AppLocalizations l10n) => song == null
       ? (label ?? '')
@@ -92,6 +101,7 @@ class LiveScreen extends ConsumerStatefulWidget {
           LiveItem.song(
             v.song!,
             setTranspose: v.item.transpose,
+            setSequence: v.item.sequence,
             setItemId: v.item.id,
           ),
     ];
@@ -527,6 +537,7 @@ class _LiveItemPage extends ConsumerWidget {
       parsed: parsed,
       overlay: overlay,
       setTranspose: item.setTranspose,
+      setSequence: item.setSequence,
       scrollController: scrollController,
       imageLookup: (src) {
         final image = imageAttachmentFor(attachments, src);
@@ -542,6 +553,7 @@ class _ChordProPage extends ConsumerWidget {
     required this.parsed,
     required this.overlay,
     required this.setTranspose,
+    required this.setSequence,
     required this.scrollController,
     required this.imageLookup,
   });
@@ -550,6 +562,7 @@ class _ChordProPage extends ConsumerWidget {
   final Song parsed;
   final SongOverlay overlay;
   final int setTranspose;
+  final String? setSequence;
   final ScrollController scrollController;
   final ImageLookup imageLookup;
 
@@ -585,6 +598,7 @@ class _ChordProPage extends ConsumerWidget {
             formatter: formatter,
             capo: formatter.effectiveCapo,
             compact: true,
+            setSequence: setSequence,
           ),
           const SizedBox(height: 12),
           Expanded(

@@ -221,5 +221,12 @@
   "insertImage": "Image",
   "insertAbc": "ABC notation",
   "insertTextblock": "Text block",
-  "insertNewSong": "Next song in the same file"
+  "insertNewSong": "Next song in the same file",
+  "sequenceEdit": "Song sequence for this set",
+  "sequenceFromSet": "Sequence changed for this set",
+  "sequenceOriginal": "In the song: {sequence}",
+  "sequenceNoneInSong": "The song has no sequence.",
+  "sequenceRestore": "Use the song's sequence",
+  "sequenceHint": "e.g. I, V1, C, V2, PC, C x2, B, O",
+  "sequenceAbbreviations": "I Intro · V Verse · PC Pre-chorus · C Chorus · B Bridge · Int Interlude · Solo · T Tag · O Outro · C x2 = twice"
 }
