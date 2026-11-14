@@ -1,6 +1,6 @@
 # ADR-0011: Song import from CCLI SongSelect
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-14
 
 ## Context
@@ -54,6 +54,10 @@ Findings (researched 2026-11-14):
 - The ChordPro importer must handle files downloaded from SongSelect well.
 - Bands without a church license need other sources for chord sheets (own ChordPro files,
   other services, own transcriptions).
+
+## Decision log
+
+- 2026-11-14: Accepted. No SongSelect API integration; manual import of ChordPro files downloaded from SongSelect.
 
 ## Open points
 
