@@ -46,6 +46,7 @@ A user can be a member of several bands; the role is defined per band (ADR-0005)
 | Live mode | Pedal/keyboard control, wakelock; each member navigates independently (**no leader sync**) | [ADR-0007](adr/0007-live-mode.md) |
 | Localization | UI in **German (Swiss, `de-CH`) and English**, selectable in the settings | [ADR-0008](adr/0008-localization.md) |
 | Sheet music | **PDF attachments** per song, synced and available offline, shown in live mode | [ADR-0009](adr/0009-pdf-attachments.md) |
+| SongSelect (CCLI) | **No API integration** (partner program closed); manual import of ChordPro files downloaded from SongSelect | [ADR-0011](adr/0011-songselect-import.md) |
 
 ## 4. Building block view
 
@@ -202,6 +203,7 @@ See "Open points" in the individual ADRs. The most important:
 11. Server details: OS, Docker, public domain/HTTPS – also needed for deep links of invitation links (ADR-0004, ADR-0005)
 12. App name and domain – "BandChords" is a working title; candidates in [`docs/app-name-candidates.md`](../app-name-candidates.md)
 13. ~~May agents merge their own PRs?~~ → Yes, from the start, but only when all tests pass (test gate, ADR-0010). Open: repository host and name
+14. SongSelect import: no API integration, manual ChordPro import (ADR-0011, proposed). Open: test with a real SongSelect file, show copyright/CCLI number?
 
 ## 10. ADR index
 
@@ -217,5 +219,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0008](adr/0008-localization.md) | Localization (German/English) | Accepted |
 | [0009](adr/0009-pdf-attachments.md) | PDF sheet music attachments | Accepted |
 | [0010](adr/0010-git-workflow.md) | Git workflow for autonomous agents | Accepted |
+| [0011](adr/0011-songselect-import.md) | Song import from CCLI SongSelect | Proposed |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.
