@@ -237,6 +237,14 @@ void main() {
       expect(songs.map((s) => s.title), ['One', 'Two', 'Three']);
       expect(parseChordPro('{title: One}\n{ns}\n{title: Two}').title, 'One');
     });
+
+    test('splits the source text per song', () {
+      final parts = splitChordProSongs(
+        '{ns}\n{title: One}\n[C]a\n\n{new_song}\n{title: Two}\r\n[G]b\n{ns}\n',
+      );
+      expect(parts, ['{title: One}\n[C]a\n', '{title: Two}\n[G]b\n']);
+      expect(splitChordProSongs('[C]single'), ['[C]single\n']);
+    });
   });
 
   group('grids', () {

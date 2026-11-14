@@ -133,11 +133,14 @@ class _SongScreenState extends ConsumerState<SongScreen> {
       value: songValue,
       data: (song) {
         if (song == null) return const Scaffold();
-        final parsed = parseChordPro(song.chordproSource);
+        final parsed = parseChordPro(
+          song.chordproSource,
+          selectors: settings.selectors,
+        );
         final formatter = ChordFormatter.forSong(
           parsed,
           transpose: overlay.transpose,
-          capo: overlay.capo == 0 ? null : overlay.capo,
+          capo: overlay.capoFret,
           notation: settings.notation,
           nashville: overlay.nashville ?? settings.nashville,
         );
@@ -192,6 +195,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
               const SizedBox(height: 12),
               _AdjustmentsBar(
                 songKey: parsed.key,
+                songCapo: parsed.capoFret,
                 notation: settings.notation,
                 overlay: overlay,
                 deviceNashville: settings.nashville,
@@ -243,6 +247,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
 class _AdjustmentsBar extends StatelessWidget {
   const _AdjustmentsBar({
     required this.songKey,
+    required this.songCapo,
     required this.notation,
     required this.overlay,
     required this.deviceNashville,
@@ -251,6 +256,9 @@ class _AdjustmentsBar extends StatelessWidget {
   });
 
   final cp.Key? songKey;
+
+  /// `{capo}` of the song (0 if none).
+  final int songCapo;
   final ChordNotation notation;
   final SongOverlay overlay;
   final bool deviceNashville;
@@ -262,7 +270,7 @@ class _AdjustmentsBar extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final changed =
         overlay.transpose != 0 ||
-        overlay.capo != 0 ||
+        overlay.capoFret != null ||
         overlay.fontScale != 1.0 ||
         overlay.nashville != null;
 
@@ -280,16 +288,29 @@ class _AdjustmentsBar extends StatelessWidget {
         MenuAnchor(
           builder: (context, controller, _) => ActionChip(
             avatar: const Icon(Icons.straighten, size: 18),
-            label: Text(
-              overlay.capo == 0 ? l10n.noCapo : l10n.capoValue(overlay.capo),
-            ),
+            label: Text(switch (overlay.capoFret) {
+              null when songCapo > 0 => l10n.capoAsInSong(songCapo),
+              null || 0 => l10n.noCapo,
+              final fret => l10n.capoValue(fret),
+            }),
             onPressed: () =>
                 controller.isOpen ? controller.close() : controller.open(),
           ),
           menuChildren: [
+            // null = as written in the song ({capo}), 0 = explicitly none.
+            if (songCapo > 0)
+              MenuItemButton(
+                onPressed: () =>
+                    onChanged((o) => o.copyWith(capoFret: const Value(null))),
+                child: Text(l10n.capoAsInSong(songCapo)),
+              ),
             for (var fret = 0; fret <= 9; fret++)
               MenuItemButton(
-                onPressed: () => onChanged((o) => o.copyWith(capo: fret)),
+                onPressed: () => onChanged(
+                  (o) => o.copyWith(
+                    capoFret: Value(fret == 0 && songCapo == 0 ? null : fret),
+                  ),
+                ),
                 child: Text(fret == 0 ? l10n.noCapo : l10n.capoValue(fret)),
               ),
           ],
@@ -348,7 +369,7 @@ class _AdjustmentsBar extends StatelessWidget {
             onPressed: () => onChanged(
               (o) => o.copyWith(
                 transpose: 0,
-                capo: 0,
+                capoFret: const Value(null),
                 fontScale: 1.0,
                 nashville: const Value(null),
               ),

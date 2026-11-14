@@ -136,6 +136,14 @@ class AppLocalizationsDe extends AppLocalizations {
   String get noCapo => 'Ohne Kapo';
 
   @override
+  String capoAsInSong(int fret) {
+    return 'Kapo $fret (wie im Song)';
+  }
+
+  @override
+  String get allTags => 'Alle';
+
+  @override
   String get notes => 'Notizen';
 
   @override
@@ -422,6 +430,44 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsSectionStorage => 'Speicher';
+
+  @override
+  String get settingsSectionMusician => 'Musiker';
+
+  @override
+  String get settingsInstrument => 'Mein Instrument';
+
+  @override
+  String get settingsInstrumentHint =>
+      'Wird für bedingte Abschnitte (z. B. nur für Gitarre) und für Griffdiagramme verwendet.';
+
+  @override
+  String get instrumentGuitar => 'Gitarre';
+
+  @override
+  String get instrumentUkulele => 'Ukulele';
+
+  @override
+  String get instrumentBass => 'Bass';
+
+  @override
+  String get instrumentKeyboard => 'Keyboard';
+
+  @override
+  String get instrumentVocals => 'Gesang';
+
+  @override
+  String get instrumentOther => 'Anderes …';
+
+  @override
+  String get settingsUserName => 'Mein Name oder meine Stimme';
+
+  @override
+  String get settingsUserNameHint =>
+      'Für bedingte Abschnitte, z. B. «alto» oder «tenor».';
+
+  @override
+  String get notSet => 'Nicht festgelegt';
 
   @override
   String get settingsLanguage => 'Sprache';

@@ -308,6 +308,18 @@ abstract class AppLocalizations {
   /// **'Ohne Kapo'**
   String get noCapo;
 
+  /// No description provided for @capoAsInSong.
+  ///
+  /// In de, this message translates to:
+  /// **'Kapo {fret} (wie im Song)'**
+  String capoAsInSong(int fret);
+
+  /// No description provided for @allTags.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle'**
+  String get allTags;
+
   /// No description provided for @notes.
   ///
   /// In de, this message translates to:
@@ -799,6 +811,78 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Speicher'**
   String get settingsSectionStorage;
+
+  /// No description provided for @settingsSectionMusician.
+  ///
+  /// In de, this message translates to:
+  /// **'Musiker'**
+  String get settingsSectionMusician;
+
+  /// No description provided for @settingsInstrument.
+  ///
+  /// In de, this message translates to:
+  /// **'Mein Instrument'**
+  String get settingsInstrument;
+
+  /// No description provided for @settingsInstrumentHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Wird für bedingte Abschnitte (z. B. nur für Gitarre) und für Griffdiagramme verwendet.'**
+  String get settingsInstrumentHint;
+
+  /// No description provided for @instrumentGuitar.
+  ///
+  /// In de, this message translates to:
+  /// **'Gitarre'**
+  String get instrumentGuitar;
+
+  /// No description provided for @instrumentUkulele.
+  ///
+  /// In de, this message translates to:
+  /// **'Ukulele'**
+  String get instrumentUkulele;
+
+  /// No description provided for @instrumentBass.
+  ///
+  /// In de, this message translates to:
+  /// **'Bass'**
+  String get instrumentBass;
+
+  /// No description provided for @instrumentKeyboard.
+  ///
+  /// In de, this message translates to:
+  /// **'Keyboard'**
+  String get instrumentKeyboard;
+
+  /// No description provided for @instrumentVocals.
+  ///
+  /// In de, this message translates to:
+  /// **'Gesang'**
+  String get instrumentVocals;
+
+  /// No description provided for @instrumentOther.
+  ///
+  /// In de, this message translates to:
+  /// **'Anderes …'**
+  String get instrumentOther;
+
+  /// No description provided for @settingsUserName.
+  ///
+  /// In de, this message translates to:
+  /// **'Mein Name oder meine Stimme'**
+  String get settingsUserName;
+
+  /// No description provided for @settingsUserNameHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Für bedingte Abschnitte, z. B. «alto» oder «tenor».'**
+  String get settingsUserNameHint;
+
+  /// No description provided for @notSet.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht festgelegt'**
+  String get notSet;
 
   /// No description provided for @settingsLanguage.
   ///

@@ -45,11 +45,14 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
     _original =
         widget.initialSource ?? (widget.songId == null ? newSongTemplate : '');
     _controller = TextEditingController(text: _original);
-    _preview = parseChordPro(_original);
+    _preview = _parse(_original);
     _controller.addListener(
-      () => setState(() => _preview = parseChordPro(_controller.text)),
+      () => setState(() => _preview = _parse(_controller.text)),
     );
   }
+
+  Song _parse(String source) =>
+      parseChordPro(source, selectors: ref.read(settingsProvider).selectors);
 
   @override
   void dispose() {

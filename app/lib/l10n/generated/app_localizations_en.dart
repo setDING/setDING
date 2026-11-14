@@ -135,6 +135,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noCapo => 'No capo';
 
   @override
+  String capoAsInSong(int fret) {
+    return 'Capo $fret (as in song)';
+  }
+
+  @override
+  String get allTags => 'All';
+
+  @override
   String get notes => 'Notes';
 
   @override
@@ -418,6 +426,44 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsSectionStorage => 'Storage';
+
+  @override
+  String get settingsSectionMusician => 'Musician';
+
+  @override
+  String get settingsInstrument => 'My instrument';
+
+  @override
+  String get settingsInstrumentHint =>
+      'Used for conditional parts (e.g. guitar only) and for chord diagrams.';
+
+  @override
+  String get instrumentGuitar => 'Guitar';
+
+  @override
+  String get instrumentUkulele => 'Ukulele';
+
+  @override
+  String get instrumentBass => 'Bass';
+
+  @override
+  String get instrumentKeyboard => 'Keyboard';
+
+  @override
+  String get instrumentVocals => 'Vocals';
+
+  @override
+  String get instrumentOther => 'Other …';
+
+  @override
+  String get settingsUserName => 'My name or voice';
+
+  @override
+  String get settingsUserNameHint =>
+      'For conditional parts, e.g. \"alto\" or \"tenor\".';
+
+  @override
+  String get notSet => 'Not set';
 
   @override
   String get settingsLanguage => 'Language';

@@ -30,6 +30,14 @@ class Songs extends Table {
   TextColumn get songKey => text().nullable()();
   IntColumn get tempo => integer().nullable()();
 
+  /// `{sorttitle}` / `{sortartist}` for sorting (schema 2).
+  TextColumn get sortTitle => text().nullable()();
+  TextColumn get sortArtist => text().nullable()();
+
+  /// `{tag}` values, each enclosed in newlines (`\nRock\nLive\n`) so a tag
+  /// can be matched exactly with LIKE (schema 2).
+  TextColumn get tags => text().nullable()();
+
   IntColumn get revision => integer().withDefault(const Constant(0))();
   DateTimeColumn get updatedAt => dateTime()();
   BoolColumn get deleted => boolean().withDefault(const Constant(false))();
@@ -97,7 +105,13 @@ class SetItems extends Table {
 class PersonalOverlays extends Table {
   TextColumn get songId => text().references(Songs, #id)();
   IntColumn get transpose => integer().withDefault(const Constant(0))();
+
+  /// Legacy capo (schema 1, 0 = none); replaced by [capoFret].
   IntColumn get capo => integer().withDefault(const Constant(0))();
+
+  /// Personal capo; null = as written in the song (`{capo}`), 0 = no capo
+  /// (schema 2).
+  IntColumn get capoFret => integer().nullable()();
   RealColumn get fontScale => real().withDefault(const Constant(1.0))();
   TextColumn get notes => text().nullable()();
 
@@ -118,11 +132,26 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  /// Called after an upgrade to fill new columns from the ChordPro source.
+  Future<void> Function(AppDatabase db)? afterUpgrade;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.addColumn(songs, songs.sortTitle);
+        await m.addColumn(songs, songs.sortArtist);
+        await m.addColumn(songs, songs.tags);
+        await m.addColumn(personalOverlays, personalOverlays.capoFret);
+        await customStatement(
+          'UPDATE personal_overlays SET capo_fret = capo WHERE capo > 0',
+        );
+      }
+    },
     beforeOpen: (details) async {
+      if (details.hadUpgrade) await afterUpgrade?.call(this);
       await customStatement('PRAGMA foreign_keys = ON');
       await into(bands).insert(
         BandsCompanion.insert(id: localBandId, name: 'My band'),

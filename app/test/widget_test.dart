@@ -25,6 +25,11 @@ void main() {
 
     await tester.tap(find.text('Einstellungen').first);
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Schriftgrösse'),
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
     expect(find.text('Schriftgrösse'), findsOneWidget);
     expect(find.textContaining('ß'), findsNothing);
     await app.dispose(tester);
@@ -98,6 +103,63 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('C'), findsOneWidget);
     expect(find.text('4'), findsNothing);
+    await app.dispose(tester);
+  });
+
+  testWidgets('conditional directives follow the instrument setting', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'instrument': 'ukulele', 'userName': 'alto'},
+    );
+    final id = await tester.runAsync(
+      () => app.songs.createSong(
+        source:
+            '{title: Cond}\n{c-guitar: For guitar}\n{c-ukulele: For ukulele}\n'
+            '{c-alto: For alto}\n[C]x',
+      ),
+    );
+    await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+    await tester.pumpAndSettle();
+    expect(find.text('For ukulele'), findsOneWidget);
+    expect(find.text('For alto'), findsOneWidget);
+    expect(find.text('For guitar'), findsNothing);
+    await app.dispose(tester);
+  });
+
+  testWidgets('instrument can be chosen in the settings', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Settings').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ukulele'));
+    await tester.pumpAndSettle();
+    expect(app.prefs.getString('instrument'), 'ukulele');
+    await app.dispose(tester);
+  });
+
+  testWidgets('song capo can be overridden with no capo', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final id = await tester.runAsync(
+      () => app.songs.createSong(
+        source: '{title: Capo}\n{key: C}\n{capo: 2}\n[C]x [G]y',
+      ),
+    );
+    await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+    await tester.pumpAndSettle();
+    expect(find.text('Capo 2 (as in song)'), findsOneWidget);
+    expect(find.text('G'), findsOneWidget); // shapes as written
+
+    await tester.tap(find.text('Capo 2 (as in song)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('No capo').last);
+    await tester.pumpAndSettle();
+    expect(find.text('A'), findsOneWidget); // sounding chords without capo
+    expect(find.text('D'), findsOneWidget);
     await app.dispose(tester);
   });
 

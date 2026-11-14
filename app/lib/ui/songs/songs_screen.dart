@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database.dart';
+import '../../data/song_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../widgets/dialogs.dart';
@@ -20,6 +21,9 @@ class SongsScreen extends ConsumerStatefulWidget {
 class _SongsScreenState extends ConsumerState<SongsScreen> {
   final _search = TextEditingController();
   String _query = '';
+
+  /// Selected tag filter, or null for all songs.
+  String? _tag;
 
   @override
   void dispose() {
@@ -48,7 +52,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final songs = ref.watch(songsProvider(_query));
+    final songs = ref.watch(songsProvider((query: _query, tag: _tag)));
     final counts = ref.watch(attachmentCountsProvider).value ?? const {};
 
     return Scaffold(
@@ -98,27 +102,79 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
         icon: const Icon(Icons.add),
         label: Text(l10n.newSong),
       ),
-      body: AsyncBody(
-        value: songs,
-        data: (list) => list.isEmpty
-            ? EmptyState(
-                icon: Icons.library_music_outlined,
-                message: l10n.songsEmpty,
-              )
-            : ListView.builder(
-                padding: const EdgeInsets.only(bottom: 88),
-                itemCount: list.length,
-                itemBuilder: (context, i) => SongTile(
-                  song: list[i],
-                  hasAttachments: (counts[list[i].id] ?? 0) > 0,
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (_) => SongScreen(songId: list[i].id),
+      body: Column(
+        children: [
+          _TagFilter(
+            selected: _tag,
+            onSelected: (tag) => setState(() => _tag = tag),
+          ),
+          Expanded(
+            child: AsyncBody(
+              value: songs,
+              data: (list) => list.isEmpty
+                  ? EmptyState(
+                      icon: Icons.library_music_outlined,
+                      message: l10n.songsEmpty,
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.only(bottom: 88),
+                      itemCount: list.length,
+                      itemBuilder: (context, i) => SongTile(
+                        song: list[i],
+                        hasAttachments: (counts[list[i].id] ?? 0) > 0,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (_) => SongScreen(songId: list[i].id),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Filter chips for the tags used in the library (`{tag}`).
+class _TagFilter extends ConsumerWidget {
+  const _TagFilter({required this.selected, required this.onSelected});
+
+  final String? selected;
+  final ValueChanged<String?> onSelected;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tags = ref.watch(tagsProvider).value ?? const [];
+    if (tags.isEmpty) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context);
+    return SizedBox(
+      height: 48,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ChoiceChip(
+              label: Text(l10n.allTags),
+              selected: selected == null,
+              onSelected: (_) => onSelected(null),
+            ),
+          ),
+          for (final tag in tags)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: ChoiceChip(
+                avatar: const Icon(Icons.sell_outlined, size: 16),
+                label: Text(tag),
+                selected: selected == tag,
+                onSelected: (on) => onSelected(on ? tag : null),
               ),
+            ),
+        ],
       ),
     );
   }
@@ -147,6 +203,7 @@ class SongTile extends StatelessWidget {
     final subtitle = [
       if (song.artist != null) song.artist!,
       if (song.songKey != null) song.songKey!,
+      ...songTags(song).map((t) => '#$t'),
     ].join(' · ');
     return ListTile(
       leading: leading,

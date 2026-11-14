@@ -98,6 +98,29 @@ Song parseChordPro(
   SelectorContext selectors = const SelectorContext(),
 }) => parseChordProSongs(source, selectors: selectors).first;
 
+/// Splits ChordPro [source] at `{new_song}` / `{ns}` into the source texts
+/// of the individual songs (ADR-0012). Parts without content are dropped.
+List<String> splitChordProSongs(String source) {
+  final parts = <String>[];
+  final current = <String>[];
+  void flush() {
+    final text = current.join('\n').trim();
+    if (text.isNotEmpty) parts.add('$text\n');
+    current.clear();
+  }
+
+  for (final line in source.replaceAll('\r\n', '\n').split('\n')) {
+    final d = line.trimLeft().startsWith('{') ? parseDirective(line) : null;
+    if (d != null && (d.name == 'new_song' || d.name == 'ns')) {
+      flush();
+    } else {
+      current.add(line);
+    }
+  }
+  flush();
+  return parts;
+}
+
 /// Parses ChordPro [source] that may contain several songs separated by
 /// `{new_song}` / `{ns}`.
 ///

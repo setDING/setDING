@@ -345,6 +345,37 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _sortTitleMeta = const VerificationMeta(
+    'sortTitle',
+  );
+  @override
+  late final GeneratedColumn<String> sortTitle = GeneratedColumn<String>(
+    'sort_title',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sortArtistMeta = const VerificationMeta(
+    'sortArtist',
+  );
+  @override
+  late final GeneratedColumn<String> sortArtist = GeneratedColumn<String>(
+    'sort_artist',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _tagsMeta = const VerificationMeta('tags');
+  @override
+  late final GeneratedColumn<String> tags = GeneratedColumn<String>(
+    'tags',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _revisionMeta = const VerificationMeta(
     'revision',
   );
@@ -392,6 +423,9 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
     artist,
     songKey,
     tempo,
+    sortTitle,
+    sortArtist,
+    tags,
     revision,
     updatedAt,
     deleted,
@@ -456,6 +490,24 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
         tempo.isAcceptableOrUnknown(data['tempo']!, _tempoMeta),
       );
     }
+    if (data.containsKey('sort_title')) {
+      context.handle(
+        _sortTitleMeta,
+        sortTitle.isAcceptableOrUnknown(data['sort_title']!, _sortTitleMeta),
+      );
+    }
+    if (data.containsKey('sort_artist')) {
+      context.handle(
+        _sortArtistMeta,
+        sortArtist.isAcceptableOrUnknown(data['sort_artist']!, _sortArtistMeta),
+      );
+    }
+    if (data.containsKey('tags')) {
+      context.handle(
+        _tagsMeta,
+        tags.isAcceptableOrUnknown(data['tags']!, _tagsMeta),
+      );
+    }
     if (data.containsKey('revision')) {
       context.handle(
         _revisionMeta,
@@ -513,6 +565,18 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
         DriftSqlType.int,
         data['${effectivePrefix}tempo'],
       ),
+      sortTitle: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sort_title'],
+      ),
+      sortArtist: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sort_artist'],
+      ),
+      tags: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tags'],
+      ),
       revision: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}revision'],
@@ -546,6 +610,14 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
   final String? artist;
   final String? songKey;
   final int? tempo;
+
+  /// `{sorttitle}` / `{sortartist}` for sorting (schema 2).
+  final String? sortTitle;
+  final String? sortArtist;
+
+  /// `{tag}` values, each enclosed in newlines (`\nRock\nLive\n`) so a tag
+  /// can be matched exactly with LIKE (schema 2).
+  final String? tags;
   final int revision;
   final DateTime updatedAt;
   final bool deleted;
@@ -557,6 +629,9 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     this.artist,
     this.songKey,
     this.tempo,
+    this.sortTitle,
+    this.sortArtist,
+    this.tags,
     required this.revision,
     required this.updatedAt,
     required this.deleted,
@@ -576,6 +651,15 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     }
     if (!nullToAbsent || tempo != null) {
       map['tempo'] = Variable<int>(tempo);
+    }
+    if (!nullToAbsent || sortTitle != null) {
+      map['sort_title'] = Variable<String>(sortTitle);
+    }
+    if (!nullToAbsent || sortArtist != null) {
+      map['sort_artist'] = Variable<String>(sortArtist);
+    }
+    if (!nullToAbsent || tags != null) {
+      map['tags'] = Variable<String>(tags);
     }
     map['revision'] = Variable<int>(revision);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -598,6 +682,13 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       tempo: tempo == null && nullToAbsent
           ? const Value.absent()
           : Value(tempo),
+      sortTitle: sortTitle == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sortTitle),
+      sortArtist: sortArtist == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sortArtist),
+      tags: tags == null && nullToAbsent ? const Value.absent() : Value(tags),
       revision: Value(revision),
       updatedAt: Value(updatedAt),
       deleted: Value(deleted),
@@ -617,6 +708,9 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       artist: serializer.fromJson<String?>(json['artist']),
       songKey: serializer.fromJson<String?>(json['songKey']),
       tempo: serializer.fromJson<int?>(json['tempo']),
+      sortTitle: serializer.fromJson<String?>(json['sortTitle']),
+      sortArtist: serializer.fromJson<String?>(json['sortArtist']),
+      tags: serializer.fromJson<String?>(json['tags']),
       revision: serializer.fromJson<int>(json['revision']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deleted: serializer.fromJson<bool>(json['deleted']),
@@ -633,6 +727,9 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       'artist': serializer.toJson<String?>(artist),
       'songKey': serializer.toJson<String?>(songKey),
       'tempo': serializer.toJson<int?>(tempo),
+      'sortTitle': serializer.toJson<String?>(sortTitle),
+      'sortArtist': serializer.toJson<String?>(sortArtist),
+      'tags': serializer.toJson<String?>(tags),
       'revision': serializer.toJson<int>(revision),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deleted': serializer.toJson<bool>(deleted),
@@ -647,6 +744,9 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     Value<String?> artist = const Value.absent(),
     Value<String?> songKey = const Value.absent(),
     Value<int?> tempo = const Value.absent(),
+    Value<String?> sortTitle = const Value.absent(),
+    Value<String?> sortArtist = const Value.absent(),
+    Value<String?> tags = const Value.absent(),
     int? revision,
     DateTime? updatedAt,
     bool? deleted,
@@ -658,6 +758,9 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     artist: artist.present ? artist.value : this.artist,
     songKey: songKey.present ? songKey.value : this.songKey,
     tempo: tempo.present ? tempo.value : this.tempo,
+    sortTitle: sortTitle.present ? sortTitle.value : this.sortTitle,
+    sortArtist: sortArtist.present ? sortArtist.value : this.sortArtist,
+    tags: tags.present ? tags.value : this.tags,
     revision: revision ?? this.revision,
     updatedAt: updatedAt ?? this.updatedAt,
     deleted: deleted ?? this.deleted,
@@ -673,6 +776,11 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       artist: data.artist.present ? data.artist.value : this.artist,
       songKey: data.songKey.present ? data.songKey.value : this.songKey,
       tempo: data.tempo.present ? data.tempo.value : this.tempo,
+      sortTitle: data.sortTitle.present ? data.sortTitle.value : this.sortTitle,
+      sortArtist: data.sortArtist.present
+          ? data.sortArtist.value
+          : this.sortArtist,
+      tags: data.tags.present ? data.tags.value : this.tags,
       revision: data.revision.present ? data.revision.value : this.revision,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deleted: data.deleted.present ? data.deleted.value : this.deleted,
@@ -689,6 +797,9 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
           ..write('artist: $artist, ')
           ..write('songKey: $songKey, ')
           ..write('tempo: $tempo, ')
+          ..write('sortTitle: $sortTitle, ')
+          ..write('sortArtist: $sortArtist, ')
+          ..write('tags: $tags, ')
           ..write('revision: $revision, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deleted: $deleted')
@@ -705,6 +816,9 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     artist,
     songKey,
     tempo,
+    sortTitle,
+    sortArtist,
+    tags,
     revision,
     updatedAt,
     deleted,
@@ -720,6 +834,9 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
           other.artist == this.artist &&
           other.songKey == this.songKey &&
           other.tempo == this.tempo &&
+          other.sortTitle == this.sortTitle &&
+          other.sortArtist == this.sortArtist &&
+          other.tags == this.tags &&
           other.revision == this.revision &&
           other.updatedAt == this.updatedAt &&
           other.deleted == this.deleted);
@@ -733,6 +850,9 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
   final Value<String?> artist;
   final Value<String?> songKey;
   final Value<int?> tempo;
+  final Value<String?> sortTitle;
+  final Value<String?> sortArtist;
+  final Value<String?> tags;
   final Value<int> revision;
   final Value<DateTime> updatedAt;
   final Value<bool> deleted;
@@ -745,6 +865,9 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     this.artist = const Value.absent(),
     this.songKey = const Value.absent(),
     this.tempo = const Value.absent(),
+    this.sortTitle = const Value.absent(),
+    this.sortArtist = const Value.absent(),
+    this.tags = const Value.absent(),
     this.revision = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deleted = const Value.absent(),
@@ -758,6 +881,9 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     this.artist = const Value.absent(),
     this.songKey = const Value.absent(),
     this.tempo = const Value.absent(),
+    this.sortTitle = const Value.absent(),
+    this.sortArtist = const Value.absent(),
+    this.tags = const Value.absent(),
     this.revision = const Value.absent(),
     required DateTime updatedAt,
     this.deleted = const Value.absent(),
@@ -774,6 +900,9 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     Expression<String>? artist,
     Expression<String>? songKey,
     Expression<int>? tempo,
+    Expression<String>? sortTitle,
+    Expression<String>? sortArtist,
+    Expression<String>? tags,
     Expression<int>? revision,
     Expression<DateTime>? updatedAt,
     Expression<bool>? deleted,
@@ -787,6 +916,9 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
       if (artist != null) 'artist': artist,
       if (songKey != null) 'song_key': songKey,
       if (tempo != null) 'tempo': tempo,
+      if (sortTitle != null) 'sort_title': sortTitle,
+      if (sortArtist != null) 'sort_artist': sortArtist,
+      if (tags != null) 'tags': tags,
       if (revision != null) 'revision': revision,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deleted != null) 'deleted': deleted,
@@ -802,6 +934,9 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     Value<String?>? artist,
     Value<String?>? songKey,
     Value<int?>? tempo,
+    Value<String?>? sortTitle,
+    Value<String?>? sortArtist,
+    Value<String?>? tags,
     Value<int>? revision,
     Value<DateTime>? updatedAt,
     Value<bool>? deleted,
@@ -815,6 +950,9 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
       artist: artist ?? this.artist,
       songKey: songKey ?? this.songKey,
       tempo: tempo ?? this.tempo,
+      sortTitle: sortTitle ?? this.sortTitle,
+      sortArtist: sortArtist ?? this.sortArtist,
+      tags: tags ?? this.tags,
       revision: revision ?? this.revision,
       updatedAt: updatedAt ?? this.updatedAt,
       deleted: deleted ?? this.deleted,
@@ -846,6 +984,15 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     if (tempo.present) {
       map['tempo'] = Variable<int>(tempo.value);
     }
+    if (sortTitle.present) {
+      map['sort_title'] = Variable<String>(sortTitle.value);
+    }
+    if (sortArtist.present) {
+      map['sort_artist'] = Variable<String>(sortArtist.value);
+    }
+    if (tags.present) {
+      map['tags'] = Variable<String>(tags.value);
+    }
     if (revision.present) {
       map['revision'] = Variable<int>(revision.value);
     }
@@ -871,6 +1018,9 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
           ..write('artist: $artist, ')
           ..write('songKey: $songKey, ')
           ..write('tempo: $tempo, ')
+          ..write('sortTitle: $sortTitle, ')
+          ..write('sortArtist: $sortArtist, ')
+          ..write('tags: $tags, ')
           ..write('revision: $revision, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deleted: $deleted, ')
@@ -2451,6 +2601,17 @@ class $PersonalOverlaysTable extends PersonalOverlays
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _capoFretMeta = const VerificationMeta(
+    'capoFret',
+  );
+  @override
+  late final GeneratedColumn<int> capoFret = GeneratedColumn<int>(
+    'capo_fret',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _fontScaleMeta = const VerificationMeta(
     'fontScale',
   );
@@ -2502,6 +2663,7 @@ class $PersonalOverlaysTable extends PersonalOverlays
     songId,
     transpose,
     capo,
+    capoFret,
     fontScale,
     notes,
     nashville,
@@ -2537,6 +2699,12 @@ class $PersonalOverlaysTable extends PersonalOverlays
       context.handle(
         _capoMeta,
         capo.isAcceptableOrUnknown(data['capo']!, _capoMeta),
+      );
+    }
+    if (data.containsKey('capo_fret')) {
+      context.handle(
+        _capoFretMeta,
+        capoFret.isAcceptableOrUnknown(data['capo_fret']!, _capoFretMeta),
       );
     }
     if (data.containsKey('font_scale')) {
@@ -2584,6 +2752,10 @@ class $PersonalOverlaysTable extends PersonalOverlays
         DriftSqlType.int,
         data['${effectivePrefix}capo'],
       )!,
+      capoFret: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}capo_fret'],
+      ),
       fontScale: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}font_scale'],
@@ -2612,7 +2784,13 @@ class $PersonalOverlaysTable extends PersonalOverlays
 class SongOverlay extends DataClass implements Insertable<SongOverlay> {
   final String songId;
   final int transpose;
+
+  /// Legacy capo (schema 1, 0 = none); replaced by [capoFret].
   final int capo;
+
+  /// Personal capo; null = as written in the song (`{capo}`), 0 = no capo
+  /// (schema 2).
+  final int? capoFret;
   final double fontScale;
   final String? notes;
 
@@ -2625,6 +2803,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     required this.songId,
     required this.transpose,
     required this.capo,
+    this.capoFret,
     required this.fontScale,
     this.notes,
     this.nashville,
@@ -2636,6 +2815,9 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     map['song_id'] = Variable<String>(songId);
     map['transpose'] = Variable<int>(transpose);
     map['capo'] = Variable<int>(capo);
+    if (!nullToAbsent || capoFret != null) {
+      map['capo_fret'] = Variable<int>(capoFret);
+    }
     map['font_scale'] = Variable<double>(fontScale);
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
@@ -2654,6 +2836,9 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       songId: Value(songId),
       transpose: Value(transpose),
       capo: Value(capo),
+      capoFret: capoFret == null && nullToAbsent
+          ? const Value.absent()
+          : Value(capoFret),
       fontScale: Value(fontScale),
       notes: notes == null && nullToAbsent
           ? const Value.absent()
@@ -2676,6 +2861,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       songId: serializer.fromJson<String>(json['songId']),
       transpose: serializer.fromJson<int>(json['transpose']),
       capo: serializer.fromJson<int>(json['capo']),
+      capoFret: serializer.fromJson<int?>(json['capoFret']),
       fontScale: serializer.fromJson<double>(json['fontScale']),
       notes: serializer.fromJson<String?>(json['notes']),
       nashville: serializer.fromJson<bool?>(json['nashville']),
@@ -2689,6 +2875,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       'songId': serializer.toJson<String>(songId),
       'transpose': serializer.toJson<int>(transpose),
       'capo': serializer.toJson<int>(capo),
+      'capoFret': serializer.toJson<int?>(capoFret),
       'fontScale': serializer.toJson<double>(fontScale),
       'notes': serializer.toJson<String?>(notes),
       'nashville': serializer.toJson<bool?>(nashville),
@@ -2700,6 +2887,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     String? songId,
     int? transpose,
     int? capo,
+    Value<int?> capoFret = const Value.absent(),
     double? fontScale,
     Value<String?> notes = const Value.absent(),
     Value<bool?> nashville = const Value.absent(),
@@ -2708,6 +2896,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     songId: songId ?? this.songId,
     transpose: transpose ?? this.transpose,
     capo: capo ?? this.capo,
+    capoFret: capoFret.present ? capoFret.value : this.capoFret,
     fontScale: fontScale ?? this.fontScale,
     notes: notes.present ? notes.value : this.notes,
     nashville: nashville.present ? nashville.value : this.nashville,
@@ -2718,6 +2907,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       songId: data.songId.present ? data.songId.value : this.songId,
       transpose: data.transpose.present ? data.transpose.value : this.transpose,
       capo: data.capo.present ? data.capo.value : this.capo,
+      capoFret: data.capoFret.present ? data.capoFret.value : this.capoFret,
       fontScale: data.fontScale.present ? data.fontScale.value : this.fontScale,
       notes: data.notes.present ? data.notes.value : this.notes,
       nashville: data.nashville.present ? data.nashville.value : this.nashville,
@@ -2731,6 +2921,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
           ..write('songId: $songId, ')
           ..write('transpose: $transpose, ')
           ..write('capo: $capo, ')
+          ..write('capoFret: $capoFret, ')
           ..write('fontScale: $fontScale, ')
           ..write('notes: $notes, ')
           ..write('nashville: $nashville, ')
@@ -2744,6 +2935,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     songId,
     transpose,
     capo,
+    capoFret,
     fontScale,
     notes,
     nashville,
@@ -2756,6 +2948,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
           other.songId == this.songId &&
           other.transpose == this.transpose &&
           other.capo == this.capo &&
+          other.capoFret == this.capoFret &&
           other.fontScale == this.fontScale &&
           other.notes == this.notes &&
           other.nashville == this.nashville &&
@@ -2766,6 +2959,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
   final Value<String> songId;
   final Value<int> transpose;
   final Value<int> capo;
+  final Value<int?> capoFret;
   final Value<double> fontScale;
   final Value<String?> notes;
   final Value<bool?> nashville;
@@ -2775,6 +2969,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     this.songId = const Value.absent(),
     this.transpose = const Value.absent(),
     this.capo = const Value.absent(),
+    this.capoFret = const Value.absent(),
     this.fontScale = const Value.absent(),
     this.notes = const Value.absent(),
     this.nashville = const Value.absent(),
@@ -2785,6 +2980,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     required String songId,
     this.transpose = const Value.absent(),
     this.capo = const Value.absent(),
+    this.capoFret = const Value.absent(),
     this.fontScale = const Value.absent(),
     this.notes = const Value.absent(),
     this.nashville = const Value.absent(),
@@ -2795,6 +2991,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     Expression<String>? songId,
     Expression<int>? transpose,
     Expression<int>? capo,
+    Expression<int>? capoFret,
     Expression<double>? fontScale,
     Expression<String>? notes,
     Expression<bool>? nashville,
@@ -2805,6 +3002,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
       if (songId != null) 'song_id': songId,
       if (transpose != null) 'transpose': transpose,
       if (capo != null) 'capo': capo,
+      if (capoFret != null) 'capo_fret': capoFret,
       if (fontScale != null) 'font_scale': fontScale,
       if (notes != null) 'notes': notes,
       if (nashville != null) 'nashville': nashville,
@@ -2817,6 +3015,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     Value<String>? songId,
     Value<int>? transpose,
     Value<int>? capo,
+    Value<int?>? capoFret,
     Value<double>? fontScale,
     Value<String?>? notes,
     Value<bool?>? nashville,
@@ -2827,6 +3026,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
       songId: songId ?? this.songId,
       transpose: transpose ?? this.transpose,
       capo: capo ?? this.capo,
+      capoFret: capoFret ?? this.capoFret,
       fontScale: fontScale ?? this.fontScale,
       notes: notes ?? this.notes,
       nashville: nashville ?? this.nashville,
@@ -2846,6 +3046,9 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     }
     if (capo.present) {
       map['capo'] = Variable<int>(capo.value);
+    }
+    if (capoFret.present) {
+      map['capo_fret'] = Variable<int>(capoFret.value);
     }
     if (fontScale.present) {
       map['font_scale'] = Variable<double>(fontScale.value);
@@ -2871,6 +3074,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
           ..write('songId: $songId, ')
           ..write('transpose: $transpose, ')
           ..write('capo: $capo, ')
+          ..write('capoFret: $capoFret, ')
           ..write('fontScale: $fontScale, ')
           ..write('notes: $notes, ')
           ..write('nashville: $nashville, ')
@@ -3262,6 +3466,9 @@ typedef $$SongsTableCreateCompanionBuilder = SongsCompanion Function({
   Value<String?> artist,
   Value<String?> songKey,
   Value<int?> tempo,
+  Value<String?> sortTitle,
+  Value<String?> sortArtist,
+  Value<String?> tags,
   Value<int> revision,
   required DateTime updatedAt,
   Value<bool> deleted,
@@ -3275,6 +3482,9 @@ typedef $$SongsTableUpdateCompanionBuilder = SongsCompanion Function({
   Value<String?> artist,
   Value<String?> songKey,
   Value<int?> tempo,
+  Value<String?> sortTitle,
+  Value<String?> sortArtist,
+  Value<String?> tags,
   Value<int> revision,
   Value<DateTime> updatedAt,
   Value<bool> deleted,
@@ -3394,6 +3604,21 @@ class $$SongsTableFilterComposer extends Composer<_$AppDatabase, $SongsTable> {
 
   ColumnFilters<int> get tempo => $composableBuilder(
     column: $table.tempo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sortTitle => $composableBuilder(
+    column: $table.sortTitle,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sortArtist => $composableBuilder(
+    column: $table.sortArtist,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tags => $composableBuilder(
+    column: $table.tags,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3550,6 +3775,21 @@ class $$SongsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get sortTitle => $composableBuilder(
+    column: $table.sortTitle,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sortArtist => $composableBuilder(
+    column: $table.sortArtist,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tags => $composableBuilder(
+    column: $table.tags,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get revision => $composableBuilder(
     column: $table.revision,
     builder: (column) => ColumnOrderings(column),
@@ -3617,6 +3857,17 @@ class $$SongsTableAnnotationComposer
 
   GeneratedColumn<int> get tempo =>
       $composableBuilder(column: $table.tempo, builder: (column) => column);
+
+  GeneratedColumn<String> get sortTitle =>
+      $composableBuilder(column: $table.sortTitle, builder: (column) => column);
+
+  GeneratedColumn<String> get sortArtist => $composableBuilder(
+    column: $table.sortArtist,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get tags =>
+      $composableBuilder(column: $table.tags, builder: (column) => column);
 
   GeneratedColumn<int> get revision =>
       $composableBuilder(column: $table.revision, builder: (column) => column);
@@ -3766,6 +4017,9 @@ class $$SongsTableTableManager
                 Value<String?> artist = const Value.absent(),
                 Value<String?> songKey = const Value.absent(),
                 Value<int?> tempo = const Value.absent(),
+                Value<String?> sortTitle = const Value.absent(),
+                Value<String?> sortArtist = const Value.absent(),
+                Value<String?> tags = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
@@ -3778,6 +4032,9 @@ class $$SongsTableTableManager
                 artist: artist,
                 songKey: songKey,
                 tempo: tempo,
+                sortTitle: sortTitle,
+                sortArtist: sortArtist,
+                tags: tags,
                 revision: revision,
                 updatedAt: updatedAt,
                 deleted: deleted,
@@ -3792,6 +4049,9 @@ class $$SongsTableTableManager
                 Value<String?> artist = const Value.absent(),
                 Value<String?> songKey = const Value.absent(),
                 Value<int?> tempo = const Value.absent(),
+                Value<String?> sortTitle = const Value.absent(),
+                Value<String?> sortArtist = const Value.absent(),
+                Value<String?> tags = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 required DateTime updatedAt,
                 Value<bool> deleted = const Value.absent(),
@@ -3804,6 +4064,9 @@ class $$SongsTableTableManager
                 artist: artist,
                 songKey: songKey,
                 tempo: tempo,
+                sortTitle: sortTitle,
+                sortArtist: sortArtist,
+                tags: tags,
                 revision: revision,
                 updatedAt: updatedAt,
                 deleted: deleted,
@@ -5240,6 +5503,7 @@ typedef $$PersonalOverlaysTableCreateCompanionBuilder =
       required String songId,
       Value<int> transpose,
       Value<int> capo,
+      Value<int?> capoFret,
       Value<double> fontScale,
       Value<String?> notes,
       Value<bool?> nashville,
@@ -5251,6 +5515,7 @@ typedef $$PersonalOverlaysTableUpdateCompanionBuilder =
       Value<String> songId,
       Value<int> transpose,
       Value<int> capo,
+      Value<int?> capoFret,
       Value<double> fontScale,
       Value<String?> notes,
       Value<bool?> nashville,
@@ -5300,6 +5565,11 @@ class $$PersonalOverlaysTableFilterComposer
 
   ColumnFilters<int> get capo => $composableBuilder(
     column: $table.capo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get capoFret => $composableBuilder(
+    column: $table.capoFret,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5366,6 +5636,11 @@ class $$PersonalOverlaysTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get capoFret => $composableBuilder(
+    column: $table.capoFret,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<double> get fontScale => $composableBuilder(
     column: $table.fontScale,
     builder: (column) => ColumnOrderings(column),
@@ -5424,6 +5699,9 @@ class $$PersonalOverlaysTableAnnotationComposer
 
   GeneratedColumn<int> get capo =>
       $composableBuilder(column: $table.capo, builder: (column) => column);
+
+  GeneratedColumn<int> get capoFret =>
+      $composableBuilder(column: $table.capoFret, builder: (column) => column);
 
   GeneratedColumn<double> get fontScale =>
       $composableBuilder(column: $table.fontScale, builder: (column) => column);
@@ -5494,6 +5772,7 @@ class $$PersonalOverlaysTableTableManager
                 Value<String> songId = const Value.absent(),
                 Value<int> transpose = const Value.absent(),
                 Value<int> capo = const Value.absent(),
+                Value<int?> capoFret = const Value.absent(),
                 Value<double> fontScale = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<bool?> nashville = const Value.absent(),
@@ -5503,6 +5782,7 @@ class $$PersonalOverlaysTableTableManager
                 songId: songId,
                 transpose: transpose,
                 capo: capo,
+                capoFret: capoFret,
                 fontScale: fontScale,
                 notes: notes,
                 nashville: nashville,
@@ -5514,6 +5794,7 @@ class $$PersonalOverlaysTableTableManager
                 required String songId,
                 Value<int> transpose = const Value.absent(),
                 Value<int> capo = const Value.absent(),
+                Value<int?> capoFret = const Value.absent(),
                 Value<double> fontScale = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<bool?> nashville = const Value.absent(),
@@ -5523,6 +5804,7 @@ class $$PersonalOverlaysTableTableManager
                 songId: songId,
                 transpose: transpose,
                 capo: capo,
+                capoFret: capoFret,
                 fontScale: fontScale,
                 notes: notes,
                 nashville: nashville,

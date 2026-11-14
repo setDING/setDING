@@ -81,6 +81,11 @@ Each phase is a separate branch and merge (ADR-0010).
   next cell); `{columns}` fixes the live column count when the column setting is
   automatic; `{column_break}`/`{new_page}` start a new column when more than one column
   is shown. Layout measurement covers all of these.
+- 2026-11-14: Phase 3 done: settings for instrument (presets guitar, ukulele, bass,
+  keyboard, vocals, or free text) and user name drive conditional directives; files with
+  `{new_song}` are imported as separate songs; `{sorttitle}` sorts the library and `{tag}`
+  values can be filtered (case-insensitive). Database schema 2 stores sort fields and
+  tags and a personal capo that can be "as in the song".
 
 ## Open points
 

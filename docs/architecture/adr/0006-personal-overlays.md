@@ -55,6 +55,7 @@ size/zoom setting is relevant.
 
 - 2026-11-14: Overlay model accepted. Freehand annotations are postponed to a later phase. A dedicated chords-only display mode is not planned.
 - 2026-11-14: The key is chosen from a dropdown of the twelve keys (or semitone offsets for songs without a key). In a set – in the set list and in live mode started from a set – the chosen key is stored on the **set item** (layer 2); the song itself is never changed. Outside a set, the dropdown sets the personal transposition (layer 3).
+- 2026-11-14: The personal capo distinguishes "as written in the song" (`{capo}`, default) from an explicit fret including "no capo" (ADR-0012).
 
 ## Open points
 

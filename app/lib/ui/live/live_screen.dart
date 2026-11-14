@@ -495,7 +495,10 @@ class _LiveItemPage extends ConsumerWidget {
     final attachments =
         ref.watch(attachmentsProvider(song.id)).value ??
         const <AttachmentEntry>[];
-    final parsed = parseChordPro(song.chordproSource);
+    final parsed = parseChordPro(
+      song.chordproSource,
+      selectors: ref.watch(settingsProvider).selectors,
+    );
 
     AttachmentEntry? pdf;
     if (overlay.liveView != null) {
@@ -543,7 +546,7 @@ class _ChordProPage extends ConsumerWidget {
     final formatter = ChordFormatter.forSong(
       parsed,
       transpose: setTranspose + overlay.transpose,
-      capo: overlay.capo == 0 ? null : overlay.capo,
+      capo: overlay.capoFret,
       notation: settings.notation,
       nashville: overlay.nashville ?? settings.nashville,
     );

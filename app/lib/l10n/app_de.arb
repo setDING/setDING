@@ -70,6 +70,15 @@
     }
   },
   "noCapo": "Ohne Kapo",
+  "capoAsInSong": "Kapo {fret} (wie im Song)",
+  "@capoAsInSong": {
+    "placeholders": {
+      "fret": {
+        "type": "int"
+      }
+    }
+  },
+  "allTags": "Alle",
   "notes": "Notizen",
   "notesHint": "Persönliche Notiz zu diesem Song",
   "editSource": "ChordPro bearbeiten",
@@ -218,6 +227,18 @@
   "settingsSectionDisplay": "Darstellung",
   "settingsSectionLive": "Live-Modus",
   "settingsSectionStorage": "Speicher",
+  "settingsSectionMusician": "Musiker",
+  "settingsInstrument": "Mein Instrument",
+  "settingsInstrumentHint": "Wird für bedingte Abschnitte (z. B. nur für Gitarre) und für Griffdiagramme verwendet.",
+  "instrumentGuitar": "Gitarre",
+  "instrumentUkulele": "Ukulele",
+  "instrumentBass": "Bass",
+  "instrumentKeyboard": "Keyboard",
+  "instrumentVocals": "Gesang",
+  "instrumentOther": "Anderes …",
+  "settingsUserName": "Mein Name oder meine Stimme",
+  "settingsUserNameHint": "Für bedingte Abschnitte, z. B. «alto» oder «tenor».",
+  "notSet": "Nicht festgelegt",
   "settingsLanguage": "Sprache",
   "languageSystem": "Systemsprache",
   "languageDe": "Deutsch",

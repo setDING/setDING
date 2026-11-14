@@ -1,8 +1,11 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'dart:convert';
+
 import 'package:bandchords/data/attachment_storage.dart';
 import 'package:bandchords/data/database.dart';
+import 'package:bandchords/data/import_export.dart';
 import 'package:bandchords/data/set_repository.dart';
 import 'package:bandchords/data/song_repository.dart';
 import 'package:drift/drift.dart' show Value;
@@ -138,6 +141,44 @@ void main() {
       expect(overlay.nashville, isNull);
       expect(overlay.notes, isNull);
       expect(overlay.liveView, isNull);
+    });
+  });
+
+  group('Tags, sorting and import', () {
+    test('sorts by sorttitle and filters by tag', () async {
+      await songs.createSong(
+        source: '{title: The Zebra}\n{sorttitle: Zebra}\n{tag: Rock}',
+      );
+      await songs.createSong(
+        source: '{title: Apple}\n{tag: Ballad}\n{tag: rock}',
+      );
+      await songs.createSong(source: '{title: Mango}');
+      expect((await songs.watchSongs().first).map((s) => s.title), [
+        'Apple',
+        'Mango',
+        'The Zebra',
+      ]);
+      expect((await songs.watchSongs(tag: 'Rock').first).map((s) => s.title), [
+        'Apple',
+        'The Zebra',
+      ]);
+      expect(await songs.watchTags().first, ['Ballad', 'Rock']);
+    });
+
+    test('a file with several songs is imported as several songs', () async {
+      final service = ImportExportService(songs, sets);
+      final result = await service.importFiles([
+        ImportFile(
+          'medley.cho',
+          Uint8List.fromList(
+            utf8.encode('{title: One}\n[C]a\n{new_song}\n{title: Two}\n[G]b\n'),
+          ),
+        ),
+      ]);
+      expect(result.imported, 2);
+      final all = await songs.watchSongs().first;
+      expect(all.map((s) => s.title), ['One', 'Two']);
+      expect(all.last.chordproSource, '{title: Two}\n[G]b\n');
     });
   });
 

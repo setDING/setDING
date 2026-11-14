@@ -38,6 +38,11 @@ Future<void> main() async {
       native: DriftNativeOptions(databasePath: () async => dbFile.path),
     ),
   );
+  // After a schema upgrade, fill new columns from the ChordPro sources.
+  db.afterUpgrade = (db) => SongRepository(
+    db,
+    AttachmentStorage(Directory(supportDir.path)),
+  ).refreshAllMetadata();
   final storage = AttachmentStorage(
     Directory(p.join(supportDir.path, 'attachments')),
   );

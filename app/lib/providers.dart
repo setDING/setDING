@@ -35,8 +35,17 @@ final importExportProvider = Provider<ImportExportService>(
   ),
 );
 
-final songsProvider = StreamProvider.family<List<SongEntry>, String>(
-  (ref, query) => ref.watch(songRepositoryProvider).watchSongs(query: query),
+/// Songs filtered by search text and optional tag.
+final songsProvider =
+    StreamProvider.family<List<SongEntry>, ({String query, String? tag})>(
+      (ref, filter) => ref
+          .watch(songRepositoryProvider)
+          .watchSongs(query: filter.query, tag: filter.tag),
+    );
+
+/// All tags used in the library.
+final tagsProvider = StreamProvider<List<String>>(
+  (ref) => ref.watch(songRepositoryProvider).watchTags(),
 );
 
 final songProvider = StreamProvider.family<SongEntry?, String>(

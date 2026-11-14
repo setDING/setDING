@@ -9,7 +9,15 @@ const _uuid = Uuid();
 
 /// Metadata extracted from a ChordPro source (ADR-0003).
 class SongMeta {
-  const SongMeta({this.title, this.artist, this.key, this.tempo});
+  const SongMeta({
+    this.title,
+    this.artist,
+    this.key,
+    this.tempo,
+    this.sortTitle,
+    this.sortArtist,
+    this.tags = const [],
+  });
 
   factory SongMeta.fromSource(String source) {
     final song = cp.parseChordPro(source);
@@ -18,6 +26,12 @@ class SongMeta {
       artist: _blankToNull(song.artist),
       key: _blankToNull(song.keyName),
       tempo: song.tempo,
+      sortTitle: _blankToNull(song.sortTitle),
+      sortArtist: _blankToNull(song.sortArtist),
+      tags: [
+        for (final t in song.tags)
+          if (t.trim().isNotEmpty) t.trim(),
+      ],
     );
   }
 
@@ -25,7 +39,19 @@ class SongMeta {
   final String? artist;
   final String? key;
   final int? tempo;
+  final String? sortTitle;
+  final String? sortArtist;
+  final List<String> tags;
+
+  /// Tags as stored in the database (see `Songs.tags`).
+  String? get tagsColumn => tags.isEmpty ? null : '\n${tags.join('\n')}\n';
 }
+
+/// Tags of a song as stored in the database.
+List<String> songTags(SongEntry song) => [
+  for (final t in (song.tags ?? '').split('\n'))
+    if (t.isNotEmpty) t,
+];
 
 String? _blankToNull(String? value) =>
     value == null || value.trim().isEmpty ? null : value.trim();
@@ -37,10 +63,19 @@ class SongRepository {
   final AppDatabase db;
   final AttachmentStorage storage;
 
-  Stream<List<SongEntry>> watchSongs({String query = ''}) {
+  /// Songs sorted by `{sorttitle}` (or title); optionally filtered by a
+  /// search [query] and a [tag].
+  Stream<List<SongEntry>> watchSongs({String query = '', String? tag}) {
     final q = db.select(db.songs)
       ..where((s) => s.deleted.equals(false))
-      ..orderBy([(s) => OrderingTerm.asc(s.title.collate(Collate.noCase))]);
+      ..orderBy([
+        (s) => OrderingTerm.asc(
+          coalesce([s.sortTitle, s.title]).collate(Collate.noCase),
+        ),
+      ]);
+    if (tag != null) {
+      q.where((s) => s.tags.lower().like('%\n${tag.toLowerCase()}\n%'));
+    }
     final trimmed = query.trim();
     if (trimmed.isNotEmpty) {
       final pattern = '%${trimmed.toLowerCase()}%';
@@ -83,6 +118,9 @@ class SongRepository {
             artist: Value(meta.artist ?? _blankToNull(artist)),
             songKey: Value(meta.key),
             tempo: Value(meta.tempo),
+            sortTitle: Value(meta.sortTitle),
+            sortArtist: Value(meta.sortArtist),
+            tags: Value(meta.tagsColumn),
             updatedAt: DateTime.now(),
           ),
         );
@@ -101,10 +139,52 @@ class SongRepository {
         artist: Value(meta.artist ?? existing.artist),
         songKey: Value(meta.key),
         tempo: Value(meta.tempo),
+        sortTitle: Value(meta.sortTitle),
+        sortArtist: Value(meta.sortArtist),
+        tags: Value(meta.tagsColumn),
         revision: Value(existing.revision + 1),
         updatedAt: Value(DateTime.now()),
       ),
     );
+  }
+
+  /// All tags used in the library, sorted.
+  Stream<List<String>> watchTags() =>
+      (db.selectOnly(db.songs)
+            ..addColumns([db.songs.tags])
+            ..where(db.songs.deleted.equals(false) & db.songs.tags.isNotNull()))
+          .watch()
+          .map((rows) {
+            // Tags are matched case-insensitively; show one spelling per
+            // tag (the first in sort order, e.g. "Rock" before "rock").
+            final byKey = <String, String>{};
+            for (final r in rows) {
+              for (final t in (r.read(db.songs.tags) ?? '').split('\n')) {
+                if (t.isEmpty) continue;
+                final key = t.toLowerCase();
+                final known = byKey[key];
+                if (known == null || t.compareTo(known) < 0) byKey[key] = t;
+              }
+            }
+            return byKey.values.toList()
+              ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+          });
+
+  /// Recomputes the stored metadata of all songs from their ChordPro
+  /// source (used after a database upgrade).
+  Future<void> refreshAllMetadata() async {
+    final all = await db.select(db.songs).get();
+    for (final song in all) {
+      if (song.chordproSource.trim().isEmpty) continue;
+      final meta = SongMeta.fromSource(song.chordproSource);
+      await (db.update(db.songs)..where((s) => s.id.equals(song.id))).write(
+        SongsCompanion(
+          sortTitle: Value(meta.sortTitle),
+          sortArtist: Value(meta.sortArtist),
+          tags: Value(meta.tagsColumn),
+        ),
+      );
+    }
   }
 
   /// Updates title and artist of a song without ChordPro metadata.

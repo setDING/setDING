@@ -76,6 +76,30 @@ class SettingsScreen extends ConsumerWidget {
                 ThemeMode.dark: l10n.themeDark,
               }, (v) => notifier.update((s) => s.copyWith(themeMode: v))),
 
+              header(l10n.settingsSectionMusician),
+              _InstrumentTile(settings: s, notifier: notifier),
+              ListTile(
+                title: Text(l10n.settingsUserName),
+                subtitle: Text(
+                  s.userName.isEmpty
+                      ? '${l10n.notSet} – ${l10n.settingsUserNameHint}'
+                      : s.userName,
+                ),
+                trailing: const Icon(Icons.edit_outlined),
+                onTap: () async {
+                  final name = await askText(
+                    context,
+                    title: l10n.settingsUserName,
+                    initial: s.userName,
+                    hint: l10n.settingsUserNameHint,
+                    allowEmpty: true,
+                  );
+                  if (name != null) {
+                    await notifier.update((s) => s.copyWith(userName: name));
+                  }
+                },
+              ),
+
               header(l10n.settingsSectionDisplay),
               choice(l10n.settingsNotation, s.notation, {
                 ChordNotation.international: l10n.notationInternational,
@@ -159,6 +183,73 @@ class SettingsScreen extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _InstrumentTile extends StatelessWidget {
+  const _InstrumentTile({required this.settings, required this.notifier});
+
+  final AppSettings settings;
+  final SettingsNotifier notifier;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final names = {
+      'guitar': l10n.instrumentGuitar,
+      'ukulele': l10n.instrumentUkulele,
+      'bass': l10n.instrumentBass,
+      'keyboard': l10n.instrumentKeyboard,
+      'vocals': l10n.instrumentVocals,
+    };
+    final current = settings.instrument.trim().toLowerCase();
+    final isPreset = names.containsKey(current);
+    return ListTile(
+      title: Text(l10n.settingsInstrument),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(l10n.settingsInstrumentHint),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final e in names.entries)
+                ChoiceChip(
+                  label: Text(e.value),
+                  selected: current == e.key,
+                  onSelected: (_) =>
+                      notifier.update((s) => s.copyWith(instrument: e.key)),
+                ),
+              ChoiceChip(
+                label: Text(
+                  isPreset || current.isEmpty
+                      ? l10n.instrumentOther
+                      : settings.instrument,
+                ),
+                selected: !isPreset && current.isNotEmpty,
+                onSelected: (_) async {
+                  final value = await askText(
+                    context,
+                    title: l10n.settingsInstrument,
+                    initial: isPreset ? '' : settings.instrument,
+                  );
+                  if (value != null && value.isNotEmpty) {
+                    await notifier.update(
+                      (s) => s.copyWith(instrument: value.toLowerCase()),
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

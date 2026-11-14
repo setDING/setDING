@@ -71,13 +71,18 @@ class ImportExportService {
         skipped.add(name);
         return;
       }
-      var source = decodeText(bytes);
-      if (germanNotation) source = cp.convertGermanToInternational(source);
-      await songs.createSong(
-        source: source,
-        title: p.basenameWithoutExtension(name),
-      );
-      imported++;
+      var text = decodeText(bytes);
+      if (germanNotation) text = cp.convertGermanToInternational(text);
+      // A file may contain several songs separated by {new_song}.
+      final parts = cp.splitChordProSongs(text);
+      final base = p.basenameWithoutExtension(name);
+      for (var i = 0; i < parts.length; i++) {
+        await songs.createSong(
+          source: parts[i],
+          title: parts.length == 1 ? base : '$base (${i + 1})',
+        );
+        imported++;
+      }
     }
 
     for (final file in files) {

@@ -34,6 +34,8 @@ class AppSettings {
     this.autoFit = true,
     this.chorusRepeat = ChorusRepeat.auto,
     this.fontSize = 20,
+    this.instrument = 'guitar',
+    this.userName = '',
   });
 
   final LanguageMode language;
@@ -50,6 +52,28 @@ class AppSettings {
 
   /// Base font size for lyrics in logical pixels.
   final double fontSize;
+
+  /// Instrument type for conditional directives and chord diagrams
+  /// (ADR-0012), e.g. `guitar`, `ukulele` or a free text.
+  final String instrument;
+
+  /// User name for conditional directives (e.g. a voice like `alto`).
+  final String userName;
+
+  /// Instrument presets offered in the settings.
+  static const instruments = [
+    'guitar',
+    'ukulele',
+    'bass',
+    'keyboard',
+    'vocals',
+  ];
+
+  /// Selection context for conditional ChordPro directives.
+  SelectorContext get selectors => SelectorContext(
+    instrument: instrument.trim().isEmpty ? null : instrument.trim(),
+    user: userName.trim().isEmpty ? null : userName.trim(),
+  );
 
   static const minFontSize = 12.0;
   static const maxFontSize = 40.0;
@@ -80,6 +104,8 @@ class AppSettings {
     bool? autoFit,
     ChorusRepeat? chorusRepeat,
     double? fontSize,
+    String? instrument,
+    String? userName,
   }) => AppSettings(
     language: language ?? this.language,
     notation: notation ?? this.notation,
@@ -90,6 +116,8 @@ class AppSettings {
     pageTurn: pageTurn ?? this.pageTurn,
     autoFit: autoFit ?? this.autoFit,
     chorusRepeat: chorusRepeat ?? this.chorusRepeat,
+    instrument: instrument ?? this.instrument,
+    userName: userName ?? this.userName,
     fontSize: fontSize ?? this.fontSize,
   );
 
@@ -110,6 +138,8 @@ class AppSettings {
       pageTurn: pick(PageTurnMode.values, 'pageTurn', d.pageTurn),
       autoFit: prefs.getBool('autoFit') ?? d.autoFit,
       chorusRepeat: pick(ChorusRepeat.values, 'chorusRepeat', d.chorusRepeat),
+      instrument: prefs.getString('instrument') ?? d.instrument,
+      userName: prefs.getString('userName') ?? d.userName,
       fontSize: (prefs.getDouble('fontSize') ?? d.fontSize).clamp(
         minFontSize,
         maxFontSize,
@@ -127,6 +157,8 @@ class AppSettings {
     await prefs.setString('pageTurn', pageTurn.name);
     await prefs.setBool('autoFit', autoFit);
     await prefs.setString('chorusRepeat', chorusRepeat.name);
+    await prefs.setString('instrument', instrument);
+    await prefs.setString('userName', userName);
     await prefs.setDouble('fontSize', fontSize);
   }
 }
