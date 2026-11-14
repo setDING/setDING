@@ -74,6 +74,13 @@ Each phase is a separate branch and merge (ADR-0010).
 - 2026-11-14: Full ChordPro support required. Chord diagrams with built-in library and
   `define`; SVG and textblock rendered, ABC as notation, Lilypond as source; images as
   attachments; new settings for instrument and user name.
+- 2026-11-14: Phase 1 (parser core) done.
+- 2026-11-14: Phase 2 (rendering) done: markup in lyrics, chords, comments and labels;
+  font/size/colour directives (absolute sizes relative to 12 pt); grids laid out in cells
+  (cell width from the widest single chord, several chords per cell may spill into the
+  next cell); `{columns}` fixes the live column count when the column setting is
+  automatic; `{column_break}`/`{new_page}` start a new column when more than one column
+  is shown. Layout measurement covers all of these.
 
 ## Open points
 

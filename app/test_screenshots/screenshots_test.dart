@@ -121,7 +121,51 @@ void main() {
         ),
       );
       await _shot(tester, '${lang}_5_live_portrait');
+
+      // Showcase of ChordPro features (ADR-0012).
+      tester.view.physicalSize = const Size(1280, 800);
+      final showcase = await tester.runAsync(() async {
+        final id = await app.songs.createSong(source: _showcase);
+        return app.songs.getSong(id);
+      });
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: LiveScreen(items: [LiveItem.song(showcase!)])),
+        ),
+      );
+      await _shot(tester, '${lang}_6_chordpro_showcase');
       await app.dispose(tester);
     });
   }
 }
+
+const _showcase = r'''{title: ChordPro Showcase}
+{artist: BandChords}
+{key: D}
+{tempo: 100}
+{c: Key %{key}, %{tempo} BPM}
+
+{start_of_verse: label="Verse 1\nAll voices"}
+[D]Markup is <b>bold</b>, <i>italic</i> and [G]<span color="red">red</span>,
+[Em]<u>underlined</u> and <span size="larger">larger</span> [A7]too.
+{end_of_verse}
+
+{textcolour: #1e88e5}
+{start_of_chorus}
+[G]A coloured [D]chorus [A]line,
+[G]sung with [D]joy [A]all the [D]time.
+{end_of_chorus}
+{textcolour}
+
+{column_break}
+{start_of_grid shape="1+4x2+1" label="Interlude"}
+A   || D . | G . | % . | A7 . |
+    | Em~A7 . | / . | D . | . . || x2
+{end_of_grid}
+
+{transpose: 2}
+{start_of_bridge: Bridge (+2)}
+[D]Modulates up [G]two [A]semitones
+{end_of_bridge}
+''';

@@ -4,6 +4,7 @@ library;
 import 'chord.dart';
 import 'diagrams.dart';
 import 'grid.dart';
+import 'markup.dart';
 
 /// Kind of a song section.
 enum SectionKind { none, verse, chorus, bridge, tab, grid, custom }
@@ -160,8 +161,11 @@ class LyricLine extends Line {
 
   bool get hasChords => segments.any((s) => s.chord != null);
 
-  /// The lyrics without chords.
+  /// The lyrics without chords (markup included, see [plainText]).
   String get text => segments.map((s) => s.text).join();
+
+  /// The lyrics without chords and without markup.
+  String get plainText => stripMarkup(text);
 }
 
 /// A piece of lyrics preceded by an optional chord.
@@ -175,8 +179,10 @@ class Segment {
 /// A chord as written in the source, parsed if possible.
 class ChordToken {
   ChordToken(this.raw, {this.transpose = 0, this.preferFlats, this.key})
-    : parenthesized = _optional.hasMatch(raw),
-      chord = Chord.tryParse(_optional.firstMatch(raw)?.group(1) ?? raw);
+    : parenthesized = _optional.hasMatch(stripMarkup(raw)),
+      chord = Chord.tryParse(
+        _optional.firstMatch(stripMarkup(raw))?.group(1) ?? stripMarkup(raw),
+      );
 
   static final _optional = RegExp(r'^\((.+)\)$');
 

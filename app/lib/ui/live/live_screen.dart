@@ -583,6 +583,11 @@ class _ChordProPage extends ConsumerWidget {
                     ),
                   );
                 }
+                final songColumns =
+                    settings.columns == ColumnMode.auto &&
+                        parsed.columns != null
+                    ? parsed.columns!.clamp(1, 4)
+                    : null;
                 final fit = fitSong(
                   parsed,
                   formatter: formatter,
@@ -595,7 +600,9 @@ class _ChordProPage extends ConsumerWidget {
                   size: size,
                   textScaler: MediaQuery.textScalerOf(context),
                   baseStyle: DefaultTextStyle.of(context).style,
-                  maxColumns: settings.maxColumns,
+                  // {columns} in the song wins over the automatic choice.
+                  minColumns: songColumns ?? 1,
+                  maxColumns: songColumns ?? settings.maxColumns,
                   chorusRepeat: settings.chorusRepeat,
                 );
                 final options = _options(

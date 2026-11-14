@@ -2,6 +2,7 @@
 library;
 
 import 'chord.dart';
+import 'markup.dart';
 import 'song.dart';
 
 /// Options that turn a written chord into the displayed chord.
@@ -77,9 +78,9 @@ class ChordFormatter {
 
   /// Formats a chord token for display.
   String format(ChordToken token) {
-    if (token.isAnnotation) return token.annotationText;
+    if (token.isAnnotation) return stripMarkup(token.annotationText);
     final chord = token.chord;
-    if (chord == null) return token.raw;
+    if (chord == null) return stripMarkup(token.raw);
     final tokenKey = token.key ?? key;
     String text;
     if (nashville && tokenKey != null) {
@@ -88,7 +89,7 @@ class ChordFormatter {
     } else {
       final total = shift + token.transpose;
       if (total == 0 && notation == ChordNotation.international) {
-        return token.raw;
+        return stripMarkup(token.raw);
       }
       bool? useFlats;
       if (total != 0) {
@@ -106,4 +107,14 @@ class ChordFormatter {
 
   /// Formats the sounding key for display (e.g. in the header).
   String? formatKey() => soundingKey?.format(notation);
+}
+
+/// Markup style of a chord written like `[<b>C</b>]` or `[*<i>Rit.</i>]`:
+/// the style of its first styled run, or plain.
+MarkupStyle chordMarkupStyle(ChordToken token) {
+  if (!mayContainMarkup(token.raw)) return MarkupStyle.plain;
+  for (final run in parseMarkup(token.raw).runs) {
+    if (!run.style.isPlain) return run.style;
+  }
+  return MarkupStyle.plain;
 }

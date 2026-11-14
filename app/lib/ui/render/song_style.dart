@@ -1,0 +1,361 @@
+import 'package:chordpro/chordpro.dart';
+import 'package:flutter/material.dart';
+
+/// Text styles of the song items at one font size. Rendering and layout
+/// measurement use the same styles so the measured sizes match.
+class SongTextStyles {
+  SongTextStyles._(
+    this.fontSize,
+    this.lyrics,
+    this.chord,
+    this.label,
+    this.mono,
+    this.colors,
+  );
+
+  factory SongTextStyles.of(BuildContext context, double fontSize) {
+    final theme = Theme.of(context);
+    return SongTextStyles.fromBase(
+      DefaultTextStyle.of(context).style
+          .copyWith(color: theme.colorScheme.onSurface),
+      fontSize,
+      theme.colorScheme,
+    );
+  }
+
+  /// Styles derived from [base] (the default text style of the context).
+  factory SongTextStyles.fromBase(
+    TextStyle base,
+    double fontSize, [
+    ColorScheme? colors,
+  ]) {
+    final scheme =
+        colors ?? ColorScheme.fromSeed(seedColor: const Color(0xFF3F51B5));
+    final text = base.merge(
+      TextStyle(fontSize: fontSize, height: lineHeightFactor),
+    );
+    return SongTextStyles._(
+      fontSize,
+      text,
+      text.copyWith(
+        fontSize: fontSize * chordScale,
+        fontWeight: FontWeight.w700,
+        color: scheme.primary,
+      ),
+      text.copyWith(
+        fontSize: fontSize * labelScale,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.8,
+        color: scheme.secondary,
+      ),
+      text.copyWith(fontFamily: 'monospace', fontSize: fontSize * monoScale),
+      scheme,
+    );
+  }
+
+  static const lineHeightFactor = 1.25;
+  static const chordScale = 0.9;
+  static const labelScale = 0.75;
+  static const monoScale = 0.85;
+
+  final double fontSize;
+  final TextStyle lyrics;
+  final TextStyle chord;
+  final TextStyle label;
+  final TextStyle mono;
+  final ColorScheme colors;
+
+  /// Lyrics style with the format directives in effect.
+  TextStyle lyricsFor(FormatState format, {bool inChorus = false}) =>
+      applyFormatValues(lyrics, format.lyricsValues(inChorus: inChorus));
+
+  TextStyle chordFor(FormatState format) =>
+      applyFormatValues(chord, format.valuesFor(FormatTarget.chord));
+
+  TextStyle labelFor(FormatState format) =>
+      applyFormatValues(label, format.valuesFor(FormatTarget.label));
+
+  TextStyle tabFor(FormatState format) =>
+      applyFormatValues(mono, format.valuesFor(FormatTarget.tab));
+
+  /// Grid text (bars, margins) and grid chords.
+  TextStyle gridFor(FormatState format) => applyFormatValues(
+    lyrics.copyWith(fontSize: fontSize * chordScale),
+    format.valuesFor(FormatTarget.grid),
+  );
+
+  TextStyle gridChordFor(FormatState format) =>
+      applyFormatValues(chord, format.valuesFor(FormatTarget.grid));
+}
+
+/// Reference size in points for absolute ChordPro sizes (`{textsize: 14}`,
+/// `<span size="14">`): 12 pt corresponds to the normal size of an item.
+const chordProReferencePoints = 12.0;
+
+const _serifFallback = [
+  'Noto Serif',
+  'DejaVu Serif',
+  'Times New Roman',
+  'Georgia',
+];
+const _monoFallback = [
+  'Noto Sans Mono',
+  'DejaVu Sans Mono',
+  'Consolas',
+  'Courier New',
+  'Menlo',
+];
+
+/// Maps a ChordPro font family to a Flutter style. `sans`/`normal` keep the
+/// app font; `serif` and `monospace` use generic families with fallbacks.
+TextStyle withFontFamily(TextStyle style, String family) {
+  final name = family.trim().toLowerCase();
+  if (name.isEmpty ||
+      const {
+        'sans',
+        'sans-serif',
+        'normal',
+        'helvetica',
+        'arial',
+      }.contains(name)) {
+    return style;
+  }
+  if (const {
+    'serif',
+    'times',
+    'times-roman',
+    'times new roman',
+  }.contains(name)) {
+    return style.copyWith(
+      fontFamily: 'serif',
+      fontFamilyFallback: _serifFallback,
+    );
+  }
+  if (const {'monospace', 'mono', 'courier', 'tt'}.contains(name)) {
+    return style.copyWith(
+      fontFamily: 'monospace',
+      fontFamilyFallback: _monoFallback,
+    );
+  }
+  return style.copyWith(fontFamily: family.trim());
+}
+
+/// Applies a ChordPro size to [style] (factor or points relative to
+/// [chordProReferencePoints]).
+TextStyle withSize(TextStyle style, MarkupSize size) {
+  final base = style.fontSize ?? 14;
+  final factor = size.factor ?? size.points! / chordProReferencePoints;
+  return style.copyWith(fontSize: base * factor);
+}
+
+const _namedColours = {
+  'black': Color(0xFF000000),
+  'white': Color(0xFFFFFFFF),
+  'red': Color(0xFFE53935),
+  'green': Color(0xFF43A047),
+  'blue': Color(0xFF1E88E5),
+  'yellow': Color(0xFFFDD835),
+  'magenta': Color(0xFFD81B60),
+  'cyan': Color(0xFF00ACC1),
+  'grey': Color(0xFF9E9E9E),
+  'gray': Color(0xFF9E9E9E),
+  'orange': Color(0xFFFB8C00),
+  'purple': Color(0xFF8E24AA),
+  'brown': Color(0xFF6D4C41),
+  'pink': Color(0xFFF06292),
+  'darkred': Color(0xFF8B0000),
+  'darkgreen': Color(0xFF006400),
+  'darkblue': Color(0xFF00008B),
+  'lightgrey': Color(0xFFD3D3D3),
+  'lightgray': Color(0xFFD3D3D3),
+  'darkgrey': Color(0xFF616161),
+  'darkgray': Color(0xFF616161),
+};
+
+/// Parses `#RRGGBB`, `#RGB`, `#AARRGGBB` or a colour name.
+Color? parseColour(String? value) {
+  if (value == null) return null;
+  final v = value.trim().toLowerCase();
+  final named = _namedColours[v];
+  if (named != null) return named;
+  if (!v.startsWith('#')) return null;
+  var hex = v.substring(1);
+  if (hex.length == 3) hex = hex.split('').map((c) => '$c$c').join();
+  if (hex.length == 6) hex = 'ff$hex';
+  if (hex.length != 8) return null;
+  final n = int.tryParse(hex, radix: 16);
+  return n == null ? null : Color(n);
+}
+
+/// Applies font/size/colour directive values to [style].
+TextStyle applyFormatValues(TextStyle style, FormatValues values) {
+  var result = style;
+  if (values.font != null) result = withFontFamily(result, values.font!);
+  if (values.size != null) result = withSize(result, values.size!);
+  final colour = parseColour(values.colour);
+  if (colour != null) result = result.copyWith(color: colour);
+  return result;
+}
+
+/// Applies a markup style to [style].
+TextStyle applyMarkupStyle(TextStyle style, MarkupStyle markup) {
+  if (markup.isPlain) return style;
+  var result = style;
+  if (markup.family != null) result = withFontFamily(result, markup.family!);
+  if (markup.size != null) result = withSize(result, markup.size!);
+  if (markup.bold != null) {
+    result = result.copyWith(
+      fontWeight: markup.bold! ? FontWeight.w700 : FontWeight.w400,
+    );
+  }
+  if (markup.italic != null) {
+    result = result.copyWith(
+      fontStyle: markup.italic! ? FontStyle.italic : FontStyle.normal,
+    );
+  }
+  final foreground = parseColour(markup.foreground);
+  if (foreground != null) result = result.copyWith(color: foreground);
+  final background = parseColour(markup.background);
+  if (background != null) {
+    result = result.copyWith(backgroundColor: background);
+  }
+
+  final decorations = <TextDecoration>[];
+  TextDecorationStyle? decorationStyle;
+  Color? decorationColor;
+  if (markup.underline != null && markup.underline != 'none') {
+    decorations.add(TextDecoration.underline);
+    if (markup.underline == 'double') {
+      decorationStyle = TextDecorationStyle.double;
+    }
+    decorationColor = parseColour(markup.underlineColour);
+  }
+  if (markup.overline != null && markup.overline != 'none') {
+    decorations.add(TextDecoration.overline);
+    decorationColor ??= parseColour(markup.overlineColour);
+  }
+  if (markup.strikethrough ?? false) {
+    decorations.add(TextDecoration.lineThrough);
+    decorationColor ??= parseColour(markup.strikethroughColour);
+  }
+  if (decorations.isNotEmpty) {
+    result = result.copyWith(
+      decoration: TextDecoration.combine(decorations),
+      decorationStyle: decorationStyle,
+      decorationColor: decorationColor,
+    );
+  }
+  return result;
+}
+
+/// Builds a span for [raw] text with ChordPro markup.
+///
+/// Runs with `rise` (sub/superscript) are shifted with a widget span unless
+/// [forMeasuring] is set (text painters cannot lay out widget spans without
+/// placeholder sizes).
+InlineSpan markupSpan(
+  String raw,
+  TextStyle base, {
+  String Function(String)? transform,
+  bool forMeasuring = false,
+}) {
+  final text = transform ?? (String s) => s;
+  if (!mayContainMarkup(raw)) return TextSpan(text: text(raw), style: base);
+  final parsed = parseMarkup(raw);
+  return TextSpan(
+    style: base,
+    children: [
+      for (final run in parsed.runs) runSpan(run, base, text, forMeasuring),
+    ],
+  );
+}
+
+/// Span for one markup run (see [markupSpan]).
+InlineSpan runSpan(
+  MarkupRun run,
+  TextStyle base,
+  String Function(String) transform,
+  bool forMeasuring,
+) {
+  final style = applyMarkupStyle(base, run.style);
+  final rise = run.style.rise;
+  if (rise == null || rise == 0 || forMeasuring) {
+    return TextSpan(text: transform(run.text), style: style);
+  }
+  return WidgetSpan(
+    alignment: PlaceholderAlignment.baseline,
+    baseline: TextBaseline.alphabetic,
+    child: Transform.translate(
+      offset: Offset(0, -rise * (base.fontSize ?? 14)),
+      child: Text(transform(run.text), style: style),
+    ),
+  );
+}
+
+/// Largest font-size factor used by markup in [raw] (for line heights).
+double markupSizeFactor(String raw) {
+  if (!mayContainMarkup(raw)) return 1;
+  var largest = 1.0;
+  for (final run in parseMarkup(raw).runs) {
+    final size = run.style.size;
+    if (size == null) continue;
+    final factor = size.factor ?? size.points! / chordProReferencePoints;
+    if (factor > largest) largest = factor;
+  }
+  return largest;
+}
+
+final _wordPattern = RegExp(r'\S+\s*|\s+');
+
+/// A word of a chord/lyrics line, with the chord above its start.
+class LinePiece {
+  const LinePiece(this.chord, this.chordMarkup, this.runs);
+
+  /// Formatted chord, or null.
+  final String? chord;
+
+  /// Markup style of the chord (e.g. `[<b>C</b>]`).
+  final MarkupStyle chordMarkup;
+
+  /// The word with its markup runs (may be empty).
+  final List<MarkupRun> runs;
+
+  String get text => runs.map((r) => r.text).join();
+}
+
+/// Splits a lyrics line into word pieces (so lines can wrap between
+/// words); the chord of a segment sits on its first word. Markup may span
+/// several segments.
+List<LinePiece> chordLinePieces(LyricLine line, ChordFormatter formatter) {
+  final raw = line.segments.map((s) => s.text).join();
+  final markup = parseMarkup(raw);
+  final plain = markup.plain;
+  final pieces = <LinePiece>[];
+  var rawPos = 0;
+  for (final segment in line.segments) {
+    final start = markup.plainIndex(rawPos);
+    rawPos += segment.text.length;
+    final end = markup.plainIndex(rawPos);
+    final chordToken = segment.chord;
+    final chord = chordToken == null ? null : formatter.format(chordToken);
+    final chordMarkup = chordToken == null
+        ? MarkupStyle.plain
+        : chordMarkupStyle(chordToken);
+    final words = _wordPattern.allMatches(plain.substring(start, end)).toList();
+    if (words.isEmpty) {
+      pieces.add(LinePiece(chord, chordMarkup, const []));
+      continue;
+    }
+    for (var i = 0; i < words.length; i++) {
+      final w = words[i];
+      pieces.add(
+        LinePiece(
+          i == 0 ? chord : null,
+          chordMarkup,
+          markup.slice(start + w.start, start + w.end),
+        ),
+      );
+    }
+  }
+  return pieces;
+}

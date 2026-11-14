@@ -4,6 +4,14 @@ import 'package:chordpro/chordpro.dart';
 import 'package:flutter/material.dart';
 
 import '../../l10n/generated/app_localizations.dart';
+import 'song_blocks.dart';
+import 'song_grid.dart';
+import 'song_layout.dart';
+import 'song_style.dart';
+
+export 'song_blocks.dart';
+export 'song_layout.dart';
+export 'song_style.dart';
 
 /// Options for rendering a song (combined layers of ADR-0006).
 class SongRenderOptions {
@@ -24,133 +32,12 @@ class SongRenderOptions {
 
   /// Show a repeated chorus as a label only.
   final bool collapseRecalls;
-
-  SongRenderOptions copyWith({double? fontSize, int? columns}) =>
-      SongRenderOptions(
-        formatter: formatter,
-        lyricsOnly: lyricsOnly,
-        fontSize: fontSize ?? this.fontSize,
-        columns: columns ?? this.columns,
-        notes: notes,
-        collapseRecalls: collapseRecalls,
-      );
-}
-
-/// A unit of the song layout that is placed as a whole into a column.
-class SongBlock {
-  const SongBlock.notes(String this.text)
-    : section = null,
-      label = null,
-      lines = const [],
-      isRecallLabel = false;
-
-  const SongBlock.section(Section this.section, this.label, this.lines)
-    : text = null,
-      isRecallLabel = false;
-
-  const SongBlock.recall(String this.label)
-    : section = null,
-      text = null,
-      lines = const [],
-      isRecallLabel = true;
-
-  /// Personal note text (notes block).
-  final String? text;
-  final Section? section;
-  final String? label;
-  final List<Line> lines;
-
-  /// A repeated chorus shown only as a label.
-  final bool isRecallLabel;
-}
-
-/// Default label for a section kind (localized), or null for none.
-typedef SectionLabeler = String? Function(SectionKind kind);
-
-SectionLabeler sectionLabeler(AppLocalizations l10n) =>
-    (kind) => switch (kind) {
-      SectionKind.verse => l10n.sectionVerse,
-      SectionKind.chorus => l10n.sectionChorus,
-      SectionKind.bridge => l10n.sectionBridge,
-      SectionKind.tab => l10n.sectionTab,
-      SectionKind.grid => l10n.sectionGrid,
-      SectionKind.none || SectionKind.custom => null,
-    };
-
-/// Splits [song] into layout blocks.
-///
-/// With [collapseRecalls], a repeated chorus (`{chorus}`) is shown as a
-/// label only instead of repeating its lines, to save space in live mode.
-List<SongBlock> buildSongBlocks(
-  Song song, {
-  required bool lyricsOnly,
-  required SectionLabeler labeler,
-  String? notes,
-  bool collapseRecalls = false,
-}) {
-  List<Line> visible(Section s) => lyricsOnly
-      ? s.lines
-            .where((l) => l is! LyricLine || l.text.trim().isNotEmpty)
-            .toList()
-      : s.lines;
-
-  final blocks = <SongBlock>[];
-  final note = notes?.trim();
-  if (note != null && note.isNotEmpty) blocks.add(SongBlock.notes(note));
-  final chorusLabel = labeler(SectionKind.chorus) ?? 'Chorus';
-
-  for (final element in song.elements) {
-    switch (element) {
-      case Section s:
-        final label = s.label ?? labeler(s.kind);
-        final lines = visible(s);
-        if (lines.isEmpty && label == null) continue;
-        blocks.add(SongBlock.section(s, label, lines));
-      case ChorusRecall r:
-        final chorus = r.chorus;
-        final label = r.label ?? chorus?.label ?? chorusLabel;
-        if (chorus == null || collapseRecalls) {
-          blocks.add(SongBlock.recall(label));
-        } else {
-          blocks.add(SongBlock.section(chorus, label, visible(chorus)));
-        }
-      case DelegateSection d:
-        // Rendered as source until delegated environments are supported
-        // (ADR-0012, phase 5).
-        final section = Section(
-          kind: SectionKind.tab,
-          label: d.label,
-          lines: [for (final l in d.lines) RawLine(l)],
-        );
-        blocks.add(SongBlock.section(section, d.label, section.lines));
-    }
-  }
-  return blocks;
-}
-
-/// Plain-text form of a grid line (ADR-0012, phase 1).
-String gridRowText(GridRow row, ChordFormatter formatter) {
-  final parts = <String>[
-    ?row.leftMargin,
-    for (final token in row.tokens)
-      switch (token) {
-        GridBar b => row.hideBars ? '' : b.symbol,
-        GridChords c => c.chords.map(formatter.format).join('~'),
-        GridMark m => switch (m.symbol) {
-          GridSymbol.empty => '.',
-          GridSymbol.slash => '/',
-          GridSymbol.repeat1 => '%',
-          GridSymbol.repeat2 => '%%',
-        },
-        GridStrum s => s.symbol,
-      },
-    ?row.rightMargin,
-  ];
-  return parts.where((p) => p.isNotEmpty).join(' ');
 }
 
 /// Renders the body of a ChordPro song: sections with chords above lyrics,
-/// arranged in [SongRenderOptions.columns] columns.
+/// arranged in [SongRenderOptions.columns] columns. Column breaks in the
+/// song (`{column_break}`) start new columns when more than one column is
+/// used.
 class SongBody extends StatelessWidget {
   const SongBody({super.key, required this.song, required this.options});
 
@@ -170,16 +57,12 @@ class SongBody extends StatelessWidget {
     Widget render(SongBlock b) => b.text != null
         ? _NotesCard(text: b.text!, style: style)
         : b.isRecallLabel
-        ? _RecallLabel(text: b.label!, style: style)
-        : _SectionBlock(
-            section: b.section!,
-            label: b.label,
-            lines: b.lines,
-            options: options,
-            style: style,
-          );
+        ? _RecallLabel(block: b, style: style)
+        : _SectionBlock(block: b, options: options, style: style);
 
-    final columns = math.min(options.columns, blocks.length);
+    final columns = forcedColumns(blocks) != null && options.columns > 1
+        ? forcedColumns(blocks)!
+        : math.min(options.columns, blocks.length);
     if (columns <= 1) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,10 +86,10 @@ class SongBody extends StatelessWidget {
         final heights = [
           for (final m in metrics) m.height(options.fontSize, width),
         ];
-        final breaks = [...partitionColumns(heights, columns), blocks.length];
+        final ends = [...columnBreaks(blocks, heights, columns), blocks.length];
         final children = <Widget>[];
         var start = 0;
-        for (final end in breaks) {
+        for (final end in ends) {
           if (start > 0) {
             children.add(SizedBox(width: options.fontSize * columnGap));
           }
@@ -229,109 +112,6 @@ class SongBody extends StatelessWidget {
       },
     );
   }
-}
-
-/// Gap between columns, relative to the font size.
-const columnGap = 1.5;
-
-/// Splits ordered [heights] into at most [columns] consecutive groups so that
-/// the tallest group is as short as possible. Returns the end index of each
-/// group except the last.
-List<int> partitionColumns(List<double> heights, int columns) {
-  final n = heights.length;
-  final k = math.min(columns, n);
-  if (k <= 1) return const [];
-  final prefix = [0.0];
-  for (final h in heights) {
-    prefix.add(prefix.last + h);
-  }
-
-  // best[j][i]: minimal tallest group for the first i heights in j groups.
-  final best = List.generate(k + 1, (_) => List.filled(n + 1, double.infinity));
-  final cut = List.generate(k + 1, (_) => List.filled(n + 1, 0));
-  best[0][0] = 0;
-  for (var j = 1; j <= k; j++) {
-    for (var i = j; i <= n; i++) {
-      for (var p = j - 1; p < i; p++) {
-        final value = math.max(best[j - 1][p], prefix[i] - prefix[p]);
-        if (value < best[j][i]) {
-          best[j][i] = value;
-          cut[j][i] = p;
-        }
-      }
-    }
-  }
-  final breaks = <int>[];
-  var i = n;
-  for (var j = k; j > 1; j--) {
-    i = cut[j][i];
-    breaks.insert(0, i);
-  }
-  return breaks;
-}
-
-/// Tallest column when [heights] are split into [columns] columns.
-double partitionHeight(List<double> heights, int columns) {
-  var tallest = 0.0;
-  var start = 0;
-  for (final end in [...partitionColumns(heights, columns), heights.length]) {
-    var h = 0.0;
-    for (var i = start; i < end; i++) {
-      h += heights[i];
-    }
-    tallest = math.max(tallest, h);
-    start = end;
-  }
-  return tallest;
-}
-
-/// Text styles derived from the font size and theme.
-class SongTextStyles {
-  SongTextStyles._(
-    this.fontSize,
-    this.lyrics,
-    this.chord,
-    this.label,
-    this.mono,
-    this.colors,
-  );
-
-  factory SongTextStyles.of(BuildContext context, double fontSize) {
-    final theme = Theme.of(context);
-    final base = TextStyle(
-      fontSize: fontSize,
-      height: lineHeightFactor,
-      color: theme.colorScheme.onSurface,
-    );
-    return SongTextStyles._(
-      fontSize,
-      base,
-      base.copyWith(
-        fontSize: fontSize * chordScale,
-        fontWeight: FontWeight.w700,
-        color: theme.colorScheme.primary,
-      ),
-      base.copyWith(
-        fontSize: fontSize * labelScale,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.8,
-        color: theme.colorScheme.secondary,
-      ),
-      base.copyWith(fontFamily: 'monospace', fontSize: fontSize * 0.85),
-      theme.colorScheme,
-    );
-  }
-
-  static const lineHeightFactor = 1.25;
-  static const chordScale = 0.9;
-  static const labelScale = 0.75;
-
-  final double fontSize;
-  final TextStyle lyrics;
-  final TextStyle chord;
-  final TextStyle label;
-  final TextStyle mono;
-  final ColorScheme colors;
 }
 
 class _NotesCard extends StatelessWidget {
@@ -372,58 +152,141 @@ class _NotesCard extends StatelessWidget {
   );
 }
 
-class _RecallLabel extends StatelessWidget {
-  const _RecallLabel({required this.text, required this.style});
+/// A section label (upper case, markup allowed, `\n` for several lines).
+class _Label extends StatelessWidget {
+  const _Label({required this.text, required this.style});
 
   final String text;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) =>
+      Text.rich(markupSpan(text, style, transform: (s) => s.toUpperCase()));
+}
+
+class _RecallLabel extends StatelessWidget {
+  const _RecallLabel({required this.block, required this.style});
+
+  final SongBlock block;
   final SongTextStyles style;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.only(bottom: style.fontSize * 0.8),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          Icons.repeat,
-          size: style.fontSize * 0.9,
-          color: style.colors.secondary,
-        ),
-        SizedBox(width: style.fontSize * 0.3),
-        Text(text.toUpperCase(), style: style.label),
-      ],
-    ),
-  );
+  Widget build(BuildContext context) {
+    final labelStyle = style.labelFor(block.startFormat);
+    return Padding(
+      padding: EdgeInsets.only(bottom: style.fontSize * 0.8),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.repeat,
+            size: style.fontSize * 0.9,
+            color: labelStyle.color,
+          ),
+          SizedBox(width: style.fontSize * 0.3),
+          _Label(text: block.label!, style: labelStyle),
+        ],
+      ),
+    );
+  }
 }
 
 class _SectionBlock extends StatelessWidget {
   const _SectionBlock({
-    required this.section,
-    required this.label,
-    required this.lines,
+    required this.block,
     required this.options,
     required this.style,
   });
 
-  final Section section;
-  final String? label;
-  final List<Line> lines;
+  final SongBlock block;
   final SongRenderOptions options;
   final SongTextStyles style;
 
   @override
   Widget build(BuildContext context) {
+    final format = block.startFormat.copy();
+    final chorus = block.isChorus;
+    GridGeometry? grid;
+    final children = <Widget>[
+      if (block.label != null)
+        _Label(text: block.label!, style: style.labelFor(format)),
+    ];
+    for (final line in block.lines) {
+      switch (line) {
+        case FormatLine l:
+          format.apply(l);
+        case LyricLine l when !options.lyricsOnly && l.hasChords:
+          children.add(
+            _ChordLyricLine(
+              line: l,
+              formatter: options.formatter,
+              lyricStyle: style.lyricsFor(format, inChorus: chorus),
+              chordStyle: style.chordFor(format),
+            ),
+          );
+        case LyricLine l:
+          children.add(
+            Text.rich(
+              markupSpan(l.text, style.lyricsFor(format, inChorus: chorus)),
+            ),
+          );
+        case CommentLine c:
+          children.add(
+            _Comment(
+              comment: c,
+              textStyle: style.lyricsFor(format),
+              colors: style.colors,
+            ),
+          );
+        case RawLine r:
+          children.add(
+            Text(r.text, style: style.tabFor(format), softWrap: false),
+          );
+        case GridLine g:
+          final text = style.gridFor(format);
+          final chordStyle = style.gridChordFor(format);
+          grid ??= _gridGeometry(context, block.lines, text, chordStyle);
+          children.add(
+            GridRowView(
+              row: g.row,
+              geometry: grid,
+              formatter: options.formatter,
+              textStyle: text,
+              chordStyle: chordStyle,
+              barColor: style.colors.outline,
+            ),
+          );
+        case ImageLine i:
+          children.add(
+            _Placeholder(
+              icon: Icons.image_outlined,
+              text: i.src ?? '',
+              style: style.labelFor(format),
+              size: style.fontSize,
+            ),
+          );
+        case ChordDiagramLine c:
+          children.add(
+            _Placeholder(
+              icon: Icons.grid_on,
+              text: c.definition.display ?? c.definition.name,
+              style: style.labelFor(format),
+              size: style.fontSize,
+            ),
+          );
+        case BreakLine():
+          break;
+        case EmptyLine():
+          children.add(SizedBox(height: style.fontSize * 0.6));
+      }
+    }
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (label != null) Text(label!.toUpperCase(), style: style.label),
-        for (final line in lines) _buildLine(line),
-      ],
+      children: children,
     );
-    final isChorus = section.kind == SectionKind.chorus;
     return Padding(
       padding: EdgeInsets.only(bottom: style.fontSize * 0.8),
-      child: isChorus
+      child: chorus
           ? Container(
               padding: EdgeInsets.only(left: style.fontSize * 0.6),
               decoration: BoxDecoration(
@@ -437,33 +300,28 @@ class _SectionBlock extends StatelessWidget {
     );
   }
 
-  Widget _buildLine(Line line) => switch (line) {
-    LyricLine l when !options.lyricsOnly && l.hasChords => _ChordLyricLine(
-      line: l,
-      formatter: options.formatter,
-      style: style,
-    ),
-    LyricLine l => Text(l.text, style: style.lyrics),
-    CommentLine c => _Comment(comment: c, style: style),
-    RawLine r => Text(r.text, style: style.mono, softWrap: false),
-    GridLine g => Text(
-      gridRowText(g.row, options.formatter),
-      style: style.mono.copyWith(fontWeight: FontWeight.w600),
-      softWrap: false,
-    ),
-    ImageLine i => _Placeholder(
-      icon: Icons.image_outlined,
-      text: i.src ?? '',
-      style: style,
-    ),
-    ChordDiagramLine c => _Placeholder(
-      icon: Icons.grid_on,
-      text: c.definition.display ?? c.definition.name,
-      style: style,
-    ),
-    BreakLine() || FormatLine() => const SizedBox.shrink(),
-    EmptyLine() => SizedBox(height: style.fontSize * 0.6),
-  };
+  GridGeometry _gridGeometry(
+    BuildContext context,
+    List<Line> lines,
+    TextStyle text,
+    TextStyle chordStyle,
+  ) {
+    final painter = TextPainter(
+      textDirection: TextDirection.ltr,
+      textScaler: MediaQuery.textScalerOf(context),
+    );
+    final size = text.fontSize ?? 14;
+    final geometry = GridGeometry.of(lines, options.formatter, (
+      s, {
+      bool chord = false,
+    }) {
+      painter.text = TextSpan(text: s, style: chord ? chordStyle : text);
+      painter.layout();
+      return painter.width / size;
+    });
+    painter.dispose();
+    return geometry;
+  }
 }
 
 /// Images and chord diagrams until they are rendered (ADR-0012, phases 4–5).
@@ -472,471 +330,117 @@ class _Placeholder extends StatelessWidget {
     required this.icon,
     required this.text,
     required this.style,
+    required this.size,
   });
 
   final IconData icon;
   final String text;
-  final SongTextStyles style;
+  final TextStyle style;
+  final double size;
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.symmetric(vertical: style.fontSize * 0.15),
+    padding: EdgeInsets.symmetric(vertical: size * 0.15),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: style.fontSize, color: style.colors.outline),
-        SizedBox(width: style.fontSize * 0.3),
-        Text(text, style: style.label),
+        Icon(icon, size: size, color: style.color),
+        SizedBox(width: size * 0.3),
+        Text(text, style: style),
       ],
     ),
   );
 }
 
 class _Comment extends StatelessWidget {
-  const _Comment({required this.comment, required this.style});
+  const _Comment({
+    required this.comment,
+    required this.textStyle,
+    required this.colors,
+  });
 
   final CommentLine comment;
-  final SongTextStyles style;
+  final TextStyle textStyle;
+  final ColorScheme colors;
 
   @override
-  Widget build(BuildContext context) => Container(
-    margin: EdgeInsets.symmetric(vertical: style.fontSize * 0.15),
-    padding: EdgeInsets.symmetric(
-      horizontal: style.fontSize * 0.4,
-      vertical: style.fontSize * 0.1,
-    ),
-    decoration: BoxDecoration(
-      color: comment.style == CommentStyle.box
-          ? null
-          : style.colors.surfaceContainerHighest,
-      border: comment.style == CommentStyle.box
-          ? Border.all(color: style.colors.outline)
-          : null,
-      borderRadius: BorderRadius.circular(4),
-    ),
-    child: Text(
-      comment.text,
-      style: style.lyrics.copyWith(
-        fontSize: style.fontSize * 0.85,
-        fontStyle: comment.style == CommentStyle.italic
-            ? FontStyle.italic
-            : FontStyle.normal,
+  Widget build(BuildContext context) {
+    final size = textStyle.fontSize ?? 14;
+    final style = textStyle.copyWith(
+      fontSize: size * 0.85,
+      fontStyle: comment.style == CommentStyle.italic ? FontStyle.italic : null,
+    );
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: size * 0.15),
+      padding: EdgeInsets.symmetric(
+        horizontal: size * 0.4,
+        vertical: size * 0.1,
       ),
-    ),
-  );
+      decoration: BoxDecoration(
+        color: comment.style == CommentStyle.box
+            ? null
+            : colors.surfaceContainerHighest,
+        border: comment.style == CommentStyle.box
+            ? Border.all(color: colors.outline)
+            : null,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text.rich(markupSpan(comment.text, style)),
+    );
+  }
 }
-
-final _wordPattern = RegExp(r'\S+\s*|\s+');
 
 class _ChordLyricLine extends StatelessWidget {
   const _ChordLyricLine({
     required this.line,
     required this.formatter,
-    required this.style,
+    required this.lyricStyle,
+    required this.chordStyle,
   });
 
   final LyricLine line;
   final ChordFormatter formatter;
-  final SongTextStyles style;
+  final TextStyle lyricStyle;
+  final TextStyle chordStyle;
 
   @override
   Widget build(BuildContext context) {
-    final pieces = <Widget>[];
-    for (final segment in line.segments) {
-      final chord = segment.chord == null
-          ? null
-          : formatter.format(segment.chord!);
-      final words = _wordPattern
-          .allMatches(segment.text)
-          .map((m) => m.group(0)!)
-          .toList();
-      if (words.isEmpty) words.add('');
-      for (var i = 0; i < words.length; i++) {
-        pieces.add(_piece(i == 0 ? chord : null, words[i]));
-      }
-    }
+    final size = lyricStyle.fontSize ?? 14;
     return Padding(
-      padding: EdgeInsets.only(top: style.fontSize * 0.1),
-      child: Wrap(children: pieces),
-    );
-  }
-
-  Widget _piece(String? chord, String word) => Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Padding(
-        padding: EdgeInsets.only(
-          right: chord == null ? 0 : style.fontSize * 0.35,
-        ),
-        child: Text(chord ?? ' ', style: style.chord),
+      padding: EdgeInsets.only(top: size * 0.1),
+      child: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.end,
+        children: [
+          for (final piece in chordLinePieces(line, formatter))
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(
+                    right: piece.chord == null ? 0 : size * 0.35,
+                  ),
+                  child: Text(
+                    piece.chord ?? ' ',
+                    style: applyMarkupStyle(chordStyle, piece.chordMarkup),
+                  ),
+                ),
+                if (piece.runs.isEmpty)
+                  Text(' ', style: lyricStyle)
+                else
+                  Text.rich(
+                    TextSpan(
+                      style: lyricStyle,
+                      children: [
+                        for (final run in piece.runs)
+                          runSpan(run, lyricStyle, (s) => s, false),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+        ],
       ),
-      Text(word.isEmpty ? ' ' : word, style: style.lyrics),
-    ],
-  );
-}
-
-// Layout measurement ----------------------------------------------------------
-//
-// Mirrors the paddings of the widgets above. Sizes are stored per unit of font
-// size; text widths are measured once with TextPainter at a reference size.
-// Lines without chords (plain lyrics, comments, notes) may wrap; chord lines,
-// tabs and labels must fit the column width.
-
-const _referenceFontSize = 20.0;
-
-/// Size information of a [SongBlock], independent of the font size.
-class BlockMetrics {
-  const BlockMetrics({
-    required this.fixedHeight,
-    required this.wrapping,
-    required this.minWidth,
-    this.indent = 0,
-  });
-
-  /// Height of everything that never wraps, per unit of font size.
-  final double fixedHeight;
-
-  /// Lines that may wrap: text width, line height and horizontal padding,
-  /// each per unit of font size.
-  final List<({double width, double lineHeight, double padding})> wrapping;
-
-  /// Widest content that must not wrap, per unit of font size.
-  final double minWidth;
-
-  /// Left indent (chorus border), per unit of font size.
-  final double indent;
-
-  /// Height at [fontSize] in a column of [columnWidth] logical pixels.
-  double height(double fontSize, double columnWidth) {
-    final f = fontSize;
-    var h = fixedHeight * f;
-    for (final line in wrapping) {
-      final available = columnWidth - (indent + line.padding) * f;
-      final count = available <= 0
-          ? 1
-          : math.max(1, (line.width * f * 1.05 / available).ceil());
-      h += count * line.lineHeight * f;
-    }
-    return h;
-  }
-}
-
-/// Measures [blocks] for layout.
-///
-/// [baseStyle] must be the default text style the song is rendered with
-/// (`DefaultTextStyle.of(context).style`), so the same font is measured.
-List<BlockMetrics> measureBlocks(
-  List<SongBlock> blocks, {
-  required ChordFormatter formatter,
-  required bool lyricsOnly,
-  required TextScaler textScaler,
-  TextStyle? baseStyle,
-}) {
-  final painter = TextPainter(
-    textDirection: TextDirection.ltr,
-    textScaler: textScaler,
-  );
-  try {
-    return [
-      for (final b in blocks)
-        _measure(b, formatter, lyricsOnly, painter, baseStyle),
-    ];
-  } finally {
-    painter.dispose();
-  }
-}
-
-BlockMetrics _measure(
-  SongBlock block,
-  ChordFormatter formatter,
-  bool lyricsOnly,
-  TextPainter painter,
-  TextStyle? baseStyle,
-) {
-  const f = _referenceFontSize;
-  const lh = SongTextStyles.lineHeightFactor;
-  const labelHeight = SongTextStyles.labelScale * lh;
-  final lyric = (baseStyle ?? const TextStyle()).merge(
-    const TextStyle(fontSize: f, height: lh),
-  );
-  final chordStyle = lyric.copyWith(
-    fontSize: f * SongTextStyles.chordScale,
-    fontWeight: FontWeight.w700,
-  );
-  final labelStyle = lyric.copyWith(
-    fontSize: f * SongTextStyles.labelScale,
-    fontWeight: FontWeight.w600,
-    letterSpacing: 0.8,
-  );
-  double unit(String text, TextStyle style) {
-    painter.text = TextSpan(text: text, style: style);
-    painter.layout();
-    return painter.width / f;
-  }
-
-  if (block.text != null) {
-    // Notes card: margin, padding; the text wraps next to the icon.
-    return BlockMetrics(
-      fixedHeight: 0.8 + 1.0,
-      wrapping: [
-        (
-          width: unit(block.text!, lyric.copyWith(fontSize: f * 0.85)),
-          lineHeight: 0.85 * lh,
-          padding: 1.0 + 1.0 + 0.4,
-        ),
-      ],
-      minWidth: 0,
     );
   }
-  if (block.isRecallLabel) {
-    return BlockMetrics(
-      fixedHeight: 0.8 + math.max(labelHeight, 0.9),
-      wrapping: const [],
-      minWidth: 1.2 + unit(block.label!.toUpperCase(), labelStyle),
-    );
-  }
-
-  final indent = block.section?.kind == SectionKind.chorus ? 0.6 + 3 / f : 0.0;
-  var fixed = 0.8;
-  var minWidth = 0.0;
-  final wrapping = <({double width, double lineHeight, double padding})>[];
-  if (block.label != null) {
-    fixed += labelHeight;
-    minWidth = unit(block.label!.toUpperCase(), labelStyle);
-  }
-  for (final line in block.lines) {
-    switch (line) {
-      case LyricLine l when !lyricsOnly && l.hasChords:
-        fixed += 0.1 + SongTextStyles.chordScale * lh + lh;
-        minWidth = math.max(
-          minWidth,
-          _chordLineWidth(
-                l,
-                formatter,
-                f,
-                (text) => unit(text, lyric) * f,
-                (text) => unit(text, chordStyle) * f,
-              ) /
-              f,
-        );
-      case LyricLine l:
-        wrapping.add((width: unit(l.text, lyric), lineHeight: lh, padding: 0));
-      case CommentLine c:
-        fixed += 0.3 + 0.2;
-        wrapping.add((
-          width: unit(
-            c.text,
-            lyric.copyWith(
-              fontSize: f * 0.85,
-              fontStyle: c.style == CommentStyle.italic
-                  ? FontStyle.italic
-                  : FontStyle.normal,
-            ),
-          ),
-          lineHeight: 0.85 * lh,
-          padding: 0.8,
-        ));
-      case RawLine r:
-        fixed += 0.85 * lh;
-        minWidth = math.max(
-          minWidth,
-          unit(
-            r.text,
-            lyric.copyWith(fontFamily: 'monospace', fontSize: f * 0.85),
-          ),
-        );
-      case GridLine g:
-        fixed += 0.85 * lh;
-        minWidth = math.max(
-          minWidth,
-          unit(
-            gridRowText(g.row, formatter),
-            lyric.copyWith(
-              fontFamily: 'monospace',
-              fontSize: f * 0.85,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        );
-      case ImageLine() || ChordDiagramLine():
-        fixed += 0.3 + math.max(labelHeight, 1.0);
-      case BreakLine() || FormatLine():
-        break;
-      case EmptyLine():
-        fixed += 0.6;
-    }
-  }
-  return BlockMetrics(
-    fixedHeight: fixed,
-    wrapping: wrapping,
-    minWidth: minWidth + indent,
-    indent: indent,
-  );
-}
-
-double _chordLineWidth(
-  LyricLine line,
-  ChordFormatter formatter,
-  double fontSize,
-  double Function(String) lyricWidth,
-  double Function(String) chordWidth,
-) {
-  var total = 0.0;
-  for (final segment in line.segments) {
-    final words = _wordPattern
-        .allMatches(segment.text)
-        .map((m) => m.group(0)!)
-        .toList();
-    if (words.isEmpty) words.add(' ');
-    for (var i = 0; i < words.length; i++) {
-      var w = lyricWidth(words[i]);
-      if (i == 0 && segment.chord != null) {
-        w = math.max(
-          w,
-          chordWidth(formatter.format(segment.chord!)) + fontSize * 0.35,
-        );
-      }
-      total += w;
-    }
-  }
-  return total;
-}
-
-/// Width of one of [columns] columns in [width] at [fontSize].
-double columnWidth(double width, int columns, double fontSize) =>
-    (width - columnGap * fontSize * (columns - 1)) / columns;
-
-/// Result of [fitSong].
-class SongFit {
-  const SongFit({
-    required this.fontSize,
-    required this.columns,
-    this.collapseRecalls = false,
-    this.fits = true,
-  });
-
-  final double fontSize;
-  final int columns;
-  final bool collapseRecalls;
-
-  /// Whether the whole song fits on the screen without scrolling.
-  final bool fits;
-}
-
-/// Chooses font size, number of columns and chorus display for live mode so
-/// that the whole song fits into [size] without scrolling.
-///
-/// Sections are kept whole and distributed over 1 to [maxColumns] columns in
-/// reading order. Chord lines must fit the column width; lines without chords
-/// may wrap. The arrangement with the largest font wins; more columns are
-/// only used when they give a clearly larger font, and repeated choruses are
-/// only collapsed to a label when that gives a clearly larger font. If
-/// nothing fits at [minFontSize], one scrollable column is returned.
-SongFit fitSong(
-  Song song, {
-  required ChordFormatter formatter,
-  required bool lyricsOnly,
-  required SectionLabeler labeler,
-  String? notes,
-  required double baseFontSize,
-  required double maxFontSize,
-  required double minFontSize,
-  required Size size,
-  required TextScaler textScaler,
-  TextStyle? baseStyle,
-  int minColumns = 1,
-  int maxColumns = 4,
-  double minColumnWidth = 220,
-  ChorusRepeat chorusRepeat = ChorusRepeat.auto,
-}) {
-  SongFit? best;
-  double bestScore = 0;
-  double? singleColumnFont;
-
-  final collapseOptions = switch (chorusRepeat) {
-    ChorusRepeat.auto => const [false, true],
-    ChorusRepeat.full => const [false],
-    ChorusRepeat.label => const [true],
-  };
-  for (final collapse in collapseOptions) {
-    final blocks = buildSongBlocks(
-      song,
-      lyricsOnly: lyricsOnly,
-      labeler: labeler,
-      notes: notes,
-      collapseRecalls: collapse,
-    );
-    if (blocks.isEmpty) return SongFit(fontSize: baseFontSize, columns: 1);
-    final metrics = measureBlocks(
-      blocks,
-      formatter: formatter,
-      lyricsOnly: lyricsOnly,
-      textScaler: textScaler,
-      baseStyle: baseStyle,
-    );
-    final widest = metrics.fold<double>(0, (w, m) => math.max(w, m.minWidth));
-    singleColumnFont ??= widest <= 0 ? maxFontSize : size.width / widest;
-
-    final lowest = math.min(minColumns, blocks.length);
-    final highest = math.min(maxColumns, blocks.length);
-    for (var k = lowest; k <= highest; k++) {
-      if (k > 1 && columnWidth(size.width, k, baseFontSize) < minColumnWidth) {
-        continue;
-      }
-      // Start with the largest font the width allows, then shrink until the
-      // tallest column fits (wrapping changes with the font size).
-      var font = widest <= 0
-          ? maxFontSize
-          : size.width / (k * widest + columnGap * (k - 1));
-      font = math.min(font, maxFontSize);
-      var fits = false;
-      for (var i = 0; i < 12 && font >= minFontSize; i++) {
-        final width = columnWidth(size.width, k, font);
-        final tallest = partitionHeight([
-          for (final m in metrics) m.height(font, width),
-        ], k);
-        if (tallest <= size.height) {
-          fits = true;
-          break;
-        }
-        font *= size.height / tallest * 0.99;
-      }
-      if (!fits) continue;
-      font *= 0.98;
-      // Prefer fewer columns and full choruses unless clearly better.
-      final penalty = collapse && chorusRepeat == ChorusRepeat.auto
-          ? 0.85
-          : 1.0;
-      final score = font * penalty * (1 - 0.03 * (k - 1));
-      if (score > bestScore) {
-        bestScore = score;
-        best = SongFit(fontSize: font, columns: k, collapseRecalls: collapse);
-      }
-    }
-  }
-
-  if (best != null) return best;
-  // Does not fit: one column, as large as the width allows, scrollable.
-  return SongFit(
-    fontSize: (singleColumnFont ?? baseFontSize).clamp(
-      minFontSize,
-      maxFontSize,
-    ),
-    columns: 1,
-    collapseRecalls: chorusRepeat == ChorusRepeat.label,
-    fits: false,
-  );
-}
-
-/// How a repeated chorus (`{chorus}`) is shown in live mode.
-enum ChorusRepeat {
-  /// Full lines, shortened to a label only if that is needed to fit.
-  auto,
-
-  /// Always the full lines.
-  full,
-
-  /// Always a label only.
-  label,
 }
