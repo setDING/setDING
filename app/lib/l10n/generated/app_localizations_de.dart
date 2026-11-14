@@ -631,4 +631,124 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get sectionOutro => 'Outro';
+
+  @override
+  String get editorGroupChords => 'Akkorde';
+
+  @override
+  String get editorGroupSections => 'Abschnitte';
+
+  @override
+  String get editorGroupInfo => 'Song-Infos';
+
+  @override
+  String get editorGroupText => 'Text';
+
+  @override
+  String get editorGroupMore => 'Mehr';
+
+  @override
+  String get insertOptionalChord => 'Optionaler Akkord';
+
+  @override
+  String get insertAnnotation => 'Anmerkung';
+
+  @override
+  String get insertNoChord => 'Kein Akkord (N.C.)';
+
+  @override
+  String get insertDefine => 'Akkord-Definition';
+
+  @override
+  String get insertChordDiagram => 'Akkord-Diagramm';
+
+  @override
+  String get insertTranspose => 'Transponieren';
+
+  @override
+  String get insertTab => 'Tabulatur';
+
+  @override
+  String get insertGrid => 'Akkord-Raster';
+
+  @override
+  String get insertChorusRecall => 'Refrain wiederholen';
+
+  @override
+  String get metaSubtitle => 'Untertitel';
+
+  @override
+  String get metaComposer => 'Komponist';
+
+  @override
+  String get metaLyricist => 'Texter';
+
+  @override
+  String get metaCopyright => 'Copyright';
+
+  @override
+  String get metaCcli => 'CCLI-Nummer';
+
+  @override
+  String get metaTag => 'Tag';
+
+  @override
+  String get metaYear => 'Jahr';
+
+  @override
+  String get metaAlbum => 'Album';
+
+  @override
+  String get metaDuration => 'Dauer';
+
+  @override
+  String get metaTempo => 'Tempo (BPM)';
+
+  @override
+  String get metaTime => 'Taktart';
+
+  @override
+  String get metaKey => 'Tonart';
+
+  @override
+  String get insertCommentItalic => 'Kommentar (kursiv)';
+
+  @override
+  String get insertCommentBox => 'Kommentar (Rahmen)';
+
+  @override
+  String get insertHighlight => 'Hervorhebung';
+
+  @override
+  String get insertBold => 'Fett';
+
+  @override
+  String get insertItalic => 'Kursiv';
+
+  @override
+  String get insertUnderline => 'Unterstrichen';
+
+  @override
+  String get insertColour => 'Farbe';
+
+  @override
+  String get insertColumnBreak => 'Spaltenumbruch';
+
+  @override
+  String get insertNewPage => 'Seitenumbruch';
+
+  @override
+  String get insertColumns => 'Spalten';
+
+  @override
+  String get insertImage => 'Bild';
+
+  @override
+  String get insertAbc => 'ABC-Notation';
+
+  @override
+  String get insertTextblock => 'Textblock';
+
+  @override
+  String get insertNewSong => 'Nächster Song in derselben Datei';
 }

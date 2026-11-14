@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'package:bandchords/data/database.dart';
 import 'package:bandchords/data/demo_song.dart';
 import 'package:bandchords/ui/live/live_screen.dart';
+import 'package:bandchords/ui/songs/song_editor_screen.dart';
 import 'package:bandchords/ui/songs/song_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -172,6 +173,19 @@ void main() {
         ),
       );
       await _shot(tester, '${lang}_8_media');
+
+      // Song editor with grouped insert menus; the preview starts at the top.
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            home: SongEditorScreen(initialSource: demoSongSource),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(lang == 'de' ? 'Abschnitte' : 'Sections'));
+      await _shot(tester, '${lang}_9_editor');
       await app.dispose(tester);
     });
   }

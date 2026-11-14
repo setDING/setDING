@@ -627,4 +627,124 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sectionOutro => 'Outro';
+
+  @override
+  String get editorGroupChords => 'Chords';
+
+  @override
+  String get editorGroupSections => 'Sections';
+
+  @override
+  String get editorGroupInfo => 'Song info';
+
+  @override
+  String get editorGroupText => 'Text';
+
+  @override
+  String get editorGroupMore => 'More';
+
+  @override
+  String get insertOptionalChord => 'Optional chord';
+
+  @override
+  String get insertAnnotation => 'Annotation';
+
+  @override
+  String get insertNoChord => 'No chord (N.C.)';
+
+  @override
+  String get insertDefine => 'Chord definition';
+
+  @override
+  String get insertChordDiagram => 'Chord diagram';
+
+  @override
+  String get insertTranspose => 'Transpose';
+
+  @override
+  String get insertTab => 'Tab';
+
+  @override
+  String get insertGrid => 'Chord grid';
+
+  @override
+  String get insertChorusRecall => 'Repeat chorus';
+
+  @override
+  String get metaSubtitle => 'Subtitle';
+
+  @override
+  String get metaComposer => 'Composer';
+
+  @override
+  String get metaLyricist => 'Lyricist';
+
+  @override
+  String get metaCopyright => 'Copyright';
+
+  @override
+  String get metaCcli => 'CCLI number';
+
+  @override
+  String get metaTag => 'Tag';
+
+  @override
+  String get metaYear => 'Year';
+
+  @override
+  String get metaAlbum => 'Album';
+
+  @override
+  String get metaDuration => 'Duration';
+
+  @override
+  String get metaTempo => 'Tempo (BPM)';
+
+  @override
+  String get metaTime => 'Time signature';
+
+  @override
+  String get metaKey => 'Key';
+
+  @override
+  String get insertCommentItalic => 'Comment (italic)';
+
+  @override
+  String get insertCommentBox => 'Comment (box)';
+
+  @override
+  String get insertHighlight => 'Highlight';
+
+  @override
+  String get insertBold => 'Bold';
+
+  @override
+  String get insertItalic => 'Italic';
+
+  @override
+  String get insertUnderline => 'Underline';
+
+  @override
+  String get insertColour => 'Colour';
+
+  @override
+  String get insertColumnBreak => 'Column break';
+
+  @override
+  String get insertNewPage => 'Page break';
+
+  @override
+  String get insertColumns => 'Columns';
+
+  @override
+  String get insertImage => 'Image';
+
+  @override
+  String get insertAbc => 'ABC notation';
+
+  @override
+  String get insertTextblock => 'Text block';
+
+  @override
+  String get insertNewSong => 'Next song in the same file';
 }

@@ -8,6 +8,7 @@ import '../../settings/settings.dart';
 import '../render/song_header.dart';
 import '../render/song_view.dart';
 import '../widgets/dialogs.dart';
+import 'editor_toolbar.dart';
 
 const newSongTemplate = '''{title: }
 {artist: }
@@ -38,6 +39,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
   late final TextEditingController _controller;
   late final String _original;
   late Song _preview;
+  final _focus = FocusNode();
 
   @override
   void initState() {
@@ -57,6 +59,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
   @override
   void dispose() {
     _controller.dispose();
+    _focus.dispose();
     super.dispose();
   }
 
@@ -77,19 +80,77 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
     }
   }
 
-  void _insert(String before, [String after = '']) {
+  /// Inserts [snippet] around the selection. A metadata directive that
+  /// already exists is selected instead of being inserted again.
+  void _insert(EditorSnippet snippet) {
     final text = _controller.text;
+    if (snippet.meta case final name?) {
+      final existing = RegExp(
+        '^\\{\\s*${RegExp.escape(name)}\\s*:\\s*([^}]*)\\}',
+        multiLine: true,
+      ).firstMatch(text);
+      if (existing != null) {
+        final valueStart = existing.end - 1 - existing.group(1)!.length;
+        _controller.selection = TextSelection(
+          baseOffset: valueStart,
+          extentOffset: existing.end - 1,
+        );
+        _focus.requestFocus();
+        return;
+      }
+      // New metadata goes to the end of the header (the directive lines
+      // at the top of the file), independent of the cursor.
+      var pos = 0;
+      final header = RegExp(
+        r'^[ \t]*\{(?!start_of|so[a-z]\b|new_song)[^}]*\}[ \t]*$',
+      );
+      while (pos < text.length) {
+        final lineEnd = text.indexOf('\n', pos);
+        final end = lineEnd < 0 ? text.length : lineEnd;
+        final line = text.substring(pos, end);
+        if (line.trim().isEmpty || !header.hasMatch(line)) break;
+        pos = lineEnd < 0 ? text.length : lineEnd + 1;
+      }
+      final prefix = pos > 0 && text[pos - 1] != '\n' ? '\n' : '';
+      final insert = '$prefix${snippet.before}${snippet.after}';
+      _controller.value = TextEditingValue(
+        text: text.replaceRange(pos, pos, insert),
+        selection: TextSelection.collapsed(
+          offset: pos + prefix.length + snippet.before.length,
+        ),
+      );
+      _focus.requestFocus();
+      return;
+    }
     final sel = _controller.selection;
     final start = sel.isValid ? sel.start : text.length;
     final end = sel.isValid ? sel.end : text.length;
     final selected = text.substring(start, end);
-    final replacement = '$before$selected$after';
+    var before = snippet.before;
+    var after = snippet.after;
+    if (snippet.block) {
+      // Blocks start on a line of their own.
+      if (start > 0 && text[start - 1] != '\n') before = '\n$before';
+      if (selected.endsWith('\n') && after.startsWith('\n')) {
+        after = after.substring(1);
+      }
+      // No empty line after the block when a line break follows anyway.
+      if (after.endsWith('\n') && end < text.length && text[end] == '\n') {
+        after = after.substring(0, after.length - 1);
+      } else if (after.isEmpty &&
+          before.endsWith('\n') &&
+          end < text.length &&
+          text[end] == '\n') {
+        before = before.substring(0, before.length - 1);
+      }
+    }
     _controller.value = TextEditingValue(
-      text: text.replaceRange(start, end, replacement),
+      text: text.replaceRange(start, end, '$before$selected$after'),
       selection: TextSelection.collapsed(
         offset: start + before.length + selected.length,
       ),
     );
+    _focus.requestFocus();
   }
 
   Future<bool> _confirmDiscard() async {
@@ -107,13 +168,15 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final wide = MediaQuery.sizeOf(context).width >= 900;
+    final snippets = EditorSnippets(l10n);
 
     final editor = Column(
       children: [
-        _Toolbar(onInsert: _insert),
+        EditorToolbar(snippets: snippets, onInsert: _insert),
         const Divider(height: 1),
         Expanded(
           child: TextField(
+            focusNode: _focus,
             controller: _controller,
             expands: true,
             maxLines: null,
@@ -140,81 +203,52 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
         if (didPop) return;
         if (await _confirmDiscard() && context.mounted) Navigator.pop(context);
       },
-      child: DefaultTabController(
-        length: 2,
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text(
-              widget.songId == null
-                  ? l10n.editorTitleNew
-                  : l10n.editorTitleEdit,
-            ),
-            actions: [
-              IconButton(
-                tooltip: l10n.save,
-                icon: const Icon(Icons.check),
-                onPressed: _save,
+      child: CallbackShortcuts(
+        bindings: {
+          saveShortcut: _save,
+          for (final snippet in snippets.withShortcut)
+            snippet.shortcut!: () => _insert(snippet),
+        },
+        child: DefaultTabController(
+          length: 2,
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(
+                widget.songId == null
+                    ? l10n.editorTitleNew
+                    : l10n.editorTitleEdit,
               ),
-            ],
-            bottom: wide
-                ? null
-                : TabBar(
-                    tabs: [
-                      Tab(text: l10n.editorTab),
-                      Tab(text: l10n.previewTab),
+              actions: [
+                IconButton(
+                  tooltip: l10n.save,
+                  icon: const Icon(Icons.check),
+                  onPressed: _save,
+                ),
+              ],
+              bottom: wide
+                  ? null
+                  : TabBar(
+                      tabs: [
+                        Tab(text: l10n.editorTab),
+                        Tab(text: l10n.previewTab),
+                      ],
+                    ),
+            ),
+            body: wide
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(child: editor),
+                      const VerticalDivider(width: 1),
+                      Expanded(child: preview),
                     ],
+                  )
+                : TabBarView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [editor, preview],
                   ),
           ),
-          body: wide
-              ? Row(
-                  children: [
-                    Expanded(child: editor),
-                    const VerticalDivider(width: 1),
-                    Expanded(child: preview),
-                  ],
-                )
-              : TabBarView(
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [editor, preview],
-                ),
         ),
-      ),
-    );
-  }
-}
-
-class _Toolbar extends StatelessWidget {
-  const _Toolbar({required this.onInsert});
-
-  final void Function(String before, [String after]) onInsert;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    Widget button(String label, VoidCallback onPressed) => Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: ActionChip(label: Text(label), onPressed: onPressed),
-    );
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Row(
-        children: [
-          button('[ ]  ${l10n.insertChord}', () => onInsert('[', ']')),
-          button(
-            l10n.insertVerse,
-            () => onInsert('{start_of_verse}\n', '\n{end_of_verse}\n'),
-          ),
-          button(
-            l10n.insertChorus,
-            () => onInsert('{start_of_chorus}\n', '\n{end_of_chorus}\n'),
-          ),
-          button(
-            l10n.insertBridge,
-            () => onInsert('{start_of_bridge}\n', '\n{end_of_bridge}\n'),
-          ),
-          button(l10n.insertComment, () => onInsert('{comment: ', '}\n')),
-        ],
       ),
     );
   }

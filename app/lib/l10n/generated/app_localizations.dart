@@ -1189,6 +1189,246 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Outro'**
   String get sectionOutro;
+
+  /// No description provided for @editorGroupChords.
+  ///
+  /// In de, this message translates to:
+  /// **'Akkorde'**
+  String get editorGroupChords;
+
+  /// No description provided for @editorGroupSections.
+  ///
+  /// In de, this message translates to:
+  /// **'Abschnitte'**
+  String get editorGroupSections;
+
+  /// No description provided for @editorGroupInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Song-Infos'**
+  String get editorGroupInfo;
+
+  /// No description provided for @editorGroupText.
+  ///
+  /// In de, this message translates to:
+  /// **'Text'**
+  String get editorGroupText;
+
+  /// No description provided for @editorGroupMore.
+  ///
+  /// In de, this message translates to:
+  /// **'Mehr'**
+  String get editorGroupMore;
+
+  /// No description provided for @insertOptionalChord.
+  ///
+  /// In de, this message translates to:
+  /// **'Optionaler Akkord'**
+  String get insertOptionalChord;
+
+  /// No description provided for @insertAnnotation.
+  ///
+  /// In de, this message translates to:
+  /// **'Anmerkung'**
+  String get insertAnnotation;
+
+  /// No description provided for @insertNoChord.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Akkord (N.C.)'**
+  String get insertNoChord;
+
+  /// No description provided for @insertDefine.
+  ///
+  /// In de, this message translates to:
+  /// **'Akkord-Definition'**
+  String get insertDefine;
+
+  /// No description provided for @insertChordDiagram.
+  ///
+  /// In de, this message translates to:
+  /// **'Akkord-Diagramm'**
+  String get insertChordDiagram;
+
+  /// No description provided for @insertTranspose.
+  ///
+  /// In de, this message translates to:
+  /// **'Transponieren'**
+  String get insertTranspose;
+
+  /// No description provided for @insertTab.
+  ///
+  /// In de, this message translates to:
+  /// **'Tabulatur'**
+  String get insertTab;
+
+  /// No description provided for @insertGrid.
+  ///
+  /// In de, this message translates to:
+  /// **'Akkord-Raster'**
+  String get insertGrid;
+
+  /// No description provided for @insertChorusRecall.
+  ///
+  /// In de, this message translates to:
+  /// **'Refrain wiederholen'**
+  String get insertChorusRecall;
+
+  /// No description provided for @metaSubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Untertitel'**
+  String get metaSubtitle;
+
+  /// No description provided for @metaComposer.
+  ///
+  /// In de, this message translates to:
+  /// **'Komponist'**
+  String get metaComposer;
+
+  /// No description provided for @metaLyricist.
+  ///
+  /// In de, this message translates to:
+  /// **'Texter'**
+  String get metaLyricist;
+
+  /// No description provided for @metaCopyright.
+  ///
+  /// In de, this message translates to:
+  /// **'Copyright'**
+  String get metaCopyright;
+
+  /// No description provided for @metaCcli.
+  ///
+  /// In de, this message translates to:
+  /// **'CCLI-Nummer'**
+  String get metaCcli;
+
+  /// No description provided for @metaTag.
+  ///
+  /// In de, this message translates to:
+  /// **'Tag'**
+  String get metaTag;
+
+  /// No description provided for @metaYear.
+  ///
+  /// In de, this message translates to:
+  /// **'Jahr'**
+  String get metaYear;
+
+  /// No description provided for @metaAlbum.
+  ///
+  /// In de, this message translates to:
+  /// **'Album'**
+  String get metaAlbum;
+
+  /// No description provided for @metaDuration.
+  ///
+  /// In de, this message translates to:
+  /// **'Dauer'**
+  String get metaDuration;
+
+  /// No description provided for @metaTempo.
+  ///
+  /// In de, this message translates to:
+  /// **'Tempo (BPM)'**
+  String get metaTempo;
+
+  /// No description provided for @metaTime.
+  ///
+  /// In de, this message translates to:
+  /// **'Taktart'**
+  String get metaTime;
+
+  /// No description provided for @metaKey.
+  ///
+  /// In de, this message translates to:
+  /// **'Tonart'**
+  String get metaKey;
+
+  /// No description provided for @insertCommentItalic.
+  ///
+  /// In de, this message translates to:
+  /// **'Kommentar (kursiv)'**
+  String get insertCommentItalic;
+
+  /// No description provided for @insertCommentBox.
+  ///
+  /// In de, this message translates to:
+  /// **'Kommentar (Rahmen)'**
+  String get insertCommentBox;
+
+  /// No description provided for @insertHighlight.
+  ///
+  /// In de, this message translates to:
+  /// **'Hervorhebung'**
+  String get insertHighlight;
+
+  /// No description provided for @insertBold.
+  ///
+  /// In de, this message translates to:
+  /// **'Fett'**
+  String get insertBold;
+
+  /// No description provided for @insertItalic.
+  ///
+  /// In de, this message translates to:
+  /// **'Kursiv'**
+  String get insertItalic;
+
+  /// No description provided for @insertUnderline.
+  ///
+  /// In de, this message translates to:
+  /// **'Unterstrichen'**
+  String get insertUnderline;
+
+  /// No description provided for @insertColour.
+  ///
+  /// In de, this message translates to:
+  /// **'Farbe'**
+  String get insertColour;
+
+  /// No description provided for @insertColumnBreak.
+  ///
+  /// In de, this message translates to:
+  /// **'Spaltenumbruch'**
+  String get insertColumnBreak;
+
+  /// No description provided for @insertNewPage.
+  ///
+  /// In de, this message translates to:
+  /// **'Seitenumbruch'**
+  String get insertNewPage;
+
+  /// No description provided for @insertColumns.
+  ///
+  /// In de, this message translates to:
+  /// **'Spalten'**
+  String get insertColumns;
+
+  /// No description provided for @insertImage.
+  ///
+  /// In de, this message translates to:
+  /// **'Bild'**
+  String get insertImage;
+
+  /// No description provided for @insertAbc.
+  ///
+  /// In de, this message translates to:
+  /// **'ABC-Notation'**
+  String get insertAbc;
+
+  /// No description provided for @insertTextblock.
+  ///
+  /// In de, this message translates to:
+  /// **'Textblock'**
+  String get insertTextblock;
+
+  /// No description provided for @insertNewSong.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächster Song in derselben Datei'**
+  String get insertNewSong;
 }
 
 class _AppLocalizationsDelegate
