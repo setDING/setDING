@@ -20,6 +20,17 @@ Screenshots with real fonts for visual review (not part of the test suite):
 flutter test test_screenshots   # writes build/screenshots/*.png
 ```
 
+## Running locally on Linux (development only)
+
+Linux is not a release platform (ADR-0002); it is used to try the app quickly.
+Requires `cmake`, `ninja` and GTK 3 development files (on Arch: `sudo pacman -S cmake ninja`).
+
+```bash
+flutter run -d linux
+```
+
+A keyboard simulates a foot pedal in live mode: arrow keys, Page Up/Down and Space.
+
 ## Structure
 
 | Path | Content |

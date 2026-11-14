@@ -45,6 +45,7 @@ Suggested libraries (to be verified during project setup):
 ## Decision log
 
 - 2026-11-14: Flutter accepted. Existing team experience with other technologies is not a factor in this decision.
+- 2026-11-14: Linux desktop added to the Flutter project as a **development and test target only** (quick local runs without a device). It is not a release platform.
 
 ## Open points
 
