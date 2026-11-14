@@ -8,6 +8,7 @@ import '../../settings/settings.dart';
 import '../render/song_header.dart';
 import '../render/song_view.dart';
 import '../widgets/dialogs.dart';
+import '../widgets/sequence_dialog.dart';
 import 'editor_toolbar.dart';
 
 const newSongTemplate = '''{title: }
@@ -83,6 +84,10 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
   /// Inserts [snippet] around the selection. A metadata directive that
   /// already exists is selected instead of being inserted again.
   void _insert(EditorSnippet snippet) {
+    if (snippet.meta == 'x_sequence') {
+      _editSequence();
+      return;
+    }
     final text = _controller.text;
     if (snippet.meta case final name?) {
       final existing = RegExp(
@@ -98,27 +103,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
         _focus.requestFocus();
         return;
       }
-      // New metadata goes to the end of the header (the directive lines
-      // at the top of the file), independent of the cursor.
-      var pos = 0;
-      final header = RegExp(
-        r'^[ \t]*\{(?!start_of|so[a-z]\b|new_song)[^}]*\}[ \t]*$',
-      );
-      while (pos < text.length) {
-        final lineEnd = text.indexOf('\n', pos);
-        final end = lineEnd < 0 ? text.length : lineEnd;
-        final line = text.substring(pos, end);
-        if (line.trim().isEmpty || !header.hasMatch(line)) break;
-        pos = lineEnd < 0 ? text.length : lineEnd + 1;
-      }
-      final prefix = pos > 0 && text[pos - 1] != '\n' ? '\n' : '';
-      final insert = '$prefix${snippet.before}${snippet.after}';
-      _controller.value = TextEditingValue(
-        text: text.replaceRange(pos, pos, insert),
-        selection: TextSelection.collapsed(
-          offset: pos + prefix.length + snippet.before.length,
-        ),
-      );
+      _insertMeta(snippet.before, snippet.after);
       _focus.requestFocus();
       return;
     }
@@ -150,6 +135,63 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
         offset: start + before.length + selected.length,
       ),
     );
+    _focus.requestFocus();
+  }
+
+  /// Inserts a metadata directive at the end of the header (the directive
+  /// lines at the top of the file), independent of the cursor; the cursor
+  /// ends up after [before].
+  void _insertMeta(String before, String after) {
+    final text = _controller.text;
+    var pos = 0;
+    final header = RegExp(
+      r'^[ \t]*\{(?!start_of|so[a-z]\b|new_song)[^}]*\}[ \t]*$',
+    );
+    while (pos < text.length) {
+      final lineEnd = text.indexOf('\n', pos);
+      final end = lineEnd < 0 ? text.length : lineEnd;
+      final line = text.substring(pos, end);
+      if (line.trim().isEmpty || !header.hasMatch(line)) break;
+      pos = lineEnd < 0 ? text.length : lineEnd + 1;
+    }
+    final prefix = pos > 0 && text[pos - 1] != '\n' ? '\n' : '';
+    _controller.value = TextEditingValue(
+      text: text.replaceRange(pos, pos, '$prefix$before$after'),
+      selection: TextSelection.collapsed(
+        offset: pos + prefix.length + before.length,
+      ),
+    );
+  }
+
+  static final _sequenceLine = RegExp(
+    r'^[ \t]*\{[ \t]*x_sequence[ \t]*:[^}\n]*\}[ \t]*(\n|$)',
+    multiLine: true,
+  );
+
+  /// Builds `{x_sequence}` from the parts of the song by tapping them.
+  Future<void> _editSequence() async {
+    final l10n = AppLocalizations.of(context);
+    final choice = await editSequence(
+      context,
+      title: l10n.sequenceLabel,
+      parts: songParts(_preview),
+      initial: findSequence(_controller.text),
+    );
+    if (choice == null) return;
+    final text = _controller.text;
+    final value = choice.value;
+    final existing = _sequenceLine.firstMatch(text);
+    if (existing != null) {
+      final line = value == null ? '' : '{x_sequence: $value}\n';
+      _controller.value = TextEditingValue(
+        text: text.replaceRange(existing.start, existing.end, line),
+        selection: TextSelection.collapsed(
+          offset: existing.start + line.length,
+        ),
+      );
+    } else if (value != null) {
+      _insertMeta('{x_sequence: $value', '}\n');
+    }
     _focus.requestFocus();
   }
 

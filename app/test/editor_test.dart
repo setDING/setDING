@@ -130,4 +130,41 @@ void main() {
     expect(header.dy, lessThan(150));
     await app.dispose(tester);
   });
+
+  testWidgets('song sequence is built from the parts of the song', (
+    tester,
+  ) async {
+    const source =
+        '{title: T}\n{sov}\na\n{eov}\n{start_of_verse: Pre-Chorus}\nb\n'
+        '{eov}\n{soc}\nc\n{eoc}';
+    final (app, field) = await pumpEditor(tester, source, cursor: 0);
+    await choose(tester, 'Song info', 'Song sequence');
+    await tester.tap(find.byKey(const ValueKey('sequence-part-V')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('sequence-part-PC')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('sequence-part-C')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('sequence-part-C')));
+    await tester.pump();
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    expect(
+      field.controller!.text,
+      source.replaceFirst(
+        '{title: T}\n',
+        '{title: T}\n{x_sequence: V, PC, C x2}\n',
+      ),
+    );
+
+    // Editing again replaces the directive; clearing removes it.
+    await choose(tester, 'Song info', 'Song sequence');
+    expect(find.byKey(const ValueKey('sequence-entry')), findsNWidgets(3));
+    await tester.tap(find.text('Clear'));
+    await tester.pump();
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    expect(field.controller!.text, source);
+    await app.dispose(tester);
+  });
 }

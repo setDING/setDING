@@ -352,7 +352,9 @@ void main() {
   testWidgets('song sequence can be changed per set item', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'en'});
-    const source = '{title: Seq}\n{x_sequence: V, C}\n[C]la';
+    const source =
+        '{title: Seq}\n{x_sequence: V, C}\n'
+        '{sov}\n[C]a\n{eov}\n{soc}\n[F]b\n{eoc}\n{sob}\n[G]c\n{eob}';
     final ids = await tester.runAsync(() async {
       final songId = await app.songs.createSong(source: source);
       final setId = await app.sets.createSet(name: 'Gig');
@@ -368,7 +370,24 @@ void main() {
     await tester.tap(find.byTooltip('Song sequence for this set'));
     await tester.pumpAndSettle();
     expect(find.text('In the song: V, C'), findsOneWidget);
-    await tester.enterText(find.byType(TextField), 'I, V, C x2, O');
+    // Only the parts of the song can be added, by tapping them.
+    for (final code in ['V', 'C', 'B']) {
+      expect(find.byKey(ValueKey('sequence-part-$code')), findsOneWidget);
+    }
+    expect(find.byKey(const ValueKey('sequence-part-PC')), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('sequence-part-C')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('sequence-part-B')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('sequence-part-V')));
+    await tester.pump();
+    // V, C x2, B, V → remove the first V.
+    final entries = find.byKey(const ValueKey('sequence-entry'));
+    expect(entries, findsNWidgets(4));
+    await tester.tap(
+      find.descendant(of: entries.first, matching: find.byIcon(Icons.close)),
+    );
+    await tester.pump();
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
@@ -378,9 +397,9 @@ void main() {
         (await app.songs.getSong(songId))!.chordproSource,
       ),
     );
-    expect(stored!.$1, 'I, V, C x2, O');
+    expect(stored!.$1, 'C x2, B, V');
     expect(stored.$2, source); // the song itself is unchanged
-    expect(chips, findsNWidgets(4));
+    expect(chips, findsNWidgets(3));
     expect(find.byKey(const ValueKey('sequence-from-set')), findsOneWidget);
 
     // Live mode from the set shows the set's sequence.

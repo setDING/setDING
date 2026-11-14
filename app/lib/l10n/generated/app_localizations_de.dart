@@ -775,4 +775,21 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get sequenceAbbreviations =>
       'I Intro · V Strophe · PC Pre-Chorus · C Refrain · B Bridge · Int Zwischenspiel · Solo · T Tag · O Outro · C x2 = zweimal';
+
+  @override
+  String get sequenceEmpty =>
+      'Tippe unten auf die Teile, um den Ablauf zusammenzustellen.';
+
+  @override
+  String get sequenceSongParts => 'Teile des Songs';
+
+  @override
+  String get sequenceCommonParts =>
+      'Übliche Teile (der Song hat noch keine Abschnitte)';
+
+  @override
+  String get sequenceClear => 'Leeren';
+
+  @override
+  String get sequenceAsText => 'Als Text bearbeiten';
 }

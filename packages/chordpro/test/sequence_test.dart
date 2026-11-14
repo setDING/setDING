@@ -56,4 +56,39 @@ void main() {
     expect(findSequence('{title: X}'), isNull);
     expect(findSequence('{x_sequence: }'), isNull);
   });
+
+  group('songParts', () {
+    List<String> codes(String source) =>
+        songParts(parseChordPro(source)).map((i) => i.code).toList();
+
+    test('from section types, numbering repeated verses', () {
+      expect(
+        codes(
+          '{sov}\na\n{eov}\n{soc}\nb\n{eoc}\n{sov}\nc\n{eov}\n'
+          '{chorus}\n{sob}\nd\n{eob}',
+        ),
+        ['V1', 'C', 'V2', 'B'],
+      );
+    });
+
+    test('from labels, custom sections and comment headings', () {
+      expect(
+        codes(
+          '{start_of_verse: Intro}\na\n{end_of_verse}\n'
+          '{start_of_verse: Verse 1\\nAll}\na\n{end_of_verse}\n'
+          '{start_of_verse: Pre-Chorus}\na\n{end_of_verse}\n'
+          '{start_of_chorus: Refrain}\na\n{end_of_chorus}\n'
+          '{start_of_verse: Verse 1}\na\n{end_of_verse}\n'
+          '{start_of_outro}\na\n{end_of_outro}\n'
+          '{start_of_verse: Coda}\na\n{end_of_verse}\n'
+          '{comment: Chorus 2}\n[C]x',
+        ),
+        ['I', 'V1', 'PC', 'C', 'O', 'Coda', 'C2'],
+      );
+    });
+
+    test('tab and grid without label are no parts', () {
+      expect(codes('{sot}\ne|--|\n{eot}\n{sog}\n| C |\n{eog}'), isEmpty);
+    });
+  });
 }

@@ -2,6 +2,8 @@
 /// e.g. `{x_sequence: I, V1, C, V2, PC, C x2, B, C, O}`.
 library;
 
+import 'song.dart';
+
 /// Kind of a part in a song sequence.
 enum SequencePart {
   intro,
@@ -124,4 +126,70 @@ final _directive = RegExp(
 String? findSequence(String source) {
   final value = _directive.firstMatch(source)?.group(1)?.trim();
   return value == null || value.isEmpty ? null : value;
+}
+
+/// Short code of each part, used for sequences built from a song's parts.
+const sequenceAbbreviations = {
+  SequencePart.intro: 'I',
+  SequencePart.verse: 'V',
+  SequencePart.preChorus: 'PC',
+  SequencePart.chorus: 'C',
+  SequencePart.postChorus: 'PoC',
+  SequencePart.bridge: 'B',
+  SequencePart.interlude: 'Int',
+  SequencePart.instrumental: 'Inst',
+  SequencePart.solo: 'Solo',
+  SequencePart.tag: 'T',
+  SequencePart.outro: 'O',
+};
+
+/// The parts that exist in [song] (its sections), in document order and
+/// without duplicates, as sequence items with short codes (`V1`, `PC`, `C`).
+///
+/// The part is detected from the section label (`Verse 2`, `Pre-Chorus`,
+/// `Refrain`) or, without a label, from the section type. Unlabelled
+/// sections of the same part are numbered when there are several.
+/// Unknown labels are kept as written (e.g. `Coda`).
+List<SequenceItem> songParts(Song song) {
+  final found = <({SequencePart part, int? number, String text})>[];
+  for (final section in song.sections) {
+    final label = section.label?.split('\n').first.trim();
+    final text = (label != null && label.isNotEmpty)
+        ? label
+        : switch (section.kind) {
+            SectionKind.verse => 'Verse',
+            SectionKind.chorus => 'Chorus',
+            SectionKind.bridge => 'Bridge',
+            SectionKind.custom => section.name ?? '',
+            _ => '',
+          };
+    if (text.isEmpty) continue;
+    final item = _parseItem(text);
+    found.add((part: item.part, number: item.number, text: text));
+  }
+  // Number unlabelled repeats of a part: Verse, Verse → V1, V2.
+  final unnumbered = <SequencePart, int>{};
+  for (final f in found) {
+    if (f.part != SequencePart.other && f.number == null) {
+      unnumbered[f.part] = (unnumbered[f.part] ?? 0) + 1;
+    }
+  }
+  final counters = <SequencePart, int>{};
+  final result = <String, SequenceItem>{};
+  for (final f in found) {
+    var number = f.number;
+    if (f.part != SequencePart.other &&
+        number == null &&
+        unnumbered[f.part]! > 1) {
+      number = counters[f.part] = (counters[f.part] ?? 0) + 1;
+    }
+    final code = f.part == SequencePart.other
+        ? f.text
+        : '${sequenceAbbreviations[f.part]}${number ?? ''}';
+    result.putIfAbsent(
+      code,
+      () => SequenceItem(code: code, part: f.part, number: number),
+    );
+  }
+  return result.values.toList();
 }

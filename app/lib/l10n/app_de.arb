@@ -343,5 +343,10 @@
   "sequenceNoneInSong": "Der Song hat keinen Ablauf.",
   "sequenceRestore": "Ablauf des Songs verwenden",
   "sequenceHint": "z. B. I, V1, C, V2, PC, C x2, B, O",
-  "sequenceAbbreviations": "I Intro · V Strophe · PC Pre-Chorus · C Refrain · B Bridge · Int Zwischenspiel · Solo · T Tag · O Outro · C x2 = zweimal"
+  "sequenceAbbreviations": "I Intro · V Strophe · PC Pre-Chorus · C Refrain · B Bridge · Int Zwischenspiel · Solo · T Tag · O Outro · C x2 = zweimal",
+  "sequenceEmpty": "Tippe unten auf die Teile, um den Ablauf zusammenzustellen.",
+  "sequenceSongParts": "Teile des Songs",
+  "sequenceCommonParts": "Übliche Teile (der Song hat noch keine Abschnitte)",
+  "sequenceClear": "Leeren",
+  "sequenceAsText": "Als Text bearbeiten"
 }

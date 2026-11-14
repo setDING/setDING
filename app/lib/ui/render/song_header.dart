@@ -128,7 +128,7 @@ class SongSequenceView extends StatelessWidget {
             ),
           for (final item in sequence)
             Tooltip(
-              message: _partName(l10n, item),
+              message: partName(l10n, item),
               child: Container(
                 key: const ValueKey('sequence-chip'),
                 padding: EdgeInsets.symmetric(
@@ -136,13 +136,13 @@ class SongSequenceView extends StatelessWidget {
                   vertical: compact ? 1 : 2,
                 ),
                 decoration: BoxDecoration(
-                  color: _background(scheme, item.part),
+                  color: background(scheme, item.part),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   item.code,
                   style: style?.copyWith(
-                    color: _foreground(scheme, item.part),
+                    color: foreground(scheme, item.part),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -153,7 +153,7 @@ class SongSequenceView extends StatelessWidget {
     );
   }
 
-  static Color _background(ColorScheme scheme, SequencePart part) =>
+  static Color background(ColorScheme scheme, SequencePart part) =>
       switch (part) {
         SequencePart.chorus => scheme.primaryContainer,
         SequencePart.preChorus ||
@@ -162,7 +162,7 @@ class SongSequenceView extends StatelessWidget {
         _ => scheme.surfaceContainerHighest,
       };
 
-  static Color _foreground(ColorScheme scheme, SequencePart part) =>
+  static Color foreground(ColorScheme scheme, SequencePart part) =>
       switch (part) {
         SequencePart.chorus => scheme.onPrimaryContainer,
         SequencePart.preChorus ||
@@ -171,7 +171,7 @@ class SongSequenceView extends StatelessWidget {
         _ => scheme.onSurfaceVariant,
       };
 
-  static String _partName(AppLocalizations l10n, SequenceItem item) {
+  static String partName(AppLocalizations l10n, SequenceItem item) {
     final name = switch (item.part) {
       SequencePart.intro => l10n.sectionIntro,
       SequencePart.verse => l10n.sectionVerse,

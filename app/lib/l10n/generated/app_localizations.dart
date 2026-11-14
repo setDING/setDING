@@ -1471,6 +1471,36 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'I Intro · V Strophe · PC Pre-Chorus · C Refrain · B Bridge · Int Zwischenspiel · Solo · T Tag · O Outro · C x2 = zweimal'**
   String get sequenceAbbreviations;
+
+  /// No description provided for @sequenceEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe unten auf die Teile, um den Ablauf zusammenzustellen.'**
+  String get sequenceEmpty;
+
+  /// No description provided for @sequenceSongParts.
+  ///
+  /// In de, this message translates to:
+  /// **'Teile des Songs'**
+  String get sequenceSongParts;
+
+  /// No description provided for @sequenceCommonParts.
+  ///
+  /// In de, this message translates to:
+  /// **'Übliche Teile (der Song hat noch keine Abschnitte)'**
+  String get sequenceCommonParts;
+
+  /// No description provided for @sequenceClear.
+  ///
+  /// In de, this message translates to:
+  /// **'Leeren'**
+  String get sequenceClear;
+
+  /// No description provided for @sequenceAsText.
+  ///
+  /// In de, this message translates to:
+  /// **'Als Text bearbeiten'**
+  String get sequenceAsText;
 }
 
 class _AppLocalizationsDelegate

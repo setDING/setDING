@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'package:bandchords/data/database.dart';
 import 'package:bandchords/data/demo_song.dart';
 import 'package:bandchords/ui/live/live_screen.dart';
+import 'package:bandchords/ui/sets/set_screen.dart';
 import 'package:bandchords/ui/songs/song_editor_screen.dart';
 import 'package:bandchords/ui/songs/song_screen.dart';
 import 'package:flutter/material.dart';
@@ -186,6 +187,22 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text(lang == 'de' ? 'Abschnitte' : 'Sections'));
       await _shot(tester, '${lang}_9_editor');
+
+      // Song sequence for a set item, built from the parts of the song.
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: SetScreen(setId: ids[1])),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.format_list_numbered).first);
+      await tester.pumpAndSettle();
+      for (final code in ['V1', 'C', 'V2', 'C']) {
+        await tester.tap(find.byKey(ValueKey('sequence-part-$code')));
+        await tester.pump();
+      }
+      await _shot(tester, '${lang}_10_set_sequence');
       await app.dispose(tester);
     });
   }

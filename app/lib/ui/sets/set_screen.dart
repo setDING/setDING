@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../render/song_header.dart';
-import 'sequence_dialog.dart';
+import '../widgets/sequence_dialog.dart';
 import '../../data/database.dart';
 import '../../data/set_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
@@ -317,14 +317,22 @@ class _SetItemTile extends ConsumerWidget {
               icon: const Icon(Icons.format_list_numbered),
               selectedIcon: const Icon(Icons.playlist_play),
               onPressed: () async {
-                final choice = await editSetSequence(
+                final choice = await editSequence(
                   context,
+                  title: l10n.sequenceEdit,
+                  parts: cp.songParts(cp.parseChordPro(song.chordproSource)),
+                  initial: sequence,
                   original: originalSequence,
-                  current: item.sequence,
+                  showOriginal: true,
+                  canRestore: item.sequence != null,
                 );
-                if (choice != null) {
-                  await repo.setItemSequence(item.id, choice.value);
-                }
+                if (choice == null) return;
+                // The song's own sequence is no set-specific one.
+                final value = choice.value;
+                await repo.setItemSequence(
+                  item.id,
+                  value == originalSequence?.trim() ? null : value,
+                );
               },
             ),
           IconButton(

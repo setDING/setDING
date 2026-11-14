@@ -128,3 +128,9 @@ Each phase is a separate branch and merge (ADR-0010).
   ones). The song sequence is therefore `{x_sequence: …}` only, available as
   `%{x_sequence}`; `{sequence}` and `{x_bandchords_sequence}` are no longer recognised.
   Future BandChords extensions use the `x_` prefix as well.
+- 2026-11-15: The song sequence is edited in a dialog (song editor: Song info → Song
+  sequence; set list: per set item, ADR-0006) by tapping the parts that exist in the song.
+  The parts are derived from the sections: the label (`Verse 2`, `Pre-Chorus`, `Refrain`,
+  comment headings) or the section type, numbering unlabelled repeats (`V1`, `V2`);
+  unknown labels are kept as written. Tapping the same part twice in a row gives a repeat
+  (`C x2`). Free text editing stays available.

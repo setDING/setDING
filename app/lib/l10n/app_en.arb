@@ -228,5 +228,10 @@
   "sequenceNoneInSong": "The song has no sequence.",
   "sequenceRestore": "Use the song's sequence",
   "sequenceHint": "e.g. I, V1, C, V2, PC, C x2, B, O",
-  "sequenceAbbreviations": "I Intro · V Verse · PC Pre-chorus · C Chorus · B Bridge · Int Interlude · Solo · T Tag · O Outro · C x2 = twice"
+  "sequenceAbbreviations": "I Intro · V Verse · PC Pre-chorus · C Chorus · B Bridge · Int Interlude · Solo · T Tag · O Outro · C x2 = twice",
+  "sequenceEmpty": "Tap the parts below to build the sequence.",
+  "sequenceSongParts": "Parts of the song",
+  "sequenceCommonParts": "Common parts (the song has no sections yet)",
+  "sequenceClear": "Clear",
+  "sequenceAsText": "Edit as text"
 }
