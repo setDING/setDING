@@ -1519,6 +1519,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Set-Liste kopiert'**
   String get setListCopied;
+
+  /// No description provided for @exportSetListPdf.
+  ///
+  /// In de, this message translates to:
+  /// **'Set-Liste exportieren (PDF zum Drucken)'**
+  String get exportSetListPdf;
 }
 
 class _AppLocalizationsDelegate

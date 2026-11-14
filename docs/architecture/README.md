@@ -48,7 +48,7 @@ A user can be a member of several bands; the role is defined per band (ADR-0005)
 | Sheet music | **PDF attachments** per song, synced and available offline, shown in live mode | [ADR-0009](adr/0009-pdf-attachments.md) |
 | ChordPro coverage | **Whole specification** (transpose, grids, markup, conditionals, diagrams, images, delegated environments) | [ADR-0012](adr/0012-full-chordpro-support.md) |
 | SongSelect (CCLI) | **No API integration** (partner program closed); manual import of ChordPro files downloaded from SongSelect | [ADR-0011](adr/0011-songselect-import.md) |
-| Printable set list | *Proposed:* PDF generated in the client with the `pdf` package, embedded font, saved via the save dialog; no print plugin yet | [ADR-0013](adr/0013-printable-set-list.md) |
+| Printable set list | PDF generated in the client with the `pdf` package, embedded font, saved via the save dialog; no print plugin yet | [ADR-0013](adr/0013-printable-set-list.md) |
 
 ## 4. Building block view
 
@@ -157,7 +157,7 @@ Notes:
 ## 7. Cross-cutting concerns
 
 - **Security:** Authentication via PocketBase (email/password or magic link); data is only accessible within the user's own bands, and write permissions follow the role per band (backend access rules). The auth token is stored locally so no new login is needed offline.
-- **Import/export:** Import of `.cho`/`.chordpro`/`.chopro`/`.txt` files (individually and as ZIP, optionally converting German H/B notation) and PDF attachments; export of a set as a ZIP with ChordPro files and PDF attachments; the set list as text (file or clipboard), one line per song with title, key for the set and sequence.
+- **Import/export:** Import of `.cho`/`.chordpro`/`.chopro`/`.txt` files (individually and as ZIP, optionally converting German H/B notation) and PDF attachments; export of a set as a ZIP with ChordPro files and PDF attachments; the set list as text (file or clipboard) and as a printable PDF (ADR-0013), one line per song with title, key for the set and sequence.
 - **Localization:** UI in German and English, selectable in the settings (ADR-0008). Song content is not translated.
 - **Testability:** `chordpro` package with extensive unit tests (parser, transposition); golden tests for rendering.
 - **Data protection:** Self-hosting keeps the data under the band's own control (e.g. in Switzerland).
@@ -169,7 +169,7 @@ Notes:
 | **MVP** ✅ | ChordPro parser & renderer (notation B/H, Nashville), local song library, PDF attachments, creating sets, live mode with pedal, import/export, German/English UI – initially **without** a backend (single device) |
 | **Phase 1** | Backend, login, bands & roles (several admins, several bands per user), sync of songs, sets and PDF files incl. conflict handling |
 | **Phase 2** | Synced personal overlays |
-| **Later** | Printable set list as PDF (ADR-0013, proposed), freehand annotations (stylus), metronome/count-in, MIDI control, web client for management |
+| **Later** | Freehand annotations (stylus), metronome/count-in, MIDI control, web client for management |
 
 ### MVP status (2026-11-14)
 
@@ -206,7 +206,7 @@ See "Open points" in the individual ADRs. The most important:
 12. App name and domain – "BandChords" is a working title; candidates in [`docs/app-name-candidates.md`](../app-name-candidates.md)
 13. ~~May agents merge their own PRs?~~ → Yes, from the start, but only when all tests pass (test gate, ADR-0010). Open: repository host and name
 14. ~~SongSelect import?~~ → No API integration, manual ChordPro import (ADR-0011, accepted). Open: test with a real SongSelect file, show copyright/CCLI number?
-15. Printable set list (ADR-0013, proposed): `pdf` package with an embedded font? Paper size, export options, native print dialog later?
+15. ~~Printable set list?~~ → PDF in the client with the `pdf` package and embedded Noto Sans (ADR-0013, accepted). Open: Letter paper, export options, native print dialog
 
 ## 10. ADR index
 
@@ -224,6 +224,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0010](adr/0010-git-workflow.md) | Git workflow for autonomous agents | Accepted |
 | [0011](adr/0011-songselect-import.md) | Song import from CCLI SongSelect | Accepted |
 | [0012](adr/0012-full-chordpro-support.md) | Full ChordPro specification support | Accepted |
-| [0013](adr/0013-printable-set-list.md) | Printable set list as PDF | Proposed |
+| [0013](adr/0013-printable-set-list.md) | Printable set list as PDF | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.

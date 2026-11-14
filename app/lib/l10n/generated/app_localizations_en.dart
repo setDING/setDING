@@ -796,4 +796,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get setListCopied => 'Set list copied';
+
+  @override
+  String get exportSetListPdf => 'Export set list (PDF for printing)';
 }

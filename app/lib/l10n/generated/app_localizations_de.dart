@@ -801,4 +801,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get setListCopied => 'Set-Liste kopiert';
+
+  @override
+  String get exportSetListPdf => 'Set-Liste exportieren (PDF zum Drucken)';
 }

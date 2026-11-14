@@ -1,6 +1,6 @@
 # ADR-0013: Printable set list as PDF
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-15
 
 ## Context
@@ -69,6 +69,12 @@ Constraints:
 ## Decision log
 
 - 2026-11-15: Proposed after the text export of the set list was implemented.
+- 2026-11-15: Accepted by the user. Font: Noto Sans regular and bold (SIL OFL 1.1),
+  shipped under `app/assets/fonts/` with its licence. Paper size A4 for now; no export
+  options yet.
+- 2026-11-15: Implemented: "Export set list (PDF for printing)" in the set menu. The
+  font size is found by laying out the document from 18 pt down to 12 pt until it fits
+  on one page; text and PDF export share one set list model.
 
 ## Open points
 

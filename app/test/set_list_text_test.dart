@@ -1,4 +1,5 @@
 import 'package:bandchords/data/database.dart';
+import 'package:bandchords/ui/sets/set_list_pdf.dart';
 import 'package:bandchords/ui/sets/set_list_text.dart';
 import 'package:bandchords/ui/sets/set_screen.dart';
 import 'package:chordpro/chordpro.dart' as cp;
@@ -49,12 +50,14 @@ void main() {
       ),
     );
     String text(cp.ChordNotation notation) => setListText(
-      data!.$1,
-      data.$2,
-      notation: notation,
-      formatDate: (d) => '${d.day}.${d.month}.${d.year}',
-      untitled: 'Untitled',
-      songMissing: 'Missing',
+      buildSetList(
+        data!.$1,
+        data.$2,
+        notation: notation,
+        formatDate: (d) => '${d.day}.${d.month}.${d.year}',
+        untitled: 'Untitled',
+        songMissing: 'Missing',
+      ),
     );
     expect(
       text(cp.ChordNotation.international),
@@ -105,5 +108,51 @@ void main() {
     expect(copied, contains('1. Late Train – A – I, V1, C x2\n'));
     expect(find.text('Set list copied'), findsOneWidget);
     await app.dispose(tester);
+  });
+
+  group('PDF', () {
+    SetList list(
+      int songs, {
+      String sequence = 'I, V1, C, V2, PC, C x2, B, O',
+    }) => SetList('Summer Festival', '21.6.2027 · Bern', [
+      for (var i = 1; i <= songs; i++) ...[
+        SetListSong(
+          i,
+          'Song number $i – Ünïcödé',
+          key: 'B♭',
+          sequence: sequence,
+        ),
+        if (i == 3) const SetListMarker('Pause', pause: true),
+      ],
+    ]);
+
+    testWidgets('fits a typical set on one page in large type', (tester) async {
+      final pdf = (await tester.runAsync(() async {
+        final fonts = await SetListFonts.load();
+        return setListPdf(list(12, sequence: 'V1, C, V2, C'), fonts);
+      }))!;
+      expect(String.fromCharCodes(pdf.bytes.take(5)), '%PDF-');
+      expect(pdf.pages, 1);
+      expect(pdf.fontSize, setListMaxFontSize);
+    });
+
+    testWidgets('shrinks the font for longer sets', (tester) async {
+      final pdf = (await tester.runAsync(() async {
+        final fonts = await SetListFonts.load();
+        return setListPdf(list(28), fonts);
+      }))!;
+      expect(pdf.pages, 1);
+      expect(pdf.fontSize, lessThan(setListMaxFontSize));
+      expect(pdf.fontSize, greaterThanOrEqualTo(setListMinFontSize));
+    });
+
+    testWidgets('continues on more pages at the minimum size', (tester) async {
+      final pdf = (await tester.runAsync(() async {
+        final fonts = await SetListFonts.load();
+        return setListPdf(list(80), fonts);
+      }))!;
+      expect(pdf.fontSize, setListMinFontSize);
+      expect(pdf.pages, greaterThan(1));
+    });
   });
 }

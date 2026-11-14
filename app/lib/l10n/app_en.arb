@@ -236,5 +236,6 @@
   "sequenceAsText": "Edit as text",
   "exportSetList": "Export set list (text)",
   "copySetList": "Copy set list",
-  "setListCopied": "Set list copied"
+  "setListCopied": "Set list copied",
+  "exportSetListPdf": "Export set list (PDF for printing)"
 }

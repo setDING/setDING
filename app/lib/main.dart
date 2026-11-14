@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -18,6 +20,12 @@ import 'settings/settings.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Font embedded in PDF set lists (ADR-0013).
+  LicenseRegistry.addLicense(() async* {
+    yield LicenseEntryWithLineBreaks([
+      'Noto Sans',
+    ], await rootBundle.loadString('assets/fonts/NotoSans-OFL.txt'));
+  });
 
   final prefs = await SharedPreferences.getInstance();
   // All data lives in the app's private directory (ADR-0001). On desktop
