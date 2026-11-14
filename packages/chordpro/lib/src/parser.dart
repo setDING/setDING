@@ -1,24 +1,36 @@
-/// ChordPro parser (subset of ChordPro 6, see ADR-0003).
+/// ChordPro parser for the whole ChordPro 6 specification (ADR-0003,
+/// ADR-0012).
 library;
 
+import 'chord.dart';
+import 'diagrams.dart';
+import 'directive.dart';
+import 'grid.dart';
+import 'metadata.dart';
 import 'song.dart';
 
+/// Directive names (long and short) of meta-data items.
 const _metaAliases = {
   't': 'title',
-  'st': 'subtitle',
   'title': 'title',
+  'sorttitle': 'sorttitle',
+  'st': 'subtitle',
   'subtitle': 'subtitle',
   'artist': 'artist',
+  'sortartist': 'sortartist',
   'composer': 'composer',
   'lyricist': 'lyricist',
+  'arranger': 'arranger',
+  'copyright': 'copyright',
   'album': 'album',
   'year': 'year',
   'key': 'key',
-  'tempo': 'tempo',
   'time': 'time',
-  'capo': 'capo',
+  'tempo': 'tempo',
   'duration': 'duration',
-  'copyright': 'copyright',
+  'capo': 'capo',
+  'tag': 'tag',
+  // Used by CCLI SongSelect files (ADR-0011).
   'ccli': 'ccli',
   'ccli_license': 'ccli_license',
   'footer': 'footer',
@@ -34,47 +46,156 @@ const _commentAliases = {
   'comment_box': CommentStyle.box,
 };
 
-const _sectionStart = {
-  'sov': SectionKind.verse,
-  'start_of_verse': SectionKind.verse,
-  'soc': SectionKind.chorus,
-  'start_of_chorus': SectionKind.chorus,
-  'sob': SectionKind.bridge,
-  'start_of_bridge': SectionKind.bridge,
-  'sot': SectionKind.tab,
-  'start_of_tab': SectionKind.tab,
-  'sog': SectionKind.grid,
-  'start_of_grid': SectionKind.grid,
+/// Short forms of section directives.
+const _shortStart = {
+  'sov': 'verse',
+  'soc': 'chorus',
+  'sob': 'bridge',
+  'sot': 'tab',
+  'sog': 'grid',
+};
+const _shortEnd = {
+  'eov': 'verse',
+  'eoc': 'chorus',
+  'eob': 'bridge',
+  'eot': 'tab',
+  'eog': 'grid',
 };
 
-const _sectionEnd = {
-  'eov',
-  'end_of_verse',
-  'eoc',
-  'end_of_chorus',
-  'eob',
-  'end_of_bridge',
-  'eot',
-  'end_of_tab',
-  'eog',
-  'end_of_grid',
+const _sectionKinds = {
+  'verse': SectionKind.verse,
+  'chorus': SectionKind.chorus,
+  'bridge': SectionKind.bridge,
+  'tab': SectionKind.tab,
+  'grid': SectionKind.grid,
 };
 
-final _directive = RegExp(
-  r'^\{\s*([A-Za-z_][\w-]*)\s*(?:[:\s]\s*(.*?))?\s*\}$',
-);
-final _labelAttr = RegExp(r'''^label\s*=\s*["'](.*)["']$''');
+const _delegates = {
+  'abc': DelegateType.abc,
+  'ly': DelegateType.ly,
+  'svg': DelegateType.svg,
+  'textblock': DelegateType.textblock,
+};
 
-/// Parses ChordPro [source] into a [Song].
+/// Font/size/colour directives: name → (target, property).
+final Map<String, (FormatTarget, FormatProperty)> _formatDirectives = {
+  for (final target in FormatTarget.values) ...{
+    '${target.name}font': (target, FormatProperty.font),
+    '${target.name}size': (target, FormatProperty.size),
+    '${target.name}colour': (target, FormatProperty.colour),
+    '${target.name}color': (target, FormatProperty.colour),
+  },
+  'cf': (FormatTarget.chord, FormatProperty.font),
+  'cs': (FormatTarget.chord, FormatProperty.size),
+  'tf': (FormatTarget.text, FormatProperty.font),
+  'ts': (FormatTarget.text, FormatProperty.size),
+};
+
+/// Parses ChordPro [source] into a [Song] (the first song if the file
+/// contains several, see [parseChordProSongs]).
+Song parseChordPro(
+  String source, {
+  SelectorContext selectors = const SelectorContext(),
+}) => parseChordProSongs(source, selectors: selectors).first;
+
+/// Parses ChordPro [source] that may contain several songs separated by
+/// `{new_song}` / `{ns}`.
 ///
 /// The parser is lenient: unknown directives are ignored (the source text
 /// itself is never modified), unclosed sections are closed implicitly.
-Song parseChordPro(String source) {
+/// [selectors] decides conditional directives such as `{comment-alto: …}`.
+List<Song> parseChordProSongs(
+  String source, {
+  SelectorContext selectors = const SelectorContext(),
+}) {
+  final songs = <Song>[];
+  final lines = source
+      .replaceAll('\r\n', '\n')
+      .replaceAll('\r', '\n')
+      .split('\n');
+  var parser = _SongParser(selectors);
+  for (final line in lines) {
+    final d = line.trimLeft().startsWith('{') ? parseDirective(line) : null;
+    if (d != null && (d.name == 'new_song' || d.name == 'ns')) {
+      if (parser.hasAnything) songs.add(parser.finish());
+      parser = _SongParser(selectors);
+      continue;
+    }
+    parser.addLine(line);
+  }
+  if (parser.hasAnything || songs.isEmpty) songs.add(parser.finish());
+  return songs;
+}
+
+class _SongParser {
+  _SongParser(this.selectors);
+
+  final SelectorContext selectors;
   final meta = <String, List<String>>{};
   final elements = <SongElement>[];
+  final definitions = <ChordDefinition>[];
+  int? columns;
+  String? diagrams;
+
   Section? current;
+  bool explicitSection = false;
   Section? lastChorus;
-  var explicitSection = false;
+  GridShape? lastGridShape;
+
+  /// Open delegated environment.
+  DelegateSection? delegate;
+
+  /// Section name being skipped because its selector did not match.
+  String? skipping;
+
+  /// `{transpose}` stack: (semitones, prefer flats).
+  final transposeStack = <(int, bool?)>[];
+  Key? currentKey;
+  int? leadingTranspose;
+  bool hasAnything = false;
+
+  int get transpose => transposeStack.isEmpty ? 0 : transposeStack.last.$1;
+  bool? get preferFlats =>
+      transposeStack.isEmpty ? null : transposeStack.last.$2;
+
+  List<String> lookup(String name) {
+    switch (name) {
+      case 'key_actual':
+        final key = currentKey?.transpose(transpose);
+        return key == null ? const [] : [key.toString()];
+      case 'key_from':
+        return transpose == 0 || currentKey == null
+            ? const []
+            : [currentKey.toString()];
+      case '_key':
+        final capo = int.tryParse(meta['capo']?.firstOrNull ?? '') ?? 0;
+        final key = currentKey?.transpose(capo);
+        return key == null ? const [] : [key.toString()];
+      case 'instrument' || 'instrument.type':
+        return [?selectors.instrument];
+      case 'user' || 'user.name':
+        return [?selectors.user];
+      case 'today':
+        final now = DateTime.now();
+        String two(int n) => n.toString().padLeft(2, '0');
+        return ['${now.year}-${two(now.month)}-${two(now.day)}'];
+      case 'chordpro':
+        return const ['ChordPro'];
+    }
+    return meta[name] ?? const [];
+  }
+
+  String substitute(String text) => substituteMetadata(text, lookup);
+
+  bool selected(Directive d) {
+    final selector = d.selector;
+    if (selector == null) return true;
+    final match =
+        selector == selectors.instrument?.toLowerCase() ||
+        selector == selectors.user?.toLowerCase() ||
+        isTruthy(meta[selector]?.firstOrNull);
+    return d.negated ? !match : match;
+  }
 
   Section ensureSection() {
     if (current == null) {
@@ -83,6 +204,11 @@ Song parseChordPro(String source) {
       explicitSection = false;
     }
     return current!;
+  }
+
+  void startContent() {
+    hasAnything = true;
+    leadingTranspose ??= transpose;
   }
 
   void closeSection() {
@@ -107,70 +233,59 @@ Song parseChordPro(String source) {
     explicitSection = false;
   }
 
-  final lines = source
-      .replaceAll('\r\n', '\n')
-      .replaceAll('\r', '\n')
-      .split('\n');
-  for (final rawLine in lines) {
+  void addLine(String rawLine) {
     final line = rawLine.trimRight();
     final trimmed = line.trim();
+    final d = trimmed.startsWith('{') ? parseDirective(trimmed) : null;
 
-    if (trimmed.startsWith('#')) continue;
-
-    final match = _directive.firstMatch(trimmed);
-    if (match != null) {
-      final name = match.group(1)!.toLowerCase();
-      final value = match.group(2)?.trim() ?? '';
-
-      if (_metaAliases.containsKey(name)) {
-        meta.putIfAbsent(_metaAliases[name]!, () => []).add(value);
-        continue;
+    // Inside a delegated environment everything up to its end is content.
+    final openDelegate = delegate;
+    if (openDelegate != null) {
+      if (d != null && d.name == 'end_of_${openDelegate.type.name}') {
+        delegate = null;
+      } else {
+        openDelegate.lines.add(line);
       }
-      if (name == 'meta') {
-        final space = value.indexOf(RegExp(r'\s'));
-        if (space > 0) {
-          final key = value.substring(0, space).toLowerCase();
-          meta.putIfAbsent(key, () => []).add(value.substring(space).trim());
-        }
-        continue;
-      }
-      if (_commentAliases.containsKey(name)) {
-        ensureSection().lines.add(
-          CommentLine(value, style: _commentAliases[name]!),
-        );
-        continue;
-      }
-      if (_sectionStart.containsKey(name) || name.startsWith('start_of_')) {
-        closeSection();
-        final kind = _sectionStart[name] ?? SectionKind.custom;
-        current = Section(kind: kind, label: _parseLabel(value));
-        elements.add(current!);
-        explicitSection = true;
-        continue;
-      }
-      if (_sectionEnd.contains(name) || name.startsWith('end_of_')) {
-        closeSection();
-        continue;
-      }
-      if (name == 'chorus') {
-        closeSection();
-        elements.add(
-          ChorusRecall(
-            label: value.isEmpty ? null : _parseLabel(value),
-            chorus: lastChorus,
-          ),
-        );
-        continue;
-      }
-      // Unknown or layout directives (new_page, column_break, define, …)
-      // are ignored for display.
-      continue;
+      return;
     }
+
+    // Skipping a section whose selector did not match.
+    if (skipping != null) {
+      if (d != null &&
+          (d.name == 'end_of_$skipping' || _shortEnd[d.name] == skipping)) {
+        skipping = null;
+      }
+      return;
+    }
+
+    if (d != null) {
+      _directive(d);
+      return;
+    }
+
+    if (trimmed.startsWith('#')) return;
 
     final section = current;
     if (section != null && section.isPreformatted) {
       section.lines.add(line.isEmpty ? const EmptyLine() : RawLine(line));
-      continue;
+      return;
+    }
+    if (section != null && section.kind == SectionKind.grid) {
+      if (trimmed.isEmpty) {
+        section.lines.add(const EmptyLine());
+      } else {
+        section.lines.add(
+          GridLine(
+            parseGridRow(
+              trimmed,
+              transpose: transpose,
+              preferFlats: preferFlats,
+              key: currentKey,
+            ),
+          ),
+        );
+      }
+      return;
     }
 
     if (trimmed.isEmpty) {
@@ -181,18 +296,212 @@ Song parseChordPro(String source) {
       } else if (section != null) {
         section.lines.add(const EmptyLine());
       }
-      continue;
+      return;
     }
 
-    ensureSection().lines.add(parseLyricLine(line));
+    startContent();
+    ensureSection().lines.add(
+      parseLyricLine(
+        line,
+        transpose: transpose,
+        preferFlats: preferFlats,
+        key: currentKey,
+      ),
+    );
   }
-  closeSection();
 
-  return Song(meta: meta, elements: elements);
+  void _directive(Directive d) {
+    final name = d.name;
+    if (name.startsWith('x_')) return; // Custom extensions (ignored).
+
+    // Section ends never carry a selector; handle them first.
+    final endName = name.startsWith('end_of_')
+        ? name.substring(7)
+        : _shortEnd[name];
+    if (endName != null) {
+      closeSection();
+      return;
+    }
+
+    final startName = name.startsWith('start_of_')
+        ? name.substring(9)
+        : _shortStart[name];
+
+    if (!selected(d)) {
+      if (startName != null) skipping = startName;
+      return;
+    }
+
+    final metaName = _metaAliases[name];
+    if (metaName != null) {
+      _addMeta(metaName, d.plainArgument);
+      return;
+    }
+    if (name == 'meta') {
+      final m = RegExp(r'^(\S+)\s*(.*)$').firstMatch(d.argument);
+      if (m != null) _addMeta(m.group(1)!.toLowerCase(), m.group(2)!);
+      return;
+    }
+
+    final commentStyle = _commentAliases[name];
+    if (commentStyle != null) {
+      startContent();
+      ensureSection().lines.add(
+        CommentLine(substitute(d.argument), style: commentStyle),
+      );
+      return;
+    }
+
+    if (startName != null) {
+      _startSection(startName, d);
+      return;
+    }
+
+    switch (name) {
+      case 'chorus':
+        closeSection();
+        startContent();
+        final label = d.label;
+        elements.add(
+          ChorusRecall(
+            label: label == null ? null : substitute(label),
+            chorus: lastChorus,
+          ),
+        );
+      case 'transpose':
+        _transpose(d.plainArgument);
+      case 'image':
+        startContent();
+        final attributes = d.attributes.isNotEmpty
+            ? d.attributes
+            : {'src': d.plainArgument};
+        ensureSection().lines.add(ImageLine(attributes));
+      case 'define':
+        final def = ChordDefinition.tryParse(d.argument);
+        if (def != null) definitions.add(def);
+      case 'chord':
+        final def = ChordDefinition.tryParse(d.argument);
+        if (def != null) {
+          startContent();
+          ensureSection().lines.add(ChordDiagramLine(def));
+        }
+      case 'diagrams':
+        diagrams = d.plainArgument.isEmpty
+            ? 'on'
+            : d.plainArgument.toLowerCase();
+      case 'columns' || 'col':
+        columns = int.tryParse(d.plainArgument);
+      case 'column_break' || 'colb':
+        ensureSection().lines.add(const BreakLine(BreakKind.column));
+      case 'new_page' || 'np' || 'new_physical_page' || 'npp':
+        ensureSection().lines.add(const BreakLine(BreakKind.page));
+      default:
+        final format = _formatDirectives[name];
+        if (format != null) {
+          final value = d.plainArgument;
+          ensureSection().lines.add(
+            FormatLine(format.$1, format.$2, value.isEmpty ? null : value),
+          );
+        }
+      // Other directives (pagetype, titles, grid, no_grid, unknown ones)
+      // have no effect on screen.
+    }
+  }
+
+  void _addMeta(String name, String value) {
+    hasAnything = true;
+    meta.putIfAbsent(name, () => []).add(value);
+    if (name == 'key') {
+      final key = Key.tryParse(value);
+      if (key != null) currentKey = key;
+    }
+  }
+
+  void _startSection(String name, Directive d) {
+    closeSection();
+    final delegateType = _delegates[name];
+    if (delegateType != null) {
+      startContent();
+      final label = d.label;
+      final section = DelegateSection(
+        type: delegateType,
+        label: label == null ? null : substitute(label),
+        attributes: d.attributes,
+      );
+      elements.add(section);
+      delegate = section;
+      return;
+    }
+
+    final kind = _sectionKinds[name] ?? SectionKind.custom;
+    GridShape? shape;
+    var label = d.label;
+    if (kind == SectionKind.grid) {
+      // {start_of_grid shape="1+4x4+1" label="Intro"} or legacy
+      // {start_of_grid: 1+4x4+1 Intro}.
+      shape = GridShape.tryParse(d.attributes['shape']);
+      if (shape == null && d.attributes.isEmpty && d.argument.isNotEmpty) {
+        final legacy = RegExp(r'^(\S+)\s*(.*)$').firstMatch(d.argument);
+        shape = GridShape.tryParse(legacy?.group(1));
+        if (shape != null) {
+          final rest = legacy!.group(2)!.trim();
+          label = rest.isEmpty ? null : rest;
+        }
+      }
+      shape ??= lastGridShape ?? GridShape.fallback;
+      lastGridShape = shape;
+    }
+    startContent();
+    current = Section(
+      kind: kind,
+      label: label == null ? null : substitute(label),
+      name: name,
+      attributes: d.attributes,
+      gridShape: shape,
+    );
+    elements.add(current!);
+    explicitSection = true;
+  }
+
+  void _transpose(String argument) {
+    if (argument.isEmpty) {
+      if (transposeStack.isNotEmpty) transposeStack.removeLast();
+      return;
+    }
+    final m = RegExp(r'^([+-]?\d+)\s*([sf])?$').firstMatch(argument);
+    if (m == null) return;
+    final value = int.parse(m.group(1)!);
+    final mode = m.group(2);
+    final flats = mode == 'f'
+        ? true
+        : mode == 's'
+        ? false
+        : value < 0;
+    transposeStack.add((value, flats));
+  }
+
+  Song finish() {
+    delegate = null;
+    closeSection();
+    return Song(
+      meta: meta,
+      elements: elements,
+      definitions: definitions,
+      columns: columns,
+      diagrams: diagrams,
+      leadingTranspose: leadingTranspose ?? transpose,
+    );
+  }
 }
 
 /// Parses a single line with inline chords, e.g. `[G]Hello [C]world`.
-LyricLine parseLyricLine(String line) {
+/// `\[` and `\]` produce literal brackets.
+LyricLine parseLyricLine(
+  String line, {
+  int transpose = 0,
+  bool? preferFlats,
+  Key? key,
+}) {
   final segments = <Segment>[];
   var index = 0;
   ChordToken? pendingChord;
@@ -208,11 +517,23 @@ LyricLine parseLyricLine(String line) {
 
   while (index < line.length) {
     final char = line[index];
+    if (char == r'\' &&
+        index + 1 < line.length &&
+        '[]{}'.contains(line[index + 1])) {
+      text.write(line[index + 1]);
+      index += 2;
+      continue;
+    }
     if (char == '[') {
       final end = line.indexOf(']', index + 1);
       if (end > index) {
         flush();
-        pendingChord = ChordToken(line.substring(index + 1, end).trim());
+        pendingChord = ChordToken(
+          line.substring(index + 1, end).trim(),
+          transpose: transpose,
+          preferFlats: preferFlats,
+          key: key,
+        );
         index = end + 1;
         continue;
       }
@@ -222,13 +543,6 @@ LyricLine parseLyricLine(String line) {
   }
   flush();
   return LyricLine(segments);
-}
-
-String? _parseLabel(String value) {
-  if (value.isEmpty) return null;
-  final attr = _labelAttr.firstMatch(value);
-  if (attr != null) return attr.group(1);
-  return value;
 }
 
 void _trimEmptyLines(List<Line> lines) {

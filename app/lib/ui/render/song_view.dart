@@ -114,9 +114,39 @@ List<SongBlock> buildSongBlocks(
         } else {
           blocks.add(SongBlock.section(chorus, label, visible(chorus)));
         }
+      case DelegateSection d:
+        // Rendered as source until delegated environments are supported
+        // (ADR-0012, phase 5).
+        final section = Section(
+          kind: SectionKind.tab,
+          label: d.label,
+          lines: [for (final l in d.lines) RawLine(l)],
+        );
+        blocks.add(SongBlock.section(section, d.label, section.lines));
     }
   }
   return blocks;
+}
+
+/// Plain-text form of a grid line (ADR-0012, phase 1).
+String gridRowText(GridRow row, ChordFormatter formatter) {
+  final parts = <String>[
+    ?row.leftMargin,
+    for (final token in row.tokens)
+      switch (token) {
+        GridBar b => row.hideBars ? '' : b.symbol,
+        GridChords c => c.chords.map(formatter.format).join('~'),
+        GridMark m => switch (m.symbol) {
+          GridSymbol.empty => '.',
+          GridSymbol.slash => '/',
+          GridSymbol.repeat1 => '%',
+          GridSymbol.repeat2 => '%%',
+        },
+        GridStrum s => s.symbol,
+      },
+    ?row.rightMargin,
+  ];
+  return parts.where((p) => p.isNotEmpty).join(' ');
 }
 
 /// Renders the body of a ChordPro song: sections with chords above lyrics,
@@ -416,8 +446,50 @@ class _SectionBlock extends StatelessWidget {
     LyricLine l => Text(l.text, style: style.lyrics),
     CommentLine c => _Comment(comment: c, style: style),
     RawLine r => Text(r.text, style: style.mono, softWrap: false),
+    GridLine g => Text(
+      gridRowText(g.row, options.formatter),
+      style: style.mono.copyWith(fontWeight: FontWeight.w600),
+      softWrap: false,
+    ),
+    ImageLine i => _Placeholder(
+      icon: Icons.image_outlined,
+      text: i.src ?? '',
+      style: style,
+    ),
+    ChordDiagramLine c => _Placeholder(
+      icon: Icons.grid_on,
+      text: c.definition.display ?? c.definition.name,
+      style: style,
+    ),
+    BreakLine() || FormatLine() => const SizedBox.shrink(),
     EmptyLine() => SizedBox(height: style.fontSize * 0.6),
   };
+}
+
+/// Images and chord diagrams until they are rendered (ADR-0012, phases 4–5).
+class _Placeholder extends StatelessWidget {
+  const _Placeholder({
+    required this.icon,
+    required this.text,
+    required this.style,
+  });
+
+  final IconData icon;
+  final String text;
+  final SongTextStyles style;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: EdgeInsets.symmetric(vertical: style.fontSize * 0.15),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: style.fontSize, color: style.colors.outline),
+        SizedBox(width: style.fontSize * 0.3),
+        Text(text, style: style.label),
+      ],
+    ),
+  );
 }
 
 class _Comment extends StatelessWidget {
@@ -674,6 +746,23 @@ BlockMetrics _measure(
             lyric.copyWith(fontFamily: 'monospace', fontSize: f * 0.85),
           ),
         );
+      case GridLine g:
+        fixed += 0.85 * lh;
+        minWidth = math.max(
+          minWidth,
+          unit(
+            gridRowText(g.row, formatter),
+            lyric.copyWith(
+              fontFamily: 'monospace',
+              fontSize: f * 0.85,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        );
+      case ImageLine() || ChordDiagramLine():
+        fixed += 0.3 + math.max(labelHeight, 1.0);
+      case BreakLine() || FormatLine():
+        break;
       case EmptyLine():
         fixed += 0.6;
     }

@@ -74,8 +74,8 @@ void main() {
     final converted = convertGermanToInternational(german);
     expect(converted, contains('{key: B}'));
     expect(converted, contains('[B]Ein [Bb]Lied'));
-    // Unparseable chords stay as written.
-    expect(converted, contains('[Hm7/Fis]'.replaceFirst('Hm7/Fis', 'Bm7/Fis')));
-    expect(converted, contains('[Es]y'));
+    // German note names in the bass are understood too (Fis = F#).
+    expect(converted, contains('[Bm7/F#]x'));
+    expect(converted, contains('[Eb]y')); // Es = E flat
   });
 }

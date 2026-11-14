@@ -137,7 +137,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
         final formatter = ChordFormatter.forSong(
           parsed,
           transpose: overlay.transpose,
-          capo: overlay.capo,
+          capo: overlay.capo == 0 ? null : overlay.capo,
           notation: settings.notation,
           nashville: overlay.nashville ?? settings.nashville,
         );
@@ -187,7 +187,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                 artist: song.artist,
                 song: parsed,
                 formatter: formatter,
-                capo: overlay.capo,
+                capo: formatter.effectiveCapo,
               ),
               const SizedBox(height: 12),
               _AdjustmentsBar(

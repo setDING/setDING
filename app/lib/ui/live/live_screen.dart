@@ -543,7 +543,7 @@ class _ChordProPage extends ConsumerWidget {
     final formatter = ChordFormatter.forSong(
       parsed,
       transpose: setTranspose + overlay.transpose,
-      capo: overlay.capo,
+      capo: overlay.capo == 0 ? null : overlay.capo,
       notation: settings.notation,
       nashville: overlay.nashville ?? settings.nashville,
     );
@@ -560,7 +560,7 @@ class _ChordProPage extends ConsumerWidget {
             artist: song.artist,
             song: parsed,
             formatter: formatter,
-            capo: overlay.capo,
+            capo: formatter.effectiveCapo,
             compact: true,
           ),
           const SizedBox(height: 12),

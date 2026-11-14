@@ -102,6 +102,25 @@ class Note {
       pitch -= 1;
       consumed = 2;
       preferFlat = true;
+    } else {
+      // German/Dutch note names: Cis, Fis (sharp), Des, Bes, As, Es (flat).
+      // "sus" must not be read as a flat (Asus, Esus).
+      final rest = input.substring(1);
+      if (rest.startsWith('is') && !rest.startsWith('isu')) {
+        pitch += 1;
+        consumed = 3;
+        preferFlat = false;
+      } else if (rest.startsWith('es') && !rest.startsWith('esu')) {
+        pitch -= 1;
+        consumed = 3;
+        preferFlat = true;
+      } else if ((letter == 'A' || letter == 'E') &&
+          rest.startsWith('s') &&
+          !rest.startsWith('su')) {
+        pitch -= 1;
+        consumed = 2;
+        preferFlat = true;
+      }
     }
   }
   return (Note(pitch % 12, preferFlat: preferFlat), consumed);
