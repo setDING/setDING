@@ -71,6 +71,28 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('Nashville can be switched on and off per song', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final id = await tester.runAsync(
+      () => app.songs.createSong(source: '{title: X}\n{key: G}\n[G]One [C]two'),
+    );
+    await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+    await tester.pumpAndSettle();
+    expect(find.text('C'), findsOneWidget);
+
+    await tester.tap(find.text('Nashville numbers'));
+    await tester.pumpAndSettle();
+    expect(find.text('4'), findsOneWidget);
+    expect(find.text('C'), findsNothing);
+
+    await tester.tap(find.text('Nashville numbers'));
+    await tester.pumpAndSettle();
+    expect(find.text('C'), findsOneWidget);
+    expect(find.text('4'), findsNothing);
+    await app.dispose(tester);
+  });
+
   testWidgets('German notation shows H', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(

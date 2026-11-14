@@ -5,6 +5,7 @@ import 'package:bandchords/data/attachment_storage.dart';
 import 'package:bandchords/data/database.dart';
 import 'package:bandchords/data/set_repository.dart';
 import 'package:bandchords/data/song_repository.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -108,6 +109,35 @@ void main() {
       final overlay = await songs.getOverlay(id);
       expect(overlay.transpose, 2);
       expect(overlay.capo, 1);
+    });
+
+    test('overlay fields can be reset to null', () async {
+      final id = await songs.createSong(title: 'X');
+      final attId = await songs.addAttachment(
+        id,
+        name: 'P',
+        bytes: Uint8List.fromList([1]),
+      );
+      await songs.saveOverlay(
+        (await songs.getOverlay(id)).copyWith(
+          nashville: const Value(true),
+          notes: const Value('note'),
+          liveView: Value(attId),
+        ),
+      );
+      expect((await songs.getOverlay(id)).nashville, isTrue);
+
+      await songs.saveOverlay(
+        (await songs.getOverlay(id)).copyWith(
+          nashville: const Value(null),
+          notes: const Value(null),
+          liveView: const Value(null),
+        ),
+      );
+      final overlay = await songs.getOverlay(id);
+      expect(overlay.nashville, isNull);
+      expect(overlay.notes, isNull);
+      expect(overlay.liveView, isNull);
     });
   });
 

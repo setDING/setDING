@@ -236,6 +236,9 @@ class SongRepository {
   static SongOverlay defaultOverlay(String songId) =>
       SongOverlay(songId: songId, transpose: 0, capo: 0, fontScale: 1.0);
 
-  Future<void> saveOverlay(SongOverlay overlay) =>
-      db.into(db.personalOverlays).insertOnConflictUpdate(overlay);
+  /// Saves all fields, including null values (e.g. resetting Nashville to
+  /// the device setting or removing a note).
+  Future<void> saveOverlay(SongOverlay overlay) => db
+      .into(db.personalOverlays)
+      .insertOnConflictUpdate(overlay.toCompanion(false));
 }
