@@ -878,6 +878,36 @@ abstract class AppLocalizations {
   /// **'Für bedingte Abschnitte, z. B. «alto» oder «tenor».'**
   String get settingsUserNameHint;
 
+  /// No description provided for @settingsDiagrams.
+  ///
+  /// In de, this message translates to:
+  /// **'Griffdiagramme'**
+  String get settingsDiagrams;
+
+  /// No description provided for @settingsDiagramsHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeigt die Griffe aller Akkorde des Songs für dein Instrument. Ein Song kann das mit der Direktive diagrams selbst festlegen.'**
+  String get settingsDiagramsHint;
+
+  /// No description provided for @diagramsOff.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus'**
+  String get diagramsOff;
+
+  /// No description provided for @diagramsTop.
+  ///
+  /// In de, this message translates to:
+  /// **'Oben'**
+  String get diagramsTop;
+
+  /// No description provided for @diagramsBottom.
+  ///
+  /// In de, this message translates to:
+  /// **'Unten'**
+  String get diagramsBottom;
+
   /// No description provided for @notSet.
   ///
   /// In de, this message translates to:

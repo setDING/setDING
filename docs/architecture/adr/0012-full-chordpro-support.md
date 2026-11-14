@@ -86,9 +86,16 @@ Each phase is a separate branch and merge (ADR-0010).
   `{new_song}` are imported as separate songs; `{sorttitle}` sorts the library and `{tag}`
   values can be filtered (case-insensitive). Database schema 2 stores sort fields and
   tags and a personal capo that can be "as in the song".
+- 2026-11-14: Phase 4 done. The open point on the chord library is decided: fingerings
+  are **generated** from the chord tones (no external chord data, no licence question).
+  The generator searches playable fingerings within 12 frets (all required tones, lowest
+  note = root or slash bass on guitar and bass, low positions, open strings, at most four
+  fingers incl. barre); the ukulele (re-entrant tuning) allows inversions; keyboard
+  diagrams highlight the chord tones. `{define}`/`{chord}` shapes are used when the chord
+  is shown as written (also `copy`, `display`, `diagram off`); transposed chords get
+  generated fingerings. A new setting shows the diagrams of all chords at the top or the
+  bottom (default off); the song's `{diagrams}` wins.
 
 ## Open points
 
-- Source and licence of the built-in chord library (ChordPro reference data is under the
-  Artistic License 2.0; alternatively generated fingerings).
 - ABC rendering library on all platforms (Android, iOS, Windows) without network access.

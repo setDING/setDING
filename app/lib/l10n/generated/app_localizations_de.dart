@@ -467,6 +467,22 @@ class AppLocalizationsDe extends AppLocalizations {
       'Für bedingte Abschnitte, z. B. «alto» oder «tenor».';
 
   @override
+  String get settingsDiagrams => 'Griffdiagramme';
+
+  @override
+  String get settingsDiagramsHint =>
+      'Zeigt die Griffe aller Akkorde des Songs für dein Instrument. Ein Song kann das mit der Direktive diagrams selbst festlegen.';
+
+  @override
+  String get diagramsOff => 'Aus';
+
+  @override
+  String get diagramsTop => 'Oben';
+
+  @override
+  String get diagramsBottom => 'Unten';
+
+  @override
   String get notSet => 'Nicht festgelegt';
 
   @override

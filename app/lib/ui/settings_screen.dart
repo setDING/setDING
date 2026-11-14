@@ -100,6 +100,18 @@ class SettingsScreen extends ConsumerWidget {
                 },
               ),
 
+              choice(
+                l10n.settingsDiagrams,
+                s.diagrams,
+                {
+                  DiagramsPosition.off: l10n.diagramsOff,
+                  DiagramsPosition.top: l10n.diagramsTop,
+                  DiagramsPosition.bottom: l10n.diagramsBottom,
+                },
+                (v) => notifier.update((s) => s.copyWith(diagrams: v)),
+                hint: l10n.settingsDiagramsHint,
+              ),
+
               header(l10n.settingsSectionDisplay),
               choice(l10n.settingsNotation, s.notation, {
                 ChordNotation.international: l10n.notationInternational,

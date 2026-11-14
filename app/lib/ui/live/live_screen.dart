@@ -14,6 +14,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../render/song_header.dart';
+import '../render/chord_diagram.dart';
 import '../render/song_view.dart';
 import '../widgets/key_picker.dart';
 
@@ -551,6 +552,12 @@ class _ChordProPage extends ConsumerWidget {
       nashville: overlay.nashville ?? settings.nashville,
     );
     final lyricsOnly = settings.displayMode == DisplayMode.lyricsOnly;
+    final resolver = DiagramResolver(
+      parsed,
+      formatter,
+      diagramInstrumentFor(settings.instrument),
+    );
+    final diagrams = diagramsPosition(parsed.diagrams, settings.diagrams);
     const padding = EdgeInsets.fromLTRB(20, 12, 20, 0);
 
     return Padding(
@@ -583,6 +590,8 @@ class _ChordProPage extends ConsumerWidget {
                           ? 1
                           : settings.maxColumns,
                       settings.chorusRepeat == ChorusRepeat.label,
+                      resolver,
+                      diagrams,
                     ),
                   );
                 }
@@ -607,6 +616,8 @@ class _ChordProPage extends ConsumerWidget {
                   minColumns: songColumns ?? 1,
                   maxColumns: songColumns ?? settings.maxColumns,
                   chorusRepeat: settings.chorusRepeat,
+                  diagramResolver: resolver,
+                  diagramsPosition: diagrams,
                 );
                 final options = _options(
                   formatter,
@@ -614,6 +625,8 @@ class _ChordProPage extends ConsumerWidget {
                   fit.fontSize * scale,
                   fit.columns,
                   fit.collapseRecalls,
+                  resolver,
+                  diagrams,
                 );
                 // A personal font scale above 100 % may need scrolling.
                 if (!fit.fits || scale > 1.0) return _scrolling(size, options);
@@ -643,6 +656,8 @@ class _ChordProPage extends ConsumerWidget {
     double fontSize,
     int columns,
     bool collapseRecalls,
+    DiagramResolver resolver,
+    DiagramsPosition diagrams,
   ) => SongRenderOptions(
     formatter: formatter,
     lyricsOnly: lyricsOnly,
@@ -650,6 +665,8 @@ class _ChordProPage extends ConsumerWidget {
     columns: columns,
     notes: overlay.notes,
     collapseRecalls: collapseRecalls,
+    diagramResolver: resolver,
+    diagramsPosition: diagrams,
   );
 
   Widget _scrolling(Size size, SongRenderOptions options) =>

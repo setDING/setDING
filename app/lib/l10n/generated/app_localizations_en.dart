@@ -463,6 +463,22 @@ class AppLocalizationsEn extends AppLocalizations {
       'For conditional parts, e.g. \"alto\" or \"tenor\".';
 
   @override
+  String get settingsDiagrams => 'Chord diagrams';
+
+  @override
+  String get settingsDiagramsHint =>
+      'Shows the fingerings of all chords of the song for your instrument. A song can set this itself with the diagrams directive.';
+
+  @override
+  String get diagramsOff => 'Off';
+
+  @override
+  String get diagramsTop => 'Top';
+
+  @override
+  String get diagramsBottom => 'Bottom';
+
+  @override
   String get notSet => 'Not set';
 
   @override

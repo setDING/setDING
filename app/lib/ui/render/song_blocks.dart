@@ -3,11 +3,23 @@ import 'dart:math' as math;
 import 'package:chordpro/chordpro.dart';
 
 import '../../l10n/generated/app_localizations.dart';
+import 'chord_diagram.dart';
 
 /// A unit of the song layout that is placed as a whole into a column.
 class SongBlock {
   SongBlock.notes(String this.text)
     : section = null,
+      label = null,
+      lines = const [],
+      isRecallLabel = false,
+      breakBefore = false,
+      diagrams = null,
+      startFormat = FormatState();
+
+  /// Diagrams of all chords of the song (`{diagrams}`, ADR-0012).
+  SongBlock.diagrams(List<DiagramData> this.diagrams)
+    : section = null,
+      text = null,
       label = null,
       lines = const [],
       isRecallLabel = false,
@@ -21,6 +33,7 @@ class SongBlock {
     required this.startFormat,
     this.breakBefore = false,
   }) : text = null,
+       diagrams = null,
        isRecallLabel = false;
 
   SongBlock.recall(String this.label, {required this.startFormat})
@@ -28,10 +41,14 @@ class SongBlock {
       text = null,
       lines = const [],
       isRecallLabel = true,
+      diagrams = null,
       breakBefore = false;
 
   /// Personal note text (notes block).
   final String? text;
+
+  /// Chord diagrams (diagrams block).
+  final List<DiagramData>? diagrams;
   final Section? section;
   final String? label;
   final List<Line> lines;
@@ -73,6 +90,8 @@ List<SongBlock> buildSongBlocks(
   required SectionLabeler labeler,
   String? notes,
   bool collapseRecalls = false,
+  List<DiagramData> diagrams = const [],
+  bool diagramsOnTop = false,
 }) {
   bool visible(Line l) =>
       !lyricsOnly || l is! LyricLine || l.plainText.trim().isNotEmpty;
@@ -80,6 +99,9 @@ List<SongBlock> buildSongBlocks(
   final blocks = <SongBlock>[];
   final note = notes?.trim();
   if (note != null && note.isNotEmpty) blocks.add(SongBlock.notes(note));
+  if (diagrams.isNotEmpty && diagramsOnTop) {
+    blocks.add(SongBlock.diagrams(diagrams));
+  }
   final chorusLabel = labeler(SectionKind.chorus) ?? 'Chorus';
   final format = FormatState();
   var pendingBreak = false;
@@ -145,6 +167,9 @@ List<SongBlock> buildSongBlocks(
         );
         addSection(section, d.label);
     }
+  }
+  if (diagrams.isNotEmpty && !diagramsOnTop) {
+    blocks.add(SongBlock.diagrams(diagrams));
   }
   return blocks;
 }

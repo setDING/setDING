@@ -105,6 +105,24 @@ class ChordFormatter {
     return token.parenthesized ? '($text)' : text;
   }
 
+  /// The chord as played (after transposition and capo), e.g. for chord
+  /// diagrams. Null for annotations and unrecognised chords.
+  Chord? playedChord(ChordToken token) {
+    final chord = token.chord;
+    if (token.isAnnotation || chord == null) return null;
+    final total = shift + token.transpose;
+    if (total == 0) return chord;
+    final tokenKey = token.key ?? key;
+    final useFlats =
+        tokenKey?.transpose(total).usesFlats ??
+        token.preferFlats ??
+        chord.root.preferFlat;
+    return chord.transpose(total, useFlats: useFlats);
+  }
+
+  /// Name of [chord] in the display notation.
+  String chordName(Chord chord) => chord.format(notation);
+
   /// Formats the sounding key for display (e.g. in the header).
   String? formatKey() => soundingKey?.format(notation);
 }

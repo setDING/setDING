@@ -12,6 +12,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../live/live_screen.dart';
+import '../render/chord_diagram.dart';
 import '../render/song_header.dart';
 import '../render/song_view.dart';
 import '../widgets/dialogs.dart';
@@ -222,6 +223,15 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                     lyricsOnly: settings.displayMode == DisplayMode.lyricsOnly,
                     fontSize: settings.fontSize * overlay.fontScale,
                     notes: overlay.notes,
+                    diagramResolver: DiagramResolver(
+                      parsed,
+                      formatter,
+                      diagramInstrumentFor(settings.instrument),
+                    ),
+                    diagramsPosition: diagramsPosition(
+                      parsed.diagrams,
+                      settings.diagrams,
+                    ),
                   ),
                 )
               else

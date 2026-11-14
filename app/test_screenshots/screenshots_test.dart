@@ -135,6 +135,20 @@ void main() {
         ),
       );
       await _shot(tester, '${lang}_6_chordpro_showcase');
+
+      // Chord diagrams below the song (guitar in English, ukulele in German).
+      await app.prefs.setString('diagrams', 'bottom');
+      await app.prefs.setString(
+        'instrument',
+        lang == 'de' ? 'ukulele' : 'guitar',
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: LiveScreen(items: items)),
+        ),
+      );
+      await _shot(tester, '${lang}_7_diagrams');
       await app.dispose(tester);
     });
   }

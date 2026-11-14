@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:chordpro/chordpro.dart';
 import 'package:flutter/material.dart';
 
+import 'chord_diagram.dart';
 import 'song_blocks.dart';
 import 'song_grid.dart';
 import 'song_style.dart';
@@ -16,6 +17,10 @@ import 'song_style.dart';
 // must fit the column width.
 
 const _referenceFontSize = 20.0;
+
+/// Spacing between chord diagrams, relative to the font size.
+const diagramSpacing = 0.8;
+const diagramRunSpacing = 0.6;
 
 /// Size information of a [SongBlock], independent of the font size.
 class BlockMetrics {
@@ -64,6 +69,7 @@ List<BlockMetrics> measureBlocks(
   required bool lyricsOnly,
   required TextScaler textScaler,
   TextStyle? baseStyle,
+  DiagramResolver? diagramResolver,
 }) {
   final painter = TextPainter(
     textDirection: TextDirection.ltr,
@@ -76,7 +82,7 @@ List<BlockMetrics> measureBlocks(
   try {
     return [
       for (final b in blocks)
-        _measure(b, formatter, lyricsOnly, painter, styles),
+        _measure(b, formatter, lyricsOnly, painter, styles, diagramResolver),
     ];
   } finally {
     painter.dispose();
@@ -89,6 +95,7 @@ BlockMetrics _measure(
   bool lyricsOnly,
   TextPainter painter,
   SongTextStyles styles,
+  DiagramResolver? diagramResolver,
 ) {
   const f = _referenceFontSize;
   const lh = SongTextStyles.lineHeightFactor;
@@ -105,6 +112,29 @@ BlockMetrics _measure(
 
   /// Height factor (per unit of f) of a style's line.
   double lineUnits(TextStyle style) => (style.fontSize ?? f) * lh / f;
+
+  final diagrams = block.diagrams;
+  if (diagrams != null) {
+    // Diagrams wrap in rows; modelled as one wrapping "line".
+    final tallest = diagrams.fold<double>(
+      0,
+      (h, d) => math.max(h, d.heightUnits),
+    );
+    return BlockMetrics(
+      fixedHeight: 0.2 - diagramRunSpacing,
+      wrapping: [
+        (
+          width: diagrams.fold<double>(
+            0,
+            (w, d) => w + d.widthUnits + diagramSpacing,
+          ),
+          lineHeight: tallest + diagramRunSpacing,
+          padding: 0,
+        ),
+      ],
+      minWidth: diagrams.fold<double>(0, (w, d) => math.max(w, d.widthUnits)),
+    );
+  }
 
   if (block.text != null) {
     // Notes card: margin, padding; the text wraps next to the icon.
@@ -218,6 +248,11 @@ BlockMetrics _measure(
           minWidth,
           grid.rowWidth(g.row, formatter, gridWidth) * size / f,
         );
+      case ChordDiagramLine c
+          when diagramResolver?.forDefinition(c.definition) != null:
+        final data = diagramResolver!.forDefinition(c.definition)!;
+        fixed += data.heightUnits + 0.3;
+        minWidth = math.max(minWidth, data.widthUnits);
       case ImageLine() || ChordDiagramLine():
         fixed += 0.3 + math.max(lineUnits(labelStyle), 1.0);
       case BreakLine():
@@ -314,7 +349,13 @@ SongFit fitSong(
   int maxColumns = 4,
   double minColumnWidth = 220,
   ChorusRepeat chorusRepeat = ChorusRepeat.auto,
+  DiagramResolver? diagramResolver,
+  DiagramsPosition diagramsPosition = DiagramsPosition.off,
 }) {
+  final diagrams =
+      diagramsPosition == DiagramsPosition.off || diagramResolver == null
+      ? const <DiagramData>[]
+      : diagramResolver.allChords();
   SongFit? best;
   double bestScore = 0;
   double? singleColumnFont;
@@ -331,6 +372,8 @@ SongFit fitSong(
       labeler: labeler,
       notes: notes,
       collapseRecalls: collapse,
+      diagrams: diagrams,
+      diagramsOnTop: diagramsPosition == DiagramsPosition.top,
     );
     if (blocks.isEmpty) return SongFit(fontSize: baseFontSize, columns: 1);
     final metrics = measureBlocks(
@@ -339,6 +382,7 @@ SongFit fitSong(
       lyricsOnly: lyricsOnly,
       textScaler: textScaler,
       baseStyle: baseStyle,
+      diagramResolver: diagramResolver,
     );
     final widest = metrics.fold<double>(0, (w, m) => math.max(w, m.minWidth));
     singleColumnFont ??= widest <= 0 ? maxFontSize : size.width / widest;

@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../ui/render/chord_diagram.dart' show DiagramsPosition;
 import '../ui/render/song_view.dart' show ChorusRepeat;
 
+export '../ui/render/chord_diagram.dart' show DiagramsPosition;
 export '../ui/render/song_view.dart' show ChorusRepeat;
 
 /// UI language setting (ADR-0008).
@@ -36,6 +38,7 @@ class AppSettings {
     this.fontSize = 20,
     this.instrument = 'guitar',
     this.userName = '',
+    this.diagrams = DiagramsPosition.off,
   });
 
   final LanguageMode language;
@@ -59,6 +62,9 @@ class AppSettings {
 
   /// User name for conditional directives (e.g. a voice like `alto`).
   final String userName;
+
+  /// Chord diagrams of all chords of a song (ADR-0012).
+  final DiagramsPosition diagrams;
 
   /// Instrument presets offered in the settings.
   static const instruments = [
@@ -106,6 +112,7 @@ class AppSettings {
     double? fontSize,
     String? instrument,
     String? userName,
+    DiagramsPosition? diagrams,
   }) => AppSettings(
     language: language ?? this.language,
     notation: notation ?? this.notation,
@@ -118,6 +125,7 @@ class AppSettings {
     chorusRepeat: chorusRepeat ?? this.chorusRepeat,
     instrument: instrument ?? this.instrument,
     userName: userName ?? this.userName,
+    diagrams: diagrams ?? this.diagrams,
     fontSize: fontSize ?? this.fontSize,
   );
 
@@ -140,6 +148,7 @@ class AppSettings {
       chorusRepeat: pick(ChorusRepeat.values, 'chorusRepeat', d.chorusRepeat),
       instrument: prefs.getString('instrument') ?? d.instrument,
       userName: prefs.getString('userName') ?? d.userName,
+      diagrams: pick(DiagramsPosition.values, 'diagrams', d.diagrams),
       fontSize: (prefs.getDouble('fontSize') ?? d.fontSize).clamp(
         minFontSize,
         maxFontSize,
@@ -159,6 +168,7 @@ class AppSettings {
     await prefs.setString('chorusRepeat', chorusRepeat.name);
     await prefs.setString('instrument', instrument);
     await prefs.setString('userName', userName);
+    await prefs.setString('diagrams', diagrams.name);
     await prefs.setDouble('fontSize', fontSize);
   }
 }

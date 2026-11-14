@@ -4,6 +4,7 @@ import 'package:chordpro/chordpro.dart';
 import 'package:flutter/material.dart';
 
 import '../../l10n/generated/app_localizations.dart';
+import 'chord_diagram.dart';
 import 'song_blocks.dart';
 import 'song_grid.dart';
 import 'song_layout.dart';
@@ -22,6 +23,8 @@ class SongRenderOptions {
     this.columns = 1,
     this.notes,
     this.collapseRecalls = false,
+    this.diagramResolver,
+    this.diagramsPosition = DiagramsPosition.off,
   });
 
   final ChordFormatter formatter;
@@ -32,6 +35,18 @@ class SongRenderOptions {
 
   /// Show a repeated chorus as a label only.
   final bool collapseRecalls;
+
+  /// Resolves chord diagrams; null = no diagrams.
+  final DiagramResolver? diagramResolver;
+
+  /// Where the diagrams of all chords are shown.
+  final DiagramsPosition diagramsPosition;
+
+  /// Diagrams of all chords for [diagramsPosition].
+  List<DiagramData> get songDiagrams =>
+      diagramsPosition == DiagramsPosition.off || diagramResolver == null
+      ? const []
+      : diagramResolver!.allChords();
 }
 
 /// Renders the body of a ChordPro song: sections with chords above lyrics,
@@ -53,8 +68,12 @@ class SongBody extends StatelessWidget {
       labeler: sectionLabeler(AppLocalizations.of(context)),
       notes: options.notes,
       collapseRecalls: options.collapseRecalls,
+      diagrams: options.songDiagrams,
+      diagramsOnTop: options.diagramsPosition == DiagramsPosition.top,
     );
-    Widget render(SongBlock b) => b.text != null
+    Widget render(SongBlock b) => b.diagrams != null
+        ? _DiagramsBlock(diagrams: b.diagrams!, style: style)
+        : b.text != null
         ? _NotesCard(text: b.text!, style: style)
         : b.isRecallLabel
         ? _RecallLabel(block: b, style: style)
@@ -82,6 +101,7 @@ class SongBody extends StatelessWidget {
           lyricsOnly: options.lyricsOnly,
           textScaler: MediaQuery.textScalerOf(context),
           baseStyle: DefaultTextStyle.of(context).style,
+          diagramResolver: options.diagramResolver,
         );
         final heights = [
           for (final m in metrics) m.height(options.fontSize, width),
@@ -112,6 +132,33 @@ class SongBody extends StatelessWidget {
       },
     );
   }
+}
+
+/// Diagrams of all chords of the song.
+class _DiagramsBlock extends StatelessWidget {
+  const _DiagramsBlock({required this.diagrams, required this.style});
+
+  final List<DiagramData> diagrams;
+  final SongTextStyles style;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: EdgeInsets.only(bottom: style.fontSize * 0.2),
+    child: Wrap(
+      spacing: style.fontSize * diagramSpacing,
+      runSpacing: style.fontSize * diagramRunSpacing,
+      children: [
+        for (final d in diagrams)
+          ChordDiagramView(
+            data: d,
+            fontSize: style.fontSize,
+            color: style.colors.onSurfaceVariant,
+            accent: style.colors.primary,
+            nameStyle: style.lyrics,
+          ),
+      ],
+    ),
+  );
 }
 
 class _NotesCard extends StatelessWidget {
@@ -266,13 +313,27 @@ class _SectionBlock extends StatelessWidget {
             ),
           );
         case ChordDiagramLine c:
+          final data = options.diagramResolver?.forDefinition(c.definition);
           children.add(
-            _Placeholder(
-              icon: Icons.grid_on,
-              text: c.definition.display ?? c.definition.name,
-              style: style.labelFor(format),
-              size: style.fontSize,
-            ),
+            data == null
+                ? _Placeholder(
+                    icon: Icons.grid_on,
+                    text: c.definition.display ?? c.definition.name,
+                    style: style.labelFor(format),
+                    size: style.fontSize,
+                  )
+                : Padding(
+                    padding: EdgeInsets.symmetric(
+                      vertical: style.fontSize * 0.15,
+                    ),
+                    child: ChordDiagramView(
+                      data: data,
+                      fontSize: style.fontSize,
+                      color: style.colors.onSurfaceVariant,
+                      accent: style.colors.primary,
+                      nameStyle: style.lyrics,
+                    ),
+                  ),
           );
         case BreakLine():
           break;

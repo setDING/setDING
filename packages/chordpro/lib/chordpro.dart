@@ -4,7 +4,9 @@
 library;
 
 export 'src/chord.dart';
+export 'src/chord_tones.dart';
 export 'src/diagrams.dart';
+export 'src/fingering.dart';
 export 'src/directive.dart' show SelectorContext;
 export 'src/format.dart';
 export 'src/formatter.dart';
