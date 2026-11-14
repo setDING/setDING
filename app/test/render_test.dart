@@ -1,5 +1,6 @@
 import 'package:bandchords/ui/live/live_screen.dart';
 import 'package:bandchords/ui/render/song_grid.dart';
+import 'package:bandchords/ui/render/song_header.dart';
 import 'package:bandchords/ui/render/song_view.dart';
 import 'package:chordpro/chordpro.dart';
 import 'package:flutter/material.dart';
@@ -169,6 +170,40 @@ void main() {
     final box = tester.getSize(find.byType(FittedBox));
     expect(body.height, lessThanOrEqualTo(box.height));
     expect(body.width, lessThanOrEqualTo(box.width + 0.5));
+    await app.dispose(tester);
+  });
+
+  testWidgets('song sequence below the subtitle', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final song = parseChordPro(
+      '{title: T}\n{subtitle: Sub}\n{sequence: C, V1, PC, C x2, B, Coda}',
+    );
+    await tester.pumpWidget(
+      app.build(
+        home: Scaffold(
+          body: SongHeader(
+            title: 'T',
+            song: song,
+            formatter: ChordFormatter.forSong(song),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('sequence-chip')), findsNWidgets(6));
+    for (final code in ['C', 'V1', 'PC', 'C x2', 'B', 'Coda']) {
+      expect(find.text(code), findsWidgets);
+    }
+    // Below the subtitle.
+    expect(
+      tester.getTopLeft(find.text('V1')).dy,
+      greaterThan(tester.getBottomLeft(find.text('Sub')).dy),
+    );
+    // Full names as tooltips.
+    expect(find.byTooltip('Pre-chorus'), findsOneWidget);
+    expect(find.byTooltip('Verse 1'), findsOneWidget);
+    expect(find.byTooltip('Chorus ×2'), findsOneWidget);
     await app.dispose(tester);
   });
 }

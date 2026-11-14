@@ -604,4 +604,31 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get lilypondNotice =>
       'Lilypond-Noten können auf diesem Gerät nicht dargestellt werden. Quelltext:';
+
+  @override
+  String get sequenceLabel => 'Songablauf';
+
+  @override
+  String get sectionIntro => 'Intro';
+
+  @override
+  String get sectionPreChorus => 'Pre-Chorus';
+
+  @override
+  String get sectionPostChorus => 'Post-Chorus';
+
+  @override
+  String get sectionInterlude => 'Zwischenspiel';
+
+  @override
+  String get sectionInstrumental => 'Instrumental';
+
+  @override
+  String get sectionSolo => 'Solo';
+
+  @override
+  String get sectionTag => 'Tag';
+
+  @override
+  String get sectionOutro => 'Outro';
 }

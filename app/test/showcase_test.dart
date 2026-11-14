@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:bandchords/data/import_export.dart';
@@ -8,6 +7,7 @@ import 'package:bandchords/ui/render/abc_view.dart';
 import 'package:bandchords/ui/render/chord_diagram.dart';
 import 'package:bandchords/ui/render/song_grid.dart';
 import 'package:bandchords/ui/songs/song_screen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -63,6 +63,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(find.byType(GridRowView), findsWidgets);
+    expect(find.byKey(const ValueKey('sequence-chip')), findsNWidgets(8));
     expect(find.byType(ChordDiagramView, skipOffstage: false), findsWidgets);
     expect(find.byType(AbcView, skipOffstage: false), findsOneWidget);
     expect(find.byType(SvgPicture, skipOffstage: false), findsNWidgets(2));

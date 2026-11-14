@@ -57,6 +57,11 @@ class SongHeader extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
+        if (song.sequence case final sequence when sequence.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: SongSequenceView(sequence, compact: compact),
+          ),
         if (info.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 4),
@@ -69,5 +74,93 @@ class SongHeader extends StatelessWidget {
           ),
       ],
     );
+  }
+}
+
+/// The song sequence from `{sequence: …}` as a row of small chips.
+class SongSequenceView extends StatelessWidget {
+  const SongSequenceView(this.sequence, {super.key, this.compact = false});
+
+  final List<SequenceItem> sequence;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final style = theme.textTheme.labelMedium;
+    return Semantics(
+      label: l10n.sequenceLabel,
+      child: Wrap(
+        spacing: 4,
+        runSpacing: 4,
+        children: [
+          for (final item in sequence)
+            Tooltip(
+              message: _partName(l10n, item),
+              child: Container(
+                key: const ValueKey('sequence-chip'),
+                padding: EdgeInsets.symmetric(
+                  horizontal: compact ? 5 : 7,
+                  vertical: compact ? 1 : 2,
+                ),
+                decoration: BoxDecoration(
+                  color: _background(scheme, item.part),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  item.code,
+                  style: style?.copyWith(
+                    color: _foreground(scheme, item.part),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  static Color _background(ColorScheme scheme, SequencePart part) =>
+      switch (part) {
+        SequencePart.chorus => scheme.primaryContainer,
+        SequencePart.preChorus ||
+        SequencePart.postChorus => scheme.secondaryContainer,
+        SequencePart.bridge => scheme.tertiaryContainer,
+        _ => scheme.surfaceContainerHighest,
+      };
+
+  static Color _foreground(ColorScheme scheme, SequencePart part) =>
+      switch (part) {
+        SequencePart.chorus => scheme.onPrimaryContainer,
+        SequencePart.preChorus ||
+        SequencePart.postChorus => scheme.onSecondaryContainer,
+        SequencePart.bridge => scheme.onTertiaryContainer,
+        _ => scheme.onSurfaceVariant,
+      };
+
+  static String _partName(AppLocalizations l10n, SequenceItem item) {
+    final name = switch (item.part) {
+      SequencePart.intro => l10n.sectionIntro,
+      SequencePart.verse => l10n.sectionVerse,
+      SequencePart.preChorus => l10n.sectionPreChorus,
+      SequencePart.chorus => l10n.sectionChorus,
+      SequencePart.postChorus => l10n.sectionPostChorus,
+      SequencePart.bridge => l10n.sectionBridge,
+      SequencePart.interlude => l10n.sectionInterlude,
+      SequencePart.instrumental => l10n.sectionInstrumental,
+      SequencePart.solo => l10n.sectionSolo,
+      SequencePart.tag => l10n.sectionTag,
+      SequencePart.outro => l10n.sectionOutro,
+      SequencePart.other => item.code,
+    };
+    return [
+      name,
+      if (item.part != SequencePart.other && item.number != null)
+        '${item.number}',
+      if (item.repeat != null) '×${item.repeat}',
+    ].join(' ');
   }
 }

@@ -600,4 +600,31 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get lilypondNotice =>
       'Lilypond notation cannot be rendered on this device. Source:';
+
+  @override
+  String get sequenceLabel => 'Song sequence';
+
+  @override
+  String get sectionIntro => 'Intro';
+
+  @override
+  String get sectionPreChorus => 'Pre-chorus';
+
+  @override
+  String get sectionPostChorus => 'Post-chorus';
+
+  @override
+  String get sectionInterlude => 'Interlude';
+
+  @override
+  String get sectionInstrumental => 'Instrumental';
+
+  @override
+  String get sectionSolo => 'Solo';
+
+  @override
+  String get sectionTag => 'Tag';
+
+  @override
+  String get sectionOutro => 'Outro';
 }

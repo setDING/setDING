@@ -38,6 +38,16 @@ void main() {
       expect(song.sortArtist, 'BandChords Band, The');
       expect(song.meta['composer'], hasLength(2));
       expect(song.tags, ['Test', 'Showcase']);
+      expect(song.sequence.map((i) => i.part), [
+        SequencePart.intro,
+        SequencePart.verse,
+        SequencePart.chorus,
+        SequencePart.verse,
+        SequencePart.preChorus,
+        SequencePart.chorus,
+        SequencePart.bridge,
+        SequencePart.outro,
+      ]);
       expect(song.meta['key'], ['G', 'A']);
       expect(song.tempo, 96);
       expect(song.columns, 2);

@@ -287,5 +287,14 @@
     }
   },
   "settingsAbout": "BandChords läuft lokal auf diesem Gerät. Alle Daten sind offline verfügbar.",
-  "lilypondNotice": "Lilypond-Noten können auf diesem Gerät nicht dargestellt werden. Quelltext:"
+  "lilypondNotice": "Lilypond-Noten können auf diesem Gerät nicht dargestellt werden. Quelltext:",
+  "sequenceLabel": "Songablauf",
+  "sectionIntro": "Intro",
+  "sectionPreChorus": "Pre-Chorus",
+  "sectionPostChorus": "Post-Chorus",
+  "sectionInterlude": "Zwischenspiel",
+  "sectionInstrumental": "Instrumental",
+  "sectionSolo": "Solo",
+  "sectionTag": "Tag",
+  "sectionOutro": "Outro"
 }

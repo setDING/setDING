@@ -16,4 +16,5 @@ export 'src/markup.dart';
 export 'src/metadata.dart';
 export 'src/notation.dart';
 export 'src/parser.dart';
+export 'src/sequence.dart';
 export 'src/song.dart';

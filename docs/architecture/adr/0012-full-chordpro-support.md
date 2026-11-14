@@ -114,3 +114,12 @@ Each phase is a separate branch and merge (ADR-0010).
 ## Open points
 
 - ABC: multiple voices (`V:`), slurs and decorations are not drawn yet.
+- 2026-11-15: BandChords extension `{sequence: C, V1, PC, C x2, B}` (also written
+  `{x_sequence}` for portability) holds the song sequence (arrangement). It is metadata
+  (`%{sequence}` works) and is shown as small chips below the subtitle in the song view,
+  the editor preview and live mode, with the full part name as tooltip. Recognised
+  abbreviations (case-insensitive, English and German): I/Intro, V/Vs/S/Str/Verse/Strophe,
+  PC/Pre/PR/Pre-chorus, C/Ch/R/Ref/Chorus/Refrain, PoC/Post-chorus, B/Br/Bridge,
+  Int/Zw/Interlude, Inst/Instrumental, Solo, T/Tag, O/Out/End/Outro; optional number
+  (`V2`) and repeat (`C x2`, `2x C`, `C (2x)`); unknown codes are shown as written. Other
+  ChordPro tools treat `{sequence}` as an unknown directive.

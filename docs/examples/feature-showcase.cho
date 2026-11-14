@@ -24,6 +24,9 @@
 {tag: Showcase}
 {meta: mood happy}
 {meta: duet true}
+# BandChords extension: song sequence, shown below the subtitle
+# (C=Chorus, V=Verse, PC=Pre-chorus, B=Bridge, I=Intro, O=Outro, …).
+{sequence: I, V1, C, V2, PC, C x2, B, O}
 {x_bandchords_note: custom directives starting with x_ are ignored}
 
 # ---------------------------------------------------------------------------

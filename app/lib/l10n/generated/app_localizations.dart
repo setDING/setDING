@@ -1135,6 +1135,60 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Lilypond-Noten können auf diesem Gerät nicht dargestellt werden. Quelltext:'**
   String get lilypondNotice;
+
+  /// No description provided for @sequenceLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Songablauf'**
+  String get sequenceLabel;
+
+  /// No description provided for @sectionIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Intro'**
+  String get sectionIntro;
+
+  /// No description provided for @sectionPreChorus.
+  ///
+  /// In de, this message translates to:
+  /// **'Pre-Chorus'**
+  String get sectionPreChorus;
+
+  /// No description provided for @sectionPostChorus.
+  ///
+  /// In de, this message translates to:
+  /// **'Post-Chorus'**
+  String get sectionPostChorus;
+
+  /// No description provided for @sectionInterlude.
+  ///
+  /// In de, this message translates to:
+  /// **'Zwischenspiel'**
+  String get sectionInterlude;
+
+  /// No description provided for @sectionInstrumental.
+  ///
+  /// In de, this message translates to:
+  /// **'Instrumental'**
+  String get sectionInstrumental;
+
+  /// No description provided for @sectionSolo.
+  ///
+  /// In de, this message translates to:
+  /// **'Solo'**
+  String get sectionSolo;
+
+  /// No description provided for @sectionTag.
+  ///
+  /// In de, this message translates to:
+  /// **'Tag'**
+  String get sectionTag;
+
+  /// No description provided for @sectionOutro.
+  ///
+  /// In de, this message translates to:
+  /// **'Outro'**
+  String get sectionOutro;
 }
 
 class _AppLocalizationsDelegate

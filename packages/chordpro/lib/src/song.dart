@@ -5,6 +5,7 @@ import 'chord.dart';
 import 'diagrams.dart';
 import 'grid.dart';
 import 'markup.dart';
+import 'sequence.dart';
 
 /// Kind of a song section.
 enum SectionKind { none, verse, chorus, bridge, tab, grid, custom }
@@ -56,6 +57,12 @@ class Song {
   String? get sortTitle => metaValue('sorttitle');
   String? get sortArtist => metaValue('sortartist');
   List<String> get tags => meta['tag'] ?? const [];
+
+  /// Song sequence from `{sequence: …}` (BandChords extension).
+  List<SequenceItem> get sequence {
+    final value = metaValue('sequence');
+    return value == null ? const [] : parseSequence(value);
+  }
 
   int? get tempo {
     final value = metaValue('tempo');

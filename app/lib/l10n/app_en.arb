@@ -172,5 +172,14 @@
   "settingsPedalHint": "Foot pedal and keyboard: arrow keys, Page Up/Down and Space turn pages. Tap the left or right side of the screen to go back or forward.",
   "settingsStorageUsed": "PDF attachments use {size}",
   "settingsAbout": "BandChords runs locally on this device. All data is available offline.",
-  "lilypondNotice": "Lilypond notation cannot be rendered on this device. Source:"
+  "lilypondNotice": "Lilypond notation cannot be rendered on this device. Source:",
+  "sequenceLabel": "Song sequence",
+  "sectionIntro": "Intro",
+  "sectionPreChorus": "Pre-chorus",
+  "sectionPostChorus": "Post-chorus",
+  "sectionInterlude": "Interlude",
+  "sectionInstrumental": "Instrumental",
+  "sectionSolo": "Solo",
+  "sectionTag": "Tag",
+  "sectionOutro": "Outro"
 }
