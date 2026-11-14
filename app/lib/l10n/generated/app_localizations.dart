@@ -1135,12 +1135,6 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Lilypond-Noten können auf diesem Gerät nicht dargestellt werden. Quelltext:'**
   String get lilypondNotice;
-
-  /// No description provided for @abcNotice.
-  ///
-  /// In de, this message translates to:
-  /// **'ABC-Noten (Quelltext):'**
-  String get abcNotice;
 }
 
 class _AppLocalizationsDelegate

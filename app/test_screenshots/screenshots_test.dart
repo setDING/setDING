@@ -223,6 +223,15 @@ const _media = r'''{title: Media Showcase}
 Ladies and gentlemen,
 <i>please welcome</i> the <b>band</b>!
 {end_of_textblock}
+{start_of_abc}
+X:1
+T:Speed the Plough
+M:4/4
+L:1/8
+K:G
+|:"G"GABG DGBG|"D"A2 AB c2 Bc|"G"d^cdB "C"c2 =cB|1 "D7"A3 G A4:|2 "D7"A2 F2 G4||
+w:one two three four
+{end_of_abc}
 {start_of_ly label="Melody"}
 \relative c' { c4 d e f | g2 g }
 {end_of_ly}

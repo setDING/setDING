@@ -85,6 +85,9 @@ class SongBody extends StatelessWidget {
             label: style.labelFor(b.startFormat),
             mono: style.tabFor(b.startFormat),
             colors: style.colors,
+            transpose:
+                options.formatter.transpose +
+                options.formatter.leadingTranspose,
           )
         : b.diagrams != null
         ? _DiagramsBlock(diagrams: b.diagrams!, style: style)

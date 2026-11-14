@@ -2,6 +2,7 @@ import 'package:chordpro/chordpro.dart';
 import 'package:flutter/material.dart';
 
 import '../../l10n/generated/app_localizations.dart';
+import 'abc_view.dart';
 import 'song_image.dart';
 import 'song_style.dart';
 
@@ -58,7 +59,11 @@ class DelegateView extends StatelessWidget {
     required this.label,
     required this.mono,
     required this.colors,
+    this.transpose = 0,
   });
+
+  /// Semitones for ABC notation (set and personal transposition).
+  final int transpose;
 
   final DelegateSection delegate;
   final TextStyle lyrics;
@@ -70,7 +75,10 @@ class DelegateView extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = lyrics.fontSize ?? 14;
     final l10n = AppLocalizations.of(context);
-    final title = delegate.label;
+    final abc = delegate.type == DelegateType.abc
+        ? abcTuneOf(delegate, transpose)
+        : null;
+    final title = delegate.label ?? abc?.title;
     final content = switch (delegate.type) {
       DelegateType.svg => SongImageView(
         box: svgDelegateBox(delegate),
@@ -78,10 +86,15 @@ class DelegateView extends StatelessWidget {
         svg: delegate.content,
       ),
       DelegateType.textblock => _TextBlock(delegate: delegate, style: lyrics),
-      DelegateType.ly || DelegateType.abc => _Source(
-        notice: delegate.type == DelegateType.ly
-            ? l10n.lilypondNotice
-            : l10n.abcNotice,
+      DelegateType.abc => AbcView(
+        tune: abc!,
+        fontSize: size,
+        color: lyrics.color ?? colors.onSurface,
+        accent: colors.primary,
+        textStyle: lyrics,
+      ),
+      DelegateType.ly => _Source(
+        notice: l10n.lilypondNotice,
         source: delegate.content,
         mono: mono,
         noticeStyle: lyrics.copyWith(

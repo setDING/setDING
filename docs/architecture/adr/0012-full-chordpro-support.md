@@ -34,7 +34,7 @@ as listed below. The ChordPro source stays the single source of truth (ADR-0003)
 | Markup | Pango subset: `<span …>` (font, size, style, weight, colours, underline, overline, strikethrough, rise), `<b> <i> <u> <s> <sub> <sup> <big> <small> <tt>`, `<strut/>` | Full in lyrics, chords, comments and labels; `href`/bookmarks are ignored |
 | Environments | `chorus`, `verse`, `bridge`, `tab`, `grid`, any `start_of_xxx`, `{chorus}` recall | Full; unknown environments are shown as lyrics |
 | Grids | `shape`, cells, bar lines (`\|`, `\|\|`, `\|.`, `\|:`, `:\|`, `:\|:`, voltas), `.` `/` `~` `%` `%%`, margins, strums | Full, chords transposed |
-| Delegated | `abc`, `ly`, `svg`, `textblock` | SVG and textblock rendered; ABC rendered as notation; Lilypond shown as source with a notice (needs an external program that is not available on tablets) |
+| Delegated | `abc`, `ly`, `svg`, `textblock` | SVG and textblock rendered; ABC rendered as notation by BandChords' own engraver (single voice, transposable); Lilypond shown as source with a notice (needs an external program that is not available on tablets) |
 | Images | `image` with `src`, `width`, `height`, `scale`, `align`, … | Images are **attachments** of the song (like PDFs, ADR-0009), found by file name |
 | Chord diagrams | `define`, `chord`, `diagrams` | Diagrams for the instrument chosen in the settings; built-in chord library plus `define`/`chord` |
 | Transposition | `transpose` (`+n`, `-n`, `s`/`f` suffix, cancel, modulation mid-song) | Full; combined with set and personal transposition (ADR-0006) |
@@ -102,7 +102,15 @@ Each phase is a separate branch and merge (ADR-0010).
   and images shrink to the column width. `{start_of_svg}` and `{start_of_textblock}`
   (`flush`, `align`, `textsize`, `padding`) are rendered; Lilypond is shown as source with
   a notice. ABC follows in phase 5b.
+- 2026-11-14: Phase 5b done. The open point on ABC is decided: no external library (none
+  works offline on all platforms without a web view); BandChords has its own ABC parser
+  (`chordpro` package) and engraver: header fields, keys and modes, notes with
+  accidentals (shown according to key signature and measure), durations, broken rhythm,
+  tuplets, ties, chords, rests, bar lines, repeats, voltas, chord symbols, annotations,
+  inline key/meter changes and `w:` lyrics, single voice. Lines break at bar lines to fit
+  the column; the tune follows the set and personal transposition. Multiple voices,
+  slurs and decorations are not drawn. All phases of this ADR are done.
 
 ## Open points
 
-- ABC rendering library on all platforms (Android, iOS, Windows) without network access.
+- ABC: multiple voices (`V:`), slurs and decorations are not drawn yet.

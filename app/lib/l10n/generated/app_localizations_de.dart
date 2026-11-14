@@ -604,7 +604,4 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get lilypondNotice =>
       'Lilypond-Noten können auf diesem Gerät nicht dargestellt werden. Quelltext:';
-
-  @override
-  String get abcNotice => 'ABC-Noten (Quelltext):';
 }

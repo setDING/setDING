@@ -600,7 +600,4 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get lilypondNotice =>
       'Lilypond notation cannot be rendered on this device. Source:';
-
-  @override
-  String get abcNotice => 'ABC notation (source):';
 }

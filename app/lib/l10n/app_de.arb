@@ -287,6 +287,5 @@
     }
   },
   "settingsAbout": "BandChords läuft lokal auf diesem Gerät. Alle Daten sind offline verfügbar.",
-  "lilypondNotice": "Lilypond-Noten können auf diesem Gerät nicht dargestellt werden. Quelltext:",
-  "abcNotice": "ABC-Noten (Quelltext):"
+  "lilypondNotice": "Lilypond-Noten können auf diesem Gerät nicht dargestellt werden. Quelltext:"
 }

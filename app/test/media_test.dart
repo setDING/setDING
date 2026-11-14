@@ -10,10 +10,12 @@ import 'package:bandchords/data/import_export.dart';
 import 'package:bandchords/data/set_repository.dart';
 import 'package:bandchords/data/song_repository.dart';
 import 'package:bandchords/ui/live/live_screen.dart';
+import 'package:bandchords/ui/render/abc_view.dart';
 import 'package:bandchords/ui/render/song_image.dart';
 import 'package:bandchords/ui/render/song_view.dart';
 import 'package:bandchords/ui/songs/song_screen.dart';
 import 'package:drift/native.dart';
+import 'package:chordpro/chordpro.dart' hide Key;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -51,6 +53,7 @@ const _svg =
     '<rect width="200" height="100" fill="#3f51b5"/></svg>';
 
 void main() {
+  abcGroup();
   group('image sizes', () {
     test('raster headers', () {
       expect(imageBytesSize(pngHeader(640, 480)), const Size(640, 480));
@@ -234,5 +237,80 @@ void main() {
     expect(body.height, lessThanOrEqualTo(box.height + 0.5));
     await tester.pumpWidget(const SizedBox());
     await app.dispose(tester);
+  });
+}
+
+const _abc = """X:1
+T:Tune
+M:4/4
+L:1/8
+K:D
+|:"D"A2 F d2 A B c|"G"B>cd "A7"e2 c d e|(3fed ^c2 =c A B c|1 [DFA]4 d4:|2 "D"d8|]
+w:one two three four
+""";
+
+void abcGroup() {
+  group('ABC notation', () {
+    test('lines break at bar lines to fit the width', () {
+      final tune = parseAbc(_abc);
+      final natural = layoutAbc(tune);
+      expect(natural, hasLength(1));
+      final narrow = layoutAbc(tune, maxWidth: natural.single.width / 2.5);
+      expect(narrow.length, greaterThan(2));
+      for (final row in narrow) {
+        // Every row fits unless it is a single measure.
+        expect(
+          row.width <= natural.single.width / 2.5 ||
+              row.line.elements.whereType<AbcBar>().length <= 2,
+          isTrue,
+        );
+      }
+      // The volta starts a row's measure, never ends a row.
+      for (final row in narrow) {
+        final last = row.line.elements.last;
+        expect(last is AbcBar && last.volta != null, isFalse);
+      }
+      // A leading repeat sign stays with the first measure.
+      expect(narrow.first.line.elements.whereType<AbcNote>(), isNotEmpty);
+    });
+
+    test('exact height follows the line breaks', () {
+      final tune = parseAbc(_abc);
+      final wide = abcHeight(tune, 20, 4000);
+      final narrow = abcHeight(tune, 20, 400);
+      expect(narrow, greaterThan(wide * 2));
+    });
+
+    testWidgets('renders ABC with transposition and fits in live mode', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final source =
+          '{title: ABC}\n{start_of_abc}\n$_abc{end_of_abc}\n[C]After';
+      final song = await tester.runAsync(() async {
+        final id = await app.songs.createSong(source: source);
+        return app.songs.getSong(id);
+      });
+      await tester.pumpWidget(
+        app.build(
+          home: LiveScreen(items: [LiveItem.song(song!, setTranspose: 2)]),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(AbcView), findsOneWidget);
+      expect(find.text('TUNE'), findsOneWidget); // T: as label
+      expect(find.byType(SingleChildScrollView), findsNothing);
+      final body = tester.getSize(find.byType(SongBody));
+      final box = tester.getSize(find.byType(FittedBox).first);
+      expect(body.height, lessThanOrEqualTo(box.height + 0.5));
+      // Transposed by the set item: D major becomes E major.
+      final tune = abcTuneOf(
+        parseChordPro(source).elements.whereType<DelegateSection>().single,
+        2,
+      );
+      expect(tune.key.name, 'E');
+      await app.dispose(tester);
+    });
   });
 }

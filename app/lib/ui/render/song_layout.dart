@@ -4,6 +4,7 @@ import 'package:chordpro/chordpro.dart';
 import 'package:flutter/material.dart';
 
 import 'chord_diagram.dart';
+import 'abc_view.dart';
 import 'song_blocks.dart';
 import 'song_delegates.dart';
 import 'song_image.dart';
@@ -32,6 +33,7 @@ class BlockMetrics {
     required this.minWidth,
     this.indent = 0,
     this.images = const [],
+    this.custom = const [],
   });
 
   /// Height of everything that never wraps, per unit of font size.
@@ -50,6 +52,10 @@ class BlockMetrics {
   /// Images that shrink to the column width.
   final List<ImageBox> images;
 
+  /// Content with its own layout: height in pixels for (font size, column
+  /// width), e.g. ABC notation that breaks at bar lines.
+  final List<double Function(double fontSize, double columnWidth)> custom;
+
   /// Height at [fontSize] in a column of [columnWidth] logical pixels.
   double height(double fontSize, double columnWidth) {
     final f = fontSize;
@@ -64,6 +70,9 @@ class BlockMetrics {
     final available = columnWidth - indent * f;
     for (final image in images) {
       h += image.height(f, available) + 0.3 * f;
+    }
+    for (final part in custom) {
+      h += part(f, available);
     }
     return h;
   }
@@ -142,6 +151,7 @@ BlockMetrics _measure(
       width,
       spanWidth,
       lineUnits,
+      formatter.transpose + formatter.leadingTranspose,
     );
   }
 
@@ -312,17 +322,28 @@ BlockMetrics _measureDelegate(
   double Function(String, TextStyle) width,
   double Function(InlineSpan) spanWidth,
   double Function(TextStyle) lineUnits,
+  int transpose,
 ) {
   const f = _referenceFontSize;
   final format = block.startFormat;
+  final abc = d.type == DelegateType.abc ? abcTuneOf(d, transpose) : null;
+  final title = d.label ?? abc?.title;
   final labelStyle = styles.labelFor(format);
   var fixed = 0.8;
   var minWidth = 0.0;
-  if (d.label != null) {
-    fixed += _labelLines(d.label!) * lineUnits(labelStyle);
-    minWidth = _labelWidth(d.label!, labelStyle, spanWidth);
+  if (title != null) {
+    fixed += _labelLines(title) * lineUnits(labelStyle);
+    minWidth = _labelWidth(title, labelStyle, spanWidth);
   }
   switch (d.type) {
+    case DelegateType.abc:
+      // Lines break at bar lines exactly as when rendering.
+      return BlockMetrics(
+        fixedHeight: fixed,
+        wrapping: const [],
+        minWidth: minWidth,
+        custom: [(f, width) => abcHeight(abc!, f, width)],
+      );
     case DelegateType.svg:
       return BlockMetrics(
         fixedHeight: fixed,
@@ -348,7 +369,7 @@ BlockMetrics _measureDelegate(
         ],
         minWidth: minWidth,
       );
-    case DelegateType.ly || DelegateType.abc:
+    case DelegateType.ly:
       final mono = styles.tabFor(format);
       // Same style as the notice in song_delegates.dart.
       final notice = styles
@@ -366,9 +387,7 @@ BlockMetrics _measureDelegate(
         wrapping: [
           (
             width: width(
-              d.type == DelegateType.ly
-                  ? 'Lilypond notation cannot be rendered on this device. Source:'
-                  : 'ABC notation (source):',
+              'Lilypond notation cannot be rendered on this device. Source:',
               notice,
             ),
             lineHeight: lineUnits(notice),
