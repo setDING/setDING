@@ -278,23 +278,17 @@ abstract class AppLocalizations {
   /// **'Hat PDF-Anhänge'**
   String get attachmentsTooltip;
 
-  /// No description provided for @transposeDown.
+  /// No description provided for @keyPickerTooltip.
   ///
   /// In de, this message translates to:
-  /// **'Halbton tiefer'**
-  String get transposeDown;
+  /// **'Tonart wählen'**
+  String get keyPickerTooltip;
 
-  /// No description provided for @transposeUp.
+  /// No description provided for @keyOriginal.
   ///
   /// In de, this message translates to:
-  /// **'Halbton höher'**
-  String get transposeUp;
-
-  /// No description provided for @transposeValue.
-  ///
-  /// In de, this message translates to:
-  /// **'Transponiert: {value}'**
-  String transposeValue(String value);
+  /// **'Original'**
+  String get keyOriginal;
 
   /// No description provided for @capo.
   ///
@@ -733,12 +727,6 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Aus dem Set entfernen'**
   String get removeFromSet;
-
-  /// No description provided for @setTranspose.
-  ///
-  /// In de, this message translates to:
-  /// **'Transponierung im Set'**
-  String get setTranspose;
 
   /// No description provided for @selectSongs.
   ///

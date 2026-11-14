@@ -2,6 +2,8 @@ import 'package:bandchords/data/database.dart';
 import 'package:bandchords/data/demo_song.dart';
 import 'package:bandchords/ui/live/live_screen.dart';
 import 'package:bandchords/ui/render/song_view.dart';
+import 'package:bandchords/ui/sets/set_screen.dart';
+import 'package:bandchords/ui/widgets/key_picker.dart';
 import 'package:bandchords/ui/songs/song_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -62,13 +64,18 @@ void main() {
     // Chord above lyrics.
     expect(find.text('D/F#'), findsWidgets);
 
-    // Transpose up by two semitones → key A, D/F# becomes E/G#.
-    await tester.tap(find.byTooltip('One semitone up'));
+    // Choose key A in the dropdown → D/F# becomes E/G#.
+    await tester.tap(find.byType(KeyPicker));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('One semitone up'));
+    await tester.tap(find.text('A').last);
     await tester.pumpAndSettle();
     expect(find.textContaining('Key A'), findsOneWidget);
     expect(find.text('E/G#'), findsWidgets);
+    final id = (await tester.runAsync(() => app.songs.watchSongs().first))!
+        .single
+        .id;
+    final overlay = await tester.runAsync(() => app.songs.getOverlay(id));
+    expect(overlay!.transpose, 2);
     await app.dispose(tester);
   });
 
@@ -217,6 +224,86 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.byIcon(Icons.repeat), findsNWidgets(2));
+    await app.dispose(tester);
+  });
+
+  testWidgets('chooses the key of a song in the set list', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final setId = await tester.runAsync(() async {
+      final id = await app.songs.createSong(
+        source: '{title: In F}\n{key: F}\n[F]x',
+      );
+      final setId = await app.sets.createSet(name: 'Gig');
+      await app.sets.addSongs(setId, [id]);
+      return setId;
+    });
+    await tester.pumpWidget(app.build(home: SetScreen(setId: setId!)));
+    await tester.pumpAndSettle();
+
+    // Dropdown shows the original key; choose D (three semitones down).
+    expect(find.text('F'), findsOneWidget);
+    await tester.tap(find.byType(KeyPicker));
+    await tester.pumpAndSettle();
+    expect(find.text('Original'), findsOneWidget);
+    await tester.tap(find.text('D').last);
+    await tester.pumpAndSettle();
+
+    final item = (await tester.runAsync(() => app.sets.getItems(setId)))!
+        .single;
+    expect(item.item.transpose, -3);
+    expect(find.text('D'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('key chosen in live mode is stored on the set item', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    const source = '{title: Live Key}\n{key: G}\n[G]Hello [C]there';
+    final data = await tester.runAsync(() async {
+      final songId = await app.songs.createSong(source: source);
+      final setId = await app.sets.createSet(name: 'Gig');
+      await app.sets.addSongs(setId, [songId]);
+      final views = await app.sets.getItems(setId);
+      return (
+        songId,
+        setId,
+        [
+          for (final v in views)
+            LiveItem.song(
+              v.song!,
+              setTranspose: v.item.transpose,
+              setItemId: v.item.id,
+            ),
+        ],
+      );
+    });
+    final (songId, setId, items) = data!;
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+
+    // Open the control bar (tap in the middle) and choose key A.
+    final page = tester.getRect(find.byType(PageView));
+    await tester.tapAt(page.center);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(KeyPicker));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('A').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('D'), findsWidgets); // C → D
+    final stored = await tester.runAsync(
+      () async => (
+        (await app.sets.getItems(setId)).single.item.transpose,
+        (await app.songs.getSong(songId))!.chordproSource,
+        (await app.songs.getOverlay(songId)).transpose,
+      ),
+    );
+    expect(stored!.$1, 2);
+    expect(stored.$2, source); // the song itself is unchanged
+    expect(stored.$3, 0); // no personal transposition
     await app.dispose(tester);
   });
 

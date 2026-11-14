@@ -58,16 +58,8 @@
     }
   },
   "attachmentsTooltip": "Hat PDF-Anhänge",
-  "transposeDown": "Halbton tiefer",
-  "transposeUp": "Halbton höher",
-  "transposeValue": "Transponiert: {value}",
-  "@transposeValue": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
+  "keyPickerTooltip": "Tonart wählen",
+  "keyOriginal": "Original",
   "capo": "Kapo",
   "capoValue": "Kapo {fret}",
   "@capoValue": {
@@ -190,7 +182,6 @@
   },
   "exportSet": "Als ZIP exportieren",
   "removeFromSet": "Aus dem Set entfernen",
-  "setTranspose": "Transponierung im Set",
   "selectSongs": "Songs auswählen",
   "selectedCount": "{count, plural, =0{Keine ausgewählt} =1{1 ausgewählt} other{{count} ausgewählt}}",
   "@selectedCount": {

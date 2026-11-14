@@ -11,6 +11,7 @@ import '../live/live_screen.dart';
 import '../songs/song_screen.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
+import '../widgets/key_picker.dart';
 import 'sets_screen.dart';
 import 'song_picker.dart';
 
@@ -250,13 +251,9 @@ class _SetItemTile extends ConsumerWidget {
     }
 
     final settings = ref.watch(settingsProvider);
-    String? keyText;
-    if (song?.songKey case final key?) {
-      final parsed = cp.Key.tryParse(key);
-      keyText = parsed == null
-          ? key
-          : parsed.transpose(item.transpose).format(settings.notation);
-    }
+    final songKey = song?.songKey == null
+        ? null
+        : cp.Key.tryParse(song!.songKey!);
 
     return ListTile(
       leading: SizedBox(
@@ -270,13 +267,7 @@ class _SetItemTile extends ConsumerWidget {
             ? l10n.songMissing
             : (song.title.isEmpty ? l10n.untitled : song.title),
       ),
-      subtitle: Text(
-        [
-          ?song?.artist,
-          ?keyText,
-          if (item.transpose != 0) formatSemitones(item.transpose),
-        ].join(' · '),
-      ),
+      subtitle: song?.artist == null ? null : Text(song!.artist!),
       onTap: song == null
           ? null
           : () => Navigator.push(
@@ -288,37 +279,18 @@ class _SetItemTile extends ConsumerWidget {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          PopupMenuButton<String>(
-            onSelected: (value) => switch (value) {
-              'up' => repo.setItemTranspose(
-                item.id,
-                (item.transpose + 1).remainder(12),
-              ),
-              'down' => repo.setItemTranspose(
-                item.id,
-                (item.transpose - 1).remainder(12),
-              ),
-              'reset' => repo.setItemTranspose(item.id, 0),
-              'remove' => repo.removeItem(setId, item.id),
-              _ => null,
-            },
-            itemBuilder: (_) => [
-              PopupMenuItem(
-                enabled: false,
-                child: Text(
-                  '${l10n.setTranspose}: ${formatSemitones(item.transpose)}',
-                ),
-              ),
-              PopupMenuItem(value: 'up', child: Text(l10n.transposeUp)),
-              PopupMenuItem(value: 'down', child: Text(l10n.transposeDown)),
-              if (item.transpose != 0)
-                PopupMenuItem(
-                  value: 'reset',
-                  child: Text(l10n.resetAdjustments),
-                ),
-              const PopupMenuDivider(),
-              PopupMenuItem(value: 'remove', child: Text(l10n.removeFromSet)),
-            ],
+          if (song != null)
+            KeyPicker(
+              dense: true,
+              baseKey: songKey,
+              transpose: item.transpose,
+              notation: settings.notation,
+              onChanged: (value) => repo.setItemTranspose(item.id, value),
+            ),
+          IconButton(
+            tooltip: l10n.removeFromSet,
+            icon: const Icon(Icons.remove_circle_outline),
+            onPressed: () => repo.removeItem(setId, item.id),
           ),
           handle,
         ],

@@ -1,4 +1,5 @@
-import 'package:chordpro/chordpro.dart';
+import 'package:chordpro/chordpro.dart' hide Key;
+import 'package:chordpro/chordpro.dart' as cp show Key;
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,6 +16,7 @@ import '../render/song_header.dart';
 import '../render/song_view.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
+import '../widgets/key_picker.dart';
 import 'song_editor_screen.dart';
 
 /// Shows a song with personal adjustments and its PDF attachments.
@@ -189,6 +191,8 @@ class _SongScreenState extends ConsumerState<SongScreen> {
               ),
               const SizedBox(height: 12),
               _AdjustmentsBar(
+                songKey: parsed.key,
+                notation: settings.notation,
                 overlay: overlay,
                 deviceNashville: settings.nashville,
                 hasKey: parsed.key != null,
@@ -238,12 +242,16 @@ class _SongScreenState extends ConsumerState<SongScreen> {
 /// Transposition, capo, font size, Nashville and notes (layer 3, ADR-0006).
 class _AdjustmentsBar extends StatelessWidget {
   const _AdjustmentsBar({
+    required this.songKey,
+    required this.notation,
     required this.overlay,
     required this.deviceNashville,
     required this.hasKey,
     required this.onChanged,
   });
 
+  final cp.Key? songKey;
+  final ChordNotation notation;
   final SongOverlay overlay;
   final bool deviceNashville;
   final bool hasKey;
@@ -263,16 +271,11 @@ class _AdjustmentsBar extends StatelessWidget {
       runSpacing: 8,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        _Stepper(
-          icon: Icons.music_note,
-          label: formatSemitones(overlay.transpose),
-          tooltip: l10n.transposeValue(formatSemitones(overlay.transpose)),
-          downTooltip: l10n.transposeDown,
-          upTooltip: l10n.transposeUp,
-          onDown: () =>
-              onChanged((o) => o.copyWith(transpose: _wrap(o.transpose - 1))),
-          onUp: () =>
-              onChanged((o) => o.copyWith(transpose: _wrap(o.transpose + 1))),
+        KeyPicker(
+          baseKey: songKey,
+          transpose: overlay.transpose,
+          notation: notation,
+          onChanged: (value) => onChanged((o) => o.copyWith(transpose: value)),
         ),
         MenuAnchor(
           builder: (context, controller, _) => ActionChip(
@@ -354,16 +357,12 @@ class _AdjustmentsBar extends StatelessWidget {
       ],
     );
   }
-
-  /// Keeps transposition within one octave (−11 … +11).
-  static int _wrap(int value) => value.remainder(12);
 }
 
 class _Stepper extends StatelessWidget {
   const _Stepper({
     required this.icon,
     required this.label,
-    this.tooltip,
     required this.downTooltip,
     required this.upTooltip,
     required this.onDown,
@@ -372,7 +371,6 @@ class _Stepper extends StatelessWidget {
 
   final IconData icon;
   final String label;
-  final String? tooltip;
   final String downTooltip;
   final String upTooltip;
   final VoidCallback onDown;
@@ -397,10 +395,7 @@ class _Stepper extends StatelessWidget {
           ),
           Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
           const SizedBox(width: 4),
-          Tooltip(
-            message: tooltip ?? '',
-            child: Text(label, style: theme.textTheme.labelLarge),
-          ),
+          Text(label, style: theme.textTheme.labelLarge),
           IconButton(
             visualDensity: VisualDensity.compact,
             tooltip: upTooltip,

@@ -118,15 +118,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get attachmentsTooltip => 'Has PDF attachments';
 
   @override
-  String get transposeDown => 'One semitone down';
+  String get keyPickerTooltip => 'Choose key';
 
   @override
-  String get transposeUp => 'One semitone up';
-
-  @override
-  String transposeValue(String value) {
-    return 'Transposed: $value';
-  }
+  String get keyOriginal => 'Original';
 
   @override
   String get capo => 'Capo';
@@ -374,9 +369,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get removeFromSet => 'Remove from set';
-
-  @override
-  String get setTranspose => 'Transposition in this set';
 
   @override
   String get selectSongs => 'Select songs';

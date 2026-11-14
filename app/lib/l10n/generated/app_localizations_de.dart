@@ -119,15 +119,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get attachmentsTooltip => 'Hat PDF-Anhänge';
 
   @override
-  String get transposeDown => 'Halbton tiefer';
+  String get keyPickerTooltip => 'Tonart wählen';
 
   @override
-  String get transposeUp => 'Halbton höher';
-
-  @override
-  String transposeValue(String value) {
-    return 'Transponiert: $value';
-  }
+  String get keyOriginal => 'Original';
 
   @override
   String get capo => 'Kapo';
@@ -378,9 +373,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get removeFromSet => 'Aus dem Set entfernen';
-
-  @override
-  String get setTranspose => 'Transponierung im Set';
 
   @override
   String get selectSongs => 'Songs auswählen';

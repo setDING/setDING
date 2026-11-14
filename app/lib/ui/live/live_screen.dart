@@ -15,21 +15,34 @@ import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../render/song_header.dart';
 import '../render/song_view.dart';
+import '../widgets/key_picker.dart';
 
 /// One entry of the live sequence.
 class LiveItem {
-  const LiveItem.song(SongEntry this.song, {this.setTranspose = 0})
-    : type = SetItemType.song,
-      label = null;
+  const LiveItem.song(
+    SongEntry this.song, {
+    this.setTranspose = 0,
+    this.setItemId,
+  }) : type = SetItemType.song,
+       label = null;
 
-  const LiveItem.marker(this.type, this.label) : song = null, setTranspose = 0;
+  const LiveItem.marker(this.type, this.label)
+    : song = null,
+      setTranspose = 0,
+      setItemId = null;
 
   final SetItemType type;
   final SongEntry? song;
 
   /// Transposition from the set item (layer 2, ADR-0006).
   final int setTranspose;
+
+  /// The set item this entry comes from; null when a single song is played.
+  final String? setItemId;
   final String? label;
+
+  LiveItem withSetTranspose(int value) =>
+      LiveItem.song(song!, setTranspose: value, setItemId: setItemId);
 
   String title(AppLocalizations l10n) => song == null
       ? (label ?? '')
@@ -72,7 +85,11 @@ class LiveScreen extends ConsumerStatefulWidget {
         if (v.item.type != SetItemType.song)
           LiveItem.marker(v.item.type, v.item.note)
         else if (v.song != null)
-          LiveItem.song(v.song!, setTranspose: v.item.transpose),
+          LiveItem.song(
+            v.song!,
+            setTranspose: v.item.transpose,
+            setItemId: v.item.id,
+          ),
     ];
     if (items.isEmpty || !context.mounted) return;
     await Navigator.push(
@@ -108,6 +125,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   final _pdf = <int, PdfViewerController>{};
   final _focus = FocusNode();
   bool _controls = false;
+
+  /// Items as shown; the key of a set item can be changed during live mode.
+  late final List<LiveItem> _items = [...widget.items];
 
   @override
   void initState() {
@@ -169,7 +189,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         return;
       }
     }
-    if (_index < widget.items.length - 1) {
+    if (_index < _items.length - 1) {
       _pages.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
@@ -249,14 +269,14 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
             ),
-            for (var i = 0; i < widget.items.length; i++)
+            for (var i = 0; i < _items.length; i++)
               ListTile(
                 selected: i == _index,
                 leading: Text('${i + 1}'),
-                title: Text(widget.items[i].title(l10n)),
-                subtitle: widget.items[i].song?.songKey == null
+                title: Text(_items[i].title(l10n)),
+                subtitle: _items[i].song?.songKey == null
                     ? null
-                    : Text(widget.items[i].song!.songKey!),
+                    : Text(_items[i].song!.songKey!),
                 onTap: () => Navigator.pop(context, i),
               ),
           ],
@@ -267,8 +287,18 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     _focus.requestFocus();
   }
 
+  /// Changes the key of the current set item. It is stored on the set item,
+  /// so the song itself stays unchanged.
+  Future<void> _setKey(int transpose) async {
+    final item = _items[_index];
+    final id = item.setItemId;
+    if (id == null) return;
+    setState(() => _items[_index] = item.withSetTranspose(transpose));
+    await ref.read(setRepositoryProvider).setItemTranspose(id, transpose);
+  }
+
   Future<void> _adjust(SongOverlay Function(SongOverlay) change) async {
-    final song = widget.items[_index].song;
+    final song = _items[_index].song;
     if (song == null) return;
     final repo = ref.read(songRepositoryProvider);
     await repo.saveOverlay(change(await repo.getOverlay(song.id)));
@@ -277,7 +307,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final items = widget.items;
+    final items = _items;
     final next = _index < items.length - 1 ? items[_index + 1] : null;
     final theme = Theme.of(context);
 
@@ -334,9 +364,11 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
               ),
               if (_controls)
                 _ControlBar(
+                  item: items[_index],
                   onExit: () => Navigator.pop(context),
                   onOverview: _showOverview,
                   onAdjust: items[_index].song == null ? null : _adjust,
+                  onSetKey: _setKey,
                 ),
             ],
           ),
@@ -359,21 +391,35 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   }
 }
 
-class _ControlBar extends StatelessWidget {
+class _ControlBar extends ConsumerWidget {
   const _ControlBar({
+    required this.item,
     required this.onExit,
     required this.onOverview,
     required this.onAdjust,
+    required this.onSetKey,
   });
 
+  final LiveItem item;
   final VoidCallback onExit;
   final VoidCallback onOverview;
   final Future<void> Function(SongOverlay Function(SongOverlay))? onAdjust;
+  final ValueChanged<int> onSetKey;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final adjust = onAdjust;
+    final song = item.song;
+    final overlay = song == null
+        ? null
+        : ref.watch(overlayProvider(song.id)).value;
+    // In a set, the key is stored on the set item (the song stays
+    // unchanged); a single song uses the personal transposition.
+    final inSet = item.setItemId != null;
+    final originalKey = song?.songKey == null
+        ? null
+        : cp.Key.tryParse(song!.songKey!);
     return Material(
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
       child: Padding(
@@ -392,20 +438,15 @@ class _ControlBar extends StatelessWidget {
             ),
             const Spacer(),
             if (adjust != null) ...[
-              IconButton(
-                tooltip: l10n.transposeDown,
-                icon: const Icon(Icons.arrow_downward),
-                onPressed: () => adjust(
-                  (o) => o.copyWith(transpose: (o.transpose - 1).remainder(12)),
-                ),
+              KeyPicker(
+                baseKey: originalKey,
+                transpose: inSet ? item.setTranspose : overlay?.transpose ?? 0,
+                notation: ref.watch(settingsProvider).notation,
+                onChanged: (value) => inSet
+                    ? onSetKey(value)
+                    : adjust((o) => o.copyWith(transpose: value)),
               ),
-              IconButton(
-                tooltip: l10n.transposeUp,
-                icon: const Icon(Icons.arrow_upward),
-                onPressed: () => adjust(
-                  (o) => o.copyWith(transpose: (o.transpose + 1).remainder(12)),
-                ),
-              ),
+              const SizedBox(width: 8),
               IconButton(
                 tooltip: l10n.fontSmaller,
                 icon: const Icon(Icons.text_decrease),
