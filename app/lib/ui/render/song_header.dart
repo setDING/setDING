@@ -77,7 +77,7 @@ class SongHeader extends StatelessWidget {
   }
 }
 
-/// The song sequence from `{sequence: …}` as a row of small chips.
+/// The song sequence from `{x_sequence: …}` as a row of small chips.
 class SongSequenceView extends StatelessWidget {
   const SongSequenceView(this.sequence, {super.key, this.compact = false});
 

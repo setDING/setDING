@@ -177,7 +177,7 @@ void main() {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'en'});
     final song = parseChordPro(
-      '{title: T}\n{subtitle: Sub}\n{sequence: C, V1, PC, C x2, B, Coda}',
+      '{title: T}\n{subtitle: Sub}\n{x_sequence: C, V1, PC, C x2, B, Coda}',
     );
     await tester.pumpWidget(
       app.build(

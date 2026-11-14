@@ -123,3 +123,8 @@ Each phase is a separate branch and merge (ADR-0010).
   Int/Zw/Interlude, Inst/Instrumental, Solo, T/Tag, O/Out/End/Outro; optional number
   (`V2`) and repeat (`C x2`, `2x C`, `C (2x)`); unknown codes are shown as written. Other
   ChordPro tools treat `{sequence}` as an unknown directive.
+- 2026-11-15: Custom directives follow the ChordPro specification and start with `x_`
+  (the specification never defines `x_` directives and asks tools to ignore unknown
+  ones). The song sequence is therefore `{x_sequence: …}` only, available as
+  `%{x_sequence}`; `{sequence}` and `{x_bandchords_sequence}` are no longer recognised.
+  Future BandChords extensions use the `x_` prefix as well.

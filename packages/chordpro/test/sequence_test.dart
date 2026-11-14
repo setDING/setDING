@@ -2,8 +2,8 @@ import 'package:chordpro/chordpro.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('parses the sequence directive', () {
-    final song = parseChordPro('{title: X}\n{sequence: C, V, C, PC, B}');
+  test('parses the custom directive x_sequence', () {
+    final song = parseChordPro('{title: X}\n{x_sequence: C, V, C, PC, B}');
     expect(song.sequence.map((i) => i.code), ['C', 'V', 'C', 'PC', 'B']);
     expect(song.sequence.map((i) => i.part), [
       SequencePart.chorus,
@@ -33,11 +33,15 @@ void main() {
     expect(items.last.code, 'Coda');
   });
 
-  test('portable form x_sequence and metadata substitution', () {
-    final song = parseChordPro('{x_sequence: V, C}\n{c: Order: %{sequence}}');
+  test('metadata substitution with %{x_sequence}', () {
+    final song = parseChordPro('{x_sequence: V, C}\n{c: Order: %{x_sequence}}');
     expect(song.sequence.map((i) => i.code), ['V', 'C']);
     final comment = song.sections.single.lines.single as CommentLine;
     expect(comment.text, 'Order: V, C');
+  });
+
+  test('{sequence} without x_ is not a BandChords directive', () {
+    expect(parseChordPro('{sequence: V, C}').sequence, isEmpty);
   });
 
   test('no sequence', () {

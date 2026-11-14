@@ -1,5 +1,5 @@
-/// Song sequence (arrangement): BandChords' custom `{sequence}` directive,
-/// e.g. `{sequence: I, V1, C, V2, PC, C x2, B, C, O}`.
+/// Song sequence (arrangement): BandChords' custom directive `{x_sequence}`,
+/// e.g. `{x_sequence: I, V1, C, V2, PC, C x2, B, C, O}`.
 library;
 
 /// Kind of a part in a song sequence.
@@ -93,7 +93,7 @@ final _item = RegExp(
   r'^(?:(\d+)\s*[x×]\s*)?([a-zA-Z][a-zA-Z-]*?)\s*(\d+)?\s*(?:[x×]\s*(\d+)|\((\d+)\s*[x×]\))?$',
 );
 
-/// Parses the value of `{sequence}`. Items are separated by commas (or
+/// Parses the value of `{x_sequence}`. Items are separated by commas (or
 /// semicolons); unknown abbreviations are kept as [SequencePart.other].
 List<SequenceItem> parseSequence(String value) => [
   for (final raw in value.split(RegExp(r'[,;]')))

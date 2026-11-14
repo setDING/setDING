@@ -24,7 +24,7 @@ brackets, all section types and labels, chorus recall, SongSelect-style headings
 tab, grids (shape, marks, voltas, strums), font/size/colour directives, conditional
 directives (instrument, user, metadata, negation), chord definitions and diagrams,
 images, SVG, textblock, ABC, Lilypond, `{columns}`, `{column_break}`, `{new_page}`,
-custom `x_` directives, the BandChords `{sequence}` directive and `{new_song}`.
+custom `x_` directives (including BandChords' `{x_sequence}`) and `{new_song}`.
 
 The file is also a regression test: `packages/chordpro/test/showcase_test.dart` and
 `app/test/showcase_test.dart` parse, import and render it.

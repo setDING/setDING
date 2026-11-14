@@ -52,6 +52,10 @@ Every change follows [`docs/development/git-workflow.md`](docs/development/git-w
 regression test (package and app). When adding or changing a ChordPro feature, extend
 the showcase and its tests, and run `make examples` to rebuild the ZIP.
 
+BandChords-specific directives are custom directives in the sense of the ChordPro
+specification and **must start with `x_`** (e.g. `{x_sequence}`); never add directives
+without this prefix that the specification does not define.
+
 ## Language
 
 - **Project language is English**: code, identifiers, comments, documentation, ADRs, commit messages, pull requests, issues and file names.

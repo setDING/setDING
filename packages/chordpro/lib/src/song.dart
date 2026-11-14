@@ -58,9 +58,9 @@ class Song {
   String? get sortArtist => metaValue('sortartist');
   List<String> get tags => meta['tag'] ?? const [];
 
-  /// Song sequence from `{sequence: …}` (BandChords extension).
+  /// Song sequence from the custom directive `{x_sequence: …}`.
   List<SequenceItem> get sequence {
-    final value = metaValue('sequence');
+    final value = metaValue('x_sequence');
     return value == null ? const [] : parseSequence(value);
   }
 

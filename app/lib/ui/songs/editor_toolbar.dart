@@ -174,7 +174,7 @@ class EditorSnippets {
         meta('tempo', l10n.metaTempo),
         meta('time', l10n.metaTime),
         meta('duration', l10n.metaDuration),
-        meta('sequence', l10n.sequenceLabel),
+        meta('x_sequence', l10n.sequenceLabel),
         null,
         meta('composer', l10n.metaComposer),
         meta('lyricist', l10n.metaLyricist),
