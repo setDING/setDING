@@ -183,6 +183,7 @@ See "Open points" in the individual ADRs. The most important:
 9. ~~Invitation flow?~~ → Invitation link (reusable, 7 days, revocable, member role) plus QR code (ADR-0005)
 10. ~~PDF details?~~ → All attachments on every device, max. 20 MB per PDF, PDF-only songs allowed, local PDFs in the MVP (ADR-0009)
 11. Server details: OS, Docker, public domain/HTTPS – also needed for deep links of invitation links (ADR-0004, ADR-0005)
+12. App name and domain – "BandChords" is a working title; candidates in [`docs/app-name-candidates.md`](../app-name-candidates.md)
 
 ## 10. ADR index
 
