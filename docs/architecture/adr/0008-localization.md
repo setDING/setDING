@@ -1,0 +1,60 @@
+# ADR-0008: Localization (German/English)
+
+- **Status:** Accepted
+- **Date:** 2026-11-14
+
+## Context
+
+The app is primarily used by German-speaking bands, but should also be usable in
+English. Users must be able to choose the language themselves, independent of the
+device's system language (e.g. an English-language tablet used by a German-speaking
+musician).
+
+## Decision
+
+- The UI is available in **German (`de`) and English (`en`)**. All UI texts are
+  localized from the start of the MVP; no hard-coded strings in widgets.
+- Implementation uses Flutter's standard approach: **`flutter_localizations` + `intl`
+  with ARB files** (`app_de.arb`, `app_en.arb`) and generated, type-safe accessors
+  (`gen-l10n`).
+- **Language setting** in the app settings with three options:
+  - *System default* (initial value) – uses the device language if it is German or
+    English, otherwise **English** as fallback
+  - *Deutsch*
+  - *English*
+- The setting is stored **locally per device** (layer 4 in ADR-0006) and applied
+  immediately without restarting the app.
+- **German is the reference language** for UI texts; new texts are written in German
+  and English at the same time. A missing translation fails the build/CI check.
+- **Not localized:** song content (ChordPro text, titles, comments written by the
+  band). Only generated labels are localized, e.g. default section labels
+  ("Verse"/"Strophe", "Chorus"/"Refrain") when the ChordPro file has no explicit label.
+- Date and number formats follow the selected language (`intl`).
+- **German means Swiss Standard German (`de-CH`):** German UI texts use Swiss
+  orthography ("ss" instead of "ß", e.g. "Grösse", "schliessen"), and date/number
+  formatting uses the `de_CH` locale. There is only one German variant; users in
+  Germany or Austria also get the Swiss spelling.
+
+## Alternatives considered
+
+| Option | Pros | Cons |
+|---|---|---|
+| **`flutter_localizations` + `intl` (ARB, gen-l10n)** (chosen) | Official Flutter approach, type-safe, ARB is supported by translation tools, no extra dependency | Some boilerplate, code generation |
+| `easy_localization` / `slang` | Less boilerplate, JSON/YAML files | Additional third-party dependency |
+| Follow system language only (no setting) | Simplest | Does not meet the requirement to choose the language in the settings |
+| German only | Least effort | Excludes English-speaking musicians/stand-ins |
+
+## Consequences
+
+- From the first screen on, every UI text goes through the localization layer.
+- Further languages (e.g. French, Italian for Switzerland) can be added later by adding an ARB file.
+- Chord notation (H vs. B) is **not** coupled to the UI language; it is a separate display setting (see open point in ADR-0003).
+
+## Decision log
+
+- 2026-11-14: UI primarily in German and English, selectable in the settings.
+- 2026-11-14: German variant is Swiss Standard German (`de-CH`, no "ß"). A separate de-DE variant is not planned; it could be added later as an extra ARB file if needed.
+
+## Open points
+
+- Should the language preference also be synced with the user account (as a default for new devices)?

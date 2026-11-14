@@ -1,0 +1,42 @@
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+coverage/
+*.g.dart.tmp
+
+# Platform builds
+android/.gradle/
+android/local.properties
+android/key.properties
+*.jks
+*.keystore
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/App.framework
+windows/flutter/ephemeral/
+
+# PocketBase (local dev data)
+pb_data/
+
+# Secrets / local env
+.env
+.env.*
+!.env.example
+
+# Claude Code local settings
+.claude/settings.local.json
