@@ -233,5 +233,8 @@
   "sequenceSongParts": "Parts of the song",
   "sequenceCommonParts": "Common parts (the song has no sections yet)",
   "sequenceClear": "Clear",
-  "sequenceAsText": "Edit as text"
+  "sequenceAsText": "Edit as text",
+  "exportSetList": "Export set list (text)",
+  "copySetList": "Copy set list",
+  "setListCopied": "Set list copied"
 }

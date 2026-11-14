@@ -792,4 +792,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get sequenceAsText => 'Als Text bearbeiten';
+
+  @override
+  String get exportSetList => 'Set-Liste exportieren (Text)';
+
+  @override
+  String get copySetList => 'Set-Liste kopieren';
+
+  @override
+  String get setListCopied => 'Set-Liste kopiert';
 }

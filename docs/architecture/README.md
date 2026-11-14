@@ -156,7 +156,7 @@ Notes:
 ## 7. Cross-cutting concerns
 
 - **Security:** Authentication via PocketBase (email/password or magic link); data is only accessible within the user's own bands, and write permissions follow the role per band (backend access rules). The auth token is stored locally so no new login is needed offline.
-- **Import/export:** Import of `.cho`/`.chordpro`/`.chopro`/`.txt` files (individually and as ZIP, optionally converting German H/B notation) and PDF attachments; export of a set as a ZIP with ChordPro files and PDF attachments.
+- **Import/export:** Import of `.cho`/`.chordpro`/`.chopro`/`.txt` files (individually and as ZIP, optionally converting German H/B notation) and PDF attachments; export of a set as a ZIP with ChordPro files and PDF attachments; the set list as text (file or clipboard), one line per song with title, key for the set and sequence.
 - **Localization:** UI in German and English, selectable in the settings (ADR-0008). Song content is not translated.
 - **Testability:** `chordpro` package with extensive unit tests (parser, transposition); golden tests for rendering.
 - **Data protection:** Self-hosting keeps the data under the band's own control (e.g. in Switzerland).

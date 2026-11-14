@@ -348,5 +348,8 @@
   "sequenceSongParts": "Teile des Songs",
   "sequenceCommonParts": "Übliche Teile (der Song hat noch keine Abschnitte)",
   "sequenceClear": "Leeren",
-  "sequenceAsText": "Als Text bearbeiten"
+  "sequenceAsText": "Als Text bearbeiten",
+  "exportSetList": "Set-Liste exportieren (Text)",
+  "copySetList": "Set-Liste kopieren",
+  "setListCopied": "Set-Liste kopiert"
 }

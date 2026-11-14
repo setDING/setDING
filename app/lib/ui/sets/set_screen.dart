@@ -1,19 +1,24 @@
+import 'dart:convert';
+
 import 'package:chordpro/chordpro.dart' as cp;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../render/song_header.dart';
-import '../widgets/sequence_dialog.dart';
 import '../../data/database.dart';
+import '../../data/import_export.dart';
 import '../../data/set_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../live/live_screen.dart';
+import '../render/song_header.dart';
 import '../songs/song_screen.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
 import '../widgets/key_picker.dart';
+import '../widgets/sequence_dialog.dart';
+import 'set_list_text.dart';
 import 'sets_screen.dart';
 import 'song_picker.dart';
 
@@ -59,6 +64,39 @@ class _SetScreenState extends ConsumerState<SetScreen> {
       mimeType: 'application/zip',
     );
     if (saved && mounted) showMessage(context, l10n.exported);
+  }
+
+  /// The set list as text: one line per song with title, key and sequence.
+  Future<String> _setListText(SetlistEntry set) async {
+    final l10n = AppLocalizations.of(context);
+    final items = await _repo.getItems(set.id);
+    if (!mounted) return '';
+    return setListText(
+      set,
+      items,
+      notation: ref.read(settingsProvider).notation,
+      formatDate: (date) => formatGigDate(context, date),
+      untitled: l10n.untitled,
+      songMissing: l10n.songMissing,
+    );
+  }
+
+  Future<void> _exportSetList(SetlistEntry set) async {
+    final l10n = AppLocalizations.of(context);
+    final text = await _setListText(set);
+    final saved = await saveFile(
+      '${safeFileName(set.name)}.txt',
+      Uint8List.fromList(utf8.encode(text)),
+      mimeType: 'text/plain',
+    );
+    if (saved && mounted) showMessage(context, l10n.exported);
+  }
+
+  Future<void> _copySetList(SetlistEntry set) async {
+    final l10n = AppLocalizations.of(context);
+    final text = await _setListText(set);
+    await Clipboard.setData(ClipboardData(text: text));
+    if (mounted) showMessage(context, l10n.setListCopied);
   }
 
   Future<void> _delete(SetlistEntry set) async {
@@ -120,6 +158,8 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                   'text' => _addMarker(SetItemType.text),
                   'edit' => showSetDialog(context, ref, existing: set),
                   'export' => _export(set),
+                  'exportList' => _exportSetList(set),
+                  'copyList' => _copySetList(set),
                   'delete' => _delete(set),
                   _ => null,
                 },
@@ -127,7 +167,17 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                   PopupMenuItem(value: 'pause', child: Text(l10n.addPause)),
                   PopupMenuItem(value: 'text', child: Text(l10n.addText)),
                   PopupMenuItem(value: 'edit', child: Text(l10n.editSet)),
+                  const PopupMenuDivider(),
+                  PopupMenuItem(
+                    value: 'copyList',
+                    child: Text(l10n.copySetList),
+                  ),
+                  PopupMenuItem(
+                    value: 'exportList',
+                    child: Text(l10n.exportSetList),
+                  ),
                   PopupMenuItem(value: 'export', child: Text(l10n.exportSet)),
+                  const PopupMenuDivider(),
                   PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
                 ],
               ),
