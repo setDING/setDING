@@ -163,10 +163,27 @@ Notes:
 
 | Phase | Scope |
 |---|---|
-| **MVP** | ChordPro parser & renderer (notation B/H, Nashville), local song library, PDF attachments, creating sets, live mode with pedal, import/export, German/English UI – initially **without** a backend (single device) |
+| **MVP** ✅ | ChordPro parser & renderer (notation B/H, Nashville), local song library, PDF attachments, creating sets, live mode with pedal, import/export, German/English UI – initially **without** a backend (single device) |
 | **Phase 1** | Backend, login, bands & roles (several admins, several bands per user), sync of songs, sets and PDF files incl. conflict handling |
 | **Phase 2** | Synced personal overlays |
 | **Later** | Freehand annotations (stylus), metronome/count-in, MIDI control, web client for management |
+
+### MVP status (2026-11-14)
+
+The MVP is implemented in [`app/`](../../app) and [`packages/chordpro/`](../../packages/chordpro)
+and runs locally on a single device (no backend yet). Simplifications compared to the
+target state described in the ADRs, to be completed in later phases:
+
+| Topic | MVP | Target (ADR) |
+|---|---|---|
+| Personal notes | One text note per song, shown above the song | Notes anchored to a line/section (ADR-0006) |
+| Pedal keys | Fixed mapping: arrows, Page Up/Down, Space, Enter, Backspace | Configurable mapping (ADR-0007) |
+| Auto-scroll | Not implemented | Optional auto-scroll by tempo/duration (ADR-0007) |
+| PDF display | One page at a time, fit to width | Two pages side by side in landscape (ADR-0009) |
+| Bands & roles | One implicit local band, all features available | Roles per band via backend (ADR-0005, phase 1) |
+
+Verified with unit and widget tests (`tool/check.sh`) and rendered screenshots;
+not yet built or run on a physical Android, iOS or Windows device.
 
 ## 9. Open questions
 
