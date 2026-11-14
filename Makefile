@@ -26,7 +26,7 @@ BUNDLE   := $(APP)/build/linux/x64/debug/bundle/bandchords
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := BANDCHORDS_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build reset data-dir check test codegen l10n screenshots doctor clean
+.PHONY: help setup dev start build reset data-dir check test codegen l10n screenshots examples doctor clean
 
 help: ## Show this help
 	@echo "BandChords – make targets"
@@ -76,6 +76,11 @@ l10n: ## Regenerate the translations from the ARB files
 screenshots: ## Render screenshots with real fonts to app/build/screenshots/
 	cd $(APP) && $(FLUTTER) test test_screenshots
 	@echo "Screenshots: $(APP)/build/screenshots/"
+
+examples: ## Rebuild docs/examples/feature-showcase.zip from the example files
+	cd $(ROOT)/docs/examples && rm -f feature-showcase.zip && \
+		python3 -c "import zipfile; z = zipfile.ZipFile('feature-showcase.zip', 'w', zipfile.ZIP_DEFLATED); [z.write(f) for f in ('feature-showcase.cho', 'stage-plan.svg')]; z.close()"
+	@echo "Updated docs/examples/feature-showcase.zip"
 
 doctor: ## Show the state of the Flutter toolchain
 	$(FLUTTER) doctor

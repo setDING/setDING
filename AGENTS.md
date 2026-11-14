@@ -46,6 +46,12 @@ Every change follows [`docs/development/git-workflow.md`](docs/development/git-w
 - Squash merge only. An agent may merge its own PR when the test gate is satisfied, CI is green and no "human must decide" rule applies; otherwise label `needs-human`.
 - Never end a session with unpushed work: commit, push, and leave a handover comment on the PR.
 
+## ChordPro features
+
+`docs/examples/feature-showcase.cho` uses every supported ChordPro feature and is a
+regression test (package and app). When adding or changing a ChordPro feature, extend
+the showcase and its tests, and run `make examples` to rebuild the ZIP.
+
 ## Language
 
 - **Project language is English**: code, identifiers, comments, documentation, ADRs, commit messages, pull requests, issues and file names.

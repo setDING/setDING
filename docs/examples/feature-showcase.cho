@@ -1,0 +1,234 @@
+# BandChords feature showcase – every ChordPro feature supported by the app.
+# All lyrics and music in this file are original and free to use.
+# Import it (or feature-showcase.zip, which also contains the image) via
+# Songs → Import files. The {new_song} at the end creates a second song.
+
+{title: Feature Showcase}
+{sorttitle: Showcase, Feature}
+{subtitle: Every directive in one song}
+{artist: The BandChords Band}
+{sortartist: BandChords Band, The}
+{composer: A. Composer}
+{composer: B. Composer}
+{lyricist: C. Lyricist}
+{arranger: D. Arranger}
+{copyright: 2026 BandChords (free to use)}
+{album: Test Recordings}
+{year: 2026}
+{key: G}
+{time: 4/4}
+{tempo: 96}
+{duration: 3:45}
+{capo: 0}
+{tag: Test}
+{tag: Showcase}
+{meta: mood happy}
+{meta: duet true}
+{x_bandchords_note: custom directives starting with x_ are ignored}
+
+# ---------------------------------------------------------------------------
+# Metadata in texts and comment styles
+# ---------------------------------------------------------------------------
+{comment: %{title} by %{artist} – key %{key}, %{tempo} BPM}
+{comment: Composers: %{composer} (first: %{composer.1}, last: %{composer.-1})}
+{comment_italic: %{album|Album: %{}|No album} · %{year=2026|This year|Another year}}
+{comment_box: Instrument: %{instrument|%{}|not set} · User: %{user|%{}|not set}}
+{highlight: Highlighted comment}
+{c: Escaped markup characters: \%\{not metadata\}}
+
+# ---------------------------------------------------------------------------
+# Sections, labels, markup and chords
+# ---------------------------------------------------------------------------
+{start_of_verse: label="Verse 1\nAll voices"}
+[G]Markup in lyrics: <b>bold</b>, <i>italic</i>, <u>underlined</u>, <s>struck</s>,
+[Em]<span color="red">red</span>, <span size="larger">larger</span>, <sup>sup</sup> and <sub>sub</sub>,
+[C]<tt>monospace</tt>, <span background="#fff59d">highlighted</span> and [D]<b>bold [G]across</b> chords.
+[G]Chords with markup: [<b>Am</b>]bold chord, [*<i>Rit.</i>]annotation, [N.C.]no chord.
+[G]Optional chords: [(D/F#)]in parentheses, [Cadd9]extensions, [Dsus4]suspended, [G7(b9)]altered.
+[G]German and Dutch names: [Hm]H minor, [Fis]Fis, [Bes]Bes, [Es]Es, [As]As.
+[G]Escaped brackets: \[not a chord\] and an inline chord [C]here.
+{end_of_verse}
+
+{start_of_chorus: Chorus}
+[C]This is the [G]chorus, it [D]stands out
+[C]with a bar on the [D]left side, [G]no doubt.
+{end_of_chorus}
+
+{start_of_bridge}
+[Em]A bridge without a label uses the [C]default label,
+[Am]chords above the [D]words, as stable as a table.
+{end_of_bridge}
+
+{start_of_outro}
+[G]A custom section (start_of_outro) is shown as lyrics.
+{end_of_outro}
+
+{chorus}
+{chorus: Chorus (again, with a label)}
+
+# Section headings as comments (as in CCLI SongSelect files):
+{comment: Chorus 2}
+[C]A comment heading [G]becomes a chorus section.
+
+# ---------------------------------------------------------------------------
+# Transposition, key changes and Nashville numbers
+# ---------------------------------------------------------------------------
+{start_of_verse: Transposition}
+[C]No transposition: [D]D [E]E [F]F
+{transpose: 2}
+[C]{transpose: 2} (sharps): [D]D [E]E [F]F
+{transpose: -10}
+[C]{transpose: -10} (flats): [D]D [E]E [F]F
+{transpose: 2f}
+[C]{transpose: 2f} (flats forced): [D]D [E]E [F]F
+{transpose}
+{transpose}
+{transpose}
+[C]Back to no transposition: [D]D [E]E [F]F
+{end_of_verse}
+
+{key: A}
+{start_of_verse: Modulation to A}
+[A]After {key: A} Nashville [D]numbers [E]follow the new key.
+{end_of_verse}
+
+# ---------------------------------------------------------------------------
+# Tab and grid
+# ---------------------------------------------------------------------------
+{start_of_tab: Riff}
+e|-----0---0-----|
+B|---1---1---1---|
+G|-2-----------2-|
+{end_of_tab}
+
+{start_of_grid shape="1+4x2+4" label="Intro grid"}
+A    || G7 . | % . | %% . | . . |
+     | C7 . | %  . || G7 . | % . ||
+     |: C7 . | %  . :|: G7~D7 . | / . :| repeat 4 times
+Coda | D7 . | Eb7 . |1 D7 . |2 G7 . |.
+{end_of_grid}
+
+{start_of_grid label="Strums"}
+| S dn up dn up |
+| s d u ux x |
+{end_of_grid}
+
+# ---------------------------------------------------------------------------
+# Fonts, sizes and colours
+# ---------------------------------------------------------------------------
+{start_of_verse: Formats}
+Normal text line.
+{textfont: serif}
+{textsize: 120%}
+{textcolour: #1e88e5}
+Serif, 120 %, blue text.
+{chordcolour: red}
+{chordsize: 14}
+[G]Red chords at 14 pt [C]size.
+{textfont: monospace 12}
+Monospace 12 pt.
+# A directive without value restores the previous value (a stack):
+{textfont}
+Serif again (previous font restored).
+{textfont}
+{textsize}
+{textcolour}
+{chordcolour}
+{chordsize}
+[G]Back to normal [C]formats.
+{labelcolour: green}
+{end_of_verse}
+
+{choruscolour: #43a047}
+{start_of_chorus: Green chorus}
+[C]Chorus lyrics are [G]green.
+{end_of_chorus}
+{choruscolour}
+{labelcolour}
+
+# ---------------------------------------------------------------------------
+# Conditional directives (Settings → My instrument / My name or voice)
+# ---------------------------------------------------------------------------
+{comment-guitar: Shown only for guitar}
+{comment-ukulele: Shown only for ukulele}
+{comment-keyboard: Shown only for keyboard}
+{comment-guitar!: Shown for every instrument except guitar}
+{comment-alto: Shown only for the user "alto"}
+{comment-duet: Shown because the meta item "duet" is true}
+{comment-nosuchmeta: Never shown}
+{start_of_verse-soprano: Soprano only}
+[C]This whole section is only shown for the user "soprano".
+{end_of_verse}
+
+# ---------------------------------------------------------------------------
+# Chord diagrams (Settings → Chord diagrams, or {diagrams})
+# ---------------------------------------------------------------------------
+{define: Am base-fret 1 frets x 0 2 2 1 0 fingers 0 0 2 3 1 0}
+{define: G6 base-fret 1 frets 3 2 0 0 0 0}
+{define-ukulele: G6 base-fret 1 frets 0 2 0 2}
+{define: Hm7 copy Bm7 display B minor 7}
+{define: Csus2 diagram off}
+{diagrams: bottom}
+{start_of_verse: Diagrams}
+[Am]Defined Am, [G6]defined G6, [Csus2]no diagram for Csus2.
+{chord: Am}
+{chord: E7 base-fret 1 frets 0 2 0 1 0 0}
+{chord: [Dm]}
+{end_of_verse}
+
+# ---------------------------------------------------------------------------
+# Images and delegated environments
+# ---------------------------------------------------------------------------
+{image: src="stage-plan.svg" width="50%" align="center"}
+
+{start_of_svg label="Inline SVG"}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60">
+  <rect x="2" y="2" width="236" height="56" rx="8" fill="none" stroke="#3f51b5" stroke-width="3"/>
+  <circle cx="40" cy="30" r="16" fill="#e53935"/>
+  <circle cx="120" cy="30" r="16" fill="#fdd835"/>
+  <circle cx="200" cy="30" r="16" fill="#43a047"/>
+</svg>
+{end_of_svg}
+
+{start_of_textblock label="Spoken intro" flush="center" align="center" textsize="110%"}
+Ladies and gentlemen,
+<i>please welcome</i> the <b>BandChords Band</b>!
+{end_of_textblock}
+
+{start_of_abc}
+X:1
+T:Showcase Melody
+M:6/8
+L:1/8
+K:G
+|:"G"G2 B d2 B|"C"c>BA "D7"F2 A|(3GAB ^c2 =c A B c|1 "G"[GBd]3 g3:|2 "G"g6|]
+w:Here's a lit-tle tune to play
+{end_of_abc}
+
+{start_of_ly label="Lilypond"}
+\relative c' { \key g \major g4 a b c | d2 d }
+{end_of_ly}
+
+# ---------------------------------------------------------------------------
+# Columns and breaks (live mode)
+# ---------------------------------------------------------------------------
+{columns: 2}
+{column_break}
+{start_of_verse: After a column break}
+[G]{column_break} starts a new column in live mode.
+{end_of_verse}
+{new_page}
+{start_of_verse: After a page break}
+[C]{new_page} also starts a new column on screen.
+{end_of_verse}
+
+{new_song}
+{title: Second Song in the Same File}
+{artist: The BandChords Band}
+{key: D}
+{tag: Test}
+
+{start_of_verse}
+[D]{new_song} starts a [G]second song; the import
+[A]creates two songs from [D]one file.
+{end_of_verse}
