@@ -79,6 +79,7 @@ Notation alternatives:
 - 2026-11-14: ChordPro as single source of truth accepted.
 - 2026-11-14: Display notation selectable (international B / German H), storage always international.
 - 2026-11-14: Nashville number display is supported. Chord diagrams are not planned.
+- 2026-11-14: Extended by ADR-0012: the whole ChordPro specification is supported, including chord diagrams (supersedes "chord diagrams are not displayed" and the subset listed above).
 
 ## Open points
 

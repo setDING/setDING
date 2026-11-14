@@ -67,3 +67,4 @@ See the ADR index in the architecture README for the current status. In short:
 - PDF sheet music attachments per song, available offline (ADR-0009)
 - Git workflow with test gate before every merge (ADR-0010)
 - No SongSelect API integration; manual ChordPro import (ADR-0011)
+- Whole ChordPro specification supported, in phases (ADR-0012)

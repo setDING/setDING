@@ -64,6 +64,7 @@ synced and displayed.
 ## Decision log
 
 - 2026-11-14: PDF attachments accepted: all attachments are downloaded to every device (no selective download), maximum 20 MB per PDF, songs may consist of PDFs only. Local PDF support is part of the MVP; file sync follows in phase 1.
+- 2026-11-14: Attachments are extended to images (PNG, JPG, GIF, SVG) for the ChordPro `{image}` directive (ADR-0012).
 
 ## Open points
 
