@@ -43,3 +43,6 @@ pb_data/
 
 # Local test instance data (make dev / make start)
 .dev-data/
+
+# Copyrighted sample files (e.g. from CCLI SongSelect) – never commit
+docs/chordpro/
