@@ -959,14 +959,56 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAutoFit.
   ///
   /// In de, this message translates to:
-  /// **'Schrift automatisch anpassen'**
+  /// **'Song an den Bildschirm anpassen'**
   String get settingsAutoFit;
 
   /// No description provided for @settingsAutoFitHint.
   ///
   /// In de, this message translates to:
-  /// **'Wählt die Schriftgrösse so, dass ein Song möglichst auf eine Seite passt.'**
+  /// **'Der ganze Song passt ohne Scrollen auf den Bildschirm. Die Abschnitte werden automatisch in Spalten angeordnet und die Schrift so gross wie möglich gewählt.'**
   String get settingsAutoFitHint;
+
+  /// No description provided for @settingsColumnsHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Beim Anpassen an den Bildschirm die höchste erlaubte Anzahl Spalten.'**
+  String get settingsColumnsHint;
+
+  /// No description provided for @columnsThree.
+  ///
+  /// In de, this message translates to:
+  /// **'Drei'**
+  String get columnsThree;
+
+  /// No description provided for @settingsChorusRepeat.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederholter Refrain'**
+  String get settingsChorusRepeat;
+
+  /// No description provided for @settingsChorusRepeatHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Automatisch: Ein wiederholter Refrain wird nur dann als kurzer Hinweis angezeigt, wenn der Song sonst nicht gut auf den Bildschirm passt.'**
+  String get settingsChorusRepeatHint;
+
+  /// No description provided for @chorusRepeatAuto.
+  ///
+  /// In de, this message translates to:
+  /// **'Automatisch'**
+  String get chorusRepeatAuto;
+
+  /// No description provided for @chorusRepeatFull.
+  ///
+  /// In de, this message translates to:
+  /// **'Ganz anzeigen'**
+  String get chorusRepeatFull;
+
+  /// No description provided for @chorusRepeatLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur Hinweis'**
+  String get chorusRepeatLabel;
 
   /// No description provided for @settingsPedalHint.
   ///

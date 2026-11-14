@@ -21,7 +21,12 @@ song, all tablets follow automatically. We evaluated whether this is needed.
   - Bluetooth page turners (e.g. AirTurn, PageFlip, Donner) register as HID keyboards → keys **arrow left/right, Page Up/Down, space** can be mapped.
   - Tap on the left/right half of the screen, swipe.
 - **Page turn modes:** full page, half page (top half already shows the next page), optional auto-scroll based on tempo/duration.
-- **Layout:** auto-fit (choose font size so the song fits on as few pages as possible), two columns in landscape.
+- **Layout – fit to screen (default, configurable in the settings):** the whole song fits on the screen without scrolling.
+  Sections are kept whole and arranged automatically in reading order into 1–4 columns; the arrangement with the largest
+  font wins (more columns only when clearly better). A repeated chorus (`{chorus}`) is shown as a short label only when
+  needed to fit. Scrolling is used only if the song cannot fit at the minimum font size, or when fitting is switched off.
+- **Settings:** fit to screen on/off, maximum number of columns (automatic = up to 4, or 1/2/3), repeated chorus
+  (automatic / always in full / always as label), base font size.
 - PDF attachments (ADR-0009) are shown in live mode with the same page-turn input.
 - At the end of a song → next item in the set; footer preview "Next: *Title* (key)".
 - Quick jump to any song of the set (set overview), e.g. when the set order changes spontaneously on stage.
@@ -48,6 +53,7 @@ between devices – neither over the local network nor via the backend.
 ## Decision log
 
 - 2026-11-14: Leader sync is not needed and is removed from the roadmap. Each member turns pages on their own device.
+- 2026-11-14: In live mode the song is fitted to the screen without scrolling; sections are arranged in columns automatically. Fitting, maximum columns and the display of repeated choruses are configurable in the settings.
 
 ## Open points
 

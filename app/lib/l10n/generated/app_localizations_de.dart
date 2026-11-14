@@ -505,11 +505,34 @@ class AppLocalizationsDe extends AppLocalizations {
   String get pageTurnHalf => 'Halbe Seite';
 
   @override
-  String get settingsAutoFit => 'Schrift automatisch anpassen';
+  String get settingsAutoFit => 'Song an den Bildschirm anpassen';
 
   @override
   String get settingsAutoFitHint =>
-      'Wählt die Schriftgrösse so, dass ein Song möglichst auf eine Seite passt.';
+      'Der ganze Song passt ohne Scrollen auf den Bildschirm. Die Abschnitte werden automatisch in Spalten angeordnet und die Schrift so gross wie möglich gewählt.';
+
+  @override
+  String get settingsColumnsHint =>
+      'Beim Anpassen an den Bildschirm die höchste erlaubte Anzahl Spalten.';
+
+  @override
+  String get columnsThree => 'Drei';
+
+  @override
+  String get settingsChorusRepeat => 'Wiederholter Refrain';
+
+  @override
+  String get settingsChorusRepeatHint =>
+      'Automatisch: Ein wiederholter Refrain wird nur dann als kurzer Hinweis angezeigt, wenn der Song sonst nicht gut auf den Bildschirm passt.';
+
+  @override
+  String get chorusRepeatAuto => 'Automatisch';
+
+  @override
+  String get chorusRepeatFull => 'Ganz anzeigen';
+
+  @override
+  String get chorusRepeatLabel => 'Nur Hinweis';
 
   @override
   String get settingsPedalHint =>

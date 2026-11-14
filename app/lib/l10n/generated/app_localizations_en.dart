@@ -501,11 +501,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pageTurnHalf => 'Half page';
 
   @override
-  String get settingsAutoFit => 'Fit text automatically';
+  String get settingsAutoFit => 'Fit song to screen';
 
   @override
   String get settingsAutoFitHint =>
-      'Chooses the font size so that a song fits on one page if possible.';
+      'The whole song fits on the screen without scrolling. Sections are arranged in columns automatically and the text is as large as possible.';
+
+  @override
+  String get settingsColumnsHint =>
+      'When fitting to the screen, the highest number of columns allowed.';
+
+  @override
+  String get columnsThree => 'Three';
+
+  @override
+  String get settingsChorusRepeat => 'Repeated chorus';
+
+  @override
+  String get settingsChorusRepeatHint =>
+      'Automatic: a repeated chorus is shown as a short label only if the song would otherwise not fit well on the screen.';
+
+  @override
+  String get chorusRepeatAuto => 'Automatic';
+
+  @override
+  String get chorusRepeatFull => 'Show in full';
+
+  @override
+  String get chorusRepeatLabel => 'Label only';
 
   @override
   String get settingsPedalHint =>

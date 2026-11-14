@@ -1,6 +1,7 @@
 import 'package:bandchords/data/database.dart';
 import 'package:bandchords/data/demo_song.dart';
 import 'package:bandchords/ui/live/live_screen.dart';
+import 'package:bandchords/ui/render/song_view.dart';
 import 'package:bandchords/ui/songs/song_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -152,6 +153,70 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
     await tester.pumpAndSettle();
     expect(find.text('2 / 3'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  for (final landscape in [true, false]) {
+    testWidgets(
+      'live mode fits a long song without scrolling (landscape: $landscape)',
+      (tester) async {
+        useTabletSize(tester, landscape: landscape);
+        final app = await TestApp.create(prefs: {'language': 'en'});
+        final song = await tester.runAsync(() async {
+          final id = await app.songs.createSong(source: demoSongSource);
+          return app.songs.getSong(id);
+        });
+        await tester.pumpWidget(
+          app.build(home: LiveScreen(items: [LiveItem.song(song!)])),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byType(SingleChildScrollView), findsNothing);
+        final page = tester.getRect(find.byType(PageView));
+        final lastLine = tester.getRect(find.text('long.').last);
+        expect(lastLine.bottom, lessThanOrEqualTo(page.bottom));
+        expect(lastLine.right, lessThanOrEqualTo(page.right));
+        // The measured layout is accurate: the safety FittedBox does not
+        // need to shrink the content.
+        final body = tester.getSize(find.byType(SongBody));
+        final box = tester.getSize(find.byType(FittedBox));
+        expect(body.height, lessThanOrEqualTo(box.height));
+        await app.dispose(tester);
+      },
+    );
+  }
+
+  testWidgets('live mode scrolls when fitting is switched off', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'autoFit': false},
+    );
+    final song = await tester.runAsync(() async {
+      final id = await app.songs.createSong(source: demoSongSource);
+      return app.songs.getSong(id);
+    });
+    await tester.pumpWidget(
+      app.build(home: LiveScreen(items: [LiveItem.song(song!)])),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(SingleChildScrollView), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('repeated chorus can be shown as a label only', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'chorusRepeat': 'label'},
+    );
+    final song = await tester.runAsync(() async {
+      final id = await app.songs.createSong(source: demoSongSource);
+      return app.songs.getSong(id);
+    });
+    await tester.pumpWidget(
+      app.build(home: LiveScreen(items: [LiveItem.song(song!)])),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.repeat), findsNWidgets(2));
     await app.dispose(tester);
   });
 

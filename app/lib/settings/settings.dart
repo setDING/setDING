@@ -3,14 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../ui/render/song_view.dart' show ChorusRepeat;
+
+export '../ui/render/song_view.dart' show ChorusRepeat;
+
 /// UI language setting (ADR-0008).
 enum LanguageMode { system, de, en }
 
 /// What is shown of a song.
 enum DisplayMode { lyricsAndChords, lyricsOnly }
 
-/// Number of columns in live mode.
-enum ColumnMode { auto, one, two }
+/// Number of columns in live mode. When fitting to the screen this is the
+/// maximum; `auto` allows up to four columns.
+enum ColumnMode { auto, one, two, three }
 
 /// How far a page turn moves.
 enum PageTurnMode { full, half }
@@ -27,6 +32,7 @@ class AppSettings {
     this.columns = ColumnMode.auto,
     this.pageTurn = PageTurnMode.full,
     this.autoFit = true,
+    this.chorusRepeat = ChorusRepeat.auto,
     this.fontSize = 20,
   });
 
@@ -37,7 +43,10 @@ class AppSettings {
   final ThemeMode themeMode;
   final ColumnMode columns;
   final PageTurnMode pageTurn;
+
+  /// Fit the whole song on the screen (no scrolling) in live mode.
   final bool autoFit;
+  final ChorusRepeat chorusRepeat;
 
   /// Base font size for lyrics in logical pixels.
   final double fontSize;
@@ -46,6 +55,14 @@ class AppSettings {
   static const maxFontSize = 40.0;
 
   /// The locale to use, or null to follow the system.
+  /// Highest column count allowed in live mode.
+  int get maxColumns => switch (columns) {
+    ColumnMode.auto => 4,
+    ColumnMode.one => 1,
+    ColumnMode.two => 2,
+    ColumnMode.three => 3,
+  };
+
   Locale? get locale => switch (language) {
     LanguageMode.system => null,
     LanguageMode.de => const Locale('de', 'CH'),
@@ -61,6 +78,7 @@ class AppSettings {
     ColumnMode? columns,
     PageTurnMode? pageTurn,
     bool? autoFit,
+    ChorusRepeat? chorusRepeat,
     double? fontSize,
   }) => AppSettings(
     language: language ?? this.language,
@@ -71,6 +89,7 @@ class AppSettings {
     columns: columns ?? this.columns,
     pageTurn: pageTurn ?? this.pageTurn,
     autoFit: autoFit ?? this.autoFit,
+    chorusRepeat: chorusRepeat ?? this.chorusRepeat,
     fontSize: fontSize ?? this.fontSize,
   );
 
@@ -90,6 +109,7 @@ class AppSettings {
       columns: pick(ColumnMode.values, 'columns', d.columns),
       pageTurn: pick(PageTurnMode.values, 'pageTurn', d.pageTurn),
       autoFit: prefs.getBool('autoFit') ?? d.autoFit,
+      chorusRepeat: pick(ChorusRepeat.values, 'chorusRepeat', d.chorusRepeat),
       fontSize: (prefs.getDouble('fontSize') ?? d.fontSize).clamp(
         minFontSize,
         maxFontSize,
@@ -106,6 +126,7 @@ class AppSettings {
     await prefs.setString('columns', columns.name);
     await prefs.setString('pageTurn', pageTurn.name);
     await prefs.setBool('autoFit', autoFit);
+    await prefs.setString('chorusRepeat', chorusRepeat.name);
     await prefs.setDouble('fontSize', fontSize);
   }
 }

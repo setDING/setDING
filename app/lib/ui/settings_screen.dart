@@ -31,20 +31,28 @@ class SettingsScreen extends ConsumerWidget {
       String title,
       T value,
       Map<T, String> options,
-      void Function(T) onChanged,
-    ) => ListTile(
+      void Function(T) onChanged, {
+      String? hint,
+    }) => ListTile(
       title: Text(title),
-      subtitle: Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: SegmentedButton<T>(
-          showSelectedIcon: false,
-          segments: [
-            for (final e in options.entries)
-              ButtonSegment(value: e.key, label: Text(e.value)),
-          ],
-          selected: {value},
-          onSelectionChanged: (v) => onChanged(v.first),
-        ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (hint != null)
+            Padding(padding: const EdgeInsets.only(top: 4), child: Text(hint)),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: SegmentedButton<T>(
+              showSelectedIcon: false,
+              segments: [
+                for (final e in options.entries)
+                  ButtonSegment(value: e.key, label: Text(e.value)),
+              ],
+              selected: {value},
+              onSelectionChanged: (v) => onChanged(v.first),
+            ),
+          ),
+        ],
       ),
     );
 
@@ -107,11 +115,29 @@ class SettingsScreen extends ConsumerWidget {
                 onChanged: (v) =>
                     notifier.update((s) => s.copyWith(autoFit: v)),
               ),
-              choice(l10n.settingsColumns, s.columns, {
-                ColumnMode.auto: l10n.columnsAuto,
-                ColumnMode.one: l10n.columnsOne,
-                ColumnMode.two: l10n.columnsTwo,
-              }, (v) => notifier.update((s) => s.copyWith(columns: v))),
+              choice(
+                l10n.settingsColumns,
+                s.columns,
+                {
+                  ColumnMode.auto: l10n.columnsAuto,
+                  ColumnMode.one: l10n.columnsOne,
+                  ColumnMode.two: l10n.columnsTwo,
+                  ColumnMode.three: l10n.columnsThree,
+                },
+                (v) => notifier.update((s) => s.copyWith(columns: v)),
+                hint: l10n.settingsColumnsHint,
+              ),
+              choice(
+                l10n.settingsChorusRepeat,
+                s.chorusRepeat,
+                {
+                  ChorusRepeat.auto: l10n.chorusRepeatAuto,
+                  ChorusRepeat.full: l10n.chorusRepeatFull,
+                  ChorusRepeat.label: l10n.chorusRepeatLabel,
+                },
+                (v) => notifier.update((s) => s.copyWith(chorusRepeat: v)),
+                hint: l10n.settingsChorusRepeatHint,
+              ),
               choice(l10n.settingsPageTurn, s.pageTurn, {
                 PageTurnMode.full: l10n.pageTurnFull,
                 PageTurnMode.half: l10n.pageTurnHalf,

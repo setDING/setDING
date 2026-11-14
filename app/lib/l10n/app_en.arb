@@ -15,7 +15,6 @@
   "discard": "Discard",
   "untitled": "Untitled",
   "errorGeneric": "Something went wrong: {error}",
-
   "songsEmpty": "No songs yet. Create a new song or import ChordPro files.",
   "searchSongs": "Search songs",
   "newSong": "New song",
@@ -31,7 +30,6 @@
   "deleteSongTitle": "Delete song?",
   "deleteSongMessage": "\"{title}\" will be deleted and removed from all sets.",
   "attachmentsTooltip": "Has PDF attachments",
-
   "transposeDown": "One semitone down",
   "transposeUp": "One semitone up",
   "transposeValue": "Transposed: {value}",
@@ -69,7 +67,6 @@
   "keyLabel": "Key {key}",
   "bpm": "{tempo} BPM",
   "noKeyForNashville": "Nashville numbers need a key in the song.",
-
   "editorTitleNew": "New song",
   "editorTitleEdit": "Edit song",
   "editorTab": "Text",
@@ -81,13 +78,11 @@
   "insertChord": "Insert chord",
   "discardChangesTitle": "Discard changes?",
   "discardChangesMessage": "Your changes have not been saved yet.",
-
   "sectionVerse": "Verse",
   "sectionChorus": "Chorus",
   "sectionBridge": "Bridge",
   "sectionTab": "Tab",
   "sectionGrid": "Grid",
-
   "setsEmpty": "No sets yet. Create a set for your next gig.",
   "newSet": "New set",
   "editSet": "Edit set",
@@ -115,13 +110,11 @@
   "selectSongs": "Select songs",
   "selectedCount": "{count, plural, =0{None selected} =1{1 selected} other{{count} selected}}",
   "songMissing": "Song no longer exists",
-
   "liveNext": "Next: {title}",
   "liveEnd": "End of set",
   "liveSetOverview": "Set overview",
   "liveExit": "Exit live mode",
   "livePosition": "{current} / {total}",
-
   "settingsSectionGeneral": "General",
   "settingsSectionDisplay": "Display",
   "settingsSectionLive": "Live mode",
@@ -150,8 +143,15 @@
   "settingsPageTurn": "Page turn",
   "pageTurnFull": "Full page",
   "pageTurnHalf": "Half page",
-  "settingsAutoFit": "Fit text automatically",
-  "settingsAutoFitHint": "Chooses the font size so that a song fits on one page if possible.",
+  "settingsAutoFit": "Fit song to screen",
+  "settingsAutoFitHint": "The whole song fits on the screen without scrolling. Sections are arranged in columns automatically and the text is as large as possible.",
+  "settingsColumnsHint": "When fitting to the screen, the highest number of columns allowed.",
+  "columnsThree": "Three",
+  "settingsChorusRepeat": "Repeated chorus",
+  "settingsChorusRepeatHint": "Automatic: a repeated chorus is shown as a short label only if the song would otherwise not fit well on the screen.",
+  "chorusRepeatAuto": "Automatic",
+  "chorusRepeatFull": "Show in full",
+  "chorusRepeatLabel": "Label only",
   "settingsPedalHint": "Foot pedal and keyboard: arrow keys, Page Up/Down and Space turn pages. Tap the left or right side of the screen to go back or forward.",
   "settingsStorageUsed": "PDF attachments use {size}",
   "settingsAbout": "BandChords runs locally on this device. All data is available offline."

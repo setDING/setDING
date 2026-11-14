@@ -113,6 +113,14 @@ void main() {
         ),
       );
       await _shot(tester, '${lang}_4_live');
+      tester.view.physicalSize = const Size(800, 1280);
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: LiveScreen(items: items)),
+        ),
+      );
+      await _shot(tester, '${lang}_5_live_portrait');
       await app.dispose(tester);
     });
   }

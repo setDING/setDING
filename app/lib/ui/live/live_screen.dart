@@ -527,41 +527,53 @@ class _ChordProPage extends ConsumerWidget {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final size = Size(constraints.maxWidth, constraints.maxHeight);
-                final landscape = size.width > size.height && size.width >= 700;
-                SongFit fit;
-                if (settings.autoFit) {
-                  fit = fitSong(
-                    parsed,
-                    formatter: formatter,
-                    lyricsOnly: lyricsOnly,
-                    baseFontSize: settings.fontSize,
-                    maxFontSize: settings.fontSize * 1.6,
-                    minFontSize: AppSettings.minFontSize,
-                    size: size,
-                    textScaler: MediaQuery.textScalerOf(context),
-                    allowTwoColumns:
-                        settings.columns == ColumnMode.auto && landscape,
-                    forceTwoColumns: settings.columns == ColumnMode.two,
-                  );
-                } else {
-                  fit = SongFit(
-                    settings.fontSize,
-                    settings.columns == ColumnMode.two ? 2 : 1,
+                final scale = overlay.fontScale;
+                if (!settings.autoFit) {
+                  return _scrolling(
+                    size,
+                    _options(
+                      formatter,
+                      lyricsOnly,
+                      settings.fontSize * scale,
+                      settings.columns == ColumnMode.auto
+                          ? 1
+                          : settings.maxColumns,
+                      settings.chorusRepeat == ChorusRepeat.label,
+                    ),
                   );
                 }
-                return SingleChildScrollView(
-                  controller: scrollController,
-                  child: Padding(
-                    padding: EdgeInsets.only(bottom: size.height * 0.25),
-                    child: SongBody(
-                      song: parsed,
-                      options: SongRenderOptions(
-                        formatter: formatter,
-                        lyricsOnly: lyricsOnly,
-                        fontSize: fit.fontSize * overlay.fontScale,
-                        columns: fit.columns,
-                        notes: overlay.notes,
-                      ),
+                final fit = fitSong(
+                  parsed,
+                  formatter: formatter,
+                  lyricsOnly: lyricsOnly,
+                  labeler: sectionLabeler(l10n),
+                  notes: overlay.notes,
+                  baseFontSize: settings.fontSize,
+                  maxFontSize: settings.fontSize * 2,
+                  minFontSize: AppSettings.minFontSize,
+                  size: size,
+                  textScaler: MediaQuery.textScalerOf(context),
+                  maxColumns: settings.maxColumns,
+                  chorusRepeat: settings.chorusRepeat,
+                );
+                final options = _options(
+                  formatter,
+                  lyricsOnly,
+                  fit.fontSize * scale,
+                  fit.columns,
+                  fit.collapseRecalls,
+                );
+                // A personal font scale above 100 % may need scrolling.
+                if (!fit.fits || scale > 1.0) return _scrolling(size, options);
+                // Fits: no scrolling. FittedBox only shrinks, as a safety net
+                // for small measurement differences (e.g. wrapped notes).
+                return SizedBox.expand(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.topLeft,
+                    child: SizedBox(
+                      width: size.width,
+                      child: SongBody(song: parsed, options: options),
                     ),
                   ),
                 );
@@ -572,6 +584,30 @@ class _ChordProPage extends ConsumerWidget {
       ),
     );
   }
+
+  SongRenderOptions _options(
+    ChordFormatter formatter,
+    bool lyricsOnly,
+    double fontSize,
+    int columns,
+    bool collapseRecalls,
+  ) => SongRenderOptions(
+    formatter: formatter,
+    lyricsOnly: lyricsOnly,
+    fontSize: fontSize,
+    columns: columns,
+    notes: overlay.notes,
+    collapseRecalls: collapseRecalls,
+  );
+
+  Widget _scrolling(Size size, SongRenderOptions options) =>
+      SingleChildScrollView(
+        controller: scrollController,
+        child: Padding(
+          padding: EdgeInsets.only(bottom: size.height * 0.25),
+          child: SongBody(song: parsed, options: options),
+        ),
+      );
 }
 
 class _MarkerPage extends StatelessWidget {

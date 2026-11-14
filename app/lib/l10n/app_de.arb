@@ -15,8 +15,13 @@
   "discard": "Verwerfen",
   "untitled": "Ohne Titel",
   "errorGeneric": "Etwas ist schiefgelaufen: {error}",
-  "@errorGeneric": {"placeholders": {"error": {"type": "String"}}},
-
+  "@errorGeneric": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "songsEmpty": "Noch keine Songs. Erstelle einen neuen Song oder importiere ChordPro-Dateien.",
   "searchSongs": "Songs suchen",
   "newSong": "Neuer Song",
@@ -28,21 +33,50 @@
   "importGermanNotationHint": "Akkorde werden beim Import in internationale Notation umgewandelt.",
   "chooseFiles": "Dateien auswählen",
   "importResult": "{count, plural, =0{Keine Songs importiert} =1{1 Song importiert} other{{count} Songs importiert}}",
-  "@importResult": {"placeholders": {"count": {"type": "int"}}},
+  "@importResult": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "importSkipped": "Übersprungen: {files}",
-  "@importSkipped": {"placeholders": {"files": {"type": "String"}}},
+  "@importSkipped": {
+    "placeholders": {
+      "files": {
+        "type": "String"
+      }
+    }
+  },
   "deleteSongTitle": "Song löschen?",
   "deleteSongMessage": "«{title}» wird gelöscht und aus allen Sets entfernt.",
-  "@deleteSongMessage": {"placeholders": {"title": {"type": "String"}}},
+  "@deleteSongMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "attachmentsTooltip": "Hat PDF-Anhänge",
-
   "transposeDown": "Halbton tiefer",
   "transposeUp": "Halbton höher",
   "transposeValue": "Transponiert: {value}",
-  "@transposeValue": {"placeholders": {"value": {"type": "String"}}},
+  "@transposeValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "capo": "Kapo",
   "capoValue": "Kapo {fret}",
-  "@capoValue": {"placeholders": {"fret": {"type": "int"}}},
+  "@capoValue": {
+    "placeholders": {
+      "fret": {
+        "type": "int"
+      }
+    }
+  },
   "noCapo": "Ohne Kapo",
   "notes": "Notizen",
   "notesHint": "Persönliche Notiz zu diesem Song",
@@ -53,9 +87,21 @@
   "attachmentName": "Name des Anhangs",
   "deleteAttachmentTitle": "Anhang löschen?",
   "deleteAttachmentMessage": "«{name}» wird gelöscht.",
-  "@deleteAttachmentMessage": {"placeholders": {"name": {"type": "String"}}},
+  "@deleteAttachmentMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "pagesCount": "{count, plural, =1{1 Seite} other{{count} Seiten}}",
-  "@pagesCount": {"placeholders": {"count": {"type": "int"}}},
+  "@pagesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "liveView": "Im Live-Modus anzeigen",
   "liveViewChordPro": "ChordPro-Text",
   "exportSong": "Exportieren",
@@ -75,11 +121,22 @@
   "noContent": "Dieser Song hat noch keinen ChordPro-Text.",
   "addChordPro": "ChordPro-Text erfassen",
   "keyLabel": "Tonart {key}",
-  "@keyLabel": {"placeholders": {"key": {"type": "String"}}},
+  "@keyLabel": {
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
+  },
   "bpm": "{tempo} BPM",
-  "@bpm": {"placeholders": {"tempo": {"type": "int"}}},
+  "@bpm": {
+    "placeholders": {
+      "tempo": {
+        "type": "int"
+      }
+    }
+  },
   "noKeyForNashville": "Für Nashville-Nummern braucht der Song eine Tonart.",
-
   "editorTitleNew": "Neuer Song",
   "editorTitleEdit": "Song bearbeiten",
   "editorTab": "Text",
@@ -91,13 +148,11 @@
   "insertChord": "Akkord einfügen",
   "discardChangesTitle": "Änderungen verwerfen?",
   "discardChangesMessage": "Deine Änderungen wurden noch nicht gespeichert.",
-
   "sectionVerse": "Strophe",
   "sectionChorus": "Refrain",
   "sectionBridge": "Bridge",
   "sectionTab": "Tab",
   "sectionGrid": "Raster",
-
   "setsEmpty": "Noch keine Sets. Erstelle ein Set für deinen nächsten Auftritt.",
   "newSet": "Neues Set",
   "editSet": "Set bearbeiten",
@@ -108,7 +163,13 @@
   "pickDate": "Datum wählen",
   "clearDate": "Datum entfernen",
   "itemCount": "{count, plural, =0{Leer} =1{1 Eintrag} other{{count} Einträge}}",
-  "@itemCount": {"placeholders": {"count": {"type": "int"}}},
+  "@itemCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "offlineReady": "Offline bereit",
   "notOfflineReady": "Nicht offline bereit",
   "addSongs": "Songs hinzufügen",
@@ -120,23 +181,48 @@
   "setEmpty": "Dieses Set ist leer. Füge Songs hinzu.",
   "deleteSetTitle": "Set löschen?",
   "deleteSetMessage": "«{name}» wird gelöscht. Die Songs bleiben erhalten.",
-  "@deleteSetMessage": {"placeholders": {"name": {"type": "String"}}},
+  "@deleteSetMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "exportSet": "Als ZIP exportieren",
   "removeFromSet": "Aus dem Set entfernen",
   "setTranspose": "Transponierung im Set",
   "selectSongs": "Songs auswählen",
   "selectedCount": "{count, plural, =0{Keine ausgewählt} =1{1 ausgewählt} other{{count} ausgewählt}}",
-  "@selectedCount": {"placeholders": {"count": {"type": "int"}}},
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "songMissing": "Song nicht mehr vorhanden",
-
   "liveNext": "Nächster: {title}",
-  "@liveNext": {"placeholders": {"title": {"type": "String"}}},
+  "@liveNext": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "liveEnd": "Ende des Sets",
   "liveSetOverview": "Set-Übersicht",
   "liveExit": "Live-Modus beenden",
   "livePosition": "{current} / {total}",
-  "@livePosition": {"placeholders": {"current": {"type": "int"}, "total": {"type": "int"}}},
-
+  "@livePosition": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "settingsSectionGeneral": "Allgemein",
   "settingsSectionDisplay": "Darstellung",
   "settingsSectionLive": "Live-Modus",
@@ -165,10 +251,23 @@
   "settingsPageTurn": "Blättern",
   "pageTurnFull": "Ganze Seite",
   "pageTurnHalf": "Halbe Seite",
-  "settingsAutoFit": "Schrift automatisch anpassen",
-  "settingsAutoFitHint": "Wählt die Schriftgrösse so, dass ein Song möglichst auf eine Seite passt.",
+  "settingsAutoFit": "Song an den Bildschirm anpassen",
+  "settingsAutoFitHint": "Der ganze Song passt ohne Scrollen auf den Bildschirm. Die Abschnitte werden automatisch in Spalten angeordnet und die Schrift so gross wie möglich gewählt.",
+  "settingsColumnsHint": "Beim Anpassen an den Bildschirm die höchste erlaubte Anzahl Spalten.",
+  "columnsThree": "Drei",
+  "settingsChorusRepeat": "Wiederholter Refrain",
+  "settingsChorusRepeatHint": "Automatisch: Ein wiederholter Refrain wird nur dann als kurzer Hinweis angezeigt, wenn der Song sonst nicht gut auf den Bildschirm passt.",
+  "chorusRepeatAuto": "Automatisch",
+  "chorusRepeatFull": "Ganz anzeigen",
+  "chorusRepeatLabel": "Nur Hinweis",
   "settingsPedalHint": "Fusspedal und Tastatur: Pfeiltasten, Bild auf/ab und Leertaste blättern. Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern.",
   "settingsStorageUsed": "PDF-Anhänge belegen {size}",
-  "@settingsStorageUsed": {"placeholders": {"size": {"type": "String"}}},
+  "@settingsStorageUsed": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
   "settingsAbout": "BandChords läuft lokal auf diesem Gerät. Alle Daten sind offline verfügbar."
 }
