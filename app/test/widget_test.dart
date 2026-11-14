@@ -84,6 +84,37 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('tag filter stays after deleting the last song with the tag', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final tagged = await tester.runAsync(
+      () => app.songs.createSong(source: '{title: Tagged}\n{tag: Gig}'),
+    );
+    await tester.runAsync(() => app.songs.createSong(source: '{title: Plain}'));
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Songs').first);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Gig'));
+    await tester.pumpAndSettle();
+    expect(find.text('Plain'), findsNothing);
+
+    await tester.runAsync(() => app.songs.deleteSong(tagged!));
+    await tester.pumpAndSettle();
+    expect(find.text('Tagged'), findsNothing);
+    // The filter bar is still there and "All" shows the other songs again.
+    expect(find.widgetWithText(ChoiceChip, 'Gig'), findsOneWidget);
+    await tester.tap(find.widgetWithText(ChoiceChip, 'All'));
+    await tester.pumpAndSettle();
+    expect(find.text('Plain'), findsOneWidget);
+    // Without a selection the unused tag disappears.
+    expect(find.byType(ChoiceChip), findsNothing);
+    await app.dispose(tester);
+  });
+
   testWidgets('Nashville can be switched on and off per song', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'en'});

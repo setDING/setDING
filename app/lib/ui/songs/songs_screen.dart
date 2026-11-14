@@ -147,7 +147,13 @@ class _TagFilter extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tags = ref.watch(tagsProvider).value ?? const [];
+    final used = ref.watch(tagsProvider).value ?? const <String>[];
+    // A selected tag stays visible (and can be deselected) even when no
+    // song uses it any more, e.g. after deleting its last song.
+    final tags = [
+      ...used,
+      if (selected case final tag? when !used.contains(tag)) tag,
+    ];
     if (tags.isEmpty) return const SizedBox.shrink();
     final l10n = AppLocalizations.of(context);
     return SizedBox(
