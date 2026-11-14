@@ -5,6 +5,7 @@ import 'package:archive/archive.dart';
 import 'package:chordpro/chordpro.dart' as cp;
 import 'package:path/path.dart' as p;
 
+import 'attachment_storage.dart';
 import 'database.dart';
 import 'set_repository.dart';
 import 'song_repository.dart';
@@ -66,7 +67,11 @@ class ImportExportService {
     var imported = 0;
     final skipped = <String>[];
 
-    Future<void> importOne(String name, Uint8List bytes) async {
+    Future<void> importOne(
+      String name,
+      Uint8List bytes, {
+      Map<String, (String, Uint8List)> images = const {},
+    }) async {
       if (!_isChordPro(name)) {
         skipped.add(name);
         return;
@@ -77,28 +82,71 @@ class ImportExportService {
       final parts = cp.splitChordProSongs(text);
       final base = p.basenameWithoutExtension(name);
       for (var i = 0; i < parts.length; i++) {
-        await songs.createSong(
+        final id = await songs.createSong(
           source: parts[i],
           title: parts.length == 1 ? base : '$base (${i + 1})',
         );
         imported++;
+        // Attach images from the same archive that {image} refers to.
+        if (images.isNotEmpty) await _attachImages(id, parts[i], images);
       }
     }
 
     for (final file in files) {
       if (p.extension(file.name).toLowerCase() == '.zip') {
         final archive = ZipDecoder().decodeBytes(file.bytes);
-        for (final entry in archive.files) {
-          if (!entry.isFile) continue;
+        bool skip(ArchiveFile entry) {
           final base = p.basename(entry.name);
-          if (base.startsWith('.') || entry.name.contains('__MACOSX')) continue;
-          await importOne(base, Uint8List.fromList(entry.content));
+          return !entry.isFile ||
+              base.startsWith('.') ||
+              entry.name.contains('__MACOSX');
+        }
+
+        final images = <String, (String, Uint8List)>{
+          for (final entry in archive.files)
+            if (!skip(entry) && isImageFile(entry.name))
+              p.basename(entry.name).toLowerCase(): (
+                p.basename(entry.name),
+                Uint8List.fromList(entry.content),
+              ),
+        };
+        for (final entry in archive.files) {
+          if (skip(entry) || isImageFile(entry.name)) continue;
+          await importOne(
+            p.basename(entry.name),
+            Uint8List.fromList(entry.content),
+            images: images,
+          );
         }
       } else {
         await importOne(file.name, file.bytes);
       }
     }
     return ImportResult(imported, skipped);
+  }
+
+  Future<void> _attachImages(
+    String songId,
+    String source,
+    Map<String, (String, Uint8List)> images,
+  ) async {
+    final song = cp.parseChordPro(source);
+    final attached = <String>{};
+    for (final line in song.sections.expand((s) => s.lines)) {
+      if (line is! cp.ImageLine) continue;
+      final key = p
+          .basename((line.src ?? '').replaceAll(r'\', '/'))
+          .toLowerCase();
+      final image = images[key];
+      if (image == null || !attached.add(key)) continue;
+      if (image.$2.length > maxAttachmentBytes) continue;
+      await songs.addAttachment(
+        songId,
+        name: image.$1,
+        bytes: image.$2,
+        extension: p.extension(image.$1).replaceFirst('.', ''),
+      );
+    }
   }
 
   /// A ChordPro file for a single song.
@@ -134,12 +182,14 @@ class ImportExportService {
         final file = songs.storage.file(attachment.fileName);
         if (!await file.exists()) continue;
         final bytes = await file.readAsBytes();
+        final ext = isPdfFile(attachment.fileName)
+            ? '.pdf'
+            : p.extension(attachment.fileName);
+        final stem = isPdfFile(attachment.fileName)
+            ? attachment.name
+            : p.basenameWithoutExtension(attachment.name);
         archive.addFile(
-          ArchiveFile(
-            '$base - ${safeFileName(attachment.name)}.pdf',
-            bytes.length,
-            bytes,
-          ),
+          ArchiveFile('$base - ${safeFileName(stem)}$ext', bytes.length, bytes),
         );
       }
     }

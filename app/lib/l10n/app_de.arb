@@ -82,8 +82,8 @@
   "notes": "Notizen",
   "notesHint": "Persönliche Notiz zu diesem Song",
   "editSource": "ChordPro bearbeiten",
-  "attachments": "PDF-Anhänge",
-  "addAttachment": "PDF hinzufügen",
+  "attachments": "Anhänge",
+  "addAttachment": "Datei anhängen",
   "attachmentTooLarge": "Die Datei ist grösser als 20 MB und kann nicht angehängt werden.",
   "attachmentName": "Name des Anhangs",
   "deleteAttachmentTitle": "Anhang löschen?",
@@ -286,5 +286,7 @@
       }
     }
   },
-  "settingsAbout": "BandChords läuft lokal auf diesem Gerät. Alle Daten sind offline verfügbar."
+  "settingsAbout": "BandChords läuft lokal auf diesem Gerät. Alle Daten sind offline verfügbar.",
+  "lilypondNotice": "Lilypond-Noten können auf diesem Gerät nicht dargestellt werden. Quelltext:",
+  "abcNotice": "ABC-Noten (Quelltext):"
 }

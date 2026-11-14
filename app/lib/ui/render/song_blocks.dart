@@ -14,11 +14,23 @@ class SongBlock {
       isRecallLabel = false,
       breakBefore = false,
       diagrams = null,
+      delegate = null,
       startFormat = FormatState();
+
+  /// A delegated environment (SVG, textblock, ABC, Lilypond).
+  SongBlock.delegate(DelegateSection this.delegate, {required this.startFormat})
+    : section = null,
+      text = null,
+      label = delegate.label,
+      lines = const [],
+      isRecallLabel = false,
+      breakBefore = false,
+      diagrams = null;
 
   /// Diagrams of all chords of the song (`{diagrams}`, ADR-0012).
   SongBlock.diagrams(List<DiagramData> this.diagrams)
     : section = null,
+      delegate = null,
       text = null,
       label = null,
       lines = const [],
@@ -34,6 +46,7 @@ class SongBlock {
     this.breakBefore = false,
   }) : text = null,
        diagrams = null,
+       delegate = null,
        isRecallLabel = false;
 
   SongBlock.recall(String this.label, {required this.startFormat})
@@ -42,6 +55,7 @@ class SongBlock {
       lines = const [],
       isRecallLabel = true,
       diagrams = null,
+      delegate = null,
       breakBefore = false;
 
   /// Personal note text (notes block).
@@ -49,6 +63,9 @@ class SongBlock {
 
   /// Chord diagrams (diagrams block).
   final List<DiagramData>? diagrams;
+
+  /// Delegated environment (delegate block).
+  final DelegateSection? delegate;
   final Section? section;
   final String? label;
   final List<Line> lines;
@@ -158,14 +175,7 @@ List<SongBlock> buildSongBlocks(
           addSection(chorus, label, applyFormats: false);
         }
       case DelegateSection d:
-        // Rendered as source until delegated environments are supported
-        // (ADR-0012, phase 5).
-        final section = Section(
-          kind: SectionKind.tab,
-          label: d.label,
-          lines: [for (final l in d.lines) RawLine(l)],
-        );
-        addSection(section, d.label);
+        blocks.add(SongBlock.delegate(d, startFormat: format.copy()));
     }
   }
   if (diagrams.isNotEmpty && !diagramsOnTop) {

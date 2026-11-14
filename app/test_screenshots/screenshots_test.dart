@@ -34,6 +34,15 @@ Future<void> _loadFonts() async {
     'Roboto-Italic.ttf',
   ]);
   await load('MaterialIcons', ['MaterialIcons-Regular.otf']);
+  // A system monospace font for tabs and sources, if available.
+  const mono = '/usr/share/fonts/TTF/DejaVuSansMono.ttf';
+  if (File(mono).existsSync()) {
+    final loader = FontLoader('monospace')
+      ..addFont(
+        Future.value(ByteData.sublistView(File(mono).readAsBytesSync())),
+      );
+    await loader.load();
+  }
 }
 
 Future<void> _shot(WidgetTester tester, String name) async {
@@ -149,6 +158,20 @@ void main() {
         ),
       );
       await _shot(tester, '${lang}_7_diagrams');
+
+      // Delegated environments: SVG, textblock, Lilypond source.
+      await app.prefs.setString('diagrams', 'off');
+      final media = await tester.runAsync(() async {
+        final id = await app.songs.createSong(source: _media);
+        return app.songs.getSong(id);
+      });
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: LiveScreen(items: [LiveItem.song(media!)])),
+        ),
+      );
+      await _shot(tester, '${lang}_8_media');
       await app.dispose(tester);
     });
   }
@@ -182,4 +205,25 @@ A   || D . | G . | % . | A7 . |
 {start_of_bridge: Bridge (+2)}
 [D]Modulates up [G]two [A]semitones
 {end_of_bridge}
+''';
+
+const _media = r'''{title: Media Showcase}
+{start_of_verse}
+[G]A verse before the [D]picture
+{end_of_verse}
+{start_of_svg label="Stage plan"}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 120">
+<rect x="5" y="5" width="290" height="110" rx="10" fill="none" stroke="#7986cb" stroke-width="3"/>
+<circle cx="70" cy="60" r="22" fill="#3f51b5"/><text x="70" y="100" font-size="14" text-anchor="middle" fill="#7986cb">Guitar</text>
+<circle cx="150" cy="45" r="22" fill="#e53935"/><text x="150" y="100" font-size="14" text-anchor="middle" fill="#7986cb">Vocals</text>
+<circle cx="230" cy="60" r="22" fill="#43a047"/><text x="230" y="100" font-size="14" text-anchor="middle" fill="#7986cb">Bass</text>
+</svg>
+{end_of_svg}
+{start_of_textblock flush=center align=center label="Spoken intro"}
+Ladies and gentlemen,
+<i>please welcome</i> the <b>band</b>!
+{end_of_textblock}
+{start_of_ly label="Melody"}
+\relative c' { c4 d e f | g2 g }
+{end_of_ly}
 ''';

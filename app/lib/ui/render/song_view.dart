@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:chordpro/chordpro.dart';
@@ -6,6 +7,8 @@ import 'package:flutter/material.dart';
 import '../../l10n/generated/app_localizations.dart';
 import 'chord_diagram.dart';
 import 'song_blocks.dart';
+import 'song_delegates.dart';
+import 'song_image.dart';
 import 'song_grid.dart';
 import 'song_layout.dart';
 import 'song_style.dart';
@@ -25,6 +28,7 @@ class SongRenderOptions {
     this.collapseRecalls = false,
     this.diagramResolver,
     this.diagramsPosition = DiagramsPosition.off,
+    this.imageLookup,
   });
 
   final ChordFormatter formatter;
@@ -41,6 +45,9 @@ class SongRenderOptions {
 
   /// Where the diagrams of all chords are shown.
   final DiagramsPosition diagramsPosition;
+
+  /// Finds image files for `{image}`; null = images are not available.
+  final ImageLookup? imageLookup;
 
   /// Diagrams of all chords for [diagramsPosition].
   List<DiagramData> get songDiagrams =>
@@ -71,7 +78,15 @@ class SongBody extends StatelessWidget {
       diagrams: options.songDiagrams,
       diagramsOnTop: options.diagramsPosition == DiagramsPosition.top,
     );
-    Widget render(SongBlock b) => b.diagrams != null
+    Widget render(SongBlock b) => b.delegate != null
+        ? DelegateView(
+            delegate: b.delegate!,
+            lyrics: style.lyricsFor(b.startFormat),
+            label: style.labelFor(b.startFormat),
+            mono: style.tabFor(b.startFormat),
+            colors: style.colors,
+          )
+        : b.diagrams != null
         ? _DiagramsBlock(diagrams: b.diagrams!, style: style)
         : b.text != null
         ? _NotesCard(text: b.text!, style: style)
@@ -102,6 +117,7 @@ class SongBody extends StatelessWidget {
           textScaler: MediaQuery.textScalerOf(context),
           baseStyle: DefaultTextStyle.of(context).style,
           diagramResolver: options.diagramResolver,
+          imageLookup: options.imageLookup,
         );
         final heights = [
           for (final m in metrics) m.height(options.fontSize, width),
@@ -303,6 +319,11 @@ class _SectionBlock extends StatelessWidget {
               barColor: style.colors.outline,
             ),
           );
+        case ImageLine i when _image(i) != null:
+          final (file, box) = _image(i)!;
+          children.add(
+            SongImageView(box: box, fontSize: style.fontSize, file: file),
+          );
         case ImageLine i:
           children.add(
             _Placeholder(
@@ -360,6 +381,9 @@ class _SectionBlock extends StatelessWidget {
           : content,
     );
   }
+
+  (File, ImageBox)? _image(ImageLine line) =>
+      resolveImage(line, options.imageLookup);
 
   GridGeometry _gridGeometry(
     BuildContext context,

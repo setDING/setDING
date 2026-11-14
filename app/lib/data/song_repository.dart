@@ -254,18 +254,21 @@ class SongRepository {
     );
   }
 
-  /// Adds a PDF attachment. Throws [AttachmentTooLargeException] above 20 MB.
+  /// Adds a PDF or image attachment ([extension] without dot). Throws
+  /// [AttachmentTooLargeException] above 20 MB.
   Future<String> addAttachment(
     String songId, {
     required String name,
     required Uint8List bytes,
     int? pages,
+    String extension = 'pdf',
   }) async {
     if (bytes.length > maxAttachmentBytes) {
       throw AttachmentTooLargeException(bytes.length);
     }
     final id = _uuid.v4();
-    final fileName = '$id.pdf';
+    final ext = extension.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+    final fileName = '$id.${ext.isEmpty ? 'bin' : ext}';
     await storage.write(fileName, bytes);
     await db
         .into(db.attachments)

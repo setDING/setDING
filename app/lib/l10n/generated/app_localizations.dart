@@ -341,13 +341,13 @@ abstract class AppLocalizations {
   /// No description provided for @attachments.
   ///
   /// In de, this message translates to:
-  /// **'PDF-Anhänge'**
+  /// **'Anhänge'**
   String get attachments;
 
   /// No description provided for @addAttachment.
   ///
   /// In de, this message translates to:
-  /// **'PDF hinzufügen'**
+  /// **'Datei anhängen'**
   String get addAttachment;
 
   /// No description provided for @attachmentTooLarge.
@@ -1129,6 +1129,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'BandChords läuft lokal auf diesem Gerät. Alle Daten sind offline verfügbar.'**
   String get settingsAbout;
+
+  /// No description provided for @lilypondNotice.
+  ///
+  /// In de, this message translates to:
+  /// **'Lilypond-Noten können auf diesem Gerät nicht dargestellt werden. Quelltext:'**
+  String get lilypondNotice;
+
+  /// No description provided for @abcNotice.
+  ///
+  /// In de, this message translates to:
+  /// **'ABC-Noten (Quelltext):'**
+  String get abcNotice;
 }
 
 class _AppLocalizationsDelegate

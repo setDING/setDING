@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 
 import 'chord_diagram.dart';
 import 'song_blocks.dart';
+import 'song_delegates.dart';
+import 'song_image.dart';
 import 'song_grid.dart';
 import 'song_style.dart';
 
@@ -29,6 +31,7 @@ class BlockMetrics {
     required this.wrapping,
     required this.minWidth,
     this.indent = 0,
+    this.images = const [],
   });
 
   /// Height of everything that never wraps, per unit of font size.
@@ -44,6 +47,9 @@ class BlockMetrics {
   /// Left indent (chorus border), per unit of font size.
   final double indent;
 
+  /// Images that shrink to the column width.
+  final List<ImageBox> images;
+
   /// Height at [fontSize] in a column of [columnWidth] logical pixels.
   double height(double fontSize, double columnWidth) {
     final f = fontSize;
@@ -54,6 +60,10 @@ class BlockMetrics {
           ? 1
           : math.max(1, (line.width * f * 1.05 / available).ceil());
       h += count * line.lineHeight * f;
+    }
+    final available = columnWidth - indent * f;
+    for (final image in images) {
+      h += image.height(f, available) + 0.3 * f;
     }
     return h;
   }
@@ -70,6 +80,7 @@ List<BlockMetrics> measureBlocks(
   required TextScaler textScaler,
   TextStyle? baseStyle,
   DiagramResolver? diagramResolver,
+  ImageLookup? imageLookup,
 }) {
   final painter = TextPainter(
     textDirection: TextDirection.ltr,
@@ -82,7 +93,15 @@ List<BlockMetrics> measureBlocks(
   try {
     return [
       for (final b in blocks)
-        _measure(b, formatter, lyricsOnly, painter, styles, diagramResolver),
+        _measure(
+          b,
+          formatter,
+          lyricsOnly,
+          painter,
+          styles,
+          diagramResolver,
+          imageLookup,
+        ),
     ];
   } finally {
     painter.dispose();
@@ -96,6 +115,7 @@ BlockMetrics _measure(
   TextPainter painter,
   SongTextStyles styles,
   DiagramResolver? diagramResolver,
+  ImageLookup? imageLookup,
 ) {
   const f = _referenceFontSize;
   const lh = SongTextStyles.lineHeightFactor;
@@ -112,6 +132,18 @@ BlockMetrics _measure(
 
   /// Height factor (per unit of f) of a style's line.
   double lineUnits(TextStyle style) => (style.fontSize ?? f) * lh / f;
+
+  final delegate = block.delegate;
+  if (delegate != null) {
+    return _measureDelegate(
+      delegate,
+      block,
+      styles,
+      width,
+      spanWidth,
+      lineUnits,
+    );
+  }
 
   final diagrams = block.diagrams;
   if (diagrams != null) {
@@ -175,6 +207,7 @@ BlockMetrics _measure(
   }
 
   GridGeometry? grid;
+  final images = <ImageBox>[];
   for (final line in block.lines) {
     switch (line) {
       case FormatLine l:
@@ -248,6 +281,8 @@ BlockMetrics _measure(
           minWidth,
           grid.rowWidth(g.row, formatter, gridWidth) * size / f,
         );
+      case ImageLine i when resolveImage(i, imageLookup) != null:
+        images.add(resolveImage(i, imageLookup)!.$2);
       case ChordDiagramLine c
           when diagramResolver?.forDefinition(c.definition) != null:
         final data = diagramResolver!.forDefinition(c.definition)!;
@@ -266,7 +301,86 @@ BlockMetrics _measure(
     wrapping: wrapping,
     minWidth: minWidth + indent,
     indent: indent,
+    images: images,
   );
+}
+
+BlockMetrics _measureDelegate(
+  DelegateSection d,
+  SongBlock block,
+  SongTextStyles styles,
+  double Function(String, TextStyle) width,
+  double Function(InlineSpan) spanWidth,
+  double Function(TextStyle) lineUnits,
+) {
+  const f = _referenceFontSize;
+  final format = block.startFormat;
+  final labelStyle = styles.labelFor(format);
+  var fixed = 0.8;
+  var minWidth = 0.0;
+  if (d.label != null) {
+    fixed += _labelLines(d.label!) * lineUnits(labelStyle);
+    minWidth = _labelWidth(d.label!, labelStyle, spanWidth);
+  }
+  switch (d.type) {
+    case DelegateType.svg:
+      return BlockMetrics(
+        fixedHeight: fixed,
+        wrapping: const [],
+        minWidth: minWidth,
+        images: [svgDelegateBox(d)],
+      );
+    case DelegateType.textblock:
+      final block = TextBlockStyle.of(d.attributes);
+      final lyric = styles.lyricsFor(format);
+      final text = lyric.copyWith(
+        fontSize: (lyric.fontSize ?? f) * block.sizeFactor,
+      );
+      return BlockMetrics(
+        fixedHeight: fixed + 2 * block.paddingUnits,
+        wrapping: [
+          for (final line in d.lines)
+            (
+              width: spanWidth(markupSpan(line, text, forMeasuring: true)),
+              lineHeight: lineUnits(text) * markupSizeFactor(line),
+              padding: 2 * block.paddingUnits,
+            ),
+        ],
+        minWidth: minWidth,
+      );
+    case DelegateType.ly || DelegateType.abc:
+      final mono = styles.tabFor(format);
+      // Same style as the notice in song_delegates.dart.
+      final notice = styles
+          .lyricsFor(format)
+          .copyWith(fontSize: mono.fontSize, fontStyle: FontStyle.italic);
+      final monoSize = (mono.fontSize ?? f) / f;
+      var widest = 0.0;
+      for (final line in d.lines) {
+        final w = width(line, mono);
+        if (w > widest) widest = w;
+      }
+      return BlockMetrics(
+        fixedHeight:
+            fixed + monoSize * (1.0 + 0.4) + d.lines.length * lineUnits(mono),
+        wrapping: [
+          (
+            width: width(
+              d.type == DelegateType.ly
+                  ? 'Lilypond notation cannot be rendered on this device. Source:'
+                  : 'ABC notation (source):',
+              notice,
+            ),
+            lineHeight: lineUnits(notice),
+            padding: monoSize + 2 / f,
+          ),
+        ],
+        minWidth: [
+          minWidth,
+          widest + monoSize + 2 / f,
+        ].reduce((a, b) => a > b ? a : b),
+      );
+  }
 }
 
 int _labelLines(String label) => '\n'.allMatches(label).length + 1;
@@ -345,6 +459,7 @@ SongFit fitSong(
   required Size size,
   required TextScaler textScaler,
   TextStyle? baseStyle,
+  ImageLookup? imageLookup,
   int minColumns = 1,
   int maxColumns = 4,
   double minColumnWidth = 220,
@@ -383,6 +498,7 @@ SongFit fitSong(
       textScaler: textScaler,
       baseStyle: baseStyle,
       diagramResolver: diagramResolver,
+      imageLookup: imageLookup,
     );
     final widest = metrics.fold<double>(0, (w, m) => math.max(w, m.minWidth));
     singleColumnFont ??= widest <= 0 ? maxFontSize : size.width / widest;

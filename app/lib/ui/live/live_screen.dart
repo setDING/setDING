@@ -8,6 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../../data/attachment_lookup.dart';
+import '../../data/attachment_storage.dart';
 import '../../data/database.dart';
 import '../../data/song_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
@@ -15,6 +17,7 @@ import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../render/song_header.dart';
 import '../render/chord_diagram.dart';
+import '../render/song_image.dart';
 import '../render/song_view.dart';
 import '../widgets/key_picker.dart';
 
@@ -505,7 +508,10 @@ class _LiveItemPage extends ConsumerWidget {
     if (overlay.liveView != null) {
       pdf = attachments.where((a) => a.id == overlay.liveView).firstOrNull;
     }
-    if (pdf == null && !parsed.hasContent) pdf = attachments.firstOrNull;
+    if (pdf == null && !parsed.hasContent) {
+      pdf = attachments.where((a) => isPdfFile(a.fileName)).firstOrNull;
+    }
+    if (pdf != null && !isPdfFile(pdf.fileName)) pdf = null;
     if (pdf != null) {
       final file = ref.watch(attachmentStorageProvider).file(pdf.fileName);
       return PdfViewer.file(
@@ -515,12 +521,17 @@ class _LiveItemPage extends ConsumerWidget {
         params: const PdfViewerParams(),
       );
     }
+    final storage = ref.watch(attachmentStorageProvider);
     return _ChordProPage(
       song: song,
       parsed: parsed,
       overlay: overlay,
       setTranspose: item.setTranspose,
       scrollController: scrollController,
+      imageLookup: (src) {
+        final image = imageAttachmentFor(attachments, src);
+        return image == null ? null : storage.file(image.fileName);
+      },
     );
   }
 }
@@ -532,6 +543,7 @@ class _ChordProPage extends ConsumerWidget {
     required this.overlay,
     required this.setTranspose,
     required this.scrollController,
+    required this.imageLookup,
   });
 
   final SongEntry song;
@@ -539,6 +551,7 @@ class _ChordProPage extends ConsumerWidget {
   final SongOverlay overlay;
   final int setTranspose;
   final ScrollController scrollController;
+  final ImageLookup imageLookup;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -618,6 +631,7 @@ class _ChordProPage extends ConsumerWidget {
                   chorusRepeat: settings.chorusRepeat,
                   diagramResolver: resolver,
                   diagramsPosition: diagrams,
+                  imageLookup: imageLookup,
                 );
                 final options = _options(
                   formatter,
@@ -667,6 +681,7 @@ class _ChordProPage extends ConsumerWidget {
     collapseRecalls: collapseRecalls,
     diagramResolver: resolver,
     diagramsPosition: diagrams,
+    imageLookup: imageLookup,
   );
 
   Widget _scrolling(Size size, SongRenderOptions options) =>

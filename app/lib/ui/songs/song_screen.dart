@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 
+import '../../data/attachment_lookup.dart';
 import '../../data/attachment_storage.dart';
 import '../../data/database.dart';
 import '../../data/song_repository.dart';
@@ -53,18 +54,21 @@ class _SongScreenState extends ConsumerState<SongScreen> {
 
   Future<void> _addAttachment() async {
     final l10n = AppLocalizations.of(context);
-    final files = await pickFiles(extensions: ['pdf']);
+    final files = await pickFiles(extensions: ['pdf', ...imageExtensions]);
     for (final file in files) {
       if (file.bytes.length > maxAttachmentBytes) {
         if (mounted) showMessage(context, l10n.attachmentTooLarge);
         continue;
       }
-      final pages = await countPdfPages(file.bytes);
+      final extension = p.extension(file.name).replaceFirst('.', '');
+      final pdf = isPdfFile(file.name);
       await _repo.addAttachment(
         widget.songId,
-        name: p.basenameWithoutExtension(file.name),
+        // Images keep their file name so {image: src="…"} finds them.
+        name: pdf ? p.basenameWithoutExtension(file.name) : file.name,
         bytes: file.bytes,
-        pages: pages,
+        pages: pdf ? await countPdfPages(file.bytes) : null,
+        extension: extension,
       );
     }
   }
@@ -232,6 +236,14 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                       parsed.diagrams,
                       settings.diagrams,
                     ),
+                    imageLookup: (src) {
+                      final image = imageAttachmentFor(attachments, src);
+                      return image == null
+                          ? null
+                          : ref
+                                .read(attachmentStorageProvider)
+                                .file(image.fileName);
+                    },
                   ),
                 )
               else
@@ -458,8 +470,16 @@ class _AttachmentsCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final repo = ref.read(songRepositoryProvider);
+    final pdfs = [
+      for (final a in attachments)
+        if (isPdfFile(a.fileName)) a,
+    ];
+    final images = [
+      for (final a in attachments)
+        if (!isPdfFile(a.fileName)) a,
+    ];
     final selected =
-        overlay.liveView ?? (hasChordPro ? null : attachments.firstOrNull?.id);
+        overlay.liveView ?? (hasChordPro ? null : pdfs.firstOrNull?.id);
 
     return Card.outlined(
       child: RadioGroup<String?>(
@@ -473,9 +493,7 @@ class _AttachmentsCard extends ConsumerWidget {
                 l10n.attachments,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              subtitle:
-                  attachments.length > 1 ||
-                      (hasChordPro && attachments.isNotEmpty)
+              subtitle: pdfs.length > 1 || (hasChordPro && pdfs.isNotEmpty)
                   ? Text(l10n.liveView)
                   : null,
               trailing: TextButton.icon(
@@ -484,13 +502,13 @@ class _AttachmentsCard extends ConsumerWidget {
                 label: Text(l10n.addAttachment),
               ),
             ),
-            if (hasChordPro && attachments.isNotEmpty)
+            if (hasChordPro && pdfs.isNotEmpty)
               RadioListTile<String?>(
                 value: null,
                 title: Text(l10n.liveViewChordPro),
                 secondary: const Icon(Icons.text_snippet_outlined),
               ),
-            for (final a in attachments)
+            for (final a in pdfs)
               RadioListTile<String?>(
                 value: a.id,
                 title: Text(a.name),
@@ -500,34 +518,46 @@ class _AttachmentsCard extends ConsumerWidget {
                     formatBytes(a.sizeBytes),
                   ].join(' · '),
                 ),
-                secondary: PopupMenuButton<String>(
-                  onSelected: (value) async {
-                    if (value == 'rename') {
-                      final name = await askText(
-                        context,
-                        title: l10n.rename,
-                        initial: a.name,
-                        label: l10n.attachmentName,
-                      );
-                      if (name != null) await repo.renameAttachment(a.id, name);
-                    } else if (value == 'delete') {
-                      final ok = await confirm(
-                        context,
-                        title: l10n.deleteAttachmentTitle,
-                        message: l10n.deleteAttachmentMessage(a.name),
-                      );
-                      if (ok) await repo.deleteAttachment(a);
-                    }
-                  },
-                  itemBuilder: (_) => [
-                    PopupMenuItem(value: 'rename', child: Text(l10n.rename)),
-                    PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
-                  ],
-                ),
+                secondary: _menu(context, repo, a),
+              ),
+            for (final a in images)
+              ListTile(
+                leading: const Icon(Icons.image_outlined),
+                title: Text(a.name),
+                subtitle: Text(formatBytes(a.sizeBytes)),
+                trailing: _menu(context, repo, a),
               ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _menu(BuildContext context, SongRepository repo, AttachmentEntry a) {
+    final l10n = AppLocalizations.of(context);
+    return PopupMenuButton<String>(
+      onSelected: (value) async {
+        if (value == 'rename') {
+          final name = await askText(
+            context,
+            title: l10n.rename,
+            initial: a.name,
+            label: l10n.attachmentName,
+          );
+          if (name != null) await repo.renameAttachment(a.id, name);
+        } else if (value == 'delete') {
+          final ok = await confirm(
+            context,
+            title: l10n.deleteAttachmentTitle,
+            message: l10n.deleteAttachmentMessage(a.name),
+          );
+          if (ok) await repo.deleteAttachment(a);
+        }
+      },
+      itemBuilder: (_) => [
+        PopupMenuItem(value: 'rename', child: Text(l10n.rename)),
+        PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
+      ],
     );
   }
 }

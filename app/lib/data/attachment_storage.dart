@@ -3,8 +3,24 @@ import 'dart:typed_data';
 
 import 'package:path/path.dart' as p;
 
-/// Maximum size of a PDF attachment (ADR-0009).
+/// Maximum size of an attachment (ADR-0009).
 const maxAttachmentBytes = 20 * 1024 * 1024;
+
+/// File extensions of image attachments for `{image}` (ADR-0012).
+const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'];
+
+String _extension(String fileName) =>
+    p.extension(fileName).replaceFirst('.', '').toLowerCase();
+
+/// Whether a stored attachment file is a PDF.
+bool isPdfFile(String fileName) => _extension(fileName) == 'pdf';
+
+/// Whether a stored attachment file is an image.
+bool isImageFile(String fileName) =>
+    imageExtensions.contains(_extension(fileName));
+
+/// Whether a stored attachment file is an SVG image.
+bool isSvgFile(String fileName) => _extension(fileName) == 'svg';
 
 /// Thrown when an attachment exceeds [maxAttachmentBytes].
 class AttachmentTooLargeException implements Exception {

@@ -40,8 +40,8 @@
   "notes": "Notes",
   "notesHint": "Personal note for this song",
   "editSource": "Edit ChordPro",
-  "attachments": "PDF attachments",
-  "addAttachment": "Add PDF",
+  "attachments": "Attachments",
+  "addAttachment": "Attach file",
   "attachmentTooLarge": "The file is larger than 20 MB and cannot be attached.",
   "attachmentName": "Attachment name",
   "deleteAttachmentTitle": "Delete attachment?",
@@ -171,5 +171,7 @@
   "chorusRepeatLabel": "Label only",
   "settingsPedalHint": "Foot pedal and keyboard: arrow keys, Page Up/Down and Space turn pages. Tap the left or right side of the screen to go back or forward.",
   "settingsStorageUsed": "PDF attachments use {size}",
-  "settingsAbout": "BandChords runs locally on this device. All data is available offline."
+  "settingsAbout": "BandChords runs locally on this device. All data is available offline.",
+  "lilypondNotice": "Lilypond notation cannot be rendered on this device. Source:",
+  "abcNotice": "ABC notation (source):"
 }

@@ -95,6 +95,13 @@ Each phase is a separate branch and merge (ADR-0010).
   is shown as written (also `copy`, `display`, `diagram off`); transposed chords get
   generated fingerings. A new setting shows the diagrams of all chords at the top or the
   bottom (default off); the song's `{diagrams}` wins.
+- 2026-11-14: Phase 5a done: images (PNG, JPG, GIF, WebP, SVG) can be attached to a song
+  and are found by `{image}` via their file name; images in an imported ZIP are attached
+  automatically when a song refers to them. Image sizes are read from the file headers
+  (1 font unit = 20 px, 12 pt; `width`/`height` in points or percent, `scale`, `align`)
+  and images shrink to the column width. `{start_of_svg}` and `{start_of_textblock}`
+  (`flush`, `align`, `textsize`, `padding`) are rendered; Lilypond is shown as source with
+  a notice. ABC follows in phase 5b.
 
 ## Open points
 

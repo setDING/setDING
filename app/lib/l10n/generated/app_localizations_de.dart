@@ -153,10 +153,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get editSource => 'ChordPro bearbeiten';
 
   @override
-  String get attachments => 'PDF-Anhänge';
+  String get attachments => 'Anhänge';
 
   @override
-  String get addAttachment => 'PDF hinzufügen';
+  String get addAttachment => 'Datei anhängen';
 
   @override
   String get attachmentTooLarge =>
@@ -600,4 +600,11 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get settingsAbout =>
       'BandChords läuft lokal auf diesem Gerät. Alle Daten sind offline verfügbar.';
+
+  @override
+  String get lilypondNotice =>
+      'Lilypond-Noten können auf diesem Gerät nicht dargestellt werden. Quelltext:';
+
+  @override
+  String get abcNotice => 'ABC-Noten (Quelltext):';
 }
