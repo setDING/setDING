@@ -1,0 +1,115 @@
+import 'package:chordpro/chordpro.dart';
+import 'package:test/test.dart';
+
+/// Structure of a ChordPro file as downloaded from CCLI SongSelect
+/// (own placeholder text, not a real song).
+const _songSelectStyle = '''{title: Test Song}
+{artist: Writer One, Writer Two}
+{subtitle: Deutsch: Translator}
+{key: Bb}
+{time: 4/4}
+{tempo: 72}
+{ccli_license: 1234567}
+{ccli: 7654321}
+{copyright: 2024 Example Publishing | Other Music}
+{footer: For use solely with the SongSelect® Terms of Use. All rights reserved. www.ccli.com}
+
+{comment: Intro}
+[|][Eb] [.] [.] [Gm] [|] [Fsus] [|]
+
+{comment: Vers 1}
+[Bb]Line one of the [Eb2]verse [Bb]here
+[Gm7]Line two [F(4)]goes on [Eb2]now
+
+{comment: Pre-Chorus}
+[Eb2]Building [Gm7]up
+[F]and up
+
+{comment: Chorus 1}
+[(Bb/D)]Sing [Eb2]out [Gm7]loud [F]now
+[Cm7]and [F]again
+
+{comment: Tag}
+[Cm7]Last [F]line [Bb]here
+
+{comment: Play softly}
+[Bb]Not a heading, a real comment
+
+CCLI-Liednummer 7654321
+© 2024 Example Publishing
+''';
+
+void main() {
+  final song = parseChordPro(_songSelectStyle);
+
+  test('reads SongSelect metadata', () {
+    expect(song.title, 'Test Song');
+    expect(song.keyName, 'Bb');
+    expect(song.tempo, 72);
+    expect(song.time, '4/4');
+    expect(song.metaValue('ccli'), '7654321');
+    expect(song.metaValue('ccli_license'), '1234567');
+    expect(song.metaValue('copyright'), startsWith('2024'));
+  });
+
+  test('comment headings become labelled sections', () {
+    final sections = song.sections.toList();
+    expect(
+      [for (final s in sections.take(5)) (s.kind, s.label)],
+      [
+        (SectionKind.custom, 'Intro'),
+        (SectionKind.verse, 'Vers 1'),
+        (SectionKind.custom, 'Pre-Chorus'),
+        (SectionKind.chorus, 'Chorus 1'),
+        (SectionKind.custom, 'Tag'),
+      ],
+    );
+    // The heading itself is not repeated as a line.
+    expect(sections[1].lines.first, isA<LyricLine>());
+    expect(sections[1].lines, hasLength(2));
+  });
+
+  test('ordinary comments are not treated as headings', () {
+    final section = song.sections.elementAt(5);
+    expect(section.kind, SectionKind.none);
+    expect((section.lines.first as CommentLine).text, 'Play softly');
+  });
+
+  test('trailing copyright text stays as plain lines', () {
+    final last = song.sections.last;
+    expect(last.kind, SectionKind.none);
+    expect(last.lines.whereType<LyricLine>(), hasLength(2));
+  });
+
+  test('optional chords in parentheses are transposed', () {
+    final f = ChordFormatter.forSong(song, transpose: 2);
+    expect(f.format(ChordToken('(Bb/D)')), '(C/E)');
+    expect(f.format(ChordToken('F(4)')), 'G(4)');
+    expect(f.format(ChordToken('Eb2')), 'F2');
+    final german = ChordFormatter.forSong(song, notation: ChordNotation.german);
+    expect(german.format(ChordToken('(Bb/D)')), '(B/D)');
+    final nashville = ChordFormatter.forSong(song, nashville: true);
+    expect(nashville.format(ChordToken('(Bb/D)')), '(1/3)');
+  });
+
+  test('bar and beat marks are kept as written', () {
+    final f = ChordFormatter.forSong(song, transpose: 2);
+    expect(f.format(ChordToken('|')), '|');
+    expect(f.format(ChordToken('.')), '.');
+  });
+
+  test('heading variants', () {
+    String? kindOf(String heading) {
+      final s = parseChordPro('{c: $heading}\n[C]x').sections.first;
+      return s.kind == SectionKind.none ? null : s.kind.name;
+    }
+
+    expect(kindOf('Verse 2'), 'verse');
+    expect(kindOf('Strophe 1'), 'verse');
+    expect(kindOf('Refrain'), 'chorus');
+    expect(kindOf('Chorus 2 (2x)'), 'chorus');
+    expect(kindOf('Bridge'), 'bridge');
+    expect(kindOf('Outro'), 'custom');
+    expect(kindOf('Guitar solo over verse chords'), isNull);
+  });
+}

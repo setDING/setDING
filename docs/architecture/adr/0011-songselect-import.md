@@ -59,10 +59,34 @@ Findings (researched 2026-11-14):
 
 - 2026-11-14: Accepted. No SongSelect API integration; manual import of ChordPro files downloaded from SongSelect.
 
+## Findings from a real SongSelect file (2026-11-14)
+
+A ChordPro file downloaded from SongSelect was tested (not committed to the repository
+because of copyright). Its structure:
+
+- Metadata: `title`, `artist`, `subtitle` (translators), `key`, `time`, `tempo`, plus
+  CCLI-specific `ccli`, `ccli_license`, `copyright` and `footer`. UTF-8, LF line endings.
+- **Sections are marked with comment headings** (`{comment: Vers 1}`, `{comment: Chorus 1}`,
+  `{comment: Pre-Chorus}`, `{comment: Intro}`, `{comment: Tag}`) instead of
+  `{start_of_verse}` etc.
+- **Optional chords in parentheses** (`[(Bb/D)]`), bar and beat marks as chords (`[|]`, `[.]`)
+  in the intro line, chords such as `Eb2`, `F(4)`, `Fsus`.
+- After the song, a plain-text paragraph with CCLI song number, copyright, terms notice and
+  CCLI license number.
+
+Resulting changes in the `chordpro` package and the app:
+
+- Comment headings with known section names (verse/Vers/Strophe, chorus/Refrain, bridge,
+  pre-chorus, intro, outro, tag, interlude, solo, …) at the start of a paragraph become
+  labelled sections; ordinary comments stay comments.
+- Optional chords in parentheses are transposed and formatted (notation, Nashville) and keep
+  their parentheses; bar/beat marks stay as written.
+- `ccli`, `ccli_license` and `footer` are read as metadata.
+- Live-mode fitting lets lines without chords (such as the copyright paragraph) wrap instead
+  of shrinking the font, and measures with the same font as the display.
+
 ## Open points
 
-- Test the import with a real ChordPro file downloaded from SongSelect (directives, section
-  headings, encoding).
-- Should CCLI metadata in such files (e.g. copyright, CCLI song number) be shown in the song
-  header or footer? A visible copyright notice may be required by the license terms.
+- Should the copyright paragraph be rendered smaller (as a footer) in live mode? It is
+  currently shown as written, at lyrics size.
 - Monitor whether CCLI reopens the partner program.

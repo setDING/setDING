@@ -64,14 +64,19 @@ class ChordFormatter {
     if (token.isAnnotation) return token.annotationText;
     final chord = token.chord;
     if (chord == null) return token.raw;
-    if (showsNashville) return chord.toNashville(key!);
-    if (shift == 0 && notation == ChordNotation.international) {
+    if (shift == 0 && notation == ChordNotation.international && !nashville) {
       return token.raw;
     }
-    final useFlats = shift == 0
-        ? null
-        : (shapeKey?.usesFlats ?? chord.root.preferFlat);
-    return chord.transpose(shift, useFlats: useFlats).format(notation);
+    final String text;
+    if (showsNashville) {
+      text = chord.toNashville(key!);
+    } else {
+      final useFlats = shift == 0
+          ? null
+          : (shapeKey?.usesFlats ?? chord.root.preferFlat);
+      text = chord.transpose(shift, useFlats: useFlats).format(notation);
+    }
+    return token.parenthesized ? '($text)' : text;
   }
 
   /// Formats the sounding key for display (e.g. in the header).

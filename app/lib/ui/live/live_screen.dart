@@ -553,6 +553,7 @@ class _ChordProPage extends ConsumerWidget {
                   minFontSize: AppSettings.minFontSize,
                   size: size,
                   textScaler: MediaQuery.textScalerOf(context),
+                  baseStyle: DefaultTextStyle.of(context).style,
                   maxColumns: settings.maxColumns,
                   chorusRepeat: settings.chorusRepeat,
                 );

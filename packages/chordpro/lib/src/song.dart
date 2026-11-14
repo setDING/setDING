@@ -105,13 +105,20 @@ class Segment {
 
 /// A chord as written in the source, parsed if possible.
 class ChordToken {
-  ChordToken(this.raw) : chord = Chord.tryParse(raw);
+  ChordToken(this.raw)
+    : parenthesized = _optional.hasMatch(raw),
+      chord = Chord.tryParse(_optional.firstMatch(raw)?.group(1) ?? raw);
+
+  static final _optional = RegExp(r'^\((.+)\)$');
 
   /// Text between the brackets.
   final String raw;
 
   /// Parsed chord, or null for annotations like `N.C.` or `*Riff`.
   final Chord? chord;
+
+  /// Optional chord written in parentheses, e.g. `[(Bb/D)]` (SongSelect).
+  final bool parenthesized;
 
   /// Annotations (`[*text]`) are displayed as written.
   bool get isAnnotation => raw.startsWith('*');

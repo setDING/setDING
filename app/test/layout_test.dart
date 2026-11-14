@@ -100,9 +100,15 @@ void main() {
         labeler: _labeler,
         collapseRecalls: result.collapseRecalls,
       );
+      final metrics = measureBlocks(
+        blocks,
+        formatter: formatter,
+        lyricsOnly: false,
+        textScaler: TextScaler.noScaling,
+      );
+      final width = columnWidth(size.width, result.columns, result.fontSize);
       final heights = [
-        for (final b in blocks)
-          blockHeight(b, lyricsOnly: false, fontSize: result.fontSize),
+        for (final m in metrics) m.height(result.fontSize, width),
       ];
       expect(
         partitionHeight(heights, result.columns),
@@ -127,6 +133,26 @@ void main() {
         fit(const Size(1240, 680), chorus: ChorusRepeat.label).collapseRecalls,
         isTrue,
       );
+    });
+
+    test('long lines without chords wrap instead of shrinking the font', () {
+      final withFooter = parseChordPro(
+        '$demoSongSource\n\n${'Copyright notice with a very long text. ' * 8}',
+      );
+      final result = fitSong(
+        withFooter,
+        formatter: ChordFormatter.forSong(withFooter),
+        lyricsOnly: false,
+        labeler: _labeler,
+        baseFontSize: 20,
+        maxFontSize: 40,
+        minFontSize: 12,
+        size: const Size(1240, 680),
+        textScaler: TextScaler.noScaling,
+      );
+      expect(result.fits, isTrue);
+      expect(result.columns, greaterThan(1));
+      expect(result.fontSize, greaterThan(14));
     });
 
     test('falls back to scrolling when nothing fits', () {

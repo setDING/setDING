@@ -19,6 +19,9 @@ const _metaAliases = {
   'capo': 'capo',
   'duration': 'duration',
   'copyright': 'copyright',
+  'ccli': 'ccli',
+  'ccli_license': 'ccli_license',
+  'footer': 'footer',
 };
 
 const _commentAliases = {
@@ -83,7 +86,16 @@ Song parseChordPro(String source) {
   }
 
   void closeSection() {
-    final section = current;
+    var section = current;
+    if (section != null && !explicitSection) {
+      // SongSelect and other sources mark sections with a comment heading
+      // such as `{comment: Verse 1}` instead of `{start_of_verse}`.
+      final heading = _headingSection(section);
+      if (heading != null) {
+        elements[elements.indexOf(section)] = heading;
+        section = heading;
+      }
+    }
     if (section != null) {
       _trimEmptyLines(section.lines);
       if (section.kind == SectionKind.chorus) lastChorus = section;
@@ -226,4 +238,33 @@ void _trimEmptyLines(List<Line> lines) {
   while (lines.isNotEmpty && lines.last is EmptyLine) {
     lines.removeLast();
   }
+}
+
+final _heading = RegExp(
+  r'^(pre[\s-]?chorus|pre[\s-]?refrain|post[\s-]?chorus|chorus|refrain|'
+  r'verse|vers|strophe|bridge|intro|outro|tag|interlude|instrumental|'
+  r'zwischenspiel|ending|schluss|coda|solo|vamp|turnaround)'
+  r'(\s*\d+[a-z]?)?(\s*\(.*\))?\s*:?$',
+  caseSensitive: false,
+);
+
+/// Turns an implicit section starting with a heading comment into a
+/// labelled section, e.g. `{comment: Chorus 1}` → chorus "Chorus 1".
+Section? _headingSection(Section section) {
+  if (section.kind != SectionKind.none || section.lines.isEmpty) return null;
+  final first = section.lines.first;
+  if (first is! CommentLine || first.style != CommentStyle.normal) return null;
+  final match = _heading.firstMatch(first.text.trim());
+  if (match == null) return null;
+  final kind = switch (match.group(1)!.toLowerCase()) {
+    'chorus' || 'refrain' => SectionKind.chorus,
+    'verse' || 'vers' || 'strophe' => SectionKind.verse,
+    'bridge' => SectionKind.bridge,
+    _ => SectionKind.custom,
+  };
+  return Section(
+    kind: kind,
+    label: first.text.trim(),
+    lines: section.lines.sublist(1),
+  );
 }
