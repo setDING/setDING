@@ -25,11 +25,24 @@ flutter test test_screenshots   # writes build/screenshots/*.png
 Linux is not a release platform (ADR-0002); it is used to try the app quickly.
 Requires `cmake`, `ninja` and GTK 3 development files (on Arch: `sudo pacman -S cmake ninja`).
 
+The `Makefile` in the repository root starts **test instances** with their own data
+directory (`.dev-data/`, override with `DATA_DIR=...`), so they never touch the data of
+a normally started app:
+
 ```bash
-flutter run -d linux
+make            # list all targets
+make dev        # test instance with hot reload (r = reload, q = quit)
+make start      # build and start a test instance
+make reset      # delete the test instance's data (next start begins fresh)
+make check      # all checks – the test gate before every merge
 ```
 
 A keyboard simulates a foot pedal in live mode: arrow keys, Page Up/Down and Space.
+
+Data locations: the database, settings and PDF attachments live in the app's private
+support directory (on Linux `~/.local/share/ch.bandchords.bandchords/`). Older builds
+stored the database in the documents folder; it is moved on the next start.
+`BANDCHORDS_DATA_DIR` (development only) overrides the directory for database and PDFs.
 
 ## Structure
 

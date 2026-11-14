@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'data/attachment_storage.dart';
+import 'data/data_location.dart';
 import 'data/database.dart';
 import 'data/demo_song.dart';
 import 'data/song_repository.dart';
@@ -19,8 +20,24 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final prefs = await SharedPreferences.getInstance();
-  final supportDir = await getApplicationSupportDirectory();
-  final db = AppDatabase(driftDatabase(name: 'bandchords'));
+  // All data lives in the app's private directory (ADR-0001). On desktop
+  // the documents directory is the user's visible "Documents" folder.
+  // BANDCHORDS_DATA_DIR (development only, see Makefile) runs an isolated
+  // test instance and never touches existing data.
+  final override = Platform.environment['BANDCHORDS_DATA_DIR'];
+  final supportDir = override != null && override.isNotEmpty
+      ? Directory(override)
+      : await getApplicationSupportDirectory();
+  final dbFile = await resolveDatabaseFile(
+    supportDir,
+    legacyDir: override == null ? await _legacyDocumentsDir() : null,
+  );
+  final db = AppDatabase(
+    driftDatabase(
+      name: 'bandchords',
+      native: DriftNativeOptions(databasePath: () async => dbFile.path),
+    ),
+  );
   final storage = AttachmentStorage(
     Directory(p.join(supportDir.path, 'attachments')),
   );
@@ -41,4 +58,13 @@ Future<void> main() async {
       child: const BandChordsApp(),
     ),
   );
+}
+
+/// Where earlier versions stored the database, or null if unavailable.
+Future<Directory?> _legacyDocumentsDir() async {
+  try {
+    return await getApplicationDocumentsDirectory();
+  } catch (_) {
+    return null;
+  }
 }

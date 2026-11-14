@@ -29,6 +29,12 @@ The documentation must always reflect the current state of the project:
 - **Always update the README** together with the ADR: the solution strategy table, the domain model, the roadmap, the open questions and the ADR index (number, title, status).
 - Status values: `Proposed`, `Accepted`, `Rejected`, `Superseded by ADR-XXXX`. Only the user can accept or reject an ADR; agents create ADRs as `Proposed`.
 
+## Local commands
+
+Use the `Makefile` in the repository root (`make help`): `make check` is the test gate,
+`make dev` / `make start` run an isolated local test instance on Linux, `make reset`
+deletes its data.
+
 ## Git workflow (mandatory)
 
 Every change follows [`docs/development/git-workflow.md`](docs/development/git-workflow.md) (ADR-0010). In short:

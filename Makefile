@@ -1,0 +1,84 @@
+# BandChords – local development helpers (Linux).
+#
+# Test instances use their own data directory (DATA_DIR, default .dev-data/),
+# so they never touch the data of a normally started app.
+#
+#   make            show this help
+#   make dev        start a test instance with hot reload
+#   make start      build and start a test instance (without Flutter tooling)
+#   make reset      delete the test instance's data (fresh start with demo song)
+
+SHELL := /bin/bash
+.DEFAULT_GOAL := help
+
+ROOT     := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+APP      := $(ROOT)/app
+PACKAGE  := $(ROOT)/packages/chordpro
+DATA_DIR ?= $(ROOT)/.dev-data
+
+# Flutter from PATH, otherwise from ~/development/flutter.
+FLUTTER  ?= $(shell command -v flutter 2>/dev/null || echo $(HOME)/development/flutter/bin/flutter)
+DART     := $(dir $(FLUTTER))dart
+
+BUNDLE   := $(APP)/build/linux/x64/debug/bundle/bandchords
+
+# Redirects the app's private data to DATA_DIR: BANDCHORDS_DATA_DIR for the
+# database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
+TEST_ENV := BANDCHORDS_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
+
+.PHONY: help setup dev start build reset data-dir check test codegen l10n screenshots doctor clean
+
+help: ## Show this help
+	@echo "BandChords – make targets"
+	@echo
+	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | \
+		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
+	@echo
+	@echo "Test data: $(DATA_DIR)   (override with DATA_DIR=...)"
+	@echo "Flutter:   $(FLUTTER)"
+
+setup: ## Install dependencies, generate code and translations
+	@test -x "$(FLUTTER)" || { echo "Flutter not found. Install it or set FLUTTER=/path/to/flutter"; exit 1; }
+	cd $(PACKAGE) && $(DART) pub get
+	cd $(APP) && $(FLUTTER) pub get
+	$(MAKE) codegen l10n
+
+dev: data-dir ## Start a test instance with hot reload (r = reload, q = quit)
+	cd $(APP) && $(TEST_ENV) $(FLUTTER) run -d linux
+
+start: build data-dir ## Build and start a test instance (debug build, no hot reload)
+	$(TEST_ENV) $(BUNDLE)
+
+build: ## Build the Linux debug app
+	cd $(APP) && $(FLUTTER) build linux --debug
+
+reset: ## Delete all data of the test instance
+	rm -rf "$(DATA_DIR)"
+	@echo "Test data deleted: $(DATA_DIR)"
+
+data-dir:
+	@mkdir -p "$(DATA_DIR)/app" "$(DATA_DIR)/xdg"
+	@echo "Test data: $(DATA_DIR)"
+
+check: ## Run all checks (format, analysis, l10n, tests) – the test gate
+	$(ROOT)/tool/check.sh
+
+test: ## Run all tests
+	cd $(PACKAGE) && $(DART) test
+	cd $(APP) && $(FLUTTER) test
+
+codegen: ## Regenerate the drift database code
+	cd $(APP) && $(DART) run build_runner build
+
+l10n: ## Regenerate the translations from the ARB files
+	cd $(APP) && $(FLUTTER) gen-l10n
+
+screenshots: ## Render screenshots with real fonts to app/build/screenshots/
+	cd $(APP) && $(FLUTTER) test test_screenshots
+	@echo "Screenshots: $(APP)/build/screenshots/"
+
+doctor: ## Show the state of the Flutter toolchain
+	$(FLUTTER) doctor
+
+clean: ## Remove build output (keeps test data; see 'make reset')
+	cd $(APP) && $(FLUTTER) clean

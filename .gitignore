@@ -40,3 +40,6 @@ pb_data/
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Local test instance data (make dev / make start)
+.dev-data/
