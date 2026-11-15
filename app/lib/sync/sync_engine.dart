@@ -99,6 +99,7 @@ class SyncEngine {
       for (final band in visible) {
         pulled += await _pullSets(band);
       }
+      await _enqueueUnsynced(visible);
       final p = await _push();
       pushed += p.$1;
       conflicts += p.$2;
@@ -402,6 +403,55 @@ class SyncEngine {
   }
 
   // Push -------------------------------------------------------------------------
+
+  /// Adds records that never reached the server (revision 0) to the outbox,
+  /// e.g. songs copied into an organization before the outbox existed
+  /// (app schema < 5). Only records the user may push are added, so a
+  /// rejected change is not retried on every sync.
+  Future<void> _enqueueUnsynced(List<BandView> bands) async {
+    final libraries = {
+      for (final b in bands)
+        if (b.canEditSongs) b.libraryId,
+    }..remove(localBandId);
+    final setBands = {
+      for (final b in bands)
+        if (b.canManageSets && !b.isLocal) b.id,
+    };
+    String placeholders(int n) => List.filled(n, '?').join(', ');
+    Future<void> enqueue(String collection, String select, List<String> args) =>
+        db.customStatement(
+          'INSERT OR IGNORE INTO sync_outbox (collection, record_id, version) '
+          "SELECT '$collection', id, 1 FROM ($select)",
+          args,
+        );
+    if (libraries.isNotEmpty) {
+      final libs = libraries.toList();
+      await enqueue(
+        SyncCollection.songs,
+        'SELECT id FROM songs WHERE revision = 0 AND deleted = 0 '
+        'AND library_id IN (${placeholders(libs.length)})',
+        libs,
+      );
+      await enqueue(
+        SyncCollection.attachments,
+        'SELECT a.id FROM attachments a JOIN songs s ON s.id = a.song_id '
+        'WHERE a.revision = 0 AND a.deleted = 0 AND s.deleted = 0 '
+        "AND lower(a.file_name) LIKE '%.pdf' "
+        'AND s.library_id IN (${placeholders(libs.length)})',
+        libs,
+      );
+    }
+    if (setBands.isNotEmpty) {
+      final ids = setBands.toList();
+      await enqueue(
+        SyncCollection.setlists,
+        'SELECT id FROM setlists WHERE revision = 0 AND deleted = 0 '
+        'AND band_id IN (${placeholders(ids.length)})',
+        ids,
+      );
+    }
+    db.notifyUpdates({TableUpdate.onTable(db.syncOutbox)});
+  }
 
   /// Returns (pushed, new conflicts).
   Future<(int, int)> _push() async {

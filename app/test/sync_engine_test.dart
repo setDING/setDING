@@ -485,4 +485,40 @@ void main() {
       expect(await outbox(), isEmpty);
     });
   });
+  group('records from before the outbox (#29)', () {
+    final pdf = Uint8List.fromList('%PDF-1.4 test'.codeUnits);
+
+    test('songs, sets and PDFs that never synced are uploaded', () async {
+      final songId = await songs.createSong(source: '{title: Old}');
+      final a = await songs.addAttachment(songId, name: 'Score', bytes: pdf);
+      final setId = await sets.createSet(name: 'Old gig');
+      final local = SongRepository(db, AttachmentStorage(dir));
+      await local.createSong(source: '{title: Private}');
+      // Created by an app version without the outbox.
+      await db.delete(db.syncOutbox).go();
+
+      final report = await engine.sync();
+      expect(report.error, isNull);
+      expect(server.songs.keys, [songId]);
+      expect(server.sets.keys, [setId]);
+      expect(server.attachments.keys, [a]);
+      expect(await outbox(), isEmpty);
+    });
+
+    test('records without permission are not retried every sync', () async {
+      await sets.createSet(name: 'Gig');
+      await db.delete(db.syncOutbox).go();
+      server.members.single.role = BandRole.member;
+      server.orgMembers.single.role = BandRole.member;
+      server.addMember(
+        'b1',
+        const AuthUser(id: 'x', email: 'x', name: 'X'),
+        BandRole.admin,
+      );
+      await engine.sync();
+      await engine.sync();
+      expect(server.pushCount, 0);
+      expect(await outbox(), isEmpty);
+    });
+  });
 }
