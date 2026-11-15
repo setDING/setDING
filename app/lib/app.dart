@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'l10n/generated/app_localizations.dart';
 import 'settings/settings.dart';
+import 'sync/sync_controller.dart';
 import 'ui/deep_links.dart';
 import 'ui/home_screen.dart';
 
@@ -33,6 +34,8 @@ class _RealChordAppState extends ConsumerState<RealChordApp> {
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
+    // Keeps the sync running while the app is open (ADR-0004).
+    ref.watch(syncControllerProvider);
     return MaterialApp(
       navigatorKey: _navigatorKey,
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,

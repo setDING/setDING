@@ -7,6 +7,7 @@ import '../../sync/auth_providers.dart';
 import '../widgets/dialogs.dart';
 import '../bands/bands_screen.dart';
 import 'sign_in_screen.dart';
+import 'sync_tile.dart';
 
 /// Account tiles of the settings screen: sign-in state and server.
 class AccountSection extends ConsumerWidget {
@@ -52,6 +53,7 @@ class AccountSection extends ConsumerWidget {
               child: Text(l10n.accountSignOut),
             ),
           ),
+        if (user != null) const SyncTile(),
         if (user != null)
           ListTile(
             key: const Key('account-bands'),

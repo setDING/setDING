@@ -418,6 +418,106 @@ class FakeSyncBackend implements SyncBackend {
     return orgId;
   }
 
+  // Songs and sets ----------------------------------------------------------------
+
+  /// Server state: songs and sets by ID.
+  final songs = <String, RemoteSong>{};
+  final sets = <String, RemoteSet>{};
+  int _serverRevision = 1000;
+  final changes = StreamController<String>.broadcast();
+  int pushCount = 0;
+
+  /// Simulates a change by someone else.
+  RemoteSong putSong(RemoteSong song) {
+    final stored = RemoteSong(
+      id: song.id,
+      organizationId: song.organizationId,
+      title: song.title,
+      chordpro: song.chordpro,
+      revision: ++_serverRevision,
+      deleted: song.deleted,
+    );
+    songs[song.id] = stored;
+    return stored;
+  }
+
+  RemoteSet putSet(RemoteSet set) {
+    final stored = RemoteSet(
+      id: set.id,
+      bandId: set.bandId,
+      name: set.name,
+      gigDate: set.gigDate,
+      venue: set.venue,
+      items: set.items,
+      revision: ++_serverRevision,
+      deleted: set.deleted,
+    );
+    sets[set.id] = stored;
+    return stored;
+  }
+
+  @override
+  Future<List<RemoteSong>> pullSongs(String organizationId, int since) async {
+    _requireUser();
+    return songs.values
+        .where((s) => s.organizationId == organizationId && s.revision > since)
+        .toList()
+      ..sort((a, b) => a.revision.compareTo(b.revision));
+  }
+
+  @override
+  Future<List<RemoteSet>> pullSets(String bandId, int since) async {
+    _requireUser();
+    return sets.values
+        .where((s) => s.bandId == bandId && s.revision > since)
+        .toList()
+      ..sort((a, b) => a.revision.compareTo(b.revision));
+  }
+
+  @override
+  Future<RemoteSong?> fetchSong(String id) async {
+    _requireUser();
+    return songs[id];
+  }
+
+  @override
+  Future<RemoteSong> pushSong(RemoteSong song, {required bool create}) async {
+    _requireUser();
+    pushCount++;
+    final existing = songs[song.id];
+    if (create && existing != null) {
+      throw const BackendException(BackendErrorKind.server);
+    }
+    if (!create) {
+      if (existing == null) {
+        throw const BackendException(BackendErrorKind.notAllowed);
+      }
+      if (existing.revision != song.revision) {
+        throw const BackendException(BackendErrorKind.conflict);
+      }
+    }
+    return putSong(song);
+  }
+
+  @override
+  Future<RemoteSet> pushSet(RemoteSet set, {required bool create}) async {
+    _requireUser();
+    pushCount++;
+    if (!bands.containsKey(set.bandId) || !_canManageBand(set.bandId)) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    if (create && sets.containsKey(set.id)) {
+      throw const BackendException(BackendErrorKind.server);
+    }
+    if (!create && !sets.containsKey(set.id)) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    return putSet(set);
+  }
+
+  @override
+  Stream<String> watchChanges() => changes.stream;
+
   @override
   void dispose() {}
 }

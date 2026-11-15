@@ -55,6 +55,8 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-14: Leader sync is not needed and is removed from the roadmap. Each member turns pages on their own device.
 - 2026-11-14: In live mode the song is fitted to the screen without scrolling; sections are arranged in columns automatically. Fitting, maximum columns and the display of repeated choruses are configurable in the settings.
 
+- 2026-11-15: Sync is paused while live mode is open; a sync requested meanwhile runs after leaving live mode (issue #17, ADR-0004).
+
 ## Open points
 
 - Is a page turner already in use? Which model (for testing)?

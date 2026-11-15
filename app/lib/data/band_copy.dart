@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 
 import 'attachment_storage.dart';
 import 'database.dart';
+import 'outbox.dart';
 
 const _uuid = Uuid();
 
@@ -87,6 +88,12 @@ class BandCopyService {
               ),
             );
       }
+      await markDirty(
+        db,
+        SyncCollection.setlists,
+        newSetId,
+        scope: targetBandId,
+      );
     });
     return newSetId;
   }
@@ -148,6 +155,17 @@ class BandCopyService {
               ),
             ),
           );
+    }
+    await markDirty(db, SyncCollection.songs, newId, scope: targetLibraryId);
+    for (final a in attachments) {
+      if (!isPdfFile(a.fileName)) continue;
+      final id = attachmentCopies[a.id]!;
+      await markDirty(
+        db,
+        SyncCollection.attachments,
+        id,
+        scope: targetLibraryId,
+      );
     }
     return newId;
   }

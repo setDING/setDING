@@ -11,6 +11,7 @@ import 'package:realchord/settings/settings.dart';
 import 'package:realchord/sync/auth_providers.dart';
 import 'package:realchord/sync/session_store.dart';
 import 'package:realchord/sync/sync_backend.dart';
+import 'package:realchord/sync/sync_controller.dart';
 import 'package:realchord/ui/deep_links.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
@@ -65,6 +66,7 @@ class TestApp {
       sessionStoreProvider.overrideWithValue(MemorySessionStore()),
       syncBackendProvider.overrideWithValue(backend),
       incomingLinksProvider.overrideWithValue(links.stream),
+      autoSyncProvider.overrideWithValue(false),
     ],
     child: RealChordApp(home: home),
   );

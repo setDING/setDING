@@ -68,6 +68,8 @@ but contains no ChordPro logic.
 - 2026-11-15: Server details and backup concept decided in **ADR-0014** (accepted): Debian LXC on the owner's Proxmox server, PocketBase as a systemd service, published via a Cloudflare Tunnel (replaces the Caddy reverse proxy), daily SQLite online backups, provisioning with `make server-install`.
 - 2026-11-15: Details of the data model decided in **ADR-0015** (accepted): one server-wide revision counter incremented in the save transaction, set items stored as JSON in the set, conflict detection for songs with HTTP 409 when the base revision is outdated.
 
+- 2026-11-15: Sync of songs and sets implemented (issue #17, owner asked to finish the remaining features without further questions): local tables `sync_outbox` (one row per changed record with a version counter, so a change during a push is not lost), `sync_cursors` (last pulled revision per organization/band and collection) and `song_conflicts` (server version of a song changed on both sides). A run refreshes organizations and bands, pulls songs per organization and sets per band, then pushes the outbox; songs are pushed with their base revision and a 409 or a pull of a locally changed song becomes a conflict the user resolves on the song screen (keep mine, use server version, keep both); sets use last writer wins. Records the user may no longer change stay local. Syncs start after sign-in and at start, 3 s after local changes, on realtime events and every 5 minutes, never while live mode is open (ADR-0007). Local edits no longer change `revision`, which is always the server revision. The local library is never synced.
+
 ## Open points
 
 - Should there be a version history for songs (restore earlier versions)?

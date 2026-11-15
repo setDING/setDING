@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../../sync/sync_controller.dart';
 import '../../data/attachment_lookup.dart';
 import '../../data/attachment_storage.dart';
 import '../../data/database.dart';
@@ -143,14 +144,19 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   /// Items as shown; the key of a set item can be changed during live mode.
   late final List<LiveItem> _items = [...widget.items];
 
+  /// Sync is paused on stage: nothing changes what is shown (ADR-0007).
+  late final SyncController _sync = ref.read(syncControllerProvider.notifier);
+
   @override
   void initState() {
     super.initState();
     _setStageMode(true);
+    _sync.pause();
   }
 
   @override
   void dispose() {
+    _sync.resume();
     _setStageMode(false);
     _pages.dispose();
     for (final c in _scroll.values) {

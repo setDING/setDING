@@ -1212,4 +1212,77 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get joinSignInFirst => 'Sign in or create an account to join.';
+
+  @override
+  String get syncTitle => 'Sync';
+
+  @override
+  String get syncNow => 'Sync now';
+
+  @override
+  String get syncRunning => 'Syncing …';
+
+  @override
+  String syncLast(String time) {
+    return 'Last synced: $time';
+  }
+
+  @override
+  String get syncNever => 'Not synced yet';
+
+  @override
+  String syncPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes are not on the server yet.',
+      one: '1 change is not on the server yet.',
+      zero: 'All changes are on the server.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncOffline => 'No connection – changes will be sent later.';
+
+  @override
+  String syncConflicts(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs with a conflict – open them to decide.',
+      one: '1 song with a conflict – open it to decide.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get conflictBanner =>
+      'This song was changed on the server and on this device.';
+
+  @override
+  String get conflictBannerDeleted =>
+      'This song was deleted on the server and changed on this device.';
+
+  @override
+  String get conflictKeepMine => 'Keep mine';
+
+  @override
+  String get conflictTakeServer => 'Use server version';
+
+  @override
+  String get conflictKeepBoth => 'Keep both';
+
+  @override
+  String get conflictCompare => 'Show server version';
+
+  @override
+  String get conflictServerVersion => 'Server version';
+
+  @override
+  String get conflictKeptBoth => 'Your version was saved as a separate song.';
+
+  @override
+  String get accountErrorConflict =>
+      'The song was changed on the server in the meantime.';
 }

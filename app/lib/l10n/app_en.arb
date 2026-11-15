@@ -476,5 +476,43 @@
       }
     }
   },
-  "joinSignInFirst": "Sign in or create an account to join."
+  "joinSignInFirst": "Sign in or create an account to join.",
+  "syncTitle": "Sync",
+  "syncNow": "Sync now",
+  "syncRunning": "Syncing …",
+  "syncLast": "Last synced: {time}",
+  "@syncLast": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncNever": "Not synced yet",
+  "syncPending": "{count, plural, =0{All changes are on the server.} =1{1 change is not on the server yet.} other{{count} changes are not on the server yet.}}",
+  "@syncPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncOffline": "No connection – changes will be sent later.",
+  "syncConflicts": "{count, plural, =1{1 song with a conflict – open it to decide.} other{{count} songs with a conflict – open them to decide.}}",
+  "@syncConflicts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "conflictBanner": "This song was changed on the server and on this device.",
+  "conflictBannerDeleted": "This song was deleted on the server and changed on this device.",
+  "conflictKeepMine": "Keep mine",
+  "conflictTakeServer": "Use server version",
+  "conflictKeepBoth": "Keep both",
+  "conflictCompare": "Show server version",
+  "conflictServerVersion": "Server version",
+  "conflictKeptBoth": "Your version was saved as a separate song.",
+  "accountErrorConflict": "The song was changed on the server in the meantime."
 }

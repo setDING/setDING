@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 
 import 'attachment_storage.dart';
 import 'database.dart';
+import 'outbox.dart';
 
 const _uuid = Uuid();
 
@@ -88,6 +89,7 @@ class SetRepository {
             updatedAt: DateTime.now(),
           ),
         );
+    await markDirty(db, SyncCollection.setlists, id, scope: bandId);
     return id;
   }
 
@@ -116,6 +118,7 @@ class SetRepository {
       ),
     );
     await (db.delete(db.setItems)..where((i) => i.setId.equals(id))).go();
+    await _touch(id);
   });
 
   Stream<List<SetItemView>> watchItems(String setId) =>
@@ -185,10 +188,12 @@ class SetRepository {
     await _touch(setId);
   }
 
-  Future<void> updateMarker(String itemId, String label) =>
-      (db.update(db.setItems)..where((i) => i.id.equals(itemId))).write(
-        SetItemsCompanion(note: Value(label.trim())),
-      );
+  Future<void> updateMarker(String itemId, String label) async {
+    await (db.update(db.setItems)..where((i) => i.id.equals(itemId))).write(
+      SetItemsCompanion(note: Value(label.trim())),
+    );
+    await _touchItem(itemId);
+  }
 
   Future<void> removeItem(String setId, String itemId) async {
     await (db.delete(db.setItems)..where((i) => i.id.equals(itemId))).go();
@@ -207,19 +212,22 @@ class SetRepository {
     await _touch(setId);
   }
 
-  Future<void> setItemTranspose(String itemId, int transpose) =>
-      (db.update(db.setItems)..where((i) => i.id.equals(itemId))).write(
-        SetItemsCompanion(transpose: Value(transpose)),
-      );
+  Future<void> setItemTranspose(String itemId, int transpose) async {
+    await (db.update(db.setItems)..where((i) => i.id.equals(itemId))).write(
+      SetItemsCompanion(transpose: Value(transpose)),
+    );
+    await _touchItem(itemId);
+  }
 
   /// Set-specific song sequence; null or empty restores the song's own.
-  Future<void> setItemSequence(String itemId, String? sequence) {
+  Future<void> setItemSequence(String itemId, String? sequence) async {
     final value = sequence?.trim();
-    return (db.update(db.setItems)..where((i) => i.id.equals(itemId))).write(
+    await (db.update(db.setItems)..where((i) => i.id.equals(itemId))).write(
       SetItemsCompanion(
         sequence: Value(value == null || value.isEmpty ? null : value),
       ),
     );
+    await _touchItem(itemId);
   }
 
   /// A set is "offline ready" when all its songs and their attachment files
@@ -246,17 +254,23 @@ class SetRepository {
     await reorder(setId, [for (final v in items) v.item.id]);
   }
 
+  /// Records a change of the set (or one of its items) for the sync.
   Future<void> _touch(String setId) async {
     final current = await (db.select(
       db.setlists,
     )..where((s) => s.id.equals(setId))).getSingleOrNull();
     if (current == null) return;
     await (db.update(db.setlists)..where((s) => s.id.equals(setId))).write(
-      SetlistsCompanion(
-        revision: Value(current.revision + 1),
-        updatedAt: Value(DateTime.now()),
-      ),
+      SetlistsCompanion(updatedAt: Value(DateTime.now())),
     );
+    await markDirty(db, SyncCollection.setlists, setId, scope: current.bandId);
+  }
+
+  Future<void> _touchItem(String itemId) async {
+    final item = await (db.select(
+      db.setItems,
+    )..where((i) => i.id.equals(itemId))).getSingleOrNull();
+    if (item != null) await _touch(item.setId);
   }
 }
 

@@ -197,6 +197,49 @@ class PersonalOverlays extends Table {
   Set<Column> get primaryKey => {songId};
 }
 
+/// Local changes waiting to be pushed to the server (ADR-0004, schema 5).
+/// One row per record; [version] grows with every change, so a change made
+/// while a push is running is not lost.
+@DataClassName('OutboxEntry')
+class SyncOutbox extends Table {
+  /// Server collection: `songs`, `setlists` or `attachments`.
+  TextColumn get collection => text()();
+  TextColumn get recordId => text()();
+  IntColumn get version => integer().withDefault(const Constant(1))();
+
+  @override
+  Set<Column> get primaryKey => {collection, recordId};
+}
+
+/// Highest server revision pulled per scope (organization or band) and
+/// collection (delta sync, schema 5).
+@DataClassName('SyncCursor')
+class SyncCursors extends Table {
+  TextColumn get scope => text()();
+  TextColumn get collection => text()();
+  IntColumn get revision => integer().withDefault(const Constant(0))();
+
+  @override
+  Set<Column> get primaryKey => {scope, collection};
+}
+
+/// A song changed on the server and on this device (ADR-0004): the server
+/// version waits here until the user decides (schema 5).
+@DataClassName('SongConflict')
+class SongConflicts extends Table {
+  TextColumn get songId => text()();
+  TextColumn get title => text()();
+  TextColumn get chordproSource => text()();
+  IntColumn get revision => integer()();
+
+  /// The song was deleted on the server.
+  BoolColumn get deleted => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get detectedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {songId};
+}
+
 @DriftDatabase(
   tables: [
     Organizations,
@@ -208,13 +251,16 @@ class PersonalOverlays extends Table {
     Setlists,
     SetItems,
     PersonalOverlays,
+    SyncOutbox,
+    SyncCursors,
+    SongConflicts,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   /// Called after an upgrade to fill new columns from the ChordPro source.
   Future<void> Function(AppDatabase db)? afterUpgrade;
@@ -251,6 +297,11 @@ class AppDatabase extends _$AppDatabase {
             },
           ),
         );
+      }
+      if (from < 5) {
+        await m.createTable(syncOutbox);
+        await m.createTable(syncCursors);
+        await m.createTable(songConflicts);
       }
     },
     beforeOpen: (details) async {

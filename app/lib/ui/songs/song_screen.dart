@@ -20,6 +20,8 @@ import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
 import '../widgets/key_picker.dart';
 import '../bands/copy_to_band.dart';
+import '../../sync/sync_controller.dart';
+import 'conflict_banner.dart';
 import 'song_editor_screen.dart';
 
 /// Shows a song with personal adjustments and its PDF attachments.
@@ -203,6 +205,9 @@ class _SongScreenState extends ConsumerState<SongScreen> {
           body: ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
             children: [
+              if (ref.watch(songConflictProvider(song.id)).value
+                  case final conflict?)
+                ConflictBanner(conflict: conflict),
               SongHeader(
                 title: song.title.isEmpty ? l10n.untitled : song.title,
                 artist: song.artist,

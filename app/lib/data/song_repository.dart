@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import 'attachment_storage.dart';
 import 'database.dart';
+import 'outbox.dart';
 
 const _uuid = Uuid();
 
@@ -129,6 +130,7 @@ class SongRepository {
             updatedAt: DateTime.now(),
           ),
         );
+    await markDirty(db, SyncCollection.songs, id, scope: libraryId);
     return id;
   }
 
@@ -147,10 +149,10 @@ class SongRepository {
         sortTitle: Value(meta.sortTitle),
         sortArtist: Value(meta.sortArtist),
         tags: Value(meta.tagsColumn),
-        revision: Value(existing.revision + 1),
         updatedAt: Value(DateTime.now()),
       ),
     );
+    await markDirty(db, SyncCollection.songs, id, scope: existing.libraryId);
   }
 
   /// All tags used in the library, sorted.
@@ -208,17 +210,30 @@ class SongRepository {
       SongsCompanion(
         title: Value(title.trim()),
         artist: Value(_blankToNull(artist)),
-        revision: Value(existing.revision + 1),
         updatedAt: Value(DateTime.now()),
       ),
     );
+    await markDirty(db, SyncCollection.songs, id, scope: existing.libraryId);
   }
 
   /// Soft-deletes a song, removes it from all sets and deletes its files.
   Future<void> deleteSong(String id) async {
+    final song = await (db.select(
+      db.songs,
+    )..where((s) => s.id.equals(id))).getSingleOrNull();
     final files = await (db.select(
       db.attachments,
     )..where((a) => a.songId.equals(id) & a.deleted.equals(false))).get();
+    // Sets that lose the song are changed, too.
+    final sets =
+        await (db.select(db.setlists).join([
+              innerJoin(
+                db.setItems,
+                db.setItems.setId.equalsExp(db.setlists.id),
+              ),
+            ])..where(db.setItems.songId.equals(id)))
+            .map((r) => r.readTable(db.setlists))
+            .get();
     await db.transaction(() async {
       await (db.update(db.songs)..where((s) => s.id.equals(id))).write(
         SongsCompanion(
@@ -229,6 +244,12 @@ class SongRepository {
       await (db.update(db.attachments)..where((a) => a.songId.equals(id)))
           .write(const AttachmentsCompanion(deleted: Value(true)));
       await (db.delete(db.setItems)..where((i) => i.songId.equals(id))).go();
+      if (song != null) {
+        await markDirty(db, SyncCollection.songs, id, scope: song.libraryId);
+      }
+      for (final set in sets) {
+        await markDirty(db, SyncCollection.setlists, set.id, scope: set.bandId);
+      }
     });
     for (final f in files) {
       await storage.delete(f.fileName);
@@ -292,20 +313,42 @@ class SongRepository {
             updatedAt: DateTime.now(),
           ),
         );
+    await _markAttachment(id, songId, fileName);
     return id;
   }
 
-  Future<void> renameAttachment(String id, String name) =>
-      (db.update(db.attachments)..where((a) => a.id.equals(id))).write(
-        AttachmentsCompanion(
-          name: Value(name),
-          updatedAt: Value(DateTime.now()),
-        ),
-      );
+  /// Only PDF attachments are synced (ADR-0009); images stay on the device.
+  Future<void> _markAttachment(
+    String id,
+    String songId,
+    String fileName,
+  ) async {
+    if (!isPdfFile(fileName)) return;
+    final song = await (db.select(
+      db.songs,
+    )..where((s) => s.id.equals(songId))).getSingleOrNull();
+    if (song == null) return;
+    await markDirty(db, SyncCollection.attachments, id, scope: song.libraryId);
+  }
+
+  Future<void> renameAttachment(String id, String name) async {
+    await (db.update(db.attachments)..where((a) => a.id.equals(id))).write(
+      AttachmentsCompanion(name: Value(name), updatedAt: Value(DateTime.now())),
+    );
+    final a = await (db.select(
+      db.attachments,
+    )..where((a) => a.id.equals(id))).getSingleOrNull();
+    if (a != null) await _markAttachment(a.id, a.songId, a.fileName);
+  }
 
   Future<void> deleteAttachment(AttachmentEntry attachment) async {
     await (db.update(db.attachments)..where((a) => a.id.equals(attachment.id)))
         .write(const AttachmentsCompanion(deleted: Value(true)));
+    await _markAttachment(
+      attachment.id,
+      attachment.songId,
+      attachment.fileName,
+    );
     await (db.update(db.personalOverlays)
           ..where((o) => o.liveView.equals(attachment.id)))
         .write(const PersonalOverlaysCompanion(liveView: Value(null)));

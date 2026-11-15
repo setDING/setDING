@@ -1,0 +1,218 @@
+// Two devices sync songs and sets through a real PocketBase with the
+// repository's schema (ADR-0004, ADR-0015, ADR-0017).
+library;
+
+import 'dart:io';
+
+import 'package:drift/drift.dart' show driftRuntimeOptions;
+import 'package:drift/native.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:realchord/data/attachment_storage.dart';
+import 'package:realchord/data/band_copy.dart';
+import 'package:realchord/data/database.dart';
+import 'package:realchord/data/set_repository.dart';
+import 'package:realchord/data/song_repository.dart';
+import 'package:realchord/sync/band_service.dart';
+import 'package:realchord/sync/pocketbase_backend.dart';
+import 'package:realchord/sync/session_store.dart';
+import 'package:realchord/sync/sync_engine.dart';
+import 'package:realchord_server/pocketbase_harness.dart';
+import 'package:uuid/uuid.dart';
+
+/// One device: its own database and session.
+class Device {
+  Device._(this.db, this.dir, this.backend, this.engine);
+
+  final AppDatabase db;
+  final Directory dir;
+  final PocketBaseBackend backend;
+  final SyncEngine engine;
+
+  static Future<Device> create(String url) async {
+    driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+    final db = AppDatabase(NativeDatabase.memory());
+    final dir = Directory.systemTemp.createTempSync('realchord_device');
+    final backend = PocketBaseBackend(
+      serverUrl: url,
+      store: MemorySessionStore(),
+    );
+    final storage = AttachmentStorage(dir);
+    final engine = SyncEngine(
+      db,
+      backend,
+      BandService(db, backend),
+      copies: BandCopyService(db, storage),
+    );
+    return Device._(db, dir, backend, engine);
+  }
+
+  SongRepository songs(String org) =>
+      SongRepository(db, AttachmentStorage(dir), libraryId: org);
+  SetRepository sets(String band) =>
+      SetRepository(db, AttachmentStorage(dir), bandId: band);
+
+  Future<SyncReport> sync() async {
+    final report = await engine.sync();
+    expect(report.error, isNull);
+    return report;
+  }
+
+  Future<void> close() async {
+    backend.dispose();
+    await db.close();
+    dir.deleteSync(recursive: true);
+  }
+}
+
+void main() {
+  late PocketBase pb;
+  late String url;
+
+  setUpAll(() async {
+    pb = await PocketBase.start();
+    url = pb.baseUrl.toString().replaceAll(RegExp(r'/$'), '');
+  });
+  tearDownAll(() => pb.stop());
+
+  var n = 0;
+  String email() =>
+      'sync${++n}-${DateTime.now().microsecondsSinceEpoch}@realchord.test';
+
+  /// Ann (admin) and Bob (band member allowed to edit songs) on two devices.
+  Future<(Device, Device, String org, String band)> twoDevices() async {
+    final ann = await Device.create(url);
+    final bob = await Device.create(url);
+    await ann.backend.signUp(
+      email: email(),
+      password: 'password-123',
+      name: 'Ann',
+    );
+    final bobUser = await bob.backend.signUp(
+      email: email(),
+      password: 'password-123',
+      name: 'Bob',
+    );
+    final band = const Uuid().v4();
+    await ann.backend.createBand(id: band, name: 'Rock');
+    final org = (await ann.backend.fetchOrganizations()).single.id;
+    (await pb.superuser.post('org_memberships', {
+      'user': bobUser.id,
+      'organization': org,
+      'role': 'member',
+    })).expectStatus(200);
+    await ann.backend.addBandMember(band, bobUser.id, BandRole.member);
+    await ann.backend.updateBand(band, membersCanEditSongs: true);
+    // Loads the organizations and bands on both devices.
+    await ann.sync();
+    await bob.sync();
+    return (ann, bob, org, band);
+  }
+
+  test('songs and sets reach the other device', () async {
+    final (ann, bob, org, band) = await twoDevices();
+    final song = await ann
+        .songs(org)
+        .createSong(source: '{title: Shared}\n{key: G}\n[G]Hello');
+    final set = await ann.sets(band).createSet(name: 'Gig', venue: 'Bern');
+    await ann.sets(band).addSongs(set, [song]);
+    await ann.sets(band).addMarker(set, SetItemType.pause, 'Break');
+    expect((await ann.sync()).pushed, 2);
+
+    await bob.sync();
+    final bobSong = (await bob.songs(org).getSong(song))!;
+    expect(bobSong.title, 'Shared');
+    expect(bobSong.songKey, 'G');
+    final items = await bob.sets(band).getItems(set);
+    expect(items.map((i) => i.song?.title ?? i.item.note), ['Shared', 'Break']);
+    expect((await bob.sets(band).watchSets().first).single.set.venue, 'Bern');
+
+    // Bob fixes a typo; Ann gets it.
+    await bob
+        .songs(org)
+        .updateSource(song, '{title: Shared}\n{key: G}\n[G]Hallo');
+    await bob.sync();
+    await ann.sync();
+    expect(
+      (await ann.songs(org).getSong(song))!.chordproSource,
+      contains('Hallo'),
+    );
+
+    // Ann deletes the song; it disappears on Bob's device and from the set.
+    await ann.songs(org).deleteSong(song);
+    await ann.sync();
+    await bob.sync();
+    expect(await bob.songs(org).getSong(song), isNull);
+    expect((await bob.sets(band).getItems(set)).map((i) => i.item.type), [
+      SetItemType.pause,
+    ]);
+    await ann.close();
+    await bob.close();
+  });
+
+  test(
+    'concurrent edits of a song become a conflict, never a silent loss',
+    () async {
+      final (ann, bob, org, _) = await twoDevices();
+      final song = await ann
+          .songs(org)
+          .createSong(source: '{title: Base}\n[C]base');
+      await ann.sync();
+      await bob.sync();
+
+      await ann.songs(org).updateSource(song, '{title: Base}\n[C]ann');
+      await bob.songs(org).updateSource(song, '{title: Base}\n[C]bob');
+      await ann.sync(); // first one wins on the server
+      final report = await bob.sync();
+      expect(report.conflicts, 1);
+      expect(
+        (await bob.songs(org).getSong(song))!.chordproSource,
+        contains('bob'),
+      );
+
+      // Bob keeps both: his version becomes a new song for everyone.
+      final copy = await bob.engine.keepBoth(song);
+      await bob.sync();
+      await ann.sync();
+      expect(
+        (await ann.songs(org).getSong(song))!.chordproSource,
+        contains('ann'),
+      );
+      expect(
+        (await ann.songs(org).getSong(copy!))!.chordproSource,
+        contains('bob'),
+      );
+      await ann.close();
+      await bob.close();
+    },
+  );
+
+  test('sets: last writer wins', () async {
+    final (ann, bob, _, band) = await twoDevices();
+    final set = await ann.sets(band).createSet(name: 'First');
+    await ann.sync();
+    await bob.sync();
+
+    await ann.sets(band).updateSet(set, name: 'Ann');
+    await ann.sync();
+    // Bob is a member and cannot change sets; his device only reads.
+    await bob.sync();
+    expect((await bob.sets(band).watchSets().first).single.set.name, 'Ann');
+    await ann.close();
+    await bob.close();
+  });
+
+  test(
+    'the server refuses sets from members; the change stays local',
+    () async {
+      final (ann, bob, _, band) = await twoDevices();
+      final set = await bob.sets(band).createSet(name: 'Not allowed');
+      final report = await bob.engine.sync();
+      expect(report.error, isNull);
+      await ann.sync();
+      expect(await ann.sets(band).watchSets().first, isEmpty);
+      expect((await bob.sets(band).watchSets().first).single.set.id, set);
+      await ann.close();
+      await bob.close();
+    },
+  );
+}

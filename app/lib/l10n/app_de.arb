@@ -591,5 +591,43 @@
       }
     }
   },
-  "joinSignInFirst": "Melde dich an oder erstelle ein Konto, um beizutreten."
+  "joinSignInFirst": "Melde dich an oder erstelle ein Konto, um beizutreten.",
+  "syncTitle": "Synchronisation",
+  "syncNow": "Jetzt synchronisieren",
+  "syncRunning": "Synchronisiere …",
+  "syncLast": "Zuletzt synchronisiert: {time}",
+  "@syncLast": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncNever": "Noch nicht synchronisiert",
+  "syncPending": "{count, plural, =0{Alle Änderungen sind auf dem Server.} =1{1 Änderung ist noch nicht auf dem Server.} other{{count} Änderungen sind noch nicht auf dem Server.}}",
+  "@syncPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncOffline": "Keine Verbindung – Änderungen werden später übertragen.",
+  "syncConflicts": "{count, plural, =1{1 Song mit Konflikt – öffne ihn, um zu entscheiden.} other{{count} Songs mit Konflikt – öffne sie, um zu entscheiden.}}",
+  "@syncConflicts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "conflictBanner": "Dieser Song wurde auf dem Server und auf diesem Gerät geändert.",
+  "conflictBannerDeleted": "Dieser Song wurde auf dem Server gelöscht und auf diesem Gerät geändert.",
+  "conflictKeepMine": "Meine Version behalten",
+  "conflictTakeServer": "Server-Version übernehmen",
+  "conflictKeepBoth": "Beide behalten",
+  "conflictCompare": "Server-Version ansehen",
+  "conflictServerVersion": "Version auf dem Server",
+  "conflictKeptBoth": "Deine Version wurde als eigener Song gespeichert.",
+  "accountErrorConflict": "Der Song wurde inzwischen auf dem Server geändert."
 }

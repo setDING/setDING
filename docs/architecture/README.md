@@ -224,6 +224,9 @@ song/set sync, PDF sync).
   revocable) shown with a QR code; people join via deep link or by pasting the link
   (Bands → Join). Landing page and verification files on the server; verified App
   Links / Universal Links need the signing details (open, see ADR-0005).
+- **Sync of songs and sets (#17):** outbox, delta pull per organization/band, push with
+  base revision, conflict dialog for songs, last writer wins for sets, realtime
+  triggers, paused in live mode; sync status and "Sync now" in the settings (ADR-0004).
 
 ## 9. Open questions
 

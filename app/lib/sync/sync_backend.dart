@@ -65,6 +65,10 @@ enum BackendErrorKind {
   /// The invitation link was revoked by an admin.
   inviteRevoked,
 
+  /// The song was changed on the server since the local change was based on
+  /// it (ADR-0004); the user decides.
+  conflict,
+
   /// Not signed in.
   signedOut,
 
@@ -143,6 +147,51 @@ class RemoteOrganization {
   final int revision;
   final List<RemoteMember> members;
   final List<RemoteBand> bands;
+}
+
+/// A song as stored on the server (ADR-0017: per organization).
+@immutable
+class RemoteSong {
+  const RemoteSong({
+    required this.id,
+    required this.organizationId,
+    required this.title,
+    required this.chordpro,
+    this.revision = 0,
+    this.deleted = false,
+  });
+
+  final String id;
+  final String organizationId;
+  final String title;
+  final String chordpro;
+  final int revision;
+  final bool deleted;
+}
+
+/// A set as stored on the server: its items as one JSON array
+/// (ADR-0015), each `{id, type, song, transpose, sequence, note}`.
+@immutable
+class RemoteSet {
+  const RemoteSet({
+    required this.id,
+    required this.bandId,
+    required this.name,
+    this.gigDate,
+    this.venue,
+    this.items = const [],
+    this.revision = 0,
+    this.deleted = false,
+  });
+
+  final String id;
+  final String bandId;
+  final String name;
+  final DateTime? gigDate;
+  final String? venue;
+  final List<Map<String, dynamic>> items;
+  final int revision;
+  final bool deleted;
 }
 
 /// State of an invitation link.
@@ -307,6 +356,32 @@ abstract class SyncBackend {
 
   /// Joins the organization of a link as member; returns its ID.
   Future<String> redeemInvite(String token);
+
+  // Songs and sets (ADR-0004) ------------------------------------------------------
+
+  /// Songs of an organization changed after revision [since] (also deleted
+  /// ones), in revision order.
+  Future<List<RemoteSong>> pullSongs(String organizationId, int since);
+
+  /// Sets of a band changed after revision [since], in revision order.
+  Future<List<RemoteSet>> pullSets(String bandId, int since);
+
+  /// The current server state of a song, or null if it does not exist.
+  Future<RemoteSong?> fetchSong(String id);
+
+  /// Creates ([create]) or updates a song and returns the server state. An
+  /// update sends [song]`.revision` as base revision; if the server has moved
+  /// on, it fails with [BackendErrorKind.conflict].
+  Future<RemoteSong> pushSong(RemoteSong song, {required bool create});
+
+  /// Creates or updates a set (last writer wins) and returns the server
+  /// state.
+  Future<RemoteSet> pushSet(RemoteSet set, {required bool create});
+
+  /// Emits the name of a collection whenever the server reports a change
+  /// (realtime, while online). Errors are not reported; delta sync catches
+  /// up anyway.
+  Stream<String> watchChanges();
 
   /// Releases resources.
   void dispose();

@@ -393,6 +393,172 @@ class PocketBaseBackend implements SyncBackend {
     return (data['organization'] as Map<String, dynamic>)['id'] as String;
   }
 
+  // Songs and sets -------------------------------------------------------------
+
+  static RemoteSong _song(RecordModel r) => RemoteSong(
+    id: r.id,
+    organizationId: r.getStringValue('organization'),
+    title: r.getStringValue('title'),
+    chordpro: r.getStringValue('chordpro'),
+    revision: r.getIntValue('revision'),
+    deleted: r.getBoolValue('deleted'),
+  );
+
+  static RemoteSet _set(RecordModel r) {
+    final date = r.getStringValue('gig_date');
+    final venue = r.getStringValue('venue');
+    final items = r.get<dynamic>('items');
+    return RemoteSet(
+      id: r.id,
+      bandId: r.getStringValue('band'),
+      name: r.getStringValue('name'),
+      gigDate: date.isEmpty ? null : DateTime.parse(date),
+      venue: venue.isEmpty ? null : venue,
+      items: items is List
+          ? [for (final i in items) (i as Map).cast<String, dynamic>()]
+          : const [],
+      revision: r.getIntValue('revision'),
+      deleted: r.getBoolValue('deleted'),
+    );
+  }
+
+  Future<List<RecordModel>> _since(
+    String collection,
+    String scopeField,
+    String scope,
+    int since,
+  ) async {
+    if (currentUser == null) {
+      throw const BackendException(BackendErrorKind.signedOut);
+    }
+    try {
+      return await _pb
+          .collection(collection)
+          .getFullList(
+            filter: _pb.filter(
+              '$scopeField = {:scope} && revision > {:since}',
+              {'scope': scope, 'since': since},
+            ),
+            sort: 'revision',
+          );
+    } on ClientException catch (e) {
+      throw _map(e);
+    }
+  }
+
+  @override
+  Future<List<RemoteSong>> pullSongs(String organizationId, int since) async =>
+      [
+        for (final r in await _since(
+          'songs',
+          'organization',
+          organizationId,
+          since,
+        ))
+          _song(r),
+      ];
+
+  @override
+  Future<List<RemoteSet>> pullSets(String bandId, int since) async => [
+    for (final r in await _since('setlists', 'band', bandId, since)) _set(r),
+  ];
+
+  @override
+  Future<RemoteSong?> fetchSong(String id) async {
+    try {
+      return _song(await _pb.collection('songs').getOne(id));
+    } on ClientException catch (e) {
+      if (e.statusCode == 404) return null;
+      throw _map(e);
+    }
+  }
+
+  @override
+  Future<RemoteSong> pushSong(RemoteSong song, {required bool create}) async {
+    if (currentUser == null) {
+      throw const BackendException(BackendErrorKind.signedOut);
+    }
+    final body = {
+      'title': song.title,
+      'chordpro': song.chordpro,
+      'deleted': song.deleted,
+    };
+    try {
+      final r = create
+          ? await _pb
+                .collection('songs')
+                .create(
+                  body: {
+                    'id': song.id,
+                    'organization': song.organizationId,
+                    ...body,
+                  },
+                )
+          : await _pb
+                .collection('songs')
+                .update(song.id, body: {...body, 'revision': song.revision});
+      return _song(r);
+    } on ClientException catch (e) {
+      if (e.statusCode == 409) {
+        throw BackendException(BackendErrorKind.conflict, e.response);
+      }
+      throw _map(e);
+    }
+  }
+
+  @override
+  Future<RemoteSet> pushSet(RemoteSet set, {required bool create}) async {
+    if (currentUser == null) {
+      throw const BackendException(BackendErrorKind.signedOut);
+    }
+    final body = {
+      'name': set.name,
+      'gig_date':
+          set.gigDate?.toUtc().toIso8601String().replaceFirst('T', ' ') ?? '',
+      'venue': set.venue ?? '',
+      'items': set.items,
+      'deleted': set.deleted,
+    };
+    try {
+      final r = create
+          ? await _pb
+                .collection('setlists')
+                .create(body: {'id': set.id, 'band': set.bandId, ...body})
+          : await _pb.collection('setlists').update(set.id, body: body);
+      return _set(r);
+    } on ClientException catch (e) {
+      throw _map(e);
+    }
+  }
+
+  @override
+  Stream<String> watchChanges() {
+    const collections = ['songs', 'setlists', 'attachments', 'bands'];
+    late StreamController<String> controller;
+    final unsubscribers = <Future<void> Function()>[];
+    controller = StreamController<String>(
+      onListen: () async {
+        for (final c in collections) {
+          try {
+            unsubscribers.add(
+              await _pb.collection(c).subscribe('*', (_) => controller.add(c)),
+            );
+          } catch (e) {
+            debugPrint('Realtime subscription for $c failed: $e');
+          }
+        }
+      },
+      onCancel: () async {
+        for (final unsubscribe in unsubscribers) {
+          try {
+            await unsubscribe();
+          } catch (_) {}
+        }
+      },
+    );
+    return controller.stream;
+  }
+
   Future<Map<String, dynamic>> _send(
     String path, {
     String method = 'GET',

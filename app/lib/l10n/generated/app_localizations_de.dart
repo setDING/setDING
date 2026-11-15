@@ -1222,4 +1222,79 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get joinSignInFirst =>
       'Melde dich an oder erstelle ein Konto, um beizutreten.';
+
+  @override
+  String get syncTitle => 'Synchronisation';
+
+  @override
+  String get syncNow => 'Jetzt synchronisieren';
+
+  @override
+  String get syncRunning => 'Synchronisiere …';
+
+  @override
+  String syncLast(String time) {
+    return 'Zuletzt synchronisiert: $time';
+  }
+
+  @override
+  String get syncNever => 'Noch nicht synchronisiert';
+
+  @override
+  String syncPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Änderungen sind noch nicht auf dem Server.',
+      one: '1 Änderung ist noch nicht auf dem Server.',
+      zero: 'Alle Änderungen sind auf dem Server.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncOffline =>
+      'Keine Verbindung – Änderungen werden später übertragen.';
+
+  @override
+  String syncConflicts(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs mit Konflikt – öffne sie, um zu entscheiden.',
+      one: '1 Song mit Konflikt – öffne ihn, um zu entscheiden.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get conflictBanner =>
+      'Dieser Song wurde auf dem Server und auf diesem Gerät geändert.';
+
+  @override
+  String get conflictBannerDeleted =>
+      'Dieser Song wurde auf dem Server gelöscht und auf diesem Gerät geändert.';
+
+  @override
+  String get conflictKeepMine => 'Meine Version behalten';
+
+  @override
+  String get conflictTakeServer => 'Server-Version übernehmen';
+
+  @override
+  String get conflictKeepBoth => 'Beide behalten';
+
+  @override
+  String get conflictCompare => 'Server-Version ansehen';
+
+  @override
+  String get conflictServerVersion => 'Version auf dem Server';
+
+  @override
+  String get conflictKeptBoth =>
+      'Deine Version wurde als eigener Song gespeichert.';
+
+  @override
+  String get accountErrorConflict =>
+      'Der Song wurde inzwischen auf dem Server geändert.';
 }

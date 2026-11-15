@@ -2209,6 +2209,108 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Melde dich an oder erstelle ein Konto, um beizutreten.'**
   String get joinSignInFirst;
+
+  /// No description provided for @syncTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Synchronisation'**
+  String get syncTitle;
+
+  /// No description provided for @syncNow.
+  ///
+  /// In de, this message translates to:
+  /// **'Jetzt synchronisieren'**
+  String get syncNow;
+
+  /// No description provided for @syncRunning.
+  ///
+  /// In de, this message translates to:
+  /// **'Synchronisiere …'**
+  String get syncRunning;
+
+  /// No description provided for @syncLast.
+  ///
+  /// In de, this message translates to:
+  /// **'Zuletzt synchronisiert: {time}'**
+  String syncLast(String time);
+
+  /// No description provided for @syncNever.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch nicht synchronisiert'**
+  String get syncNever;
+
+  /// No description provided for @syncPending.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{Alle Änderungen sind auf dem Server.} =1{1 Änderung ist noch nicht auf dem Server.} other{{count} Änderungen sind noch nicht auf dem Server.}}'**
+  String syncPending(int count);
+
+  /// No description provided for @syncOffline.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Verbindung – Änderungen werden später übertragen.'**
+  String get syncOffline;
+
+  /// No description provided for @syncConflicts.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song mit Konflikt – öffne ihn, um zu entscheiden.} other{{count} Songs mit Konflikt – öffne sie, um zu entscheiden.}}'**
+  String syncConflicts(int count);
+
+  /// No description provided for @conflictBanner.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieser Song wurde auf dem Server und auf diesem Gerät geändert.'**
+  String get conflictBanner;
+
+  /// No description provided for @conflictBannerDeleted.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieser Song wurde auf dem Server gelöscht und auf diesem Gerät geändert.'**
+  String get conflictBannerDeleted;
+
+  /// No description provided for @conflictKeepMine.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Version behalten'**
+  String get conflictKeepMine;
+
+  /// No description provided for @conflictTakeServer.
+  ///
+  /// In de, this message translates to:
+  /// **'Server-Version übernehmen'**
+  String get conflictTakeServer;
+
+  /// No description provided for @conflictKeepBoth.
+  ///
+  /// In de, this message translates to:
+  /// **'Beide behalten'**
+  String get conflictKeepBoth;
+
+  /// No description provided for @conflictCompare.
+  ///
+  /// In de, this message translates to:
+  /// **'Server-Version ansehen'**
+  String get conflictCompare;
+
+  /// No description provided for @conflictServerVersion.
+  ///
+  /// In de, this message translates to:
+  /// **'Version auf dem Server'**
+  String get conflictServerVersion;
+
+  /// No description provided for @conflictKeptBoth.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Version wurde als eigener Song gespeichert.'**
+  String get conflictKeptBoth;
+
+  /// No description provided for @accountErrorConflict.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Song wurde inzwischen auf dem Server geändert.'**
+  String get accountErrorConflict;
 }
 
 class _AppLocalizationsDelegate

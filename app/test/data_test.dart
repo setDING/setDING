@@ -51,12 +51,13 @@ void main() {
       expect(song.chordproSource, '');
     });
 
-    test('updateSource bumps revision and keeps title if missing', () async {
+    test('updateSource keeps the title if the source has none', () async {
       final id = await songs.createSong(title: 'Keep me');
       await songs.updateSource(id, '[C]No title here');
       final song = (await songs.getSong(id))!;
       expect(song.title, 'Keep me');
-      expect(song.revision, 1);
+      // The revision is the server's (ADR-0004); local edits don't change it.
+      expect(song.revision, 0);
     });
 
     test('search matches title, artist and lyrics', () async {
@@ -215,7 +216,6 @@ void main() {
 
       final summary = (await sets.watchSets().first).single;
       expect(summary.itemCount, 2);
-      expect(summary.set.revision, greaterThan(0));
     });
 
     test('deleting a song removes it from sets', () async {
