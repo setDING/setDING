@@ -194,7 +194,7 @@ target state described in the ADRs, to be completed in later phases:
 | Pedal keys | Fixed mapping: arrows, Page Up/Down, Space, Enter, Backspace | Configurable mapping (ADR-0007) |
 | Auto-scroll | Not implemented | Optional auto-scroll by tempo/duration (ADR-0007) |
 | PDF display | One page at a time, fit to width | Two pages side by side in landscape (ADR-0009) |
-| Bands & roles | One implicit local band, all features available | Roles per band via backend (ADR-0005, phase 1) |
+| Bands & roles | One implicit local band, all features available | Roles per band via backend (ADR-0005, phase 1); done in #15, the MVP band became the local library |
 
 Verified with unit and widget tests (`tool/check.sh`) and rendered screenshots;
 not yet built or run on a physical Android, iOS or Windows device.
@@ -212,8 +212,14 @@ song/set sync, PDF sync).
   platform's secure storage, kept while offline (ADR-0016, accepted). Password reset
   needs SMTP on the server (open). Bands, sync and invitations follow (#15–#18).
 - **Organizations (#21):** server model with organizations and a shared song library
-  per organization (ADR-0017, accepted). The app part of bands and roles (#15) is
-  paused on its branch and will be adapted to organizations.
+  per organization (ADR-0017, accepted), deployed.
+- **Bands and roles in the app (#15):** organizations, bands, members and roles are
+  loaded from the server and cached locally (schema 4: `organizations`,
+  `org_memberships`, `memberships`; songs belong to a library = organization or the
+  local library "On this device"). Band switcher grouped by organization, band and
+  organization screens (settings, roles, add members, leave), UI actions gated by
+  role, copying songs and sets from the local library into a band. Songs and sets of
+  bands stay on the device until sync (#17).
 
 ## 9. Open questions
 

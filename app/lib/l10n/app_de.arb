@@ -389,5 +389,134 @@
   "accountErrorServer": "Der Server hat einen Fehler gemeldet. Versuche es später nochmals.",
   "settingsServer": "Server",
   "settingsServerHint": "Nur für Tests ändern. Beim Wechsel wirst du abgemeldet.",
-  "settingsServerInvalid": "Die Adresse muss mit http:// oder https:// beginnen."
+  "settingsServerInvalid": "Die Adresse muss mit http:// oder https:// beginnen.",
+  "bandLocal": "Auf diesem Gerät",
+  "bandLocalHint": "Nur auf diesem Gerät, wird nicht synchronisiert.",
+  "bandSwitch": "Band wechseln",
+  "bandManage": "Bands verwalten",
+  "bandsTitle": "Bands",
+  "bandsEmpty": "Du bist noch in keiner Band. Erstelle eine Band für deine Songs und Sets.",
+  "bandsSignInHint": "Melde dich an, um Bands zu erstellen.",
+  "bandNew": "Neue Band",
+  "bandName": "Bandname",
+  "bandRoleAdmin": "Admin",
+  "bandRoleMember": "Mitglied",
+  "bandMembers": "Mitglieder",
+  "bandYou": "{name} (du)",
+  "@bandYou": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bandMakeAdmin": "Zum Admin machen",
+  "bandMakeMember": "Zum Mitglied machen",
+  "bandRemoveMember": "Aus der Band entfernen",
+  "bandRemoveTitle": "{name} entfernen?",
+  "@bandRemoveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bandRemoveMessage": "{name} sieht die Songs und Sets der Band danach nicht mehr.",
+  "@bandRemoveMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bandLeave": "Band verlassen",
+  "bandLeaveTitle": "{band} verlassen?",
+  "@bandLeaveTitle": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "bandLeaveMessage": "Du siehst die Songs und Sets der Band danach nicht mehr. Ein Admin kann dich wieder einladen.",
+  "bandMembersCanEdit": "Mitglieder dürfen Songs bearbeiten",
+  "bandMembersCanEditHint": "Songs erstellen, importieren und bearbeiten. Löschen und Sets bleiben den Admins vorbehalten.",
+  "bandRefresh": "Aktualisieren",
+  "bandErrorLastAdmin": "Eine Band braucht mindestens einen Admin.",
+  "bandErrorNotAllowed": "Dazu fehlt die Berechtigung, oder die Band gibt es nicht mehr.",
+  "accountErrorSignedOut": "Bitte melde dich an.",
+  "copyToBand": "In Band kopieren",
+  "copyToBandTitle": "In welche Band kopieren?",
+  "copyToBandNoTarget": "Es gibt keine andere Band, in die du kopieren darfst.",
+  "copiedSongs": "{count, plural, =1{1 Song nach {band} kopiert} other{{count} Songs nach {band} kopiert}}",
+  "@copiedSongs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "copiedSet": "Set nach {band} kopiert",
+  "@copiedSet": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "songsSelected": "{count} ausgewählt",
+  "@songsSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectAll": "Alle auswählen",
+  "selectMode": "Auswählen",
+  "bandRoleOrgAdmin": "Admin der Organisation",
+  "bandOrganization": "Organisation",
+  "bandNewOrganization": "Neue Organisation",
+  "bandNewHint": "Die Bands einer Organisation teilen ihre Songs.",
+  "bandAddMember": "Mitglied hinzufügen",
+  "bandAddMemberTitle": "Wen hinzufügen?",
+  "bandAddMemberNone": "Alle Personen der Organisation sind schon in dieser Band.",
+  "bandOrgAdminHint": "Du verwaltest diese Band als Admin der Organisation.",
+  "bandErrorNotOrgMember": "Diese Person gehört nicht zur Organisation.",
+  "orgName": "Name der Organisation",
+  "orgPeople": "Personen",
+  "orgBands": "Bands",
+  "orgRemove": "Aus der Organisation entfernen",
+  "orgRemoveTitle": "{name} entfernen?",
+  "@orgRemoveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "orgRemoveMessage": "{name} verlässt damit auch alle Bands der Organisation und sieht ihre Songs nicht mehr.",
+  "@orgRemoveMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "orgLeave": "Organisation verlassen",
+  "orgLeaveTitle": "{org} verlassen?",
+  "@orgLeaveTitle": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "orgLeaveMessage": "Du verlässt damit auch alle ihre Bands und siehst ihre Songs nicht mehr.",
+  "orgInviteSoon": "Personen in die Organisation einladen ist bald möglich.",
+  "orgSongsShared": "Alle Bands der Organisation teilen dieselben Songs.",
+  "copyToLibraryTitle": "In welche Songbibliothek kopieren?"
 }

@@ -78,6 +78,267 @@ class FakeSyncBackend implements SyncBackend {
   @override
   Future<void> signOut() async => _set(null);
 
+  // Organizations and bands ----------------------------------------------------
+
+  /// Organizations on the "server": id → name.
+  final organizations = <String, String>{};
+
+  /// People of organizations on the "server".
+  final orgMembers = <FakeMember>[];
+
+  /// Bands on the "server".
+  final bands = <String, FakeBand>{};
+
+  /// Band memberships on the "server".
+  final members = <FakeMember>[];
+  int _revision = 0;
+  int _ids = 0;
+
+  /// Adds an organization with [admin], e.g. to start a test inside one.
+  void addOrganization(String id, String name, {required AuthUser admin}) {
+    organizations[id] = name;
+    addOrgMember(id, admin, BandRole.admin);
+  }
+
+  FakeMember addOrgMember(String orgId, AuthUser user, BandRole role) {
+    final m = FakeMember('om${++_ids}', orgId, user, role);
+    orgMembers.add(m);
+    return m;
+  }
+
+  /// Adds a band to an organization (created if needed) with [admin].
+  void addBand(
+    String id,
+    String name, {
+    required AuthUser admin,
+    String? organizationId,
+    bool membersCanEditSongs = false,
+  }) {
+    final orgId = organizationId ?? 'org-$id';
+    if (!organizations.containsKey(orgId)) {
+      addOrganization(orgId, name, admin: admin);
+    }
+    bands[id] = FakeBand(orgId, name, membersCanEditSongs);
+    addMember(id, admin, BandRole.admin);
+  }
+
+  FakeMember addMember(String bandId, AuthUser user, BandRole role) {
+    final orgId = bands[bandId]!.organizationId;
+    if (!orgMembers.any((m) => m.scopeId == orgId && m.user.id == user.id)) {
+      addOrgMember(orgId, user, BandRole.member);
+    }
+    final m = FakeMember('m${++_ids}', bandId, user, role);
+    members.add(m);
+    return m;
+  }
+
+  bool _isOrgAdmin(String orgId) => orgMembers.any(
+    (m) =>
+        m.scopeId == orgId && m.user.id == user?.id && m.role == BandRole.admin,
+  );
+
+  bool _canManageBand(String bandId) =>
+      _isOrgAdmin(bands[bandId]!.organizationId) ||
+      members.any(
+        (m) =>
+            m.scopeId == bandId &&
+            m.user.id == user?.id &&
+            m.role == BandRole.admin,
+      );
+
+  void _requireUser() {
+    _check();
+    if (user == null) throw const BackendException(BackendErrorKind.signedOut);
+  }
+
+  RemoteMember _remote(FakeMember m) => RemoteMember(
+    membershipId: m.id,
+    userId: m.user.id,
+    name: m.user.displayName,
+    email: m.user.id == user!.id ? m.user.email : null,
+    role: m.role,
+  );
+
+  @override
+  Future<List<RemoteOrganization>> fetchOrganizations() async {
+    _requireUser();
+    return [
+      for (final o in organizations.entries)
+        if (orgMembers.any((m) => m.scopeId == o.key && m.user.id == user!.id))
+          RemoteOrganization(
+            id: o.key,
+            name: o.value,
+            revision: ++_revision,
+            members: [
+              for (final m in orgMembers)
+                if (m.scopeId == o.key) _remote(m),
+            ],
+            bands: [
+              for (final b in bands.entries)
+                if (b.value.organizationId == o.key &&
+                    (_isOrgAdmin(o.key) ||
+                        members.any(
+                          (m) => m.scopeId == b.key && m.user.id == user!.id,
+                        )))
+                  RemoteBand(
+                    id: b.key,
+                    organizationId: o.key,
+                    name: b.value.name,
+                    membersCanEditSongs: b.value.membersCanEditSongs,
+                    revision: ++_revision,
+                    members: [
+                      for (final m in members)
+                        if (m.scopeId == b.key) _remote(m),
+                    ],
+                  ),
+            ],
+          ),
+    ];
+  }
+
+  void _keepAdmin(List<FakeMember> list, FakeMember m) {
+    final others = list.where(
+      (o) => o.scopeId == m.scopeId && o != m && o.role == BandRole.admin,
+    );
+    if (m.role == BandRole.admin && others.isEmpty) {
+      throw const BackendException(BackendErrorKind.lastAdmin);
+    }
+  }
+
+  FakeMember _find(List<FakeMember> list, String id) {
+    final m = list.where((m) => m.id == id).firstOrNull;
+    if (m == null) throw const BackendException(BackendErrorKind.notAllowed);
+    return m;
+  }
+
+  @override
+  Future<void> renameOrganization(String organizationId, String name) async {
+    _requireUser();
+    if (!_isOrgAdmin(organizationId)) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    organizations[organizationId] = name.trim();
+  }
+
+  @override
+  Future<void> setOrgMemberRole(String orgMembershipId, BandRole role) async {
+    _requireUser();
+    final m = _find(orgMembers, orgMembershipId);
+    if (!_isOrgAdmin(m.scopeId)) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    if (role == BandRole.member) _keepAdmin(orgMembers, m);
+    m.role = role;
+  }
+
+  @override
+  Future<void> removeOrgMember(String orgMembershipId) async {
+    _requireUser();
+    final m = _find(orgMembers, orgMembershipId);
+    if (!_isOrgAdmin(m.scopeId) && m.user.id != user!.id) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    _keepAdmin(orgMembers, m);
+    orgMembers.remove(m);
+    members.removeWhere(
+      (b) =>
+          b.user.id == m.user.id &&
+          bands[b.scopeId]?.organizationId == m.scopeId,
+    );
+  }
+
+  @override
+  Future<void> createBand({
+    required String id,
+    required String name,
+    String? organizationId,
+  }) async {
+    _requireUser();
+    if (organizationId != null && !_isOrgAdmin(organizationId)) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    addBand(id, name.trim(), admin: user!, organizationId: organizationId);
+  }
+
+  @override
+  Future<void> updateBand(
+    String bandId, {
+    String? name,
+    bool? membersCanEditSongs,
+  }) async {
+    _requireUser();
+    final band = bands[bandId];
+    if (band == null || !_canManageBand(bandId)) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    if (name != null) band.name = name.trim();
+    if (membersCanEditSongs != null) {
+      band.membersCanEditSongs = membersCanEditSongs;
+    }
+  }
+
+  @override
+  Future<void> addBandMember(
+    String bandId,
+    String userId,
+    BandRole role,
+  ) async {
+    _requireUser();
+    if (!_canManageBand(bandId)) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    final person = orgMembers
+        .where(
+          (m) =>
+              m.scopeId == bands[bandId]!.organizationId && m.user.id == userId,
+        )
+        .firstOrNull;
+    if (person == null) {
+      throw const BackendException(BackendErrorKind.notOrgMember);
+    }
+    members.add(FakeMember('m${++_ids}', bandId, person.user, role));
+  }
+
+  @override
+  Future<void> setMemberRole(String membershipId, BandRole role) async {
+    _requireUser();
+    final m = _find(members, membershipId);
+    if (!_canManageBand(m.scopeId)) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    if (role == BandRole.member) _keepAdmin(members, m);
+    m.role = role;
+  }
+
+  @override
+  Future<void> removeMember(String membershipId) async {
+    _requireUser();
+    final m = _find(members, membershipId);
+    if (!_canManageBand(m.scopeId) && m.user.id != user!.id) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    _keepAdmin(members, m);
+    members.remove(m);
+  }
+
   @override
   void dispose() {}
+}
+
+class FakeBand {
+  FakeBand(this.organizationId, this.name, this.membersCanEditSongs);
+
+  final String organizationId;
+  String name;
+  bool membersCanEditSongs;
+}
+
+/// A membership in an organization or a band ([scopeId]).
+class FakeMember {
+  FakeMember(this.id, this.scopeId, this.user, this.role);
+
+  final String id;
+  final String scopeId;
+  final AuthUser user;
+  BandRole role;
 }

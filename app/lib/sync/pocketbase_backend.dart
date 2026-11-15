@@ -139,6 +139,185 @@ class PocketBaseBackend implements SyncBackend {
   @override
   Future<void> signOut() async => _pb.authStore.clear();
 
+  // Organizations and bands ----------------------------------------------------
+
+  @override
+  Future<List<RemoteOrganization>> fetchOrganizations() async {
+    final me = currentUser;
+    if (me == null) {
+      throw const BackendException(BackendErrorKind.signedOut);
+    }
+    try {
+      Future<List<RecordModel>> all(String collection, {String? expand}) => _pb
+          .collection(collection)
+          .getFullList(filter: 'deleted = false', expand: expand);
+      final orgs = await all('organizations');
+      final orgMembers = await all('org_memberships', expand: 'user');
+      final bands = await all('bands');
+      final bandMembers = await all('memberships', expand: 'user');
+      return [
+        for (final o in orgs)
+          if (orgMembers.any(
+            (m) =>
+                m.getStringValue('organization') == o.id &&
+                m.getStringValue('user') == me.id,
+          ))
+            RemoteOrganization(
+              id: o.id,
+              name: o.getStringValue('name'),
+              revision: o.getIntValue('revision'),
+              members: [
+                for (final m in orgMembers)
+                  if (m.getStringValue('organization') == o.id) _member(m, me),
+              ],
+              bands: [
+                for (final b in bands)
+                  if (b.getStringValue('organization') == o.id)
+                    RemoteBand(
+                      id: b.id,
+                      organizationId: o.id,
+                      name: b.getStringValue('name'),
+                      membersCanEditSongs: b.getBoolValue(
+                        'members_can_edit_songs',
+                      ),
+                      revision: b.getIntValue('revision'),
+                      members: [
+                        for (final m in bandMembers)
+                          if (m.getStringValue('band') == b.id) _member(m, me),
+                      ],
+                    ),
+              ],
+            ),
+      ];
+    } on ClientException catch (e) {
+      throw _map(e);
+    }
+  }
+
+  static RemoteMember _member(RecordModel m, AuthUser me) {
+    final userId = m.getStringValue('user');
+    final user = m.get<RecordModel?>('expand.user');
+    final name = user?.getStringValue('name') ?? '';
+    final email = user?.getStringValue('email') ?? '';
+    return RemoteMember(
+      membershipId: m.id,
+      userId: userId,
+      name: userId == me.id && name.isEmpty ? me.displayName : name,
+      email: userId == me.id ? me.email : (email.isEmpty ? null : email),
+      role: m.getStringValue('role') == 'admin'
+          ? BandRole.admin
+          : BandRole.member,
+      revision: m.getIntValue('revision'),
+    );
+  }
+
+  @override
+  Future<void> renameOrganization(String organizationId, String name) => _call(
+    () => _pb
+        .collection('organizations')
+        .update(organizationId, body: {'name': name.trim()}),
+  );
+
+  @override
+  Future<void> setOrgMemberRole(String orgMembershipId, BandRole role) => _call(
+    () => _pb
+        .collection('org_memberships')
+        .update(orgMembershipId, body: {'role': role.name}),
+  );
+
+  @override
+  Future<void> removeOrgMember(String orgMembershipId) => _call(
+    () => _pb
+        .collection('org_memberships')
+        .update(orgMembershipId, body: {'deleted': true}),
+  );
+
+  @override
+  Future<void> createBand({
+    required String id,
+    required String name,
+    String? organizationId,
+  }) => _call(
+    () => _pb
+        .collection('bands')
+        .create(
+          body: {
+            'id': id,
+            'name': name.trim(),
+            'organization': ?organizationId,
+          },
+        ),
+  );
+
+  @override
+  Future<void> updateBand(
+    String bandId, {
+    String? name,
+    bool? membersCanEditSongs,
+  }) => _call(
+    () => _pb
+        .collection('bands')
+        .update(
+          bandId,
+          body: {
+            'name': ?name?.trim(),
+            'members_can_edit_songs': ?membersCanEditSongs,
+          },
+        ),
+  );
+
+  @override
+  Future<void> addBandMember(String bandId, String userId, BandRole role) =>
+      _call(() async {
+        // A removed member keeps a soft-deleted membership (unique per user
+        // and band), which is reactivated instead.
+        final previous = await _pb
+            .collection('memberships')
+            .getList(
+              perPage: 1,
+              filter: _pb.filter('band = {:band} && user = {:user}', {
+                'band': bandId,
+                'user': userId,
+              }),
+            );
+        if (previous.items.isNotEmpty) {
+          return _pb
+              .collection('memberships')
+              .update(
+                previous.items.first.id,
+                body: {'deleted': false, 'role': role.name},
+              );
+        }
+        return _pb
+            .collection('memberships')
+            .create(body: {'band': bandId, 'user': userId, 'role': role.name});
+      });
+
+  @override
+  Future<void> setMemberRole(String membershipId, BandRole role) => _call(
+    () => _pb
+        .collection('memberships')
+        .update(membershipId, body: {'role': role.name}),
+  );
+
+  @override
+  Future<void> removeMember(String membershipId) => _call(
+    () => _pb
+        .collection('memberships')
+        .update(membershipId, body: {'deleted': true}),
+  );
+
+  Future<void> _call(Future<Object?> Function() request) async {
+    if (currentUser == null) {
+      throw const BackendException(BackendErrorKind.signedOut);
+    }
+    try {
+      await request();
+    } on ClientException catch (e) {
+      throw _map(e);
+    }
+  }
+
   @override
   void dispose() {
     _subscription.cancel();
@@ -151,6 +330,12 @@ class PocketBaseBackend implements SyncBackend {
     }
     if (credentials && e.statusCode == 400) {
       return BackendException(BackendErrorKind.invalidCredentials, e.response);
+    }
+    if (e.statusCode == 403 || e.statusCode == 404) {
+      return BackendException(BackendErrorKind.notAllowed, e.response);
+    }
+    if (e.statusCode == 401) {
+      return BackendException(BackendErrorKind.signedOut, e.response);
     }
     final fields = e.response['data'];
     if (fields is Map) {
@@ -168,6 +353,12 @@ class PocketBaseBackend implements SyncBackend {
       }
       if (code('password') != null || code('passwordConfirm') != null) {
         return BackendException(BackendErrorKind.weakPassword, e.response);
+      }
+      if (code('role') == 'last_admin') {
+        return BackendException(BackendErrorKind.lastAdmin, e.response);
+      }
+      if (code('user') == 'not_org_member') {
+        return BackendException(BackendErrorKind.notOrgMember, e.response);
       }
     }
     return BackendException(BackendErrorKind.server, e.response);

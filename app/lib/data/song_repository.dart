@@ -56,18 +56,23 @@ List<String> songTags(SongEntry song) => [
 String? _blankToNull(String? value) =>
     value == null || value.trim().isEmpty ? null : value.trim();
 
-/// Access to songs, attachments and personal overlays.
+/// Access to songs, attachments and personal overlays of one song library:
+/// the organization of the current band (ADR-0017), or the local library
+/// by default.
 class SongRepository {
-  SongRepository(this.db, this.storage);
+  SongRepository(this.db, this.storage, {this.libraryId = localBandId});
 
   final AppDatabase db;
   final AttachmentStorage storage;
+
+  /// Library whose songs are listed and to which new songs belong.
+  final String libraryId;
 
   /// Songs sorted by `{sorttitle}` (or title); optionally filtered by a
   /// search [query] and a [tag].
   Stream<List<SongEntry>> watchSongs({String query = '', String? tag}) {
     final q = db.select(db.songs)
-      ..where((s) => s.deleted.equals(false))
+      ..where((s) => s.deleted.equals(false) & s.libraryId.equals(libraryId))
       ..orderBy([
         (s) => OrderingTerm.asc(
           coalesce([s.sortTitle, s.title]).collate(Collate.noCase),
@@ -112,7 +117,7 @@ class SongRepository {
         .insert(
           SongsCompanion.insert(
             id: id,
-            bandId: localBandId,
+            libraryId: libraryId,
             chordproSource: Value(source),
             title: meta.title ?? _blankToNull(title) ?? '',
             artist: Value(meta.artist ?? _blankToNull(artist)),
@@ -152,7 +157,11 @@ class SongRepository {
   Stream<List<String>> watchTags() =>
       (db.selectOnly(db.songs)
             ..addColumns([db.songs.tags])
-            ..where(db.songs.deleted.equals(false) & db.songs.tags.isNotNull()))
+            ..where(
+              db.songs.deleted.equals(false) &
+                  db.songs.libraryId.equals(libraryId) &
+                  db.songs.tags.isNotNull(),
+            ))
           .watch()
           .map((rows) {
             // Tags are matched case-insensitively; show one spelling per

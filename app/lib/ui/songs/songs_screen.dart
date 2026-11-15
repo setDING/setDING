@@ -5,6 +5,8 @@ import '../../data/database.dart';
 import '../../data/song_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
+import '../bands/band_switcher.dart';
+import '../bands/copy_to_band.dart';
 import '../widgets/dialogs.dart';
 import 'import_dialog.dart';
 import 'song_editor_screen.dart';
@@ -24,6 +26,15 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
 
   /// Selected tag filter, or null for all songs.
   String? _tag;
+
+  /// Songs selected for copying, or null outside selection mode.
+  Set<String>? _selected;
+
+  void _toggle(String id) => setState(() {
+    final selected = {...?_selected};
+    if (!selected.remove(id)) selected.add(id);
+    _selected = selected.isEmpty ? null : selected;
+  });
 
   @override
   void dispose() {
@@ -54,10 +65,27 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
     final l10n = AppLocalizations.of(context);
     final songs = ref.watch(songsProvider((query: _query, tag: _tag)));
     final counts = ref.watch(attachmentCountsProvider).value ?? const {};
+    final band = ref.watch(currentBandProvider);
+    final selected = _selected;
+    // Leave selection mode when switching bands.
+    ref.listen(currentBandProvider, (previous, next) {
+      if (previous?.id != next.id) setState(() => _selected = null);
+    });
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.navSongs),
+        leading: selected == null
+            ? null
+            : IconButton(
+                tooltip: l10n.cancel,
+                icon: const Icon(Icons.close),
+                onPressed: () => setState(() => _selected = null),
+              ),
+        title: Text(
+          selected == null
+              ? l10n.navSongs
+              : l10n.songsSelected(selected.length),
+        ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(64),
           child: Padding(
@@ -80,28 +108,66 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
             ),
           ),
         ),
-        actions: [
-          IconButton(
-            tooltip: l10n.importFiles,
-            icon: const Icon(Icons.file_open_outlined),
-            onPressed: () => showImportDialog(context),
-          ),
-          IconButton(
-            tooltip: l10n.newPdfSong,
-            icon: const Icon(Icons.picture_as_pdf_outlined),
-            onPressed: _newPdfSong,
-          ),
-        ],
+        actions: selected != null
+            ? [
+                IconButton(
+                  tooltip: l10n.selectAll,
+                  icon: const Icon(Icons.select_all),
+                  onPressed: () => setState(
+                    () => _selected = {
+                      for (final s in songs.value ?? const <SongEntry>[]) s.id,
+                    },
+                  ),
+                ),
+                IconButton(
+                  key: const Key('songs-copy-to-band'),
+                  tooltip: l10n.copyToBand,
+                  icon: const Icon(Icons.drive_file_move_outline),
+                  onPressed: () async {
+                    await copySongsToBand(context, ref, selected.toList());
+                    if (mounted) setState(() => _selected = null);
+                  },
+                ),
+              ]
+            : [
+                const BandSwitcher(),
+                if (band.canEditSongs) ...[
+                  IconButton(
+                    tooltip: l10n.importFiles,
+                    icon: const Icon(Icons.file_open_outlined),
+                    onPressed: () => showImportDialog(context),
+                  ),
+                  IconButton(
+                    tooltip: l10n.newPdfSong,
+                    icon: const Icon(Icons.picture_as_pdf_outlined),
+                    onPressed: _newPdfSong,
+                  ),
+                ],
+                PopupMenuButton<String>(
+                  key: const Key('songs-menu'),
+                  onSelected: (_) => setState(() => _selected = {}),
+                  itemBuilder: (_) => [
+                    PopupMenuItem(
+                      value: 'select',
+                      child: Text(l10n.selectMode),
+                    ),
+                  ],
+                ),
+              ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: null,
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute<void>(builder: (_) => const SongEditorScreen()),
-        ),
-        icon: const Icon(Icons.add),
-        label: Text(l10n.newSong),
-      ),
+      floatingActionButton: !band.canEditSongs || selected != null
+          ? null
+          : FloatingActionButton.extended(
+              heroTag: null,
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (_) => const SongEditorScreen(),
+                ),
+              ),
+              icon: const Icon(Icons.add),
+              label: Text(l10n.newSong),
+            ),
       body: Column(
         children: [
           _TagFilter(
@@ -122,12 +188,22 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                       itemBuilder: (context, i) => SongTile(
                         song: list[i],
                         hasAttachments: (counts[list[i].id] ?? 0) > 0,
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute<void>(
-                            builder: (_) => SongScreen(songId: list[i].id),
-                          ),
-                        ),
+                        leading: selected == null
+                            ? null
+                            : Checkbox(
+                                value: selected.contains(list[i].id),
+                                onChanged: (_) => _toggle(list[i].id),
+                              ),
+                        onLongPress: () => _toggle(list[i].id),
+                        onTap: selected != null
+                            ? () => _toggle(list[i].id)
+                            : () => Navigator.push(
+                                context,
+                                MaterialPageRoute<void>(
+                                  builder: (_) =>
+                                      SongScreen(songId: list[i].id),
+                                ),
+                              ),
                       ),
                     ),
             ),
@@ -193,6 +269,7 @@ class SongTile extends StatelessWidget {
     required this.song,
     this.hasAttachments = false,
     this.onTap,
+    this.onLongPress,
     this.trailing,
     this.leading,
   });
@@ -200,6 +277,7 @@ class SongTile extends StatelessWidget {
   final SongEntry song;
   final bool hasAttachments;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
   final Widget? trailing;
   final Widget? leading;
 
@@ -224,6 +302,7 @@ class SongTile extends StatelessWidget {
                 )
               : null),
       onTap: onTap,
+      onLongPress: onLongPress,
     );
   }
 }

@@ -22,12 +22,16 @@ class SetSummary {
   final int itemCount;
 }
 
-/// Access to sets (setlists) and their items.
+/// Access to sets (setlists) and their items of one band (the current
+/// band, or the local library by default).
 class SetRepository {
-  SetRepository(this.db, this.storage);
+  SetRepository(this.db, this.storage, {this.bandId = localBandId});
 
   final AppDatabase db;
   final AttachmentStorage storage;
+
+  /// Band whose sets are listed and to which new sets belong.
+  final String bandId;
 
   Stream<List<SetSummary>> watchSets() {
     final count = db.setItems.id.count();
@@ -40,7 +44,10 @@ class SetRepository {
             ),
           ])
           ..addColumns([count])
-          ..where(db.setlists.deleted.equals(false))
+          ..where(
+            db.setlists.deleted.equals(false) &
+                db.setlists.bandId.equals(bandId),
+          )
           ..groupBy([db.setlists.id])
           ..orderBy([
             OrderingTerm(
@@ -74,7 +81,7 @@ class SetRepository {
         .insert(
           SetlistsCompanion.insert(
             id: id,
-            bandId: localBandId,
+            bandId: bandId,
             name: name.trim(),
             gigDate: Value(gigDate),
             venue: Value(_blankToNull(venue)),

@@ -34,6 +34,10 @@ class TestApp {
   late final songs = SongRepository(db, storage);
   late final sets = SetRepository(db, storage);
 
+  /// Songs of another library, e.g. an organization (ADR-0017).
+  static SongRepository songsIn(TestApp app, String libraryId) =>
+      SongRepository(app.db, app.storage, libraryId: libraryId);
+
   static Future<TestApp> create({
     Map<String, Object> prefs = const {},
     AuthUser? user,

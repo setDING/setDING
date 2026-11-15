@@ -19,6 +19,7 @@ import '../render/song_view.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
 import '../widgets/key_picker.dart';
+import '../bands/copy_to_band.dart';
 import 'song_editor_screen.dart';
 
 /// Shows a song with personal adjustments and its PDF attachments.
@@ -133,6 +134,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
     final attachments =
         ref.watch(attachmentsProvider(widget.songId)).value ?? const [];
     final settings = ref.watch(settingsProvider);
+    final band = ref.watch(currentBandProvider);
 
     return AsyncBody(
       value: songValue,
@@ -160,29 +162,40 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                 icon: const Icon(Icons.play_arrow),
                 onPressed: () => LiveScreen.openSong(context, song.id),
               ),
-              IconButton(
-                tooltip: l10n.editSource,
-                icon: const Icon(Icons.edit_note),
-                onPressed: () => _editSource(song),
-              ),
+              if (band.canEditSongs)
+                IconButton(
+                  tooltip: l10n.editSource,
+                  icon: const Icon(Icons.edit_note),
+                  onPressed: () => _editSource(song),
+                ),
               PopupMenuButton<String>(
                 onSelected: (value) => switch (value) {
                   'title' => _editTitle(song),
                   'pdf' => _addAttachment(),
                   'export' => _export(song),
+                  'copyToBand' => copySongsToBand(context, ref, [song.id]),
                   'delete' => _delete(song),
                   _ => null,
                 },
                 itemBuilder: (_) => [
-                  if (!hasSourceTitle)
+                  if (!hasSourceTitle && band.canEditSongs)
                     PopupMenuItem(value: 'title', child: Text(l10n.editTitle)),
-                  PopupMenuItem(value: 'pdf', child: Text(l10n.addAttachment)),
+                  if (band.canEditSongs)
+                    PopupMenuItem(
+                      value: 'pdf',
+                      child: Text(l10n.addAttachment),
+                    ),
                   if (song.chordproSource.trim().isNotEmpty)
                     PopupMenuItem(
                       value: 'export',
                       child: Text(l10n.exportSong),
                     ),
-                  PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
+                  PopupMenuItem(
+                    value: 'copyToBand',
+                    child: Text(l10n.copyToBand),
+                  ),
+                  if (band.canDeleteSongs)
+                    PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
                 ],
               ),
             ],
@@ -213,7 +226,9 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   attachments: attachments,
                   overlay: overlay,
                   hasChordPro: parsed.hasContent,
-                  onAdd: _addAttachment,
+                  onAdd: band.canEditSongs ? _addAttachment : null,
+                  canRename: band.canEditSongs,
+                  canDelete: band.canDeleteSongs,
                   onLiveView: (id) =>
                       _updateOverlay((o) => o.copyWith(liveView: Value(id))),
                 ),
@@ -251,10 +266,12 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   child: ListTile(
                     leading: const Icon(Icons.text_snippet_outlined),
                     title: Text(l10n.noContent),
-                    trailing: FilledButton.tonal(
-                      onPressed: () => _editSource(song),
-                      child: Text(l10n.addChordPro),
-                    ),
+                    trailing: !band.canEditSongs
+                        ? null
+                        : FilledButton.tonal(
+                            onPressed: () => _editSource(song),
+                            child: Text(l10n.addChordPro),
+                          ),
                   ),
                 ),
             ],
@@ -458,12 +475,18 @@ class _AttachmentsCard extends ConsumerWidget {
     required this.hasChordPro,
     required this.onAdd,
     required this.onLiveView,
+    this.canRename = true,
+    this.canDelete = true,
   });
 
   final List<AttachmentEntry> attachments;
   final SongOverlay overlay;
   final bool hasChordPro;
-  final VoidCallback onAdd;
+
+  /// Null hides the "add" button (no permission, ADR-0005).
+  final VoidCallback? onAdd;
+  final bool canRename;
+  final bool canDelete;
   final void Function(String? attachmentId) onLiveView;
 
   @override
@@ -496,11 +519,13 @@ class _AttachmentsCard extends ConsumerWidget {
               subtitle: pdfs.length > 1 || (hasChordPro && pdfs.isNotEmpty)
                   ? Text(l10n.liveView)
                   : null,
-              trailing: TextButton.icon(
-                onPressed: onAdd,
-                icon: const Icon(Icons.add),
-                label: Text(l10n.addAttachment),
-              ),
+              trailing: onAdd == null
+                  ? null
+                  : TextButton.icon(
+                      onPressed: onAdd,
+                      icon: const Icon(Icons.add),
+                      label: Text(l10n.addAttachment),
+                    ),
             ),
             if (hasChordPro && pdfs.isNotEmpty)
               RadioListTile<String?>(
@@ -533,8 +558,9 @@ class _AttachmentsCard extends ConsumerWidget {
     );
   }
 
-  Widget _menu(BuildContext context, SongRepository repo, AttachmentEntry a) {
+  Widget? _menu(BuildContext context, SongRepository repo, AttachmentEntry a) {
     final l10n = AppLocalizations.of(context);
+    if (!canRename && !canDelete) return null;
     return PopupMenuButton<String>(
       onSelected: (value) async {
         if (value == 'rename') {
@@ -555,8 +581,8 @@ class _AttachmentsCard extends ConsumerWidget {
         }
       },
       itemBuilder: (_) => [
-        PopupMenuItem(value: 'rename', child: Text(l10n.rename)),
-        PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
+        if (canRename) PopupMenuItem(value: 'rename', child: Text(l10n.rename)),
+        if (canDelete) PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
       ],
     );
   }

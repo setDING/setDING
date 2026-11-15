@@ -152,10 +152,18 @@ class AsyncBody<T> extends StatelessWidget {
 
 /// Placeholder for empty lists.
 class EmptyState extends StatelessWidget {
-  const EmptyState({super.key, required this.icon, required this.message});
+  const EmptyState({
+    super.key,
+    required this.icon,
+    required this.message,
+    this.action,
+  });
 
   final IconData icon;
   final String message;
+
+  /// Optional button below the message.
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
@@ -175,6 +183,7 @@ class EmptyState extends StatelessWidget {
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
+            if (action != null) ...[const SizedBox(height: 16), action!],
           ],
         ),
       ),

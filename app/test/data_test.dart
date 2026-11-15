@@ -41,7 +41,7 @@ void main() {
       expect(song.artist, 'Band');
       expect(song.songKey, 'G');
       expect(song.tempo, 100);
-      expect(song.bandId, localBandId);
+      expect(song.libraryId, localBandId);
     });
 
     test('PDF-only song uses given title and artist', () async {

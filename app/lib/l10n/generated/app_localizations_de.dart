@@ -906,4 +906,210 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get settingsServerInvalid =>
       'Die Adresse muss mit http:// oder https:// beginnen.';
+
+  @override
+  String get bandLocal => 'Auf diesem Gerät';
+
+  @override
+  String get bandLocalHint =>
+      'Nur auf diesem Gerät, wird nicht synchronisiert.';
+
+  @override
+  String get bandSwitch => 'Band wechseln';
+
+  @override
+  String get bandManage => 'Bands verwalten';
+
+  @override
+  String get bandsTitle => 'Bands';
+
+  @override
+  String get bandsEmpty =>
+      'Du bist noch in keiner Band. Erstelle eine Band für deine Songs und Sets.';
+
+  @override
+  String get bandsSignInHint => 'Melde dich an, um Bands zu erstellen.';
+
+  @override
+  String get bandNew => 'Neue Band';
+
+  @override
+  String get bandName => 'Bandname';
+
+  @override
+  String get bandRoleAdmin => 'Admin';
+
+  @override
+  String get bandRoleMember => 'Mitglied';
+
+  @override
+  String get bandMembers => 'Mitglieder';
+
+  @override
+  String bandYou(String name) {
+    return '$name (du)';
+  }
+
+  @override
+  String get bandMakeAdmin => 'Zum Admin machen';
+
+  @override
+  String get bandMakeMember => 'Zum Mitglied machen';
+
+  @override
+  String get bandRemoveMember => 'Aus der Band entfernen';
+
+  @override
+  String bandRemoveTitle(String name) {
+    return '$name entfernen?';
+  }
+
+  @override
+  String bandRemoveMessage(String name) {
+    return '$name sieht die Songs und Sets der Band danach nicht mehr.';
+  }
+
+  @override
+  String get bandLeave => 'Band verlassen';
+
+  @override
+  String bandLeaveTitle(String band) {
+    return '$band verlassen?';
+  }
+
+  @override
+  String get bandLeaveMessage =>
+      'Du siehst die Songs und Sets der Band danach nicht mehr. Ein Admin kann dich wieder einladen.';
+
+  @override
+  String get bandMembersCanEdit => 'Mitglieder dürfen Songs bearbeiten';
+
+  @override
+  String get bandMembersCanEditHint =>
+      'Songs erstellen, importieren und bearbeiten. Löschen und Sets bleiben den Admins vorbehalten.';
+
+  @override
+  String get bandRefresh => 'Aktualisieren';
+
+  @override
+  String get bandErrorLastAdmin => 'Eine Band braucht mindestens einen Admin.';
+
+  @override
+  String get bandErrorNotAllowed =>
+      'Dazu fehlt die Berechtigung, oder die Band gibt es nicht mehr.';
+
+  @override
+  String get accountErrorSignedOut => 'Bitte melde dich an.';
+
+  @override
+  String get copyToBand => 'In Band kopieren';
+
+  @override
+  String get copyToBandTitle => 'In welche Band kopieren?';
+
+  @override
+  String get copyToBandNoTarget =>
+      'Es gibt keine andere Band, in die du kopieren darfst.';
+
+  @override
+  String copiedSongs(int count, String band) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs nach $band kopiert',
+      one: '1 Song nach $band kopiert',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String copiedSet(String band) {
+    return 'Set nach $band kopiert';
+  }
+
+  @override
+  String songsSelected(int count) {
+    return '$count ausgewählt';
+  }
+
+  @override
+  String get selectAll => 'Alle auswählen';
+
+  @override
+  String get selectMode => 'Auswählen';
+
+  @override
+  String get bandRoleOrgAdmin => 'Admin der Organisation';
+
+  @override
+  String get bandOrganization => 'Organisation';
+
+  @override
+  String get bandNewOrganization => 'Neue Organisation';
+
+  @override
+  String get bandNewHint => 'Die Bands einer Organisation teilen ihre Songs.';
+
+  @override
+  String get bandAddMember => 'Mitglied hinzufügen';
+
+  @override
+  String get bandAddMemberTitle => 'Wen hinzufügen?';
+
+  @override
+  String get bandAddMemberNone =>
+      'Alle Personen der Organisation sind schon in dieser Band.';
+
+  @override
+  String get bandOrgAdminHint =>
+      'Du verwaltest diese Band als Admin der Organisation.';
+
+  @override
+  String get bandErrorNotOrgMember =>
+      'Diese Person gehört nicht zur Organisation.';
+
+  @override
+  String get orgName => 'Name der Organisation';
+
+  @override
+  String get orgPeople => 'Personen';
+
+  @override
+  String get orgBands => 'Bands';
+
+  @override
+  String get orgRemove => 'Aus der Organisation entfernen';
+
+  @override
+  String orgRemoveTitle(String name) {
+    return '$name entfernen?';
+  }
+
+  @override
+  String orgRemoveMessage(String name) {
+    return '$name verlässt damit auch alle Bands der Organisation und sieht ihre Songs nicht mehr.';
+  }
+
+  @override
+  String get orgLeave => 'Organisation verlassen';
+
+  @override
+  String orgLeaveTitle(String org) {
+    return '$org verlassen?';
+  }
+
+  @override
+  String get orgLeaveMessage =>
+      'Du verlässt damit auch alle ihre Bands und siehst ihre Songs nicht mehr.';
+
+  @override
+  String get orgInviteSoon =>
+      'Personen in die Organisation einladen ist bald möglich.';
+
+  @override
+  String get orgSongsShared =>
+      'Alle Bands der Organisation teilen dieselben Songs.';
+
+  @override
+  String get copyToLibraryTitle => 'In welche Songbibliothek kopieren?';
 }

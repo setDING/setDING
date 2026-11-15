@@ -274,5 +274,134 @@
   "accountErrorServer": "The server reported an error. Please try again later.",
   "settingsServer": "Server",
   "settingsServerHint": "Only change for testing. Changing it signs you out.",
-  "settingsServerInvalid": "The address must start with http:// or https://."
+  "settingsServerInvalid": "The address must start with http:// or https://.",
+  "bandLocal": "On this device",
+  "bandLocalHint": "Only on this device, not synced.",
+  "bandSwitch": "Switch band",
+  "bandManage": "Manage bands",
+  "bandsTitle": "Bands",
+  "bandsEmpty": "You are not in a band yet. Create a band for your songs and sets.",
+  "bandsSignInHint": "Sign in to create bands.",
+  "bandNew": "New band",
+  "bandName": "Band name",
+  "bandRoleAdmin": "Admin",
+  "bandRoleMember": "Member",
+  "bandMembers": "Members",
+  "bandYou": "{name} (you)",
+  "@bandYou": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bandMakeAdmin": "Make admin",
+  "bandMakeMember": "Make member",
+  "bandRemoveMember": "Remove from band",
+  "bandRemoveTitle": "Remove {name}?",
+  "@bandRemoveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bandRemoveMessage": "{name} will no longer see the band's songs and sets.",
+  "@bandRemoveMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bandLeave": "Leave band",
+  "bandLeaveTitle": "Leave {band}?",
+  "@bandLeaveTitle": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "bandLeaveMessage": "You will no longer see the band's songs and sets. An admin can invite you again.",
+  "bandMembersCanEdit": "Members may edit songs",
+  "bandMembersCanEditHint": "Create, import and edit songs. Deleting and sets stay with the admins.",
+  "bandRefresh": "Refresh",
+  "bandErrorLastAdmin": "A band needs at least one admin.",
+  "bandErrorNotAllowed": "Not allowed, or the band no longer exists.",
+  "accountErrorSignedOut": "Please sign in.",
+  "copyToBand": "Copy to band",
+  "copyToBandTitle": "Copy to which band?",
+  "copyToBandNoTarget": "There is no other band you may copy to.",
+  "copiedSongs": "{count, plural, =1{1 song copied to {band}} other{{count} songs copied to {band}}}",
+  "@copiedSongs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "copiedSet": "Set copied to {band}",
+  "@copiedSet": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "songsSelected": "{count} selected",
+  "@songsSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectAll": "Select all",
+  "selectMode": "Select",
+  "bandRoleOrgAdmin": "Organization admin",
+  "bandOrganization": "Organization",
+  "bandNewOrganization": "New organization",
+  "bandNewHint": "The bands of an organization share their songs.",
+  "bandAddMember": "Add member",
+  "bandAddMemberTitle": "Add whom?",
+  "bandAddMemberNone": "Everyone in the organization is already in this band.",
+  "bandOrgAdminHint": "You manage this band as an admin of the organization.",
+  "bandErrorNotOrgMember": "This person is not a member of the organization.",
+  "orgName": "Organization name",
+  "orgPeople": "People",
+  "orgBands": "Bands",
+  "orgRemove": "Remove from organization",
+  "orgRemoveTitle": "Remove {name}?",
+  "@orgRemoveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "orgRemoveMessage": "{name} will also leave all bands of the organization and no longer see its songs.",
+  "@orgRemoveMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "orgLeave": "Leave organization",
+  "orgLeaveTitle": "Leave {org}?",
+  "@orgLeaveTitle": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "orgLeaveMessage": "You will also leave all its bands and no longer see its songs.",
+  "orgInviteSoon": "Inviting people to the organization is coming soon.",
+  "orgSongsShared": "All bands of the organization share the same songs.",
+  "copyToLibraryTitle": "Copy to which song library?"
 }

@@ -1,0 +1,271 @@
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
+import 'package:drift/native.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:realchord/data/attachment_storage.dart';
+import 'package:realchord/data/band_copy.dart';
+import 'package:realchord/data/band_view.dart';
+import 'package:realchord/data/database.dart';
+import 'package:realchord/data/set_repository.dart';
+import 'package:realchord/data/song_repository.dart';
+import 'package:realchord/sync/band_service.dart';
+import 'package:realchord/sync/sync_backend.dart';
+
+import 'fake_backend.dart';
+
+const _ann = AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann');
+const _bob = AuthUser(id: 'bob', email: 'bob@example.test', name: 'Bob');
+
+void main() {
+  late AppDatabase db;
+  late FakeSyncBackend backend;
+  late BandService service;
+
+  setUp(() {
+    driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+    db = AppDatabase(NativeDatabase.memory());
+    backend = FakeSyncBackend(user: _ann);
+    service = BandService(db, backend);
+  });
+  tearDown(() => db.close());
+
+  Future<List<BandView>> bands([String userId = 'ann']) =>
+      service.watchBands(userId).first;
+
+  BandView band(List<BandView> all, String id) =>
+      all.firstWhere((b) => b.id == id);
+
+  test('signed out, only the local library is available', () async {
+    expect(await service.watchBands(null).first, [BandView.local]);
+  });
+
+  test('stores organizations, bands and members from the server', () async {
+    backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+    backend.organizations['o1'] = 'School';
+    backend.addMember('b1', _bob, BandRole.member);
+    await service.refresh();
+
+    final all = await bands();
+    expect(all.first, BandView.local);
+    final rock = band(all, 'b1');
+    expect(rock.organizationName, 'School');
+    expect(rock.libraryId, 'o1');
+    expect(rock.isBandAdmin, isTrue);
+    expect(rock.isOrgAdmin, isTrue);
+    final members = await service.watchMembers('b1').first;
+    expect(members.map((m) => m.userName), ['Ann', 'Bob']);
+    final people = await service.watchOrgMembers('o1').first;
+    expect(people.map((m) => m.userId), unorderedEquals(['ann', 'bob']));
+  });
+
+  test('permissions follow the roles (ADR-0017)', () async {
+    // Ann administers the organization; Bob is a member of "Rock" only.
+    backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+    backend.addBand('b2', 'Jazz', admin: _ann, organizationId: 'o1');
+    backend.addMember('b1', _bob, BandRole.member);
+
+    backend.user = _bob;
+    await service.refresh();
+    var all = await bands('bob');
+    expect(all.map((b) => b.id), [localBandId, 'b1']);
+    final rock = band(all, 'b1');
+    expect(rock.canEditSongs, isFalse);
+    expect(rock.canDeleteSongs, isFalse);
+    expect(rock.canManageSets, isFalse);
+    expect(rock.canManageBand, isFalse);
+
+    // Admin of another band of the organization: edits the shared songs.
+    backend.addMember('b2', _bob, BandRole.admin);
+    await service.refresh();
+    all = await bands('bob');
+    expect(band(all, 'b1').canEditSongs, isTrue);
+    expect(band(all, 'b1').canManageSets, isFalse);
+    expect(band(all, 'b2').canManageSets, isTrue);
+    expect(band(all, 'b2').canDeleteSongs, isFalse);
+  });
+
+  test('members may edit songs when their band allows it', () async {
+    backend.addBand(
+      'b1',
+      'Rock',
+      admin: _ann,
+      organizationId: 'o1',
+      membersCanEditSongs: true,
+    );
+    backend.addMember('b1', _bob, BandRole.member);
+    backend.user = _bob;
+    await service.refresh();
+    final rock = band(await bands('bob'), 'b1');
+    expect(rock.canEditSongs, isTrue);
+    expect(rock.canDeleteSongs, isFalse);
+  });
+
+  test('organization admins see all bands of their organization', () async {
+    backend.addBand('b1', 'Rock', admin: _bob, organizationId: 'o1');
+    backend.addOrgMember('o1', _ann, BandRole.admin);
+    await service.refresh();
+    final rock = band(await bands(), 'b1');
+    expect(rock.role, isNull);
+    expect(rock.canManageBand, isTrue);
+    expect(rock.canManageSets, isTrue);
+    expect(rock.canDeleteSongs, isTrue);
+  });
+
+  test('bands and organizations the user lost are hidden', () async {
+    backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+    backend.addBand('b2', 'Jazz', admin: _bob, organizationId: 'o2');
+    backend.addMember('b2', _ann, BandRole.member);
+    await service.refresh();
+    expect((await bands()).map((b) => b.id), [localBandId, 'b2', 'b1']);
+
+    final membership = backend.orgMembers.firstWhere(
+      (m) => m.scopeId == 'o2' && m.user.id == 'ann',
+    );
+    await service.removeOrgMember(membership.id);
+    expect((await bands()).map((b) => b.id), [localBandId, 'b1']);
+    expect((await service.watchOrganizations('ann').first).map((o) => o.id), [
+      'o1',
+    ]);
+  });
+
+  test('creates a band in a new or an existing organization', () async {
+    final first = await service.createBand('Rock');
+    var all = await bands();
+    final rock = band(all, first);
+    expect(rock.organizationName, 'Rock');
+    final second = await service.createBand(
+      'Jazz',
+      organizationId: rock.organizationId,
+    );
+    all = await bands();
+    expect(band(all, second).organizationId, rock.organizationId);
+    expect(await service.watchOrganizations('ann').first, hasLength(1));
+  });
+
+  test('reports the last admin and people outside the organization', () async {
+    backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+    await service.refresh();
+    final own = backend.members.single;
+    await expectLater(
+      service.setRole(own.id, BandRole.member),
+      throwsA(
+        isA<BackendException>().having(
+          (e) => e.kind,
+          'kind',
+          BackendErrorKind.lastAdmin,
+        ),
+      ),
+    );
+    await expectLater(
+      service.addBandMember('b1', 'stranger', BandRole.member),
+      throwsA(
+        isA<BackendException>().having(
+          (e) => e.kind,
+          'kind',
+          BackendErrorKind.notOrgMember,
+        ),
+      ),
+    );
+  });
+
+  group('copy', () {
+    late Directory dir;
+    late AttachmentStorage storage;
+
+    setUp(() {
+      dir = Directory.systemTemp.createTempSync('realchord_copy');
+      storage = AttachmentStorage(dir);
+    });
+    tearDown(() => dir.deleteSync(recursive: true));
+
+    test(
+      'copies songs with attachments and adjustments into a library',
+      () async {
+        final local = SongRepository(db, storage);
+        final id = await local.createSong(source: '{title: Mine}\n[C]x');
+        final pdf = await local.addAttachment(
+          id,
+          name: 'Score',
+          bytes: Uint8List.fromList([1, 2, 3]),
+        );
+        await local.saveOverlay(
+          (await local.getOverlay(id))
+              .copyWith(transpose: 2, liveView: Value(pdf)),
+        );
+
+        final copies = await BandCopyService(db, storage).copySongs([id], 'o1');
+        final org = SongRepository(db, storage, libraryId: 'o1');
+        final copy = (await org.getSong(copies.single))!;
+        expect(copy.title, 'Mine');
+        final files = await org.getAttachments(copy.id);
+        expect(files.single.name, 'Score');
+        expect(await storage.file(files.single.fileName).readAsBytes(), [
+          1,
+          2,
+          3,
+        ]);
+        final overlay = await org.getOverlay(copy.id);
+        expect(overlay.transpose, 2);
+        expect(overlay.liveView, files.single.id);
+        // The original stays in the local library.
+        expect((await local.watchSongs().first).map((s) => s.id), [id]);
+      },
+    );
+
+    test(
+      'copies a set with its songs into a band of another library',
+      () async {
+        await db
+            .into(db.bands)
+            .insert(BandsCompanion.insert(id: 'b1', name: 'Rock'));
+        final songs = SongRepository(db, storage);
+        final a = await songs.createSong(source: '{title: A}');
+        final sets = SetRepository(db, storage);
+        final setId = await sets.createSet(name: 'Gig');
+        await sets.addSongs(setId, [a, a]);
+        await sets.addMarker(setId, SetItemType.pause, 'Break');
+
+        final copyId = await BandCopyService(
+          db,
+          storage,
+        ).copySet(setId, targetBandId: 'b1', targetLibraryId: 'o1');
+        final copied = SetRepository(db, storage, bandId: 'b1');
+        final items = await copied.getItems(copyId);
+        expect(items.map((i) => i.item.type), [
+          SetItemType.song,
+          SetItemType.song,
+          SetItemType.pause,
+        ]);
+        // A song used twice is copied once, into the target library.
+        expect(items[0].song!.id, items[1].song!.id);
+        expect(items[0].song!.id, isNot(a));
+        expect(items[0].song!.libraryId, 'o1');
+      },
+    );
+
+    test('a set copied within the same library keeps its songs', () async {
+      await db
+          .into(db.bands)
+          .insert(BandsCompanion.insert(id: 'b1', name: 'Rock'));
+      final songs = SongRepository(db, storage);
+      final a = await songs.createSong(source: '{title: A}');
+      final sets = SetRepository(db, storage);
+      final setId = await sets.createSet(name: 'Gig');
+      await sets.addSongs(setId, [a]);
+      final copyId = await BandCopyService(db, storage).copySet(
+        setId,
+        targetBandId: 'b1',
+        targetLibraryId: localBandId,
+        copySongs: false,
+      );
+      final items = await SetRepository(
+        db,
+        storage,
+        bandId: 'b1',
+      ).getItems(copyId);
+      expect(items.single.song!.id, a);
+    });
+  });
+}

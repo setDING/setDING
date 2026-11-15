@@ -6,6 +6,7 @@ import '../../data/database.dart';
 import '../../data/set_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
+import '../bands/band_switcher.dart';
 import '../widgets/dialogs.dart';
 import 'set_screen.dart';
 
@@ -17,23 +18,31 @@ class SetsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final sets = ref.watch(setsProvider);
+    final band = ref.watch(currentBandProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.navSets)),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: null,
-        onPressed: () async {
-          final id = await showSetDialog(context, ref);
-          if (id != null && context.mounted) {
-            await Navigator.push(
-              context,
-              MaterialPageRoute<void>(builder: (_) => SetScreen(setId: id)),
-            );
-          }
-        },
-        icon: const Icon(Icons.add),
-        label: Text(l10n.newSet),
+      appBar: AppBar(
+        title: Text(l10n.navSets),
+        actions: const [BandSwitcher()],
       ),
+      floatingActionButton: !band.canManageSets
+          ? null
+          : FloatingActionButton.extended(
+              heroTag: null,
+              onPressed: () async {
+                final id = await showSetDialog(context, ref);
+                if (id != null && context.mounted) {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (_) => SetScreen(setId: id),
+                    ),
+                  );
+                }
+              },
+              icon: const Icon(Icons.add),
+              label: Text(l10n.newSet),
+            ),
       body: AsyncBody(
         value: sets,
         data: (list) => list.isEmpty

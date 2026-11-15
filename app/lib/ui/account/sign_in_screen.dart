@@ -18,6 +18,10 @@ String backendErrorText(AppLocalizations l10n, BackendErrorKind kind) =>
       BackendErrorKind.emailTaken => l10n.accountErrorEmailTaken,
       BackendErrorKind.invalidEmail => l10n.accountErrorInvalidEmail,
       BackendErrorKind.weakPassword => l10n.accountErrorWeakPassword,
+      BackendErrorKind.lastAdmin => l10n.bandErrorLastAdmin,
+      BackendErrorKind.notAllowed => l10n.bandErrorNotAllowed,
+      BackendErrorKind.notOrgMember => l10n.bandErrorNotOrgMember,
+      BackendErrorKind.signedOut => l10n.accountErrorSignedOut,
       BackendErrorKind.server => l10n.accountErrorServer,
     };
 

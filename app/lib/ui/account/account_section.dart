@@ -5,6 +5,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../settings/settings.dart';
 import '../../sync/auth_providers.dart';
 import '../widgets/dialogs.dart';
+import '../bands/bands_screen.dart';
 import 'sign_in_screen.dart';
 
 /// Account tiles of the settings screen: sign-in state and server.
@@ -49,6 +50,18 @@ class AccountSection extends ConsumerWidget {
                 if (ok) await ref.read(authProvider.notifier).signOut();
               },
               child: Text(l10n.accountSignOut),
+            ),
+          ),
+        if (user != null)
+          ListTile(
+            key: const Key('account-bands'),
+            leading: const Icon(Icons.groups_outlined),
+            title: Text(l10n.bandsTitle),
+            subtitle: Text(l10n.bandManage),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute<void>(builder: (_) => const BandsScreen()),
             ),
           ),
         ListTile(

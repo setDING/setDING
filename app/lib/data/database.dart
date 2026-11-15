@@ -1,16 +1,81 @@
 import 'package:drift/drift.dart';
 
+import 'band_role.dart';
+
+export 'band_role.dart';
+
 part 'database.g.dart';
 
-/// ID of the implicit band used while the app runs without a backend (MVP).
+/// ID of the local library ("On this device"): the band of the MVP, kept
+/// on this device only and never synced. Works without an account.
 const localBandId = '00000000-0000-4000-8000-000000000001';
 
+/// An organization from the server (ADR-0017); owns the song library that
+/// its bands share (schema 4).
+@DataClassName('OrganizationEntry')
+class Organizations extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  IntColumn get revision => integer().withDefault(const Constant(0))();
+
+  /// The organization is no longer available to this device.
+  BoolColumn get deleted => boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Membership of a user in an organization, cached from the server
+/// (schema 4).
+@DataClassName('OrgMembershipEntry')
+class OrgMemberships extends Table {
+  TextColumn get id => text()();
+  TextColumn get organizationId => text().references(Organizations, #id)();
+  TextColumn get userId => text()();
+  TextColumn get userName => text().withDefault(const Constant(''))();
+  TextColumn get userEmail => text().nullable()();
+  TextColumn get role => textEnum<BandRole>()();
+  IntColumn get revision => integer().withDefault(const Constant(0))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// A band from the server, or the local library ([localBandId]).
 @DataClassName('BandEntry')
 class Bands extends Table {
   TextColumn get id => text()();
   TextColumn get name => text()();
+
+  /// Organization of the band; null for the local library (schema 4).
+  TextColumn get organizationId =>
+      text().nullable().references(Organizations, #id)();
   BoolColumn get membersCanEditSongs =>
       boolean().withDefault(const Constant(false))();
+
+  /// Server revision (ADR-0015); 0 for the local library (schema 4).
+  IntColumn get revision => integer().withDefault(const Constant(0))();
+
+  /// The band is no longer available to this device (schema 4).
+  BoolColumn get deleted => boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Membership of a user in a band, cached from the server so that roles
+/// and member names are available offline (schema 4).
+@DataClassName('MembershipEntry')
+class Memberships extends Table {
+  TextColumn get id => text()();
+  TextColumn get bandId => text().references(Bands, #id)();
+  TextColumn get userId => text()();
+
+  /// Name of the user at the time of the last refresh.
+  TextColumn get userName => text().withDefault(const Constant(''))();
+  TextColumn get userEmail => text().nullable()();
+  TextColumn get role => textEnum<BandRole>()();
+  IntColumn get revision => integer().withDefault(const Constant(0))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -19,7 +84,10 @@ class Bands extends Table {
 @DataClassName('SongEntry')
 class Songs extends Table {
   TextColumn get id => text()();
-  TextColumn get bandId => text().references(Bands, #id)();
+
+  /// Song library the song belongs to: an organization ID (ADR-0017), or
+  /// [localBandId] for the local library. Until schema 3: `band_id`.
+  TextColumn get libraryId => text()();
 
   /// ChordPro text – the single source of truth (ADR-0003).
   TextColumn get chordproSource => text().withDefault(const Constant(''))();
@@ -130,13 +198,23 @@ class PersonalOverlays extends Table {
 }
 
 @DriftDatabase(
-  tables: [Bands, Songs, Attachments, Setlists, SetItems, PersonalOverlays],
+  tables: [
+    Organizations,
+    OrgMemberships,
+    Bands,
+    Memberships,
+    Songs,
+    Attachments,
+    Setlists,
+    SetItems,
+    PersonalOverlays,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   /// Called after an upgrade to fill new columns from the ChordPro source.
   Future<void> Function(AppDatabase db)? afterUpgrade;
@@ -155,6 +233,24 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 3) {
         await m.addColumn(setItems, setItems.sequence);
+      }
+      if (from < 4) {
+        await m.createTable(organizations);
+        await m.createTable(orgMemberships);
+        await m.addColumn(bands, bands.organizationId);
+        await m.addColumn(bands, bands.revision);
+        await m.addColumn(bands, bands.deleted);
+        await m.createTable(memberships);
+        // Songs belong to a library instead of a band (ADR-0017); the
+        // table is rebuilt to drop the foreign key on bands.
+        await m.alterTable(
+          TableMigration(
+            songs,
+            columnTransformer: {
+              songs.libraryId: const CustomExpression<String>('band_id'),
+            },
+          ),
+        );
       }
     },
     beforeOpen: (details) async {

@@ -3,6 +3,789 @@
 part of 'database.dart';
 
 // ignore_for_file: type=lint
+class $OrganizationsTable extends Organizations
+    with TableInfo<$OrganizationsTable, OrganizationEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $OrganizationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _revisionMeta = const VerificationMeta(
+    'revision',
+  );
+  @override
+  late final GeneratedColumn<int> revision = GeneratedColumn<int>(
+    'revision',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _deletedMeta = const VerificationMeta(
+    'deleted',
+  );
+  @override
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
+    'deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, revision, deleted];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'organizations';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<OrganizationEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('revision')) {
+      context.handle(
+        _revisionMeta,
+        revision.isAcceptableOrUnknown(data['revision']!, _revisionMeta),
+      );
+    }
+    if (data.containsKey('deleted')) {
+      context.handle(
+        _deletedMeta,
+        deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  OrganizationEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return OrganizationEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      revision: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}revision'],
+      )!,
+      deleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}deleted'],
+      )!,
+    );
+  }
+
+  @override
+  $OrganizationsTable createAlias(String alias) {
+    return $OrganizationsTable(attachedDatabase, alias);
+  }
+}
+
+class OrganizationEntry extends DataClass
+    implements Insertable<OrganizationEntry> {
+  final String id;
+  final String name;
+  final int revision;
+
+  /// The organization is no longer available to this device.
+  final bool deleted;
+  const OrganizationEntry({
+    required this.id,
+    required this.name,
+    required this.revision,
+    required this.deleted,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['revision'] = Variable<int>(revision);
+    map['deleted'] = Variable<bool>(deleted);
+    return map;
+  }
+
+  OrganizationsCompanion toCompanion(bool nullToAbsent) {
+    return OrganizationsCompanion(
+      id: Value(id),
+      name: Value(name),
+      revision: Value(revision),
+      deleted: Value(deleted),
+    );
+  }
+
+  factory OrganizationEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return OrganizationEntry(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      revision: serializer.fromJson<int>(json['revision']),
+      deleted: serializer.fromJson<bool>(json['deleted']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'revision': serializer.toJson<int>(revision),
+      'deleted': serializer.toJson<bool>(deleted),
+    };
+  }
+
+  OrganizationEntry copyWith({
+    String? id,
+    String? name,
+    int? revision,
+    bool? deleted,
+  }) => OrganizationEntry(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    revision: revision ?? this.revision,
+    deleted: deleted ?? this.deleted,
+  );
+  OrganizationEntry copyWithCompanion(OrganizationsCompanion data) {
+    return OrganizationEntry(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      revision: data.revision.present ? data.revision.value : this.revision,
+      deleted: data.deleted.present ? data.deleted.value : this.deleted,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OrganizationEntry(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('revision: $revision, ')
+          ..write('deleted: $deleted')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, revision, deleted);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is OrganizationEntry &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.revision == this.revision &&
+          other.deleted == this.deleted);
+}
+
+class OrganizationsCompanion extends UpdateCompanion<OrganizationEntry> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<int> revision;
+  final Value<bool> deleted;
+  final Value<int> rowid;
+  const OrganizationsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.revision = const Value.absent(),
+    this.deleted = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  OrganizationsCompanion.insert({
+    required String id,
+    required String name,
+    this.revision = const Value.absent(),
+    this.deleted = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name);
+  static Insertable<OrganizationEntry> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<int>? revision,
+    Expression<bool>? deleted,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (revision != null) 'revision': revision,
+      if (deleted != null) 'deleted': deleted,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  OrganizationsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<int>? revision,
+    Value<bool>? deleted,
+    Value<int>? rowid,
+  }) {
+    return OrganizationsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      revision: revision ?? this.revision,
+      deleted: deleted ?? this.deleted,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (revision.present) {
+      map['revision'] = Variable<int>(revision.value);
+    }
+    if (deleted.present) {
+      map['deleted'] = Variable<bool>(deleted.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OrganizationsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('revision: $revision, ')
+          ..write('deleted: $deleted, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $OrgMembershipsTable extends OrgMemberships
+    with TableInfo<$OrgMembershipsTable, OrgMembershipEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $OrgMembershipsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _organizationIdMeta = const VerificationMeta(
+    'organizationId',
+  );
+  @override
+  late final GeneratedColumn<String> organizationId = GeneratedColumn<String>(
+    'organization_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES organizations (id)',
+    ),
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userNameMeta = const VerificationMeta(
+    'userName',
+  );
+  @override
+  late final GeneratedColumn<String> userName = GeneratedColumn<String>(
+    'user_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _userEmailMeta = const VerificationMeta(
+    'userEmail',
+  );
+  @override
+  late final GeneratedColumn<String> userEmail = GeneratedColumn<String>(
+    'user_email',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<BandRole, String> role =
+      GeneratedColumn<String>(
+        'role',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<BandRole>($OrgMembershipsTable.$converterrole);
+  static const VerificationMeta _revisionMeta = const VerificationMeta(
+    'revision',
+  );
+  @override
+  late final GeneratedColumn<int> revision = GeneratedColumn<int>(
+    'revision',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    organizationId,
+    userId,
+    userName,
+    userEmail,
+    role,
+    revision,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'org_memberships';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<OrgMembershipEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('organization_id')) {
+      context.handle(
+        _organizationIdMeta,
+        organizationId.isAcceptableOrUnknown(
+          data['organization_id']!,
+          _organizationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_organizationIdMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('user_name')) {
+      context.handle(
+        _userNameMeta,
+        userName.isAcceptableOrUnknown(data['user_name']!, _userNameMeta),
+      );
+    }
+    if (data.containsKey('user_email')) {
+      context.handle(
+        _userEmailMeta,
+        userEmail.isAcceptableOrUnknown(data['user_email']!, _userEmailMeta),
+      );
+    }
+    if (data.containsKey('revision')) {
+      context.handle(
+        _revisionMeta,
+        revision.isAcceptableOrUnknown(data['revision']!, _revisionMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  OrgMembershipEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return OrgMembershipEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      organizationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organization_id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      userName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_name'],
+      )!,
+      userEmail: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_email'],
+      ),
+      role: $OrgMembershipsTable.$converterrole.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}role'],
+        )!,
+      ),
+      revision: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}revision'],
+      )!,
+    );
+  }
+
+  @override
+  $OrgMembershipsTable createAlias(String alias) {
+    return $OrgMembershipsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<BandRole, String, String> $converterrole =
+      const EnumNameConverter<BandRole>(BandRole.values);
+}
+
+class OrgMembershipEntry extends DataClass
+    implements Insertable<OrgMembershipEntry> {
+  final String id;
+  final String organizationId;
+  final String userId;
+  final String userName;
+  final String? userEmail;
+  final BandRole role;
+  final int revision;
+  const OrgMembershipEntry({
+    required this.id,
+    required this.organizationId,
+    required this.userId,
+    required this.userName,
+    this.userEmail,
+    required this.role,
+    required this.revision,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['organization_id'] = Variable<String>(organizationId);
+    map['user_id'] = Variable<String>(userId);
+    map['user_name'] = Variable<String>(userName);
+    if (!nullToAbsent || userEmail != null) {
+      map['user_email'] = Variable<String>(userEmail);
+    }
+    {
+      map['role'] = Variable<String>(
+        $OrgMembershipsTable.$converterrole.toSql(role),
+      );
+    }
+    map['revision'] = Variable<int>(revision);
+    return map;
+  }
+
+  OrgMembershipsCompanion toCompanion(bool nullToAbsent) {
+    return OrgMembershipsCompanion(
+      id: Value(id),
+      organizationId: Value(organizationId),
+      userId: Value(userId),
+      userName: Value(userName),
+      userEmail: userEmail == null && nullToAbsent
+          ? const Value.absent()
+          : Value(userEmail),
+      role: Value(role),
+      revision: Value(revision),
+    );
+  }
+
+  factory OrgMembershipEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return OrgMembershipEntry(
+      id: serializer.fromJson<String>(json['id']),
+      organizationId: serializer.fromJson<String>(json['organizationId']),
+      userId: serializer.fromJson<String>(json['userId']),
+      userName: serializer.fromJson<String>(json['userName']),
+      userEmail: serializer.fromJson<String?>(json['userEmail']),
+      role: $OrgMembershipsTable.$converterrole.fromJson(
+        serializer.fromJson<String>(json['role']),
+      ),
+      revision: serializer.fromJson<int>(json['revision']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'organizationId': serializer.toJson<String>(organizationId),
+      'userId': serializer.toJson<String>(userId),
+      'userName': serializer.toJson<String>(userName),
+      'userEmail': serializer.toJson<String?>(userEmail),
+      'role': serializer.toJson<String>(
+        $OrgMembershipsTable.$converterrole.toJson(role),
+      ),
+      'revision': serializer.toJson<int>(revision),
+    };
+  }
+
+  OrgMembershipEntry copyWith({
+    String? id,
+    String? organizationId,
+    String? userId,
+    String? userName,
+    Value<String?> userEmail = const Value.absent(),
+    BandRole? role,
+    int? revision,
+  }) => OrgMembershipEntry(
+    id: id ?? this.id,
+    organizationId: organizationId ?? this.organizationId,
+    userId: userId ?? this.userId,
+    userName: userName ?? this.userName,
+    userEmail: userEmail.present ? userEmail.value : this.userEmail,
+    role: role ?? this.role,
+    revision: revision ?? this.revision,
+  );
+  OrgMembershipEntry copyWithCompanion(OrgMembershipsCompanion data) {
+    return OrgMembershipEntry(
+      id: data.id.present ? data.id.value : this.id,
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      userName: data.userName.present ? data.userName.value : this.userName,
+      userEmail: data.userEmail.present ? data.userEmail.value : this.userEmail,
+      role: data.role.present ? data.role.value : this.role,
+      revision: data.revision.present ? data.revision.value : this.revision,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OrgMembershipEntry(')
+          ..write('id: $id, ')
+          ..write('organizationId: $organizationId, ')
+          ..write('userId: $userId, ')
+          ..write('userName: $userName, ')
+          ..write('userEmail: $userEmail, ')
+          ..write('role: $role, ')
+          ..write('revision: $revision')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    organizationId,
+    userId,
+    userName,
+    userEmail,
+    role,
+    revision,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is OrgMembershipEntry &&
+          other.id == this.id &&
+          other.organizationId == this.organizationId &&
+          other.userId == this.userId &&
+          other.userName == this.userName &&
+          other.userEmail == this.userEmail &&
+          other.role == this.role &&
+          other.revision == this.revision);
+}
+
+class OrgMembershipsCompanion extends UpdateCompanion<OrgMembershipEntry> {
+  final Value<String> id;
+  final Value<String> organizationId;
+  final Value<String> userId;
+  final Value<String> userName;
+  final Value<String?> userEmail;
+  final Value<BandRole> role;
+  final Value<int> revision;
+  final Value<int> rowid;
+  const OrgMembershipsCompanion({
+    this.id = const Value.absent(),
+    this.organizationId = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.userName = const Value.absent(),
+    this.userEmail = const Value.absent(),
+    this.role = const Value.absent(),
+    this.revision = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  OrgMembershipsCompanion.insert({
+    required String id,
+    required String organizationId,
+    required String userId,
+    this.userName = const Value.absent(),
+    this.userEmail = const Value.absent(),
+    required BandRole role,
+    this.revision = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       organizationId = Value(organizationId),
+       userId = Value(userId),
+       role = Value(role);
+  static Insertable<OrgMembershipEntry> custom({
+    Expression<String>? id,
+    Expression<String>? organizationId,
+    Expression<String>? userId,
+    Expression<String>? userName,
+    Expression<String>? userEmail,
+    Expression<String>? role,
+    Expression<int>? revision,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (organizationId != null) 'organization_id': organizationId,
+      if (userId != null) 'user_id': userId,
+      if (userName != null) 'user_name': userName,
+      if (userEmail != null) 'user_email': userEmail,
+      if (role != null) 'role': role,
+      if (revision != null) 'revision': revision,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  OrgMembershipsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? organizationId,
+    Value<String>? userId,
+    Value<String>? userName,
+    Value<String?>? userEmail,
+    Value<BandRole>? role,
+    Value<int>? revision,
+    Value<int>? rowid,
+  }) {
+    return OrgMembershipsCompanion(
+      id: id ?? this.id,
+      organizationId: organizationId ?? this.organizationId,
+      userId: userId ?? this.userId,
+      userName: userName ?? this.userName,
+      userEmail: userEmail ?? this.userEmail,
+      role: role ?? this.role,
+      revision: revision ?? this.revision,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (userName.present) {
+      map['user_name'] = Variable<String>(userName.value);
+    }
+    if (userEmail.present) {
+      map['user_email'] = Variable<String>(userEmail.value);
+    }
+    if (role.present) {
+      map['role'] = Variable<String>(
+        $OrgMembershipsTable.$converterrole.toSql(role.value),
+      );
+    }
+    if (revision.present) {
+      map['revision'] = Variable<int>(revision.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OrgMembershipsCompanion(')
+          ..write('id: $id, ')
+          ..write('organizationId: $organizationId, ')
+          ..write('userId: $userId, ')
+          ..write('userName: $userName, ')
+          ..write('userEmail: $userEmail, ')
+          ..write('role: $role, ')
+          ..write('revision: $revision, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $BandsTable extends Bands with TableInfo<$BandsTable, BandEntry> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -26,6 +809,20 @@ class $BandsTable extends Bands with TableInfo<$BandsTable, BandEntry> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _organizationIdMeta = const VerificationMeta(
+    'organizationId',
+  );
+  @override
+  late final GeneratedColumn<String> organizationId = GeneratedColumn<String>(
+    'organization_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES organizations (id)',
+    ),
+  );
   static const VerificationMeta _membersCanEditSongsMeta =
       const VerificationMeta('membersCanEditSongs');
   @override
@@ -40,8 +837,42 @@ class $BandsTable extends Bands with TableInfo<$BandsTable, BandEntry> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _revisionMeta = const VerificationMeta(
+    'revision',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, name, membersCanEditSongs];
+  late final GeneratedColumn<int> revision = GeneratedColumn<int>(
+    'revision',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _deletedMeta = const VerificationMeta(
+    'deleted',
+  );
+  @override
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
+    'deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    organizationId,
+    membersCanEditSongs,
+    revision,
+    deleted,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -67,6 +898,15 @@ class $BandsTable extends Bands with TableInfo<$BandsTable, BandEntry> {
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
+    if (data.containsKey('organization_id')) {
+      context.handle(
+        _organizationIdMeta,
+        organizationId.isAcceptableOrUnknown(
+          data['organization_id']!,
+          _organizationIdMeta,
+        ),
+      );
+    }
     if (data.containsKey('members_can_edit_songs')) {
       context.handle(
         _membersCanEditSongsMeta,
@@ -74,6 +914,18 @@ class $BandsTable extends Bands with TableInfo<$BandsTable, BandEntry> {
           data['members_can_edit_songs']!,
           _membersCanEditSongsMeta,
         ),
+      );
+    }
+    if (data.containsKey('revision')) {
+      context.handle(
+        _revisionMeta,
+        revision.isAcceptableOrUnknown(data['revision']!, _revisionMeta),
+      );
+    }
+    if (data.containsKey('deleted')) {
+      context.handle(
+        _deletedMeta,
+        deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
       );
     }
     return context;
@@ -93,9 +945,21 @@ class $BandsTable extends Bands with TableInfo<$BandsTable, BandEntry> {
         DriftSqlType.string,
         data['${effectivePrefix}name'],
       )!,
+      organizationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organization_id'],
+      ),
       membersCanEditSongs: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}members_can_edit_songs'],
+      )!,
+      revision: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}revision'],
+      )!,
+      deleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}deleted'],
       )!,
     );
   }
@@ -109,18 +973,35 @@ class $BandsTable extends Bands with TableInfo<$BandsTable, BandEntry> {
 class BandEntry extends DataClass implements Insertable<BandEntry> {
   final String id;
   final String name;
+
+  /// Organization of the band; null for the local library (schema 4).
+  final String? organizationId;
   final bool membersCanEditSongs;
+
+  /// Server revision (ADR-0015); 0 for the local library (schema 4).
+  final int revision;
+
+  /// The band is no longer available to this device (schema 4).
+  final bool deleted;
   const BandEntry({
     required this.id,
     required this.name,
+    this.organizationId,
     required this.membersCanEditSongs,
+    required this.revision,
+    required this.deleted,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['name'] = Variable<String>(name);
+    if (!nullToAbsent || organizationId != null) {
+      map['organization_id'] = Variable<String>(organizationId);
+    }
     map['members_can_edit_songs'] = Variable<bool>(membersCanEditSongs);
+    map['revision'] = Variable<int>(revision);
+    map['deleted'] = Variable<bool>(deleted);
     return map;
   }
 
@@ -128,7 +1009,12 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
     return BandsCompanion(
       id: Value(id),
       name: Value(name),
+      organizationId: organizationId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(organizationId),
       membersCanEditSongs: Value(membersCanEditSongs),
+      revision: Value(revision),
+      deleted: Value(deleted),
     );
   }
 
@@ -140,9 +1026,12 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
     return BandEntry(
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
+      organizationId: serializer.fromJson<String?>(json['organizationId']),
       membersCanEditSongs: serializer.fromJson<bool>(
         json['membersCanEditSongs'],
       ),
+      revision: serializer.fromJson<int>(json['revision']),
+      deleted: serializer.fromJson<bool>(json['deleted']),
     );
   }
   @override
@@ -151,23 +1040,42 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String>(name),
+      'organizationId': serializer.toJson<String?>(organizationId),
       'membersCanEditSongs': serializer.toJson<bool>(membersCanEditSongs),
+      'revision': serializer.toJson<int>(revision),
+      'deleted': serializer.toJson<bool>(deleted),
     };
   }
 
-  BandEntry copyWith({String? id, String? name, bool? membersCanEditSongs}) =>
-      BandEntry(
-        id: id ?? this.id,
-        name: name ?? this.name,
-        membersCanEditSongs: membersCanEditSongs ?? this.membersCanEditSongs,
-      );
+  BandEntry copyWith({
+    String? id,
+    String? name,
+    Value<String?> organizationId = const Value.absent(),
+    bool? membersCanEditSongs,
+    int? revision,
+    bool? deleted,
+  }) => BandEntry(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    organizationId: organizationId.present
+        ? organizationId.value
+        : this.organizationId,
+    membersCanEditSongs: membersCanEditSongs ?? this.membersCanEditSongs,
+    revision: revision ?? this.revision,
+    deleted: deleted ?? this.deleted,
+  );
   BandEntry copyWithCompanion(BandsCompanion data) {
     return BandEntry(
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
       membersCanEditSongs: data.membersCanEditSongs.present
           ? data.membersCanEditSongs.value
           : this.membersCanEditSongs,
+      revision: data.revision.present ? data.revision.value : this.revision,
+      deleted: data.deleted.present ? data.deleted.value : this.deleted,
     );
   }
 
@@ -176,51 +1084,79 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
     return (StringBuffer('BandEntry(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('membersCanEditSongs: $membersCanEditSongs')
+          ..write('organizationId: $organizationId, ')
+          ..write('membersCanEditSongs: $membersCanEditSongs, ')
+          ..write('revision: $revision, ')
+          ..write('deleted: $deleted')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, membersCanEditSongs);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    organizationId,
+    membersCanEditSongs,
+    revision,
+    deleted,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is BandEntry &&
           other.id == this.id &&
           other.name == this.name &&
-          other.membersCanEditSongs == this.membersCanEditSongs);
+          other.organizationId == this.organizationId &&
+          other.membersCanEditSongs == this.membersCanEditSongs &&
+          other.revision == this.revision &&
+          other.deleted == this.deleted);
 }
 
 class BandsCompanion extends UpdateCompanion<BandEntry> {
   final Value<String> id;
   final Value<String> name;
+  final Value<String?> organizationId;
   final Value<bool> membersCanEditSongs;
+  final Value<int> revision;
+  final Value<bool> deleted;
   final Value<int> rowid;
   const BandsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
+    this.organizationId = const Value.absent(),
     this.membersCanEditSongs = const Value.absent(),
+    this.revision = const Value.absent(),
+    this.deleted = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   BandsCompanion.insert({
     required String id,
     required String name,
+    this.organizationId = const Value.absent(),
     this.membersCanEditSongs = const Value.absent(),
+    this.revision = const Value.absent(),
+    this.deleted = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name);
   static Insertable<BandEntry> custom({
     Expression<String>? id,
     Expression<String>? name,
+    Expression<String>? organizationId,
     Expression<bool>? membersCanEditSongs,
+    Expression<int>? revision,
+    Expression<bool>? deleted,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
+      if (organizationId != null) 'organization_id': organizationId,
       if (membersCanEditSongs != null)
         'members_can_edit_songs': membersCanEditSongs,
+      if (revision != null) 'revision': revision,
+      if (deleted != null) 'deleted': deleted,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -228,13 +1164,19 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
   BandsCompanion copyWith({
     Value<String>? id,
     Value<String>? name,
+    Value<String?>? organizationId,
     Value<bool>? membersCanEditSongs,
+    Value<int>? revision,
+    Value<bool>? deleted,
     Value<int>? rowid,
   }) {
     return BandsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
+      organizationId: organizationId ?? this.organizationId,
       membersCanEditSongs: membersCanEditSongs ?? this.membersCanEditSongs,
+      revision: revision ?? this.revision,
+      deleted: deleted ?? this.deleted,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -248,8 +1190,17 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
+    }
     if (membersCanEditSongs.present) {
       map['members_can_edit_songs'] = Variable<bool>(membersCanEditSongs.value);
+    }
+    if (revision.present) {
+      map['revision'] = Variable<int>(revision.value);
+    }
+    if (deleted.present) {
+      map['deleted'] = Variable<bool>(deleted.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -262,18 +1213,22 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
     return (StringBuffer('BandsCompanion(')
           ..write('id: $id, ')
           ..write('name: $name, ')
+          ..write('organizationId: $organizationId, ')
           ..write('membersCanEditSongs: $membersCanEditSongs, ')
+          ..write('revision: $revision, ')
+          ..write('deleted: $deleted, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
 }
 
-class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
+class $MembershipsTable extends Memberships
+    with TableInfo<$MembershipsTable, MembershipEntry> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $SongsTable(this.attachedDatabase, [this._alias]);
+  $MembershipsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -294,6 +1249,464 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'REFERENCES bands (id)',
     ),
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userNameMeta = const VerificationMeta(
+    'userName',
+  );
+  @override
+  late final GeneratedColumn<String> userName = GeneratedColumn<String>(
+    'user_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _userEmailMeta = const VerificationMeta(
+    'userEmail',
+  );
+  @override
+  late final GeneratedColumn<String> userEmail = GeneratedColumn<String>(
+    'user_email',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<BandRole, String> role =
+      GeneratedColumn<String>(
+        'role',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<BandRole>($MembershipsTable.$converterrole);
+  static const VerificationMeta _revisionMeta = const VerificationMeta(
+    'revision',
+  );
+  @override
+  late final GeneratedColumn<int> revision = GeneratedColumn<int>(
+    'revision',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    bandId,
+    userId,
+    userName,
+    userEmail,
+    role,
+    revision,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'memberships';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MembershipEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('band_id')) {
+      context.handle(
+        _bandIdMeta,
+        bandId.isAcceptableOrUnknown(data['band_id']!, _bandIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bandIdMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('user_name')) {
+      context.handle(
+        _userNameMeta,
+        userName.isAcceptableOrUnknown(data['user_name']!, _userNameMeta),
+      );
+    }
+    if (data.containsKey('user_email')) {
+      context.handle(
+        _userEmailMeta,
+        userEmail.isAcceptableOrUnknown(data['user_email']!, _userEmailMeta),
+      );
+    }
+    if (data.containsKey('revision')) {
+      context.handle(
+        _revisionMeta,
+        revision.isAcceptableOrUnknown(data['revision']!, _revisionMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  MembershipEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MembershipEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      bandId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}band_id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      userName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_name'],
+      )!,
+      userEmail: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_email'],
+      ),
+      role: $MembershipsTable.$converterrole.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}role'],
+        )!,
+      ),
+      revision: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}revision'],
+      )!,
+    );
+  }
+
+  @override
+  $MembershipsTable createAlias(String alias) {
+    return $MembershipsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<BandRole, String, String> $converterrole =
+      const EnumNameConverter<BandRole>(BandRole.values);
+}
+
+class MembershipEntry extends DataClass implements Insertable<MembershipEntry> {
+  final String id;
+  final String bandId;
+  final String userId;
+
+  /// Name of the user at the time of the last refresh.
+  final String userName;
+  final String? userEmail;
+  final BandRole role;
+  final int revision;
+  const MembershipEntry({
+    required this.id,
+    required this.bandId,
+    required this.userId,
+    required this.userName,
+    this.userEmail,
+    required this.role,
+    required this.revision,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['band_id'] = Variable<String>(bandId);
+    map['user_id'] = Variable<String>(userId);
+    map['user_name'] = Variable<String>(userName);
+    if (!nullToAbsent || userEmail != null) {
+      map['user_email'] = Variable<String>(userEmail);
+    }
+    {
+      map['role'] = Variable<String>(
+        $MembershipsTable.$converterrole.toSql(role),
+      );
+    }
+    map['revision'] = Variable<int>(revision);
+    return map;
+  }
+
+  MembershipsCompanion toCompanion(bool nullToAbsent) {
+    return MembershipsCompanion(
+      id: Value(id),
+      bandId: Value(bandId),
+      userId: Value(userId),
+      userName: Value(userName),
+      userEmail: userEmail == null && nullToAbsent
+          ? const Value.absent()
+          : Value(userEmail),
+      role: Value(role),
+      revision: Value(revision),
+    );
+  }
+
+  factory MembershipEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MembershipEntry(
+      id: serializer.fromJson<String>(json['id']),
+      bandId: serializer.fromJson<String>(json['bandId']),
+      userId: serializer.fromJson<String>(json['userId']),
+      userName: serializer.fromJson<String>(json['userName']),
+      userEmail: serializer.fromJson<String?>(json['userEmail']),
+      role: $MembershipsTable.$converterrole.fromJson(
+        serializer.fromJson<String>(json['role']),
+      ),
+      revision: serializer.fromJson<int>(json['revision']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'bandId': serializer.toJson<String>(bandId),
+      'userId': serializer.toJson<String>(userId),
+      'userName': serializer.toJson<String>(userName),
+      'userEmail': serializer.toJson<String?>(userEmail),
+      'role': serializer.toJson<String>(
+        $MembershipsTable.$converterrole.toJson(role),
+      ),
+      'revision': serializer.toJson<int>(revision),
+    };
+  }
+
+  MembershipEntry copyWith({
+    String? id,
+    String? bandId,
+    String? userId,
+    String? userName,
+    Value<String?> userEmail = const Value.absent(),
+    BandRole? role,
+    int? revision,
+  }) => MembershipEntry(
+    id: id ?? this.id,
+    bandId: bandId ?? this.bandId,
+    userId: userId ?? this.userId,
+    userName: userName ?? this.userName,
+    userEmail: userEmail.present ? userEmail.value : this.userEmail,
+    role: role ?? this.role,
+    revision: revision ?? this.revision,
+  );
+  MembershipEntry copyWithCompanion(MembershipsCompanion data) {
+    return MembershipEntry(
+      id: data.id.present ? data.id.value : this.id,
+      bandId: data.bandId.present ? data.bandId.value : this.bandId,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      userName: data.userName.present ? data.userName.value : this.userName,
+      userEmail: data.userEmail.present ? data.userEmail.value : this.userEmail,
+      role: data.role.present ? data.role.value : this.role,
+      revision: data.revision.present ? data.revision.value : this.revision,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MembershipEntry(')
+          ..write('id: $id, ')
+          ..write('bandId: $bandId, ')
+          ..write('userId: $userId, ')
+          ..write('userName: $userName, ')
+          ..write('userEmail: $userEmail, ')
+          ..write('role: $role, ')
+          ..write('revision: $revision')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, bandId, userId, userName, userEmail, role, revision);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MembershipEntry &&
+          other.id == this.id &&
+          other.bandId == this.bandId &&
+          other.userId == this.userId &&
+          other.userName == this.userName &&
+          other.userEmail == this.userEmail &&
+          other.role == this.role &&
+          other.revision == this.revision);
+}
+
+class MembershipsCompanion extends UpdateCompanion<MembershipEntry> {
+  final Value<String> id;
+  final Value<String> bandId;
+  final Value<String> userId;
+  final Value<String> userName;
+  final Value<String?> userEmail;
+  final Value<BandRole> role;
+  final Value<int> revision;
+  final Value<int> rowid;
+  const MembershipsCompanion({
+    this.id = const Value.absent(),
+    this.bandId = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.userName = const Value.absent(),
+    this.userEmail = const Value.absent(),
+    this.role = const Value.absent(),
+    this.revision = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MembershipsCompanion.insert({
+    required String id,
+    required String bandId,
+    required String userId,
+    this.userName = const Value.absent(),
+    this.userEmail = const Value.absent(),
+    required BandRole role,
+    this.revision = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       bandId = Value(bandId),
+       userId = Value(userId),
+       role = Value(role);
+  static Insertable<MembershipEntry> custom({
+    Expression<String>? id,
+    Expression<String>? bandId,
+    Expression<String>? userId,
+    Expression<String>? userName,
+    Expression<String>? userEmail,
+    Expression<String>? role,
+    Expression<int>? revision,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (bandId != null) 'band_id': bandId,
+      if (userId != null) 'user_id': userId,
+      if (userName != null) 'user_name': userName,
+      if (userEmail != null) 'user_email': userEmail,
+      if (role != null) 'role': role,
+      if (revision != null) 'revision': revision,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MembershipsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? bandId,
+    Value<String>? userId,
+    Value<String>? userName,
+    Value<String?>? userEmail,
+    Value<BandRole>? role,
+    Value<int>? revision,
+    Value<int>? rowid,
+  }) {
+    return MembershipsCompanion(
+      id: id ?? this.id,
+      bandId: bandId ?? this.bandId,
+      userId: userId ?? this.userId,
+      userName: userName ?? this.userName,
+      userEmail: userEmail ?? this.userEmail,
+      role: role ?? this.role,
+      revision: revision ?? this.revision,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (bandId.present) {
+      map['band_id'] = Variable<String>(bandId.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (userName.present) {
+      map['user_name'] = Variable<String>(userName.value);
+    }
+    if (userEmail.present) {
+      map['user_email'] = Variable<String>(userEmail.value);
+    }
+    if (role.present) {
+      map['role'] = Variable<String>(
+        $MembershipsTable.$converterrole.toSql(role.value),
+      );
+    }
+    if (revision.present) {
+      map['revision'] = Variable<int>(revision.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MembershipsCompanion(')
+          ..write('id: $id, ')
+          ..write('bandId: $bandId, ')
+          ..write('userId: $userId, ')
+          ..write('userName: $userName, ')
+          ..write('userEmail: $userEmail, ')
+          ..write('role: $role, ')
+          ..write('revision: $revision, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SongsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _libraryIdMeta = const VerificationMeta(
+    'libraryId',
+  );
+  @override
+  late final GeneratedColumn<String> libraryId = GeneratedColumn<String>(
+    'library_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _chordproSourceMeta = const VerificationMeta(
     'chordproSource',
@@ -417,7 +1830,7 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
   @override
   List<GeneratedColumn> get $columns => [
     id,
-    bandId,
+    libraryId,
     chordproSource,
     title,
     artist,
@@ -447,13 +1860,13 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
     } else if (isInserting) {
       context.missing(_idMeta);
     }
-    if (data.containsKey('band_id')) {
+    if (data.containsKey('library_id')) {
       context.handle(
-        _bandIdMeta,
-        bandId.isAcceptableOrUnknown(data['band_id']!, _bandIdMeta),
+        _libraryIdMeta,
+        libraryId.isAcceptableOrUnknown(data['library_id']!, _libraryIdMeta),
       );
     } else if (isInserting) {
-      context.missing(_bandIdMeta);
+      context.missing(_libraryIdMeta);
     }
     if (data.containsKey('chordpro_source')) {
       context.handle(
@@ -541,9 +1954,9 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
         DriftSqlType.string,
         data['${effectivePrefix}id'],
       )!,
-      bandId: attachedDatabase.typeMapping.read(
+      libraryId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}band_id'],
+        data['${effectivePrefix}library_id'],
       )!,
       chordproSource: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -600,7 +2013,10 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
 
 class SongEntry extends DataClass implements Insertable<SongEntry> {
   final String id;
-  final String bandId;
+
+  /// Song library the song belongs to: an organization ID (ADR-0017), or
+  /// [localBandId] for the local library. Until schema 3: `band_id`.
+  final String libraryId;
 
   /// ChordPro text – the single source of truth (ADR-0003).
   final String chordproSource;
@@ -623,7 +2039,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
   final bool deleted;
   const SongEntry({
     required this.id,
-    required this.bandId,
+    required this.libraryId,
     required this.chordproSource,
     required this.title,
     this.artist,
@@ -640,7 +2056,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
-    map['band_id'] = Variable<String>(bandId);
+    map['library_id'] = Variable<String>(libraryId);
     map['chordpro_source'] = Variable<String>(chordproSource);
     map['title'] = Variable<String>(title);
     if (!nullToAbsent || artist != null) {
@@ -670,7 +2086,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
   SongsCompanion toCompanion(bool nullToAbsent) {
     return SongsCompanion(
       id: Value(id),
-      bandId: Value(bandId),
+      libraryId: Value(libraryId),
       chordproSource: Value(chordproSource),
       title: Value(title),
       artist: artist == null && nullToAbsent
@@ -702,7 +2118,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return SongEntry(
       id: serializer.fromJson<String>(json['id']),
-      bandId: serializer.fromJson<String>(json['bandId']),
+      libraryId: serializer.fromJson<String>(json['libraryId']),
       chordproSource: serializer.fromJson<String>(json['chordproSource']),
       title: serializer.fromJson<String>(json['title']),
       artist: serializer.fromJson<String?>(json['artist']),
@@ -721,7 +2137,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
-      'bandId': serializer.toJson<String>(bandId),
+      'libraryId': serializer.toJson<String>(libraryId),
       'chordproSource': serializer.toJson<String>(chordproSource),
       'title': serializer.toJson<String>(title),
       'artist': serializer.toJson<String?>(artist),
@@ -738,7 +2154,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
 
   SongEntry copyWith({
     String? id,
-    String? bandId,
+    String? libraryId,
     String? chordproSource,
     String? title,
     Value<String?> artist = const Value.absent(),
@@ -752,7 +2168,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     bool? deleted,
   }) => SongEntry(
     id: id ?? this.id,
-    bandId: bandId ?? this.bandId,
+    libraryId: libraryId ?? this.libraryId,
     chordproSource: chordproSource ?? this.chordproSource,
     title: title ?? this.title,
     artist: artist.present ? artist.value : this.artist,
@@ -768,7 +2184,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
   SongEntry copyWithCompanion(SongsCompanion data) {
     return SongEntry(
       id: data.id.present ? data.id.value : this.id,
-      bandId: data.bandId.present ? data.bandId.value : this.bandId,
+      libraryId: data.libraryId.present ? data.libraryId.value : this.libraryId,
       chordproSource: data.chordproSource.present
           ? data.chordproSource.value
           : this.chordproSource,
@@ -791,7 +2207,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
   String toString() {
     return (StringBuffer('SongEntry(')
           ..write('id: $id, ')
-          ..write('bandId: $bandId, ')
+          ..write('libraryId: $libraryId, ')
           ..write('chordproSource: $chordproSource, ')
           ..write('title: $title, ')
           ..write('artist: $artist, ')
@@ -810,7 +2226,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
   @override
   int get hashCode => Object.hash(
     id,
-    bandId,
+    libraryId,
     chordproSource,
     title,
     artist,
@@ -828,7 +2244,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       identical(this, other) ||
       (other is SongEntry &&
           other.id == this.id &&
-          other.bandId == this.bandId &&
+          other.libraryId == this.libraryId &&
           other.chordproSource == this.chordproSource &&
           other.title == this.title &&
           other.artist == this.artist &&
@@ -844,7 +2260,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
 
 class SongsCompanion extends UpdateCompanion<SongEntry> {
   final Value<String> id;
-  final Value<String> bandId;
+  final Value<String> libraryId;
   final Value<String> chordproSource;
   final Value<String> title;
   final Value<String?> artist;
@@ -859,7 +2275,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
   final Value<int> rowid;
   const SongsCompanion({
     this.id = const Value.absent(),
-    this.bandId = const Value.absent(),
+    this.libraryId = const Value.absent(),
     this.chordproSource = const Value.absent(),
     this.title = const Value.absent(),
     this.artist = const Value.absent(),
@@ -875,7 +2291,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
   });
   SongsCompanion.insert({
     required String id,
-    required String bandId,
+    required String libraryId,
     this.chordproSource = const Value.absent(),
     required String title,
     this.artist = const Value.absent(),
@@ -889,12 +2305,12 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     this.deleted = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
-       bandId = Value(bandId),
+       libraryId = Value(libraryId),
        title = Value(title),
        updatedAt = Value(updatedAt);
   static Insertable<SongEntry> custom({
     Expression<String>? id,
-    Expression<String>? bandId,
+    Expression<String>? libraryId,
     Expression<String>? chordproSource,
     Expression<String>? title,
     Expression<String>? artist,
@@ -910,7 +2326,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (bandId != null) 'band_id': bandId,
+      if (libraryId != null) 'library_id': libraryId,
       if (chordproSource != null) 'chordpro_source': chordproSource,
       if (title != null) 'title': title,
       if (artist != null) 'artist': artist,
@@ -928,7 +2344,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
 
   SongsCompanion copyWith({
     Value<String>? id,
-    Value<String>? bandId,
+    Value<String>? libraryId,
     Value<String>? chordproSource,
     Value<String>? title,
     Value<String?>? artist,
@@ -944,7 +2360,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
   }) {
     return SongsCompanion(
       id: id ?? this.id,
-      bandId: bandId ?? this.bandId,
+      libraryId: libraryId ?? this.libraryId,
       chordproSource: chordproSource ?? this.chordproSource,
       title: title ?? this.title,
       artist: artist ?? this.artist,
@@ -966,8 +2382,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     if (id.present) {
       map['id'] = Variable<String>(id.value);
     }
-    if (bandId.present) {
-      map['band_id'] = Variable<String>(bandId.value);
+    if (libraryId.present) {
+      map['library_id'] = Variable<String>(libraryId.value);
     }
     if (chordproSource.present) {
       map['chordpro_source'] = Variable<String>(chordproSource.value);
@@ -1012,7 +2428,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
   String toString() {
     return (StringBuffer('SongsCompanion(')
           ..write('id: $id, ')
-          ..write('bandId: $bandId, ')
+          ..write('libraryId: $libraryId, ')
           ..write('chordproSource: $chordproSource, ')
           ..write('title: $title, ')
           ..write('artist: $artist, ')
@@ -3139,7 +4555,10 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
+  late final $OrganizationsTable organizations = $OrganizationsTable(this);
+  late final $OrgMembershipsTable orgMemberships = $OrgMembershipsTable(this);
   late final $BandsTable bands = $BandsTable(this);
+  late final $MembershipsTable memberships = $MembershipsTable(this);
   late final $SongsTable songs = $SongsTable(this);
   late final $AttachmentsTable attachments = $AttachmentsTable(this);
   late final $SetlistsTable setlists = $SetlistsTable(this);
@@ -3152,7 +4571,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
+    organizations,
+    orgMemberships,
     bands,
+    memberships,
     songs,
     attachments,
     setlists,
@@ -3161,16 +4583,769 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   ];
 }
 
+typedef $$OrganizationsTableCreateCompanionBuilder =
+    OrganizationsCompanion Function({
+      required String id,
+      required String name,
+      Value<int> revision,
+      Value<bool> deleted,
+      Value<int> rowid,
+    });
+typedef $$OrganizationsTableUpdateCompanionBuilder =
+    OrganizationsCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<int> revision,
+      Value<bool> deleted,
+      Value<int> rowid,
+    });
+
+final class $$OrganizationsTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $OrganizationsTable, OrganizationEntry> {
+  $$OrganizationsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static MultiTypedResultKey<$OrgMembershipsTable, List<OrgMembershipEntry>>
+  _orgMembershipsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.orgMemberships,
+    aliasName: 'organizations__id__org_memberships__organization_id',
+  );
+
+  $$OrgMembershipsTableProcessedTableManager get orgMembershipsRefs {
+    final manager = $$OrgMembershipsTableTableManager(
+      $_db,
+      $_db.orgMemberships,
+    ).filter((f) => f.organizationId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_orgMembershipsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$BandsTable, List<BandEntry>> _bandsRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.bands,
+    aliasName: 'organizations__id__bands__organization_id',
+  );
+
+  $$BandsTableProcessedTableManager get bandsRefs {
+    final manager = $$BandsTableTableManager(
+      $_db,
+      $_db.bands,
+    ).filter((f) => f.organizationId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_bandsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$OrganizationsTableFilterComposer
+    extends Composer<_$AppDatabase, $OrganizationsTable> {
+  $$OrganizationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> orgMembershipsRefs(
+    Expression<bool> Function($$OrgMembershipsTableFilterComposer f) f,
+  ) {
+    final $$OrgMembershipsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.orgMemberships,
+      getReferencedColumn: (t) => t.organizationId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OrgMembershipsTableFilterComposer(
+            $db: $db,
+            $table: $db.orgMemberships,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> bandsRefs(
+    Expression<bool> Function($$BandsTableFilterComposer f) f,
+  ) {
+    final $$BandsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.bands,
+      getReferencedColumn: (t) => t.organizationId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BandsTableFilterComposer(
+            $db: $db,
+            $table: $db.bands,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$OrganizationsTableOrderingComposer
+    extends Composer<_$AppDatabase, $OrganizationsTable> {
+  $$OrganizationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$OrganizationsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $OrganizationsTable> {
+  $$OrganizationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<int> get revision =>
+      $composableBuilder(column: $table.revision, builder: (column) => column);
+
+  GeneratedColumn<bool> get deleted =>
+      $composableBuilder(column: $table.deleted, builder: (column) => column);
+
+  Expression<T> orgMembershipsRefs<T extends Object>(
+    Expression<T> Function($$OrgMembershipsTableAnnotationComposer a) f,
+  ) {
+    final $$OrgMembershipsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.orgMemberships,
+      getReferencedColumn: (t) => t.organizationId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OrgMembershipsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.orgMemberships,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> bandsRefs<T extends Object>(
+    Expression<T> Function($$BandsTableAnnotationComposer a) f,
+  ) {
+    final $$BandsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.bands,
+      getReferencedColumn: (t) => t.organizationId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BandsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.bands,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$OrganizationsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $OrganizationsTable,
+          OrganizationEntry,
+          $$OrganizationsTableFilterComposer,
+          $$OrganizationsTableOrderingComposer,
+          $$OrganizationsTableAnnotationComposer,
+          $$OrganizationsTableCreateCompanionBuilder,
+          $$OrganizationsTableUpdateCompanionBuilder,
+          (OrganizationEntry, $$OrganizationsTableReferences),
+          OrganizationEntry,
+          PrefetchHooks Function({bool orgMembershipsRefs, bool bandsRefs})
+        > {
+  $$OrganizationsTableTableManager(_$AppDatabase db, $OrganizationsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$OrganizationsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$OrganizationsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$OrganizationsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<int> revision = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => OrganizationsCompanion(
+                id: id,
+                name: name,
+                revision: revision,
+                deleted: deleted,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                Value<int> revision = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => OrganizationsCompanion.insert(
+                id: id,
+                name: name,
+                revision: revision,
+                deleted: deleted,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$OrganizationsTable, OrganizationEntry>(table),
+                  $$OrganizationsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({orgMembershipsRefs = false, bandsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (orgMembershipsRefs) db.orgMemberships,
+                    if (bandsRefs) db.bands,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (orgMembershipsRefs)
+                        await $_getPrefetchedDataByColumns<
+                          OrganizationEntry,
+                          $OrganizationsTable,
+                          OrgMembershipEntry,
+                          $OrgMembershipsTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$OrganizationsTableReferences
+                              ._orgMembershipsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$OrganizationsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).orgMembershipsRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'organization_id',
+                          typedResults: items,
+                        ),
+                      if (bandsRefs)
+                        await $_getPrefetchedDataByColumns<
+                          OrganizationEntry,
+                          $OrganizationsTable,
+                          BandEntry,
+                          $BandsTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$OrganizationsTableReferences
+                              ._bandsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$OrganizationsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).bandsRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'organization_id',
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$OrganizationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $OrganizationsTable,
+      OrganizationEntry,
+      $$OrganizationsTableFilterComposer,
+      $$OrganizationsTableOrderingComposer,
+      $$OrganizationsTableAnnotationComposer,
+      $$OrganizationsTableCreateCompanionBuilder,
+      $$OrganizationsTableUpdateCompanionBuilder,
+      (OrganizationEntry, $$OrganizationsTableReferences),
+      OrganizationEntry,
+      PrefetchHooks Function({bool orgMembershipsRefs, bool bandsRefs})
+    >;
+typedef $$OrgMembershipsTableCreateCompanionBuilder =
+    OrgMembershipsCompanion Function({
+      required String id,
+      required String organizationId,
+      required String userId,
+      Value<String> userName,
+      Value<String?> userEmail,
+      required BandRole role,
+      Value<int> revision,
+      Value<int> rowid,
+    });
+typedef $$OrgMembershipsTableUpdateCompanionBuilder =
+    OrgMembershipsCompanion Function({
+      Value<String> id,
+      Value<String> organizationId,
+      Value<String> userId,
+      Value<String> userName,
+      Value<String?> userEmail,
+      Value<BandRole> role,
+      Value<int> revision,
+      Value<int> rowid,
+    });
+
+final class $$OrgMembershipsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $OrgMembershipsTable,
+          OrgMembershipEntry
+        > {
+  $$OrgMembershipsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $OrganizationsTable _organizationIdTable(_$AppDatabase db) => db
+      .organizations
+      .createAlias('org_memberships__organization_id__organizations__id');
+
+  $$OrganizationsTableProcessedTableManager get organizationId {
+    final $_column = $_itemColumn<String>('organization_id')!;
+
+    final manager = $$OrganizationsTableTableManager(
+      $_db,
+      $_db.organizations,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_organizationIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$OrgMembershipsTableFilterComposer
+    extends Composer<_$AppDatabase, $OrgMembershipsTable> {
+  $$OrgMembershipsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userName => $composableBuilder(
+    column: $table.userName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userEmail => $composableBuilder(
+    column: $table.userEmail,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<BandRole, BandRole, String> get role =>
+      $composableBuilder(
+        column: $table.role,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$OrganizationsTableFilterComposer get organizationId {
+    final $$OrganizationsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.organizationId,
+      referencedTable: $db.organizations,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OrganizationsTableFilterComposer(
+            $db: $db,
+            $table: $db.organizations,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$OrgMembershipsTableOrderingComposer
+    extends Composer<_$AppDatabase, $OrgMembershipsTable> {
+  $$OrgMembershipsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userName => $composableBuilder(
+    column: $table.userName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userEmail => $composableBuilder(
+    column: $table.userEmail,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get role => $composableBuilder(
+    column: $table.role,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$OrganizationsTableOrderingComposer get organizationId {
+    final $$OrganizationsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.organizationId,
+      referencedTable: $db.organizations,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OrganizationsTableOrderingComposer(
+            $db: $db,
+            $table: $db.organizations,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$OrgMembershipsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $OrgMembershipsTable> {
+  $$OrgMembershipsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get userName =>
+      $composableBuilder(column: $table.userName, builder: (column) => column);
+
+  GeneratedColumn<String> get userEmail =>
+      $composableBuilder(column: $table.userEmail, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<BandRole, String> get role =>
+      $composableBuilder(column: $table.role, builder: (column) => column);
+
+  GeneratedColumn<int> get revision =>
+      $composableBuilder(column: $table.revision, builder: (column) => column);
+
+  $$OrganizationsTableAnnotationComposer get organizationId {
+    final $$OrganizationsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.organizationId,
+      referencedTable: $db.organizations,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OrganizationsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.organizations,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$OrgMembershipsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $OrgMembershipsTable,
+          OrgMembershipEntry,
+          $$OrgMembershipsTableFilterComposer,
+          $$OrgMembershipsTableOrderingComposer,
+          $$OrgMembershipsTableAnnotationComposer,
+          $$OrgMembershipsTableCreateCompanionBuilder,
+          $$OrgMembershipsTableUpdateCompanionBuilder,
+          (OrgMembershipEntry, $$OrgMembershipsTableReferences),
+          OrgMembershipEntry,
+          PrefetchHooks Function({bool organizationId})
+        > {
+  $$OrgMembershipsTableTableManager(
+    _$AppDatabase db,
+    $OrgMembershipsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$OrgMembershipsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$OrgMembershipsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$OrgMembershipsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> organizationId = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String> userName = const Value.absent(),
+                Value<String?> userEmail = const Value.absent(),
+                Value<BandRole> role = const Value.absent(),
+                Value<int> revision = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => OrgMembershipsCompanion(
+                id: id,
+                organizationId: organizationId,
+                userId: userId,
+                userName: userName,
+                userEmail: userEmail,
+                role: role,
+                revision: revision,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String organizationId,
+                required String userId,
+                Value<String> userName = const Value.absent(),
+                Value<String?> userEmail = const Value.absent(),
+                required BandRole role,
+                Value<int> revision = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => OrgMembershipsCompanion.insert(
+                id: id,
+                organizationId: organizationId,
+                userId: userId,
+                userName: userName,
+                userEmail: userEmail,
+                role: role,
+                revision: revision,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$OrgMembershipsTable, OrgMembershipEntry>(table),
+                  $$OrgMembershipsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({organizationId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (organizationId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.organizationId,
+                        referencedTable: $$OrgMembershipsTableReferences
+                            ._organizationIdTable(db),
+                        referencedColumn: $$OrgMembershipsTableReferences
+                            ._organizationIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$OrgMembershipsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $OrgMembershipsTable,
+      OrgMembershipEntry,
+      $$OrgMembershipsTableFilterComposer,
+      $$OrgMembershipsTableOrderingComposer,
+      $$OrgMembershipsTableAnnotationComposer,
+      $$OrgMembershipsTableCreateCompanionBuilder,
+      $$OrgMembershipsTableUpdateCompanionBuilder,
+      (OrgMembershipEntry, $$OrgMembershipsTableReferences),
+      OrgMembershipEntry,
+      PrefetchHooks Function({bool organizationId})
+    >;
 typedef $$BandsTableCreateCompanionBuilder = BandsCompanion Function({
   required String id,
   required String name,
+  Value<String?> organizationId,
   Value<bool> membersCanEditSongs,
+  Value<int> revision,
+  Value<bool> deleted,
   Value<int> rowid,
 });
 typedef $$BandsTableUpdateCompanionBuilder = BandsCompanion Function({
   Value<String> id,
   Value<String> name,
+  Value<String?> organizationId,
   Value<bool> membersCanEditSongs,
+  Value<int> revision,
+  Value<bool> deleted,
   Value<int> rowid,
 });
 
@@ -3178,20 +5353,36 @@ final class $$BandsTableReferences
     extends BaseReferences<_$AppDatabase, $BandsTable, BandEntry> {
   $$BandsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static MultiTypedResultKey<$SongsTable, List<SongEntry>> _songsRefsTable(
-    _$AppDatabase db,
-  ) => MultiTypedResultKey.fromTable(
-    db.songs,
-    aliasName: 'bands__id__songs__band_id',
+  static $OrganizationsTable _organizationIdTable(_$AppDatabase db) =>
+      db.organizations.createAlias('bands__organization_id__organizations__id');
+
+  $$OrganizationsTableProcessedTableManager? get organizationId {
+    final $_column = $_itemColumn<String>('organization_id');
+    if ($_column == null) return null;
+    final manager = $$OrganizationsTableTableManager(
+      $_db,
+      $_db.organizations,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_organizationIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$MembershipsTable, List<MembershipEntry>>
+  _membershipsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.memberships,
+    aliasName: 'bands__id__memberships__band_id',
   );
 
-  $$SongsTableProcessedTableManager get songsRefs {
-    final manager = $$SongsTableTableManager(
+  $$MembershipsTableProcessedTableManager get membershipsRefs {
+    final manager = $$MembershipsTableTableManager(
       $_db,
-      $_db.songs,
+      $_db.memberships,
     ).filter((f) => f.bandId.id.sqlEquals($_itemColumn<String>('id')!));
 
-    final cache = $_typedResult.readTableOrNull(_songsRefsTable($_db));
+    final cache = $_typedResult.readTableOrNull(_membershipsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -3239,22 +5430,55 @@ class $$BandsTableFilterComposer extends Composer<_$AppDatabase, $BandsTable> {
     builder: (column) => ColumnFilters(column),
   );
 
-  Expression<bool> songsRefs(
-    Expression<bool> Function($$SongsTableFilterComposer f) f,
+  ColumnFilters<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$OrganizationsTableFilterComposer get organizationId {
+    final $$OrganizationsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.organizationId,
+      referencedTable: $db.organizations,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OrganizationsTableFilterComposer(
+            $db: $db,
+            $table: $db.organizations,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> membershipsRefs(
+    Expression<bool> Function($$MembershipsTableFilterComposer f) f,
   ) {
-    final $$SongsTableFilterComposer composer = $composerBuilder(
+    final $$MembershipsTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.songs,
+      referencedTable: $db.memberships,
       getReferencedColumn: (t) => t.bandId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$SongsTableFilterComposer(
+          }) => $$MembershipsTableFilterComposer(
             $db: $db,
-            $table: $db.songs,
+            $table: $db.memberships,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3313,6 +5537,39 @@ class $$BandsTableOrderingComposer
     column: $table.membersCanEditSongs,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$OrganizationsTableOrderingComposer get organizationId {
+    final $$OrganizationsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.organizationId,
+      referencedTable: $db.organizations,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OrganizationsTableOrderingComposer(
+            $db: $db,
+            $table: $db.organizations,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$BandsTableAnnotationComposer
@@ -3335,22 +5592,51 @@ class $$BandsTableAnnotationComposer
     builder: (column) => column,
   );
 
-  Expression<T> songsRefs<T extends Object>(
-    Expression<T> Function($$SongsTableAnnotationComposer a) f,
+  GeneratedColumn<int> get revision =>
+      $composableBuilder(column: $table.revision, builder: (column) => column);
+
+  GeneratedColumn<bool> get deleted =>
+      $composableBuilder(column: $table.deleted, builder: (column) => column);
+
+  $$OrganizationsTableAnnotationComposer get organizationId {
+    final $$OrganizationsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.organizationId,
+      referencedTable: $db.organizations,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$OrganizationsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.organizations,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> membershipsRefs<T extends Object>(
+    Expression<T> Function($$MembershipsTableAnnotationComposer a) f,
   ) {
-    final $$SongsTableAnnotationComposer composer = $composerBuilder(
+    final $$MembershipsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.songs,
+      referencedTable: $db.memberships,
       getReferencedColumn: (t) => t.bandId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$SongsTableAnnotationComposer(
+          }) => $$MembershipsTableAnnotationComposer(
             $db: $db,
-            $table: $db.songs,
+            $table: $db.memberships,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3399,7 +5685,11 @@ class $$BandsTableTableManager
           $$BandsTableUpdateCompanionBuilder,
           (BandEntry, $$BandsTableReferences),
           BandEntry,
-          PrefetchHooks Function({bool songsRefs, bool setlistsRefs})
+          PrefetchHooks Function({
+            bool organizationId,
+            bool membershipsRefs,
+            bool setlistsRefs,
+          })
         > {
   $$BandsTableTableManager(_$AppDatabase db, $BandsTable table)
     : super(
@@ -3416,24 +5706,36 @@ class $$BandsTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
+                Value<String?> organizationId = const Value.absent(),
                 Value<bool> membersCanEditSongs = const Value.absent(),
+                Value<int> revision = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => BandsCompanion(
                 id: id,
                 name: name,
+                organizationId: organizationId,
                 membersCanEditSongs: membersCanEditSongs,
+                revision: revision,
+                deleted: deleted,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
                 required String id,
                 required String name,
+                Value<String?> organizationId = const Value.absent(),
                 Value<bool> membersCanEditSongs = const Value.absent(),
+                Value<int> revision = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => BandsCompanion.insert(
                 id: id,
                 name: name,
+                organizationId: organizationId,
                 membersCanEditSongs: membersCanEditSongs,
+                revision: revision,
+                deleted: deleted,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -3444,53 +5746,94 @@ class $$BandsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({songsRefs = false, setlistsRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (songsRefs) db.songs,
-                if (setlistsRefs) db.setlists,
-              ],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (songsRefs)
-                    await $_getPrefetchedDataByColumns<
-                      BandEntry,
-                      $BandsTable,
-                      SongEntry,
-                      $SongsTable
-                    >(
-                      currentTable: table,
-                      referencedTable: $$BandsTableReferences._songsRefsTable(
-                        db,
-                      ),
-                      managerFromTypedResult: (p0) =>
-                          $$BandsTableReferences(db, table, p0).songsRefs,
-                      currentColumn: 'id',
-                      referencedColumn: 'band_id',
-                      typedResults: items,
-                    ),
-                  if (setlistsRefs)
-                    await $_getPrefetchedDataByColumns<
-                      BandEntry,
-                      $BandsTable,
-                      SetlistEntry,
-                      $SetlistsTable
-                    >(
-                      currentTable: table,
-                      referencedTable: $$BandsTableReferences
-                          ._setlistsRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$BandsTableReferences(db, table, p0).setlistsRefs,
-                      currentColumn: 'id',
-                      referencedColumn: 'band_id',
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({
+                organizationId = false,
+                membershipsRefs = false,
+                setlistsRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (membershipsRefs) db.memberships,
+                    if (setlistsRefs) db.setlists,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (organizationId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.organizationId,
+                            referencedTable: $$BandsTableReferences
+                                ._organizationIdTable(db),
+                            referencedColumn: $$BandsTableReferences
+                                ._organizationIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (membershipsRefs)
+                        await $_getPrefetchedDataByColumns<
+                          BandEntry,
+                          $BandsTable,
+                          MembershipEntry,
+                          $MembershipsTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$BandsTableReferences
+                              ._membershipsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$BandsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).membershipsRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'band_id',
+                          typedResults: items,
+                        ),
+                      if (setlistsRefs)
+                        await $_getPrefetchedDataByColumns<
+                          BandEntry,
+                          $BandsTable,
+                          SetlistEntry,
+                          $SetlistsTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$BandsTableReferences
+                              ._setlistsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$BandsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).setlistsRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'band_id',
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -3507,11 +5850,369 @@ typedef $$BandsTableProcessedTableManager =
       $$BandsTableUpdateCompanionBuilder,
       (BandEntry, $$BandsTableReferences),
       BandEntry,
-      PrefetchHooks Function({bool songsRefs, bool setlistsRefs})
+      PrefetchHooks Function({
+        bool organizationId,
+        bool membershipsRefs,
+        bool setlistsRefs,
+      })
+    >;
+typedef $$MembershipsTableCreateCompanionBuilder =
+    MembershipsCompanion Function({
+      required String id,
+      required String bandId,
+      required String userId,
+      Value<String> userName,
+      Value<String?> userEmail,
+      required BandRole role,
+      Value<int> revision,
+      Value<int> rowid,
+    });
+typedef $$MembershipsTableUpdateCompanionBuilder =
+    MembershipsCompanion Function({
+      Value<String> id,
+      Value<String> bandId,
+      Value<String> userId,
+      Value<String> userName,
+      Value<String?> userEmail,
+      Value<BandRole> role,
+      Value<int> revision,
+      Value<int> rowid,
+    });
+
+final class $$MembershipsTableReferences
+    extends BaseReferences<_$AppDatabase, $MembershipsTable, MembershipEntry> {
+  $$MembershipsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $BandsTable _bandIdTable(_$AppDatabase db) =>
+      db.bands.createAlias('memberships__band_id__bands__id');
+
+  $$BandsTableProcessedTableManager get bandId {
+    final $_column = $_itemColumn<String>('band_id')!;
+
+    final manager = $$BandsTableTableManager(
+      $_db,
+      $_db.bands,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_bandIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$MembershipsTableFilterComposer
+    extends Composer<_$AppDatabase, $MembershipsTable> {
+  $$MembershipsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userName => $composableBuilder(
+    column: $table.userName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userEmail => $composableBuilder(
+    column: $table.userEmail,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<BandRole, BandRole, String> get role =>
+      $composableBuilder(
+        column: $table.role,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$BandsTableFilterComposer get bandId {
+    final $$BandsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.bandId,
+      referencedTable: $db.bands,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BandsTableFilterComposer(
+            $db: $db,
+            $table: $db.bands,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MembershipsTableOrderingComposer
+    extends Composer<_$AppDatabase, $MembershipsTable> {
+  $$MembershipsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userName => $composableBuilder(
+    column: $table.userName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userEmail => $composableBuilder(
+    column: $table.userEmail,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get role => $composableBuilder(
+    column: $table.role,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$BandsTableOrderingComposer get bandId {
+    final $$BandsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.bandId,
+      referencedTable: $db.bands,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BandsTableOrderingComposer(
+            $db: $db,
+            $table: $db.bands,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MembershipsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MembershipsTable> {
+  $$MembershipsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get userName =>
+      $composableBuilder(column: $table.userName, builder: (column) => column);
+
+  GeneratedColumn<String> get userEmail =>
+      $composableBuilder(column: $table.userEmail, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<BandRole, String> get role =>
+      $composableBuilder(column: $table.role, builder: (column) => column);
+
+  GeneratedColumn<int> get revision =>
+      $composableBuilder(column: $table.revision, builder: (column) => column);
+
+  $$BandsTableAnnotationComposer get bandId {
+    final $$BandsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.bandId,
+      referencedTable: $db.bands,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BandsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.bands,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MembershipsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MembershipsTable,
+          MembershipEntry,
+          $$MembershipsTableFilterComposer,
+          $$MembershipsTableOrderingComposer,
+          $$MembershipsTableAnnotationComposer,
+          $$MembershipsTableCreateCompanionBuilder,
+          $$MembershipsTableUpdateCompanionBuilder,
+          (MembershipEntry, $$MembershipsTableReferences),
+          MembershipEntry,
+          PrefetchHooks Function({bool bandId})
+        > {
+  $$MembershipsTableTableManager(_$AppDatabase db, $MembershipsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MembershipsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MembershipsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MembershipsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> bandId = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String> userName = const Value.absent(),
+                Value<String?> userEmail = const Value.absent(),
+                Value<BandRole> role = const Value.absent(),
+                Value<int> revision = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MembershipsCompanion(
+                id: id,
+                bandId: bandId,
+                userId: userId,
+                userName: userName,
+                userEmail: userEmail,
+                role: role,
+                revision: revision,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String bandId,
+                required String userId,
+                Value<String> userName = const Value.absent(),
+                Value<String?> userEmail = const Value.absent(),
+                required BandRole role,
+                Value<int> revision = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MembershipsCompanion.insert(
+                id: id,
+                bandId: bandId,
+                userId: userId,
+                userName: userName,
+                userEmail: userEmail,
+                role: role,
+                revision: revision,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$MembershipsTable, MembershipEntry>(table),
+                  $$MembershipsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({bandId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (bandId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.bandId,
+                        referencedTable: $$MembershipsTableReferences
+                            ._bandIdTable(db),
+                        referencedColumn: $$MembershipsTableReferences
+                            ._bandIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$MembershipsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MembershipsTable,
+      MembershipEntry,
+      $$MembershipsTableFilterComposer,
+      $$MembershipsTableOrderingComposer,
+      $$MembershipsTableAnnotationComposer,
+      $$MembershipsTableCreateCompanionBuilder,
+      $$MembershipsTableUpdateCompanionBuilder,
+      (MembershipEntry, $$MembershipsTableReferences),
+      MembershipEntry,
+      PrefetchHooks Function({bool bandId})
     >;
 typedef $$SongsTableCreateCompanionBuilder = SongsCompanion Function({
   required String id,
-  required String bandId,
+  required String libraryId,
   Value<String> chordproSource,
   required String title,
   Value<String?> artist,
@@ -3527,7 +6228,7 @@ typedef $$SongsTableCreateCompanionBuilder = SongsCompanion Function({
 });
 typedef $$SongsTableUpdateCompanionBuilder = SongsCompanion Function({
   Value<String> id,
-  Value<String> bandId,
+  Value<String> libraryId,
   Value<String> chordproSource,
   Value<String> title,
   Value<String?> artist,
@@ -3545,23 +6246,6 @@ typedef $$SongsTableUpdateCompanionBuilder = SongsCompanion Function({
 final class $$SongsTableReferences
     extends BaseReferences<_$AppDatabase, $SongsTable, SongEntry> {
   $$SongsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static $BandsTable _bandIdTable(_$AppDatabase db) =>
-      db.bands.createAlias('songs__band_id__bands__id');
-
-  $$BandsTableProcessedTableManager get bandId {
-    final $_column = $_itemColumn<String>('band_id')!;
-
-    final manager = $$BandsTableTableManager(
-      $_db,
-      $_db.bands,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_bandIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
 
   static MultiTypedResultKey<$AttachmentsTable, List<AttachmentEntry>>
   _attachmentsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
@@ -3633,6 +6317,11 @@ class $$SongsTableFilterComposer extends Composer<_$AppDatabase, $SongsTable> {
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get libraryId => $composableBuilder(
+    column: $table.libraryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get chordproSource => $composableBuilder(
     column: $table.chordproSource,
     builder: (column) => ColumnFilters(column),
@@ -3687,29 +6376,6 @@ class $$SongsTableFilterComposer extends Composer<_$AppDatabase, $SongsTable> {
     column: $table.deleted,
     builder: (column) => ColumnFilters(column),
   );
-
-  $$BandsTableFilterComposer get bandId {
-    final $$BandsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.bandId,
-      referencedTable: $db.bands,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$BandsTableFilterComposer(
-            $db: $db,
-            $table: $db.bands,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 
   Expression<bool> attachmentsRefs(
     Expression<bool> Function($$AttachmentsTableFilterComposer f) f,
@@ -3801,6 +6467,11 @@ class $$SongsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get libraryId => $composableBuilder(
+    column: $table.libraryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get chordproSource => $composableBuilder(
     column: $table.chordproSource,
     builder: (column) => ColumnOrderings(column),
@@ -3855,29 +6526,6 @@ class $$SongsTableOrderingComposer
     column: $table.deleted,
     builder: (column) => ColumnOrderings(column),
   );
-
-  $$BandsTableOrderingComposer get bandId {
-    final $$BandsTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.bandId,
-      referencedTable: $db.bands,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$BandsTableOrderingComposer(
-            $db: $db,
-            $table: $db.bands,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$SongsTableAnnotationComposer
@@ -3891,6 +6539,9 @@ class $$SongsTableAnnotationComposer
   });
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get libraryId =>
+      $composableBuilder(column: $table.libraryId, builder: (column) => column);
 
   GeneratedColumn<String> get chordproSource => $composableBuilder(
     column: $table.chordproSource,
@@ -3928,29 +6579,6 @@ class $$SongsTableAnnotationComposer
 
   GeneratedColumn<bool> get deleted =>
       $composableBuilder(column: $table.deleted, builder: (column) => column);
-
-  $$BandsTableAnnotationComposer get bandId {
-    final $$BandsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.bandId,
-      referencedTable: $db.bands,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$BandsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.bands,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 
   Expression<T> attachmentsRefs<T extends Object>(
     Expression<T> Function($$AttachmentsTableAnnotationComposer a) f,
@@ -4042,7 +6670,6 @@ class $$SongsTableTableManager
           (SongEntry, $$SongsTableReferences),
           SongEntry,
           PrefetchHooks Function({
-            bool bandId,
             bool attachmentsRefs,
             bool setItemsRefs,
             bool personalOverlaysRefs,
@@ -4062,7 +6689,7 @@ class $$SongsTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
-                Value<String> bandId = const Value.absent(),
+                Value<String> libraryId = const Value.absent(),
                 Value<String> chordproSource = const Value.absent(),
                 Value<String> title = const Value.absent(),
                 Value<String?> artist = const Value.absent(),
@@ -4077,7 +6704,7 @@ class $$SongsTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => SongsCompanion(
                 id: id,
-                bandId: bandId,
+                libraryId: libraryId,
                 chordproSource: chordproSource,
                 title: title,
                 artist: artist,
@@ -4094,7 +6721,7 @@ class $$SongsTableTableManager
           createCompanionCallback:
               ({
                 required String id,
-                required String bandId,
+                required String libraryId,
                 Value<String> chordproSource = const Value.absent(),
                 required String title,
                 Value<String?> artist = const Value.absent(),
@@ -4109,7 +6736,7 @@ class $$SongsTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => SongsCompanion.insert(
                 id: id,
-                bandId: bandId,
+                libraryId: libraryId,
                 chordproSource: chordproSource,
                 title: title,
                 artist: artist,
@@ -4133,7 +6760,6 @@ class $$SongsTableTableManager
               .toList(),
           prefetchHooksCallback:
               ({
-                bandId = false,
                 attachmentsRefs = false,
                 setItemsRefs = false,
                 personalOverlaysRefs = false,
@@ -4145,36 +6771,7 @@ class $$SongsTableTableManager
                     if (setItemsRefs) db.setItems,
                     if (personalOverlaysRefs) db.personalOverlays,
                   ],
-                  addJoins:
-                      <
-                        T extends TableManagerState<
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic
-                        >
-                      >(state) {
-                        if (bandId) {
-                          state = state.withJoin(
-                            currentTable: table,
-                            currentColumn: table.bandId,
-                            referencedTable: $$SongsTableReferences
-                                ._bandIdTable(db),
-                            referencedColumn: $$SongsTableReferences
-                                ._bandIdTable(db)
-                                .id,
-                          ) as T;
-                        }
-
-                        return state;
-                      },
+                  addJoins: null,
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (attachmentsRefs)
@@ -4258,7 +6855,6 @@ typedef $$SongsTableProcessedTableManager =
       (SongEntry, $$SongsTableReferences),
       SongEntry,
       PrefetchHooks Function({
-        bool bandId,
         bool attachmentsRefs,
         bool setItemsRefs,
         bool personalOverlaysRefs,
@@ -5950,8 +8546,14 @@ typedef $$PersonalOverlaysTableProcessedTableManager =
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
+  $$OrganizationsTableTableManager get organizations =>
+      $$OrganizationsTableTableManager(_db, _db.organizations);
+  $$OrgMembershipsTableTableManager get orgMemberships =>
+      $$OrgMembershipsTableTableManager(_db, _db.orgMemberships);
   $$BandsTableTableManager get bands =>
       $$BandsTableTableManager(_db, _db.bands);
+  $$MembershipsTableTableManager get memberships =>
+      $$MembershipsTableTableManager(_db, _db.memberships);
   $$SongsTableTableManager get songs =>
       $$SongsTableTableManager(_db, _db.songs);
   $$AttachmentsTableTableManager get attachments =>

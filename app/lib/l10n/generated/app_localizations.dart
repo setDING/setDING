@@ -1705,6 +1705,342 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Die Adresse muss mit http:// oder https:// beginnen.'**
   String get settingsServerInvalid;
+
+  /// No description provided for @bandLocal.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf diesem Gerät'**
+  String get bandLocal;
+
+  /// No description provided for @bandLocalHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur auf diesem Gerät, wird nicht synchronisiert.'**
+  String get bandLocalHint;
+
+  /// No description provided for @bandSwitch.
+  ///
+  /// In de, this message translates to:
+  /// **'Band wechseln'**
+  String get bandSwitch;
+
+  /// No description provided for @bandManage.
+  ///
+  /// In de, this message translates to:
+  /// **'Bands verwalten'**
+  String get bandManage;
+
+  /// No description provided for @bandsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Bands'**
+  String get bandsTitle;
+
+  /// No description provided for @bandsEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist noch in keiner Band. Erstelle eine Band für deine Songs und Sets.'**
+  String get bandsEmpty;
+
+  /// No description provided for @bandsSignInHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Melde dich an, um Bands zu erstellen.'**
+  String get bandsSignInHint;
+
+  /// No description provided for @bandNew.
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Band'**
+  String get bandNew;
+
+  /// No description provided for @bandName.
+  ///
+  /// In de, this message translates to:
+  /// **'Bandname'**
+  String get bandName;
+
+  /// No description provided for @bandRoleAdmin.
+  ///
+  /// In de, this message translates to:
+  /// **'Admin'**
+  String get bandRoleAdmin;
+
+  /// No description provided for @bandRoleMember.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitglied'**
+  String get bandRoleMember;
+
+  /// No description provided for @bandMembers.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitglieder'**
+  String get bandMembers;
+
+  /// No description provided for @bandYou.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} (du)'**
+  String bandYou(String name);
+
+  /// No description provided for @bandMakeAdmin.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Admin machen'**
+  String get bandMakeAdmin;
+
+  /// No description provided for @bandMakeMember.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Mitglied machen'**
+  String get bandMakeMember;
+
+  /// No description provided for @bandRemoveMember.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus der Band entfernen'**
+  String get bandRemoveMember;
+
+  /// No description provided for @bandRemoveTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} entfernen?'**
+  String bandRemoveTitle(String name);
+
+  /// No description provided for @bandRemoveMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} sieht die Songs und Sets der Band danach nicht mehr.'**
+  String bandRemoveMessage(String name);
+
+  /// No description provided for @bandLeave.
+  ///
+  /// In de, this message translates to:
+  /// **'Band verlassen'**
+  String get bandLeave;
+
+  /// No description provided for @bandLeaveTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'{band} verlassen?'**
+  String bandLeaveTitle(String band);
+
+  /// No description provided for @bandLeaveMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Du siehst die Songs und Sets der Band danach nicht mehr. Ein Admin kann dich wieder einladen.'**
+  String get bandLeaveMessage;
+
+  /// No description provided for @bandMembersCanEdit.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitglieder dürfen Songs bearbeiten'**
+  String get bandMembersCanEdit;
+
+  /// No description provided for @bandMembersCanEditHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Songs erstellen, importieren und bearbeiten. Löschen und Sets bleiben den Admins vorbehalten.'**
+  String get bandMembersCanEditHint;
+
+  /// No description provided for @bandRefresh.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktualisieren'**
+  String get bandRefresh;
+
+  /// No description provided for @bandErrorLastAdmin.
+  ///
+  /// In de, this message translates to:
+  /// **'Eine Band braucht mindestens einen Admin.'**
+  String get bandErrorLastAdmin;
+
+  /// No description provided for @bandErrorNotAllowed.
+  ///
+  /// In de, this message translates to:
+  /// **'Dazu fehlt die Berechtigung, oder die Band gibt es nicht mehr.'**
+  String get bandErrorNotAllowed;
+
+  /// No description provided for @accountErrorSignedOut.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte melde dich an.'**
+  String get accountErrorSignedOut;
+
+  /// No description provided for @copyToBand.
+  ///
+  /// In de, this message translates to:
+  /// **'In Band kopieren'**
+  String get copyToBand;
+
+  /// No description provided for @copyToBandTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'In welche Band kopieren?'**
+  String get copyToBandTitle;
+
+  /// No description provided for @copyToBandNoTarget.
+  ///
+  /// In de, this message translates to:
+  /// **'Es gibt keine andere Band, in die du kopieren darfst.'**
+  String get copyToBandNoTarget;
+
+  /// No description provided for @copiedSongs.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song nach {band} kopiert} other{{count} Songs nach {band} kopiert}}'**
+  String copiedSongs(int count, String band);
+
+  /// No description provided for @copiedSet.
+  ///
+  /// In de, this message translates to:
+  /// **'Set nach {band} kopiert'**
+  String copiedSet(String band);
+
+  /// No description provided for @songsSelected.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} ausgewählt'**
+  String songsSelected(int count);
+
+  /// No description provided for @selectAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle auswählen'**
+  String get selectAll;
+
+  /// No description provided for @selectMode.
+  ///
+  /// In de, this message translates to:
+  /// **'Auswählen'**
+  String get selectMode;
+
+  /// No description provided for @bandRoleOrgAdmin.
+  ///
+  /// In de, this message translates to:
+  /// **'Admin der Organisation'**
+  String get bandRoleOrgAdmin;
+
+  /// No description provided for @bandOrganization.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisation'**
+  String get bandOrganization;
+
+  /// No description provided for @bandNewOrganization.
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Organisation'**
+  String get bandNewOrganization;
+
+  /// No description provided for @bandNewHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Bands einer Organisation teilen ihre Songs.'**
+  String get bandNewHint;
+
+  /// No description provided for @bandAddMember.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitglied hinzufügen'**
+  String get bandAddMember;
+
+  /// No description provided for @bandAddMemberTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Wen hinzufügen?'**
+  String get bandAddMemberTitle;
+
+  /// No description provided for @bandAddMemberNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Personen der Organisation sind schon in dieser Band.'**
+  String get bandAddMemberNone;
+
+  /// No description provided for @bandOrgAdminHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Du verwaltest diese Band als Admin der Organisation.'**
+  String get bandOrgAdminHint;
+
+  /// No description provided for @bandErrorNotOrgMember.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Person gehört nicht zur Organisation.'**
+  String get bandErrorNotOrgMember;
+
+  /// No description provided for @orgName.
+  ///
+  /// In de, this message translates to:
+  /// **'Name der Organisation'**
+  String get orgName;
+
+  /// No description provided for @orgPeople.
+  ///
+  /// In de, this message translates to:
+  /// **'Personen'**
+  String get orgPeople;
+
+  /// No description provided for @orgBands.
+  ///
+  /// In de, this message translates to:
+  /// **'Bands'**
+  String get orgBands;
+
+  /// No description provided for @orgRemove.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus der Organisation entfernen'**
+  String get orgRemove;
+
+  /// No description provided for @orgRemoveTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} entfernen?'**
+  String orgRemoveTitle(String name);
+
+  /// No description provided for @orgRemoveMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} verlässt damit auch alle Bands der Organisation und sieht ihre Songs nicht mehr.'**
+  String orgRemoveMessage(String name);
+
+  /// No description provided for @orgLeave.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisation verlassen'**
+  String get orgLeave;
+
+  /// No description provided for @orgLeaveTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'{org} verlassen?'**
+  String orgLeaveTitle(String org);
+
+  /// No description provided for @orgLeaveMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Du verlässt damit auch alle ihre Bands und siehst ihre Songs nicht mehr.'**
+  String get orgLeaveMessage;
+
+  /// No description provided for @orgInviteSoon.
+  ///
+  /// In de, this message translates to:
+  /// **'Personen in die Organisation einladen ist bald möglich.'**
+  String get orgInviteSoon;
+
+  /// No description provided for @orgSongsShared.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Bands der Organisation teilen dieselben Songs.'**
+  String get orgSongsShared;
+
+  /// No description provided for @copyToLibraryTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'In welche Songbibliothek kopieren?'**
+  String get copyToLibraryTitle;
 }
 
 class _AppLocalizationsDelegate

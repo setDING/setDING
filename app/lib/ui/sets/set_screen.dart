@@ -14,6 +14,7 @@ import '../../settings/settings.dart';
 import '../live/live_screen.dart';
 import '../render/song_header.dart';
 import '../songs/song_screen.dart';
+import '../bands/copy_to_band.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
 import '../widgets/key_picker.dart';
@@ -146,6 +147,7 @@ class _SetScreenState extends ConsumerState<SetScreen> {
     final setValue = ref.watch(setProvider(widget.setId));
     final itemsValue = ref.watch(setItemsProvider(widget.setId));
     final ready = ref.watch(offlineReadyProvider(widget.setId)).value;
+    final canEdit = ref.watch(currentBandProvider).canManageSets;
 
     return AsyncBody(
       value: setValue,
@@ -178,14 +180,17 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                   'exportList' => _exportSetList(set),
                   'exportListPdf' => _exportSetListPdf(set),
                   'copyList' => _copySetList(set),
+                  'copyToBand' => copySetToBand(context, ref, set.id),
                   'delete' => _delete(set),
                   _ => null,
                 },
                 itemBuilder: (_) => [
-                  PopupMenuItem(value: 'pause', child: Text(l10n.addPause)),
-                  PopupMenuItem(value: 'text', child: Text(l10n.addText)),
-                  PopupMenuItem(value: 'edit', child: Text(l10n.editSet)),
-                  const PopupMenuDivider(),
+                  if (canEdit) ...[
+                    PopupMenuItem(value: 'pause', child: Text(l10n.addPause)),
+                    PopupMenuItem(value: 'text', child: Text(l10n.addText)),
+                    PopupMenuItem(value: 'edit', child: Text(l10n.editSet)),
+                    const PopupMenuDivider(),
+                  ],
                   PopupMenuItem(
                     value: 'copyList',
                     child: Text(l10n.copySetList),
@@ -199,18 +204,26 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                     child: Text(l10n.exportSetList),
                   ),
                   PopupMenuItem(value: 'export', child: Text(l10n.exportSet)),
-                  const PopupMenuDivider(),
-                  PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
+                  PopupMenuItem(
+                    value: 'copyToBand',
+                    child: Text(l10n.copyToBand),
+                  ),
+                  if (canEdit) ...[
+                    const PopupMenuDivider(),
+                    PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
+                  ],
                 ],
               ),
             ],
           ),
-          floatingActionButton: FloatingActionButton.extended(
-            heroTag: null,
-            onPressed: _addSongs,
-            icon: const Icon(Icons.playlist_add),
-            label: Text(l10n.addSongs),
-          ),
+          floatingActionButton: !canEdit
+              ? null
+              : FloatingActionButton.extended(
+                  heroTag: null,
+                  onPressed: _addSongs,
+                  icon: const Icon(Icons.playlist_add),
+                  label: Text(l10n.addSongs),
+                ),
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -246,6 +259,7 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                           index: i,
                           view: items[i],
                           setId: widget.setId,
+                          canEdit: canEdit,
                         ),
                       ),
               ),
@@ -263,11 +277,15 @@ class _SetItemTile extends ConsumerWidget {
     required this.index,
     required this.view,
     required this.setId,
+    required this.canEdit,
   });
 
   final int index;
   final SetItemView view;
   final String setId;
+
+  /// Edit, transpose, reorder and remove items (admins, ADR-0005).
+  final bool canEdit;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -302,25 +320,29 @@ class _SetItemTile extends ConsumerWidget {
         subtitle: Text(
           item.type == SetItemType.pause ? l10n.pause : l10n.textItem,
         ),
-        onTap: () async {
-          final label = await askText(
-            context,
-            title: l10n.edit,
-            initial: item.note ?? '',
-          );
-          if (label != null) await repo.updateMarker(item.id, label);
-        },
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              tooltip: l10n.removeFromSet,
-              icon: const Icon(Icons.remove_circle_outline),
-              onPressed: () => repo.removeItem(setId, item.id),
-            ),
-            handle,
-          ],
-        ),
+        onTap: !canEdit
+            ? null
+            : () async {
+                final label = await askText(
+                  context,
+                  title: l10n.edit,
+                  initial: item.note ?? '',
+                );
+                if (label != null) await repo.updateMarker(item.id, label);
+              },
+        trailing: !canEdit
+            ? null
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    tooltip: l10n.removeFromSet,
+                    icon: const Icon(Icons.remove_circle_outline),
+                    onPressed: () => repo.removeItem(setId, item.id),
+                  ),
+                  handle,
+                ],
+              ),
       );
     }
 
@@ -371,50 +393,75 @@ class _SetItemTile extends ConsumerWidget {
                 builder: (_) => SongScreen(songId: song.id),
               ),
             ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (song != null)
-            KeyPicker(
-              dense: true,
-              baseKey: songKey,
-              transpose: item.transpose,
-              notation: settings.notation,
-              onChanged: (value) => repo.setItemTranspose(item.id, value),
+      trailing: !canEdit
+          ? _readOnlyKey(context, songKey, item.transpose, settings)
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (song != null)
+                  KeyPicker(
+                    dense: true,
+                    baseKey: songKey,
+                    transpose: item.transpose,
+                    notation: settings.notation,
+                    onChanged: (value) => repo.setItemTranspose(item.id, value),
+                  ),
+                if (song != null)
+                  IconButton(
+                    tooltip: l10n.sequenceEdit,
+                    isSelected: item.sequence != null,
+                    icon: const Icon(Icons.format_list_numbered),
+                    selectedIcon: const Icon(Icons.playlist_play),
+                    onPressed: () async {
+                      final choice = await editSequence(
+                        context,
+                        title: l10n.sequenceEdit,
+                        parts: cp.songParts(
+                          cp.parseChordPro(song.chordproSource),
+                        ),
+                        initial: sequence,
+                        original: originalSequence,
+                        showOriginal: true,
+                        canRestore: item.sequence != null,
+                      );
+                      if (choice == null) return;
+                      // The song's own sequence is no set-specific one.
+                      final value = choice.value;
+                      await repo.setItemSequence(
+                        item.id,
+                        value == originalSequence?.trim() ? null : value,
+                      );
+                    },
+                  ),
+                IconButton(
+                  tooltip: l10n.removeFromSet,
+                  icon: const Icon(Icons.remove_circle_outline),
+                  onPressed: () => repo.removeItem(setId, item.id),
+                ),
+                handle,
+              ],
             ),
-          if (song != null)
-            IconButton(
-              tooltip: l10n.sequenceEdit,
-              isSelected: item.sequence != null,
-              icon: const Icon(Icons.format_list_numbered),
-              selectedIcon: const Icon(Icons.playlist_play),
-              onPressed: () async {
-                final choice = await editSequence(
-                  context,
-                  title: l10n.sequenceEdit,
-                  parts: cp.songParts(cp.parseChordPro(song.chordproSource)),
-                  initial: sequence,
-                  original: originalSequence,
-                  showOriginal: true,
-                  canRestore: item.sequence != null,
-                );
-                if (choice == null) return;
-                // The song's own sequence is no set-specific one.
-                final value = choice.value;
-                await repo.setItemSequence(
-                  item.id,
-                  value == originalSequence?.trim() ? null : value,
-                );
-              },
-            ),
-          IconButton(
-            tooltip: l10n.removeFromSet,
-            icon: const Icon(Icons.remove_circle_outline),
-            onPressed: () => repo.removeItem(setId, item.id),
-          ),
-          handle,
-        ],
-      ),
     );
   }
+}
+
+/// The key of a set item for users who may not change it (members).
+Widget? _readOnlyKey(
+  BuildContext context,
+  cp.Key? songKey,
+  int transpose,
+  AppSettings settings,
+) {
+  if (songKey == null && transpose == 0) return null;
+  final theme = Theme.of(context);
+  final label = songKey == null
+      ? formatSemitones(transpose)
+      : songKey.transpose(transpose).format(settings.notation);
+  return Text(
+    label,
+    style: theme.textTheme.titleSmall?.copyWith(
+      fontWeight: FontWeight.w600,
+      color: transpose == 0 ? null : theme.colorScheme.primary,
+    ),
+  );
 }
