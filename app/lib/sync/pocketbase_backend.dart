@@ -334,10 +334,7 @@ class PocketBaseBackend implements SyncBackend {
 
   @override
   Future<List<InviteInfo>> fetchInvites(String organizationId) async {
-    if (currentUser == null) {
-      throw const BackendException(BackendErrorKind.signedOut);
-    }
-    try {
+    return _signedIn(() async {
       final filter = _pb.filter('organization = {:org}', {
         'org': organizationId,
       });
@@ -365,9 +362,7 @@ class PocketBaseBackend implements SyncBackend {
             ],
           ),
       ];
-    } on ClientException catch (e) {
-      throw _map(e);
-    }
+    });
   }
 
   @override
@@ -437,10 +432,7 @@ class PocketBaseBackend implements SyncBackend {
     String scope,
     int since,
   ) async {
-    if (currentUser == null) {
-      throw const BackendException(BackendErrorKind.signedOut);
-    }
-    try {
+    return _signedIn(() async {
       return await _pb
           .collection(collection)
           .getFullList(
@@ -450,9 +442,7 @@ class PocketBaseBackend implements SyncBackend {
             ),
             sort: 'revision',
           );
-    } on ClientException catch (e) {
-      throw _map(e);
-    }
+    });
   }
 
   @override
@@ -483,61 +473,52 @@ class PocketBaseBackend implements SyncBackend {
   }
 
   @override
-  Future<RemoteSong> pushSong(RemoteSong song, {required bool create}) async {
-    if (currentUser == null) {
-      throw const BackendException(BackendErrorKind.signedOut);
-    }
+  Future<RemoteSong> pushSong(RemoteSong song, {required bool create}) {
     final body = {
       'title': song.title,
       'chordpro': song.chordpro,
       'deleted': song.deleted,
     };
-    try {
-      final r = create
-          ? await _pb
-                .collection('songs')
-                .create(
-                  body: {
-                    'id': song.id,
-                    'organization': song.organizationId,
-                    ...body,
-                  },
-                )
-          : await _pb
-                .collection('songs')
-                .update(song.id, body: {...body, 'revision': song.revision});
-      return _song(r);
-    } on ClientException catch (e) {
-      if (e.statusCode == 409) {
-        throw BackendException(BackendErrorKind.conflict, e.response);
-      }
-      throw _map(e);
-    }
+    return _signedIn(
+      () async => _song(
+        create
+            ? await _pb
+                  .collection('songs')
+                  .create(
+                    body: {
+                      'id': song.id,
+                      'organization': song.organizationId,
+                      ...body,
+                    },
+                  )
+            : await _pb
+                  .collection('songs')
+                  .update(song.id, body: {...body, 'revision': song.revision}),
+      ),
+      map: (e) => e.statusCode == 409
+          ? BackendException(BackendErrorKind.conflict, e.response)
+          : _map(e),
+    );
   }
 
   @override
   Future<RemoteSet> pushSet(RemoteSet set, {required bool create}) async {
-    if (currentUser == null) {
-      throw const BackendException(BackendErrorKind.signedOut);
-    }
-    final body = {
-      'name': set.name,
-      'gig_date':
-          set.gigDate?.toUtc().toIso8601String().replaceFirst('T', ' ') ?? '',
-      'venue': set.venue ?? '',
-      'items': set.items,
-      'deleted': set.deleted,
-    };
-    try {
+    return _signedIn(() async {
+      final body = {
+        'name': set.name,
+        'gig_date':
+            set.gigDate?.toUtc().toIso8601String().replaceFirst('T', ' ') ?? '',
+        'venue': set.venue ?? '',
+        'items': set.items,
+        'deleted': set.deleted,
+      };
       final r = create
           ? await _pb
                 .collection('setlists')
                 .create(body: {'id': set.id, 'band': set.bandId, ...body})
           : await _pb.collection('setlists').update(set.id, body: body);
       return _set(r);
-    } on ClientException catch (e) {
-      throw _map(e);
-    }
+    });
   }
 
   static RemoteAttachment _attachment(RecordModel r) {
@@ -576,10 +557,7 @@ class PocketBaseBackend implements SyncBackend {
     required bool create,
     List<int>? bytes,
   }) async {
-    if (currentUser == null) {
-      throw const BackendException(BackendErrorKind.signedOut);
-    }
-    try {
+    return _signedIn(() async {
       final RecordModel r;
       if (create) {
         r = await _pb
@@ -612,9 +590,7 @@ class PocketBaseBackend implements SyncBackend {
             );
       }
       return _attachment(r);
-    } on ClientException catch (e) {
-      throw _map(e);
-    }
+    });
   }
 
   @override
@@ -652,17 +628,10 @@ class PocketBaseBackend implements SyncBackend {
     String path, {
     String method = 'GET',
     Map<String, dynamic> body = const {},
-  }) async {
-    if (currentUser == null) {
-      throw const BackendException(BackendErrorKind.signedOut);
-    }
-    try {
-      final result = await _pb.send<dynamic>(path, method: method, body: body);
-      return (result as Map).cast<String, dynamic>();
-    } on ClientException catch (e) {
-      throw _map(e, invite: true);
-    }
-  }
+  }) => _signedIn(() async {
+    final result = await _pb.send<dynamic>(path, method: method, body: body);
+    return (result as Map).cast<String, dynamic>();
+  }, map: (e) => _map(e, invite: true));
 
   /// Only well-formed tokens go into a URL path.
   static String _token(String token) {
@@ -672,16 +641,24 @@ class PocketBaseBackend implements SyncBackend {
     return token;
   }
 
-  Future<void> _call(Future<Object?> Function() request) async {
+  /// Runs [request] for the signed-in user; maps its [ClientException]s
+  /// with [map] (default: [_map]).
+  Future<T> _signedIn<T>(
+    Future<T> Function() request, {
+    BackendException Function(ClientException e)? map,
+  }) async {
     if (currentUser == null) {
       throw const BackendException(BackendErrorKind.signedOut);
     }
     try {
-      await request();
+      return await request();
     } on ClientException catch (e) {
-      throw _map(e);
+      throw (map ?? _map)(e);
     }
   }
+
+  /// [_signedIn] for requests whose result is not needed.
+  Future<void> _call(Future<Object?> Function() request) => _signedIn(request);
 
   @override
   void dispose() {

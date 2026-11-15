@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import 'attachment_storage.dart';
 import 'database.dart';
 import 'outbox.dart';
+import 'text.dart';
 
 const _uuid = Uuid();
 
@@ -24,12 +25,12 @@ class SongMeta {
   factory SongMeta.fromSource(String source) {
     final song = cp.parseChordPro(source);
     return SongMeta(
-      title: _blankToNull(song.title),
-      artist: _blankToNull(song.artist),
-      key: _blankToNull(song.keyName),
+      title: blankToNull(song.title),
+      artist: blankToNull(song.artist),
+      key: blankToNull(song.keyName),
       tempo: song.tempo,
-      sortTitle: _blankToNull(song.sortTitle),
-      sortArtist: _blankToNull(song.sortArtist),
+      sortTitle: blankToNull(song.sortTitle),
+      sortArtist: blankToNull(song.sortArtist),
       tags: [
         for (final t in song.tags)
           if (t.trim().isNotEmpty) t.trim(),
@@ -100,9 +101,6 @@ class SongListEntry {
   @override
   int get hashCode => Object.hash(id, title, artist, songKey, tags);
 }
-
-String? _blankToNull(String? value) =>
-    value == null || value.trim().isEmpty ? null : value.trim();
 
 /// Access to songs, attachments and personal overlays of one song library:
 /// the organization of the current band (ADR-0017), or the local library
@@ -194,8 +192,8 @@ class SongRepository {
               id: id,
               libraryId: libraryId,
               chordproSource: Value(source),
-              title: meta.title ?? _blankToNull(title) ?? '',
-              artist: Value(meta.artist ?? _blankToNull(artist)),
+              title: meta.title ?? blankToNull(title) ?? '',
+              artist: Value(meta.artist ?? blankToNull(artist)),
               songKey: Value(meta.key),
               tempo: Value(meta.tempo),
               sortTitle: Value(meta.sortTitle),
@@ -288,7 +286,7 @@ class SongRepository {
         await (db.update(db.songs)..where((s) => s.id.equals(id))).write(
           SongsCompanion(
             title: Value(title.trim()),
-            artist: Value(_blankToNull(artist)),
+            artist: Value(blankToNull(artist)),
             updatedAt: Value(DateTime.now()),
           ),
         );

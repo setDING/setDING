@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import 'attachment_storage.dart';
 import 'database.dart';
 import 'outbox.dart';
+import 'text.dart';
 
 const _uuid = Uuid();
 
@@ -86,7 +87,7 @@ class SetRepository {
               bandId: bandId,
               name: name.trim(),
               gigDate: Value(gigDate),
-              venue: Value(_blankToNull(venue)),
+              venue: Value(blankToNull(venue)),
               updatedAt: DateTime.now(),
             ),
           );
@@ -105,7 +106,7 @@ class SetRepository {
       SetlistsCompanion(
         name: Value(name.trim()),
         gigDate: Value(gigDate),
-        venue: Value(_blankToNull(venue)),
+        venue: Value(blankToNull(venue)),
         updatedAt: Value(DateTime.now()),
       ),
     );
@@ -308,6 +309,3 @@ class SetRepository {
     if (item != null) await _touch(item.setId);
   }
 }
-
-String? _blankToNull(String? value) =>
-    value == null || value.trim().isEmpty ? null : value.trim();

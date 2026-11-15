@@ -316,4 +316,60 @@ void main() {
       ),
     );
   });
+
+  group('errors of signed-in requests', () {
+    Matcher kind(BackendErrorKind k) =>
+        throwsA(isA<BackendException>().having((e) => e.kind, 'kind', k));
+    const song = RemoteSong(
+      id: 's1',
+      organizationId: 'o1',
+      title: 'T',
+      chordpro: '',
+      revision: 3,
+    );
+
+    test('signed out: no request', () async {
+      final b = backend(MemorySessionStore(), (r) async => _json(200, {}));
+      await expectLater(
+        b.pushSong(song, create: false),
+        kind(BackendErrorKind.signedOut),
+      );
+      await expectLater(b.pullSets('b1', 0), kind(BackendErrorKind.signedOut));
+      expect(requests, isEmpty);
+    });
+
+    test('a changed song is a conflict, other errors are mapped', () async {
+      var status = 409;
+      final b = backend(
+        MemorySessionStore(_storedSession()),
+        (r) async => _json(status, {'message': 'x', 'data': {}}),
+      );
+      await expectLater(
+        b.pushSong(song, create: false),
+        kind(BackendErrorKind.conflict),
+      );
+      status = 403;
+      await expectLater(
+        b.pushSong(song, create: false),
+        kind(BackendErrorKind.notAllowed),
+      );
+      await expectLater(b.pullSets('b1', 0), kind(BackendErrorKind.notAllowed));
+    });
+
+    test('a revoked invitation is reported as such', () async {
+      final b = backend(
+        MemorySessionStore(_storedSession()),
+        (r) async => _json(410, {
+          'message': 'gone',
+          'data': {
+            'token': {'code': 'revoked', 'message': 'revoked'},
+          },
+        }),
+      );
+      await expectLater(
+        b.redeemInvite('A' * 32),
+        kind(BackendErrorKind.inviteRevoked),
+      );
+    });
+  });
 }
