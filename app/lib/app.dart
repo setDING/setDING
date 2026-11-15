@@ -7,8 +7,8 @@ import 'settings/settings.dart';
 import 'ui/home_screen.dart';
 
 /// Root widget: theme, localization (ADR-0008) and navigation.
-class BandChordsApp extends ConsumerWidget {
-  const BandChordsApp({super.key, this.home});
+class RealChordApp extends ConsumerWidget {
+  const RealChordApp({super.key, this.home});
 
   /// Overrides the start screen (used in tests).
   final Widget? home;

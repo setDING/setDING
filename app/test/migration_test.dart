@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:bandchords/data/attachment_storage.dart';
-import 'package:bandchords/data/database.dart';
-import 'package:bandchords/data/set_repository.dart';
-import 'package:bandchords/data/song_repository.dart';
+import 'package:realchord/data/attachment_storage.dart';
+import 'package:realchord/data/database.dart';
+import 'package:realchord/data/set_repository.dart';
+import 'package:realchord/data/song_repository.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,7 +15,7 @@ void main() {
 
   setUp(() {
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
-    dir = Directory.systemTemp.createTempSync('bandchords_migration');
+    dir = Directory.systemTemp.createTempSync('realchord_migration');
     file = File('${dir.path}/db.sqlite');
   });
 

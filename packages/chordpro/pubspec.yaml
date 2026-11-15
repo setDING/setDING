@@ -1,5 +1,5 @@
 name: chordpro
-description: ChordPro parser, transposition and chord formatting for BandChords.
+description: ChordPro parser, transposition and chord formatting for RealChord.
 version: 0.1.0
 publish_to: none
 

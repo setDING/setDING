@@ -1,5 +1,5 @@
-name: bandchords
-description: "BandChords – chords and sets for bands on stage."
+name: realchord
+description: "RealChord – chords and sets for bands on stage."
 publish_to: 'none'
 version: 0.1.0+1
 

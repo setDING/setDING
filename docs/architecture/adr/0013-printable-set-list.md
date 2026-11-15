@@ -5,7 +5,7 @@
 
 ## Context
 
-Bands tape a printed set list to the stage floor or to their amps. BandChords can
+Bands tape a printed set list to the stage floor or to their amps. RealChord can
 already export the set list as text (clipboard or `.txt`): a header with set name,
 date and venue, then one line per song with title, key for this set (set
 transposition, ADR-0006) and sequence (`{x_sequence}`, set-specific or from the song,

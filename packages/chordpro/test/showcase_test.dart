@@ -35,7 +35,7 @@ void main() {
 
     test('meta-data', () {
       expect(song.sortTitle, 'Showcase, Feature');
-      expect(song.sortArtist, 'BandChords Band, The');
+      expect(song.sortArtist, 'RealChord Band, The');
       expect(song.meta['composer'], hasLength(2));
       expect(song.tags, ['Test', 'Showcase']);
       expect(song.sequence.map((i) => i.part), [
@@ -58,7 +58,7 @@ void main() {
       final c = comments(song);
       expect(
         c,
-        contains('Feature Showcase by The BandChords Band – key G, 96 BPM'),
+        contains('Feature Showcase by The RealChord Band – key G, 96 BPM'),
       );
       expect(
         c,

@@ -1,7 +1,7 @@
-import 'package:bandchords/ui/live/live_screen.dart';
-import 'package:bandchords/ui/render/song_grid.dart';
-import 'package:bandchords/ui/render/song_header.dart';
-import 'package:bandchords/ui/render/song_view.dart';
+import 'package:realchord/ui/live/live_screen.dart';
+import 'package:realchord/ui/render/song_grid.dart';
+import 'package:realchord/ui/render/song_header.dart';
+import 'package:realchord/ui/render/song_view.dart';
 import 'package:chordpro/chordpro.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

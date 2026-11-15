@@ -3,17 +3,17 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
-import 'package:bandchords/data/attachment_lookup.dart';
-import 'package:bandchords/data/attachment_storage.dart';
-import 'package:bandchords/data/database.dart';
-import 'package:bandchords/data/import_export.dart';
-import 'package:bandchords/data/set_repository.dart';
-import 'package:bandchords/data/song_repository.dart';
-import 'package:bandchords/ui/live/live_screen.dart';
-import 'package:bandchords/ui/render/abc_view.dart';
-import 'package:bandchords/ui/render/song_image.dart';
-import 'package:bandchords/ui/render/song_view.dart';
-import 'package:bandchords/ui/songs/song_screen.dart';
+import 'package:realchord/data/attachment_lookup.dart';
+import 'package:realchord/data/attachment_storage.dart';
+import 'package:realchord/data/database.dart';
+import 'package:realchord/data/import_export.dart';
+import 'package:realchord/data/set_repository.dart';
+import 'package:realchord/data/song_repository.dart';
+import 'package:realchord/ui/live/live_screen.dart';
+import 'package:realchord/ui/render/abc_view.dart';
+import 'package:realchord/ui/render/song_image.dart';
+import 'package:realchord/ui/render/song_view.dart';
+import 'package:realchord/ui/songs/song_screen.dart';
 import 'package:drift/native.dart';
 import 'package:chordpro/chordpro.dart' hide Key;
 import 'package:flutter/material.dart';
@@ -131,7 +131,7 @@ void main() {
 
   test('ZIP import attaches referenced images', () async {
     final db = AppDatabase(NativeDatabase.memory());
-    final dir = Directory.systemTemp.createTempSync('bandchords_zip');
+    final dir = Directory.systemTemp.createTempSync('realchord_zip');
     final storage = AttachmentStorage(dir);
     final songs = SongRepository(db, storage);
     final archive = Archive()

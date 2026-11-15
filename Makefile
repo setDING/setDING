@@ -1,4 +1,4 @@
-# BandChords – local development helpers (Linux).
+# RealChord – local development helpers (Linux).
 #
 # Test instances use their own data directory (DATA_DIR, default .dev-data/),
 # so they never touch the data of a normally started app.
@@ -20,16 +20,16 @@ DATA_DIR ?= $(ROOT)/.dev-data
 FLUTTER  ?= $(shell command -v flutter 2>/dev/null || echo $(HOME)/development/flutter/bin/flutter)
 DART     := $(dir $(FLUTTER))dart
 
-BUNDLE   := $(APP)/build/linux/x64/debug/bundle/bandchords
+BUNDLE   := $(APP)/build/linux/x64/debug/bundle/realchord
 
-# Redirects the app's private data to DATA_DIR: BANDCHORDS_DATA_DIR for the
+# Redirects the app's private data to DATA_DIR: REALCHORD_DATA_DIR for the
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
-TEST_ENV := BANDCHORDS_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
+TEST_ENV := REALCHORD_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
 .PHONY: help setup dev start build reset data-dir check test codegen l10n screenshots examples doctor clean
 
 help: ## Show this help
-	@echo "BandChords – make targets"
+	@echo "RealChord – make targets"
 	@echo
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'

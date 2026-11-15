@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In de, this message translates to:
-  /// **'BandChords'**
+  /// **'RealChord'**
   String get appTitle;
 
   /// No description provided for @navSets.
@@ -1127,7 +1127,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAbout.
   ///
   /// In de, this message translates to:
-  /// **'BandChords läuft lokal auf diesem Gerät. Alle Daten sind offline verfügbar.'**
+  /// **'RealChord läuft lokal auf diesem Gerät. Alle Daten sind offline verfügbar.'**
   String get settingsAbout;
 
   /// No description provided for @lilypondNotice.

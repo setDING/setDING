@@ -3,12 +3,12 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import 'package:bandchords/data/database.dart';
-import 'package:bandchords/data/demo_song.dart';
-import 'package:bandchords/ui/live/live_screen.dart';
-import 'package:bandchords/ui/sets/set_screen.dart';
-import 'package:bandchords/ui/songs/song_editor_screen.dart';
-import 'package:bandchords/ui/songs/song_screen.dart';
+import 'package:realchord/data/database.dart';
+import 'package:realchord/data/demo_song.dart';
+import 'package:realchord/ui/live/live_screen.dart';
+import 'package:realchord/ui/sets/set_screen.dart';
+import 'package:realchord/ui/songs/song_editor_screen.dart';
+import 'package:realchord/ui/songs/song_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -209,7 +209,7 @@ void main() {
 }
 
 const _showcase = r'''{title: ChordPro Showcase}
-{artist: BandChords}
+{artist: RealChord}
 {key: D}
 {tempo: 100}
 {c: Key %{key}, %{tempo} BPM}

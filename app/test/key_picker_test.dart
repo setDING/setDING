@@ -1,4 +1,4 @@
-import 'package:bandchords/ui/widgets/key_picker.dart';
+import 'package:realchord/ui/widgets/key_picker.dart';
 import 'package:chordpro/chordpro.dart' as cp;
 import 'package:flutter_test/flutter_test.dart';
 

@@ -1,4 +1,4 @@
-# BandChords app
+# RealChord app
 
 Flutter client for Android, iOS and Windows (ADR-0002). See the
 [architecture docs](../docs/architecture/README.md) for decisions and scope.
@@ -40,9 +40,9 @@ make check      # all checks – the test gate before every merge
 A keyboard simulates a foot pedal in live mode: arrow keys, Page Up/Down and Space.
 
 Data locations: the database, settings and PDF attachments live in the app's private
-support directory (on Linux `~/.local/share/ch.bandchords.bandchords/`). Older builds
+support directory (on Linux `~/.local/share/ch.realchord.realchord/`). Older builds
 stored the database in the documents folder; it is moved on the next start.
-`BANDCHORDS_DATA_DIR` (development only) overrides the directory for database and PDFs.
+`REALCHORD_DATA_DIR` (development only) overrides the directory for database and PDFs.
 
 ## Structure
 

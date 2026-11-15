@@ -27,22 +27,27 @@ Future<void> main() async {
     ], await rootBundle.loadString('assets/fonts/NotoSans-OFL.txt'));
   });
 
+  // Move data from before the rename to RealChord. Runs before the settings
+  // are read because shared_preferences lives in the same directory on
+  // desktop platforms.
+  final appSupportDir = await getApplicationSupportDirectory();
+  await _migrateLegacySupportDir(appSupportDir);
   final prefs = await SharedPreferences.getInstance();
   // All data lives in the app's private directory (ADR-0001). On desktop
   // the documents directory is the user's visible "Documents" folder.
-  // BANDCHORDS_DATA_DIR (development only, see Makefile) runs an isolated
+  // REALCHORD_DATA_DIR (development only, see Makefile) runs an isolated
   // test instance and never touches existing data.
-  final override = Platform.environment['BANDCHORDS_DATA_DIR'];
+  final override = Platform.environment['REALCHORD_DATA_DIR'];
   final supportDir = override != null && override.isNotEmpty
       ? Directory(override)
-      : await getApplicationSupportDirectory();
+      : appSupportDir;
   final dbFile = await resolveDatabaseFile(
     supportDir,
     legacyDir: override == null ? await _legacyDocumentsDir() : null,
   );
   final db = AppDatabase(
     driftDatabase(
-      name: 'bandchords',
+      name: 'realchord',
       native: DriftNativeOptions(databasePath: () async => dbFile.path),
     ),
   );
@@ -68,7 +73,7 @@ Future<void> main() async {
         databaseProvider.overrideWithValue(db),
         attachmentStorageProvider.overrideWithValue(storage),
       ],
-      child: const BandChordsApp(),
+      child: const RealChordApp(),
     ),
   );
 }
@@ -79,5 +84,14 @@ Future<Directory?> _legacyDocumentsDir() async {
     return await getApplicationDocumentsDirectory();
   } catch (_) {
     return null;
+  }
+}
+
+/// Moves the app directory from before the rename; never blocks the start.
+Future<void> _migrateLegacySupportDir(Directory supportDir) async {
+  try {
+    await migrateLegacySupportDir(supportDir);
+  } on FileSystemException catch (e) {
+    debugPrint('Could not move data from before the rename: $e');
   }
 }

@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appTitle": "BandChords",
+  "appTitle": "RealChord",
   "navSets": "Sets",
   "navSongs": "Songs",
   "navSettings": "Settings",
@@ -171,7 +171,7 @@
   "chorusRepeatLabel": "Label only",
   "settingsPedalHint": "Foot pedal and keyboard: arrow keys, Page Up/Down and Space turn pages. Tap the left or right side of the screen to go back or forward.",
   "settingsStorageUsed": "PDF attachments use {size}",
-  "settingsAbout": "BandChords runs locally on this device. All data is available offline.",
+  "settingsAbout": "RealChord runs locally on this device. All data is available offline.",
   "lilypondNotice": "Lilypond notation cannot be rendered on this device. Source:",
   "sequenceLabel": "Song sequence",
   "sectionIntro": "Intro",

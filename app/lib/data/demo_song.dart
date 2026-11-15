@@ -1,6 +1,6 @@
-/// Example song added on first start. Original text written for BandChords.
+/// Example song added on first start. Original text written for RealChord.
 const demoSongSource = '''{title: Late Train Home}
-{artist: BandChords Example}
+{artist: RealChord Example}
 {key: G}
 {tempo: 92}
 {time: 4/4}

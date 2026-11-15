@@ -1,6 +1,6 @@
 {
   "@@locale": "de",
-  "appTitle": "BandChords",
+  "appTitle": "RealChord",
   "navSets": "Sets",
   "navSongs": "Songs",
   "navSettings": "Einstellungen",
@@ -286,7 +286,7 @@
       }
     }
   },
-  "settingsAbout": "BandChords läuft lokal auf diesem Gerät. Alle Daten sind offline verfügbar.",
+  "settingsAbout": "RealChord läuft lokal auf diesem Gerät. Alle Daten sind offline verfügbar.",
   "lilypondNotice": "Lilypond-Noten können auf diesem Gerät nicht dargestellt werden. Quelltext:",
   "sequenceLabel": "Songablauf",
   "sectionIntro": "Intro",

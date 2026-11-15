@@ -3,11 +3,11 @@ import 'dart:typed_data';
 
 import 'dart:convert';
 
-import 'package:bandchords/data/attachment_storage.dart';
-import 'package:bandchords/data/database.dart';
-import 'package:bandchords/data/import_export.dart';
-import 'package:bandchords/data/set_repository.dart';
-import 'package:bandchords/data/song_repository.dart';
+import 'package:realchord/data/attachment_storage.dart';
+import 'package:realchord/data/database.dart';
+import 'package:realchord/data/import_export.dart';
+import 'package:realchord/data/set_repository.dart';
+import 'package:realchord/data/song_repository.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -20,7 +20,7 @@ void main() {
 
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
-    dir = await Directory.systemTemp.createTemp('bandchords_test');
+    dir = await Directory.systemTemp.createTemp('realchord_test');
     final storage = AttachmentStorage(dir);
     songs = SongRepository(db, storage);
     sets = SetRepository(db, storage);

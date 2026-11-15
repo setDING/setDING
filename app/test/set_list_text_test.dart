@@ -1,7 +1,7 @@
-import 'package:bandchords/data/database.dart';
-import 'package:bandchords/ui/sets/set_list_pdf.dart';
-import 'package:bandchords/ui/sets/set_list_text.dart';
-import 'package:bandchords/ui/sets/set_screen.dart';
+import 'package:realchord/data/database.dart';
+import 'package:realchord/ui/sets/set_list_pdf.dart';
+import 'package:realchord/ui/sets/set_list_text.dart';
+import 'package:realchord/ui/sets/set_screen.dart';
 import 'package:chordpro/chordpro.dart' as cp;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

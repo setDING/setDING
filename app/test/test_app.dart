@@ -1,12 +1,12 @@
 import 'dart:io';
 
-import 'package:bandchords/app.dart';
-import 'package:bandchords/data/attachment_storage.dart';
-import 'package:bandchords/data/database.dart';
-import 'package:bandchords/data/set_repository.dart';
-import 'package:bandchords/data/song_repository.dart';
-import 'package:bandchords/providers.dart';
-import 'package:bandchords/settings/settings.dart';
+import 'package:realchord/app.dart';
+import 'package:realchord/data/attachment_storage.dart';
+import 'package:realchord/data/database.dart';
+import 'package:realchord/data/set_repository.dart';
+import 'package:realchord/data/song_repository.dart';
+import 'package:realchord/providers.dart';
+import 'package:realchord/settings/settings.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +31,7 @@ class TestApp {
     SharedPreferences.setMockInitialValues(prefs);
     return TestApp._(
       AppDatabase(NativeDatabase.memory()),
-      Directory.systemTemp.createTempSync('bandchords_widget'),
+      Directory.systemTemp.createTempSync('realchord_widget'),
       await SharedPreferences.getInstance(),
     );
   }
@@ -42,7 +42,7 @@ class TestApp {
       databaseProvider.overrideWithValue(db),
       attachmentStorageProvider.overrideWithValue(storage),
     ],
-    child: BandChordsApp(home: home),
+    child: RealChordApp(home: home),
   );
 
   Future<void> dispose(WidgetTester tester) async {

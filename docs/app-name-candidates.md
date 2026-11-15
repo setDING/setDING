@@ -26,10 +26,12 @@ The app is called **RealChord**.
 2. Trademark search at swissreg.ch and EUIPO/TMview, classes 9 and 42 (to be done by
    a human; a web search does not replace it).
 3. Check the Google Play, Apple App Store and Microsoft Store for "RealChord".
-4. Rename the code and build identifiers (package names, application IDs, bundle
-   name in the `Makefile`, `BANDCHORDS_DATA_DIR`, feature showcase, `x_bandchords_*`
-   example directive) in a separate change. The ChordPro directive prefix `x_` is
-   not affected.
+4. ~~Rename the code and build identifiers~~ – done 2026-11-15: Dart package
+   `realchord`, application ID / bundle ID `ch.realchord.realchord`, binary
+   `realchord`, database `realchord.sqlite`, `REALCHORD_DATA_DIR`. Data from before
+   the rename (old app directory on Linux/Windows, `bandchords.sqlite`) is moved on
+   the first start. Android and iOS get a new application ID; nothing was installed
+   there yet.
 
 ## Criteria
 

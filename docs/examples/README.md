@@ -2,7 +2,7 @@
 
 | File | Content |
 |---|---|
-| [`feature-showcase.cho`](feature-showcase.cho) | One ChordPro file that uses **every ChordPro feature supported by BandChords** (ADR-0012), plus a second song after `{new_song}`. All lyrics and music are original and free to use. |
+| [`feature-showcase.cho`](feature-showcase.cho) | One ChordPro file that uses **every ChordPro feature supported by RealChord** (ADR-0012), plus a second song after `{new_song}`. All lyrics and music are original and free to use. |
 | [`stage-plan.svg`](stage-plan.svg) | Image used by `{image: src="stage-plan.svg"}` in the showcase. |
 | [`feature-showcase.zip`](feature-showcase.zip) | Both files in one archive: importing it creates the two songs and attaches the image automatically. Rebuild it with `make examples` after changing the files. |
 
@@ -24,7 +24,7 @@ brackets, all section types and labels, chorus recall, SongSelect-style headings
 tab, grids (shape, marks, voltas, strums), font/size/colour directives, conditional
 directives (instrument, user, metadata, negation), chord definitions and diagrams,
 images, SVG, textblock, ABC, Lilypond, `{columns}`, `{column_break}`, `{new_page}`,
-custom `x_` directives (including BandChords' `{x_sequence}`) and `{new_song}`.
+custom `x_` directives (including RealChord' `{x_sequence}`) and `{new_song}`.
 
 The file is also a regression test: `packages/chordpro/test/showcase_test.dart` and
 `app/test/showcase_test.dart` parse, import and render it.

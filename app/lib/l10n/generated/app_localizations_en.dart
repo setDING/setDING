@@ -10,7 +10,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'BandChords';
+  String get appTitle => 'RealChord';
 
   @override
   String get navSets => 'Sets';
@@ -595,7 +595,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsAbout =>
-      'BandChords runs locally on this device. All data is available offline.';
+      'RealChord runs locally on this device. All data is available offline.';
 
   @override
   String get lilypondNotice =>
