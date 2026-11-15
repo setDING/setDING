@@ -77,19 +77,21 @@ class SetRepository {
     String? venue,
   }) async {
     final id = _uuid.v4();
-    await db
-        .into(db.setlists)
-        .insert(
-          SetlistsCompanion.insert(
-            id: id,
-            bandId: bandId,
-            name: name.trim(),
-            gigDate: Value(gigDate),
-            venue: Value(_blankToNull(venue)),
-            updatedAt: DateTime.now(),
-          ),
-        );
-    await markDirty(db, SyncCollection.setlists, id, scope: bandId);
+    await db.transaction(() async {
+      await db
+          .into(db.setlists)
+          .insert(
+            SetlistsCompanion.insert(
+              id: id,
+              bandId: bandId,
+              name: name.trim(),
+              gigDate: Value(gigDate),
+              venue: Value(_blankToNull(venue)),
+              updatedAt: DateTime.now(),
+            ),
+          );
+      await markDirty(db, SyncCollection.setlists, id, scope: bandId);
+    });
     return id;
   }
 
@@ -98,7 +100,7 @@ class SetRepository {
     required String name,
     DateTime? gigDate,
     String? venue,
-  }) async {
+  }) => db.transaction(() async {
     await (db.update(db.setlists)..where((s) => s.id.equals(id))).write(
       SetlistsCompanion(
         name: Value(name.trim()),
@@ -108,7 +110,7 @@ class SetRepository {
       ),
     );
     await _touch(id);
-  }
+  });
 
   Future<void> deleteSet(String id) => db.transaction(() async {
     await (db.update(db.setlists)..where((s) => s.id.equals(id))).write(
@@ -152,83 +154,91 @@ class SetRepository {
     return (row.read(max) ?? -1) + 1;
   }
 
-  Future<void> addSongs(String setId, List<String> songIds) async {
-    await db.transaction(() async {
-      var position = await _nextPosition(setId);
-      for (final songId in songIds) {
+  Future<void> addSongs(String setId, List<String> songIds) =>
+      db.transaction(() async {
+        var position = await _nextPosition(setId);
+        for (final songId in songIds) {
+          await db
+              .into(db.setItems)
+              .insert(
+                SetItemsCompanion.insert(
+                  id: _uuid.v4(),
+                  setId: setId,
+                  songId: Value(songId),
+                  position: position++,
+                  type: SetItemType.song,
+                ),
+              );
+        }
+        await _touch(setId);
+      });
+
+  /// Adds a pause or a text item (announcement, encore separator, …).
+  Future<void> addMarker(String setId, SetItemType type, String label) =>
+      db.transaction(() async {
         await db
             .into(db.setItems)
             .insert(
               SetItemsCompanion.insert(
                 id: _uuid.v4(),
                 setId: setId,
-                songId: Value(songId),
-                position: position++,
-                type: SetItemType.song,
+                position: await _nextPosition(setId),
+                type: type,
+                note: Value(label.trim()),
               ),
             );
-      }
-    });
-    await _touch(setId);
-  }
+        await _touch(setId);
+      });
 
-  /// Adds a pause or a text item (announcement, encore separator, …).
-  Future<void> addMarker(String setId, SetItemType type, String label) async {
-    await db
-        .into(db.setItems)
-        .insert(
-          SetItemsCompanion.insert(
-            id: _uuid.v4(),
-            setId: setId,
-            position: await _nextPosition(setId),
-            type: type,
-            note: Value(label.trim()),
-          ),
+  Future<void> updateMarker(String itemId, String label) =>
+      db.transaction(() async {
+        await (db.update(db.setItems)..where((i) => i.id.equals(itemId))).write(
+          SetItemsCompanion(note: Value(label.trim())),
         );
-    await _touch(setId);
-  }
+        await _touchItem(itemId);
+      });
 
-  Future<void> updateMarker(String itemId, String label) async {
-    await (db.update(db.setItems)..where((i) => i.id.equals(itemId))).write(
-      SetItemsCompanion(note: Value(label.trim())),
-    );
-    await _touchItem(itemId);
-  }
-
-  Future<void> removeItem(String setId, String itemId) async {
-    await (db.delete(db.setItems)..where((i) => i.id.equals(itemId))).go();
-    await _renumber(setId);
-    await _touch(setId);
-  }
+  Future<void> removeItem(String setId, String itemId) =>
+      db.transaction(() async {
+        await (db.delete(db.setItems)..where((i) => i.id.equals(itemId))).go();
+        final items = await getItems(setId);
+        await _writePositions([for (final v in items) v.item.id]);
+        await _touch(setId);
+      });
 
   /// Stores the order of [itemIds] as positions 0..n-1.
-  Future<void> reorder(String setId, List<String> itemIds) async {
-    await db.transaction(() async {
-      for (var i = 0; i < itemIds.length; i++) {
-        await (db.update(db.setItems)..where((it) => it.id.equals(itemIds[i])))
-            .write(SetItemsCompanion(position: Value(i)));
-      }
-    });
-    await _touch(setId);
+  Future<void> reorder(String setId, List<String> itemIds) =>
+      db.transaction(() async {
+        await _writePositions(itemIds);
+        await _touch(setId);
+      });
+
+  Future<void> _writePositions(List<String> itemIds) async {
+    for (var i = 0; i < itemIds.length; i++) {
+      await (db.update(db.setItems)..where((it) => it.id.equals(itemIds[i])))
+          .write(SetItemsCompanion(position: Value(i)));
+    }
   }
 
-  Future<void> setItemTranspose(String itemId, int transpose) async {
-    await (db.update(db.setItems)..where((i) => i.id.equals(itemId))).write(
-      SetItemsCompanion(transpose: Value(transpose)),
-    );
-    await _touchItem(itemId);
-  }
+  Future<void> setItemTranspose(String itemId, int transpose) =>
+      db.transaction(() async {
+        await (db.update(db.setItems)..where((i) => i.id.equals(itemId))).write(
+          SetItemsCompanion(transpose: Value(transpose)),
+        );
+        await _touchItem(itemId);
+      });
 
   /// Set-specific song sequence; null or empty restores the song's own.
-  Future<void> setItemSequence(String itemId, String? sequence) async {
-    final value = sequence?.trim();
-    await (db.update(db.setItems)..where((i) => i.id.equals(itemId))).write(
-      SetItemsCompanion(
-        sequence: Value(value == null || value.isEmpty ? null : value),
-      ),
-    );
-    await _touchItem(itemId);
-  }
+  Future<void> setItemSequence(String itemId, String? sequence) =>
+      db.transaction(() async {
+        final value = sequence?.trim();
+        await (db.update(db.setItems)..where((i) => i.id.equals(itemId))).write(
+          SetItemsCompanion(
+            sequence: Value(value == null || value.isEmpty ? null : value),
+          ),
+        );
+        await _touchItem(itemId);
+      });
 
   /// A set is "offline ready" when all its songs and their attachment files
   /// are available locally (ADR-0001).
@@ -278,12 +288,8 @@ class SetRepository {
     return notReady;
   }
 
-  Future<void> _renumber(String setId) async {
-    final items = await getItems(setId);
-    await reorder(setId, [for (final v in items) v.item.id]);
-  }
-
-  /// Records a change of the set (or one of its items) for the sync.
+  /// Records a change of the set (or one of its items) for the sync. Runs in
+  /// the transaction of the change.
   Future<void> _touch(String setId) async {
     final current = await (db.select(
       db.setlists,

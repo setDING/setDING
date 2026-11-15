@@ -540,4 +540,59 @@ void main() {
       expect(await outbox(), isEmpty);
     });
   });
+
+  group('atomic writes', () {
+    Future<void> failOutbox(String event) => db.customStatement(
+      'CREATE TRIGGER fail_outbox BEFORE $event ON sync_outbox '
+      "BEGIN SELECT RAISE(ABORT, 'outbox unavailable'); END",
+    );
+
+    test('a change is rolled back when its outbox entry fails', () async {
+      final kept = await songs.createSong(source: '{title: Kept}');
+      final setId = await sets.createSet(name: 'Gig');
+      await failOutbox('INSERT');
+
+      await expectLater(
+        songs.createSong(source: '{title: New}'),
+        throwsA(anything),
+      );
+      expect((await songs.watchSongs().first).map((s) => s.title), ['Kept']);
+
+      await expectLater(
+        songs.updateSource(kept, '{title: Changed}'),
+        throwsA(anything),
+      );
+      expect((await songs.getSong(kept))!.title, 'Kept');
+
+      await expectLater(sets.addSongs(setId, [kept]), throwsA(anything));
+      expect(await sets.getItems(setId), isEmpty);
+    });
+
+    test('removing a set item marks the set once', () async {
+      final a = await songs.createSong(source: '{title: A}');
+      final b = await songs.createSong(source: '{title: B}');
+      final setId = await sets.createSet(name: 'Gig');
+      await sets.addSongs(setId, [a, b]);
+      await engine.sync();
+      expect(await outbox(), isEmpty);
+
+      final items = await sets.getItems(setId);
+      await sets.removeItem(setId, items.first.item.id);
+      final entry = (await outbox()).single;
+      expect(entry.recordId, setId);
+      expect(entry.version, 1);
+      expect((await sets.getItems(setId)).single.item.position, 0);
+    });
+
+    test('a pushed revision is only stored with the outbox removal', () async {
+      final id = await songs.createSong(source: '{title: New}');
+      await failOutbox('DELETE');
+
+      await expectLater(engine.sync(), throwsA(anything));
+      expect(server.songs[id], isNotNull);
+      // Neither the revision nor the removal of the outbox entry is stored.
+      expect((await songs.getSong(id))!.revision, 0);
+      expect((await outbox()).single.recordId, id);
+    });
+  });
 }

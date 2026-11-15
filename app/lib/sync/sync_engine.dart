@@ -529,10 +529,12 @@ class SyncEngine {
     );
     try {
       final stored = await _pushSongOrRecover(remote, create: create);
-      await (db.update(db.songs)..where((s) => s.id.equals(song.id))).write(
-        SongsCompanion(revision: Value(stored.revision)),
-      );
-      await _done(entry);
+      await db.transaction(() async {
+        await (db.update(db.songs)..where((s) => s.id.equals(song.id))).write(
+          SongsCompanion(revision: Value(stored.revision)),
+        );
+        await _done(entry);
+      });
       return _Push.done;
     } on BackendException catch (e) {
       if (e.kind == BackendErrorKind.conflict) {
@@ -624,10 +626,12 @@ class SyncEngine {
         if (!create || e.kind != BackendErrorKind.server) rethrow;
         stored = await backend.pushSet(remote, create: false);
       }
-      await (db.update(db.setlists)..where((s) => s.id.equals(set.id))).write(
-        SetlistsCompanion(revision: Value(stored.revision)),
-      );
-      await _done(entry);
+      await db.transaction(() async {
+        await (db.update(db.setlists)..where((s) => s.id.equals(set.id))).write(
+          SetlistsCompanion(revision: Value(stored.revision)),
+        );
+        await _done(entry);
+      });
       return _Push.done;
     } on BackendException catch (e) {
       if (e.kind == BackendErrorKind.notAllowed) {
@@ -685,13 +689,17 @@ class SyncEngine {
         create: create,
         bytes: bytes,
       );
-      await (db.update(db.attachments)..where((x) => x.id.equals(a.id))).write(
-        AttachmentsCompanion(
-          revision: Value(stored.revision),
-          remoteFile: Value(stored.file ?? a.remoteFile),
-        ),
-      );
-      await _done(entry);
+      await db.transaction(() async {
+        await (db.update(
+          db.attachments,
+        )..where((x) => x.id.equals(a.id))).write(
+          AttachmentsCompanion(
+            revision: Value(stored.revision),
+            remoteFile: Value(stored.file ?? a.remoteFile),
+          ),
+        );
+        await _done(entry);
+      });
       return _Push.done;
     } on BackendException catch (e) {
       if (e.kind == BackendErrorKind.network ||

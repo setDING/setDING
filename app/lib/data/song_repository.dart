@@ -113,46 +113,50 @@ class SongRepository {
   }) async {
     final meta = SongMeta.fromSource(source);
     final id = _uuid.v4();
-    await db
-        .into(db.songs)
-        .insert(
-          SongsCompanion.insert(
-            id: id,
-            libraryId: libraryId,
-            chordproSource: Value(source),
-            title: meta.title ?? _blankToNull(title) ?? '',
-            artist: Value(meta.artist ?? _blankToNull(artist)),
-            songKey: Value(meta.key),
-            tempo: Value(meta.tempo),
-            sortTitle: Value(meta.sortTitle),
-            sortArtist: Value(meta.sortArtist),
-            tags: Value(meta.tagsColumn),
-            updatedAt: DateTime.now(),
-          ),
-        );
-    await markDirty(db, SyncCollection.songs, id, scope: libraryId);
+    await _write(() async {
+      await db
+          .into(db.songs)
+          .insert(
+            SongsCompanion.insert(
+              id: id,
+              libraryId: libraryId,
+              chordproSource: Value(source),
+              title: meta.title ?? _blankToNull(title) ?? '',
+              artist: Value(meta.artist ?? _blankToNull(artist)),
+              songKey: Value(meta.key),
+              tempo: Value(meta.tempo),
+              sortTitle: Value(meta.sortTitle),
+              sortArtist: Value(meta.sortArtist),
+              tags: Value(meta.tagsColumn),
+              updatedAt: DateTime.now(),
+            ),
+          );
+      await markDirty(db, SyncCollection.songs, id, scope: libraryId);
+    });
     return id;
   }
 
   /// Saves a new ChordPro source and refreshes the extracted metadata.
   Future<void> updateSource(String id, String source) async {
-    final existing = await getSong(id);
-    if (existing == null) return;
     final meta = SongMeta.fromSource(source);
-    await (db.update(db.songs)..where((s) => s.id.equals(id))).write(
-      SongsCompanion(
-        chordproSource: Value(source),
-        title: Value(meta.title ?? existing.title),
-        artist: Value(meta.artist ?? existing.artist),
-        songKey: Value(meta.key),
-        tempo: Value(meta.tempo),
-        sortTitle: Value(meta.sortTitle),
-        sortArtist: Value(meta.sortArtist),
-        tags: Value(meta.tagsColumn),
-        updatedAt: Value(DateTime.now()),
-      ),
-    );
-    await markDirty(db, SyncCollection.songs, id, scope: existing.libraryId);
+    await _write(() async {
+      final existing = await getSong(id);
+      if (existing == null) return;
+      await (db.update(db.songs)..where((s) => s.id.equals(id))).write(
+        SongsCompanion(
+          chordproSource: Value(source),
+          title: Value(meta.title ?? existing.title),
+          artist: Value(meta.artist ?? existing.artist),
+          songKey: Value(meta.key),
+          tempo: Value(meta.tempo),
+          sortTitle: Value(meta.sortTitle),
+          sortArtist: Value(meta.sortArtist),
+          tags: Value(meta.tagsColumn),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+      await markDirty(db, SyncCollection.songs, id, scope: existing.libraryId);
+    });
   }
 
   /// All tags used in the library, sorted.
@@ -199,22 +203,24 @@ class SongRepository {
   }
 
   /// Updates title and artist of a song without ChordPro metadata.
-  Future<void> updateTitleArtist(
-    String id,
-    String title,
-    String? artist,
-  ) async {
-    final existing = await getSong(id);
-    if (existing == null) return;
-    await (db.update(db.songs)..where((s) => s.id.equals(id))).write(
-      SongsCompanion(
-        title: Value(title.trim()),
-        artist: Value(_blankToNull(artist)),
-        updatedAt: Value(DateTime.now()),
-      ),
-    );
-    await markDirty(db, SyncCollection.songs, id, scope: existing.libraryId);
-  }
+  Future<void> updateTitleArtist(String id, String title, String? artist) =>
+      _write(() async {
+        final existing = await getSong(id);
+        if (existing == null) return;
+        await (db.update(db.songs)..where((s) => s.id.equals(id))).write(
+          SongsCompanion(
+            title: Value(title.trim()),
+            artist: Value(_blankToNull(artist)),
+            updatedAt: Value(DateTime.now()),
+          ),
+        );
+        await markDirty(
+          db,
+          SyncCollection.songs,
+          id,
+          scope: existing.libraryId,
+        );
+      });
 
   /// Soft-deletes a song, removes it from all sets and deletes its files.
   Future<void> deleteSong(String id) async {
@@ -300,20 +306,28 @@ class SongRepository {
     final ext = extension.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
     final fileName = '$id.${ext.isEmpty ? 'bin' : ext}';
     await storage.write(fileName, bytes);
-    await db
-        .into(db.attachments)
-        .insert(
-          AttachmentsCompanion.insert(
-            id: id,
-            songId: songId,
-            name: name,
-            fileName: fileName,
-            pages: Value(pages),
-            sizeBytes: bytes.length,
-            updatedAt: DateTime.now(),
-          ),
-        );
-    await _markAttachment(id, songId, fileName);
+    try {
+      await _write(() async {
+        await db
+            .into(db.attachments)
+            .insert(
+              AttachmentsCompanion.insert(
+                id: id,
+                songId: songId,
+                name: name,
+                fileName: fileName,
+                pages: Value(pages),
+                sizeBytes: bytes.length,
+                updatedAt: DateTime.now(),
+              ),
+            );
+        await _markAttachment(id, songId, fileName);
+      });
+    } catch (_) {
+      // Not stored: the file would be an orphan.
+      await storage.delete(fileName);
+      rethrow;
+    }
     return id;
   }
 
@@ -331,7 +345,7 @@ class SongRepository {
     await markDirty(db, SyncCollection.attachments, id, scope: song.libraryId);
   }
 
-  Future<void> renameAttachment(String id, String name) async {
+  Future<void> renameAttachment(String id, String name) => _write(() async {
     await (db.update(db.attachments)..where((a) => a.id.equals(id))).write(
       AttachmentsCompanion(name: Value(name), updatedAt: Value(DateTime.now())),
     );
@@ -339,21 +353,28 @@ class SongRepository {
       db.attachments,
     )..where((a) => a.id.equals(id))).getSingleOrNull();
     if (a != null) await _markAttachment(a.id, a.songId, a.fileName);
-  }
+  });
 
   Future<void> deleteAttachment(AttachmentEntry attachment) async {
-    await (db.update(db.attachments)..where((a) => a.id.equals(attachment.id)))
-        .write(const AttachmentsCompanion(deleted: Value(true)));
-    await _markAttachment(
-      attachment.id,
-      attachment.songId,
-      attachment.fileName,
-    );
-    await (db.update(db.personalOverlays)
-          ..where((o) => o.liveView.equals(attachment.id)))
-        .write(const PersonalOverlaysCompanion(liveView: Value(null)));
+    await _write(() async {
+      await (db.update(db.attachments)
+            ..where((a) => a.id.equals(attachment.id)))
+          .write(const AttachmentsCompanion(deleted: Value(true)));
+      await _markAttachment(
+        attachment.id,
+        attachment.songId,
+        attachment.fileName,
+      );
+      await (db.update(db.personalOverlays)
+            ..where((o) => o.liveView.equals(attachment.id)))
+          .write(const PersonalOverlaysCompanion(liveView: Value(null)));
+    });
     await storage.delete(attachment.fileName);
   }
+
+  /// Runs a change together with its outbox entries ([markDirty]) in one
+  /// transaction, so that no change is stored without being synced.
+  Future<T> _write<T>(Future<T> Function() change) => db.transaction(change);
 
   // Personal overlays --------------------------------------------------------
 
