@@ -35,7 +35,8 @@ The schema is defined as versioned migrations in
 
 Other song metadata (artist, key, tempo, tags, sort fields) is derived from the
 ChordPro text in the client (ADR-0003) and not stored on the server.
-Personal overlays (ADR-0006) follow in phase 2.
+Personal overlays (ADR-0006, ADR-0020) are stored in `overlays` (see the
+decision log).
 
 ### Sync fields
 
@@ -122,6 +123,7 @@ Enforced with PocketBase API rules; the client only mirrors them in the UI.
 - 2026-11-15: Accepted by the owner.
 - 2026-11-15: Extended by **ADR-0017** (accepted): `organizations` and `org_memberships`, `bands.organization`; `songs`, `attachments` and `invites` reference the organization instead of a band; users see the people of their organizations. Migration `1794900000_organizations.js`.
 - 2026-11-15: Invitations (issue #16): `org_memberships.invite` (link a person joined with); organization admins may revoke links (`invites.revoked` only); links are created and redeemed through routes in `pb_hooks/invites.pb.js`. Migration `1795000000_invitations.js`.
+- 2026-11-15: Personal adjustments (**ADR-0020**, issue #82): collection `overlays` (`user`, `song`, `data` JSON with the fields of layer 3, sync fields; unique per user and song; record ID derived from user and song, so all devices of a person use the same record). Private: only the user may list, create and change their overlays, and only for songs of their organizations; `user` and `song` cannot be changed. Deleting a song soft-deletes its overlays (`pb_hooks/songs.pb.js`). Migration `1795100000_overlays.js`.
 
 ## Open points
 

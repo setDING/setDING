@@ -593,12 +593,63 @@ class PocketBaseBackend implements SyncBackend {
     });
   }
 
+  static RemoteOverlay _overlay(RecordModel r) {
+    final data = r.get<dynamic>('data');
+    return RemoteOverlay(
+      id: r.id,
+      userId: r.getStringValue('user'),
+      songId: r.getStringValue('song'),
+      data: data is Map ? data.cast<String, dynamic>() : const {},
+      revision: r.getIntValue('revision'),
+      deleted: r.getBoolValue('deleted'),
+    );
+  }
+
+  @override
+  Future<List<RemoteOverlay>> pullOverlays(int since) async => [
+    for (final r in await _since(
+      'overlays',
+      'user',
+      currentUser?.id ?? '',
+      since,
+    ))
+      _overlay(r),
+  ];
+
+  @override
+  Future<RemoteOverlay> pushOverlay(
+    RemoteOverlay overlay, {
+    required bool create,
+  }) => _signedIn(() async {
+    final body = {'data': overlay.data, 'deleted': overlay.deleted};
+    return _overlay(
+      create
+          ? await _pb
+                .collection('overlays')
+                .create(
+                  body: {
+                    'id': overlay.id,
+                    'user': overlay.userId,
+                    'song': overlay.songId,
+                    ...body,
+                  },
+                )
+          : await _pb.collection('overlays').update(overlay.id, body: body),
+    );
+  });
+
   @override
   AttachmentDownloads openDownloads() => _PocketBaseDownloads(this);
 
   @override
   Stream<String> watchChanges() {
-    const collections = ['songs', 'setlists', 'attachments', 'bands'];
+    const collections = [
+      'songs',
+      'setlists',
+      'attachments',
+      'bands',
+      'overlays',
+    ];
     late StreamController<String> controller;
     final unsubscribers = <Future<void> Function()>[];
     controller = StreamController<String>(

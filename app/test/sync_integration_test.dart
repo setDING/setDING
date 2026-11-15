@@ -5,7 +5,7 @@ library;
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:drift/drift.dart' show driftRuntimeOptions;
+import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:realchord/data/attachment_storage.dart';
@@ -47,8 +47,12 @@ class Device {
     return Device._(db, dir, backend, engine);
   }
 
-  SongRepository songs(String org) =>
-      SongRepository(db, AttachmentStorage(dir), libraryId: org);
+  SongRepository songs(String org) => SongRepository(
+    db,
+    AttachmentStorage(dir),
+    libraryId: org,
+    userId: backend.currentUser?.id,
+  );
   SetRepository sets(String band) =>
       SetRepository(db, AttachmentStorage(dir), bandId: band);
 
@@ -251,6 +255,42 @@ void main() {
     await bob.sync();
     expect(await bob.songs(org).getAttachments(song), isEmpty);
     expect(await AttachmentStorage(bob.dir).exists(bobs.fileName), isFalse);
+    await ann.close();
+    await bob.close();
+  });
+
+  test('personal adjustments follow the person, not the device', () async {
+    final (ann, bob, org, _) = await twoDevices();
+    final song = await ann
+        .songs(org)
+        .createSong(source: '{title: Mine}\n[C]la');
+    await ann.sync();
+    await bob.sync();
+
+    // Ann's second device: same account, new database.
+    final annTablet = await Device.create(url);
+    addTearDown(annTablet.close);
+    await annTablet.backend.signIn(
+      email: ann.backend.currentUser!.email,
+      password: 'password-123',
+    );
+    await annTablet.sync();
+
+    final repo = ann.songs(org);
+    await repo.saveOverlay(
+      (await repo.getOverlay(song))
+          .copyWith(transpose: 2, notes: const Value('Solo after the bridge')),
+    );
+    expect((await ann.sync()).pushed, 1);
+
+    await annTablet.sync();
+    final there = await annTablet.songs(org).getOverlay(song);
+    expect(there.transpose, 2);
+    expect(there.notes, 'Solo after the bridge');
+
+    // Private: Bob sees nothing of it.
+    await bob.sync();
+    expect((await bob.songs(org).getOverlay(song)).transpose, 0);
     await ann.close();
     await bob.close();
   });

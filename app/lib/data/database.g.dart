@@ -4191,6 +4191,18 @@ class $PersonalOverlaysTable extends PersonalOverlays
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _revisionMeta = const VerificationMeta(
+    'revision',
+  );
+  @override
+  late final GeneratedColumn<int> revision = GeneratedColumn<int>(
+    'revision',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     ownerId,
@@ -4202,6 +4214,7 @@ class $PersonalOverlaysTable extends PersonalOverlays
     notes,
     nashville,
     liveView,
+    revision,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4271,6 +4284,12 @@ class $PersonalOverlaysTable extends PersonalOverlays
         liveView.isAcceptableOrUnknown(data['live_view']!, _liveViewMeta),
       );
     }
+    if (data.containsKey('revision')) {
+      context.handle(
+        _revisionMeta,
+        revision.isAcceptableOrUnknown(data['revision']!, _revisionMeta),
+      );
+    }
     return context;
   }
 
@@ -4316,6 +4335,10 @@ class $PersonalOverlaysTable extends PersonalOverlays
         DriftSqlType.string,
         data['${effectivePrefix}live_view'],
       ),
+      revision: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}revision'],
+      )!,
     );
   }
 
@@ -4345,6 +4368,9 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
 
   /// What live mode shows: null = ChordPro, otherwise an attachment ID.
   final String? liveView;
+
+  /// Server revision; 0 = not on the server (schema 9, ADR-0020).
+  final int revision;
   const SongOverlay({
     required this.ownerId,
     required this.songId,
@@ -4355,6 +4381,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     this.notes,
     this.nashville,
     this.liveView,
+    required this.revision,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4376,6 +4403,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     if (!nullToAbsent || liveView != null) {
       map['live_view'] = Variable<String>(liveView);
     }
+    map['revision'] = Variable<int>(revision);
     return map;
   }
 
@@ -4398,6 +4426,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       liveView: liveView == null && nullToAbsent
           ? const Value.absent()
           : Value(liveView),
+      revision: Value(revision),
     );
   }
 
@@ -4416,6 +4445,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       notes: serializer.fromJson<String?>(json['notes']),
       nashville: serializer.fromJson<bool?>(json['nashville']),
       liveView: serializer.fromJson<String?>(json['liveView']),
+      revision: serializer.fromJson<int>(json['revision']),
     );
   }
   @override
@@ -4431,6 +4461,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       'notes': serializer.toJson<String?>(notes),
       'nashville': serializer.toJson<bool?>(nashville),
       'liveView': serializer.toJson<String?>(liveView),
+      'revision': serializer.toJson<int>(revision),
     };
   }
 
@@ -4444,6 +4475,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     Value<String?> notes = const Value.absent(),
     Value<bool?> nashville = const Value.absent(),
     Value<String?> liveView = const Value.absent(),
+    int? revision,
   }) => SongOverlay(
     ownerId: ownerId ?? this.ownerId,
     songId: songId ?? this.songId,
@@ -4454,6 +4486,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     notes: notes.present ? notes.value : this.notes,
     nashville: nashville.present ? nashville.value : this.nashville,
     liveView: liveView.present ? liveView.value : this.liveView,
+    revision: revision ?? this.revision,
   );
   SongOverlay copyWithCompanion(PersonalOverlaysCompanion data) {
     return SongOverlay(
@@ -4466,6 +4499,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       notes: data.notes.present ? data.notes.value : this.notes,
       nashville: data.nashville.present ? data.nashville.value : this.nashville,
       liveView: data.liveView.present ? data.liveView.value : this.liveView,
+      revision: data.revision.present ? data.revision.value : this.revision,
     );
   }
 
@@ -4480,7 +4514,8 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
           ..write('fontScale: $fontScale, ')
           ..write('notes: $notes, ')
           ..write('nashville: $nashville, ')
-          ..write('liveView: $liveView')
+          ..write('liveView: $liveView, ')
+          ..write('revision: $revision')
           ..write(')'))
         .toString();
   }
@@ -4496,6 +4531,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     notes,
     nashville,
     liveView,
+    revision,
   );
   @override
   bool operator ==(Object other) =>
@@ -4509,7 +4545,8 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
           other.fontScale == this.fontScale &&
           other.notes == this.notes &&
           other.nashville == this.nashville &&
-          other.liveView == this.liveView);
+          other.liveView == this.liveView &&
+          other.revision == this.revision);
 }
 
 class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
@@ -4522,6 +4559,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
   final Value<String?> notes;
   final Value<bool?> nashville;
   final Value<String?> liveView;
+  final Value<int> revision;
   final Value<int> rowid;
   const PersonalOverlaysCompanion({
     this.ownerId = const Value.absent(),
@@ -4533,6 +4571,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     this.notes = const Value.absent(),
     this.nashville = const Value.absent(),
     this.liveView = const Value.absent(),
+    this.revision = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   PersonalOverlaysCompanion.insert({
@@ -4545,6 +4584,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     this.notes = const Value.absent(),
     this.nashville = const Value.absent(),
     this.liveView = const Value.absent(),
+    this.revision = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : songId = Value(songId);
   static Insertable<SongOverlay> custom({
@@ -4557,6 +4597,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     Expression<String>? notes,
     Expression<bool>? nashville,
     Expression<String>? liveView,
+    Expression<int>? revision,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -4569,6 +4610,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
       if (notes != null) 'notes': notes,
       if (nashville != null) 'nashville': nashville,
       if (liveView != null) 'live_view': liveView,
+      if (revision != null) 'revision': revision,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -4583,6 +4625,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     Value<String?>? notes,
     Value<bool?>? nashville,
     Value<String?>? liveView,
+    Value<int>? revision,
     Value<int>? rowid,
   }) {
     return PersonalOverlaysCompanion(
@@ -4595,6 +4638,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
       notes: notes ?? this.notes,
       nashville: nashville ?? this.nashville,
       liveView: liveView ?? this.liveView,
+      revision: revision ?? this.revision,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4629,6 +4673,9 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     if (liveView.present) {
       map['live_view'] = Variable<String>(liveView.value);
     }
+    if (revision.present) {
+      map['revision'] = Variable<int>(revision.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -4647,6 +4694,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
           ..write('notes: $notes, ')
           ..write('nashville: $nashville, ')
           ..write('liveView: $liveView, ')
+          ..write('revision: $revision, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -9295,6 +9343,7 @@ typedef $$PersonalOverlaysTableCreateCompanionBuilder =
       Value<String?> notes,
       Value<bool?> nashville,
       Value<String?> liveView,
+      Value<int> revision,
       Value<int> rowid,
     });
 typedef $$PersonalOverlaysTableUpdateCompanionBuilder =
@@ -9308,6 +9357,7 @@ typedef $$PersonalOverlaysTableUpdateCompanionBuilder =
       Value<String?> notes,
       Value<bool?> nashville,
       Value<String?> liveView,
+      Value<int> revision,
       Value<int> rowid,
     });
 
@@ -9386,6 +9436,11 @@ class $$PersonalOverlaysTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$SongsTableFilterComposer get songId {
     final $$SongsTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -9459,6 +9514,11 @@ class $$PersonalOverlaysTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$SongsTableOrderingComposer get songId {
     final $$SongsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -9515,6 +9575,9 @@ class $$PersonalOverlaysTableAnnotationComposer
 
   GeneratedColumn<String> get liveView =>
       $composableBuilder(column: $table.liveView, builder: (column) => column);
+
+  GeneratedColumn<int> get revision =>
+      $composableBuilder(column: $table.revision, builder: (column) => column);
 
   $$SongsTableAnnotationComposer get songId {
     final $$SongsTableAnnotationComposer composer = $composerBuilder(
@@ -9579,6 +9642,7 @@ class $$PersonalOverlaysTableTableManager
                 Value<String?> notes = const Value.absent(),
                 Value<bool?> nashville = const Value.absent(),
                 Value<String?> liveView = const Value.absent(),
+                Value<int> revision = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PersonalOverlaysCompanion(
                 ownerId: ownerId,
@@ -9590,6 +9654,7 @@ class $$PersonalOverlaysTableTableManager
                 notes: notes,
                 nashville: nashville,
                 liveView: liveView,
+                revision: revision,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -9603,6 +9668,7 @@ class $$PersonalOverlaysTableTableManager
                 Value<String?> notes = const Value.absent(),
                 Value<bool?> nashville = const Value.absent(),
                 Value<String?> liveView = const Value.absent(),
+                Value<int> revision = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PersonalOverlaysCompanion.insert(
                 ownerId: ownerId,
@@ -9614,6 +9680,7 @@ class $$PersonalOverlaysTableTableManager
                 notes: notes,
                 nashville: nashville,
                 liveView: liveView,
+                revision: revision,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

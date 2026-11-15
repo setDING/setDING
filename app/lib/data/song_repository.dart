@@ -514,13 +514,30 @@ class SongRepository {
     transpose: 0,
     capo: 0,
     fontScale: 1.0,
+    revision: 0,
   );
 
   /// Saves all fields, including null values (e.g. resetting Nashville to
-  /// the device setting or removing a note), always for [overlayOwner].
-  Future<void> saveOverlay(SongOverlay overlay) => db
-      .into(db.personalOverlays)
-      .insertOnConflictUpdate(
-        overlay.copyWith(ownerId: overlayOwner).toCompanion(false),
+  /// the device setting or removing a note), always for [overlayOwner];
+  /// adjustments of organization songs are synced with the account
+  /// (ADR-0020).
+  Future<void> saveOverlay(SongOverlay overlay) => _write(() async {
+    await db
+        .into(db.personalOverlays)
+        .insertOnConflictUpdate(
+          overlay
+              .copyWith(ownerId: overlayOwner)
+              .toCompanion(false)
+              // The server revision is kept as stored.
+              .copyWith(revision: const Value.absent()),
+        );
+    if (overlayOwner != localOwnerId) {
+      await markDirty(
+        db,
+        SyncCollection.overlays,
+        overlayRecordId(overlayOwner, overlay.songId),
+        scope: libraryId,
       );
+    }
+  });
 }

@@ -446,6 +446,57 @@ class FakeSyncBackend implements SyncBackend {
     return stored;
   }
 
+  /// Personal adjustments by record ID (ADR-0020).
+  final overlays = <String, RemoteOverlay>{};
+
+  /// Simulates a change on another device of [overlay]'s user.
+  RemoteOverlay putOverlay(RemoteOverlay overlay) {
+    final stored = RemoteOverlay(
+      id: overlay.id,
+      userId: overlay.userId,
+      songId: overlay.songId,
+      data: overlay.data,
+      revision: ++_serverRevision,
+      deleted: overlay.deleted,
+    );
+    overlays[overlay.id] = stored;
+    return stored;
+  }
+
+  @override
+  Future<List<RemoteOverlay>> pullOverlays(int since) async {
+    _requireUser();
+    return overlays.values
+        .where((o) => o.userId == user!.id && o.revision > since)
+        .toList()
+      ..sort((a, b) => a.revision.compareTo(b.revision));
+  }
+
+  @override
+  Future<RemoteOverlay> pushOverlay(
+    RemoteOverlay overlay, {
+    required bool create,
+  }) async {
+    _requireUser();
+    pushCount++;
+    final song = songs[overlay.songId];
+    if (overlay.userId != user!.id ||
+        song == null ||
+        !orgMembers.any(
+          (m) => m.scopeId == song.organizationId && m.user.id == user!.id,
+        )) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    final existing = overlays[overlay.id];
+    if (create && existing != null) {
+      throw const BackendException(BackendErrorKind.server);
+    }
+    if (!create && existing == null) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    return putOverlay(overlay);
+  }
+
   RemoteSet putSet(RemoteSet set) {
     final stored = RemoteSet(
       id: set.id,

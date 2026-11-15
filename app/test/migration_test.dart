@@ -257,4 +257,36 @@ void main() {
     expect(overlay.transpose, 3);
     await upgraded.close();
   });
+
+  test('upgrades a schema 8 database: overlays get a revision', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final storage = AttachmentStorage(dir);
+    final org = SongRepository(
+      current,
+      storage,
+      libraryId: 'o1',
+      userId: 'ann',
+    );
+    final id = await org.createSong(source: '{title: Org}');
+    await org.saveOverlay((await org.getOverlay(id)).copyWith(transpose: 1));
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    raw.execute('ALTER TABLE personal_overlays DROP COLUMN revision');
+    raw.execute('PRAGMA user_version = 8');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final overlay = await SongRepository(
+      upgraded,
+      storage,
+      libraryId: 'o1',
+      userId: 'ann',
+    ).getOverlay(id);
+    expect(
+      (overlay.ownerId, overlay.transpose, overlay.revision),
+      ('ann', 1, 0),
+    );
+    await upgraded.close();
+  });
 }

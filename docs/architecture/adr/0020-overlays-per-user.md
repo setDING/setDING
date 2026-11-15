@@ -101,6 +101,11 @@ whose owner is unknown.
   needs. Clarified: songs of the local library always use the owner `local`.
 - 2026-11-15: Local part implemented (schema 8, #81); sync with the account
   follows in #82.
+- 2026-11-15: Sync implemented (#82): server collection `overlays` (ADR-0015
+  decision log); local schema 9 adds `revision` to `personal_overlays`; the
+  server record ID is a UUID v5 of user and song, so a person's devices never
+  create two records; delta pull with the user as scope; changes of another
+  person on a shared device stay in the outbox until that person syncs.
 
 ## Open points
 

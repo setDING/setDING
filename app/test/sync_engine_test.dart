@@ -628,6 +628,131 @@ void main() {
     expect(items.map((v) => v.song?.id), ['s7', null]);
   });
 
+  group('personal adjustments (ADR-0020)', () {
+    late SongRepository mine;
+
+    setUp(() async {
+      mine = SongRepository(
+        db,
+        AttachmentStorage(dir),
+        libraryId: 'o1',
+        userId: 'ann',
+      );
+      server.putSong(remoteSong('s1', '{title: Song}\n{key: G}'));
+      await engine.sync();
+    });
+
+    Future<void> adjust(
+      SongRepository repo,
+      SongOverlay Function(SongOverlay) f,
+    ) async => repo.saveOverlay(f(await repo.getOverlay('s1')));
+
+    test(
+      'pushes own adjustments with a record ID shared by all devices',
+      () async {
+        await adjust(
+          mine,
+          (o) => o.copyWith(transpose: 2, notes: const Value('Solo')),
+        );
+        final report = await engine.sync();
+        expect(report.error, isNull);
+        final id = SyncEngine.overlayServerId('ann', 's1');
+        final remote = server.overlays[id]!;
+        expect(remote.userId, 'ann');
+        expect(remote.data['transpose'], 2);
+        expect(remote.data['notes'], 'Solo');
+        expect((await mine.getOverlay('s1')).revision, remote.revision);
+        expect(await outbox(), isEmpty);
+      },
+    );
+
+    test('pulls adjustments made on another device', () async {
+      server.putOverlay(
+        RemoteOverlay(
+          id: SyncEngine.overlayServerId('ann', 's1'),
+          userId: 'ann',
+          songId: 's1',
+          data: const {'transpose': -3, 'capo_fret': 2, 'font_scale': 1.2},
+        ),
+      );
+      await engine.sync();
+      final o = await mine.getOverlay('s1');
+      expect((o.transpose, o.capoFret, o.fontScale), (-3, 2, 1.2));
+      expect(
+        await outbox(),
+        isEmpty,
+        reason: 'pulled changes are not pushed back',
+      );
+
+      // Removed on the other device.
+      final id = SyncEngine.overlayServerId('ann', 's1');
+      server.putOverlay(
+        RemoteOverlay(id: id, userId: 'ann', songId: 's1', deleted: true),
+      );
+      await engine.sync();
+      expect((await mine.getOverlay('s1')).transpose, 0);
+    });
+
+    test(
+      'the last writer wins: a pending local change is kept and pushed',
+      () async {
+        await adjust(mine, (o) => o.copyWith(transpose: 1));
+        await engine.sync();
+        final id = SyncEngine.overlayServerId('ann', 's1');
+        server.putOverlay(
+          RemoteOverlay(
+            id: id,
+            userId: 'ann',
+            songId: 's1',
+            data: const {'transpose': 5},
+          ),
+        );
+        await adjust(mine, (o) => o.copyWith(transpose: 7));
+        await engine.sync();
+        expect((await mine.getOverlay('s1')).transpose, 7);
+        expect(server.overlays[id]!.data['transpose'], 7);
+      },
+    );
+
+    test(
+      "on a shared device, another person's change waits for them",
+      () async {
+        final bob = SongRepository(
+          db,
+          AttachmentStorage(dir),
+          libraryId: 'o1',
+          userId: 'bob',
+        );
+        await adjust(bob, (o) => o.copyWith(transpose: 4));
+        await adjust(mine, (o) => o.copyWith(transpose: 1));
+        await engine.sync();
+        expect(server.overlays.values.map((o) => o.userId), ['ann']);
+        expect((await outbox()).single.recordId, 'bob:s1');
+      },
+    );
+
+    test('taken-over and local-library adjustments', () async {
+      // Taken over after the upgrade: never on the server yet.
+      await db
+          .into(db.personalOverlays)
+          .insert(
+            PersonalOverlaysCompanion.insert(
+              ownerId: const Value('ann'),
+              songId: 's1',
+              capoFret: const Value(3),
+            ),
+          );
+      final local = SongRepository(db, AttachmentStorage(dir), userId: 'ann');
+      final own = await local.createSong(source: '{title: Mine}');
+      await local.saveOverlay(
+        (await local.getOverlay(own)).copyWith(transpose: 2),
+      );
+      await engine.sync();
+      expect(server.overlays.values.single.data['capo_fret'], 3);
+      expect(await outbox(), isEmpty);
+    });
+  });
+
   group('atomic writes', () {
     Future<void> failOutbox(String event) => db.customStatement(
       'CREATE TRIGGER fail_outbox BEFORE $event ON sync_outbox '

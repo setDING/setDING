@@ -212,6 +212,9 @@ class PersonalOverlays extends Table {
   /// What live mode shows: null = ChordPro, otherwise an attachment ID.
   TextColumn get liveView => text().nullable()();
 
+  /// Server revision; 0 = not on the server (schema 9, ADR-0020).
+  IntColumn get revision => integer().withDefault(const Constant(0))();
+
   @override
   Set<Column> get primaryKey => {ownerId, songId};
 }
@@ -279,7 +282,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   /// Indexes of the local database (schema 7).
   List<Index> get localIndexes => [
@@ -347,9 +350,11 @@ class AppDatabase extends _$AppDatabase {
         await m.alterTable(
           TableMigration(
             personalOverlays,
-            newColumns: [personalOverlays.ownerId],
+            newColumns: [personalOverlays.ownerId, personalOverlays.revision],
           ),
         );
+      } else if (from < 9) {
+        await m.addColumn(personalOverlays, personalOverlays.revision);
       }
     },
     beforeOpen: (details) async {

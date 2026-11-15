@@ -20,3 +20,23 @@ onRecordUpdateRequest((e) => {
   }
   e.next();
 }, "songs");
+
+// Deleting a song removes the personal adjustments of all users for it
+// (ADR-0020): soft deletes, so the delta pull carries them to the devices.
+onRecordUpdateExecute((e) => {
+  const deleting = e.record.getBool("deleted") && !e.record.original().getBool("deleted");
+  e.next();
+  if (!deleting) return;
+  const overlays = e.app.findRecordsByFilter(
+    "overlays",
+    "song = {:song} && deleted = false",
+    "",
+    0,
+    0,
+    { song: e.record.id },
+  );
+  for (const overlay of overlays) {
+    overlay.set("deleted", true);
+    e.app.save(overlay);
+  }
+}, "songs");

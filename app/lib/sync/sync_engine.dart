@@ -100,8 +100,10 @@ class SyncEngine {
       for (final band in visible) {
         pulled += await _pullSets(band);
       }
-      await _enqueueUnsynced(visible);
-      final p = await _push();
+      // After the songs: an overlay needs its song on this device.
+      pulled += await _pullOverlays(user.id);
+      await _enqueueUnsynced(visible, userId: user.id, orgIds: orgIds);
+      final p = await _push(user.id);
       pushed += p.$1;
       conflicts += p.$2;
       downloaded += await _downloadMissing();
@@ -524,7 +526,11 @@ class SyncEngine {
   /// e.g. songs copied into an organization before the outbox existed
   /// (app schema < 5). Only records the user may push are added, so a
   /// rejected change is not retried on every sync.
-  Future<void> _enqueueUnsynced(List<BandView> bands) async {
+  Future<void> _enqueueUnsynced(
+    List<BandView> bands, {
+    required String userId,
+    required Set<String> orgIds,
+  }) async {
     final libraries = {
       for (final b in bands)
         if (b.canEditSongs) b.libraryId,
@@ -570,6 +576,19 @@ class SyncEngine {
         ids,
       );
     }
+    if (orgIds.isNotEmpty) {
+      // Personal adjustments of this user, e.g. taken over after the
+      // upgrade (ADR-0020); any member may sync their own.
+      final libs = orgIds.toList();
+      await enqueue(
+        SyncCollection.overlays,
+        "SELECT o.owner_id || ':' || o.song_id AS id FROM personal_overlays o "
+        'JOIN songs s ON s.id = o.song_id '
+        'WHERE o.revision = 0 AND o.owner_id = ? AND s.deleted = 0 '
+        'AND s.library_id IN (${placeholders(libs.length)})',
+        [userId, ...libs],
+      );
+    }
     if (added > 0) {
       db.notifyUpdates({
         TableUpdate.onTable(db.syncOutbox, kind: UpdateKind.insert),
@@ -578,14 +597,15 @@ class SyncEngine {
   }
 
   /// Returns (pushed, new conflicts).
-  Future<(int, int)> _push() async {
+  Future<(int, int)> _push(String userId) async {
     var pushed = 0;
     var conflicts = 0;
-    // Songs first: an attachment needs its song on the server.
+    // Songs first: attachments and overlays need their song on the server.
     const order = [
       SyncCollection.songs,
       SyncCollection.setlists,
       SyncCollection.attachments,
+      SyncCollection.overlays,
     ];
     final entries = await db.select(db.syncOutbox).get()
       ..sort(
@@ -602,6 +622,8 @@ class SyncEngine {
           if (await _pushSet(entry) == _Push.done) pushed++;
         case SyncCollection.attachments:
           if (await _pushAttachment(entry) == _Push.done) pushed++;
+        case SyncCollection.overlays:
+          if (await _pushOverlay(entry, userId) == _Push.done) pushed++;
       }
     }
     return (pushed, conflicts);
@@ -826,6 +848,134 @@ class SyncEngine {
       debugPrint('Attachment ${a.id} not pushed: $e');
       await _done(entry);
       return _Push.skipped;
+    }
+  }
+
+  // Personal adjustments (ADR-0020) --------------------------------------------
+
+  /// Server record ID of the adjustments of [userId] for [songId]: the same
+  /// on every device, so two devices never create two records.
+  static String overlayServerId(String userId, String songId) =>
+      _uuid.v5(Namespace.url.value, 'realchord:overlay:$userId:$songId');
+
+  /// The fields of layer 3 as stored on the server.
+  static Map<String, dynamic> overlayData(SongOverlay o) => {
+    'transpose': o.transpose,
+    'capo_fret': o.capoFret,
+    'font_scale': o.fontScale,
+    'notes': o.notes,
+    'nashville': o.nashville,
+    'live_view': o.liveView,
+  };
+
+  Future<int> _pullOverlays(String userId) async {
+    final since = await _cursor(userId, SyncCollection.overlays);
+    final remote = await backend.pullOverlays(since);
+    if (remote.isEmpty) return 0;
+    await db.transaction(() async {
+      final songIds = [for (final o in remote) o.songId];
+      final locals = await _byId(
+        songIds,
+        (chunk) => (db.select(
+          db.personalOverlays,
+        )..where((o) => o.ownerId.equals(userId) & o.songId.isIn(chunk))).get(),
+        (o) => o.songId,
+      );
+      final dirty = await _dirty(SyncCollection.overlays, [
+        for (final id in songIds) overlayRecordId(userId, id),
+      ]);
+      final songs = await _existingSongs(songIds);
+      for (final o in remote) {
+        final local = locals[o.songId];
+        if (local != null && o.revision <= local.revision) continue;
+        // Last writer wins: a pending local change is pushed afterwards.
+        if (dirty.contains(overlayRecordId(userId, o.songId))) continue;
+        if (o.deleted) {
+          await (db.delete(db.personalOverlays)..where(
+                (x) => x.ownerId.equals(userId) & x.songId.equals(o.songId),
+              ))
+              .go();
+          continue;
+        }
+        if (!songs.contains(o.songId)) continue; // the song is not here
+        final d = o.data;
+        await db
+            .into(db.personalOverlays)
+            .insertOnConflictUpdate(
+              PersonalOverlaysCompanion.insert(
+                ownerId: Value(userId),
+                songId: o.songId,
+                transpose: Value((d['transpose'] as num?)?.toInt() ?? 0),
+                capoFret: Value((d['capo_fret'] as num?)?.toInt()),
+                fontScale: Value((d['font_scale'] as num?)?.toDouble() ?? 1.0),
+                notes: Value(d['notes'] as String?),
+                nashville: Value(d['nashville'] as bool?),
+                liveView: Value(d['live_view'] as String?),
+                revision: Value(o.revision),
+              ),
+            );
+      }
+      await _setCursor(userId, SyncCollection.overlays, remote.last.revision);
+    });
+    return remote.length;
+  }
+
+  Future<_Push> _pushOverlay(OutboxEntry entry, String userId) async {
+    final (owner, songId) = parseOverlayRecordId(entry.recordId);
+    // Another person's change on a shared device: pushed when they sync.
+    if (owner != userId) return _Push.skipped;
+    final row =
+        await (db.select(db.personalOverlays).join([
+              innerJoin(
+                db.songs,
+                db.songs.id.equalsExp(db.personalOverlays.songId),
+              ),
+            ])..where(
+              db.personalOverlays.ownerId.equals(owner) &
+                  db.personalOverlays.songId.equals(songId),
+            ))
+            .getSingleOrNull();
+    if (row == null || row.readTable(db.songs).libraryId == localBandId) {
+      await _done(entry);
+      return _Push.skipped;
+    }
+    final overlay = row.readTable(db.personalOverlays);
+    final song = row.readTable(db.songs);
+    if (song.deleted) {
+      await _done(entry); // the server deletes it with the song
+      return _Push.skipped;
+    }
+    if (song.revision == 0) return _Push.skipped; // the song comes first
+    final remote = RemoteOverlay(
+      id: overlayServerId(owner, songId),
+      userId: owner,
+      songId: songId,
+      data: overlayData(overlay),
+    );
+    try {
+      final create = overlay.revision == 0;
+      RemoteOverlay stored;
+      try {
+        stored = await backend.pushOverlay(remote, create: create);
+      } on BackendException catch (e) {
+        // Created by another device of the same person (same record ID).
+        if (!create || e.kind != BackendErrorKind.server) rethrow;
+        stored = await backend.pushOverlay(remote, create: false);
+      }
+      await db.transaction(() async {
+        await (db.update(db.personalOverlays)
+              ..where((o) => o.ownerId.equals(owner) & o.songId.equals(songId)))
+            .write(PersonalOverlaysCompanion(revision: Value(stored.revision)));
+        await _done(entry);
+      });
+      return _Push.done;
+    } on BackendException catch (e) {
+      if (e.kind == BackendErrorKind.notAllowed) {
+        debugPrint('Overlay ${entry.recordId} not pushed: not allowed');
+        await _done(entry);
+        return _Push.skipped;
+      }
+      rethrow;
     }
   }
 

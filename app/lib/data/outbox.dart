@@ -7,6 +7,19 @@ abstract final class SyncCollection {
   static const songs = 'songs';
   static const setlists = 'setlists';
   static const attachments = 'attachments';
+
+  /// Personal adjustments (ADR-0020); the outbox record ID is
+  /// [overlayRecordId].
+  static const overlays = 'overlays';
+}
+
+/// Outbox record ID of the personal adjustments of [ownerId] for [songId].
+String overlayRecordId(String ownerId, String songId) => '$ownerId:$songId';
+
+/// Owner and song of an [overlayRecordId].
+(String, String) parseOverlayRecordId(String id) {
+  final i = id.indexOf(':');
+  return (id.substring(0, i), id.substring(i + 1));
 }
 
 /// Records a local change for the sync (ADR-0004). Changes in the local

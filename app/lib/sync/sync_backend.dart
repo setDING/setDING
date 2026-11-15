@@ -196,6 +196,27 @@ class RemoteSet {
   final bool deleted;
 }
 
+/// Personal adjustments of a user for a song as stored on the server
+/// (ADR-0020); [data] holds the fields of layer 3 (ADR-0006).
+@immutable
+class RemoteOverlay {
+  const RemoteOverlay({
+    required this.id,
+    required this.userId,
+    required this.songId,
+    this.data = const {},
+    this.revision = 0,
+    this.deleted = false,
+  });
+
+  final String id;
+  final String userId;
+  final String songId;
+  final Map<String, dynamic> data;
+  final int revision;
+  final bool deleted;
+}
+
 /// PDF attachment metadata as stored on the server (ADR-0009, ADR-0017).
 @immutable
 class RemoteAttachment {
@@ -420,6 +441,17 @@ abstract class SyncBackend {
     RemoteAttachment attachment, {
     required bool create,
     List<int>? bytes,
+  });
+
+  /// Personal adjustments of the signed-in user changed after revision
+  /// [since], in revision order (ADR-0020).
+  Future<List<RemoteOverlay>> pullOverlays(int since);
+
+  /// Creates ([create]) or updates personal adjustments of the signed-in
+  /// user and returns the server state (last writer wins).
+  Future<RemoteOverlay> pushOverlay(
+    RemoteOverlay overlay, {
+    required bool create,
   });
 
   /// Starts downloading attachment files (protected, need read access).
