@@ -8,6 +8,7 @@
 #   make start      build and start a test instance (without Flutter tooling)
 #   make reset      delete the test instance's data (fresh start with demo song)
 #   make backend    start a local PocketBase with the repository's schema and hooks
+#   make apk        build an Android APK for manual installation (sideloading)
 #   make server-*   install and operate the PocketBase server (SERVER=root@host)
 
 SHELL := /bin/bash
@@ -23,6 +24,14 @@ FLUTTER  ?= $(shell command -v flutter 2>/dev/null || echo $(HOME)/development/f
 DART     := $(dir $(FLUTTER))dart
 
 BUNDLE   := $(APP)/build/linux/x64/debug/bundle/realchord
+
+# Android APK for sideloading (make apk). The release build is signed with the
+# machine's debug key (app/android/app/build.gradle.kts) until a release key exists.
+export ANDROID_HOME ?= $(HOME)/Android/Sdk
+ADB         ?= $(ANDROID_HOME)/platform-tools/adb
+APK_VERSION := $(shell sed -n 's/^version: *\([^+]*\).*/\1/p' $(APP)/pubspec.yaml)
+APK_COMMIT  := $(shell git -C $(ROOT) rev-parse --short HEAD 2>/dev/null || echo unknown)
+APK         := $(APP)/build/realchord-$(APK_VERSION)-$(APK_COMMIT).apk
 
 # CI image (tool/ci/Dockerfile) in the Forgejo container registry. The tag is the
 # Flutter version; keep it in sync with .forgejo/workflows/ci.yml.
@@ -46,7 +55,7 @@ BACKEND_PORT    ?= 8090
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := REALCHORD_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build reset data-dir backend check test codegen l10n screenshots examples doctor clean ci-image ci-image-push \
+.PHONY: help setup dev start build apk apk-install reset data-dir backend check test codegen l10n screenshots examples doctor clean ci-image ci-image-push \
 	server-target server-install server-status server-logs server-backup server-fetch-backup server-ssh
 
 help: ## Show this help
@@ -73,6 +82,15 @@ start: build data-dir ## Build and start a test instance (debug build, no hot re
 
 build: ## Build the Linux debug app
 	cd $(APP) && $(FLUTTER) build linux --debug
+
+apk: ## Build an Android release APK for manual installation (app/build/realchord-<version>-<commit>.apk)
+	@test -d "$(ANDROID_HOME)" || { echo "Android SDK not found. Install it or set ANDROID_HOME=/path/to/sdk"; exit 1; }
+	cd $(APP) && $(FLUTTER) build apk --release
+	cp $(APP)/build/app/outputs/flutter-apk/app-release.apk $(APK)
+	@echo "APK: $(APK)"
+
+apk-install: apk ## Build the APK and install it on a USB-connected device (adb, USB debugging on)
+	$(ADB) install -r $(APK)
 
 reset: ## Delete all data of the test instance
 	rm -rf "$(DATA_DIR)"
