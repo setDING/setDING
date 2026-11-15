@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:chordpro/chordpro.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,6 +27,9 @@ const newSongTemplate = '''{title: }
 ''';
 
 /// Text editor for the ChordPro source with live preview (ADR-0003).
+/// Delay before the preview follows the text.
+const editorPreviewDelay = Duration(milliseconds: 200);
+
 class SongEditorScreen extends ConsumerStatefulWidget {
   const SongEditorScreen({super.key, this.songId, this.initialSource});
 
@@ -49,9 +54,31 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
         widget.initialSource ?? (widget.songId == null ? newSongTemplate : '');
     _controller = TextEditingController(text: _original);
     _preview = _parse(_original);
-    _controller.addListener(
-      () => setState(() => _preview = _parse(_controller.text)),
-    );
+    _previewSource = _original;
+    _controller.addListener(_onChanged);
+  }
+
+  /// Source of [_preview].
+  late String _previewSource;
+  Timer? _previewDebounce;
+
+  /// The controller also notifies on cursor and selection moves; the
+  /// preview is parsed again only when the text changed, shortly after the
+  /// last keystroke.
+  void _onChanged() {
+    if (_controller.text == _previewSource) {
+      _previewDebounce?.cancel();
+      return;
+    }
+    _previewDebounce?.cancel();
+    _previewDebounce = Timer(editorPreviewDelay, () {
+      if (!mounted) return;
+      final source = _controller.text;
+      setState(() {
+        _previewSource = source;
+        _preview = _parse(source);
+      });
+    });
   }
 
   Song _parse(String source) =>
@@ -59,6 +86,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
 
   @override
   void dispose() {
+    _previewDebounce?.cancel();
     _controller.dispose();
     _focus.dispose();
     super.dispose();

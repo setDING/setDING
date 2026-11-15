@@ -124,6 +124,27 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('the preview follows the text shortly after typing', (
+    tester,
+  ) async {
+    final (app, field) = await pumpEditor(tester, '{title: Before}\n[C]la');
+    String previewTitle() =>
+        tester.widget<SongHeader>(find.byType(SongHeader)).title;
+    expect(previewTitle(), 'Before');
+
+    field.controller!.text = '{title: After}\n[C]la';
+    await tester.pump();
+    expect(previewTitle(), 'Before');
+    await tester.pump(editorPreviewDelay);
+    expect(previewTitle(), 'After');
+
+    // Moving the cursor keeps the preview.
+    field.controller!.selection = const TextSelection.collapsed(offset: 3);
+    await tester.pump();
+    expect(previewTitle(), 'After');
+    await app.dispose(tester);
+  });
+
   testWidgets('the preview is aligned to the top', (tester) async {
     final (app, _) = await pumpEditor(tester, '{title: Short}\n[C]la');
     final header = tester.getTopLeft(find.byType(SongHeader));
