@@ -52,6 +52,8 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 - 2026-11-15: Repository host decided: self-hosted **Forgejo** at `github.com`, repository `andi/RealChord` (instead of the assumed GitHub). Issues, PRs and labels live there; agents use the forgejo-cli (`fj`); CI becomes Forgejo Actions. Until agents have an access token, they push their branches and squash-merge locally after the test gate.
 - 2026-11-15: CLI is forgejo-cli (`fj`) instead of `tea`: built for Forgejo, supports squash merge, drafts ("WIP: ") and AGit PRs.
 - 2026-11-15: CI active: Forgejo Actions workflow `.forgejo/workflows/ci.yml` runs `tool/check.sh` (job `test`) on a global `linux-amd64` runner, installing the pinned Flutter version in a Debian container for every PR and push to `main`. Build jobs and commit-lint follow later.
+- 2026-11-15: CI uses its own image `ghcr.io/tafli/realchord-ci:<flutter version>` (`tool/ci/Dockerfile`, Forgejo container registry) instead of installing Flutter in every run. It is built and pushed with `make ci-image ci-image-push` by the owner (package write token); the runner pulls it with the repository secret `CI_REGISTRY_TOKEN` (package read), since the instance requires sign-in.
+- 2026-11-15: Agents act as the Forgejo user `factoryd` (commit author `andi+factoryd@theboss.ch`, `fj` login, CI registry token) instead of the owner's account, so agent work is distinguishable from the owner's.
 - 2026-11-15: Agents have API access: an access token (scopes repository and issue, under the owner's account) is stored by `fj` on the development machine. The normal flow with issues and PRs applies; local squash merges remain only as a fallback without a login (workflow section 11).
 
 ## Open points

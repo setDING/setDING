@@ -12,11 +12,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Keep in sync with the Flutter version used for development.
-  FLUTTER_VERSION: 3.47.9
-  # The runner's container cannot chown extracted files (user namespace
-  # remapping); Flutter extracts its artifacts with tar.
-  TAR_OPTIONS: --no-same-owner
   # One test process per visible CPU core exhausts the container's memory
   # and hangs the run; two are enough (tool/check.sh).
   TEST_CONCURRENCY: 2
@@ -26,26 +21,22 @@ jobs:
     runs-on: linux-amd64
     timeout-minutes: 20
     container:
-      # Debian with git, curl, unzip, xz and python3 (buildpack-deps) plus Node
-      # for the checkout action.
-      image: node:22-bookworm
+      # tool/ci/Dockerfile: Debian, Node, python3, clang and Flutter. The tag is
+      # the Flutter version used for development (FLUTTER_VERSION in the
+      # Makefile); build and push a new tag with `make ci-image ci-image-push`.
+      image: ghcr.io/tafli/realchord-ci:3.47.9
+      # The instance requires sign-in, also for pulling packages. The secret
+      # holds a token with the scope package:read (repository settings ->
+      # Actions -> Secrets).
+      credentials:
+        username: factoryd
+        password: ${{ secrets.CI_REGISTRY_TOKEN }}
     steps:
       - name: Check out
         uses: https://data.forgejo.org/actions/checkout@v4
 
-      - name: Install build tools
-        # clang builds native assets of dependencies (e.g. pdfium_dart).
-        run: |
-          apt-get update -qq
-          apt-get install -y -qq --no-install-recommends clang >/dev/null
-
-      - name: Install Flutter
-        run: |
-          git clone --quiet --depth 1 --branch "$FLUTTER_VERSION" \
-            https://github.com/flutter/flutter.git "$HOME/flutter"
-          echo "$HOME/flutter/bin" >> "$GITHUB_PATH"
-          "$HOME/flutter/bin/flutter" config --no-analytics --no-cli-animations >/dev/null
-          "$HOME/flutter/bin/flutter" --version
+      - name: Versions
+        run: flutter --version
 
       - name: Test gate (format, analyze, l10n, tests)
         run: tool/check.sh

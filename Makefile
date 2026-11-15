@@ -22,11 +22,17 @@ DART     := $(dir $(FLUTTER))dart
 
 BUNDLE   := $(APP)/build/linux/x64/debug/bundle/realchord
 
+# CI image (tool/ci/Dockerfile) in the Forgejo container registry. The tag is the
+# Flutter version; keep it in sync with .forgejo/workflows/ci.yml.
+FLUTTER_VERSION ?= 3.47.9
+CI_IMAGE        ?= ghcr.io/tafli/realchord-ci:$(FLUTTER_VERSION)
+DOCKER          ?= docker
+
 # Redirects the app's private data to DATA_DIR: REALCHORD_DATA_DIR for the
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := REALCHORD_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build reset data-dir check test codegen l10n screenshots examples doctor clean
+.PHONY: help setup dev start build reset data-dir check test codegen l10n screenshots examples doctor clean ci-image ci-image-push
 
 help: ## Show this help
 	@echo "RealChord – make targets"
@@ -87,3 +93,9 @@ doctor: ## Show the state of the Flutter toolchain
 
 clean: ## Remove build output (keeps test data; see 'make reset')
 	cd $(APP) && $(FLUTTER) clean
+
+ci-image: ## Build the CI image (tool/ci/Dockerfile) with docker
+	$(DOCKER) build --build-arg FLUTTER_VERSION=$(FLUTTER_VERSION) -t $(CI_IMAGE) $(ROOT)/tool/ci
+
+ci-image-push: ## Push the CI image (needs: docker login ghcr.io)
+	$(DOCKER) push $(CI_IMAGE)

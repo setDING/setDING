@@ -129,9 +129,13 @@ to be decided.
 
 CI runs as **Forgejo Actions** on every PR and on every push to `main`:
 [`.forgejo/workflows/ci.yml`](../../.forgejo/workflows/ci.yml), on the global Forgejo
-runner with the label `linux-amd64`, in a `node:22-bookworm` container. The job
-installs the Flutter version pinned in `FLUTTER_VERSION`, which must match the version
-used for development (update both together). `TEST_CONCURRENCY=2` limits the
+runner with the label `linux-amd64`, in the project's own CI image
+`ghcr.io/tafli/realchord-ci:<flutter version>` from the Forgejo container
+registry ([`tool/ci/Dockerfile`](../../tool/ci/Dockerfile): Debian, Node for the checkout
+action, python3, clang for native assets, Flutter precached for Linux). The instance
+requires sign-in for packages too, so the job pulls the image with the repository
+secret `CI_REGISTRY_TOKEN` (a token of the agent user `factoryd` with the scope
+*package: read*). `TEST_CONCURRENCY=2` limits the
 parallel test processes: the container sees all host cores but has little memory, and
 one test process per core made the run hang.
 
@@ -140,6 +144,11 @@ one test process per core made the run hang.
 | `test` | `tool/check.sh`: format (`dart format --set-exit-if-changed`), `analyze` without infos, `l10n` (all ARB keys in German and English, no "ß"), unit and widget tests of `packages/chordpro` and `app` | **Active, required** |
 | `build` | Android build (APK); iOS and Windows builds at least on `main` | Planned (needs the Android SDK, a macOS and a Windows runner) |
 | `commit-lint` | PR title follows Conventional Commits | Planned |
+
+**Upgrading Flutter:** set `FLUTTER_VERSION` in the `Makefile`, run
+`make ci-image ci-image-push` (needs `docker login ghcr.io` with a token that
+may write packages – done by the human) and change the image tag in
+`.forgejo/workflows/ci.yml` in the same PR as the code changes for the new version.
 
 `fj pr status <index>` shows the checks of a PR; `fj actions tasks` lists the runs.
 
@@ -206,6 +215,10 @@ human has not added the token yet):
 
 - **Host:** self-hosted Forgejo, repository `github.com/tafli/RealChord`, remote
   `origin` over SSH (`git@github.com:tafli/RealChord.git`).
+- **Agent user:** agents work as the Forgejo user `factoryd`: commit author
+  `factoryd <andi+factoryd@theboss.ch>` (local git config of the repository), `fj`
+  login and CI registry pulls with tokens of that user. The owner (`andi`) reviews,
+  decides `needs-human` items and owns the repository settings.
 - **CLI:** [forgejo-cli](https://codeberg.org/Cyborus/forgejo-cli) (`fj`, v0.7 or
   later) for issues, PRs and merges; it finds the repository from the `origin` remote.
   Login once per machine, done by the human: `fj -H github.com auth login`
