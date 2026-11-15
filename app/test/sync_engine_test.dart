@@ -408,6 +408,62 @@ void main() {
       expect(server.downloads, 1);
     });
 
+    void putAttachments(int count, {List<int>? bytes}) {
+      server.putSong(remoteSong('s1', '{title: Song}'));
+      for (var i = 0; i < count; i++) {
+        server.putAttachment(
+          RemoteAttachment(
+            id: 'a$i',
+            organizationId: 'o1',
+            songId: 's1',
+            name: 'Sheet $i',
+          ),
+          bytes: bytes,
+        );
+      }
+    }
+
+    test(
+      'downloads several files in one session; refused ones are skipped',
+      () async {
+        putAttachments(5, bytes: pdf);
+        server.files.remove('a2_abc.pdf'); // refused by the server
+
+        final report = await engine.sync();
+        expect(report.downloaded, 4);
+        expect(report.error, isNull);
+        expect(server.downloadsOpened, 1);
+        expect(server.downloadsClosed, 1);
+        for (final a in await songs.getAttachments('s1')) {
+          expect(await storage.exists(a.fileName), a.id != 'a2', reason: a.id);
+        }
+        expect(dir.listSync().where((f) => f.path.endsWith('.part')), isEmpty);
+      },
+    );
+
+    test('a broken connection stops the downloads, no partial file', () async {
+      putAttachments(SyncEngine.parallelDownloads + 3, bytes: pdf);
+      server.offlineFiles.add('a0_abc.pdf');
+
+      final report = await engine.sync();
+      expect(report.error, BackendErrorKind.network);
+      expect(server.downloadsClosed, 1);
+      // The workers stop taking new files; the broken one is not stored.
+      expect(server.downloads, lessThan(SyncEngine.parallelDownloads + 3));
+      final a0 = (await songs.getAttachments('s1'))
+          .firstWhere((a) => a.id == 'a0');
+      expect(await storage.exists(a0.fileName), isFalse);
+      expect(dir.listSync().where((f) => f.path.endsWith('.part')), isEmpty);
+
+      // Back online: the rest arrives.
+      server.offlineFiles.clear();
+      final retry = await engine.sync();
+      expect(retry.error, isNull);
+      for (final a in await songs.getAttachments('s1')) {
+        expect(await storage.exists(a.fileName), isTrue);
+      }
+    });
+
     test('renames and deletions travel both ways', () async {
       server.putSong(remoteSong('s1', '{title: Song}'));
       server.putAttachment(

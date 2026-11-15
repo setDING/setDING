@@ -618,38 +618,7 @@ class PocketBaseBackend implements SyncBackend {
   }
 
   @override
-  Future<List<int>> downloadAttachment(RemoteAttachment attachment) async {
-    if (currentUser == null) {
-      throw const BackendException(BackendErrorKind.signedOut);
-    }
-    try {
-      final token = await _pb.files.getToken();
-      final uri = Uri.parse(
-        '$serverUrl/api/files/attachments/${attachment.id}/${attachment.file}',
-      ).replace(queryParameters: {'token': token});
-      final client = _httpClientFactory();
-      try {
-        final response = await client.get(uri);
-        if (response.statusCode != 200) {
-          throw BackendException(
-            response.statusCode == 404
-                ? BackendErrorKind.notAllowed
-                : BackendErrorKind.server,
-            response.statusCode,
-          );
-        }
-        return response.bodyBytes;
-      } finally {
-        client.close();
-      }
-    } on ClientException catch (e) {
-      throw _map(e);
-    } on http.ClientException catch (e) {
-      throw BackendException(BackendErrorKind.network, e);
-    } on SocketException catch (e) {
-      throw BackendException(BackendErrorKind.network, e);
-    }
-  }
+  AttachmentDownloads openDownloads() => _PocketBaseDownloads(this);
 
   @override
   Stream<String> watchChanges() {
@@ -778,4 +747,66 @@ class PocketBaseBackend implements SyncBackend {
     }
     return BackendException(BackendErrorKind.server, e.response);
   }
+}
+
+/// Downloads with one HTTP client and a shared file token, renewed after a
+/// minute (file tokens are short-lived).
+class _PocketBaseDownloads implements AttachmentDownloads {
+  _PocketBaseDownloads(this._backend) : _client = _backend._httpClientFactory();
+
+  static const _tokenAge = Duration(minutes: 1);
+
+  final PocketBaseBackend _backend;
+  final http.Client _client;
+  Future<String>? _token;
+  DateTime _tokenTime = DateTime(0);
+
+  Future<String> _fileToken() {
+    final now = DateTime.now();
+    if (_token == null || now.difference(_tokenTime) > _tokenAge) {
+      _tokenTime = now;
+      _token = _backend._pb.files.getToken();
+    }
+    return _token!;
+  }
+
+  @override
+  Future<void> download(RemoteAttachment attachment, File target) async {
+    if (_backend.currentUser == null) {
+      throw const BackendException(BackendErrorKind.signedOut);
+    }
+    try {
+      final token = await _fileToken();
+      final uri = Uri.parse(
+        '${_backend.serverUrl}/api/files/attachments/'
+        '${attachment.id}/${attachment.file}',
+      ).replace(queryParameters: {'token': token});
+      final response = await _client.send(http.Request('GET', uri));
+      if (response.statusCode != 200) {
+        await response.stream.drain<void>();
+        throw BackendException(
+          response.statusCode == 404
+              ? BackendErrorKind.notAllowed
+              : BackendErrorKind.server,
+          response.statusCode,
+        );
+      }
+      final sink = target.openWrite();
+      try {
+        await sink.addStream(response.stream);
+      } finally {
+        await sink.close();
+      }
+    } on ClientException catch (e) {
+      _token = null; // e.g. a failed token request: ask again next time
+      throw PocketBaseBackend._map(e);
+    } on http.ClientException catch (e) {
+      throw BackendException(BackendErrorKind.network, e);
+    } on SocketException catch (e) {
+      throw BackendException(BackendErrorKind.network, e);
+    }
+  }
+
+  @override
+  void close() => _client.close();
 }

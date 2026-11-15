@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:async';
 
 import 'package:realchord/sync/sync_backend.dart';
@@ -589,15 +590,17 @@ class FakeSyncBackend implements SyncBackend {
 
   int downloads = 0;
 
+  /// Download sessions opened and closed.
+  int downloadsOpened = 0;
+  int downloadsClosed = 0;
+
+  /// Server files whose download fails with a network error.
+  final offlineFiles = <String>{};
+
   @override
-  Future<List<int>> downloadAttachment(RemoteAttachment attachment) async {
-    _requireUser();
-    downloads++;
-    final bytes = files[attachment.file];
-    if (bytes == null) {
-      throw const BackendException(BackendErrorKind.notAllowed);
-    }
-    return bytes;
+  AttachmentDownloads openDownloads() {
+    downloadsOpened++;
+    return _FakeDownloads(this);
   }
 
   @override
@@ -641,4 +644,29 @@ class FakeMember {
   final String scopeId;
   final AuthUser user;
   BandRole role;
+}
+
+class _FakeDownloads implements AttachmentDownloads {
+  _FakeDownloads(this._server);
+
+  final FakeSyncBackend _server;
+
+  @override
+  Future<void> download(RemoteAttachment attachment, File target) async {
+    _server._requireUser();
+    _server.downloads++;
+    if (_server.offlineFiles.contains(attachment.file)) {
+      // Part of the file arrived before the connection broke.
+      await target.writeAsBytes([1, 2]);
+      throw const BackendException(BackendErrorKind.network);
+    }
+    final bytes = _server.files[attachment.file];
+    if (bytes == null) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    await target.writeAsBytes(bytes);
+  }
+
+  @override
+  void close() => _server.downloadsClosed++;
 }

@@ -270,4 +270,50 @@ void main() {
     expect(body['passwordConfirm'], 'password');
     expect(requests.last.url.path, '/api/collections/users/auth-with-password');
   });
+
+  test('downloads share one file token and stream to the target', () async {
+    final store = MemorySessionStore(_storedSession());
+    final b = backend(store, (r) async {
+      if (r.url.path == '/api/files/token') return _json(200, {'token': 'ft'});
+      if (r.url.path == '/api/files/attachments/a1/one.pdf') {
+        return http.Response.bytes([1, 2, 3], 200);
+      }
+      return _json(404, {'message': 'not found'});
+    });
+    final dir = Directory.systemTemp.createTempSync('realchord_download');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    RemoteAttachment attachment(String id, String file) => RemoteAttachment(
+      id: id,
+      organizationId: 'o1',
+      songId: 's1',
+      name: id,
+      file: file,
+    );
+
+    final downloads = b.openDownloads();
+    final target = File('${dir.path}/one');
+    await downloads.download(attachment('a1', 'one.pdf'), target);
+    expect(await target.readAsBytes(), [1, 2, 3]);
+    await expectLater(
+      downloads.download(attachment('a2', 'two.pdf'), File('${dir.path}/two')),
+      throwsA(
+        isA<BackendException>().having(
+          (e) => e.kind,
+          'kind',
+          BackendErrorKind.notAllowed,
+        ),
+      ),
+    );
+    downloads.close();
+    expect(
+      requests.where((r) => r.url.path == '/api/files/token'),
+      hasLength(1),
+    );
+    expect(
+      requests.where((r) => r.url.path.startsWith('/api/files/attachments')),
+      everyElement(
+        predicate<http.Request>((r) => r.url.queryParameters['token'] == 'ft'),
+      ),
+    );
+  });
 }

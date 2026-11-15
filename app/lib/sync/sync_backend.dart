@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 
 import '../data/band_role.dart';
@@ -420,8 +422,10 @@ abstract class SyncBackend {
     List<int>? bytes,
   });
 
-  /// Downloads the file of an attachment (protected, needs read access).
-  Future<List<int>> downloadAttachment(RemoteAttachment attachment);
+  /// Starts downloading attachment files (protected, need read access).
+  /// The downloads share one file token and one HTTP client; close them
+  /// when done.
+  AttachmentDownloads openDownloads();
 
   /// Emits the name of a collection whenever the server reports a change
   /// (realtime, while online). Errors are not reported; delta sync catches
@@ -430,4 +434,14 @@ abstract class SyncBackend {
 
   /// Releases resources.
   void dispose();
+}
+
+/// Downloads of attachment files during one sync run (ADR-0009).
+abstract interface class AttachmentDownloads {
+  /// Streams the file of [attachment] into [target]. Throws a
+  /// [BackendException].
+  Future<void> download(RemoteAttachment attachment, File target);
+
+  /// Releases the HTTP client.
+  void close();
 }

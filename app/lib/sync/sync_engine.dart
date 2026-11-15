@@ -370,6 +370,9 @@ class SyncEngine {
     return fileName;
   }
 
+  /// Attachment files downloaded at the same time.
+  static const parallelDownloads = 3;
+
   /// Downloads attachment files that are not on this device yet
   /// (ADR-0009: all attachments are available offline).
   Future<int> _downloadMissing() async {
@@ -384,28 +387,53 @@ class SyncEngine {
                   db.songs.deleted.equals(false),
             ))
             .get();
+    final missing = [
+      for (final r in rows)
+        if (!await storage.exists(r.readTable(db.attachments).fileName))
+          (r.readTable(db.attachments), r.readTable(db.songs).libraryId),
+    ];
+    if (missing.isEmpty) return 0;
+    final downloads = backend.openDownloads();
     var count = 0;
-    for (final r in rows) {
-      final a = r.readTable(db.attachments);
-      if (await storage.exists(a.fileName)) continue;
-      try {
-        final bytes = await backend.downloadAttachment(
-          RemoteAttachment(
-            id: a.id,
-            organizationId: r.readTable(db.songs).libraryId,
-            songId: a.songId,
-            name: a.name,
-            file: a.remoteFile,
-          ),
-        );
-        await storage.write(a.fileName, Uint8List.fromList(bytes));
-        count++;
-      } on BackendException catch (e) {
-        if (e.kind == BackendErrorKind.network) rethrow;
-        // This file only; the others are still downloaded.
-        debugPrint('Attachment ${a.id} not downloaded: $e');
+    var next = 0;
+    BackendException? offline;
+    // A few workers take the next missing file until all are done or the
+    // network is gone.
+    Future<void> worker() async {
+      while (offline == null && next < missing.length) {
+        final (a, libraryId) = missing[next++];
+        try {
+          await storage.writeWith(
+            a.fileName,
+            (temp) => downloads.download(
+              RemoteAttachment(
+                id: a.id,
+                organizationId: libraryId,
+                songId: a.songId,
+                name: a.name,
+                file: a.remoteFile,
+              ),
+              temp,
+            ),
+          );
+          count++;
+        } on BackendException catch (e) {
+          if (e.kind == BackendErrorKind.network) {
+            offline ??= e;
+            return;
+          }
+          // This file only; the others are still downloaded.
+          debugPrint('Attachment ${a.id} not downloaded: $e');
+        }
       }
     }
+
+    try {
+      await Future.wait([for (var i = 0; i < parallelDownloads; i++) worker()]);
+    } finally {
+      downloads.close();
+    }
+    if (offline case final e?) throw e;
     return count;
   }
 

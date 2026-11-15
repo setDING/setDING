@@ -44,6 +44,23 @@ class AttachmentStorage {
     await file(fileName).writeAsBytes(bytes, flush: true);
   }
 
+  /// Writes [fileName] through a temporary file that [fill] writes, so a
+  /// failed or interrupted write never leaves a partial file.
+  Future<void> writeWith(
+    String fileName,
+    Future<void> Function(File temp) fill,
+  ) async {
+    await directory.create(recursive: true);
+    final temp = file('$fileName.part');
+    try {
+      await fill(temp);
+      await temp.rename(file(fileName).path);
+    } catch (_) {
+      if (await temp.exists()) await temp.delete();
+      rethrow;
+    }
+  }
+
   Future<bool> exists(String fileName) => file(fileName).exists();
 
   Future<void> delete(String fileName) async {
