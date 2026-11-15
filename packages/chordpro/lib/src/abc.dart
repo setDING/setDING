@@ -66,7 +66,7 @@ class AbcKey {
 
   /// Parses the value of a `K:` field (clef and other settings ignored).
   static AbcKey parse(String value) {
-    final m = RegExp(r'^\s*([A-Ga-g])([#b]?)\s*([A-Za-z]*)').firstMatch(value);
+    final m = _keyPattern.firstMatch(value);
     if (m == null || value.trim().toLowerCase().startsWith('none')) {
       return const AbcKey(fifths: 0);
     }
@@ -274,6 +274,23 @@ class AbcTune {
 /// Parses an ABC tune.
 AbcTune parseAbc(String source) => _AbcParser(source).parse();
 
+// Patterns of the parser, compiled once. Patterns used at a position of a
+// line are matched with matchAsPrefix(text, i), without copying the rest
+// of the line.
+final _keyPattern = RegExp(r'^\s*([A-Ga-g])([#b]?)\s*([A-Za-z]*)');
+final _headerPattern = RegExp(r'^([A-Za-z]):\s?(.*)$');
+final _bassClefPattern = RegExp(r'clef\s*=\s*bass|\bbass\b');
+final _fractionPattern = RegExp(r'^\s*(\d+)\s*/\s*(\d+)');
+final _durationPattern = RegExp(r'(\d*)(/*)(\d*)');
+final _pitchPattern = RegExp(r"(\^\^|\^|__|_|=)?([A-Ga-g])([,']*)");
+final _decoratedPattern = RegExp(r'[\^_=A-Ga-g\[]');
+final _inlineFieldPattern = RegExp(r'\[([KML]):([^\]]*)\]');
+final _barPattern = RegExp(
+  r'(:\|:|:\|\]|\|\]|\[\||:\||\|:|::|\|\||\|)(\d)?|\[(\d)',
+);
+final _tupletPattern = RegExp(r'\((\d)(?::(\d)?)?(?::(\d))?');
+final _brokenPattern = RegExp(r'>+|<+');
+
 class _AbcParser {
   _AbcParser(this.source);
 
@@ -296,7 +313,7 @@ class _AbcParser {
         line = line.substring(0, comment);
       }
       if (line.trim().isEmpty || line.startsWith('%%')) continue;
-      final header = RegExp(r'^([A-Za-z]):\s?(.*)$').firstMatch(line);
+      final header = _headerPattern.firstMatch(line);
       if (header != null && !(inBody && header.group(1) == 'w')) {
         final name = header.group(1)!;
         final value = header.group(2)!.trim();
@@ -308,7 +325,7 @@ class _AbcParser {
         switch (name) {
           case 'K':
             key = AbcKey.parse(value);
-            bassClef = RegExp(r'clef\s*=\s*bass|\bbass\b').hasMatch(value);
+            bassClef = _bassClefPattern.hasMatch(value);
             inBody = true;
           case 'M':
             meter = value;
@@ -354,7 +371,7 @@ class _AbcParser {
   }
 
   static double? _fraction(String text) {
-    final m = RegExp(r'^\s*(\d+)\s*/\s*(\d+)').firstMatch(text);
+    final m = _fractionPattern.firstMatch(text);
     if (m == null) return null;
     return int.parse(m.group(1)!) / int.parse(m.group(2)!);
   }
@@ -377,7 +394,7 @@ class _AbcParser {
     double readDuration() {
       var num = 1.0;
       var den = 1.0;
-      final m = RegExp(r'^(\d*)(/*)(\d*)').firstMatch(text.substring(i))!;
+      final m = _durationPattern.matchAsPrefix(text, i)!;
       if (m.group(1)!.isNotEmpty) num = double.parse(m.group(1)!);
       final slashes = m.group(2)!.length;
       if (slashes > 0) {
@@ -390,9 +407,7 @@ class _AbcParser {
     }
 
     AbcPitch? readPitch() {
-      final m = RegExp(
-        r"^(\^\^|\^|__|_|=)?([A-Ga-g])([,']*)",
-      ).firstMatch(text.substring(i));
+      final m = _pitchPattern.matchAsPrefix(text, i);
       if (m == null) return null;
       i += m.group(0)!.length;
       final letterChar = m.group(2)!;
@@ -460,7 +475,6 @@ class _AbcParser {
 
     while (i < text.length) {
       final c = text[i];
-      final rest = text.substring(i);
 
       if (c == ' ' || c == '\t') {
         space = true;
@@ -486,12 +500,12 @@ class _AbcParser {
       }
       if ('~.HLMOPST'.contains(c) &&
           i + 1 < text.length &&
-          RegExp(r'[\^_=A-Ga-g\[]').hasMatch(text[i + 1])) {
+          _decoratedPattern.hasMatch(text[i + 1])) {
         i++; // Short decorations are ignored.
         continue;
       }
       // Inline fields [K:…], [M:…], [L:…].
-      final inline = RegExp(r'^\[([KML]):([^\]]*)\]').firstMatch(rest);
+      final inline = _inlineFieldPattern.matchAsPrefix(text, i);
       if (inline != null) {
         i += inline.group(0)!.length;
         final value = inline.group(2)!.trim();
@@ -509,9 +523,7 @@ class _AbcParser {
         continue;
       }
       // Bar lines and voltas.
-      final bar = RegExp(
-        r'^(:\|:|:\|\]|\|\]|\[\||:\||\|:|::|\|\||\|)(\d)?|^\[(\d)',
-      ).firstMatch(rest);
+      final bar = _barPattern.matchAsPrefix(text, i);
       if (bar != null) {
         i += bar.group(0)!.length;
         final volta = int.tryParse(bar.group(2) ?? bar.group(3) ?? '');
@@ -521,7 +533,7 @@ class _AbcParser {
         continue;
       }
       if (c == '(') {
-        final tuplet = RegExp(r'^\((\d)(?::(\d)?)?(?::(\d))?').firstMatch(rest);
+        final tuplet = _tupletPattern.matchAsPrefix(text, i);
         if (tuplet != null) {
           i += tuplet.group(0)!.length;
           final p = int.parse(tuplet.group(1)!);
@@ -550,7 +562,7 @@ class _AbcParser {
         continue;
       }
       if (c == '>' || c == '<') {
-        final m = RegExp(r'^(>+|<+)').firstMatch(rest)!;
+        final m = _brokenPattern.matchAsPrefix(text, i)!;
         i += m.group(0)!.length;
         applyBroken(m.group(0)!);
         continue;

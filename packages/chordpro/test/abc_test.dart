@@ -144,4 +144,18 @@ void main() {
       expect(minor.key.fifths, -4);
     });
   });
+
+  test('a long music line parses in linear time', () {
+    // 4000 bars on one line: matching at the position instead of copying
+    // the rest of the line keeps this fast.
+    final line = List.filled(4000, '[K:D] "G"(3ABc d2>e2 z2 |').join(' ');
+    final watch = Stopwatch()..start();
+    final tune = parseAbc('X:1\nM:4/4\nL:1/8\nK:G\n$line\n');
+    watch.stop();
+    final elements = tune.lines.single.elements;
+    expect(elements.whereType<AbcBar>(), hasLength(4000));
+    expect(elements.whereType<AbcNote>(), hasLength(4000 * 5));
+    expect(elements.whereType<AbcNote>().first.tuplet, 3);
+    expect(watch.elapsed, lessThan(const Duration(seconds: 2)));
+  });
 }
