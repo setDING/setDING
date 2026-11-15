@@ -123,10 +123,10 @@ final importExportProvider = Provider<ImportExportService>(
 
 /// Songs filtered by search text and optional tag.
 final songsProvider = StreamProvider.autoDispose
-    .family<List<SongEntry>, ({String query, String? tag})>(
+    .family<List<SongListEntry>, ({String query, String? tag})>(
       (ref, filter) => ref
           .watch(songRepositoryProvider)
-          .watchSongs(query: filter.query, tag: filter.tag),
+          .watchSongList(query: filter.query, tag: filter.tag),
     );
 
 /// All tags used in the library.

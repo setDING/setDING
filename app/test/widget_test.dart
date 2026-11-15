@@ -76,7 +76,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('Key A'), findsOneWidget);
     expect(find.text('E/G#'), findsWidgets);
-    final id = (await tester.runAsync(() => app.songs.watchSongs().first))!
+    // A plain query: a new stream query does not run inside runAsync.
+    final id = (await tester.runAsync(() => app.db.select(app.db.songs).get()))!
         .single
         .id;
     final overlay = await tester.runAsync(() => app.songs.getOverlay(id));

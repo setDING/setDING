@@ -183,6 +183,33 @@ void main() {
     });
   });
 
+  test('the song list has what lists show, filtered like the songs', () async {
+    final a = await songs.createSong(
+      source: '{title: Alpha}\n{artist: Ann}\n{key: G}\n{tag: Rock}\n[G]sun',
+    );
+    await songs.createSong(source: '{title: Beta}\n[C]rain');
+    final list = await songs.watchSongList().first;
+    expect(list.map((s) => s.title), ['Alpha', 'Beta']);
+    expect(
+      list.first,
+      SongListEntry(
+        id: a,
+        title: 'Alpha',
+        artist: 'Ann',
+        songKey: 'G',
+        tags: '\nRock\n',
+      ),
+    );
+    expect(list.first.tagList, ['Rock']);
+    expect(
+      (await songs.watchSongList(query: 'rain').first).map((s) => s.title),
+      ['Beta'],
+    );
+    expect((await songs.watchSongList(tag: 'rock').first).map((s) => s.id), [
+      a,
+    ]);
+  });
+
   group('SetRepository', () {
     test('adds, reorders and removes items', () async {
       final a = await songs.createSong(source: '{title: A}');

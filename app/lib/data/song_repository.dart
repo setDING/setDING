@@ -1,6 +1,6 @@
 import 'package:chordpro/chordpro.dart' as cp;
 import 'package:drift/drift.dart';
-import 'package:flutter/foundation.dart' show compute;
+import 'package:flutter/foundation.dart' show compute, immutable;
 import 'package:uuid/uuid.dart';
 
 import 'attachment_storage.dart';
@@ -60,10 +60,46 @@ List<SongMeta> _metas(List<String> sources) => [
 ];
 
 /// Tags of a song as stored in the database.
-List<String> songTags(SongEntry song) => [
-  for (final t in (song.tags ?? '').split('\n'))
+List<String> songTags(SongEntry song) => _tags(song.tags);
+
+List<String> _tags(String? column) => [
+  for (final t in (column ?? '').split('\n'))
     if (t.isNotEmpty) t,
 ];
+
+/// A song as lists show it (see [SongRepository.watchSongList]).
+@immutable
+class SongListEntry {
+  const SongListEntry({
+    required this.id,
+    required this.title,
+    this.artist,
+    this.songKey,
+    this.tags,
+  });
+
+  final String id;
+  final String title;
+  final String? artist;
+  final String? songKey;
+
+  /// As stored in the database (see `Songs.tags`).
+  final String? tags;
+
+  List<String> get tagList => _tags(tags);
+
+  @override
+  bool operator ==(Object other) =>
+      other is SongListEntry &&
+      other.id == id &&
+      other.title == title &&
+      other.artist == artist &&
+      other.songKey == songKey &&
+      other.tags == tags;
+
+  @override
+  int get hashCode => Object.hash(id, title, artist, songKey, tags);
+}
 
 String? _blankToNull(String? value) =>
     value == null || value.trim().isEmpty ? null : value.trim();
@@ -82,28 +118,54 @@ class SongRepository {
 
   /// Songs sorted by `{sorttitle}` (or title); optionally filtered by a
   /// search [query] and a [tag].
-  Stream<List<SongEntry>> watchSongs({String query = '', String? tag}) {
-    final q = db.select(db.songs)
-      ..where((s) => s.deleted.equals(false) & s.libraryId.equals(libraryId))
-      ..orderBy([
-        (s) => OrderingTerm.asc(
-          coalesce([s.sortTitle, s.title]).collate(Collate.noCase),
-        ),
-      ]);
+  Stream<List<SongEntry>> watchSongs({String query = '', String? tag}) =>
+      (db.select(db.songs)
+            ..where((_) => _filter(query, tag))
+            ..orderBy([(_) => _order]))
+          .watch();
+
+  /// Like [watchSongs], with only what a list shows (without the ChordPro
+  /// text, which can be long).
+  Stream<List<SongListEntry>> watchSongList({String query = '', String? tag}) {
+    final s = db.songs;
+    final q = db.selectOnly(s)
+      ..addColumns([s.id, s.title, s.artist, s.songKey, s.tags])
+      ..where(_filter(query, tag))
+      ..orderBy([_order]);
+    return q.watch().map(
+      (rows) => [
+        for (final r in rows)
+          SongListEntry(
+            id: r.read(s.id)!,
+            title: r.read(s.title)!,
+            artist: r.read(s.artist),
+            songKey: r.read(s.songKey),
+            tags: r.read(s.tags),
+          ),
+      ],
+    );
+  }
+
+  OrderingTerm get _order => OrderingTerm.asc(
+    coalesce([db.songs.sortTitle, db.songs.title]).collate(Collate.noCase),
+  );
+
+  Expression<bool> _filter(String query, String? tag) {
+    final s = db.songs;
+    var filter = s.deleted.equals(false) & s.libraryId.equals(libraryId);
     if (tag != null) {
-      q.where((s) => s.tags.lower().like('%\n${tag.toLowerCase()}\n%'));
+      filter = filter & s.tags.lower().like('%\n${tag.toLowerCase()}\n%');
     }
     final trimmed = query.trim();
     if (trimmed.isNotEmpty) {
       final pattern = '%${trimmed.toLowerCase()}%';
-      q.where(
-        (s) =>
-            s.title.lower().like(pattern) |
-            s.artist.lower().like(pattern) |
-            s.chordproSource.lower().like(pattern),
-      );
+      filter =
+          filter &
+          (s.title.lower().like(pattern) |
+              s.artist.lower().like(pattern) |
+              s.chordproSource.lower().like(pattern));
     }
-    return q.watch();
+    return filter;
   }
 
   Stream<SongEntry?> watchSong(String id) =>

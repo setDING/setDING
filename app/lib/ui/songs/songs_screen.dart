@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/database.dart';
 import '../../data/song_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
@@ -131,7 +130,8 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                   icon: const Icon(Icons.select_all),
                   onPressed: () => setState(
                     () => _selected = {
-                      for (final s in songs.value ?? const <SongEntry>[]) s.id,
+                      for (final s in songs.value ?? const <SongListEntry>[])
+                        s.id,
                     },
                   ),
                 ),
@@ -290,7 +290,7 @@ class SongTile extends StatelessWidget {
     this.leading,
   });
 
-  final SongEntry song;
+  final SongListEntry song;
   final bool hasAttachments;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
@@ -303,7 +303,7 @@ class SongTile extends StatelessWidget {
     final subtitle = [
       if (song.artist != null) song.artist!,
       if (song.songKey != null) song.songKey!,
-      ...songTags(song).map((t) => '#$t'),
+      ...song.tagList.map((t) => '#$t'),
     ].join(' · ');
     return ListTile(
       leading: leading,
