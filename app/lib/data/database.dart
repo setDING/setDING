@@ -122,6 +122,10 @@ class Attachments extends Table {
 
   /// File name inside the attachment directory.
   TextColumn get fileName => text()();
+
+  /// Name of the file on the server, null until uploaded or for local-only
+  /// attachments; a missing local file is downloaded with it (schema 6).
+  TextColumn get remoteFile => text().nullable()();
   IntColumn get pages => integer().nullable()();
   IntColumn get sizeBytes => integer()();
   IntColumn get revision => integer().withDefault(const Constant(0))();
@@ -260,7 +264,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   /// Called after an upgrade to fill new columns from the ChordPro source.
   Future<void> Function(AppDatabase db)? afterUpgrade;
@@ -302,6 +306,9 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(syncOutbox);
         await m.createTable(syncCursors);
         await m.createTable(songConflicts);
+      }
+      if (from < 6) {
+        await m.addColumn(attachments, attachments.remoteFile);
       }
     },
     beforeOpen: (details) async {

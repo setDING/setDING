@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
@@ -347,6 +348,141 @@ void main() {
       expect(server.sets.containsKey(setId), isFalse);
       expect(await outbox(), isEmpty);
       expect((await sets.watchSets().first).single.set.id, setId);
+    });
+  });
+
+  group('attachments (ADR-0009)', () {
+    late AttachmentStorage storage;
+    final pdf = Uint8List.fromList('%PDF-1.4 test'.codeUnits);
+
+    setUp(() => storage = AttachmentStorage(dir));
+
+    test('uploads PDFs after their song; images stay on the device', () async {
+      final id = await songs.createSong(source: '{title: With score}');
+      final a = await songs.addAttachment(
+        id,
+        name: 'Score',
+        bytes: pdf,
+        pages: 2,
+      );
+      await songs.addAttachment(
+        id,
+        name: 'cover.png',
+        bytes: Uint8List.fromList([1, 2]),
+        extension: 'png',
+      );
+      await engine.sync();
+      expect(server.attachments.keys, [a]);
+      final remote = server.attachments[a]!;
+      expect(remote.name, 'Score');
+      expect(remote.pages, 2);
+      expect(server.files[remote.file], pdf);
+      final local = (await songs.getAttachments(id))
+          .firstWhere((x) => x.id == a);
+      expect(local.remoteFile, remote.file);
+      expect(local.revision, remote.revision);
+      expect(await outbox(), isEmpty);
+    });
+
+    test('downloads PDFs of other devices', () async {
+      server.putSong(remoteSong('s1', '{title: Song}'));
+      server.putAttachment(
+        const RemoteAttachment(
+          id: 'a1',
+          organizationId: 'o1',
+          songId: 's1',
+          name: 'Lead sheet',
+          sizeBytes: 13,
+        ),
+        bytes: pdf,
+      );
+      final report = await engine.sync();
+      expect(report.downloaded, 1);
+      final local = (await songs.getAttachments('s1')).single;
+      expect(local.name, 'Lead sheet');
+      expect(await storage.file(local.fileName).readAsBytes(), pdf);
+
+      // Already there: not downloaded again.
+      await engine.sync();
+      expect(server.downloads, 1);
+    });
+
+    test('renames and deletions travel both ways', () async {
+      server.putSong(remoteSong('s1', '{title: Song}'));
+      server.putAttachment(
+        const RemoteAttachment(
+          id: 'a1',
+          organizationId: 'o1',
+          songId: 's1',
+          name: 'Old',
+        ),
+        bytes: pdf,
+      );
+      await engine.sync();
+      final local = (await songs.getAttachments('s1')).single;
+
+      await songs.renameAttachment('a1', 'New');
+      await engine.sync();
+      expect(server.attachments['a1']!.name, 'New');
+
+      final current = server.attachments['a1']!;
+      server.putAttachment(
+        RemoteAttachment(
+          id: 'a1',
+          organizationId: 'o1',
+          songId: 's1',
+          name: current.name,
+          file: current.file,
+          deleted: true,
+        ),
+      );
+      await engine.sync();
+      expect(await songs.getAttachments('s1'), isEmpty);
+      expect(await storage.exists(local.fileName), isFalse);
+    });
+
+    test('a local deletion is pushed', () async {
+      final id = await songs.createSong(source: '{title: Song}');
+      await songs.addAttachment(id, name: 'Score', bytes: pdf);
+      await engine.sync();
+      final a = (await songs.getAttachments(id)).single;
+      await songs.deleteAttachment(a);
+      await engine.sync();
+      expect(server.attachments[a.id]!.deleted, isTrue);
+    });
+
+    test('a failed download does not stop the others', () async {
+      server.putSong(remoteSong('s1', '{title: Song}'));
+      server.putAttachment(
+        const RemoteAttachment(
+          id: 'a1',
+          organizationId: 'o1',
+          songId: 's1',
+          name: 'Broken',
+          file: 'missing.pdf',
+        ),
+      );
+      server.putAttachment(
+        const RemoteAttachment(
+          id: 'a2',
+          organizationId: 'o1',
+          songId: 's1',
+          name: 'Fine',
+        ),
+        bytes: pdf,
+      );
+      final report = await engine.sync();
+      expect(report.error, isNull);
+      expect(report.downloaded, 1);
+    });
+
+    test('attachments of the local library are never uploaded', () async {
+      final local = SongRepository(db, storage);
+      final id = await local.createSong(source: '{title: Private}');
+      await local.addAttachment(id, name: 'Score', bytes: pdf);
+      await engine.sync();
+      expect(server.attachments, isEmpty);
+      expect(await outbox(), isEmpty);
     });
   });
 }

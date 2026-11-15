@@ -227,6 +227,9 @@ song/set sync, PDF sync).
 - **Sync of songs and sets (#17):** outbox, delta pull per organization/band, push with
   base revision, conflict dialog for songs, last writer wins for sets, realtime
   triggers, paused in live mode; sync status and "Sync now" in the settings (ADR-0004).
+- **PDF sync (#18):** attachments uploaded after their songs and downloaded on every
+  device in the same run; missing files shown in live mode and the settings
+  (ADR-0009). Images for `{image}` stay local (open). **Phase 1 is complete.**
 
 ## 9. Open questions
 

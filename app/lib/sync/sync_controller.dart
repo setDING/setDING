@@ -20,6 +20,7 @@ final syncEngineProvider = Provider<SyncEngine>(
     ref.watch(syncBackendProvider),
     ref.watch(bandServiceProvider),
     copies: ref.watch(bandCopyProvider),
+    storage: ref.watch(attachmentStorageProvider),
   ),
 );
 
@@ -128,6 +129,26 @@ final pendingChangesProvider = StreamProvider<int>((ref) {
   return (db.selectOnly(
     db.syncOutbox,
   )..addColumns([count])).watchSingle().map((r) => r.read(count) ?? 0);
+});
+
+/// Synced attachment files that are not downloaded yet (ADR-0009).
+final missingFilesProvider = StreamProvider<int>((ref) async* {
+  final db = ref.watch(databaseProvider);
+  final storage = ref.watch(attachmentStorageProvider);
+  Future<int> count() async {
+    final rows = await (db.select(
+      db.attachments,
+    )..where((a) => a.deleted.equals(false) & a.remoteFile.isNotNull())).get();
+    // Synchronous checks: a few local files, and no async I/O per row.
+    return rows.where((a) => !storage.file(a.fileName).existsSync()).length;
+  }
+
+  yield await count();
+  await for (final _ in db.tableUpdates(
+    TableUpdateQuery.onTable(db.attachments),
+  )) {
+    yield await count();
+  }
 });
 
 /// Songs changed here and on the server (ADR-0004).

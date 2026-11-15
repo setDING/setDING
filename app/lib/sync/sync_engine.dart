@@ -5,6 +5,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
+import '../data/attachment_storage.dart';
 import '../data/band_copy.dart';
 import '../data/band_view.dart';
 import '../data/database.dart';
@@ -22,6 +23,7 @@ class SyncReport {
     this.pulled = 0,
     this.pushed = 0,
     this.conflicts = 0,
+    this.downloaded = 0,
     this.error,
   });
 
@@ -30,6 +32,9 @@ class SyncReport {
 
   /// New conflicts detected in this run.
   final int conflicts;
+
+  /// Attachment files downloaded in this run.
+  final int downloaded;
 
   /// Why the run stopped early (e.g. offline), or null.
   final BackendErrorKind? error;
@@ -43,9 +48,19 @@ class SyncReport {
 ///
 /// The local library ("On this device") is never synced.
 class SyncEngine {
-  SyncEngine(this.db, this.backend, this.bands, {this.copies});
+  SyncEngine(
+    this.db,
+    this.backend,
+    this.bands, {
+    this.copies,
+    AttachmentStorage? storage,
+  }) : storage = storage ?? copies?.storage;
 
   final AppDatabase db;
+
+  /// Where attachment files are stored (ADR-0009); without it, attachment
+  /// files are neither uploaded nor downloaded.
+  final AttachmentStorage? storage;
   final SyncBackend backend;
   final BandService bands;
 
@@ -64,6 +79,7 @@ class SyncEngine {
     var pulled = 0;
     var pushed = 0;
     var conflicts = 0;
+    var downloaded = 0;
     try {
       await bands.refresh();
       final visible = [
@@ -78,6 +94,7 @@ class SyncEngine {
         final r = await _pullSongs(org);
         pulled += r.$1;
         conflicts += r.$2;
+        pulled += await _pullAttachments(org);
       }
       for (final band in visible) {
         pulled += await _pullSets(band);
@@ -85,13 +102,20 @@ class SyncEngine {
       final p = await _push();
       pushed += p.$1;
       conflicts += p.$2;
-      return SyncReport(pulled: pulled, pushed: pushed, conflicts: conflicts);
+      downloaded += await _downloadMissing();
+      return SyncReport(
+        pulled: pulled,
+        pushed: pushed,
+        conflicts: conflicts,
+        downloaded: downloaded,
+      );
     } on BackendException catch (e) {
       debugPrint('Sync stopped: $e');
       return SyncReport(
         pulled: pulled,
         pushed: pushed,
         conflicts: conflicts,
+        downloaded: downloaded,
         error: e.kind,
       );
     }
@@ -199,6 +223,107 @@ class SyncEngine {
     }
   }
 
+  Future<int> _pullAttachments(String orgId) async {
+    final since = await _cursor(orgId, SyncCollection.attachments);
+    final remote = await backend.pullAttachments(orgId, since);
+    final removedFiles = <String>[];
+    await db.transaction(() async {
+      for (final a in remote) {
+        final file = await _applyAttachment(a);
+        if (file != null) removedFiles.add(file);
+      }
+      if (remote.isNotEmpty) {
+        await _setCursor(
+          orgId,
+          SyncCollection.attachments,
+          remote.last.revision,
+        );
+      }
+    });
+    for (final f in removedFiles) {
+      await storage?.delete(f);
+    }
+    return remote.length;
+  }
+
+  /// Applies server metadata; returns a local file to delete, if any.
+  Future<String?> _applyAttachment(RemoteAttachment remote) async {
+    final local = await (db.select(
+      db.attachments,
+    )..where((a) => a.id.equals(remote.id))).getSingleOrNull();
+    if (local != null && remote.revision <= local.revision) return null;
+    // A pending local change (rename, delete) wins and is pushed.
+    if (local != null &&
+        await _outbox(SyncCollection.attachments, remote.id) != null) {
+      return null;
+    }
+    final song = await (db.select(
+      db.songs,
+    )..where((s) => s.id.equals(remote.songId))).getSingleOrNull();
+    if (song == null) return null; // the song is gone
+    final fileName = local?.fileName ?? '${remote.id}.pdf';
+    await db
+        .into(db.attachments)
+        .insertOnConflictUpdate(
+          AttachmentsCompanion.insert(
+            id: remote.id,
+            songId: remote.songId,
+            name: remote.name,
+            fileName: fileName,
+            remoteFile: Value(remote.file),
+            pages: Value(remote.pages),
+            sizeBytes: remote.sizeBytes,
+            revision: Value(remote.revision),
+            updatedAt: DateTime.now(),
+            deleted: Value(remote.deleted),
+          ),
+        );
+    if (!remote.deleted) return null;
+    await (db.update(db.personalOverlays)
+          ..where((o) => o.liveView.equals(remote.id)))
+        .write(const PersonalOverlaysCompanion(liveView: Value(null)));
+    return fileName;
+  }
+
+  /// Downloads attachment files that are not on this device yet
+  /// (ADR-0009: all attachments are available offline).
+  Future<int> _downloadMissing() async {
+    final storage = this.storage;
+    if (storage == null) return 0;
+    final rows =
+        await (db.select(db.attachments).join([
+              innerJoin(db.songs, db.songs.id.equalsExp(db.attachments.songId)),
+            ])..where(
+              db.attachments.deleted.equals(false) &
+                  db.attachments.remoteFile.isNotNull() &
+                  db.songs.deleted.equals(false),
+            ))
+            .get();
+    var count = 0;
+    for (final r in rows) {
+      final a = r.readTable(db.attachments);
+      if (await storage.exists(a.fileName)) continue;
+      try {
+        final bytes = await backend.downloadAttachment(
+          RemoteAttachment(
+            id: a.id,
+            organizationId: r.readTable(db.songs).libraryId,
+            songId: a.songId,
+            name: a.name,
+            file: a.remoteFile,
+          ),
+        );
+        await storage.write(a.fileName, Uint8List.fromList(bytes));
+        count++;
+      } on BackendException catch (e) {
+        if (e.kind == BackendErrorKind.network) rethrow;
+        // This file only; the others are still downloaded.
+        debugPrint('Attachment ${a.id} not downloaded: $e');
+      }
+    }
+    return count;
+  }
+
   Future<int> _pullSets(BandView band) async {
     final since = await _cursor(band.id, SyncCollection.setlists);
     final remote = await backend.pullSets(band.id, since);
@@ -282,7 +407,17 @@ class SyncEngine {
   Future<(int, int)> _push() async {
     var pushed = 0;
     var conflicts = 0;
-    final entries = await db.select(db.syncOutbox).get();
+    // Songs first: an attachment needs its song on the server.
+    const order = [
+      SyncCollection.songs,
+      SyncCollection.setlists,
+      SyncCollection.attachments,
+    ];
+    final entries = await db.select(db.syncOutbox).get()
+      ..sort(
+        (a, b) =>
+            order.indexOf(a.collection).compareTo(order.indexOf(b.collection)),
+      );
     for (final entry in entries) {
       switch (entry.collection) {
         case SyncCollection.songs:
@@ -291,9 +426,8 @@ class SyncEngine {
           if (r == _Push.conflict) conflicts++;
         case SyncCollection.setlists:
           if (await _pushSet(entry) == _Push.done) pushed++;
-        default:
-          // Attachments are pushed by the attachment sync (issue #18).
-          continue;
+        case SyncCollection.attachments:
+          if (await _pushAttachment(entry) == _Push.done) pushed++;
       }
     }
     return (pushed, conflicts);
@@ -444,6 +578,72 @@ class SyncEngine {
         return _Push.skipped;
       }
       rethrow;
+    }
+  }
+
+  Future<_Push> _pushAttachment(OutboxEntry entry) async {
+    final storage = this.storage;
+    final row = await (db.select(db.attachments).join([
+      innerJoin(db.songs, db.songs.id.equalsExp(db.attachments.songId)),
+    ])..where(db.attachments.id.equals(entry.recordId))).getSingleOrNull();
+    if (row == null || storage == null) {
+      if (row == null) await _done(entry);
+      return _Push.skipped;
+    }
+    final a = row.readTable(db.attachments);
+    final song = row.readTable(db.songs);
+    if (song.libraryId == localBandId || !isPdfFile(a.fileName)) {
+      await _done(entry);
+      return _Push.skipped;
+    }
+    final create = a.revision == 0;
+    if (create && a.deleted) {
+      await _done(entry);
+      return _Push.skipped;
+    }
+    // The song must be on the server first (pushed in this run or before).
+    if (song.revision == 0) return _Push.skipped;
+    List<int>? bytes;
+    if (create) {
+      if (!await storage.exists(a.fileName)) {
+        await _done(entry);
+        return _Push.skipped;
+      }
+      bytes = await storage.file(a.fileName).readAsBytes();
+    }
+    final remote = RemoteAttachment(
+      id: a.id,
+      organizationId: song.libraryId,
+      songId: a.songId,
+      name: a.name,
+      pages: a.pages,
+      sizeBytes: a.sizeBytes,
+      revision: a.revision,
+      deleted: a.deleted,
+    );
+    try {
+      final stored = await backend.pushAttachment(
+        remote,
+        create: create,
+        bytes: bytes,
+      );
+      await (db.update(db.attachments)..where((x) => x.id.equals(a.id))).write(
+        AttachmentsCompanion(
+          revision: Value(stored.revision),
+          remoteFile: Value(stored.file ?? a.remoteFile),
+        ),
+      );
+      await _done(entry);
+      return _Push.done;
+    } on BackendException catch (e) {
+      if (e.kind == BackendErrorKind.network ||
+          e.kind == BackendErrorKind.signedOut) {
+        rethrow;
+      }
+      // Not allowed, too large or refused: the attachment stays local.
+      debugPrint('Attachment ${a.id} not pushed: $e');
+      await _done(entry);
+      return _Push.skipped;
     }
   }
 

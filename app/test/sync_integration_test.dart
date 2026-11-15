@@ -3,6 +3,7 @@
 library;
 
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
@@ -215,4 +216,42 @@ void main() {
       await bob.close();
     },
   );
+
+  test('PDF attachments reach the other device (ADR-0009)', () async {
+    final (ann, bob, org, _) = await twoDevices();
+    final pdf = Uint8List.fromList(
+      '%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF\n'
+          .codeUnits,
+    );
+    final song = await ann.songs(org).createSong(source: '{title: Score}');
+    final a = await ann
+        .songs(org)
+        .addAttachment(song, name: 'Lead sheet', bytes: pdf, pages: 1);
+    await ann.sync();
+
+    final report = await bob.sync();
+    expect(report.downloaded, 1);
+    final bobs = (await bob.songs(org).getAttachments(song)).single;
+    expect(bobs.id, a);
+    expect(bobs.name, 'Lead sheet');
+    expect(
+      await AttachmentStorage(bob.dir).file(bobs.fileName).readAsBytes(),
+      pdf,
+    );
+
+    await bob.songs(org).renameAttachment(a, 'Lead');
+    await bob.sync();
+    await ann.sync();
+    expect((await ann.songs(org).getAttachments(song)).single.name, 'Lead');
+
+    await ann
+        .songs(org)
+        .deleteAttachment((await ann.songs(org).getAttachments(song)).single);
+    await ann.sync();
+    await bob.sync();
+    expect(await bob.songs(org).getAttachments(song), isEmpty);
+    expect(await AttachmentStorage(bob.dir).exists(bobs.fileName), isFalse);
+    await ann.close();
+    await bob.close();
+  });
 }

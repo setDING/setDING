@@ -2,7 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+
+import 'dart:io';
+
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:pocketbase/pocketbase.dart';
 
 import 'session_store.dart';
@@ -14,7 +18,8 @@ class PocketBaseBackend implements SyncBackend {
     required this.serverUrl,
     required SessionStore store,
     http.Client Function()? httpClientFactory,
-  }) : _store = store {
+  }) : _store = store,
+       _httpClientFactory = httpClientFactory ?? http.Client.new {
     _pb = PocketBase(
       serverUrl,
       authStore: AsyncAuthStore(
@@ -39,6 +44,7 @@ class PocketBaseBackend implements SyncBackend {
   final String serverUrl;
 
   final SessionStore _store;
+  final http.Client Function() _httpClientFactory;
   late final PocketBase _pb;
   late final StreamSubscription<AuthStoreEvent> _subscription;
   final _changes = StreamController<AuthUser?>.broadcast();
@@ -528,6 +534,117 @@ class PocketBaseBackend implements SyncBackend {
       return _set(r);
     } on ClientException catch (e) {
       throw _map(e);
+    }
+  }
+
+  static RemoteAttachment _attachment(RecordModel r) {
+    final file = r.getStringValue('file');
+    final pages = r.getIntValue('pages');
+    return RemoteAttachment(
+      id: r.id,
+      organizationId: r.getStringValue('organization'),
+      songId: r.getStringValue('song'),
+      name: r.getStringValue('name'),
+      file: file.isEmpty ? null : file,
+      pages: pages == 0 ? null : pages,
+      sizeBytes: r.getIntValue('size_bytes'),
+      revision: r.getIntValue('revision'),
+      deleted: r.getBoolValue('deleted'),
+    );
+  }
+
+  @override
+  Future<List<RemoteAttachment>> pullAttachments(
+    String organizationId,
+    int since,
+  ) async => [
+    for (final r in await _since(
+      'attachments',
+      'organization',
+      organizationId,
+      since,
+    ))
+      _attachment(r),
+  ];
+
+  @override
+  Future<RemoteAttachment> pushAttachment(
+    RemoteAttachment attachment, {
+    required bool create,
+    List<int>? bytes,
+  }) async {
+    if (currentUser == null) {
+      throw const BackendException(BackendErrorKind.signedOut);
+    }
+    try {
+      final RecordModel r;
+      if (create) {
+        r = await _pb
+            .collection('attachments')
+            .create(
+              body: {
+                'id': attachment.id,
+                'organization': attachment.organizationId,
+                'song': attachment.songId,
+                'name': attachment.name,
+                'pages': ?attachment.pages,
+                'size_bytes': attachment.sizeBytes,
+                'deleted': attachment.deleted,
+              },
+              files: [
+                http.MultipartFile.fromBytes(
+                  'file',
+                  bytes ?? const [],
+                  filename: '${attachment.id}.pdf',
+                  contentType: MediaType('application', 'pdf'),
+                ),
+              ],
+            );
+      } else {
+        r = await _pb
+            .collection('attachments')
+            .update(
+              attachment.id,
+              body: {'name': attachment.name, 'deleted': attachment.deleted},
+            );
+      }
+      return _attachment(r);
+    } on ClientException catch (e) {
+      throw _map(e);
+    }
+  }
+
+  @override
+  Future<List<int>> downloadAttachment(RemoteAttachment attachment) async {
+    if (currentUser == null) {
+      throw const BackendException(BackendErrorKind.signedOut);
+    }
+    try {
+      final token = await _pb.files.getToken();
+      final uri = Uri.parse(
+        '$serverUrl/api/files/attachments/${attachment.id}/${attachment.file}',
+      ).replace(queryParameters: {'token': token});
+      final client = _httpClientFactory();
+      try {
+        final response = await client.get(uri);
+        if (response.statusCode != 200) {
+          throw BackendException(
+            response.statusCode == 404
+                ? BackendErrorKind.notAllowed
+                : BackendErrorKind.server,
+            response.statusCode,
+          );
+        }
+        return response.bodyBytes;
+      } finally {
+        client.close();
+      }
+    } on ClientException catch (e) {
+      throw _map(e);
+    } on http.ClientException catch (e) {
+      throw BackendException(BackendErrorKind.network, e);
+    } on SocketException catch (e) {
+      throw BackendException(BackendErrorKind.network, e);
     }
   }
 

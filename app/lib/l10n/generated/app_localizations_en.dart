@@ -1285,4 +1285,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get accountErrorConflict =>
       'The song was changed on the server in the meantime.';
+
+  @override
+  String get pdfMissing =>
+      'The PDF is not on this device yet. It is downloaded with the next sync.';
+
+  @override
+  String syncMissingFiles(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count PDFs are still being downloaded.',
+      one: '1 PDF is still being downloaded.',
+    );
+    return '$_temp0';
+  }
 }

@@ -2311,6 +2311,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Der Song wurde inzwischen auf dem Server geändert.'**
   String get accountErrorConflict;
+
+  /// No description provided for @pdfMissing.
+  ///
+  /// In de, this message translates to:
+  /// **'Das PDF ist noch nicht auf diesem Gerät. Es wird beim nächsten Sync geladen.'**
+  String get pdfMissing;
+
+  /// No description provided for @syncMissingFiles.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 PDF wird noch geladen.} other{{count} PDFs werden noch geladen.}}'**
+  String syncMissingFiles(int count);
 }
 
 class _AppLocalizationsDelegate

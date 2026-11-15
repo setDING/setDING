@@ -514,5 +514,14 @@
   "conflictCompare": "Show server version",
   "conflictServerVersion": "Server version",
   "conflictKeptBoth": "Your version was saved as a separate song.",
-  "accountErrorConflict": "The song was changed on the server in the meantime."
+  "accountErrorConflict": "The song was changed on the server in the meantime.",
+  "pdfMissing": "The PDF is not on this device yet. It is downloaded with the next sync.",
+  "syncMissingFiles": "{count, plural, =1{1 PDF is still being downloaded.} other{{count} PDFs are still being downloaded.}}",
+  "@syncMissingFiles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

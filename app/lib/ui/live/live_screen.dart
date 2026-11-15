@@ -530,6 +530,20 @@ class _LiveItemPage extends ConsumerWidget {
     if (pdf != null && !isPdfFile(pdf.fileName)) pdf = null;
     if (pdf != null) {
       final file = ref.watch(attachmentStorageProvider).file(pdf.fileName);
+      if (!file.existsSync()) {
+        // Synced from the server but not downloaded yet (ADR-0009).
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Text(
+              AppLocalizations.of(context).pdfMissing,
+              key: const Key('pdf-missing'),
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+          ),
+        );
+      }
       return PdfViewer.file(
         file.path,
         key: ValueKey(pdf.id),

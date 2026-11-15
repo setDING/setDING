@@ -629,5 +629,14 @@
   "conflictCompare": "Server-Version ansehen",
   "conflictServerVersion": "Version auf dem Server",
   "conflictKeptBoth": "Deine Version wurde als eigener Song gespeichert.",
-  "accountErrorConflict": "Der Song wurde inzwischen auf dem Server geändert."
+  "accountErrorConflict": "Der Song wurde inzwischen auf dem Server geändert.",
+  "pdfMissing": "Das PDF ist noch nicht auf diesem Gerät. Es wird beim nächsten Sync geladen.",
+  "syncMissingFiles": "{count, plural, =1{1 PDF wird noch geladen.} other{{count} PDFs werden noch geladen.}}",
+  "@syncMissingFiles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

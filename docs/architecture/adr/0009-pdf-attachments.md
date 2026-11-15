@@ -66,6 +66,8 @@ synced and displayed.
 - 2026-11-14: PDF attachments accepted: all attachments are downloaded to every device (no selective download), maximum 20 MB per PDF, songs may consist of PDFs only. Local PDF support is part of the MVP; file sync follows in phase 1.
 - 2026-11-14: Attachments are extended to images (PNG, JPG, GIF, SVG) for the ChordPro `{image}` directive (ADR-0012).
 
+- 2026-11-15: Sync of PDF attachments implemented (issue #18, ADR-0004): metadata is pulled per organization with the songs; files are uploaded once (immutable, the song first) and downloaded in the same sync run, so all attachments are on every device; renames and deletions travel both ways, deleted files are removed locally. A file that is not downloaded yet is shown as a hint in live mode and keeps the set from being "offline ready"; the settings show how many files are still missing. Image attachments for `{image}` (ADR-0012) stay on the device (the server accepts PDFs only).
+
 ## Open points
 
-- None.
+- Syncing image attachments (`{image}`): needs the server to accept image types.

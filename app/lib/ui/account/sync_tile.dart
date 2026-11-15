@@ -17,6 +17,7 @@ class SyncTile extends ConsumerWidget {
     final status = ref.watch(syncControllerProvider);
     final pending = ref.watch(pendingChangesProvider).value ?? 0;
     final conflicts = ref.watch(conflictsProvider).value?.length ?? 0;
+    final missing = ref.watch(missingFilesProvider).value ?? 0;
     final error = status.lastReport?.error;
     final last = status.lastSync;
     final localizations = MaterialLocalizations.of(context);
@@ -36,6 +37,7 @@ class SyncTile extends ConsumerWidget {
         l10n.syncOffline
       else if (error != null)
         backendErrorText(l10n, error),
+      if (missing > 0) l10n.syncMissingFiles(missing),
       if (conflicts > 0) l10n.syncConflicts(conflicts),
     ];
 

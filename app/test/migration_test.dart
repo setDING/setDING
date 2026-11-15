@@ -13,6 +13,11 @@ import 'package:sqlite3/sqlite3.dart';
 /// Turns a current database back into schema 3 (before organizations):
 /// songs reference a band again, no organization or membership tables.
 void downgradeToSchema3(Database raw) {
+  // Schema 6 and 5: attachment server file, sync tables.
+  raw.execute('ALTER TABLE attachments DROP COLUMN remote_file');
+  raw.execute('DROP TABLE sync_outbox');
+  raw.execute('DROP TABLE sync_cursors');
+  raw.execute('DROP TABLE song_conflicts');
   raw.execute('DROP TABLE memberships');
   raw.execute('DROP TABLE org_memberships');
   raw.execute('ALTER TABLE bands DROP COLUMN organization_id');

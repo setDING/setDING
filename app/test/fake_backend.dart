@@ -515,6 +515,87 @@ class FakeSyncBackend implements SyncBackend {
     return putSet(set);
   }
 
+  /// Server state: attachments by ID and their files.
+  final attachments = <String, RemoteAttachment>{};
+  final files = <String, List<int>>{};
+
+  RemoteAttachment putAttachment(RemoteAttachment a, {List<int>? bytes}) {
+    final stored = RemoteAttachment(
+      id: a.id,
+      organizationId: a.organizationId,
+      songId: a.songId,
+      name: a.name,
+      file: a.file ?? attachments[a.id]?.file ?? '${a.id}_abc.pdf',
+      pages: a.pages,
+      sizeBytes: a.sizeBytes,
+      revision: ++_serverRevision,
+      deleted: a.deleted,
+    );
+    attachments[a.id] = stored;
+    if (bytes != null) files[stored.file!] = bytes;
+    return stored;
+  }
+
+  @override
+  Future<List<RemoteAttachment>> pullAttachments(
+    String organizationId,
+    int since,
+  ) async {
+    _requireUser();
+    return attachments.values
+        .where((a) => a.organizationId == organizationId && a.revision > since)
+        .toList()
+      ..sort((a, b) => a.revision.compareTo(b.revision));
+  }
+
+  @override
+  Future<RemoteAttachment> pushAttachment(
+    RemoteAttachment attachment, {
+    required bool create,
+    List<int>? bytes,
+  }) async {
+    _requireUser();
+    pushCount++;
+    if (!songs.containsKey(attachment.songId)) {
+      throw const BackendException(BackendErrorKind.server);
+    }
+    if (create) {
+      if (bytes == null || bytes.length > 20 * 1024 * 1024) {
+        throw const BackendException(BackendErrorKind.server);
+      }
+      return putAttachment(attachment, bytes: bytes);
+    }
+    final existing = attachments[attachment.id];
+    if (existing == null) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    return putAttachment(
+      RemoteAttachment(
+        id: attachment.id,
+        organizationId: existing.organizationId,
+        songId: existing.songId,
+        name: attachment.name,
+        file: existing.file,
+        pages: existing.pages,
+        sizeBytes: existing.sizeBytes,
+        deleted: attachment.deleted,
+      ),
+    );
+  }
+
+  int downloads = 0;
+
+  @override
+  Future<List<int>> downloadAttachment(RemoteAttachment attachment) async {
+    _requireUser();
+    downloads++;
+    final bytes = files[attachment.file];
+    if (bytes == null) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    return bytes;
+  }
+
   @override
   Stream<String> watchChanges() => changes.stream;
 

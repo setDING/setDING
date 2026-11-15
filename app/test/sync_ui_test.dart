@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:realchord/data/database.dart';
 import 'package:realchord/sync/sync_backend.dart';
 import 'package:realchord/sync/sync_controller.dart';
+import 'package:realchord/ui/live/live_screen.dart';
 import 'package:realchord/ui/settings_screen.dart';
 import 'package:realchord/ui/songs/song_screen.dart';
 
@@ -11,15 +13,25 @@ import 'test_app.dart';
 
 const _ann = AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann');
 
-/// Runs a sync in real time (the database work does not finish in the
-/// widget test's fake time).
+/// Runs a sync to the end. The database work needs real time, while the
+/// widgets' stream queries run in the test's fake time, so both are
+/// advanced alternately.
 Future<void> syncNow(WidgetTester tester, {Finder? within}) async {
   final container = ProviderScope.containerOf(
     tester.element(within ?? find.byType(Scaffold).first),
   );
-  await tester.runAsync(
-    () => container.read(syncControllerProvider.notifier).syncNow(),
-  );
+  var done = false;
+  container
+      .read(syncControllerProvider.notifier)
+      .syncNow()
+      .whenComplete(() => done = true);
+  for (var i = 0; i < 500 && !done; i++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump();
+  }
+  expect(done, isTrue, reason: 'sync did not finish');
   await tester.pumpAndSettle();
 }
 
@@ -122,6 +134,34 @@ void main() {
       );
     });
     expect(app.backend.songs, hasLength(1));
+    await app.dispose(tester);
+  });
+
+  testWidgets('live mode explains a PDF that is not downloaded yet', (
+    tester,
+  ) async {
+    final app = await setup(tester);
+    final songs = TestApp.songsIn(app, 'o1');
+    final id = await songs.createSong(title: 'Only PDF');
+    await app.db
+        .into(app.db.attachments)
+        .insert(
+          AttachmentsCompanion.insert(
+            id: 'a1',
+            songId: id,
+            name: 'Score',
+            fileName: 'a1.pdf',
+            remoteFile: const Value('a1_x.pdf'),
+            sizeBytes: 10,
+            updatedAt: DateTime(2026),
+          ),
+        );
+    final song = await tester.runAsync(() => songs.getSong(id));
+    await tester.pumpWidget(
+      app.build(home: LiveScreen(items: [LiveItem.song(song!)])),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('pdf-missing')), findsOneWidget);
     await app.dispose(tester);
   });
 }

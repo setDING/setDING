@@ -2493,6 +2493,17 @@ class $AttachmentsTable extends Attachments
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _remoteFileMeta = const VerificationMeta(
+    'remoteFile',
+  );
+  @override
+  late final GeneratedColumn<String> remoteFile = GeneratedColumn<String>(
+    'remote_file',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _pagesMeta = const VerificationMeta('pages');
   @override
   late final GeneratedColumn<int> pages = GeneratedColumn<int>(
@@ -2557,6 +2568,7 @@ class $AttachmentsTable extends Attachments
     songId,
     name,
     fileName,
+    remoteFile,
     pages,
     sizeBytes,
     revision,
@@ -2603,6 +2615,12 @@ class $AttachmentsTable extends Attachments
       );
     } else if (isInserting) {
       context.missing(_fileNameMeta);
+    }
+    if (data.containsKey('remote_file')) {
+      context.handle(
+        _remoteFileMeta,
+        remoteFile.isAcceptableOrUnknown(data['remote_file']!, _remoteFileMeta),
+      );
     }
     if (data.containsKey('pages')) {
       context.handle(
@@ -2663,6 +2681,10 @@ class $AttachmentsTable extends Attachments
         DriftSqlType.string,
         data['${effectivePrefix}file_name'],
       )!,
+      remoteFile: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_file'],
+      ),
       pages: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}pages'],
@@ -2699,6 +2721,10 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
 
   /// File name inside the attachment directory.
   final String fileName;
+
+  /// Name of the file on the server, null until uploaded or for local-only
+  /// attachments; a missing local file is downloaded with it (schema 6).
+  final String? remoteFile;
   final int? pages;
   final int sizeBytes;
   final int revision;
@@ -2709,6 +2735,7 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
     required this.songId,
     required this.name,
     required this.fileName,
+    this.remoteFile,
     this.pages,
     required this.sizeBytes,
     required this.revision,
@@ -2722,6 +2749,9 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
     map['song_id'] = Variable<String>(songId);
     map['name'] = Variable<String>(name);
     map['file_name'] = Variable<String>(fileName);
+    if (!nullToAbsent || remoteFile != null) {
+      map['remote_file'] = Variable<String>(remoteFile);
+    }
     if (!nullToAbsent || pages != null) {
       map['pages'] = Variable<int>(pages);
     }
@@ -2738,6 +2768,9 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
       songId: Value(songId),
       name: Value(name),
       fileName: Value(fileName),
+      remoteFile: remoteFile == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteFile),
       pages: pages == null && nullToAbsent
           ? const Value.absent()
           : Value(pages),
@@ -2758,6 +2791,7 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
       songId: serializer.fromJson<String>(json['songId']),
       name: serializer.fromJson<String>(json['name']),
       fileName: serializer.fromJson<String>(json['fileName']),
+      remoteFile: serializer.fromJson<String?>(json['remoteFile']),
       pages: serializer.fromJson<int?>(json['pages']),
       sizeBytes: serializer.fromJson<int>(json['sizeBytes']),
       revision: serializer.fromJson<int>(json['revision']),
@@ -2773,6 +2807,7 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
       'songId': serializer.toJson<String>(songId),
       'name': serializer.toJson<String>(name),
       'fileName': serializer.toJson<String>(fileName),
+      'remoteFile': serializer.toJson<String?>(remoteFile),
       'pages': serializer.toJson<int?>(pages),
       'sizeBytes': serializer.toJson<int>(sizeBytes),
       'revision': serializer.toJson<int>(revision),
@@ -2786,6 +2821,7 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
     String? songId,
     String? name,
     String? fileName,
+    Value<String?> remoteFile = const Value.absent(),
     Value<int?> pages = const Value.absent(),
     int? sizeBytes,
     int? revision,
@@ -2796,6 +2832,7 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
     songId: songId ?? this.songId,
     name: name ?? this.name,
     fileName: fileName ?? this.fileName,
+    remoteFile: remoteFile.present ? remoteFile.value : this.remoteFile,
     pages: pages.present ? pages.value : this.pages,
     sizeBytes: sizeBytes ?? this.sizeBytes,
     revision: revision ?? this.revision,
@@ -2808,6 +2845,9 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
       songId: data.songId.present ? data.songId.value : this.songId,
       name: data.name.present ? data.name.value : this.name,
       fileName: data.fileName.present ? data.fileName.value : this.fileName,
+      remoteFile: data.remoteFile.present
+          ? data.remoteFile.value
+          : this.remoteFile,
       pages: data.pages.present ? data.pages.value : this.pages,
       sizeBytes: data.sizeBytes.present ? data.sizeBytes.value : this.sizeBytes,
       revision: data.revision.present ? data.revision.value : this.revision,
@@ -2823,6 +2863,7 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
           ..write('songId: $songId, ')
           ..write('name: $name, ')
           ..write('fileName: $fileName, ')
+          ..write('remoteFile: $remoteFile, ')
           ..write('pages: $pages, ')
           ..write('sizeBytes: $sizeBytes, ')
           ..write('revision: $revision, ')
@@ -2838,6 +2879,7 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
     songId,
     name,
     fileName,
+    remoteFile,
     pages,
     sizeBytes,
     revision,
@@ -2852,6 +2894,7 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
           other.songId == this.songId &&
           other.name == this.name &&
           other.fileName == this.fileName &&
+          other.remoteFile == this.remoteFile &&
           other.pages == this.pages &&
           other.sizeBytes == this.sizeBytes &&
           other.revision == this.revision &&
@@ -2864,6 +2907,7 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
   final Value<String> songId;
   final Value<String> name;
   final Value<String> fileName;
+  final Value<String?> remoteFile;
   final Value<int?> pages;
   final Value<int> sizeBytes;
   final Value<int> revision;
@@ -2875,6 +2919,7 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
     this.songId = const Value.absent(),
     this.name = const Value.absent(),
     this.fileName = const Value.absent(),
+    this.remoteFile = const Value.absent(),
     this.pages = const Value.absent(),
     this.sizeBytes = const Value.absent(),
     this.revision = const Value.absent(),
@@ -2887,6 +2932,7 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
     required String songId,
     required String name,
     required String fileName,
+    this.remoteFile = const Value.absent(),
     this.pages = const Value.absent(),
     required int sizeBytes,
     this.revision = const Value.absent(),
@@ -2904,6 +2950,7 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
     Expression<String>? songId,
     Expression<String>? name,
     Expression<String>? fileName,
+    Expression<String>? remoteFile,
     Expression<int>? pages,
     Expression<int>? sizeBytes,
     Expression<int>? revision,
@@ -2916,6 +2963,7 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
       if (songId != null) 'song_id': songId,
       if (name != null) 'name': name,
       if (fileName != null) 'file_name': fileName,
+      if (remoteFile != null) 'remote_file': remoteFile,
       if (pages != null) 'pages': pages,
       if (sizeBytes != null) 'size_bytes': sizeBytes,
       if (revision != null) 'revision': revision,
@@ -2930,6 +2978,7 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
     Value<String>? songId,
     Value<String>? name,
     Value<String>? fileName,
+    Value<String?>? remoteFile,
     Value<int?>? pages,
     Value<int>? sizeBytes,
     Value<int>? revision,
@@ -2942,6 +2991,7 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
       songId: songId ?? this.songId,
       name: name ?? this.name,
       fileName: fileName ?? this.fileName,
+      remoteFile: remoteFile ?? this.remoteFile,
       pages: pages ?? this.pages,
       sizeBytes: sizeBytes ?? this.sizeBytes,
       revision: revision ?? this.revision,
@@ -2965,6 +3015,9 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
     }
     if (fileName.present) {
       map['file_name'] = Variable<String>(fileName.value);
+    }
+    if (remoteFile.present) {
+      map['remote_file'] = Variable<String>(remoteFile.value);
     }
     if (pages.present) {
       map['pages'] = Variable<int>(pages.value);
@@ -2994,6 +3047,7 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
           ..write('songId: $songId, ')
           ..write('name: $name, ')
           ..write('fileName: $fileName, ')
+          ..write('remoteFile: $remoteFile, ')
           ..write('pages: $pages, ')
           ..write('sizeBytes: $sizeBytes, ')
           ..write('revision: $revision, ')
@@ -7824,6 +7878,7 @@ typedef $$AttachmentsTableCreateCompanionBuilder =
       required String songId,
       required String name,
       required String fileName,
+      Value<String?> remoteFile,
       Value<int?> pages,
       required int sizeBytes,
       Value<int> revision,
@@ -7837,6 +7892,7 @@ typedef $$AttachmentsTableUpdateCompanionBuilder =
       Value<String> songId,
       Value<String> name,
       Value<String> fileName,
+      Value<String?> remoteFile,
       Value<int?> pages,
       Value<int> sizeBytes,
       Value<int> revision,
@@ -7888,6 +7944,11 @@ class $$AttachmentsTableFilterComposer
 
   ColumnFilters<String> get fileName => $composableBuilder(
     column: $table.fileName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get remoteFile => $composableBuilder(
+    column: $table.remoteFile,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7964,6 +8025,11 @@ class $$AttachmentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get remoteFile => $composableBuilder(
+    column: $table.remoteFile,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get pages => $composableBuilder(
     column: $table.pages,
     builder: (column) => ColumnOrderings(column),
@@ -8030,6 +8096,11 @@ class $$AttachmentsTableAnnotationComposer
 
   GeneratedColumn<String> get fileName =>
       $composableBuilder(column: $table.fileName, builder: (column) => column);
+
+  GeneratedColumn<String> get remoteFile => $composableBuilder(
+    column: $table.remoteFile,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get pages =>
       $composableBuilder(column: $table.pages, builder: (column) => column);
@@ -8102,6 +8173,7 @@ class $$AttachmentsTableTableManager
                 Value<String> songId = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String> fileName = const Value.absent(),
+                Value<String?> remoteFile = const Value.absent(),
                 Value<int?> pages = const Value.absent(),
                 Value<int> sizeBytes = const Value.absent(),
                 Value<int> revision = const Value.absent(),
@@ -8113,6 +8185,7 @@ class $$AttachmentsTableTableManager
                 songId: songId,
                 name: name,
                 fileName: fileName,
+                remoteFile: remoteFile,
                 pages: pages,
                 sizeBytes: sizeBytes,
                 revision: revision,
@@ -8126,6 +8199,7 @@ class $$AttachmentsTableTableManager
                 required String songId,
                 required String name,
                 required String fileName,
+                Value<String?> remoteFile = const Value.absent(),
                 Value<int?> pages = const Value.absent(),
                 required int sizeBytes,
                 Value<int> revision = const Value.absent(),
@@ -8137,6 +8211,7 @@ class $$AttachmentsTableTableManager
                 songId: songId,
                 name: name,
                 fileName: fileName,
+                remoteFile: remoteFile,
                 pages: pages,
                 sizeBytes: sizeBytes,
                 revision: revision,

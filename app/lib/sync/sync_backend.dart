@@ -194,6 +194,34 @@ class RemoteSet {
   final bool deleted;
 }
 
+/// PDF attachment metadata as stored on the server (ADR-0009, ADR-0017).
+@immutable
+class RemoteAttachment {
+  const RemoteAttachment({
+    required this.id,
+    required this.organizationId,
+    required this.songId,
+    required this.name,
+    this.file,
+    this.pages,
+    this.sizeBytes = 0,
+    this.revision = 0,
+    this.deleted = false,
+  });
+
+  final String id;
+  final String organizationId;
+  final String songId;
+  final String name;
+
+  /// File name on the server (download), null before the upload.
+  final String? file;
+  final int? pages;
+  final int sizeBytes;
+  final int revision;
+  final bool deleted;
+}
+
 /// State of an invitation link.
 enum InviteStatus { valid, expired, revoked }
 
@@ -377,6 +405,23 @@ abstract class SyncBackend {
   /// Creates or updates a set (last writer wins) and returns the server
   /// state.
   Future<RemoteSet> pushSet(RemoteSet set, {required bool create});
+
+  /// PDF attachments of an organization changed after revision [since].
+  Future<List<RemoteAttachment>> pullAttachments(
+    String organizationId,
+    int since,
+  );
+
+  /// Uploads a new attachment with its file ([bytes], PDF), or updates the
+  /// metadata (name, deleted) of an existing one. Files are immutable.
+  Future<RemoteAttachment> pushAttachment(
+    RemoteAttachment attachment, {
+    required bool create,
+    List<int>? bytes,
+  });
+
+  /// Downloads the file of an attachment (protected, needs read access).
+  Future<List<int>> downloadAttachment(RemoteAttachment attachment);
 
   /// Emits the name of a collection whenever the server reports a change
   /// (realtime, while online). Errors are not reported; delta sync catches
