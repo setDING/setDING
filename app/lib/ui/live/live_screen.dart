@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:chordpro/chordpro.dart' hide Key;
 import 'package:chordpro/chordpro.dart' as cp show Key;
+import 'package:flutter/gestures.dart' show Drag;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -260,8 +261,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     return KeyEventResult.ignored;
   }
 
-  void _onTap(TapUpDetails details, double width) {
-    final x = details.localPosition.dx;
+  /// Width of the page area, for the tap zones.
+  double _width = 0;
+
+  void _onTap(Offset position) {
+    final x = position.dx;
+    final width = _width;
     if (x < width * 0.3) {
       _previous();
     } else if (x > width * 0.7) {
@@ -341,20 +346,24 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
             children: [
               Expanded(
                 child: LayoutBuilder(
-                  builder: (context, constraints) => GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onTapUp: (d) => _onTap(d, constraints.maxWidth),
-                    child: PageView.builder(
-                      controller: _pages,
-                      itemCount: items.length,
-                      onPageChanged: (i) => setState(() => _index = i),
-                      itemBuilder: (context, i) => _LiveItemPage(
-                        item: items[i],
-                        scrollController: _scrollFor(i),
-                        pdfController: _pdfFor(i),
+                  builder: (context, constraints) {
+                    _width = constraints.maxWidth;
+                    return GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onTapUp: (d) => _onTap(d.localPosition),
+                      child: PageView.builder(
+                        controller: _pages,
+                        itemCount: items.length,
+                        onPageChanged: (i) => setState(() => _index = i),
+                        itemBuilder: (context, i) => _LiveItemPage(
+                          item: items[i],
+                          scrollController: _scrollFor(i),
+                          pdfController: _pdfFor(i),
+                          onTap: _onTap,
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ),
               Container(
@@ -498,11 +507,16 @@ class _LiveItemPage extends ConsumerWidget {
     required this.item,
     required this.scrollController,
     required this.pdfController,
+    required this.onTap,
   });
 
   final LiveItem item;
   final ScrollController scrollController;
   final PdfViewerController pdfController;
+
+  /// Tap at a position of the page; the viewer of a PDF handles taps itself,
+  /// so it forwards them to the tap zones of the live screen.
+  final ValueChanged<Offset> onTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -548,7 +562,16 @@ class _LiveItemPage extends ConsumerWidget {
         file.path,
         key: ValueKey(pdf.id),
         controller: pdfController,
-        params: const PdfViewerParams(),
+        params: PdfViewerParams(
+          // No text selection on stage: drags and long presses would
+          // select text instead of moving the sheet.
+          textSelectionParams: const PdfTextSelectionParams(enabled: false),
+          onGeneralTap: (context, controller, details) {
+            if (details.type != PdfViewerGeneralTapType.tap) return false;
+            onTap(details.localPosition);
+            return true;
+          },
+        ),
       );
     }
     final storage = ref.watch(attachmentStorageProvider);
@@ -604,27 +627,32 @@ class _ChordProPage extends ConsumerWidget {
       diagramInstrumentFor(settings.instrument),
     );
     final diagrams = diagramsPosition(parsed.diagrams, settings.diagrams);
-    const padding = EdgeInsets.fromLTRB(20, 12, 20, 0);
-
-    return Padding(
-      padding: padding,
+    // The margins belong to the scroll view (and the header to the drag
+    // area below), so drags on empty areas scroll the song too.
+    return _DragToScroll(
+      controller: scrollController,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SongHeader(
-            title: song.title.isEmpty ? l10n.untitled : song.title,
-            artist: song.artist,
-            song: parsed,
-            formatter: formatter,
-            capo: formatter.effectiveCapo,
-            compact: true,
-            setSequence: setSequence,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(_margin, 12, _margin, 12),
+            child: SongHeader(
+              title: song.title.isEmpty ? l10n.untitled : song.title,
+              artist: song.artist,
+              song: parsed,
+              formatter: formatter,
+              capo: formatter.effectiveCapo,
+              compact: true,
+              setSequence: setSequence,
+            ),
           ),
-          const SizedBox(height: 12),
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final size = Size(constraints.maxWidth, constraints.maxHeight);
+                final size = Size(
+                  constraints.maxWidth - 2 * _margin,
+                  constraints.maxHeight,
+                );
                 final scale = overlay.fontScale;
                 if (!settings.autoFit) {
                   return _scrolling(
@@ -680,7 +708,8 @@ class _ChordProPage extends ConsumerWidget {
                 if (!fit.fits || scale > 1.0) return _scrolling(size, options);
                 // Fits: no scrolling. FittedBox only shrinks, as a safety net
                 // for small measurement differences (e.g. wrapped notes).
-                return SizedBox.expand(
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: _margin),
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.topLeft,
@@ -721,11 +750,48 @@ class _ChordProPage extends ConsumerWidget {
   Widget _scrolling(Size size, SongRenderOptions options) =>
       SingleChildScrollView(
         controller: scrollController,
-        child: Padding(
-          padding: EdgeInsets.only(bottom: size.height * 0.25),
-          child: SongBody(song: parsed, options: options),
-        ),
+        padding: EdgeInsets.fromLTRB(_margin, 0, _margin, size.height * 0.25),
+        child: SongBody(song: parsed, options: options),
       );
+}
+
+/// Horizontal page margin of a song in live mode.
+const _margin = 20.0;
+
+/// Lets vertical drags outside the scroll view (e.g. on the header) scroll
+/// the song, with the same physics as a drag inside it. Drags that start in
+/// the scroll view are handled there, as it wins the gesture arena.
+class _DragToScroll extends StatefulWidget {
+  const _DragToScroll({required this.controller, required this.child});
+
+  final ScrollController controller;
+  final Widget child;
+
+  @override
+  State<_DragToScroll> createState() => _DragToScrollState();
+}
+
+class _DragToScrollState extends State<_DragToScroll> {
+  Drag? _drag;
+  ScrollHoldController? _hold;
+
+  ScrollPosition? get _position =>
+      widget.controller.hasClients ? widget.controller.position : null;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    behavior: HitTestBehavior.translucent,
+    onVerticalDragDown: (_) => _hold = _position?.hold(() => _hold = null),
+    onVerticalDragStart: (details) =>
+        _drag = _position?.drag(details, () => _drag = null),
+    onVerticalDragUpdate: (details) => _drag?.update(details),
+    onVerticalDragEnd: (details) => _drag?.end(details),
+    onVerticalDragCancel: () {
+      _hold?.cancel();
+      _drag?.cancel();
+    },
+    child: widget.child,
+  );
 }
 
 class _MarkerPage extends StatelessWidget {
