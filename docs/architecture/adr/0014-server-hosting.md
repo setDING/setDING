@@ -74,10 +74,10 @@ server details (OS, Docker, domain/HTTPS) and the backup concept. They are now k
 - 2026-11-15: Proposed after the owner chose Proxmox LXC + Cloudflare and asked for
   provisioning from the repository via `make`.
 - 2026-11-15: Accepted by the owner.
+- 2026-11-15: Production instance installed: Proxmox CT 600, public hostname `api.realchord.app`.
 
 ## Open points
 
-- Final hostname (e.g. `api.realchord.app` once the domain is registered).
 - Staging container (`staging.` hostname) for testing PocketBase updates and migrations.
 - Monitoring/alerting (e.g. an uptime check on `/api/health`).
 - Encrypting the PocketBase settings (`--encryptionEnv`) once SMTP/S3 credentials are stored there.

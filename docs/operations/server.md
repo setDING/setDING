@@ -9,9 +9,18 @@ Tablets ──HTTPS──▶ Cloudflare ──tunnel──▶ cloudflared ──
                                           └──────── Debian LXC on Proxmox ────────┘
 ```
 
-All `make server-*` targets need `SERVER`, the SSH target (root), e.g.
-`SERVER=root@realchord`. Export it once (`export SERVER=root@realchord`) or add a
-host alias in `~/.ssh/config`.
+## Production instance
+
+| | |
+|---|---|
+| Public URL | `https://api.realchord.app` (Cloudflare Tunnel) |
+| Container | Proxmox CT 600, Debian 13, 2 vCPU, 2 GB RAM, 16 GB disk |
+| LAN address | `192.168.1.40` (SSH as root with key) |
+| Installed | 2026-11-15, PocketBase 0.40.6 |
+
+The `make server-*` targets use `SERVER` as the SSH target; it defaults to the
+production instance (`root@192.168.1.40`). Override it for another instance, e.g.
+`make server-install SERVER=root@<staging-ip>`.
 
 | Target | What it does |
 |---|---|
@@ -52,8 +61,8 @@ Tokens and account settings stay with the owner (ADR-0014).
    (cloudflared), e.g. `realchord`.
 2. On the server, run the shown install command once:
    `cloudflared service install <TOKEN>`.
-3. **Public hostname:** e.g. `api.<domain>` → service `HTTP` → `localhost:8090`.
-4. **Access:** create an Access application for the path `api.<domain>/_/*` only
+3. **Public hostname:** e.g. `api.realchord.app` → service `HTTP` → `localhost:8090`.
+4. **Access:** create an Access application for the path `api.realchord.app/_/*` only
    (admin UI), allowing only the owner's email. Do not protect the whole hostname.
 5. **Security → Bots:** make sure Bot Fight Mode or challenges do not apply to this
    hostname (add a WAF skip rule if needed).
@@ -66,8 +75,8 @@ Tokens and account settings stay with the owner (ADR-0014).
    `runuser -u pocketbase -- /opt/pocketbase/pocketbase superuser upsert <email> <password> --dir=/var/lib/pocketbase/pb_data`
    (or open the installer link from `journalctl -u pocketbase` through an SSH tunnel:
    `ssh -L 8090:127.0.0.1:8090 root@<ip>`).
-2. Log in at `https://api.<domain>/_/` and enable MFA for superusers.
-3. **Settings → Application:** set the application URL to `https://api.<domain>`.
+2. Log in at `https://api.realchord.app/_/` and enable MFA for superusers.
+3. **Settings → Application:** set the application URL to `https://api.realchord.app`.
 4. **Settings → Trusted proxy:** header `CF-Connecting-IP`.
 
 ## Updates

@@ -203,7 +203,7 @@ See "Open points" in the individual ADRs. The most important:
 8. ~~Attachments offline?~~ → PDF sheet music yes, audio no (ADR-0001, ADR-0009)
 9. ~~Invitation flow?~~ → Invitation link (reusable, 7 days, revocable, member role) plus QR code (ADR-0005)
 10. ~~PDF details?~~ → All attachments on every device, max. 20 MB per PDF, PDF-only songs allowed, local PDFs in the MVP (ADR-0009)
-11. ~~Server details?~~ → Debian LXC on Proxmox, Cloudflare Tunnel, daily backups, `make server-*` targets (ADR-0014, accepted; [operations guide](../operations/server.md)). Open: final hostname, staging container, monitoring
+11. ~~Server details?~~ → Debian LXC on Proxmox, Cloudflare Tunnel, daily backups, `make server-*` targets (ADR-0014, accepted; [operations guide](../operations/server.md)). Production: `api.realchord.app`. Open: staging container, monitoring
 12. ~~App name and domain?~~ → **RealChord**, domains `realchord.app` / `realchord.ch` ([`docs/app-name-candidates.md`](../app-name-candidates.md)). Code identifiers renamed (`ch.realchord.realchord`). Open: register the domains, trademark check (swissreg/EUIPO)
 13. ~~May agents merge their own PRs?~~ → Yes, from the start, but only when all tests pass (test gate, ADR-0010). Host: self-hosted Forgejo, `github.com/tafli/RealChord`. Agents use `fj` with an access token; CI runs the test gate in Forgejo Actions. Open: build jobs, branch protection
 14. ~~SongSelect import?~~ → No API integration, manual ChordPro import (ADR-0011, accepted). Open: test with a real SongSelect file, show copyright/CCLI number?

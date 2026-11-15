@@ -29,10 +29,11 @@ FLUTTER_VERSION ?= 3.47.9
 CI_IMAGE        ?= ghcr.io/tafli/realchord-ci:$(FLUTTER_VERSION)
 DOCKER          ?= docker
 
-# PocketBase server (ADR-0014, docs/operations/server.md). SERVER is the SSH target,
-# e.g. `make server-status SERVER=root@realchord` (or export SERVER once).
+# PocketBase server (ADR-0014, docs/operations/server.md). SERVER is the SSH target;
+# it defaults to the production instance (api.realchord.app, Proxmox CT 600).
+# Override it for another instance, e.g. `make server-install SERVER=root@<ip>`.
 # PB_VERSION is the pinned PocketBase version; updates are deliberate (ADR-0004).
-SERVER          ?=
+SERVER          ?= root@192.168.1.40
 PB_VERSION      ?= 0.40.6
 SSH             ?= ssh
 SERVER_BACKUPS  := /var/lib/pocketbase/backups
@@ -112,7 +113,7 @@ ci-image-push: ## Push the CI image (needs: docker login ghcr.io)
 	$(DOCKER) push $(CI_IMAGE)
 
 server-target:
-	@test -n "$(SERVER)" || { echo "Set SERVER to the SSH target, e.g. make $(MAKECMDGOALS) SERVER=root@realchord"; exit 1; }
+	@test -n "$(SERVER)" || { echo "Set SERVER to the SSH target, e.g. make $(MAKECMDGOALS) SERVER=root@<ip>"; exit 1; }
 
 server-install: server-target ## Install or update the server (PocketBase PB_VERSION, hooks, migrations)
 	tar -C $(ROOT) -czf - tool/server server/pb_hooks server/pb_migrations | \
