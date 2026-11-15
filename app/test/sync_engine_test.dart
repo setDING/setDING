@@ -283,14 +283,18 @@ void main() {
       final remote = server.sets[setId]!;
       expect(remote.name, 'Gig');
       expect(remote.venue, 'Bern');
-      expect(remote.items, [
-        {'id': item.id, 'type': 'song', 'song': 's1', 'transpose': 2},
-        {
-          'id': (await sets.getItems(setId)).last.item.id,
-          'type': 'pause',
-          'note': 'Break',
-        },
-      ]);
+      // The wire format (ADR-0015).
+      expect(
+        [for (final i in remote.items) i.toJson()],
+        [
+          {'id': item.id, 'type': 'song', 'song': 's1', 'transpose': 2},
+          {
+            'id': (await sets.getItems(setId)).last.item.id,
+            'type': 'pause',
+            'note': 'Break',
+          },
+        ],
+      );
       expect(await outbox(), isEmpty);
     });
 
@@ -302,9 +306,14 @@ void main() {
           bandId: 'b1',
           name: 'Remote gig',
           items: [
-            {'id': 'i1', 'type': 'song', 'song': 's1', 'sequence': 'V, C'},
-            {'id': 'i2', 'type': 'song', 'song': 'unknown'},
-            {'id': 'i3', 'type': 'text', 'note': 'Encore'},
+            RemoteSetItem(
+              id: 'i1',
+              type: SetItemType.song,
+              songId: 's1',
+              sequence: 'V, C',
+            ),
+            RemoteSetItem(id: 'i2', type: SetItemType.song, songId: 'unknown'),
+            RemoteSetItem(id: 'i3', type: SetItemType.text, note: 'Encore'),
           ],
         ),
       );
@@ -623,8 +632,8 @@ void main() {
         bandId: 'b1',
         name: 'Gig',
         items: [
-          {'id': 'i1', 'type': 'song', 'song': 's7'},
-          {'id': 'i2', 'type': 'song', 'song': 'unknown'},
+          RemoteSetItem(id: 'i1', type: SetItemType.song, songId: 's7'),
+          RemoteSetItem(id: 'i2', type: SetItemType.song, songId: 'unknown'),
         ],
       ),
     );
@@ -815,6 +824,27 @@ void main() {
       // Neither the revision nor the removal of the outbox entry is stored.
       expect((await songs.getSong(id))!.revision, 0);
       expect((await outbox()).single.recordId, id);
+    });
+  });
+
+  test('set items read and write the JSON of the server', () {
+    const json = {
+      'id': 'i1',
+      'type': 'song',
+      'song': 's1',
+      'transpose': -2,
+      'sequence': 'V, C',
+    };
+    final item = RemoteSetItem.fromJson(json);
+    expect(item.type, SetItemType.song);
+    expect(item.transpose, -2);
+    expect(item.toJson(), json);
+    // Unknown types (newer clients) become text items; no ID gets a new one.
+    final odd = RemoteSetItem.fromJson({'type': 'medley', 'note': 'x'});
+    expect((odd.type, odd.id, odd.note), (SetItemType.text, '', 'x'));
+    expect(const RemoteSetItem(id: 'i2', type: SetItemType.pause).toJson(), {
+      'id': 'i2',
+      'type': 'pause',
     });
   });
 }

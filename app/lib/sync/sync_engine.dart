@@ -449,8 +449,7 @@ class SyncEngine {
       final dirty = await _dirty(SyncCollection.setlists, ids);
       final songs = await _existingSongs([
         for (final s in remote)
-          for (final item in s.items)
-            if (item['song'] case final String id) id,
+          for (final item in s.items) ?item.songId,
       ]);
       for (final set in remote) {
         await _applySet(
@@ -499,11 +498,7 @@ class SyncEngine {
     )..where((i) => i.setId.equals(remote.id))).go();
     if (remote.deleted) return;
     for (final (position, item) in remote.items.indexed) {
-      final type = SetItemType.values.firstWhere(
-        (t) => t.name == item['type'],
-        orElse: () => SetItemType.text,
-      );
-      var songId = item['song'] as String?;
+      var songId = item.songId;
       if (songId != null && !songExists(songId)) {
         songId = null; // not (yet) available: shown as "song missing"
       }
@@ -511,14 +506,14 @@ class SyncEngine {
           .into(db.setItems)
           .insert(
             SetItemsCompanion.insert(
-              id: (item['id'] as String?) ?? _uuid.v4(),
+              id: item.id.isEmpty ? _uuid.v4() : item.id,
               setId: remote.id,
               songId: Value(songId),
               position: position,
-              transpose: Value((item['transpose'] as num?)?.toInt() ?? 0),
-              sequence: Value(item['sequence'] as String?),
-              note: Value(item['note'] as String?),
-              type: type,
+              transpose: Value(item.transpose),
+              sequence: Value(item.sequence),
+              note: Value(item.note),
+              type: item.type,
             ),
             mode: InsertMode.insertOrReplace,
           );
@@ -757,7 +752,7 @@ class SyncEngine {
       name: set.name,
       gigDate: set.gigDate,
       venue: set.venue,
-      items: [for (final i in items) setItemJson(i)],
+      items: [for (final i in items) RemoteSetItem.fromEntry(i)],
       revision: set.revision,
       deleted: set.deleted,
     );
@@ -983,16 +978,6 @@ class SyncEngine {
       rethrow;
     }
   }
-
-  /// The JSON form of a set item on the server (ADR-0015).
-  static Map<String, dynamic> setItemJson(SetItemEntry i) => {
-    'id': i.id,
-    'type': i.type.name,
-    if (i.songId != null) 'song': i.songId,
-    if (i.transpose != 0) 'transpose': i.transpose,
-    if (i.sequence != null) 'sequence': i.sequence,
-    if (i.note != null) 'note': i.note,
-  };
 
   // Conflicts ---------------------------------------------------------------------
 

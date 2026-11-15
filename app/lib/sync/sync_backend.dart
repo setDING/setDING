@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 
 import '../data/band_role.dart';
+import '../data/database.dart' show SetItemEntry, SetItemType;
 
 export '../data/band_role.dart';
 
@@ -191,9 +192,77 @@ class RemoteSet {
   final String name;
   final DateTime? gigDate;
   final String? venue;
-  final List<Map<String, dynamic>> items;
+  final List<RemoteSetItem> items;
   final int revision;
   final bool deleted;
+}
+
+/// An item of a set as stored on the server: one entry of the JSON array
+/// `setlists.items` (ADR-0015).
+@immutable
+class RemoteSetItem {
+  const RemoteSetItem({
+    required this.id,
+    required this.type,
+    this.songId,
+    this.transpose = 0,
+    this.sequence,
+    this.note,
+  });
+
+  /// Reads an entry; an unknown type is shown as a text item.
+  factory RemoteSetItem.fromJson(Map<String, dynamic> json) => RemoteSetItem(
+    id: json['id'] as String? ?? '',
+    type: SetItemType.values.firstWhere(
+      (t) => t.name == json['type'],
+      orElse: () => SetItemType.text,
+    ),
+    songId: json['song'] as String?,
+    transpose: (json['transpose'] as num?)?.toInt() ?? 0,
+    sequence: json['sequence'] as String?,
+    note: json['note'] as String?,
+  );
+
+  /// An item of the local database.
+  factory RemoteSetItem.fromEntry(SetItemEntry i) => RemoteSetItem(
+    id: i.id,
+    type: i.type,
+    songId: i.songId,
+    transpose: i.transpose,
+    sequence: i.sequence,
+    note: i.note,
+  );
+
+  /// Empty when the server sent none (older clients); a new ID is used.
+  final String id;
+  final SetItemType type;
+  final String? songId;
+  final int transpose;
+  final String? sequence;
+  final String? note;
+
+  /// The JSON form, without default values.
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'type': type.name,
+    'song': ?songId,
+    if (transpose != 0) 'transpose': transpose,
+    'sequence': ?sequence,
+    'note': ?note,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      other is RemoteSetItem &&
+      other.id == id &&
+      other.type == type &&
+      other.songId == songId &&
+      other.transpose == transpose &&
+      other.sequence == sequence &&
+      other.note == note;
+
+  @override
+  int get hashCode => Object.hash(id, type, songId, transpose, sequence, note);
 }
 
 /// Personal adjustments of a user for a song as stored on the server

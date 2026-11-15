@@ -419,7 +419,10 @@ class PocketBaseBackend implements SyncBackend {
       gigDate: date.isEmpty ? null : DateTime.parse(date),
       venue: venue.isEmpty ? null : venue,
       items: items is List
-          ? [for (final i in items) (i as Map).cast<String, dynamic>()]
+          ? [
+              for (final i in items)
+                RemoteSetItem.fromJson((i as Map).cast<String, dynamic>()),
+            ]
           : const [],
       revision: r.getIntValue('revision'),
       deleted: r.getBoolValue('deleted'),
@@ -509,7 +512,7 @@ class PocketBaseBackend implements SyncBackend {
         'gig_date':
             set.gigDate?.toUtc().toIso8601String().replaceFirst('T', ' ') ?? '',
         'venue': set.venue ?? '',
-        'items': set.items,
+        'items': [for (final i in set.items) i.toJson()],
         'deleted': set.deleted,
       };
       final r = create
