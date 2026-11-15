@@ -5,6 +5,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:realchord/data/database.dart';
 import 'package:realchord/data/song_repository.dart';
 import 'package:realchord/providers.dart';
+import 'package:realchord/settings/settings.dart';
 import 'package:realchord/sync/auth_providers.dart';
 import 'package:realchord/sync/sync_backend.dart';
 import 'package:realchord/ui/songs/songs_screen.dart';
@@ -105,5 +106,26 @@ void main() {
     await pumpEventQueue(times: 20);
     expect(await owner(second), localOwnerId);
     container.dispose();
+  });
+
+  test('the selectors change only with instrument and user name', () async {
+    final app = await TestApp.create();
+    final container = ProviderContainer(overrides: app.overrides);
+    addTearDown(() async {
+      container.dispose();
+      await app.db.close();
+      app.dir.deleteSync(recursive: true);
+    });
+    final sub = container.listen(selectorsProvider, (_, _) {});
+    final first = sub.read();
+    await container
+        .read(settingsProvider.notifier)
+        .update((s) => s.copyWith(fontSize: 30));
+    expect(identical(container.read(selectorsProvider), first), isTrue);
+    await container
+        .read(settingsProvider.notifier)
+        .update((s) => s.copyWith(instrument: 'ukulele'));
+    expect(container.read(selectorsProvider).instrument, 'ukulele');
+    sub.close();
   });
 }

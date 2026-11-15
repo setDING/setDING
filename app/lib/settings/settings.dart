@@ -229,3 +229,10 @@ class SettingsNotifier extends Notifier<AppSettings> {
 final settingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(
   SettingsNotifier.new,
 );
+
+/// Selection context for conditional directives; changes only with the
+/// instrument and the user name, not with other settings.
+final selectorsProvider = Provider<SelectorContext>((ref) {
+  ref.watch(settingsProvider.select((s) => (s.instrument, s.userName)));
+  return ref.read(settingsProvider).selectors;
+});

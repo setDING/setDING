@@ -33,7 +33,9 @@ class _RealChordAppState extends ConsumerState<RealChordApp> {
 
   @override
   Widget build(BuildContext context) {
-    final settings = ref.watch(settingsProvider);
+    // Only what the app shell needs: other settings do not rebuild it.
+    final themeMode = ref.watch(settingsProvider.select((s) => s.themeMode));
+    final locale = ref.watch(settingsProvider.select((s) => s.locale));
     // Keeps the sync running while the app is open (ADR-0004).
     ref.watch(syncControllerProvider);
     return MaterialApp(
@@ -42,8 +44,8 @@ class _RealChordAppState extends ConsumerState<RealChordApp> {
       debugShowCheckedModeBanner: false,
       theme: RealChordApp.theme(Brightness.light),
       darkTheme: RealChordApp.theme(Brightness.dark),
-      themeMode: settings.themeMode,
-      locale: settings.locale,
+      themeMode: themeMode,
+      locale: locale,
       supportedLocales: const [Locale('de', 'CH'), Locale('de'), Locale('en')],
       localizationsDelegates: const [
         AppLocalizations.delegate,

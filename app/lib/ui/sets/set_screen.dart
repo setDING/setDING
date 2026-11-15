@@ -346,7 +346,7 @@ class _SetItemTile extends ConsumerWidget {
       );
     }
 
-    final settings = ref.watch(settingsProvider);
+    final notation = ref.watch(settingsProvider.select((s) => s.notation));
     final originalSequence = song == null
         ? null
         : cp.findSequence(song.chordproSource);
@@ -394,7 +394,7 @@ class _SetItemTile extends ConsumerWidget {
               ),
             ),
       trailing: !canEdit
-          ? _readOnlyKey(context, songKey, item.transpose, settings)
+          ? _readOnlyKey(context, songKey, item.transpose, notation)
           : Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -403,7 +403,7 @@ class _SetItemTile extends ConsumerWidget {
                     dense: true,
                     baseKey: songKey,
                     transpose: item.transpose,
-                    notation: settings.notation,
+                    notation: notation,
                     onChanged: (value) => repo.setItemTranspose(item.id, value),
                   ),
                 if (song != null)
@@ -450,13 +450,13 @@ Widget? _readOnlyKey(
   BuildContext context,
   cp.Key? songKey,
   int transpose,
-  AppSettings settings,
+  cp.ChordNotation notation,
 ) {
   if (songKey == null && transpose == 0) return null;
   final theme = Theme.of(context);
   final label = songKey == null
       ? formatSemitones(transpose)
-      : songKey.transpose(transpose).format(settings.notation);
+      : songKey.transpose(transpose).format(notation);
   return Text(
     label,
     style: theme.textTheme.titleSmall?.copyWith(

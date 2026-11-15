@@ -331,8 +331,10 @@ class _Preview extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(settingsProvider);
-    final formatter = ChordFormatter.forSong(song, notation: settings.notation);
+    final (notation, fontSize) = ref.watch(
+      settingsProvider.select((s) => (s.notation, s.fontSize)),
+    );
+    final formatter = ChordFormatter.forSong(song, notation: notation);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -349,7 +351,7 @@ class _Preview extends ConsumerWidget {
             song: song,
             options: SongRenderOptions(
               formatter: formatter,
-              fontSize: settings.fontSize,
+              fontSize: fontSize,
             ),
           ),
         ],

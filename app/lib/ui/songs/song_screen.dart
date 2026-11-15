@@ -145,7 +145,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
         if (song == null) return const Scaffold();
         final parsed = parseChordProCached(
           song.chordproSource,
-          selectors: settings.selectors,
+          selectors: ref.watch(selectorsProvider),
         );
         final formatter = ChordFormatter.forSong(
           parsed,

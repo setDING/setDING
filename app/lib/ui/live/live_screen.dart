@@ -484,7 +484,7 @@ class _ControlBar extends ConsumerWidget {
               KeyPicker(
                 baseKey: originalKey,
                 transpose: inSet ? item.setTranspose : overlay?.transpose ?? 0,
-                notation: ref.watch(settingsProvider).notation,
+                notation: ref.watch(settingsProvider.select((s) => s.notation)),
                 onChanged: (value) => inSet
                     ? onSetKey(value)
                     : adjust((o) => o.copyWith(transpose: value)),
@@ -545,7 +545,7 @@ class _LiveItemPage extends ConsumerWidget {
         const <AttachmentEntry>[];
     final parsed = parseChordProCached(
       song.chordproSource,
-      selectors: ref.watch(settingsProvider).selectors,
+      selectors: ref.watch(selectorsProvider),
     );
 
     AttachmentEntry? pdf;
