@@ -401,7 +401,80 @@
     }
   },
   "orgLeaveMessage": "You will also leave all its bands and no longer see its songs.",
-  "orgInviteSoon": "Inviting people to the organization is coming soon.",
   "orgSongsShared": "All bands of the organization share the same songs.",
-  "copyToLibraryTitle": "Copy to which song library?"
+  "copyToLibraryTitle": "Copy to which song library?",
+  "inviteCreate": "Invite people",
+  "inviteCreateHint": "Creates a link that is valid for 7 days. Whoever opens it becomes a member of the organization.",
+  "inviteLinkTitle": "Invitation link",
+  "inviteLinkHint": "Share the link, e.g. in a group chat, or let people scan the QR code. Valid until {date}. The link is only shown now.",
+  "@inviteLinkHint": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteCopy": "Copy link",
+  "inviteCopied": "Link copied",
+  "invitesTitle": "Invitation links",
+  "inviteStatusValid": "Valid until {date}",
+  "@inviteStatusValid": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteStatusExpired": "Expired",
+  "inviteStatusRevoked": "Revoked",
+  "inviteJoined": "{count, plural, =0{Nobody joined yet} =1{Joined: {names}} other{{count} joined: {names}}}",
+  "@inviteJoined": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteRevoke": "Revoke",
+  "inviteRevokeTitle": "Revoke link?",
+  "inviteRevokeMessage": "The link will stop working. People who already joined stay members.",
+  "inviteAskAdmin": "Ask an admin of the organization for an invitation.",
+  "inviteErrorUnknown": "This invitation does not exist. Check the link.",
+  "inviteErrorExpired": "This invitation has expired. Please ask for a new link.",
+  "inviteErrorRevoked": "This invitation was revoked. Please ask for a new link.",
+  "joinTitle": "Join",
+  "joinHint": "Paste the invitation link you received.",
+  "joinLink": "Invitation link",
+  "joinContinue": "Continue",
+  "joinInvalidLink": "This is not a valid invitation link.",
+  "joinQuestion": "Join {org}?",
+  "@joinQuestion": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "joinExplanation": "You become a member of the organization and see its songs. An admin can then add you to a band.",
+  "joinAlreadyMember": "You are already a member of {org}.",
+  "@joinAlreadyMember": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "joinButton": "Join",
+  "joinDone": "You joined {org}.",
+  "@joinDone": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "joinSignInFirst": "Sign in or create an account to join."
 }

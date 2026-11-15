@@ -10,6 +10,7 @@ import '../account/sign_in_screen.dart';
 import '../widgets/dialogs.dart';
 import 'band_labels.dart';
 import 'band_screen.dart';
+import 'join_screen.dart';
 import 'organization_screen.dart';
 
 /// Runs a band action and shows backend errors as a message.
@@ -138,6 +139,15 @@ class BandsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.bandsTitle),
         actions: [
+          IconButton(
+            key: const Key('band-join'),
+            tooltip: l10n.joinTitle,
+            icon: const Icon(Icons.login),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute<bool>(builder: (_) => const JoinScreen()),
+            ),
+          ),
           if (user != null)
             IconButton(
               tooltip: l10n.bandRefresh,

@@ -516,7 +516,80 @@
     }
   },
   "orgLeaveMessage": "Du verlässt damit auch alle ihre Bands und siehst ihre Songs nicht mehr.",
-  "orgInviteSoon": "Personen in die Organisation einladen ist bald möglich.",
   "orgSongsShared": "Alle Bands der Organisation teilen dieselben Songs.",
-  "copyToLibraryTitle": "In welche Songbibliothek kopieren?"
+  "copyToLibraryTitle": "In welche Songbibliothek kopieren?",
+  "inviteCreate": "Personen einladen",
+  "inviteCreateHint": "Erstellt einen Link, der 7 Tage gilt. Wer ihn öffnet, wird Mitglied der Organisation.",
+  "inviteLinkTitle": "Einladungslink",
+  "inviteLinkHint": "Teile den Link, z. B. im Gruppenchat, oder lass den QR-Code scannen. Gültig bis {date}. Der Link wird nur jetzt angezeigt.",
+  "@inviteLinkHint": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteCopy": "Link kopieren",
+  "inviteCopied": "Link kopiert",
+  "invitesTitle": "Einladungslinks",
+  "inviteStatusValid": "Gültig bis {date}",
+  "@inviteStatusValid": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteStatusExpired": "Abgelaufen",
+  "inviteStatusRevoked": "Widerrufen",
+  "inviteJoined": "{count, plural, =0{Noch niemand beigetreten} =1{Beigetreten: {names}} other{{count} beigetreten: {names}}}",
+  "@inviteJoined": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteRevoke": "Widerrufen",
+  "inviteRevokeTitle": "Link widerrufen?",
+  "inviteRevokeMessage": "Der Link funktioniert danach nicht mehr. Wer schon beigetreten ist, bleibt Mitglied.",
+  "inviteAskAdmin": "Für eine Einladung wende dich an einen Admin der Organisation.",
+  "inviteErrorUnknown": "Diese Einladung gibt es nicht. Prüfe den Link.",
+  "inviteErrorExpired": "Diese Einladung ist abgelaufen. Bitte um einen neuen Link.",
+  "inviteErrorRevoked": "Diese Einladung wurde widerrufen. Bitte um einen neuen Link.",
+  "joinTitle": "Beitreten",
+  "joinHint": "Füge den Einladungslink ein, den du erhalten hast.",
+  "joinLink": "Einladungslink",
+  "joinContinue": "Weiter",
+  "joinInvalidLink": "Das ist kein gültiger Einladungslink.",
+  "joinQuestion": "{org} beitreten?",
+  "@joinQuestion": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "joinExplanation": "Du wirst Mitglied der Organisation und siehst ihre Songs. Ein Admin kann dich danach in eine Band aufnehmen.",
+  "joinAlreadyMember": "Du bist bereits Mitglied von {org}.",
+  "@joinAlreadyMember": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "joinButton": "Beitreten",
+  "joinDone": "Du bist {org} beigetreten.",
+  "@joinDone": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "joinSignInFirst": "Melde dich an oder erstelle ein Konto, um beizutreten."
 }

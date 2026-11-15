@@ -56,6 +56,15 @@ enum BackendErrorKind {
   /// The person is not a member of the band's organization.
   notOrgMember,
 
+  /// The invitation link is unknown (mistyped or deleted).
+  inviteUnknown,
+
+  /// The invitation link has expired (valid for 7 days).
+  inviteExpired,
+
+  /// The invitation link was revoked by an admin.
+  inviteRevoked,
+
   /// Not signed in.
   signedOut,
 
@@ -136,6 +145,73 @@ class RemoteOrganization {
   final List<RemoteBand> bands;
 }
 
+/// State of an invitation link.
+enum InviteStatus { valid, expired, revoked }
+
+/// A new invitation link; the URL is only available right after creating it
+/// (the server stores a hash of the token).
+@immutable
+class CreatedInvite {
+  const CreatedInvite({
+    required this.id,
+    required this.url,
+    required this.expires,
+  });
+
+  final String id;
+  final String url;
+  final DateTime expires;
+}
+
+/// An invitation link of an organization as admins see it.
+@immutable
+class InviteInfo {
+  const InviteInfo({
+    required this.id,
+    required this.created,
+    required this.expires,
+    required this.revoked,
+    this.joined = const [],
+  });
+
+  final String id;
+  final DateTime created;
+  final DateTime expires;
+  final bool revoked;
+
+  /// Names of the people who joined with this link.
+  final List<String> joined;
+
+  InviteStatus statusAt(DateTime now) => revoked
+      ? InviteStatus.revoked
+      : (expires.isBefore(now) ? InviteStatus.expired : InviteStatus.valid);
+}
+
+/// What a link leads to, shown before joining.
+@immutable
+class InvitePreview {
+  const InvitePreview({
+    required this.organizationId,
+    required this.organizationName,
+    required this.status,
+    required this.alreadyMember,
+  });
+
+  final String organizationId;
+  final String organizationName;
+  final InviteStatus status;
+  final bool alreadyMember;
+}
+
+/// Extracts the token from an invitation link (`https://…/invite/<token>`,
+/// `realchord://invite/<token>`) or a pasted token; null if there is none.
+String? inviteTokenFrom(String input) {
+  final text = input.trim();
+  final inLink = RegExp(r'invite/([A-Za-z0-9]{16,64})').firstMatch(text);
+  if (inLink != null) return inLink.group(1);
+  return RegExp(r'^[A-Za-z0-9]{16,64}$').hasMatch(text) ? text : null;
+}
+
 /// Access to the RealChord server (ADR-0004). The app talks to the backend
 /// only through this interface, so the backend product can be replaced
 /// without touching the rest of the app.
@@ -214,6 +290,23 @@ abstract class SyncBackend {
 
   /// Removes a member from a band, or leaves it (own membership).
   Future<void> removeMember(String membershipId);
+
+  // Invitations (ADR-0005, ADR-0017) ---------------------------------------------
+
+  /// Creates an invitation link into an organization (organization admins).
+  Future<CreatedInvite> createInvite(String organizationId);
+
+  /// The links of an organization, newest first (organization admins).
+  Future<List<InviteInfo>> fetchInvites(String organizationId);
+
+  /// Revokes a link; people who joined stay members.
+  Future<void> revokeInvite(String inviteId);
+
+  /// The organization and state of a link.
+  Future<InvitePreview> previewInvite(String token);
+
+  /// Joins the organization of a link as member; returns its ID.
+  Future<String> redeemInvite(String token);
 
   /// Releases resources.
   void dispose();

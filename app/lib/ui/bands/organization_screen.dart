@@ -10,6 +10,7 @@ import '../widgets/dialogs.dart';
 import 'band_labels.dart';
 import 'band_screen.dart';
 import 'bands_screen.dart';
+import 'invites_section.dart';
 
 /// An organization (ADR-0017): its bands and people. Organization admins
 /// rename it and manage people and their roles; everyone can leave.
@@ -97,10 +98,13 @@ class OrganizationScreen extends ConsumerWidget {
               isAdmin: org.isAdmin,
               isMe: p.userId == me.id,
             ),
-          ListTile(
-            leading: const Icon(Icons.person_add_alt),
-            subtitle: Text(l10n.orgInviteSoon),
-          ),
+          if (org.isAdmin)
+            InvitesSection(organizationId: organizationId)
+          else
+            ListTile(
+              leading: const Icon(Icons.person_add_alt),
+              subtitle: Text(l10n.inviteAskAdmin),
+            ),
           if (own != null)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),

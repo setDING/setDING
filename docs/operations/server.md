@@ -82,6 +82,28 @@ Tokens and account settings stay with the owner (ADR-0014).
    app (ADR-0016). Until it is configured, reset requests are accepted but no email
    is sent.
 
+## 5. Deep links for invitations (owner, once the apps are signed)
+
+Invitation links are `https://api.realchord.app/invite/<token>` (ADR-0005, ADR-0017).
+Without the app, the link shows a landing page; with the app, Android opens it
+directly once the domain is verified. The server serves the verification files from
+settings in `/etc/realchord/pocketbase.env` (read by `pocketbase.service`):
+
+```bash
+# SHA-256 fingerprint(s) of the Android signing certificate (Play App Signing:
+# Play Console → App integrity), comma-separated.
+REALCHORD_ANDROID_CERT_SHA256=AB:CD:…
+# Apple Developer Team ID (for Universal Links, once the iOS app has the
+# Associated Domains capability).
+REALCHORD_APPLE_TEAM_ID=ABCDE12345
+```
+
+Then `systemctl restart pocketbase` and check
+`https://api.realchord.app/.well-known/assetlinks.json`. Without the file, both URLs
+return 404 and links still work through the landing page, the `realchord://` scheme,
+pasting and the QR code. Cloudflare must not challenge `/invite/*` and `/.well-known/*`
+(only `/_/*` is behind Access, see step 3).
+
 ## Updates
 
 - **Debian security updates:** automatic (unattended-upgrades).

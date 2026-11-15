@@ -24,7 +24,9 @@ class PocketBase {
   static const _superuserEmail = 'root@realchord.test';
   static const _superuserPassword = 'superuser-password';
 
-  static Future<PocketBase> start() async {
+  /// [environment] is added to the server's environment (e.g. deep-link
+  /// settings read by the hooks).
+  static Future<PocketBase> start({Map<String, String>? environment}) async {
     final root = _repositoryRoot();
     final binary = await _binary(root);
     final dir = await Directory.systemTemp.createTemp('realchord-pb-');
@@ -45,7 +47,7 @@ class PocketBase {
     }
 
     final port = await _freePort();
-    final process = await Process.start(binary, [
+    final process = await Process.start(environment: environment, binary, [
       'serve',
       '--dev=false',
       '--hooksWatch=false',

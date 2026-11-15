@@ -220,6 +220,10 @@ song/set sync, PDF sync).
   organization screens (settings, roles, add members, leave), UI actions gated by
   role, copying songs and sets from the local library into a band. Songs and sets of
   bands stay on the device until sync (#17).
+- **Invitations (#16):** organization admins create links (7 days, reusable,
+  revocable) shown with a QR code; people join via deep link or by pasting the link
+  (Bands → Join). Landing page and verification files on the server; verified App
+  Links / Universal Links need the signing details (open, see ADR-0005).
 
 ## 9. Open questions
 

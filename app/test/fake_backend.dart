@@ -321,8 +321,123 @@ class FakeSyncBackend implements SyncBackend {
     members.remove(m);
   }
 
+  // Invitations ------------------------------------------------------------------
+
+  final invites = <FakeInvite>[];
+
+  /// Clock for expiry checks (tests can move it forward).
+  DateTime now = DateTime.utc(2026, 11, 15, 12);
+
+  FakeInvite? _invite(String token) =>
+      invites.where((i) => i.token == token).firstOrNull;
+
+  InviteStatus _inviteStatus(FakeInvite i) => i.revoked
+      ? InviteStatus.revoked
+      : (i.expires.isBefore(now) ? InviteStatus.expired : InviteStatus.valid);
+
+  @override
+  Future<CreatedInvite> createInvite(String organizationId) async {
+    _requireUser();
+    if (!_isOrgAdmin(organizationId)) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    final token = 'Tok${++_ids}'.padRight(32, 'x');
+    final invite = FakeInvite(
+      'inv$_ids',
+      organizationId,
+      token,
+      now,
+      now.add(const Duration(days: 7)),
+    );
+    invites.add(invite);
+    return CreatedInvite(
+      id: invite.id,
+      url: 'https://api.realchord.app/invite/$token',
+      expires: invite.expires,
+    );
+  }
+
+  @override
+  Future<List<InviteInfo>> fetchInvites(String organizationId) async {
+    _requireUser();
+    return [
+      for (final i in invites.reversed)
+        if (i.organizationId == organizationId)
+          InviteInfo(
+            id: i.id,
+            created: i.created,
+            expires: i.expires,
+            revoked: i.revoked,
+            joined: [for (final u in i.joined) u.displayName],
+          ),
+    ];
+  }
+
+  @override
+  Future<void> revokeInvite(String inviteId) async {
+    _requireUser();
+    invites.firstWhere((i) => i.id == inviteId).revoked = true;
+  }
+
+  @override
+  Future<InvitePreview> previewInvite(String token) async {
+    _requireUser();
+    final invite = _invite(token);
+    if (invite == null) {
+      throw const BackendException(BackendErrorKind.inviteUnknown);
+    }
+    return InvitePreview(
+      organizationId: invite.organizationId,
+      organizationName: organizations[invite.organizationId]!,
+      status: _inviteStatus(invite),
+      alreadyMember: orgMembers.any(
+        (m) => m.scopeId == invite.organizationId && m.user.id == user!.id,
+      ),
+    );
+  }
+
+  @override
+  Future<String> redeemInvite(String token) async {
+    _requireUser();
+    final invite = _invite(token);
+    if (invite == null) {
+      throw const BackendException(BackendErrorKind.inviteUnknown);
+    }
+    switch (_inviteStatus(invite)) {
+      case InviteStatus.expired:
+        throw const BackendException(BackendErrorKind.inviteExpired);
+      case InviteStatus.revoked:
+        throw const BackendException(BackendErrorKind.inviteRevoked);
+      case InviteStatus.valid:
+    }
+    final orgId = invite.organizationId;
+    if (!orgMembers.any((m) => m.scopeId == orgId && m.user.id == user!.id)) {
+      addOrgMember(orgId, user!, BandRole.member);
+      invite.joined.add(user!);
+    }
+    return orgId;
+  }
+
   @override
   void dispose() {}
+}
+
+class FakeInvite {
+  FakeInvite(
+    this.id,
+    this.organizationId,
+    this.token,
+    this.created,
+    this.expires,
+  );
+
+  final String id;
+  final String organizationId;
+  final String token;
+  final DateTime created;
+  final DateTime expires;
+  bool revoked = false;
+  final joined = <AuthUser>[];
 }
 
 class FakeBand {

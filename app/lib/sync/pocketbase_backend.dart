@@ -307,6 +307,116 @@ class PocketBaseBackend implements SyncBackend {
         .update(membershipId, body: {'deleted': true}),
   );
 
+  // Invitations -----------------------------------------------------------------
+
+  @override
+  Future<CreatedInvite> createInvite(String organizationId) async {
+    final data = await _send(
+      '/api/realchord/invites',
+      method: 'POST',
+      body: {'organization': organizationId},
+    );
+    return CreatedInvite(
+      id: data['id'] as String,
+      url: data['url'] as String,
+      expires: DateTime.parse(data['expires'] as String),
+    );
+  }
+
+  @override
+  Future<List<InviteInfo>> fetchInvites(String organizationId) async {
+    if (currentUser == null) {
+      throw const BackendException(BackendErrorKind.signedOut);
+    }
+    try {
+      final filter = _pb.filter('organization = {:org}', {
+        'org': organizationId,
+      });
+      final invites = await _pb
+          .collection('invites')
+          .getFullList(filter: filter, sort: '-created');
+      final joined = await _pb
+          .collection('org_memberships')
+          .getFullList(
+            filter: '$filter && invite != "" && deleted = false',
+            expand: 'user',
+          );
+      return [
+        for (final i in invites)
+          InviteInfo(
+            id: i.id,
+            created: DateTime.parse(i.getStringValue('created')),
+            expires: DateTime.parse(i.getStringValue('expires')),
+            revoked: i.getBoolValue('revoked'),
+            joined: [
+              for (final m in joined)
+                if (m.getStringValue('invite') == i.id)
+                  m.get<RecordModel?>('expand.user')?.getStringValue('name') ??
+                      '',
+            ],
+          ),
+      ];
+    } on ClientException catch (e) {
+      throw _map(e);
+    }
+  }
+
+  @override
+  Future<void> revokeInvite(String inviteId) => _call(
+    () => _pb.collection('invites').update(inviteId, body: {'revoked': true}),
+  );
+
+  static InviteStatus _status(String value) => switch (value) {
+    'expired' => InviteStatus.expired,
+    'revoked' => InviteStatus.revoked,
+    _ => InviteStatus.valid,
+  };
+
+  @override
+  Future<InvitePreview> previewInvite(String token) async {
+    final data = await _send('/api/realchord/invites/${_token(token)}');
+    final org = data['organization'] as Map<String, dynamic>;
+    return InvitePreview(
+      organizationId: org['id'] as String,
+      organizationName: org['name'] as String,
+      status: _status(data['status'] as String),
+      alreadyMember: data['member'] as bool,
+    );
+  }
+
+  @override
+  Future<String> redeemInvite(String token) async {
+    final data = await _send(
+      '/api/realchord/invites/${_token(token)}/redeem',
+      method: 'POST',
+    );
+    return (data['organization'] as Map<String, dynamic>)['id'] as String;
+  }
+
+  Future<Map<String, dynamic>> _send(
+    String path, {
+    String method = 'GET',
+    Map<String, dynamic> body = const {},
+  }) async {
+    if (currentUser == null) {
+      throw const BackendException(BackendErrorKind.signedOut);
+    }
+    try {
+      final result = await _pb.send<dynamic>(path, method: method, body: body);
+      return (result as Map).cast<String, dynamic>();
+    } on ClientException catch (e) {
+      throw _map(e, invite: true);
+    }
+  }
+
+  /// Only well-formed tokens go into a URL path.
+  static String _token(String token) {
+    if (inviteTokenFrom(token) != token) {
+      throw const BackendException(BackendErrorKind.inviteUnknown);
+    }
+    return token;
+  }
+
   Future<void> _call(Future<Object?> Function() request) async {
     if (currentUser == null) {
       throw const BackendException(BackendErrorKind.signedOut);
@@ -324,9 +434,28 @@ class PocketBaseBackend implements SyncBackend {
     _changes.close();
   }
 
-  static BackendException _map(ClientException e, {bool credentials = false}) {
+  static BackendException _map(
+    ClientException e, {
+    bool credentials = false,
+    bool invite = false,
+  }) {
     if (e.statusCode == 0) {
       return BackendException(BackendErrorKind.network, e.originalError);
+    }
+    if (invite && e.statusCode == 410) {
+      final data = e.response['data'];
+      final code = data is Map && data['token'] is Map
+          ? (data['token'] as Map)['code']
+          : null;
+      return BackendException(
+        code == 'revoked'
+            ? BackendErrorKind.inviteRevoked
+            : BackendErrorKind.inviteExpired,
+        e.response,
+      );
+    }
+    if (invite && e.statusCode == 404) {
+      return BackendException(BackendErrorKind.inviteUnknown, e.response);
     }
     if (credentials && e.statusCode == 400) {
       return BackendException(BackendErrorKind.invalidCredentials, e.response);

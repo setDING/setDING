@@ -2024,12 +2024,6 @@ abstract class AppLocalizations {
   /// **'Du verlässt damit auch alle ihre Bands und siehst ihre Songs nicht mehr.'**
   String get orgLeaveMessage;
 
-  /// No description provided for @orgInviteSoon.
-  ///
-  /// In de, this message translates to:
-  /// **'Personen in die Organisation einladen ist bald möglich.'**
-  String get orgInviteSoon;
-
   /// No description provided for @orgSongsShared.
   ///
   /// In de, this message translates to:
@@ -2041,6 +2035,180 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'In welche Songbibliothek kopieren?'**
   String get copyToLibraryTitle;
+
+  /// No description provided for @inviteCreate.
+  ///
+  /// In de, this message translates to:
+  /// **'Personen einladen'**
+  String get inviteCreate;
+
+  /// No description provided for @inviteCreateHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Erstellt einen Link, der 7 Tage gilt. Wer ihn öffnet, wird Mitglied der Organisation.'**
+  String get inviteCreateHint;
+
+  /// No description provided for @inviteLinkTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Einladungslink'**
+  String get inviteLinkTitle;
+
+  /// No description provided for @inviteLinkHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Teile den Link, z. B. im Gruppenchat, oder lass den QR-Code scannen. Gültig bis {date}. Der Link wird nur jetzt angezeigt.'**
+  String inviteLinkHint(String date);
+
+  /// No description provided for @inviteCopy.
+  ///
+  /// In de, this message translates to:
+  /// **'Link kopieren'**
+  String get inviteCopy;
+
+  /// No description provided for @inviteCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Link kopiert'**
+  String get inviteCopied;
+
+  /// No description provided for @invitesTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Einladungslinks'**
+  String get invitesTitle;
+
+  /// No description provided for @inviteStatusValid.
+  ///
+  /// In de, this message translates to:
+  /// **'Gültig bis {date}'**
+  String inviteStatusValid(String date);
+
+  /// No description provided for @inviteStatusExpired.
+  ///
+  /// In de, this message translates to:
+  /// **'Abgelaufen'**
+  String get inviteStatusExpired;
+
+  /// No description provided for @inviteStatusRevoked.
+  ///
+  /// In de, this message translates to:
+  /// **'Widerrufen'**
+  String get inviteStatusRevoked;
+
+  /// No description provided for @inviteJoined.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{Noch niemand beigetreten} =1{Beigetreten: {names}} other{{count} beigetreten: {names}}}'**
+  String inviteJoined(int count, String names);
+
+  /// No description provided for @inviteRevoke.
+  ///
+  /// In de, this message translates to:
+  /// **'Widerrufen'**
+  String get inviteRevoke;
+
+  /// No description provided for @inviteRevokeTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Link widerrufen?'**
+  String get inviteRevokeTitle;
+
+  /// No description provided for @inviteRevokeMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Link funktioniert danach nicht mehr. Wer schon beigetreten ist, bleibt Mitglied.'**
+  String get inviteRevokeMessage;
+
+  /// No description provided for @inviteAskAdmin.
+  ///
+  /// In de, this message translates to:
+  /// **'Für eine Einladung wende dich an einen Admin der Organisation.'**
+  String get inviteAskAdmin;
+
+  /// No description provided for @inviteErrorUnknown.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Einladung gibt es nicht. Prüfe den Link.'**
+  String get inviteErrorUnknown;
+
+  /// No description provided for @inviteErrorExpired.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Einladung ist abgelaufen. Bitte um einen neuen Link.'**
+  String get inviteErrorExpired;
+
+  /// No description provided for @inviteErrorRevoked.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Einladung wurde widerrufen. Bitte um einen neuen Link.'**
+  String get inviteErrorRevoked;
+
+  /// No description provided for @joinTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Beitreten'**
+  String get joinTitle;
+
+  /// No description provided for @joinHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Füge den Einladungslink ein, den du erhalten hast.'**
+  String get joinHint;
+
+  /// No description provided for @joinLink.
+  ///
+  /// In de, this message translates to:
+  /// **'Einladungslink'**
+  String get joinLink;
+
+  /// No description provided for @joinContinue.
+  ///
+  /// In de, this message translates to:
+  /// **'Weiter'**
+  String get joinContinue;
+
+  /// No description provided for @joinInvalidLink.
+  ///
+  /// In de, this message translates to:
+  /// **'Das ist kein gültiger Einladungslink.'**
+  String get joinInvalidLink;
+
+  /// No description provided for @joinQuestion.
+  ///
+  /// In de, this message translates to:
+  /// **'{org} beitreten?'**
+  String joinQuestion(String org);
+
+  /// No description provided for @joinExplanation.
+  ///
+  /// In de, this message translates to:
+  /// **'Du wirst Mitglied der Organisation und siehst ihre Songs. Ein Admin kann dich danach in eine Band aufnehmen.'**
+  String get joinExplanation;
+
+  /// No description provided for @joinAlreadyMember.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist bereits Mitglied von {org}.'**
+  String joinAlreadyMember(String org);
+
+  /// No description provided for @joinButton.
+  ///
+  /// In de, this message translates to:
+  /// **'Beitreten'**
+  String get joinButton;
+
+  /// No description provided for @joinDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist {org} beigetreten.'**
+  String joinDone(String org);
+
+  /// No description provided for @joinSignInFirst.
+  ///
+  /// In de, this message translates to:
+  /// **'Melde dich an oder erstelle ein Konto, um beizutreten.'**
+  String get joinSignInFirst;
 }
 
 class _AppLocalizationsDelegate

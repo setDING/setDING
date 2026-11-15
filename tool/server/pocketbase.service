@@ -9,6 +9,9 @@ Wants=network-online.target
 Type=simple
 User=pocketbase
 Group=pocketbase
+# Optional settings for the hooks, e.g. the deep-link verification files
+# (docs/operations/server.md, "Deep links").
+EnvironmentFile=-/etc/realchord/pocketbase.env
 ExecStart=/opt/pocketbase/pocketbase serve \
   --http=127.0.0.1:8090 \
   --dir=/var/lib/pocketbase/pb_data \

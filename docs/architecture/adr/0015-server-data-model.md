@@ -121,6 +121,7 @@ Enforced with PocketBase API rules; the client only mirrors them in the UI.
 - 2026-11-15: Proposed with the implementation of issue #13.
 - 2026-11-15: Accepted by the owner.
 - 2026-11-15: Extended by **ADR-0017** (accepted): `organizations` and `org_memberships`, `bands.organization`; `songs`, `attachments` and `invites` reference the organization instead of a band; users see the people of their organizations. Migration `1794900000_organizations.js`.
+- 2026-11-15: Invitations (issue #16): `org_memberships.invite` (link a person joined with); organization admins may revoke links (`invites.revoked` only); links are created and redeemed through routes in `pb_hooks/invites.pb.js`. Migration `1795000000_invitations.js`.
 
 ## Open points
 

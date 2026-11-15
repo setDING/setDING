@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:realchord/app.dart';
@@ -10,6 +11,7 @@ import 'package:realchord/settings/settings.dart';
 import 'package:realchord/sync/auth_providers.dart';
 import 'package:realchord/sync/session_store.dart';
 import 'package:realchord/sync/sync_backend.dart';
+import 'package:realchord/ui/deep_links.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +31,9 @@ class TestApp {
 
   /// Backend used instead of a real server.
   final FakeSyncBackend backend;
+
+  /// Links "opened" from outside the app (deep links).
+  final links = StreamController<Uri>.broadcast();
 
   late final storage = AttachmentStorage(dir);
   late final songs = SongRepository(db, storage);
@@ -59,6 +64,7 @@ class TestApp {
       attachmentStorageProvider.overrideWithValue(storage),
       sessionStoreProvider.overrideWithValue(MemorySessionStore()),
       syncBackendProvider.overrideWithValue(backend),
+      incomingLinksProvider.overrideWithValue(links.stream),
     ],
     child: RealChordApp(home: home),
   );

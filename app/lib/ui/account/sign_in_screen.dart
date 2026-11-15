@@ -21,6 +21,9 @@ String backendErrorText(AppLocalizations l10n, BackendErrorKind kind) =>
       BackendErrorKind.lastAdmin => l10n.bandErrorLastAdmin,
       BackendErrorKind.notAllowed => l10n.bandErrorNotAllowed,
       BackendErrorKind.notOrgMember => l10n.bandErrorNotOrgMember,
+      BackendErrorKind.inviteUnknown => l10n.inviteErrorUnknown,
+      BackendErrorKind.inviteExpired => l10n.inviteErrorExpired,
+      BackendErrorKind.inviteRevoked => l10n.inviteErrorRevoked,
       BackendErrorKind.signedOut => l10n.accountErrorSignedOut,
       BackendErrorKind.server => l10n.accountErrorServer,
     };

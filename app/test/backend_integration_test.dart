@@ -229,4 +229,73 @@ void main() {
       ann.dispose();
     });
   });
+
+  group('invitations (ADR-0005, ADR-0017)', () {
+    Future<(PocketBaseBackend, AuthUser)> signedIn(String name) async {
+      final b = PocketBaseBackend(serverUrl: url, store: MemorySessionStore());
+      final user = await b.signUp(
+        email: email(),
+        password: 'password-123',
+        name: name,
+      );
+      return (b, user);
+    }
+
+    test('admins invite, people join with the link', () async {
+      final (ann, _) = await signedIn('Ann');
+      final (bob, _) = await signedIn('Bob');
+      await ann.createBand(id: const Uuid().v4(), name: 'Rock');
+      final orgId = (await ann.fetchOrganizations()).single.id;
+
+      final invite = await ann.createInvite(orgId);
+      final token = inviteTokenFrom(invite.url)!;
+      expect(invite.url, endsWith('/invite/$token'));
+
+      final preview = await bob.previewInvite(token);
+      expect(preview.organizationName, 'Rock');
+      expect(preview.status, InviteStatus.valid);
+      expect(preview.alreadyMember, isFalse);
+
+      expect(await bob.redeemInvite(token), orgId);
+      final bobsOrgs = await bob.fetchOrganizations();
+      expect(bobsOrgs.single.id, orgId);
+      expect(bobsOrgs.single.bands, isEmpty);
+
+      final links = await ann.fetchInvites(orgId);
+      expect(links.single.joined, ['Bob']);
+      expect(links.single.statusAt(DateTime.now()), InviteStatus.valid);
+
+      await ann.revokeInvite(links.single.id);
+      final (carol, _) = await signedIn('Carol');
+      expect(
+        await kindOf(() => carol.redeemInvite(token)),
+        BackendErrorKind.inviteRevoked,
+      );
+      expect((await bob.previewInvite(token)).status, InviteStatus.revoked);
+      ann.dispose();
+      bob.dispose();
+      carol.dispose();
+    });
+
+    test('members cannot invite; unknown links are reported', () async {
+      final (ann, _) = await signedIn('Ann');
+      await ann.createBand(id: const Uuid().v4(), name: 'Rock');
+      final orgId = (await ann.fetchOrganizations()).single.id;
+      final (bob, _) = await signedIn('Bob');
+      expect(
+        await kindOf(() => bob.createInvite(orgId)),
+        BackendErrorKind.notAllowed,
+      );
+      expect(
+        await kindOf(() => bob.redeemInvite('Q' * 32)),
+        BackendErrorKind.inviteUnknown,
+      );
+      expect(
+        await kindOf(() => bob.previewInvite('../../x')),
+        BackendErrorKind.inviteUnknown,
+      );
+      ann.dispose();
+      bob.dispose();
+    });
+  });
 }

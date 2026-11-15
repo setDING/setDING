@@ -1103,13 +1103,123 @@ class AppLocalizationsDe extends AppLocalizations {
       'Du verlässt damit auch alle ihre Bands und siehst ihre Songs nicht mehr.';
 
   @override
-  String get orgInviteSoon =>
-      'Personen in die Organisation einladen ist bald möglich.';
-
-  @override
   String get orgSongsShared =>
       'Alle Bands der Organisation teilen dieselben Songs.';
 
   @override
   String get copyToLibraryTitle => 'In welche Songbibliothek kopieren?';
+
+  @override
+  String get inviteCreate => 'Personen einladen';
+
+  @override
+  String get inviteCreateHint =>
+      'Erstellt einen Link, der 7 Tage gilt. Wer ihn öffnet, wird Mitglied der Organisation.';
+
+  @override
+  String get inviteLinkTitle => 'Einladungslink';
+
+  @override
+  String inviteLinkHint(String date) {
+    return 'Teile den Link, z. B. im Gruppenchat, oder lass den QR-Code scannen. Gültig bis $date. Der Link wird nur jetzt angezeigt.';
+  }
+
+  @override
+  String get inviteCopy => 'Link kopieren';
+
+  @override
+  String get inviteCopied => 'Link kopiert';
+
+  @override
+  String get invitesTitle => 'Einladungslinks';
+
+  @override
+  String inviteStatusValid(String date) {
+    return 'Gültig bis $date';
+  }
+
+  @override
+  String get inviteStatusExpired => 'Abgelaufen';
+
+  @override
+  String get inviteStatusRevoked => 'Widerrufen';
+
+  @override
+  String inviteJoined(int count, String names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count beigetreten: $names',
+      one: 'Beigetreten: $names',
+      zero: 'Noch niemand beigetreten',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get inviteRevoke => 'Widerrufen';
+
+  @override
+  String get inviteRevokeTitle => 'Link widerrufen?';
+
+  @override
+  String get inviteRevokeMessage =>
+      'Der Link funktioniert danach nicht mehr. Wer schon beigetreten ist, bleibt Mitglied.';
+
+  @override
+  String get inviteAskAdmin =>
+      'Für eine Einladung wende dich an einen Admin der Organisation.';
+
+  @override
+  String get inviteErrorUnknown =>
+      'Diese Einladung gibt es nicht. Prüfe den Link.';
+
+  @override
+  String get inviteErrorExpired =>
+      'Diese Einladung ist abgelaufen. Bitte um einen neuen Link.';
+
+  @override
+  String get inviteErrorRevoked =>
+      'Diese Einladung wurde widerrufen. Bitte um einen neuen Link.';
+
+  @override
+  String get joinTitle => 'Beitreten';
+
+  @override
+  String get joinHint => 'Füge den Einladungslink ein, den du erhalten hast.';
+
+  @override
+  String get joinLink => 'Einladungslink';
+
+  @override
+  String get joinContinue => 'Weiter';
+
+  @override
+  String get joinInvalidLink => 'Das ist kein gültiger Einladungslink.';
+
+  @override
+  String joinQuestion(String org) {
+    return '$org beitreten?';
+  }
+
+  @override
+  String get joinExplanation =>
+      'Du wirst Mitglied der Organisation und siehst ihre Songs. Ein Admin kann dich danach in eine Band aufnehmen.';
+
+  @override
+  String joinAlreadyMember(String org) {
+    return 'Du bist bereits Mitglied von $org.';
+  }
+
+  @override
+  String get joinButton => 'Beitreten';
+
+  @override
+  String joinDone(String org) {
+    return 'Du bist $org beigetreten.';
+  }
+
+  @override
+  String get joinSignInFirst =>
+      'Melde dich an oder erstelle ein Konto, um beizutreten.';
 }
