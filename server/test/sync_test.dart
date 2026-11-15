@@ -1,7 +1,7 @@
 import 'package:test/test.dart';
 
 import 'support/fixtures.dart';
-import 'support/pocketbase.dart';
+import 'package:realchord_server/pocketbase_harness.dart';
 
 void main() {
   late PocketBase pb;

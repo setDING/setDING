@@ -352,5 +352,42 @@
   "exportSetList": "Set-Liste exportieren (Text)",
   "copySetList": "Set-Liste kopieren",
   "setListCopied": "Set-Liste kopiert",
-  "exportSetListPdf": "Set-Liste exportieren (PDF zum Drucken)"
+  "exportSetListPdf": "Set-Liste exportieren (PDF zum Drucken)",
+  "settingsSectionAccount": "Konto",
+  "accountSignedOut": "Nicht angemeldet",
+  "accountSignedOutHint": "Melde dich an, um Songs und Sets mit deiner Band zu teilen. Ohne Konto funktioniert RealChord weiterhin lokal auf diesem Gerät.",
+  "accountSignIn": "Anmelden",
+  "accountSignUp": "Konto erstellen",
+  "accountSignOut": "Abmelden",
+  "accountSignOutTitle": "Abmelden?",
+  "accountSignOutMessage": "Songs und Sets auf diesem Gerät bleiben erhalten.",
+  "accountEmail": "E-Mail",
+  "accountPassword": "Passwort",
+  "accountPasswordConfirm": "Passwort bestätigen",
+  "accountName": "Name",
+  "accountNameHint": "So sehen dich deine Bandmitglieder.",
+  "accountToSignUp": "Noch kein Konto? Konto erstellen",
+  "accountToSignIn": "Bereits ein Konto? Anmelden",
+  "accountForgotPassword": "Passwort vergessen?",
+  "accountResetTitle": "Passwort zurücksetzen",
+  "accountResetSent": "Falls es ein Konto mit dieser Adresse gibt, wurde eine E-Mail zum Zurücksetzen gesendet.",
+  "accountFieldRequired": "Bitte ausfüllen.",
+  "accountPasswordTooShort": "Mindestens {min} Zeichen.",
+  "@accountPasswordTooShort": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "accountPasswordMismatch": "Die Passwörter stimmen nicht überein.",
+  "accountErrorNetwork": "Keine Verbindung zum Server. Prüfe die Internetverbindung.",
+  "accountErrorInvalidCredentials": "E-Mail oder Passwort ist falsch.",
+  "accountErrorEmailTaken": "Mit dieser E-Mail-Adresse gibt es bereits ein Konto.",
+  "accountErrorInvalidEmail": "Die E-Mail-Adresse ist ungültig.",
+  "accountErrorWeakPassword": "Das Passwort erfüllt die Anforderungen des Servers nicht.",
+  "accountErrorServer": "Der Server hat einen Fehler gemeldet. Versuche es später nochmals.",
+  "settingsServer": "Server",
+  "settingsServerHint": "Nur für Tests ändern. Beim Wechsel wirst du abgemeldet.",
+  "settingsServerInvalid": "Die Adresse muss mit http:// oder https:// beginnen."
 }

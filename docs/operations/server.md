@@ -78,6 +78,9 @@ Tokens and account settings stay with the owner (ADR-0014).
 2. Log in at `https://api.realchord.app/_/` and enable MFA for superusers.
 3. **Settings → Application:** set the application URL to `https://api.realchord.app`.
 4. **Settings → Trusted proxy:** header `CF-Connecting-IP`.
+5. **Settings → Mail settings (SMTP):** needed for password reset emails from the
+   app (ADR-0016). Until it is configured, reset requests are accepted but no email
+   is sent.
 
 ## Updates
 

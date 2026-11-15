@@ -237,5 +237,42 @@
   "exportSetList": "Export set list (text)",
   "copySetList": "Copy set list",
   "setListCopied": "Set list copied",
-  "exportSetListPdf": "Export set list (PDF for printing)"
+  "exportSetListPdf": "Export set list (PDF for printing)",
+  "settingsSectionAccount": "Account",
+  "accountSignedOut": "Not signed in",
+  "accountSignedOutHint": "Sign in to share songs and sets with your band. Without an account, RealChord keeps working locally on this device.",
+  "accountSignIn": "Sign in",
+  "accountSignUp": "Create account",
+  "accountSignOut": "Sign out",
+  "accountSignOutTitle": "Sign out?",
+  "accountSignOutMessage": "Songs and sets on this device are kept.",
+  "accountEmail": "Email",
+  "accountPassword": "Password",
+  "accountPasswordConfirm": "Confirm password",
+  "accountName": "Name",
+  "accountNameHint": "How your bandmates see you.",
+  "accountToSignUp": "No account yet? Create one",
+  "accountToSignIn": "Already have an account? Sign in",
+  "accountForgotPassword": "Forgot password?",
+  "accountResetTitle": "Reset password",
+  "accountResetSent": "If an account with this address exists, a reset email has been sent.",
+  "accountFieldRequired": "Required.",
+  "accountPasswordTooShort": "At least {min} characters.",
+  "@accountPasswordTooShort": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "accountPasswordMismatch": "The passwords do not match.",
+  "accountErrorNetwork": "No connection to the server. Check your internet connection.",
+  "accountErrorInvalidCredentials": "Wrong email or password.",
+  "accountErrorEmailTaken": "An account with this email address already exists.",
+  "accountErrorInvalidEmail": "The email address is not valid.",
+  "accountErrorWeakPassword": "The password does not meet the server's requirements.",
+  "accountErrorServer": "The server reported an error. Please try again later.",
+  "settingsServer": "Server",
+  "settingsServerHint": "Only change for testing. Changing it signs you out.",
+  "settingsServerInvalid": "The address must start with http:// or https://."
 }

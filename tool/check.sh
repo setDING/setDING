@@ -27,14 +27,16 @@ dart test "${concurrency[@]}"
 
 # Server: PocketBase schema, access rules and hooks, tested against a real
 # PocketBase of the pinned version (PB_VERSION in the Makefile, downloaded once).
+# The app's integration tests use the same binary.
 step "server"
+pb_version="$(sed -n 's/^PB_VERSION *?= *//p' "$ROOT/Makefile")"
+POCKETBASE_BIN="$("$ROOT/tool/server/fetch-pocketbase.sh" "$pb_version")"
+export POCKETBASE_BIN
 cd "$ROOT/server"
 dart pub get >/dev/null
 dart format --output=none --set-exit-if-changed .
 dart analyze --fatal-infos
-pb_version="$(sed -n 's/^PB_VERSION *?= *//p' "$ROOT/Makefile")"
-POCKETBASE_BIN="$("$ROOT/tool/server/fetch-pocketbase.sh" "$pb_version")" \
-  dart test "${concurrency[@]}"
+dart test "${concurrency[@]}"
 
 if [ -d "$ROOT/app" ]; then
   step "app"

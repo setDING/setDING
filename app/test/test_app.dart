@@ -7,6 +7,9 @@ import 'package:realchord/data/set_repository.dart';
 import 'package:realchord/data/song_repository.dart';
 import 'package:realchord/providers.dart';
 import 'package:realchord/settings/settings.dart';
+import 'package:realchord/sync/auth_providers.dart';
+import 'package:realchord/sync/session_store.dart';
+import 'package:realchord/sync/sync_backend.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -14,25 +17,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'fake_backend.dart';
+
 /// App with an in-memory database for widget tests.
 class TestApp {
-  TestApp._(this.db, this.dir, this.prefs);
+  TestApp._(this.db, this.dir, this.prefs, this.backend);
 
   final AppDatabase db;
   final Directory dir;
   final SharedPreferences prefs;
 
+  /// Backend used instead of a real server.
+  final FakeSyncBackend backend;
+
   late final storage = AttachmentStorage(dir);
   late final songs = SongRepository(db, storage);
   late final sets = SetRepository(db, storage);
 
-  static Future<TestApp> create({Map<String, Object> prefs = const {}}) async {
+  static Future<TestApp> create({
+    Map<String, Object> prefs = const {},
+    AuthUser? user,
+  }) async {
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
     SharedPreferences.setMockInitialValues(prefs);
     return TestApp._(
       AppDatabase(NativeDatabase.memory()),
       Directory.systemTemp.createTempSync('realchord_widget'),
       await SharedPreferences.getInstance(),
+      FakeSyncBackend(user: user),
     );
   }
 
@@ -41,6 +53,8 @@ class TestApp {
       sharedPreferencesProvider.overrideWithValue(prefs),
       databaseProvider.overrideWithValue(db),
       attachmentStorageProvider.overrideWithValue(storage),
+      sessionStoreProvider.overrideWithValue(MemorySessionStore()),
+      syncBackendProvider.overrideWithValue(backend),
     ],
     child: RealChordApp(home: home),
   );

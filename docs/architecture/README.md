@@ -49,6 +49,7 @@ A user can be a member of several bands; the role is defined per band (ADR-0005)
 | ChordPro coverage | **Whole specification** (transpose, grids, markup, conditionals, diagrams, images, delegated environments) | [ADR-0012](adr/0012-full-chordpro-support.md) |
 | SongSelect (CCLI) | **No API integration** (partner program closed); manual import of ChordPro files downloaded from SongSelect | [ADR-0011](adr/0011-songselect-import.md) |
 | Server hosting | **Debian LXC** on Proxmox, PocketBase as systemd service, published via **Cloudflare Tunnel**, daily backups, provisioned with `make server-install` | [ADR-0014](adr/0014-server-hosting.md) |
+| Sign-in & session | Email/password via `SyncBackend` (PocketBase SDK, pinned), session in secure storage, kept while offline, refreshed when online, 30-day tokens | [ADR-0016](adr/0016-client-authentication.md) |
 | Server data model | PocketBase collections as migrations, server-wide revision counter, set items as JSON, access rules per role, tested against a real PocketBase | [ADR-0015](adr/0015-server-data-model.md) |
 | Printable set list | PDF generated in the client with the `pdf` package, embedded font, saved via the save dialog; no print plugin yet | [ADR-0013](adr/0013-printable-set-list.md) |
 
@@ -159,7 +160,7 @@ Notes:
 
 ## 7. Cross-cutting concerns
 
-- **Security:** Authentication via PocketBase (email/password or magic link); data is only accessible within the user's own bands, and write permissions follow the role per band (backend access rules). The auth token is stored locally so no new login is needed offline.
+- **Security:** Authentication via PocketBase (email/password, ADR-0016); data is only accessible within the user's own bands, and write permissions follow the role per band (backend access rules, ADR-0015). The session is kept in the platform's secure storage and stays valid offline, so no new login is needed on stage.
 - **Import/export:** Import of `.cho`/`.chordpro`/`.chopro`/`.txt` files (individually and as ZIP, optionally converting German H/B notation) and PDF attachments; export of a set as a ZIP with ChordPro files and PDF attachments; the set list as text (file or clipboard) and as a printable PDF (ADR-0013), one line per song with title, key for the set and sequence.
 - **Localization:** UI in German and English, selectable in the settings (ADR-0008). Song content is not translated.
 - **Testability:** `chordpro` package with extensive unit tests (parser, transposition); golden tests for rendering.
@@ -198,8 +199,11 @@ song/set sync, PDF sync).
 
 - **Server schema (#13):** collections, access rules and hooks in [`server/`](../../server)
   (ADR-0015, accepted), tested against a real PocketBase in `make check`; `make backend`
-  starts a local instance. Not yet deployed to `api.realchord.app`.
-- The app does not talk to the server yet (#14 onwards).
+  starts a local instance. Deployed to `api.realchord.app`.
+- **Sign-in (#14):** account section in the settings (sign up, sign in, sign out,
+  password reset, server URL) behind the `SyncBackend` interface; session in the
+  platform's secure storage, kept while offline (ADR-0016, accepted). Password reset
+  needs SMTP on the server (open). Bands, sync and invitations follow (#15–#18).
 
 ## 9. Open questions
 
@@ -240,5 +244,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0013](adr/0013-printable-set-list.md) | Printable set list as PDF | Accepted |
 | [0014](adr/0014-server-hosting.md) | Server hosting and operations | Accepted |
 | [0015](adr/0015-server-data-model.md) | Server data model and access rules | Accepted |
+| [0016](adr/0016-client-authentication.md) | Client authentication and session storage | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.

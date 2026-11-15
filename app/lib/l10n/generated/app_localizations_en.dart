@@ -799,4 +799,104 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportSetListPdf => 'Export set list (PDF for printing)';
+
+  @override
+  String get settingsSectionAccount => 'Account';
+
+  @override
+  String get accountSignedOut => 'Not signed in';
+
+  @override
+  String get accountSignedOutHint =>
+      'Sign in to share songs and sets with your band. Without an account, RealChord keeps working locally on this device.';
+
+  @override
+  String get accountSignIn => 'Sign in';
+
+  @override
+  String get accountSignUp => 'Create account';
+
+  @override
+  String get accountSignOut => 'Sign out';
+
+  @override
+  String get accountSignOutTitle => 'Sign out?';
+
+  @override
+  String get accountSignOutMessage => 'Songs and sets on this device are kept.';
+
+  @override
+  String get accountEmail => 'Email';
+
+  @override
+  String get accountPassword => 'Password';
+
+  @override
+  String get accountPasswordConfirm => 'Confirm password';
+
+  @override
+  String get accountName => 'Name';
+
+  @override
+  String get accountNameHint => 'How your bandmates see you.';
+
+  @override
+  String get accountToSignUp => 'No account yet? Create one';
+
+  @override
+  String get accountToSignIn => 'Already have an account? Sign in';
+
+  @override
+  String get accountForgotPassword => 'Forgot password?';
+
+  @override
+  String get accountResetTitle => 'Reset password';
+
+  @override
+  String get accountResetSent =>
+      'If an account with this address exists, a reset email has been sent.';
+
+  @override
+  String get accountFieldRequired => 'Required.';
+
+  @override
+  String accountPasswordTooShort(int min) {
+    return 'At least $min characters.';
+  }
+
+  @override
+  String get accountPasswordMismatch => 'The passwords do not match.';
+
+  @override
+  String get accountErrorNetwork =>
+      'No connection to the server. Check your internet connection.';
+
+  @override
+  String get accountErrorInvalidCredentials => 'Wrong email or password.';
+
+  @override
+  String get accountErrorEmailTaken =>
+      'An account with this email address already exists.';
+
+  @override
+  String get accountErrorInvalidEmail => 'The email address is not valid.';
+
+  @override
+  String get accountErrorWeakPassword =>
+      'The password does not meet the server\'s requirements.';
+
+  @override
+  String get accountErrorServer =>
+      'The server reported an error. Please try again later.';
+
+  @override
+  String get settingsServer => 'Server';
+
+  @override
+  String get settingsServerHint =>
+      'Only change for testing. Changing it signs you out.';
+
+  @override
+  String get settingsServerInvalid =>
+      'The address must start with http:// or https://.';
 }

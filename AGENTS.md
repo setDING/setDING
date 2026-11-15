@@ -82,3 +82,4 @@ See the ADR index in the architecture README for the current status. In short:
 - Whole ChordPro specification supported, in phases (ADR-0012)
 - Server: Debian LXC on Proxmox, PocketBase via systemd, Cloudflare Tunnel, provisioned with `make server-install` (ADR-0014)
 - Server data model as PocketBase migrations and hooks in `server/`, tested against a real PocketBase in `make check`; `make backend` runs it locally (ADR-0015)
+- Sign-in through the `SyncBackend` interface, session in secure storage and kept while offline (ADR-0016)

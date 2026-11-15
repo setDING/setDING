@@ -17,6 +17,8 @@ import 'data/demo_song.dart';
 import 'data/song_repository.dart';
 import 'providers.dart';
 import 'settings/settings.dart';
+import 'sync/auth_providers.dart';
+import 'sync/session_store.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,6 +62,13 @@ Future<void> main() async {
     Directory(p.join(supportDir.path, 'attachments')),
   );
 
+  // The session (sign-in) is kept in the platform's secure storage; an
+  // isolated test instance keeps its own session in its data directory.
+  final SessionStore sessionStore = override != null && override.isNotEmpty
+      ? FileSessionStore(File(p.join(supportDir.path, 'session.json')))
+      : SecureSessionStore();
+  await sessionStore.load();
+
   // Add an example song on the very first start.
   if (!(prefs.getBool('demoSeeded') ?? false)) {
     await SongRepository(db, storage).createSong(source: demoSongSource);
@@ -72,6 +81,7 @@ Future<void> main() async {
         sharedPreferencesProvider.overrideWithValue(prefs),
         databaseProvider.overrideWithValue(db),
         attachmentStorageProvider.overrideWithValue(storage),
+        sessionStoreProvider.overrideWithValue(sessionStore),
       ],
       child: const RealChordApp(),
     ),

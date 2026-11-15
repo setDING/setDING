@@ -804,4 +804,106 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get exportSetListPdf => 'Set-Liste exportieren (PDF zum Drucken)';
+
+  @override
+  String get settingsSectionAccount => 'Konto';
+
+  @override
+  String get accountSignedOut => 'Nicht angemeldet';
+
+  @override
+  String get accountSignedOutHint =>
+      'Melde dich an, um Songs und Sets mit deiner Band zu teilen. Ohne Konto funktioniert RealChord weiterhin lokal auf diesem Gerät.';
+
+  @override
+  String get accountSignIn => 'Anmelden';
+
+  @override
+  String get accountSignUp => 'Konto erstellen';
+
+  @override
+  String get accountSignOut => 'Abmelden';
+
+  @override
+  String get accountSignOutTitle => 'Abmelden?';
+
+  @override
+  String get accountSignOutMessage =>
+      'Songs und Sets auf diesem Gerät bleiben erhalten.';
+
+  @override
+  String get accountEmail => 'E-Mail';
+
+  @override
+  String get accountPassword => 'Passwort';
+
+  @override
+  String get accountPasswordConfirm => 'Passwort bestätigen';
+
+  @override
+  String get accountName => 'Name';
+
+  @override
+  String get accountNameHint => 'So sehen dich deine Bandmitglieder.';
+
+  @override
+  String get accountToSignUp => 'Noch kein Konto? Konto erstellen';
+
+  @override
+  String get accountToSignIn => 'Bereits ein Konto? Anmelden';
+
+  @override
+  String get accountForgotPassword => 'Passwort vergessen?';
+
+  @override
+  String get accountResetTitle => 'Passwort zurücksetzen';
+
+  @override
+  String get accountResetSent =>
+      'Falls es ein Konto mit dieser Adresse gibt, wurde eine E-Mail zum Zurücksetzen gesendet.';
+
+  @override
+  String get accountFieldRequired => 'Bitte ausfüllen.';
+
+  @override
+  String accountPasswordTooShort(int min) {
+    return 'Mindestens $min Zeichen.';
+  }
+
+  @override
+  String get accountPasswordMismatch => 'Die Passwörter stimmen nicht überein.';
+
+  @override
+  String get accountErrorNetwork =>
+      'Keine Verbindung zum Server. Prüfe die Internetverbindung.';
+
+  @override
+  String get accountErrorInvalidCredentials =>
+      'E-Mail oder Passwort ist falsch.';
+
+  @override
+  String get accountErrorEmailTaken =>
+      'Mit dieser E-Mail-Adresse gibt es bereits ein Konto.';
+
+  @override
+  String get accountErrorInvalidEmail => 'Die E-Mail-Adresse ist ungültig.';
+
+  @override
+  String get accountErrorWeakPassword =>
+      'Das Passwort erfüllt die Anforderungen des Servers nicht.';
+
+  @override
+  String get accountErrorServer =>
+      'Der Server hat einen Fehler gemeldet. Versuche es später nochmals.';
+
+  @override
+  String get settingsServer => 'Server';
+
+  @override
+  String get settingsServerHint =>
+      'Nur für Tests ändern. Beim Wechsel wirst du abgemeldet.';
+
+  @override
+  String get settingsServerInvalid =>
+      'Die Adresse muss mit http:// oder https:// beginnen.';
 }

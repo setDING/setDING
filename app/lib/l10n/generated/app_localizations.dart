@@ -1525,6 +1525,186 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Set-Liste exportieren (PDF zum Drucken)'**
   String get exportSetListPdf;
+
+  /// No description provided for @settingsSectionAccount.
+  ///
+  /// In de, this message translates to:
+  /// **'Konto'**
+  String get settingsSectionAccount;
+
+  /// No description provided for @accountSignedOut.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht angemeldet'**
+  String get accountSignedOut;
+
+  /// No description provided for @accountSignedOutHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Melde dich an, um Songs und Sets mit deiner Band zu teilen. Ohne Konto funktioniert RealChord weiterhin lokal auf diesem Gerät.'**
+  String get accountSignedOutHint;
+
+  /// No description provided for @accountSignIn.
+  ///
+  /// In de, this message translates to:
+  /// **'Anmelden'**
+  String get accountSignIn;
+
+  /// No description provided for @accountSignUp.
+  ///
+  /// In de, this message translates to:
+  /// **'Konto erstellen'**
+  String get accountSignUp;
+
+  /// No description provided for @accountSignOut.
+  ///
+  /// In de, this message translates to:
+  /// **'Abmelden'**
+  String get accountSignOut;
+
+  /// No description provided for @accountSignOutTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Abmelden?'**
+  String get accountSignOutTitle;
+
+  /// No description provided for @accountSignOutMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Songs und Sets auf diesem Gerät bleiben erhalten.'**
+  String get accountSignOutMessage;
+
+  /// No description provided for @accountEmail.
+  ///
+  /// In de, this message translates to:
+  /// **'E-Mail'**
+  String get accountEmail;
+
+  /// No description provided for @accountPassword.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort'**
+  String get accountPassword;
+
+  /// No description provided for @accountPasswordConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort bestätigen'**
+  String get accountPasswordConfirm;
+
+  /// No description provided for @accountName.
+  ///
+  /// In de, this message translates to:
+  /// **'Name'**
+  String get accountName;
+
+  /// No description provided for @accountNameHint.
+  ///
+  /// In de, this message translates to:
+  /// **'So sehen dich deine Bandmitglieder.'**
+  String get accountNameHint;
+
+  /// No description provided for @accountToSignUp.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch kein Konto? Konto erstellen'**
+  String get accountToSignUp;
+
+  /// No description provided for @accountToSignIn.
+  ///
+  /// In de, this message translates to:
+  /// **'Bereits ein Konto? Anmelden'**
+  String get accountToSignIn;
+
+  /// No description provided for @accountForgotPassword.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort vergessen?'**
+  String get accountForgotPassword;
+
+  /// No description provided for @accountResetTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort zurücksetzen'**
+  String get accountResetTitle;
+
+  /// No description provided for @accountResetSent.
+  ///
+  /// In de, this message translates to:
+  /// **'Falls es ein Konto mit dieser Adresse gibt, wurde eine E-Mail zum Zurücksetzen gesendet.'**
+  String get accountResetSent;
+
+  /// No description provided for @accountFieldRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte ausfüllen.'**
+  String get accountFieldRequired;
+
+  /// No description provided for @accountPasswordTooShort.
+  ///
+  /// In de, this message translates to:
+  /// **'Mindestens {min} Zeichen.'**
+  String accountPasswordTooShort(int min);
+
+  /// No description provided for @accountPasswordMismatch.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Passwörter stimmen nicht überein.'**
+  String get accountPasswordMismatch;
+
+  /// No description provided for @accountErrorNetwork.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Verbindung zum Server. Prüfe die Internetverbindung.'**
+  String get accountErrorNetwork;
+
+  /// No description provided for @accountErrorInvalidCredentials.
+  ///
+  /// In de, this message translates to:
+  /// **'E-Mail oder Passwort ist falsch.'**
+  String get accountErrorInvalidCredentials;
+
+  /// No description provided for @accountErrorEmailTaken.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit dieser E-Mail-Adresse gibt es bereits ein Konto.'**
+  String get accountErrorEmailTaken;
+
+  /// No description provided for @accountErrorInvalidEmail.
+  ///
+  /// In de, this message translates to:
+  /// **'Die E-Mail-Adresse ist ungültig.'**
+  String get accountErrorInvalidEmail;
+
+  /// No description provided for @accountErrorWeakPassword.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Passwort erfüllt die Anforderungen des Servers nicht.'**
+  String get accountErrorWeakPassword;
+
+  /// No description provided for @accountErrorServer.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Server hat einen Fehler gemeldet. Versuche es später nochmals.'**
+  String get accountErrorServer;
+
+  /// No description provided for @settingsServer.
+  ///
+  /// In de, this message translates to:
+  /// **'Server'**
+  String get settingsServer;
+
+  /// No description provided for @settingsServerHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur für Tests ändern. Beim Wechsel wirst du abgemeldet.'**
+  String get settingsServerHint;
+
+  /// No description provided for @settingsServerInvalid.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Adresse muss mit http:// oder https:// beginnen.'**
+  String get settingsServerInvalid;
 }
 
 class _AppLocalizationsDelegate

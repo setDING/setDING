@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../providers.dart';
 import '../settings/settings.dart';
+import 'account/account_section.dart';
 import 'widgets/dialogs.dart';
 
 /// Device settings (layer 4, ADR-0006).
@@ -64,6 +65,9 @@ class SettingsScreen extends ConsumerWidget {
           child: ListView(
             padding: const EdgeInsets.only(bottom: 32),
             children: [
+              header(l10n.settingsSectionAccount),
+              const AccountSection(),
+
               header(l10n.settingsSectionGeneral),
               choice(l10n.settingsLanguage, s.language, {
                 LanguageMode.system: l10n.languageSystem,

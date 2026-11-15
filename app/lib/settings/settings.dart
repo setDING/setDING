@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../sync/sync_backend.dart' show defaultServerUrl;
 import '../ui/render/chord_diagram.dart' show DiagramsPosition;
 import '../ui/render/song_view.dart' show ChorusRepeat;
 
@@ -39,6 +40,7 @@ class AppSettings {
     this.instrument = 'guitar',
     this.userName = '',
     this.diagrams = DiagramsPosition.off,
+    this.serverUrl = defaultServerUrl,
   });
 
   final LanguageMode language;
@@ -65,6 +67,10 @@ class AppSettings {
 
   /// Chord diagrams of all chords of a song (ADR-0012).
   final DiagramsPosition diagrams;
+
+  /// RealChord server for accounts and sync (ADR-0004); changeable for a
+  /// local test server (`make backend`).
+  final String serverUrl;
 
   /// Instrument presets offered in the settings.
   static const instruments = [
@@ -113,6 +119,7 @@ class AppSettings {
     String? instrument,
     String? userName,
     DiagramsPosition? diagrams,
+    String? serverUrl,
   }) => AppSettings(
     language: language ?? this.language,
     notation: notation ?? this.notation,
@@ -127,6 +134,7 @@ class AppSettings {
     userName: userName ?? this.userName,
     diagrams: diagrams ?? this.diagrams,
     fontSize: fontSize ?? this.fontSize,
+    serverUrl: serverUrl ?? this.serverUrl,
   );
 
   static AppSettings load(SharedPreferences prefs) {
@@ -149,6 +157,7 @@ class AppSettings {
       instrument: prefs.getString('instrument') ?? d.instrument,
       userName: prefs.getString('userName') ?? d.userName,
       diagrams: pick(DiagramsPosition.values, 'diagrams', d.diagrams),
+      serverUrl: prefs.getString('serverUrl') ?? d.serverUrl,
       fontSize: (prefs.getDouble('fontSize') ?? d.fontSize).clamp(
         minFontSize,
         maxFontSize,
@@ -170,6 +179,7 @@ class AppSettings {
     await prefs.setString('userName', userName);
     await prefs.setString('diagrams', diagrams.name);
     await prefs.setDouble('fontSize', fontSize);
+    await prefs.setString('serverUrl', serverUrl);
   }
 }
 
