@@ -19,6 +19,7 @@ import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../render/song_header.dart';
 import '../render/chord_diagram.dart';
+import '../render/render_cache.dart';
 import '../render/song_image.dart';
 import '../render/song_view.dart';
 import '../widgets/key_picker.dart';
@@ -344,26 +345,47 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         child: SafeArea(
           child: Column(
             children: [
+              // The control bar overlays the page, so showing it does not
+              // change the page size (and does not fit the song again).
               Expanded(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    _width = constraints.maxWidth;
-                    return GestureDetector(
-                      behavior: HitTestBehavior.translucent,
-                      onTapUp: (d) => _onTap(d.localPosition),
-                      child: PageView.builder(
-                        controller: _pages,
-                        itemCount: items.length,
-                        onPageChanged: (i) => setState(() => _index = i),
-                        itemBuilder: (context, i) => _LiveItemPage(
-                          item: items[i],
-                          scrollController: _scrollFor(i),
-                          pdfController: _pdfFor(i),
-                          onTap: _onTap,
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          _width = constraints.maxWidth;
+                          return GestureDetector(
+                            behavior: HitTestBehavior.translucent,
+                            onTapUp: (d) => _onTap(d.localPosition),
+                            child: PageView.builder(
+                              controller: _pages,
+                              itemCount: items.length,
+                              onPageChanged: (i) => setState(() => _index = i),
+                              itemBuilder: (context, i) => _LiveItemPage(
+                                item: items[i],
+                                scrollController: _scrollFor(i),
+                                pdfController: _pdfFor(i),
+                                onTap: _onTap,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    if (_controls)
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: _ControlBar(
+                          item: items[_index],
+                          onExit: () => Navigator.pop(context),
+                          onOverview: _showOverview,
+                          onAdjust: items[_index].song == null ? null : _adjust,
+                          onSetKey: _setKey,
                         ),
                       ),
-                    );
-                  },
+                  ],
                 ),
               ),
               Container(
@@ -391,14 +413,6 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                   ],
                 ),
               ),
-              if (_controls)
-                _ControlBar(
-                  item: items[_index],
-                  onExit: () => Navigator.pop(context),
-                  onOverview: _showOverview,
-                  onAdjust: items[_index].song == null ? null : _adjust,
-                  onSetKey: _setKey,
-                ),
             ],
           ),
         ),
@@ -529,7 +543,7 @@ class _LiveItemPage extends ConsumerWidget {
     final attachments =
         ref.watch(attachmentsProvider(song.id)).value ??
         const <AttachmentEntry>[];
-    final parsed = parseChordPro(
+    final parsed = parseChordProCached(
       song.chordproSource,
       selectors: ref.watch(settingsProvider).selectors,
     );
@@ -582,6 +596,7 @@ class _LiveItemPage extends ConsumerWidget {
       setTranspose: item.setTranspose,
       setSequence: item.setSequence,
       scrollController: scrollController,
+      attachments: attachments,
       imageLookup: (src) {
         final image = imageAttachmentFor(attachments, src);
         return image == null ? null : storage.file(image.fileName);
@@ -598,6 +613,7 @@ class _ChordProPage extends ConsumerWidget {
     required this.setTranspose,
     required this.setSequence,
     required this.scrollController,
+    required this.attachments,
     required this.imageLookup,
   });
 
@@ -607,6 +623,9 @@ class _ChordProPage extends ConsumerWidget {
   final int setTranspose;
   final String? setSequence;
   final ScrollController scrollController;
+
+  /// Attachments of the song; [imageLookup] finds images among them.
+  final List<AttachmentEntry> attachments;
   final ImageLookup imageLookup;
 
   @override
@@ -675,25 +694,56 @@ class _ChordProPage extends ConsumerWidget {
                         parsed.columns != null
                     ? parsed.columns!.clamp(1, 4)
                     : null;
-                final fit = fitSong(
-                  parsed,
-                  formatter: formatter,
-                  lyricsOnly: lyricsOnly,
-                  labeler: sectionLabeler(l10n),
-                  notes: overlay.notes,
-                  baseFontSize: settings.fontSize,
-                  maxFontSize: settings.fontSize * 2,
-                  minFontSize: AppSettings.minFontSize,
-                  size: size,
-                  textScaler: MediaQuery.textScalerOf(context),
-                  baseStyle: DefaultTextStyle.of(context).style,
-                  // {columns} in the song wins over the automatic choice.
-                  minColumns: songColumns ?? 1,
-                  maxColumns: songColumns ?? settings.maxColumns,
-                  chorusRepeat: settings.chorusRepeat,
-                  diagramResolver: resolver,
-                  diagramsPosition: diagrams,
-                  imageLookup: imageLookup,
+                final textScaler = MediaQuery.textScalerOf(context);
+                final baseStyle = DefaultTextStyle.of(context).style;
+                // Rebuilds (page changes, overlay events) reuse the fit:
+                // fitting measures every line of the song.
+                final fit = _fits.get(
+                  (
+                    parsed,
+                    formatter.transpose,
+                    formatter.capo,
+                    formatter.notation,
+                    formatter.nashville,
+                    lyricsOnly,
+                    overlay.notes,
+                    settings.fontSize,
+                    songColumns,
+                    settings.maxColumns,
+                    settings.chorusRepeat,
+                    diagrams,
+                    settings.instrument,
+                    size,
+                    textScaler,
+                    baseStyle,
+                    // By content: the list is loaded anew after the page
+                    // was disposed.
+                    [
+                      for (final a in attachments)
+                        '${a.id}/${a.name}/${a.fileName}',
+                    ].join('\n'),
+                    Localizations.localeOf(context),
+                  ),
+                  () => fitSong(
+                    parsed,
+                    formatter: formatter,
+                    lyricsOnly: lyricsOnly,
+                    labeler: sectionLabeler(l10n),
+                    notes: overlay.notes,
+                    baseFontSize: settings.fontSize,
+                    maxFontSize: settings.fontSize * 2,
+                    minFontSize: AppSettings.minFontSize,
+                    size: size,
+                    textScaler: textScaler,
+                    baseStyle: baseStyle,
+                    // {columns} in the song wins over the automatic choice.
+                    minColumns: songColumns ?? 1,
+                    maxColumns: songColumns ?? settings.maxColumns,
+                    chorusRepeat: settings.chorusRepeat,
+                    diagramResolver: resolver,
+                    diagramsPosition: diagrams,
+                    imageLookup: imageLookup,
+                  ),
                 );
                 final options = _options(
                   formatter,
@@ -703,6 +753,8 @@ class _ChordProPage extends ConsumerWidget {
                   fit.collapseRecalls,
                   resolver,
                   diagrams,
+                  // Measured at the reference size: valid for any scale.
+                  layout: fit.layout,
                 );
                 // A personal font scale above 100 % may need scrolling.
                 if (!fit.fits || scale > 1.0) return _scrolling(size, options);
@@ -734,8 +786,9 @@ class _ChordProPage extends ConsumerWidget {
     int columns,
     bool collapseRecalls,
     DiagramResolver resolver,
-    DiagramsPosition diagrams,
-  ) => SongRenderOptions(
+    DiagramsPosition diagrams, {
+    SongLayout? layout,
+  }) => SongRenderOptions(
     formatter: formatter,
     lyricsOnly: lyricsOnly,
     fontSize: fontSize,
@@ -745,6 +798,7 @@ class _ChordProPage extends ConsumerWidget {
     diagramResolver: resolver,
     diagramsPosition: diagrams,
     imageLookup: imageLookup,
+    layout: layout,
   );
 
   Widget _scrolling(Size size, SongRenderOptions options) =>
@@ -754,6 +808,9 @@ class _ChordProPage extends ConsumerWidget {
         child: SongBody(song: parsed, options: options),
       );
 }
+
+/// Results of [fitSong] for the songs of live mode.
+final _fits = LruCache<Object, SongFit>(16);
 
 /// Horizontal page margin of a song in live mode.
 const _margin = 20.0;

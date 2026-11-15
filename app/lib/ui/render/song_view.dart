@@ -29,6 +29,7 @@ class SongRenderOptions {
     this.diagramResolver,
     this.diagramsPosition = DiagramsPosition.off,
     this.imageLookup,
+    this.layout,
   });
 
   final ChordFormatter formatter;
@@ -48,6 +49,10 @@ class SongRenderOptions {
 
   /// Finds image files for `{image}`; null = images are not available.
   final ImageLookup? imageLookup;
+
+  /// Blocks and measurements from [fitSong] for exactly these options;
+  /// null = built and measured when rendering.
+  final SongLayout? layout;
 
   /// Diagrams of all chords for [diagramsPosition].
   List<DiagramData> get songDiagrams =>
@@ -69,15 +74,17 @@ class SongBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = SongTextStyles.of(context, options.fontSize);
-    final blocks = buildSongBlocks(
-      song,
-      lyricsOnly: options.lyricsOnly,
-      labeler: sectionLabeler(AppLocalizations.of(context)),
-      notes: options.notes,
-      collapseRecalls: options.collapseRecalls,
-      diagrams: options.songDiagrams,
-      diagramsOnTop: options.diagramsPosition == DiagramsPosition.top,
-    );
+    final blocks =
+        options.layout?.blocks ??
+        buildSongBlocks(
+          song,
+          lyricsOnly: options.lyricsOnly,
+          labeler: sectionLabeler(AppLocalizations.of(context)),
+          notes: options.notes,
+          collapseRecalls: options.collapseRecalls,
+          diagrams: options.songDiagrams,
+          diagramsOnTop: options.diagramsPosition == DiagramsPosition.top,
+        );
     Widget render(SongBlock b) => b.delegate != null
         ? DelegateView(
             delegate: b.delegate!,
@@ -113,15 +120,17 @@ class SongBody extends StatelessWidget {
           columns,
           options.fontSize,
         );
-        final metrics = measureBlocks(
-          blocks,
-          formatter: options.formatter,
-          lyricsOnly: options.lyricsOnly,
-          textScaler: MediaQuery.textScalerOf(context),
-          baseStyle: DefaultTextStyle.of(context).style,
-          diagramResolver: options.diagramResolver,
-          imageLookup: options.imageLookup,
-        );
+        final metrics =
+            options.layout?.metrics ??
+            measureBlocks(
+              blocks,
+              formatter: options.formatter,
+              lyricsOnly: options.lyricsOnly,
+              textScaler: MediaQuery.textScalerOf(context),
+              baseStyle: DefaultTextStyle.of(context).style,
+              diagramResolver: options.diagramResolver,
+              imageLookup: options.imageLookup,
+            );
         final heights = [
           for (final m in metrics) m.height(options.fontSize, width),
         ];

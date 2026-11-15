@@ -14,6 +14,7 @@ import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../live/live_screen.dart';
 import '../render/chord_diagram.dart';
+import '../render/render_cache.dart';
 import '../render/song_header.dart';
 import '../render/song_view.dart';
 import '../widgets/dialogs.dart';
@@ -142,7 +143,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
       value: songValue,
       data: (song) {
         if (song == null) return const Scaffold();
-        final parsed = parseChordPro(
+        final parsed = parseChordProCached(
           song.chordproSource,
           selectors: settings.selectors,
         );

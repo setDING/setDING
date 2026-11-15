@@ -78,6 +78,9 @@ class BlockMetrics {
   }
 }
 
+/// Number of [measureBlocks] calls, for tests of the render caches.
+int debugMeasureBlocksCalls = 0;
+
 /// Measures [blocks] for layout.
 ///
 /// [baseStyle] must be the default text style the song is rendered with
@@ -91,6 +94,7 @@ List<BlockMetrics> measureBlocks(
   DiagramResolver? diagramResolver,
   ImageLookup? imageLookup,
 }) {
+  debugMeasureBlocksCalls++;
   final painter = TextPainter(
     textDirection: TextDirection.ltr,
     textScaler: textScaler,
@@ -433,15 +437,24 @@ class SongFit {
     required this.columns,
     this.collapseRecalls = false,
     this.fits = true,
+    this.layout,
   });
 
   final double fontSize;
   final int columns;
   final bool collapseRecalls;
 
+  /// Blocks and measurements of the chosen arrangement, so that rendering
+  /// does not build and measure them again (see `SongRenderOptions.layout`);
+  /// null when the song does not fit.
+  final SongLayout? layout;
+
   /// Whether the whole song fits on the screen without scrolling.
   final bool fits;
 }
+
+/// Blocks of a song with their measurements.
+typedef SongLayout = ({List<SongBlock> blocks, List<BlockMetrics> metrics});
 
 /// How a repeated chorus (`{chorus}`) is shown in live mode.
 enum ChorusRepeat {
@@ -560,7 +573,12 @@ SongFit fitSong(
       final score = font * penalty * (1 - 0.03 * (k - 1));
       if (score > bestScore) {
         bestScore = score;
-        best = SongFit(fontSize: font, columns: k, collapseRecalls: collapse);
+        best = SongFit(
+          fontSize: font,
+          columns: k,
+          collapseRecalls: collapse,
+          layout: (blocks: blocks, metrics: metrics),
+        );
       }
     }
   }
