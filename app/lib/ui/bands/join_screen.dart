@@ -127,13 +127,25 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
                   Text(l10n.joinSignInFirst),
                   const SizedBox(height: 16),
                   FilledButton(
+                    key: const Key('join-sign-up'),
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute<bool>(
+                        builder: (_) => const SignInScreen(signUp: true),
+                      ),
+                    ),
+                    child: Text(l10n.accountSignUp),
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton(
+                    key: const Key('join-sign-in'),
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute<bool>(
                         builder: (_) => const SignInScreen(),
                       ),
                     ),
-                    child: Text(l10n.accountSignIn),
+                    child: Text(l10n.joinHaveAccount),
                   ),
                 ] else
                   FilledButton(

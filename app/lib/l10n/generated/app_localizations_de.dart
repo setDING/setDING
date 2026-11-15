@@ -822,6 +822,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get accountSignUp => 'Konto erstellen';
 
   @override
+  String get accountJoin => 'Mit Einladung beitreten';
+
+  @override
   String get accountSignOut => 'Abmelden';
 
   @override
@@ -1222,6 +1225,9 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get joinSignInFirst =>
       'Melde dich an oder erstelle ein Konto, um beizutreten.';
+
+  @override
+  String get joinHaveAccount => 'Ich habe schon ein Konto';
 
   @override
   String get syncTitle => 'Synchronisation';

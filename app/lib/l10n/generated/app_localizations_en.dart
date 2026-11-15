@@ -817,6 +817,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSignUp => 'Create account';
 
   @override
+  String get accountJoin => 'Join with invitation';
+
+  @override
   String get accountSignOut => 'Sign out';
 
   @override
@@ -1212,6 +1215,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get joinSignInFirst => 'Sign in or create an account to join.';
+
+  @override
+  String get joinHaveAccount => 'I already have an account';
 
   @override
   String get syncTitle => 'Sync';

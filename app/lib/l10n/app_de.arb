@@ -358,6 +358,7 @@
   "accountSignedOutHint": "Melde dich an, um Songs und Sets mit deiner Band zu teilen. Ohne Konto funktioniert RealChord weiterhin lokal auf diesem Gerät.",
   "accountSignIn": "Anmelden",
   "accountSignUp": "Konto erstellen",
+  "accountJoin": "Mit Einladung beitreten",
   "accountSignOut": "Abmelden",
   "accountSignOutTitle": "Abmelden?",
   "accountSignOutMessage": "Songs und Sets auf diesem Gerät bleiben erhalten.",
@@ -592,6 +593,7 @@
     }
   },
   "joinSignInFirst": "Melde dich an oder erstelle ein Konto, um beizutreten.",
+  "joinHaveAccount": "Ich habe schon ein Konto",
   "syncTitle": "Synchronisation",
   "syncNow": "Jetzt synchronisieren",
   "syncRunning": "Synchronisiere …",

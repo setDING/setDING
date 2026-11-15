@@ -1556,6 +1556,12 @@ abstract class AppLocalizations {
   /// **'Konto erstellen'**
   String get accountSignUp;
 
+  /// No description provided for @accountJoin.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit Einladung beitreten'**
+  String get accountJoin;
+
   /// No description provided for @accountSignOut.
   ///
   /// In de, this message translates to:
@@ -2209,6 +2215,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Melde dich an oder erstelle ein Konto, um beizutreten.'**
   String get joinSignInFirst;
+
+  /// No description provided for @joinHaveAccount.
+  ///
+  /// In de, this message translates to:
+  /// **'Ich habe schon ein Konto'**
+  String get joinHaveAccount;
 
   /// No description provided for @syncTitle.
   ///

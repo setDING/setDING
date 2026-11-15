@@ -243,6 +243,7 @@
   "accountSignedOutHint": "Sign in to share songs and sets with your band. Without an account, RealChord keeps working locally on this device.",
   "accountSignIn": "Sign in",
   "accountSignUp": "Create account",
+  "accountJoin": "Join with invitation",
   "accountSignOut": "Sign out",
   "accountSignOutTitle": "Sign out?",
   "accountSignOutMessage": "Songs and sets on this device are kept.",
@@ -477,6 +478,7 @@
     }
   },
   "joinSignInFirst": "Sign in or create an account to join.",
+  "joinHaveAccount": "I already have an account",
   "syncTitle": "Sync",
   "syncNow": "Sync now",
   "syncRunning": "Syncing …",

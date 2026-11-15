@@ -6,7 +6,8 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../sync/auth_providers.dart';
 import '../../sync/sync_backend.dart';
-import '../account/sign_in_screen.dart';
+import '../account/account_section.dart';
+import '../account/sign_in_screen.dart' show backendErrorText;
 import '../widgets/dialogs.dart';
 import 'band_labels.dart';
 import 'band_screen.dart';
@@ -74,13 +75,7 @@ class BandsScreen extends ConsumerWidget {
       body = EmptyState(
         icon: Icons.groups_outlined,
         message: l10n.bandsSignInHint,
-        action: FilledButton(
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute<bool>(builder: (_) => const SignInScreen()),
-          ),
-          child: Text(l10n.accountSignIn),
-        ),
+        action: const SignedOutActions(),
       );
     } else if (orgs.isEmpty) {
       body = EmptyState(icon: Icons.groups_outlined, message: l10n.bandsEmpty);

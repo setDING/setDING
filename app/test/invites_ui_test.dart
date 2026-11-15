@@ -4,6 +4,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:realchord/sync/sync_backend.dart';
 import 'package:realchord/ui/bands/join_screen.dart';
 import 'package:realchord/ui/bands/organization_screen.dart';
+import 'package:realchord/ui/settings_screen.dart';
 
 import 'test_app.dart';
 
@@ -128,7 +129,7 @@ void main() {
     expect(find.textContaining('Sign in or create an account'), findsOneWidget);
 
     app.backend.accounts['bob@example.test'] = 'secret-pw';
-    await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+    await tester.tap(find.byKey(const Key('join-sign-in')));
     await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(const Key('account-email')),
@@ -141,6 +142,40 @@ void main() {
     await tester.tap(find.byKey(const Key('account-submit')));
     await tester.pumpAndSettle();
     expect(find.text('Join School?'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('signed out: join from the settings and create an account', (
+    tester,
+  ) async {
+    final app = await pump(tester, null, const SettingsScreen());
+    final link = (await _invite(app)).url;
+    await tester.tap(find.byKey(const Key('account-open-join')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('join-link')), link);
+    await tester.tap(find.byKey(const Key('join-continue')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('join-sign-up')));
+    await tester.pumpAndSettle();
+    for (final (key, value) in [
+      ('account-name', 'Bob'),
+      ('account-email', 'bob@example.test'),
+      ('account-password', 'long-enough'),
+      ('account-password-confirm', 'long-enough'),
+    ]) {
+      await tester.enterText(find.byKey(Key(key)), value);
+    }
+    await tester.tap(find.byKey(const Key('account-submit')));
+    await tester.pumpAndSettle();
+    expect(find.text('Join School?'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('join-button')));
+    await tester.pumpAndSettle();
+
+    expect(
+      app.backend.orgMembers.where((m) => m.user.email == 'bob@example.test'),
+      hasLength(1),
+    );
     await app.dispose(tester);
   });
 

@@ -6,6 +6,7 @@ import '../../settings/settings.dart';
 import '../../sync/auth_providers.dart';
 import '../widgets/dialogs.dart';
 import '../bands/bands_screen.dart';
+import '../bands/join_screen.dart';
 import 'sign_in_screen.dart';
 import 'sync_tile.dart';
 
@@ -21,20 +22,20 @@ class AccountSection extends ConsumerWidget {
 
     return Column(
       children: [
-        if (user == null)
+        if (user == null) ...[
           ListTile(
             leading: const Icon(Icons.account_circle_outlined),
             title: Text(l10n.accountSignedOut),
             subtitle: Text(l10n.accountSignedOutHint),
-            trailing: FilledButton(
-              key: const Key('account-open-sign-in'),
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<bool>(builder: (_) => const SignInScreen()),
-              ),
-              child: Text(l10n.accountSignIn),
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(72, 0, 16, 8),
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: SignedOutActions(),
             ),
-          )
-        else
+          ),
+        ] else
           ListTile(
             leading: const Icon(Icons.account_circle),
             title: Text(user.displayName),
@@ -104,6 +105,39 @@ class AccountSection extends ConsumerWidget {
     await ref
         .read(settingsProvider.notifier)
         .update((s) => s.copyWith(serverUrl: url));
+  }
+}
+
+/// What a signed-out user can do: sign in, or join an organization with an
+/// invitation link (creating an account on the way).
+class SignedOutActions extends StatelessWidget {
+  const SignedOutActions({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      alignment: WrapAlignment.center,
+      children: [
+        FilledButton(
+          key: const Key('account-open-sign-in'),
+          onPressed: () => Navigator.of(
+            context,
+          ).push(MaterialPageRoute<bool>(builder: (_) => const SignInScreen())),
+          child: Text(l10n.accountSignIn),
+        ),
+        OutlinedButton.icon(
+          key: const Key('account-open-join'),
+          icon: const Icon(Icons.link),
+          onPressed: () => Navigator.of(
+            context,
+          ).push(MaterialPageRoute<bool>(builder: (_) => const JoinScreen())),
+          label: Text(l10n.accountJoin),
+        ),
+      ],
+    );
   }
 }
 
