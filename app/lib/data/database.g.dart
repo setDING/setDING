@@ -5575,6 +5575,38 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SyncOutboxTable syncOutbox = $SyncOutboxTable(this);
   late final $SyncCursorsTable syncCursors = $SyncCursorsTable(this);
   late final $SongConflictsTable songConflicts = $SongConflictsTable(this);
+  late final Index orgMembershipsUser = Index(
+    'org_memberships_user',
+    'CREATE INDEX org_memberships_user ON org_memberships (user_id)',
+  );
+  late final Index membershipsBand = Index(
+    'memberships_band',
+    'CREATE INDEX memberships_band ON memberships (band_id)',
+  );
+  late final Index membershipsUser = Index(
+    'memberships_user',
+    'CREATE INDEX memberships_user ON memberships (user_id)',
+  );
+  late final Index songsLibrary = Index(
+    'songs_library',
+    'CREATE INDEX songs_library ON songs (library_id, deleted)',
+  );
+  late final Index attachmentsSong = Index(
+    'attachments_song',
+    'CREATE INDEX attachments_song ON attachments (song_id)',
+  );
+  late final Index setlistsBand = Index(
+    'setlists_band',
+    'CREATE INDEX setlists_band ON setlists (band_id, deleted)',
+  );
+  late final Index setItemsSet = Index(
+    'set_items_set',
+    'CREATE INDEX set_items_set ON set_items (set_id, position)',
+  );
+  late final Index setItemsSong = Index(
+    'set_items_song',
+    'CREATE INDEX set_items_song ON set_items (song_id)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5592,6 +5624,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     syncOutbox,
     syncCursors,
     songConflicts,
+    orgMembershipsUser,
+    membershipsBand,
+    membershipsUser,
+    songsLibrary,
+    attachmentsSong,
+    setlistsBand,
+    setItemsSet,
+    setItemsSong,
   ];
 }
 

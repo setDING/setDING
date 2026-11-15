@@ -27,6 +27,7 @@ class Organizations extends Table {
 
 /// Membership of a user in an organization, cached from the server
 /// (schema 4).
+@TableIndex(name: 'org_memberships_user', columns: {#userId})
 @DataClassName('OrgMembershipEntry')
 class OrgMemberships extends Table {
   TextColumn get id => text()();
@@ -65,6 +66,8 @@ class Bands extends Table {
 
 /// Membership of a user in a band, cached from the server so that roles
 /// and member names are available offline (schema 4).
+@TableIndex(name: 'memberships_band', columns: {#bandId})
+@TableIndex(name: 'memberships_user', columns: {#userId})
 @DataClassName('MembershipEntry')
 class Memberships extends Table {
   TextColumn get id => text()();
@@ -81,6 +84,7 @@ class Memberships extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+@TableIndex(name: 'songs_library', columns: {#libraryId, #deleted})
 @DataClassName('SongEntry')
 class Songs extends Table {
   TextColumn get id => text()();
@@ -114,6 +118,7 @@ class Songs extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+@TableIndex(name: 'attachments_song', columns: {#songId})
 @DataClassName('AttachmentEntry')
 class Attachments extends Table {
   TextColumn get id => text()();
@@ -136,6 +141,7 @@ class Attachments extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+@TableIndex(name: 'setlists_band', columns: {#bandId, #deleted})
 @DataClassName('SetlistEntry')
 class Setlists extends Table {
   TextColumn get id => text()();
@@ -154,6 +160,8 @@ class Setlists extends Table {
 /// Type of a set item.
 enum SetItemType { song, pause, text }
 
+@TableIndex(name: 'set_items_set', columns: {#setId, #position})
+@TableIndex(name: 'set_items_song', columns: {#songId})
 @DataClassName('SetItemEntry')
 class SetItems extends Table {
   TextColumn get id => text()();
@@ -264,7 +272,13 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
+
+  /// Indexes of the local database (schema 7).
+  List<Index> get localIndexes => [
+    for (final e in allSchemaEntities)
+      if (e is Index) e,
+  ];
 
   /// Called after an upgrade to fill new columns from the ChordPro source.
   Future<void> Function(AppDatabase db)? afterUpgrade;
@@ -309,6 +323,15 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 6) {
         await m.addColumn(attachments, attachments.remoteFile);
+      }
+      if (from < 7) {
+        // Indexes for the lists of songs, sets, items, attachments and
+        // members (schema 7). Rebuilding a table above may already have
+        // created some of them.
+        for (final index in localIndexes) {
+          await customStatement('DROP INDEX IF EXISTS ${index.entityName}');
+          await m.createIndex(index);
+        }
       }
     },
     beforeOpen: (details) async {

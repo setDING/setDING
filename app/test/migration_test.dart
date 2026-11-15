@@ -10,9 +10,38 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqlite3/sqlite3.dart';
 
+/// Indexes added in schema 7.
+const schema7Indexes = [
+  'org_memberships_user',
+  'memberships_band',
+  'memberships_user',
+  'songs_library',
+  'attachments_song',
+  'setlists_band',
+  'set_items_set',
+  'set_items_song',
+];
+
+/// Turns a current database back into schema 6 (no indexes).
+void downgradeToSchema6(Database raw) {
+  for (final index in schema7Indexes) {
+    raw.execute('DROP INDEX $index');
+  }
+}
+
+/// Names of the indexes in [raw] (without SQLite's own).
+Set<String> indexNames(Database raw) => {
+  for (final row in raw.select(
+    "SELECT name FROM sqlite_master WHERE type = 'index' "
+    "AND name NOT LIKE 'sqlite_%'",
+  ))
+    row['name'] as String,
+};
+
 /// Turns a current database back into schema 3 (before organizations):
 /// songs reference a band again, no organization or membership tables.
 void downgradeToSchema3(Database raw) {
+  downgradeToSchema6(raw);
   // Schema 6 and 5: attachment server file, sync tables.
   raw.execute('ALTER TABLE attachments DROP COLUMN remote_file');
   raw.execute('DROP TABLE sync_outbox');
@@ -142,4 +171,44 @@ void main() {
       await upgraded.close();
     },
   );
+
+  test('a new database has the indexes of schema 7', () async {
+    final db = AppDatabase(NativeDatabase(file));
+    await SongRepository(db, AttachmentStorage(dir)).getSong('x');
+    await db.close();
+    final raw = sqlite3.open(file.path);
+    expect(indexNames(raw), containsAll(schema7Indexes));
+    raw.close();
+  });
+
+  for (final from in [6, 3]) {
+    test('upgrades a schema $from database: lists get indexes', () async {
+      final current = AppDatabase(NativeDatabase(file));
+      final storage = AttachmentStorage(dir);
+      final songId = await SongRepository(
+        current,
+        storage,
+      ).createSong(source: '{title: Indexed}');
+      await current.close();
+
+      var raw = sqlite3.open(file.path);
+      if (from == 6) {
+        downgradeToSchema6(raw);
+      } else {
+        downgradeToSchema3(raw);
+      }
+      raw.execute('PRAGMA user_version = $from');
+      expect(indexNames(raw).intersection(schema7Indexes.toSet()), isEmpty);
+      raw.close();
+
+      final upgraded = AppDatabase(NativeDatabase(file));
+      final repo = SongRepository(upgraded, storage);
+      expect((await repo.watchSongs().first).map((s) => s.id), [songId]);
+      await upgraded.close();
+
+      raw = sqlite3.open(file.path);
+      expect(indexNames(raw), containsAll(schema7Indexes));
+      raw.close();
+    });
+  }
 }
