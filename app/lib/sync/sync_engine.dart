@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
@@ -15,6 +16,16 @@ import 'band_service.dart';
 import 'sync_backend.dart';
 
 const _uuid = Uuid();
+
+/// Metadata of ChordPro [sources]; larger batches (e.g. the first sync of a
+/// library) are parsed outside the UI isolate.
+Future<List<SongMeta>> songMetas(List<String> sources) => sources.length < 20
+    ? Future.value(_metas(sources))
+    : compute(_metas, sources);
+
+List<SongMeta> _metas(List<String> sources) => [
+  for (final s in sources) SongMeta.fromSource(s),
+];
 
 /// Result of one sync run.
 @immutable
@@ -143,20 +154,81 @@ class SyncEngine {
         ),
       );
 
-  Future<OutboxEntry?> _outbox(String collection, String id) =>
-      (db.select(db.syncOutbox)..where(
-            (o) => o.collection.equals(collection) & o.recordId.equals(id),
-          ))
-          .getSingleOrNull();
+  /// Rows for [ids], loaded in chunks (SQLite limits the variables of a
+  /// statement), by ID.
+  static Future<Map<String, T>> _byId<T>(
+    List<String> ids,
+    Future<List<T>> Function(List<String> chunk) load,
+    String Function(T) id,
+  ) async {
+    const chunkSize = 500;
+    final result = <String, T>{};
+    for (var i = 0; i < ids.length; i += chunkSize) {
+      final chunk = ids.sublist(i, math.min(i + chunkSize, ids.length));
+      for (final row in await load(chunk)) {
+        result[id(row)] = row;
+      }
+    }
+    return result;
+  }
+
+  /// Which of [ids] have a pending local change in [collection].
+  Future<Set<String>> _dirty(String collection, List<String> ids) async =>
+      (await _byId(
+        ids,
+        (chunk) =>
+            (db.select(db.syncOutbox)..where(
+                  (o) =>
+                      o.collection.equals(collection) & o.recordId.isIn(chunk),
+                ))
+                .get(),
+        (o) => o.recordId,
+      )).keys.toSet();
+
+  /// Which of [ids] are songs on this device (also deleted ones).
+  Future<Set<String>> _existingSongs(List<String> ids) async => (await _byId(
+    ids.toSet().toList(),
+    (chunk) =>
+        (db.selectOnly(db.songs)
+              ..addColumns([db.songs.id])
+              ..where(db.songs.id.isIn(chunk)))
+            .map((r) => r.read(db.songs.id)!)
+            .get(),
+    (id) => id,
+  )).keys.toSet();
 
   /// Returns (pulled, new conflicts).
   Future<(int, int)> _pullSongs(String orgId) async {
     final since = await _cursor(orgId, SyncCollection.songs);
     final remote = await backend.pullSongs(orgId, since);
+    if (remote.isEmpty) return (0, 0);
+    final metas = await songMetas([for (final s in remote) s.chordpro]);
     var conflicts = 0;
     await db.transaction(() async {
-      for (final song in remote) {
-        if (await _applySong(song)) conflicts++;
+      final ids = [for (final s in remote) s.id];
+      final locals = await _byId(
+        ids,
+        (chunk) => (db.select(db.songs)..where((s) => s.id.isIn(chunk))).get(),
+        (s) => s.id,
+      );
+      final dirty = await _dirty(SyncCollection.songs, ids);
+      final known = (await _byId(
+        ids,
+        (chunk) => (db.select(
+          db.songConflicts,
+        )..where((c) => c.songId.isIn(chunk))).get(),
+        (c) => c.songId,
+      )).keys.toSet();
+      for (final (i, song) in remote.indexed) {
+        if (await _applySong(
+          song,
+          metas[i],
+          local: locals[song.id],
+          dirty: dirty.contains(song.id),
+          knownConflict: known.contains(song.id),
+        )) {
+          conflicts++;
+        }
       }
       if (remote.isNotEmpty) {
         await _setCursor(orgId, SyncCollection.songs, remote.last.revision);
@@ -165,18 +237,18 @@ class SyncEngine {
     return (remote.length, conflicts);
   }
 
-  /// Applies a server song; returns true if it became a new conflict.
-  Future<bool> _applySong(RemoteSong remote) async {
-    final local = await (db.select(
-      db.songs,
-    )..where((s) => s.id.equals(remote.id))).getSingleOrNull();
+  /// Applies a server song ([local], [dirty] and [knownConflict] describe
+  /// this device's state); returns true if it became a new conflict.
+  Future<bool> _applySong(
+    RemoteSong remote,
+    SongMeta meta, {
+    required SongEntry? local,
+    required bool dirty,
+    required bool knownConflict,
+  }) async {
     if (local != null && remote.revision <= local.revision) return false;
-    final dirty = await _outbox(SyncCollection.songs, remote.id);
-    if (local != null && dirty != null) {
+    if (local != null && dirty) {
       // Changed here and on the server: never overwrite silently.
-      final existing = await (db.select(
-        db.songConflicts,
-      )..where((c) => c.songId.equals(remote.id))).getSingleOrNull();
       await db
           .into(db.songConflicts)
           .insertOnConflictUpdate(
@@ -189,15 +261,16 @@ class SyncEngine {
               detectedAt: DateTime.now(),
             ),
           );
-      return existing == null;
+      return !knownConflict;
     }
-    await writeSong(remote);
+    await writeSong(remote, meta: meta);
     return false;
   }
 
-  /// Stores the server state of a song locally (no outbox entry).
-  Future<void> writeSong(RemoteSong remote) async {
-    final meta = SongMeta.fromSource(remote.chordpro);
+  /// Stores the server state of a song locally (no outbox entry); [meta]
+  /// is extracted from its source unless given.
+  Future<void> writeSong(RemoteSong remote, {SongMeta? meta}) async {
+    meta ??= SongMeta.fromSource(remote.chordpro);
     await db
         .into(db.songs)
         .insertOnConflictUpdate(
@@ -227,10 +300,25 @@ class SyncEngine {
   Future<int> _pullAttachments(String orgId) async {
     final since = await _cursor(orgId, SyncCollection.attachments);
     final remote = await backend.pullAttachments(orgId, since);
+    if (remote.isEmpty) return 0;
     final removedFiles = <String>[];
     await db.transaction(() async {
+      final ids = [for (final a in remote) a.id];
+      final locals = await _byId(
+        ids,
+        (chunk) =>
+            (db.select(db.attachments)..where((a) => a.id.isIn(chunk))).get(),
+        (a) => a.id,
+      );
+      final dirty = await _dirty(SyncCollection.attachments, ids);
+      final songs = await _existingSongs([for (final a in remote) a.songId]);
       for (final a in remote) {
-        final file = await _applyAttachment(a);
+        final file = await _applyAttachment(
+          a,
+          local: locals[a.id],
+          dirty: dirty.contains(a.id),
+          songExists: songs.contains(a.songId),
+        );
         if (file != null) removedFiles.add(file);
       }
       if (remote.isNotEmpty) {
@@ -248,20 +336,16 @@ class SyncEngine {
   }
 
   /// Applies server metadata; returns a local file to delete, if any.
-  Future<String?> _applyAttachment(RemoteAttachment remote) async {
-    final local = await (db.select(
-      db.attachments,
-    )..where((a) => a.id.equals(remote.id))).getSingleOrNull();
+  Future<String?> _applyAttachment(
+    RemoteAttachment remote, {
+    required AttachmentEntry? local,
+    required bool dirty,
+    required bool songExists,
+  }) async {
     if (local != null && remote.revision <= local.revision) return null;
     // A pending local change (rename, delete) wins and is pushed.
-    if (local != null &&
-        await _outbox(SyncCollection.attachments, remote.id) != null) {
-      return null;
-    }
-    final song = await (db.select(
-      db.songs,
-    )..where((s) => s.id.equals(remote.songId))).getSingleOrNull();
-    if (song == null) return null; // the song is gone
+    if (local != null && dirty) return null;
+    if (!songExists) return null; // the song is gone
     final fileName = local?.fileName ?? '${remote.id}.pdf';
     await db
         .into(db.attachments)
@@ -328,9 +412,28 @@ class SyncEngine {
   Future<int> _pullSets(BandView band) async {
     final since = await _cursor(band.id, SyncCollection.setlists);
     final remote = await backend.pullSets(band.id, since);
+    if (remote.isEmpty) return 0;
     await db.transaction(() async {
+      final ids = [for (final s in remote) s.id];
+      final locals = await _byId(
+        ids,
+        (chunk) =>
+            (db.select(db.setlists)..where((s) => s.id.isIn(chunk))).get(),
+        (s) => s.id,
+      );
+      final dirty = await _dirty(SyncCollection.setlists, ids);
+      final songs = await _existingSongs([
+        for (final s in remote)
+          for (final item in s.items)
+            if (item['song'] case final String id) id,
+      ]);
       for (final set in remote) {
-        await _applySet(set);
+        await _applySet(
+          set,
+          local: locals[set.id],
+          dirty: dirty.contains(set.id),
+          songExists: songs.contains,
+        );
       }
       if (remote.isNotEmpty) {
         await _setCursor(
@@ -343,16 +446,15 @@ class SyncEngine {
     return remote.length;
   }
 
-  Future<void> _applySet(RemoteSet remote) async {
-    final local = await (db.select(
-      db.setlists,
-    )..where((s) => s.id.equals(remote.id))).getSingleOrNull();
+  Future<void> _applySet(
+    RemoteSet remote, {
+    required SetlistEntry? local,
+    required bool dirty,
+    required bool Function(String songId) songExists,
+  }) async {
     if (local != null && remote.revision <= local.revision) return;
     // Last writer wins: a pending local change is pushed afterwards.
-    if (local != null &&
-        await _outbox(SyncCollection.setlists, remote.id) != null) {
-      return;
-    }
+    if (local != null && dirty) return;
     await db
         .into(db.setlists)
         .insertOnConflictUpdate(
@@ -377,11 +479,7 @@ class SyncEngine {
         orElse: () => SetItemType.text,
       );
       var songId = item['song'] as String?;
-      if (songId != null &&
-          await (db.select(
-                db.songs,
-              )..where((s) => s.id.equals(songId!))).getSingleOrNull() ==
-              null) {
+      if (songId != null && !songExists(songId)) {
         songId = null; // not (yet) available: shown as "song missing"
       }
       await db

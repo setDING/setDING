@@ -541,6 +541,37 @@ void main() {
     });
   });
 
+  test('pulls a large library with sets and a conflict in one run', () async {
+    // The first sync of a library: many songs (parsed outside the UI
+    // isolate), sets referring to them, one song changed on both sides.
+    final local = await songs.createSong(source: '{title: Mine}');
+    await engine.sync();
+    await songs.updateSource(local, '{title: Mine, changed here}');
+    server.putSong(remoteSong(local, '{title: Mine, changed there}'));
+    for (var i = 0; i < 60; i++) {
+      server.putSong(remoteSong('s$i', '{title: Song $i}\n{key: A}'));
+    }
+    server.putSet(
+      const RemoteSet(
+        id: 'set1',
+        bandId: 'b1',
+        name: 'Gig',
+        items: [
+          {'id': 'i1', 'type': 'song', 'song': 's7'},
+          {'id': 'i2', 'type': 'song', 'song': 'unknown'},
+        ],
+      ),
+    );
+
+    final report = await engine.sync();
+    expect(report.conflicts, 1);
+    expect((await songs.getSong('s59'))!.title, 'Song 59');
+    expect((await songs.getSong('s59'))!.songKey, 'A');
+    expect((await songs.getSong(local))!.title, 'Mine, changed here');
+    final items = await sets.getItems('set1');
+    expect(items.map((v) => v.song?.id), ['s7', null]);
+  });
+
   group('atomic writes', () {
     Future<void> failOutbox(String event) => db.customStatement(
       'CREATE TRIGGER fail_outbox BEFORE $event ON sync_outbox '
