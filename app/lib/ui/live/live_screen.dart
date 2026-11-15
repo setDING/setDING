@@ -673,19 +673,66 @@ class _ChordProPage extends ConsumerWidget {
                   constraints.maxHeight,
                 );
                 final scale = overlay.fontScale;
+                final textScaler = MediaQuery.textScalerOf(context);
+                final baseStyle = DefaultTextStyle.of(context).style;
+                // By content: the list is loaded anew after the page was
+                // disposed.
+                final attachmentsKey = [
+                  for (final a in attachments)
+                    '${a.id}/${a.name}/${a.fileName}',
+                ].join('\n');
+                final locale = Localizations.localeOf(context);
                 if (!settings.autoFit) {
+                  final columns = settings.columns == ColumnMode.auto
+                      ? 1
+                      : settings.maxColumns;
+                  final collapse = settings.chorusRepeat == ChorusRepeat.label;
+                  // Several columns are measured to split the song; the
+                  // measurement does not depend on the font size.
+                  final layout = columns <= 1
+                      ? null
+                      : _layouts.get(
+                          (
+                            parsed,
+                            formatter.transpose,
+                            formatter.capo,
+                            formatter.notation,
+                            formatter.nashville,
+                            lyricsOnly,
+                            overlay.notes,
+                            collapse,
+                            diagrams,
+                            settings.instrument,
+                            textScaler,
+                            baseStyle,
+                            attachmentsKey,
+                            locale,
+                          ),
+                          () => layoutSong(
+                            parsed,
+                            formatter: formatter,
+                            lyricsOnly: lyricsOnly,
+                            labeler: sectionLabeler(l10n),
+                            notes: overlay.notes,
+                            collapseRecalls: collapse,
+                            diagramResolver: resolver,
+                            diagramsPosition: diagrams,
+                            textScaler: textScaler,
+                            baseStyle: baseStyle,
+                            imageLookup: imageLookup,
+                          ),
+                        );
                   return _scrolling(
                     size,
                     _options(
                       formatter,
                       lyricsOnly,
                       settings.fontSize * scale,
-                      settings.columns == ColumnMode.auto
-                          ? 1
-                          : settings.maxColumns,
-                      settings.chorusRepeat == ChorusRepeat.label,
+                      columns,
+                      collapse,
                       resolver,
                       diagrams,
+                      layout: layout,
                     ),
                   );
                 }
@@ -694,8 +741,6 @@ class _ChordProPage extends ConsumerWidget {
                         parsed.columns != null
                     ? parsed.columns!.clamp(1, 4)
                     : null;
-                final textScaler = MediaQuery.textScalerOf(context);
-                final baseStyle = DefaultTextStyle.of(context).style;
                 // Rebuilds (page changes, overlay events) reuse the fit:
                 // fitting measures every line of the song.
                 final fit = _fits.get(
@@ -716,13 +761,8 @@ class _ChordProPage extends ConsumerWidget {
                     size,
                     textScaler,
                     baseStyle,
-                    // By content: the list is loaded anew after the page
-                    // was disposed.
-                    [
-                      for (final a in attachments)
-                        '${a.id}/${a.name}/${a.fileName}',
-                    ].join('\n'),
-                    Localizations.localeOf(context),
+                    attachmentsKey,
+                    locale,
                   ),
                   () => fitSong(
                     parsed,
@@ -811,6 +851,9 @@ class _ChordProPage extends ConsumerWidget {
 
 /// Results of [fitSong] for the songs of live mode.
 final _fits = LruCache<Object, SongFit>(16);
+
+/// Measured songs for scrolling with several columns.
+final _layouts = LruCache<Object, SongLayout>(16);
 
 /// Horizontal page margin of a song in live mode.
 const _margin = 20.0;

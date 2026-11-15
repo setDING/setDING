@@ -432,6 +432,48 @@ double _labelWidth(
   return widest;
 }
 
+/// The blocks of [song] with their measurements, as [SongBody] would build
+/// and measure them for the same options (to cache them, see
+/// `SongRenderOptions.layout`).
+SongLayout layoutSong(
+  Song song, {
+  required ChordFormatter formatter,
+  required bool lyricsOnly,
+  required SectionLabeler labeler,
+  String? notes,
+  bool collapseRecalls = false,
+  DiagramResolver? diagramResolver,
+  DiagramsPosition diagramsPosition = DiagramsPosition.off,
+  required TextScaler textScaler,
+  TextStyle? baseStyle,
+  ImageLookup? imageLookup,
+}) {
+  final blocks = buildSongBlocks(
+    song,
+    lyricsOnly: lyricsOnly,
+    labeler: labeler,
+    notes: notes,
+    collapseRecalls: collapseRecalls,
+    diagrams:
+        diagramsPosition == DiagramsPosition.off || diagramResolver == null
+        ? const []
+        : diagramResolver.allChords(),
+    diagramsOnTop: diagramsPosition == DiagramsPosition.top,
+  );
+  return (
+    blocks: blocks,
+    metrics: measureBlocks(
+      blocks,
+      formatter: formatter,
+      lyricsOnly: lyricsOnly,
+      textScaler: textScaler,
+      baseStyle: baseStyle,
+      diagramResolver: diagramResolver,
+      imageLookup: imageLookup,
+    ),
+  );
+}
+
 /// Result of [fitSong].
 class SongFit {
   const SongFit({

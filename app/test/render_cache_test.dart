@@ -66,4 +66,30 @@ void main() {
     expect(debugMeasureBlocksCalls, second);
     await app.dispose(tester);
   });
+
+  testWidgets('scrolling with two columns measures a song once', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'autoFit': false, 'columns': 'two'},
+    );
+    final items = (await tester.runAsync(() async {
+      final id = await app.songs.createSong(source: demoSongSource);
+      return [LiveItem.song((await app.songs.getSong(id))!)];
+    }))!;
+    final before = debugMeasureBlocksCalls;
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+    final measured = debugMeasureBlocksCalls;
+    expect(measured, before + 1);
+
+    final center = tester.getCenter(find.byType(PageView));
+    await tester.tapAt(center);
+    await tester.pumpAndSettle();
+    await tester.tapAt(center);
+    await tester.pumpAndSettle();
+    expect(debugMeasureBlocksCalls, measured);
+    await app.dispose(tester);
+  });
 }
