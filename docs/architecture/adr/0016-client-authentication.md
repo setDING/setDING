@@ -77,6 +77,7 @@ restarts and is a credential, so it must not be stored in plain text.
 
 - 2026-11-15: Proposed with the implementation of issue #14.
 - 2026-11-15: Accepted by the owner.
+- 2026-11-15: Session on web (ADR-0018, accepted): kept for the tab only by default, "Stay signed in" unchecked; signing out deletes the local data of that browser; the server URL defaults to the page's origin.
 
 ## Open points
 

@@ -54,6 +54,7 @@ A user can be a member of several organizations and bands; roles are defined per
 | Organizations | Bands belong to an **organization** that owns the shared song library; organization admins manage people and bands; created automatically for a single band | [ADR-0017](adr/0017-organizations.md) |
 | Server data model | PocketBase collections as migrations, server-wide revision counter, set items as JSON, access rules per role, tested against a real PocketBase | [ADR-0015](adr/0015-server-data-model.md) |
 | Printable set list | PDF generated in the client with the `pdf` package, embedded font, saved via the save dialog; no print plugin yet | [ADR-0013](adr/0013-printable-set-list.md) |
+| Web client | **Flutter web build of the same app** for management without installation, served by PocketBase (`pb_public`) at `app.realchord.app`, same sync engine, no offline guarantee in the browser | [ADR-0018](adr/0018-web-client.md) |
 
 ## 4. Building block view
 
@@ -179,8 +180,8 @@ Notes:
 |---|---|
 | **MVP** ✅ | ChordPro parser & renderer (notation B/H, Nashville), local song library, PDF attachments, creating sets, live mode with pedal, import/export, German/English UI – initially **without** a backend (single device) |
 | **Phase 1** | Backend, login, bands & roles (several admins, several bands per user), sync of songs, sets and PDF files incl. conflict handling |
-| **Phase 2** | Synced personal overlays |
-| **Later** | Freehand annotations (stylus), metronome/count-in, MIDI control, web client for management |
+| **Phase 2** | Web client for management (ADR-0018, #27), synced personal overlays |
+| **Later** | Freehand annotations (stylus), metronome/count-in, MIDI control |
 
 ### MVP status (2026-11-14)
 
@@ -250,6 +251,7 @@ See "Open points" in the individual ADRs. The most important:
 13. ~~May agents merge their own PRs?~~ → Yes, from the start, but only when all tests pass (test gate, ADR-0010). Host: self-hosted Forgejo, `github.com/tafli/RealChord`. Agents use `fj` with an access token; CI runs the test gate in Forgejo Actions. Open: build jobs, branch protection
 14. ~~SongSelect import?~~ → No API integration, manual ChordPro import (ADR-0011, accepted). Open: test with a real SongSelect file, show copyright/CCLI number?
 15. ~~Printable set list?~~ → PDF in the client with the `pdf` package and embedded Noto Sans (ADR-0013, accepted). Open: Letter paper, export options, native print dialog
+16. Web client for management without an installed app? → Flutter web build of the same app at `app.realchord.app`, served by the same PocketBase; local library hidden, live mode with a "not offline-safe" notice, session for the tab only by default (ADR-0018, accepted, #27). Open: tunnel hostname and DNS (owner)
 
 ## 10. ADR index
 
@@ -272,5 +274,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0015](adr/0015-server-data-model.md) | Server data model and access rules | Accepted |
 | [0016](adr/0016-client-authentication.md) | Client authentication and session storage | Accepted |
 | [0017](adr/0017-organizations.md) | Organizations with a shared song library | Accepted |
+| [0018](adr/0018-web-client.md) | Web client for management | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.

@@ -75,6 +75,7 @@ server details (OS, Docker, domain/HTTPS) and the backup concept. They are now k
   provisioning from the repository via `make`.
 - 2026-11-15: Accepted by the owner.
 - 2026-11-15: Production instance installed: Proxmox CT 600, public hostname `api.realchord.app`.
+- 2026-11-15: The web client (ADR-0018, accepted) is served by the same PocketBase from `pb_public`, deployed with the server targets and published as a second tunnel hostname `app.realchord.app` (tunnel and DNS entry by the owner).
 
 ## Open points
 
