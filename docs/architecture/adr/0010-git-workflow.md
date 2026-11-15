@@ -16,7 +16,7 @@ leaving the few decisions that must stay with a human clearly marked.
 We use **trunk-based development with short-lived branches and pull requests**, as
 described in detail in [`docs/development/git-workflow.md`](../../development/git-workflow.md):
 
-- Backlog as GitHub issues with labels for agents (`agent:ready`, `agent:in-progress`, `needs-human`).
+- Backlog as issues in the self-hosted Forgejo repository, with labels for agents (`agent:ready`, `agent:in-progress`, `needs-human`).
 - One issue = one branch (`<type>/<issue>-<slug>`) = one PR; no direct commits to `main`.
 - Conventional Commits, English, `Co-Authored-By` trailer for agents.
 - Local checks + self-review before a PR is marked ready; required CI checks.
@@ -41,15 +41,18 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 
 ## Consequences
 
-- CI and branch protection are essential and are set up together with the Flutter project (`tool/check.sh`, GitHub Actions).
+- CI and branch protection are essential and are set up together with the Flutter project (`tool/check.sh`, Forgejo Actions with a Forgejo runner).
 - Quality depends on automated tests and the self-review, so test coverage of the core packages (`chordpro`, `sync`) must be high.
 - The issue tracker becomes the agents' work queue; issues must have clear acceptance criteria.
-- A remote repository (GitHub) is required for the full workflow; until then the local variant applies.
+- The full workflow needs the Forgejo remote plus an access token for agents (`tea` CLI); until the token exists, agents push branches and squash-merge locally after the test gate (workflow section 11).
 
 ## Decision log
 
 - 2026-11-14: Workflow accepted. Agents may merge their own PRs from the start, under the condition that all tests always pass before a merge (test gate).
+- 2026-11-15: Repository host decided: self-hosted **Forgejo** at `github.com`, repository `andi/RealChord` (instead of the assumed GitHub). Issues, PRs and labels live there; agents use the `tea` CLI; CI becomes Forgejo Actions. Until agents have an access token, they push their branches and squash-merge locally after the test gate.
 
 ## Open points
 
-- Repository host (GitHub assumed). The repository name follows the app name RealChord (`realchord`), decided 2026-11-15.
+- Access token for agents (`tea` login): who creates it, which account (personal or a separate bot user)?
+- Forgejo Actions: is a runner available, and which platforms can it build (Linux at least; Android needs the SDK, iOS needs macOS, Windows needs a Windows runner)?
+- Branch protection on `main` is enabled once agents can merge through the API.

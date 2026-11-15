@@ -19,8 +19,9 @@ cases where a human must decide.
 
 ## 2. Work items (issues)
 
-The backlog is kept as GitHub issues. An agent always works on an issue; if none
-exists for the task, it creates one first.
+The backlog is kept as issues in the project's **Forgejo** repository
+(`github.com/tafli/RealChord`, see section 12). An agent always works on an issue;
+if none exists for the task, it creates one first.
 
 | Label | Meaning |
 |---|---|
@@ -85,7 +86,7 @@ An agent runs all of the following and only continues when everything passes:
 
 - Opened as soon as the branch is pushed. As a **draft** while work is in progress, marked **ready** when section 5 is complete.
 - Title = the future squash commit message (Conventional Commit format).
-- Body follows [`.github/pull_request_template.md`](../../.github/pull_request_template.md): summary, linked issue (`Closes #n`), affected ADRs, how it was tested, open points.
+- Body follows [`.github/pull_request_template.md`](../../.github/pull_request_template.md) (Forgejo reads PR templates from `.github/` as well as `.forgejo/`): summary, linked issue (`Closes #n`), affected ADRs, how it was tested, open points.
 - Size: aim for **under ~400 changed lines** (generated files excluded). Larger work is split into several PRs, each leaving `main` working.
 - **Merge method: squash merge** only. The branch is deleted after the merge.
 - **CI must be green** before merging (see section 7).
@@ -99,8 +100,9 @@ merge, by agents and humans alike:
   `main`** – not on an earlier state. If `main` moves on before the merge, rebase and
   run the tests again.
 - With CI: the required `test` check (and all other required checks) is green.
-  Without CI (before a remote exists): the agent runs the full suite locally
-  immediately before the merge and reports the result in the merge commit body or PR.
+  Without CI (no Forgejo Actions runner yet, section 12): the agent runs the full
+  suite locally immediately before the merge and reports the result in the PR and the
+  merge commit body.
 - **New or changed behaviour comes with tests.** A PR that changes code without
   corresponding tests is not ready (pure docs/config changes excepted).
 - **Tests are never weakened to get green:** no skipping, deleting, disabling or
@@ -125,8 +127,8 @@ to be decided.
 
 ## 7. Continuous integration
 
-CI runs on every PR and on every push to `main` (set up together with the Flutter
-project). Required checks:
+CI runs as **Forgejo Actions** (workflows in `.forgejo/workflows/`, executed by a
+Forgejo runner) on every PR and on every push to `main`. Required checks:
 
 | Check | Content |
 |---|---|
@@ -179,14 +181,38 @@ Agents may create **proposals** for all of these (an ADR, a draft PR), just not 
 - The tag triggers the CI release build (artifacts for Android, iOS, Windows). **Publishing to the stores requires human approval** (protected CI environment).
 - Hotfixes follow the normal flow (`fix/…` branch, `priority:high`), then a patch release.
 
-## 11. Before a remote exists
+## 11. Until agents have API access
 
-As long as the repository has no remote, the same rules apply locally:
+Agents create issues and PRs and merge through the Forgejo API (section 12), which
+needs an access token. As long as no token is set up for agents:
 
-- Work on a branch named as in section 3, commit as in section 4.
+- Work on a branch named as in section 3, commit as in section 4, and **push the
+  branch** (`git push -u origin <branch>`).
 - Run the checks from section 5.
-- Rebase on `main` and run the **full test suite** right before merging (test gate, section 6). Only merge if it passes.
-- Merge into `main` with `git merge --squash <branch>` and a Conventional Commit message, then delete the branch.
+- Rebase on `origin/main` and run the **full test suite** right before merging (test
+  gate, section 6). Only merge if it passes.
+- Merge with `git merge --squash <branch>` and a Conventional Commit message that
+  reports the test result, push `main`, then delete the branch locally and on the
+  remote (`git push origin --delete <branch>`).
+- Issues that would be created are listed in the handover instead; the human creates
+  them or sets up the token.
+
+## 12. Forgejo
+
+- **Host:** self-hosted Forgejo, repository `github.com/tafli/RealChord`, remote
+  `origin` over SSH (`git@github.com:tafli/RealChord.git`).
+- **CLI:** [`tea`](https://gitea.com/gitea/tea) (works with Forgejo) for issues, labels,
+  PRs and merges. Login once per machine:
+  `tea login add --name realchord --url https://github.com --token <token>`.
+  The token is a personal access token with read/write scope for *repository* and
+  *issue*; it is stored by `tea`, never in the repository (section 4).
+- **Closing keywords:** `Closes #n` in the PR body closes the issue on merge, as on
+  GitHub.
+- **Labels:** the labels of section 2 are created once in the repository settings.
+- **Merge settings:** in the repository settings only *squash* is enabled, and
+  "delete branch after merge" is the default.
+- **Branch protection on `main`** (repository settings → Branches): no direct push,
+  PR required, required status checks from section 7 once a runner exists.
 
 ## Quick reference
 
@@ -197,8 +223,8 @@ git switch -c feat/12-chordpro-parser origin/main
 git fetch origin && git rebase origin/main
 tool/check.sh
 git push -u origin feat/12-chordpro-parser
-gh pr create --draft --fill
-# … checks pass, self-review done …
-gh pr ready
-gh pr merge --squash --delete-branch   # only if section 6 "Who merges" allows it
+tea pr create --title "feat(chordpro): …" --description "…"   # "WIP: " title prefix = draft
+# … checks pass, self-review done, "WIP: " prefix removed (tea pr edit / web UI) …
+tea pr merge --style squash <index>   # only if section 6 "Who merges" allows it
+git push origin --delete feat/12-chordpro-parser
 ```

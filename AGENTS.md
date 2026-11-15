@@ -45,6 +45,7 @@ Every change follows [`docs/development/git-workflow.md`](docs/development/git-w
 - **Test gate: all tests must pass before every merge**, run on the final branch state rebased on `main`. Never skip, delete or weaken tests to get green. New or changed behaviour comes with tests.
 - Squash merge only. An agent may merge its own PR when the test gate is satisfied, CI is green and no "human must decide" rule applies; otherwise label `needs-human`.
 - Never end a session with unpushed work: commit, push, and leave a handover comment on the PR.
+- Remote: self-hosted **Forgejo** (`github.com/tafli/RealChord`), CLI `tea`. Until agents have an access token, push the branch and squash-merge locally after the test gate (workflow section 11).
 
 ## ChordPro features
 
