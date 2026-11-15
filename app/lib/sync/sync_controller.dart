@@ -188,12 +188,10 @@ final conflictsProvider = StreamProvider<List<SongConflict>>(
 );
 
 /// The conflict of one song, or null.
-final songConflictProvider = StreamProvider.family<SongConflict?, String>((
-  ref,
-  songId,
-) {
-  final db = ref.watch(databaseProvider);
-  return (db.select(
-    db.songConflicts,
-  )..where((c) => c.songId.equals(songId))).watchSingleOrNull();
-});
+final songConflictProvider = StreamProvider.autoDispose
+    .family<SongConflict?, String>((ref, songId) {
+      final db = ref.watch(databaseProvider);
+      return (db.select(
+        db.songConflicts,
+      )..where((c) => c.songId.equals(songId))).watchSingleOrNull();
+    });

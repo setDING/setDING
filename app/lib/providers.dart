@@ -76,14 +76,14 @@ final organizationsProvider = StreamProvider<List<OrganizationView>>(
 );
 
 /// People of an organization, admins first.
-final orgMembersProvider =
-    StreamProvider.family<List<OrgMembershipEntry>, String>(
+final orgMembersProvider = StreamProvider.autoDispose
+    .family<List<OrgMembershipEntry>, String>(
       (ref, orgId) => ref.watch(bandServiceProvider).watchOrgMembers(orgId),
     );
 
 /// Members of a band, admins first.
-final bandMembersProvider =
-    StreamProvider.family<List<MembershipEntry>, String>(
+final bandMembersProvider = StreamProvider.autoDispose
+    .family<List<MembershipEntry>, String>(
       (ref, bandId) => ref.watch(bandServiceProvider).watchMembers(bandId),
     );
 
@@ -113,8 +113,8 @@ final importExportProvider = Provider<ImportExportService>(
 );
 
 /// Songs filtered by search text and optional tag.
-final songsProvider =
-    StreamProvider.family<List<SongEntry>, ({String query, String? tag})>(
+final songsProvider = StreamProvider.autoDispose
+    .family<List<SongEntry>, ({String query, String? tag})>(
       (ref, filter) => ref
           .watch(songRepositoryProvider)
           .watchSongs(query: filter.query, tag: filter.tag),
@@ -125,12 +125,12 @@ final tagsProvider = StreamProvider<List<String>>(
   (ref) => ref.watch(songRepositoryProvider).watchTags(),
 );
 
-final songProvider = StreamProvider.family<SongEntry?, String>(
+final songProvider = StreamProvider.autoDispose.family<SongEntry?, String>(
   (ref, id) => ref.watch(songRepositoryProvider).watchSong(id),
 );
 
-final attachmentsProvider =
-    StreamProvider.family<List<AttachmentEntry>, String>(
+final attachmentsProvider = StreamProvider.autoDispose
+    .family<List<AttachmentEntry>, String>(
       (ref, songId) =>
           ref.watch(songRepositoryProvider).watchAttachments(songId),
     );
@@ -139,7 +139,7 @@ final attachmentCountsProvider = StreamProvider<Map<String, int>>(
   (ref) => ref.watch(songRepositoryProvider).watchAttachmentCounts(),
 );
 
-final overlayProvider = StreamProvider.family<SongOverlay, String>(
+final overlayProvider = StreamProvider.autoDispose.family<SongOverlay, String>(
   (ref, songId) => ref.watch(songRepositoryProvider).watchOverlay(songId),
 );
 
@@ -147,16 +147,17 @@ final setsProvider = StreamProvider<List<SetSummary>>(
   (ref) => ref.watch(setRepositoryProvider).watchSets(),
 );
 
-final setProvider = StreamProvider.family<SetlistEntry?, String>(
+final setProvider = StreamProvider.autoDispose.family<SetlistEntry?, String>(
   (ref, id) => ref.watch(setRepositoryProvider).watchSet(id),
 );
 
-final setItemsProvider = StreamProvider.family<List<SetItemView>, String>(
-  (ref, setId) => ref.watch(setRepositoryProvider).watchItems(setId),
-);
+final setItemsProvider = StreamProvider.autoDispose
+    .family<List<SetItemView>, String>(
+      (ref, setId) => ref.watch(setRepositoryProvider).watchItems(setId),
+    );
 
 /// Re-evaluated whenever the set's items or the attachments change.
-final offlineReadyProvider = FutureProvider.family<bool, String>((
+final offlineReadyProvider = FutureProvider.autoDispose.family<bool, String>((
   ref,
   setId,
 ) async {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,6 +14,10 @@ import 'import_dialog.dart';
 import 'song_editor_screen.dart';
 import 'song_screen.dart';
 
+/// Delay before a changed search text is applied, so that typing does not
+/// start a database query per keystroke.
+const songSearchDelay = Duration(milliseconds: 250);
+
 /// Song library with search, creation and import.
 class SongsScreen extends ConsumerStatefulWidget {
   const SongsScreen({super.key});
@@ -23,6 +29,14 @@ class SongsScreen extends ConsumerStatefulWidget {
 class _SongsScreenState extends ConsumerState<SongsScreen> {
   final _search = TextEditingController();
   String _query = '';
+  Timer? _searchDebounce;
+
+  void _onSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(songSearchDelay, () {
+      if (mounted) setState(() => _query = value);
+    });
+  }
 
   /// Selected tag filter, or null for all songs.
   String? _tag;
@@ -38,6 +52,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _search.dispose();
     super.dispose();
   }
@@ -95,16 +110,17 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
               hintText: l10n.searchSongs,
               leading: const Icon(Icons.search),
               trailing: [
-                if (_query.isNotEmpty)
+                if (_search.text.isNotEmpty)
                   IconButton(
                     icon: const Icon(Icons.clear),
                     onPressed: () {
+                      _searchDebounce?.cancel();
                       _search.clear();
                       setState(() => _query = '');
                     },
                   ),
               ],
-              onChanged: (value) => setState(() => _query = value),
+              onChanged: _onSearchChanged,
             ),
           ),
         ),

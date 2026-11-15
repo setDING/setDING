@@ -17,6 +17,7 @@ import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -58,16 +59,19 @@ class TestApp {
     );
   }
 
+  /// Provider overrides of the test app (also for a [ProviderContainer]).
+  List<Override> get overrides => [
+    sharedPreferencesProvider.overrideWithValue(prefs),
+    databaseProvider.overrideWithValue(db),
+    attachmentStorageProvider.overrideWithValue(storage),
+    sessionStoreProvider.overrideWithValue(MemorySessionStore()),
+    syncBackendProvider.overrideWithValue(backend),
+    incomingLinksProvider.overrideWithValue(links.stream),
+    autoSyncProvider.overrideWithValue(false),
+  ];
+
   Widget build({Widget? home}) => ProviderScope(
-    overrides: [
-      sharedPreferencesProvider.overrideWithValue(prefs),
-      databaseProvider.overrideWithValue(db),
-      attachmentStorageProvider.overrideWithValue(storage),
-      sessionStoreProvider.overrideWithValue(MemorySessionStore()),
-      syncBackendProvider.overrideWithValue(backend),
-      incomingLinksProvider.overrideWithValue(links.stream),
-      autoSyncProvider.overrideWithValue(false),
-    ],
+    overrides: overrides,
     child: RealChordApp(home: home),
   );
 
