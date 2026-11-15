@@ -224,6 +224,42 @@ void main() {
     });
     tearDown(() => dir.deleteSync(recursive: true));
 
+    test('a copied attachment gets its own server file', () async {
+      final org = SongRepository(db, storage, libraryId: 'o1');
+      final id = await org.createSong(source: '{title: Synced}');
+      final a = await org.addAttachment(
+        id,
+        name: 'Score',
+        bytes: Uint8List.fromList([4, 5]),
+      );
+      // As after a sync: the original's file is on the server.
+      await (db.update(db.attachments)..where((x) => x.id.equals(a))).write(
+        const AttachmentsCompanion(remoteFile: Value('score_abc.pdf')),
+      );
+      // A second attachment whose file is not downloaded yet.
+      final missing = await org.addAttachment(
+        id,
+        name: 'Missing',
+        bytes: Uint8List.fromList([6]),
+      );
+      final missingFile = (await org.getAttachments(id))
+          .firstWhere((x) => x.id == missing)
+          .fileName;
+      await storage.delete(missingFile);
+
+      final copies = await BandCopyService(db, storage).copySongs([id], 'o2');
+      final copied = await SongRepository(
+        db,
+        storage,
+        libraryId: 'o2',
+      ).getAttachments(copies.single);
+      expect(copied.map((x) => x.remoteFile), [null, null]);
+      final score = copied.firstWhere((x) => x.name == 'Score');
+      expect(await storage.file(score.fileName).readAsBytes(), [4, 5]);
+      final notThere = copied.firstWhere((x) => x.name == 'Missing');
+      expect(await storage.exists(notThere.fileName), isFalse);
+    });
+
     test(
       'copies songs with attachments and adjustments into a library',
       () async {

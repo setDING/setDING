@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:chordpro/chordpro.dart' as cp;
+import 'package:flutter/foundation.dart' show compute;
 import 'package:path/path.dart' as p;
 
 import 'attachment_storage.dart';
@@ -94,29 +95,15 @@ class ImportExportService {
 
     for (final file in files) {
       if (p.extension(file.name).toLowerCase() == '.zip') {
-        final archive = ZipDecoder().decodeBytes(file.bytes);
-        bool skip(ArchiveFile entry) {
-          final base = p.basename(entry.name);
-          return !entry.isFile ||
-              base.startsWith('.') ||
-              entry.name.contains('__MACOSX');
-        }
-
+        final entries = await unzipFiles(file.bytes);
         final images = <String, (String, Uint8List)>{
-          for (final entry in archive.files)
-            if (!skip(entry) && isImageFile(entry.name))
-              p.basename(entry.name).toLowerCase(): (
-                p.basename(entry.name),
-                Uint8List.fromList(entry.content),
-              ),
+          for (final (name, bytes) in entries)
+            if (isImageFile(name))
+              p.basename(name).toLowerCase(): (name, bytes),
         };
-        for (final entry in archive.files) {
-          if (skip(entry) || isImageFile(entry.name)) continue;
-          await importOne(
-            p.basename(entry.name),
-            Uint8List.fromList(entry.content),
-            images: images,
-          );
+        for (final (name, bytes) in entries) {
+          if (isImageFile(name)) continue;
+          await importOne(name, bytes, images: images);
         }
       } else {
         await importOne(file.name, file.bytes);
@@ -158,7 +145,7 @@ class ImportExportService {
   /// Exports a set as ZIP: numbered ChordPro files, PDF attachments and a
   /// plain-text setlist.
   Future<Uint8List> exportSet(SetlistEntry set) async {
-    final archive = Archive();
+    final files = <(String, Uint8List)>[];
     final items = await sets.getItems(set.id);
     final setlist = StringBuffer('${set.name}\n\n');
     var number = 0;
@@ -175,8 +162,7 @@ class ImportExportService {
       );
       final base = '$prefix - ${safeFileName(song.title)}';
       if (song.chordproSource.trim().isNotEmpty) {
-        final bytes = utf8.encode(_sourceWithMeta(song));
-        archive.addFile(ArchiveFile('$base.cho', bytes.length, bytes));
+        files.add(('$base.cho', utf8.encode(_sourceWithMeta(song))));
       }
       for (final attachment in await songs.getAttachments(song.id)) {
         final file = songs.storage.file(attachment.fileName);
@@ -188,14 +174,11 @@ class ImportExportService {
         final stem = isPdfFile(attachment.fileName)
             ? attachment.name
             : p.basenameWithoutExtension(attachment.name);
-        archive.addFile(
-          ArchiveFile('$base - ${safeFileName(stem)}$ext', bytes.length, bytes),
-        );
+        files.add(('$base - ${safeFileName(stem)}$ext', bytes));
       }
     }
-    final listBytes = utf8.encode(setlist.toString());
-    archive.addFile(ArchiveFile('setlist.txt', listBytes.length, listBytes));
-    return Uint8List.fromList(ZipEncoder().encode(archive));
+    files.add(('setlist.txt', utf8.encode(setlist.toString())));
+    return compute(_zip, files);
   }
 
   String setFileName(SetlistEntry set) => '${safeFileName(set.name)}.zip';
@@ -213,6 +196,27 @@ class ImportExportService {
     }
     return header.isEmpty ? source : '$header$source';
   }
+}
+
+/// The files of a ZIP archive as (base name, bytes), without folders, hidden
+/// files and macOS metadata; decoded outside the UI isolate.
+Future<List<(String, Uint8List)>> unzipFiles(Uint8List zip) =>
+    compute(_unzip, zip);
+
+List<(String, Uint8List)> _unzip(Uint8List zip) => [
+  for (final entry in ZipDecoder().decodeBytes(zip).files)
+    if (entry.isFile &&
+        !p.basename(entry.name).startsWith('.') &&
+        !entry.name.contains('__MACOSX'))
+      (p.basename(entry.name), Uint8List.fromList(entry.content)),
+];
+
+Uint8List _zip(List<(String, Uint8List)> files) {
+  final archive = Archive();
+  for (final (name, bytes) in files) {
+    archive.addFile(ArchiveFile(name, bytes.length, bytes));
+  }
+  return Uint8List.fromList(ZipEncoder().encode(archive));
 }
 
 /// Removes characters that are not allowed in file names.

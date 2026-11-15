@@ -61,6 +61,14 @@ class AttachmentStorage {
     }
   }
 
+  /// Copies [from] to [to]; does nothing if [from] does not exist.
+  Future<void> copy(String from, String to) async {
+    final source = file(from);
+    if (!await source.exists()) return;
+    await directory.create(recursive: true);
+    await source.copy(file(to).path);
+  }
+
   Future<bool> exists(String fileName) => file(fileName).exists();
 
   Future<void> delete(String fileName) async {

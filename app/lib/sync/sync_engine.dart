@@ -11,21 +11,11 @@ import '../data/band_copy.dart';
 import '../data/band_view.dart';
 import '../data/database.dart';
 import '../data/outbox.dart';
-import '../data/song_repository.dart' show SongMeta;
+import '../data/song_repository.dart' show SongMeta, songMetas;
 import 'band_service.dart';
 import 'sync_backend.dart';
 
 const _uuid = Uuid();
-
-/// Metadata of ChordPro [sources]; larger batches (e.g. the first sync of a
-/// library) are parsed outside the UI isolate.
-Future<List<SongMeta>> songMetas(List<String> sources) => sources.length < 20
-    ? Future.value(_metas(sources))
-    : compute(_metas, sources);
-
-List<SongMeta> _metas(List<String> sources) => [
-  for (final s in sources) SongMeta.fromSource(s),
-];
 
 /// Result of one sync run.
 @immutable

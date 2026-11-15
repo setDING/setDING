@@ -25,11 +25,13 @@ class BandCopyService {
     String targetLibraryId,
   ) async {
     final copies = <String>[];
+    final files = <(String, String)>[];
     await db.transaction(() async {
       for (final id in songIds) {
-        copies.add(await _copySong(id, targetLibraryId));
+        copies.add(await _copySong(id, targetLibraryId, files));
       }
     });
+    await _copyFiles(files);
     return copies;
   }
 
@@ -44,6 +46,7 @@ class BandCopyService {
     bool copySongs = true,
   }) async {
     final newSetId = _uuid.v4();
+    final files = <(String, String)>[];
     await db.transaction(() async {
       final set = await (db.select(
         db.setlists,
@@ -75,6 +78,7 @@ class BandCopyService {
               ? songCopies[original] ??= await _copySong(
                   original,
                   targetLibraryId,
+                  files,
                 )
               : original;
         }
@@ -95,10 +99,27 @@ class BandCopyService {
         scope: targetBandId,
       );
     });
+    await _copyFiles(files);
     return newSetId;
   }
 
-  Future<String> _copySong(String songId, String targetLibraryId) async {
+  /// Copies the attachment files ([files]: source, copy) after the database
+  /// transaction: file I/O does not hold the transaction open, and a failed
+  /// transaction leaves no files behind. A missing source is skipped (not
+  /// downloaded yet); the copy is then missing like an undownloaded file.
+  Future<void> _copyFiles(List<(String, String)> files) async {
+    for (final (from, to) in files) {
+      await storage.copy(from, to);
+    }
+  }
+
+  /// Copies a song into the database; its attachment files are added to
+  /// [files] for [_copyFiles].
+  Future<String> _copySong(
+    String songId,
+    String targetLibraryId,
+    List<(String, String)> files,
+  ) async {
     final song = await (db.select(
       db.songs,
     )..where((s) => s.id.equals(songId))).getSingle();
@@ -122,10 +143,7 @@ class BandCopyService {
       final id = _uuid.v4();
       final dot = a.fileName.lastIndexOf('.');
       final fileName = dot < 0 ? id : '$id${a.fileName.substring(dot)}';
-      final source = storage.file(a.fileName);
-      if (await source.exists()) {
-        await storage.write(fileName, await source.readAsBytes());
-      }
+      files.add((a.fileName, fileName));
       await db
           .into(db.attachments)
           .insert(
@@ -133,6 +151,8 @@ class BandCopyService {
               id: id,
               songId: newId,
               fileName: fileName,
+              // A new record: its file is uploaded, not the original's.
+              remoteFile: const Value(null),
               revision: 0,
               updatedAt: DateTime.now(),
             ),

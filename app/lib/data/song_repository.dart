@@ -1,5 +1,6 @@
 import 'package:chordpro/chordpro.dart' as cp;
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart' show compute;
 import 'package:uuid/uuid.dart';
 
 import 'attachment_storage.dart';
@@ -47,6 +48,16 @@ class SongMeta {
   /// Tags as stored in the database (see `Songs.tags`).
   String? get tagsColumn => tags.isEmpty ? null : '\n${tags.join('\n')}\n';
 }
+
+/// Metadata of ChordPro [sources]; larger batches (e.g. the first sync of a
+/// library) are parsed outside the UI isolate.
+Future<List<SongMeta>> songMetas(List<String> sources) => sources.length < 20
+    ? Future.value(_metas(sources))
+    : compute(_metas, sources);
+
+List<SongMeta> _metas(List<String> sources) => [
+  for (final s in sources) SongMeta.fromSource(s),
+];
 
 /// Tags of a song as stored in the database.
 List<String> songTags(SongEntry song) => [
@@ -188,18 +199,23 @@ class SongRepository {
   /// Recomputes the stored metadata of all songs from their ChordPro
   /// source (used after a database upgrade).
   Future<void> refreshAllMetadata() async {
-    final all = await db.select(db.songs).get();
-    for (final song in all) {
-      if (song.chordproSource.trim().isEmpty) continue;
-      final meta = SongMeta.fromSource(song.chordproSource);
-      await (db.update(db.songs)..where((s) => s.id.equals(song.id))).write(
-        SongsCompanion(
-          sortTitle: Value(meta.sortTitle),
-          sortArtist: Value(meta.sortArtist),
-          tags: Value(meta.tagsColumn),
-        ),
-      );
-    }
+    final all = [
+      for (final song in await db.select(db.songs).get())
+        if (song.chordproSource.trim().isNotEmpty) song,
+    ];
+    final metas = await songMetas([for (final s in all) s.chordproSource]);
+    await db.transaction(() async {
+      for (final (i, song) in all.indexed) {
+        final meta = metas[i];
+        await (db.update(db.songs)..where((s) => s.id.equals(song.id))).write(
+          SongsCompanion(
+            sortTitle: Value(meta.sortTitle),
+            sortArtist: Value(meta.sortArtist),
+            tags: Value(meta.tagsColumn),
+          ),
+        );
+      }
+    });
   }
 
   /// Updates title and artist of a song without ChordPro metadata.
