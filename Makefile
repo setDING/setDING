@@ -7,6 +7,7 @@
 #   make dev        start a test instance with hot reload
 #   make start      build and start a test instance (without Flutter tooling)
 #   make reset      delete the test instance's data (fresh start with demo song)
+#   make backend    start a local PocketBase with the repository's schema and hooks
 #   make server-*   install and operate the PocketBase server (SERVER=root@host)
 
 SHELL := /bin/bash
@@ -38,12 +39,14 @@ PB_VERSION      ?= 0.40.6
 SSH             ?= ssh
 SERVER_BACKUPS  := /var/lib/pocketbase/backups
 BACKUP_DIR      ?= $(ROOT)/.server-backups
+# Local PocketBase (make backend); its data lives in DATA_DIR like the test instance.
+BACKEND_PORT    ?= 8090
 
 # Redirects the app's private data to DATA_DIR: REALCHORD_DATA_DIR for the
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := REALCHORD_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build reset data-dir check test codegen l10n screenshots examples doctor clean ci-image ci-image-push \
+.PHONY: help setup dev start build reset data-dir backend check test codegen l10n screenshots examples doctor clean ci-image ci-image-push \
 	server-target server-install server-status server-logs server-backup server-fetch-backup server-ssh
 
 help: ## Show this help
@@ -58,6 +61,7 @@ help: ## Show this help
 setup: ## Install dependencies, generate code and translations
 	@test -x "$(FLUTTER)" || { echo "Flutter not found. Install it or set FLUTTER=/path/to/flutter"; exit 1; }
 	cd $(PACKAGE) && $(DART) pub get
+	cd $(ROOT)/server && $(DART) pub get
 	cd $(APP) && $(FLUTTER) pub get
 	$(MAKE) codegen l10n
 
@@ -78,11 +82,19 @@ data-dir:
 	@mkdir -p "$(DATA_DIR)/app" "$(DATA_DIR)/xdg"
 	@echo "Test data: $(DATA_DIR)"
 
+backend: ## Start a local PocketBase with the schema and hooks from server/ (PB_VERSION)
+	@pb=$$($(ROOT)/tool/server/fetch-pocketbase.sh $(PB_VERSION)) && \
+		echo "PocketBase $(PB_VERSION): http://127.0.0.1:$(BACKEND_PORT)/_/  (data: $(DATA_DIR)/pb_data)" && \
+		echo "Create a superuser: $$pb superuser upsert EMAIL PASS --dir $(DATA_DIR)/pb_data" && \
+		$$pb serve --dir $(DATA_DIR)/pb_data --hooksDir $(ROOT)/server/pb_hooks \
+			--migrationsDir $(ROOT)/server/pb_migrations --http 127.0.0.1:$(BACKEND_PORT)
+
 check: ## Run all checks (format, analysis, l10n, tests) – the test gate
 	$(ROOT)/tool/check.sh
 
 test: ## Run all tests
 	cd $(PACKAGE) && $(DART) test
+	cd $(ROOT)/server && $(DART) test
 	cd $(APP) && $(FLUTTER) test
 
 codegen: ## Regenerate the drift database code

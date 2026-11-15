@@ -84,8 +84,13 @@ Tokens and account settings stay with the owner (ADR-0014).
 - **Debian security updates:** automatic (unattended-upgrades).
 - **PocketBase:** read the release notes, change `PB_VERSION` in the `Makefile` in a PR,
   run `make server-install` (on a staging container first, once there is one).
-- **Hooks and migrations:** change `server/pb_hooks` / `server/pb_migrations` in a PR,
-  then `make server-install`; PocketBase is restarted and applies new migrations.
+- **Hooks and migrations:** change `server/pb_hooks` / `server/pb_migrations` in a PR
+  (data model: ADR-0015, tests in `server/test`, run by `make check`), then
+  `make server-install`; PocketBase is restarted and applies new migrations.
+  Never edit collections in the admin UI: such changes are not in the repository and
+  are lost or conflict with the next migration.
+- **Local instance for development:** `make backend` starts PocketBase with the
+  repository's schema and hooks on `127.0.0.1:8090` (data in `.dev-data/pb_data`).
 - **cloudflared:** updated with the Debian packages (apt repository of Cloudflare).
 
 ## Backups

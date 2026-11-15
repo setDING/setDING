@@ -66,6 +66,7 @@ but contains no ChordPro logic.
 - 2026-11-14: The backend is **self-hosted** on an **existing server**. Managed cloud services (Supabase Cloud, Firebase) and syncing via a shared folder are therefore rejected.
 - 2026-11-14: **PocketBase** confirmed as the backend product. Because PocketBase is still pre-1.0, a specific version is pinned and updates are applied deliberately. Client access remains encapsulated behind the `SyncBackend` interface.
 - 2026-11-15: Server details and backup concept decided in **ADR-0014** (accepted): Debian LXC on the owner's Proxmox server, PocketBase as a systemd service, published via a Cloudflare Tunnel (replaces the Caddy reverse proxy), daily SQLite online backups, provisioning with `make server-install`.
+- 2026-11-15: Details of the data model decided in **ADR-0015** (accepted): one server-wide revision counter incremented in the save transaction, set items stored as JSON in the set, conflict detection for songs with HTTP 409 when the base revision is outdated.
 
 ## Open points
 
