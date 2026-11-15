@@ -181,10 +181,11 @@ Agents may create **proposals** for all of these (an ADR, a draft PR), just not 
 - The tag triggers the CI release build (artifacts for Android, iOS, Windows). **Publishing to the stores requires human approval** (protected CI environment).
 - Hotfixes follow the normal flow (`fix/…` branch, `priority:high`), then a patch release.
 
-## 11. Until agents have API access
+## 11. Without API access (fallback)
 
-Agents create issues and PRs and merge through the Forgejo API (section 12), which
-needs an access token. As long as no token is set up for agents:
+Agents create issues and PRs and merge with `fj` (section 12). Only if `fj auth list`
+shows no login for `github.com` on the machine (e.g. a new machine where the
+human has not added the token yet):
 
 - Work on a branch named as in section 3, commit as in section 4, and **push the
   branch** (`git push -u origin <branch>`).
@@ -212,7 +213,8 @@ needs an access token. As long as no token is set up for agents:
   creates a PR without pushing a branch, if AGit is enabled on the instance.
 - **Closing keywords:** `Closes #n` in the PR body closes the issue on merge, as on
   GitHub.
-- **Labels:** the labels of section 2 are created once in the repository settings.
+- **Labels:** the labels of section 2 are created once in the repository settings
+  (`fj` 0.7 cannot create labels).
 - **Merge settings:** in the repository settings only *squash* is enabled, and
   "delete branch after merge" is the default.
 - **Branch protection on `main`** (repository settings → Branches): no direct push,
