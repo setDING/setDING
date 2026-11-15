@@ -135,9 +135,11 @@ registry ([`tool/ci/Dockerfile`](../../tool/ci/Dockerfile): Debian, Node for the
 action, python3, clang for native assets, Flutter precached for Linux). The instance
 requires sign-in for packages too, so the job pulls the image with the repository
 secret `CI_REGISTRY_TOKEN` (a token of the agent user `factoryd` with the scope
-*package: read*). `TEST_CONCURRENCY=2` limits the
-parallel test processes: the container sees all host cores but has little memory, and
-one test process per core made the run hang.
+*package: read*). `TEST_CONCURRENCY=6` limits the
+parallel test processes: the runner has 8 vCPUs and 12 GB RAM, and one test process
+per visible core can exhaust the memory and hang the run. The first step prints the
+runner's CPUs and memory; a run takes far longer than a local cold run
+(about 1 minute) when the runner lacks resources.
 
 | Check | Content | Status |
 |---|---|---|

@@ -12,9 +12,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # One test process per visible CPU core exhausts the container's memory
-  # and hangs the run; two are enough (tool/check.sh).
-  TEST_CONCURRENCY: 2
+  # Parallel test processes (tool/check.sh). The runner has 8 vCPUs and 12 GB
+  # RAM; one process per visible core can exhaust the memory and hang the run.
+  TEST_CONCURRENCY: 6
 
 jobs:
   test:
@@ -35,8 +35,11 @@ jobs:
       - name: Check out
         uses: https://data.forgejo.org/actions/checkout@v4
 
-      - name: Versions
-        run: flutter --version
+      - name: Versions and runner resources
+        run: |
+          flutter --version
+          echo "CPUs: $(nproc)"
+          free -h
 
       - name: Test gate (format, analyze, l10n, tests)
         run: tool/check.sh
