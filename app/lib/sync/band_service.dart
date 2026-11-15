@@ -152,115 +152,179 @@ class BandService {
             ]))
           .watch();
 
+  Future<void>? _refreshing;
+
   /// Loads the organizations and bands of the signed-in user from the
   /// server and stores them. What the user can no longer see is hidden
   /// (songs and sets stay in the database until sync cleans them up).
-  Future<void> refresh() async {
+  /// Concurrent calls share one request.
+  Future<void> refresh() =>
+      _refreshing ??= _refresh().whenComplete(() => _refreshing = null);
+
+  Future<void> _refresh() async {
     final user = backend.currentUser;
     if (user == null) return;
     await store(user.id, await backend.fetchOrganizations());
   }
 
-  /// Stores [remote] as the complete view of [userId].
-  Future<void> store(String userId, List<RemoteOrganization> remote) =>
-      db.transaction(() async {
-        // What this user could see before, to hide what is gone.
-        final previousOrgs = {
-          for (final m in await (db.select(
-            db.orgMemberships,
-          )..where((m) => m.userId.equals(userId))).get())
-            m.organizationId,
-        };
-        final previousBands = {
-          for (final b in await (db.select(
-            db.bands,
-          )..where((b) => b.organizationId.isIn(previousOrgs))).get())
-            b.id,
-        };
+  /// Stores [remote] as the complete view of [userId]. Only rows that
+  /// changed are written, so an unchanged refresh notifies no watcher.
+  Future<void> store(
+    String userId,
+    List<RemoteOrganization> remote,
+  ) => db.transaction(() async {
+    // What this user could see before, to hide what is gone.
+    final previousOrgs = {
+      for (final m in await (db.select(
+        db.orgMemberships,
+      )..where((m) => m.userId.equals(userId))).get())
+        m.organizationId,
+    };
+    final previousBands = {
+      for (final b in await (db.select(
+        db.bands,
+      )..where((b) => b.organizationId.isIn(previousOrgs))).get())
+        b.id,
+    };
 
-        final orgIds = <String>{};
-        final bandIds = <String>{};
-        for (final o in remote) {
-          orgIds.add(o.id);
-          await db
-              .into(db.organizations)
-              .insertOnConflictUpdate(
-                OrganizationsCompanion.insert(
-                  id: o.id,
-                  name: o.name,
-                  revision: Value(o.revision),
-                  deleted: const Value(false),
-                ),
-              );
-          await (db.delete(
-            db.orgMemberships,
-          )..where((m) => m.organizationId.equals(o.id))).go();
-          for (final m in o.members) {
-            await db
-                .into(db.orgMemberships)
-                .insert(
-                  OrgMembershipsCompanion.insert(
-                    id: m.membershipId,
-                    organizationId: o.id,
-                    userId: m.userId,
-                    userName: Value(m.name),
-                    userEmail: Value(m.email),
-                    role: m.role,
-                    revision: Value(m.revision),
-                  ),
-                );
-          }
-          for (final b in o.bands) {
-            bandIds.add(b.id);
-            await db
-                .into(db.bands)
-                .insertOnConflictUpdate(
-                  BandsCompanion.insert(
-                    id: b.id,
-                    name: b.name,
-                    organizationId: Value(o.id),
-                    membersCanEditSongs: Value(b.membersCanEditSongs),
-                    revision: Value(b.revision),
-                    deleted: const Value(false),
-                  ),
-                );
-            await (db.delete(
-              db.memberships,
-            )..where((m) => m.bandId.equals(b.id))).go();
-            for (final m in b.members) {
-              await db
-                  .into(db.memberships)
-                  .insert(
-                    MembershipsCompanion.insert(
-                      id: m.membershipId,
-                      bandId: b.id,
-                      userId: m.userId,
-                      userName: Value(m.name),
-                      userEmail: Value(m.email),
-                      role: m.role,
-                      revision: Value(m.revision),
-                    ),
-                  );
-            }
-          }
-        }
+    final orgIds = {for (final o in remote) o.id};
+    final bandIds = {
+      for (final o in remote)
+        for (final b in o.bands) b.id,
+    };
+    final orgs = {
+      for (final o in await (db.select(
+        db.organizations,
+      )..where((o) => o.id.isIn(orgIds))).get())
+        o.id: o,
+    };
+    final orgMembers = await (db.select(
+      db.orgMemberships,
+    )..where((m) => m.organizationId.isIn(orgIds))).get();
+    final bands = {
+      for (final b in await (db.select(
+        db.bands,
+      )..where((b) => b.id.isIn(bandIds))).get())
+        b.id: b,
+    };
+    final bandMembers = await (db.select(
+      db.memberships,
+    )..where((m) => m.bandId.isIn(bandIds))).get();
 
-        for (final id in previousBands.difference(bandIds)) {
-          await (db.delete(
-            db.memberships,
-          )..where((m) => m.bandId.equals(id))).go();
-          await (db.update(db.bands)..where((b) => b.id.equals(id))).write(
-            const BandsCompanion(deleted: Value(true)),
-          );
-        }
-        for (final id in previousOrgs.difference(orgIds)) {
-          await (db.delete(
-            db.orgMemberships,
-          )..where((m) => m.organizationId.equals(id))).go();
-          await (db.update(db.organizations)..where((o) => o.id.equals(id)))
-              .write(const OrganizationsCompanion(deleted: Value(true)));
-        }
-      });
+    for (final o in remote) {
+      await _put(
+        db.organizations,
+        orgs[o.id],
+        OrganizationEntry(
+          id: o.id,
+          name: o.name,
+          revision: o.revision,
+          deleted: false,
+        ),
+      );
+      await _replace(
+        db.orgMemberships,
+        [
+          for (final m in orgMembers)
+            if (m.organizationId == o.id) m,
+        ],
+        [
+          for (final m in o.members)
+            OrgMembershipEntry(
+              id: m.membershipId,
+              organizationId: o.id,
+              userId: m.userId,
+              userName: m.name,
+              userEmail: m.email,
+              role: m.role,
+              revision: m.revision,
+            ),
+        ],
+        id: (m) => m.id,
+        delete: (ids) =>
+            (db.delete(db.orgMemberships)..where((m) => m.id.isIn(ids))).go(),
+      );
+      for (final b in o.bands) {
+        await _put(
+          db.bands,
+          bands[b.id],
+          BandEntry(
+            id: b.id,
+            name: b.name,
+            organizationId: o.id,
+            membersCanEditSongs: b.membersCanEditSongs,
+            revision: b.revision,
+            deleted: false,
+          ),
+        );
+        await _replace(
+          db.memberships,
+          [
+            for (final m in bandMembers)
+              if (m.bandId == b.id) m,
+          ],
+          [
+            for (final m in b.members)
+              MembershipEntry(
+                id: m.membershipId,
+                bandId: b.id,
+                userId: m.userId,
+                userName: m.name,
+                userEmail: m.email,
+                role: m.role,
+                revision: m.revision,
+              ),
+          ],
+          id: (m) => m.id,
+          delete: (ids) =>
+              (db.delete(db.memberships)..where((m) => m.id.isIn(ids))).go(),
+        );
+      }
+    }
+
+    // Deletes and updates of no rows notify no watcher.
+    final goneBands = previousBands.difference(bandIds);
+    await (db.delete(
+      db.memberships,
+    )..where((m) => m.bandId.isIn(goneBands))).go();
+    await (db.update(db.bands)
+          ..where((b) => b.id.isIn(goneBands) & b.deleted.equals(false)))
+        .write(const BandsCompanion(deleted: Value(true)));
+    final goneOrgs = previousOrgs.difference(orgIds);
+    await (db.delete(
+      db.orgMemberships,
+    )..where((m) => m.organizationId.isIn(goneOrgs))).go();
+    await (db.update(db.organizations)
+          ..where((o) => o.id.isIn(goneOrgs) & o.deleted.equals(false)))
+        .write(const OrganizationsCompanion(deleted: Value(true)));
+  });
+
+  /// Writes [row] unless [existing] is equal.
+  Future<void> _put<D extends DataClass>(
+    TableInfo<Table, D> table,
+    D? existing,
+    D row,
+  ) async {
+    if (existing == row) return;
+    await db.into(table).insertOnConflictUpdate(row as Insertable<D>);
+  }
+
+  /// Makes the rows [existing] equal to [wanted]: deletes rows that are
+  /// gone, writes new and changed ones.
+  Future<void> _replace<D extends DataClass>(
+    TableInfo<Table, D> table,
+    List<D> existing,
+    List<D> wanted, {
+    required String Function(D) id,
+    required Future<int> Function(Set<String> ids) delete,
+  }) async {
+    final byId = {for (final row in existing) id(row): row};
+    final gone = byId.keys.toSet().difference(wanted.map(id).toSet());
+    if (gone.isNotEmpty) await delete(gone);
+    for (final row in wanted) {
+      await _put(table, byId[id(row)], row);
+    }
+  }
 
   Future<T> _then<T>(Future<T> action) async {
     final result = await action;

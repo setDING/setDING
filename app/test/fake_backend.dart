@@ -91,7 +91,6 @@ class FakeSyncBackend implements SyncBackend {
 
   /// Band memberships on the "server".
   final members = <FakeMember>[];
-  int _revision = 0;
   int _ids = 0;
 
   /// Adds an organization with [admin], e.g. to start a test inside one.
@@ -159,8 +158,12 @@ class FakeSyncBackend implements SyncBackend {
     role: m.role,
   );
 
+  /// Number of [fetchOrganizations] calls.
+  int fetchOrganizationsCalls = 0;
+
   @override
   Future<List<RemoteOrganization>> fetchOrganizations() async {
+    fetchOrganizationsCalls++;
     _requireUser();
     return [
       for (final o in organizations.entries)
@@ -168,7 +171,8 @@ class FakeSyncBackend implements SyncBackend {
           RemoteOrganization(
             id: o.key,
             name: o.value,
-            revision: ++_revision,
+            // Stable like the server's: unchanged records keep it.
+            revision: 1,
             members: [
               for (final m in orgMembers)
                 if (m.scopeId == o.key) _remote(m),
@@ -185,7 +189,7 @@ class FakeSyncBackend implements SyncBackend {
                     organizationId: o.key,
                     name: b.value.name,
                     membersCanEditSongs: b.value.membersCanEditSongs,
-                    revision: ++_revision,
+                    revision: 1,
                     members: [
                       for (final m in members)
                         if (m.scopeId == b.key) _remote(m),

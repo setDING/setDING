@@ -5,6 +5,7 @@ import '../providers.dart' show bandServiceProvider;
 import '../settings/settings.dart';
 import 'pocketbase_backend.dart';
 import 'session_store.dart';
+import 'sync_controller.dart' show SyncController, autoSyncProvider;
 import 'sync_backend.dart';
 
 /// Where the session is stored; overridden in main() and in tests.
@@ -33,15 +34,24 @@ class AuthNotifier extends Notifier<AuthUser?> {
     final subscription = backend.userChanges.listen((user) {
       final signedIn = state == null && user != null;
       state = user;
-      if (signedIn) _refreshBands();
+      if (signedIn && !_syncRefreshesBands) _refreshBands();
     });
     ref.onDispose(subscription.cancel);
     Future.microtask(() async {
       await backend.refreshSession();
-      if (backend.currentUser != null) await _refreshBands();
+      if (backend.currentUser != null && !_syncRefreshesBands) {
+        await _refreshBands();
+      }
     });
     return backend.currentUser;
   }
+
+  /// The sync that starts at start and after signing in (unless manual,
+  /// see [SyncController]) refreshes the bands itself; refreshing them here
+  /// too would load them twice.
+  bool get _syncRefreshesBands =>
+      ref.read(autoSyncProvider) &&
+      ref.read(settingsProvider).syncMode != SyncMode.manual;
 
   Future<void> _refreshBands() async {
     try {

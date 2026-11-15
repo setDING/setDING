@@ -83,6 +83,8 @@ void main() {
     await start(null);
     expect(container.read(settingsProvider).syncMode, SyncMode.onStart);
     expect(engine.runs, 1);
+    // The sync refreshes the bands; signing in does not load them again.
+    expect(backend.fetchOrganizationsCalls, 0);
     await change();
     backend.changes.add('songs');
     await Future<void>.delayed(afterLocal);
@@ -92,6 +94,8 @@ void main() {
   test('manual: only "Sync now" syncs', () async {
     await start(SyncMode.manual);
     expect(engine.runs, 0);
+    // Without a sync at start, the bands are refreshed after signing in.
+    expect(backend.fetchOrganizationsCalls, 1);
     await change();
     await Future<void>.delayed(afterLocal);
     expect(engine.runs, 0);

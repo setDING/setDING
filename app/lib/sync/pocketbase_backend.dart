@@ -157,10 +157,13 @@ class PocketBaseBackend implements SyncBackend {
       Future<List<RecordModel>> all(String collection, {String? expand}) => _pb
           .collection(collection)
           .getFullList(filter: 'deleted = false', expand: expand);
-      final orgs = await all('organizations');
-      final orgMembers = await all('org_memberships', expand: 'user');
-      final bands = await all('bands');
-      final bandMembers = await all('memberships', expand: 'user');
+      // In parallel; Future.wait passes the first ClientException on.
+      final [orgs, orgMembers, bands, bandMembers] = await Future.wait([
+        all('organizations'),
+        all('org_memberships', expand: 'user'),
+        all('bands'),
+        all('memberships', expand: 'user'),
+      ]);
       return [
         for (final o in orgs)
           if (orgMembers.any(

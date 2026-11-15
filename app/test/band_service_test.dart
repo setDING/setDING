@@ -1,7 +1,8 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
+import 'package:drift/drift.dart'
+    show TableUpdateQuery, Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:realchord/data/attachment_storage.dart';
@@ -111,6 +112,49 @@ void main() {
     expect(rock.canManageBand, isTrue);
     expect(rock.canManageSets, isTrue);
     expect(rock.canDeleteSongs, isTrue);
+  });
+
+  test('an unchanged refresh writes nothing', () async {
+    backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+    backend.addMember('b1', _bob, BandRole.member);
+    await service.refresh();
+
+    final updates = <Object>[];
+    final sub = db
+        .tableUpdates(
+          TableUpdateQuery.onAllTables([
+            db.organizations,
+            db.orgMemberships,
+            db.bands,
+            db.memberships,
+          ]),
+        )
+        .listen(updates.add);
+    await service.refresh();
+    await pumpEventQueue();
+    expect(updates, isEmpty);
+
+    // Bob's membership is replaced: the old row is deleted, the new one
+    // written.
+    backend.members.removeWhere((m) => m.user.id == 'bob');
+    backend.addMember('b1', _bob, BandRole.admin);
+    await service.refresh();
+    await pumpEventQueue();
+    expect(updates, isNotEmpty);
+    final members = await service.watchMembers('b1').first;
+    expect(members.map((m) => (m.userId, m.role)), [
+      ('ann', BandRole.admin),
+      ('bob', BandRole.admin),
+    ]);
+    await sub.cancel();
+  });
+
+  test('concurrent refreshes share one request', () async {
+    backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+    await Future.wait([service.refresh(), service.refresh()]);
+    expect(backend.fetchOrganizationsCalls, 1);
+    await service.refresh();
+    expect(backend.fetchOrganizationsCalls, 2);
   });
 
   test('bands and organizations the user lost are hidden', () async {
