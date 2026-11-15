@@ -71,10 +71,15 @@ class SyncEngine {
   Future<SyncReport>? _running;
 
   /// Runs a sync; concurrent calls share the running one.
-  Future<SyncReport> sync() =>
-      _running ??= _sync().whenComplete(() => _running = null);
+  ///
+  /// [refreshBands] false skips loading the organizations and bands first,
+  /// e.g. for a realtime event about a song or set (ADR-0004): the bands
+  /// stored on this device are used.
+  Future<SyncReport> sync({bool refreshBands = true}) =>
+      _running ??= _sync(refreshBands: refreshBands)
+          .whenComplete(() => _running = null);
 
-  Future<SyncReport> _sync() async {
+  Future<SyncReport> _sync({required bool refreshBands}) async {
     final user = backend.currentUser;
     if (user == null) return const SyncReport();
     var pulled = 0;
@@ -82,7 +87,7 @@ class SyncEngine {
     var conflicts = 0;
     var downloaded = 0;
     try {
-      await bands.refresh();
+      if (refreshBands) await bands.refresh();
       final visible = [
         for (final b in await bands.watchBands(user.id).first)
           if (!b.isLocal) b,

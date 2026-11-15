@@ -83,6 +83,16 @@ void main() {
       expect((await songs.getSong(id))!.revision, server.songs[id]!.revision);
     });
 
+    test('a sync without band refresh uses the stored bands', () async {
+      final calls = server.fetchOrganizationsCalls;
+      server.putSong(remoteSong('s1', '{title: Quick}'));
+      final report = await engine.sync(refreshBands: false);
+      expect(report.pulled, 1);
+      expect(server.fetchOrganizationsCalls, calls);
+      await engine.sync();
+      expect(server.fetchOrganizationsCalls, calls + 1);
+    });
+
     test('never syncs the local library', () async {
       final local = SongRepository(db, AttachmentStorage(dir));
       await local.createSong(source: '{title: Private}');

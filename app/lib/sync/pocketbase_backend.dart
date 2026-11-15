@@ -647,8 +647,12 @@ class PocketBaseBackend implements SyncBackend {
       'songs',
       'setlists',
       'attachments',
-      'bands',
       'overlays',
+      // Changes of who sees which band (SyncController.bandCollections).
+      'organizations',
+      'org_memberships',
+      'bands',
+      'memberships',
     ];
     late StreamController<String> controller;
     final unsubscribers = <Future<void> Function()>[];

@@ -59,6 +59,18 @@ class SyncController extends Notifier<SyncStatus> {
   Timer? _debounce;
   int _paused = 0;
   bool _requested = false;
+
+  /// Whether the scheduled (or deferred) sync must load the bands first.
+  bool _refreshBands = false;
+
+  /// Realtime events that change who sees which band; other events (songs,
+  /// sets, attachments, adjustments) sync without loading the bands.
+  static const bandCollections = {
+    'organizations',
+    'org_memberships',
+    'bands',
+    'memberships',
+  };
   final _auto = <void Function()>[];
 
   @override
@@ -97,11 +109,18 @@ class SyncController extends Notifier<SyncStatus> {
             limitUpdateKind: UpdateKind.insert,
           ),
         )
-        .listen((_) => _schedule(localDelay));
+        // Local changes do not change the bands.
+        .listen((_) => _schedule(localDelay, refreshBands: false));
     final remote = ref
         .read(syncBackendProvider)
         .watchChanges()
-        .listen((_) => _schedule(remoteDelay), onError: (Object _) {});
+        .listen(
+          (collection) => _schedule(
+            remoteDelay,
+            refreshBands: bandCollections.contains(collection),
+          ),
+          onError: (Object _) {},
+        );
     final periodic = Timer.periodic(interval, (_) => syncNow());
     _auto.addAll([outbox.cancel, remote.cancel, periodic.cancel]);
   }
@@ -113,20 +132,25 @@ class SyncController extends Notifier<SyncStatus> {
     _auto.clear();
   }
 
-  void _schedule(Duration delay) {
+  void _schedule(Duration delay, {bool refreshBands = true}) {
+    _refreshBands |= refreshBands;
     _debounce?.cancel();
-    _debounce = Timer(delay, syncNow);
+    _debounce = Timer(delay, () => syncNow(refreshBands: _refreshBands));
   }
 
   /// Runs a sync now (or after live mode); returns null when deferred.
-  Future<SyncReport?> syncNow() async {
+  /// [refreshBands] false skips loading the bands (see [SyncEngine.sync]).
+  Future<SyncReport?> syncNow({bool refreshBands = true}) async {
     if (_paused > 0) {
       _requested = true;
+      _refreshBands |= refreshBands;
       return null;
     }
     _requested = false;
+    final bands = refreshBands || _refreshBands;
+    _refreshBands = false;
     state = state.copyWith(running: true);
-    final report = await ref.read(syncEngineProvider).sync();
+    final report = await ref.read(syncEngineProvider).sync(refreshBands: bands);
     if (!ref.mounted) return report;
     state = SyncStatus(
       lastSync: report.error == null ? DateTime.now() : state.lastSync,
@@ -141,7 +165,9 @@ class SyncController extends Notifier<SyncStatus> {
   /// Live mode closed: catch up on requested syncs.
   void resume() {
     if (_paused > 0) _paused--;
-    if (_paused == 0 && _requested) _schedule(remoteDelay);
+    if (_paused == 0 && _requested) {
+      _schedule(remoteDelay, refreshBands: _refreshBands);
+    }
   }
 }
 

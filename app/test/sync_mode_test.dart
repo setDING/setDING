@@ -28,9 +28,13 @@ class _CountingEngine extends SyncEngine {
 
   int runs = 0;
 
+  /// `refreshBands` of each run.
+  final refreshes = <bool>[];
+
   @override
-  Future<SyncReport> sync() async {
+  Future<SyncReport> sync({bool refreshBands = true}) async {
     runs++;
+    refreshes.add(refreshBands);
     return const SyncReport();
   }
 }
@@ -128,5 +132,27 @@ void main() {
     backend.changes.add('songs');
     await Future<void>.delayed(afterLocal);
     expect(engine.runs, 3);
+  });
+
+  test('automatic: only band events load the bands again', () async {
+    await start(SyncMode.automatic);
+    expect(engine.refreshes, [true]); // at start
+
+    backend.changes.add('songs');
+    await Future<void>.delayed(const Duration(milliseconds: 1300));
+    backend.changes.add('memberships');
+    await Future<void>.delayed(const Duration(milliseconds: 1300));
+    await change();
+    await Future<void>.delayed(afterLocal);
+    expect(engine.refreshes, [true, false, true, false]);
+
+    // Within one delay, a band event wins over a song event.
+    backend.changes
+      ..add('setlists')
+      ..add('bands')
+      ..add('overlays');
+    await Future<void>.delayed(const Duration(milliseconds: 1300));
+    expect(engine.refreshes.last, isTrue);
+    expect(engine.runs, 5);
   });
 }
