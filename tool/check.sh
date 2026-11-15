@@ -11,12 +11,19 @@ fi
 
 step() { printf '\n==> %s\n' "$*"; }
 
+# TEST_CONCURRENCY limits parallel test processes (default: one per CPU core).
+# CI sets it because containers see all host cores but have little memory.
+concurrency=()
+if [ -n "${TEST_CONCURRENCY:-}" ]; then
+  concurrency=(--concurrency="$TEST_CONCURRENCY")
+fi
+
 step "packages/chordpro"
 cd "$ROOT/packages/chordpro"
 dart pub get >/dev/null
 dart format --output=none --set-exit-if-changed .
 dart analyze --fatal-infos
-dart test
+dart test "${concurrency[@]}"
 
 if [ -d "$ROOT/app" ]; then
   step "app"
@@ -36,7 +43,7 @@ print('l10n: OK (%d keys)' % len(de))
 PY
   dart format --output=none --set-exit-if-changed lib test
   flutter analyze --fatal-infos
-  flutter test
+  flutter test "${concurrency[@]}"
 fi
 
 step "All checks passed"

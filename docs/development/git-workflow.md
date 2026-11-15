@@ -127,17 +127,21 @@ to be decided.
 
 ## 7. Continuous integration
 
-CI runs as **Forgejo Actions** (workflows in `.forgejo/workflows/`, executed by a
-Forgejo runner) on every PR and on every push to `main`. Required checks:
+CI runs as **Forgejo Actions** on every PR and on every push to `main`:
+[`.forgejo/workflows/ci.yml`](../../.forgejo/workflows/ci.yml), on the global Forgejo
+runner with the label `linux-amd64`, in a `node:22-bookworm` container. The job
+installs the Flutter version pinned in `FLUTTER_VERSION`, which must match the version
+used for development (update both together). `TEST_CONCURRENCY=2` limits the
+parallel test processes: the container sees all host cores but has little memory, and
+one test process per core made the run hang.
 
-| Check | Content |
-|---|---|
-| `format` | `dart format --set-exit-if-changed` |
-| `analyze` | `flutter analyze` without warnings |
-| `test` | unit, widget and golden tests |
-| `l10n` | all ARB keys present in German and English |
-| `build` | Android build (APK); iOS and Windows builds at least on `main` |
-| `commit-lint` | PR title follows Conventional Commits |
+| Check | Content | Status |
+|---|---|---|
+| `test` | `tool/check.sh`: format (`dart format --set-exit-if-changed`), `analyze` without infos, `l10n` (all ARB keys in German and English, no "ß"), unit and widget tests of `packages/chordpro` and `app` | **Active, required** |
+| `build` | Android build (APK); iOS and Windows builds at least on `main` | Planned (needs the Android SDK, a macOS and a Windows runner) |
+| `commit-lint` | PR title follows Conventional Commits | Planned |
+
+`fj pr status <index>` shows the checks of a PR; `fj actions tasks` lists the runs.
 
 Branch protection on `main`: PR required, required checks green, squash merge only,
 no force push, no deletion.
