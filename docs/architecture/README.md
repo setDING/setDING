@@ -55,6 +55,7 @@ A user can be a member of several organizations and bands; roles are defined per
 | Server data model | PocketBase collections as migrations, server-wide revision counter, set items as JSON, access rules per role, tested against a real PocketBase | [ADR-0015](adr/0015-server-data-model.md) |
 | Printable set list | PDF generated in the client with the `pdf` package, embedded font, saved via the save dialog; no print plugin yet | [ADR-0013](adr/0013-printable-set-list.md) |
 | Web client | **Flutter web build of the same app** for management without installation, served by PocketBase (`pb_public`) at `app.realchord.app`, same sync engine, no offline guarantee in the browser | [ADR-0018](adr/0018-web-client.md) |
+| Linux release | `make release`: Linux release built in a **Debian container** (baseline glibc, ISA check) from the committed state; no Windows release for now ([guide](../development/releases.md)) | [ADR-0019](adr/0019-linux-release-builds.md) |
 
 ## 4. Building block view
 
@@ -253,6 +254,7 @@ See "Open points" in the individual ADRs. The most important:
 14. ~~SongSelect import?~~ → No API integration, manual ChordPro import (ADR-0011, accepted). Open: test with a real SongSelect file, show copyright/CCLI number?
 15. ~~Printable set list?~~ → PDF in the client with the `pdf` package and embedded Noto Sans (ADR-0013, accepted). Open: Letter paper, export options, native print dialog
 16. Web client for management without an installed app? → Flutter web build of the same app at `app.realchord.app`, served by the same PocketBase; local library hidden, live mode with a "not offline-safe" notice, session for the tab only by default (ADR-0018, accepted, #27). Open: tunnel hostname and DNS (owner)
+17. Distributable Linux builds? → `make release`: built in a Debian container with an ISA check (ADR-0019, accepted, #45). Open: Windows release (not needed yet), packaging and signing, CI release builds
 
 ## 10. ADR index
 
@@ -276,5 +278,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0016](adr/0016-client-authentication.md) | Client authentication and session storage | Accepted |
 | [0017](adr/0017-organizations.md) | Organizations with a shared song library | Accepted |
 | [0018](adr/0018-web-client.md) | Web client for management | Accepted |
+| [0019](adr/0019-linux-release-builds.md) | Linux release builds | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.

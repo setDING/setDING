@@ -202,6 +202,7 @@ Agents may create **proposals** for all of these (an ADR, a draft PR), just not 
 - A release is a tag `vX.Y.Z` on `main`, created by an agent through a `chore(release): vX.Y.Z` PR that updates the version in `pubspec.yaml` and `CHANGELOG.md` (generated from the Conventional Commits).
 - The build number is the CI run number.
 - The tag triggers the CI release build (artifacts for Android, iOS, Windows). **Publishing to the stores requires human approval** (protected CI environment).
+- Until CI release builds exist, the Linux package is built locally with `make release` (in a container; [releases.md](releases.md), ADR-0019).
 - Hotfixes follow the normal flow (`fix/…` branch, `priority:high`), then a patch release.
 
 ## 11. Without API access (fallback)

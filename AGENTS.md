@@ -33,7 +33,8 @@ The documentation must always reflect the current state of the project:
 
 Use the `Makefile` in the repository root (`make help`): `make check` is the test gate,
 `make dev` / `make start` run an isolated local test instance on Linux, `make reset`
-deletes its data. `make server-*` installs and operates the PocketBase server over SSH
+deletes its data. `make release` builds the distributable Linux package
+(see [`docs/development/releases.md`](docs/development/releases.md), ADR-0019). `make server-*` installs and operates the PocketBase server over SSH
 (see [`docs/operations/server.md`](docs/operations/server.md), ADR-0014).
 
 ## Git workflow (mandatory)
@@ -85,3 +86,4 @@ See the ADR index in the architecture README for the current status. In short:
 - Server data model as PocketBase migrations and hooks in `server/`, tested against a real PocketBase in `make check`; `make backend` runs it locally (ADR-0015)
 - Organizations above bands: songs belong to the organization and are shared by its bands, users only see people of their organizations (ADR-0017)
 - Sign-in through the `SyncBackend` interface, session in secure storage and kept while offline (ADR-0016)
+- Linux release with `make release`, built in a Debian container (ADR-0019)
