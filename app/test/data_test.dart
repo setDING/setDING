@@ -237,5 +237,52 @@ void main() {
       await File('${dir.path}/$file').delete();
       expect(await sets.isOfflineReady(setId), isFalse);
     });
+
+    test('offline status of all sets comes from one stream', () async {
+      final a = await songs.createSong(title: 'A');
+      await songs.addAttachment(a, name: 'P', bytes: Uint8List.fromList([1]));
+      final b = await songs.createSong(title: 'B');
+      final ready = await sets.createSet(name: 'Ready');
+      await sets.addSongs(ready, [a]);
+      await sets.addMarker(ready, SetItemType.pause, 'Break');
+      final empty = await sets.createSet(name: 'Empty');
+      final missingFile = await sets.createSet(name: 'Missing file');
+      await sets.addSongs(missingFile, [b]);
+      await songs.addAttachment(b, name: 'Q', bytes: Uint8List.fromList([2]));
+      final missingSong = await sets.createSet(name: 'Missing song');
+      // A set item whose song is not on this device (e.g. not synced yet).
+      await db
+          .into(db.setItems)
+          .insert(
+            SetItemsCompanion.insert(
+              id: 'item-x',
+              setId: missingSong,
+              position: 0,
+              type: SetItemType.song,
+            ),
+          );
+
+      final fileB = (await songs.getAttachments(b)).single.fileName;
+      await File('${dir.path}/$fileB').delete();
+      // Another band's set is not part of this band's status.
+      final other = SetRepository(db, sets.storage, bandId: 'other');
+      await db
+          .into(db.bands)
+          .insert(BandsCompanion.insert(id: 'other', name: 'Other'));
+      final otherSet = await other.createSet(name: 'Other');
+      await other.addSongs(otherSet, [b]);
+
+      final stream = sets.watchNotOfflineReady();
+      expect(await stream.first, {missingFile, missingSong});
+      expect(await sets.isOfflineReady(ready), isTrue);
+      expect(await sets.isOfflineReady(empty), isTrue);
+      expect(await sets.isOfflineReady(missingFile), isFalse);
+      expect(await sets.isOfflineReady(missingSong), isFalse);
+      expect(await other.isOfflineReady(otherSet), isFalse);
+
+      // Removing the song with the missing file makes the set ready.
+      await songs.deleteSong(b);
+      expect(await sets.watchNotOfflineReady().first, {missingSong});
+    });
   });
 }

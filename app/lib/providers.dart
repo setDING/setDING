@@ -156,15 +156,16 @@ final setItemsProvider = StreamProvider.autoDispose
       (ref, setId) => ref.watch(setRepositoryProvider).watchItems(setId),
     );
 
-/// Re-evaluated whenever the set's items or the attachments change.
-final offlineReadyProvider = FutureProvider.autoDispose.family<bool, String>((
-  ref,
-  setId,
-) async {
-  ref.watch(setItemsProvider(setId));
-  ref.watch(attachmentCountsProvider);
-  return ref.watch(setRepositoryProvider).isOfflineReady(setId);
-});
+/// Sets of the current band that are not offline ready, from one query.
+final _notOfflineReadySetsProvider = StreamProvider.autoDispose<Set<String>>(
+  (ref) => ref.watch(setRepositoryProvider).watchNotOfflineReady(),
+);
+
+/// Whether a set of the current band is offline ready (ADR-0001).
+final offlineReadyProvider = FutureProvider.autoDispose.family<bool, String>(
+  (ref, setId) async =>
+      !(await ref.watch(_notOfflineReadySetsProvider.future)).contains(setId),
+);
 
 final storageUsageProvider = FutureProvider<int>((ref) async {
   ref.watch(attachmentCountsProvider);

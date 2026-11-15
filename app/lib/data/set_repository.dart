@@ -232,21 +232,50 @@ class SetRepository {
 
   /// A set is "offline ready" when all its songs and their attachment files
   /// are available locally (ADR-0001).
-  Future<bool> isOfflineReady(String setId) async {
-    final items = await getItems(setId);
-    for (final view in items) {
-      if (view.item.type != SetItemType.song) continue;
-      if (view.song == null) return false;
-      final files =
-          await (db.select(db.attachments)..where(
-                (a) => a.songId.equals(view.song!.id) & a.deleted.equals(false),
-              ))
-              .get();
-      for (final f in files) {
-        if (!await storage.exists(f.fileName)) return false;
+  Future<bool> isOfflineReady(String setId) async =>
+      !(await _notReady(await _offlineQuery(setId: setId).get()))
+          .contains(setId);
+
+  /// IDs of the band's sets that are not offline ready (see
+  /// [isOfflineReady]), from one query for all sets; updated when sets,
+  /// items, songs or attachments change.
+  Stream<Set<String>> watchNotOfflineReady() =>
+      _offlineQuery().watch().asyncMap(_notReady);
+
+  /// One row per song item and attachment: the item's set, its song (null
+  /// if missing) and an attachment file (null if none).
+  Selectable<QueryRow> _offlineQuery({String? setId}) => db.customSelect(
+    'SELECT i.set_id AS set_id, s.id AS song, s.deleted AS song_deleted, '
+    'a.file_name AS file FROM set_items i '
+    'JOIN setlists l ON l.id = i.set_id '
+    'LEFT JOIN songs s ON s.id = i.song_id '
+    'LEFT JOIN attachments a ON a.song_id = s.id AND a.deleted = 0 '
+    "WHERE i.type = 'song' AND "
+    '${setId == null ? 'l.band_id' : 'l.id'} = ?',
+    variables: [Variable.withString(setId ?? bandId)],
+    readsFrom: {db.setItems, db.setlists, db.songs, db.attachments},
+  );
+
+  /// Sets with a missing song or file; each file is checked once.
+  Future<Set<String>> _notReady(List<QueryRow> rows) async {
+    final notReady = <String>{};
+    final setsByFile = <String, Set<String>>{};
+    for (final row in rows) {
+      final set = row.read<String>('set_id');
+      if (row.readNullable<String>('song') == null ||
+          row.read<bool>('song_deleted')) {
+        notReady.add(set);
+        continue;
       }
+      final file = row.readNullable<String>('file');
+      if (file != null) (setsByFile[file] ??= {}).add(set);
     }
-    return true;
+    final files = setsByFile.keys.toList();
+    final exists = await Future.wait(files.map(storage.exists));
+    for (var i = 0; i < files.length; i++) {
+      if (!exists[i]) notReady.addAll(setsByFile[files[i]]!);
+    }
+    return notReady;
   }
 
   Future<void> _renumber(String setId) async {
