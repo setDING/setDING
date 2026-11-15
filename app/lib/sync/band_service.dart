@@ -28,11 +28,29 @@ class BandService {
     ]);
     late StreamController<T> controller;
     StreamSubscription<void>? sub;
+    // One load at a time: changes during a load start one more load, and
+    // the result of a load that a change overtook is dropped, so the
+    // stream never emits an older state after a newer one.
+    var loading = false;
+    var changed = false;
     Future<void> emit() async {
+      if (loading) {
+        changed = true;
+        return;
+      }
+      loading = true;
       try {
-        controller.add(await load());
-      } catch (e, st) {
-        controller.addError(e, st);
+        do {
+          changed = false;
+          try {
+            final value = await load();
+            if (!changed && !controller.isClosed) controller.add(value);
+          } catch (e, st) {
+            if (!changed && !controller.isClosed) controller.addError(e, st);
+          }
+        } while (changed && !controller.isClosed);
+      } finally {
+        loading = false;
       }
     }
 
@@ -41,7 +59,10 @@ class BandService {
         emit();
         sub = db.tableUpdates(tables).listen((_) => emit());
       },
-      onCancel: () => sub?.cancel(),
+      onCancel: () async {
+        await sub?.cancel();
+        await controller.close();
+      },
     );
     return controller.stream;
   }

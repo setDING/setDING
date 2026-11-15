@@ -149,6 +149,28 @@ void main() {
     await sub.cancel();
   });
 
+  test('rapid changes end with the latest state, never an older one', () async {
+    backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+    await service.refresh();
+    final names = <String>[];
+    final sub = service
+        .watchBands('ann')
+        .listen((all) => names.add(band(all, 'b1').name));
+    await pumpEventQueue();
+    for (var i = 0; i < 10; i++) {
+      await (db.update(db.bands)..where((b) => b.id.equals('b1'))).write(
+        BandsCompanion(name: Value('Rock $i')),
+      );
+    }
+    await pumpEventQueue(times: 50);
+    expect(names.last, 'Rock 9');
+    // Changes during a load are combined into one more load.
+    expect(names.length, lessThan(11));
+    final order = [for (final n in names.skip(1)) int.parse(n.split(' ')[1])];
+    expect(order, orderedEquals([...order]..sort()));
+    await sub.cancel();
+  });
+
   test('concurrent refreshes share one request', () async {
     backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
     await Future.wait([service.refresh(), service.refresh()]);
