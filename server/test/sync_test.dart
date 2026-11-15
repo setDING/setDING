@@ -17,7 +17,7 @@ void main() {
     final id = uuid();
     final song = await band.admin.post('songs', {
       'id': id,
-      'band': band.id,
+      'organization': band.orgId,
       'title': 'With UUID',
     });
     song.expectStatus(200);
@@ -25,7 +25,7 @@ void main() {
 
     final bad = await band.admin.post('songs', {
       'id': 'abc123',
-      'band': band.id,
+      'organization': band.orgId,
       'title': 'Bad ID',
     });
     expect(bad.status, 400);
@@ -34,7 +34,7 @@ void main() {
   test('generates a UUID when the client sends no ID', () async {
     final song = await band.createSong(band.admin);
     final r = await band.admin.post('songs', {
-      'band': band.id,
+      'organization': band.orgId,
       'title': 'No ID',
     });
     r.expectStatus(200);
@@ -70,7 +70,7 @@ void main() {
 
   test('clients cannot set revision or updated_by', () async {
     final r = await band.admin.post('songs', {
-      'band': band.id,
+      'organization': band.orgId,
       'title': 'Forged',
       'revision': 999999,
       'updated_by': band.member.id,
@@ -116,7 +116,7 @@ void main() {
 
     final changes = await band.member.list(
       'songs',
-      filter: 'band = "${band.id}" && revision > $cursor',
+      filter: 'organization = "${band.orgId}" && revision > $cursor',
     );
     expect(changes.map((s) => s['id']), [after['id'], before['id']]);
     expect(changes.last['deleted'], isTrue);

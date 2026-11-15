@@ -15,11 +15,25 @@ String uuid() {
 }
 
 /// A band with an admin, a member and an outsider (no membership).
+///
+/// The band is created without an organization, so the server creates one
+/// with the admin as organization admin (ADR-0017); the member belongs to
+/// the organization and the band.
 class BandFixture {
-  BandFixture._(this.pb, this.id, this.admin, this.member, this.outsider);
+  BandFixture._(
+    this.pb,
+    this.id,
+    this.orgId,
+    this.admin,
+    this.member,
+    this.outsider,
+  );
 
   final PocketBase pb;
   final String id;
+
+  /// The band's organization.
+  final String orgId;
   final User admin;
   final User member;
   final User outsider;
@@ -37,17 +51,42 @@ class BandFixture {
     });
     band.expectStatus(200);
     final id = band.json['id'] as String;
+    final orgId = band.json['organization'] as String;
     await addMember(pb, id, member);
-    return BandFixture._(pb, id, admin, member, outsider);
+    return BandFixture._(pb, id, orgId, admin, member, outsider);
   }
 
-  /// Adds [user] to the band; in the app this happens through an invitation.
+  /// Adds [user] to an organization; in the app this happens through an
+  /// invitation (#16). Does nothing if the user is already a member.
+  static Future<Map<String, dynamic>> addOrgMember(
+    PocketBase pb,
+    String orgId,
+    User user, {
+    String role = 'member',
+  }) async {
+    final existing = await pb.superuser.list(
+      'org_memberships',
+      filter: 'organization = "$orgId" && user = "${user.id}"',
+    );
+    if (existing.isNotEmpty) return existing.single;
+    final r = await pb.superuser.post('org_memberships', {
+      'user': user.id,
+      'organization': orgId,
+      'role': role,
+    });
+    r.expectStatus(200);
+    return r.json;
+  }
+
+  /// Adds [user] to the band and, if needed, to its organization.
   static Future<Map<String, dynamic>> addMember(
     PocketBase pb,
     String bandId,
     User user, {
     String role = 'member',
   }) async {
+    final band = await pb.superuser.view('bands', bandId);
+    await addOrgMember(pb, band.json['organization'] as String, user);
     final r = await pb.superuser.post('memberships', {
       'user': user.id,
       'band': bandId,
@@ -72,7 +111,7 @@ class BandFixture {
   }) async {
     final r = await client.post('songs', {
       'id': uuid(),
-      'band': id,
+      'organization': orgId,
       'title': title,
       'chordpro': '{title: $title}\n[C]Hello [G]world',
     });

@@ -120,6 +120,7 @@ Enforced with PocketBase API rules; the client only mirrors them in the UI.
 
 - 2026-11-15: Proposed with the implementation of issue #13.
 - 2026-11-15: Accepted by the owner.
+- 2026-11-15: Extended by **ADR-0017** (accepted): `organizations` and `org_memberships`, `bands.organization`; `songs`, `attachments` and `invites` reference the organization instead of a band; users see the people of their organizations. Migration `1794900000_organizations.js`.
 
 ## Open points
 

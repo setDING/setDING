@@ -105,6 +105,7 @@ Alternatives for invitations:
 - 2026-11-14: Several admins per band and membership in several bands are supported. No guest role.
 - 2026-11-14: Members join via invitation link (reusable, 7 days valid, revocable, member role only), also shown as a QR code. Invite codes and email invitations are not planned.
 - 2026-11-15: App name RealChord chosen; `realchord.app` (and `realchord.ch`) are the intended public domains for invitation links and the deep-link verification files, once registered and pointed at the server (see `docs/app-name-candidates.md`).
+- 2026-11-15: **Organizations** above bands decided in **ADR-0017** (accepted) (owner request): songs belong to the organization and are shared by all its bands (replaces "songs belong to one band; sharing between bands only by copy"); organization admins manage people and bands; invitations add people to the organization, band admins then add organization members to their bands. Band roles and `members_can_edit_songs` stay.
 
 ## Open points
 

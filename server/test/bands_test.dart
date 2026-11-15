@@ -212,23 +212,28 @@ void main() {
   });
 
   group('users', () {
-    test('users see themselves and their bandmates only', () async {
-      final f = await BandFixture.create(pb);
-      final ids = (await f.member.list('users')).map((u) => u['id']);
-      expect(ids, unorderedEquals([f.admin.id, f.member.id]));
-      expect((await f.member.view('users', f.outsider.id)).status, 404);
-      final outsiderSees = (await f.outsider.list('users')).map((u) => u['id']);
-      expect(outsiderSees, [f.outsider.id]);
-    });
+    test(
+      'users see themselves and the people of their organizations only',
+      () async {
+        final f = await BandFixture.create(pb);
+        final ids = (await f.member.list('users')).map((u) => u['id']);
+        expect(ids, unorderedEquals([f.admin.id, f.member.id]));
+        expect((await f.member.view('users', f.outsider.id)).status, 404);
+        final outsiderSees = (await f.outsider.list(
+          'users',
+        )).map((u) => u['id']);
+        expect(outsiderSees, [f.outsider.id]);
+      },
+    );
 
-    test('former bandmates are not visible anymore', () async {
+    test('people stay visible while they share an organization', () async {
       final f = await BandFixture.create(pb);
       final m = await f.membershipOf(f.member);
       (await f.admin.patch('memberships', m['id'], {
         'deleted': true,
       })).expectStatus(200);
-      expect((await f.admin.view('users', f.member.id)).status, 404);
-      expect((await f.member.view('users', f.admin.id)).status, 404);
+      // Removed from the band, but still in the organization (ADR-0017).
+      expect((await f.admin.view('users', f.member.id)).status, 200);
     });
   });
 }

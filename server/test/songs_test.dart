@@ -9,9 +9,9 @@ void main() {
   setUpAll(() async => pb = await PocketBase.start());
   tearDownAll(() => pb.stop());
 
-  Map<String, dynamic> songBody(String band) => {
+  Map<String, dynamic> songBody(String org) => {
     'id': uuid(),
-    'band': band,
+    'organization': org,
     'title': 'Song',
     'chordpro': '{title: Song}',
   };
@@ -37,7 +37,7 @@ void main() {
 
   test('members cannot create or edit songs by default', () async {
     final f = await BandFixture.create(pb);
-    expect((await f.member.post('songs', songBody(f.id))).status, 400);
+    expect((await f.member.post('songs', songBody(f.orgId))).status, 400);
     final song = await f.createSong(f.admin);
     final r = await f.member.patch('songs', song['id'], {
       'title': 'Hijacked',
@@ -48,7 +48,7 @@ void main() {
 
   test('members create and edit songs if the band allows it', () async {
     final f = await BandFixture.create(pb, membersCanEditSongs: true);
-    final created = await f.member.post('songs', songBody(f.id));
+    final created = await f.member.post('songs', songBody(f.orgId));
     created.expectStatus(200);
     final r = await f.member.patch('songs', created.json['id'], {
       'title': 'Fixed typo',
@@ -59,7 +59,7 @@ void main() {
 
   test('outsiders cannot add songs to a band', () async {
     final f = await BandFixture.create(pb, membersCanEditSongs: true);
-    expect((await f.outsider.post('songs', songBody(f.id))).status, 400);
+    expect((await f.outsider.post('songs', songBody(f.orgId))).status, 400);
   });
 
   test('only admins delete songs', () async {
@@ -78,14 +78,14 @@ void main() {
     expect(byAdmin.json['deleted'], isTrue);
   });
 
-  test('songs cannot be moved to another band', () async {
+  test('songs cannot be moved to another organization', () async {
     final f = await BandFixture.create(pb);
     final other = await BandFixture.create(pb);
     // f.admin is no member of other; add as admin to make the move plausible.
-    await BandFixture.addMember(pb, other.id, f.admin, role: 'admin');
+    await BandFixture.addOrgMember(pb, other.orgId, f.admin, role: 'admin');
     final song = await f.createSong(f.admin);
     final r = await f.admin.patch('songs', song['id'], {
-      'band': other.id,
+      'organization': other.orgId,
       'revision': song['revision'],
     });
     expect(r.status, isNot(200));

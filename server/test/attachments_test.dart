@@ -17,7 +17,7 @@ void main() {
 
   Future<Response> upload(
     Client client,
-    String band,
+    String org,
     String song, {
     List<int>? bytes,
     String contentType = 'application/pdf',
@@ -26,7 +26,7 @@ void main() {
     'attachments',
     {
       'id': uuid(),
-      'band': band,
+      'organization': org,
       'song': song,
       'name': 'Score',
       'pages': '1',
@@ -41,7 +41,7 @@ void main() {
   test('admins upload PDFs; members download them with a file token', () async {
     final f = await BandFixture.create(pb);
     final song = await f.createSong(f.admin);
-    final created = await upload(f.admin, f.id, song['id']);
+    final created = await upload(f.admin, f.orgId, song['id']);
     created.expectStatus(200);
     final file = created.json['file'] as String;
     expect(file, endsWith('.pdf'));
@@ -85,32 +85,32 @@ void main() {
     final f = await BandFixture.create(pb);
     final song = await f.createSong(f.admin);
     final big = [..._pdf, ...List<int>.filled(20 * 1024 * 1024, 32)];
-    final r = await upload(f.admin, f.id, song['id'], bytes: big);
+    final r = await upload(f.admin, f.orgId, song['id'], bytes: big);
     expect(r.status, 400);
   });
 
-  test('the song must belong to the same band', () async {
+  test('the song must belong to the same organization', () async {
     final f = await BandFixture.create(pb);
     final other = await BandFixture.create(pb);
     final foreignSong = await other.createSong(other.admin);
-    final r = await upload(f.admin, f.id, foreignSong['id']);
+    final r = await upload(f.admin, f.orgId, foreignSong['id']);
     expect(r.status, 400);
   });
 
   test('members upload only if the band allows song editing', () async {
     final strict = await BandFixture.create(pb);
     final s1 = await strict.createSong(strict.admin);
-    expect((await upload(strict.member, strict.id, s1['id'])).status, 400);
+    expect((await upload(strict.member, strict.orgId, s1['id'])).status, 400);
 
     final relaxed = await BandFixture.create(pb, membersCanEditSongs: true);
     final s2 = await relaxed.createSong(relaxed.admin);
-    (await upload(relaxed.member, relaxed.id, s2['id'])).expectStatus(200);
+    (await upload(relaxed.member, relaxed.orgId, s2['id'])).expectStatus(200);
   });
 
   test('files are immutable; metadata can change', () async {
     final f = await BandFixture.create(pb);
     final song = await f.createSong(f.admin);
-    final created = await upload(f.admin, f.id, song['id']);
+    final created = await upload(f.admin, f.orgId, song['id']);
     final id = created.json['id'] as String;
 
     final renamed = await f.admin.patch('attachments', id, {'name': 'Lead'});
@@ -132,7 +132,7 @@ void main() {
   test('only admins delete attachments', () async {
     final f = await BandFixture.create(pb, membersCanEditSongs: true);
     final song = await f.createSong(f.admin);
-    final created = await upload(f.admin, f.id, song['id']);
+    final created = await upload(f.admin, f.orgId, song['id']);
     final id = created.json['id'] as String;
     expect(
       (await f.member.patch('attachments', id, {'deleted': true})).status,

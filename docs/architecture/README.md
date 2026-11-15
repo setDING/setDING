@@ -20,10 +20,11 @@ RealChord (working title until 2026-11-15: BandChords) is an app that lets bands
 
 | Role | Responsibilities |
 |---|---|
-| **Admin / band leader** | Manage the band, invite members, create/edit songs, put sets together. A band can have several admins. |
+| **Organization admin** | Manage the organization (e.g. a music school or a church with several bands): invite people, create bands, manage all its bands and its song library |
+| **Admin / band leader** | Manage the band, add organization members to it, create/edit songs, put sets together. A band can have several admins. |
 | **Member** | View sets and use them live, personal adjustments (transposition, notes, font size); edit songs if enabled for the band |
 
-A user can be a member of several bands; the role is defined per band (ADR-0005).
+A user can be a member of several organizations and bands; roles are defined per organization and per band (ADR-0005, ADR-0017). The bands of an organization share its song library; nothing is shared across organizations, and users only see the people of their own organizations.
 
 ## 2. Quality goals (prioritized)
 
@@ -50,6 +51,7 @@ A user can be a member of several bands; the role is defined per band (ADR-0005)
 | SongSelect (CCLI) | **No API integration** (partner program closed); manual import of ChordPro files downloaded from SongSelect | [ADR-0011](adr/0011-songselect-import.md) |
 | Server hosting | **Debian LXC** on Proxmox, PocketBase as systemd service, published via **Cloudflare Tunnel**, daily backups, provisioned with `make server-install` | [ADR-0014](adr/0014-server-hosting.md) |
 | Sign-in & session | Email/password via `SyncBackend` (PocketBase SDK, pinned), session in secure storage, kept while offline, refreshed when online, 30-day tokens | [ADR-0016](adr/0016-client-authentication.md) |
+| Organizations | Bands belong to an **organization** that owns the shared song library; organization admins manage people and bands; created automatically for a single band | [ADR-0017](adr/0017-organizations.md) |
 | Server data model | PocketBase collections as migrations, server-wide revision counter, set items as JSON, access rules per role, tested against a real PocketBase | [ADR-0015](adr/0015-server-data-model.md) |
 | Printable set list | PDF generated in the client with the `pdf` package, embedded font, saved via the save dialog; no print plugin yet | [ADR-0013](adr/0013-printable-set-list.md) |
 
@@ -104,18 +106,23 @@ flowchart LR
 
 ```mermaid
 erDiagram
+    ORGANIZATION ||--o{ ORG_MEMBERSHIP : has
+    USER ||--o{ ORG_MEMBERSHIP : is
+    ORGANIZATION ||--o{ BAND : contains
+    ORGANIZATION ||--o{ SONG : owns
     BAND ||--o{ MEMBERSHIP : has
     USER ||--o{ MEMBERSHIP : is
-    BAND ||--o{ SONG : owns
     BAND ||--o{ SETLIST : owns
     SETLIST ||--o{ SET_ITEM : contains
     SONG ||--o{ SET_ITEM : "referenced by"
     USER ||--o{ PERSONAL_OVERLAY : has
     SONG ||--o{ PERSONAL_OVERLAY : "applies to"
     SONG ||--o{ ATTACHMENT : has
-    BAND ||--o{ INVITATION : has
+    ORGANIZATION ||--o{ INVITATION : has
 
-    BAND { uuid id string name bool members_can_edit_songs }
+    ORGANIZATION { uuid id string name }
+    ORG_MEMBERSHIP { uuid organization_id uuid user_id enum role "admin|member" }
+    BAND { uuid id uuid organization_id string name bool members_can_edit_songs }
     USER { uuid id string name string email string locale }
     MEMBERSHIP { uuid band_id uuid user_id enum role "admin|member" }
     SONG { uuid id string chordpro_source string title string artist string key int tempo int revision timestamp updated_at bool deleted }
@@ -123,7 +130,7 @@ erDiagram
     SET_ITEM { uuid id uuid set_id uuid song_id int position int transpose string sequence string note string type "song|break|text" }
     PERSONAL_OVERLAY { uuid user_id uuid song_id int transpose int capo float font_scale string notes bool nashville string live_view "chordpro|attachment_id" }
     ATTACHMENT { uuid id uuid song_id string name file pdf int pages int size_bytes int revision bool deleted }
-    INVITATION { uuid id uuid band_id string token_hash uuid created_by timestamp expires_at int used_count bool revoked }
+    INVITATION { uuid id uuid organization_id string token_hash uuid created_by timestamp expires_at int used_count bool revoked }
 ```
 
 Notes:
@@ -204,6 +211,9 @@ song/set sync, PDF sync).
   password reset, server URL) behind the `SyncBackend` interface; session in the
   platform's secure storage, kept while offline (ADR-0016, accepted). Password reset
   needs SMTP on the server (open). Bands, sync and invitations follow (#15–#18).
+- **Organizations (#21):** server model with organizations and a shared song library
+  per organization (ADR-0017, accepted). The app part of bands and roles (#15) is
+  paused on its branch and will be adapted to organizations.
 
 ## 9. Open questions
 
@@ -245,5 +255,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0014](adr/0014-server-hosting.md) | Server hosting and operations | Accepted |
 | [0015](adr/0015-server-data-model.md) | Server data model and access rules | Accepted |
 | [0016](adr/0016-client-authentication.md) | Client authentication and session storage | Accepted |
+| [0017](adr/0017-organizations.md) | Organizations with a shared song library | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.

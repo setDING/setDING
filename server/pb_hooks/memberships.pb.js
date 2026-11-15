@@ -1,22 +1,16 @@
 /// <reference path="../pb_data/types.d.ts" />
 
-// Every band must always keep at least one admin (ADR-0005): demoting or
-// removing the last active admin is refused.
+// Band memberships (ADR-0005, ADR-0017): only members of the band's
+// organization can be band members, and a band keeps at least one admin.
+
+onRecordCreate((e) => {
+  require(`${__hooks}/lib/members.js`).requireOrgMember(e);
+  e.next();
+}, "memberships");
+
 onRecordUpdate((e) => {
-  const before = e.record.original();
-  const wasAdmin = before.getString("role") === "admin" && !before.getBool("deleted");
-  const isAdmin = e.record.getString("role") === "admin" && !e.record.getBool("deleted");
-  if (wasAdmin && !isAdmin) {
-    const others = e.app.countRecords(
-      "memberships",
-      $dbx.hashExp({ band: e.record.getString("band"), role: "admin", deleted: false }),
-      $dbx.not($dbx.hashExp({ id: e.record.id })),
-    );
-    if (others === 0) {
-      throw new BadRequestError("A band must keep at least one admin.", {
-        role: new ValidationError("last_admin", "A band must keep at least one admin."),
-      });
-    }
-  }
+  const members = require(`${__hooks}/lib/members.js`);
+  members.keepLastAdmin(e, "memberships", "band");
+  members.requireOrgMember(e);
   e.next();
 }, "memberships");
