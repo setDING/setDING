@@ -52,4 +52,4 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 
 ## Open points
 
-- Repository host and name (GitHub assumed; name depends on the app name, see `docs/app-name-candidates.md`).
+- Repository host (GitHub assumed). The repository name follows the app name RealChord (`realchord`), decided 2026-11-15.

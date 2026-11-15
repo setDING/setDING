@@ -1,13 +1,13 @@
-# BandChords – Architecture
+# RealChord – Architecture
 
-> Status: **Draft for discussion** (most core decisions accepted) · Last updated: 2026-11-14
+> Status: **Draft for discussion** (most core decisions accepted) · Last updated: 2026-11-15
 >
 > This document describes the overall architecture. Individual decisions are recorded
 > as Architecture Decision Records (ADRs) in [`adr/`](adr/).
 
 ## 1. Goal and context
 
-BandChords is an app that lets bands see the chords of their songs on tablets
+RealChord (working title until 2026-11-15: BandChords) is an app that lets bands see the chords of their songs on tablets
 (Android, iOS, Windows) while performing – similar to SongBook Pro, but focused on
 **sets that are managed together** within a band.
 
@@ -203,7 +203,7 @@ See "Open points" in the individual ADRs. The most important:
 9. ~~Invitation flow?~~ → Invitation link (reusable, 7 days, revocable, member role) plus QR code (ADR-0005)
 10. ~~PDF details?~~ → All attachments on every device, max. 20 MB per PDF, PDF-only songs allowed, local PDFs in the MVP (ADR-0009)
 11. Server details: OS, Docker, public domain/HTTPS – also needed for deep links of invitation links (ADR-0004, ADR-0005)
-12. App name and domain – "BandChords" is a working title; candidates in [`docs/app-name-candidates.md`](../app-name-candidates.md)
+12. ~~App name and domain?~~ → **RealChord**, domains `realchord.app` / `realchord.ch` ([`docs/app-name-candidates.md`](../app-name-candidates.md)). Open: register the domains, trademark check (swissreg/EUIPO), rename code identifiers
 13. ~~May agents merge their own PRs?~~ → Yes, from the start, but only when all tests pass (test gate, ADR-0010). Open: repository host and name
 14. ~~SongSelect import?~~ → No API integration, manual ChordPro import (ADR-0011, accepted). Open: test with a real SongSelect file, show copyright/CCLI number?
 15. ~~Printable set list?~~ → PDF in the client with the `pdf` package and embedded Noto Sans (ADR-0013, accepted). Open: Letter paper, export options, native print dialog

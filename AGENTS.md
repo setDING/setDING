@@ -4,7 +4,7 @@ Guidance for AI coding agents (and humans) working on this repository.
 
 ## Project
 
-BandChords is an app that shows bands the chords of their songs (ChordPro) on tablets
+RealChord (formerly the working title BandChords) is an app that shows bands the chords of their songs (ChordPro) on tablets
 (Android, iOS, Windows) during a performance. Admins put together sets; band members
 view and play them, offline-first.
 
@@ -52,7 +52,7 @@ Every change follows [`docs/development/git-workflow.md`](docs/development/git-w
 regression test (package and app). When adding or changing a ChordPro feature, extend
 the showcase and its tests, and run `make examples` to rebuild the ZIP.
 
-BandChords-specific directives are custom directives in the sense of the ChordPro
+RealChord-specific directives are custom directives in the sense of the ChordPro
 specification and **must start with `x_`** (e.g. `{x_sequence}`); never add directives
 without this prefix that the specification does not define.
 

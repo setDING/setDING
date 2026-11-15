@@ -1,12 +1,42 @@
 # App name candidates
 
-> Status: **Open** – no name chosen yet. "BandChords" is the working title.
+> Status: **Decided (2026-11-15): RealChord.** "BandChords" was the working title.
 > Collected: 2026-11-14
+
+## Decision
+
+The app is called **RealChord**.
+
+- **Idea:** a nod to the *Real Book* (the jazz musicians' lead sheet collection) and
+  "the real chords" – the reliable source on stage. Fits both strengths of the app:
+  managing and writing ChordPro, and playing live gigs.
+- **Pronunciation:** easy in German and English.
+- **Conflicts found (2026-11-15, web and app store search):** only "RealChord" by
+  LutherSoft, an old iPhone guitar chord reference from the iTunes era, apparently no
+  longer maintained. No registered trademark found. Similar but distinct names exist
+  ("Real Guitar – Tabs & Chords", a practice app).
+- **Weakness:** in English, "real chord" may suggest chord detection; a tagline such
+  as "RealChord – ChordPro for the stage" helps.
+- **Domains:** `realchord.app`, `realchord.ch` and `realchord.com` had no DNS
+  records on 2026-11-15 (a hint only, not proof that they are free).
+
+### Still to do
+
+1. Register `realchord.app` and `realchord.ch` (optionally `.com`) at a registrar.
+2. Trademark search at swissreg.ch and EUIPO/TMview, classes 9 and 42 (to be done by
+   a human; a web search does not replace it).
+3. Check the Google Play, Apple App Store and Microsoft Store for "RealChord".
+4. Rename the code and build identifiers (package names, application IDs, bundle
+   name in the `Makefile`, `BANDCHORDS_DATA_DIR`, feature showcase, `x_bandchords_*`
+   example directive) in a separate change. The ChordPro directive prefix `x_` is
+   not affected.
+
+## Criteria
 
 The name should be short, memorable, easy to pronounce in German and English, and
 available as a domain (the domain is also used for invitation links, ADR-0005).
 
-## Shortlist (favourites)
+## Earlier shortlist (2026-11-14)
 
 | Name | Idea | Possible domains |
 |---|---|---|
@@ -38,6 +68,9 @@ available as a domain (the domain is also used for invitation links, ADR-0005).
 
 | Name | Reason |
 |---|---|
+| MuseChord | "Muse" is heavily used in music software by Muse Group (MuseScore, MuseHub, Muse Sounds, MU/MUSE marks) → trademark risk; `musechord.com` taken |
+| StageChord | Already used by an offline ChordPro viewer with setlists (github.com/mikesprad/StageChord) and by a MIDI chord-detection plugin for live keyboarders (LiveKeyTools) |
+| ChordStage, ChordPilot, ChordCraft, ChordWise, ChordSmith, ChordLight, ChordCue, ChordPad, ChordFlow, Stagepad | `.app` domain already taken (DNS check 2026-11-15) |
 | Tutti | tutti.ch is a well-known Swiss classifieds marketplace → confusion / trademark risk |
 | Coda | Well-known software product (coda.io) |
 | Chordify, OnSong, BandHelper, SongbookPro, forScore | Existing music apps |
@@ -47,11 +80,7 @@ available as a domain (the domain is also used for invitation links, ADR-0005).
 - `.app` enforces HTTPS (required anyway for deep links of invitation links).
 - Additionally register `.ch` for protection and the Swiss market; `.band` is an option.
 
-## Checks before deciding (not done yet)
+## Further candidates considered (2026-11-15)
 
-1. Domain availability at the registrar
-2. App stores (Google Play, Apple App Store, Microsoft Store): no app with the same or a very similar name
-3. Trademarks: swissreg.ch (Switzerland) and EUIPO (EU)
-
-Once a name is chosen: update the architecture README, AGENTS.md and ADR-0005
-(invitation link domain), and remove this file or mark it as decided.
+CueChord, ChordLine, EncoreChord and SetChord had no app of the same name and mostly
+free-looking domains; RealChord was preferred.
