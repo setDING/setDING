@@ -48,6 +48,7 @@ A user can be a member of several bands; the role is defined per band (ADR-0005)
 | Sheet music | **PDF attachments** per song, synced and available offline, shown in live mode | [ADR-0009](adr/0009-pdf-attachments.md) |
 | ChordPro coverage | **Whole specification** (transpose, grids, markup, conditionals, diagrams, images, delegated environments) | [ADR-0012](adr/0012-full-chordpro-support.md) |
 | SongSelect (CCLI) | **No API integration** (partner program closed); manual import of ChordPro files downloaded from SongSelect | [ADR-0011](adr/0011-songselect-import.md) |
+| Server hosting | **Debian LXC** on Proxmox, PocketBase as systemd service, published via **Cloudflare Tunnel**, daily backups, provisioned with `make server-install` | [ADR-0014](adr/0014-server-hosting.md) |
 | Printable set list | PDF generated in the client with the `pdf` package, embedded font, saved via the save dialog; no print plugin yet | [ADR-0013](adr/0013-printable-set-list.md) |
 
 ## 4. Building block view
@@ -193,7 +194,7 @@ not yet built or run on a physical Android, iOS or Windows device.
 See "Open points" in the individual ADRs. The most important:
 
 1. ~~Client technology?~~ → Flutter (ADR-0002, accepted)
-2. ~~Self-hosting or cloud service?~~ → PocketBase, self-hosted on an existing server (ADR-0004). Open: server details (OS, Docker, domain/HTTPS)
+2. ~~Self-hosting or cloud service?~~ → PocketBase, self-hosted on an existing server (ADR-0004). Server details: see question 11
 3. ~~UI language?~~ → Swiss Standard German (`de-CH`) and English, selectable in the settings (ADR-0008)
 4. ~~May members edit songs?~~ → Configurable per band, default admins only; sets by admins only (ADR-0005)
 5. ~~Several bands per user?~~ → Yes; several admins per band; no guest role (ADR-0005)
@@ -202,7 +203,7 @@ See "Open points" in the individual ADRs. The most important:
 8. ~~Attachments offline?~~ → PDF sheet music yes, audio no (ADR-0001, ADR-0009)
 9. ~~Invitation flow?~~ → Invitation link (reusable, 7 days, revocable, member role) plus QR code (ADR-0005)
 10. ~~PDF details?~~ → All attachments on every device, max. 20 MB per PDF, PDF-only songs allowed, local PDFs in the MVP (ADR-0009)
-11. Server details: OS, Docker, public domain/HTTPS – also needed for deep links of invitation links (ADR-0004, ADR-0005)
+11. ~~Server details?~~ → Debian LXC on Proxmox, Cloudflare Tunnel, daily backups, `make server-*` targets (ADR-0014, accepted; [operations guide](../operations/server.md)). Open: final hostname, staging container, monitoring
 12. ~~App name and domain?~~ → **RealChord**, domains `realchord.app` / `realchord.ch` ([`docs/app-name-candidates.md`](../app-name-candidates.md)). Code identifiers renamed (`ch.realchord.realchord`). Open: register the domains, trademark check (swissreg/EUIPO)
 13. ~~May agents merge their own PRs?~~ → Yes, from the start, but only when all tests pass (test gate, ADR-0010). Host: self-hosted Forgejo, `github.com/tafli/RealChord`. Agents use `fj` with an access token; CI runs the test gate in Forgejo Actions. Open: build jobs, branch protection
 14. ~~SongSelect import?~~ → No API integration, manual ChordPro import (ADR-0011, accepted). Open: test with a real SongSelect file, show copyright/CCLI number?
@@ -225,5 +226,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0011](adr/0011-songselect-import.md) | Song import from CCLI SongSelect | Accepted |
 | [0012](adr/0012-full-chordpro-support.md) | Full ChordPro specification support | Accepted |
 | [0013](adr/0013-printable-set-list.md) | Printable set list as PDF | Accepted |
+| [0014](adr/0014-server-hosting.md) | Server hosting and operations | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.

@@ -7,6 +7,7 @@
 #   make dev        start a test instance with hot reload
 #   make start      build and start a test instance (without Flutter tooling)
 #   make reset      delete the test instance's data (fresh start with demo song)
+#   make server-*   install and operate the PocketBase server (SERVER=root@host)
 
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
@@ -28,17 +29,27 @@ FLUTTER_VERSION ?= 3.47.9
 CI_IMAGE        ?= ghcr.io/tafli/realchord-ci:$(FLUTTER_VERSION)
 DOCKER          ?= docker
 
+# PocketBase server (ADR-0014, docs/operations/server.md). SERVER is the SSH target,
+# e.g. `make server-status SERVER=root@realchord` (or export SERVER once).
+# PB_VERSION is the pinned PocketBase version; updates are deliberate (ADR-0004).
+SERVER          ?=
+PB_VERSION      ?= 0.40.6
+SSH             ?= ssh
+SERVER_BACKUPS  := /var/lib/pocketbase/backups
+BACKUP_DIR      ?= $(ROOT)/.server-backups
+
 # Redirects the app's private data to DATA_DIR: REALCHORD_DATA_DIR for the
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := REALCHORD_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build reset data-dir check test codegen l10n screenshots examples doctor clean ci-image ci-image-push
+.PHONY: help setup dev start build reset data-dir check test codegen l10n screenshots examples doctor clean ci-image ci-image-push \
+	server-target server-install server-status server-logs server-backup server-fetch-backup server-ssh
 
 help: ## Show this help
 	@echo "RealChord – make targets"
 	@echo
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | \
-		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
+		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo
 	@echo "Test data: $(DATA_DIR)   (override with DATA_DIR=...)"
 	@echo "Flutter:   $(FLUTTER)"
@@ -99,3 +110,31 @@ ci-image: ## Build the CI image (tool/ci/Dockerfile) with docker
 
 ci-image-push: ## Push the CI image (needs: docker login ghcr.io)
 	$(DOCKER) push $(CI_IMAGE)
+
+server-target:
+	@test -n "$(SERVER)" || { echo "Set SERVER to the SSH target, e.g. make $(MAKECMDGOALS) SERVER=root@realchord"; exit 1; }
+
+server-install: server-target ## Install or update the server (PocketBase PB_VERSION, hooks, migrations)
+	tar -C $(ROOT) -czf - tool/server server/pb_hooks server/pb_migrations | \
+		$(SSH) $(SERVER) 'd=$$(mktemp -d /tmp/realchord-setup.XXXXXX) && tar -C $$d -xzf - && bash $$d/tool/server/install.sh $(PB_VERSION)'
+
+server-status: server-target ## Show services, PocketBase version and backups of the server
+	@$(SSH) $(SERVER) 'systemctl --no-pager --lines=0 status pocketbase cloudflared realchord-backup.timer; \
+		echo; /opt/pocketbase/pocketbase --version; curl -fsS http://127.0.0.1:8090/api/health; echo; \
+		echo; echo "Backups:"; ls -lh $(SERVER_BACKUPS) | tail -n 5; echo; df -h /'
+
+server-logs: server-target ## Follow the PocketBase and tunnel logs of the server (Ctrl+C to stop)
+	$(SSH) -t $(SERVER) 'journalctl -u pocketbase -u cloudflared -n 100 -f'
+
+server-backup: server-target ## Run a backup on the server now
+	$(SSH) $(SERVER) 'systemctl start realchord-backup.service && journalctl -u realchord-backup -n 3 -o cat'
+
+server-fetch-backup: server-target ## Copy the latest server backup to BACKUP_DIR (off-host copy)
+	@mkdir -p "$(BACKUP_DIR)"
+	@latest=$$($(SSH) $(SERVER) 'ls -1t $(SERVER_BACKUPS)/realchord-*.tar.gz 2>/dev/null | head -n 1'); \
+		test -n "$$latest" || { echo "No backup on the server yet"; exit 1; }; \
+		$(SSH) $(SERVER) "cat '$$latest'" >"$(BACKUP_DIR)/$$(basename $$latest)"; \
+		echo "Saved $(BACKUP_DIR)/$$(basename $$latest)"
+
+server-ssh: server-target ## Open a shell on the server
+	$(SSH) $(SERVER)

@@ -46,3 +46,6 @@ pb_data/
 
 # Copyrighted sample files (e.g. from CCLI SongSelect) – never commit
 docs/chordpro/
+
+# Server backups fetched with make server-fetch-backup
+.server-backups/

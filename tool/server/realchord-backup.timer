@@ -1,0 +1,11 @@
+# Daily backup of the PocketBase data (ADR-0014). Installed by tool/server/install.sh.
+[Unit]
+Description=Daily RealChord backup
+
+[Timer]
+OnCalendar=*-*-* 03:30:00
+RandomizedDelaySec=15m
+Persistent=true
+
+[Install]
+WantedBy=timers.target

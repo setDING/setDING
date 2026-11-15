@@ -33,7 +33,8 @@ The documentation must always reflect the current state of the project:
 
 Use the `Makefile` in the repository root (`make help`): `make check` is the test gate,
 `make dev` / `make start` run an isolated local test instance on Linux, `make reset`
-deletes its data.
+deletes its data. `make server-*` installs and operates the PocketBase server over SSH
+(see [`docs/operations/server.md`](docs/operations/server.md), ADR-0014).
 
 ## Git workflow (mandatory)
 
@@ -79,3 +80,4 @@ See the ADR index in the architecture README for the current status. In short:
 - Git workflow with test gate before every merge (ADR-0010)
 - No SongSelect API integration; manual ChordPro import (ADR-0011)
 - Whole ChordPro specification supported, in phases (ADR-0012)
+- Server: Debian LXC on Proxmox, PocketBase via systemd, Cloudflare Tunnel, provisioned with `make server-install` (ADR-0014)

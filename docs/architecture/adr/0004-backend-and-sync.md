@@ -54,6 +54,7 @@ but contains no ChordPro logic.
 
 - The client encapsulates backend access behind a `SyncBackend` interface, so a later switch (e.g. to Supabase or an own backend) only affects the sync layer.
 - Operations: set up backups of the server's SQLite file; HTTPS via a reverse proxy (e.g. Caddy).
+  Hosting, publication (Cloudflare Tunnel instead of Caddy) and backups: ADR-0014.
 - Server access rules ensure that users only see data of their own bands.
 - Exception to the "dumb backend": **redeeming invitation links** (ADR-0005) needs a
   small server-side hook (PocketBase `pb_hooks`) that validates the token and creates
@@ -64,9 +65,8 @@ but contains no ChordPro logic.
 
 - 2026-11-14: The backend is **self-hosted** on an **existing server**. Managed cloud services (Supabase Cloud, Firebase) and syncing via a shared folder are therefore rejected.
 - 2026-11-14: **PocketBase** confirmed as the backend product. Because PocketBase is still pre-1.0, a specific version is pinned and updates are applied deliberately. Client access remains encapsulated behind the `SyncBackend` interface.
+- 2026-11-15: Server details and backup concept decided in **ADR-0014** (accepted): Debian LXC on the owner's Proxmox server, PocketBase as a systemd service, published via a Cloudflare Tunnel (replaces the Caddy reverse proxy), daily SQLite online backups, provisioning with `make server-install`.
 
 ## Open points
 
-- Details of the existing server: operating system, architecture (x86/ARM), Docker available, publicly reachable with domain/HTTPS or only via VPN?
-- Backup concept for the server database.
 - Should there be a version history for songs (restore earlier versions)?
