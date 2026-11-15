@@ -76,6 +76,7 @@ server details (OS, Docker, domain/HTTPS) and the backup concept. They are now k
 - 2026-11-15: Accepted by the owner.
 - 2026-11-15: Production instance installed: Proxmox CT 600, public hostname `api.realchord.app`.
 - 2026-11-15: The web client (ADR-0018, accepted) is served by the same PocketBase from `pb_public`, deployed with the server targets and published as a second tunnel hostname `app.realchord.app` (tunnel and DNS entry by the owner).
+- 2026-11-15: The container time zone is set to `Europe/Zurich` by `install.sh` (it was `Etc/UTC`, so logs, backup names and the backup timer were an hour off). The clock comes from the Proxmox host; PocketBase keeps storing UTC.
 
 ## Open points
 

@@ -50,7 +50,8 @@ make server-install SERVER=root@<ip>
 The script ([`tool/server/install.sh`](../../tool/server/install.sh)) installs the
 pinned PocketBase version (`PB_VERSION` in the `Makefile`), hooks and migrations from
 [`server/`](../../server), the systemd units, the backup timer, `cloudflared`,
-unattended security updates, and switches SSH to keys only (only if root has an
+unattended security updates, sets the time zone to `Europe/Zurich` (the clock itself
+comes from the Proxmox host), and switches SSH to keys only (only if root has an
 authorized key). It ends with a health check.
 
 ## 3. Cloudflare tunnel (owner)
@@ -120,7 +121,7 @@ pasting and the QR code. Cloudflare must not challenge `/invite/*` and `/.well-k
 
 ## Backups
 
-- **Daily on the server** (`realchord-backup.timer`, 03:30): SQLite online backup of
+- **Daily on the server** (`realchord-backup.timer`, 03:30 Swiss time): SQLite online backup of
   `data.db` (integrity checked) plus the `storage/` files (PDF attachments) as
   `/var/lib/pocketbase/backups/realchord-<timestamp>.tar.gz`, kept 14 days.
 - **Off-host:** include the container in the Proxmox backup job (snapshot mode), and

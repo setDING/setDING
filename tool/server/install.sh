@@ -38,6 +38,15 @@ APT::Periodic::Update-Package-Lists "1";
 APT::Periodic::Unattended-Upgrade "1";
 EOF
 
+# --- Time zone ----------------------------------------------------------------
+# The clock comes from the Proxmox host (LXC); only the zone is set here, so logs,
+# backup names and the backup timer use Swiss time. PocketBase stores UTC anyway.
+TIMEZONE="${TIMEZONE:-Europe/Zurich}"
+if [ "$(timedatectl show -p Timezone --value 2>/dev/null)" != "$TIMEZONE" ]; then
+  step "Time zone $TIMEZONE"
+  timedatectl set-timezone "$TIMEZONE"
+fi
+
 # --- SSH: keys only ----------------------------------------------------------
 # Only when root has an authorized key, so the script never locks anyone out.
 if [ -s /root/.ssh/authorized_keys ] && [ -d /etc/ssh/sshd_config.d ]; then
