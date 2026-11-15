@@ -61,4 +61,6 @@ size/zoom setting is relevant.
 
 ## Open points
 
-- None.
+- Owner of an overlay on shared devices and the sync with the account
+  (phase 2): proposed in [ADR-0020](0020-overlays-per-user.md). Until it is
+  accepted, overlays are stored per device (key: song).
