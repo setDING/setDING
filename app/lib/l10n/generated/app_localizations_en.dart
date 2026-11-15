@@ -1226,6 +1226,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncNow => 'Sync now';
 
   @override
+  String get settingsSyncMode => 'Sync';
+
+  @override
+  String get syncModeAutomatic => 'Automatic';
+
+  @override
+  String get syncModeOnStart => 'At start';
+
+  @override
+  String get syncModeManual => 'Manual';
+
+  @override
+  String get syncModeAutomaticHint =>
+      'Syncs at start, a few seconds after changes, when something changes on the server and every 5 minutes.';
+
+  @override
+  String get syncModeOnStartHint =>
+      'Syncs once when the app starts and after signing in. Otherwise with \"Sync now\".';
+
+  @override
+  String get syncModeManualHint => 'Syncs only when you tap \"Sync now\".';
+
+  @override
   String get syncRunning => 'Syncing …';
 
   @override

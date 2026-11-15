@@ -596,6 +596,13 @@
   "joinHaveAccount": "Ich habe schon ein Konto",
   "syncTitle": "Synchronisation",
   "syncNow": "Jetzt synchronisieren",
+  "settingsSyncMode": "Synchronisieren",
+  "syncModeAutomatic": "Automatisch",
+  "syncModeOnStart": "Beim Start",
+  "syncModeManual": "Manuell",
+  "syncModeAutomaticHint": "Synchronisiert beim Start, wenige Sekunden nach Änderungen, bei Änderungen auf dem Server und alle 5 Minuten.",
+  "syncModeOnStartHint": "Synchronisiert einmal beim Start der App und nach dem Anmelden. Sonst mit «Jetzt synchronisieren».",
+  "syncModeManualHint": "Synchronisiert nur, wenn du auf «Jetzt synchronisieren» tippst.",
   "syncRunning": "Synchronisiere …",
   "syncLast": "Zuletzt synchronisiert: {time}",
   "@syncLast": {

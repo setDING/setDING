@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../providers.dart';
 import '../settings/settings.dart';
+import '../sync/auth_providers.dart';
 import 'account/account_section.dart';
 import 'widgets/dialogs.dart';
 
@@ -67,6 +68,22 @@ class SettingsScreen extends ConsumerWidget {
             children: [
               header(l10n.settingsSectionAccount),
               const AccountSection(),
+              if (ref.watch(authProvider) != null)
+                choice(
+                  l10n.settingsSyncMode,
+                  s.syncMode,
+                  {
+                    SyncMode.automatic: l10n.syncModeAutomatic,
+                    SyncMode.onStart: l10n.syncModeOnStart,
+                    SyncMode.manual: l10n.syncModeManual,
+                  },
+                  (v) => notifier.update((s) => s.copyWith(syncMode: v)),
+                  hint: switch (s.syncMode) {
+                    SyncMode.automatic => l10n.syncModeAutomaticHint,
+                    SyncMode.onStart => l10n.syncModeOnStartHint,
+                    SyncMode.manual => l10n.syncModeManualHint,
+                  },
+                ),
 
               header(l10n.settingsSectionGeneral),
               choice(l10n.settingsLanguage, s.language, {

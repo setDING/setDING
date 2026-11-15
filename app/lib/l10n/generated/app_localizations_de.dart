@@ -1236,6 +1236,30 @@ class AppLocalizationsDe extends AppLocalizations {
   String get syncNow => 'Jetzt synchronisieren';
 
   @override
+  String get settingsSyncMode => 'Synchronisieren';
+
+  @override
+  String get syncModeAutomatic => 'Automatisch';
+
+  @override
+  String get syncModeOnStart => 'Beim Start';
+
+  @override
+  String get syncModeManual => 'Manuell';
+
+  @override
+  String get syncModeAutomaticHint =>
+      'Synchronisiert beim Start, wenige Sekunden nach Änderungen, bei Änderungen auf dem Server und alle 5 Minuten.';
+
+  @override
+  String get syncModeOnStartHint =>
+      'Synchronisiert einmal beim Start der App und nach dem Anmelden. Sonst mit «Jetzt synchronisieren».';
+
+  @override
+  String get syncModeManualHint =>
+      'Synchronisiert nur, wenn du auf «Jetzt synchronisieren» tippst.';
+
+  @override
   String get syncRunning => 'Synchronisiere …';
 
   @override

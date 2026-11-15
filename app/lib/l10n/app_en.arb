@@ -481,6 +481,13 @@
   "joinHaveAccount": "I already have an account",
   "syncTitle": "Sync",
   "syncNow": "Sync now",
+  "settingsSyncMode": "Sync",
+  "syncModeAutomatic": "Automatic",
+  "syncModeOnStart": "At start",
+  "syncModeManual": "Manual",
+  "syncModeAutomaticHint": "Syncs at start, a few seconds after changes, when something changes on the server and every 5 minutes.",
+  "syncModeOnStartHint": "Syncs once when the app starts and after signing in. Otherwise with \"Sync now\".",
+  "syncModeManualHint": "Syncs only when you tap \"Sync now\".",
   "syncRunning": "Syncing …",
   "syncLast": "Last synced: {time}",
   "@syncLast": {

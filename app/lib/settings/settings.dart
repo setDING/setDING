@@ -23,6 +23,18 @@ enum ColumnMode { auto, one, two, three }
 /// How far a page turn moves.
 enum PageTurnMode { full, half }
 
+/// When syncs start (ADR-0004); "Sync now" is always available.
+enum SyncMode {
+  /// At start, after local changes, on server changes and periodically.
+  automatic,
+
+  /// Once at start and after signing in.
+  onStart,
+
+  /// Only with "Sync now".
+  manual,
+}
+
 /// Device settings (layer 4, ADR-0006). Stored locally per device.
 @immutable
 class AppSettings {
@@ -41,6 +53,7 @@ class AppSettings {
     this.userName = '',
     this.diagrams = DiagramsPosition.off,
     this.serverUrl = defaultServerUrl,
+    this.syncMode = SyncMode.onStart,
   });
 
   final LanguageMode language;
@@ -71,6 +84,9 @@ class AppSettings {
   /// RealChord server for accounts and sync (ADR-0004); changeable for a
   /// local test server (`make backend`).
   final String serverUrl;
+
+  /// When syncs start.
+  final SyncMode syncMode;
 
   /// Instrument presets offered in the settings.
   static const instruments = [
@@ -120,6 +136,7 @@ class AppSettings {
     String? userName,
     DiagramsPosition? diagrams,
     String? serverUrl,
+    SyncMode? syncMode,
   }) => AppSettings(
     language: language ?? this.language,
     notation: notation ?? this.notation,
@@ -135,6 +152,7 @@ class AppSettings {
     diagrams: diagrams ?? this.diagrams,
     fontSize: fontSize ?? this.fontSize,
     serverUrl: serverUrl ?? this.serverUrl,
+    syncMode: syncMode ?? this.syncMode,
   );
 
   static AppSettings load(SharedPreferences prefs) {
@@ -158,6 +176,7 @@ class AppSettings {
       userName: prefs.getString('userName') ?? d.userName,
       diagrams: pick(DiagramsPosition.values, 'diagrams', d.diagrams),
       serverUrl: prefs.getString('serverUrl') ?? d.serverUrl,
+      syncMode: pick(SyncMode.values, 'syncMode', d.syncMode),
       fontSize: (prefs.getDouble('fontSize') ?? d.fontSize).clamp(
         minFontSize,
         maxFontSize,
@@ -180,6 +199,7 @@ class AppSettings {
     await prefs.setString('diagrams', diagrams.name);
     await prefs.setDouble('fontSize', fontSize);
     await prefs.setString('serverUrl', serverUrl);
+    await prefs.setString('syncMode', syncMode.name);
   }
 }
 

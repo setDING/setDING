@@ -23,5 +23,7 @@ Future<void> markDirty(
     'ON CONFLICT (collection, record_id) DO UPDATE SET version = version + 1',
     [collection, recordId],
   );
-  db.notifyUpdates({TableUpdate.onTable(db.syncOutbox)});
+  db.notifyUpdates({
+    TableUpdate.onTable(db.syncOutbox, kind: UpdateKind.insert),
+  });
 }

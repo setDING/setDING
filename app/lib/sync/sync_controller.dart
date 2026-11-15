@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/database.dart';
 import '../providers.dart';
+import '../settings/settings.dart';
 import '../ui/bands/copy_to_band.dart' show bandCopyProvider;
 import 'auth_providers.dart';
 import 'sync_engine.dart';
@@ -46,10 +47,11 @@ class SyncStatus {
   );
 }
 
-/// Starts syncs (ADR-0004): after signing in and at start, a few seconds
-/// after local changes, on realtime events from the server and every few
-/// minutes. Paused while live mode is open, so nothing changes on stage
-/// (ADR-0007); a sync requested meanwhile runs afterwards.
+/// Starts syncs (ADR-0004) according to the [SyncMode] setting: once after
+/// signing in and at start (unless manual); in automatic mode also a few
+/// seconds after local changes, on realtime events from the server and
+/// every few minutes. Paused while live mode is open, so nothing changes on
+/// stage (ADR-0007); a sync requested meanwhile runs afterwards.
 class SyncController extends Notifier<SyncStatus> {
   static const localDelay = Duration(seconds: 3);
   static const remoteDelay = Duration(seconds: 1);
@@ -58,32 +60,58 @@ class SyncController extends Notifier<SyncStatus> {
   Timer? _debounce;
   int _paused = 0;
   bool _requested = false;
+  final _auto = <void Function()>[];
 
   @override
   SyncStatus build() {
     final userId = ref.watch(authProvider.select((u) => u?.id));
+    ref.onDispose(() {
+      _stopAutomatic();
+      _debounce?.cancel();
+    });
     if (userId == null || !ref.watch(autoSyncProvider)) {
       return const SyncStatus();
     }
-    final db = ref.watch(databaseProvider);
-    final backend = ref.watch(syncBackendProvider);
-
-    final outbox = db
-        .tableUpdates(TableUpdateQuery.onTable(db.syncOutbox))
-        .listen((_) => _schedule(localDelay));
-    final remote = backend.watchChanges().listen(
-      (_) => _schedule(remoteDelay),
-      onError: (Object _) {},
+    // Read, not watched: changing the mode must not rebuild (and reset)
+    // the controller.
+    final mode = ref.read(settingsProvider).syncMode;
+    ref.listen(
+      settingsProvider.select((s) => s.syncMode),
+      (_, next) => _applyMode(next),
     );
-    final periodic = Timer.periodic(interval, (_) => syncNow());
-    ref.onDispose(() {
-      outbox.cancel();
-      remote.cancel();
-      periodic.cancel();
-      _debounce?.cancel();
-    });
-    Future.microtask(syncNow);
+    _applyMode(mode);
+    // At start and after signing in.
+    if (mode != SyncMode.manual) Future.microtask(syncNow);
     return const SyncStatus();
+  }
+
+  void _applyMode(SyncMode mode) {
+    _stopAutomatic();
+    if (mode != SyncMode.automatic) return;
+    final db = ref.read(databaseProvider);
+    // New or changed entries only: entries the sync itself removes after
+    // pushing must not start the next sync.
+    final outbox = db
+        .tableUpdates(
+          TableUpdateQuery.onTable(
+            db.syncOutbox,
+            limitUpdateKind: UpdateKind.insert,
+          ),
+        )
+        .listen((_) => _schedule(localDelay));
+    final remote = ref
+        .read(syncBackendProvider)
+        .watchChanges()
+        .listen((_) => _schedule(remoteDelay), onError: (Object _) {});
+    final periodic = Timer.periodic(interval, (_) => syncNow());
+    _auto.addAll([outbox.cancel, remote.cancel, periodic.cancel]);
+  }
+
+  void _stopAutomatic() {
+    for (final cancel in _auto) {
+      cancel();
+    }
+    _auto.clear();
   }
 
   void _schedule(Duration delay) {

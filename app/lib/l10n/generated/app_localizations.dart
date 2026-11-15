@@ -2234,6 +2234,48 @@ abstract class AppLocalizations {
   /// **'Jetzt synchronisieren'**
   String get syncNow;
 
+  /// No description provided for @settingsSyncMode.
+  ///
+  /// In de, this message translates to:
+  /// **'Synchronisieren'**
+  String get settingsSyncMode;
+
+  /// No description provided for @syncModeAutomatic.
+  ///
+  /// In de, this message translates to:
+  /// **'Automatisch'**
+  String get syncModeAutomatic;
+
+  /// No description provided for @syncModeOnStart.
+  ///
+  /// In de, this message translates to:
+  /// **'Beim Start'**
+  String get syncModeOnStart;
+
+  /// No description provided for @syncModeManual.
+  ///
+  /// In de, this message translates to:
+  /// **'Manuell'**
+  String get syncModeManual;
+
+  /// No description provided for @syncModeAutomaticHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Synchronisiert beim Start, wenige Sekunden nach Änderungen, bei Änderungen auf dem Server und alle 5 Minuten.'**
+  String get syncModeAutomaticHint;
+
+  /// No description provided for @syncModeOnStartHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Synchronisiert einmal beim Start der App und nach dem Anmelden. Sonst mit «Jetzt synchronisieren».'**
+  String get syncModeOnStartHint;
+
+  /// No description provided for @syncModeManualHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Synchronisiert nur, wenn du auf «Jetzt synchronisieren» tippst.'**
+  String get syncModeManualHint;
+
   /// No description provided for @syncRunning.
   ///
   /// In de, this message translates to:

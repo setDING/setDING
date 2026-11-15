@@ -1,7 +1,8 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
+import 'package:drift/drift.dart'
+    show TableUpdateQuery, UpdateKind, Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:realchord/data/attachment_storage.dart';
@@ -503,6 +504,24 @@ void main() {
       expect(server.sets.keys, [setId]);
       expect(server.attachments.keys, [a]);
       expect(await outbox(), isEmpty);
+    });
+
+    test('a sync with nothing to add reports no new outbox entries', () async {
+      await songs.createSong(source: '{title: Synced}');
+      await engine.sync();
+      var events = 0;
+      final sub = db
+          .tableUpdates(
+            TableUpdateQuery.onTable(
+              db.syncOutbox,
+              limitUpdateKind: UpdateKind.insert,
+            ),
+          )
+          .listen((_) => events++);
+      await engine.sync();
+      await Future<void>.delayed(Duration.zero);
+      await sub.cancel();
+      expect(events, 0);
     });
 
     test('records without permission are not retried every sync', () async {

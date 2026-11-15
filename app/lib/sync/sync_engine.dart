@@ -418,12 +418,16 @@ class SyncEngine {
         if (b.canManageSets && !b.isLocal) b.id,
     };
     String placeholders(int n) => List.filled(n, '?').join(', ');
-    Future<void> enqueue(String collection, String select, List<String> args) =>
-        db.customStatement(
-          'INSERT OR IGNORE INTO sync_outbox (collection, record_id, version) '
-          "SELECT '$collection', id, 1 FROM ($select)",
-          args,
-        );
+    var added = 0;
+    Future<void> enqueue(
+      String collection,
+      String select,
+      List<String> args,
+    ) async => added += await db.customUpdate(
+      'INSERT OR IGNORE INTO sync_outbox (collection, record_id, version) '
+      "SELECT '$collection', id, 1 FROM ($select)",
+      variables: [for (final a in args) Variable.withString(a)],
+    );
     if (libraries.isNotEmpty) {
       final libs = libraries.toList();
       await enqueue(
@@ -450,7 +454,11 @@ class SyncEngine {
         ids,
       );
     }
-    db.notifyUpdates({TableUpdate.onTable(db.syncOutbox)});
+    if (added > 0) {
+      db.notifyUpdates({
+        TableUpdate.onTable(db.syncOutbox, kind: UpdateKind.insert),
+      });
+    }
   }
 
   /// Returns (pushed, new conflicts).

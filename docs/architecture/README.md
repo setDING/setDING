@@ -149,8 +149,8 @@ Notes:
 ### Preparing and distributing a set
 
 1. The band leader creates a set, adds songs and reorders them via drag & drop.
-2. Changes are written to the local DB immediately and synced as soon as the device is online.
-3. Member devices fetch changes (realtime push, or on app start / pull-to-refresh).
+2. Changes are written to the local DB immediately and synced according to the device's sync setting: at app start (default), automatically, or manually with "Sync now".
+3. Member devices fetch changes the same way (at start, with "Sync now", or in automatic mode on realtime events).
 4. For each set the app shows an **"Offline ready ✓"** status once all songs of the set and their PDF attachments are available locally and up to date.
 
 ### Joining a band
