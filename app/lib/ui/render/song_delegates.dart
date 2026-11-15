@@ -106,7 +106,7 @@ class DelegateView extends StatelessWidget {
       ),
     };
     return Padding(
-      padding: EdgeInsets.only(bottom: size * 0.8),
+      padding: EdgeInsets.only(bottom: size * SongSpacing.blockGap),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

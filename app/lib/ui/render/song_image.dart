@@ -6,6 +6,8 @@ import 'package:chordpro/chordpro.dart' show ImageLine;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import 'song_style.dart';
+
 /// Finds the file of an `{image: src=…}` (an attachment of the song).
 typedef ImageLookup = File? Function(String src);
 
@@ -295,7 +297,9 @@ class SongImageView extends StatelessWidget {
         );
       }
       return Padding(
-        padding: EdgeInsets.symmetric(vertical: fontSize * 0.15),
+        padding: EdgeInsets.symmetric(
+          vertical: fontSize * SongSpacing.lineItemPadding,
+        ),
         child: Align(alignment: box.alignment, child: image),
       );
     },

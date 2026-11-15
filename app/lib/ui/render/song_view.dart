@@ -85,7 +85,7 @@ class SongBody extends StatelessWidget {
           diagrams: options.songDiagrams,
           diagramsOnTop: options.diagramsPosition == DiagramsPosition.top,
         );
-    Widget render(SongBlock b) => b.delegate != null
+    Widget blockWidget(SongBlock b) => b.delegate != null
         ? DelegateView(
             delegate: b.delegate!,
             lyrics: style.lyricsFor(b.startFormat),
@@ -103,6 +103,9 @@ class SongBody extends StatelessWidget {
         : b.isRecallLabel
         ? _RecallLabel(block: b, style: style)
         : _SectionBlock(block: b, options: options, style: style);
+    // Keyed by index, so tests can compare rendered and measured heights.
+    Widget render(int i, SongBlock b) =>
+        KeyedSubtree(key: ValueKey(('song-block', i)), child: blockWidget(b));
 
     final columns = forcedColumns(blocks) != null && options.columns > 1
         ? forcedColumns(blocks)!
@@ -110,7 +113,7 @@ class SongBody extends StatelessWidget {
     if (columns <= 1) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [for (final b in blocks) render(b)],
+        children: [for (final (i, b) in blocks.indexed) render(i, b)],
       );
     }
     return LayoutBuilder(
@@ -146,7 +149,7 @@ class SongBody extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  for (final b in blocks.sublist(start, end)) render(b),
+                  for (var i = start; i < end; i++) render(i, blocks[i]),
                 ],
               ),
             ),
@@ -171,7 +174,9 @@ class _DiagramsBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.only(bottom: style.fontSize * 0.2),
+    padding: EdgeInsets.only(
+      bottom: style.fontSize * SongSpacing.diagramsBlockGap,
+    ),
     child: Wrap(
       spacing: style.fontSize * diagramSpacing,
       runSpacing: style.fontSize * diagramRunSpacing,
@@ -198,8 +203,8 @@ class _NotesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     width: double.infinity,
-    margin: EdgeInsets.only(bottom: style.fontSize * 0.8),
-    padding: EdgeInsets.all(style.fontSize * 0.5),
+    margin: EdgeInsets.only(bottom: style.fontSize * SongSpacing.blockGap),
+    padding: EdgeInsets.all(style.fontSize * SongSpacing.notesPadding),
     decoration: BoxDecoration(
       color: style.colors.tertiaryContainer,
       borderRadius: BorderRadius.circular(8),
@@ -209,15 +214,15 @@ class _NotesCard extends StatelessWidget {
       children: [
         Icon(
           Icons.sticky_note_2_outlined,
-          size: style.fontSize,
+          size: style.fontSize * SongSpacing.notesIcon,
           color: style.colors.onTertiaryContainer,
         ),
-        SizedBox(width: style.fontSize * 0.4),
+        SizedBox(width: style.fontSize * SongSpacing.notesIconGap),
         Expanded(
           child: Text(
             text,
             style: style.lyrics.copyWith(
-              fontSize: style.fontSize * 0.85,
+              fontSize: style.fontSize * SongSpacing.smallText,
               color: style.colors.onTertiaryContainer,
             ),
           ),
@@ -249,16 +254,16 @@ class _RecallLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     final labelStyle = style.labelFor(block.startFormat);
     return Padding(
-      padding: EdgeInsets.only(bottom: style.fontSize * 0.8),
+      padding: EdgeInsets.only(bottom: style.fontSize * SongSpacing.blockGap),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             Icons.repeat,
-            size: style.fontSize * 0.9,
+            size: style.fontSize * SongSpacing.recallIcon,
             color: labelStyle.color,
           ),
-          SizedBox(width: style.fontSize * 0.3),
+          SizedBox(width: style.fontSize * SongSpacing.iconGap),
           _Label(text: block.label!, style: labelStyle),
         ],
       ),
@@ -357,7 +362,7 @@ class _SectionBlock extends StatelessWidget {
                   )
                 : Padding(
                     padding: EdgeInsets.symmetric(
-                      vertical: style.fontSize * 0.15,
+                      vertical: style.fontSize * SongSpacing.lineItemPadding,
                     ),
                     child: ChordDiagramView(
                       data: data,
@@ -371,7 +376,9 @@ class _SectionBlock extends StatelessWidget {
         case BreakLine():
           break;
         case EmptyLine():
-          children.add(SizedBox(height: style.fontSize * 0.6));
+          children.add(
+            SizedBox(height: style.fontSize * SongSpacing.emptyLine),
+          );
       }
     }
     final content = Column(
@@ -379,13 +386,18 @@ class _SectionBlock extends StatelessWidget {
       children: children,
     );
     return Padding(
-      padding: EdgeInsets.only(bottom: style.fontSize * 0.8),
+      padding: EdgeInsets.only(bottom: style.fontSize * SongSpacing.blockGap),
       child: chorus
           ? Container(
-              padding: EdgeInsets.only(left: style.fontSize * 0.6),
+              padding: EdgeInsets.only(
+                left: style.fontSize * SongSpacing.chorusIndent,
+              ),
               decoration: BoxDecoration(
                 border: Border(
-                  left: BorderSide(color: style.colors.primary, width: 3),
+                  left: BorderSide(
+                    color: style.colors.primary,
+                    width: SongSpacing.chorusBorderPixels,
+                  ),
                 ),
               ),
               child: content,
@@ -437,12 +449,12 @@ class _Placeholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.symmetric(vertical: size * 0.15),
+    padding: EdgeInsets.symmetric(vertical: size * SongSpacing.lineItemPadding),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: size, color: style.color),
-        SizedBox(width: size * 0.3),
+        SizedBox(width: size * SongSpacing.iconGap),
         Text(text, style: style),
       ],
     ),
@@ -464,14 +476,14 @@ class _Comment extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = textStyle.fontSize ?? 14;
     final style = textStyle.copyWith(
-      fontSize: size * 0.85,
+      fontSize: size * SongSpacing.smallText,
       fontStyle: comment.style == CommentStyle.italic ? FontStyle.italic : null,
     );
     return Container(
-      margin: EdgeInsets.symmetric(vertical: size * 0.15),
+      margin: EdgeInsets.symmetric(vertical: size * SongSpacing.commentMargin),
       padding: EdgeInsets.symmetric(
-        horizontal: size * 0.4,
-        vertical: size * 0.1,
+        horizontal: size * SongSpacing.commentPaddingHorizontal,
+        vertical: size * SongSpacing.commentPaddingVertical,
       ),
       decoration: BoxDecoration(
         color: comment.style == CommentStyle.box
@@ -504,7 +516,7 @@ class _ChordLyricLine extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = lyricStyle.fontSize ?? 14;
     return Padding(
-      padding: EdgeInsets.only(top: size * 0.1),
+      padding: EdgeInsets.only(top: size * SongSpacing.chordLineTop),
       child: Wrap(
         crossAxisAlignment: WrapCrossAlignment.end,
         children: [
@@ -515,7 +527,9 @@ class _ChordLyricLine extends StatelessWidget {
               children: [
                 Padding(
                   padding: EdgeInsets.only(
-                    right: piece.chord == null ? 0 : size * 0.35,
+                    right: piece.chord == null
+                        ? 0
+                        : size * SongSpacing.chordGap,
                   ),
                   child: Text(
                     piece.chord ?? ' ',

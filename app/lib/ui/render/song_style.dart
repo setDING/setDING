@@ -1,6 +1,50 @@
 import 'package:chordpro/chordpro.dart';
 import 'package:flutter/material.dart';
 
+/// Spacing of the rendered song, in units of the font size. The widgets
+/// (song_view.dart) and the layout measurement (song_layout.dart) both use
+/// these values, so measured heights match the rendered ones.
+abstract final class SongSpacing {
+  /// Space below every block (section, notes card, chorus label).
+  static const blockGap = 0.8;
+
+  /// Indent of a chorus next to its border, plus the border in pixels.
+  static const chorusIndent = 0.6;
+  static const chorusBorderPixels = 3.0;
+
+  /// Height of an empty line.
+  static const emptyLine = 0.6;
+
+  /// Space above a line with chords, and between a chord and the next one.
+  static const chordLineTop = 0.1;
+  static const chordGap = 0.35;
+
+  /// Size of comments and notes relative to the lyrics.
+  static const smallText = 0.85;
+
+  /// Comment box: margin above and below, padding inside.
+  static const commentMargin = 0.15;
+  static const commentPaddingVertical = 0.1;
+  static const commentPaddingHorizontal = 0.4;
+
+  /// Notes card: padding, icon and the gap after it.
+  static const notesPadding = 0.5;
+  static const notesIcon = 1.0;
+  static const notesIconGap = 0.4;
+
+  /// Icon of the label of a repeated chorus.
+  static const recallIcon = 0.9;
+
+  /// Gap after the icon of a chorus label or a placeholder.
+  static const iconGap = 0.3;
+
+  /// Space above and below a chord diagram, an image or a placeholder.
+  static const lineItemPadding = 0.15;
+
+  /// Space below the chord diagrams of the song.
+  static const diagramsBlockGap = 0.2;
+}
+
 /// Text styles of the song items at one font size. Rendering and layout
 /// measurement use the same styles so the measured sizes match.
 class SongTextStyles {

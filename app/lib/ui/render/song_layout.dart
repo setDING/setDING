@@ -23,6 +23,11 @@ export '../../settings/display_options.dart' show ChorusRepeat;
 
 const _referenceFontSize = 20.0;
 
+/// Share of the computed font size that [fitSong] uses: room for what the
+/// measurement does not model exactly, e.g. text lines rounded up to whole
+/// pixels (about 1 %).
+const fitSafety = 0.98;
+
 /// Spacing between chord diagrams, relative to the font size.
 const diagramSpacing = 0.8;
 const diagramRunSpacing = 0.6;
@@ -71,7 +76,7 @@ class BlockMetrics {
     }
     final available = columnWidth - indent * f;
     for (final image in images) {
-      h += image.height(f, available) + 0.3 * f;
+      h += image.height(f, available) + 2 * SongSpacing.lineItemPadding * f;
     }
     for (final part in custom) {
       h += part(f, available);
@@ -169,7 +174,7 @@ BlockMetrics _measure(
       (h, d) => math.max(h, d.heightUnits),
     );
     return BlockMetrics(
-      fixedHeight: 0.2 - diagramRunSpacing,
+      fixedHeight: SongSpacing.diagramsBlockGap - diagramRunSpacing,
       wrapping: [
         (
           width: diagrams.fold<double>(
@@ -186,14 +191,19 @@ BlockMetrics _measure(
 
   if (block.text != null) {
     // Notes card: margin, padding; the text wraps next to the icon.
-    final noteStyle = styles.lyrics.copyWith(fontSize: f * 0.85);
+    final noteStyle = styles.lyrics.copyWith(
+      fontSize: f * SongSpacing.smallText,
+    );
     return BlockMetrics(
-      fixedHeight: 0.8 + 1.0,
+      fixedHeight: SongSpacing.blockGap + 2 * SongSpacing.notesPadding,
       wrapping: [
         (
           width: width(block.text!, noteStyle),
-          lineHeight: 0.85 * lh,
-          padding: 1.0 + 1.0 + 0.4,
+          lineHeight: SongSpacing.smallText * lh,
+          padding:
+              2 * SongSpacing.notesPadding +
+              SongSpacing.notesIcon +
+              SongSpacing.notesIconGap,
         ),
       ],
       minWidth: 0,
@@ -205,16 +215,24 @@ BlockMetrics _measure(
   if (block.isRecallLabel) {
     return BlockMetrics(
       fixedHeight:
-          0.8 +
-          math.max(_labelLines(block.label!) * lineUnits(labelStyle), 0.9),
+          SongSpacing.blockGap +
+          math.max(
+            _labelLines(block.label!) * lineUnits(labelStyle),
+            SongSpacing.recallIcon,
+          ),
       wrapping: const [],
-      minWidth: 1.2 + _labelWidth(block.label!, labelStyle, spanWidth),
+      minWidth:
+          SongSpacing.recallIcon +
+          SongSpacing.iconGap +
+          _labelWidth(block.label!, labelStyle, spanWidth),
     );
   }
 
   final chorus = block.isChorus;
-  final indent = chorus ? 0.6 + 3 / f : 0.0;
-  var fixed = 0.8;
+  final indent = chorus
+      ? SongSpacing.chorusIndent + SongSpacing.chorusBorderPixels / f
+      : 0.0;
+  var fixed = SongSpacing.blockGap;
   var minWidth = 0.0;
   final wrapping = <({double width, double lineHeight, double padding})>[];
   if (block.label != null) {
@@ -252,12 +270,15 @@ BlockMetrics _measure(
             w = math.max(
               w,
               width(p.chord!, applyMarkupStyle(chord, p.chordMarkup)) +
-                  0.35 * (lyric.fontSize ?? f) / f,
+                  SongSpacing.chordGap * (lyric.fontSize ?? f) / f,
             );
           }
           lineWidth += w;
         }
-        fixed += 0.1 + lineUnits(chord) + tallestLyric;
+        fixed +=
+            SongSpacing.chordLineTop * (lyric.fontSize ?? f) / f +
+            lineUnits(chord) +
+            tallestLyric;
         minWidth = math.max(minWidth, lineWidth);
       case LyricLine l:
         final lyric = styles.lyricsFor(format, inChorus: chorus);
@@ -267,19 +288,24 @@ BlockMetrics _measure(
           padding: 0,
         ));
       case CommentLine c:
+        // The comment's spacing scales with its text size (song_view.dart).
+        final base = (styles.lyricsFor(format).fontSize ?? f) / f;
         final style = styles
             .lyricsFor(format)
             .copyWith(
-              fontSize: (styles.lyricsFor(format).fontSize ?? f) * 0.85,
+              fontSize: base * f * SongSpacing.smallText,
               fontStyle: c.style == CommentStyle.italic
                   ? FontStyle.italic
                   : null,
             );
-        fixed += 0.3 + 0.2;
+        fixed +=
+            base *
+            2 *
+            (SongSpacing.commentMargin + SongSpacing.commentPaddingVertical);
         wrapping.add((
           width: spanWidth(markupSpan(c.text, style, forMeasuring: true)),
           lineHeight: lineUnits(style) * markupSizeFactor(c.text),
-          padding: 0.8,
+          padding: base * 2 * SongSpacing.commentPaddingHorizontal,
         ));
       case RawLine r:
         final style = styles.tabFor(format);
@@ -302,14 +328,17 @@ BlockMetrics _measure(
       case ChordDiagramLine c
           when diagramResolver?.forDefinition(c.definition) != null:
         final data = diagramResolver!.forDefinition(c.definition)!;
-        fixed += data.heightUnits + 0.3;
+        fixed += data.heightUnits + 2 * SongSpacing.lineItemPadding;
         minWidth = math.max(minWidth, data.widthUnits);
       case ImageLine() || ChordDiagramLine():
-        fixed += 0.3 + math.max(lineUnits(labelStyle), 1.0);
+        // Placeholder: icon (one unit) or label, whichever is taller.
+        fixed +=
+            2 * SongSpacing.lineItemPadding +
+            math.max(lineUnits(labelStyle), 1.0);
       case BreakLine():
         break;
       case EmptyLine():
-        fixed += 0.6;
+        fixed += SongSpacing.emptyLine;
     }
   }
   return BlockMetrics(
@@ -335,7 +364,7 @@ BlockMetrics _measureDelegate(
   final abc = d.type == DelegateType.abc ? abcTuneOf(d, transpose) : null;
   final title = d.label ?? abc?.title;
   final labelStyle = styles.labelFor(format);
-  var fixed = 0.8;
+  var fixed = SongSpacing.blockGap;
   var minWidth = 0.0;
   if (title != null) {
     fixed += _labelLines(title) * lineUnits(labelStyle);
@@ -597,7 +626,7 @@ SongFit fitSong(
         font *= size.height / tallest * 0.99;
       }
       if (!fits) continue;
-      font *= 0.98;
+      font *= fitSafety;
       // Prefer fewer columns and full choruses unless clearly better.
       final penalty = collapse && chorusRepeat == ChorusRepeat.auto
           ? 0.85
