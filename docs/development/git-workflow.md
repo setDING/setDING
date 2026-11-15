@@ -201,11 +201,15 @@ needs an access token. As long as no token is set up for agents:
 
 - **Host:** self-hosted Forgejo, repository `github.com/tafli/RealChord`, remote
   `origin` over SSH (`git@github.com:tafli/RealChord.git`).
-- **CLI:** [`tea`](https://gitea.com/gitea/tea) (works with Forgejo) for issues, labels,
-  PRs and merges. Login once per machine:
-  `tea login add --name realchord --url https://github.com --token <token>`.
-  The token is a personal access token with read/write scope for *repository* and
-  *issue*; it is stored by `tea`, never in the repository (section 4).
+- **CLI:** [forgejo-cli](https://codeberg.org/Cyborus/forgejo-cli) (`fj`, v0.7 or
+  later) for issues, PRs and merges; it finds the repository from the `origin` remote.
+  Login once per machine, done by the human: `fj -H github.com auth login`
+  (browser) or `fj -H github.com auth add-token` (token from stdin). The token is a
+  personal access token with read/write scope for *repository* and *issue*; it is
+  stored by `fj`, never in the repository (section 4). `fj auth list` shows whether a
+  login exists.
+- **AGit:** `fj pr create --agit` (or `git push origin HEAD:refs/for/main -o topic=…`)
+  creates a PR without pushing a branch, if AGit is enabled on the instance.
 - **Closing keywords:** `Closes #n` in the PR body closes the issue on merge, as on
   GitHub.
 - **Labels:** the labels of section 2 are created once in the repository settings.
@@ -223,8 +227,9 @@ git switch -c feat/12-chordpro-parser origin/main
 git fetch origin && git rebase origin/main
 tool/check.sh
 git push -u origin feat/12-chordpro-parser
-tea pr create --title "feat(chordpro): …" --description "…"   # "WIP: " title prefix = draft
-# … checks pass, self-review done, "WIP: " prefix removed (tea pr edit / web UI) …
-tea pr merge --style squash <index>   # only if section 6 "Who merges" allows it
-git push origin --delete feat/12-chordpro-parser
+fj pr create --base main --head feat/12-chordpro-parser \
+  --body-file pr.md "WIP: feat(chordpro): …"   # "WIP: " title prefix = draft
+# … checks pass, self-review done, "WIP: " prefix removed (fj pr edit) …
+fj pr status <index>
+fj pr merge -M squash -d <index>   # only if section 6 "Who merges" allows it
 ```

@@ -44,15 +44,16 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 - CI and branch protection are essential and are set up together with the Flutter project (`tool/check.sh`, Forgejo Actions with a Forgejo runner).
 - Quality depends on automated tests and the self-review, so test coverage of the core packages (`chordpro`, `sync`) must be high.
 - The issue tracker becomes the agents' work queue; issues must have clear acceptance criteria.
-- The full workflow needs the Forgejo remote plus an access token for agents (`tea` CLI); until the token exists, agents push branches and squash-merge locally after the test gate (workflow section 11).
+- The full workflow needs the Forgejo remote plus an access token for agents (`fj` CLI); until the token exists, agents push branches and squash-merge locally after the test gate (workflow section 11).
 
 ## Decision log
 
 - 2026-11-14: Workflow accepted. Agents may merge their own PRs from the start, under the condition that all tests always pass before a merge (test gate).
-- 2026-11-15: Repository host decided: self-hosted **Forgejo** at `github.com`, repository `andi/RealChord` (instead of the assumed GitHub). Issues, PRs and labels live there; agents use the `tea` CLI; CI becomes Forgejo Actions. Until agents have an access token, they push their branches and squash-merge locally after the test gate.
+- 2026-11-15: Repository host decided: self-hosted **Forgejo** at `github.com`, repository `andi/RealChord` (instead of the assumed GitHub). Issues, PRs and labels live there; agents use the forgejo-cli (`fj`); CI becomes Forgejo Actions. Until agents have an access token, they push their branches and squash-merge locally after the test gate.
+- 2026-11-15: CLI is forgejo-cli (`fj`) instead of `tea`: built for Forgejo, supports squash merge, drafts ("WIP: ") and AGit PRs.
 
 ## Open points
 
-- Access token for agents (`tea` login): who creates it, which account (personal or a separate bot user)?
+- Access token for agents (`fj auth` login): who creates it, which account (personal or a separate bot user)?
 - Forgejo Actions: is a runner available, and which platforms can it build (Linux at least; Android needs the SDK, iOS needs macOS, Windows needs a Windows runner)?
 - Branch protection on `main` is enabled once agents can merge through the API.
