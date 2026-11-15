@@ -1,19 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/band_copy.dart';
 import '../../data/band_view.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../widgets/dialogs.dart';
 import 'band_labels.dart';
-
-final bandCopyProvider = Provider<BandCopyService>(
-  (ref) => BandCopyService(
-    ref.watch(databaseProvider),
-    ref.watch(attachmentStorageProvider),
-  ),
-);
 
 /// A song library songs can be copied to: the local library or an
 /// organization's library (ADR-0017).

@@ -10,6 +10,8 @@ import 'song_delegates.dart';
 import 'song_image.dart';
 import 'song_grid.dart';
 import 'song_style.dart';
+import '../../settings/display_options.dart';
+export '../../settings/display_options.dart' show ChorusRepeat;
 
 // Layout measurement ----------------------------------------------------------
 //
@@ -455,18 +457,6 @@ class SongFit {
 
 /// Blocks of a song with their measurements.
 typedef SongLayout = ({List<SongBlock> blocks, List<BlockMetrics> metrics});
-
-/// How a repeated chorus (`{chorus}`) is shown in live mode.
-enum ChorusRepeat {
-  /// Full lines, shortened to a label only if that is needed to fit.
-  auto,
-
-  /// Always the full lines.
-  full,
-
-  /// Always a label only.
-  label,
-}
 
 /// Chooses font size, number of columns and chorus display for live mode so
 /// that the whole song fits into [size] without scrolling.

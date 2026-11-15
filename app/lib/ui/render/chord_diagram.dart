@@ -3,8 +3,8 @@ import 'dart:math' as math;
 import 'package:chordpro/chordpro.dart';
 import 'package:flutter/material.dart';
 
-/// Where the diagrams of all chords of a song are shown.
-enum DiagramsPosition { off, top, bottom }
+import '../../settings/display_options.dart';
+export '../../settings/display_options.dart' show DiagramsPosition;
 
 /// Combines the device setting with the song's `{diagrams}` directive,
 /// which wins (`off`, `on`, or a position; `right`/`below` are shown at

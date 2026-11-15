@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/database.dart';
 import '../providers.dart';
 import '../settings/settings.dart';
-import '../ui/bands/copy_to_band.dart' show bandCopyProvider;
 import 'auth_providers.dart';
 import 'sync_engine.dart';
 

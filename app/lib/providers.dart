@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'data/attachment_storage.dart';
+import 'data/band_copy.dart';
 import 'data/band_view.dart';
 import 'data/database.dart';
 import 'data/import_export.dart';
@@ -102,6 +103,14 @@ final setRepositoryProvider = Provider<SetRepository>(
     ref.watch(databaseProvider),
     ref.watch(attachmentStorageProvider),
     bandId: ref.watch(_currentBandIdProvider),
+  ),
+);
+
+/// Copies songs and sets into other libraries and bands (ADR-0017).
+final bandCopyProvider = Provider<BandCopyService>(
+  (ref) => BandCopyService(
+    ref.watch(databaseProvider),
+    ref.watch(attachmentStorageProvider),
   ),
 );
 

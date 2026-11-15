@@ -4,11 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../sync/sync_backend.dart' show defaultServerUrl;
-import '../ui/render/chord_diagram.dart' show DiagramsPosition;
-import '../ui/render/song_view.dart' show ChorusRepeat;
+import 'display_options.dart';
 
-export '../ui/render/chord_diagram.dart' show DiagramsPosition;
-export '../ui/render/song_view.dart' show ChorusRepeat;
+export 'display_options.dart';
 
 /// UI language setting (ADR-0008).
 enum LanguageMode { system, de, en }
