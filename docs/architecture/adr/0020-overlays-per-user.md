@@ -1,6 +1,6 @@
 # ADR-0020: Personal adjustments per user, synced with the account
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-15
 
 ## Context
@@ -28,12 +28,14 @@ The code review of 2026-11-15 (finding B7) raised this. Deciding it now keeps
 the next schema change (and the phase 2 sync) from having to migrate data
 whose owner is unknown.
 
-## Decision (proposed)
+## Decision
 
 1. **Each overlay belongs to a person.** The local key becomes
    (`owner_id`, `song_id`). `owner_id` is the server user ID of the signed-in
-   user, or the fixed value `local` for use without an account (local library
-   "On this device", ADR-0017).
+   user for songs of an organization. Songs of the local library ("On this
+   device", ADR-0017) always use the fixed value `local`, also while someone
+   is signed in: the local library belongs to the device, not to a person,
+   and is never synced.
 2. **Reads and writes use the current owner.** Signed in: the user's ID;
    signed out: `local`. Other people's overlays stay on the device (like songs
    and sets on sign-out, ADR-0016) but are never shown or changed. Without an
@@ -48,7 +50,11 @@ whose owner is unknown.
    (`user`, `song`, the fields of layer 3, `revision`, `deleted`; unique per
    user and song). Access rules: only the user themself may list, create and
    change their overlays, and only for songs of their organizations
-   (ADR-0015). Overlays use the outbox and delta pull like other records
+   (ADR-0015). Overlays are private: organization admins do not see other
+   people's adjustments or notes. A removed overlay is soft-deleted
+   (`deleted`) like other synced records, so the delta pull carries the
+   removal to the user's other devices. Overlays use the outbox and delta
+   pull like other records
    (ADR-0004), with the user as the pull scope, and **last writer wins**: an
    overlay is personal, so there is no conflict dialog. `local` overlays are
    never synced.
@@ -88,13 +94,14 @@ whose owner is unknown.
 ## Decision log
 
 - 2026-11-15: Proposed after the code review (finding B7).
+- 2026-11-15: Accepted by the owner as proposed. Resolved open points: the
+  first user who signs in after the upgrade takes over the existing overlays
+  of organization songs (once per device); overlays are private (no access
+  for organization admins); removals are soft deletes, which the delta sync
+  needs. Clarified: songs of the local library always use the owner `local`.
+- 2026-11-15: Local part implemented (schema 8, #81); sync with the account
+  follows in #82.
 
 ## Open points
 
-- Is the one-time adoption of existing overlays by the first user who signs in
-  the right default, or should existing overlays stay `local` (and be lost for
-  synced songs)?
-- Should an organization admin be able to see members' notes (e.g. for
-  rehearsal planning)? This ADR assumes not: overlays are private.
-- Server: soft delete with `deleted` like other synced records, or hard
-  delete of overlays (they are personal and need no history)?
+- None.

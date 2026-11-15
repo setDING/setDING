@@ -43,7 +43,7 @@ A user can be a member of several organizations and bands; roles are defined per
 | Data format | **ChordPro as the source of truth**, parsing and rendering in the client; display notation B/H selectable, Nashville numbers | [ADR-0003](adr/0003-chordpro-source-format.md) |
 | Backend & sync | **PocketBase**, self-hosted on an existing server, revision-based sync | [ADR-0004](adr/0004-backend-and-sync.md) |
 | Management | **One app with roles** instead of a separate management application | [ADR-0005](adr/0005-single-app-with-roles.md) |
-| Personal settings | **Overlay model**: personal adjustments never change the shared ChordPro text; per user and synced with the account (proposed) | [ADR-0006](adr/0006-personal-overlays.md), [ADR-0020](adr/0020-overlays-per-user.md) |
+| Personal settings | **Overlay model**: personal adjustments never change the shared ChordPro text; per user (`local` for the local library), synced with the account | [ADR-0006](adr/0006-personal-overlays.md), [ADR-0020](adr/0020-overlays-per-user.md) |
 | Live mode | Pedal/keyboard control, wakelock; each member navigates independently (**no leader sync**) | [ADR-0007](adr/0007-live-mode.md) |
 | Localization | UI in **German (Swiss, `de-CH`) and English**, selectable in the settings | [ADR-0008](adr/0008-localization.md) |
 | Sheet music | **PDF attachments** per song, synced and available offline, shown in live mode | [ADR-0009](adr/0009-pdf-attachments.md) |
@@ -181,7 +181,7 @@ Notes:
 |---|---|
 | **MVP** ✅ | ChordPro parser & renderer (notation B/H, Nashville), local song library, PDF attachments, creating sets, live mode with pedal, import/export, German/English UI – initially **without** a backend (single device) |
 | **Phase 1** | Backend, login, bands & roles (several admins, several bands per user), sync of songs, sets and PDF files incl. conflict handling |
-| **Phase 2** | Web client for management (ADR-0018, #27), synced personal overlays (per user, ADR-0020, proposed) |
+| **Phase 2** | Web client for management (ADR-0018, #27), synced personal overlays (per user, ADR-0020; local part done in #81) |
 | **Towards version 1** | Re-enable CI as a required check on every PR and push to `main` (manual-only during early development, ADR-0010), branch protection, build jobs |
 | **Later** | Freehand annotations (stylus), metronome/count-in, MIDI control |
 
@@ -255,7 +255,7 @@ See "Open points" in the individual ADRs. The most important:
 15. ~~Printable set list?~~ → PDF in the client with the `pdf` package and embedded Noto Sans (ADR-0013, accepted). Open: Letter paper, export options, native print dialog
 16. Web client for management without an installed app? → Flutter web build of the same app at `app.realchord.app`, served by the same PocketBase; local library hidden, live mode with a "not offline-safe" notice, session for the tab only by default (ADR-0018, accepted, #27). Open: tunnel hostname and DNS (owner)
 17. Distributable Linux builds? → `make release`: built in a Debian container with an ISA check (ADR-0019, accepted, #45). Open: Windows release (not needed yet), packaging and signing, CI release builds
-18. Personal adjustments on shared devices and across devices? → Proposed: overlays belong to a user (`owner_id`, `local` without an account), existing ones are taken over by the first user who signs in, synced in phase 2 with last writer wins (ADR-0020, proposed). Open: adoption default, privacy of notes, soft or hard delete
+18. ~~Personal adjustments on shared devices and across devices?~~ → Overlays belong to a user (`owner_id`; `local` for the local library), existing ones are taken over once by the first user who signs in, private, synced in phase 2 with last writer wins and soft delete (ADR-0020, accepted)
 
 ## 10. ADR index
 
@@ -280,6 +280,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0017](adr/0017-organizations.md) | Organizations with a shared song library | Accepted |
 | [0018](adr/0018-web-client.md) | Web client for management | Accepted |
 | [0019](adr/0019-linux-release-builds.md) | Linux release builds | Accepted |
-| [0020](adr/0020-overlays-per-user.md) | Personal adjustments per user, synced with the account | Proposed |
+| [0020](adr/0020-overlays-per-user.md) | Personal adjustments per user, synced with the account | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.

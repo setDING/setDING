@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../providers.dart' show bandServiceProvider;
+import '../data/song_repository.dart' show adoptLocalOverlays;
+import '../providers.dart' show bandServiceProvider, databaseProvider;
 import '../settings/settings.dart';
 import 'pocketbase_backend.dart';
 import 'session_store.dart';
@@ -34,10 +35,14 @@ class AuthNotifier extends Notifier<AuthUser?> {
     final subscription = backend.userChanges.listen((user) {
       final signedIn = state == null && user != null;
       state = user;
+      if (signedIn) _adoptOverlays(user.id);
       if (signedIn && !_syncRefreshesBands) _refreshBands();
     });
     ref.onDispose(subscription.cancel);
     Future.microtask(() async {
+      if (backend.currentUser case final user?) {
+        await _adoptOverlays(user.id);
+      }
       await backend.refreshSession();
       if (backend.currentUser != null && !_syncRefreshesBands) {
         await _refreshBands();
@@ -52,6 +57,18 @@ class AuthNotifier extends Notifier<AuthUser?> {
   bool get _syncRefreshesBands =>
       ref.read(autoSyncProvider) &&
       ref.read(settingsProvider).syncMode != SyncMode.manual;
+
+  static const _adoptedKey = 'overlaysAdopted';
+
+  /// The first user signed in on this device after the upgrade to schema 8
+  /// takes over the existing personal adjustments (ADR-0020), once.
+  Future<void> _adoptOverlays(String userId) async {
+    final prefs = ref.read(sharedPreferencesProvider);
+    if (prefs.getBool(_adoptedKey) ?? false) return;
+    await prefs.setBool(_adoptedKey, true);
+    final count = await adoptLocalOverlays(ref.read(databaseProvider), userId);
+    if (count > 0) debugPrint('Took over $count personal adjustments');
+  }
 
   Future<void> _refreshBands() async {
     try {

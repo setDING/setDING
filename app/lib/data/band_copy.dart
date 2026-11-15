@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import 'attachment_storage.dart';
 import 'database.dart';
 import 'outbox.dart';
+import 'song_repository.dart' show overlayOwnerFor;
 
 const _uuid = Uuid();
 
@@ -13,10 +14,13 @@ const _uuid = Uuid();
 /// (ADR-0017: nothing is shared across organizations); attachment files and
 /// the personal adjustments are copied along.
 class BandCopyService {
-  BandCopyService(this.db, this.storage);
+  BandCopyService(this.db, this.storage, {this.userId});
 
   final AppDatabase db;
   final AttachmentStorage storage;
+
+  /// The signed-in user: the copy gets their adjustments (ADR-0020).
+  final String? userId;
 
   /// Copies [songIds] into the library [targetLibraryId]; returns the IDs of
   /// the copies in the same order.
@@ -160,15 +164,22 @@ class BandCopyService {
       attachmentCopies[a.id] = id;
     }
 
-    final overlay = await (db.select(
-      db.personalOverlays,
-    )..where((o) => o.songId.equals(songId))).getSingleOrNull();
+    // The current person's adjustments, for their owner in the target
+    // library (ADR-0020).
+    final overlay =
+        await (db.select(db.personalOverlays)..where(
+              (o) =>
+                  o.songId.equals(songId) &
+                  o.ownerId.equals(overlayOwnerFor(song.libraryId, userId)),
+            ))
+            .getSingleOrNull();
     if (overlay != null) {
       final liveView = overlay.liveView;
       await db
           .into(db.personalOverlays)
           .insert(
             overlay.copyWith(
+              ownerId: overlayOwnerFor(targetLibraryId, userId),
               songId: newId,
               liveView: Value(
                 liveView == null ? null : attachmentCopies[liveView],

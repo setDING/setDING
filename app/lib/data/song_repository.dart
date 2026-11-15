@@ -60,6 +60,29 @@ List<SongMeta> _metas(List<String> sources) => [
   for (final s in sources) SongMeta.fromSource(s),
 ];
 
+/// Owner of personal adjustments of songs in [libraryId] for [userId]
+/// (ADR-0020).
+String overlayOwnerFor(String libraryId, String? userId) =>
+    libraryId == localBandId || userId == null ? localOwnerId : userId;
+
+/// Gives [userId] the adjustments of the local owner for songs of
+/// organizations, once per device after the upgrade to schema 8 (ADR-0020);
+/// returns how many were taken over. Adjustments of the local library stay
+/// with the local owner.
+Future<int> adoptLocalOverlays(AppDatabase db, String userId) =>
+    db.customUpdate(
+      'UPDATE OR IGNORE personal_overlays SET owner_id = ? '
+      'WHERE owner_id = ? AND song_id IN '
+      '(SELECT id FROM songs WHERE library_id != ?)',
+      variables: [
+        Variable.withString(userId),
+        Variable.withString(localOwnerId),
+        Variable.withString(localBandId),
+      ],
+      updates: {db.personalOverlays},
+      updateKind: UpdateKind.update,
+    );
+
 /// Tags of a song as stored in the database.
 List<String> songTags(SongEntry song) => _tags(song.tags);
 
@@ -106,13 +129,26 @@ class SongListEntry {
 /// the organization of the current band (ADR-0017), or the local library
 /// by default.
 class SongRepository {
-  SongRepository(this.db, this.storage, {this.libraryId = localBandId});
+  SongRepository(
+    this.db,
+    this.storage, {
+    this.libraryId = localBandId,
+    this.userId,
+  });
 
   final AppDatabase db;
   final AttachmentStorage storage;
 
   /// Library whose songs are listed and to which new songs belong.
   final String libraryId;
+
+  /// The signed-in user, or null.
+  final String? userId;
+
+  /// Whose personal adjustments are shown and changed (ADR-0020): the
+  /// signed-in user for songs of an organization, the local owner for the
+  /// local library (and without an account).
+  String get overlayOwner => overlayOwnerFor(libraryId, userId);
 
   /// Songs sorted by `{sorttitle}` (or title); optionally filtered by a
   /// search [query] and a [tag].
@@ -454,23 +490,37 @@ class SongRepository {
 
   // Personal overlays --------------------------------------------------------
 
+  SimpleSelectStatement<$PersonalOverlaysTable, SongOverlay> _overlay(
+    String songId,
+  ) => db.select(db.personalOverlays)
+    ..where((o) => o.ownerId.equals(overlayOwner) & o.songId.equals(songId));
+
   Stream<SongOverlay> watchOverlay(String songId) =>
-      (db.select(db.personalOverlays)..where((o) => o.songId.equals(songId)))
+      _overlay(songId)
           .watchSingleOrNull()
-          .map((o) => o ?? defaultOverlay(songId));
+          .map((o) => o ?? defaultOverlay(songId, ownerId: overlayOwner));
 
   Future<SongOverlay> getOverlay(String songId) async =>
-      await (db.select(
-        db.personalOverlays,
-      )..where((o) => o.songId.equals(songId))).getSingleOrNull() ??
-      defaultOverlay(songId);
+      await _overlay(songId).getSingleOrNull() ??
+      defaultOverlay(songId, ownerId: overlayOwner);
 
-  static SongOverlay defaultOverlay(String songId) =>
-      SongOverlay(songId: songId, transpose: 0, capo: 0, fontScale: 1.0);
+  /// No adjustments: as written in the song.
+  static SongOverlay defaultOverlay(
+    String songId, {
+    String ownerId = localOwnerId,
+  }) => SongOverlay(
+    ownerId: ownerId,
+    songId: songId,
+    transpose: 0,
+    capo: 0,
+    fontScale: 1.0,
+  );
 
   /// Saves all fields, including null values (e.g. resetting Nashville to
-  /// the device setting or removing a note).
+  /// the device setting or removing a note), always for [overlayOwner].
   Future<void> saveOverlay(SongOverlay overlay) => db
       .into(db.personalOverlays)
-      .insertOnConflictUpdate(overlay.toCompanion(false));
+      .insertOnConflictUpdate(
+        overlay.copyWith(ownerId: overlayOwner).toCompanion(false),
+      );
 }

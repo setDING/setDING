@@ -59,8 +59,8 @@ size/zoom setting is relevant.
 - 2026-11-14: The personal capo distinguishes "as written in the song" (`{capo}`, default) from an explicit fret including "no capo" (ADR-0012).
 - 2026-11-15: The song sequence (`{x_sequence}`, ADR-0012) can be overridden per **set item** (layer 2, column `set_items.sequence`, database schema 3, same syntax; null = as in the song). It is edited in the set list and shown in the set list and in live mode started from the set, marked as set-specific; the song itself is never changed. Opening the song on its own shows its original sequence.
 
+- 2026-11-15: Overlays belong to a person and are synced with the account (phase 2): see [ADR-0020](0020-overlays-per-user.md).
+
 ## Open points
 
-- Owner of an overlay on shared devices and the sync with the account
-  (phase 2): proposed in [ADR-0020](0020-overlays-per-user.md). Until it is
-  accepted, overlays are stored per device (key: song).
+- None.

@@ -10,6 +10,11 @@ part 'database.g.dart';
 /// on this device only and never synced. Works without an account.
 const localBandId = '00000000-0000-4000-8000-000000000001';
 
+/// Owner of personal adjustments without an account: songs of the local
+/// library, and existing adjustments until a user takes them over
+/// (ADR-0020).
+const localOwnerId = 'local';
+
 /// An organization from the server (ADR-0017); owns the song library that
 /// its bands share (schema 4).
 @DataClassName('OrganizationEntry')
@@ -184,9 +189,11 @@ class SetItems extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-/// Personal adjustments per song (layer 3, ADR-0006).
+/// Personal adjustments per person and song (layer 3, ADR-0006, ADR-0020).
 @DataClassName('SongOverlay')
 class PersonalOverlays extends Table {
+  /// Server user ID, or [localOwnerId] (schema 8).
+  TextColumn get ownerId => text().withDefault(const Constant(localOwnerId))();
   TextColumn get songId => text().references(Songs, #id)();
   IntColumn get transpose => integer().withDefault(const Constant(0))();
 
@@ -206,7 +213,7 @@ class PersonalOverlays extends Table {
   TextColumn get liveView => text().nullable()();
 
   @override
-  Set<Column> get primaryKey => {songId};
+  Set<Column> get primaryKey => {ownerId, songId};
 }
 
 /// Local changes waiting to be pushed to the server (ADR-0004, schema 5).
@@ -272,7 +279,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   /// Indexes of the local database (schema 7).
   List<Index> get localIndexes => [
@@ -332,6 +339,17 @@ class AppDatabase extends _$AppDatabase {
           await customStatement('DROP INDEX IF EXISTS ${index.entityName}');
           await m.createIndex(index);
         }
+      }
+      if (from < 8) {
+        // Overlays belong to a person (ADR-0020): existing ones to the
+        // local owner until a user takes them over. The table is rebuilt
+        // for the new primary key.
+        await m.alterTable(
+          TableMigration(
+            personalOverlays,
+            newColumns: [personalOverlays.ownerId],
+          ),
+        );
       }
     },
     beforeOpen: (details) async {

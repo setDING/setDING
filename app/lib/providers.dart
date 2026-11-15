@@ -95,6 +95,7 @@ final songRepositoryProvider = Provider<SongRepository>(
     ref.watch(databaseProvider),
     ref.watch(attachmentStorageProvider),
     libraryId: ref.watch(_currentLibraryIdProvider),
+    userId: ref.watch(authProvider.select((u) => u?.id)),
   ),
 );
 
@@ -111,6 +112,7 @@ final bandCopyProvider = Provider<BandCopyService>(
   (ref) => BandCopyService(
     ref.watch(databaseProvider),
     ref.watch(attachmentStorageProvider),
+    userId: ref.watch(authProvider.select((u) => u?.id)),
   ),
 );
 

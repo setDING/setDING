@@ -22,8 +22,32 @@ const schema7Indexes = [
   'set_items_song',
 ];
 
+/// Turns a current database back into schema 7: personal overlays without
+/// an owner, keyed by song.
+void downgradeToSchema7(Database raw) {
+  raw.execute('''
+    CREATE TABLE overlays_7 (
+      song_id TEXT NOT NULL REFERENCES songs (id),
+      transpose INTEGER NOT NULL DEFAULT 0,
+      capo INTEGER NOT NULL DEFAULT 0,
+      capo_fret INTEGER NULL,
+      font_scale REAL NOT NULL DEFAULT 1.0,
+      notes TEXT NULL,
+      nashville INTEGER NULL,
+      live_view TEXT NULL,
+      PRIMARY KEY (song_id)
+    )''');
+  raw.execute(
+    'INSERT INTO overlays_7 SELECT song_id, transpose, capo, capo_fret, '
+    'font_scale, notes, nashville, live_view FROM personal_overlays',
+  );
+  raw.execute('DROP TABLE personal_overlays');
+  raw.execute('ALTER TABLE overlays_7 RENAME TO personal_overlays');
+}
+
 /// Turns a current database back into schema 6 (no indexes).
 void downgradeToSchema6(Database raw) {
+  downgradeToSchema7(raw);
   for (final index in schema7Indexes) {
     raw.execute('DROP INDEX $index');
   }
@@ -211,4 +235,26 @@ void main() {
       raw.close();
     });
   }
+
+  test('upgrades a schema 7 database: overlays get the local owner', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final storage = AttachmentStorage(dir);
+    final local = SongRepository(current, storage);
+    final id = await local.createSong(source: '{title: Mine}');
+    await local.saveOverlay(
+      (await local.getOverlay(id)).copyWith(transpose: 3),
+    );
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema7(raw);
+    raw.execute('PRAGMA user_version = 7');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final overlay = await SongRepository(upgraded, storage).getOverlay(id);
+    expect(overlay.ownerId, localOwnerId);
+    expect(overlay.transpose, 3);
+    await upgraded.close();
+  });
 }

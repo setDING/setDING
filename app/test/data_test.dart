@@ -210,6 +210,56 @@ void main() {
     ]);
   });
 
+  group('personal adjustments per person (ADR-0020)', () {
+    SongRepository org(String? user) =>
+        SongRepository(db, songs.storage, libraryId: 'o1', userId: user);
+
+    test('each person sees their own adjustments on a shared device', () async {
+      final id = await org('ann').createSong(source: '{title: Shared}');
+      final ann = org('ann');
+      await ann.saveOverlay((await ann.getOverlay(id)).copyWith(transpose: 2));
+      final bob = org('bob');
+      expect((await bob.getOverlay(id)).transpose, 0);
+      await bob.saveOverlay(
+        (await bob.getOverlay(id)).copyWith(notes: const Value('Solo')),
+      );
+      expect((await ann.getOverlay(id)).transpose, 2);
+      expect((await ann.getOverlay(id)).notes, isNull);
+      expect((await bob.getOverlay(id)).ownerId, 'bob');
+    });
+
+    test('the local library keeps the local owner when signed in', () async {
+      final id = await songs.createSong(source: '{title: Mine}');
+      await songs.saveOverlay((await songs.getOverlay(id)).copyWith(capo: 1));
+      final signedIn = SongRepository(db, songs.storage, userId: 'ann');
+      expect(signedIn.overlayOwner, localOwnerId);
+      expect((await signedIn.getOverlay(id)).capo, 1);
+    });
+
+    test(
+      'the first user takes over local adjustments of organization songs',
+      () async {
+        final orgSong = await org(null).createSong(source: '{title: Org}');
+        final localSong = await songs.createSong(source: '{title: Mine}');
+        // As after the upgrade: everything belongs to the local owner.
+        for (final id in [orgSong, localSong]) {
+          await db
+              .into(db.personalOverlays)
+              .insert(
+                PersonalOverlaysCompanion.insert(
+                  songId: id,
+                  transpose: const Value(5),
+                ),
+              );
+        }
+        expect(await adoptLocalOverlays(db, 'ann'), 1);
+        expect((await org('ann').getOverlay(orgSong)).transpose, 5);
+        expect((await org('bob').getOverlay(orgSong)).transpose, 0);
+        expect((await songs.getOverlay(localSong)).transpose, 5);
+      },
+    );
+  });
+
   group('SetRepository', () {
     test('adds, reorders and removes items', () async {
       final a = await songs.createSong(source: '{title: A}');

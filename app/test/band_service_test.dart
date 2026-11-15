@@ -246,6 +246,22 @@ void main() {
     });
     tearDown(() => dir.deleteSync(recursive: true));
 
+    test('a copy gets the adjustments of the person who copies', () async {
+      final local = SongRepository(db, storage, userId: 'ann');
+      final id = await local.createSong(source: '{title: Mine}');
+      await local.saveOverlay((await local.getOverlay(id)).copyWith(capo: 2));
+
+      final copy = (await BandCopyService(
+        db,
+        storage,
+        userId: 'ann',
+      ).copySongs([id], 'o1')).single;
+      SongRepository org(String user) =>
+          SongRepository(db, storage, libraryId: 'o1', userId: user);
+      expect((await org('ann').getOverlay(copy)).capo, 2);
+      expect((await org('bob').getOverlay(copy)).capo, 0);
+    });
+
     test('a copied attachment gets its own server file', () async {
       final org = SongRepository(db, storage, libraryId: 'o1');
       final id = await org.createSong(source: '{title: Synced}');

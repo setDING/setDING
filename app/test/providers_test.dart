@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:drift/drift.dart' show Value;
+import 'package:realchord/data/database.dart';
+import 'package:realchord/data/song_repository.dart';
 import 'package:realchord/providers.dart';
+import 'package:realchord/sync/auth_providers.dart';
+import 'package:realchord/sync/sync_backend.dart';
 import 'package:realchord/ui/songs/songs_screen.dart';
 
 import 'test_app.dart';
@@ -64,5 +69,41 @@ void main() {
     expect(find.text('Late Train Home'), findsOneWidget);
     expect(find.text('Morning Song'), findsNothing);
     await app.dispose(tester);
+  });
+
+  test('the first user signed in takes over local adjustments once', () async {
+    final app = await TestApp.create(
+      user: const AuthUser(id: 'ann', email: 'a@x.test', name: 'Ann'),
+    );
+    addTearDown(() async {
+      await app.db.close();
+      app.dir.deleteSync(recursive: true);
+    });
+    final org = SongRepository(app.db, app.storage, libraryId: 'o1');
+    final first = await org.createSong(source: '{title: One}');
+    final second = await org.createSong(source: '{title: Two}');
+    Future<void> localOverlay(String id) => app.db
+        .into(app.db.personalOverlays)
+        .insert(
+          PersonalOverlaysCompanion.insert(songId: id, capo: const Value(4)),
+        );
+    Future<String> owner(String id) async => (await (app.db.select(
+      app.db.personalOverlays,
+    )..where((o) => o.songId.equals(id))).getSingle()).ownerId;
+
+    await localOverlay(first);
+    var container = ProviderContainer(overrides: app.overrides);
+    container.read(authProvider);
+    await pumpEventQueue(times: 20);
+    expect(await owner(first), 'ann');
+    container.dispose();
+
+    // Later local adjustments (e.g. from an older backup) are not taken.
+    await localOverlay(second);
+    container = ProviderContainer(overrides: app.overrides);
+    container.read(authProvider);
+    await pumpEventQueue(times: 20);
+    expect(await owner(second), localOwnerId);
+    container.dispose();
   });
 }

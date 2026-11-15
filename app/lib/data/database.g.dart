@@ -4088,6 +4088,18 @@ class $PersonalOverlaysTable extends PersonalOverlays
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $PersonalOverlaysTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _ownerIdMeta = const VerificationMeta(
+    'ownerId',
+  );
+  @override
+  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
+    'owner_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(localOwnerId),
+  );
   static const VerificationMeta _songIdMeta = const VerificationMeta('songId');
   @override
   late final GeneratedColumn<String> songId = GeneratedColumn<String>(
@@ -4181,6 +4193,7 @@ class $PersonalOverlaysTable extends PersonalOverlays
   );
   @override
   List<GeneratedColumn> get $columns => [
+    ownerId,
     songId,
     transpose,
     capo,
@@ -4202,6 +4215,12 @@ class $PersonalOverlaysTable extends PersonalOverlays
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('owner_id')) {
+      context.handle(
+        _ownerIdMeta,
+        ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta),
+      );
+    }
     if (data.containsKey('song_id')) {
       context.handle(
         _songIdMeta,
@@ -4256,11 +4275,15 @@ class $PersonalOverlaysTable extends PersonalOverlays
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {songId};
+  Set<GeneratedColumn> get $primaryKey => {ownerId, songId};
   @override
   SongOverlay map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return SongOverlay(
+      ownerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner_id'],
+      )!,
       songId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}song_id'],
@@ -4303,6 +4326,8 @@ class $PersonalOverlaysTable extends PersonalOverlays
 }
 
 class SongOverlay extends DataClass implements Insertable<SongOverlay> {
+  /// Server user ID, or [localOwnerId] (schema 8).
+  final String ownerId;
   final String songId;
   final int transpose;
 
@@ -4321,6 +4346,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
   /// What live mode shows: null = ChordPro, otherwise an attachment ID.
   final String? liveView;
   const SongOverlay({
+    required this.ownerId,
     required this.songId,
     required this.transpose,
     required this.capo,
@@ -4333,6 +4359,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    map['owner_id'] = Variable<String>(ownerId);
     map['song_id'] = Variable<String>(songId);
     map['transpose'] = Variable<int>(transpose);
     map['capo'] = Variable<int>(capo);
@@ -4354,6 +4381,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
 
   PersonalOverlaysCompanion toCompanion(bool nullToAbsent) {
     return PersonalOverlaysCompanion(
+      ownerId: Value(ownerId),
       songId: Value(songId),
       transpose: Value(transpose),
       capo: Value(capo),
@@ -4379,6 +4407,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return SongOverlay(
+      ownerId: serializer.fromJson<String>(json['ownerId']),
       songId: serializer.fromJson<String>(json['songId']),
       transpose: serializer.fromJson<int>(json['transpose']),
       capo: serializer.fromJson<int>(json['capo']),
@@ -4393,6 +4422,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'ownerId': serializer.toJson<String>(ownerId),
       'songId': serializer.toJson<String>(songId),
       'transpose': serializer.toJson<int>(transpose),
       'capo': serializer.toJson<int>(capo),
@@ -4405,6 +4435,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
   }
 
   SongOverlay copyWith({
+    String? ownerId,
     String? songId,
     int? transpose,
     int? capo,
@@ -4414,6 +4445,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     Value<bool?> nashville = const Value.absent(),
     Value<String?> liveView = const Value.absent(),
   }) => SongOverlay(
+    ownerId: ownerId ?? this.ownerId,
     songId: songId ?? this.songId,
     transpose: transpose ?? this.transpose,
     capo: capo ?? this.capo,
@@ -4425,6 +4457,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
   );
   SongOverlay copyWithCompanion(PersonalOverlaysCompanion data) {
     return SongOverlay(
+      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
       songId: data.songId.present ? data.songId.value : this.songId,
       transpose: data.transpose.present ? data.transpose.value : this.transpose,
       capo: data.capo.present ? data.capo.value : this.capo,
@@ -4439,6 +4472,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
   @override
   String toString() {
     return (StringBuffer('SongOverlay(')
+          ..write('ownerId: $ownerId, ')
           ..write('songId: $songId, ')
           ..write('transpose: $transpose, ')
           ..write('capo: $capo, ')
@@ -4453,6 +4487,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
 
   @override
   int get hashCode => Object.hash(
+    ownerId,
     songId,
     transpose,
     capo,
@@ -4466,6 +4501,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is SongOverlay &&
+          other.ownerId == this.ownerId &&
           other.songId == this.songId &&
           other.transpose == this.transpose &&
           other.capo == this.capo &&
@@ -4477,6 +4513,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
 }
 
 class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
+  final Value<String> ownerId;
   final Value<String> songId;
   final Value<int> transpose;
   final Value<int> capo;
@@ -4487,6 +4524,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
   final Value<String?> liveView;
   final Value<int> rowid;
   const PersonalOverlaysCompanion({
+    this.ownerId = const Value.absent(),
     this.songId = const Value.absent(),
     this.transpose = const Value.absent(),
     this.capo = const Value.absent(),
@@ -4498,6 +4536,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     this.rowid = const Value.absent(),
   });
   PersonalOverlaysCompanion.insert({
+    this.ownerId = const Value.absent(),
     required String songId,
     this.transpose = const Value.absent(),
     this.capo = const Value.absent(),
@@ -4509,6 +4548,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     this.rowid = const Value.absent(),
   }) : songId = Value(songId);
   static Insertable<SongOverlay> custom({
+    Expression<String>? ownerId,
     Expression<String>? songId,
     Expression<int>? transpose,
     Expression<int>? capo,
@@ -4520,6 +4560,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
+      if (ownerId != null) 'owner_id': ownerId,
       if (songId != null) 'song_id': songId,
       if (transpose != null) 'transpose': transpose,
       if (capo != null) 'capo': capo,
@@ -4533,6 +4574,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
   }
 
   PersonalOverlaysCompanion copyWith({
+    Value<String>? ownerId,
     Value<String>? songId,
     Value<int>? transpose,
     Value<int>? capo,
@@ -4544,6 +4586,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     Value<int>? rowid,
   }) {
     return PersonalOverlaysCompanion(
+      ownerId: ownerId ?? this.ownerId,
       songId: songId ?? this.songId,
       transpose: transpose ?? this.transpose,
       capo: capo ?? this.capo,
@@ -4559,6 +4602,9 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (ownerId.present) {
+      map['owner_id'] = Variable<String>(ownerId.value);
+    }
     if (songId.present) {
       map['song_id'] = Variable<String>(songId.value);
     }
@@ -4592,6 +4638,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
   @override
   String toString() {
     return (StringBuffer('PersonalOverlaysCompanion(')
+          ..write('ownerId: $ownerId, ')
           ..write('songId: $songId, ')
           ..write('transpose: $transpose, ')
           ..write('capo: $capo, ')
@@ -9239,6 +9286,7 @@ typedef $$SetItemsTableProcessedTableManager =
     >;
 typedef $$PersonalOverlaysTableCreateCompanionBuilder =
     PersonalOverlaysCompanion Function({
+      Value<String> ownerId,
       required String songId,
       Value<int> transpose,
       Value<int> capo,
@@ -9251,6 +9299,7 @@ typedef $$PersonalOverlaysTableCreateCompanionBuilder =
     });
 typedef $$PersonalOverlaysTableUpdateCompanionBuilder =
     PersonalOverlaysCompanion Function({
+      Value<String> ownerId,
       Value<String> songId,
       Value<int> transpose,
       Value<int> capo,
@@ -9297,6 +9346,11 @@ class $$PersonalOverlaysTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get transpose => $composableBuilder(
     column: $table.transpose,
     builder: (column) => ColumnFilters(column),
@@ -9365,6 +9419,11 @@ class $$PersonalOverlaysTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get transpose => $composableBuilder(
     column: $table.transpose,
     builder: (column) => ColumnOrderings(column),
@@ -9433,6 +9492,9 @@ class $$PersonalOverlaysTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<String> get ownerId =>
+      $composableBuilder(column: $table.ownerId, builder: (column) => column);
+
   GeneratedColumn<int> get transpose =>
       $composableBuilder(column: $table.transpose, builder: (column) => column);
 
@@ -9508,6 +9570,7 @@ class $$PersonalOverlaysTableTableManager
               $$PersonalOverlaysTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
+                Value<String> ownerId = const Value.absent(),
                 Value<String> songId = const Value.absent(),
                 Value<int> transpose = const Value.absent(),
                 Value<int> capo = const Value.absent(),
@@ -9518,6 +9581,7 @@ class $$PersonalOverlaysTableTableManager
                 Value<String?> liveView = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PersonalOverlaysCompanion(
+                ownerId: ownerId,
                 songId: songId,
                 transpose: transpose,
                 capo: capo,
@@ -9530,6 +9594,7 @@ class $$PersonalOverlaysTableTableManager
               ),
           createCompanionCallback:
               ({
+                Value<String> ownerId = const Value.absent(),
                 required String songId,
                 Value<int> transpose = const Value.absent(),
                 Value<int> capo = const Value.absent(),
@@ -9540,6 +9605,7 @@ class $$PersonalOverlaysTableTableManager
                 Value<String?> liveView = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PersonalOverlaysCompanion.insert(
+                ownerId: ownerId,
                 songId: songId,
                 transpose: transpose,
                 capo: capo,
