@@ -39,6 +39,6 @@ void main() {
     (await pb.guest.post('users', body)).expectStatus(200);
     final again = await pb.guest.post('users', body);
     expect(again.status, 400);
-    expect(again.json['data']['email']['code'], 'validation_not_unique');
+    expect(again.field('data.email.code'), 'validation_not_unique');
   });
 }

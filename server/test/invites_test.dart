@@ -96,7 +96,7 @@ void main() {
 
       final preview = await newcomer.send('GET', '/api/realchord/invites/$t');
       preview.expectStatus(200);
-      expect(preview.json['organization']['id'], f.orgId);
+      expect(preview.field('organization.id'), f.orgId);
       expect(preview.json['status'], 'valid');
       expect(preview.json['member'], isFalse);
 
@@ -170,7 +170,7 @@ void main() {
       (await f.admin.patch('invites', id, {'revoked': true})).expectStatus(200);
       final revoked = await redeem(user, t);
       expect(revoked.status, 410);
-      expect(revoked.json['data']['token']['code'], 'revoked');
+      expect(revoked.field('data.token.code'), 'revoked');
       expect(
         (await user.send('GET', '/api/realchord/invites/$t')).json['status'],
         'revoked',
@@ -187,7 +187,7 @@ void main() {
       })).expectStatus(200);
       final expired = await redeem(user, t2);
       expect(expired.status, 410);
-      expect(expired.json['data']['token']['code'], 'expired');
+      expect(expired.field('data.token.code'), 'expired');
 
       expect((await redeem(user, 'A' * 32)).status, 404);
       expect((await redeem(user, 'bad!')).status, 404);

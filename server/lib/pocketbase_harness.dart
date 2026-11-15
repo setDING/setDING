@@ -302,6 +302,16 @@ class Response {
   Map<String, dynamic> get json =>
       raw.body.isEmpty ? {} : jsonDecode(raw.body) as Map<String, dynamic>;
 
+  /// A nested value of the JSON body, e.g. `field('data.email.code')`;
+  /// null if a part of the path is missing.
+  Object? field(String path) {
+    Object? value = json;
+    for (final key in path.split('.')) {
+      value = value is Map ? value[key] : null;
+    }
+    return value;
+  }
+
   /// Throws with the response body if the status does not match.
   void expectStatus(int expected) {
     if (status != expected) {

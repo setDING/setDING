@@ -221,11 +221,11 @@ class DiagramResolver {
     for (final section in song.sections) {
       for (final line in section.lines) {
         switch (line) {
-          case LyricLine l:
+          case final LyricLine l:
             for (final s in l.segments) {
               if (s.chord != null) add(s.chord!);
             }
-          case GridLine g:
+          case final GridLine g:
             for (final t in g.row.tokens) {
               if (t is GridChords) t.chords.forEach(add);
             }

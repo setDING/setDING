@@ -441,13 +441,13 @@ class _AbcParser {
         tupletLeft--;
       }
       switch (e) {
-        case AbcNote n:
+        case final AbcNote n:
           n.duration = d;
           if (tupletNumber != null) {
             n.tuplet = tupletNumber;
             tupletNumber = null;
           }
-        case AbcRest r:
+        case final AbcRest r:
           r.duration = d;
         default:
           break;
@@ -689,10 +689,10 @@ void applyAccidentals(AbcTune tune) {
       switch (e) {
         case AbcBar():
           measure.clear();
-        case AbcKeyChange k:
+        case final AbcKeyChange k:
           key = k.key;
           measure.clear();
-        case AbcNote n:
+        case final AbcNote n:
           n.shownAccidentals = [
             for (final p in n.pitches)
               () {
@@ -728,7 +728,7 @@ AbcTune transposeAbc(AbcTune tune, int semitones, {bool? preferFlats}) {
     final elements = <AbcElement>[];
     for (final e in line.elements) {
       switch (e) {
-        case AbcNote n:
+        case final AbcNote n:
           final note = AbcNote(
             pitches: [
               for (final p in n.pitches) _respell(p.midi + semitones, key),
@@ -741,7 +741,7 @@ AbcTune transposeAbc(AbcTune tune, int semitones, {bool? preferFlats}) {
             tuplet: n.tuplet,
           )..lyric = n.lyric;
           elements.add(note);
-        case AbcRest r:
+        case final AbcRest r:
           elements.add(
             AbcRest(
               duration: r.duration,
@@ -750,7 +750,7 @@ AbcTune transposeAbc(AbcTune tune, int semitones, {bool? preferFlats}) {
               chordSymbol: chord(r.chordSymbol),
             ),
           );
-        case AbcKeyChange k:
+        case final AbcKeyChange k:
           key = k.key.transpose(semitones, preferFlats: preferFlats);
           elements.add(AbcKeyChange(key));
         default:

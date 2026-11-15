@@ -82,6 +82,7 @@ class TestApp {
     final closing = db.close();
     await tester.pump(Duration.zero);
     await closing;
+    await links.close();
     dir.deleteSync(recursive: true);
   }
 }

@@ -244,9 +244,9 @@ BlockMetrics _measure(
   final images = <ImageBox>[];
   for (final line in block.lines) {
     switch (line) {
-      case FormatLine l:
+      case final FormatLine l:
         format.apply(l);
-      case LyricLine l when !lyricsOnly && l.hasChords:
+      case final LyricLine l when !lyricsOnly && l.hasChords:
         final lyric = styles.lyricsFor(format, inChorus: chorus);
         final chord = styles.chordFor(format);
         final pieces = chordLinePieces(l, formatter);
@@ -280,14 +280,14 @@ BlockMetrics _measure(
             lineUnits(chord) +
             tallestLyric;
         minWidth = math.max(minWidth, lineWidth);
-      case LyricLine l:
+      case final LyricLine l:
         final lyric = styles.lyricsFor(format, inChorus: chorus);
         wrapping.add((
           width: spanWidth(markupSpan(l.text, lyric, forMeasuring: true)),
           lineHeight: lineUnits(lyric) * markupSizeFactor(l.text),
           padding: 0,
         ));
-      case CommentLine c:
+      case final CommentLine c:
         // The comment's spacing scales with its text size (song_view.dart).
         final base = (styles.lyricsFor(format).fontSize ?? f) / f;
         final style = styles
@@ -307,11 +307,11 @@ BlockMetrics _measure(
           lineHeight: lineUnits(style) * markupSizeFactor(c.text),
           padding: base * 2 * SongSpacing.commentPaddingHorizontal,
         ));
-      case RawLine r:
+      case final RawLine r:
         final style = styles.tabFor(format);
         fixed += lineUnits(style);
         minWidth = math.max(minWidth, width(r.text, style));
-      case GridLine g:
+      case final GridLine g:
         final text = styles.gridFor(format);
         final chordStyle = styles.gridChordFor(format);
         final size = text.fontSize ?? f;
@@ -323,9 +323,9 @@ BlockMetrics _measure(
           minWidth,
           grid.rowWidth(g.row, formatter, gridWidth) * size / f,
         );
-      case ImageLine i when resolveImage(i, imageLookup) != null:
+      case final ImageLine i when resolveImage(i, imageLookup) != null:
         images.add(resolveImage(i, imageLookup)!.$2);
-      case ChordDiagramLine c
+      case final ChordDiagramLine c
           when diagramResolver?.forDefinition(c.definition) != null:
         final data = diagramResolver!.forDefinition(c.definition)!;
         fixed += data.heightUnits + 2 * SongSpacing.lineItemPadding;

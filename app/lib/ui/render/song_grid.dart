@@ -129,7 +129,7 @@ class GridRowView extends StatelessWidget {
     ];
     for (final token in row.tokens) {
       switch (token) {
-        case GridBar bar:
+        case final GridBar bar:
           children.add(
             SizedBox(
               width: GridGeometry.barWidth(bar.symbol, width) * size,
@@ -144,9 +144,9 @@ class GridRowView extends StatelessWidget {
               ),
             ),
           );
-        case GridChords cell:
+        case final GridChords cell:
           children.add(_cell(gridChordText(cell, formatter), chordStyle, size));
-        case GridMark mark:
+        case final GridMark mark:
           children.add(
             _cell(
               gridMarkText(mark.symbol),
@@ -154,7 +154,7 @@ class GridRowView extends StatelessWidget {
               size,
             ),
           );
-        case GridStrum strum:
+        case final GridStrum strum:
           children.add(_cell(strum.symbol, chordStyle, size));
       }
     }

@@ -72,7 +72,10 @@ void main() {
       requests.single.url.path,
       '/api/collections/users/auth-with-password',
     );
-    expect(jsonDecode(requests.single.body)['identity'], 'ann@example.test');
+    expect(
+      (jsonDecode(requests.single.body) as Map)['identity'],
+      'ann@example.test',
+    );
 
     await Future<void>.delayed(Duration.zero);
     expect(changes, [user]);
@@ -144,8 +147,11 @@ void main() {
     final store = MemorySessionStore(_storedSession());
     final b = backend(
       store,
-      (r) async =>
-          _json(401, {'status': 401, 'message': 'invalid', 'data': {}}),
+      (r) async => _json(401, {
+        'status': 401,
+        'message': 'invalid',
+        'data': <String, dynamic>{},
+      }),
     );
     await b.refreshSession();
     expect(b.currentUser, isNull);
@@ -184,7 +190,7 @@ void main() {
         (r) async => _json(400, {
           'status': 400,
           'message': 'Failed to authenticate.',
-          'data': {},
+          'data': <String, dynamic>{},
         }),
       );
       expect(
@@ -342,7 +348,8 @@ void main() {
       var status = 409;
       final b = backend(
         MemorySessionStore(_storedSession()),
-        (r) async => _json(status, {'message': 'x', 'data': {}}),
+        (r) async =>
+            _json(status, {'message': 'x', 'data': <String, dynamic>{}}),
       );
       await expectLater(
         b.pushSong(song, create: false),

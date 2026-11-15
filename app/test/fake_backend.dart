@@ -658,7 +658,7 @@ class FakeSyncBackend implements SyncBackend {
   Stream<String> watchChanges() => changes.stream;
 
   @override
-  void dispose() {}
+  void dispose() => changes.close();
 }
 
 class FakeInvite {

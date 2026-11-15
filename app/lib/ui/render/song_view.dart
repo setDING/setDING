@@ -293,9 +293,9 @@ class _SectionBlock extends StatelessWidget {
     ];
     for (final line in block.lines) {
       switch (line) {
-        case FormatLine l:
+        case final FormatLine l:
           format.apply(l);
-        case LyricLine l when !options.lyricsOnly && l.hasChords:
+        case final LyricLine l when !options.lyricsOnly && l.hasChords:
           children.add(
             _ChordLyricLine(
               line: l,
@@ -304,13 +304,13 @@ class _SectionBlock extends StatelessWidget {
               chordStyle: style.chordFor(format),
             ),
           );
-        case LyricLine l:
+        case final LyricLine l:
           children.add(
             Text.rich(
               markupSpan(l.text, style.lyricsFor(format, inChorus: chorus)),
             ),
           );
-        case CommentLine c:
+        case final CommentLine c:
           children.add(
             _Comment(
               comment: c,
@@ -318,11 +318,11 @@ class _SectionBlock extends StatelessWidget {
               colors: style.colors,
             ),
           );
-        case RawLine r:
+        case final RawLine r:
           children.add(
             Text(r.text, style: style.tabFor(format), softWrap: false),
           );
-        case GridLine g:
+        case final GridLine g:
           final text = style.gridFor(format);
           final chordStyle = style.gridChordFor(format);
           grid ??= _gridGeometry(context, block.lines, text, chordStyle);
@@ -336,12 +336,12 @@ class _SectionBlock extends StatelessWidget {
               barColor: style.colors.outline,
             ),
           );
-        case ImageLine i when _image(i) != null:
+        case final ImageLine i when _image(i) != null:
           final (file, box) = _image(i)!;
           children.add(
             SongImageView(box: box, fontSize: style.fontSize, file: file),
           );
-        case ImageLine i:
+        case final ImageLine i:
           children.add(
             _Placeholder(
               icon: Icons.image_outlined,
@@ -350,7 +350,7 @@ class _SectionBlock extends StatelessWidget {
               size: style.fontSize,
             ),
           );
-        case ChordDiagramLine c:
+        case final ChordDiagramLine c:
           final data = options.diagramResolver?.forDefinition(c.definition);
           children.add(
             data == null

@@ -174,7 +174,7 @@ AbcLineLayout _layoutRow(
   var lowest = 4.0; // largest y
   for (final e in elements) {
     switch (e) {
-      case AbcNote n:
+      case final AbcNote n:
         final accidentals = n.shownAccidentals.whereType<int>().length;
         final accSpace = accidentals == 0 ? 0.0 : 1.3;
         x += accSpace;
@@ -195,11 +195,11 @@ AbcLineLayout _layoutRow(
           lowest = math.max(lowest, y + 3.5);
         }
         x += width;
-      case AbcRest r:
+      case final AbcRest r:
         if (r.chordSymbol != null) hasChords = true;
         items.add(AbcPlaced(e, x));
         x += 1.8 + 7 * r.duration;
-      case AbcBar b:
+      case final AbcBar b:
         x += 0.3;
         items.add(AbcPlaced(e, x));
         x += switch (b.type) {
@@ -207,7 +207,7 @@ AbcLineLayout _layoutRow(
           _ when b.type.length > 1 => 2.0,
           _ => 1.2,
         };
-      case AbcKeyChange k:
+      case final AbcKeyChange k:
         key = k.key;
         items.add(AbcPlaced(e, x));
         x += k.key.signatureLetters.length * 1.0 + 1.0;
@@ -362,7 +362,7 @@ class _AbcPainter extends CustomPainter {
     for (var i = 0; i < items.length; i++) {
       final item = items[i];
       switch (item.element) {
-        case AbcNote n:
+        case final AbcNote n:
           _note(n, item, beamed.contains(item));
           if (n.tie && i + 1 < items.length) {
             final next = items
@@ -370,15 +370,15 @@ class _AbcPainter extends CustomPainter {
                 .firstWhere((p) => p.element is AbcNote, orElse: () => item);
             if (next != item) _tie(item, next, n);
           }
-        case AbcRest r:
+        case final AbcRest r:
           if (!r.invisible) _rest(r, item.x);
           if (r.chordSymbol != null) _chordSymbol(r.chordSymbol!, item.x);
-        case AbcBar b:
+        case final AbcBar b:
           _bar(b, item.x);
-        case AbcKeyChange k:
+        case final AbcKeyChange k:
           activeKey = k.key;
           _keySignature(activeKey, item.x);
-        case AbcMeterChange m:
+        case final AbcMeterChange m:
           _meter(m.meter, item.x);
       }
     }

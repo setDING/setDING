@@ -164,9 +164,9 @@ List<SongBlock> buildSongBlocks(
 
   for (final element in song.elements) {
     switch (element) {
-      case Section s:
+      case final Section s:
         addSection(s, s.label ?? labeler(s.kind));
-      case ChorusRecall r:
+      case final ChorusRecall r:
         final chorus = r.chorus;
         final label = r.label ?? chorus?.label ?? chorusLabel;
         if (chorus == null || collapseRecalls) {
@@ -174,7 +174,7 @@ List<SongBlock> buildSongBlocks(
         } else {
           addSection(chorus, label, applyFormats: false);
         }
-      case DelegateSection d:
+      case final DelegateSection d:
         blocks.add(SongBlock.delegate(d, startFormat: format.copy()));
     }
   }

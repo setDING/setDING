@@ -1,1 +1,16 @@
 include: package:lints/recommended.yaml
+
+analyzer:
+  language:
+    # JSON-heavy test code: casts stay implicit here (see app and chordpro).
+    strict-inference: true
+    strict-raw-types: true
+
+linter:
+  rules:
+    - unawaited_futures
+    - avoid_dynamic_calls
+    - cancel_subscriptions
+    - close_sinks
+    - always_declare_return_types
+    - prefer_final_locals

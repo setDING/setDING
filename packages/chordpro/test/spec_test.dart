@@ -191,8 +191,8 @@ void main() {
       return [
         for (final line in song.sections.expand((s) => s.lines))
           switch (line) {
-            CommentLine c => c.text,
-            LyricLine l => l.text,
+            final CommentLine c => c.text,
+            final LyricLine l => l.text,
             _ => '',
           },
       ];

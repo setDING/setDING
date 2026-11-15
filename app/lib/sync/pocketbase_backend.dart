@@ -678,6 +678,7 @@ class PocketBaseBackend implements SyncBackend {
             await unsubscribe();
           } catch (_) {}
         }
+        await controller.close();
       },
     );
     return controller.stream;

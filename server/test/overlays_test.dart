@@ -42,7 +42,9 @@ void main() {
         greaterThan(mine.json['revision'] as int),
       );
       expect(
-        (await f.admin.patch('overlays', mine.json['id'], {'data': {}})).status,
+        (await f.admin.patch('overlays', mine.json['id'], {
+          'data': <String, dynamic>{},
+        })).status,
         404,
       );
     },

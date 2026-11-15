@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -21,10 +23,12 @@ Future<void> syncNow(WidgetTester tester, {Finder? within}) async {
     tester.element(within ?? find.byType(Scaffold).first),
   );
   var done = false;
-  container
-      .read(syncControllerProvider.notifier)
-      .syncNow()
-      .whenComplete(() => done = true);
+  unawaited(
+    container
+        .read(syncControllerProvider.notifier)
+        .syncNow()
+        .whenComplete(() => done = true),
+  );
   for (var i = 0; i < 500 && !done; i++) {
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 5)),

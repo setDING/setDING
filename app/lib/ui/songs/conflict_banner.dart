@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -21,7 +23,8 @@ class ConflictBanner extends ConsumerWidget {
 
     Future<void> resolve(Future<void> Function() action) async {
       await action();
-      ref.read(syncControllerProvider.notifier).syncNow();
+      // Pushes the decision; the banner does not wait for it.
+      unawaited(ref.read(syncControllerProvider.notifier).syncNow());
     }
 
     return Card(
