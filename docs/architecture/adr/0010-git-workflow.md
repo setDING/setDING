@@ -19,12 +19,12 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 - Backlog as issues in the self-hosted Forgejo repository, with labels for agents (`agent:ready`, `agent:in-progress`, `needs-human`).
 - One issue = one branch (`<type>/<issue>-<slug>`) = one PR; no direct commits to `main`.
 - Conventional Commits, English, `Co-Authored-By` trailer for agents.
-- Local checks + self-review before a PR is marked ready; required CI checks.
+- Local checks + self-review before a PR is marked ready. During early development the local test gate is binding and CI runs only on manual dispatch; required CI checks return when heading towards version 1.
 - **Squash merge** only; branch deleted after merge.
 - **Test gate:** all tests must pass on the final, rebased state of the branch before
   every merge – no exceptions, no weakening of tests to get green.
 - Agents **may merge their own PRs** from the start, when the test gate is satisfied,
-  CI is green (once it exists) and no human-decision rule applies.
+  CI is green (while it is a required check) and no human-decision rule applies.
 - Human decision required for: accepting/rejecting ADRs, store releases, secrets and
   access, history rewrites on `main`, changes to the workflow/CI rules, unclear requirements.
 - Handover comments on the PR whenever an agent stops mid-task.
@@ -56,7 +56,11 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 - 2026-11-15: Agents act as the Forgejo user `factoryd` (commit author `andi+factoryd@theboss.ch`, `fj` login, CI registry token) instead of the owner's account, so agent work is distinguishable from the owner's.
 - 2026-11-15: Agents have API access: an access token (scopes repository and issue, under the owner's account) is stored by `fj` on the development machine. The normal flow with issues and PRs applies; local squash merges remain only as a fallback without a login (workflow section 11).
 
+- 2026-11-15: CI made manual-only (`workflow_dispatch`) during early development: waiting for the runner slowed development down too much. The test gate is the full local suite (`make check`) on the rebased branch right before the merge; agents do not wait for CI. Decided by the owner.
+
 ## Open points
+
+- Re-enable CI on every PR and push to `main` as a required check (`test`) when heading towards version 1, together with branch protection.
 
 - Build jobs: Android (SDK in the container or a separate image), iOS (needs a macOS runner), Windows (needs a Windows runner).
 - Branch protection on `main` (PR required, required check `test`) is to be enabled by the owner in the repository settings.

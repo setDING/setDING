@@ -89,7 +89,7 @@ An agent runs all of the following and only continues when everything passes:
 - Body follows [`.github/pull_request_template.md`](../../.github/pull_request_template.md) (Forgejo reads PR templates from `.github/` as well as `.forgejo/`): summary, linked issue (`Closes #n`), affected ADRs, how it was tested, open points.
 - Size: aim for **under ~400 changed lines** (generated files excluded). Larger work is split into several PRs, each leaving `main` working.
 - **Merge method: squash merge** only. The branch is deleted after the merge.
-- **CI must be green** before merging (see section 7).
+- **CI must be green** before merging while CI is a required check (see section 7). During early development CI is manual-only and the local test gate applies.
 
 ### Test gate
 
@@ -99,10 +99,11 @@ merge, by agents and humans alike:
 - The full test suite runs on the **final state of the branch, rebased on the latest
   `main`** – not on an earlier state. If `main` moves on before the merge, rebase and
   run the tests again.
-- With CI: the required `test` check (and all other required checks) is green.
-  Without CI (no Forgejo Actions runner yet, section 12): the agent runs the full
-  suite locally immediately before the merge and reports the result in the PR and the
-  merge commit body.
+- **Currently (early development): local test gate.** The agent runs the full suite
+  locally (`make check`) immediately before the merge and reports the result in the
+  PR and the merge commit body. Agents do not wait for CI (section 7).
+- Once CI is a required check again (towards version 1): the required `test` check
+  (and all other required checks) is green.
 - **New or changed behaviour comes with tests.** A PR that changes code without
   corresponding tests is not ready (pure docs/config changes excepted).
 - **Tests are never weakened to get green:** no skipping, deleting, disabling or
@@ -118,7 +119,7 @@ An agent **may merge its own PR** – from the start of the project – when all
 following hold:
 
 - the test gate above is satisfied
-- CI is green (once it exists) and the branch is up to date with `main`
+- CI is green (while CI is a required check, section 7) and the branch is up to date with `main`
 - the self-review is done and its findings are fixed
 - no rule from section 9 applies
 
@@ -127,7 +128,14 @@ to be decided.
 
 ## 7. Continuous integration
 
-CI runs as **Forgejo Actions** on every PR and on every push to `main`:
+> **Early development: CI is manual-only.** Waiting for the runner slowed development
+> down too much, so the workflow has only a `workflow_dispatch` trigger and is not a
+> required check; the local test gate (section 6) is binding. Run it by hand when
+> useful (Forgejo → Actions → CI → Run workflow). **When heading towards version 1**,
+> re-enable the `pull_request` and `push` triggers in `ci.yml`, make `test` a
+> required check again and enable branch protection (ADR-0010, open points).
+
+CI runs as **Forgejo Actions** (when enabled, on every PR and on every push to `main`):
 [`.forgejo/workflows/ci.yml`](../../.forgejo/workflows/ci.yml), on the global Forgejo
 runner with the label `linux-amd64`, in the project's own CI image
 `ghcr.io/tafli/realchord-ci:<flutter version>` from the Forgejo container
@@ -143,7 +151,7 @@ runner's CPUs and memory; a run takes far longer than a local cold run
 
 | Check | Content | Status |
 |---|---|---|
-| `test` | `tool/check.sh`: format (`dart format --set-exit-if-changed`), `analyze` without infos, `l10n` (all ARB keys in German and English, no "ß"), unit and widget tests of `packages/chordpro` and `app` | **Active, required** |
+| `test` | `tool/check.sh`: format (`dart format --set-exit-if-changed`), `analyze` without infos, `l10n` (all ARB keys in German and English, no "ß"), unit and widget tests of `packages/chordpro` and `app` | **Manual only** (required again towards version 1) |
 | `build` | Android build (APK); iOS and Windows builds at least on `main` | Planned (needs the Android SDK, a macOS and a Windows runner) |
 | `commit-lint` | PR title follows Conventional Commits | Planned |
 
