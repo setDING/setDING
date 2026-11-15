@@ -598,6 +598,16 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get settingsLogCopy => 'Diagnoseprotokoll kopieren';
+
+  @override
+  String get settingsLogCopyHint =>
+      'Die letzten Meldungen der App, z. B. warum eine Synchronisation fehlschlug – zum Einfügen in eine Nachricht an den Support.';
+
+  @override
+  String get settingsLogCopied => 'Diagnoseprotokoll kopiert';
+
+  @override
   String get settingsAbout =>
       'RealChord läuft lokal auf diesem Gerät. Alle Daten sind offline verfügbar.';
 

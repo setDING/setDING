@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/song_repository.dart' show adoptLocalOverlays;
@@ -8,6 +7,9 @@ import 'pocketbase_backend.dart';
 import 'session_store.dart';
 import 'sync_controller.dart' show SyncController, autoSyncProvider;
 import 'sync_backend.dart';
+import '../util/log.dart';
+
+const _log = Log('auth');
 
 /// Where the session is stored; overridden in main() and in tests.
 final sessionStoreProvider = Provider<SessionStore>(
@@ -67,7 +69,7 @@ class AuthNotifier extends Notifier<AuthUser?> {
     if (prefs.getBool(_adoptedKey) ?? false) return;
     await prefs.setBool(_adoptedKey, true);
     final count = await adoptLocalOverlays(ref.read(databaseProvider), userId);
-    if (count > 0) debugPrint('Took over $count personal adjustments');
+    if (count > 0) _log.info('Took over $count personal adjustments');
   }
 
   Future<void> _refreshBands() async {
@@ -75,7 +77,7 @@ class AuthNotifier extends Notifier<AuthUser?> {
       await ref.read(bandServiceProvider).refresh();
     } catch (e) {
       // Offline or server error: the cached bands stay available.
-      debugPrint('Could not refresh bands: $e');
+      _log.warning('Could not refresh bands', e);
     }
   }
 

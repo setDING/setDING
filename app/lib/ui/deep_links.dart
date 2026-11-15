@@ -6,6 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../sync/sync_backend.dart';
 import 'bands/join_screen.dart';
+import '../util/log.dart';
+
+const _log = Log('links');
 
 /// Links that open the app (ADR-0005): App Links / Universal Links
 /// (`https://api.realchord.app/invite/<token>`) and `realchord://invite/<token>`,
@@ -14,7 +17,7 @@ final incomingLinksProvider = Provider<Stream<Uri>>((ref) {
   try {
     return AppLinks().uriLinkStream;
   } catch (e) {
-    debugPrint('Deep links not available: $e');
+    _log.warning('Deep links not available', e);
     return const Stream.empty();
   }
 });
@@ -44,7 +47,7 @@ class _DeepLinkListenerState extends ConsumerState<DeepLinkListener> {
         .read(incomingLinksProvider)
         .listen(
           _open,
-          onError: (Object e) => debugPrint('Deep link failed: $e'),
+          onError: (Object e) => _log.warning('Deep link failed', e),
         );
   }
 

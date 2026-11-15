@@ -1,11 +1,13 @@
-import 'package:chordpro/chordpro.dart';
+import 'package:chordpro/chordpro.dart' hide Key;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../l10n/generated/app_localizations.dart';
 import '../providers.dart';
 import '../settings/settings.dart';
 import '../sync/auth_providers.dart';
+import '../util/log.dart';
 import 'account/account_section.dart';
 import 'widgets/dialogs.dart';
 
@@ -208,6 +210,18 @@ class SettingsScreen extends ConsumerWidget {
               ListTile(
                 leading: const Icon(Icons.sd_storage_outlined),
                 title: Text(l10n.settingsStorageUsed(formatBytes(usage ?? 0))),
+              ),
+              ListTile(
+                key: const Key('copy-log'),
+                leading: const Icon(Icons.bug_report_outlined),
+                title: Text(l10n.settingsLogCopy),
+                subtitle: Text(l10n.settingsLogCopyHint),
+                onTap: () async {
+                  await Clipboard.setData(ClipboardData(text: Log.export()));
+                  if (context.mounted) {
+                    showMessage(context, l10n.settingsLogCopied);
+                  }
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.info_outline),

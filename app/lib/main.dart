@@ -19,6 +19,9 @@ import 'providers.dart';
 import 'settings/settings.dart';
 import 'sync/auth_providers.dart';
 import 'sync/session_store.dart';
+import 'util/log.dart';
+
+const _log = Log('app');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -102,6 +105,6 @@ Future<void> _migrateLegacySupportDir(Directory supportDir) async {
   try {
     await migrateLegacySupportDir(supportDir);
   } on FileSystemException catch (e) {
-    debugPrint('Could not move data from before the rename: $e');
+    _log.warning('Could not move data from before the rename', e);
   }
 }

@@ -14,6 +14,9 @@ import '../data/outbox.dart';
 import '../data/song_repository.dart' show SongMeta, songMetas;
 import 'band_service.dart';
 import 'sync_backend.dart';
+import '../util/log.dart';
+
+const _log = Log('sync');
 
 const _uuid = Uuid();
 
@@ -112,6 +115,10 @@ class SyncEngine {
       pushed += p.$1;
       conflicts += p.$2;
       downloaded += await _downloadMissing();
+      _log.info(
+        'Sync done: pulled $pulled, pushed $pushed, conflicts $conflicts, '
+        'downloaded $downloaded',
+      );
       return SyncReport(
         pulled: pulled,
         pushed: pushed,
@@ -119,7 +126,7 @@ class SyncEngine {
         downloaded: downloaded,
       );
     } on BackendException catch (e) {
-      debugPrint('Sync stopped: $e');
+      _log.warning('Sync stopped', e);
       return SyncReport(
         pulled: pulled,
         pushed: pushed,
@@ -420,7 +427,7 @@ class SyncEngine {
             return;
           }
           // This file only; the others are still downloaded.
-          debugPrint('Attachment ${a.id} not downloaded: $e');
+          _log.warning('Attachment ${a.id} not downloaded', e);
         }
       }
     }
@@ -695,7 +702,7 @@ class SyncEngine {
       }
       if (e.kind == BackendErrorKind.notAllowed) {
         // No (longer) permission: the change stays local.
-        debugPrint('Song ${song.id} not pushed: not allowed');
+        _log.warning('Song ${song.id} not pushed: not allowed');
         await _done(entry);
         return _Push.skipped;
       }
@@ -773,7 +780,7 @@ class SyncEngine {
       return _Push.done;
     } on BackendException catch (e) {
       if (e.kind == BackendErrorKind.notAllowed) {
-        debugPrint('Set ${set.id} not pushed: not allowed');
+        _log.warning('Set ${set.id} not pushed: not allowed');
         await _done(entry);
         return _Push.skipped;
       }
@@ -845,7 +852,7 @@ class SyncEngine {
         rethrow;
       }
       // Not allowed, too large or refused: the attachment stays local.
-      debugPrint('Attachment ${a.id} not pushed: $e');
+      _log.warning('Attachment ${a.id} not pushed', e);
       await _done(entry);
       return _Push.skipped;
     }
@@ -971,7 +978,7 @@ class SyncEngine {
       return _Push.done;
     } on BackendException catch (e) {
       if (e.kind == BackendErrorKind.notAllowed) {
-        debugPrint('Overlay ${entry.recordId} not pushed: not allowed');
+        _log.warning('Overlay ${entry.recordId} not pushed: not allowed');
         await _done(entry);
         return _Push.skipped;
       }

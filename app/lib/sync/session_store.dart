@@ -1,7 +1,10 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+import '../util/log.dart';
+
+const _log = Log('session');
 
 /// Persists the session (auth token and user record) between app starts.
 ///
@@ -39,7 +42,7 @@ class SecureSessionStore implements SessionStore {
     } catch (e) {
       // No keyring available (e.g. a Linux desktop without Secret Service):
       // the app starts signed out instead of failing.
-      debugPrint('Could not read the stored session: $e');
+      _log.warning('Could not read the stored session', e);
       _current = null;
     }
   }
@@ -50,7 +53,7 @@ class SecureSessionStore implements SessionStore {
     try {
       await _storage.write(key: _key, value: value);
     } catch (e) {
-      debugPrint('Could not store the session: $e');
+      _log.warning('Could not store the session', e);
     }
   }
 
@@ -60,7 +63,7 @@ class SecureSessionStore implements SessionStore {
     try {
       await _storage.delete(key: _key);
     } catch (e) {
-      debugPrint('Could not delete the stored session: $e');
+      _log.warning('Could not delete the stored session', e);
     }
   }
 }

@@ -173,6 +173,7 @@ Notes:
 - **Import/export:** Import of `.cho`/`.chordpro`/`.chopro`/`.txt` files (individually and as ZIP, optionally converting German H/B notation) and PDF attachments; export of a set as a ZIP with ChordPro files and PDF attachments; the set list as text (file or clipboard) and as a printable PDF (ADR-0013), one line per song with title, key for the set and sequence.
 - **Localization:** UI in German and English, selectable in the settings (ADR-0008). Song content is not translated.
 - **Testability:** `chordpro` package with extensive unit tests (parser, transposition); golden tests for rendering.
+- **Diagnostics:** named loggers (`app/lib/util/log.dart`, no extra package) write to the console (also in release builds) and the Dart developer log, and keep the last 300 messages; the settings copy them to the clipboard for support. Logs contain no song content or credentials.
 - **Data protection:** Self-hosting keeps the data under the band's own control (e.g. in Switzerland).
 
 ## 8. Phases / roadmap (proposal)

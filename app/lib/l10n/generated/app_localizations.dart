@@ -1124,6 +1124,24 @@ abstract class AppLocalizations {
   /// **'PDF-Anhänge belegen {size}'**
   String settingsStorageUsed(String size);
 
+  /// No description provided for @settingsLogCopy.
+  ///
+  /// In de, this message translates to:
+  /// **'Diagnoseprotokoll kopieren'**
+  String get settingsLogCopy;
+
+  /// No description provided for @settingsLogCopyHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Die letzten Meldungen der App, z. B. warum eine Synchronisation fehlschlug – zum Einfügen in eine Nachricht an den Support.'**
+  String get settingsLogCopyHint;
+
+  /// No description provided for @settingsLogCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Diagnoseprotokoll kopiert'**
+  String get settingsLogCopied;
+
   /// No description provided for @settingsAbout.
   ///
   /// In de, this message translates to:

@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
-
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
@@ -11,6 +9,9 @@ import 'package:pocketbase/pocketbase.dart';
 
 import 'session_store.dart';
 import 'sync_backend.dart';
+import '../util/log.dart';
+
+const _log = Log('backend');
 
 /// [SyncBackend] on PocketBase (ADR-0004, ADR-0015).
 class PocketBaseBackend implements SyncBackend {
@@ -137,7 +138,7 @@ class PocketBaseBackend implements SyncBackend {
         // Token invalidated or account gone: the user has to sign in again.
         _pb.authStore.clear();
       } else {
-        debugPrint('Session refresh failed: ${e.statusCode} ${e.response}');
+        _log.warning('Session refresh failed: ${e.statusCode} ${e.response}');
       }
     }
   }
@@ -667,7 +668,7 @@ class PocketBaseBackend implements SyncBackend {
               await _pb.collection(c).subscribe('*', (_) => controller.add(c)),
             );
           } catch (e) {
-            debugPrint('Realtime subscription for $c failed: $e');
+            _log.warning('Realtime subscription for $c failed', e);
           }
         }
       },
