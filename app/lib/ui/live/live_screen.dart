@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:chordpro/chordpro.dart' hide Key;
+import 'package:drift/drift.dart' show Value;
 import 'package:chordpro/chordpro.dart' as cp show Key;
 import 'package:flutter/gestures.dart' show Drag;
 import 'package:material_ui/material_ui.dart';
@@ -513,6 +514,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   }
 }
 
+/// Minimum width for the Nashville toggle in the same row as the controls.
+const _wideControlBar = 720.0;
+
 class _ControlBar extends ConsumerWidget {
   const _ControlBar({
     required this.item,
@@ -544,70 +548,143 @@ class _ControlBar extends ConsumerWidget {
     final originalKey = song?.songKey == null
         ? null
         : cp.Key.tryParse(song!.songKey!);
+    final deviceNashville = ref.watch(
+      settingsProvider.select((s) => s.nashville),
+    );
+    final toggle = adjust == null || song == null
+        ? null
+        : _NashvilleToggle(
+            selected: overlay?.nashville ?? deviceNashville,
+            hasKey:
+                parseChordProCached(
+                  song.chordproSource,
+                  selectors: ref.watch(selectorsProvider),
+                ).key !=
+                null,
+            onChanged: (selected) => adjust(
+              (o) => o.copyWith(
+                nashville: Value(selected == deviceNashville ? null : selected),
+              ),
+            ),
+          );
+    final leading = <Widget>[
+      IconButton(
+        tooltip: l10n.liveExit,
+        icon: const Icon(Icons.close),
+        onPressed: onExit,
+      ),
+      IconButton(
+        tooltip: l10n.liveSetOverview,
+        icon: const Icon(Icons.format_list_numbered),
+        onPressed: onOverview,
+      ),
+    ];
+    final trailing = <Widget>[
+      if (adjust != null) ...[
+        KeyPicker(
+          baseKey: originalKey,
+          transpose: inSet ? item.setTranspose : overlay?.transpose ?? 0,
+          notation: ref.watch(settingsProvider.select((s) => s.notation)),
+          onChanged: (value) => inSet
+              ? onSetKey(value)
+              : adjust((o) => o.copyWith(transpose: value)),
+        ),
+        const SizedBox(width: 8),
+        IconButton(
+          tooltip: l10n.fontSmaller,
+          icon: const Icon(Icons.text_decrease),
+          onPressed: () => adjust(
+            (o) => o.copyWith(
+              fontScale: (o.fontScale - 0.1).clamp(
+                _minFontScale,
+                _maxFontScale,
+              ),
+            ),
+          ),
+        ),
+        IconButton(
+          tooltip: l10n.fontLarger,
+          icon: const Icon(Icons.text_increase),
+          onPressed: () => adjust(
+            (o) => o.copyWith(
+              fontScale: (o.fontScale + 0.1).clamp(
+                _minFontScale,
+                _maxFontScale,
+              ),
+            ),
+          ),
+        ),
+        // With fitting on, 100 % is the fitted size (ADR-0007).
+        IconButton(
+          tooltip: l10n.fitToPage,
+          icon: const Icon(Icons.fit_screen),
+          onPressed:
+              ref.watch(settingsProvider.select((s) => s.autoFit)) &&
+                  (overlay == null || overlay.fontScale == 1.0)
+              ? null
+              : onFit,
+        ),
+      ],
+    ];
     return Material(
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Row(
-          children: [
-            IconButton(
-              tooltip: l10n.liveExit,
-              icon: const Icon(Icons.close),
-              onPressed: onExit,
-            ),
-            IconButton(
-              tooltip: l10n.liveSetOverview,
-              icon: const Icon(Icons.format_list_numbered),
-              onPressed: onOverview,
-            ),
-            const Spacer(),
-            if (adjust != null) ...[
-              KeyPicker(
-                baseKey: originalKey,
-                transpose: inSet ? item.setTranspose : overlay?.transpose ?? 0,
-                notation: ref.watch(settingsProvider.select((s) => s.notation)),
-                onChanged: (value) => inSet
-                    ? onSetKey(value)
-                    : adjust((o) => o.copyWith(transpose: value)),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                tooltip: l10n.fontSmaller,
-                icon: const Icon(Icons.text_decrease),
-                onPressed: () => adjust(
-                  (o) => o.copyWith(
-                    fontScale: (o.fontScale - 0.1).clamp(
-                      _minFontScale,
-                      _maxFontScale,
-                    ),
-                  ),
-                ),
-              ),
-              IconButton(
-                tooltip: l10n.fontLarger,
-                icon: const Icon(Icons.text_increase),
-                onPressed: () => adjust(
-                  (o) => o.copyWith(
-                    fontScale: (o.fontScale + 0.1).clamp(
-                      _minFontScale,
-                      _maxFontScale,
-                    ),
-                  ),
-                ),
-              ),
-              // With fitting on, 100 % is the fitted size (ADR-0007).
-              IconButton(
-                tooltip: l10n.fitToPage,
-                icon: const Icon(Icons.fit_screen),
-                onPressed:
-                    ref.watch(settingsProvider.select((s) => s.autoFit)) &&
-                        (overlay == null || overlay.fontScale == 1.0)
-                    ? null
-                    : onFit,
-              ),
-            ],
-          ],
+        // The toggle sits in the middle, easy to reach on stage; on narrow
+        // screens it gets a row of its own above the other controls.
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final wide = constraints.maxWidth >= _wideControlBar;
+            final row = Row(
+              children: [
+                ...leading,
+                const Spacer(),
+                if (toggle != null && wide) ...[toggle, const Spacer()],
+                ...trailing,
+              ],
+            );
+            if (toggle == null || wide) return row;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [toggle, row],
+            );
+          },
         ),
+      ),
+    );
+  }
+}
+
+/// Switches the current song between chord names and Nashville numbers;
+/// stored as the personal Nashville overlay of the song (ADR-0006).
+class _NashvilleToggle extends StatelessWidget {
+  const _NashvilleToggle({
+    required this.selected,
+    required this.hasKey,
+    required this.onChanged,
+  });
+
+  final bool selected;
+
+  /// Nashville numbers need a key in the song.
+  final bool hasKey;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Tooltip(
+      message: hasKey ? '' : l10n.noKeyForNashville,
+      child: SegmentedButton<bool>(
+        key: const Key('live-nashville'),
+        showSelectedIcon: false,
+        style: const ButtonStyle(visualDensity: VisualDensity.compact),
+        segments: [
+          ButtonSegment(value: false, label: Text(l10n.liveChordNames)),
+          ButtonSegment(value: true, label: Text(l10n.liveNashville)),
+        ],
+        selected: {hasKey && selected},
+        onSelectionChanged: hasKey ? (s) => onChanged(s.single) : null,
       ),
     );
   }

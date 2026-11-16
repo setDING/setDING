@@ -794,6 +794,18 @@ abstract class AppLocalizations {
   /// **'Live-Modus beenden'**
   String get liveExit;
 
+  /// No description provided for @liveChordNames.
+  ///
+  /// In de, this message translates to:
+  /// **'Akkorde'**
+  String get liveChordNames;
+
+  /// No description provided for @liveNashville.
+  ///
+  /// In de, this message translates to:
+  /// **'Nashville'**
+  String get liveNashville;
+
   /// No description provided for @liveSongPage.
   ///
   /// In de, this message translates to:

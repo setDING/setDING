@@ -214,6 +214,8 @@
   "liveEnd": "Ende des Sets",
   "liveSetOverview": "Set-Übersicht",
   "liveExit": "Live-Modus beenden",
+  "liveChordNames": "Akkorde",
+  "liveNashville": "Nashville",
   "liveSongPage": "Seite {page}/{count}",
   "@liveSongPage": {
     "placeholders": {

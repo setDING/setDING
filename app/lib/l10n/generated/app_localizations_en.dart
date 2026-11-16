@@ -418,6 +418,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get liveExit => 'Exit live mode';
 
   @override
+  String get liveChordNames => 'Chords';
+
+  @override
+  String get liveNashville => 'Nashville';
+
+  @override
   String liveSongPage(int page, int count) {
     return 'Page $page/$count';
   }
