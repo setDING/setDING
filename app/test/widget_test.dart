@@ -201,12 +201,36 @@ void main() {
       find.text('Capo 2 (as in song) – Key: C, Capo: 2 (D)'),
       findsOneWidget,
     );
-    expect(find.text('Key: A, Capo: 5 (D)'), findsOneWidget);
+    expect(find.text('Key: D, Capo: 5 (A)'), findsOneWidget);
     await tester.tap(find.text('No capo – Key: D'));
     await tester.pumpAndSettle();
     expect(find.text('A'), findsOneWidget); // sounding chords without capo
     expect(find.text('D'), findsOneWidget);
     expect(find.text('Key: D'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('a personal capo keeps the sounding key as the key', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final id = await tester.runAsync(
+      () => app.songs.createSong(source: '{title: Capo}\n{key: A}\n[A]x [D]y'),
+    );
+    await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+    await tester.pumpAndSettle();
+    expect(find.text('Key: A'), findsOneWidget);
+
+    await tester.tap(find.text('No capo'));
+    await tester.pumpAndSettle();
+    expect(find.text('No capo – Key: A'), findsOneWidget);
+    await tester.tap(find.text('Key: A, Capo: 2 (G)'));
+    await tester.pumpAndSettle();
+    // The header keeps A; the chords are the shapes for capo 2.
+    expect(find.text('Key: A, Capo: 2 (G)'), findsOneWidget);
+    expect(find.text('G'), findsOneWidget);
+    expect(find.text('C'), findsOneWidget);
     await app.dispose(tester);
   });
 

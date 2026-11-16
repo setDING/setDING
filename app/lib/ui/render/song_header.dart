@@ -11,7 +11,6 @@ class SongHeader extends StatelessWidget {
     this.artist,
     required this.song,
     required this.formatter,
-    this.capo = 0,
     this.compact = false,
     this.setSequence,
   });
@@ -20,7 +19,6 @@ class SongHeader extends StatelessWidget {
   final String? artist;
   final Song song;
   final ChordFormatter formatter;
-  final int capo;
   final bool compact;
 
   /// Set-specific sequence (layer 2, ADR-0006); replaces the song's own.
@@ -33,7 +31,7 @@ class SongHeader extends StatelessWidget {
     final sequence = setSequence == null
         ? song.sequence
         : parseSequence(setSequence!);
-    final keyAndCapo = keyAndCapoText(l10n, formatter, capo);
+    final keyAndCapo = keyAndCapoText(l10n, formatter);
     final info = <String>[
       if (keyAndCapo.isNotEmpty) keyAndCapo,
       if (song.tempo case final tempo?) l10n.bpm(tempo),
@@ -88,20 +86,22 @@ class SongHeader extends StatelessWidget {
   }
 }
 
-/// Key of the chords as played and, with a [capo], the sounding key after
-/// it, e.g. "Key: A, Capo: 3 (C)". Empty without key and capo.
-String keyAndCapoText(
-  AppLocalizations l10n,
-  ChordFormatter formatter,
-  int capo,
-) => [
-  if (formatter.formatShapeKey() case final key?) l10n.keyLabel(key),
-  if (capo > 0)
-    switch (formatter.formatKey()) {
-      final sounding? => l10n.capoLabelWithKey(capo, sounding),
-      null => l10n.capoLabel(capo),
-    },
-].join(', ');
+/// Key and capo of [formatter], e.g. "Key: A, Capo: 3 (C)". With the song's
+/// own capo the key is the one written (the shapes) and the sounding key
+/// follows the capo; with a personal capo the key is the sounding one and
+/// the shapes follow the capo ("Key: A, Capo: 2 (G)"). Empty without key
+/// and capo.
+String keyAndCapoText(AppLocalizations l10n, ChordFormatter formatter) {
+  final capo = formatter.effectiveCapo;
+  final asWritten = capo == formatter.songCapo;
+  final key = asWritten ? formatter.formatShapeKey() : formatter.formatKey();
+  final other = asWritten ? formatter.formatKey() : formatter.formatShapeKey();
+  return [
+    if (key != null) l10n.keyLabel(key),
+    if (capo > 0)
+      other == null ? l10n.capoLabel(capo) : l10n.capoLabelWithKey(capo, other),
+  ].join(', ');
+}
 
 /// The song sequence from `{x_sequence: …}` as a row of small chips.
 class SongSequenceView extends StatelessWidget {
