@@ -9,6 +9,7 @@
 #   make reset      delete the test instance's data (fresh start with demo song)
 #   make backend    start a local PocketBase with the repository's schema and hooks
 #   make apk        build an Android APK for manual installation (sideloading)
+#   make android-keystore  create the Android release key (owner, once)
 #   make release    build the Linux release package (runs on any x86-64 Linux)
 #   make server-*   install and operate the PocketBase server (SERVER=root@host)
 
@@ -27,7 +28,8 @@ DART     := $(dir $(FLUTTER))dart
 BUNDLE   := $(APP)/build/linux/x64/debug/bundle/realchord
 
 # Android APK for sideloading (make apk). The release build is signed with the
-# machine's debug key (app/android/app/build.gradle.kts) until a release key exists.
+# release key from app/android/key.properties if it exists, otherwise with the
+# machine's debug key (app/android/app/build.gradle.kts, ADR-0021).
 export ANDROID_HOME ?= $(HOME)/Android/Sdk
 ADB         ?= $(ANDROID_HOME)/platform-tools/adb
 APK_VERSION := $(shell sed -n 's/^version: *\([^+]*\).*/\1/p' $(APP)/pubspec.yaml)
@@ -44,8 +46,13 @@ DOCKER          ?= docker
 # Linux release package (make release, ADR-0019), named after version and commit.
 # Built in a Debian container (tool/release/linux.Dockerfile) so the result runs on
 # every x86-64 CPU and distribution, not only on the machine that runs make.
-RELEASE_NAME  := realchord-$(APK_VERSION)-$(APK_COMMIT)
+# CI (ADR-0021) sets RELEASE_NAME without the commit and BUILD_NUMBER to its run number.
+RELEASE_NAME  ?= realchord-$(APK_VERSION)-$(APK_COMMIT)
 RELEASE_IMAGE ?= realchord-release-linux:$(FLUTTER_VERSION)
+BUILD_NUMBER  ?=
+
+# Android release key (make android-keystore, ADR-0021); never inside the repository.
+ANDROID_KEYSTORE ?= $(HOME)/.local/share/realchord/android-release.jks
 
 # PocketBase server (ADR-0014, docs/operations/server.md). SERVER is the SSH target;
 # it defaults to the production instance (api.realchord.app, Proxmox CT 600).
@@ -63,7 +70,7 @@ BACKEND_PORT    ?= 8090
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := REALCHORD_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build web web-serve deps upgrade apk apk-install release release-linux release-check reset data-dir backend check test codegen l10n screenshots examples doctor clean ci-image \
+.PHONY: help setup dev start build web web-serve deps upgrade apk apk-install android-keystore release release-linux release-check reset data-dir backend check test codegen l10n screenshots examples doctor clean ci-image \
 	server-target server-install server-status server-logs server-backup server-fetch-backup server-ssh
 
 help: ## Show this help
@@ -100,7 +107,10 @@ apk: ## Build an Android release APK for manual installation (app/build/realchor
 apk-install: apk ## Build the APK and install it on a USB-connected device (adb, USB debugging on)
 	$(ADB) install -r $(APK)
 
-release: release-linux ## Build the release packages (currently Linux only)
+android-keystore: ## Create the Android release key and store it as GitHub secrets (owner only, once)
+	$(ROOT)/tool/release/android-keystore.sh $(ANDROID_KEYSTORE)
+
+release: release-linux ## Build the release packages locally (Linux; a vX.Y.Z tag builds all platforms in CI)
 
 release-check:
 	@git -C $(ROOT) diff --quiet HEAD || echo "warning: uncommitted changes are not part of the release (built from commit $(APK_COMMIT))"
@@ -111,7 +121,7 @@ release-linux: release-check ## Build the Linux release in a container (app/buil
 	@mkdir -p $(APP)/build
 	git -C $(ROOT) archive HEAD | $(DOCKER) run --rm -i \
 		-v $(ROOT)/tool/release:/release:ro -v $(APP)/build:/out -v realchord-release-pub-cache:/root/.pub-cache \
-		-e HOST_UID=$$(id -u) -e HOST_GID=$$(id -g) \
+		-e HOST_UID=$$(id -u) -e HOST_GID=$$(id -g) -e BUILD_NUMBER=$(BUILD_NUMBER) \
 		$(RELEASE_IMAGE) /release/build-linux.sh $(RELEASE_NAME)-linux-x64
 	@echo "Linux release: $(APP)/build/$(RELEASE_NAME)-linux-x64.tar.gz"
 

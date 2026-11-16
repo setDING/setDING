@@ -203,8 +203,8 @@ Agents may create **proposals** for all of these (an ADR, a draft PR), just not 
 - **Semantic versioning**: `MAJOR.MINOR.PATCH`; before the first store release `0.x.y`.
 - A release is a tag `vX.Y.Z` on `main`, created by an agent through a `chore(release): vX.Y.Z` PR that updates the version in `pubspec.yaml` and `CHANGELOG.md` (generated from the Conventional Commits).
 - The build number is the CI run number.
-- The tag triggers the CI release build (artifacts for Android, iOS, Windows). **Publishing to the stores requires human approval** (protected CI environment).
-- Until CI release builds exist, the Linux package is built locally with `make release` (in a container; [releases.md](releases.md), ADR-0019).
+- Pushing the tag (`git tag -s vX.Y.Z && git push origin vX.Y.Z`, after the release PR is merged) triggers the release build (`.github/workflows/release.yml`, ADR-0021): Linux, Android and Windows, published as a GitHub Release, from which Obtainium updates the Android app ([releases.md](releases.md)). The tag must match the version in `pubspec.yaml`. iOS is not built yet. **Publishing to the stores requires human approval** (protected CI environment).
+- `make release` still builds the Linux package locally (in a container; ADR-0019).
 - Hotfixes follow the normal flow (`fix/…` branch, `priority:high`), then a patch release.
 
 ## 11. Without API access (fallback)

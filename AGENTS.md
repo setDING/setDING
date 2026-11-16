@@ -104,3 +104,4 @@ See the ADR index in the architecture README for the current status. In short:
 - Organizations above bands: songs belong to the organization and are shared by its bands, users only see people of their organizations (ADR-0017)
 - Sign-in through the `SyncBackend` interface, session in secure storage and kept while offline (ADR-0016)
 - Linux release with `make release`, built in a Debian container (ADR-0019)
+- Release builds for Linux, Android and Windows on GitHub Actions from a `vX.Y.Z` tag; Android via Obtainium, signed with the release key from the repository secrets (ADR-0021)

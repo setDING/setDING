@@ -1,0 +1,202 @@
+# Release builds for RealChord (ADR-0021, docs/development/releases.md).
+#
+# A tag vX.Y.Z on main builds the Linux, Android and Windows release and publishes
+# them as a GitHub Release; Obtainium installs and updates the Android app from
+# there. A manual run (workflow_dispatch) only builds the artifacts, it publishes
+# nothing. The build number is the run number of this workflow (git workflow,
+# section 10), so the Android versionCode grows with every release.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      flutter: ${{ steps.version.outputs.flutter }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Version (pubspec.yaml) and Flutter version (Makefile)
+        id: version
+        run: |
+          version="$(sed -n 's/^version: *\([^+]*\).*/\1/p' app/pubspec.yaml)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "flutter=$(sed -n 's/^FLUTTER_VERSION *?= *//p' Makefile)" >> "$GITHUB_OUTPUT"
+          echo "Version $version, build number $GITHUB_RUN_NUMBER"
+          if [ "$GITHUB_REF_TYPE" = tag ] && [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match the version in app/pubspec.yaml (v$version)"
+            exit 1
+          fi
+
+  linux:
+    needs: version
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      # Same container build as locally (make release-linux, ADR-0019): baseline
+      # glibc and the ISA check, independent of the runner's Ubuntu.
+      - name: Build (Debian container)
+        run: make release-linux RELEASE_NAME=realchord-${{ needs.version.outputs.version }} BUILD_NUMBER=$GITHUB_RUN_NUMBER
+
+      - name: Upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: linux
+          path: app/build/realchord-${{ needs.version.outputs.version }}-linux-x64.tar.gz
+          if-no-files-found: error
+
+  android:
+    needs: version
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ needs.version.outputs.flutter }}
+          cache: true
+
+      # The release key lives only in the repository secrets (created with
+      # `make android-keystore`). Obtainium can only update an app signed with the
+      # same key, so a tag build without it fails instead of falling back to a
+      # throwaway debug key.
+      - name: Release signing key
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
+            if [ "$GITHUB_REF_TYPE" = tag ]; then
+              echo "::error::The ANDROID_KEYSTORE_* secrets are missing; create them with 'make android-keystore'"
+              exit 1
+            fi
+            echo "::warning::No release key in the secrets; the APK is signed with a throwaway debug key"
+            exit 0
+          fi
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          cat > app/android/key.properties <<EOF
+          storeFile=$RUNNER_TEMP/release.jks
+          storePassword=$ANDROID_KEYSTORE_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
+          keyPassword=$ANDROID_KEY_PASSWORD
+          EOF
+
+      - name: Build APK
+        working-directory: app
+        run: |
+          flutter config --no-analytics >/dev/null
+          flutter build apk --release --build-number "$GITHUB_RUN_NUMBER"
+          cp build/app/outputs/flutter-apk/app-release.apk \
+            "$GITHUB_WORKSPACE/realchord-${{ needs.version.outputs.version }}-android.apk"
+
+      - name: Signing certificate
+        run: |
+          apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)"
+          "$apksigner" verify --print-certs realchord-*-android.apk | grep -E 'SHA-256|DN'
+
+      - name: Upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: android
+          path: realchord-${{ needs.version.outputs.version }}-android.apk
+          if-no-files-found: error
+
+  windows:
+    needs: version
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ needs.version.outputs.flutter }}
+          cache: true
+
+      - name: Build
+        working-directory: app
+        shell: bash
+        run: |
+          flutter config --no-analytics >/dev/null
+          flutter build windows --release --build-number "$GITHUB_RUN_NUMBER"
+
+      # Flutter apps need the Visual C++ runtime; ship its DLLs next to the
+      # executable so the zip runs on a Windows without the redistributable.
+      - name: Package
+        shell: pwsh
+        run: |
+          $name = "realchord-${{ needs.version.outputs.version }}-windows-x64"
+          $dir = New-Item -ItemType Directory -Path "staging\$name"
+          Copy-Item -Recurse "app\build\windows\x64\runner\Release\*" $dir
+          foreach ($dll in 'msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll') {
+            Copy-Item "$env:WINDIR\System32\$dll" $dir
+          }
+          Compress-Archive -Path $dir -DestinationPath "$name.zip"
+
+      - name: Upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows
+          path: realchord-${{ needs.version.outputs.version }}-windows-x64.zip
+          if-no-files-found: error
+
+  publish:
+    if: github.ref_type == 'tag'
+    needs: [version, linux, android, windows]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+
+      # Only tags with a suffix (v1.2.0-beta.1) become pre-releases: Obtainium
+      # ignores pre-releases by default.
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          cd dist
+          sha256sum -- * > SHA256SUMS
+          prerelease=()
+          [[ "$GITHUB_REF_NAME" == *-* ]] && prerelease=(--prerelease)
+          gh release create "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" --title "RealChord $VERSION" \
+            --generate-notes --verify-tag "${prerelease[@]}" -- *
