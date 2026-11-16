@@ -49,3 +49,6 @@ docs/chordpro/
 
 # Server backups fetched with make server-fetch-backup
 .server-backups/
+
+# GitHub migration work data (tool/github-migration, issue #116)
+.github-migration/

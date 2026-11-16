@@ -58,9 +58,11 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 
 - 2026-11-15: CI made manual-only (`workflow_dispatch`) during early development: waiting for the runner slowed development down too much. The test gate is the full local suite (`make check`) on the rebased branch right before the merge; agents do not wait for CI. Decided by the owner.
 - 2026-11-16: After a merge the branch is deleted locally as well (`git branch -D`, since squash-merged branches do not count as merged), not only on the remote (owner request).
+- 2026-11-16: Move to **GitHub** (`github.com/tafli/RealChord`) decided by the owner, to be carried out once #27 is done and all Forgejo issues are closed ([runbook](../../development/github-migration.md), #116). Issues and pull requests keep their numbers (PRs become closed issues), CI becomes GitHub Actions with the image on `ghcr.io`, commits are made with the owner's signed identity instead of `factoryd` (agents marked by `Co-Authored-By`), and **no reference to the Forgejo instance may exist on GitHub**: the history is rewritten before the push (new commit ids, old signatures dropped). The workflow sections for GitHub follow in the cutover PR.
 
 ## Open points
 
+- Carry out the move to GitHub (runbook `docs/development/github-migration.md`, #116); afterwards this ADR and the git workflow describe GitHub instead of Forgejo.
 - Re-enable CI on every PR and push to `main` as a required check (`test`) when heading towards version 1, together with branch protection.
 
 - Build jobs: Android (SDK in the container or a separate image), iOS (needs a macOS runner), Windows (needs a Windows runner).

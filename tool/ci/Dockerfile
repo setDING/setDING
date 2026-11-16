@@ -9,6 +9,10 @@
 # .forgejo/workflows/ci.yml.
 FROM node:22-bookworm
 
+# Links the image on ghcr.io to the repository, so GitHub Actions may pull it
+# with GITHUB_TOKEN (after the move to GitHub, issue #116).
+LABEL org.opencontainers.image.source=https://github.com/tafli/RealChord
+
 ARG FLUTTER_VERSION
 
 RUN test -n "$FLUTTER_VERSION" \
