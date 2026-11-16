@@ -18,6 +18,7 @@ Future<void> main() async {
   // Logo while the local services start. On Android, iOS and the web it
   // replaces the identical native / HTML splash; on Windows and Linux it is
   // the first thing the window shows.
+  final splash = Stopwatch()..start();
   runApp(const SplashScreen());
   // Font embedded in PDF set lists (ADR-0013).
   LicenseRegistry.addLicense(() async* {
@@ -39,6 +40,7 @@ Future<void> main() async {
     await prefs.setBool('demoSeeded', true);
   }
 
+  await SplashScreen.waitForMinimum(splash);
   runApp(
     ProviderScope(
       overrides: [

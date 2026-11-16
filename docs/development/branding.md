@@ -30,7 +30,9 @@ background following the system's light/dark mode.
 2. **Web splash** (`app/web/index.html`): plain HTML with the SVGs from
    `app/web/splash/`, removed on the engine's `flutter-first-frame` event.
 3. **In-app splash** (`SplashScreen` in `logo.dart`, all platforms): the first
-   frame, shown while `main()` opens the database and loads the session. On
+   frame, shown while `main()` opens the database and loads the session, and
+   for at least one second from the start (`SplashScreen.minimumDuration`;
+   starting runs meanwhile, only the rest is waited for). On
    Windows and Linux, which have no native splash, it is the first thing the
    window shows. The web client also shows it (with a progress indicator)
    while the first sync after signing in loads the bands. The mark is drawn
