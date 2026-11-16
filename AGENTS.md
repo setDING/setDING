@@ -57,7 +57,7 @@ Every change follows [`docs/development/git-workflow.md`](docs/development/git-w
 - Never end a session with unpushed work: commit, push, and leave a handover comment on the PR.
 - **CI is manual-only during early development**: do not wait for it; local green tests are enough. Re-enable it as a required check when heading towards version 1 (ADR-0010).
 - Remote: **GitHub** (`github.com/tafli/RealChord`), CLI `gh` (logged in on the development machine): issues, PRs and squash merges go through `gh`. Without a login, fall back to workflow section 11.
-- Commits use the owner's global git identity and are **GPG-signed**; never set a repository-local identity or commit unsigned. Every commit carries the `Co-Authored-By` trailer.
+- Commits use the owner's global git identity and are **GPG-signed**; never set a repository-local identity or commit unsigned. Squash merges on GitHub use `gh pr merge --author-email andi@theboss.ch`. Every commit carries the `Co-Authored-By` trailer.
 
 ## External libraries (mandatory)
 
