@@ -209,6 +209,7 @@
       }
     }
   },
+  "liveWebNotice": "Im Browser nicht offline-sicher – auf der Bühne die App verwenden",
   "liveEnd": "Ende des Sets",
   "liveSetOverview": "Set-Übersicht",
   "liveExit": "Live-Modus beenden",

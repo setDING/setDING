@@ -49,6 +49,7 @@ The app is built **offline-first**:
 
 - 2026-11-14: Offline-first accepted. PDF sheet music attachments are also kept offline. Audio files are not part of the offline scope.
 - 2026-11-15: Exception for the web client (ADR-0018, accepted): the browser is a management tool without an offline guarantee; "Offline ready" is not shown there. The apps stay offline-first.
+- 2026-11-16: Web client implemented and deployed (#27): data in the browser exists only while signed in (deleted on sign-out and on a start without a session), PDFs are loaded when opened, no "Offline ready" status, and live mode shows "not offline-safe, use the app on stage". The apps are unchanged.
 
 ## Open points
 

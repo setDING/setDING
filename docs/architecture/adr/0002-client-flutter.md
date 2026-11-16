@@ -46,6 +46,7 @@ Suggested libraries (to be verified during project setup):
 
 - 2026-11-14: Flutter accepted. Existing team experience with other technologies is not a factor in this decision.
 - 2026-11-14: Linux desktop added to the Flutter project as a **development and test target only** (quick local runs without a device). It is not a release platform.
+- 2026-11-16: **Web** is a release platform for management (ADR-0018): `app/web`, built by `make web` and in `make check`, served by PocketBase at `app.realchord.app` (#27).
 
 ## Open points
 

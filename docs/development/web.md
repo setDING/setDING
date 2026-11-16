@@ -69,6 +69,7 @@ covered by the normal widget tests (`test/web_client_test.dart`):
 - Attachments are not preloaded (`SyncEngine.preloadAttachments`); the live
   view loads a PDF through `attachmentFileProvider` / `AttachmentFetcher`
   when it is opened. "Offline ready" and missing files are not shown.
+- Live mode shows "not offline-safe, use the app on stage" in its status bar.
 - `AuthNotifier` deletes the local data (`AppDatabase.clearAll`, attachments,
   selected band) when signing out and on a start without a session.
 

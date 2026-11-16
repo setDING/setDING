@@ -183,7 +183,7 @@ Notes:
 |---|---|
 | **MVP** ✅ | ChordPro parser & renderer (notation B/H, Nashville), local song library, PDF attachments, creating sets, live mode with pedal, import/export, German/English UI – initially **without** a backend (single device) |
 | **Phase 1** | Backend, login, bands & roles (several admins, several bands per user), sync of songs, sets and PDF files incl. conflict handling |
-| **Phase 2** | Web client for management (ADR-0018, #27), synced personal overlays (per user, ADR-0020; done in #81, #82) |
+| **Phase 2** ✅ | Web client for management at `app.realchord.app` (ADR-0018; done in #27), synced personal overlays (per user, ADR-0020; done in #81, #82) |
 | **Towards version 1** | Re-enable CI as a required check on every PR and push to `main` (manual-only during early development, ADR-0010), branch protection, build jobs |
 | **Later** | Freehand annotations (stylus), metronome/count-in, MIDI control |
 
@@ -255,7 +255,7 @@ See "Open points" in the individual ADRs. The most important:
 13. ~~May agents merge their own PRs?~~ → Yes, from the start, but only when all tests pass (test gate, ADR-0010). Host: self-hosted Forgejo, `github.com/tafli/RealChord`. Agents use `fj` with an access token; during early development the test gate runs locally and CI (Forgejo Actions) is manual-only. Open: re-enable CI as a required check towards version 1, build jobs, branch protection
 14. ~~SongSelect import?~~ → No API integration, manual ChordPro import (ADR-0011, accepted). Open: test with a real SongSelect file, show copyright/CCLI number?
 15. ~~Printable set list?~~ → PDF in the client with the `pdf` package and embedded Noto Sans (ADR-0013, accepted). Open: Letter paper, export options, native print dialog
-16. Web client for management without an installed app? → Flutter web build of the same app at `app.realchord.app`, served by the same PocketBase; local library hidden, live mode with a "not offline-safe" notice, session as long as a tab is open by default ("Stay signed in" optional), local data deleted on sign-out, sign-in required and no file import or export on web (ADR-0018, accepted, #27). Open: tunnel hostname `app.realchord.app` and `REALCHORD_WEB_URL` on the server (owner, docs/operations/server.md step 6)
+16. Web client for management without an installed app? → Flutter web build of the same app at `app.realchord.app`, served by the same PocketBase; local library hidden, live mode with a "not offline-safe" notice, session as long as a tab is open by default ("Stay signed in" optional), local data deleted on sign-out, sign-in required and no file import or export on web (ADR-0018, accepted, #27). Implemented and deployed in #27 (2026-11-16)
 17. Distributable Linux builds? → `make release`: built in a Debian container with an ISA check (ADR-0019, accepted, #45). Open: Windows release (not needed yet), packaging and signing, CI release builds
 18. ~~Personal adjustments on shared devices and across devices?~~ → Overlays belong to a user (`owner_id`; `local` for the local library), existing ones are taken over once by the first user who signs in, private, synced in phase 2 with last writer wins and soft delete (ADR-0020, accepted)
 

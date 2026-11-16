@@ -402,6 +402,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get liveWebNotice =>
+      'Not offline-safe in the browser – use the app on stage';
+
+  @override
   String get liveEnd => 'End of set';
 
   @override

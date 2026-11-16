@@ -407,6 +407,28 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                         style: theme.textTheme.titleSmall,
                       ),
                     ),
+                    // Web: no offline guarantee (ADR-0018).
+                    if (ref.watch(webClientProvider)) ...[
+                      const SizedBox(width: 12),
+                      Icon(
+                        Icons.cloud_off,
+                        size: 18,
+                        color: theme.colorScheme.error,
+                      ),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          l10n.liveWebNotice,
+                          key: const Key('live-web-notice'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.error,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
                     Text(
                       l10n.livePosition(_index + 1, items.length),
                       style: theme.textTheme.titleSmall,

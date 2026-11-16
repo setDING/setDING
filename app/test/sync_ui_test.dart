@@ -166,6 +166,8 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('pdf-missing')), findsOneWidget);
+    // The apps are offline-safe: no notice.
+    expect(find.byKey(const Key('live-web-notice')), findsNothing);
     await app.dispose(tester);
   });
 }

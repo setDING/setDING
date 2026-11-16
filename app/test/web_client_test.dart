@@ -278,6 +278,8 @@ void main() {
       expect(find.byKey(const Key('pdf-missing')), findsNothing);
       expect(find.byType(PdfViewer), findsOneWidget);
       expect(app.backend.downloads, 1);
+      // Live mode in the browser is not offline-safe (ADR-0018).
+      expect(find.byKey(const Key('live-web-notice')), findsOneWidget);
       await app.dispose(tester);
     });
 

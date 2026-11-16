@@ -764,6 +764,12 @@ abstract class AppLocalizations {
   /// **'Nächster: {title}'**
   String liveNext(String title);
 
+  /// No description provided for @liveWebNotice.
+  ///
+  /// In de, this message translates to:
+  /// **'Im Browser nicht offline-sicher – auf der Bühne die App verwenden'**
+  String get liveWebNotice;
+
   /// No description provided for @liveEnd.
   ///
   /// In de, this message translates to:

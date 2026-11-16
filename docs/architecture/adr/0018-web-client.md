@@ -180,9 +180,16 @@ Tracked in issue #27, each step a separate PR:
   landing page and the `/invite/<token>` route on the web hostname; the server
   URL of the web client defaults to the page's origin
   (`--dart-define=REALCHORD_SERVER_URL` for development).
+- 2026-11-16: Open points resolved: supported browsers are current Chrome,
+  Edge and Firefox (OPFS with cross-origin isolation) and Safari (IndexedDB
+  fallback); embedded Electron browsers may fail to start drift's worker under
+  isolation. `app.realchord.app` is registered in the tunnel by the owner,
+  `REALCHORD_WEB_URL` is set on the server, and the web client is deployed
+  (2026-11-16).
+- 2026-11-16: Live mode on web shows "not offline-safe, use the app on stage" in
+  its status bar (the notice decided on 2026-11-15; step "docs").
 
 ## Open points
 
-- Supported browsers (OPFS needs current Chrome, Edge, Firefox or Safari; fallback
-  to IndexedDB on older ones).
-- Register `app.realchord.app` in the tunnel and DNS (owner).
+- None. Possible later: a service worker for faster repeated loads (not an
+  offline guarantee).
