@@ -98,7 +98,7 @@ flowchart LR
 | `render` | Rendering the AST: chords above lyrics, sections (verse/chorus), one or two columns, auto-fit, notation B/H, Nashville numbers |
 | `pdf` | Displaying PDF attachments (fit to width/page, two-page view) |
 | `data` | Local DB (SQLite, e.g. via `drift`), repositories, domain model |
-| `sync` | Sync between local DB and backend, conflict handling, offline queue |
+| `sync` | Sync between local DB and backend, conflict handling, offline queue. `SyncEngine` runs the order of a sync; the parts per kind of record live in `app/lib/sync/engine/` (songs with conflicts, sets, attachments with downloads, personal adjustments, shared cursors and outbox) |
 | `live` | Performance mode: full screen, wakelock, pedal/keyboard control, set navigation |
 | `manage` | Create/import songs, ChordPro editor with preview, put sets together |
 | `band` | Login, band selection, invitations, roles |

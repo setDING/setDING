@@ -10,7 +10,9 @@ import 'package:realchord/data/band_copy.dart';
 import 'package:realchord/data/database.dart';
 import 'package:realchord/data/set_repository.dart';
 import 'package:realchord/data/song_repository.dart';
+import 'package:realchord/data/outbox.dart';
 import 'package:realchord/sync/band_service.dart';
+import 'package:realchord/sync/engine/sync_store.dart';
 import 'package:realchord/sync/sync_backend.dart';
 import 'package:realchord/sync/sync_engine.dart';
 
@@ -855,5 +857,19 @@ void main() {
       'id': 'i2',
       'type': 'pause',
     });
+  });
+
+  test('the sync store looks up large batches in chunks', () async {
+    final store = SyncStore(db);
+    final ids = [for (var i = 0; i < 1200; i++) 'song-$i'];
+    for (final id in ids.where((id) => id.endsWith('7'))) {
+      await markDirty(db, SyncCollection.songs, id, scope: 'o1');
+    }
+    final dirty = await store.dirty(SyncCollection.songs, ids);
+    expect(dirty, hasLength(120));
+    expect(dirty, contains('song-1197'));
+    expect(await store.cursor('o1', 'nothing'), 0);
+    await store.setCursor('o1', 'nothing', 42);
+    expect(await store.cursor('o1', 'nothing'), 42);
   });
 }

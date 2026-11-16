@@ -1,24 +1,25 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math' as math;
 
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
-import 'package:uuid/uuid.dart';
 
 import '../data/attachment_storage.dart';
 import '../data/band_copy.dart';
 import '../data/band_view.dart';
 import '../data/database.dart';
 import '../data/outbox.dart';
-import '../data/song_repository.dart' show SongMeta, songMetas;
+import '../data/song_repository.dart' show SongMeta;
 import 'band_service.dart';
+import 'engine/attachment_sync.dart';
+import 'engine/overlay_sync.dart';
+import 'engine/set_sync.dart';
+import 'engine/song_sync.dart';
+import 'engine/sync_store.dart';
 import 'sync_backend.dart';
 import '../util/log.dart';
 
 const _log = Log('sync');
-
-const _uuid = Uuid();
 
 /// Result of one sync run.
 @immutable
@@ -58,7 +59,13 @@ class SyncEngine {
     this.bands, {
     this.copies,
     AttachmentStorage? storage,
-  }) : storage = storage ?? copies?.storage;
+  }) : storage = storage ?? copies?.storage {
+    final store = SyncStore(db);
+    _songs = SongSync(db, backend, store, copies: copies);
+    _sets = SetSync(db, backend, store);
+    _attachments = AttachmentSync(db, backend, store, this.storage);
+    _overlays = OverlaySync(db, backend, store);
+  }
 
   final AppDatabase db;
 
@@ -70,6 +77,11 @@ class SyncEngine {
 
   /// Used to keep both versions of a conflicting song.
   final BandCopyService? copies;
+
+  late final SongSync _songs;
+  late final SetSync _sets;
+  late final AttachmentSync _attachments;
+  late final OverlaySync _overlays;
 
   Future<SyncReport>? _running;
 
@@ -100,21 +112,21 @@ class SyncEngine {
       orgIds.addAll(orgs.map((o) => o.id));
 
       for (final org in orgIds) {
-        final r = await _pullSongs(org);
+        final r = await _songs.pull(org);
         pulled += r.$1;
         conflicts += r.$2;
-        pulled += await _pullAttachments(org);
+        pulled += await _attachments.pull(org);
       }
       for (final band in visible) {
-        pulled += await _pullSets(band);
+        pulled += await _sets.pull(band);
       }
       // After the songs: an overlay needs its song on this device.
-      pulled += await _pullOverlays(user.id);
+      pulled += await _overlays.pull(user.id);
       await _enqueueUnsynced(visible, userId: user.id, orgIds: orgIds);
       final p = await _push(user.id);
       pushed += p.$1;
       conflicts += p.$2;
-      downloaded += await _downloadMissing();
+      downloaded += await _attachments.downloadMissing();
       _log.info(
         'Sync done: pulled $pulled, pushed $pushed, conflicts $conflicts, '
         'downloaded $downloaded',
@@ -134,397 +146,6 @@ class SyncEngine {
         downloaded: downloaded,
         error: e.kind,
       );
-    }
-  }
-
-  // Pull -------------------------------------------------------------------------
-
-  Future<int> _cursor(String scope, String collection) async {
-    final row =
-        await (db.select(db.syncCursors)..where(
-              (c) => c.scope.equals(scope) & c.collection.equals(collection),
-            ))
-            .getSingleOrNull();
-    return row?.revision ?? 0;
-  }
-
-  Future<void> _setCursor(String scope, String collection, int revision) => db
-      .into(db.syncCursors)
-      .insertOnConflictUpdate(
-        SyncCursorsCompanion.insert(
-          scope: scope,
-          collection: collection,
-          revision: Value(revision),
-        ),
-      );
-
-  /// Rows for [ids], loaded in chunks (SQLite limits the variables of a
-  /// statement), by ID.
-  static Future<Map<String, T>> _byId<T>(
-    List<String> ids,
-    Future<List<T>> Function(List<String> chunk) load,
-    String Function(T) id,
-  ) async {
-    const chunkSize = 500;
-    final result = <String, T>{};
-    for (var i = 0; i < ids.length; i += chunkSize) {
-      final chunk = ids.sublist(i, math.min(i + chunkSize, ids.length));
-      for (final row in await load(chunk)) {
-        result[id(row)] = row;
-      }
-    }
-    return result;
-  }
-
-  /// Which of [ids] have a pending local change in [collection].
-  Future<Set<String>> _dirty(String collection, List<String> ids) async =>
-      (await _byId(
-        ids,
-        (chunk) =>
-            (db.select(db.syncOutbox)..where(
-                  (o) =>
-                      o.collection.equals(collection) & o.recordId.isIn(chunk),
-                ))
-                .get(),
-        (o) => o.recordId,
-      )).keys.toSet();
-
-  /// Which of [ids] are songs on this device (also deleted ones).
-  Future<Set<String>> _existingSongs(List<String> ids) async => (await _byId(
-    ids.toSet().toList(),
-    (chunk) =>
-        (db.selectOnly(db.songs)
-              ..addColumns([db.songs.id])
-              ..where(db.songs.id.isIn(chunk)))
-            .map((r) => r.read(db.songs.id)!)
-            .get(),
-    (id) => id,
-  )).keys.toSet();
-
-  /// Returns (pulled, new conflicts).
-  Future<(int, int)> _pullSongs(String orgId) async {
-    final since = await _cursor(orgId, SyncCollection.songs);
-    final remote = await backend.pullSongs(orgId, since);
-    if (remote.isEmpty) return (0, 0);
-    final metas = await songMetas([for (final s in remote) s.chordpro]);
-    var conflicts = 0;
-    await db.transaction(() async {
-      final ids = [for (final s in remote) s.id];
-      final locals = await _byId(
-        ids,
-        (chunk) => (db.select(db.songs)..where((s) => s.id.isIn(chunk))).get(),
-        (s) => s.id,
-      );
-      final dirty = await _dirty(SyncCollection.songs, ids);
-      final known = (await _byId(
-        ids,
-        (chunk) => (db.select(
-          db.songConflicts,
-        )..where((c) => c.songId.isIn(chunk))).get(),
-        (c) => c.songId,
-      )).keys.toSet();
-      for (final (i, song) in remote.indexed) {
-        if (await _applySong(
-          song,
-          metas[i],
-          local: locals[song.id],
-          dirty: dirty.contains(song.id),
-          knownConflict: known.contains(song.id),
-        )) {
-          conflicts++;
-        }
-      }
-      if (remote.isNotEmpty) {
-        await _setCursor(orgId, SyncCollection.songs, remote.last.revision);
-      }
-    });
-    return (remote.length, conflicts);
-  }
-
-  /// Applies a server song ([local], [dirty] and [knownConflict] describe
-  /// this device's state); returns true if it became a new conflict.
-  Future<bool> _applySong(
-    RemoteSong remote,
-    SongMeta meta, {
-    required SongEntry? local,
-    required bool dirty,
-    required bool knownConflict,
-  }) async {
-    if (local != null && remote.revision <= local.revision) return false;
-    if (local != null && dirty) {
-      // Changed here and on the server: never overwrite silently.
-      await db
-          .into(db.songConflicts)
-          .insertOnConflictUpdate(
-            SongConflictsCompanion.insert(
-              songId: remote.id,
-              title: remote.title,
-              chordproSource: remote.chordpro,
-              revision: remote.revision,
-              deleted: Value(remote.deleted),
-              detectedAt: DateTime.now(),
-            ),
-          );
-      return !knownConflict;
-    }
-    await writeSong(remote, meta: meta);
-    return false;
-  }
-
-  /// Stores the server state of a song locally (no outbox entry); [meta]
-  /// is extracted from its source unless given.
-  Future<void> writeSong(RemoteSong remote, {SongMeta? meta}) async {
-    meta ??= SongMeta.fromSource(remote.chordpro);
-    await db
-        .into(db.songs)
-        .insertOnConflictUpdate(
-          SongsCompanion.insert(
-            id: remote.id,
-            libraryId: remote.organizationId,
-            chordproSource: Value(remote.chordpro),
-            title: meta.title ?? remote.title,
-            artist: Value(meta.artist),
-            songKey: Value(meta.key),
-            tempo: Value(meta.tempo),
-            sortTitle: Value(meta.sortTitle),
-            sortArtist: Value(meta.sortArtist),
-            tags: Value(meta.tagsColumn),
-            searchText: Value(meta.searchText),
-            revision: Value(remote.revision),
-            updatedAt: DateTime.now(),
-            deleted: Value(remote.deleted),
-          ),
-        );
-    if (remote.deleted) {
-      await (db.delete(
-        db.setItems,
-      )..where((i) => i.songId.equals(remote.id))).go();
-    }
-  }
-
-  Future<int> _pullAttachments(String orgId) async {
-    final since = await _cursor(orgId, SyncCollection.attachments);
-    final remote = await backend.pullAttachments(orgId, since);
-    if (remote.isEmpty) return 0;
-    final removedFiles = <String>[];
-    await db.transaction(() async {
-      final ids = [for (final a in remote) a.id];
-      final locals = await _byId(
-        ids,
-        (chunk) =>
-            (db.select(db.attachments)..where((a) => a.id.isIn(chunk))).get(),
-        (a) => a.id,
-      );
-      final dirty = await _dirty(SyncCollection.attachments, ids);
-      final songs = await _existingSongs([for (final a in remote) a.songId]);
-      for (final a in remote) {
-        final file = await _applyAttachment(
-          a,
-          local: locals[a.id],
-          dirty: dirty.contains(a.id),
-          songExists: songs.contains(a.songId),
-        );
-        if (file != null) removedFiles.add(file);
-      }
-      if (remote.isNotEmpty) {
-        await _setCursor(
-          orgId,
-          SyncCollection.attachments,
-          remote.last.revision,
-        );
-      }
-    });
-    for (final f in removedFiles) {
-      await storage?.delete(f);
-    }
-    return remote.length;
-  }
-
-  /// Applies server metadata; returns a local file to delete, if any.
-  Future<String?> _applyAttachment(
-    RemoteAttachment remote, {
-    required AttachmentEntry? local,
-    required bool dirty,
-    required bool songExists,
-  }) async {
-    if (local != null && remote.revision <= local.revision) return null;
-    // A pending local change (rename, delete) wins and is pushed.
-    if (local != null && dirty) return null;
-    if (!songExists) return null; // the song is gone
-    final fileName = local?.fileName ?? '${remote.id}.pdf';
-    await db
-        .into(db.attachments)
-        .insertOnConflictUpdate(
-          AttachmentsCompanion.insert(
-            id: remote.id,
-            songId: remote.songId,
-            name: remote.name,
-            fileName: fileName,
-            remoteFile: Value(remote.file),
-            pages: Value(remote.pages),
-            sizeBytes: remote.sizeBytes,
-            revision: Value(remote.revision),
-            updatedAt: DateTime.now(),
-            deleted: Value(remote.deleted),
-          ),
-        );
-    if (!remote.deleted) return null;
-    await (db.update(db.personalOverlays)
-          ..where((o) => o.liveView.equals(remote.id)))
-        .write(const PersonalOverlaysCompanion(liveView: Value(null)));
-    return fileName;
-  }
-
-  /// Attachment files downloaded at the same time.
-  static const parallelDownloads = 3;
-
-  /// Downloads attachment files that are not on this device yet
-  /// (ADR-0009: all attachments are available offline).
-  Future<int> _downloadMissing() async {
-    final storage = this.storage;
-    if (storage == null) return 0;
-    final rows =
-        await (db.select(db.attachments).join([
-              innerJoin(db.songs, db.songs.id.equalsExp(db.attachments.songId)),
-            ])..where(
-              db.attachments.deleted.equals(false) &
-                  db.attachments.remoteFile.isNotNull() &
-                  db.songs.deleted.equals(false),
-            ))
-            .get();
-    final missing = [
-      for (final r in rows)
-        if (!await storage.exists(r.readTable(db.attachments).fileName))
-          (r.readTable(db.attachments), r.readTable(db.songs).libraryId),
-    ];
-    if (missing.isEmpty) return 0;
-    final downloads = backend.openDownloads();
-    var count = 0;
-    var next = 0;
-    BackendException? offline;
-    // A few workers take the next missing file until all are done or the
-    // network is gone.
-    Future<void> worker() async {
-      while (offline == null && next < missing.length) {
-        final (a, libraryId) = missing[next++];
-        try {
-          await storage.writeWith(
-            a.fileName,
-            (temp) => downloads.download(
-              RemoteAttachment(
-                id: a.id,
-                organizationId: libraryId,
-                songId: a.songId,
-                name: a.name,
-                file: a.remoteFile,
-              ),
-              temp,
-            ),
-          );
-          count++;
-        } on BackendException catch (e) {
-          if (e.kind == BackendErrorKind.network) {
-            offline ??= e;
-            return;
-          }
-          // This file only; the others are still downloaded.
-          _log.warning('Attachment ${a.id} not downloaded', e);
-        }
-      }
-    }
-
-    try {
-      await Future.wait([for (var i = 0; i < parallelDownloads; i++) worker()]);
-    } finally {
-      downloads.close();
-    }
-    if (offline case final e?) throw e;
-    return count;
-  }
-
-  Future<int> _pullSets(BandView band) async {
-    final since = await _cursor(band.id, SyncCollection.setlists);
-    final remote = await backend.pullSets(band.id, since);
-    if (remote.isEmpty) return 0;
-    await db.transaction(() async {
-      final ids = [for (final s in remote) s.id];
-      final locals = await _byId(
-        ids,
-        (chunk) =>
-            (db.select(db.setlists)..where((s) => s.id.isIn(chunk))).get(),
-        (s) => s.id,
-      );
-      final dirty = await _dirty(SyncCollection.setlists, ids);
-      final songs = await _existingSongs([
-        for (final s in remote)
-          for (final item in s.items) ?item.songId,
-      ]);
-      for (final set in remote) {
-        await _applySet(
-          set,
-          local: locals[set.id],
-          dirty: dirty.contains(set.id),
-          songExists: songs.contains,
-        );
-      }
-      if (remote.isNotEmpty) {
-        await _setCursor(
-          band.id,
-          SyncCollection.setlists,
-          remote.last.revision,
-        );
-      }
-    });
-    return remote.length;
-  }
-
-  Future<void> _applySet(
-    RemoteSet remote, {
-    required SetlistEntry? local,
-    required bool dirty,
-    required bool Function(String songId) songExists,
-  }) async {
-    if (local != null && remote.revision <= local.revision) return;
-    // Last writer wins: a pending local change is pushed afterwards.
-    if (local != null && dirty) return;
-    await db
-        .into(db.setlists)
-        .insertOnConflictUpdate(
-          SetlistsCompanion.insert(
-            id: remote.id,
-            bandId: remote.bandId,
-            name: remote.name,
-            gigDate: Value(remote.gigDate),
-            venue: Value(remote.venue),
-            revision: Value(remote.revision),
-            updatedAt: DateTime.now(),
-            deleted: Value(remote.deleted),
-          ),
-        );
-    await (db.delete(
-      db.setItems,
-    )..where((i) => i.setId.equals(remote.id))).go();
-    if (remote.deleted) return;
-    for (final (position, item) in remote.items.indexed) {
-      var songId = item.songId;
-      if (songId != null && !songExists(songId)) {
-        songId = null; // not (yet) available: shown as "song missing"
-      }
-      await db
-          .into(db.setItems)
-          .insert(
-            SetItemsCompanion.insert(
-              id: item.id.isEmpty ? _uuid.v4() : item.id,
-              setId: remote.id,
-              songId: Value(songId),
-              position: position,
-              transpose: Value(item.transpose),
-              sequence: Value(item.sequence),
-              note: Value(item.note),
-              type: item.type,
-            ),
-            mode: InsertMode.insertOrReplace,
-          );
     }
   }
 
@@ -623,431 +244,50 @@ class SyncEngine {
     for (final entry in entries) {
       switch (entry.collection) {
         case SyncCollection.songs:
-          final r = await _pushSong(entry);
-          if (r == _Push.done) pushed++;
-          if (r == _Push.conflict) conflicts++;
+          final r = await _songs.push(entry);
+          if (r == PushResult.done) pushed++;
+          if (r == PushResult.conflict) conflicts++;
         case SyncCollection.setlists:
-          if (await _pushSet(entry) == _Push.done) pushed++;
+          if (await _sets.push(entry) == PushResult.done) pushed++;
         case SyncCollection.attachments:
-          if (await _pushAttachment(entry) == _Push.done) pushed++;
+          if (await _attachments.push(entry) == PushResult.done) pushed++;
         case SyncCollection.overlays:
-          if (await _pushOverlay(entry, userId) == _Push.done) pushed++;
+          if (await _overlays.push(entry, userId) == PushResult.done) {
+            pushed++;
+          }
       }
     }
     return (pushed, conflicts);
   }
 
-  Future<void> _done(OutboxEntry entry) =>
-      (db.delete(db.syncOutbox)..where(
-            (o) =>
-                o.collection.equals(entry.collection) &
-                o.recordId.equals(entry.recordId) &
-                o.version.equals(entry.version),
-          ))
-          .go();
+  // Songs: storing server versions and resolving conflicts -------------------
 
-  Future<_Push> _pushSong(OutboxEntry entry) async {
-    final song = await (db.select(
-      db.songs,
-    )..where((s) => s.id.equals(entry.recordId))).getSingleOrNull();
-    final hasConflict =
-        await (db.select(
-          db.songConflicts,
-        )..where((c) => c.songId.equals(entry.recordId))).getSingleOrNull() !=
-        null;
-    if (song == null || song.libraryId == localBandId) {
-      await _done(entry);
-      return _Push.skipped;
-    }
-    if (hasConflict) return _Push.skipped; // waits for the user
-    final create = song.revision == 0;
-    if (create && song.deleted) {
-      await _done(entry); // created and deleted before it ever synced
-      return _Push.skipped;
-    }
-    final remote = RemoteSong(
-      id: song.id,
-      organizationId: song.libraryId,
-      title: song.title,
-      chordpro: song.chordproSource,
-      revision: song.revision,
-      deleted: song.deleted,
-    );
-    try {
-      final stored = await _pushSongOrRecover(remote, create: create);
-      await db.transaction(() async {
-        await (db.update(db.songs)..where((s) => s.id.equals(song.id))).write(
-          SongsCompanion(revision: Value(stored.revision)),
-        );
-        await _done(entry);
-      });
-      return _Push.done;
-    } on BackendException catch (e) {
-      if (e.kind == BackendErrorKind.conflict) {
-        final server = await backend.fetchSong(song.id);
-        if (server != null) {
-          await db
-              .into(db.songConflicts)
-              .insertOnConflictUpdate(
-                SongConflictsCompanion.insert(
-                  songId: song.id,
-                  title: server.title,
-                  chordproSource: server.chordpro,
-                  revision: server.revision,
-                  deleted: Value(server.deleted),
-                  detectedAt: DateTime.now(),
-                ),
-              );
-        }
-        return _Push.conflict;
-      }
-      if (e.kind == BackendErrorKind.notAllowed) {
-        // No (longer) permission: the change stays local.
-        _log.warning('Song ${song.id} not pushed: not allowed');
-        await _done(entry);
-        return _Push.skipped;
-      }
-      rethrow;
-    }
-  }
-
-  /// A create whose response got lost is retried as an update.
-  Future<RemoteSong> _pushSongOrRecover(
-    RemoteSong song, {
-    required bool create,
-  }) async {
-    try {
-      return await backend.pushSong(song, create: create);
-    } on BackendException catch (e) {
-      if (!create || e.kind != BackendErrorKind.server) rethrow;
-      final existing = await backend.fetchSong(song.id);
-      if (existing == null) rethrow;
-      return backend.pushSong(
-        RemoteSong(
-          id: song.id,
-          organizationId: song.organizationId,
-          title: song.title,
-          chordpro: song.chordpro,
-          revision: existing.revision,
-          deleted: song.deleted,
-        ),
-        create: false,
-      );
-    }
-  }
-
-  Future<_Push> _pushSet(OutboxEntry entry) async {
-    final set = await (db.select(
-      db.setlists,
-    )..where((s) => s.id.equals(entry.recordId))).getSingleOrNull();
-    if (set == null || set.bandId == localBandId) {
-      await _done(entry);
-      return _Push.skipped;
-    }
-    final create = set.revision == 0;
-    if (create && set.deleted) {
-      await _done(entry);
-      return _Push.skipped;
-    }
-    final items =
-        await (db.select(db.setItems)
-              ..where((i) => i.setId.equals(set.id))
-              ..orderBy([(i) => OrderingTerm.asc(i.position)]))
-            .get();
-    final remote = RemoteSet(
-      id: set.id,
-      bandId: set.bandId,
-      name: set.name,
-      gigDate: set.gigDate,
-      venue: set.venue,
-      items: [for (final i in items) RemoteSetItem.fromEntry(i)],
-      revision: set.revision,
-      deleted: set.deleted,
-    );
-    try {
-      RemoteSet stored;
-      try {
-        stored = await backend.pushSet(remote, create: create);
-      } on BackendException catch (e) {
-        if (!create || e.kind != BackendErrorKind.server) rethrow;
-        stored = await backend.pushSet(remote, create: false);
-      }
-      await db.transaction(() async {
-        await (db.update(db.setlists)..where((s) => s.id.equals(set.id))).write(
-          SetlistsCompanion(revision: Value(stored.revision)),
-        );
-        await _done(entry);
-      });
-      return _Push.done;
-    } on BackendException catch (e) {
-      if (e.kind == BackendErrorKind.notAllowed) {
-        _log.warning('Set ${set.id} not pushed: not allowed');
-        await _done(entry);
-        return _Push.skipped;
-      }
-      rethrow;
-    }
-  }
-
-  Future<_Push> _pushAttachment(OutboxEntry entry) async {
-    final storage = this.storage;
-    final row = await (db.select(db.attachments).join([
-      innerJoin(db.songs, db.songs.id.equalsExp(db.attachments.songId)),
-    ])..where(db.attachments.id.equals(entry.recordId))).getSingleOrNull();
-    if (row == null || storage == null) {
-      if (row == null) await _done(entry);
-      return _Push.skipped;
-    }
-    final a = row.readTable(db.attachments);
-    final song = row.readTable(db.songs);
-    if (song.libraryId == localBandId || !isPdfFile(a.fileName)) {
-      await _done(entry);
-      return _Push.skipped;
-    }
-    final create = a.revision == 0;
-    if (create && a.deleted) {
-      await _done(entry);
-      return _Push.skipped;
-    }
-    // The song must be on the server first (pushed in this run or before).
-    if (song.revision == 0) return _Push.skipped;
-    List<int>? bytes;
-    if (create) {
-      if (!await storage.exists(a.fileName)) {
-        await _done(entry);
-        return _Push.skipped;
-      }
-      bytes = await storage.file(a.fileName).readAsBytes();
-    }
-    final remote = RemoteAttachment(
-      id: a.id,
-      organizationId: song.libraryId,
-      songId: a.songId,
-      name: a.name,
-      pages: a.pages,
-      sizeBytes: a.sizeBytes,
-      revision: a.revision,
-      deleted: a.deleted,
-    );
-    try {
-      final stored = await backend.pushAttachment(
-        remote,
-        create: create,
-        bytes: bytes,
-      );
-      await db.transaction(() async {
-        await (db.update(
-          db.attachments,
-        )..where((x) => x.id.equals(a.id))).write(
-          AttachmentsCompanion(
-            revision: Value(stored.revision),
-            remoteFile: Value(stored.file ?? a.remoteFile),
-          ),
-        );
-        await _done(entry);
-      });
-      return _Push.done;
-    } on BackendException catch (e) {
-      if (e.kind == BackendErrorKind.network ||
-          e.kind == BackendErrorKind.signedOut) {
-        rethrow;
-      }
-      // Not allowed, too large or refused: the attachment stays local.
-      _log.warning('Attachment ${a.id} not pushed', e);
-      await _done(entry);
-      return _Push.skipped;
-    }
-  }
-
-  // Personal adjustments (ADR-0020) --------------------------------------------
-
-  /// Server record ID of the adjustments of [userId] for [songId]: the same
-  /// on every device, so two devices never create two records.
-  static String overlayServerId(String userId, String songId) =>
-      _uuid.v5(Namespace.url.value, 'realchord:overlay:$userId:$songId');
-
-  /// The fields of layer 3 as stored on the server.
-  static Map<String, dynamic> overlayData(SongOverlay o) => {
-    'transpose': o.transpose,
-    'capo_fret': o.capoFret,
-    'font_scale': o.fontScale,
-    'notes': o.notes,
-    'nashville': o.nashville,
-    'live_view': o.liveView,
-  };
-
-  Future<int> _pullOverlays(String userId) async {
-    final since = await _cursor(userId, SyncCollection.overlays);
-    final remote = await backend.pullOverlays(since);
-    if (remote.isEmpty) return 0;
-    await db.transaction(() async {
-      final songIds = [for (final o in remote) o.songId];
-      final locals = await _byId(
-        songIds,
-        (chunk) => (db.select(
-          db.personalOverlays,
-        )..where((o) => o.ownerId.equals(userId) & o.songId.isIn(chunk))).get(),
-        (o) => o.songId,
-      );
-      final dirty = await _dirty(SyncCollection.overlays, [
-        for (final id in songIds) overlayRecordId(userId, id),
-      ]);
-      final songs = await _existingSongs(songIds);
-      for (final o in remote) {
-        final local = locals[o.songId];
-        if (local != null && o.revision <= local.revision) continue;
-        // Last writer wins: a pending local change is pushed afterwards.
-        if (dirty.contains(overlayRecordId(userId, o.songId))) continue;
-        if (o.deleted) {
-          await (db.delete(db.personalOverlays)..where(
-                (x) => x.ownerId.equals(userId) & x.songId.equals(o.songId),
-              ))
-              .go();
-          continue;
-        }
-        if (!songs.contains(o.songId)) continue; // the song is not here
-        final d = o.data;
-        await db
-            .into(db.personalOverlays)
-            .insertOnConflictUpdate(
-              PersonalOverlaysCompanion.insert(
-                ownerId: Value(userId),
-                songId: o.songId,
-                transpose: Value((d['transpose'] as num?)?.toInt() ?? 0),
-                capoFret: Value((d['capo_fret'] as num?)?.toInt()),
-                fontScale: Value((d['font_scale'] as num?)?.toDouble() ?? 1.0),
-                notes: Value(d['notes'] as String?),
-                nashville: Value(d['nashville'] as bool?),
-                liveView: Value(d['live_view'] as String?),
-                revision: Value(o.revision),
-              ),
-            );
-      }
-      await _setCursor(userId, SyncCollection.overlays, remote.last.revision);
-    });
-    return remote.length;
-  }
-
-  Future<_Push> _pushOverlay(OutboxEntry entry, String userId) async {
-    final (owner, songId) = parseOverlayRecordId(entry.recordId);
-    // Another person's change on a shared device: pushed when they sync.
-    if (owner != userId) return _Push.skipped;
-    final row =
-        await (db.select(db.personalOverlays).join([
-              innerJoin(
-                db.songs,
-                db.songs.id.equalsExp(db.personalOverlays.songId),
-              ),
-            ])..where(
-              db.personalOverlays.ownerId.equals(owner) &
-                  db.personalOverlays.songId.equals(songId),
-            ))
-            .getSingleOrNull();
-    if (row == null || row.readTable(db.songs).libraryId == localBandId) {
-      await _done(entry);
-      return _Push.skipped;
-    }
-    final overlay = row.readTable(db.personalOverlays);
-    final song = row.readTable(db.songs);
-    if (song.deleted) {
-      await _done(entry); // the server deletes it with the song
-      return _Push.skipped;
-    }
-    if (song.revision == 0) return _Push.skipped; // the song comes first
-    final remote = RemoteOverlay(
-      id: overlayServerId(owner, songId),
-      userId: owner,
-      songId: songId,
-      data: overlayData(overlay),
-    );
-    try {
-      final create = overlay.revision == 0;
-      RemoteOverlay stored;
-      try {
-        stored = await backend.pushOverlay(remote, create: create);
-      } on BackendException catch (e) {
-        // Created by another device of the same person (same record ID).
-        if (!create || e.kind != BackendErrorKind.server) rethrow;
-        stored = await backend.pushOverlay(remote, create: false);
-      }
-      await db.transaction(() async {
-        await (db.update(db.personalOverlays)
-              ..where((o) => o.ownerId.equals(owner) & o.songId.equals(songId)))
-            .write(PersonalOverlaysCompanion(revision: Value(stored.revision)));
-        await _done(entry);
-      });
-      return _Push.done;
-    } on BackendException catch (e) {
-      if (e.kind == BackendErrorKind.notAllowed) {
-        _log.warning('Overlay ${entry.recordId} not pushed: not allowed');
-        await _done(entry);
-        return _Push.skipped;
-      }
-      rethrow;
-    }
-  }
-
-  // Conflicts ---------------------------------------------------------------------
-
-  Future<SongConflict?> _conflict(String songId) => (db.select(
-    db.songConflicts,
-  )..where((c) => c.songId.equals(songId))).getSingleOrNull();
+  /// Stores the server state of a song locally (no outbox entry).
+  Future<void> writeSong(RemoteSong remote, {SongMeta? meta}) =>
+      _songs.writeSong(remote, meta: meta);
 
   /// Keeps the local version: it is pushed on top of the server version.
-  Future<void> keepLocal(String songId) => db.transaction(() async {
-    final conflict = await _conflict(songId);
-    if (conflict == null) return;
-    await (db.update(db.songs)..where((s) => s.id.equals(songId))).write(
-      SongsCompanion(revision: Value(conflict.revision)),
-    );
-    await (db.delete(
-      db.songConflicts,
-    )..where((c) => c.songId.equals(songId))).go();
-    final song = await (db.select(
-      db.songs,
-    )..where((s) => s.id.equals(songId))).getSingle();
-    await markDirty(db, SyncCollection.songs, songId, scope: song.libraryId);
-  });
+  Future<void> keepLocal(String songId) => _songs.keepLocal(songId);
 
   /// Takes the server version and drops the local change.
-  Future<void> takeServer(String songId) => db.transaction(() async {
-    final conflict = await _conflict(songId);
-    if (conflict == null) return;
-    final song = await (db.select(
-      db.songs,
-    )..where((s) => s.id.equals(songId))).getSingle();
-    await writeSong(
-      RemoteSong(
-        id: songId,
-        organizationId: song.libraryId,
-        title: conflict.title,
-        chordpro: conflict.chordproSource,
-        revision: conflict.revision,
-        deleted: conflict.deleted,
-      ),
-    );
-    await (db.delete(
-      db.songConflicts,
-    )..where((c) => c.songId.equals(songId))).go();
-    await (db.delete(db.syncOutbox)..where(
-          (o) =>
-              o.collection.equals(SyncCollection.songs) &
-              o.recordId.equals(songId),
-        ))
-        .go();
-  });
+  Future<void> takeServer(String songId) => _songs.takeServer(songId);
 
-  /// Saves the local version as a new song in the same library and takes
-  /// the server version for the original. Returns the copy's ID.
-  Future<String?> keepBoth(String songId) async {
-    final song = await (db.select(
-      db.songs,
-    )..where((s) => s.id.equals(songId))).getSingleOrNull();
-    if (song == null || copies == null) return null;
-    final copy = (await copies!.copySongs([songId], song.libraryId)).single;
-    await takeServer(songId);
-    return copy;
-  }
+  /// Saves the local version as a new song and takes the server version for
+  /// the original. Returns the copy's ID.
+  Future<String?> keepBoth(String songId) => _songs.keepBoth(songId);
+
+  // Constants of the parts, for tests and callers -----------------------------
+
+  /// Attachment files downloaded at the same time.
+  static const parallelDownloads = AttachmentSync.parallelDownloads;
+
+  /// Server record ID of the adjustments of [userId] for [songId].
+  static String overlayServerId(String userId, String songId) =>
+      OverlaySync.overlayServerId(userId, songId);
+
+  /// The fields of layer 3 as stored on the server.
+  static Map<String, dynamic> overlayData(SongOverlay o) =>
+      OverlaySync.overlayData(o);
 
   /// Debug description of the pending outbox (tests, logs).
   Future<String> describeOutbox() async => jsonEncode([
@@ -1055,5 +295,3 @@ class SyncEngine {
       '${o.collection}/${o.recordId}@${o.version}',
   ]);
 }
-
-enum _Push { done, skipped, conflict }
