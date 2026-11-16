@@ -1,6 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:realchord/util/app_version.dart';
 import 'package:realchord/ui/settings_screen.dart';
 import 'package:realchord/util/log.dart';
 
@@ -29,8 +31,22 @@ void main() {
     expect(Log.recent.last.message, 'entry ${Log.capacity + 9}');
   });
 
-  testWidgets('the settings copy the diagnostic log', (tester) async {
+  test('formats the app version with its build number', () {
+    expect(formatAppVersion('0.1.1', '3'), '0.1.1 (3)');
+    expect(formatAppVersion('0.1.1', ''), '0.1.1');
+  });
+
+  testWidgets('the settings show the version and copy the diagnostic log', (
+    tester,
+  ) async {
     useTabletSize(tester, landscape: false);
+    PackageInfo.setMockInitialValues(
+      appName: 'RealChord',
+      packageName: 'ch.realchord.realchord',
+      version: '0.1.1',
+      buildNumber: '3',
+      buildSignature: '',
+    );
     const Log('sync').warning('Sync stopped', 'network');
     final app = await TestApp.create(prefs: {'language': 'en'});
     String? copied;
@@ -56,8 +72,15 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).last,
     );
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('app-version')),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(find.text('Version 0.1.1 (3)'), findsOneWidget);
     await tester.tap(find.byKey(const Key('copy-log')));
     await tester.pumpAndSettle();
+    expect(copied, startsWith('RealChord 0.1.1 (3)\n'));
     expect(copied, contains('[sync] Sync stopped: network'));
     expect(find.text('Diagnostic log copied'), findsOneWidget);
     await app.dispose(tester);

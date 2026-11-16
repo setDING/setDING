@@ -616,6 +616,11 @@ class AppLocalizationsDe extends AppLocalizations {
       'RealChord läuft lokal auf diesem Gerät. Alle Daten sind offline verfügbar.';
 
   @override
+  String settingsVersion(String version) {
+    return 'Version $version';
+  }
+
+  @override
   String get lilypondNotice =>
       'Lilypond-Noten können auf diesem Gerät nicht dargestellt werden. Quelltext:';
 

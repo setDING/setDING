@@ -176,6 +176,14 @@
   "settingsLogCopyHint": "The app's recent messages, e.g. why a sync failed – to paste into a message to support.",
   "settingsLogCopied": "Diagnostic log copied",
   "settingsAbout": "RealChord runs locally on this device. All data is available offline.",
+  "settingsVersion": "Version {version}",
+  "@settingsVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "lilypondNotice": "Lilypond notation cannot be rendered on this device. Source:",
   "sequenceLabel": "Song sequence",
   "sectionIntro": "Intro",

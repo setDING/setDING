@@ -1154,6 +1154,12 @@ abstract class AppLocalizations {
   /// **'RealChord läuft lokal auf diesem Gerät. Alle Daten sind offline verfügbar.'**
   String get settingsAbout;
 
+  /// No description provided for @settingsVersion.
+  ///
+  /// In de, this message translates to:
+  /// **'Version {version}'**
+  String settingsVersion(String version);
+
   /// No description provided for @lilypondNotice.
   ///
   /// In de, this message translates to:
