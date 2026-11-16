@@ -8,6 +8,14 @@ RealChord (formerly the working title BandChords) is an app that shows bands the
 (Android, iOS, Windows) during a performance. Admins put together sets; band members
 view and play them, offline-first.
 
+## License
+
+The project is licensed under the [MIT License](LICENSE). The code is largely
+AI-generated (by coding agents, reviewed and directed by the owner). New
+dependencies, fonts and other assets must have a licence compatible with MIT and
+ship their licence notice; never copy code under an incompatible licence (e.g. GPL)
+into the repository.
+
 ## Architecture and ADRs
 
 The architecture is documented in [`docs/architecture/`](docs/architecture/):

@@ -174,6 +174,7 @@ Notes:
 - **Localization:** UI in German and English, selectable in the settings (ADR-0008). Song content is not translated.
 - **Testability:** `chordpro` package with extensive unit tests (parser, transposition); golden tests for rendering.
 - **Diagnostics:** named loggers (`app/lib/util/log.dart`, no extra package) write to the console (also in release builds) and the Dart developer log, and keep the last 300 messages; the settings copy them to the clipboard for support. Logs contain no song content or credentials.
+- **Licence:** the project is MIT-licensed ([`LICENSE`](../../LICENSE)); the code is largely AI-generated. Dependencies and bundled assets must be MIT-compatible (e.g. Noto Sans under the SIL Open Font License, ADR-0013).
 - **Data protection:** Self-hosting keeps the data under the band's own control (e.g. in Switzerland).
 
 ## 8. Phases / roadmap (proposal)
