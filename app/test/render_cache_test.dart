@@ -1,5 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:chordpro/chordpro.dart' show ChordStyle;
+import 'package:realchord/settings/settings.dart';
 import 'package:realchord/data/demo_song.dart';
 import 'package:realchord/ui/live/live_screen.dart';
 import 'package:realchord/ui/render/render_cache.dart';
@@ -65,6 +68,38 @@ void main() {
     await tester.tapAt(topLeft + Offset(size.width * 0.1, size.height / 2));
     await tester.pumpAndSettle();
     expect(debugMeasureBlocksCalls, second);
+    await app.dispose(tester);
+  });
+
+  testWidgets('live mode measures again when the chord style changes', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final song = await tester.runAsync(() async {
+      final id = await app.songs.createSong(
+        source: '{title: Style}\n[Ami7]la la [Cmaj7]la',
+      );
+      return app.songs.getSong(id);
+    });
+    await tester.pumpWidget(
+      app.build(home: LiveScreen(items: [LiveItem.song(song!)])),
+    );
+    await tester.pumpAndSettle();
+    final before = debugMeasureBlocksCalls;
+    expect(find.text('Ami7'), findsOneWidget);
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(LiveScreen)),
+    );
+    await tester.runAsync(
+      () => container
+          .read(settingsProvider.notifier)
+          .update((s) => s.copyWith(chordStyle: ChordStyle.standard)),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Am7'), findsOneWidget);
+    expect(debugMeasureBlocksCalls, greaterThan(before));
     await app.dispose(tester);
   });
 

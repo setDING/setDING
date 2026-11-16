@@ -250,6 +250,25 @@ class _CategoryContent extends ConsumerWidget {
           value: s.nashville,
           onChanged: (v) => notifier.update((s) => s.copyWith(nashville: v)),
         ),
+        _Choice(
+          l10n.settingsChordStyle,
+          s.chordStyle,
+          {
+            ChordStyle.asWritten: l10n.chordStyleAsWritten,
+            ChordStyle.standard: l10n.chordStyleStandard,
+            ChordStyle.jazz: l10n.chordStyleJazz,
+          },
+          (v) => notifier.update((s) => s.copyWith(chordStyle: v)),
+          hint: l10n.settingsChordStyleHint,
+        ),
+        SwitchListTile(
+          title: Text(l10n.settingsChordSuperscript),
+          subtitle: Text(l10n.settingsChordSuperscriptHint),
+          value: s.chordSuperscript,
+          onChanged: s.chordStyle == ChordStyle.asWritten
+              ? null
+              : (v) => notifier.update((s) => s.copyWith(chordSuperscript: v)),
+        ),
         _Choice(l10n.settingsDisplayMode, s.displayMode, {
           DisplayMode.lyricsAndChords: l10n.displayLyricsAndChords,
           DisplayMode.lyricsOnly: l10n.displayLyricsOnly,

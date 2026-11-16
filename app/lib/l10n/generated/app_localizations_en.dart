@@ -571,6 +571,29 @@ class AppLocalizationsEn extends AppLocalizations {
       'Chords as scale degrees, e.g. 1, 4, 5, 6m. Needs a key in the song.';
 
   @override
+  String get settingsChordStyle => 'Chord style';
+
+  @override
+  String get settingsChordStyleHint =>
+      'How chords are spelled, e.g. Am7, Cmaj7, Em7b5 (standard) or A−7, CΔ7, Eø7 (jazz). The song itself is not changed.';
+
+  @override
+  String get chordStyleAsWritten => 'As written';
+
+  @override
+  String get chordStyleStandard => 'Standard';
+
+  @override
+  String get chordStyleJazz => 'Jazz';
+
+  @override
+  String get settingsChordSuperscript => 'Raise extensions';
+
+  @override
+  String get settingsChordSuperscriptHint =>
+      'Show extensions and alterations smaller and raised, e.g. C⁷. Needs the standard or jazz style.';
+
+  @override
   String get settingsDisplayMode => 'Content';
 
   @override

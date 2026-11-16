@@ -531,8 +531,8 @@ class _ChordLyricLine extends StatelessWidget {
                         ? 0
                         : size * SongSpacing.chordGap,
                   ),
-                  child: Text(
-                    piece.chord ?? ' ',
+                  child: ChordText(
+                    piece.chordParts ?? const [ChordPart(' ')],
                     style: applyMarkupStyle(chordStyle, piece.chordMarkup),
                   ),
                 ),

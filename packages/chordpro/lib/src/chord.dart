@@ -1,6 +1,10 @@
 /// Chord model: parsing, transposition and formatting.
 library;
 
+import 'chord_suffix.dart';
+
+export 'chord_suffix.dart';
+
 /// How chord names are displayed.
 enum ChordNotation {
   /// International notation: B, Bb.
@@ -138,11 +142,16 @@ class Chord {
   /// Optional bass note (slash chord).
   final Note? bass;
 
+  /// The suffix split into quality, extension and modifiers; null if it is
+  /// not understood (ADR-0022).
+  ChordSuffix? get parsedSuffix => ChordSuffix.tryParse(suffix);
+
   /// Whether the chord quality is minor (used for keys and Nashville).
   bool get isMinor =>
-      suffix.startsWith('m') && !suffix.startsWith('maj') ||
-      suffix.startsWith('min') ||
-      suffix.startsWith('-');
+      parsedSuffix?.isMinor ??
+      (suffix.startsWith('m') && !suffix.startsWith('maj') ||
+          suffix.startsWith('min') ||
+          suffix.startsWith('-'));
 
   /// Parses a chord. Returns null if [input] is not a recognisable chord
   /// (e.g. `N.C.`, `x`, annotations).
@@ -168,7 +177,7 @@ class Chord {
   }
 
   /// Characters allowed in a chord suffix.
-  static final _validSuffix = RegExp(r'^[a-zA-Z0-9#b♯♭+\-()/°ø△^,.*]*$');
+  static final _validSuffix = RegExp(r'^[a-zA-Z0-9#b♯♭+\-−()/°øØ△Δ^,.*]*$');
 
   Chord transpose(int semitones, {bool? useFlats}) => Chord(
     root: root.transpose(semitones, useFlats: useFlats),
@@ -176,29 +185,52 @@ class Chord {
     bass: bass?.transpose(semitones, useFlats: useFlats),
   );
 
-  /// Formats the chord in the given notation.
-  String format(ChordNotation notation, {bool? useFlats}) {
-    final buffer = StringBuffer(root.spell(notation, useFlats: useFlats))
-      ..write(suffix);
-    if (bass != null) {
-      buffer
-        ..write('/')
-        ..write(bass!.spell(notation, useFlats: useFlats));
-    }
-    return buffer.toString();
-  }
+  /// Formats the chord in the given notation and [style].
+  String format(
+    ChordNotation notation, {
+    bool? useFlats,
+    ChordStyle style = ChordStyle.asWritten,
+  }) => chordPartsText(formatParts(notation, useFlats: useFlats, style: style));
+
+  /// Formats the chord as parts; extension and modifiers are raised
+  /// (superscript) parts unless [style] is [ChordStyle.asWritten].
+  List<ChordPart> formatParts(
+    ChordNotation notation, {
+    bool? useFlats,
+    ChordStyle style = ChordStyle.asWritten,
+  }) => _parts(
+    root.spell(notation, useFlats: useFlats),
+    bass?.spell(notation, useFlats: useFlats),
+    style,
+  );
 
   /// Formats the chord as a Nashville number relative to [key].
-  String toNashville(Key key) {
-    // The suffix is kept as written, so `Am` in A minor becomes `1m`
-    // and `Am` in C major becomes `6m`.
-    final buffer = StringBuffer(_degree(root.pitch, key))..write(suffix);
-    if (bass != null) {
-      buffer
-        ..write('/')
-        ..write(_degree(bass!.pitch, key));
-    }
-    return buffer.toString();
+  String toNashville(Key key, {ChordStyle style = ChordStyle.asWritten}) =>
+      chordPartsText(toNashvilleParts(key, style: style));
+
+  /// Nashville number as parts, see [formatParts].
+  List<ChordPart> toNashvilleParts(
+    Key key, {
+    ChordStyle style = ChordStyle.asWritten,
+  }) =>
+      // The quality is kept, so `Am` in A minor becomes `1m`
+      // and `Am` in C major becomes `6m`.
+      _parts(
+        _degree(root.pitch, key),
+        bass == null ? null : _degree(bass!.pitch, key),
+        style,
+      );
+
+  List<ChordPart> _parts(String rootText, String? bassText, ChordStyle style) {
+    final styled = style == ChordStyle.asWritten
+        ? null
+        : parsedSuffix?.format(style);
+    return [
+      ChordPart(rootText),
+      ...?styled,
+      if (styled == null && suffix.isNotEmpty) ChordPart(suffix),
+      if (bassText != null) ChordPart('/$bassText'),
+    ];
   }
 
   static const _degrees = [

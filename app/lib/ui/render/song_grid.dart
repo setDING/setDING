@@ -3,6 +3,8 @@ import 'dart:math' as math;
 import 'package:chordpro/chordpro.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'song_style.dart';
+
 /// Measures a text width in units of the grid font size.
 typedef GridTextWidth = double Function(String text, {bool chord});
 
@@ -67,9 +69,14 @@ class GridGeometry {
   }
 }
 
-/// Text of a grid cell with one or more chords.
-String gridChordText(GridChords cell, ChordFormatter formatter) =>
-    cell.chords.map(formatter.format).join(' ');
+/// A grid cell with one or more chords, as chord parts.
+List<ChordPart> gridChordParts(GridChords cell, ChordFormatter formatter) =>
+    mergeChordParts([
+      for (final (i, chord) in cell.chords.indexed) ...[
+        if (i > 0) const ChordPart(' '),
+        ...formatter.formatParts(chord),
+      ],
+    ]);
 
 /// Text of a grid mark.
 String gridMarkText(GridSymbol symbol) => switch (symbol) {
@@ -145,7 +152,9 @@ class GridRowView extends StatelessWidget {
             ),
           );
         case final GridChords cell:
-          children.add(_cell(gridChordText(cell, formatter), chordStyle, size));
+          children.add(
+            _cell('', chordStyle, size, chord: gridChordParts(cell, formatter)),
+          );
         case final GridMark mark:
           children.add(
             _cell(
@@ -175,16 +184,23 @@ class GridRowView extends StatelessWidget {
     );
   }
 
-  Widget _cell(String text, TextStyle style, double size) => SizedBox(
+  Widget _cell(
+    String text,
+    TextStyle style,
+    double size, {
+    List<ChordPart>? chord,
+  }) => SizedBox(
     width: geometry.cell * size,
     child: Padding(
       padding: EdgeInsets.only(left: 0.25 * size),
-      child: Text(
-        text,
-        style: style,
-        softWrap: false,
-        overflow: TextOverflow.visible,
-      ),
+      child: chord != null
+          ? ChordText(chord, style: style)
+          : Text(
+              text,
+              style: style,
+              softWrap: false,
+              overflow: TextOverflow.visible,
+            ),
     ),
   );
 }

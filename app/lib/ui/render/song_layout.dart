@@ -266,10 +266,14 @@ BlockMetrics _measure(
             final size = applyMarkupStyle(lyric, r.style).fontSize ?? f;
             tallestLyric = math.max(tallestLyric, size * lh / f);
           }
-          if (p.chord != null) {
+          if (p.chordParts != null) {
             w = math.max(
               w,
-              width(p.chord!, applyMarkupStyle(chord, p.chordMarkup)) +
+              chordPartsWidth(
+                    p.chordParts!,
+                    applyMarkupStyle(chord, p.chordMarkup),
+                    width,
+                  ) +
                   SongSpacing.chordGap * (lyric.fontSize ?? f) / f,
             );
           }

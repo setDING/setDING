@@ -351,12 +351,82 @@ double markupSizeFactor(String raw) {
 
 final _wordPattern = RegExp(r'\S+\s*|\s+');
 
+/// Size of raised (superscript) chord parts relative to the chord
+/// (ADR-0022).
+const raisedChordScale = 0.7;
+
+/// How far raised chord parts are lifted, relative to the chord size.
+const raisedChordLift = 0.35;
+
+/// Style of raised chord parts.
+TextStyle raisedChordStyle(TextStyle style) =>
+    style.copyWith(fontSize: (style.fontSize ?? 14) * raisedChordScale);
+
+/// Width of a chord made of [parts], measured with [width].
+double chordPartsWidth(
+  List<ChordPart> parts,
+  TextStyle style,
+  double Function(String text, TextStyle style) width,
+) {
+  var total = 0.0;
+  for (final part in parts) {
+    total += width(part.text, part.raised ? raisedChordStyle(style) : style);
+  }
+  return total;
+}
+
+/// A chord shown as text, with raised parts as superscript.
+class ChordText extends StatelessWidget {
+  const ChordText(this.parts, {super.key, required this.style});
+
+  final List<ChordPart> parts;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!parts.any((p) => p.raised)) {
+      return Text(
+        chordPartsText(parts),
+        style: style,
+        softWrap: false,
+        overflow: TextOverflow.visible,
+      );
+    }
+    final lift = -(style.fontSize ?? 14) * raisedChordLift;
+    final raised = raisedChordStyle(style);
+    return Text.rich(
+      TextSpan(
+        style: style,
+        children: [
+          for (final part in parts)
+            if (part.raised)
+              WidgetSpan(
+                alignment: PlaceholderAlignment.baseline,
+                baseline: TextBaseline.alphabetic,
+                child: Transform.translate(
+                  offset: Offset(0, lift),
+                  child: Text(part.text, style: raised, softWrap: false),
+                ),
+              )
+            else
+              TextSpan(text: part.text, style: style),
+        ],
+      ),
+      softWrap: false,
+      overflow: TextOverflow.visible,
+    );
+  }
+}
+
 /// A word of a chord/lyrics line, with the chord above its start.
 class LinePiece {
-  const LinePiece(this.chord, this.chordMarkup, this.runs);
+  const LinePiece(this.chordParts, this.chordMarkup, this.runs);
 
   /// Formatted chord, or null.
-  final String? chord;
+  final List<ChordPart>? chordParts;
+
+  /// Formatted chord as plain text, or null.
+  String? get chord => chordParts == null ? null : chordPartsText(chordParts!);
 
   /// Markup style of the chord (e.g. `[<b>C</b>]`).
   final MarkupStyle chordMarkup;
@@ -381,7 +451,7 @@ List<LinePiece> chordLinePieces(LyricLine line, ChordFormatter formatter) {
     rawPos += segment.text.length;
     final end = markup.plainIndex(rawPos);
     final chordToken = segment.chord;
-    final chord = chordToken == null ? null : formatter.format(chordToken);
+    final chord = chordToken == null ? null : formatter.formatParts(chordToken);
     final chordMarkup = chordToken == null
         ? MarkupStyle.plain
         : chordMarkupStyle(chordToken);

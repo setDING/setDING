@@ -90,4 +90,84 @@ void main() {
     expect(converted, contains('[Bm7/F#]x'));
     expect(converted, contains('[Eb]y')); // Es = E flat
   });
+
+  group('chord style', () {
+    final styledSong = parseChordPro(
+      '{key: C}\n[Ami7]a [CΔ7]b [(Dm7b5)]c [N.C.]d [*Riff]e',
+    );
+    List<List<ChordPart>> parts(ChordFormatter f) =>
+        (styledSong.sections.first.lines.first as LyricLine).segments
+            .map((s) => f.formatParts(s.chord!))
+            .toList();
+
+    test('as written keeps the raw chords', () {
+      expect(parts(ChordFormatter.forSong(styledSong)).map(chordPartsText), [
+        'Ami7',
+        'CΔ7',
+        '(Dm7b5)',
+        'N.C.',
+        'Riff',
+      ]);
+    });
+
+    test('standard and jazz styles', () {
+      final standard = ChordFormatter.forSong(
+        styledSong,
+        style: ChordStyle.standard,
+      );
+      expect(parts(standard).map(chordPartsText), [
+        'Am7',
+        'Cmaj7',
+        '(Dm7b5)',
+        'N.C.',
+        'Riff',
+      ]);
+      final jazz = ChordFormatter.forSong(
+        styledSong,
+        style: ChordStyle.jazz,
+        transpose: 2,
+      );
+      expect(parts(jazz).map(chordPartsText), [
+        'B−7',
+        'DΔ7',
+        '(Eø7)',
+        'N.C.',
+        'Riff',
+      ]);
+    });
+
+    test('superscript returns raised parts', () {
+      final f = ChordFormatter.forSong(
+        styledSong,
+        style: ChordStyle.jazz,
+        superscript: true,
+      );
+      expect(parts(f).take(3), [
+        [const ChordPart('A−'), const ChordPart('7', raised: true)],
+        [const ChordPart('C'), const ChordPart('Δ7', raised: true)],
+        [
+          const ChordPart('(Dø'),
+          const ChordPart('7', raised: true),
+          const ChordPart(')'),
+        ],
+      ]);
+      // Without a style, superscript has no effect.
+      final plain = ChordFormatter.forSong(styledSong, superscript: true);
+      expect(parts(plain).first, [const ChordPart('Ami7')]);
+    });
+
+    test('Nashville numbers with style', () {
+      final f = ChordFormatter.forSong(
+        styledSong,
+        nashville: true,
+        style: ChordStyle.jazz,
+      );
+      expect(parts(f).take(3).map(chordPartsText), ['6−7', '1Δ7', '(2ø7)']);
+    });
+
+    test('chord names for diagrams use the style', () {
+      final f = ChordFormatter.forSong(styledSong, style: ChordStyle.jazz);
+      expect(f.chordName(Chord.tryParse('Am7')!), 'A−7');
+    });
+  });
 }
