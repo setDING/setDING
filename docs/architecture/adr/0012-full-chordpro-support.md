@@ -139,3 +139,7 @@ Each phase is a separate branch and merge (ADR-0010).
   directives in the ChordPro text (ADR-0003): existing ones are changed in place, keeping
   their form (`{t: …}`, `{meta: key …}`), missing ones are added to the header and
   cleared fields remove their directive. Only the first song of a file is affected.
+- 2026-11-16: In the song details form, key and capo are dropdowns as in the song view
+  (#193): no key plus the 12 major and 12 minor keys, shown in the chosen notation (B/H)
+  and written in international notation; capo none or 1–9. An unchanged key keeps its
+  spelling, and a value the dropdown does not offer is kept as an extra entry.

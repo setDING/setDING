@@ -2576,11 +2576,11 @@ abstract class AppLocalizations {
   /// **'Titel, Tonart, Tempo und mehr bearbeiten'**
   String get songDetailsTooltip;
 
-  /// No description provided for @invalidKey.
+  /// No description provided for @noKey.
   ///
   /// In de, this message translates to:
-  /// **'Unbekannte Tonart, z. B. G, Em oder Bb'**
-  String get invalidKey;
+  /// **'Keine Tonart'**
+  String get noKey;
 
   /// No description provided for @timeHint.
   ///

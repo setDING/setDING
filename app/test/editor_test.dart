@@ -189,6 +189,20 @@ void main() {
     await app.dispose(tester);
   });
 
+  Future<void> pick(WidgetTester tester, String field, String item) async {
+    await tester.tap(find.byKey(ValueKey('songDetail-$field')));
+    await tester.pumpAndSettle();
+    // The menu scrolls when it has more items than fit.
+    await tester.scrollUntilVisible(
+      find.text(item),
+      100,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(item).last);
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('song details edit the metadata in a form', (tester) async {
     const source = '{t: Old}\n{key: G}\n{capo: 2}\n\n[G]la';
     final (app, field) = await pumpEditor(tester, source);
@@ -200,11 +214,19 @@ void main() {
       tester.widget<TextFormField>(input('title')).controller!.text,
       'Old',
     );
-    expect(tester.widget<TextFormField>(input('key')).controller!.text, 'G');
+    // Key and capo are dropdowns showing the current values.
+    expect(
+      find.descendant(of: input('key'), matching: find.text('G')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: input('capo'), matching: find.text('Capo 2')),
+      findsOneWidget,
+    );
 
     await tester.enterText(input('title'), 'New');
-    await tester.enterText(input('key'), 'Bb');
-    await tester.enterText(input('capo'), '');
+    await pick(tester, 'key', 'Bb');
+    await pick(tester, 'capo', 'No capo');
     await tester.enterText(input('tempo'), '9a0');
     await tester.enterText(input('time'), '6/8');
     await tester.tap(find.text('OK'));
@@ -220,19 +242,25 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('song details reject an unknown key', (tester) async {
+  testWidgets('song details add key and capo, cancel changes nothing', (
+    tester,
+  ) async {
     const source = '{title: T}\nla';
     final (app, field) = await pumpEditor(tester, source);
     await tester.tap(find.text('Song details'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byKey(const ValueKey('songDetail-key')), 'X');
-    await tester.tap(find.text('OK'));
-    await tester.pumpAndSettle();
-    expect(find.text('Unknown key, e.g. G, Em or Bb'), findsOneWidget);
-
+    await pick(tester, 'key', 'F#m');
     await tester.tap(find.text('Cancel'));
     await tester.pumpAndSettle();
     expect(field.controller!.text, source);
+
+    await tester.tap(find.text('Song details'));
+    await tester.pumpAndSettle();
+    await pick(tester, 'key', 'F#m');
+    await pick(tester, 'capo', 'Capo 3');
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect(field.controller!.text, '{title: T}\n{key: F#m}\n{capo: 3}\nla');
     await app.dispose(tester);
   });
 }
