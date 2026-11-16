@@ -510,11 +510,17 @@ class SongFit {
     required this.columns,
     this.collapseRecalls = false,
     this.fits = true,
+    this.pages = 1,
     this.layout,
   });
 
   final double fontSize;
+
+  /// Columns per page.
   final int columns;
+
+  /// Number of pages the song is split into (see [songPages]).
+  final int pages;
   final bool collapseRecalls;
 
   /// Blocks and measurements of the chosen arrangement, so that rendering
@@ -524,6 +530,41 @@ class SongFit {
 
   /// Whether the whole song fits on the screen without scrolling.
   final bool fits;
+}
+
+/// Score factor per additional page in [fitSong]: another page must give a
+/// clearly larger font (turning pages on stage is a cost).
+const pagePenalty = 0.8;
+
+/// Splits a song into pages of [columns] columns each at most [pageHeight]
+/// tall, with as few pages as possible (at most [maxPages]).
+///
+/// [heights] are the heights of the blocks in reading order. Pages are
+/// filled in order, each with as many blocks as fit its columns. Returns the
+/// end index of every page (the last one is `heights.length`), or null when
+/// the song does not fit: a single block is taller than a page, or more
+/// than [maxPages] pages would be needed.
+List<int>? songPages(
+  List<double> heights,
+  int columns,
+  double pageHeight, {
+  int maxPages = 8,
+}) {
+  final ends = <int>[];
+  var start = 0;
+  while (start < heights.length) {
+    if (ends.length == maxPages) return null;
+    var end = start;
+    while (end < heights.length &&
+        partitionHeight(heights.sublist(start, end + 1), columns) <=
+            pageHeight) {
+      end++;
+    }
+    if (end == start) return null;
+    ends.add(end);
+    start = end;
+  }
+  return ends.isEmpty ? [0] : ends;
 }
 
 /// Blocks of a song with their measurements.
@@ -538,7 +579,12 @@ typedef SongLayout = ({List<SongBlock> blocks, List<BlockMetrics> metrics});
 /// column width; lines without chords may wrap. The arrangement with the
 /// largest font wins; more columns are only used when they give a clearly
 /// larger font, and repeated choruses are only collapsed to a label when
-/// that gives a clearly larger font. If nothing fits at [minFontSize], one
+/// that gives a clearly larger font.
+///
+/// With [maxPages] above 1, the song may be split into up to [maxPages]
+/// pages of the same columns (see [songPages]), but only when that gives a
+/// clearly larger font than fewer pages; a font above [baseFontSize] is no
+/// reason for another page. If nothing fits at [minFontSize], one
 /// scrollable column is returned.
 SongFit fitSong(
   Song song, {
@@ -559,6 +605,7 @@ SongFit fitSong(
   ChorusRepeat chorusRepeat = ChorusRepeat.auto,
   DiagramResolver? diagramResolver,
   DiagramsPosition diagramsPosition = DiagramsPosition.off,
+  int maxPages = 1,
 }) {
   final diagrams =
       diagramsPosition == DiagramsPosition.off || diagramResolver == null
@@ -605,41 +652,54 @@ SongFit fitSong(
           columnWidth(size.width, k, baseFontSize) < minColumnWidth) {
         continue;
       }
-      // Start with the largest font the width allows, then shrink until the
-      // tallest column fits (wrapping changes with the font size).
-      var font = widest <= 0
-          ? maxFontSize
-          : size.width / (k * widest + columnGap * (k - 1));
-      font = math.min(font, maxFontSize);
-      var fits = false;
-      for (var i = 0; i < 12 && font >= minFontSize; i++) {
-        final width = columnWidth(size.width, k, font);
-        final heights = [for (final m in metrics) m.height(font, width)];
-        final tallest = tallestColumn(
-          heights,
-          columnBreaks(blocks, heights, k),
-        );
-        if (tallest <= size.height) {
-          fits = true;
-          break;
+      // Breaks in the song decide the columns: no further pages.
+      final pageCount = forced == null ? maxPages : 1;
+      for (var p = 1; p <= pageCount; p++) {
+        // Every page gets at least one block.
+        if (p > 1 && (p - 1) * k >= blocks.length) break;
+        // Start with the largest font the width allows, then shrink until
+        // the tallest column fits (wrapping changes with the font size).
+        var font = widest <= 0
+            ? maxFontSize
+            : size.width / (k * widest + columnGap * (k - 1));
+        font = math.min(font, maxFontSize);
+        var fits = false;
+        for (var i = 0; i < 12 && font >= minFontSize; i++) {
+          final width = columnWidth(size.width, k, font);
+          final heights = [for (final m in metrics) m.height(font, width)];
+          // Pages continue the columns: p pages of k columns are p * k
+          // columns in reading order.
+          final tallest = tallestColumn(
+            heights,
+            columnBreaks(blocks, heights, p * k),
+          );
+          if (tallest <= size.height) {
+            fits = true;
+            break;
+          }
+          font *= size.height / tallest * 0.99;
         }
-        font *= size.height / tallest * 0.99;
-      }
-      if (!fits) continue;
-      font *= fitSafety;
-      // Prefer fewer columns and full choruses unless clearly better.
-      final penalty = collapse && chorusRepeat == ChorusRepeat.auto
-          ? 0.85
-          : 1.0;
-      final score = font * penalty * (1 - 0.03 * (k - 1));
-      if (score > bestScore) {
-        bestScore = score;
-        best = SongFit(
-          fontSize: font,
-          columns: k,
-          collapseRecalls: collapse,
-          layout: (blocks: blocks, metrics: metrics),
-        );
+        if (!fits) continue;
+        font *= fitSafety;
+        // Prefer fewer columns, full choruses and fewer pages unless
+        // clearly better; more pages only for up to the base font size.
+        final penalty = collapse && chorusRepeat == ChorusRepeat.auto
+            ? 0.85
+            : 1.0;
+        final readable = p == 1
+            ? font
+            : math.min(font, baseFontSize) * math.pow(pagePenalty, p - 1);
+        final score = readable * penalty * (1 - 0.03 * (k - 1));
+        if (score > bestScore) {
+          bestScore = score;
+          best = SongFit(
+            fontSize: font,
+            columns: k,
+            pages: p,
+            collapseRecalls: collapse,
+            layout: (blocks: blocks, metrics: metrics),
+          );
+        }
       }
     }
   }

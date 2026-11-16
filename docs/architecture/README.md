@@ -96,7 +96,7 @@ flowchart LR
 | Module | Responsibility |
 |---|---|
 | `chordpro` | Parser (ChordPro → AST), chord model, transposition, Nashville conversion, metadata extraction. Pure Dart package without UI dependencies, easy to test. |
-| `render` | Rendering the AST: chords above lyrics, sections (verse/chorus), one or two columns, auto-fit, notation B/H, Nashville numbers |
+| `render` | Rendering the AST: chords above lyrics, sections (verse/chorus), one or more columns, auto-fit with song pages in live mode, notation B/H, Nashville numbers |
 | `pdf` | Displaying PDF attachments (fit to width/page, two-page view) |
 | `data` | Local DB (SQLite, e.g. via `drift`), repositories, domain model |
 | `sync` | Sync between local DB and backend, conflict handling, offline queue. `SyncEngine` runs the order of a sync; the parts per kind of record live in `app/lib/sync/engine/` (songs with conflicts, sets, attachments with downloads, personal adjustments, shared cursors and outbox) |

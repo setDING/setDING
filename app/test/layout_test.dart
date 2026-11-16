@@ -26,6 +26,24 @@ void main() {
     });
   });
 
+  group('songPages', () {
+    test('uses as few pages as possible', () {
+      expect(songPages([1, 1, 1, 1], 1, 4), [4]);
+      expect(songPages([1, 1, 1, 1], 1, 2), [2, 4]);
+      expect(songPages([1, 1, 1, 1, 1], 1, 2), [2, 4, 5]);
+    });
+
+    test('pages continue the columns', () {
+      // Two columns per page: blocks 0-1 and 2-3 on the first page.
+      expect(songPages([1, 1, 1, 1, 1, 1], 2, 2), [4, 6]);
+    });
+
+    test('does not fit when a block is taller than the page', () {
+      expect(songPages([1, 3, 1], 1, 2), isNull);
+      expect(songPages([1, 1, 1, 1], 1, 1, maxPages: 3), isNull);
+    });
+  });
+
   group('buildSongBlocks', () {
     final song = parseChordPro(demoSongSource);
 
@@ -71,6 +89,7 @@ void main() {
       Size size, {
       int maxColumns = 4,
       ChorusRepeat chorus = ChorusRepeat.auto,
+      int maxPages = 1,
     }) => fitSong(
       song,
       formatter: formatter,
@@ -83,6 +102,7 @@ void main() {
       textScaler: TextScaler.noScaling,
       maxColumns: maxColumns,
       chorusRepeat: chorus,
+      maxPages: maxPages,
     );
 
     test('fits a long song on a landscape tablet using columns', () {
@@ -114,6 +134,48 @@ void main() {
         partitionHeight(heights, result.columns),
         lessThanOrEqualTo(size.height),
       );
+    });
+
+    /// [verses] verses of short chord lines: the height limits the font.
+    SongFit fitVerses(int verses, {required int maxPages}) {
+      final long = parseChordPro(
+        '{title: Long}\n${List.generate(verses, (_) => '{start_of_verse}\n${List.filled(4, '[C]La la [G]la').join('\n')}\n{end_of_verse}').join('\n')}',
+      );
+      return fitSong(
+        long,
+        formatter: ChordFormatter.forSong(long),
+        lyricsOnly: false,
+        labeler: _labeler,
+        baseFontSize: 20,
+        maxFontSize: 40,
+        minFontSize: 12,
+        size: const Size(1240, 680),
+        textScaler: TextScaler.noScaling,
+        maxPages: maxPages,
+      );
+    }
+
+    test('splits a long song into pages for a clearly larger font', () {
+      final one = fitVerses(16, maxPages: 1);
+      final paged = fitVerses(16, maxPages: 4);
+      expect(one.pages, 1);
+      expect(paged.fits, isTrue);
+      expect(paged.pages, 2);
+      expect(paged.fontSize, greaterThan(one.fontSize / pagePenalty));
+    });
+
+    test('another page only when clearly better', () {
+      final one = fitVerses(12, maxPages: 1);
+      expect(one.fontSize, lessThan(20));
+      final paged = fitVerses(12, maxPages: 4);
+      expect(paged.pages, 1);
+      expect(paged.fontSize, one.fontSize);
+    });
+
+    test('a song limited by its line width stays on one page', () {
+      final paged = fit(const Size(1240, 680), maxPages: 4);
+      expect(paged.pages, 1);
+      expect(paged.fontSize, fit(const Size(1240, 680)).fontSize);
     });
 
     test('respects the maximum number of columns', () {
