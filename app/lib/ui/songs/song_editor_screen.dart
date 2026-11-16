@@ -13,6 +13,7 @@ import '../widgets/dialogs.dart';
 import '../widgets/sequence_dialog.dart';
 import 'chordpro_editing_controller.dart';
 import 'editor_toolbar.dart';
+import 'line_number_gutter.dart';
 
 const newSongTemplate = '''{title: }
 {artist: }
@@ -26,6 +27,13 @@ const newSongTemplate = '''{title: }
 [F]
 {end_of_chorus}
 ''';
+
+/// Font of the ChordPro editor and its line numbers.
+const editorTextStyle = TextStyle(
+  fontFamily: 'monospace',
+  fontSize: 15,
+  height: 1.4,
+);
 
 /// Text editor for the ChordPro source with live preview (ADR-0003).
 /// Delay before the preview follows the text.
@@ -47,6 +55,8 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
   late final String _original;
   late Song _preview;
   final _focus = FocusNode();
+  final _fieldKey = GlobalKey();
+  final _scroll = ScrollController();
 
   @override
   void initState() {
@@ -90,6 +100,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
     _previewDebounce?.cancel();
     _controller.dispose();
     _focus.dispose();
+    _scroll.dispose();
     super.dispose();
   }
 
@@ -246,22 +257,33 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
         EditorToolbar(snippets: snippets, onInsert: _insert),
         const Divider(height: 1),
         Expanded(
-          child: TextField(
-            focusNode: _focus,
-            controller: _controller,
-            expands: true,
-            maxLines: null,
-            keyboardType: TextInputType.multiline,
-            textAlignVertical: TextAlignVertical.top,
-            style: const TextStyle(
-              fontFamily: 'monospace',
-              fontSize: 15,
-              height: 1.4,
-            ),
-            decoration: const InputDecoration(
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.all(16),
-            ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              LineNumberGutter(
+                fieldKey: _fieldKey,
+                controller: _controller,
+                scrollController: _scroll,
+                style: editorTextStyle,
+              ),
+              Expanded(
+                child: TextField(
+                  key: _fieldKey,
+                  focusNode: _focus,
+                  controller: _controller,
+                  scrollController: _scroll,
+                  expands: true,
+                  maxLines: null,
+                  keyboardType: TextInputType.multiline,
+                  textAlignVertical: TextAlignVertical.top,
+                  style: editorTextStyle,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.fromLTRB(4, 16, 16, 16),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],

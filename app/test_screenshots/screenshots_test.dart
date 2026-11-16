@@ -69,6 +69,7 @@ const _highlightSource = '''{title: Highlighting}
 {start_of_verse: label="Verse 1"}
 [G]Lyrics with <b>markup</b>, [*Riff] and [Xyz] [N.C.]
 {comment-alto: Selector}
+{comment: A long comment wraps onto a second row in the editor; the line number stays on the first row}
 {textsize: 120%}
 {end_of_verse}
 {start_of_grid}
