@@ -570,6 +570,43 @@ List<int>? songPages(
 /// Blocks of a song with their measurements.
 typedef SongLayout = ({List<SongBlock> blocks, List<BlockMetrics> metrics});
 
+/// Columns for a song shown at a fixed [fontSize] in [size] that may scroll
+/// (the song screen, ADR-0007): the fewest columns, up to [maxColumns], with
+/// which the whole song fits the height of [size]; when none does, the most
+/// columns that still hold every chord line and are at least
+/// [minColumnWidth] wide, so the song scrolls as little as possible.
+/// Breaks in the song (`{column_break}`) decide the columns themselves when
+/// they are wide enough, otherwise the song is shown in one column.
+int scrollColumns(
+  SongLayout layout, {
+  required double fontSize,
+  required Size size,
+  int maxColumns = 4,
+  double minColumnWidth = 220,
+}) {
+  final blocks = layout.blocks;
+  if (blocks.isEmpty) return 1;
+  final widest = layout.metrics.fold<double>(
+    0,
+    (w, m) => math.max(w, m.minWidth),
+  );
+  bool wideEnough(int k) =>
+      k == 1 ||
+      columnWidth(size.width, k, fontSize) >=
+          math.max(minColumnWidth, widest * fontSize);
+  final forced = forcedColumns(blocks);
+  if (forced != null) return wideEnough(forced) ? forced : 1;
+  var columns = 1;
+  for (var k = 1; k <= math.min(maxColumns, blocks.length); k++) {
+    if (!wideEnough(k)) break;
+    columns = k;
+    final width = columnWidth(size.width, k, fontSize);
+    final heights = [for (final m in layout.metrics) m.height(fontSize, width)];
+    if (partitionHeight(heights, k) <= size.height) break;
+  }
+  return columns;
+}
+
 /// Chooses font size, number of columns and chorus display for live mode so
 /// that the whole song fits into [size] without scrolling.
 ///

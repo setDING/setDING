@@ -539,4 +539,100 @@ void main() {
     expect(find.text('Offline ready'), findsOneWidget);
     await app.dispose(tester);
   });
+
+  group('the song screen fits the song to the screen', () {
+    /// [verses] verses of short chord lines.
+    String versesSong(int verses) =>
+        '{title: Long}\n${List.generate(verses, (_) => '{start_of_verse}\n${List.filled(4, '[C]La la [G]la').join('\n')}\n{end_of_verse}').join('\n')}';
+
+    var scrolls = false;
+
+    /// The render options of the song; [scrolls] tells whether it scrolls.
+    Future<SongRenderOptions> open(
+      WidgetTester tester,
+      String source, {
+      Map<String, Object> prefs = const {},
+    }) async {
+      final app = await TestApp.create(prefs: {'language': 'en', ...prefs});
+      final id = await tester.runAsync(
+        () => app.songs.createSong(source: source),
+      );
+      await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+      await tester.pumpAndSettle();
+      final options = tester.widget<SongBody>(find.byType(SongBody)).options;
+      scrolls =
+          tester.getRect(find.byType(SongBody)).bottom >
+          tester.getRect(find.byType(ListView)).bottom;
+      await app.dispose(tester);
+      return options;
+    }
+
+    testWidgets('a short song is enlarged', (tester) async {
+      useTabletSize(tester);
+      final options = await open(tester, '{title: Short}\n[C]One [G]two');
+      expect(options.fontSize, greaterThan(20));
+      expect(options.columns, 1);
+    });
+
+    testWidgets('a long song gets columns and scrolls', (tester) async {
+      useTabletSize(tester);
+      final options = await open(tester, versesSong(40));
+      expect(options.fontSize, 20);
+      expect(options.columns, greaterThan(1));
+      expect(scrolls, isTrue);
+    });
+
+    testWidgets('a song that fits with smaller text gets columns', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final options = await open(tester, versesSong(12));
+      expect(options.columns, greaterThan(1));
+      expect(options.layout, isNotNull);
+    });
+
+    testWidgets('a narrow screen keeps one column', (tester) async {
+      tester.view.physicalSize = const Size(400, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      final options = await open(tester, versesSong(40));
+      expect(options.columns, 1);
+      expect(options.fontSize, 20);
+    });
+
+    testWidgets('without automatic fitting only the columns change', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final short = await open(
+        tester,
+        '{title: Short}\n[C]One [G]two',
+        prefs: {'autoFit': false},
+      );
+      expect(short.fontSize, 20);
+      expect(short.columns, 1);
+      final long = await open(
+        tester,
+        versesSong(40),
+        prefs: {'autoFit': false},
+      );
+      expect(long.fontSize, 20);
+      expect(long.columns, greaterThan(1));
+    });
+
+    testWidgets('the personal font scale applies on top', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final id = await tester.runAsync(
+        () => app.songs.createSong(source: versesSong(40)),
+      );
+      await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Larger text'));
+      await tester.pumpAndSettle();
+      final options = tester.widget<SongBody>(find.byType(SongBody)).options;
+      expect(options.fontSize, closeTo(22, 0.01));
+      await app.dispose(tester);
+    });
+  });
 }

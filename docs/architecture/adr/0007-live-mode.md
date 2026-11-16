@@ -35,6 +35,11 @@ song, all tablets follow automatically. We evaluated whether this is needed.
   when chord lines would not fit. A *fit to page* button fits the song again: with fitting on, it resets the scale to 100 %,
   i.e. the fitted size; with fitting off, it sets the scale at which the song fits the page with the configured columns
   and chorus display (between 50 % and 250 %).
+- **Song screen (outside live mode):** the song is fitted to the visible area in the same way (fit to screen setting,
+  columns and repeated chorus as in live mode, personal font scale on top, no pages). When it does not fit, or with
+  fitting switched off, it keeps the base font size and is split into the fewest columns with which it fits; if none
+  does, into as many columns as the width allows (each at least 220 px and wide enough for the chord lines) and it
+  scrolls.
 - **Settings:** fit to screen on/off, maximum number of columns (automatic = up to 4, or 1/2/3), repeated chorus
   (automatic / always in full / always as label), base font size.
 - PDF attachments (ADR-0009) are shown in live mode with the same page-turn input.
@@ -76,3 +81,4 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-16: Fit to page also works with fitting switched off: it measures the font scale that fits the page (issue #175).
 - 2026-11-16: Long songs are split into pages instead of shrinking far or scrolling: pages only for a clearly larger font, enlarged text (personal scale above 100 %) is paged too, half-page turning does not apply to song pages (issue #177).
 - 2026-11-16: Swiping turns pages exactly like tapping: the scroll position, the pages of a song and PDF spreads/pages first, then the next/previous song (issue #181).
+- 2026-11-16: The song screen fits the song to the visible area like live mode; a song that does not fit is split into columns and scrolls (issue #183).
