@@ -59,6 +59,7 @@ class SyncEngine {
     this.bands, {
     this.copies,
     AttachmentStorage? storage,
+    this.preloadAttachments = true,
   }) : storage = storage ?? copies?.storage {
     final store = SyncStore(db);
     _songs = SongSync(db, backend, store, copies: copies);
@@ -74,6 +75,11 @@ class SyncEngine {
   final AttachmentStorage? storage;
   final SyncBackend backend;
   final BandService bands;
+
+  /// Whether every sync downloads the missing attachment files, so they are
+  /// available offline (ADR-0009). The web client loads them when opened
+  /// instead (ADR-0018).
+  final bool preloadAttachments;
 
   /// Used to keep both versions of a conflicting song.
   final BandCopyService? copies;
@@ -126,7 +132,9 @@ class SyncEngine {
       final p = await _push(user.id);
       pushed += p.$1;
       conflicts += p.$2;
-      downloaded += await _attachments.downloadMissing();
+      if (preloadAttachments) {
+        downloaded += await _attachments.downloadMissing();
+      }
       _log.info(
         'Sync done: pulled $pulled, pushed $pushed, conflicts $conflicts, '
         'downloaded $downloaded',

@@ -646,6 +646,7 @@
   "conflictKeptBoth": "Deine Version wurde als eigener Song gespeichert.",
   "accountErrorConflict": "Der Song wurde inzwischen auf dem Server geändert.",
   "pdfMissing": "Das PDF ist noch nicht auf diesem Gerät. Es wird beim nächsten Sync geladen.",
+  "pdfLoadFailed": "Das PDF konnte nicht vom Server geladen werden. Prüfe die Verbindung und öffne den Song erneut.",
   "syncMissingFiles": "{count, plural, =1{1 PDF wird noch geladen.} other{{count} PDFs werden noch geladen.}}",
   "@syncMissingFiles": {
     "placeholders": {

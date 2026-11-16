@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/database.dart';
 import '../providers.dart';
 import '../settings/settings.dart';
+import '../data/attachment_storage.dart';
+import 'attachment_fetcher.dart';
 import 'auth_providers.dart';
 import 'sync_engine.dart';
 
@@ -21,8 +23,27 @@ final syncEngineProvider = Provider<SyncEngine>(
     ref.watch(bandServiceProvider),
     copies: ref.watch(bandCopyProvider),
     storage: ref.watch(attachmentStorageProvider),
+    preloadAttachments: !ref.watch(webClientProvider),
   ),
 );
+
+/// Loads attachment files when they are opened (web client, ADR-0018).
+final attachmentFetcherProvider = Provider<AttachmentFetcher>(
+  (ref) => AttachmentFetcher(
+    ref.watch(databaseProvider),
+    ref.watch(syncBackendProvider),
+    ref.watch(attachmentStorageProvider),
+  ),
+);
+
+/// The file of an attachment for viewing: the stored file, or on the web
+/// client the file downloaded on demand. Null if it is not available (native
+/// apps: not downloaded yet, ADR-0009).
+final attachmentFileProvider = FutureProvider.autoDispose
+    .family<StoredFile?, String>((ref, attachmentId) async {
+      if (!ref.watch(webClientProvider)) return null;
+      return ref.watch(attachmentFetcherProvider).fetch(attachmentId);
+    });
 
 /// State of the sync for the UI.
 @immutable
@@ -186,6 +207,11 @@ final pendingChangesProvider = StreamProvider<int>((ref) {
 
 /// Synced attachment files that are not downloaded yet (ADR-0009).
 final missingFilesProvider = StreamProvider<int>((ref) async* {
+  // The web client loads files when opened (ADR-0018): none are "missing".
+  if (ref.watch(webClientProvider)) {
+    yield 0;
+    return;
+  }
   final db = ref.watch(databaseProvider);
   final storage = ref.watch(attachmentStorageProvider);
   Future<int> count() async {

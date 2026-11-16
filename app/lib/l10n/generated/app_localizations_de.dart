@@ -1354,6 +1354,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Das PDF ist noch nicht auf diesem Gerät. Es wird beim nächsten Sync geladen.';
 
   @override
+  String get pdfLoadFailed =>
+      'Das PDF konnte nicht vom Server geladen werden. Prüfe die Verbindung und öffne den Song erneut.';
+
+  @override
   String syncMissingFiles(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

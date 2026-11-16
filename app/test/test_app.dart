@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:realchord/data/attachment_storage.dart';
 import 'package:realchord/data/attachment_storage_io.dart';
+import 'package:realchord/data/attachment_storage_memory.dart';
 import 'package:realchord/app.dart';
 import 'package:realchord/data/database.dart';
 import 'package:realchord/data/set_repository.dart';
@@ -49,7 +51,10 @@ class TestApp {
   /// Links "opened" from outside the app (deep links).
   final links = StreamController<Uri>.broadcast();
 
-  late final storage = FileAttachmentStorage(dir);
+  /// Attachment files: in memory for the web client, as in the browser.
+  late final AttachmentStorage storage = web
+      ? MemoryAttachmentStorage()
+      : FileAttachmentStorage(dir);
   late final songs = SongRepository(db, storage);
   late final sets = SetRepository(db, storage);
 

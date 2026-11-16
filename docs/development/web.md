@@ -61,6 +61,9 @@ covered by the normal widget tests (`test/web_client_test.dart`):
 - `StartScreen`: sign-in gate, "no band yet" screen, then the `HomeScreen`.
 - `bandsProvider` leaves out the local library.
 - Import (ChordPro, ZIP) and export (songs, sets, set lists) are hidden.
+- Attachments are not preloaded (`SyncEngine.preloadAttachments`); the live
+  view loads a PDF through `attachmentFileProvider` / `AttachmentFetcher`
+  when it is opened. "Offline ready" and missing files are not shown.
 - `AuthNotifier` deletes the local data (`AppDatabase.clearAll`, attachments,
   selected band) when signing out and on a start without a session.
 
@@ -69,5 +72,8 @@ The session is a `BrowserSessionStore` (`sessionStorage`, `localStorage`,
 tested with fakes (`test/browser_session_store_test.dart`); the browser
 adapters are in `lib/platform/browser_storage_web.dart`.
 
-State of issue #27: PDF attachments on demand and hosting follow in their
-own steps; until then attachments are kept in memory.
+PDFs on web use pdfrx's own WebAssembly build (`pdfium.wasm`), which
+Flutter copies from the package into `build/web/assets/packages/pdfrx/`.
+
+State of issue #27: hosting (served by PocketBase at `app.realchord.app`)
+follows in its own step.

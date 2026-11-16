@@ -162,6 +162,14 @@ Tracked in issue #27, each step a separate PR:
   database. Step "web session" implemented (#27): sign-in gate, "Stay signed
   in", local library and file import/export hidden, local data deleted on
   sign-out and on a start without a session.
+- 2026-11-16: Step "PDF attachments on demand" implemented (#27): the web sync
+  does not download attachment files; the live view loads a PDF when it is
+  opened (file token, one download per file, kept in memory until signing
+  out) and explains a failed download. "Offline ready" and the count of
+  missing files are not shown on web. pdfrx runs from its bundled web assets
+  (`pdfium.wasm`). Image attachments are not synced (ADR-0012) and need
+  nothing extra. Hardened: the web client never falls back to the local
+  library, not even while the bands load or with an old stored choice.
 
 ## Open points
 

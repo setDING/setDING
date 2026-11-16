@@ -2408,6 +2408,12 @@ abstract class AppLocalizations {
   /// **'Das PDF ist noch nicht auf diesem Gerät. Es wird beim nächsten Sync geladen.'**
   String get pdfMissing;
 
+  /// No description provided for @pdfLoadFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Das PDF konnte nicht vom Server geladen werden. Prüfe die Verbindung und öffne den Song erneut.'**
+  String get pdfLoadFailed;
+
   /// No description provided for @syncMissingFiles.
   ///
   /// In de, this message translates to:

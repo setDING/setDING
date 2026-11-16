@@ -31,6 +31,8 @@ Future<bool> saveFile(
 /// Counts the pages of a PDF, or null if it cannot be read.
 Future<int?> countPdfPages(Uint8List bytes) async {
   try {
+    // The document API is used before any viewer is built (pdfrx).
+    await pdfrxFlutterInitialize();
     final doc = await PdfDocument.openData(bytes);
     final count = doc.pages.length;
     await doc.dispose();

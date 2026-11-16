@@ -74,7 +74,13 @@ final selectedBandIdProvider = NotifierProvider<SelectedBandNotifier, String>(
 /// The band whose songs and sets are shown. Falls back to the local library
 /// when the selected band is not available (signed out, removed).
 final currentBandProvider = Provider<BandView>((ref) {
-  final bands = ref.watch(bandsProvider).value ?? const [BandView.local];
+  // The web client never falls back to the local library (ADR-0018); its
+  // start screen waits for a band.
+  final bands =
+      ref.watch(bandsProvider).value ??
+      (ref.watch(webClientProvider)
+          ? const <BandView>[]
+          : const [BandView.local]);
   final selected = ref.watch(selectedBandIdProvider);
   return bands.firstWhere(
     (b) => b.id == selected,
@@ -196,10 +202,16 @@ final _notOfflineReadySetsProvider = StreamProvider.autoDispose<Set<String>>(
 );
 
 /// Whether a set of the current band is offline ready (ADR-0001).
-final offlineReadyProvider = FutureProvider.autoDispose.family<bool, String>(
-  (ref, setId) async =>
-      !(await ref.watch(_notOfflineReadySetsProvider.future)).contains(setId),
-);
+/// Whether a set is offline ready (ADR-0001); null on the web client, which
+/// makes no offline promise (ADR-0018).
+final offlineReadyProvider = FutureProvider.autoDispose.family<bool?, String>((
+  ref,
+  setId,
+) async {
+  if (ref.watch(webClientProvider)) return null;
+  return !(await ref.watch(_notOfflineReadySetsProvider.future))
+      .contains(setId);
+});
 
 final storageUsageProvider = FutureProvider<int>((ref) async {
   ref.watch(attachmentCountsProvider);
