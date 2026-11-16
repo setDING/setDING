@@ -518,6 +518,16 @@ class _ControlBar extends ConsumerWidget {
                   ),
                 ),
               ),
+              // At 100 % the song is fitted to the page (ADR-0007); without
+              // fitting there is nothing to fit to.
+              if (ref.watch(settingsProvider.select((s) => s.autoFit)))
+                IconButton(
+                  tooltip: l10n.fitToPage,
+                  icon: const Icon(Icons.fit_screen),
+                  onPressed: overlay == null || overlay.fontScale == 1.0
+                      ? null
+                      : () => adjust((o) => o.copyWith(fontScale: 1.0)),
+                ),
             ],
           ],
         ),
