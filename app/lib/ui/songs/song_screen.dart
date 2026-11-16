@@ -166,16 +166,23 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                 icon: const Icon(Icons.play_arrow),
                 onPressed: () => LiveScreen.openSong(context, song.id),
               ),
-              if (library.canEditSongs)
+              if (library.canEditSongs) ...[
+                // Same icon as "New PDF song" on the songs tab.
+                IconButton(
+                  key: const Key('song-add-attachment'),
+                  tooltip: l10n.addAttachment,
+                  icon: const Icon(Icons.picture_as_pdf_outlined),
+                  onPressed: _addAttachment,
+                ),
                 IconButton(
                   tooltip: l10n.editSource,
                   icon: const Icon(Icons.edit_note),
                   onPressed: () => _editSource(song),
                 ),
+              ],
               PopupMenuButton<String>(
                 onSelected: (value) => switch (value) {
                   'title' => _editTitle(song),
-                  'pdf' => _addAttachment(),
                   'export' => _export(song),
                   'copyToBand' => copySongsToBand(context, ref, [
                     song.id,
@@ -186,11 +193,6 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                 itemBuilder: (_) => [
                   if (!hasSourceTitle && library.canEditSongs)
                     PopupMenuItem(value: 'title', child: Text(l10n.editTitle)),
-                  if (library.canEditSongs)
-                    PopupMenuItem(
-                      value: 'pdf',
-                      child: Text(l10n.addAttachment),
-                    ),
                   if (song.chordproSource.trim().isNotEmpty &&
                       !ref.read(webClientProvider))
                     PopupMenuItem(
