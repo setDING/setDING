@@ -11,6 +11,11 @@
 # `migrate.py import` uses to fix commit ids in issue texts. Commit signatures
 # are dropped by the rewrite (they would no longer match).
 #
+# Every author and committer is rewritten to the owner (OWNER_NAME/OWNER_EMAIL,
+# default: the global git identity), including the commits of the agent user;
+# the check fails if any other identity remains. MAILMAP=<file> replaces the
+# generated mailmap.
+#
 #   history.sh prepare   clone main + tags from Forgejo, rewrite, verify (local only)
 #   history.sh verify    check the rewritten clone for references to the Forgejo host
 #   history.sh push      push main and the tags to the empty GitHub repository
@@ -28,6 +33,8 @@ FORGEJO_REPO=${FORGEJO_REPO:-$(echo "$FORGEJO_URL" | sed -E 's#^([a-z+]+://)?([^
 GITHUB_REPO=${GITHUB_REPO:-tafli/RealChord}
 GITHUB_URL=${GITHUB_URL:-git@github.com:$GITHUB_REPO.git}
 REPO=$EXPORT_DIR/repo.git
+OWNER_NAME=${OWNER_NAME:-$(git config --global user.name || true)}
+OWNER_EMAIL=${OWNER_EMAIL:-$(git config --global user.email || true)}
 export EXPORT_DIR FORGEJO_HOST FORGEJO_REPO GITHUB_REPO
 
 die() { echo "error: $*" >&2; exit 1; }
@@ -41,14 +48,20 @@ prepare() {
   git -C "$REPO" fetch -q origin 'refs/tags/*:refs/tags/*'
   git -C "$REPO" remote remove origin
   python3 "$HERE/migrate.py" rules >"$EXPORT_DIR/replacements.txt"
+  local mailmap=${MAILMAP:-$EXPORT_DIR/mailmap}
+  if [ -z "${MAILMAP:-}" ]; then
+    [ -n "$OWNER_NAME" ] && [ -n "$OWNER_EMAIL" ] || die "set OWNER_NAME and OWNER_EMAIL (or the global git identity)"
+    # Map every identity of the history (authors and committers) to the owner.
+    git -C "$REPO" log --all --format='%an <%ae>%n%cn <%ce>' | sort -u \
+      | sed "s|^|$OWNER_NAME <$OWNER_EMAIL> |" >"$mailmap"
+  fi
   echo "Rewriting history (contents and messages) …"
   # --replace-message uses the same rules; "Reviewed-on:" lines then point to
   # the GitHub pull request number, which the issue import keeps identical.
-  # MAILMAP=<file> optionally rewrites authors too (git mailmap format).
   git -C "$REPO" filter-repo --force \
     --replace-text "$EXPORT_DIR/replacements.txt" \
     --replace-message "$EXPORT_DIR/replacements.txt" \
-    ${MAILMAP:+--mailmap "$(realpath "$MAILMAP")"}
+    --mailmap "$(realpath "$mailmap")"
   verify
   echo "Rewritten clone: $REPO ($(git -C "$REPO" rev-list --count main) commits on main)"
   echo "Commit map:      $REPO/filter-repo/commit-map"
@@ -67,6 +80,14 @@ verify() {
     git -C "$REPO" log --all -p --format='commit %H%n%B' | grep -in -- "$FORGEJO_HOST" | head -20
     die "$hits line(s) still reference $FORGEJO_HOST"
   }
+  # Authors and committers: only the owner (unless a custom MAILMAP is used).
+  if [ -z "${MAILMAP:-}" ]; then
+    local ids
+    ids=$(git -C "$REPO" log --all --format='%an <%ae>%n%cn <%ce>' | sort -u)
+    [ "$ids" = "$OWNER_NAME <$OWNER_EMAIL>" ] \
+      || die "identities other than the owner remain:"$'\n'"$ids"
+    echo "OK: every author and committer is $OWNER_NAME <$OWNER_EMAIL>."
+  fi
   # File names, just in case.
   ! git -C "$REPO" log --all --name-only --format= | grep -qi -- "$FORGEJO_HOST" \
     || die "a file name references $FORGEJO_HOST"

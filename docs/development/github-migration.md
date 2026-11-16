@@ -37,10 +37,12 @@ same number, the CI image to `ghcr.io/tafli/realchord-ci`). Therefore:
 - **Old signatures are dropped** (they would no longer match the rewritten
   commits). Only commits made after the move are signed.
 - Only `main` and the tags move; no other branch (there must be no open work).
-- Authors stay as they are (`factoryd` commits keep their author). To rewrite them
-  too, pass a mailmap file: `MAILMAP=path/to/mailmap history.sh prepare`.
-  Alternatively add the `factoryd` e-mail address to the GitHub account so these
-  commits are linked to it.
+- **Every author and committer becomes the owner** (owner request): the agent
+  user `factoryd` and every other identity of the old commits are rewritten to the
+  global git identity (`OWNER_NAME`/`OWNER_EMAIL` to override), name and e-mail.
+  `history.sh` generates the mailmap and fails if another identity remains
+  (`MAILMAP=<file>` replaces the generated mapping). File contents and commit
+  messages that mention the agent user (old workflow docs) are not changed.
 
 ## Tools
 
@@ -134,7 +136,8 @@ tool/github-migration/migrate.py plan
 ```
 
 Check the plan: number of items, no open items, "commit map with N entries",
-"OK: no text references …". Optionally inspect the rewritten history:
+"OK: no text references …"; `history.sh prepare` must have printed "OK: every
+author and committer is …" with your identity. Optionally inspect the rewritten history:
 `git -C .github-migration/repo.git log --stat main`.
 
 ## 4. Migrate
