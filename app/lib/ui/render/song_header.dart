@@ -33,9 +33,18 @@ class SongHeader extends StatelessWidget {
     final sequence = setSequence == null
         ? song.sequence
         : parseSequence(setSequence!);
+    // Key of the chords as played; with a capo the sounding key follows it,
+    // e.g. "Key: A, Capo: 3 (C)".
+    final keyAndCapo = [
+      if (formatter.formatShapeKey() case final key?) l10n.keyLabel(key),
+      if (capo > 0)
+        switch (formatter.formatKey()) {
+          final sounding? => l10n.capoLabelWithKey(capo, sounding),
+          null => l10n.capoLabel(capo),
+        },
+    ].join(', ');
     final info = <String>[
-      if (formatter.formatKey() case final key?) l10n.keyLabel(key),
-      if (capo > 0) l10n.capoValue(capo),
+      if (keyAndCapo.isNotEmpty) keyAndCapo,
       if (song.tempo case final tempo?) l10n.bpm(tempo),
       ?song.time,
     ];

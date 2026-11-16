@@ -302,6 +302,18 @@ abstract class AppLocalizations {
   /// **'Kapo {fret}'**
   String capoValue(int fret);
 
+  /// No description provided for @capoLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Kapo: {fret}'**
+  String capoLabel(int fret);
+
+  /// No description provided for @capoLabelWithKey.
+  ///
+  /// In de, this message translates to:
+  /// **'Kapo: {fret} ({key})'**
+  String capoLabelWithKey(int fret, String key);
+
   /// No description provided for @noCapo.
   ///
   /// In de, this message translates to:
@@ -497,7 +509,7 @@ abstract class AppLocalizations {
   /// No description provided for @keyLabel.
   ///
   /// In de, this message translates to:
-  /// **'Tonart {key}'**
+  /// **'Tonart: {key}'**
   String keyLabel(String key);
 
   /// No description provided for @bpm.

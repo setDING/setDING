@@ -129,10 +129,18 @@ class _SongDetailsDialogState extends State<_SongDetailsDialog> {
       initialValue: _values[name],
       decoration: InputDecoration(labelText: label),
       menuMaxHeight: 640,
+      // Long labels (e.g. "Capo: 3 (F#m)") are shortened in the field.
+      isExpanded: true,
       items: [
-        DropdownMenuItem(value: '', child: Text(noneLabel)),
+        DropdownMenuItem(
+          value: '',
+          child: Text(noneLabel, overflow: TextOverflow.ellipsis),
+        ),
         for (final o in options)
-          DropdownMenuItem(value: o.value, child: Text(o.label)),
+          DropdownMenuItem(
+            value: o.value,
+            child: Text(o.label, overflow: TextOverflow.ellipsis),
+          ),
       ],
       onChanged: (v) => setState(() => _values[name] = v ?? ''),
     );
@@ -147,6 +155,14 @@ class _SongDetailsDialogState extends State<_SongDetailsDialog> {
 
     final capo = _values['capo']!;
     final frets = [for (var f = 1; f <= maxCapoFret; f++) '$f'];
+    // The capo options show the sounding key, as the song header does.
+    final key = cp.Key.tryParse(_values['key']!);
+    String capoLabel(int fret) => key == null
+        ? l10n.capoLabel(fret)
+        : l10n.capoLabelWithKey(
+            fret,
+            key.transpose(fret).format(widget.notation),
+          );
     return AlertDialog(
       title: Text(l10n.songDetails),
       content: SizedBox(
@@ -168,7 +184,7 @@ class _SongDetailsDialogState extends State<_SongDetailsDialog> {
                   if (capo.isNotEmpty && !frets.contains(capo))
                     (value: capo, label: capo),
                   for (final f in frets)
-                    (value: f, label: l10n.capoValue(int.parse(f))),
+                    (value: f, label: capoLabel(int.parse(f))),
                 ]),
               ),
               pair(

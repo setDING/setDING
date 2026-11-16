@@ -37,6 +37,18 @@ void main() {
     final f = ChordFormatter.forSong(song, transpose: 2, capo: 2);
     expect(chords(f).take(4), ['C', 'Am', 'F', 'G7/B']);
     expect(f.formatKey(), 'D');
+    expect(f.formatShapeKey(), 'C');
+  });
+
+  test('shape key follows the song capo and a personal capo', () {
+    final withCapo = parseChordPro('{key: A}\n{capo: 3}\n[A]a');
+    final asWritten = ChordFormatter.forSong(withCapo);
+    expect(asWritten.formatShapeKey(), 'A');
+    expect(asWritten.formatKey(), 'C');
+    final personal = ChordFormatter.forSong(song, capo: 3);
+    expect(personal.formatShapeKey(), 'A');
+    expect(personal.formatKey(), 'C');
+    expect(ChordFormatter.forSong(song).formatShapeKey(), 'C');
   });
 
   test('German notation', () {

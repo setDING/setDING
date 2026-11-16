@@ -68,7 +68,7 @@ void main() {
 
     await tester.tap(find.text('Late Train Home'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('Key G'), findsOneWidget);
+    expect(find.textContaining('Key: G'), findsOneWidget);
     expect(find.text('VERSE 1'), findsOneWidget);
     // Chord above lyrics.
     expect(find.text('D/F#'), findsWidgets);
@@ -78,7 +78,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('A').last);
     await tester.pumpAndSettle();
-    expect(find.textContaining('Key A'), findsOneWidget);
+    expect(find.textContaining('Key: A'), findsOneWidget);
     expect(find.text('E/G#'), findsWidgets);
     // A plain query: a new stream query does not run inside runAsync.
     final id = (await tester.runAsync(() => app.db.select(app.db.songs).get()))!
@@ -191,6 +191,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Capo 2 (as in song)'), findsOneWidget);
     expect(find.text('G'), findsOneWidget); // shapes as written
+    // Key of the shapes, the sounding key next to the capo.
+    expect(find.text('Key: C, Capo: 2 (D)'), findsOneWidget);
 
     await tester.tap(find.text('Capo 2 (as in song)'));
     await tester.pumpAndSettle();
@@ -198,6 +200,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('A'), findsOneWidget); // sounding chords without capo
     expect(find.text('D'), findsOneWidget);
+    expect(find.text('Key: D'), findsOneWidget);
     await app.dispose(tester);
   });
 

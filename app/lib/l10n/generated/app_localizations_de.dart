@@ -133,6 +133,16 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String capoLabel(int fret) {
+    return 'Kapo: $fret';
+  }
+
+  @override
+  String capoLabelWithKey(int fret, String key) {
+    return 'Kapo: $fret ($key)';
+  }
+
+  @override
   String get noCapo => 'Ohne Kapo';
 
   @override
@@ -243,7 +253,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String keyLabel(String key) {
-    return 'Tonart $key';
+    return 'Tonart: $key';
   }
 
   @override
