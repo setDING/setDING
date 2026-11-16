@@ -38,6 +38,22 @@ background following the system's light/dark mode.
 
 The web sign-in screen shows `RealChordLogo` above the form.
 
+## App icons
+
+`make branding` also writes the app icons, all with the mark on the white
+splash background:
+
+| Platform | Files |
+|---|---|
+| Android | Adaptive icon (`mipmap-anydpi-v26/ic_launcher.xml`): foreground layer, white background and a monochrome layer for themed icons (Android 13+); legacy `ic_launcher.png` per density |
+| iOS | Every size in `AppIcon.appiconset` (opaque) |
+| Windows | `windows/runner/resources/app_icon.ico` (16–256 px) |
+| Linux | `linux/runner/resources/app_icon.png`, installed into the bundle's `data/` and set as the window icon in `my_application.cc` |
+| Web | `favicon.png`, `icons/Icon-*.png` (incl. maskable) |
+
+ImageMagick writes no date chunks, so running `make branding` without
+changing the sources leaves every file unchanged.
+
 ## Changing the logo
 
 Edit the SVGs in `app/branding/` (keep `_MarkPainter` in `logo.dart` in sync
