@@ -26,7 +26,9 @@ song, all tablets follow automatically. We evaluated whether this is needed.
   font wins (more columns only when clearly better). A repeated chorus (`{chorus}`) is shown as a short label only when
   needed to fit. Scrolling is used only if the song cannot fit at the minimum font size, or when fitting is switched off.
 - **Font size on stage:** the control bar (tap in the middle of the screen) makes the text smaller or larger (personal
-  font scale, ADR-0006); with fitting on, a *fit to page* button resets the scale to 100 %, i.e. the fitted size.
+  font scale, ADR-0006). A *fit to page* button fits the song again: with fitting on, it resets the scale to 100 %,
+  i.e. the fitted size; with fitting off, it sets the scale at which the song fits the page with the configured columns
+  and chorus display (between 50 % and 250 %).
 - **Settings:** fit to screen on/off, maximum number of columns (automatic = up to 4, or 1/2/3), repeated chorus
   (automatic / always in full / always as label), base font size.
 - PDF attachments (ADR-0009) are shown in live mode with the same page-turn input.
@@ -65,3 +67,4 @@ between devices – neither over the local network nor via the backend.
 - Foot pedal support again later? Which page turner model (for testing)?
 - Is MIDI control desired (e.g. Program Change from a keyboard/pedalboard)?
 - 2026-11-16: Fit-to-page button in the live control bar next to the font size buttons; resets the personal font scale to the fitted size (issue #173).
+- 2026-11-16: Fit to page also works with fitting switched off: it measures the font scale that fits the page (issue #175).

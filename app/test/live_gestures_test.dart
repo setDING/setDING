@@ -165,18 +165,51 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('without fitting there is no fit to page button', (tester) async {
+  testWidgets('without fitting, fit to page measures the font scale', (
+    tester,
+  ) async {
     useTabletSize(tester);
     final app = await TestApp.create(
       prefs: {'language': 'en', 'autoFit': false},
     );
-    final items = await createSongs(tester, app, ['{title: First}\n[C]One']);
+    final items = await createSongs(tester, app, [
+      '{title: Long}\n${List.filled(20, '[C]One [G]two').join('\n')}',
+      '{title: Short}\n[C]One',
+    ]);
     await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
     await tester.pumpAndSettle();
-    await tester.tapAt(tester.getCenter(find.byType(PageView)));
+    final scroll = find.byType(SingleChildScrollView);
+
+    Future<double> fitToPage(int index) async {
+      // The control bar opens with a tap in the middle of the screen.
+      await tester.tapAt(tester.getCenter(find.byType(PageView)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.fit_screen));
+      await tester.pumpAndSettle();
+      final song = find.descendant(of: scroll, matching: find.byType(SongBody));
+      expect(
+        tester.getRect(song).bottom,
+        lessThanOrEqualTo(tester.getRect(scroll).bottom + 1),
+        reason: 'the whole song is visible',
+      );
+      await tester.tapAt(tester.getCenter(find.byType(PageView)));
+      await tester.pumpAndSettle();
+      final id = items[index].song!.id;
+      return (await tester.runAsync(() => app.songs.getOverlay(id)))!.fontScale;
+    }
+
+    // Longer than the page: smaller.
+    expect(await fitToPage(0), lessThan(1.0));
+
+    await tester.flingFrom(
+      Offset(tester.getRect(find.byType(PageView)).center.dx, 700),
+      const Offset(-400, 0),
+      1500,
+    );
     await tester.pumpAndSettle();
-    expect(find.byIcon(Icons.text_increase), findsOneWidget);
-    expect(find.byIcon(Icons.fit_screen), findsNothing);
+    expect(find.text('2 / 2'), findsOneWidget);
+    // A short song: larger.
+    expect(await fitToPage(1), greaterThan(1.0));
     await app.dispose(tester);
   });
 

@@ -128,6 +128,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   final _scroll = <int, ScrollController>{};
   final _pdf = <int, PdfViewerController>{};
   final _spread = <int, PdfSpreadController>{};
+  final _fit = <int, _FitController>{};
   final _focus = FocusNode();
   bool _controls = false;
 
@@ -176,6 +177,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       _pdf.putIfAbsent(index, PdfViewerController.new);
   PdfSpreadController _spreadFor(int index) =>
       _spread.putIfAbsent(index, PdfSpreadController.new);
+  _FitController _fitFor(int index) =>
+      _fit.putIfAbsent(index, _FitController.new);
 
   double get _step =>
       ref.read(settingsProvider).pageTurn == PageTurnMode.half ? 0.5 : 0.85;
@@ -317,6 +320,16 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     await repo.saveOverlay(change(await repo.getOverlay(song.id)));
   }
 
+  /// Fits the current song to the page: with fitting on, 100 % is the fitted
+  /// size (ADR-0007); without, the font scale that fits the page is measured.
+  Future<void> _fitToPage() async {
+    final scale = ref.read(settingsProvider).autoFit
+        ? 1.0
+        : _fitFor(_index).fontScale?.call();
+    if (scale == null) return;
+    await _adjust((o) => o.copyWith(fontScale: scale));
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -353,6 +366,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                 scrollController: _scrollFor(i),
                                 pdfController: _pdfFor(i),
                                 spreadController: _spreadFor(i),
+                                fitController: _fitFor(i),
                                 onTap: _onTap,
                               ),
                             ),
@@ -370,6 +384,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                           onExit: () => Navigator.pop(context),
                           onOverview: _showOverview,
                           onAdjust: items[_index].song == null ? null : _adjust,
+                          onFit: _fitToPage,
                           onSetKey: _setKey,
                         ),
                       ),
@@ -450,6 +465,7 @@ class _ControlBar extends ConsumerWidget {
     required this.onExit,
     required this.onOverview,
     required this.onAdjust,
+    required this.onFit,
     required this.onSetKey,
   });
 
@@ -457,6 +473,7 @@ class _ControlBar extends ConsumerWidget {
   final VoidCallback onExit;
   final VoidCallback onOverview;
   final Future<void> Function(SongOverlay Function(SongOverlay))? onAdjust;
+  final VoidCallback onFit;
   final ValueChanged<int> onSetKey;
 
   @override
@@ -505,7 +522,10 @@ class _ControlBar extends ConsumerWidget {
                 icon: const Icon(Icons.text_decrease),
                 onPressed: () => adjust(
                   (o) => o.copyWith(
-                    fontScale: (o.fontScale - 0.1).clamp(0.5, 2.5),
+                    fontScale: (o.fontScale - 0.1).clamp(
+                      _minFontScale,
+                      _maxFontScale,
+                    ),
                   ),
                 ),
               ),
@@ -514,20 +534,23 @@ class _ControlBar extends ConsumerWidget {
                 icon: const Icon(Icons.text_increase),
                 onPressed: () => adjust(
                   (o) => o.copyWith(
-                    fontScale: (o.fontScale + 0.1).clamp(0.5, 2.5),
+                    fontScale: (o.fontScale + 0.1).clamp(
+                      _minFontScale,
+                      _maxFontScale,
+                    ),
                   ),
                 ),
               ),
-              // At 100 % the song is fitted to the page (ADR-0007); without
-              // fitting there is nothing to fit to.
-              if (ref.watch(settingsProvider.select((s) => s.autoFit)))
-                IconButton(
-                  tooltip: l10n.fitToPage,
-                  icon: const Icon(Icons.fit_screen),
-                  onPressed: overlay == null || overlay.fontScale == 1.0
-                      ? null
-                      : () => adjust((o) => o.copyWith(fontScale: 1.0)),
-                ),
+              // With fitting on, 100 % is the fitted size (ADR-0007).
+              IconButton(
+                tooltip: l10n.fitToPage,
+                icon: const Icon(Icons.fit_screen),
+                onPressed:
+                    ref.watch(settingsProvider.select((s) => s.autoFit)) &&
+                        (overlay == null || overlay.fontScale == 1.0)
+                    ? null
+                    : onFit,
+              ),
             ],
           ],
         ),
@@ -542,6 +565,7 @@ class _LiveItemPage extends ConsumerWidget {
     required this.scrollController,
     required this.pdfController,
     required this.spreadController,
+    required this.fitController,
     required this.onTap,
   });
 
@@ -555,6 +579,9 @@ class _LiveItemPage extends ConsumerWidget {
   /// Tap at a position of the page; the viewer of a PDF handles taps itself,
   /// so it forwards them to the tap zones of the live screen.
   final ValueChanged<Offset> onTap;
+
+  /// Measures the font scale that fits the song to the page.
+  final _FitController fitController;
 
   /// Portrait: one page at a time, fit to width.
   Widget _portraitPdf(StoredFile file, Key key) => storedPdfViewer(
@@ -589,6 +616,8 @@ class _LiveItemPage extends ConsumerWidget {
       selectors: ref.watch(selectorsProvider),
     );
 
+    // Set again below when the song is shown as ChordPro.
+    fitController.fontScale = null;
     AttachmentEntry? pdf;
     if (overlay.liveView != null) {
       pdf = attachments.where((a) => a.id == overlay.liveView).firstOrNull;
@@ -648,6 +677,7 @@ class _LiveItemPage extends ConsumerWidget {
       setTranspose: item.setTranspose,
       setSequence: item.setSequence,
       scrollController: scrollController,
+      fitController: fitController,
       attachments: attachments,
       imageLookup: (src) {
         final image = imageAttachmentFor(attachments, src);
@@ -665,6 +695,7 @@ class _ChordProPage extends ConsumerWidget {
     required this.setTranspose,
     required this.setSequence,
     required this.scrollController,
+    required this.fitController,
     required this.attachments,
     required this.imageLookup,
   });
@@ -675,6 +706,7 @@ class _ChordProPage extends ConsumerWidget {
   final int setTranspose;
   final String? setSequence;
   final ScrollController scrollController;
+  final _FitController fitController;
 
   /// Attachments of the song; [imageLookup] finds images among them.
   final List<AttachmentEntry> attachments;
@@ -739,6 +771,37 @@ class _ChordProPage extends ConsumerWidget {
                       ? 1
                       : settings.maxColumns;
                   final collapse = settings.chorusRepeat == ChorusRepeat.label;
+                  // Fit to page keeps the columns and the chorus display and
+                  // only measures the font scale (on demand: it measures
+                  // every line of the song).
+                  fitController.fontScale = () {
+                    final fit = fitSong(
+                      parsed,
+                      formatter: formatter,
+                      lyricsOnly: lyricsOnly,
+                      labeler: sectionLabeler(l10n),
+                      notes: overlay.notes,
+                      baseFontSize: settings.fontSize,
+                      maxFontSize: settings.fontSize * _maxFontScale,
+                      minFontSize: settings.fontSize * _minFontScale,
+                      size: size,
+                      textScaler: textScaler,
+                      baseStyle: baseStyle,
+                      minColumns: columns,
+                      maxColumns: columns,
+                      chorusRepeat: collapse
+                          ? ChorusRepeat.label
+                          : ChorusRepeat.full,
+                      diagramResolver: resolver,
+                      diagramsPosition: diagrams,
+                      imageLookup: imageLookup,
+                    );
+                    return fit.fits
+                        // A small margin for measurement differences, which
+                        // the fitted view absorbs with a FittedBox.
+                        ? fit.fontSize / settings.fontSize * 0.98
+                        : _minFontScale;
+                  };
                   // Several columns are measured to split the song; the
                   // measurement does not depend on the font size.
                   final layout = columns <= 1
@@ -906,6 +969,17 @@ final _fits = LruCache<Object, SongFit>(16);
 
 /// Measured songs for scrolling with several columns.
 final _layouts = LruCache<Object, SongLayout>(16);
+
+/// Range of the personal font scale (ADR-0006).
+const _minFontScale = 0.5;
+const _maxFontScale = 2.5;
+
+/// Lets the control bar fit the song of a page to the page.
+class _FitController {
+  /// Font scale at which the song fits the page; null when the page cannot
+  /// be fitted (e.g. a PDF).
+  double Function()? fontScale;
+}
 
 /// Horizontal page margin of a song in live mode.
 const _margin = 20.0;
