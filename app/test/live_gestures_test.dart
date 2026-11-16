@@ -1,24 +1,31 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:realchord/data/demo_song.dart';
 import 'package:realchord/ui/live/live_screen.dart';
+import 'package:realchord/ui/live/pdf_spread_view.dart';
 import 'package:realchord/ui/render/song_view.dart';
 
 import 'test_app.dart';
 
-/// A one-page PDF without content (300 x 400 pt).
-final _pdf = utf8.encode('''%PDF-1.1
+/// A PDF with [pages] pages without content (300 x 400 pt each).
+Uint8List _pdfWith(int pages) {
+  final kids = [for (var i = 0; i < pages; i++) '${i + 3} 0 R'].join(' ');
+  return utf8.encode('''%PDF-1.1
 1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj
-2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj
-3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 300 400]>>endobj
+2 0 obj<</Type/Pages/Kids[$kids]/Count $pages>>endobj
+${[for (var i = 0; i < pages; i++) '${i + 3} 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 300 400]>>endobj'].join('\n')}
 trailer<</Root 1 0 R>>
 %%EOF
 ''');
+}
+
+final _pdf = _pdfWith(1);
 
 /// Gestures in live mode must work on the whole page, not only on the song
 /// text (ADR-0007).
@@ -28,12 +35,17 @@ void main() {
     TestApp app,
     List<String> sources, {
     bool pdfOnFirst = false,
+    Uint8List? pdf,
   }) async => (await tester.runAsync(() async {
     final items = <LiveItem>[];
     for (final (i, source) in sources.indexed) {
       final id = await app.songs.createSong(source: source);
       if (pdfOnFirst && i == 0) {
-        await app.songs.addAttachment(id, name: 'sheet.pdf', bytes: _pdf);
+        await app.songs.addAttachment(
+          id,
+          name: 'sheet.pdf',
+          bytes: pdf ?? _pdf,
+        );
       }
       items.add(LiveItem.song((await app.songs.getSong(id))!));
     }
@@ -123,8 +135,19 @@ void main() {
     await app.dispose(tester);
   });
 
+  Future<void> settlePdf(WidgetTester tester) async {
+    for (var i = 0; i < 10; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('tapping and swiping on a PDF turns the song', (tester) async {
-    useTabletSize(tester);
+    // Portrait: one page at a time in the PDF viewer.
+    useTabletSize(tester, landscape: false);
     final cache = Directory.systemTemp.createTempSync('realchord_pdfrx');
     addTearDown(() => cache.deleteSync(recursive: true));
     Pdfrx.cacheDirectoryPath = cache.path;
@@ -134,15 +157,7 @@ void main() {
       '{title: Second}\n[D]Two',
     ], pdfOnFirst: true);
     await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
-    Future<void> settle() async {
-      for (var i = 0; i < 10; i++) {
-        await tester.runAsync(
-          () => Future<void>.delayed(const Duration(milliseconds: 50)),
-        );
-        await tester.pump(const Duration(milliseconds: 100));
-      }
-      await tester.pumpAndSettle();
-    }
+    Future<void> settle() => settlePdf(tester);
 
     await settle();
     expect(find.byType(PdfViewer), findsOneWidget);
@@ -174,6 +189,62 @@ void main() {
     );
     await settle();
     expect(find.text('2 / 2'), findsOneWidget);
+    await app.dispose(tester);
+    await settle();
+  });
+
+  testWidgets('landscape shows two PDF pages side by side', (tester) async {
+    useTabletSize(tester);
+    final cache = Directory.systemTemp.createTempSync('realchord_pdfrx');
+    addTearDown(() => cache.deleteSync(recursive: true));
+    Pdfrx.cacheDirectoryPath = cache.path;
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final items = await createSongs(
+      tester,
+      app,
+      ['{title: First}', '{title: Second}\n[D]Two'],
+      pdfOnFirst: true,
+      pdf: _pdfWith(3),
+    );
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    Future<void> settle() => settlePdf(tester);
+    Finder pdfPage(int n) => find.byKey(ValueKey('pdf-spread-page-$n'));
+
+    await settle();
+    expect(find.byType(PdfSpreadView), findsOneWidget);
+    expect(find.byType(PdfViewer), findsNothing);
+    expect(pdfPage(1), findsOneWidget);
+    expect(pdfPage(2), findsOneWidget);
+    expect(
+      tester.getCenter(pdfPage(1)).dx,
+      lessThan(tester.getCenter(pdfPage(2)).dx),
+    );
+
+    final page = tester.getRect(find.byType(PageView));
+    final right = Offset(page.left + page.width * 0.9, page.center.dy);
+    final left = Offset(page.left + page.width * 0.1, page.center.dy);
+
+    // The next spread holds the last page alone.
+    await tester.tapAt(right);
+    await settle();
+    expect(pdfPage(3), findsOneWidget);
+    expect(pdfPage(1), findsNothing);
+    expect(find.text('1 / 2'), findsOneWidget);
+
+    // At the end of the PDF the next song follows.
+    await tester.tapAt(right);
+    await settle();
+    expect(find.text('2 / 2'), findsOneWidget);
+
+    // Back: the last spread first, then the first one.
+    await tester.tapAt(left);
+    await settle();
+    expect(find.text('1 / 2'), findsOneWidget);
+    expect(pdfPage(3), findsOneWidget);
+    await tester.tapAt(left);
+    await settle();
+    expect(pdfPage(1), findsOneWidget);
+    expect(pdfPage(2), findsOneWidget);
     await app.dispose(tester);
     await settle();
   });

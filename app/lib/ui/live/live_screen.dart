@@ -24,6 +24,7 @@ import '../render/render_cache.dart';
 import '../render/song_image.dart';
 import '../render/song_view.dart';
 import '../widgets/key_picker.dart';
+import 'pdf_spread_view.dart';
 
 /// One entry of the live sequence.
 class LiveItem {
@@ -126,6 +127,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   late int _index = widget.initialIndex;
   final _scroll = <int, ScrollController>{};
   final _pdf = <int, PdfViewerController>{};
+  final _spread = <int, PdfSpreadController>{};
   final _focus = FocusNode();
   bool _controls = false;
 
@@ -150,6 +152,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     for (final c in _scroll.values) {
       c.dispose();
     }
+    for (final c in _spread.values) {
+      c.dispose();
+    }
     _focus.dispose();
     super.dispose();
   }
@@ -169,6 +174,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       _scroll.putIfAbsent(index, ScrollController.new);
   PdfViewerController _pdfFor(int index) =>
       _pdf.putIfAbsent(index, PdfViewerController.new);
+  PdfSpreadController _spreadFor(int index) =>
+      _spread.putIfAbsent(index, PdfSpreadController.new);
 
   double get _step =>
       ref.read(settingsProvider).pageTurn == PageTurnMode.half ? 0.5 : 0.85;
@@ -189,6 +196,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         return;
       }
     }
+    if (_spread[_index]?.next() ?? false) return;
     final pdf = _pdf[_index];
     if (pdf != null && pdf.isReady) {
       final page = pdf.pageNumber ?? 1;
@@ -216,6 +224,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       );
       return;
     }
+    if (_spread[_index]?.previous() ?? false) return;
     final pdf = _pdf[_index];
     if (pdf != null && pdf.isReady && (pdf.pageNumber ?? 1) > 1) {
       pdf.goToPage(pageNumber: pdf.pageNumber! - 1);
@@ -343,6 +352,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                 item: items[i],
                                 scrollController: _scrollFor(i),
                                 pdfController: _pdfFor(i),
+                                spreadController: _spreadFor(i),
                                 onTap: _onTap,
                               ),
                             ),
@@ -521,6 +531,7 @@ class _LiveItemPage extends ConsumerWidget {
     required this.item,
     required this.scrollController,
     required this.pdfController,
+    required this.spreadController,
     required this.onTap,
   });
 
@@ -528,9 +539,29 @@ class _LiveItemPage extends ConsumerWidget {
   final ScrollController scrollController;
   final PdfViewerController pdfController;
 
+  /// Position when the PDF is shown as two pages side by side (landscape).
+  final PdfSpreadController spreadController;
+
   /// Tap at a position of the page; the viewer of a PDF handles taps itself,
   /// so it forwards them to the tap zones of the live screen.
   final ValueChanged<Offset> onTap;
+
+  /// Portrait: one page at a time, fit to width.
+  Widget _portraitPdf(StoredFile file, Key key) => storedPdfViewer(
+    file,
+    key: key,
+    controller: pdfController,
+    params: PdfViewerParams(
+      // No text selection on stage: drags and long presses would
+      // select text instead of moving the sheet.
+      textSelectionParams: const PdfTextSelectionParams(enabled: false),
+      onGeneralTap: (context, controller, details) {
+        if (details.type != PdfViewerGeneralTapType.tap) return false;
+        onTap(details.localPosition);
+        return true;
+      },
+    ),
+  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -585,20 +616,18 @@ class _LiveItemPage extends ConsumerWidget {
           );
         }
       }
-      return storedPdfViewer(
-        file,
-        key: ValueKey(pdf.id),
-        controller: pdfController,
-        params: PdfViewerParams(
-          // No text selection on stage: drags and long presses would
-          // select text instead of moving the sheet.
-          textSelectionParams: const PdfTextSelectionParams(enabled: false),
-          onGeneralTap: (context, controller, details) {
-            if (details.type != PdfViewerGeneralTapType.tap) return false;
-            onTap(details.localPosition);
-            return true;
-          },
-        ),
+      // Landscape: two pages side by side, fitted to the screen (ADR-0009).
+      final stored = file;
+      final pdfKey = ValueKey(pdf.id);
+      return LayoutBuilder(
+        builder: (context, constraints) =>
+            constraints.maxWidth > constraints.maxHeight
+            ? PdfSpreadView(
+                key: pdfKey,
+                documentRef: storedPdfDocumentRef(stored),
+                controller: spreadController,
+              )
+            : _portraitPdf(stored, pdfKey),
       );
     }
     final storage = ref.watch(attachmentStorageProvider);

@@ -31,3 +31,9 @@ Widget memoryPdfViewer(
   controller: controller,
   params: params,
 );
+
+/// A reference to a PDF attachment held in memory, for page widgets.
+PdfDocumentRef memoryPdfDocumentRef(StoredFile file) => PdfDocumentRefData(
+  file.readStartSync(maxAttachmentBytes)!,
+  sourceName: file.id,
+);
