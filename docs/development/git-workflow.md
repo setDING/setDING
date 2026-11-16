@@ -60,13 +60,16 @@ Format: **[Conventional Commits](https://www.conventionalcommits.org/)**.
 <body: what and why, wrapped at 72 characters>
 
 Refs #<issue>
-Co-Authored-By: <agent name> <noreply@…>
+Co-Authored-By: Claude <model> <noreply@anthropic.com>
 ```
 
 - Types as for branches; breaking changes use `!` (`feat(sync)!: …`) and a `BREAKING CHANGE:` footer.
 - Scopes follow the client modules: `chordpro`, `render`, `data`, `sync`, `live`, `manage`, `band`, `l10n`, `pdf`, plus `backend`, `ci`, `docs`, `adr`.
 - **Each commit builds and passes the tests.** No "WIP" or "fix typo" commits on `main` (they disappear with the squash merge, see section 6).
-- Commits made by an agent carry a `Co-Authored-By` trailer naming the agent.
+- **Every commit carries a `Co-Authored-By` trailer naming Claude** – no commit of the
+  project is made without it. This includes the squash commit of a PR: merge with
+  an explicit body that reports the test gate and ends with the trailer
+  (`gh pr merge --squash --delete-branch --body-file merge.md`).
 - **Never commit secrets** (keys, tokens, signing files, `.env`). Use `.env.example` with placeholders. If a secret was committed: stop, set `needs-human`, do not try to rewrite published history yourself.
 
 ## 5. Before opening a PR (local checks)
@@ -231,8 +234,8 @@ has not logged in yet):
   issues labelled `imported:pull-request` ([migration runbook](github-migration.md)).
 - **Commit identity:** commits are made with the owner's global git identity and
   are **GPG-signed** (commits and tags, `commit.gpgsign`/`tag.gpgsign` in the global
-  git config); there is no repository-local identity. Agent work is recognisable by
-  the `Co-Authored-By` trailer (section 4). If signing fails (locked gpg-agent), the
+  git config); there is no repository-local identity. Every commit carries the
+  `Co-Authored-By` trailer (section 4). If signing fails (locked gpg-agent), the
   agent stops and asks the human to unlock it; it never commits unsigned.
 - **CLI:** [GitHub CLI](https://cli.github.com/) (`gh`) for issues, PRs, merges and
   CI runs; it finds the repository from the `origin` remote. Login once per machine,
@@ -259,7 +262,7 @@ gh pr create --draft --base main --body-file pr.md --title "feat(chordpro): …"
 # … checks pass, self-review done …
 gh pr ready <number>
 gh pr checks <number>
-gh pr merge --squash --delete-branch <number>   # only if section 6 "Who merges" allows it
+gh pr merge --squash --delete-branch --body-file merge.md <number>   # only if section 6 "Who merges" allows it; merge.md ends with the Co-Authored-By trailer
 git switch main && git pull --ff-only
 git branch -D feat/12-chordpro-parser   # delete the merged branch locally too
 ```
