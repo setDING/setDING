@@ -1,4 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Sync and sign-in talk to the PocketBase server (ADR-0004). The debug
+         and profile manifests declare this permission too, so its absence
+         here only shows in release builds. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="RealChord"
         android:name="${applicationName}"
