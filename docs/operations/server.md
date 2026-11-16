@@ -129,6 +129,21 @@ from, so no CORS setting is needed.
    ```
 
 3. `systemctl restart pocketbase`.
+4. Cloudflare → **Caching → Configuration → Browser Cache TTL:** **Respect Existing
+   Headers**, then **Purge Everything** once. With any other value, Cloudflare
+   replaces `no-cache` with `max-age=<TTL>` (default 4 hours, `max-age=14400`) on
+   the files it caches by extension (`.js`, `.otf`, …), but not on `/`. Browsers
+   then combine a new `main.dart.js` with an old, tree-shaken
+   `assets/fonts/MaterialIcons-Regular.otf`, so icons added in the new build are
+   missing and the console reports "Could not find a set of Noto fonts" (#171).
+   Check it with:
+
+   ```bash
+   curl -sI https://app.realchord.app/main.dart.js | grep -i cache-control
+   ```
+
+   which must print `cache-control: no-cache`. Users who still see missing icons
+   reload once without the cache (Ctrl+Shift+R).
 
 With `REALCHORD_WEB_URL`, the invitation landing page offers **Open in the browser**
 (`https://app.realchord.app/invite/<token>`), and on that hostname `/invite/<token>`
