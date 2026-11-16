@@ -18,24 +18,27 @@ concurrency:
 
 permissions:
   contents: read
-  packages: read
 
 jobs:
   test:
+    # The runner already has git, curl, unzip, xz, python3 and clang; only
+    # Flutter is installed (and cached) by flutter-action.
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    container:
-      # tool/ci/Dockerfile: Debian, Node, python3, clang and Flutter. The tag is
-      # the Flutter version used for development (FLUTTER_VERSION in the
-      # Makefile); build and push a new tag with `make ci-image ci-image-push`.
-      # The package is linked to this repository, so GITHUB_TOKEN may pull it.
-      image: ghcr.io/tafli/realchord-ci:3.50.0
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Check out
         uses: actions/checkout@v7
+
+      - name: Flutter version (FLUTTER_VERSION in the Makefile)
+        id: flutter
+        run: echo "version=$(sed -n 's/^FLUTTER_VERSION *?= *//p' Makefile)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ steps.flutter.outputs.version }}
+          cache: true
 
       - name: Versions and runner resources
         run: |

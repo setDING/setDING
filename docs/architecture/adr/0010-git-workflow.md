@@ -62,6 +62,8 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 - 2026-11-16: Move to GitHub carried out (#129): issues and PRs imported with their numbers, CI on GitHub Actions with `ghcr.io/tafli/realchord-ci`, agents use `gh`, commits are GPG-signed with the owner's global identity (no repository-local identity), `.forgejo/` removed. The Forgejo repository is archived.
 - 2026-11-16: Every commit carries the `Co-Authored-By: Claude …` trailer, not only agent commits, since no commit is made without Claude (owner decision, #131). The history on GitHub was rewritten once more to add it to the 23 commits without it (content unchanged, new commit ids, ids in the imported issues updated).
 
+- 2026-11-16: CI no longer uses its own image: on GitHub-hosted runners everything but Flutter is preinstalled, and `subosito/flutter-action` (version from `FLUTTER_VERSION` in the `Makefile`, cached) sets Flutter up about as fast as pulling the multi-GB image, without building and pushing an image per Flutter version (#135). `tool/ci/Dockerfile` stays as the local base image of the Linux release build (ADR-0019) and is no longer pushed to `ghcr.io`.
+
 ## Open points
 
 - Re-enable CI on every PR and push to `main` as a required check (`test`) when heading towards version 1, together with branch protection.

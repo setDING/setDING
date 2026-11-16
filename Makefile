@@ -34,10 +34,11 @@ APK_VERSION := $(shell sed -n 's/^version: *\([^+]*\).*/\1/p' $(APP)/pubspec.yam
 APK_COMMIT  := $(shell git -C $(ROOT) rev-parse --short HEAD 2>/dev/null || echo unknown)
 APK         := $(APP)/build/realchord-$(APK_VERSION)-$(APK_COMMIT).apk
 
-# CI image (tool/ci/Dockerfile) in the GitHub container registry. The tag is the
-# Flutter version; keep it in sync with .github/workflows/ci.yml.
+# Flutter version used for development; CI reads it from here
+# (.github/workflows/ci.yml). CI_IMAGE (tool/ci/Dockerfile) is a local base image
+# with Flutter on Debian for the Linux release build, tagged with that version.
 FLUTTER_VERSION ?= 3.50.0
-CI_IMAGE        ?= ghcr.io/tafli/realchord-ci:$(FLUTTER_VERSION)
+CI_IMAGE        ?= realchord-ci:$(FLUTTER_VERSION)
 DOCKER          ?= docker
 
 # Linux release package (make release, ADR-0019), named after version and commit.
@@ -62,7 +63,7 @@ BACKEND_PORT    ?= 8090
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := REALCHORD_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build web web-serve deps upgrade apk apk-install release release-linux release-check reset data-dir backend check test codegen l10n screenshots examples doctor clean ci-image ci-image-push \
+.PHONY: help setup dev start build web web-serve deps upgrade apk apk-install release release-linux release-check reset data-dir backend check test codegen l10n screenshots examples doctor clean ci-image \
 	server-target server-install server-status server-logs server-backup server-fetch-backup server-ssh
 
 help: ## Show this help
@@ -105,6 +106,7 @@ release-check:
 	@git -C $(ROOT) diff --quiet HEAD || echo "warning: uncommitted changes are not part of the release (built from commit $(APK_COMMIT))"
 
 release-linux: release-check ## Build the Linux release in a container (app/build/realchord-<version>-<commit>-linux-x64.tar.gz)
+	@$(DOCKER) image inspect $(CI_IMAGE) >/dev/null 2>&1 || $(MAKE) ci-image
 	$(DOCKER) build -q --build-arg CI_IMAGE=$(CI_IMAGE) -t $(RELEASE_IMAGE) -f $(ROOT)/tool/release/linux.Dockerfile $(ROOT)/tool/release
 	@mkdir -p $(APP)/build
 	git -C $(ROOT) archive HEAD | $(DOCKER) run --rm -i \
@@ -174,11 +176,8 @@ doctor: ## Show the state of the Flutter toolchain
 clean: ## Remove build output (keeps test data; see 'make reset')
 	cd $(APP) && $(FLUTTER) clean
 
-ci-image: ## Build the CI image (tool/ci/Dockerfile) with docker
+ci-image: ## Build the Flutter base image of the release build (tool/ci/Dockerfile)
 	$(DOCKER) build --build-arg FLUTTER_VERSION=$(FLUTTER_VERSION) -t $(CI_IMAGE) $(ROOT)/tool/ci
-
-ci-image-push: ## Push the CI image (needs: docker login ghcr.io)
-	$(DOCKER) push $(CI_IMAGE)
 
 server-target:
 	@test -n "$(SERVER)" || { echo "Set SERVER to the SSH target, e.g. make $(MAKECMDGOALS) SERVER=root@<ip>"; exit 1; }

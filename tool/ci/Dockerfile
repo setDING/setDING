@@ -1,17 +1,13 @@
-# CI image for RealChord (ADR-0010, docs/development/git-workflow.md section 7).
+# Flutter base image for RealChord: Debian with Flutter, used as the base of the
+# Linux release build (tool/release/linux.Dockerfile, ADR-0019). Originally the CI
+# image; CI now runs on the plain GitHub runner with flutter-action (ADR-0010).
 #
-# Debian with Node (for the checkout action), git, curl, unzip, xz, python3
-# (from buildpack-deps), clang (native assets of dependencies) and Flutter,
-# precached for running the tests on Linux.
+# Debian with Node, git, curl, unzip, xz, python3 (from buildpack-deps), clang
+# (native assets of dependencies) and Flutter, precached for Linux.
 #
-# Build and push with `make ci-image ci-image-push`; the tag is the Flutter
-# version and must match FLUTTER_VERSION in the Makefile and the image in
-# .github/workflows/ci.yml.
+# Built locally with `make ci-image` (also done by `make release` when missing);
+# the tag is FLUTTER_VERSION from the Makefile.
 FROM node:22-bookworm
-
-# Links the image on ghcr.io to the repository, so GitHub Actions may pull it
-# with GITHUB_TOKEN.
-LABEL org.opencontainers.image.source=https://github.com/tafli/RealChord
 
 ARG FLUTTER_VERSION
 
@@ -34,4 +30,4 @@ RUN git clone --quiet --depth 1 --branch "$FLUTTER_VERSION" \
  && flutter --version
 
 LABEL org.opencontainers.image.title="realchord-ci" \
-      org.opencontainers.image.description="Flutter ${FLUTTER_VERSION} CI image for RealChord"
+      org.opencontainers.image.description="Flutter ${FLUTTER_VERSION} base image for RealChord"
