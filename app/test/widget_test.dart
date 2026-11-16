@@ -189,12 +189,12 @@ void main() {
     );
     await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
     await tester.pumpAndSettle();
-    expect(find.text('Capo 2 (as in song)'), findsOneWidget);
+    expect(find.text('Capo: 2 (D), as in song'), findsOneWidget);
     expect(find.text('G'), findsOneWidget); // shapes as written
     // Key of the shapes, the sounding key next to the capo.
     expect(find.text('Key: C, Capo: 2 (D)'), findsOneWidget);
 
-    await tester.tap(find.text('Capo 2 (as in song)'));
+    await tester.tap(find.text('Capo: 2 (D), as in song'));
     await tester.pumpAndSettle();
     // Each entry shows the header it leads to; the sounding key stays.
     expect(
@@ -229,6 +229,8 @@ void main() {
     await tester.pumpAndSettle();
     // The header keeps A; the chords are the shapes for capo 2.
     expect(find.text('Key: A, Capo: 2 (G)'), findsOneWidget);
+    // The capo button shows the capo as the header does.
+    expect(find.text('Capo: 2 (G)'), findsOneWidget);
     expect(find.text('G'), findsOneWidget);
     expect(find.text('C'), findsOneWidget);
     await app.dispose(tester);

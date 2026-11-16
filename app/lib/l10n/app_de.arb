@@ -88,6 +88,14 @@
       }
     }
   },
+  "capoAsInSongLabel": "{capo}, wie im Song",
+  "@capoAsInSongLabel": {
+    "placeholders": {
+      "capo": {
+        "type": "String"
+      }
+    }
+  },
   "noCapo": "Ohne Kapo",
   "capoAsInSong": "Kapo {fret} (wie im Song)",
   "@capoAsInSong": {

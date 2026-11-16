@@ -36,6 +36,7 @@
   "capoValue": "Capo {fret}",
   "capoLabel": "Capo: {fret}",
   "capoLabelWithKey": "Capo: {fret} ({key})",
+  "capoAsInSongLabel": "{capo}, as in song",
   "noCapo": "No capo",
   "capoAsInSong": "Capo {fret} (as in song)",
   "allTags": "All",
