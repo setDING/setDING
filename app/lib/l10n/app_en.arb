@@ -116,6 +116,8 @@
   "liveEnd": "End of set",
   "liveSetOverview": "Set overview",
   "liveExit": "Exit live mode",
+  "liveChordNames": "Chords",
+  "liveNashville": "Nashville",
   "liveSongPage": "Page {page}/{count}",
   "livePosition": "{current} / {total}",
   "settingsSectionGeneral": "General",

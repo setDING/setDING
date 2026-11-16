@@ -330,6 +330,85 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('the control bar switches between chords and Nashville', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final items = await createSongs(tester, app, [
+      '{title: X}\n{key: G}\n[G]One [C]two',
+      '{title: Y}\n[G]One [C]two',
+    ]);
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+    expect(find.text('C'), findsOneWidget);
+
+    await tester.tapAt(tester.getCenter(find.byType(PageView)));
+    await tester.pumpAndSettle();
+    final toggle = find.byKey(const Key('live-nashville'));
+    expect(toggle, findsOneWidget);
+    await tester.tap(
+      find.descendant(of: toggle, matching: find.text('Nashville')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('4'), findsOneWidget);
+    expect(find.text('C'), findsNothing);
+    // Stored as the personal overlay of the song.
+    final id = items.first.song!.id;
+    expect(
+      (await tester.runAsync(() => app.songs.getOverlay(id)))!.nashville,
+      isTrue,
+    );
+
+    await tester.tap(
+      find.descendant(of: toggle, matching: find.text('Chords')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('C'), findsOneWidget);
+    expect(find.text('4'), findsNothing);
+    // Back to the device setting.
+    expect(
+      (await tester.runAsync(() => app.songs.getOverlay(id)))!.nashville,
+      isNull,
+    );
+
+    // Without a key, Nashville numbers are not available.
+    await tester.tapAt(
+      tester.getTopRight(find.byType(PageView)) + const Offset(-20, 200),
+    );
+    await tester.pumpAndSettle();
+    final button = tester.widget<SegmentedButton<bool>>(toggle);
+    expect(button.onSelectionChanged, isNull);
+    await app.dispose(tester);
+  });
+
+  testWidgets('on a phone the Nashville toggle gets a row of its own', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 2340);
+    tester.view.devicePixelRatio = 2.75;
+    addTearDown(tester.view.reset);
+    final app = await TestApp.create(prefs: {'language': 'de'});
+    final items = await createSongs(tester, app, [
+      '{title: X}\n{key: G}\n[G]One [C]two',
+    ]);
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+    await tester.tapAt(tester.getCenter(find.byType(PageView)));
+    await tester.pumpAndSettle();
+    // No overflow, and the toggle is above the other controls.
+    expect(tester.takeException(), isNull);
+    final toggle = tester.getRect(find.byKey(const Key('live-nashville')));
+    expect(
+      toggle.bottom,
+      lessThanOrEqualTo(tester.getRect(find.byIcon(Icons.close)).top),
+    );
+    await tester.tap(find.text('Nashville'));
+    await tester.pumpAndSettle();
+    expect(find.text('4'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
   Future<void> settlePdf(WidgetTester tester) async {
     for (var i = 0; i < 10; i++) {
       await tester.runAsync(

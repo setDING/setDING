@@ -30,6 +30,9 @@ song, all tablets follow automatically. We evaluated whether this is needed.
   (or swiping left/right) turns the pages of the song before turning to the next/previous song; the bottom bar shows the page (e.g. "Page 1/2").
   The *half page* setting does not apply to song pages. Scrolling is used only if the song does not fit even on pages
   (a single section taller than the page at the minimum font size), or when fitting is switched off.
+- **Chords or Nashville on stage:** a toggle in the middle of the control bar switches the current song between chord
+  names and Nashville numbers (personal per-song Nashville overlay, ADR-0006); it is disabled when the song has no key.
+  On narrow screens it gets a row of its own above the other controls.
 - **Font size on stage:** the control bar (tap in the middle of the screen) makes the text smaller or larger (personal
   font scale, ADR-0006); larger text is split into as many pages as needed instead of scrolling, with fewer columns
   when chord lines would not fit. A *fit to page* button fits the song again: with fitting on, it resets the scale to 100 %,
@@ -82,3 +85,4 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-16: Long songs are split into pages instead of shrinking far or scrolling: pages only for a clearly larger font, enlarged text (personal scale above 100 %) is paged too, half-page turning does not apply to song pages (issue #177).
 - 2026-11-16: Swiping turns pages exactly like tapping: the scroll position, the pages of a song and PDF spreads/pages first, then the next/previous song (issue #181).
 - 2026-11-16: The song screen fits the song to the visible area like live mode; a song that does not fit is split into columns and scrolls (issue #183).
+- 2026-11-16: Chords/Nashville toggle in the middle of the live control bar, stored as the personal per-song Nashville overlay (issue #184).
