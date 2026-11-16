@@ -88,7 +88,11 @@ An agent runs all of the following and only continues when everything passes:
 - Title = the future squash commit message (Conventional Commit format).
 - Body follows [`.github/pull_request_template.md`](../../.github/pull_request_template.md) (Forgejo reads PR templates from `.github/` as well as `.forgejo/`): summary, linked issue (`Closes #n`), affected ADRs, how it was tested, open points.
 - Size: aim for **under ~400 changed lines** (generated files excluded). Larger work is split into several PRs, each leaving `main` working.
-- **Merge method: squash merge** only. The branch is deleted after the merge.
+- **Merge method: squash merge** only. The branch is deleted after the merge, on the
+  remote (`fj pr merge -d`) **and locally**: switch to `main`, pull, and delete the
+  local branch with `git branch -D <branch>`. `-D` is needed because Git does not
+  recognise a squash-merged branch as merged; check first that the PR is merged.
+  Only the agent that owns the branch deletes it (section 3).
 - **CI must be green** before merging while CI is a required check (see section 7). During early development CI is manual-only and the local test gate applies.
 
 ### Test gate
@@ -262,4 +266,6 @@ fj pr create --base main --head feat/12-chordpro-parser \
 # … checks pass, self-review done, "WIP: " prefix removed (fj pr edit) …
 fj pr status <index>
 fj pr merge -M squash -d <index>   # only if section 6 "Who merges" allows it
+git switch main && git pull --ff-only
+git branch -D feat/12-chordpro-parser   # delete the merged branch locally too
 ```

@@ -45,7 +45,7 @@ Every change follows [`docs/development/git-workflow.md`](docs/development/git-w
 - Conventional Commits in English, with a `Co-Authored-By` trailer for agents.
 - Before marking a PR ready: rebase on `main`, run the checks, update ADRs/docs, complete both ARB files, self-review.
 - **Test gate: all tests must pass before every merge**, run on the final branch state rebased on `main`. Never skip, delete or weaken tests to get green. New or changed behaviour comes with tests.
-- Squash merge only. An agent may merge its own PR when the test gate (full local `make check`) is satisfied and no "human must decide" rule applies; otherwise label `needs-human`.
+- Squash merge only; afterwards delete the branch on the remote and locally (`git branch -D`). An agent may merge its own PR when the test gate (full local `make check`) is satisfied and no "human must decide" rule applies; otherwise label `needs-human`.
 - Never end a session with unpushed work: commit, push, and leave a handover comment on the PR.
 - **CI is manual-only during early development**: do not wait for it; local green tests are enough. Re-enable it as a required check when heading towards version 1 (ADR-0010).
 - Remote: self-hosted **Forgejo** (`github.com/tafli/RealChord`), CLI `fj` (forgejo-cli, logged in on the development machine): issues, PRs and squash merges go through `fj`. Without a login, fall back to workflow section 11.

@@ -57,6 +57,7 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 - 2026-11-15: Agents have API access: an access token (scopes repository and issue, under the owner's account) is stored by `fj` on the development machine. The normal flow with issues and PRs applies; local squash merges remain only as a fallback without a login (workflow section 11).
 
 - 2026-11-15: CI made manual-only (`workflow_dispatch`) during early development: waiting for the runner slowed development down too much. The test gate is the full local suite (`make check`) on the rebased branch right before the merge; agents do not wait for CI. Decided by the owner.
+- 2026-11-16: After a merge the branch is deleted locally as well (`git branch -D`, since squash-merged branches do not count as merged), not only on the remote (owner request).
 
 ## Open points
 
