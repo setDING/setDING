@@ -48,7 +48,7 @@ splash background:
 | Android | Adaptive icon (`mipmap-anydpi-v26/ic_launcher.xml`): foreground layer, white background and a monochrome layer for themed icons (Android 13+); legacy `ic_launcher.png` per density |
 | iOS | Every size in `AppIcon.appiconset` (opaque) |
 | Windows | `windows/runner/resources/app_icon.ico` (16–256 px) |
-| Linux | `linux/runner/resources/app_icon.png`, installed into the bundle's `data/` and set as the window icon in `my_application.cc` |
+| Linux | `linux/runner/resources/app_icon.png` and `.svg`, installed into the bundle's `data/`. The window icon is set in `my_application.cc`, which only works under X11. Under Wayland the icon comes from the desktop entry that `install-desktop-entry.sh` (in `linux/packaging/`, shipped in the bundle) installs. `make start` and `make dev` install a hidden entry if there is none yet. |
 | Web | `favicon.png`, `icons/Icon-*.png` (incl. maskable) |
 
 ImageMagick writes no date chunks, so running `make branding` without

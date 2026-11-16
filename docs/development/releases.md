@@ -101,3 +101,10 @@ tool/release/check-isa.sh app/build/linux/x64/debug/bundle
 
 Unpack the archive on the target machine and run `realchord` in the unpacked folder.
 Requires GTK 3 and libsecret, which desktop distributions include.
+
+To add RealChord to the application menu, run `./install-desktop-entry.sh` in the
+unpacked folder once (again after moving the folder; `--uninstall` removes it). It
+installs a desktop entry and the icon for the current user under
+`~/.local/share`. Under Wayland (KDE, GNOME) the window only shows the RealChord
+icon with this entry, because the compositor looks the icon up through the
+`.desktop` file named after the app ID `ch.realchord.realchord`.
