@@ -55,7 +55,8 @@ A user can be a member of several organizations and bands; roles are defined per
 | Server data model | PocketBase collections as migrations, server-wide revision counter, set items as JSON, access rules per role, tested against a real PocketBase | [ADR-0015](adr/0015-server-data-model.md) |
 | Printable set list | PDF generated in the client with the `pdf` package, embedded font, saved via the save dialog; no print plugin yet | [ADR-0013](adr/0013-printable-set-list.md) |
 | Web client | **Flutter web build of the same app** for management without installation, served by PocketBase (`pb_public`) at `app.realchord.app`, same sync engine, sign-in required, no file import/export, no offline guarantee in the browser ([guide](../development/web.md)) | [ADR-0018](adr/0018-web-client.md) |
-| Linux release | `make release`: Linux release built in a **Debian container** (baseline glibc, ISA check) from the committed state; no Windows release for now ([guide](../development/releases.md)) | [ADR-0019](adr/0019-linux-release-builds.md) |
+| Linux release | `make release`: Linux release built in a **Debian container** (baseline glibc, ISA check) from the committed state ([guide](../development/releases.md)) | [ADR-0019](adr/0019-linux-release-builds.md) |
+| Release builds | A `vX.Y.Z` tag builds **Linux, Android and Windows** on GitHub Actions and publishes a GitHub Release; Android APK signed with a stable release key (repository secrets), installed and updated with **Obtainium** ([guide](../development/releases.md)) | [ADR-0021](adr/0021-release-builds-github-actions.md) |
 
 ## 4. Building block view
 
@@ -184,7 +185,7 @@ Notes:
 | **MVP** ✅ | ChordPro parser & renderer (notation B/H, Nashville), local song library, PDF attachments, creating sets, live mode with pedal, import/export, German/English UI – initially **without** a backend (single device) |
 | **Phase 1** | Backend, login, bands & roles (several admins, several bands per user), sync of songs, sets and PDF files incl. conflict handling |
 | **Phase 2** ✅ | Web client for management at `app.realchord.app` (ADR-0018; done in #27), synced personal overlays (per user, ADR-0020; done in #81, #82) |
-| **Towards version 1** | Re-enable CI as a required check on every PR and push to `main` (manual-only during early development, ADR-0010), branch protection, build jobs |
+| **Towards version 1** | Re-enable CI as a required check on every PR and push to `main` (manual-only during early development, ADR-0010), branch protection; release builds for Linux, Android and Windows exist (ADR-0021), iOS open |
 | **Later** | Freehand annotations (stylus), metronome/count-in, MIDI control |
 
 ### MVP status (2026-11-14)
@@ -256,7 +257,7 @@ See "Open points" in the individual ADRs. The most important:
 14. ~~SongSelect import?~~ → No API integration, manual ChordPro import (ADR-0011, accepted). Open: test with a real SongSelect file, show copyright/CCLI number?
 15. ~~Printable set list?~~ → PDF in the client with the `pdf` package and embedded Noto Sans (ADR-0013, accepted). Open: Letter paper, export options, native print dialog
 16. Web client for management without an installed app? → Flutter web build of the same app at `app.realchord.app`, served by the same PocketBase; local library hidden, live mode with a "not offline-safe" notice, session as long as a tab is open by default ("Stay signed in" optional), local data deleted on sign-out, sign-in required and no file import or export on web (ADR-0018, accepted, #27). Implemented and deployed in #27 (2026-11-16)
-17. Distributable Linux builds? → `make release`: built in a Debian container with an ISA check (ADR-0019, accepted, #45). Open: Windows release (not needed yet), packaging and signing, CI release builds
+17. Distributable Linux builds? → `make release`: built in a Debian container with an ISA check (ADR-0019, accepted, #45). CI release builds for Linux, Android (Obtainium) and Windows from a `vX.Y.Z` tag (ADR-0021, accepted, #137). Open: release key (owner), iOS, installers/packaging and code signing
 18. ~~Personal adjustments on shared devices and across devices?~~ → Overlays belong to a user (`owner_id`; `local` for the local library), existing ones are taken over once by the first user who signs in, private, synced in phase 2 with last writer wins and soft delete (ADR-0020, accepted)
 
 ## 10. ADR index
@@ -283,5 +284,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0018](adr/0018-web-client.md) | Web client for management | Accepted |
 | [0019](adr/0019-linux-release-builds.md) | Linux release builds | Accepted |
 | [0020](adr/0020-overlays-per-user.md) | Personal adjustments per user, synced with the account | Accepted |
+| [0021](adr/0021-release-builds-github-actions.md) | Release builds on GitHub Actions, Android via Obtainium | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.
