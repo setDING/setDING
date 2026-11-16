@@ -726,6 +726,6 @@
   "webNoBandMessage": "Du bist noch in keiner Band. Erstelle eine Organisation mit einer Band oder tritt mit einem Einladungslink bei.",
   "songDetails": "Songdetails",
   "songDetailsTooltip": "Titel, Tonart, Tempo und mehr bearbeiten",
-  "invalidKey": "Unbekannte Tonart, z. B. G, Em oder Bb",
+  "noKey": "Keine Tonart",
   "timeHint": "z. B. 4/4"
 }

@@ -1468,7 +1468,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get songDetailsTooltip => 'Titel, Tonart, Tempo und mehr bearbeiten';
 
   @override
-  String get invalidKey => 'Unbekannte Tonart, z. B. G, Em oder Bb';
+  String get noKey => 'Keine Tonart';
 
   @override
   String get timeHint => 'z. B. 4/4';

@@ -255,7 +255,11 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
   /// Edits title, key, tempo and more in a form instead of the text (#189).
   Future<void> _editDetails() async {
     final before = _controller.text;
-    final source = await editSongDetails(context, before);
+    final source = await editSongDetails(
+      context,
+      before,
+      notation: ref.read(settingsProvider).notation,
+    );
     if (source == null || !mounted) return;
     if (source != before && _controller.text == before) {
       final sel = _controller.selection;

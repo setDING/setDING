@@ -1453,7 +1453,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get songDetailsTooltip => 'Edit title, key, tempo and more';
 
   @override
-  String get invalidKey => 'Unknown key, e.g. G, Em or Bb';
+  String get noKey => 'No key';
 
   @override
   String get timeHint => 'e.g. 4/4';

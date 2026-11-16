@@ -601,6 +601,6 @@
   "webNoBandMessage": "You are not in a band yet. Create an organization with a band, or join with an invitation link.",
   "songDetails": "Song details",
   "songDetailsTooltip": "Edit title, key, tempo and more",
-  "invalidKey": "Unknown key, e.g. G, Em or Bb",
+  "noKey": "No key",
   "timeHint": "e.g. 4/4"
 }
