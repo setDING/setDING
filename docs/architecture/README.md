@@ -54,7 +54,7 @@ A user can be a member of several organizations and bands; roles are defined per
 | Organizations | Bands belong to an **organization** that owns the shared song library; organization admins manage people and bands; created automatically for a single band | [ADR-0017](adr/0017-organizations.md) |
 | Server data model | PocketBase collections as migrations, server-wide revision counter, set items as JSON, access rules per role, tested against a real PocketBase | [ADR-0015](adr/0015-server-data-model.md) |
 | Printable set list | PDF generated in the client with the `pdf` package, embedded font, saved via the save dialog; no print plugin yet | [ADR-0013](adr/0013-printable-set-list.md) |
-| Web client | **Flutter web build of the same app** for management without installation, served by PocketBase (`pb_public`) at `app.realchord.app`, same sync engine, no offline guarantee in the browser | [ADR-0018](adr/0018-web-client.md) |
+| Web client | **Flutter web build of the same app** for management without installation, served by PocketBase (`pb_public`) at `app.realchord.app`, same sync engine, sign-in required, no file import/export, no offline guarantee in the browser | [ADR-0018](adr/0018-web-client.md) |
 | Linux release | `make release`: Linux release built in a **Debian container** (baseline glibc, ISA check) from the committed state; no Windows release for now ([guide](../development/releases.md)) | [ADR-0019](adr/0019-linux-release-builds.md) |
 
 ## 4. Building block view
@@ -254,7 +254,7 @@ See "Open points" in the individual ADRs. The most important:
 13. ~~May agents merge their own PRs?~~ → Yes, from the start, but only when all tests pass (test gate, ADR-0010). Host: self-hosted Forgejo, `github.com/tafli/RealChord`. Agents use `fj` with an access token; during early development the test gate runs locally and CI (Forgejo Actions) is manual-only. Open: re-enable CI as a required check towards version 1, build jobs, branch protection
 14. ~~SongSelect import?~~ → No API integration, manual ChordPro import (ADR-0011, accepted). Open: test with a real SongSelect file, show copyright/CCLI number?
 15. ~~Printable set list?~~ → PDF in the client with the `pdf` package and embedded Noto Sans (ADR-0013, accepted). Open: Letter paper, export options, native print dialog
-16. Web client for management without an installed app? → Flutter web build of the same app at `app.realchord.app`, served by the same PocketBase; local library hidden, live mode with a "not offline-safe" notice, session for the tab only by default (ADR-0018, accepted, #27). Open: tunnel hostname and DNS (owner)
+16. Web client for management without an installed app? → Flutter web build of the same app at `app.realchord.app`, served by the same PocketBase; local library hidden, live mode with a "not offline-safe" notice, session for the tab only by default, sign-in required and no file import or export on web (ADR-0018, accepted, #27). Open: tunnel hostname and DNS (owner)
 17. Distributable Linux builds? → `make release`: built in a Debian container with an ISA check (ADR-0019, accepted, #45). Open: Windows release (not needed yet), packaging and signing, CI release builds
 18. ~~Personal adjustments on shared devices and across devices?~~ → Overlays belong to a user (`owner_id`; `local` for the local library), existing ones are taken over once by the first user who signs in, private, synced in phase 2 with last writer wins and soft delete (ADR-0020, accepted)
 

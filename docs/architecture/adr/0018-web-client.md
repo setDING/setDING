@@ -38,9 +38,12 @@ app** (`app/`), not as a separate web application.
   fetched from the server when opened, using PocketBase file tokens, and may be
   cached by the browser. Uploading attachments works as in the app.
 - **Platform code** (`dart:io`, file paths, `path_provider`, `app_links`) is moved
-  behind conditional imports with a web implementation: file import uses bytes
-  instead of paths, exports (ZIP, printable set list, ADR-0013) become browser
-  downloads, deep links become URL routes (`/invite/<token>`).
+  behind conditional imports with a web implementation; deep links become URL
+  routes (`/invite/<token>`).
+- **Sign-in required, no file import or export:** the web client works only with
+  an account, and all data reaches the browser through sync. Importing ChordPro
+  files or ZIPs and exporting songs or sets (ZIP, text, printable set list,
+  ADR-0013) are not offered on web; the native apps keep them.
 - **Local library hidden:** the local library "On this device" (ADR-0005) is not
   offered on web, because its data would exist only in one browser and could be
   evicted. The web client requires an account and shows only organization
@@ -58,8 +61,9 @@ app** (`app/`), not as a separate web application.
 |---|---|
 | Sign up, sign in, sign out, password reset | ✓ |
 | Organizations, bands, members, roles, invitations with QR code | ✓ |
-| Songs: ChordPro editor with preview, file and ZIP import, PDF attachments | ✓ |
-| Sets: create, reorder, export as ZIP, text and printable PDF | ✓ |
+| Songs: ChordPro editor with preview, PDF attachments | ✓ |
+| Sets: create, reorder | ✓ |
+| File import (ChordPro, ZIP) and export (songs, sets as ZIP, text, printable PDF) | – (not needed; data is synced with the server) |
 | Personal overlays (ADR-0006) | ✓ (as on any device) |
 | Local library "On this device" | – (hidden; signing in is required on web) |
 | Live mode | ✓ with a notice "not offline-safe, use the app on stage" |
@@ -99,7 +103,8 @@ Tracked in issue #27, each step a separate PR:
 
 1. Add the web platform: drift web setup, conditional imports for the platform
    code, `flutter build web` in `make check` and CI.
-2. Web session handling and file import/export via bytes and downloads.
+2. Web session handling (sign-in required, tab-only session, local data cleared on
+   sign-out).
 3. PDF attachments fetched on demand, `pdfrx` web assets.
 4. Hosting in `pb_public`, deploy target, "Open in the browser" on the landing page.
 
@@ -134,6 +139,9 @@ Tracked in issue #27, each step a separate PR:
   (same PocketBase, same-origin API); session for the tab only by default, "Stay
   signed in" unchecked.
 - 2026-11-15: Accepted by the owner.
+- 2026-11-16: Owner decision: the web client works only with sign-in; file import
+  and export are not offered on web, because songs and sets are synced with the
+  server. Scope table and implementation step 2 updated.
 
 ## Open points
 
