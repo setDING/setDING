@@ -196,7 +196,13 @@ void main() {
 
     await tester.tap(find.text('Capo 2 (as in song)'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('No capo').last);
+    // Each entry shows the header it leads to; the sounding key stays.
+    expect(
+      find.text('Capo 2 (as in song) – Key: C, Capo: 2 (D)'),
+      findsOneWidget,
+    );
+    expect(find.text('Key: A, Capo: 5 (D)'), findsOneWidget);
+    await tester.tap(find.text('No capo – Key: D'));
     await tester.pumpAndSettle();
     expect(find.text('A'), findsOneWidget); // sounding chords without capo
     expect(find.text('D'), findsOneWidget);

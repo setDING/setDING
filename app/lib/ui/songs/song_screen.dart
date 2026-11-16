@@ -231,6 +231,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                 const SizedBox(height: 12),
                 _AdjustmentsBar(
                   songKey: parsed.key,
+                  formatter: formatter,
                   songCapo: parsed.capoFret,
                   notation: settings.notation,
                   overlay: overlay,
@@ -471,6 +472,7 @@ final _layouts = LruCache<Object, SongLayout>(8);
 class _AdjustmentsBar extends StatelessWidget {
   const _AdjustmentsBar({
     required this.songKey,
+    required this.formatter,
     required this.songCapo,
     required this.notation,
     required this.overlay,
@@ -480,6 +482,9 @@ class _AdjustmentsBar extends StatelessWidget {
   });
 
   final cp.Key? songKey;
+
+  /// Formatter of the song view; the capo menu previews the header with it.
+  final ChordFormatter formatter;
 
   /// `{capo}` of the song (0 if none).
   final int songCapo;
@@ -497,6 +502,11 @@ class _AdjustmentsBar extends StatelessWidget {
         overlay.capoFret != null ||
         overlay.fontScale != 1.0 ||
         overlay.nashville != null;
+    // A capo menu entry followed by the header it leads to, e.g.
+    // "No capo – Key: D" (only with a key).
+    String withHeader(String label, int? capo, int fret) => hasKey
+        ? '$label – ${keyAndCapoText(l10n, formatter.withCapo(capo), fret)}'
+        : label;
 
     return Wrap(
       spacing: 8,
@@ -526,7 +536,9 @@ class _AdjustmentsBar extends StatelessWidget {
               MenuItemButton(
                 onPressed: () =>
                     onChanged((o) => o.copyWith(capoFret: const Value(null))),
-                child: Text(l10n.capoAsInSong(songCapo)),
+                child: Text(
+                  withHeader(l10n.capoAsInSong(songCapo), null, songCapo),
+                ),
               ),
             for (var fret = 0; fret <= 9; fret++)
               MenuItemButton(
@@ -535,7 +547,14 @@ class _AdjustmentsBar extends StatelessWidget {
                     capoFret: Value(fret == 0 && songCapo == 0 ? null : fret),
                   ),
                 ),
-                child: Text(fret == 0 ? l10n.noCapo : l10n.capoValue(fret)),
+                child: Text(
+                  fret == 0
+                      ? withHeader(l10n.noCapo, 0, 0)
+                      : hasKey
+                      // What the header shows with this capo.
+                      ? keyAndCapoText(l10n, formatter.withCapo(fret), fret)
+                      : l10n.capoValue(fret),
+                ),
               ),
           ],
         ),
