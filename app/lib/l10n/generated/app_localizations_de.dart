@@ -143,6 +143,11 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String capoAsInSongLabel(String capo) {
+    return '$capo, wie im Song';
+  }
+
+  @override
   String get noCapo => 'Ohne Kapo';
 
   @override

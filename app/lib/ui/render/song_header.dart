@@ -92,15 +92,25 @@ class SongHeader extends StatelessWidget {
 /// the shapes follow the capo ("Key: A, Capo: 2 (G)"). Empty without key
 /// and capo.
 String keyAndCapoText(AppLocalizations l10n, ChordFormatter formatter) {
-  final capo = formatter.effectiveCapo;
-  final asWritten = capo == formatter.songCapo;
+  final asWritten = formatter.effectiveCapo == formatter.songCapo;
   final key = asWritten ? formatter.formatShapeKey() : formatter.formatKey();
-  final other = asWritten ? formatter.formatKey() : formatter.formatShapeKey();
   return [
     if (key != null) l10n.keyLabel(key),
-    if (capo > 0)
-      other == null ? l10n.capoLabel(capo) : l10n.capoLabelWithKey(capo, other),
+    ?capoText(l10n, formatter),
   ].join(', ');
+}
+
+/// The capo part of [keyAndCapoText], e.g. "Capo: 2 (G)"; null without a
+/// capo.
+String? capoText(AppLocalizations l10n, ChordFormatter formatter) {
+  final capo = formatter.effectiveCapo;
+  if (capo <= 0) return null;
+  final other = capo == formatter.songCapo
+      ? formatter.formatKey()
+      : formatter.formatShapeKey();
+  return other == null
+      ? l10n.capoLabel(capo)
+      : l10n.capoLabelWithKey(capo, other);
 }
 
 /// The song sequence from `{x_sequence: …}` as a row of small chips.

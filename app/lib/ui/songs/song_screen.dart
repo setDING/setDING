@@ -523,10 +523,11 @@ class _AdjustmentsBar extends StatelessWidget {
         MenuAnchor(
           builder: (context, controller, _) => ActionChip(
             avatar: const Icon(Icons.straighten, size: 18),
-            label: Text(switch (overlay.capoFret) {
-              null when songCapo > 0 => l10n.capoAsInSong(songCapo),
-              null || 0 => l10n.noCapo,
-              final fret => l10n.capoValue(fret),
+            // The capo as in the header, e.g. "Capo: 2 (G)".
+            label: Text(switch ((overlay.capoFret, capoText(l10n, formatter))) {
+              (_, null) => l10n.noCapo,
+              (null, final capo?) => l10n.capoAsInSongLabel(capo),
+              (_, final capo?) => capo,
             }),
             onPressed: () =>
                 controller.isOpen ? controller.close() : controller.open(),

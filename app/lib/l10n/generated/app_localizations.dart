@@ -314,6 +314,12 @@ abstract class AppLocalizations {
   /// **'Kapo: {fret} ({key})'**
   String capoLabelWithKey(int fret, String key);
 
+  /// No description provided for @capoAsInSongLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'{capo}, wie im Song'**
+  String capoAsInSongLabel(String capo);
+
   /// No description provided for @noCapo.
   ///
   /// In de, this message translates to:
