@@ -60,6 +60,17 @@ class ChordFormatter {
   /// `{transpose}` in effect where the song starts.
   final int leadingTranspose;
 
+  /// The same options with the personal capo [capo] (null = the song's).
+  ChordFormatter withCapo(int? capo) => ChordFormatter(
+    transpose: transpose,
+    capo: capo,
+    songCapo: songCapo,
+    notation: notation,
+    nashville: nashville,
+    key: key,
+    leadingTranspose: leadingTranspose,
+  );
+
   /// Capo the player uses.
   int get effectiveCapo => capo ?? songCapo;
 
