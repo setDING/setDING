@@ -321,10 +321,32 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byTooltip('Edit ChordPro'), findsOneWidget);
+    expect(find.byTooltip('Attach file'), findsOneWidget);
     await tester.tap(find.byType(PopupMenuButton<String>).first);
     await tester.pumpAndSettle();
     expect(find.text('Copy to band'), findsOneWidget);
     expect(find.text('Delete'), findsNothing);
+    await app.dispose(tester);
+  });
+
+  testWidgets('members without edit rights see no edit buttons on a song', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'currentBandId': 'b1'},
+      user: _bob,
+    );
+    app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+    app.backend.addMember('b1', _bob, BandRole.member);
+    final orgSongs = TestApp.songsIn(app, 'o1');
+    final id = await orgSongs.createSong(source: '{title: Shared}\n[C]x');
+    await tester.pumpWidget(app.build(home: SongScreen(songId: id)));
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Play live'), findsOneWidget);
+    expect(find.byTooltip('Edit ChordPro'), findsNothing);
+    expect(find.byTooltip('Attach file'), findsNothing);
     await app.dispose(tester);
   });
 }
