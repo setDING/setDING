@@ -304,10 +304,14 @@ class EditorToolbar extends StatelessWidget {
     super.key,
     required this.snippets,
     required this.onInsert,
+    this.onDetails,
   });
 
   final EditorSnippets snippets;
   final ValueChanged<EditorSnippet> onInsert;
+
+  /// Opens the song details form (title, key, tempo, …).
+  final VoidCallback? onDetails;
 
   @override
   Widget build(BuildContext context) {
@@ -330,6 +334,15 @@ class EditorToolbar extends StatelessWidget {
         runSpacing: 4,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
+          if (onDetails != null)
+            Tooltip(
+              message: l10n.songDetailsTooltip,
+              child: TextButton.icon(
+                onPressed: onDetails,
+                icon: const Icon(Icons.edit_note, size: 18),
+                label: Text(l10n.songDetails),
+              ),
+            ),
           quick(snippets.chord, l10n.insertChord, '[ ]'),
           quick(snippets.verse, l10n.insertVerse, l10n.sectionVerse),
           quick(snippets.chorus, l10n.insertChorus, l10n.sectionChorus),

@@ -1,6 +1,6 @@
 # RealChord – Architecture
 
-> Status: **Draft for discussion** (most core decisions accepted) · Last updated: 2026-11-15
+> Status: **Draft for discussion** (most core decisions accepted) · Last updated: 2026-11-16
 >
 > This document describes the overall architecture. Individual decisions are recorded
 > as Architecture Decision Records (ADRs) in [`adr/`](adr/).
@@ -101,7 +101,7 @@ flowchart LR
 | `data` | Local DB (SQLite, e.g. via `drift`), repositories, domain model |
 | `sync` | Sync between local DB and backend, conflict handling, offline queue. `SyncEngine` runs the order of a sync; the parts per kind of record live in `app/lib/sync/engine/` (songs with conflicts, sets, attachments with downloads, personal adjustments, shared cursors and outbox) |
 | `live` | Performance mode: full screen, wakelock, tap/swipe page turns, set navigation |
-| `manage` | Create/import songs, ChordPro editor with syntax highlighting, line numbers, bracket matching, autocompletion, a warning on save for invalid ChordPro and preview, put sets together |
+| `manage` | Create/import songs, ChordPro editor with syntax highlighting, a form for the main metadata (title, key, tempo, …), line numbers, bracket matching, autocompletion, a warning on save for invalid ChordPro and preview, put sets together |
 | `band` | Login, band selection, invitations, roles |
 | `l10n` | UI translations (German, English) and language setting |
 

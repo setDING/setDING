@@ -598,5 +598,9 @@
   "keepEditing": "Keep editing",
   "webSignInHint": "Sign in to manage organizations, bands, songs and sets in the browser.",
   "webNoBandTitle": "No band yet",
-  "webNoBandMessage": "You are not in a band yet. Create an organization with a band, or join with an invitation link."
+  "webNoBandMessage": "You are not in a band yet. Create an organization with a band, or join with an invitation link.",
+  "songDetails": "Song details",
+  "songDetailsTooltip": "Edit title, key, tempo and more",
+  "invalidKey": "Unknown key, e.g. G, Em or Bb",
+  "timeHint": "e.g. 4/4"
 }

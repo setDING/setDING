@@ -2563,6 +2563,30 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Du bist noch in keiner Band. Erstelle eine Organisation mit einer Band oder tritt mit einem Einladungslink bei.'**
   String get webNoBandMessage;
+
+  /// No description provided for @songDetails.
+  ///
+  /// In de, this message translates to:
+  /// **'Songdetails'**
+  String get songDetails;
+
+  /// No description provided for @songDetailsTooltip.
+  ///
+  /// In de, this message translates to:
+  /// **'Titel, Tonart, Tempo und mehr bearbeiten'**
+  String get songDetailsTooltip;
+
+  /// No description provided for @invalidKey.
+  ///
+  /// In de, this message translates to:
+  /// **'Unbekannte Tonart, z. B. G, Em oder Bb'**
+  String get invalidKey;
+
+  /// No description provided for @timeHint.
+  ///
+  /// In de, this message translates to:
+  /// **'z. B. 4/4'**
+  String get timeHint;
 }
 
 class _AppLocalizationsDelegate
