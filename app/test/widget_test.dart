@@ -212,9 +212,7 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('live mode turns to the next song with pedal keys', (
-    tester,
-  ) async {
+  testWidgets('live mode turns to the next song with taps', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'en'});
     final items = await tester.runAsync(() async {
@@ -241,17 +239,27 @@ void main() {
     expect(find.text('Next: Second (D)'), findsOneWidget);
     expect(find.text('1 / 3'), findsOneWidget);
 
+    // Keys no longer turn pages (pedal support removed, #149).
     await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
+    await tester.pumpAndSettle();
+    expect(find.text('1 / 3'), findsOneWidget);
+
+    final size = tester.getSize(find.byType(PageView));
+    final topLeft = tester.getTopLeft(find.byType(PageView));
+    final right = topLeft + Offset(size.width * 0.9, size.height / 2);
+    final left = topLeft + Offset(size.width * 0.1, size.height / 2);
+
+    await tester.tapAt(right);
     await tester.pumpAndSettle();
     expect(find.text('Second'), findsOneWidget);
     expect(find.text('2 / 3'), findsOneWidget);
 
-    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.tapAt(right);
     await tester.pumpAndSettle();
     expect(find.text('Coffee'), findsOneWidget);
     expect(find.text('End of set'), findsOneWidget);
 
-    await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+    await tester.tapAt(left);
     await tester.pumpAndSettle();
     expect(find.text('2 / 3'), findsOneWidget);
     await app.dispose(tester);

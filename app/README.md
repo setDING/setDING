@@ -37,7 +37,6 @@ make reset      # delete the test instance's data (next start begins fresh)
 make check      # all checks – the test gate before every merge
 ```
 
-A keyboard simulates a foot pedal in live mode: arrow keys, Page Up/Down and Space.
 
 Data locations: the database, settings and PDF attachments live in the app's private
 support directory (on Linux `~/.local/share/ch.realchord.realchord/`). Older builds
@@ -71,6 +70,6 @@ library does not). A release signing key and store releases are still open.
 | `lib/settings/` | Device settings (language, notation, Nashville, live mode) |
 | `lib/l10n/` | UI texts: `app_de.arb` (reference, Swiss German) and `app_en.arb` |
 | `lib/ui/render/` | ChordPro renderer and auto-fit layout |
-| `lib/ui/live/` | Live mode (pedal/keyboard, tap zones, PDF) |
+| `lib/ui/live/` | Live mode (tap zones, swipe, PDF) |
 | `lib/ui/songs/`, `lib/ui/sets/` | Library, editor, sets |
 | `../packages/chordpro/` | Pure Dart ChordPro parser, transposition, notation, Nashville |

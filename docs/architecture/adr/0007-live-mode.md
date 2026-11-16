@@ -6,7 +6,7 @@
 ## Context
 
 During a performance the hands are on the instrument. Page turning must be possible
-via foot pedal or a minimal gesture. The screen must not turn off and the display
+via a minimal gesture (tap, swipe) or, later possibly, a foot pedal. The screen must not turn off and the display
 must not change unexpectedly.
 
 A feature found in some apps is a "leader sync": when the band leader picks the next
@@ -18,8 +18,8 @@ song, all tablets follow automatically. We evaluated whether this is needed.
 
 - Full screen, **wakelock** active, status bar hidden.
 - **Input:**
-  - Bluetooth page turners (e.g. AirTurn, PageFlip, Donner) register as HID keyboards → keys **arrow left/right, Page Up/Down, space** can be mapped.
-  - Tap on the left/right half of the screen, swipe.
+  - Tap on the left/right part of the screen, swipe.
+  - Foot pedals (Bluetooth page turners registering as HID keyboards) are **not supported for now** (removed in #149); they may return later. Escape leaves live mode.
 - **Page turn modes:** full page, half page (top half already shows the next page), optional auto-scroll based on tempo/duration.
 - **Layout – fit to screen (default, configurable in the settings):** the whole song fits on the screen without scrolling.
   Sections are kept whole and arranged automatically in reading order into 1–4 columns; the arrangement with the largest
@@ -56,8 +56,9 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-14: In live mode the song is fitted to the screen without scrolling; sections are arranged in columns automatically. Fitting, maximum columns and the display of repeated choruses are configurable in the settings.
 
 - 2026-11-15: Sync is paused while live mode is open; a sync requested meanwhile runs after leaving live mode (issue #17, ADR-0004).
+- 2026-11-16: Foot pedal / keyboard page turning removed, not needed for now; may be implemented again later (issue #149). Tap and swipe remain.
 
 ## Open points
 
-- Is a page turner already in use? Which model (for testing)?
+- Foot pedal support again later? Which page turner model (for testing)?
 - Is MIDI control desired (e.g. Program Change from a keyboard/pedalboard)?

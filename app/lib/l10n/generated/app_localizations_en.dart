@@ -589,8 +589,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chorusRepeatLabel => 'Label only';
 
   @override
-  String get settingsPedalHint =>
-      'Foot pedal and keyboard: arrow keys, Page Up/Down and Space turn pages. Tap the left or right side of the screen to go back or forward.';
+  String get settingsPageTurnHint =>
+      'Tap the left or right side of the screen to go back or forward.';
 
   @override
   String settingsStorageUsed(String size) {

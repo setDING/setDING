@@ -7,7 +7,7 @@
 
 The app must run on tablets with **Android, iOS and Windows**. Requirements:
 precise control over text layout (chords exactly above the right syllable),
-full screen, wakelock, keyboard/pedal events, a local database and smooth
+full screen, wakelock, keyboard events, a local database and smooth
 page turning. The team should maintain **a single code base** if possible.
 
 ## Decision
