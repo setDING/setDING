@@ -64,7 +64,7 @@ exist yet, and CI is manual-only during early development.
 - 2026-11-16: The base image `tool/ci/Dockerfile` is no longer the CI image on `ghcr.io`
   (CI uses flutter-action, ADR-0010, #135); `make release` builds it locally as
   `realchord-ci:<flutter-version>` when it is missing.
-- 2026-11-16: Windows release and the CI release build come with ADR-0021 (proposed,
+- 2026-11-16: Windows release and the CI release build come with ADR-0021 (accepted,
   #137): a `vX.Y.Z` tag runs `make release-linux` on GitHub Actions (same container
   and ISA check), with `RELEASE_NAME` without the commit and `BUILD_NUMBER` set to the
   run number; Windows is built on a GitHub Windows runner.

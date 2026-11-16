@@ -1,6 +1,6 @@
 # ADR-0021: Release builds on GitHub Actions, Android via Obtainium
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-16
 
 ## Context
@@ -74,6 +74,7 @@ app, so the APK must be signed with a stable release key, not a per-machine debu
 - 2026-11-16: Proposed (#137) on the owner's request for Linux, Android and Windows
   builds on GitHub Actions with Android installable via Obtainium. The Android build
   needed AGP 9.1.1 (Flutter's minimum) instead of 9.1.0.
+- 2026-11-16: Accepted by the owner.
 
 ## Open points
 

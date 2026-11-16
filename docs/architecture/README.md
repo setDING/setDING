@@ -257,7 +257,7 @@ See "Open points" in the individual ADRs. The most important:
 14. ~~SongSelect import?~~ → No API integration, manual ChordPro import (ADR-0011, accepted). Open: test with a real SongSelect file, show copyright/CCLI number?
 15. ~~Printable set list?~~ → PDF in the client with the `pdf` package and embedded Noto Sans (ADR-0013, accepted). Open: Letter paper, export options, native print dialog
 16. Web client for management without an installed app? → Flutter web build of the same app at `app.realchord.app`, served by the same PocketBase; local library hidden, live mode with a "not offline-safe" notice, session as long as a tab is open by default ("Stay signed in" optional), local data deleted on sign-out, sign-in required and no file import or export on web (ADR-0018, accepted, #27). Implemented and deployed in #27 (2026-11-16)
-17. Distributable Linux builds? → `make release`: built in a Debian container with an ISA check (ADR-0019, accepted, #45). CI release builds for Linux, Android (Obtainium) and Windows from a `vX.Y.Z` tag (ADR-0021, proposed, #137). Open: release key (owner), iOS, installers/packaging and code signing
+17. Distributable Linux builds? → `make release`: built in a Debian container with an ISA check (ADR-0019, accepted, #45). CI release builds for Linux, Android (Obtainium) and Windows from a `vX.Y.Z` tag (ADR-0021, accepted, #137). Open: release key (owner), iOS, installers/packaging and code signing
 18. ~~Personal adjustments on shared devices and across devices?~~ → Overlays belong to a user (`owner_id`; `local` for the local library), existing ones are taken over once by the first user who signs in, private, synced in phase 2 with last writer wins and soft delete (ADR-0020, accepted)
 
 ## 10. ADR index
@@ -284,6 +284,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0018](adr/0018-web-client.md) | Web client for management | Accepted |
 | [0019](adr/0019-linux-release-builds.md) | Linux release builds | Accepted |
 | [0020](adr/0020-overlays-per-user.md) | Personal adjustments per user, synced with the account | Accepted |
-| [0021](adr/0021-release-builds-github-actions.md) | Release builds on GitHub Actions, Android via Obtainium | Proposed |
+| [0021](adr/0021-release-builds-github-actions.md) | Release builds on GitHub Actions, Android via Obtainium | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.

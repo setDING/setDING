@@ -63,7 +63,7 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 - 2026-11-16: Every commit carries the `Co-Authored-By: Claude …` trailer, not only agent commits, since no commit is made without Claude (owner decision, #131). The history on GitHub was rewritten once more to add it to the 23 commits without it (content unchanged, new commit ids, ids in the imported issues updated).
 
 - 2026-11-16: CI no longer uses its own image: on GitHub-hosted runners everything but Flutter is preinstalled, and `subosito/flutter-action` (version from `FLUTTER_VERSION` in the `Makefile`, cached) sets Flutter up about as fast as pulling the multi-GB image, without building and pushing an image per Flutter version (#135). `tool/ci/Dockerfile` stays as the local base image of the Linux release build (ADR-0019) and is no longer pushed to `ghcr.io`.
-- 2026-11-16: The release build of section 10 exists for Linux, Android and Windows (`.github/workflows/release.yml`, ADR-0021, proposed, #137): a `vX.Y.Z` tag that matches `pubspec.yaml` builds all three and publishes a GitHub Release; Android updates come through Obtainium. It runs on tags regardless of the manual-only CI.
+- 2026-11-16: The release build of section 10 exists for Linux, Android and Windows (`.github/workflows/release.yml`, ADR-0021, accepted, #137): a `vX.Y.Z` tag that matches `pubspec.yaml` builds all three and publishes a GitHub Release; Android updates come through Obtainium. It runs on tags regardless of the manual-only CI.
 
 ## Open points
 
