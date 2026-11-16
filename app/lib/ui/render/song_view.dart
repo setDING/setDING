@@ -1,9 +1,9 @@
-import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:chordpro/chordpro.dart';
 import 'package:flutter/material.dart';
 
+import '../../data/attachment_storage.dart';
 import '../../l10n/generated/app_localizations.dart';
 import 'chord_diagram.dart';
 import 'song_blocks.dart';
@@ -406,7 +406,7 @@ class _SectionBlock extends StatelessWidget {
     );
   }
 
-  (File, ImageBox)? _image(ImageLine line) =>
+  (StoredFile, ImageBox)? _image(ImageLine line) =>
       resolveImage(line, options.imageLookup);
 
   GridGeometry _gridGeometry(

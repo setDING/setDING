@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -6,14 +5,16 @@ import 'package:chordpro/chordpro.dart' show ImageLine;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../data/attachment_storage.dart';
+import '../platform/stored_file_view.dart';
 import 'song_style.dart';
 
 /// Finds the file of an `{image: src=…}` (an attachment of the song).
-typedef ImageLookup = File? Function(String src);
+typedef ImageLookup = StoredFile? Function(String src);
 
 /// The file and placement of an `{image}`, or null if the image is not
 /// attached to the song or cannot be read.
-(File, ImageBox)? resolveImage(ImageLine line, ImageLookup? lookup) {
+(StoredFile, ImageBox)? resolveImage(ImageLine line, ImageLookup? lookup) {
   final src = line.src;
   if (lookup == null || src == null || src.isEmpty) return null;
   final file = lookup(src);
@@ -131,18 +132,12 @@ final _sizeCache = <String, Size?>{};
 
 /// Natural size of an image file in pixels (PNG, GIF, JPEG, WebP, SVG),
 /// read from the file header. Null if unknown.
-Size? imageFileSize(File file) => _sizeCache.putIfAbsent(file.path, () {
+Size? imageFileSize(StoredFile file) => _sizeCache.putIfAbsent(file.id, () {
+  final bytes = file.readStartSync(256 * 1024);
+  if (bytes == null) return null;
   try {
-    final raf = file.openSync();
-    try {
-      final bytes = raf.readSync(256 * 1024);
-      if (file.path.toLowerCase().endsWith('.svg')) {
-        return svgSize(String.fromCharCodes(bytes));
-      }
-      return imageBytesSize(bytes);
-    } finally {
-      raf.closeSync();
-    }
+    if (isSvgFile(file.name)) return svgSize(String.fromCharCodes(bytes));
+    return imageBytesSize(bytes);
   } catch (_) {
     return null;
   }
@@ -273,7 +268,7 @@ class SongImageView extends StatelessWidget {
 
   final ImageBox box;
   final double fontSize;
-  final File? file;
+  final StoredFile? file;
 
   /// SVG source (`{start_of_svg}`).
   final String? svg;
@@ -286,15 +281,8 @@ class SongImageView extends StatelessWidget {
       final Widget image;
       if (svg != null) {
         image = SvgPicture.string(svg!, width: width, height: height);
-      } else if (file!.path.toLowerCase().endsWith('.svg')) {
-        image = SvgPicture.file(file!, width: width, height: height);
       } else {
-        image = Image.file(
-          file!,
-          width: width,
-          height: height,
-          fit: BoxFit.contain,
-        );
+        image = storedImage(file!, width: width, height: height);
       }
       return Padding(
         padding: EdgeInsets.symmetric(

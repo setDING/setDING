@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'dart:io';
-
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:pocketbase/pocketbase.dart';
 
+import '../platform/network_error.dart';
 import 'session_store.dart';
 import 'sync_backend.dart';
 import '../util/log.dart';
@@ -808,7 +807,10 @@ class _PocketBaseDownloads implements AttachmentDownloads {
   }
 
   @override
-  Future<void> download(RemoteAttachment attachment, File target) async {
+  Future<void> download(
+    RemoteAttachment attachment,
+    StreamSink<List<int>> target,
+  ) async {
     if (_backend.currentUser == null) {
       throw const BackendException(BackendErrorKind.signedOut);
     }
@@ -828,18 +830,15 @@ class _PocketBaseDownloads implements AttachmentDownloads {
           response.statusCode,
         );
       }
-      final sink = target.openWrite();
-      try {
-        await sink.addStream(response.stream);
-      } finally {
-        await sink.close();
-      }
+      await target.addStream(response.stream);
     } on ClientException catch (e) {
       _token = null; // e.g. a failed token request: ask again next time
       throw PocketBaseBackend._map(e);
     } on http.ClientException catch (e) {
       throw BackendException(BackendErrorKind.network, e);
-    } on SocketException catch (e) {
+    } catch (e) {
+      // The connection broke while the file was arriving (native only).
+      if (!isSocketException(e)) rethrow;
       throw BackendException(BackendErrorKind.network, e);
     }
   }

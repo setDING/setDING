@@ -62,7 +62,7 @@ BACKEND_PORT    ?= 8090
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := REALCHORD_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build apk apk-install release release-linux release-check reset data-dir backend check test codegen l10n screenshots examples doctor clean ci-image ci-image-push \
+.PHONY: help setup dev start build web web-serve deps upgrade apk apk-install release release-linux release-check reset data-dir backend check test codegen l10n screenshots examples doctor clean ci-image ci-image-push \
 	server-target server-install server-status server-logs server-backup server-fetch-backup server-ssh
 
 help: ## Show this help
@@ -128,7 +128,22 @@ backend: ## Start a local PocketBase with the schema and hooks from server/ (PB_
 		$$pb serve --dir $(DATA_DIR)/pb_data --hooksDir $(ROOT)/server/pb_hooks \
 			--migrationsDir $(ROOT)/server/pb_migrations --http 127.0.0.1:$(BACKEND_PORT)
 
-check: ## Run all checks (format, analysis, l10n, tests) – the test gate
+web: ## Build the web client into app/build/web (ADR-0018)
+	$(ROOT)/tool/build-web.sh
+
+web-serve: web ## Build the web client and serve it on http://127.0.0.1:8090
+	cd $(APP)/build/web && python3 -m http.server 8090 --bind 127.0.0.1
+
+deps: ## Check that all external libraries are the newest versions
+	$(ROOT)/tool/check-deps.sh
+
+upgrade: ## Upgrade all external libraries within their constraints
+	cd $(PACKAGE) && $(DART) pub upgrade
+	cd $(ROOT)/server && $(DART) pub upgrade
+	cd $(APP) && $(FLUTTER) pub upgrade
+	$(ROOT)/tool/check-deps.sh
+
+check: ## Run all checks (dependencies, format, analysis, l10n, tests, web build) – the test gate
 	$(ROOT)/tool/check.sh
 
 test: ## Run all tests

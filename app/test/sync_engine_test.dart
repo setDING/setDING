@@ -5,6 +5,7 @@ import 'package:drift/drift.dart'
     show TableUpdateQuery, UpdateKind, Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:realchord/data/attachment_storage_io.dart';
 import 'package:realchord/data/attachment_storage.dart';
 import 'package:realchord/data/band_copy.dart';
 import 'package:realchord/data/database.dart';
@@ -32,7 +33,7 @@ void main() {
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
     db = AppDatabase(NativeDatabase.memory());
     dir = Directory.systemTemp.createTempSync('realchord_sync');
-    final storage = AttachmentStorage(dir);
+    final storage = FileAttachmentStorage(dir);
     server = FakeSyncBackend(user: _ann);
     server.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
     final bands = BandService(db, server);
@@ -105,7 +106,7 @@ void main() {
     });
 
     test('never syncs the local library', () async {
-      final local = SongRepository(db, AttachmentStorage(dir));
+      final local = SongRepository(db, FileAttachmentStorage(dir));
       await local.createSong(source: '{title: Private}');
       expect(await outbox(), isEmpty);
       await engine.sync();
@@ -386,7 +387,7 @@ void main() {
     late AttachmentStorage storage;
     final pdf = Uint8List.fromList('%PDF-1.4 test'.codeUnits);
 
-    setUp(() => storage = AttachmentStorage(dir));
+    setUp(() => storage = FileAttachmentStorage(dir));
 
     test('uploads PDFs after their song; images stay on the device', () async {
       final id = await songs.createSong(source: '{title: With score}');
@@ -579,7 +580,7 @@ void main() {
       final songId = await songs.createSong(source: '{title: Old}');
       final a = await songs.addAttachment(songId, name: 'Score', bytes: pdf);
       final setId = await sets.createSet(name: 'Old gig');
-      final local = SongRepository(db, AttachmentStorage(dir));
+      final local = SongRepository(db, FileAttachmentStorage(dir));
       await local.createSong(source: '{title: Private}');
       // Created by an app version without the outbox.
       await db.delete(db.syncOutbox).go();
@@ -664,7 +665,7 @@ void main() {
     setUp(() async {
       mine = SongRepository(
         db,
-        AttachmentStorage(dir),
+        FileAttachmentStorage(dir),
         libraryId: 'o1',
         userId: 'ann',
       );
@@ -749,7 +750,7 @@ void main() {
       () async {
         final bob = SongRepository(
           db,
-          AttachmentStorage(dir),
+          FileAttachmentStorage(dir),
           libraryId: 'o1',
           userId: 'bob',
         );
@@ -772,7 +773,11 @@ void main() {
               capoFret: const Value(3),
             ),
           );
-      final local = SongRepository(db, AttachmentStorage(dir), userId: 'ann');
+      final local = SongRepository(
+        db,
+        FileAttachmentStorage(dir),
+        userId: 'ann',
+      );
       final own = await local.createSong(source: '{title: Mine}');
       await local.saveOverlay(
         (await local.getOverlay(own)).copyWith(transpose: 2),

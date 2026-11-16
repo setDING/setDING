@@ -4,7 +4,7 @@ import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:realchord/data/attachment_storage.dart';
+import 'package:realchord/data/attachment_storage_io.dart';
 import 'package:realchord/data/database.dart';
 import 'package:realchord/data/outbox.dart';
 import 'package:realchord/providers.dart';
@@ -55,7 +55,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         databaseProvider.overrideWithValue(db),
-        attachmentStorageProvider.overrideWithValue(AttachmentStorage(dir)),
+        attachmentStorageProvider.overrideWithValue(FileAttachmentStorage(dir)),
         sessionStoreProvider.overrideWithValue(MemorySessionStore()),
         syncBackendProvider.overrideWithValue(backend),
         syncEngineProvider.overrideWithValue(engine),

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
+import 'package:realchord/data/attachment_storage_io.dart';
 import 'package:realchord/data/attachment_lookup.dart';
 import 'package:realchord/data/attachment_storage.dart';
 import 'package:realchord/data/database.dart';
@@ -132,7 +133,7 @@ void main() {
   test('ZIP import attaches referenced images', () async {
     final db = AppDatabase(NativeDatabase.memory());
     final dir = Directory.systemTemp.createTempSync('realchord_zip');
-    final storage = AttachmentStorage(dir);
+    final storage = FileAttachmentStorage(dir);
     final songs = SongRepository(db, storage);
     final archive = Archive()
       ..addFile(
@@ -211,7 +212,7 @@ void main() {
       }
       source.writeln('{start_of_svg}\n$_svg\n{end_of_svg}');
       final id = await app.songs.createSong(source: source.toString());
-      final storage = AttachmentStorage(app.dir);
+      final storage = FileAttachmentStorage(app.dir);
       final attId = await app.songs.addAttachment(
         id,
         name: 'wide.png',
@@ -219,10 +220,10 @@ void main() {
         extension: 'png',
       );
       // Pretend the image is 800 × 200 px by writing a matching header.
-      final file = storage.file(
+      await storage.write(
         (await app.songs.getAttachments(id)).single.fileName,
+        pngHeader(800, 200),
       );
-      await File(file.path).writeAsBytes(pngHeader(800, 200));
       expect(attId, isNotEmpty);
       return app.songs.getSong(id);
     });

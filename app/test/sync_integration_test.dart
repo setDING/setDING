@@ -8,7 +8,7 @@ import 'dart:typed_data';
 import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:realchord/data/attachment_storage.dart';
+import 'package:realchord/data/attachment_storage_io.dart';
 import 'package:realchord/data/band_copy.dart';
 import 'package:realchord/data/database.dart';
 import 'package:realchord/data/set_repository.dart';
@@ -37,7 +37,7 @@ class Device {
       serverUrl: url,
       store: MemorySessionStore(),
     );
-    final storage = AttachmentStorage(dir);
+    final storage = FileAttachmentStorage(dir);
     final engine = SyncEngine(
       db,
       backend,
@@ -49,12 +49,12 @@ class Device {
 
   SongRepository songs(String org) => SongRepository(
     db,
-    AttachmentStorage(dir),
+    FileAttachmentStorage(dir),
     libraryId: org,
     userId: backend.currentUser?.id,
   );
   SetRepository sets(String band) =>
-      SetRepository(db, AttachmentStorage(dir), bandId: band);
+      SetRepository(db, FileAttachmentStorage(dir), bandId: band);
 
   Future<SyncReport> sync() async {
     final report = await engine.sync();
@@ -239,7 +239,7 @@ void main() {
     expect(bobs.id, a);
     expect(bobs.name, 'Lead sheet');
     expect(
-      await AttachmentStorage(bob.dir).file(bobs.fileName).readAsBytes(),
+      await FileAttachmentStorage(bob.dir).file(bobs.fileName).readAsBytes(),
       pdf,
     );
 
@@ -254,7 +254,7 @@ void main() {
     await ann.sync();
     await bob.sync();
     expect(await bob.songs(org).getAttachments(song), isEmpty);
-    expect(await AttachmentStorage(bob.dir).exists(bobs.fileName), isFalse);
+    expect(await FileAttachmentStorage(bob.dir).exists(bobs.fileName), isFalse);
     await ann.close();
     await bob.close();
   });

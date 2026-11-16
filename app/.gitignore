@@ -46,3 +46,8 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Web worker compiled by tool/build-web.sh (ADR-0018)
+/web/drift_worker.js
+/web/drift_worker.js.deps
+/web/drift_worker.js.map

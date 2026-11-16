@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'dart:convert';
 
+import 'package:realchord/data/attachment_storage_io.dart';
 import 'package:realchord/data/attachment_storage.dart';
 import 'package:realchord/data/database.dart';
 import 'package:realchord/data/import_export.dart';
@@ -21,7 +22,7 @@ void main() {
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
     dir = await Directory.systemTemp.createTemp('realchord_test');
-    final storage = AttachmentStorage(dir);
+    final storage = FileAttachmentStorage(dir);
     songs = SongRepository(db, storage);
     sets = SetRepository(db, storage);
   });

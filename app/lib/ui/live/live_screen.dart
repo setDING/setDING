@@ -17,6 +17,7 @@ import '../../data/song_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../settings/settings.dart';
+import '../platform/stored_file_view.dart';
 import '../render/song_header.dart';
 import '../render/chord_diagram.dart';
 import '../render/render_cache.dart';
@@ -572,8 +573,8 @@ class _LiveItemPage extends ConsumerWidget {
           ),
         );
       }
-      return PdfViewer.file(
-        file.path,
+      return storedPdfViewer(
+        file,
         key: ValueKey(pdf.id),
         controller: pdfController,
         params: PdfViewerParams(

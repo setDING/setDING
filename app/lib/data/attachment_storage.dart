@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:path/path.dart' as p;
@@ -31,58 +31,49 @@ class AttachmentTooLargeException implements Exception {
   String toString() => 'Attachment too large: $sizeBytes bytes';
 }
 
-/// Stores attachment files in the app's private directory (ADR-0001).
-class AttachmentStorage {
-  AttachmentStorage(this.directory);
+/// One attachment file in an [AttachmentStorage].
+///
+/// Platform-neutral (ADR-0018): the native apps keep the file on disk
+/// (`attachment_storage_io.dart`), the web client in memory
+/// (`attachment_storage_memory.dart`).
+abstract interface class StoredFile {
+  /// File name inside the storage.
+  String get name;
 
-  final Directory directory;
+  /// Identifies the file across storages, e.g. as a cache key.
+  String get id;
 
-  File file(String fileName) => File(p.join(directory.path, fileName));
+  bool existsSync();
 
-  Future<void> write(String fileName, Uint8List bytes) async {
-    await directory.create(recursive: true);
-    await file(fileName).writeAsBytes(bytes, flush: true);
-  }
+  Future<bool> exists();
 
-  /// Writes [fileName] through a temporary file that [fill] writes, so a
-  /// failed or interrupted write never leaves a partial file.
+  Future<Uint8List> readAsBytes();
+
+  /// The first [maxBytes] bytes (or fewer), read synchronously for layout;
+  /// null if the file does not exist or cannot be read.
+  Uint8List? readStartSync(int maxBytes);
+}
+
+/// Stores attachment files on the device (ADR-0001, ADR-0009).
+abstract interface class AttachmentStorage {
+  StoredFile file(String fileName);
+
+  Future<void> write(String fileName, Uint8List bytes);
+
+  /// Writes [fileName] from what [fill] adds to its sink. A failed or
+  /// interrupted write never leaves a partial file.
   Future<void> writeWith(
     String fileName,
-    Future<void> Function(File temp) fill,
-  ) async {
-    await directory.create(recursive: true);
-    final temp = file('$fileName.part');
-    try {
-      await fill(temp);
-      await temp.rename(file(fileName).path);
-    } catch (_) {
-      if (await temp.exists()) await temp.delete();
-      rethrow;
-    }
-  }
+    Future<void> Function(StreamSink<List<int>> sink) fill,
+  );
 
   /// Copies [from] to [to]; does nothing if [from] does not exist.
-  Future<void> copy(String from, String to) async {
-    final source = file(from);
-    if (!await source.exists()) return;
-    await directory.create(recursive: true);
-    await source.copy(file(to).path);
-  }
+  Future<void> copy(String from, String to);
 
-  Future<bool> exists(String fileName) => file(fileName).exists();
+  Future<bool> exists(String fileName);
 
-  Future<void> delete(String fileName) async {
-    final f = file(fileName);
-    if (await f.exists()) await f.delete();
-  }
+  Future<void> delete(String fileName);
 
   /// Total size of all stored files in bytes.
-  Future<int> usedBytes() async {
-    if (!await directory.exists()) return 0;
-    var total = 0;
-    await for (final entity in directory.list()) {
-      if (entity is File) total += await entity.length();
-    }
-    return total;
-  }
+  Future<int> usedBytes();
 }

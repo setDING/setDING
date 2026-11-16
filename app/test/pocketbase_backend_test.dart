@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -286,8 +287,6 @@ void main() {
       }
       return _json(404, {'message': 'not found'});
     });
-    final dir = Directory.systemTemp.createTempSync('realchord_download');
-    addTearDown(() => dir.deleteSync(recursive: true));
     RemoteAttachment attachment(String id, String file) => RemoteAttachment(
       id: id,
       organizationId: 'o1',
@@ -297,11 +296,16 @@ void main() {
     );
 
     final downloads = b.openDownloads();
-    final target = File('${dir.path}/one');
-    await downloads.download(attachment('a1', 'one.pdf'), target);
-    expect(await target.readAsBytes(), [1, 2, 3]);
+    final one = StreamController<List<int>>();
+    final received = one.stream.expand((chunk) => chunk).toList();
+    await downloads.download(attachment('a1', 'one.pdf'), one.sink);
+    await one.close();
+    expect(await received, [1, 2, 3]);
     await expectLater(
-      downloads.download(attachment('a2', 'two.pdf'), File('${dir.path}/two')),
+      downloads.download(
+        attachment('a2', 'two.pdf'),
+        StreamController<List<int>>().sink,
+      ),
       throwsA(
         isA<BackendException>().having(
           (e) => e.kind,

@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:realchord/data/attachment_storage.dart';
+import 'package:realchord/data/attachment_storage_io.dart';
 import 'package:realchord/data/database.dart';
 import 'package:realchord/data/set_repository.dart';
 import 'package:realchord/data/song_repository.dart';
@@ -105,7 +105,7 @@ void main() {
   test('upgrades a schema 1 database to the current schema', () async {
     // Create the current schema, then turn it back into schema 1.
     final current = AppDatabase(NativeDatabase(file));
-    final songs = SongRepository(current, AttachmentStorage(dir));
+    final songs = SongRepository(current, FileAttachmentStorage(dir));
     final id = await songs.createSong(
       source: '{title: Old}\n{sorttitle: Old, The}\n{tag: Rock}\n[C]x',
     );
@@ -127,7 +127,7 @@ void main() {
 
     // Open with the app: migrate and fill the new columns.
     final upgraded = AppDatabase(NativeDatabase(file));
-    final repo = SongRepository(upgraded, AttachmentStorage(dir));
+    final repo = SongRepository(upgraded, FileAttachmentStorage(dir));
     upgraded.afterUpgrade = (db) => repo.refreshAllMetadata();
 
     final song = (await repo.getSong(id))!;
@@ -139,7 +139,7 @@ void main() {
 
   test('upgrades a schema 2 database: set items get a sequence', () async {
     final current = AppDatabase(NativeDatabase(file));
-    final storage = AttachmentStorage(dir);
+    final storage = FileAttachmentStorage(dir);
     final songId = await SongRepository(
       current,
       storage,
@@ -170,7 +170,7 @@ void main() {
     'upgrades a schema 3 database: songs move to the local library',
     () async {
       final current = AppDatabase(NativeDatabase(file));
-      final storage = AttachmentStorage(dir);
+      final storage = FileAttachmentStorage(dir);
       final songs = SongRepository(current, storage);
       final songId = await songs.createSong(source: '{title: Kept}');
       await songs.addAttachment(
@@ -208,7 +208,7 @@ void main() {
 
   test('a new database has the indexes of schema 7', () async {
     final db = AppDatabase(NativeDatabase(file));
-    await SongRepository(db, AttachmentStorage(dir)).getSong('x');
+    await SongRepository(db, FileAttachmentStorage(dir)).getSong('x');
     await db.close();
     final raw = sqlite3.open(file.path);
     expect(indexNames(raw), containsAll(schema7Indexes));
@@ -218,7 +218,7 @@ void main() {
   for (final from in [6, 3]) {
     test('upgrades a schema $from database: lists get indexes', () async {
       final current = AppDatabase(NativeDatabase(file));
-      final storage = AttachmentStorage(dir);
+      final storage = FileAttachmentStorage(dir);
       final songId = await SongRepository(
         current,
         storage,
@@ -248,7 +248,7 @@ void main() {
 
   test('upgrades a schema 7 database: overlays get the local owner', () async {
     final current = AppDatabase(NativeDatabase(file));
-    final storage = AttachmentStorage(dir);
+    final storage = FileAttachmentStorage(dir);
     final local = SongRepository(current, storage);
     final id = await local.createSong(source: '{title: Mine}');
     await local.saveOverlay(
@@ -270,7 +270,7 @@ void main() {
 
   test('upgrades a schema 8 database: overlays get a revision', () async {
     final current = AppDatabase(NativeDatabase(file));
-    final storage = AttachmentStorage(dir);
+    final storage = FileAttachmentStorage(dir);
     final org = SongRepository(
       current,
       storage,
@@ -303,7 +303,7 @@ void main() {
 
   test('upgrades a schema 9 database: songs become searchable', () async {
     final current = AppDatabase(NativeDatabase(file));
-    final storage = AttachmentStorage(dir);
+    final storage = FileAttachmentStorage(dir);
     final songs = SongRepository(current, storage);
     await songs.createSong(source: '{title: Old}\n[C]Hel[G]lo sunshine');
     await current.close();

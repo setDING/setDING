@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
@@ -541,7 +541,10 @@ abstract class SyncBackend {
 abstract interface class AttachmentDownloads {
   /// Streams the file of [attachment] into [target]. Throws a
   /// [BackendException].
-  Future<void> download(RemoteAttachment attachment, File target);
+  Future<void> download(
+    RemoteAttachment attachment,
+    StreamSink<List<int>> target,
+  );
 
   /// Releases the HTTP client.
   void close();

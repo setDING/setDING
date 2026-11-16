@@ -142,9 +142,18 @@ Tracked in issue #27, each step a separate PR:
 - 2026-11-16: Owner decision: the web client works only with sign-in; file import
   and export are not offered on web, because songs and sets are synced with the
   server. Scope table and implementation step 2 updated.
+- 2026-11-16: Step "web platform" implemented (#27): drift's WASM database with
+  `web/sqlite3.wasm` (checked in, pinned) and a worker compiled from the locked
+  packages; `package:sqlite3` raised to 3.9.1 because older versions made the
+  IndexedDB fallback hang. Attachments are kept in memory on web until the
+  on-demand step; the session lasts as long as the page until the session
+  step. The web build is part of `make check` (docs/development/web.md).
 
 ## Open points
 
 - Supported browsers (OPFS needs current Chrome, Edge, Firefox or Safari; fallback
   to IndexedDB on older ones).
 - Register `app.realchord.app` in the tunnel and DNS (owner).
+- Hosting: send `Cross-Origin-Opener-Policy: same-origin` and
+  `Cross-Origin-Embedder-Policy: require-corp` for the web build, so browsers
+  use OPFS instead of the IndexedDB fallback (step "hosting").

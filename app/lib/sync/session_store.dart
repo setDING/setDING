@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../util/log.dart';
@@ -68,38 +66,8 @@ class SecureSessionStore implements SessionStore {
   }
 }
 
-/// Session in a plain file. Only for isolated test instances
-/// (`REALCHORD_DATA_DIR`, see Makefile), which must not touch the session
-/// of a normally installed app.
-class FileSessionStore implements SessionStore {
-  FileSessionStore(this.file);
-
-  final File file;
-  String? _current;
-
-  @override
-  String? get current => _current;
-
-  @override
-  Future<void> load() async {
-    _current = await file.exists() ? await file.readAsString() : null;
-  }
-
-  @override
-  Future<void> write(String value) async {
-    _current = value;
-    await file.parent.create(recursive: true);
-    await file.writeAsString(value);
-  }
-
-  @override
-  Future<void> delete() async {
-    _current = null;
-    if (await file.exists()) await file.delete();
-  }
-}
-
-/// Session kept in memory only (tests).
+/// Session kept in memory only (tests; the web client until it has its own
+/// session handling, ADR-0018).
 class MemorySessionStore implements SessionStore {
   MemorySessionStore([this._current]);
 

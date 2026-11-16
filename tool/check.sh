@@ -18,6 +18,11 @@ if [ -n "${TEST_CONCURRENCY:-}" ]; then
   concurrency=(--concurrency="$TEST_CONCURRENCY")
 fi
 
+# External libraries must be the newest versions (owner rule,
+# docs/development/dependencies.md).
+step "dependencies"
+"$ROOT/tool/check-deps.sh"
+
 step "packages/chordpro"
 cd "$ROOT/packages/chordpro"
 dart pub get >/dev/null
@@ -57,6 +62,10 @@ PY
   dart format --output=none --set-exit-if-changed lib test
   flutter analyze --fatal-infos
   flutter test "${concurrency[@]}"
+  # The web client is a build of the same app (ADR-0018): code that only
+  # works on native platforms must not break it.
+  step "app (web build)"
+  "$ROOT/tool/build-web.sh"
 fi
 
 step "All checks passed"

@@ -5,6 +5,7 @@ import 'package:drift/drift.dart'
     show TableUpdateQuery, Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:realchord/data/attachment_storage_io.dart';
 import 'package:realchord/data/attachment_storage.dart';
 import 'package:realchord/data/band_copy.dart';
 import 'package:realchord/data/band_view.dart';
@@ -242,7 +243,7 @@ void main() {
 
     setUp(() {
       dir = Directory.systemTemp.createTempSync('realchord_copy');
-      storage = AttachmentStorage(dir);
+      storage = FileAttachmentStorage(dir);
     });
     tearDown(() => dir.deleteSync(recursive: true));
 

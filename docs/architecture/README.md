@@ -54,7 +54,7 @@ A user can be a member of several organizations and bands; roles are defined per
 | Organizations | Bands belong to an **organization** that owns the shared song library; organization admins manage people and bands; created automatically for a single band | [ADR-0017](adr/0017-organizations.md) |
 | Server data model | PocketBase collections as migrations, server-wide revision counter, set items as JSON, access rules per role, tested against a real PocketBase | [ADR-0015](adr/0015-server-data-model.md) |
 | Printable set list | PDF generated in the client with the `pdf` package, embedded font, saved via the save dialog; no print plugin yet | [ADR-0013](adr/0013-printable-set-list.md) |
-| Web client | **Flutter web build of the same app** for management without installation, served by PocketBase (`pb_public`) at `app.realchord.app`, same sync engine, sign-in required, no file import/export, no offline guarantee in the browser | [ADR-0018](adr/0018-web-client.md) |
+| Web client | **Flutter web build of the same app** for management without installation, served by PocketBase (`pb_public`) at `app.realchord.app`, same sync engine, sign-in required, no file import/export, no offline guarantee in the browser ([guide](../development/web.md)) | [ADR-0018](adr/0018-web-client.md) |
 | Linux release | `make release`: Linux release built in a **Debian container** (baseline glibc, ISA check) from the committed state; no Windows release for now ([guide](../development/releases.md)) | [ADR-0019](adr/0019-linux-release-builds.md) |
 
 ## 4. Building block view
