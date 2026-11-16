@@ -8,6 +8,7 @@ import '../../sync/sync_backend.dart';
 import '../../util/log.dart';
 import '../bands/join_screen.dart';
 import '../widgets/dialogs.dart';
+import '../widgets/logo.dart';
 
 const _log = Log('account');
 
@@ -151,6 +152,8 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 padding: const EdgeInsets.all(24),
                 children: [
                   if (widget.gate) ...[
+                    const Center(child: RealChordLogo(height: 36)),
+                    const SizedBox(height: 32),
                     Text(
                       _signUp ? l10n.accountSignUp : l10n.accountSignIn,
                       style: theme.textTheme.headlineSmall,

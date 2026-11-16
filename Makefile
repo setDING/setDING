@@ -70,7 +70,7 @@ BACKEND_PORT    ?= 8090
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := REALCHORD_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build web web-serve deps upgrade apk apk-install android-keystore release release-linux release-check reset data-dir backend check test codegen l10n screenshots examples doctor clean ci-image \
+.PHONY: help setup dev start build web web-serve deps upgrade apk apk-install android-keystore release release-linux release-check reset data-dir backend check test codegen l10n screenshots branding examples doctor clean ci-image \
 	server-target server-install server-status server-logs server-backup server-fetch-backup server-ssh
 
 help: ## Show this help
@@ -174,6 +174,9 @@ l10n: ## Regenerate the translations from the ARB files
 screenshots: ## Render screenshots with real fonts to app/build/screenshots/
 	cd $(APP) && $(FLUTTER) test test_screenshots
 	@echo "Screenshots: $(APP)/build/screenshots/"
+
+branding: ## Regenerate the splash screens, favicon and web icons from app/branding/*.svg
+	$(ROOT)/tool/branding.sh
 
 examples: ## Rebuild docs/examples/feature-showcase.zip from the example files
 	cd $(ROOT)/docs/examples && rm -f feature-showcase.zip && \

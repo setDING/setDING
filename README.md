@@ -1,4 +1,9 @@
-# RealChord
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="app/branding/logo-dark.svg">
+    <img alt="RealChord" src="app/branding/logo.svg" height="64">
+  </picture>
+</h1>
 
 **Your band's songbook – on every tablet, on every stage, even without Wi-Fi.**
 

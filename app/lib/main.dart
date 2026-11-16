@@ -11,9 +11,14 @@ import 'data/song_repository.dart';
 import 'providers.dart';
 import 'settings/settings.dart';
 import 'sync/auth_providers.dart';
+import 'ui/widgets/logo.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Logo while the local services start. On Android, iOS and the web it
+  // replaces the identical native / HTML splash; on Windows and Linux it is
+  // the first thing the window shows.
+  runApp(const SplashScreen());
   // Font embedded in PDF set lists (ADR-0013).
   LicenseRegistry.addLicense(() async* {
     yield LicenseEntryWithLineBreaks([
