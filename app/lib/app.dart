@@ -6,10 +6,10 @@ import 'l10n/generated/app_localizations.dart';
 import 'settings/settings.dart';
 import 'sync/sync_controller.dart';
 import 'ui/deep_links.dart';
-import 'ui/home_screen.dart';
+import 'ui/start_screen.dart';
 
-/// Root widget: theme, localization (ADR-0008), navigation and invitation
-/// links (ADR-0005).
+/// Root widget: theme, localization (ADR-0008), navigation, invitation
+/// links (ADR-0005) and the sign-in gate of the web client (ADR-0018).
 class RealChordApp extends ConsumerStatefulWidget {
   const RealChordApp({super.key, this.home});
 
@@ -57,7 +57,7 @@ class _RealChordAppState extends ConsumerState<RealChordApp> {
           resolveLocale(null, locales ?? const []),
       home: DeepLinkListener(
         navigatorKey: _navigatorKey,
-        child: widget.home ?? const HomeScreen(),
+        child: widget.home ?? const StartScreen(),
       ),
     );
   }

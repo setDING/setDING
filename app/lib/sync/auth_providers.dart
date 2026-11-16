@@ -1,7 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/song_repository.dart' show adoptLocalOverlays;
-import '../providers.dart' show bandServiceProvider, databaseProvider;
+import '../providers.dart'
+    show
+        attachmentStorageProvider,
+        bandServiceProvider,
+        databaseProvider,
+        selectedBandIdProvider,
+        webClientProvider;
 import '../settings/settings.dart';
 import 'pocketbase_backend.dart';
 import 'session_store.dart';
@@ -36,12 +42,16 @@ class AuthNotifier extends Notifier<AuthUser?> {
     final backend = ref.watch(syncBackendProvider);
     final subscription = backend.userChanges.listen((user) {
       final signedIn = state == null && user != null;
+      final signedOut = state != null && user == null;
       state = user;
+      if (signedOut) _clearWebData();
       if (signedIn) _adoptOverlays(user.id);
       if (signedIn && !_syncRefreshesBands) _refreshBands();
     });
     ref.onDispose(subscription.cancel);
     Future.microtask(() async {
+      // Data of an earlier session whose tab was closed (web only).
+      if (backend.currentUser == null) await _clearWebData();
       if (backend.currentUser case final user?) {
         await _adoptOverlays(user.id);
       }
@@ -70,6 +80,19 @@ class AuthNotifier extends Notifier<AuthUser?> {
     await prefs.setBool(_adoptedKey, true);
     final count = await adoptLocalOverlays(ref.read(databaseProvider), userId);
     if (count > 0) _log.info('Took over $count personal adjustments');
+  }
+
+  /// The web client keeps local data only while signed in (ADR-0018): it
+  /// may run on a shared computer, and browsers may evict storage anyway.
+  Future<void> _clearWebData() async {
+    if (!ref.read(webClientProvider)) return;
+    try {
+      await ref.read(databaseProvider).clearAll();
+      await ref.read(attachmentStorageProvider).deleteAll();
+      await ref.read(selectedBandIdProvider.notifier).reset();
+    } catch (e) {
+      _log.error('Could not delete the local data', e);
+    }
   }
 
   Future<void> _refreshBands() async {

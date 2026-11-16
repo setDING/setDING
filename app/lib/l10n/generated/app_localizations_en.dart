@@ -839,6 +839,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSignOutMessage => 'Songs and sets on this device are kept.';
 
   @override
+  String get accountSignOutMessageWeb =>
+      'The data in this browser is deleted. Songs and sets stay on the server.';
+
+  @override
   String get accountEmail => 'Email';
 
   @override
@@ -846,6 +850,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountPasswordConfirm => 'Confirm password';
+
+  @override
+  String get accountKeepSignedIn => 'Stay signed in';
+
+  @override
+  String get accountKeepSignedInHint =>
+      'Only on your own device. Otherwise you are signed out when you close the browser.';
 
   @override
   String get accountName => 'Name';
@@ -1372,4 +1383,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get keepEditing => 'Keep editing';
+
+  @override
+  String get webSignInHint =>
+      'Sign in to manage organizations, bands, songs and sets in the browser.';
+
+  @override
+  String get webNoBandTitle => 'No band yet';
+
+  @override
+  String get webNoBandMessage =>
+      'You are not in a band yet. Create an organization with a band, or join with an invitation link.';
 }

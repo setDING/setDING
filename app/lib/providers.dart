@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'data/attachment_storage.dart';
@@ -19,6 +20,11 @@ final attachmentStorageProvider = Provider<AttachmentStorage>(
   (ref) => throw UnimplementedError('Overridden in main()'),
 );
 
+/// Whether this is the web client (ADR-0018): signing in is required, the
+/// local library and file import/export are hidden, and signing out deletes
+/// the local data. Overridden in tests.
+final webClientProvider = Provider<bool>((ref) => kIsWeb);
+
 // Bands (ADR-0005) -------------------------------------------------------------
 
 final bandServiceProvider = Provider<BandService>(
@@ -26,12 +32,20 @@ final bandServiceProvider = Provider<BandService>(
       BandService(ref.watch(databaseProvider), ref.watch(syncBackendProvider)),
 );
 
-/// The local library followed by the bands of the signed-in user.
-final bandsProvider = StreamProvider<List<BandView>>(
-  (ref) => ref
+/// The local library followed by the bands of the signed-in user. The web
+/// client has no local library (ADR-0018).
+final bandsProvider = StreamProvider<List<BandView>>((ref) {
+  final bands = ref
       .watch(bandServiceProvider)
-      .watchBands(ref.watch(authProvider.select((u) => u?.id))),
-);
+      .watchBands(ref.watch(authProvider.select((u) => u?.id)));
+  if (!ref.watch(webClientProvider)) return bands;
+  return bands.map(
+    (list) => [
+      for (final b in list)
+        if (!b.isLocal) b,
+    ],
+  );
+});
 
 /// The band chosen in the band switcher (stored per device).
 class SelectedBandNotifier extends Notifier<String> {
@@ -45,6 +59,12 @@ class SelectedBandNotifier extends Notifier<String> {
     state = bandId;
     await ref.read(sharedPreferencesProvider).setString(_key, bandId);
   }
+
+  /// Forgets the choice (web sign-out).
+  Future<void> reset() async {
+    state = localBandId;
+    await ref.read(sharedPreferencesProvider).remove(_key);
+  }
 }
 
 final selectedBandIdProvider = NotifierProvider<SelectedBandNotifier, String>(
@@ -56,7 +76,10 @@ final selectedBandIdProvider = NotifierProvider<SelectedBandNotifier, String>(
 final currentBandProvider = Provider<BandView>((ref) {
   final bands = ref.watch(bandsProvider).value ?? const [BandView.local];
   final selected = ref.watch(selectedBandIdProvider);
-  return bands.firstWhere((b) => b.id == selected, orElse: () => bands.first);
+  return bands.firstWhere(
+    (b) => b.id == selected,
+    orElse: () => bands.firstOrNull ?? BandView.local,
+  );
 });
 
 final _currentBandIdProvider = Provider<String>(

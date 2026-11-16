@@ -66,8 +66,7 @@ class SecureSessionStore implements SessionStore {
   }
 }
 
-/// Session kept in memory only (tests; the web client until it has its own
-/// session handling, ADR-0018).
+/// Session kept in memory only (tests).
 class MemorySessionStore implements SessionStore {
   MemorySessionStore([this._current]);
 

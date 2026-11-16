@@ -79,6 +79,7 @@ restarts and is a credential, so it must not be stored in plain text.
 - 2026-11-15: Accepted by the owner.
 - 2026-11-15: Session on web (ADR-0018, accepted): kept for the tab only by default, "Stay signed in" unchecked; signing out deletes the local data of that browser; the server URL defaults to the page's origin.
 - 2026-11-15: Signed out, the app offers "Sign in" and "Join with invitation" side by side (issue #31). Joining takes the link first and then offers "Create account" or "Sign in"; afterwards it continues to the invitation.
+- 2026-11-16: Session on web changed by the owner (ADR-0018): it lasts as long as any tab of the web client is open (new tabs take it over, signing out signs out all tabs) instead of one tab only, because the tabs share the local database; a start without a session deletes leftover local data.
 
 ## Open points
 

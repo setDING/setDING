@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/generated/app_localizations.dart';
 import '../../sync/auth_providers.dart';
+import '../../sync/browser_session_store.dart';
 import '../../sync/sync_backend.dart';
+import '../bands/join_screen.dart';
 import '../widgets/dialogs.dart';
 
 /// Minimum password length of the server (PocketBase default).
@@ -29,12 +31,17 @@ String backendErrorText(AppLocalizations l10n, BackendErrorKind kind) =>
       BackendErrorKind.server => l10n.accountErrorServer,
     };
 
-/// Sign in or create an account. Closes itself after success.
+/// Sign in or create an account. Closes itself after success, unless it is
+/// the [gate] of the web client, which the app replaces after signing in.
 class SignInScreen extends ConsumerStatefulWidget {
-  const SignInScreen({super.key, this.signUp = false});
+  const SignInScreen({super.key, this.signUp = false, this.gate = false});
 
   /// Start in "create account" mode.
   final bool signUp;
+
+  /// The start screen of the web client, where signing in is required
+  /// (ADR-0018): no back button, and a way to join with an invitation.
+  final bool gate;
 
   @override
   ConsumerState<SignInScreen> createState() => _SignInScreenState();
@@ -47,6 +54,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _password = TextEditingController();
   final _confirm = TextEditingController();
   late bool _signUp = widget.signUp;
+  bool _keepSignedIn = false;
   bool _busy = false;
   String? _error;
 
@@ -66,6 +74,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       _error = null;
     });
     final backend = ref.read(syncBackendProvider);
+    if (ref.read(sessionStoreProvider) case final BrowserSessionStore store) {
+      store.keepSignedIn = _keepSignedIn;
+    }
     try {
       if (_signUp) {
         await backend.signUp(
@@ -76,7 +87,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       } else {
         await backend.signIn(email: _email.text, password: _password.text);
       }
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted && !widget.gate) Navigator.of(context).pop(true);
     } on BackendException catch (e) {
       if (!mounted) return;
       setState(() {
@@ -113,9 +124,17 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     String? required(String? v) =>
         v == null || v.trim().isEmpty ? l10n.accountFieldRequired : null;
 
+    final browserSession =
+        ref.watch(sessionStoreProvider) is BrowserSessionStore;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(_signUp ? l10n.accountSignUp : l10n.accountSignIn),
+        automaticallyImplyLeading: !widget.gate,
+        title: Text(
+          widget.gate
+              ? l10n.appTitle
+              : (_signUp ? l10n.accountSignUp : l10n.accountSignIn),
+        ),
       ),
       body: Center(
         child: ConstrainedBox(
@@ -126,6 +145,15 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(24),
                 children: [
+                  if (widget.gate) ...[
+                    Text(
+                      _signUp ? l10n.accountSignUp : l10n.accountSignIn,
+                      style: theme.textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(l10n.webSignInHint),
+                    const SizedBox(height: 24),
+                  ],
                   if (_signUp) ...[
                     TextFormField(
                       key: const Key('account-name'),
@@ -193,6 +221,20 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       onFieldSubmitted: (_) => _submit(),
                     ),
                   ],
+                  if (browserSession) ...[
+                    const SizedBox(height: 8),
+                    CheckboxListTile(
+                      key: const Key('account-keep-signed-in'),
+                      contentPadding: EdgeInsets.zero,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      value: _keepSignedIn,
+                      onChanged: _busy
+                          ? null
+                          : (v) => setState(() => _keepSignedIn = v ?? false),
+                      title: Text(l10n.accountKeepSignedIn),
+                      subtitle: Text(l10n.accountKeepSignedInHint),
+                    ),
+                  ],
                   if (_error != null) ...[
                     const SizedBox(height: 16),
                     Text(
@@ -230,6 +272,19 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     TextButton(
                       onPressed: _busy ? null : _resetPassword,
                       child: Text(l10n.accountForgotPassword),
+                    ),
+                  if (widget.gate)
+                    TextButton.icon(
+                      key: const Key('account-open-join'),
+                      icon: const Icon(Icons.link),
+                      onPressed: _busy
+                          ? null
+                          : () => Navigator.of(context).push(
+                              MaterialPageRoute<bool>(
+                                builder: (_) => const JoinScreen(),
+                              ),
+                            ),
+                      label: Text(l10n.accountJoin),
                     ),
                 ],
               ),

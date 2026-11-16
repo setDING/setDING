@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/generated/app_localizations.dart';
+import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../../sync/auth_providers.dart';
 import '../widgets/dialogs.dart';
@@ -46,7 +47,9 @@ class AccountSection extends ConsumerWidget {
                 final ok = await confirm(
                   context,
                   title: l10n.accountSignOutTitle,
-                  message: l10n.accountSignOutMessage,
+                  message: ref.read(webClientProvider)
+                      ? l10n.accountSignOutMessageWeb
+                      : l10n.accountSignOutMessage,
                   action: l10n.accountSignOut,
                 );
                 if (ok) await ref.read(authProvider.notifier).signOut();

@@ -74,11 +74,19 @@ app** (`app/`), not as a separate web application.
 Browsers have no platform key store, and web clients are often used on shared
 computers:
 
-- The session is kept for the browser tab only (`sessionStorage`) by default;
-  a **"Stay signed in"** checkbox, **unchecked by default**, keeps it in
-  persistent browser storage.
+- By default the session lasts **as long as a tab of the web client is
+  open**: it is kept in `sessionStorage`, and a new tab takes it over from an
+  open tab (`BroadcastChannel`). A **"Stay signed in"** checkbox, **unchecked
+  by default**, keeps it in `localStorage` instead.
+- Signing out in one tab signs out all tabs (they reload), because all tabs
+  share one local database.
 - Signing out on web **deletes the local database** of that browser (unlike the
-  native apps, which keep songs and sets on sign-out).
+  native apps, which keep songs and sets on sign-out). A start without a
+  session deletes leftover data too, e.g. after the last tab was closed:
+  local data exists only while signed in.
+- Signing in is required: signed out, the web client shows only the sign-in
+  screen (with "Join with invitation"); signed in without a band, it offers
+  to manage bands or join with an invitation.
 - The 30-day token lifetime and the refresh on start stay the same.
 
 ### Hosting (ADR-0014)
@@ -148,6 +156,12 @@ Tracked in issue #27, each step a separate PR:
   IndexedDB fallback hang. Attachments are kept in memory on web until the
   on-demand step; the session lasts as long as the page until the session
   step. The web build is part of `make check` (docs/development/web.md).
+- 2026-11-16: Owner decision: the default web session lasts as long as any
+  tab of the web client is open (new tabs take it over, signing out signs out
+  all tabs) instead of strictly one tab, because all tabs share the local
+  database. Step "web session" implemented (#27): sign-in gate, "Stay signed
+  in", local library and file import/export hidden, local data deleted on
+  sign-out and on a start without a session.
 
 ## Open points
 

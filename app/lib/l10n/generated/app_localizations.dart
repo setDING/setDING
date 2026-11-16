@@ -1598,6 +1598,12 @@ abstract class AppLocalizations {
   /// **'Songs und Sets auf diesem Gerät bleiben erhalten.'**
   String get accountSignOutMessage;
 
+  /// No description provided for @accountSignOutMessageWeb.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Daten in diesem Browser werden gelöscht. Songs und Sets bleiben auf dem Server.'**
+  String get accountSignOutMessageWeb;
+
   /// No description provided for @accountEmail.
   ///
   /// In de, this message translates to:
@@ -1615,6 +1621,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Passwort bestätigen'**
   String get accountPasswordConfirm;
+
+  /// No description provided for @accountKeepSignedIn.
+  ///
+  /// In de, this message translates to:
+  /// **'Angemeldet bleiben'**
+  String get accountKeepSignedIn;
+
+  /// No description provided for @accountKeepSignedInHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur auf deinem eigenen Gerät. Sonst endet die Anmeldung, wenn du den Browser schliesst.'**
+  String get accountKeepSignedInHint;
 
   /// No description provided for @accountName.
   ///
@@ -2443,6 +2461,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Weiter bearbeiten'**
   String get keepEditing;
+
+  /// No description provided for @webSignInHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Melde dich an, um Organisationen, Bands, Songs und Sets im Browser zu verwalten.'**
+  String get webSignInHint;
+
+  /// No description provided for @webNoBandTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Band'**
+  String get webNoBandTitle;
+
+  /// No description provided for @webNoBandMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist noch in keiner Band. Erstelle eine Organisation mit einer Band oder tritt mit einem Einladungslink bei.'**
+  String get webNoBandMessage;
 }
 
 class _AppLocalizationsDelegate

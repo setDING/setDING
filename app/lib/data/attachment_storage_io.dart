@@ -62,6 +62,11 @@ class FileAttachmentStorage implements AttachmentStorage {
   }
 
   @override
+  Future<void> deleteAll() async {
+    if (await directory.exists()) await directory.delete(recursive: true);
+  }
+
+  @override
   Future<int> usedBytes() async {
     if (!await directory.exists()) return 0;
     var total = 0;

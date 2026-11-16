@@ -48,6 +48,9 @@ class MemoryAttachmentStorage implements AttachmentStorage {
   Future<void> delete(String fileName) async => _files.remove(fileName);
 
   @override
+  Future<void> deleteAll() async => _files.clear();
+
+  @override
   Future<int> usedBytes() async =>
       _files.values.fold<int>(0, (sum, bytes) => sum + bytes.length);
 }

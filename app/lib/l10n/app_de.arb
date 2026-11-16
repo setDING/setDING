@@ -365,9 +365,12 @@
   "accountSignOut": "Abmelden",
   "accountSignOutTitle": "Abmelden?",
   "accountSignOutMessage": "Songs und Sets auf diesem Gerät bleiben erhalten.",
+  "accountSignOutMessageWeb": "Die Daten in diesem Browser werden gelöscht. Songs und Sets bleiben auf dem Server.",
   "accountEmail": "E-Mail",
   "accountPassword": "Passwort",
   "accountPasswordConfirm": "Passwort bestätigen",
+  "accountKeepSignedIn": "Angemeldet bleiben",
+  "accountKeepSignedInHint": "Nur auf deinem eigenen Gerät. Sonst endet die Anmeldung, wenn du den Browser schliesst.",
   "accountName": "Name",
   "accountNameHint": "So sehen dich deine Bandmitglieder.",
   "accountToSignUp": "Noch kein Konto? Konto erstellen",
@@ -686,5 +689,8 @@
     }
   },
   "saveAnyway": "Trotzdem speichern",
-  "keepEditing": "Weiter bearbeiten"
+  "keepEditing": "Weiter bearbeiten",
+  "webSignInHint": "Melde dich an, um Organisationen, Bands, Songs und Sets im Browser zu verwalten.",
+  "webNoBandTitle": "Noch keine Band",
+  "webNoBandMessage": "Du bist noch in keiner Band. Erstelle eine Organisation mit einer Band oder tritt mit einem Einladungslink bei."
 }

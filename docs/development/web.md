@@ -52,7 +52,22 @@ through conditional imports (`if (dart.library.io)`);
 | `lib/ui/platform/stored_file_view.dart` | `Image.file`, `PdfViewer.file` | from bytes |
 | `lib/platform/network_error.dart` | `SocketException` | – |
 
-State of issue #27: the web client opens the local database and runs the
-shared UI. Web sessions, hiding the local library and import/export, PDF
-attachments on demand and hosting follow in their own steps; until then the
-session lasts as long as the page and attachments are kept in memory.
+## Web-only behaviour
+
+The UI asks `webClientProvider` (`kIsWeb`, overridden in tests with
+`TestApp.create(web: true)`) instead of `kIsWeb`, so the web behaviour is
+covered by the normal widget tests (`test/web_client_test.dart`):
+
+- `StartScreen`: sign-in gate, "no band yet" screen, then the `HomeScreen`.
+- `bandsProvider` leaves out the local library.
+- Import (ChordPro, ZIP) and export (songs, sets, set lists) are hidden.
+- `AuthNotifier` deletes the local data (`AppDatabase.clearAll`, attachments,
+  selected band) when signing out and on a start without a session.
+
+The session is a `BrowserSessionStore` (`sessionStorage`, `localStorage`,
+`BroadcastChannel` between tabs, see ADR-0018). Its logic is plain Dart and
+tested with fakes (`test/browser_session_store_test.dart`); the browser
+adapters are in `lib/platform/browser_storage_web.dart`.
+
+State of issue #27: PDF attachments on demand and hosting follow in their
+own steps; until then attachments are kept in memory.

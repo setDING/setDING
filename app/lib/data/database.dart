@@ -391,10 +391,31 @@ class AppDatabase extends _$AppDatabase {
     beforeOpen: (details) async {
       if (details.hadUpgrade) await afterUpgrade?.call(this);
       await customStatement('PRAGMA foreign_keys = ON');
-      await into(bands).insert(
-        BandsCompanion.insert(id: localBandId, name: 'My band'),
-        mode: InsertMode.insertOrIgnore,
-      );
+      await _insertLocalBand();
     },
   );
+
+  Future<void> _insertLocalBand() => into(bands).insert(
+    BandsCompanion.insert(id: localBandId, name: 'My band'),
+    mode: InsertMode.insertOrIgnore,
+  );
+
+  /// Deletes all data, as after a fresh install: songs, sets, bands, the
+  /// outbox and the sync cursors. The web client does this when signing out
+  /// (ADR-0018). The full-text index follows the songs through its triggers.
+  Future<void> clearAll() async {
+    // Foreign keys cannot be switched inside a transaction.
+    await customStatement('PRAGMA foreign_keys = OFF');
+    try {
+      await transaction(() async {
+        for (final table in allTables) {
+          if (table is VirtualTableInfo) continue;
+          await delete(table).go();
+        }
+        await _insertLocalBand();
+      });
+    } finally {
+      await customStatement('PRAGMA foreign_keys = ON');
+    }
+  }
 }

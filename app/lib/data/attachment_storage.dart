@@ -76,4 +76,7 @@ abstract interface class AttachmentStorage {
 
   /// Total size of all stored files in bytes.
   Future<int> usedBytes();
+
+  /// Deletes all stored files (web sign-out, ADR-0018).
+  Future<void> deleteAll();
 }

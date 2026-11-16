@@ -188,7 +188,8 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                       value: 'pdf',
                       child: Text(l10n.addAttachment),
                     ),
-                  if (song.chordproSource.trim().isNotEmpty)
+                  if (song.chordproSource.trim().isNotEmpty &&
+                      !ref.read(webClientProvider))
                     PopupMenuItem(
                       value: 'export',
                       child: Text(l10n.exportSong),

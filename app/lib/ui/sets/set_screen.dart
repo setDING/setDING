@@ -195,15 +195,18 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                     value: 'copyList',
                     child: Text(l10n.copySetList),
                   ),
-                  PopupMenuItem(
-                    value: 'exportListPdf',
-                    child: Text(l10n.exportSetListPdf),
-                  ),
-                  PopupMenuItem(
-                    value: 'exportList',
-                    child: Text(l10n.exportSetList),
-                  ),
-                  PopupMenuItem(value: 'export', child: Text(l10n.exportSet)),
+                  // Web: no file export, sets are synced (ADR-0018).
+                  if (!ref.read(webClientProvider)) ...[
+                    PopupMenuItem(
+                      value: 'exportListPdf',
+                      child: Text(l10n.exportSetListPdf),
+                    ),
+                    PopupMenuItem(
+                      value: 'exportList',
+                      child: Text(l10n.exportSetList),
+                    ),
+                    PopupMenuItem(value: 'export', child: Text(l10n.exportSet)),
+                  ],
                   PopupMenuItem(
                     value: 'copyToBand',
                     child: Text(l10n.copyToBand),

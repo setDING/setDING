@@ -148,11 +148,14 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
             : [
                 const BandSwitcher(),
                 if (band.canEditSongs) ...[
-                  IconButton(
-                    tooltip: l10n.importFiles,
-                    icon: const Icon(Icons.file_open_outlined),
-                    onPressed: () => showImportDialog(context),
-                  ),
+                  // Web: songs come through sync, no file import (ADR-0018).
+                  if (!ref.watch(webClientProvider))
+                    IconButton(
+                      key: const Key('songs-import'),
+                      tooltip: l10n.importFiles,
+                      icon: const Icon(Icons.file_open_outlined),
+                      onPressed: () => showImportDialog(context),
+                    ),
                   IconButton(
                     tooltip: l10n.newPdfSong,
                     icon: const Icon(Icons.picture_as_pdf_outlined),

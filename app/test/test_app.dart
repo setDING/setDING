@@ -25,7 +25,19 @@ import 'fake_backend.dart';
 
 /// App with an in-memory database for widget tests.
 class TestApp {
-  TestApp._(this.db, this.dir, this.prefs, this.backend);
+  TestApp._(
+    this.db,
+    this.dir,
+    this.prefs,
+    this.backend, {
+    this.web = false,
+    SessionStore? sessionStore,
+  }) : sessionStore = sessionStore ?? MemorySessionStore();
+
+  /// Runs as the web client (ADR-0018).
+  final bool web;
+
+  final SessionStore sessionStore;
 
   final AppDatabase db;
   final Directory dir;
@@ -48,6 +60,8 @@ class TestApp {
   static Future<TestApp> create({
     Map<String, Object> prefs = const {},
     AuthUser? user,
+    bool web = false,
+    SessionStore? sessionStore,
   }) async {
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
     SharedPreferences.setMockInitialValues(prefs);
@@ -56,6 +70,8 @@ class TestApp {
       Directory.systemTemp.createTempSync('realchord_widget'),
       await SharedPreferences.getInstance(),
       FakeSyncBackend(user: user),
+      web: web,
+      sessionStore: sessionStore,
     );
   }
 
@@ -64,7 +80,8 @@ class TestApp {
     sharedPreferencesProvider.overrideWithValue(prefs),
     databaseProvider.overrideWithValue(db),
     attachmentStorageProvider.overrideWithValue(storage),
-    sessionStoreProvider.overrideWithValue(MemorySessionStore()),
+    sessionStoreProvider.overrideWithValue(sessionStore),
+    webClientProvider.overrideWithValue(web),
     syncBackendProvider.overrideWithValue(backend),
     incomingLinksProvider.overrideWithValue(links.stream),
     autoSyncProvider.overrideWithValue(false),

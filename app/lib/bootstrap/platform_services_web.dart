@@ -2,7 +2,8 @@ import 'package:drift_flutter/drift_flutter.dart';
 
 import '../data/attachment_storage_memory.dart';
 import '../data/database.dart';
-import '../sync/session_store.dart';
+import '../platform/browser_storage_web.dart';
+import '../sync/browser_session_store.dart';
 import 'platform_services.dart';
 
 /// Opens the services of the web client (ADR-0018): the database runs in
@@ -18,11 +19,17 @@ Future<PlatformServices> openPlatformServices() async {
       ),
     ),
   );
-  // Session handling for the web follows in its own step of issue #27; until
-  // then the session lasts as long as the page.
+  // The session lasts as long as a tab is open, or until signing out with
+  // "Stay signed in" (ADR-0018).
+  final sessionStore = BrowserSessionStore(
+    tab: BrowserKeyValueStorage.session(),
+    persistent: BrowserKeyValueStorage.local(),
+    channel: BroadcastTabChannel('realchord.session'),
+    onSignedOutElsewhere: reloadPage,
+  );
   return (
     db: db,
     storage: MemoryAttachmentStorage(),
-    sessionStore: MemorySessionStore(),
+    sessionStore: sessionStore,
   );
 }
