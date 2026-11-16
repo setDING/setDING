@@ -135,6 +135,51 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('fit to page resets the enlarged text', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final items = await createSongs(tester, app, ['{title: First}\n[C]One']);
+    final id = items.single.song!.id;
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+    Future<double> scale() async =>
+        (await tester.runAsync(() => app.songs.getOverlay(id)))!.fontScale;
+    IconButton fit() => tester.widget<IconButton>(
+      find.widgetWithIcon(IconButton, Icons.fit_screen),
+    );
+
+    // The control bar opens with a tap in the middle of the screen.
+    await tester.tapAt(tester.getCenter(find.byType(PageView)));
+    await tester.pumpAndSettle();
+    expect(fit().onPressed, isNull, reason: 'already fitted');
+
+    await tester.tap(find.byIcon(Icons.text_increase));
+    await tester.pumpAndSettle();
+    expect(await scale(), closeTo(1.1, 1e-9));
+    expect(fit().onPressed, isNotNull);
+
+    await tester.tap(find.byIcon(Icons.fit_screen));
+    await tester.pumpAndSettle();
+    expect(await scale(), 1.0);
+    expect(fit().onPressed, isNull);
+    await app.dispose(tester);
+  });
+
+  testWidgets('without fitting there is no fit to page button', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'autoFit': false},
+    );
+    final items = await createSongs(tester, app, ['{title: First}\n[C]One']);
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+    await tester.tapAt(tester.getCenter(find.byType(PageView)));
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.text_increase), findsOneWidget);
+    expect(find.byIcon(Icons.fit_screen), findsNothing);
+    await app.dispose(tester);
+  });
+
   Future<void> settlePdf(WidgetTester tester) async {
     for (var i = 0; i < 10; i++) {
       await tester.runAsync(

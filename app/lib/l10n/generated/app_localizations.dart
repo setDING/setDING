@@ -446,6 +446,12 @@ abstract class AppLocalizations {
   /// **'Schrift kleiner'**
   String get fontSmaller;
 
+  /// No description provided for @fitToPage.
+  ///
+  /// In de, this message translates to:
+  /// **'An Seite anpassen'**
+  String get fitToPage;
+
   /// No description provided for @resetAdjustments.
   ///
   /// In de, this message translates to:

@@ -217,6 +217,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fontSmaller => 'Smaller text';
 
   @override
+  String get fitToPage => 'Fit to page';
+
+  @override
   String get resetAdjustments => 'Reset personal adjustments';
 
   @override
