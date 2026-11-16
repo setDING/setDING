@@ -138,7 +138,8 @@ class GridStrum extends GridToken {
 
 final _bar = RegExp(r'^(?:\|\||\|\.|:\|:|\|:|:\|\d*>?|\|\d+>?|\|)$');
 
-bool _isBar(String token) => _bar.hasMatch(token);
+/// Whether [token] (one word of a grid line) is a bar line symbol.
+bool isGridBar(String token) => _bar.hasMatch(token);
 
 /// Parses one grid input line. Chords get the transposition and key
 /// that are in effect.
@@ -149,11 +150,11 @@ GridRow parseGridRow(
   Key? key,
 }) {
   final words = line.trim().split(RegExp(r'\s+'));
-  final firstBar = words.indexWhere(_isBar);
+  final firstBar = words.indexWhere(isGridBar);
   if (firstBar < 0) {
     return GridRow(leftMargin: line.trim(), tokens: const []);
   }
-  final lastBar = words.lastIndexWhere(_isBar);
+  final lastBar = words.lastIndexWhere(isGridBar);
   final left = words.sublist(0, firstBar).join(' ');
   final right = words.sublist(lastBar + 1).join(' ');
 
@@ -167,7 +168,7 @@ GridRow parseGridRow(
       hideBars = w == 's';
       continue;
     }
-    if (_isBar(w)) {
+    if (isGridBar(w)) {
       tokens.add(GridBar(w));
     } else if (w == '.') {
       tokens.add(const GridMark(GridSymbol.empty));

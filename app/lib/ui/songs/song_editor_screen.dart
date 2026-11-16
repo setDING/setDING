@@ -11,6 +11,7 @@ import '../render/song_header.dart';
 import '../render/song_view.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/sequence_dialog.dart';
+import 'chordpro_editing_controller.dart';
 import 'editor_toolbar.dart';
 
 const newSongTemplate = '''{title: }
@@ -42,7 +43,7 @@ class SongEditorScreen extends ConsumerStatefulWidget {
 }
 
 class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
-  late final TextEditingController _controller;
+  late final ChordProEditingController _controller;
   late final String _original;
   late Song _preview;
   final _focus = FocusNode();
@@ -52,7 +53,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
     super.initState();
     _original =
         widget.initialSource ?? (widget.songId == null ? newSongTemplate : '');
-    _controller = TextEditingController(text: _original);
+    _controller = ChordProEditingController(text: _original);
     _preview = _parse(_original);
     _previewSource = _original;
     _controller.addListener(_onChanged);

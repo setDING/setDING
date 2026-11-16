@@ -73,6 +73,7 @@ Notation alternatives:
 - Transposition and Nashville conversion share a chord model (root, quality, extensions, bass note) in the `chordpro` package; notation (international/German) is applied only at render time.
 - Section labels without an explicit label (e.g. a plain `{start_of_chorus}`) are rendered with a localized default label ("Chorus" / "Refrain", see ADR-0008).
 - The editor in the app is a text editor with live preview; a WYSIWYG editor is not needed. The editor shows chords in international notation, as stored.
+- The `chordpro` package also provides **source positions** (`highlightChordPro`) for syntax highlighting in the editor. The tokenizer follows the parser's rules (directive names, selectors, sections), so editor and parser agree; it is tolerant of incomplete input while typing.
 
 ## Decision log
 
@@ -80,6 +81,7 @@ Notation alternatives:
 - 2026-11-14: Display notation selectable (international B / German H), storage always international.
 - 2026-11-14: Nashville number display is supported. Chord diagrams are not planned.
 - 2026-11-14: Extended by ADR-0012: the whole ChordPro specification is supported, including chord diagrams (supersedes "chord diagrams are not displayed" and the subset listed above).
+- 2026-11-16: The package also provides source positions for syntax highlighting in the editor (`highlightChordPro`, #35); the directive names are shared by parser and highlighter.
 
 ## Open points
 

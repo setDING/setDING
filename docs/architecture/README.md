@@ -100,7 +100,7 @@ flowchart LR
 | `data` | Local DB (SQLite, e.g. via `drift`), repositories, domain model |
 | `sync` | Sync between local DB and backend, conflict handling, offline queue. `SyncEngine` runs the order of a sync; the parts per kind of record live in `app/lib/sync/engine/` (songs with conflicts, sets, attachments with downloads, personal adjustments, shared cursors and outbox) |
 | `live` | Performance mode: full screen, wakelock, pedal/keyboard control, set navigation |
-| `manage` | Create/import songs, ChordPro editor with preview, put sets together |
+| `manage` | Create/import songs, ChordPro editor with syntax highlighting and preview, put sets together |
 | `band` | Login, band selection, invitations, roles |
 | `l10n` | UI translations (German, English) and language setting |
 

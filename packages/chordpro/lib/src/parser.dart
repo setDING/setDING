@@ -5,91 +5,10 @@ library;
 import 'chord.dart';
 import 'diagrams.dart';
 import 'directive.dart';
+import 'directive_names.dart';
 import 'grid.dart';
 import 'metadata.dart';
 import 'song.dart';
-
-/// Directive names (long and short) of meta-data items.
-const _metaAliases = {
-  't': 'title',
-  'title': 'title',
-  'sorttitle': 'sorttitle',
-  'st': 'subtitle',
-  'subtitle': 'subtitle',
-  'artist': 'artist',
-  'sortartist': 'sortartist',
-  'composer': 'composer',
-  'lyricist': 'lyricist',
-  'arranger': 'arranger',
-  'copyright': 'copyright',
-  'album': 'album',
-  'year': 'year',
-  'key': 'key',
-  'time': 'time',
-  'tempo': 'tempo',
-  'duration': 'duration',
-  'capo': 'capo',
-  'tag': 'tag',
-  // Used by CCLI SongSelect files (ADR-0011).
-  'ccli': 'ccli',
-  'ccli_license': 'ccli_license',
-  'footer': 'footer',
-};
-
-const _commentAliases = {
-  'c': CommentStyle.normal,
-  'comment': CommentStyle.normal,
-  'highlight': CommentStyle.normal,
-  'ci': CommentStyle.italic,
-  'comment_italic': CommentStyle.italic,
-  'cb': CommentStyle.box,
-  'comment_box': CommentStyle.box,
-};
-
-/// Short forms of section directives.
-const _shortStart = {
-  'sov': 'verse',
-  'soc': 'chorus',
-  'sob': 'bridge',
-  'sot': 'tab',
-  'sog': 'grid',
-};
-const _shortEnd = {
-  'eov': 'verse',
-  'eoc': 'chorus',
-  'eob': 'bridge',
-  'eot': 'tab',
-  'eog': 'grid',
-};
-
-const _sectionKinds = {
-  'verse': SectionKind.verse,
-  'chorus': SectionKind.chorus,
-  'bridge': SectionKind.bridge,
-  'tab': SectionKind.tab,
-  'grid': SectionKind.grid,
-};
-
-const _delegates = {
-  'abc': DelegateType.abc,
-  'ly': DelegateType.ly,
-  'svg': DelegateType.svg,
-  'textblock': DelegateType.textblock,
-};
-
-/// Font/size/colour directives: name → (target, property).
-final Map<String, (FormatTarget, FormatProperty)> _formatDirectives = {
-  for (final target in FormatTarget.values) ...{
-    '${target.name}font': (target, FormatProperty.font),
-    '${target.name}size': (target, FormatProperty.size),
-    '${target.name}colour': (target, FormatProperty.colour),
-    '${target.name}color': (target, FormatProperty.colour),
-  },
-  'cf': (FormatTarget.chord, FormatProperty.font),
-  'cs': (FormatTarget.chord, FormatProperty.size),
-  'tf': (FormatTarget.text, FormatProperty.font),
-  'ts': (FormatTarget.text, FormatProperty.size),
-};
 
 /// Parses ChordPro [source] into a [Song] (the first song if the file
 /// contains several, see [parseChordProSongs]).
@@ -275,7 +194,8 @@ class _SongParser {
     // Skipping a section whose selector did not match.
     if (skipping != null) {
       if (d != null &&
-          (d.name == 'end_of_$skipping' || _shortEnd[d.name] == skipping)) {
+          (d.name == 'end_of_$skipping' ||
+              shortSectionEnds[d.name] == skipping)) {
         skipping = null;
       }
       return;
@@ -347,7 +267,7 @@ class _SongParser {
     // Section ends never carry a selector; handle them first.
     final endName = name.startsWith('end_of_')
         ? name.substring(7)
-        : _shortEnd[name];
+        : shortSectionEnds[name];
     if (endName != null) {
       closeSection();
       return;
@@ -355,14 +275,14 @@ class _SongParser {
 
     final startName = name.startsWith('start_of_')
         ? name.substring(9)
-        : _shortStart[name];
+        : shortSectionStarts[name];
 
     if (!selected(d)) {
       if (startName != null) skipping = startName;
       return;
     }
 
-    final metaName = _metaAliases[name];
+    final metaName = metaDirectiveAliases[name];
     if (metaName != null) {
       _addMeta(metaName, d.plainArgument);
       return;
@@ -373,7 +293,7 @@ class _SongParser {
       return;
     }
 
-    final commentStyle = _commentAliases[name];
+    final commentStyle = commentDirectives[name];
     if (commentStyle != null) {
       startContent();
       ensureSection().lines.add(
@@ -426,7 +346,7 @@ class _SongParser {
       case 'new_page' || 'np' || 'new_physical_page' || 'npp':
         ensureSection().lines.add(const BreakLine(BreakKind.page));
       default:
-        final format = _formatDirectives[name];
+        final format = formatDirectives[name];
         if (format != null) {
           final value = d.plainArgument;
           ensureSection().lines.add(
@@ -449,7 +369,7 @@ class _SongParser {
 
   void _startSection(String name, Directive d) {
     closeSection();
-    final delegateType = _delegates[name];
+    final delegateType = delegateSectionNames[name];
     if (delegateType != null) {
       startContent();
       final label = d.label;
@@ -463,7 +383,7 @@ class _SongParser {
       return;
     }
 
-    final kind = _sectionKinds[name] ?? SectionKind.custom;
+    final kind = sectionKindNames[name] ?? SectionKind.custom;
     GridShape? shape;
     var label = d.label;
     if (kind == SectionKind.grid) {

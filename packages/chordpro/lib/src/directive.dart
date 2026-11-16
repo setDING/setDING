@@ -72,6 +72,11 @@ Map<String, String> parseAttributes(String text) {
   return rest.trim().isEmpty ? result : const {};
 }
 
+/// The `key="value"` pairs in [text] with their positions; group 1 is the
+/// key, groups 2–4 the value (double-quoted, single-quoted, bare).
+Iterable<RegExpMatch> attributeMatches(String text) =>
+    _attribute.allMatches(text);
+
 /// Removes one pair of surrounding quotes.
 String unquote(String text) {
   final t = text.trim();

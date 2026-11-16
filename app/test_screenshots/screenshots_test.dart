@@ -61,6 +61,29 @@ Future<void> _shot(WidgetTester tester, String name) async {
       .writeAsBytesSync(bytes!.buffer.asUint8List());
 }
 
+/// Editor content for the highlighting screenshot: one line per token kind.
+const _highlightSource = '''{title: Highlighting}
+{key: G}
+{x_sequence: V, C}
+# A comment line
+{start_of_verse: label="Verse 1"}
+[G]Lyrics with <b>markup</b>, [*Riff] and [Xyz] [N.C.]
+{comment-alto: Selector}
+{textsize: 120%}
+{end_of_verse}
+{start_of_grid}
+| G . . . | C . D . :|
+{end_of_grid}
+{start_of_tab}
+e|--0--2--|
+{end_of_tab}
+{start_of_abc}
+X:1
+K:G
+{end_of_abc}
+[Am unclosed
+''';
+
 void main() {
   setUpAll(() async => _loadFonts());
 
@@ -187,6 +210,17 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text(lang == 'de' ? 'Abschnitte' : 'Sections'));
       await _shot(tester, '${lang}_9_editor');
+
+      // Syntax highlighting of every kind of ChordPro element.
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            home: const SongEditorScreen(initialSource: _highlightSource),
+          ),
+        ),
+      );
+      await _shot(tester, '${lang}_9b_editor_highlighting');
 
       // Song sequence for a set item, built from the parts of the song.
       await tester.pumpWidget(
