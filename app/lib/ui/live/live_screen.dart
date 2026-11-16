@@ -277,6 +277,22 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     }
   }
 
+  /// Horizontal distance of the current swipe.
+  double _swipe = 0;
+
+  /// A swipe to the left turns forward, to the right back: when it is fast
+  /// enough or long enough (a fifth of the page width).
+  void _onSwipeEnd(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    final distance = _swipe;
+    _swipe = 0;
+    if (velocity.abs() > 300 ? velocity < 0 : distance < -_width * 0.2) {
+      _next();
+    } else if (velocity.abs() > 300 ? velocity > 0 : distance > _width * 0.2) {
+      _previous();
+    }
+  }
+
   Future<void> _showOverview() async {
     final l10n = AppLocalizations.of(context);
     final target = await showModalBottomSheet<int>(
@@ -367,8 +383,15 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                           return GestureDetector(
                             behavior: HitTestBehavior.translucent,
                             onTapUp: (d) => _onTap(d.localPosition),
+                            // Swipes turn pages like taps: the pages of a
+                            // song first, then the next/previous song.
+                            onHorizontalDragStart: (_) => _swipe = 0,
+                            onHorizontalDragUpdate: (d) =>
+                                _swipe += d.primaryDelta ?? 0,
+                            onHorizontalDragEnd: _onSwipeEnd,
                             child: PageView.builder(
                               controller: _pages,
+                              physics: const NeverScrollableScrollPhysics(),
                               itemCount: items.length,
                               onPageChanged: (i) => setState(() {
                                 // A song turned to from the front starts at
