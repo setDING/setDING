@@ -71,6 +71,37 @@ void main() {
       expect(await songs.watchSongs().first, hasLength(2));
     });
 
+    test('full-text search ignores chords, accents and word order', () async {
+      await songs.createSong(
+        source:
+            '{title: Über den Wolken}\n{artist: Reinhard Mey}\n'
+            '[C]Hel[G]lo sun[Am]shine\n{c: Capo 2 – slowly}',
+      );
+      await songs.createSong(source: '{title: Other}\n[D]rain');
+      Future<List<String>> find(String q) async => [
+        for (final s in await songs.watchSongs(query: q).first) s.title,
+      ];
+      expect(await find('hello'), ['Über den Wolken']);
+      expect(await find('uber'), ['Über den Wolken']);
+      expect(await find('mey wolk'), ['Über den Wolken']);
+      expect(await find('slowly'), ['Über den Wolken']);
+      expect(await find('wolken rain'), isEmpty);
+      // Quotes and operators are search text, not FTS syntax.
+      expect(await find('"rain" OR'), isEmpty);
+      expect(await find('NEAR('), isEmpty);
+      expect(await find('!!'), isEmpty);
+      // The list query searches the same way.
+      expect(
+        (await songs.watchSongList(query: 'hello').first).single.title,
+        'Über den Wolken',
+      );
+      // Editing updates the index.
+      final id = (await songs.watchSongs(query: 'rain').first).single.id;
+      await songs.updateSource(id, '{title: Other}\n[D]snow');
+      expect(await find('rain'), isEmpty);
+      expect(await find('snow'), ['Other']);
+    });
+
     test('attachments are stored and size-limited', () async {
       final id = await songs.createSong(title: 'X');
       final attId = await songs.addAttachment(

@@ -289,6 +289,7 @@ class SyncEngine {
             sortTitle: Value(meta.sortTitle),
             sortArtist: Value(meta.sortArtist),
             tags: Value(meta.tagsColumn),
+            searchText: Value(meta.searchText),
             revision: Value(remote.revision),
             updatedAt: DateTime.now(),
             deleted: Value(remote.deleted),

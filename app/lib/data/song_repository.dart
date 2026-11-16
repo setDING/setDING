@@ -20,6 +20,7 @@ class SongMeta {
     this.sortTitle,
     this.sortArtist,
     this.tags = const [],
+    this.searchText,
   });
 
   factory SongMeta.fromSource(String source) {
@@ -35,6 +36,16 @@ class SongMeta {
         for (final t in song.tags)
           if (t.trim().isNotEmpty) t.trim(),
       ],
+      searchText: blankToNull(
+        [
+          for (final section in song.sections)
+            for (final line in section.lines)
+              if (line is cp.LyricLine)
+                line.plainText
+              else if (line is cp.CommentLine)
+                cp.stripMarkup(line.text),
+        ].join('\n'),
+      ),
     );
   }
 
@@ -45,6 +56,9 @@ class SongMeta {
   final String? sortTitle;
   final String? sortArtist;
   final List<String> tags;
+
+  /// Lyrics and comments without chords and markup (full-text search).
+  final String? searchText;
 
   /// Tags as stored in the database (see `Songs.tags`).
   String? get tagsColumn => tags.isEmpty ? null : '\n${tags.join('\n')}\n';
@@ -59,6 +73,17 @@ Future<List<SongMeta>> songMetas(List<String> sources) => sources.length < 20
 List<SongMeta> _metas(List<String> sources) => [
   for (final s in sources) SongMeta.fromSource(s),
 ];
+
+/// The FTS5 query for a search text: every word must occur as the start of
+/// a word, in any order. Null when the text has no letters or digits.
+String? songSearchMatch(String query) {
+  final words = [
+    for (final w in query.trim().split(RegExp(r'\s+')))
+      if (RegExp(r'[\p{L}\p{N}]', unicode: true).hasMatch(w)) w,
+  ];
+  if (words.isEmpty) return null;
+  return words.map((w) => '"${w.replaceAll('"', '""')}"*').join(' ');
+}
 
 /// Owner of personal adjustments of songs in [libraryId] for [userId]
 /// (ADR-0020).
@@ -190,14 +215,18 @@ class SongRepository {
     if (tag != null) {
       filter = filter & s.tags.lower().like('%\n${tag.toLowerCase()}\n%');
     }
-    final trimmed = query.trim();
-    if (trimmed.isNotEmpty) {
-      final pattern = '%${trimmed.toLowerCase()}%';
+    if (query.trim().isNotEmpty) {
+      final match = songSearchMatch(query);
+      // Full-text index (search.drift): words starting with the search
+      // terms in title, artist or lyrics, without chords.
       filter =
           filter &
-          (s.title.lower().like(pattern) |
-              s.artist.lower().like(pattern) |
-              s.chordproSource.lower().like(pattern));
+          (match == null
+              ? const Constant(false)
+              : CustomExpression<bool>(
+                  'songs.rowid IN (SELECT rowid FROM songs_fts '
+                  "WHERE songs_fts MATCH '${match.replaceAll("'", "''")}')",
+                ));
     }
     return filter;
   }
@@ -235,6 +264,7 @@ class SongRepository {
               sortTitle: Value(meta.sortTitle),
               sortArtist: Value(meta.sortArtist),
               tags: Value(meta.tagsColumn),
+              searchText: Value(meta.searchText),
               updatedAt: DateTime.now(),
             ),
           );
@@ -259,6 +289,7 @@ class SongRepository {
           sortTitle: Value(meta.sortTitle),
           sortArtist: Value(meta.sortArtist),
           tags: Value(meta.tagsColumn),
+          searchText: Value(meta.searchText),
           updatedAt: Value(DateTime.now()),
         ),
       );
@@ -308,6 +339,7 @@ class SongRepository {
             sortTitle: Value(meta.sortTitle),
             sortArtist: Value(meta.sortArtist),
             tags: Value(meta.tagsColumn),
+            searchText: Value(meta.searchText),
           ),
         );
       }

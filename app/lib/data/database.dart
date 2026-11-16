@@ -111,6 +111,10 @@ class Songs extends Table {
   TextColumn get sortTitle => text().nullable()();
   TextColumn get sortArtist => text().nullable()();
 
+  /// Lyrics and comments without chords, for the full-text search
+  /// (search.drift, schema 10).
+  TextColumn get searchText => text().nullable()();
+
   /// `{tag}` values, each enclosed in newlines (`\nRock\nLive\n`) so a tag
   /// can be matched exactly with LIKE (schema 2).
   TextColumn get tags => text().nullable()();
@@ -263,6 +267,7 @@ class SongConflicts extends Table {
 }
 
 @DriftDatabase(
+  include: {'search.drift'},
   tables: [
     Organizations,
     OrgMemberships,
@@ -282,7 +287,24 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
+
+  /// Creates the full-text index of the songs and its triggers (again) and
+  /// fills it. Needed after a migration that rebuilds the `songs` table
+  /// (which drops its triggers).
+  Future<void> createSongSearch(Migrator m) async {
+    await customStatement('DROP TABLE IF EXISTS songs_fts');
+    for (final trigger in [songsFtsInsert, songsFtsDelete, songsFtsUpdate]) {
+      await customStatement('DROP TRIGGER IF EXISTS ${trigger.entityName}');
+    }
+    await m.create(songsFts);
+    await m.create(songsFtsInsert);
+    await m.create(songsFtsDelete);
+    await m.create(songsFtsUpdate);
+    await customStatement(
+      "INSERT INTO songs_fts (songs_fts) VALUES ('rebuild')",
+    );
+  }
 
   /// Indexes of the local database (schema 7).
   List<Index> get localIndexes => [
@@ -323,6 +345,8 @@ class AppDatabase extends _$AppDatabase {
             columnTransformer: {
               songs.libraryId: const CustomExpression<String>('band_id'),
             },
+            // Columns of later schemas exist in the rebuilt table already.
+            newColumns: [songs.searchText],
           ),
         );
       }
@@ -355,6 +379,13 @@ class AppDatabase extends _$AppDatabase {
         );
       } else if (from < 9) {
         await m.addColumn(personalOverlays, personalOverlays.revision);
+      }
+      if (from < 10) {
+        // Full-text search: the column is filled by afterUpgrade
+        // (refreshAllMetadata), the index rebuilt from the songs.
+        // Before schema 4 the rebuilt table has the column already.
+        if (from >= 4) await m.addColumn(songs, songs.searchText);
+        await createSongSearch(m);
       }
     },
     beforeOpen: (details) async {

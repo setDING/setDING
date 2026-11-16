@@ -93,6 +93,15 @@ void main() {
       expect(server.fetchOrganizationsCalls, calls + 1);
     });
 
+    test('pulled songs are found by the search', () async {
+      server.putSong(remoteSong('s1', '{title: Pulled}\n[C]Moon[G]light'));
+      await engine.sync();
+      expect(
+        (await songs.watchSongs(query: 'moonlight').first).single.id,
+        's1',
+      );
+    });
+
     test('never syncs the local library', () async {
       final local = SongRepository(db, AttachmentStorage(dir));
       await local.createSong(source: '{title: Private}');

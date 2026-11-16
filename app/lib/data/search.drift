@@ -1,0 +1,30 @@
+import 'database.dart';
+
+-- Full-text search of songs (schema 10): title, artist and the lyrics
+-- without chords (`songs.search_text`). The index reads its content from
+-- `songs` and is kept up to date by the triggers below.
+CREATE VIRTUAL TABLE songs_fts USING fts5(
+  title,
+  artist,
+  search_text,
+  content = 'songs',
+  content_rowid = 'rowid',
+  tokenize = 'unicode61 remove_diacritics 2'
+);
+
+CREATE TRIGGER songs_fts_insert AFTER INSERT ON songs BEGIN
+  INSERT INTO songs_fts (rowid, title, artist, search_text)
+    VALUES (new.rowid, new.title, new.artist, new.search_text);
+END;
+
+CREATE TRIGGER songs_fts_delete AFTER DELETE ON songs BEGIN
+  INSERT INTO songs_fts (songs_fts, rowid, title, artist, search_text)
+    VALUES ('delete', old.rowid, old.title, old.artist, old.search_text);
+END;
+
+CREATE TRIGGER songs_fts_update AFTER UPDATE ON songs BEGIN
+  INSERT INTO songs_fts (songs_fts, rowid, title, artist, search_text)
+    VALUES ('delete', old.rowid, old.title, old.artist, old.search_text);
+  INSERT INTO songs_fts (rowid, title, artist, search_text)
+    VALUES (new.rowid, new.title, new.artist, new.search_text);
+END;

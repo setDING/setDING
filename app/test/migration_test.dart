@@ -22,9 +22,19 @@ const schema7Indexes = [
   'set_items_song',
 ];
 
+/// Turns a current database back into schema 9: no full-text search.
+void downgradeToSchema9(Database raw) {
+  for (final trigger in ['insert', 'delete', 'update']) {
+    raw.execute('DROP TRIGGER songs_fts_$trigger');
+  }
+  raw.execute('DROP TABLE songs_fts');
+  raw.execute('ALTER TABLE songs DROP COLUMN search_text');
+}
+
 /// Turns a current database back into schema 7: personal overlays without
 /// an owner, keyed by song.
 void downgradeToSchema7(Database raw) {
+  downgradeToSchema9(raw);
   raw.execute('''
     CREATE TABLE overlays_7 (
       song_id TEXT NOT NULL REFERENCES songs (id),
@@ -272,6 +282,7 @@ void main() {
     await current.close();
 
     final raw = sqlite3.open(file.path);
+    downgradeToSchema9(raw);
     raw.execute('ALTER TABLE personal_overlays DROP COLUMN revision');
     raw.execute('PRAGMA user_version = 8');
     raw.close();
@@ -287,6 +298,27 @@ void main() {
       (overlay.ownerId, overlay.transpose, overlay.revision),
       ('ann', 1, 0),
     );
+    await upgraded.close();
+  });
+
+  test('upgrades a schema 9 database: songs become searchable', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final storage = AttachmentStorage(dir);
+    final songs = SongRepository(current, storage);
+    await songs.createSong(source: '{title: Old}\n[C]Hel[G]lo sunshine');
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema9(raw);
+    raw.execute('PRAGMA user_version = 9');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final repo = SongRepository(upgraded, storage);
+    upgraded.afterUpgrade = (db) => repo.refreshAllMetadata();
+    expect((await repo.watchSongs(query: 'hello').first).map((s) => s.title), [
+      'Old',
+    ]);
     await upgraded.close();
   });
 }
