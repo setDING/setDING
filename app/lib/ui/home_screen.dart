@@ -4,8 +4,10 @@ import '../l10n/generated/app_localizations.dart';
 import 'sets/sets_screen.dart';
 import 'settings_screen.dart';
 import 'songs/songs_screen.dart';
+import 'widgets/logo.dart';
 
-/// Main navigation: sets, songs, settings.
+/// Main navigation: sets, songs, settings. On wide screens the rail shows
+/// the logo mark at its top.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -36,6 +38,14 @@ class _HomeScreenState extends State<HomeScreen> {
               selectedIndex: _tab,
               onDestinationSelected: (i) => setState(() => _tab = i),
               labelType: NavigationRailLabelType.all,
+              leading: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Semantics(
+                  label: 'RealChord',
+                  image: true,
+                  child: const RealChordMark(key: Key('nav-logo'), size: 40),
+                ),
+              ),
               destinations: [
                 for (final (icon, selected, label) in destinations)
                   NavigationRailDestination(
