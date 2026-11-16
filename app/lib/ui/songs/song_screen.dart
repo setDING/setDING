@@ -228,7 +228,6 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   artist: song.artist,
                   song: parsed,
                   formatter: formatter,
-                  capo: formatter.effectiveCapo,
                 ),
                 const SizedBox(height: 12),
                 _AdjustmentsBar(
@@ -506,8 +505,8 @@ class _AdjustmentsBar extends StatelessWidget {
         overlay.nashville != null;
     // A capo menu entry followed by the header it leads to, e.g.
     // "No capo – Key: D" (only with a key).
-    String withHeader(String label, int? capo, int fret) => hasKey
-        ? '$label – ${keyAndCapoText(l10n, formatter.withCapo(capo), fret)}'
+    String withHeader(String label, int? capo) => hasKey
+        ? '$label – ${keyAndCapoText(l10n, formatter.withCapo(capo))}'
         : label;
 
     return Wrap(
@@ -538,9 +537,7 @@ class _AdjustmentsBar extends StatelessWidget {
               MenuItemButton(
                 onPressed: () =>
                     onChanged((o) => o.copyWith(capoFret: const Value(null))),
-                child: Text(
-                  withHeader(l10n.capoAsInSong(songCapo), null, songCapo),
-                ),
+                child: Text(withHeader(l10n.capoAsInSong(songCapo), null)),
               ),
             for (var fret = 0; fret <= 9; fret++)
               MenuItemButton(
@@ -551,10 +548,10 @@ class _AdjustmentsBar extends StatelessWidget {
                 ),
                 child: Text(
                   fret == 0
-                      ? withHeader(l10n.noCapo, 0, 0)
+                      ? withHeader(l10n.noCapo, 0)
                       : hasKey
                       // What the header shows with this capo.
-                      ? keyAndCapoText(l10n, formatter.withCapo(fret), fret)
+                      ? keyAndCapoText(l10n, formatter.withCapo(fret))
                       : l10n.capoValue(fret),
                 ),
               ),

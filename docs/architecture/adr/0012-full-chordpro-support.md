@@ -143,3 +143,8 @@ Each phase is a separate branch and merge (ADR-0010).
   (#193): no key plus the 12 major and 12 minor keys, shown in the chosen notation (B/H)
   and written in international notation; capo none or 1–9. An unchanged key keeps its
   spelling, and a value the dropdown does not offer is kept as an extra entry.
+- 2026-11-16: Key and capo are shown as "Key: A, Capo: 3 (C)" in the song header, the
+  capo menu of the song view and the capo dropdown of the song details form (#195, #199,
+  #201). With the song's own `{capo}` the key is the one written (the chord shapes) and
+  the sounding key follows the capo; with a personal capo (ADR-0006) the key is the
+  sounding one and the shapes follow the capo ("Key: A, Capo: 2 (G)").
