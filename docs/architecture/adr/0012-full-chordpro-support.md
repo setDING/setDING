@@ -134,3 +134,8 @@ Each phase is a separate branch and merge (ADR-0010).
   comment headings) or the section type, numbering unlabelled repeats (`V1`, `V2`);
   unknown labels are kept as written. Tapping the same part twice in a row gives a repeat
   (`C x2`). Free text editing stays available.
+- 2026-11-16: The main metadata (title, artist, key, capo, tempo, time signature) can be
+  edited in a "Song details" form in the song editor (#189). The form only rewrites the
+  directives in the ChordPro text (ADR-0003): existing ones are changed in place, keeping
+  their form (`{t: …}`, `{meta: key …}`), missing ones are added to the header and
+  cleared fields remove their directive. Only the first song of a file is affected.

@@ -21,4 +21,5 @@ export 'src/notation.dart';
 export 'src/parser.dart';
 export 'src/sequence.dart';
 export 'src/song.dart';
+export 'src/source_metadata.dart';
 export 'src/validation.dart';

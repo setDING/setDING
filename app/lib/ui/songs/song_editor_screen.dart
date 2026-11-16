@@ -15,6 +15,7 @@ import 'chordpro_editing_controller.dart';
 import 'editor_autocomplete.dart';
 import 'editor_toolbar.dart';
 import 'line_number_gutter.dart';
+import 'song_details_dialog.dart';
 
 const newSongTemplate = '''{title: }
 {artist: }
@@ -241,17 +242,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
   /// ends up after [before].
   void _insertMeta(String before, String after) {
     final text = _controller.text;
-    var pos = 0;
-    final header = RegExp(
-      r'^[ \t]*\{(?!start_of|so[a-z]\b|new_song)[^}]*\}[ \t]*$',
-    );
-    while (pos < text.length) {
-      final lineEnd = text.indexOf('\n', pos);
-      final end = lineEnd < 0 ? text.length : lineEnd;
-      final line = text.substring(pos, end);
-      if (line.trim().isEmpty || !header.hasMatch(line)) break;
-      pos = lineEnd < 0 ? text.length : lineEnd + 1;
-    }
+    final pos = metadataHeaderEnd(text);
     final prefix = pos > 0 && text[pos - 1] != '\n' ? '\n' : '';
     _controller.value = TextEditingValue(
       text: text.replaceRange(pos, pos, '$prefix$before$after'),
@@ -259,6 +250,24 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
         offset: pos + prefix.length + before.length,
       ),
     );
+  }
+
+  /// Edits title, key, tempo and more in a form instead of the text (#189).
+  Future<void> _editDetails() async {
+    final before = _controller.text;
+    final source = await editSongDetails(context, before);
+    if (source == null || !mounted) return;
+    if (source != before && _controller.text == before) {
+      final sel = _controller.selection;
+      final offset = sel.isValid ? sel.baseOffset : source.length;
+      _controller.value = TextEditingValue(
+        text: source,
+        selection: TextSelection.collapsed(
+          offset: offset.clamp(0, source.length),
+        ),
+      );
+    }
+    _focus.requestFocus();
   }
 
   static final _sequenceLine = RegExp(
@@ -312,7 +321,11 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
 
     final editor = Column(
       children: [
-        EditorToolbar(snippets: snippets, onInsert: _insert),
+        EditorToolbar(
+          snippets: snippets,
+          onInsert: _insert,
+          onDetails: _editDetails,
+        ),
         const Divider(height: 1),
         Expanded(
           child: Row(

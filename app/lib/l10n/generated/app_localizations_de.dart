@@ -1460,4 +1460,16 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get webNoBandMessage =>
       'Du bist noch in keiner Band. Erstelle eine Organisation mit einer Band oder tritt mit einem Einladungslink bei.';
+
+  @override
+  String get songDetails => 'Songdetails';
+
+  @override
+  String get songDetailsTooltip => 'Titel, Tonart, Tempo und mehr bearbeiten';
+
+  @override
+  String get invalidKey => 'Unbekannte Tonart, z. B. G, Em oder Bb';
+
+  @override
+  String get timeHint => 'z. B. 4/4';
 }

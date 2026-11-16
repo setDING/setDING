@@ -1445,4 +1445,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get webNoBandMessage =>
       'You are not in a band yet. Create an organization with a band, or join with an invitation link.';
+
+  @override
+  String get songDetails => 'Song details';
+
+  @override
+  String get songDetailsTooltip => 'Edit title, key, tempo and more';
+
+  @override
+  String get invalidKey => 'Unknown key, e.g. G, Em or Bb';
+
+  @override
+  String get timeHint => 'e.g. 4/4';
 }

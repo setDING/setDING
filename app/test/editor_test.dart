@@ -188,4 +188,51 @@ void main() {
     expect(field.controller!.text, source);
     await app.dispose(tester);
   });
+
+  testWidgets('song details edit the metadata in a form', (tester) async {
+    const source = '{t: Old}\n{key: G}\n{capo: 2}\n\n[G]la';
+    final (app, field) = await pumpEditor(tester, source);
+    await tester.tap(find.text('Song details'));
+    await tester.pumpAndSettle();
+
+    Finder input(String name) => find.byKey(ValueKey('songDetail-$name'));
+    expect(
+      tester.widget<TextFormField>(input('title')).controller!.text,
+      'Old',
+    );
+    expect(tester.widget<TextFormField>(input('key')).controller!.text, 'G');
+
+    await tester.enterText(input('title'), 'New');
+    await tester.enterText(input('key'), 'Bb');
+    await tester.enterText(input('capo'), '');
+    await tester.enterText(input('tempo'), '9a0');
+    await tester.enterText(input('time'), '6/8');
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    expect(
+      field.controller!.text,
+      '{t: New}\n{key: Bb}\n{tempo: 90}\n{time: 6/8}\n\n[G]la',
+    );
+    // The preview follows.
+    await tester.pump(editorPreviewDelay);
+    expect(find.text('New'), findsWidgets);
+    await app.dispose(tester);
+  });
+
+  testWidgets('song details reject an unknown key', (tester) async {
+    const source = '{title: T}\nla';
+    final (app, field) = await pumpEditor(tester, source);
+    await tester.tap(find.text('Song details'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const ValueKey('songDetail-key')), 'X');
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect(find.text('Unknown key, e.g. G, Em or Bb'), findsOneWidget);
+
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(field.controller!.text, source);
+    await app.dispose(tester);
+  });
 }
