@@ -85,3 +85,26 @@ final Map<String, (FormatTarget, FormatProperty)> formatDirectives = {
   'tf': (FormatTarget.text, FormatProperty.font),
   'ts': (FormatTarget.text, FormatProperty.size),
 };
+
+/// Other directives the parser handles: name → whether it takes an
+/// argument. Short forms are `col`, `colb`, `np`, `npp` and `ns`.
+const otherDirectives = {
+  'transpose': true,
+  'image': true,
+  'define': true,
+  'chord': true,
+  'diagrams': true,
+  'columns': true,
+  'col': true,
+  'column_break': false,
+  'colb': false,
+  'new_page': false,
+  'np': false,
+  'new_physical_page': false,
+  'npp': false,
+  'new_song': false,
+  'ns': false,
+};
+
+/// RealChord's own directives (`x_` prefix, ADR-0012).
+const customDirectives = {'x_sequence'};

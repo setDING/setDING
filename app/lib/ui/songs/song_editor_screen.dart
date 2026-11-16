@@ -12,6 +12,7 @@ import '../render/song_view.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/sequence_dialog.dart';
 import 'chordpro_editing_controller.dart';
+import 'editor_autocomplete.dart';
 import 'editor_toolbar.dart';
 import 'line_number_gutter.dart';
 
@@ -267,19 +268,24 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
                 style: editorTextStyle,
               ),
               Expanded(
-                child: TextField(
-                  key: _fieldKey,
-                  focusNode: _focus,
+                child: EditorAutocomplete(
                   controller: _controller,
-                  scrollController: _scroll,
-                  expands: true,
-                  maxLines: null,
-                  keyboardType: TextInputType.multiline,
-                  textAlignVertical: TextAlignVertical.top,
-                  style: editorTextStyle,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.fromLTRB(4, 16, 16, 16),
+                  focusNode: _focus,
+                  fieldKey: _fieldKey,
+                  child: TextField(
+                    key: _fieldKey,
+                    focusNode: _focus,
+                    controller: _controller,
+                    scrollController: _scroll,
+                    expands: true,
+                    maxLines: null,
+                    keyboardType: TextInputType.multiline,
+                    textAlignVertical: TextAlignVertical.top,
+                    style: editorTextStyle,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.fromLTRB(4, 16, 16, 16),
+                    ),
                   ),
                 ),
               ),

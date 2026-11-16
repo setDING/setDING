@@ -230,6 +230,14 @@ void main() {
       );
       await _shot(tester, '${lang}_9b_editor_highlighting');
 
+      // Autocompletion of directives after "{".
+      await tester.tap(find.byType(TextField));
+      await tester.enterText(
+        find.byType(TextField),
+        '{title: Autocomplete}\n{key: G}\n[G]la [Em]li\n{st',
+      );
+      await _shot(tester, '${lang}_9c_editor_autocomplete');
+
       // Song sequence for a set item, built from the parts of the song.
       await tester.pumpWidget(
         RepaintBoundary(
