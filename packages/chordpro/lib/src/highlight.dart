@@ -148,7 +148,11 @@ List<SourceToken> highlightChordPro(String source) {
     final d = trimmed.startsWith('{') ? parseDirective(trimmed) : null;
 
     if (delegate != null) {
-      if (d != null && d.name == 'end_of_$delegate') {
+      // {new_song} also ends an open environment, as in the parser.
+      if (d != null &&
+          (d.name == 'end_of_$delegate' ||
+              d.name == 'new_song' ||
+              d.name == 'ns')) {
         _directive(out, lineStart, content, lead, d);
         delegate = null;
       } else if (lineEnd > lineStart) {

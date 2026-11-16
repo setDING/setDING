@@ -1339,4 +1339,37 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get invalidChordProTitle => 'Check the ChordPro?';
+
+  @override
+  String get invalidChordProMessage =>
+      'The song contains places that will probably not be shown as intended:';
+
+  @override
+  String problemUnclosedDirective(int line) {
+    return 'Line $line: a curly bracket (directive) is not closed.';
+  }
+
+  @override
+  String problemUnclosedChord(int line) {
+    return 'Line $line: a square bracket (chord) is not closed.';
+  }
+
+  @override
+  String problemUnclosedEnvironment(int line) {
+    return 'Line $line: the block is never ended and contains the whole rest of the song.';
+  }
+
+  @override
+  String moreProblems(int count) {
+    return '… and $count more.';
+  }
+
+  @override
+  String get saveAnyway => 'Save anyway';
+
+  @override
+  String get keepEditing => 'Keep editing';
 }

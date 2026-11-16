@@ -2395,6 +2395,54 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count, plural, =1{1 PDF wird noch geladen.} other{{count} PDFs werden noch geladen.}}'**
   String syncMissingFiles(int count);
+
+  /// No description provided for @invalidChordProTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'ChordPro prüfen?'**
+  String get invalidChordProTitle;
+
+  /// No description provided for @invalidChordProMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Song enthält Stellen, die wahrscheinlich nicht wie gewollt angezeigt werden:'**
+  String get invalidChordProMessage;
+
+  /// No description provided for @problemUnclosedDirective.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeile {line}: Eine geschweifte Klammer (Direktive) wird nicht geschlossen.'**
+  String problemUnclosedDirective(int line);
+
+  /// No description provided for @problemUnclosedChord.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeile {line}: Eine eckige Klammer (Akkord) wird nicht geschlossen.'**
+  String problemUnclosedChord(int line);
+
+  /// No description provided for @problemUnclosedEnvironment.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeile {line}: Der Block wird nie beendet und enthält den ganzen Rest des Songs.'**
+  String problemUnclosedEnvironment(int line);
+
+  /// No description provided for @moreProblems.
+  ///
+  /// In de, this message translates to:
+  /// **'… und {count} weitere.'**
+  String moreProblems(int count);
+
+  /// No description provided for @saveAnyway.
+  ///
+  /// In de, this message translates to:
+  /// **'Trotzdem speichern'**
+  String get saveAnyway;
+
+  /// No description provided for @keepEditing.
+  ///
+  /// In de, this message translates to:
+  /// **'Weiter bearbeiten'**
+  String get keepEditing;
 }
 
 class _AppLocalizationsDelegate

@@ -137,6 +137,13 @@ void main() {
     expect(marked('{title: My'), [('{title: My', K.error)]);
     expect(marked('[G]la [Am'), [('[G]', K.chord), ('[Am', K.error)]);
     expect(marked('[\n{'), [('[', K.error), ('{', K.error)]);
+    // {new_song} ends an open delegate, as in the parser.
+    expect(marked('{start_of_ly}\nx\n{ns}\n[C]'), [
+      ('{start_of_ly}', K.sectionDirective),
+      ('x\n', K.delegate),
+      ('{ns}', K.otherDirective),
+      ('[C]', K.chord),
+    ]);
     // A delegate that is never closed runs to the end.
     expect(marked('{start_of_svg}\n<svg'), [
       ('{start_of_svg}', K.sectionDirective),

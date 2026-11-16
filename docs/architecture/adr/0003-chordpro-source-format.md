@@ -74,6 +74,7 @@ Notation alternatives:
 - Section labels without an explicit label (e.g. a plain `{start_of_chorus}`) are rendered with a localized default label ("Chorus" / "Refrain", see ADR-0008).
 - The editor in the app is a text editor with live preview; a WYSIWYG editor is not needed. The editor shows chords in international notation, as stored.
 - The `chordpro` package also provides **source positions** (`highlightChordPro`) for syntax highlighting in the editor. The tokenizer follows the parser's rules (directive names, selectors, sections), so editor and parser agree; it is tolerant of incomplete input while typing. Bracket matching (`matchBracket`) and autocompletion (`completeChordPro`) in the editor build on these tokens; the directive suggestions come from the parser's own name tables (`chordProDirectives`).
+- The parser stays lenient and never rejects a song. Before saving, the editor warns about places where it probably does not do what the author meant (`validateChordPro`: unclosed `{` or `[`, a delegated environment that is never ended); the author can save anyway.
 
 ## Decision log
 
@@ -82,6 +83,7 @@ Notation alternatives:
 - 2026-11-14: Nashville number display is supported. Chord diagrams are not planned.
 - 2026-11-14: Extended by ADR-0012: the whole ChordPro specification is supported, including chord diagrams (supersedes "chord diagrams are not displayed" and the subset listed above).
 - 2026-11-16: The package also provides source positions for syntax highlighting in the editor (`highlightChordPro`, #35); the directive names are shared by parser and highlighter.
+- 2026-11-16: The editor warns on save about unclosed brackets and environments (`validateChordPro`, #109); saving stays possible.
 
 ## Open points
 

@@ -1352,4 +1352,37 @@ class AppLocalizationsDe extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get invalidChordProTitle => 'ChordPro prüfen?';
+
+  @override
+  String get invalidChordProMessage =>
+      'Der Song enthält Stellen, die wahrscheinlich nicht wie gewollt angezeigt werden:';
+
+  @override
+  String problemUnclosedDirective(int line) {
+    return 'Zeile $line: Eine geschweifte Klammer (Direktive) wird nicht geschlossen.';
+  }
+
+  @override
+  String problemUnclosedChord(int line) {
+    return 'Zeile $line: Eine eckige Klammer (Akkord) wird nicht geschlossen.';
+  }
+
+  @override
+  String problemUnclosedEnvironment(int line) {
+    return 'Zeile $line: Der Block wird nie beendet und enthält den ganzen Rest des Songs.';
+  }
+
+  @override
+  String moreProblems(int count) {
+    return '… und $count weitere.';
+  }
+
+  @override
+  String get saveAnyway => 'Trotzdem speichern';
+
+  @override
+  String get keepEditing => 'Weiter bearbeiten';
 }

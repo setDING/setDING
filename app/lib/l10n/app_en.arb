@@ -535,5 +535,41 @@
         "type": "int"
       }
     }
-  }
+  },
+  "invalidChordProTitle": "Check the ChordPro?",
+  "invalidChordProMessage": "The song contains places that will probably not be shown as intended:",
+  "problemUnclosedDirective": "Line {line}: a curly bracket (directive) is not closed.",
+  "@problemUnclosedDirective": {
+    "placeholders": {
+      "line": {
+        "type": "int"
+      }
+    }
+  },
+  "problemUnclosedChord": "Line {line}: a square bracket (chord) is not closed.",
+  "@problemUnclosedChord": {
+    "placeholders": {
+      "line": {
+        "type": "int"
+      }
+    }
+  },
+  "problemUnclosedEnvironment": "Line {line}: the block is never ended and contains the whole rest of the song.",
+  "@problemUnclosedEnvironment": {
+    "placeholders": {
+      "line": {
+        "type": "int"
+      }
+    }
+  },
+  "moreProblems": "… and {count} more.",
+  "@moreProblems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "saveAnyway": "Save anyway",
+  "keepEditing": "Keep editing"
 }

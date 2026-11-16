@@ -110,6 +110,9 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
   Future<void> _save() async {
     final repo = ref.read(songRepositoryProvider);
     final source = _controller.text;
+    final problems = validateChordPro(source, tokens: _controller.tokens);
+    if (problems.isNotEmpty && !await _confirmProblems(problems)) return;
+    if (!mounted) return;
     if (widget.songId == null) {
       final id = await repo.createSong(
         source: source,
@@ -120,6 +123,60 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
       await repo.updateSource(widget.songId!, source);
       if (mounted) Navigator.pop(context, widget.songId);
     }
+  }
+
+  /// Warns about problems in the source (#109). Returns whether to save
+  /// anyway; otherwise the first problem is selected in the editor.
+  Future<bool> _confirmProblems(List<ChordProProblem> problems) async {
+    final l10n = AppLocalizations.of(context);
+    const shown = 5;
+    String describe(ChordProProblem p) => switch (p.kind) {
+      ChordProProblemKind.unclosedDirective => l10n.problemUnclosedDirective(
+        p.line,
+      ),
+      ChordProProblemKind.unclosedChord => l10n.problemUnclosedChord(p.line),
+      ChordProProblemKind.unclosedEnvironment =>
+        l10n.problemUnclosedEnvironment(p.line),
+    };
+    final save = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.warning_amber),
+        title: Text(l10n.invalidChordProTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.invalidChordProMessage),
+            const SizedBox(height: 8),
+            for (final p in problems.take(shown)) Text('• ${describe(p)}'),
+            if (problems.length > shown)
+              Text(l10n.moreProblems(problems.length - shown)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.saveAnyway),
+          ),
+          FilledButton(
+            autofocus: true,
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.keepEditing),
+          ),
+        ],
+      ),
+    );
+    if (save ?? false) return true;
+    if (mounted) {
+      final first = problems.first;
+      _controller.selection = TextSelection(
+        baseOffset: first.start,
+        extentOffset: first.end,
+      );
+      _focus.requestFocus();
+    }
+    return false;
   }
 
   /// Inserts [snippet] around the selection. A metadata directive that

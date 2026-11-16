@@ -650,5 +650,41 @@
         "type": "int"
       }
     }
-  }
+  },
+  "invalidChordProTitle": "ChordPro prüfen?",
+  "invalidChordProMessage": "Der Song enthält Stellen, die wahrscheinlich nicht wie gewollt angezeigt werden:",
+  "problemUnclosedDirective": "Zeile {line}: Eine geschweifte Klammer (Direktive) wird nicht geschlossen.",
+  "@problemUnclosedDirective": {
+    "placeholders": {
+      "line": {
+        "type": "int"
+      }
+    }
+  },
+  "problemUnclosedChord": "Zeile {line}: Eine eckige Klammer (Akkord) wird nicht geschlossen.",
+  "@problemUnclosedChord": {
+    "placeholders": {
+      "line": {
+        "type": "int"
+      }
+    }
+  },
+  "problemUnclosedEnvironment": "Zeile {line}: Der Block wird nie beendet und enthält den ganzen Rest des Songs.",
+  "@problemUnclosedEnvironment": {
+    "placeholders": {
+      "line": {
+        "type": "int"
+      }
+    }
+  },
+  "moreProblems": "… und {count} weitere.",
+  "@moreProblems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "saveAnyway": "Trotzdem speichern",
+  "keepEditing": "Weiter bearbeiten"
 }
