@@ -204,8 +204,8 @@ class SettingsScreen extends ConsumerWidget {
                 PageTurnMode.half: l10n.pageTurnHalf,
               }, (v) => notifier.update((s) => s.copyWith(pageTurn: v))),
               ListTile(
-                leading: const Icon(Icons.keyboard_outlined),
-                subtitle: Text(l10n.settingsPedalHint),
+                leading: const Icon(Icons.touch_app_outlined),
+                subtitle: Text(l10n.settingsPageTurnHint),
               ),
 
               header(l10n.settingsSectionStorage),

@@ -1,5 +1,4 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:realchord/data/demo_song.dart';
 import 'package:realchord/ui/live/live_screen.dart';
@@ -57,11 +56,13 @@ void main() {
     expect(debugMeasureBlocksCalls, first);
 
     // The next song is measured once; going back uses the cached fit.
-    await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
+    final size = tester.getSize(find.byType(PageView));
+    final topLeft = tester.getTopLeft(find.byType(PageView));
+    await tester.tapAt(topLeft + Offset(size.width * 0.9, size.height / 2));
     await tester.pumpAndSettle();
     final second = debugMeasureBlocksCalls;
     expect(second, greaterThan(first));
-    await tester.sendKeyEvent(LogicalKeyboardKey.pageUp);
+    await tester.tapAt(topLeft + Offset(size.width * 0.1, size.height / 2));
     await tester.pumpAndSettle();
     expect(debugMeasureBlocksCalls, second);
     await app.dispose(tester);

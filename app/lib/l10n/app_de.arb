@@ -278,7 +278,7 @@
   "chorusRepeatAuto": "Automatisch",
   "chorusRepeatFull": "Ganz anzeigen",
   "chorusRepeatLabel": "Nur Hinweis",
-  "settingsPedalHint": "Fusspedal und Tastatur: Pfeiltasten, Bild auf/ab und Leertaste blättern. Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern.",
+  "settingsPageTurnHint": "Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern.",
   "settingsStorageUsed": "PDF-Anhänge belegen {size}",
   "@settingsStorageUsed": {
     "placeholders": {

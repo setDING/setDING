@@ -1118,11 +1118,11 @@ abstract class AppLocalizations {
   /// **'Nur Hinweis'**
   String get chorusRepeatLabel;
 
-  /// No description provided for @settingsPedalHint.
+  /// No description provided for @settingsPageTurnHint.
   ///
   /// In de, this message translates to:
-  /// **'Fusspedal und Tastatur: Pfeiltasten, Bild auf/ab und Leertaste blättern. Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern.'**
-  String get settingsPedalHint;
+  /// **'Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern.'**
+  String get settingsPageTurnHint;
 
   /// No description provided for @settingsStorageUsed.
   ///

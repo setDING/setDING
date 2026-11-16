@@ -40,7 +40,7 @@ synced and displayed.
 ### Display
 
 - PDFs are rendered in the app (no external viewer), in the live view as well.
-- Page turning with the same input as for ChordPro songs (pedal, tap, swipe; ADR-0007).
+- Page turning with the same input as for ChordPro songs (tap, swipe; ADR-0007).
 - Fit to width / fit to page; two pages side by side in landscape.
 - If a song has both ChordPro text and PDFs, the user chooses per song what to show
   in live mode (stored in the personal overlay, ADR-0006); default is ChordPro.

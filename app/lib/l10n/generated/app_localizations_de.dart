@@ -593,8 +593,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get chorusRepeatLabel => 'Nur Hinweis';
 
   @override
-  String get settingsPedalHint =>
-      'Fusspedal und Tastatur: Pfeiltasten, Bild auf/ab und Leertaste blättern. Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern.';
+  String get settingsPageTurnHint =>
+      'Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern.';
 
   @override
   String settingsStorageUsed(String size) {

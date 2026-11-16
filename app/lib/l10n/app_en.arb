@@ -170,7 +170,7 @@
   "chorusRepeatAuto": "Automatic",
   "chorusRepeatFull": "Show in full",
   "chorusRepeatLabel": "Label only",
-  "settingsPedalHint": "Foot pedal and keyboard: arrow keys, Page Up/Down and Space turn pages. Tap the left or right side of the screen to go back or forward.",
+  "settingsPageTurnHint": "Tap the left or right side of the screen to go back or forward.",
   "settingsStorageUsed": "PDF attachments use {size}",
   "settingsLogCopy": "Copy diagnostic log",
   "settingsLogCopyHint": "The app's recent messages, e.g. why a sync failed – to paste into a message to support.",

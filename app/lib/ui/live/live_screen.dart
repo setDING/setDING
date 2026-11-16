@@ -66,23 +66,8 @@ class LiveItem {
       : (song!.title.isEmpty ? l10n.untitled : song!.title);
 }
 
-/// Keys that turn forward / backward (Bluetooth page turners send these).
-final _nextKeys = {
-  LogicalKeyboardKey.arrowRight,
-  LogicalKeyboardKey.arrowDown,
-  LogicalKeyboardKey.pageDown,
-  LogicalKeyboardKey.space,
-  LogicalKeyboardKey.enter,
-};
-final _prevKeys = {
-  LogicalKeyboardKey.arrowLeft,
-  LogicalKeyboardKey.arrowUp,
-  LogicalKeyboardKey.pageUp,
-  LogicalKeyboardKey.backspace,
-};
-
 /// Performance mode (ADR-0007): full screen, screen stays on, page turning
-/// via pedal, keyboard, tap or swipe. The items are loaded once when live
+/// by tap or swipe. The items are loaded once when live
 /// mode starts, so incoming changes never alter what is on stage.
 class LiveScreen extends ConsumerStatefulWidget {
   const LiveScreen({super.key, required this.items, this.initialIndex = 0});
@@ -247,14 +232,6 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   KeyEventResult _onKey(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
       return KeyEventResult.ignored;
-    }
-    if (_nextKeys.contains(event.logicalKey)) {
-      _next();
-      return KeyEventResult.handled;
-    }
-    if (_prevKeys.contains(event.logicalKey)) {
-      _previous();
-      return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.escape) {
       Navigator.maybePop(context);

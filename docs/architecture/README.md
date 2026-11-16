@@ -29,7 +29,7 @@ A user can be a member of several organizations and bands; roles are defined per
 ## 2. Quality goals (prioritized)
 
 1. **Reliability on stage** – The app must work without a network. No loading, no login, no crash during a performance.
-2. **Readability and live usability** – Large, legible display, page turns via foot pedal or swipe, screen stays on.
+2. **Readability and live usability** – Large, legible display, page turns via tap or swipe, screen stays on.
 3. **Easy management** – A set can be put together in a few minutes and is available to all members.
 4. **Platform independence** – One code base for Android, iOS and Windows.
 5. **Open data format** – ChordPro files can always be imported and exported, no lock-in.
@@ -44,7 +44,7 @@ A user can be a member of several organizations and bands; roles are defined per
 | Backend & sync | **PocketBase**, self-hosted on an existing server, revision-based sync | [ADR-0004](adr/0004-backend-and-sync.md) |
 | Management | **One app with roles** instead of a separate management application | [ADR-0005](adr/0005-single-app-with-roles.md) |
 | Personal settings | **Overlay model**: personal adjustments never change the shared ChordPro text; per user (`local` for the local library), synced with the account | [ADR-0006](adr/0006-personal-overlays.md), [ADR-0020](adr/0020-overlays-per-user.md) |
-| Live mode | Pedal/keyboard control, wakelock; each member navigates independently (**no leader sync**) | [ADR-0007](adr/0007-live-mode.md) |
+| Live mode | Tap/swipe page turns, wakelock; each member navigates independently (**no leader sync**) | [ADR-0007](adr/0007-live-mode.md) |
 | Localization | UI in **German (Swiss, `de-CH`) and English**, selectable in the settings | [ADR-0008](adr/0008-localization.md) |
 | Sheet music | **PDF attachments** per song, synced and available offline, shown in live mode | [ADR-0009](adr/0009-pdf-attachments.md) |
 | ChordPro coverage | **Whole specification** (transpose, grids, markup, conditionals, diagrams, images, delegated environments) | [ADR-0012](adr/0012-full-chordpro-support.md) |
@@ -100,7 +100,7 @@ flowchart LR
 | `pdf` | Displaying PDF attachments (fit to width/page, two-page view) |
 | `data` | Local DB (SQLite, e.g. via `drift`), repositories, domain model |
 | `sync` | Sync between local DB and backend, conflict handling, offline queue. `SyncEngine` runs the order of a sync; the parts per kind of record live in `app/lib/sync/engine/` (songs with conflicts, sets, attachments with downloads, personal adjustments, shared cursors and outbox) |
-| `live` | Performance mode: full screen, wakelock, pedal/keyboard control, set navigation |
+| `live` | Performance mode: full screen, wakelock, tap/swipe page turns, set navigation |
 | `manage` | Create/import songs, ChordPro editor with syntax highlighting, line numbers, bracket matching, autocompletion, a warning on save for invalid ChordPro and preview, put sets together |
 | `band` | Login, band selection, invitations, roles |
 | `l10n` | UI translations (German, English) and language setting |
@@ -164,7 +164,7 @@ Notes:
 ### Performance
 
 1. A member opens the set → live mode (full screen, screen stays on).
-2. Page turns via foot pedal (Bluetooth HID, sends keys such as arrows / Page Up / Page Down), tap or swipe.
+2. Page turns via tap or swipe (foot pedal support removed for now, may return later; ADR-0007).
 3. At the end of a song, "next" automatically moves to the next song in the set.
 4. While in live mode, **no** sync operations change what is displayed (changes are applied after leaving live mode, or only announced discreetly).
 
@@ -182,11 +182,11 @@ Notes:
 
 | Phase | Scope |
 |---|---|
-| **MVP** ✅ | ChordPro parser & renderer (notation B/H, Nashville), local song library, PDF attachments, creating sets, live mode with pedal, import/export, German/English UI – initially **without** a backend (single device) |
+| **MVP** ✅ | ChordPro parser & renderer (notation B/H, Nashville), local song library, PDF attachments, creating sets, live mode, import/export, German/English UI – initially **without** a backend (single device) |
 | **Phase 1** | Backend, login, bands & roles (several admins, several bands per user), sync of songs, sets and PDF files incl. conflict handling |
 | **Phase 2** ✅ | Web client for management at `app.realchord.app` (ADR-0018; done in #27), synced personal overlays (per user, ADR-0020; done in #81, #82) |
 | **Towards version 1** | Re-enable CI as a required check on every PR and push to `main` (manual-only during early development, ADR-0010), branch protection; release builds for Linux, Android and Windows exist (ADR-0021), iOS open |
-| **Later** | Freehand annotations (stylus), metronome/count-in, MIDI control |
+| **Later** | Foot pedal / keyboard page turning, freehand annotations (stylus), metronome/count-in, MIDI control |
 
 ### MVP status (2026-11-14)
 
@@ -197,7 +197,7 @@ target state described in the ADRs, to be completed in later phases:
 | Topic | MVP | Target (ADR) |
 |---|---|---|
 | Personal notes | One text note per song, shown above the song | Notes anchored to a line/section (ADR-0006) |
-| Pedal keys | Fixed mapping: arrows, Page Up/Down, Space, Enter, Backspace | Configurable mapping (ADR-0007) |
+| Pedal keys | Removed (#149) | Foot pedal support, possibly later (ADR-0007) |
 | Auto-scroll | Not implemented | Optional auto-scroll by tempo/duration (ADR-0007) |
 | PDF display | One page at a time, fit to width | Two pages side by side in landscape (ADR-0009) |
 | Bands & roles | One implicit local band, all features available | Roles per band via backend (ADR-0005, phase 1); done in #15, the MVP band became the local library |
