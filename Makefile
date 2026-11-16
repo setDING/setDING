@@ -25,7 +25,8 @@ DATA_DIR ?= $(ROOT)/.dev-data
 FLUTTER  ?= $(shell command -v flutter 2>/dev/null || echo $(HOME)/development/flutter/bin/flutter)
 DART     := $(dir $(FLUTTER))dart
 
-BUNDLE   := $(APP)/build/linux/x64/debug/bundle/realchord
+BUNDLE_DIR := $(APP)/build/linux/x64/debug/bundle
+BUNDLE   := $(BUNDLE_DIR)/realchord
 
 # Android APK for sideloading (make apk). The release build is signed with the
 # release key from app/android/key.properties if it exists, otherwise with the
@@ -90,9 +91,11 @@ setup: ## Install dependencies, generate code and translations
 	$(MAKE) codegen l10n
 
 dev: data-dir ## Start a test instance with hot reload (r = reload, q = quit)
+	@! [ -x $(BUNDLE_DIR)/install-desktop-entry.sh ] || $(BUNDLE_DIR)/install-desktop-entry.sh --hidden --if-missing
 	cd $(APP) && $(TEST_ENV) $(FLUTTER) run -d linux
 
 start: build data-dir ## Build and start a test instance (debug build, no hot reload)
+	@$(BUNDLE_DIR)/install-desktop-entry.sh --hidden --if-missing
 	$(TEST_ENV) $(BUNDLE)
 
 build: ## Build the Linux debug app

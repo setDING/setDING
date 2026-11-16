@@ -116,8 +116,10 @@ done
 magick "$OUT"/tmp-ico-{16,24,32,48,64,128,256}.png \
   "$APP/windows/runner/resources/app_icon.ico"
 
-# Linux: window icon, installed into the bundle (linux/CMakeLists.txt).
+# Linux: window and desktop entry icon, installed into the bundle
+# (linux/CMakeLists.txt).
 svg -w 256 -h 256 "$SRC/mark.svg" -o "$APP/linux/runner/resources/app_icon.png"
+cp "$SRC/mark.svg" "$APP/linux/runner/resources/app_icon.svg"
 
 rm -f "$OUT"/tmp-*
 

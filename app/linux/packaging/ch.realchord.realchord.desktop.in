@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Version=1.5
+Name=RealChord
+GenericName=Chord sheets for bands
+GenericName[de]=Akkorde für Bands
+Comment=Chords and sets for bands, on stage and offline
+Comment[de]=Akkorde und Sets für Bands, auf der Bühne und offline
+Exec="@EXEC@"
+Icon=ch.realchord.realchord
+Terminal=false
+Categories=AudioVideo;Audio;Music;
+Keywords=chordpro;chords;setlist;band;
+StartupNotify=true
+StartupWMClass=ch.realchord.realchord
