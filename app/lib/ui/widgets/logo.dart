@@ -164,6 +164,24 @@ class SplashScreen extends StatelessWidget {
   static const markSize = 128.0;
   static const wordmarkWidth = 200.0;
 
+  /// Shortest time the splash stays on screen (counted from the start of
+  /// `main()`), so it is noticeable even where the app starts in a fraction
+  /// of a second (Windows, Linux). Starting runs during this time; only the
+  /// rest is waited for.
+  static const minimumDuration = Duration(seconds: 1);
+
+  /// Waits until [shown] has run for at least [minimumDuration].
+  static Future<void> waitForMinimum(Stopwatch shown) async {
+    final rest = remaining(shown.elapsed);
+    if (rest > Duration.zero) await Future<void>.delayed(rest);
+  }
+
+  /// How much longer the splash stays after it has been shown for [elapsed].
+  static Duration remaining(
+    Duration elapsed, {
+    Duration minimum = minimumDuration,
+  }) => elapsed >= minimum ? Duration.zero : minimum - elapsed;
+
   @override
   Widget build(BuildContext context) {
     final dark = MediaQuery.platformBrightnessOf(context) == Brightness.dark;

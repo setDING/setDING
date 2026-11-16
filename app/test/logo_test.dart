@@ -59,4 +59,19 @@ void main() {
     expect(find.text('Chord'), findsOneWidget);
     expect(find.bySemanticsLabel('RealChord'), findsOneWidget);
   });
+
+  test('the splash stays at least one second, counted from the start', () {
+    expect(SplashScreen.minimumDuration, const Duration(seconds: 1));
+    // Starting runs meanwhile: only the rest is waited for.
+    expect(
+      SplashScreen.remaining(const Duration(milliseconds: 300)),
+      const Duration(milliseconds: 700),
+    );
+    expect(SplashScreen.remaining(Duration.zero), const Duration(seconds: 1));
+  });
+
+  test('a slow start does not wait any longer', () {
+    expect(SplashScreen.remaining(const Duration(seconds: 1)), Duration.zero);
+    expect(SplashScreen.remaining(const Duration(seconds: 3)), Duration.zero);
+  });
 }
