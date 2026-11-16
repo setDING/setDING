@@ -188,6 +188,9 @@ Tracked in issue #27, each step a separate PR:
   (2026-11-16).
 - 2026-11-16: Live mode on web shows "not offline-safe, use the app on stage" in
   its status bar (the notice decided on 2026-11-15; step "docs").
+- 2026-11-16: The web client's files are served with `Cache-Control: no-cache`
+  (#121): Flutter web files keep their names between builds, and without a
+  header Cloudflare cached them for 4 hours, so a deploy reached browsers late.
 
 ## Open points
 

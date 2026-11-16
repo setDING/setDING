@@ -112,7 +112,10 @@ The web client (ADR-0018) is a Flutter web build that `make server-install` buil
 (`--publicDir`, set in `pocketbase.service`) on every hostname of the tunnel, with
 the headers `Cross-Origin-Opener-Policy: same-origin` and
 `Cross-Origin-Embedder-Policy: credentialless` (hook `web.pb.js`), so browsers keep
-its database in OPFS. The web client calls the API on the hostname it was loaded
+its database in OPFS, and `Cache-Control: no-cache`, so browsers and Cloudflare
+revalidate its files after a deploy instead of keeping the old build for hours. Do not
+add a Cloudflare cache rule with a fixed edge TTL for `app.realchord.app`; after the
+first deploy with this header, purge the hostname's cache once. The web client calls the API on the hostname it was loaded
 from, so no CORS setting is needed.
 
 1. Tunnel → **Public hostname:** `app.realchord.app` → service `HTTP` →

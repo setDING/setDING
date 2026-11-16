@@ -45,6 +45,8 @@ void main() {
   void expectIsolated(Response r) {
     expect(r.raw.headers['cross-origin-opener-policy'], 'same-origin');
     expect(r.raw.headers['cross-origin-embedder-policy'], 'credentialless');
+    // Revalidated on every load, so a deploy is visible at once (#121).
+    expect(r.raw.headers['cache-control'], 'no-cache');
   }
 
   test('serves the web build with cross-origin isolation', () async {
@@ -57,10 +59,21 @@ void main() {
     script.expectStatus(200);
     expectIsolated(script);
 
+    // Unchanged files are revalidated cheaply.
+    final modified = script.raw.headers['last-modified'];
+    expect(modified, isNotNull);
+    final again = await pb.guest.send(
+      'GET',
+      '/main.dart.js',
+      headers: {'if-modified-since': modified!},
+    );
+    again.expectStatus(304);
+
     // The API is unchanged.
     final health = await pb.guest.send('GET', '/api/health');
     health.expectStatus(200);
     expect(health.raw.headers['cross-origin-embedder-policy'], isNull);
+    expect(health.raw.headers['cache-control'], isNot('no-cache'));
   });
 
   test('the landing page offers the web client', () async {

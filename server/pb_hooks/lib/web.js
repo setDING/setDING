@@ -35,18 +35,24 @@ function isWebHost(e) {
   return (e.request.host || "").toLowerCase() === host;
 }
 
-/// Cross-origin isolation for the pages of the web client, so browsers give
-/// its database OPFS instead of the IndexedDB fallback (ADR-0018).
-/// "credentialless" keeps cross-origin resources without CORP headers
-/// working; browsers without it fall back to IndexedDB.
-function isolationHeaders(e) {
+/// Headers for the web client's files (everything but the API and the admin
+/// UI):
+/// - cross-origin isolation, so browsers give its database OPFS instead of
+///   the IndexedDB fallback (ADR-0018); "credentialless" keeps cross-origin
+///   resources without CORP headers working, browsers without it fall back
+///   to IndexedDB;
+/// - "no-cache": Flutter web files keep their names between builds, so
+///   browsers and Cloudflare must revalidate them (304 when unchanged)
+///   instead of keeping an old build for hours after a deploy (#121).
+function webHeaders(e) {
   const path = e.request.url.path || "";
   if (!path.startsWith("/api/") && !path.startsWith("/_/")) {
     const h = e.response.header();
     h.set("Cross-Origin-Opener-Policy", "same-origin");
     h.set("Cross-Origin-Embedder-Policy", "credentialless");
+    h.set("Cache-Control", "no-cache");
   }
   return e.next();
 }
 
-module.exports = { webUrl, index, available, isWebHost, isolationHeaders };
+module.exports = { webUrl, index, available, isWebHost, webHeaders };
