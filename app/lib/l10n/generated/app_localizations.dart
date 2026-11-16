@@ -815,7 +815,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsSectionStorage.
   ///
   /// In de, this message translates to:
-  /// **'Speicher'**
+  /// **'Speicher & Info'**
   String get settingsSectionStorage;
 
   /// No description provided for @settingsSectionMusician.
@@ -823,6 +823,42 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Musiker'**
   String get settingsSectionMusician;
+
+  /// No description provided for @settingsCategoryAccountHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Anmeldung, Bands, Server und Synchronisation'**
+  String get settingsCategoryAccountHint;
+
+  /// No description provided for @settingsCategoryGeneralHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprache und Design'**
+  String get settingsCategoryGeneralHint;
+
+  /// No description provided for @settingsCategoryMusicianHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Instrument, Name oder Stimme, Akkorddiagramme'**
+  String get settingsCategoryMusicianHint;
+
+  /// No description provided for @settingsCategoryDisplayHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Akkord-Notation, Nashville-Zahlen, Inhalt, Schriftgrösse'**
+  String get settingsCategoryDisplayHint;
+
+  /// No description provided for @settingsCategoryLiveHint.
+  ///
+  /// In de, this message translates to:
+  /// **'An Bildschirm anpassen, Spalten, Refrain, Blättern'**
+  String get settingsCategoryLiveHint;
+
+  /// No description provided for @settingsCategoryAboutHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Speicher, Diagnoseprotokoll und Version'**
+  String get settingsCategoryAboutHint;
 
   /// No description provided for @settingsInstrument.
   ///
@@ -1559,7 +1595,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsSectionAccount.
   ///
   /// In de, this message translates to:
-  /// **'Konto'**
+  /// **'Konto & Synchronisation'**
   String get settingsSectionAccount;
 
   /// No description provided for @accountSignedOut.

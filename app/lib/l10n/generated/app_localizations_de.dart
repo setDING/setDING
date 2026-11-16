@@ -433,10 +433,33 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsSectionLive => 'Live-Modus';
 
   @override
-  String get settingsSectionStorage => 'Speicher';
+  String get settingsSectionStorage => 'Speicher & Info';
 
   @override
   String get settingsSectionMusician => 'Musiker';
+
+  @override
+  String get settingsCategoryAccountHint =>
+      'Anmeldung, Bands, Server und Synchronisation';
+
+  @override
+  String get settingsCategoryGeneralHint => 'Sprache und Design';
+
+  @override
+  String get settingsCategoryMusicianHint =>
+      'Instrument, Name oder Stimme, Akkorddiagramme';
+
+  @override
+  String get settingsCategoryDisplayHint =>
+      'Akkord-Notation, Nashville-Zahlen, Inhalt, Schriftgrösse';
+
+  @override
+  String get settingsCategoryLiveHint =>
+      'An Bildschirm anpassen, Spalten, Refrain, Blättern';
+
+  @override
+  String get settingsCategoryAboutHint =>
+      'Speicher, Diagnoseprotokoll und Version';
 
   @override
   String get settingsInstrument => 'Mein Instrument';
@@ -825,7 +848,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get exportSetListPdf => 'Set-Liste exportieren (PDF zum Drucken)';
 
   @override
-  String get settingsSectionAccount => 'Konto';
+  String get settingsSectionAccount => 'Konto & Synchronisation';
 
   @override
   String get accountSignedOut => 'Nicht angemeldet';

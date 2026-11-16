@@ -12,240 +12,405 @@ import '../util/log.dart';
 import 'account/account_section.dart';
 import 'widgets/dialogs.dart';
 
-/// Device settings (layer 4, ADR-0006).
-class SettingsScreen extends ConsumerWidget {
+/// The categories of the settings screen.
+enum SettingsCategory { account, general, musician, display, live, about }
+
+/// Device settings (layer 4, ADR-0006), grouped into categories.
+///
+/// On wide screens the categories are listed on the left and the selected one
+/// is shown next to them; on narrow screens the overview lists the categories
+/// and each one opens as its own page.
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  /// Minimum width for showing the categories and their content side by side.
+  static const wideLayoutWidth = 640.0;
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  SettingsCategory _selected = SettingsCategory.account;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.navSettings)),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth < SettingsScreen.wideLayoutWidth) {
+            return _CategoryList(
+              onSelected: (c) => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => _CategoryPage(category: c),
+                ),
+              ),
+            );
+          }
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                width: 300,
+                child: _CategoryList(
+                  selected: _selected,
+                  onSelected: (c) => setState(() => _selected = c),
+                ),
+              ),
+              const VerticalDivider(width: 1),
+              Expanded(
+                child: Align(
+                  alignment: AlignmentDirectional.topStart,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 720),
+                    child: _CategoryContent(
+                      key: ValueKey(_selected),
+                      category: _selected,
+                      showTitle: true,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+extension on SettingsCategory {
+  IconData get icon => switch (this) {
+    SettingsCategory.account => Icons.account_circle_outlined,
+    SettingsCategory.general => Icons.tune,
+    SettingsCategory.musician => Icons.music_note_outlined,
+    SettingsCategory.display => Icons.text_fields,
+    SettingsCategory.live => Icons.play_circle_outline,
+    SettingsCategory.about => Icons.info_outline,
+  };
+
+  String title(AppLocalizations l10n) => switch (this) {
+    SettingsCategory.account => l10n.settingsSectionAccount,
+    SettingsCategory.general => l10n.settingsSectionGeneral,
+    SettingsCategory.musician => l10n.settingsSectionMusician,
+    SettingsCategory.display => l10n.settingsSectionDisplay,
+    SettingsCategory.live => l10n.settingsSectionLive,
+    SettingsCategory.about => l10n.settingsSectionStorage,
+  };
+
+  String hint(AppLocalizations l10n) => switch (this) {
+    SettingsCategory.account => l10n.settingsCategoryAccountHint,
+    SettingsCategory.general => l10n.settingsCategoryGeneralHint,
+    SettingsCategory.musician => l10n.settingsCategoryMusicianHint,
+    SettingsCategory.display => l10n.settingsCategoryDisplayHint,
+    SettingsCategory.live => l10n.settingsCategoryLiveHint,
+    SettingsCategory.about => l10n.settingsCategoryAboutHint,
+  };
+}
+
+/// The list of categories; [selected] is highlighted in the wide layout.
+class _CategoryList extends StatelessWidget {
+  const _CategoryList({required this.onSelected, this.selected});
+
+  final SettingsCategory? selected;
+  final ValueChanged<SettingsCategory> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final narrow = selected == null;
+    return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      children: [
+        for (final c in SettingsCategory.values)
+          ListTile(
+            key: Key('settings-category-${c.name}'),
+            leading: Icon(c.icon),
+            title: Text(c.title(l10n)),
+            subtitle: Text(c.hint(l10n)),
+            trailing: narrow ? const Icon(Icons.chevron_right) : null,
+            selected: c == selected,
+            onTap: () => onSelected(c),
+          ),
+      ],
+    );
+  }
+}
+
+/// A category opened as its own page (narrow layout).
+class _CategoryPage extends StatelessWidget {
+  const _CategoryPage({required this.category});
+
+  final SettingsCategory category;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Scaffold(
+      appBar: AppBar(title: Text(category.title(l10n))),
+      body: _CategoryContent(category: category),
+    );
+  }
+}
+
+/// The settings of one category.
+class _CategoryContent extends ConsumerWidget {
+  const _CategoryContent({
+    super.key,
+    required this.category,
+    this.showTitle = false,
+  });
+
+  final SettingsCategory category;
+  final bool showTitle;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final s = ref.watch(settingsProvider);
     final notifier = ref.read(settingsProvider.notifier);
-    final usage = ref.watch(storageUsageProvider).value;
-    final version = ref.watch(appVersionProvider).value;
 
-    Widget header(String text) => Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.titleSmall
-            ?.copyWith(color: Theme.of(context).colorScheme.primary),
-      ),
-    );
+    final children = switch (category) {
+      SettingsCategory.account => [
+        const AccountSection(),
+        if (ref.watch(authProvider) != null)
+          _Choice(
+            l10n.settingsSyncMode,
+            s.syncMode,
+            {
+              SyncMode.automatic: l10n.syncModeAutomatic,
+              SyncMode.onStart: l10n.syncModeOnStart,
+              SyncMode.manual: l10n.syncModeManual,
+            },
+            (v) => notifier.update((s) => s.copyWith(syncMode: v)),
+            hint: switch (s.syncMode) {
+              SyncMode.automatic => l10n.syncModeAutomaticHint,
+              SyncMode.onStart => l10n.syncModeOnStartHint,
+              SyncMode.manual => l10n.syncModeManualHint,
+            },
+          ),
+      ],
+      SettingsCategory.general => [
+        _Choice(l10n.settingsLanguage, s.language, {
+          LanguageMode.system: l10n.languageSystem,
+          LanguageMode.de: l10n.languageDe,
+          LanguageMode.en: l10n.languageEn,
+        }, (v) => notifier.update((s) => s.copyWith(language: v))),
+        _Choice(l10n.settingsTheme, s.themeMode, {
+          ThemeMode.system: l10n.themeSystem,
+          ThemeMode.light: l10n.themeLight,
+          ThemeMode.dark: l10n.themeDark,
+        }, (v) => notifier.update((s) => s.copyWith(themeMode: v))),
+      ],
+      SettingsCategory.musician => [
+        _InstrumentTile(settings: s, notifier: notifier),
+        ListTile(
+          title: Text(l10n.settingsUserName),
+          subtitle: Text(
+            s.userName.isEmpty
+                ? '${l10n.notSet} – ${l10n.settingsUserNameHint}'
+                : s.userName,
+          ),
+          trailing: const Icon(Icons.edit_outlined),
+          onTap: () async {
+            final name = await askText(
+              context,
+              title: l10n.settingsUserName,
+              initial: s.userName,
+              hint: l10n.settingsUserNameHint,
+              allowEmpty: true,
+            );
+            if (name != null) {
+              await notifier.update((s) => s.copyWith(userName: name));
+            }
+          },
+        ),
+        _Choice(
+          l10n.settingsDiagrams,
+          s.diagrams,
+          {
+            DiagramsPosition.off: l10n.diagramsOff,
+            DiagramsPosition.top: l10n.diagramsTop,
+            DiagramsPosition.bottom: l10n.diagramsBottom,
+          },
+          (v) => notifier.update((s) => s.copyWith(diagrams: v)),
+          hint: l10n.settingsDiagramsHint,
+        ),
+      ],
+      SettingsCategory.display => [
+        _Choice(l10n.settingsNotation, s.notation, {
+          ChordNotation.international: l10n.notationInternational,
+          ChordNotation.german: l10n.notationGerman,
+        }, (v) => notifier.update((s) => s.copyWith(notation: v))),
+        SwitchListTile(
+          title: Text(l10n.settingsNashville),
+          subtitle: Text(l10n.settingsNashvilleHint),
+          value: s.nashville,
+          onChanged: (v) => notifier.update((s) => s.copyWith(nashville: v)),
+        ),
+        _Choice(l10n.settingsDisplayMode, s.displayMode, {
+          DisplayMode.lyricsAndChords: l10n.displayLyricsAndChords,
+          DisplayMode.lyricsOnly: l10n.displayLyricsOnly,
+        }, (v) => notifier.update((s) => s.copyWith(displayMode: v))),
+        ListTile(
+          title: Text(l10n.settingsFontSize),
+          subtitle: Slider(
+            value: s.fontSize,
+            min: AppSettings.minFontSize,
+            max: AppSettings.maxFontSize,
+            divisions: (AppSettings.maxFontSize - AppSettings.minFontSize)
+                .round(),
+            label: s.fontSize.round().toString(),
+            onChanged: (v) => notifier.update((s) => s.copyWith(fontSize: v)),
+          ),
+          trailing: Text('${s.fontSize.round()}'),
+        ),
+      ],
+      SettingsCategory.live => [
+        SwitchListTile(
+          title: Text(l10n.settingsAutoFit),
+          subtitle: Text(l10n.settingsAutoFitHint),
+          value: s.autoFit,
+          onChanged: (v) => notifier.update((s) => s.copyWith(autoFit: v)),
+        ),
+        _Choice(
+          l10n.settingsColumns,
+          s.columns,
+          {
+            ColumnMode.auto: l10n.columnsAuto,
+            ColumnMode.one: l10n.columnsOne,
+            ColumnMode.two: l10n.columnsTwo,
+            ColumnMode.three: l10n.columnsThree,
+          },
+          (v) => notifier.update((s) => s.copyWith(columns: v)),
+          hint: l10n.settingsColumnsHint,
+        ),
+        _Choice(
+          l10n.settingsChorusRepeat,
+          s.chorusRepeat,
+          {
+            ChorusRepeat.auto: l10n.chorusRepeatAuto,
+            ChorusRepeat.full: l10n.chorusRepeatFull,
+            ChorusRepeat.label: l10n.chorusRepeatLabel,
+          },
+          (v) => notifier.update((s) => s.copyWith(chorusRepeat: v)),
+          hint: l10n.settingsChorusRepeatHint,
+        ),
+        _Choice(l10n.settingsPageTurn, s.pageTurn, {
+          PageTurnMode.full: l10n.pageTurnFull,
+          PageTurnMode.half: l10n.pageTurnHalf,
+        }, (v) => notifier.update((s) => s.copyWith(pageTurn: v))),
+        ListTile(
+          leading: const Icon(Icons.touch_app_outlined),
+          subtitle: Text(l10n.settingsPageTurnHint),
+        ),
+      ],
+      SettingsCategory.about => [const _AboutTiles()],
+    };
 
-    Widget choice<T>(
-      String title,
-      T value,
-      Map<T, String> options,
-      void Function(T) onChanged, {
-      String? hint,
-    }) => ListTile(
-      title: Text(title),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (hint != null)
-            Padding(padding: const EdgeInsets.only(top: 4), child: Text(hint)),
+    return ListView(
+      padding: const EdgeInsets.only(bottom: 32),
+      children: [
+        if (showTitle)
           Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: SegmentedButton<T>(
-              showSelectedIcon: false,
-              segments: [
-                for (final e in options.entries)
-                  ButtonSegment(value: e.key, label: Text(e.value)),
-              ],
-              selected: {value},
-              onSelectionChanged: (v) => onChanged(v.first),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
+              category.title(l10n),
+              style: Theme.of(context).textTheme.titleLarge,
             ),
           ),
-        ],
-      ),
-    );
-
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.navSettings)),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: ListView(
-            padding: const EdgeInsets.only(bottom: 32),
-            children: [
-              header(l10n.settingsSectionAccount),
-              const AccountSection(),
-              if (ref.watch(authProvider) != null)
-                choice(
-                  l10n.settingsSyncMode,
-                  s.syncMode,
-                  {
-                    SyncMode.automatic: l10n.syncModeAutomatic,
-                    SyncMode.onStart: l10n.syncModeOnStart,
-                    SyncMode.manual: l10n.syncModeManual,
-                  },
-                  (v) => notifier.update((s) => s.copyWith(syncMode: v)),
-                  hint: switch (s.syncMode) {
-                    SyncMode.automatic => l10n.syncModeAutomaticHint,
-                    SyncMode.onStart => l10n.syncModeOnStartHint,
-                    SyncMode.manual => l10n.syncModeManualHint,
-                  },
-                ),
-
-              header(l10n.settingsSectionGeneral),
-              choice(l10n.settingsLanguage, s.language, {
-                LanguageMode.system: l10n.languageSystem,
-                LanguageMode.de: l10n.languageDe,
-                LanguageMode.en: l10n.languageEn,
-              }, (v) => notifier.update((s) => s.copyWith(language: v))),
-              choice(l10n.settingsTheme, s.themeMode, {
-                ThemeMode.system: l10n.themeSystem,
-                ThemeMode.light: l10n.themeLight,
-                ThemeMode.dark: l10n.themeDark,
-              }, (v) => notifier.update((s) => s.copyWith(themeMode: v))),
-
-              header(l10n.settingsSectionMusician),
-              _InstrumentTile(settings: s, notifier: notifier),
-              ListTile(
-                title: Text(l10n.settingsUserName),
-                subtitle: Text(
-                  s.userName.isEmpty
-                      ? '${l10n.notSet} – ${l10n.settingsUserNameHint}'
-                      : s.userName,
-                ),
-                trailing: const Icon(Icons.edit_outlined),
-                onTap: () async {
-                  final name = await askText(
-                    context,
-                    title: l10n.settingsUserName,
-                    initial: s.userName,
-                    hint: l10n.settingsUserNameHint,
-                    allowEmpty: true,
-                  );
-                  if (name != null) {
-                    await notifier.update((s) => s.copyWith(userName: name));
-                  }
-                },
-              ),
-
-              choice(
-                l10n.settingsDiagrams,
-                s.diagrams,
-                {
-                  DiagramsPosition.off: l10n.diagramsOff,
-                  DiagramsPosition.top: l10n.diagramsTop,
-                  DiagramsPosition.bottom: l10n.diagramsBottom,
-                },
-                (v) => notifier.update((s) => s.copyWith(diagrams: v)),
-                hint: l10n.settingsDiagramsHint,
-              ),
-
-              header(l10n.settingsSectionDisplay),
-              choice(l10n.settingsNotation, s.notation, {
-                ChordNotation.international: l10n.notationInternational,
-                ChordNotation.german: l10n.notationGerman,
-              }, (v) => notifier.update((s) => s.copyWith(notation: v))),
-              SwitchListTile(
-                title: Text(l10n.settingsNashville),
-                subtitle: Text(l10n.settingsNashvilleHint),
-                value: s.nashville,
-                onChanged: (v) =>
-                    notifier.update((s) => s.copyWith(nashville: v)),
-              ),
-              choice(l10n.settingsDisplayMode, s.displayMode, {
-                DisplayMode.lyricsAndChords: l10n.displayLyricsAndChords,
-                DisplayMode.lyricsOnly: l10n.displayLyricsOnly,
-              }, (v) => notifier.update((s) => s.copyWith(displayMode: v))),
-              ListTile(
-                title: Text(l10n.settingsFontSize),
-                subtitle: Slider(
-                  value: s.fontSize,
-                  min: AppSettings.minFontSize,
-                  max: AppSettings.maxFontSize,
-                  divisions: (AppSettings.maxFontSize - AppSettings.minFontSize)
-                      .round(),
-                  label: s.fontSize.round().toString(),
-                  onChanged: (v) =>
-                      notifier.update((s) => s.copyWith(fontSize: v)),
-                ),
-                trailing: Text('${s.fontSize.round()}'),
-              ),
-
-              header(l10n.settingsSectionLive),
-              SwitchListTile(
-                title: Text(l10n.settingsAutoFit),
-                subtitle: Text(l10n.settingsAutoFitHint),
-                value: s.autoFit,
-                onChanged: (v) =>
-                    notifier.update((s) => s.copyWith(autoFit: v)),
-              ),
-              choice(
-                l10n.settingsColumns,
-                s.columns,
-                {
-                  ColumnMode.auto: l10n.columnsAuto,
-                  ColumnMode.one: l10n.columnsOne,
-                  ColumnMode.two: l10n.columnsTwo,
-                  ColumnMode.three: l10n.columnsThree,
-                },
-                (v) => notifier.update((s) => s.copyWith(columns: v)),
-                hint: l10n.settingsColumnsHint,
-              ),
-              choice(
-                l10n.settingsChorusRepeat,
-                s.chorusRepeat,
-                {
-                  ChorusRepeat.auto: l10n.chorusRepeatAuto,
-                  ChorusRepeat.full: l10n.chorusRepeatFull,
-                  ChorusRepeat.label: l10n.chorusRepeatLabel,
-                },
-                (v) => notifier.update((s) => s.copyWith(chorusRepeat: v)),
-                hint: l10n.settingsChorusRepeatHint,
-              ),
-              choice(l10n.settingsPageTurn, s.pageTurn, {
-                PageTurnMode.full: l10n.pageTurnFull,
-                PageTurnMode.half: l10n.pageTurnHalf,
-              }, (v) => notifier.update((s) => s.copyWith(pageTurn: v))),
-              ListTile(
-                leading: const Icon(Icons.touch_app_outlined),
-                subtitle: Text(l10n.settingsPageTurnHint),
-              ),
-
-              header(l10n.settingsSectionStorage),
-              ListTile(
-                leading: const Icon(Icons.sd_storage_outlined),
-                title: Text(l10n.settingsStorageUsed(formatBytes(usage ?? 0))),
-              ),
-              ListTile(
-                key: const Key('copy-log'),
-                leading: const Icon(Icons.bug_report_outlined),
-                title: Text(l10n.settingsLogCopy),
-                subtitle: Text(l10n.settingsLogCopyHint),
-                onTap: () async {
-                  await Clipboard.setData(
-                    ClipboardData(
-                      text: [
-                        if (version != null) 'RealChord $version',
-                        Log.export(),
-                      ].join('\n'),
-                    ),
-                  );
-                  if (context.mounted) {
-                    showMessage(context, l10n.settingsLogCopied);
-                  }
-                },
-              ),
-              ListTile(
-                key: const Key('app-version'),
-                leading: const Icon(Icons.info_outline),
-                title: version == null
-                    ? null
-                    : Text(l10n.settingsVersion(version)),
-                subtitle: Text(l10n.settingsAbout),
-              ),
-            ],
-          ),
-        ),
-      ),
+        ...children,
+      ],
     );
   }
+}
+
+/// Storage, diagnostic log and version.
+class _AboutTiles extends ConsumerWidget {
+  const _AboutTiles();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final usage = ref.watch(storageUsageProvider).value;
+    final version = ref.watch(appVersionProvider).value;
+    return Column(
+      children: [
+        ListTile(
+          leading: const Icon(Icons.sd_storage_outlined),
+          title: Text(l10n.settingsStorageUsed(formatBytes(usage ?? 0))),
+        ),
+        ListTile(
+          key: const Key('copy-log'),
+          leading: const Icon(Icons.bug_report_outlined),
+          title: Text(l10n.settingsLogCopy),
+          subtitle: Text(l10n.settingsLogCopyHint),
+          onTap: () async {
+            await Clipboard.setData(
+              ClipboardData(
+                text: [
+                  if (version != null) 'RealChord $version',
+                  Log.export(),
+                ].join('\n'),
+              ),
+            );
+            if (context.mounted) {
+              showMessage(context, l10n.settingsLogCopied);
+            }
+          },
+        ),
+        ListTile(
+          key: const Key('app-version'),
+          leading: const Icon(Icons.info_outline),
+          title: version == null ? null : Text(l10n.settingsVersion(version)),
+          subtitle: Text(l10n.settingsAbout),
+        ),
+      ],
+    );
+  }
+}
+
+/// A setting with a few options, shown as a segmented button.
+class _Choice<T> extends StatelessWidget {
+  const _Choice(
+    this.title,
+    this.value,
+    this.options,
+    this.onChanged, {
+    this.hint,
+  });
+
+  final String title;
+  final T value;
+  final Map<T, String> options;
+  final void Function(T) onChanged;
+  final String? hint;
+
+  @override
+  Widget build(BuildContext context) => ListTile(
+    title: Text(title),
+    subtitle: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (hint != null)
+          Padding(padding: const EdgeInsets.only(top: 4), child: Text(hint!)),
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: SegmentedButton<T>(
+            showSelectedIcon: false,
+            segments: [
+              for (final e in options.entries)
+                ButtonSegment(value: e.key, label: Text(e.value)),
+            ],
+            selected: {value},
+            onSelectionChanged: (v) => onChanged(v.first),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class _InstrumentTile extends StatelessWidget {
