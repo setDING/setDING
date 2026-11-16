@@ -36,4 +36,13 @@ rm -f web/drift_worker.js.deps
 # Everything from this server: no CanvasKit or fonts from Google's CDN
 # (privacy, and cross-origin isolation, ADR-0018).
 flutter build web --no-pub --no-wasm-dry-run --no-web-resources-cdn "$@" >/dev/null
+# flutter.js and flutter_bootstrap.js point to flutter.js.map, which the
+# release build does not ship; the server would answer with index.html and
+# browser devtools report a source map error. Drop references to missing maps.
+for f in build/web/*.js; do
+  map="$(sed -n 's|^//# sourceMappingURL=\([^ ]*\)$|\1|p' "$f" | tail -n 1)"
+  if [ -n "$map" ] && [ ! -e "build/web/$map" ]; then
+    sed -i '\|^//# sourceMappingURL=|d' "$f"
+  fi
+done
 echo "web: built app/build/web (sqlite3 $locked)"
