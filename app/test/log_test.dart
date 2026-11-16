@@ -67,6 +67,8 @@ void main() {
     );
     await tester.pumpWidget(app.build(home: const SettingsScreen()));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('settings-category-about')));
+    await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.byKey(const Key('copy-log')),
       300,

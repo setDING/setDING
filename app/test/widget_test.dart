@@ -25,6 +25,8 @@ void main() {
 
     await tester.tap(find.text('Einstellungen').first);
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('settings-category-display')));
+    await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.text('Schriftgrösse'),
       200,
@@ -42,6 +44,8 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Einstellungen').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('settings-category-general')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('English'));
     await tester.pumpAndSettle();
@@ -166,6 +170,8 @@ void main() {
     await tester.pumpWidget(app.build());
     await tester.pumpAndSettle();
     await tester.tap(find.text('Settings').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('settings-category-musician')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Ukulele'));
     await tester.pumpAndSettle();
