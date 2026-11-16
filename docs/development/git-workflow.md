@@ -146,12 +146,9 @@ to be decided.
 
 CI runs as **GitHub Actions** (when enabled, on every PR and on every push to `main`):
 [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml), on a GitHub-hosted
-`ubuntu-latest` runner, in the project's own CI image
-`ghcr.io/tafli/realchord-ci:<flutter version>` from the GitHub container registry
-([`tool/ci/Dockerfile`](../../tool/ci/Dockerfile): Debian, Node for the checkout
-action, python3, clang for native assets, Flutter precached for Linux). The image is
-linked to the repository (label `org.opencontainers.image.source`), so the job pulls
-it with the built-in `GITHUB_TOKEN`; no extra secret is needed. `tool/check.sh`
+`ubuntu-latest` runner without a container: the runner already has git, curl,
+python3 and clang, and `subosito/flutter-action` installs Flutter in the version of
+`FLUTTER_VERSION` in the `Makefile`, cached between runs. `tool/check.sh`
 runs one test process per core unless `TEST_CONCURRENCY` is set. The first step
 prints the runner's CPUs and memory.
 
@@ -161,10 +158,9 @@ prints the runner's CPUs and memory.
 | `build` | Android build (APK); iOS and Windows builds at least on `main` | Planned (needs the Android SDK, a macOS and a Windows runner) |
 | `commit-lint` | PR title follows Conventional Commits | Planned |
 
-**Upgrading Flutter:** set `FLUTTER_VERSION` in the `Makefile`, run
-`make ci-image ci-image-push` (needs `docker login ghcr.io` with a token that may
-write packages – done by the human) and change the image tag in
-`.github/workflows/ci.yml` in the same PR as the code changes for the new version.
+**Upgrading Flutter:** set `FLUTTER_VERSION` in the `Makefile` in the same PR as the
+code changes for the new version; CI and the release build (`make release` builds
+its base image for the new version) follow it automatically.
 
 `gh pr checks <number>` shows the checks of a PR; `gh run list` lists the runs.
 

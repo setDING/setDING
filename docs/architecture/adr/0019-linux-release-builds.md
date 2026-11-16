@@ -30,7 +30,7 @@ exist yet, and CI is manual-only during early development.
   from the **committed** state (`git archive HEAD`); uncommitted changes only cause a
   warning.
 - The build runs `flutter build linux --release` inside a **Debian container**
-  (`tool/release/linux.Dockerfile`, based on the CI image, plus CMake, Ninja, GTK 3 and
+  (`tool/release/linux.Dockerfile`, based on the Flutter image `tool/ci/Dockerfile`, plus CMake, Ninja, GTK 3 and
   libsecret). Debian's glibc targets the x86-64 baseline and is older than rolling
   distributions, so the bundle runs on every x86-64 CPU and on current distributions.
 - **ISA check:** `tool/release/check-isa.sh` fails the release if any ELF file in the
@@ -61,6 +61,9 @@ exist yet, and CI is manual-only during early development.
   failed with "CPU ISA level is lower than required" on another machine. Windows
   release left out on request (not needed yet).
 - 2026-11-15: Accepted by the owner.
+- 2026-11-16: The base image `tool/ci/Dockerfile` is no longer the CI image on `ghcr.io`
+  (CI uses flutter-action, ADR-0010, #135); `make release` builds it locally as
+  `realchord-ci:<flutter-version>` when it is missing.
 
 ## Open points
 
