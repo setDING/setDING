@@ -87,8 +87,10 @@ by band.
 
 - Replaces parts of ADR-0005 (songs belong to a band; sharing between bands only by
   copy) and of ADR-0015 (collections and rules); both get decision log entries.
-- The app (issue #15) shows the song library of the current band's organization and
-  groups the band switcher by organization; invitations (#16) target organizations.
+- The app (issue #15) groups the band switcher by organization; invitations (#16)
+  target organizations. The songs tab chooses a **song library** (the local library or
+  an organization) independently of the band (#167); sets, their song picker and Live
+  mode use the library of the band's organization.
 - The migration requires empty `bands`, `songs`, `attachments` and `invites`
   collections (true on 2026-11-15) and is not reversible; a restore needs a backup.
 
@@ -99,6 +101,12 @@ by band.
   Proposed with issue #21.
 - 2026-11-15: Accepted by the owner, including the permission choices of PR #22
   (song deletion by organization admins only, organization admins manage all bands).
+- 2026-11-16: Owner decision (#167): since songs belong to the organization, the songs
+  tab no longer switches bands. It has its own library switcher ("On this device" and
+  one entry per organization, also organizations without own bands), stored per
+  device and independent of the band chosen on the sets tab; without a choice it
+  follows the band. Song permissions and personal overlays (ADR-0020) follow the
+  library of the song shown.
 
 ## Open points
 

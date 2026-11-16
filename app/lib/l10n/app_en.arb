@@ -301,6 +301,7 @@
   "bandLocalHint": "Only on this device, not synced.",
   "bandSwitch": "Switch band",
   "bandManage": "Manage bands",
+  "librarySwitch": "Switch song library",
   "bandsTitle": "Bands",
   "bandsEmpty": "You are not in a band yet. Create a band for your songs and sets.",
   "bandsSignInHint": "Sign in to create bands.",

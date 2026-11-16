@@ -99,14 +99,39 @@ class BandService {
     ];
   }
 
-  /// The local library followed by the bands [userId] can see, sorted by
-  /// organization and band name.
-  Stream<List<BandView>> watchBands(String? userId) {
-    if (userId == null) return Stream.value(const [BandView.local]);
-    return _watch(() => _bands(userId));
+  /// The local library followed by the libraries of the organizations of
+  /// [userId], sorted by name (ADR-0017).
+  Stream<List<LibraryView>> watchLibraries(String? userId) {
+    if (userId == null) return Stream.value(const [LibraryView.local]);
+    return _watch(() => _libraries(userId));
   }
 
-  Future<List<BandView>> _bands(String userId) async {
+  Future<List<LibraryView>> _libraries(String userId) async {
+    final rights = await _rights(userId);
+    return [
+      LibraryView.local,
+      for (final o in rights.orgs.values)
+        LibraryView(
+          id: o.id,
+          name: o.name,
+          isOrgAdmin: o.isAdmin,
+          mayEditSongs: rights.mayEditSongs(o.id),
+        ),
+    ];
+  }
+
+  /// The organizations of [userId] (sorted by name), their bands, the
+  /// user's band roles and the organization-wide permission to edit songs
+  /// (same as the server rule).
+  Future<
+    ({
+      Map<String, OrganizationView> orgs,
+      List<BandEntry> bands,
+      Map<String, BandRole> own,
+      bool Function(String orgId) mayEditSongs,
+    })
+  >
+  _rights(String userId) async {
     final orgs = {for (final o in await _organizations(userId)) o.id: o};
     final bands =
         await (db.select(db.bands)..where(
@@ -119,7 +144,6 @@ class BandService {
       )..where((m) => m.userId.equals(userId))).get())
         m.bandId: m.role,
     };
-    // Organization-wide permission to edit songs (same as the server rule).
     bool mayEditSongs(String orgId) {
       if (orgs[orgId]!.isAdmin) return true;
       return bands.any(
@@ -130,6 +154,18 @@ class BandService {
       );
     }
 
+    return (orgs: orgs, bands: bands, own: own, mayEditSongs: mayEditSongs);
+  }
+
+  /// The local library followed by the bands [userId] can see, sorted by
+  /// organization and band name.
+  Stream<List<BandView>> watchBands(String? userId) {
+    if (userId == null) return Stream.value(const [BandView.local]);
+    return _watch(() => _bands(userId));
+  }
+
+  Future<List<BandView>> _bands(String userId) async {
+    final (:orgs, :bands, :own, :mayEditSongs) = await _rights(userId);
     final views = [
       for (final b in bands)
         if (own.containsKey(b.id) || orgs[b.organizationId]!.isAdmin)

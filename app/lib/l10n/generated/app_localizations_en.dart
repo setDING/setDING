@@ -967,6 +967,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bandManage => 'Manage bands';
 
   @override
+  String get librarySwitch => 'Switch song library';
+
+  @override
   String get bandsTitle => 'Bands';
 
   @override

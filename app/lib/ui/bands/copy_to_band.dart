@@ -36,24 +36,25 @@ Future<T?> _pick<T>(
   );
 }
 
-/// Copies songs into another song library the user may edit: an
-/// organization's library (shared by its bands) or the local library.
+/// Copies songs of the library [fromLibraryId] into another song library
+/// the user may edit: an organization's library (shared by its bands) or
+/// the local library.
 Future<void> copySongsToBand(
   BuildContext context,
   WidgetRef ref,
-  List<String> songIds,
-) async {
+  List<String> songIds, {
+  required String fromLibraryId,
+}) async {
   final l10n = AppLocalizations.of(context);
-  final current = ref.read(currentBandProvider);
-  final libraries = <String, _Library>{};
-  for (final b in ref.read(bandsProvider).value ?? const <BandView>[]) {
-    if (b.libraryId == current.libraryId || !b.canEditSongs) continue;
-    libraries[b.libraryId] = (
-      id: b.libraryId,
-      label: b.isLocal ? l10n.bandLocal : b.organizationName,
-      isLocal: b.isLocal,
-    );
-  }
+  final libraries = <String, _Library>{
+    for (final l in ref.read(librariesProvider).value ?? const <LibraryView>[])
+      if (l.id != fromLibraryId && l.canEditSongs)
+        l.id: (
+          id: l.id,
+          label: l.isLocal ? l10n.bandLocal : l.name,
+          isLocal: l.isLocal,
+        ),
+  };
   final target = await _pick<_Library>(
     context,
     title: l10n.copyToLibraryTitle,

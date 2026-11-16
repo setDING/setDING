@@ -416,6 +416,7 @@
   "bandLocalHint": "Nur auf diesem Gerät, wird nicht synchronisiert.",
   "bandSwitch": "Band wechseln",
   "bandManage": "Bands verwalten",
+  "librarySwitch": "Songbibliothek wechseln",
   "bandsTitle": "Bands",
   "bandsEmpty": "Du bist noch in keiner Band. Erstelle eine Band für deine Songs und Sets.",
   "bandsSignInHint": "Melde dich an, um Bands zu erstellen.",

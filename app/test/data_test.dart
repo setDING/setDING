@@ -268,6 +268,32 @@ void main() {
       expect((await signedIn.getOverlay(id)).capo, 1);
     });
 
+    test('adjustments follow the library of the song, not of the '
+        'repository', () async {
+      final orgSong = await org('ann').createSong(source: '{title: Org}');
+      final localSong = await songs.createSong(source: '{title: Mine}');
+      // A repository of the local library used for an organization song,
+      // e.g. Live mode of a set while the songs tab shows another library.
+      final local = SongRepository(db, songs.storage, userId: 'ann');
+      await local.saveOverlay(
+        (await local.getOverlay(orgSong)).copyWith(transpose: 3),
+      );
+      expect((await local.getOverlay(orgSong)).ownerId, 'ann');
+      expect((await org('ann').getOverlay(orgSong)).transpose, 3);
+      expect(await local.watchOverlay(orgSong).first, isA<SongOverlay>());
+      expect((await local.watchOverlay(orgSong).first).transpose, 3);
+      final outbox = await db.select(db.syncOutbox).get();
+      expect(outbox.where((o) => o.recordId.contains(orgSong)), isNotEmpty);
+
+      // And the other way round: the local song stays with the local owner.
+      final ann = org('ann');
+      await ann.saveOverlay(
+        (await ann.getOverlay(localSong)).copyWith(capo: 2),
+      );
+      expect((await songs.getOverlay(localSong)).capo, 2);
+      expect((await ann.getOverlay(localSong)).ownerId, localOwnerId);
+    });
+
     test(
       'the first user takes over local adjustments of organization songs',
       () async {
