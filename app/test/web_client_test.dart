@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -9,11 +10,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:realchord/data/attachment_storage_memory.dart';
 import 'package:realchord/data/database.dart';
+import 'package:realchord/data/import_export.dart';
 import 'package:realchord/data/set_repository.dart';
 import 'package:realchord/data/song_repository.dart';
 import 'package:realchord/providers.dart';
 import 'package:realchord/sync/browser_session_store.dart';
 import 'package:realchord/sync/sync_backend.dart';
+import 'package:realchord/sync/sync_controller.dart';
 import 'package:realchord/ui/home_screen.dart';
 import 'package:realchord/ui/live/live_screen.dart';
 import 'package:realchord/ui/live/pdf_spread_view.dart';
@@ -49,8 +52,8 @@ class _Storage implements KeyValueStorage {
   void remove(String key) => values.remove(key);
 }
 
-/// The web client (ADR-0018): sign-in required, no local library, no file
-/// import/export, local data only while signed in.
+/// The web client (ADR-0018): sign-in required, no local library, file import
+/// but no export, local data only while signed in.
 void main() {
   Future<TestApp> start(
     WidgetTester tester, {
@@ -108,18 +111,60 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('hides the local library and file import/export', (tester) async {
+  testWidgets('hides the local library', (tester) async {
     final app = await start(tester, user: _ann);
     expect(find.byType(NavigationRail), findsOneWidget);
-
-    await tester.tap(find.text('Songs'));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('songs-import')), findsNothing);
 
     await tester.tap(find.byKey(const Key('band-switcher')).last);
     await tester.pumpAndSettle();
     expect(find.text('The Band'), findsWidgets);
     expect(find.text('On this device'), findsNothing);
+    await app.dispose(tester);
+  });
+
+  testWidgets('imports ChordPro files into the band and syncs them', (
+    tester,
+  ) async {
+    final app = await start(tester, user: _ann);
+    await tester.tap(find.text('Songs'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('songs-import')));
+    await tester.pumpAndSettle();
+    expect(find.text('Import ChordPro files'), findsOneWidget);
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HomeScreen)),
+    );
+    final result = await tester.runAsync(
+      () => container.read(importExportProvider).importFiles([
+        ImportFile('web.cho', utf8.encode('{title: From the browser}\n[G]La')),
+      ]),
+    );
+    expect(result!.imported, 1);
+
+    var done = false;
+    unawaited(
+      container
+          .read(syncControllerProvider.notifier)
+          .syncNow()
+          .whenComplete(() => done = true),
+    );
+    for (var i = 0; i < 500 && !done; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 5)),
+      );
+      await tester.pump();
+    }
+    expect(done, isTrue, reason: 'sync did not finish');
+    await tester.pumpAndSettle();
+
+    expect(
+      app.backend.songs.values.map((s) => s.title),
+      contains('From the browser'),
+    );
     await app.dispose(tester);
   });
 
