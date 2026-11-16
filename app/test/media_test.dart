@@ -184,9 +184,14 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(Image), findsOneWidget);
+    // Image sizes scale with the font size (fitted to the screen).
+    final fontSize = tester
+        .widget<SongBody>(find.byType(SongBody))
+        .options
+        .fontSize;
     expect(
       tester.getSize(find.byType(Image)).width,
-      closeTo(60 / 12 * 20, 0.01),
+      closeTo(60 / 12 * fontSize, 0.01),
     );
     expect(find.text('missing.png'), findsOneWidget); // placeholder
     expect(find.byType(SvgPicture), findsOneWidget);

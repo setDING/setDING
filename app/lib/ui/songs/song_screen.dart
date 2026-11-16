@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:chordpro/chordpro.dart' hide Key;
 import 'package:chordpro/chordpro.dart' as cp show Key;
 import 'package:drift/drift.dart' show Value;
@@ -16,6 +18,7 @@ import '../live/live_screen.dart';
 import '../render/chord_diagram.dart';
 import '../render/render_cache.dart';
 import '../render/song_header.dart';
+import '../render/song_image.dart';
 import '../render/song_view.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
@@ -209,60 +212,57 @@ class _SongScreenState extends ConsumerState<SongScreen> {
               ),
             ],
           ),
-          body: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-            children: [
-              if (ref.watch(songConflictProvider(song.id)).value
-                  case final conflict?)
-                ConflictBanner(conflict: conflict),
-              SongHeader(
-                title: song.title.isEmpty ? l10n.untitled : song.title,
-                artist: song.artist,
-                song: parsed,
-                formatter: formatter,
-                capo: formatter.effectiveCapo,
-              ),
-              const SizedBox(height: 12),
-              _AdjustmentsBar(
-                songKey: parsed.key,
-                songCapo: parsed.capoFret,
-                notation: settings.notation,
-                overlay: overlay,
-                deviceNashville: settings.nashville,
-                hasKey: parsed.key != null,
-                onChanged: _updateOverlay,
-              ),
-              if (attachments.isNotEmpty || !parsed.hasContent) ...[
-                const SizedBox(height: 12),
-                _AttachmentsCard(
-                  attachments: attachments,
-                  overlay: overlay,
-                  hasChordPro: parsed.hasContent,
-                  onAdd: library.canEditSongs ? _addAttachment : null,
-                  canRename: library.canEditSongs,
-                  canDelete: library.canDeleteSongs,
-                  onLiveView: (id) =>
-                      _updateOverlay((o) => o.copyWith(liveView: Value(id))),
-                ),
-              ],
-              const SizedBox(height: 16),
-              if (parsed.hasContent)
-                SongBody(
+          // The song is fitted to the visible area below the app bar; the
+          // header and the adjustments scroll away above it.
+          body: LayoutBuilder(
+            builder: (context, constraints) => ListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+              children: [
+                if (ref.watch(songConflictProvider(song.id)).value
+                    case final conflict?)
+                  ConflictBanner(conflict: conflict),
+                SongHeader(
+                  title: song.title.isEmpty ? l10n.untitled : song.title,
+                  artist: song.artist,
                   song: parsed,
-                  options: SongRenderOptions(
+                  formatter: formatter,
+                  capo: formatter.effectiveCapo,
+                ),
+                const SizedBox(height: 12),
+                _AdjustmentsBar(
+                  songKey: parsed.key,
+                  songCapo: parsed.capoFret,
+                  notation: settings.notation,
+                  overlay: overlay,
+                  deviceNashville: settings.nashville,
+                  hasKey: parsed.key != null,
+                  onChanged: _updateOverlay,
+                ),
+                if (attachments.isNotEmpty || !parsed.hasContent) ...[
+                  const SizedBox(height: 12),
+                  _AttachmentsCard(
+                    attachments: attachments,
+                    overlay: overlay,
+                    hasChordPro: parsed.hasContent,
+                    onAdd: library.canEditSongs ? _addAttachment : null,
+                    canRename: library.canEditSongs,
+                    canDelete: library.canDeleteSongs,
+                    onLiveView: (id) =>
+                        _updateOverlay((o) => o.copyWith(liveView: Value(id))),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                if (parsed.hasContent)
+                  _FittedSongBody(
+                    song: parsed,
+                    overlay: overlay,
                     formatter: formatter,
-                    lyricsOnly: settings.displayMode == DisplayMode.lyricsOnly,
-                    fontSize: settings.fontSize * overlay.fontScale,
-                    notes: overlay.notes,
-                    diagramResolver: DiagramResolver(
-                      parsed,
-                      formatter,
-                      diagramInstrumentFor(settings.instrument),
+                    // The visible area without the list's padding.
+                    page: Size(
+                      constraints.maxWidth - 32,
+                      constraints.maxHeight - 40,
                     ),
-                    diagramsPosition: diagramsPosition(
-                      parsed.diagrams,
-                      settings.diagrams,
-                    ),
+                    attachments: attachments,
                     imageLookup: (src) {
                       final image = imageAttachmentFor(attachments, src);
                       return image == null
@@ -271,28 +271,201 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                                 .read(attachmentStorageProvider)
                                 .file(image.fileName);
                     },
+                  )
+                else
+                  Card.outlined(
+                    child: ListTile(
+                      leading: const Icon(Icons.text_snippet_outlined),
+                      title: Text(l10n.noContent),
+                      trailing: !library.canEditSongs
+                          ? null
+                          : FilledButton.tonal(
+                              onPressed: () => _editSource(song),
+                              child: Text(l10n.addChordPro),
+                            ),
+                    ),
                   ),
-                )
-              else
-                Card.outlined(
-                  child: ListTile(
-                    leading: const Icon(Icons.text_snippet_outlined),
-                    title: Text(l10n.noContent),
-                    trailing: !library.canEditSongs
-                        ? null
-                        : FilledButton.tonal(
-                            onPressed: () => _editSource(song),
-                            child: Text(l10n.addChordPro),
-                          ),
-                  ),
-                ),
-            ],
+              ],
+            ),
           ),
         );
       },
     );
   }
 }
+
+/// Fits the song to [page] like live mode (ADR-0007): with automatic
+/// fitting, font size and columns are chosen so that the whole song fits;
+/// the personal font scale applies on top. When it does not fit (or without
+/// automatic fitting) the song keeps the base font size and is split into as
+/// many columns as needed, up to what the width allows, and scrolls.
+class _FittedSongBody extends ConsumerWidget {
+  const _FittedSongBody({
+    required this.song,
+    required this.overlay,
+    required this.formatter,
+    required this.page,
+    required this.attachments,
+    required this.imageLookup,
+  });
+
+  final Song song;
+  final SongOverlay overlay;
+  final ChordFormatter formatter;
+  final Size page;
+  final List<AttachmentEntry> attachments;
+  final ImageLookup imageLookup;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsProvider);
+    final l10n = AppLocalizations.of(context);
+    final lyricsOnly = settings.displayMode == DisplayMode.lyricsOnly;
+    final resolver = DiagramResolver(
+      song,
+      formatter,
+      diagramInstrumentFor(settings.instrument),
+    );
+    final diagrams = diagramsPosition(song.diagrams, settings.diagrams);
+    final textScaler = MediaQuery.textScalerOf(context);
+    final baseStyle = DefaultTextStyle.of(context).style;
+    final scale = overlay.fontScale;
+    // {columns} in the song wins over the automatic choice.
+    final songColumns =
+        settings.columns == ColumnMode.auto && song.columns != null
+        ? song.columns!.clamp(1, 4)
+        : null;
+    final maxColumns = songColumns ?? settings.maxColumns;
+    // By content: the list is loaded anew on every change.
+    final key = (
+      song,
+      formatter.transpose,
+      formatter.capo,
+      formatter.notation,
+      formatter.nashville,
+      lyricsOnly,
+      overlay.notes,
+      diagrams,
+      settings.instrument,
+      textScaler,
+      baseStyle,
+      [for (final a in attachments) '${a.id}/${a.name}/${a.fileName}']
+          .join('\n'),
+      Localizations.localeOf(context),
+    );
+
+    SongRenderOptions options(
+      double fontSize,
+      int columns,
+      bool collapse,
+      SongLayout layout,
+    ) => SongRenderOptions(
+      formatter: formatter,
+      lyricsOnly: lyricsOnly,
+      fontSize: fontSize,
+      columns: columns,
+      notes: overlay.notes,
+      collapseRecalls: collapse,
+      diagramResolver: resolver,
+      diagramsPosition: diagrams,
+      imageLookup: imageLookup,
+      layout: layout,
+    );
+
+    if (settings.autoFit && page.width > 0 && page.height > 0) {
+      final fit = _fits.get(
+        (
+          key,
+          settings.fontSize,
+          songColumns,
+          settings.maxColumns,
+          settings.chorusRepeat,
+          page,
+        ),
+        () => fitSong(
+          song,
+          formatter: formatter,
+          lyricsOnly: lyricsOnly,
+          labeler: sectionLabeler(l10n),
+          notes: overlay.notes,
+          baseFontSize: settings.fontSize,
+          maxFontSize: settings.fontSize * 2,
+          minFontSize: AppSettings.minFontSize,
+          size: page,
+          textScaler: textScaler,
+          baseStyle: baseStyle,
+          minColumns: songColumns ?? 1,
+          maxColumns: maxColumns,
+          chorusRepeat: settings.chorusRepeat,
+          diagramResolver: resolver,
+          diagramsPosition: diagrams,
+          imageLookup: imageLookup,
+        ),
+      );
+      if (fit.fits && fit.layout != null) {
+        final layout = fit.layout!;
+        final font = fit.fontSize * scale;
+        // A larger personal scale may need fewer columns: chord lines must
+        // fit (breaks in the song keep their columns).
+        var columns = fit.columns;
+        if (forcedColumns(layout.blocks) == null) {
+          final widest = layout.metrics.fold<double>(
+            0,
+            (w, m) => math.max(w, m.minWidth),
+          );
+          while (columns > 1 &&
+              columnWidth(page.width, columns, font) < widest * font) {
+            columns--;
+          }
+        }
+        return SongBody(
+          song: song,
+          options: options(font, columns, fit.collapseRecalls, layout),
+        );
+      }
+    }
+
+    // Does not fit (or no automatic fitting): base font size, columns.
+    final collapse = settings.chorusRepeat == ChorusRepeat.label;
+    final layout = _layouts.get(
+      (key, collapse),
+      () => layoutSong(
+        song,
+        formatter: formatter,
+        lyricsOnly: lyricsOnly,
+        labeler: sectionLabeler(l10n),
+        notes: overlay.notes,
+        collapseRecalls: collapse,
+        diagramResolver: resolver,
+        diagramsPosition: diagrams,
+        textScaler: textScaler,
+        baseStyle: baseStyle,
+        imageLookup: imageLookup,
+      ),
+    );
+    final font = settings.fontSize * scale;
+    return SongBody(
+      song: song,
+      options: options(
+        font,
+        scrollColumns(
+          layout,
+          fontSize: font,
+          size: page,
+          maxColumns: maxColumns,
+        ),
+        collapse,
+        layout,
+      ),
+    );
+  }
+}
+
+/// Results of [fitSong] for the song screen.
+final _fits = LruCache<Object, SongFit>(8);
+
+/// Measured songs for the song screen when they do not fit.
+final _layouts = LruCache<Object, SongLayout>(8);
 
 /// Transposition, capo, font size, Nashville and notes (layer 3, ADR-0006).
 class _AdjustmentsBar extends StatelessWidget {

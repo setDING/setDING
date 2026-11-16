@@ -224,4 +224,55 @@ void main() {
       expect(result.fontSize, greaterThanOrEqualTo(12));
     });
   });
+
+  group('scrollColumns', () {
+    BlockMetrics block(double height, {double minWidth = 5}) => BlockMetrics(
+      fixedHeight: height,
+      wrapping: const [],
+      minWidth: minWidth,
+    );
+    SongLayout layout(List<BlockMetrics> metrics) => (
+      blocks: [for (final _ in metrics) SongBlock.notes('x')],
+      metrics: metrics,
+    );
+
+    test('uses the fewest columns with which the song fits', () {
+      // Four blocks of 200 px at 20 px.
+      final song = layout(List.filled(4, block(10)));
+      int columns(double height) =>
+          scrollColumns(song, fontSize: 20, size: Size(1200, height));
+      expect(columns(800), 1);
+      expect(columns(400), 2);
+      expect(columns(200), 4);
+    });
+
+    test('scrolls with as many columns as the width allows', () {
+      final song = layout(List.filled(8, block(10)));
+      const short = Size(1200, 100);
+      expect(scrollColumns(song, fontSize: 20, size: short), 4);
+      expect(scrollColumns(song, fontSize: 20, size: short, maxColumns: 2), 2);
+      // Columns narrower than the minimum width: one column.
+      expect(scrollColumns(song, fontSize: 20, size: const Size(400, 100)), 1);
+      // Chord lines of 500 px fit two columns of 1200 px, not three.
+      final wide = layout(List.filled(8, block(10, minWidth: 25)));
+      expect(scrollColumns(wide, fontSize: 20, size: short), 2);
+    });
+
+    test('breaks in the song decide the columns when they fit', () {
+      final blocks = buildSongBlocks(
+        parseChordPro(
+          '{start_of_verse}\n[C]One\n{end_of_verse}\n{column_break}\n'
+          '{start_of_verse}\n[G]Two\n{end_of_verse}',
+        ),
+        lyricsOnly: false,
+        labeler: _labeler,
+      );
+      final song = (
+        blocks: blocks,
+        metrics: [for (final _ in blocks) block(10)],
+      );
+      expect(scrollColumns(song, fontSize: 20, size: const Size(1200, 50)), 2);
+      expect(scrollColumns(song, fontSize: 20, size: const Size(400, 50)), 1);
+    });
+  });
 }
