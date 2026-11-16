@@ -18,7 +18,7 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 
 - Backlog as issues in the GitHub repository, with labels for agents (`agent:ready`, `agent:in-progress`, `needs-human`).
 - One issue = one branch (`<type>/<issue>-<slug>`) = one PR; no direct commits to `main`.
-- Conventional Commits, English, `Co-Authored-By` trailer for agents.
+- Conventional Commits, English, `Co-Authored-By` trailer naming Claude on every commit.
 - Local checks + self-review before a PR is marked ready. During early development the local test gate is binding and CI runs only on manual dispatch; required CI checks return when heading towards version 1.
 - **Squash merge** only; branch deleted after merge.
 - **Test gate:** all tests must pass on the final, rebased state of the branch before
@@ -60,6 +60,7 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 - 2026-11-16: After a merge the branch is deleted locally as well (`git branch -D`, since squash-merged branches do not count as merged), not only on the remote (owner request).
 - 2026-11-16: Move to **GitHub** (`github.com/tafli/RealChord`) decided by the owner, to be carried out once #27 is done and all Forgejo issues are closed ([runbook](../../development/github-migration.md), #116). Issues and pull requests keep their numbers (PRs become closed issues), CI becomes GitHub Actions with the image on `ghcr.io`, commits are made with the owner's signed identity instead of `factoryd` (agents marked by `Co-Authored-By`), and **no reference to the Forgejo instance may exist on GitHub**: the history is rewritten before the push (new commit ids, old signatures dropped, every author and committer rewritten to the owner, #127). The workflow sections for GitHub follow in the cutover PR.
 - 2026-11-16: Move to GitHub carried out (#129): issues and PRs imported with their numbers, CI on GitHub Actions with `ghcr.io/tafli/realchord-ci`, agents use `gh`, commits are GPG-signed with the owner's global identity (no repository-local identity), `.forgejo/` removed. The Forgejo repository is archived.
+- 2026-11-16: Every commit carries the `Co-Authored-By: Claude …` trailer, not only agent commits, since no commit is made without Claude (owner decision, #131). The history on GitHub was rewritten once more to add it to the 23 commits without it (content unchanged, new commit ids, ids in the imported issues updated).
 
 ## Open points
 

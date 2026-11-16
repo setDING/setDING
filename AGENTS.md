@@ -50,14 +50,14 @@ deletes its data. `make web` builds the web client (see [`docs/development/web.m
 Every change follows [`docs/development/git-workflow.md`](docs/development/git-workflow.md) (ADR-0010). In short:
 
 - Work on an issue; one issue = one branch (`<type>/<issue>-<slug>`) = one PR. **Never commit directly to `main`.**
-- Conventional Commits in English, with a `Co-Authored-By` trailer for agents.
+- Conventional Commits in English; **every commit** (including squash merges) carries the `Co-Authored-By: Claude …` trailer.
 - Before marking a PR ready: rebase on `main`, run the checks, update ADRs/docs, complete both ARB files, self-review.
 - **Test gate: all tests must pass before every merge**, run on the final branch state rebased on `main`. Never skip, delete or weaken tests to get green. New or changed behaviour comes with tests.
 - Squash merge only; afterwards delete the branch on the remote and locally (`git branch -D`). An agent may merge its own PR when the test gate (full local `make check`) is satisfied and no "human must decide" rule applies; otherwise label `needs-human`.
 - Never end a session with unpushed work: commit, push, and leave a handover comment on the PR.
 - **CI is manual-only during early development**: do not wait for it; local green tests are enough. Re-enable it as a required check when heading towards version 1 (ADR-0010).
 - Remote: **GitHub** (`github.com/tafli/RealChord`), CLI `gh` (logged in on the development machine): issues, PRs and squash merges go through `gh`. Without a login, fall back to workflow section 11.
-- Commits use the owner's global git identity and are **GPG-signed**; never set a repository-local identity or commit unsigned. Agent commits carry the `Co-Authored-By` trailer.
+- Commits use the owner's global git identity and are **GPG-signed**; never set a repository-local identity or commit unsigned. Every commit carries the `Co-Authored-By` trailer.
 
 ## External libraries (mandatory)
 
