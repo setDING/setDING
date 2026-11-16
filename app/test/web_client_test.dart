@@ -16,6 +16,7 @@ import 'package:realchord/sync/browser_session_store.dart';
 import 'package:realchord/sync/sync_backend.dart';
 import 'package:realchord/ui/home_screen.dart';
 import 'package:realchord/ui/live/live_screen.dart';
+import 'package:realchord/ui/live/pdf_spread_view.dart';
 import 'package:realchord/ui/sets/sets_screen.dart';
 
 import 'test_app.dart';
@@ -230,11 +231,14 @@ void main() {
   });
 
   group('PDF attachments are loaded when opened', () {
-    Future<(TestApp, LiveItem)> pdfSong(WidgetTester tester) async {
+    Future<(TestApp, LiveItem)> pdfSong(
+      WidgetTester tester, {
+      bool landscape = true,
+    }) async {
       final cache = Directory.systemTemp.createTempSync('realchord_pdfrx');
       addTearDown(() => cache.deleteSync(recursive: true));
       Pdfrx.cacheDirectoryPath = cache.path;
-      useTabletSize(tester);
+      useTabletSize(tester, landscape: landscape);
       final app = await TestApp.create(
         prefs: {'language': 'en', 'currentBandId': 'b1'},
         user: _ann,
@@ -271,17 +275,30 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets('downloads and shows the PDF', (tester) async {
-      final (app, item) = await pdfSong(tester);
-      await tester.pumpWidget(app.build(home: LiveScreen(items: [item])));
-      await settle(tester);
-      expect(find.byKey(const Key('pdf-missing')), findsNothing);
-      expect(find.byType(PdfViewer), findsOneWidget);
-      expect(app.backend.downloads, 1);
-      // Live mode in the browser is not offline-safe (ADR-0018).
-      expect(find.byKey(const Key('live-web-notice')), findsOneWidget);
-      await app.dispose(tester);
-    });
+    for (final landscape in [true, false]) {
+      testWidgets('downloads and shows the PDF (landscape: $landscape)', (
+        tester,
+      ) async {
+        final (app, item) = await pdfSong(tester, landscape: landscape);
+        await tester.pumpWidget(app.build(home: LiveScreen(items: [item])));
+        await settle(tester);
+        expect(find.byKey(const Key('pdf-missing')), findsNothing);
+        if (landscape) {
+          // Two pages side by side, loaded from memory (ADR-0009).
+          expect(find.byType(PdfSpreadView), findsOneWidget);
+          expect(
+            find.byKey(const ValueKey('pdf-spread-page-1')),
+            findsOneWidget,
+          );
+        } else {
+          expect(find.byType(PdfViewer), findsOneWidget);
+        }
+        expect(app.backend.downloads, 1);
+        // Live mode in the browser is not offline-safe (ADR-0018).
+        expect(find.byKey(const Key('live-web-notice')), findsOneWidget);
+        await app.dispose(tester);
+      });
+    }
 
     testWidgets('explains a failed download', (tester) async {
       final (app, item) = await pdfSong(tester);
@@ -296,6 +313,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.byType(PdfViewer), findsNothing);
+      expect(find.byType(PdfSpreadView), findsNothing);
       await app.dispose(tester);
     });
   });

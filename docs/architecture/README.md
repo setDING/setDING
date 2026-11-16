@@ -199,7 +199,7 @@ target state described in the ADRs, to be completed in later phases:
 | Personal notes | One text note per song, shown above the song | Notes anchored to a line/section (ADR-0006) |
 | Pedal keys | Removed (#149) | Foot pedal support, possibly later (ADR-0007) |
 | Auto-scroll | Not implemented | Optional auto-scroll by tempo/duration (ADR-0007) |
-| PDF display | One page at a time, fit to width | Two pages side by side in landscape (ADR-0009) |
+| PDF display | Done (#150): portrait one page fit to width, landscape two pages side by side | Two pages side by side in landscape (ADR-0009) |
 | Bands & roles | One implicit local band, all features available | Roles per band via backend (ADR-0005, phase 1); done in #15, the MVP band became the local library |
 
 Verified with unit and widget tests (`tool/check.sh`) and rendered screenshots;

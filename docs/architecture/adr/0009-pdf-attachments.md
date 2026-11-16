@@ -41,7 +41,7 @@ synced and displayed.
 
 - PDFs are rendered in the app (no external viewer), in the live view as well.
 - Page turning with the same input as for ChordPro songs (tap, swipe; ADR-0007).
-- Fit to width / fit to page; two pages side by side in landscape.
+- Portrait: one page at a time, fit to width. Landscape: two pages side by side (spreads 1–2, 3–4, …; a last odd page alone), fitted to the screen; a page turn moves a whole spread.
 - If a song has both ChordPro text and PDFs, the user chooses per song what to show
   in live mode (stored in the personal overlay, ADR-0006); default is ChordPro.
 - Personal transposition, notation and Nashville settings do not apply to PDFs.
@@ -69,6 +69,7 @@ synced and displayed.
 - 2026-11-15: Sync of PDF attachments implemented (issue #18, ADR-0004): metadata is pulled per organization with the songs; files are uploaded once (immutable, the song first) and downloaded in the same sync run, so all attachments are on every device; renames and deletions travel both ways, deleted files are removed locally. A file that is not downloaded yet is shown as a hint in live mode and keeps the set from being "offline ready"; the settings show how many files are still missing. Image attachments for `{image}` (ADR-0012) stay on the device (the server accepts PDFs only).
 - 2026-11-15: On web (ADR-0018, accepted) attachments are fetched on demand instead of preloaded; the apps keep all attachments offline.
 - 2026-11-16: On-demand loading implemented (#27): the web sync skips file downloads; the live view downloads a PDF when it is opened (one shared download per file, kept in memory until signing out) and explains a failed download.
+- 2026-11-16: Two pages side by side in landscape implemented (#150): live mode shows spreads fitted to the screen and turns a spread at a time; portrait keeps the scrollable viewer with one page per turn.
 
 ## Open points
 

@@ -18,3 +18,7 @@ Widget storedPdfViewer(
   PdfViewerController? controller,
   PdfViewerParams params = const PdfViewerParams(),
 }) => memoryPdfViewer(file, key: key, controller: controller, params: params);
+
+/// A reference to a PDF attachment, for page widgets; [file] must exist.
+PdfDocumentRef storedPdfDocumentRef(StoredFile file) =>
+    memoryPdfDocumentRef(file);

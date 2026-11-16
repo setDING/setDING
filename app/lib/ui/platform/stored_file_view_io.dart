@@ -48,3 +48,8 @@ Widget storedPdfViewer(
     params: params,
   );
 }
+
+/// A reference to a PDF attachment, for page widgets; [file] must exist.
+PdfDocumentRef storedPdfDocumentRef(StoredFile file) => file is IoStoredFile
+    ? PdfDocumentRefFile(file.file.path)
+    : memoryPdfDocumentRef(file);
