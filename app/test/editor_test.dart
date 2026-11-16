@@ -220,7 +220,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.descendant(of: input('capo'), matching: find.text('Capo 2')),
+      find.descendant(of: input('capo'), matching: find.text('Capo: 2 (A)')),
       findsOneWidget,
     );
 
@@ -257,7 +257,7 @@ void main() {
     await tester.tap(find.text('Song details'));
     await tester.pumpAndSettle();
     await pick(tester, 'key', 'F#m');
-    await pick(tester, 'capo', 'Capo 3');
+    await pick(tester, 'capo', 'Capo: 3 (Am)');
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
     expect(field.controller!.text, '{title: T}\n{key: F#m}\n{capo: 3}\nla');

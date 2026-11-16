@@ -69,6 +69,25 @@
       }
     }
   },
+  "capoLabel": "Kapo: {fret}",
+  "@capoLabel": {
+    "placeholders": {
+      "fret": {
+        "type": "int"
+      }
+    }
+  },
+  "capoLabelWithKey": "Kapo: {fret} ({key})",
+  "@capoLabelWithKey": {
+    "placeholders": {
+      "fret": {
+        "type": "int"
+      },
+      "key": {
+        "type": "String"
+      }
+    }
+  },
   "noCapo": "Ohne Kapo",
   "capoAsInSong": "Kapo {fret} (wie im Song)",
   "@capoAsInSong": {
@@ -122,7 +141,7 @@
   "artist": "Interpret",
   "noContent": "Dieser Song hat noch keinen ChordPro-Text.",
   "addChordPro": "ChordPro-Text erfassen",
-  "keyLabel": "Tonart {key}",
+  "keyLabel": "Tonart: {key}",
   "@keyLabel": {
     "placeholders": {
       "key": {

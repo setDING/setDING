@@ -123,8 +123,12 @@ class ChordFormatter {
   /// Name of [chord] in the display notation.
   String chordName(Chord chord) => chord.format(notation);
 
-  /// Formats the sounding key for display (e.g. in the header).
+  /// Formats the sounding key for display (e.g. next to the capo).
   String? formatKey() => soundingKey?.format(notation);
+
+  /// Formats the key of the chord shapes for display (e.g. in the header):
+  /// with a capo, the key the player's chords are in.
+  String? formatShapeKey() => shapeKey?.format(notation);
 }
 
 /// Markup style of a chord written like `[<b>C</b>]` or `[*<i>Rit.</i>]`:
