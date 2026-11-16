@@ -9,6 +9,8 @@ On stage you play from a clean, large display and turn pages with your foot.
 
 [**Download the latest release →**](https://github.com/tafli/RealChord/releases/latest)
 
+![Live mode: a song in three columns with chords, a personal note and chord diagrams](docs/screenshots/live.png)
+
 ## Why RealChord?
 
 ### 🎸 Made for the stage
@@ -26,6 +28,13 @@ On stage you play from a clean, large display and turn pages with your foot.
   **ready to play offline**.
 - Print the set list as a PDF or share it as text.
 
+<table>
+  <tr>
+    <td><img src="docs/screenshots/set.png" alt="A set with two songs, their keys, a break and the offline-ready status"></td>
+    <td><img src="docs/screenshots/sequence.png" alt="Building the song sequence for a set from the parts of the song"></td>
+  </tr>
+</table>
+
 ### 🎹 Every musician sees it their way
 - **Transpose** with one tap, set a **capo**, change the font size.
 - Chord names in **B or H** notation, or as **Nashville numbers**.
@@ -34,6 +43,8 @@ On stage you play from a clean, large display and turn pages with your foot.
 - Chord diagrams for guitar, ukulele, keyboard and more; parts only for your
   instrument or your voice.
 
+![A song with controls for key, capo, font size, Nashville numbers and a personal note](docs/screenshots/song.png)
+
 ### 📄 Your songs, your format
 - Songs are written in **[ChordPro](https://www.chordpro.org/)**, the open standard
   for chord sheets – no lock-in, import and export any time.
@@ -41,6 +52,8 @@ On stage you play from a clean, large display and turn pages with your foot.
   including the ChordPro files you download from SongSelect.
 - Attach **PDF sheet music** to any song; it is on every device, offline too.
 - A built-in editor with syntax highlighting, autocompletion and a live preview.
+
+![The ChordPro editor with insert menus, syntax highlighting and a live preview](docs/screenshots/editor.png)
 
 ### 👥 For bands, schools and churches
 - Several **bands in one organization** share one song library – ideal for music
