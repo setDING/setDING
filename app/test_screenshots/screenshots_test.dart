@@ -9,7 +9,7 @@ import 'package:realchord/ui/live/live_screen.dart';
 import 'package:realchord/ui/sets/set_screen.dart';
 import 'package:realchord/ui/songs/song_editor_screen.dart';
 import 'package:realchord/ui/songs/song_screen.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:drift/drift.dart' show Value;

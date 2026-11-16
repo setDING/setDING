@@ -1,7 +1,7 @@
 import 'package:realchord/data/demo_song.dart';
 import 'package:realchord/ui/render/song_view.dart';
 import 'package:chordpro/chordpro.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 String? _labeler(SectionKind kind) => switch (kind) {

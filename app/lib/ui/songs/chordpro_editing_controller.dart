@@ -1,5 +1,5 @@
 import 'package:chordpro/chordpro.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Text controller of the ChordPro editor with syntax highlighting and
 /// bracket matching.

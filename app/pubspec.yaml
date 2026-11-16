@@ -4,13 +4,14 @@ publish_to: 'none'
 version: 0.1.0+1
 
 environment:
-  sdk: ^3.13.7
+  sdk: ^3.14.0
 
 dependencies:
   app_links: ^7.2.2
   archive: ^4.7.1
   chordpro:
     path: ../packages/chordpro
+  cupertino_ui: ^1.1.6
   drift: ^2.35.4
   drift_flutter: ^0.3.1
   file_picker: ^13.3.3
@@ -24,6 +25,7 @@ dependencies:
   http: ^1.6.0
   http_parser: ^4.1.2
   intl: ^0.20.3
+  material_ui: ^1.11.0
   path: ^1.9.1
   path_provider: ^2.1.6
   pdf: ^3.13.1

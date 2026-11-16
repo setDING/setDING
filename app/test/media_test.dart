@@ -17,7 +17,7 @@ import 'package:realchord/ui/render/song_view.dart';
 import 'package:realchord/ui/songs/song_screen.dart';
 import 'package:drift/native.dart';
 import 'package:chordpro/chordpro.dart' hide Key;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 

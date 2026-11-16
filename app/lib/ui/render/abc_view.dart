@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:chordpro/chordpro.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'song_image.dart';
 

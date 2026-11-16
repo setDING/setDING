@@ -27,7 +27,7 @@ jobs:
       # tool/ci/Dockerfile: Debian, Node, python3, clang and Flutter. The tag is
       # the Flutter version used for development (FLUTTER_VERSION in the
       # Makefile); build and push a new tag with `make ci-image ci-image-push`.
-      image: ghcr.io/tafli/realchord-ci:3.47.9
+      image: ghcr.io/tafli/realchord-ci:3.50.0
       # The instance requires sign-in, also for pulling packages. The secret
       # holds a token with the scope package:read (repository settings ->
       # Actions -> Secrets).

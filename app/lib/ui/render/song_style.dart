@@ -1,5 +1,5 @@
 import 'package:chordpro/chordpro.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Spacing of the rendered song, in units of the font size. The widgets
 /// (song_view.dart) and the layout measurement (song_layout.dart) both use

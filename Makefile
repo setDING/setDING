@@ -36,7 +36,7 @@ APK         := $(APP)/build/realchord-$(APK_VERSION)-$(APK_COMMIT).apk
 
 # CI image (tool/ci/Dockerfile) in the Forgejo container registry. The tag is the
 # Flutter version; keep it in sync with .forgejo/workflows/ci.yml.
-FLUTTER_VERSION ?= 3.47.9
+FLUTTER_VERSION ?= 3.50.0
 CI_IMAGE        ?= ghcr.io/tafli/realchord-ci:$(FLUTTER_VERSION)
 DOCKER          ?= docker
 

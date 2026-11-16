@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:chordpro/chordpro.dart' hide Key;
 import 'package:chordpro/chordpro.dart' as cp show Key;
 import 'package:flutter/gestures.dart' show Drag;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdfrx/pdfrx.dart';

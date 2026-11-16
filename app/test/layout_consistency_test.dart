@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:chordpro/chordpro.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:realchord/data/demo_song.dart';
 import 'package:realchord/l10n/generated/app_localizations.dart';
