@@ -9,6 +9,7 @@ import 'account/sign_in_screen.dart';
 import 'bands/bands_screen.dart';
 import 'bands/join_screen.dart';
 import 'home_screen.dart';
+import 'widgets/logo.dart';
 
 /// The first screen. The native apps start with the [HomeScreen]; the web
 /// client requires signing in and a band first (ADR-0018).
@@ -26,7 +27,7 @@ class StartScreen extends ConsumerWidget {
     // The bands arrive with the first sync after signing in.
     final syncing = ref.watch(syncControllerProvider.select((s) => s.running));
     if (bands == null || syncing) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(body: SplashScreen(busy: true));
     }
     return const _NoBandScreen();
   }

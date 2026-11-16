@@ -49,6 +49,8 @@ dev_dependencies:
   drift_dev: ^2.35.3
   build_runner: ^2.17.1
   sqlite3: ^3.9.1
+  # Generates the native splash screens (make branding, docs/development/branding.md).
+  flutter_native_splash: ^2.4.8
 
 flutter:
   generate: true
@@ -58,3 +60,9 @@ flutter:
     - assets/fonts/NotoSans-Regular.ttf
     - assets/fonts/NotoSans-Bold.ttf
     - assets/fonts/NotoSans-OFL.txt
+  fonts:
+    # Wordmark of the logo (lib/ui/widgets/logo.dart).
+    - family: NotoSans
+      fonts:
+        - asset: assets/fonts/NotoSans-Bold.ttf
+          weight: 700

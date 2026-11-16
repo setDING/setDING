@@ -41,7 +41,7 @@ The documentation must always reflect the current state of the project:
 
 Use the `Makefile` in the repository root (`make help`): `make check` is the test gate,
 `make dev` / `make start` run an isolated local test instance on Linux, `make reset`
-deletes its data. `make web` builds the web client (see [`docs/development/web.md`](docs/development/web.md), ADR-0018), `make release` builds the distributable Linux package
+deletes its data. `make branding` regenerates the splash screens and icons from the logo sources (see [`docs/development/branding.md`](docs/development/branding.md)). `make web` builds the web client (see [`docs/development/web.md`](docs/development/web.md), ADR-0018), `make release` builds the distributable Linux package
 (see [`docs/development/releases.md`](docs/development/releases.md), ADR-0019). `make server-*` installs and operates the PocketBase server over SSH
 (see [`docs/operations/server.md`](docs/operations/server.md), ADR-0014).
 

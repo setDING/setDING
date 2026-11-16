@@ -9,6 +9,7 @@ import 'package:realchord/ui/live/live_screen.dart';
 import 'package:realchord/ui/sets/set_screen.dart';
 import 'package:realchord/ui/songs/song_editor_screen.dart';
 import 'package:realchord/ui/songs/song_screen.dart';
+import 'package:realchord/ui/widgets/logo.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -36,6 +37,16 @@ Future<void> _loadFonts() async {
     'Roboto-Italic.ttf',
   ]);
   await load('MaterialIcons', ['MaterialIcons-Regular.otf']);
+  // Wordmark of the logo (registered in pubspec.yaml).
+  final noto = FontLoader('NotoSans')
+    ..addFont(
+      Future.value(
+        ByteData.sublistView(
+          File('assets/fonts/NotoSans-Bold.ttf').readAsBytesSync(),
+        ),
+      ),
+    );
+  await noto.load();
   // A system monospace font for tabs and sources, if available.
   const mono = '/usr/share/fonts/TTF/DejaVuSansMono.ttf';
   if (File(mono).existsSync()) {
@@ -87,6 +98,28 @@ K:G
 
 void main() {
   setUpAll(() async => _loadFonts());
+
+  for (final dark in [false, true]) {
+    testWidgets('splash ${dark ? 'dark' : 'light'}', (tester) async {
+      tester.view.physicalSize = const Size(1080, 1920);
+      tester.view.devicePixelRatio = 2.5;
+      tester.platformDispatcher.platformBrightnessTestValue = dark
+          ? Brightness.dark
+          : Brightness.light;
+      addTearDown(tester.view.reset);
+      addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: const Directionality(
+            textDirection: TextDirection.ltr,
+            child: SplashScreen(),
+          ),
+        ),
+      );
+      await _shot(tester, '0_splash_${dark ? 'dark' : 'light'}');
+    });
+  }
 
   for (final (lang, dark) in [('de', false), ('en', true)]) {
     testWidgets('screenshots $lang', (tester) async {
