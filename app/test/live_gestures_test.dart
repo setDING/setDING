@@ -213,6 +213,76 @@ void main() {
     await app.dispose(tester);
   });
 
+  /// [verses] verses of short chord lines: the height limits the font.
+  String versesSong(int verses) =>
+      '{title: Long}\n${List.generate(verses, (_) => '{start_of_verse}\n${List.filled(4, '[C]La la [G]la').join('\n')}\n{end_of_verse}').join('\n')}';
+
+  testWidgets('long songs are split into pages turned by tapping', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final items = await createSongs(tester, app, [
+      versesSong(16),
+      '{title: Second}\n[D]Two',
+    ]);
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+    final page = tester.getRect(find.byType(PageView));
+    Future<void> tap(double x) async {
+      await tester.tapAt(Offset(x, page.bottom - 20));
+      await tester.pumpAndSettle();
+    }
+
+    final right = page.right - 20;
+    final left = page.left + 20;
+    expect(find.byType(SingleChildScrollView), findsNothing);
+    expect(find.text('Page 1/2'), findsOneWidget);
+    expect(find.text('1 / 2'), findsOneWidget);
+
+    await tap(right);
+    expect(find.text('Page 2/2'), findsOneWidget);
+    expect(find.text('1 / 2'), findsOneWidget);
+
+    await tap(right);
+    expect(find.text('2 / 2'), findsOneWidget);
+    expect(find.byKey(const Key('live-song-page')), findsNothing);
+
+    // Back to the last page of the song, then its first page.
+    await tap(left);
+    expect(find.text('1 / 2'), findsOneWidget);
+    expect(find.text('Page 2/2'), findsOneWidget);
+    await tap(left);
+    expect(find.text('Page 1/2'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('enlarged text is split into pages instead of scrolling', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final items = await createSongs(tester, app, [versesSong(8)]);
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('live-song-page')), findsNothing);
+
+    await tester.tapAt(tester.getCenter(find.byType(PageView)));
+    await tester.pumpAndSettle();
+    for (var i = 0; i < 5; i++) {
+      await tester.tap(find.byIcon(Icons.text_increase));
+      await tester.pumpAndSettle();
+    }
+    expect(find.byType(SingleChildScrollView), findsNothing);
+    expect(find.textContaining('Page 1/'), findsOneWidget);
+
+    // Fit to page brings back one page.
+    await tester.tap(find.byIcon(Icons.fit_screen));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('live-song-page')), findsNothing);
+    await app.dispose(tester);
+  });
+
   Future<void> settlePdf(WidgetTester tester) async {
     for (var i = 0; i < 10; i++) {
       await tester.runAsync(

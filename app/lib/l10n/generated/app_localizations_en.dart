@@ -418,6 +418,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get liveExit => 'Exit live mode';
 
   @override
+  String liveSongPage(int page, int count) {
+    return 'Page $page/$count';
+  }
+
+  @override
   String livePosition(int current, int total) {
     return '$current / $total';
   }

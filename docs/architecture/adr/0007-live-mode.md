@@ -24,9 +24,15 @@ song, all tablets follow automatically. We evaluated whether this is needed.
 - **Layout – fit to screen (default, configurable in the settings):** the whole song fits on the screen without scrolling.
   Sections are kept whole and arranged automatically in reading order into 1–4 columns; the arrangement with the largest
   font wins (more columns only when clearly better). A repeated chorus (`{chorus}`) is shown as a short label only when
-  needed to fit. Scrolling is used only if the song cannot fit at the minimum font size, or when fitting is switched off.
+  needed to fit. A long song is split into **pages** (up to 4) when that gives a clearly larger font than one page;
+  pages continue the columns in reading order, each page filled as far as it goes. A font above the base font size is
+  no reason for another page, and `{column_break}`/`{new_page}` in the song keep it on one page. Tapping right/left
+  turns the pages of the song before turning to the next/previous song; the bottom bar shows the page (e.g. "Page 1/2").
+  The *half page* setting does not apply to song pages. Scrolling is used only if the song does not fit even on pages
+  (a single section taller than the page at the minimum font size), or when fitting is switched off.
 - **Font size on stage:** the control bar (tap in the middle of the screen) makes the text smaller or larger (personal
-  font scale, ADR-0006). A *fit to page* button fits the song again: with fitting on, it resets the scale to 100 %,
+  font scale, ADR-0006); larger text is split into as many pages as needed instead of scrolling, with fewer columns
+  when chord lines would not fit. A *fit to page* button fits the song again: with fitting on, it resets the scale to 100 %,
   i.e. the fitted size; with fitting off, it sets the scale at which the song fits the page with the configured columns
   and chorus display (between 50 % and 250 %).
 - **Settings:** fit to screen on/off, maximum number of columns (automatic = up to 4, or 1/2/3), repeated chorus
@@ -68,3 +74,4 @@ between devices – neither over the local network nor via the backend.
 - Is MIDI control desired (e.g. Program Change from a keyboard/pedalboard)?
 - 2026-11-16: Fit-to-page button in the live control bar next to the font size buttons; resets the personal font scale to the fitted size (issue #173).
 - 2026-11-16: Fit to page also works with fitting switched off: it measures the font scale that fits the page (issue #175).
+- 2026-11-16: Long songs are split into pages instead of shrinking far or scrolling: pages only for a clearly larger font, enlarged text (personal scale above 100 %) is paged too, half-page turning does not apply to song pages (issue #177).

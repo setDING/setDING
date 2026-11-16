@@ -116,6 +116,7 @@
   "liveEnd": "End of set",
   "liveSetOverview": "Set overview",
   "liveExit": "Exit live mode",
+  "liveSongPage": "Page {page}/{count}",
   "livePosition": "{current} / {total}",
   "settingsSectionGeneral": "General",
   "settingsSectionDisplay": "Display",

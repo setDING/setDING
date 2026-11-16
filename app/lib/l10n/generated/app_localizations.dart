@@ -794,6 +794,12 @@ abstract class AppLocalizations {
   /// **'Live-Modus beenden'**
   String get liveExit;
 
+  /// No description provided for @liveSongPage.
+  ///
+  /// In de, this message translates to:
+  /// **'Seite {page}/{count}'**
+  String liveSongPage(int page, int count);
+
   /// No description provided for @livePosition.
   ///
   /// In de, this message translates to:

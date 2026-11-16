@@ -331,7 +331,23 @@ void main() {
       app.build(home: LiveScreen(items: [LiveItem.song(song!)])),
     );
     await tester.pumpAndSettle();
-    expect(find.byIcon(Icons.repeat), findsNWidgets(2));
+    // Counted over all pages of the song (ADR-0007).
+    final page = tester.getRect(find.byType(PageView));
+    final indicator = find.byKey(const Key('live-song-page'));
+    bool lastPage() {
+      if (indicator.evaluate().isEmpty) return true;
+      final pages = tester.widget<Text>(indicator).data!.split(' ').last;
+      final [current, count] = pages.split('/');
+      return current == count;
+    }
+
+    var labels = find.byIcon(Icons.repeat).evaluate().length;
+    while (!lastPage()) {
+      await tester.tapAt(Offset(page.right - 20, page.bottom - 20));
+      await tester.pumpAndSettle();
+      labels += find.byIcon(Icons.repeat).evaluate().length;
+    }
+    expect(labels, 2);
     await app.dispose(tester);
   });
 

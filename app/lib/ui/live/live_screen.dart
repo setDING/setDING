@@ -129,6 +129,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   final _pdf = <int, PdfViewerController>{};
   final _spread = <int, PdfSpreadController>{};
   final _fit = <int, _FitController>{};
+  final _songPages = <int, SongPageController>{};
   final _focus = FocusNode();
   bool _controls = false;
 
@@ -156,6 +157,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     for (final c in _spread.values) {
       c.dispose();
     }
+    for (final c in _songPages.values) {
+      c.dispose();
+    }
     _focus.dispose();
     super.dispose();
   }
@@ -179,6 +183,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       _spread.putIfAbsent(index, PdfSpreadController.new);
   _FitController _fitFor(int index) =>
       _fit.putIfAbsent(index, _FitController.new);
+  SongPageController _songPageFor(int index) =>
+      _songPages.putIfAbsent(index, SongPageController.new);
 
   double get _step =>
       ref.read(settingsProvider).pageTurn == PageTurnMode.half ? 0.5 : 0.85;
@@ -199,6 +205,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         return;
       }
     }
+    if (_songPages[_index]?.next() ?? false) return;
     if (_spread[_index]?.next() ?? false) return;
     final pdf = _pdf[_index];
     if (pdf != null && pdf.isReady) {
@@ -209,6 +216,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       }
     }
     if (_index < _items.length - 1) {
+      // The next song starts at its first page.
+      _songPages[_index + 1]?.first();
       _pages.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
@@ -227,6 +236,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       );
       return;
     }
+    if (_songPages[_index]?.previous() ?? false) return;
     if (_spread[_index]?.previous() ?? false) return;
     final pdf = _pdf[_index];
     if (pdf != null && pdf.isReady && (pdf.pageNumber ?? 1) > 1) {
@@ -360,13 +370,19 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                             child: PageView.builder(
                               controller: _pages,
                               itemCount: items.length,
-                              onPageChanged: (i) => setState(() => _index = i),
+                              onPageChanged: (i) => setState(() {
+                                // A song turned to from the front starts at
+                                // its first page.
+                                if (i > _index) _songPageFor(i).first();
+                                _index = i;
+                              }),
                               itemBuilder: (context, i) => _LiveItemPage(
                                 item: items[i],
                                 scrollController: _scrollFor(i),
                                 pdfController: _pdfFor(i),
                                 spreadController: _spreadFor(i),
                                 fitController: _fitFor(i),
+                                songPageController: _songPageFor(i),
                                 onTap: _onTap,
                               ),
                             ),
@@ -431,6 +447,21 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                       ),
                       const SizedBox(width: 12),
                     ],
+                    ListenableBuilder(
+                      listenable: _songPageFor(_index),
+                      builder: (context, _) {
+                        final pages = _songPageFor(_index);
+                        if (pages.count <= 1) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 16),
+                          child: Text(
+                            l10n.liveSongPage(pages.page + 1, pages.count),
+                            key: const Key('live-song-page'),
+                            style: theme.textTheme.titleSmall,
+                          ),
+                        );
+                      },
+                    ),
                     Text(
                       l10n.livePosition(_index + 1, items.length),
                       style: theme.textTheme.titleSmall,
@@ -566,6 +597,7 @@ class _LiveItemPage extends ConsumerWidget {
     required this.pdfController,
     required this.spreadController,
     required this.fitController,
+    required this.songPageController,
     required this.onTap,
   });
 
@@ -582,6 +614,9 @@ class _LiveItemPage extends ConsumerWidget {
 
   /// Measures the font scale that fits the song to the page.
   final _FitController fitController;
+
+  /// Page of a song split into pages.
+  final SongPageController songPageController;
 
   /// Portrait: one page at a time, fit to width.
   Widget _portraitPdf(StoredFile file, Key key) => storedPdfViewer(
@@ -627,6 +662,7 @@ class _LiveItemPage extends ConsumerWidget {
     }
     if (pdf != null && !isPdfFile(pdf.fileName)) pdf = null;
     if (pdf != null) {
+      songPageController.attach(1);
       var file = ref.watch(attachmentStorageProvider).file(pdf.fileName);
       if (!file.existsSync()) {
         // The web client loads the PDF now (ADR-0018); the apps show it
@@ -678,6 +714,7 @@ class _LiveItemPage extends ConsumerWidget {
       setSequence: item.setSequence,
       scrollController: scrollController,
       fitController: fitController,
+      songPageController: songPageController,
       attachments: attachments,
       imageLookup: (src) {
         final image = imageAttachmentFor(attachments, src);
@@ -696,6 +733,7 @@ class _ChordProPage extends ConsumerWidget {
     required this.setSequence,
     required this.scrollController,
     required this.fitController,
+    required this.songPageController,
     required this.attachments,
     required this.imageLookup,
   });
@@ -707,6 +745,7 @@ class _ChordProPage extends ConsumerWidget {
   final String? setSequence;
   final ScrollController scrollController;
   final _FitController fitController;
+  final SongPageController songPageController;
 
   /// Attachments of the song; [imageLookup] finds images among them.
   final List<AttachmentEntry> attachments;
@@ -767,6 +806,7 @@ class _ChordProPage extends ConsumerWidget {
                 ].join('\n');
                 final locale = Localizations.localeOf(context);
                 if (!settings.autoFit) {
+                  songPageController.attach(1);
                   final columns = settings.columns == ColumnMode.auto
                       ? 1
                       : settings.maxColumns;
@@ -898,33 +938,76 @@ class _ChordProPage extends ConsumerWidget {
                     diagramResolver: resolver,
                     diagramsPosition: diagrams,
                     imageLookup: imageLookup,
+                    maxPages: _maxSongPages,
                   ),
                 );
-                final options = _options(
+                if (!fit.fits) {
+                  songPageController.attach(1);
+                  return _scrolling(
+                    size,
+                    _options(
+                      formatter,
+                      lyricsOnly,
+                      fit.fontSize * scale,
+                      fit.columns,
+                      fit.collapseRecalls,
+                      resolver,
+                      diagrams,
+                    ),
+                  );
+                }
+                final pages = _songPages(fit, scale, size);
+                // Measured at the reference size: valid for any scale.
+                SongRenderOptions options(SongLayout? layout) => _options(
                   formatter,
                   lyricsOnly,
                   fit.fontSize * scale,
-                  fit.columns,
+                  pages?.columns ?? fit.columns,
                   fit.collapseRecalls,
                   resolver,
                   diagrams,
-                  // Measured at the reference size: valid for any scale.
-                  layout: fit.layout,
+                  layout: layout,
                 );
-                // A personal font scale above 100 % may need scrolling.
-                if (!fit.fits || scale > 1.0) return _scrolling(size, options);
+                // Does not fit on pages (e.g. a section taller than the
+                // page at a large personal font scale): scrolling.
+                if (pages == null) {
+                  songPageController.attach(1);
+                  return _scrolling(size, options(fit.layout));
+                }
+                songPageController.attach(pages.ends.length);
                 // Fits: no scrolling. FittedBox only shrinks, as a safety net
                 // for small measurement differences (e.g. wrapped notes).
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: _margin),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.topLeft,
-                    child: SizedBox(
-                      width: size.width,
-                      child: SongBody(song: parsed, options: options),
-                    ),
-                  ),
+                return ListenableBuilder(
+                  listenable: songPageController,
+                  builder: (context, _) {
+                    final layout = fit.layout;
+                    final page = songPageController.page;
+                    final start = page == 0 ? 0 : pages.ends[page - 1];
+                    final end = pages.ends[page];
+                    final pageOptions = options(
+                      layout == null || pages.ends.length == 1
+                          ? layout
+                          : (
+                              blocks: layout.blocks.sublist(start, end),
+                              metrics: layout.metrics.sublist(start, end),
+                            ),
+                    );
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: _margin),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.topLeft,
+                        child: SizedBox(
+                          width: size.width,
+                          child: SongBody(
+                            key: ValueKey(('song-page', page)),
+                            song: parsed,
+                            options: pageOptions,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -956,6 +1039,43 @@ class _ChordProPage extends ConsumerWidget {
     layout: layout,
   );
 
+  /// Columns and pages of a fitted song at the personal font [scale]; null
+  /// when it does not fit on pages and must scroll.
+  ({int columns, List<int> ends})? _songPages(
+    SongFit fit,
+    double scale,
+    Size size,
+  ) {
+    final layout = fit.layout;
+    if (layout == null || layout.blocks.isEmpty) {
+      return (columns: fit.columns, ends: [layout?.blocks.length ?? 0]);
+    }
+    // Breaks in the song decide the columns: one page, as fitted.
+    if (forcedColumns(layout.blocks) != null) {
+      return scale <= 1.0
+          ? (columns: fit.columns, ends: [layout.blocks.length])
+          : null;
+    }
+    final font = fit.fontSize * scale;
+    // Larger text may need fewer columns: chord lines must fit.
+    final widest = layout.metrics.fold<double>(
+      0,
+      (w, m) => math.max(w, m.minWidth),
+    );
+    var columns = fit.columns;
+    while (columns > 1 &&
+        columnWidth(size.width, columns, font) < widest * font) {
+      columns--;
+    }
+    final width = columnWidth(size.width, columns, font);
+    final ends = songPages(
+      [for (final m in layout.metrics) m.height(font, width)],
+      columns,
+      size.height,
+    );
+    return ends == null ? null : (columns: columns, ends: ends);
+  }
+
   Widget _scrolling(Size size, SongRenderOptions options) =>
       SingleChildScrollView(
         controller: scrollController,
@@ -969,6 +1089,63 @@ final _fits = LruCache<Object, SongFit>(16);
 
 /// Measured songs for scrolling with several columns.
 final _layouts = LruCache<Object, SongLayout>(16);
+
+/// Most pages a song is split into to fit it in live mode (ADR-0007).
+const _maxSongPages = 4;
+
+/// Page of a song that live mode splits into pages (ADR-0007).
+class SongPageController extends ChangeNotifier {
+  int _page = 0;
+  int _count = 1;
+
+  /// Shown page, 0-based.
+  int get page => _page;
+
+  /// Number of pages; 1 when the song is not split.
+  int get count => _count;
+
+  /// Sets the number of pages while the page is built; listeners (the page
+  /// indicator) are told after the frame.
+  void attach(int count) {
+    final changed = count != _count || _page >= count;
+    _count = math.max(1, count);
+    _page = math.min(_page, _count - 1);
+    if (changed) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_disposed) notifyListeners();
+      });
+    }
+  }
+
+  /// Shows the first page.
+  void first() {
+    if (_page == 0) return;
+    _page = 0;
+    notifyListeners();
+  }
+
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  bool next() {
+    if (_page + 1 >= _count) return false;
+    _page++;
+    notifyListeners();
+    return true;
+  }
+
+  bool previous() {
+    if (_page <= 0) return false;
+    _page--;
+    notifyListeners();
+    return true;
+  }
+}
 
 /// Range of the personal font scale (ADR-0006).
 const _minFontScale = 0.5;
