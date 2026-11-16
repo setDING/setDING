@@ -5,8 +5,11 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../sync/auth_providers.dart';
 import '../../sync/browser_session_store.dart';
 import '../../sync/sync_backend.dart';
+import '../../util/log.dart';
 import '../bands/join_screen.dart';
 import '../widgets/dialogs.dart';
+
+const _log = Log('account');
 
 /// Minimum password length of the server (PocketBase default).
 const minPasswordLength = 8;
@@ -89,6 +92,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       }
       if (mounted && !widget.gate) Navigator.of(context).pop(true);
     } on BackendException catch (e) {
+      _log.warning(_signUp ? 'Sign-up failed' : 'Sign-in failed', e);
       if (!mounted) return;
       setState(() {
         _busy = false;
@@ -111,6 +115,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       await ref.read(syncBackendProvider).requestPasswordReset(email);
       messenger.showSnackBar(SnackBar(content: Text(l10n.accountResetSent)));
     } on BackendException catch (e) {
+      _log.warning('Password reset failed', e);
       messenger.showSnackBar(
         SnackBar(content: Text(backendErrorText(l10n, e.kind))),
       );

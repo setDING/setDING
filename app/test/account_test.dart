@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:realchord/sync/sync_backend.dart';
 import 'package:realchord/ui/account/account_section.dart';
 import 'package:realchord/ui/settings_screen.dart';
+import 'package:realchord/util/log.dart';
 
 import 'test_app.dart';
 
@@ -62,7 +63,8 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('shows a network error', (tester) async {
+  testWidgets('shows and logs a network error', (tester) async {
+    Log.clear();
     final app = await pumpSettings(tester);
     app.backend.failWith = BackendErrorKind.network;
     await tester.tap(find.byKey(const Key('account-open-sign-in')));
@@ -73,6 +75,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('No connection to the server'), findsOneWidget);
+    // The cause is not shown, but the diagnostic log keeps it (issue #145).
+    expect(Log.export(), contains('[account] Sign-in failed'));
+    expect(Log.export(), contains('BackendException(network'));
     await app.dispose(tester);
   });
 

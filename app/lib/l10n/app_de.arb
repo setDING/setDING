@@ -291,6 +291,14 @@
   "settingsLogCopyHint": "Die letzten Meldungen der App, z. B. warum eine Synchronisation fehlschlug – zum Einfügen in eine Nachricht an den Support.",
   "settingsLogCopied": "Diagnoseprotokoll kopiert",
   "settingsAbout": "RealChord läuft lokal auf diesem Gerät. Alle Daten sind offline verfügbar.",
+  "settingsVersion": "Version {version}",
+  "@settingsVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "lilypondNotice": "Lilypond-Noten können auf diesem Gerät nicht dargestellt werden. Quelltext:",
   "sequenceLabel": "Songablauf",
   "sectionIntro": "Intro",

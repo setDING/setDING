@@ -7,6 +7,7 @@ import '../l10n/generated/app_localizations.dart';
 import '../providers.dart';
 import '../settings/settings.dart';
 import '../sync/auth_providers.dart';
+import '../util/app_version.dart';
 import '../util/log.dart';
 import 'account/account_section.dart';
 import 'widgets/dialogs.dart';
@@ -21,6 +22,7 @@ class SettingsScreen extends ConsumerWidget {
     final s = ref.watch(settingsProvider);
     final notifier = ref.read(settingsProvider.notifier);
     final usage = ref.watch(storageUsageProvider).value;
+    final version = ref.watch(appVersionProvider).value;
 
     Widget header(String text) => Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
@@ -217,14 +219,25 @@ class SettingsScreen extends ConsumerWidget {
                 title: Text(l10n.settingsLogCopy),
                 subtitle: Text(l10n.settingsLogCopyHint),
                 onTap: () async {
-                  await Clipboard.setData(ClipboardData(text: Log.export()));
+                  await Clipboard.setData(
+                    ClipboardData(
+                      text: [
+                        if (version != null) 'RealChord $version',
+                        Log.export(),
+                      ].join('\n'),
+                    ),
+                  );
                   if (context.mounted) {
                     showMessage(context, l10n.settingsLogCopied);
                   }
                 },
               ),
               ListTile(
+                key: const Key('app-version'),
                 leading: const Icon(Icons.info_outline),
+                title: version == null
+                    ? null
+                    : Text(l10n.settingsVersion(version)),
                 subtitle: Text(l10n.settingsAbout),
               ),
             ],
