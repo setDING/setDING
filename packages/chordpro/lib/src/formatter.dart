@@ -1,4 +1,5 @@
-/// Display formatting of chords: transposition, capo, notation, Nashville.
+/// Display formatting of chords: transposition, capo, notation, Nashville,
+/// chord style.
 library;
 
 import 'chord.dart';
@@ -18,6 +19,8 @@ class ChordFormatter {
     this.songCapo = 0,
     this.notation = ChordNotation.international,
     this.nashville = false,
+    this.style = ChordStyle.asWritten,
+    this.superscript = false,
     this.key,
     this.leadingTranspose = 0,
   });
@@ -30,12 +33,16 @@ class ChordFormatter {
     int? capo,
     ChordNotation notation = ChordNotation.international,
     bool nashville = false,
+    ChordStyle style = ChordStyle.asWritten,
+    bool superscript = false,
   }) => ChordFormatter(
     transpose: transpose,
     capo: capo,
     songCapo: song.capoFret,
     notation: notation,
     nashville: nashville,
+    style: style,
+    superscript: superscript,
     key: song.key,
     leadingTranspose: song.leadingTranspose,
   );
@@ -53,6 +60,13 @@ class ChordFormatter {
 
   /// Show Nashville numbers instead of chord names (requires a key).
   final bool nashville;
+
+  /// Spelling of the chord suffix (ADR-0022).
+  final ChordStyle style;
+
+  /// Show extension and modifiers raised; has no effect with
+  /// [ChordStyle.asWritten].
+  final bool superscript;
 
   /// First `{key}` of the song (as written).
   final Key? key;
@@ -88,19 +102,27 @@ class ChordFormatter {
   bool get showsNashville => nashville && key != null;
 
   /// Formats a chord token for display.
-  String format(ChordToken token) {
-    if (token.isAnnotation) return stripMarkup(token.annotationText);
+  String format(ChordToken token) => chordPartsText(formatParts(token));
+
+  /// Formats a chord token for display as parts; raised parts are only
+  /// returned with [superscript].
+  List<ChordPart> formatParts(ChordToken token) {
+    if (token.isAnnotation) {
+      return [ChordPart(stripMarkup(token.annotationText))];
+    }
     final chord = token.chord;
-    if (chord == null) return stripMarkup(token.raw);
+    if (chord == null) return [ChordPart(stripMarkup(token.raw))];
     final tokenKey = token.key ?? key;
-    String text;
+    List<ChordPart> parts;
     if (nashville && tokenKey != null) {
       // Degrees relative to the key in effect (both as written).
-      text = chord.toNashville(tokenKey);
+      parts = chord.toNashvilleParts(tokenKey, style: style);
     } else {
       final total = shift + token.transpose;
-      if (total == 0 && notation == ChordNotation.international) {
-        return stripMarkup(token.raw);
+      if (total == 0 &&
+          notation == ChordNotation.international &&
+          style == ChordStyle.asWritten) {
+        return [ChordPart(stripMarkup(token.raw))];
       }
       bool? useFlats;
       if (total != 0) {
@@ -111,9 +133,15 @@ class ChordFormatter {
                   token.preferFlats ??
                   chord.root.preferFlat;
       }
-      text = chord.transpose(total, useFlats: useFlats).format(notation);
+      parts = chord
+          .transpose(total, useFlats: useFlats)
+          .formatParts(notation, style: style);
     }
-    return token.parenthesized ? '($text)' : text;
+    return mergeChordParts([
+      if (token.parenthesized) const ChordPart('('),
+      ...parts,
+      if (token.parenthesized) const ChordPart(')'),
+    ], superscript: superscript);
   }
 
   /// The chord as played (after transposition and capo), e.g. for chord
@@ -131,8 +159,8 @@ class ChordFormatter {
     return chord.transpose(total, useFlats: useFlats);
   }
 
-  /// Name of [chord] in the display notation.
-  String chordName(Chord chord) => chord.format(notation);
+  /// Name of [chord] in the display notation and style.
+  String chordName(Chord chord) => chord.format(notation, style: style);
 
   /// Formats the sounding key for display (e.g. next to the capo).
   String? formatKey() => soundingKey?.format(notation);

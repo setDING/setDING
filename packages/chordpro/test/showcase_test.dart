@@ -145,6 +145,32 @@ void main() {
       expect(shown('Bes'), 'C');
       expect(shown('Es'), 'F');
       expect(shown('As'), 'A#'); // spelled for the sharp key A
+      // Spelling variants, unified by the chord style (ADR-0022).
+      String styled(String raw, ChordStyle style) => ChordFormatter.forSong(
+        song,
+        style: style,
+      ).format(tokens.firstWhere((t) => t.raw == raw));
+      expect(
+        [
+          'Ami7',
+          'A-7',
+          'CΔ7',
+          'Bø',
+          'C°7',
+        ].map((r) => styled(r, ChordStyle.standard)).toList(),
+        ['Am7', 'Am7', 'Cmaj7', 'Bm7b5', 'Cdim7'],
+      );
+      expect(
+        [
+          'Ami7',
+          'A-7',
+          'CΔ7',
+          'Bø',
+          'C°7',
+        ].map((r) => styled(r, ChordStyle.jazz)).toList(),
+        ['A−7', 'A−7', 'CΔ7', 'Bø7', 'C°7'],
+      );
+      expect(shown('CΔ7'), 'DΔ7'); // as written, transposed
       final escaped = verse.lines.whereType<LyricLine>().firstWhere(
         (l) => l.text.contains('Escaped'),
       );

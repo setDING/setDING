@@ -41,6 +41,8 @@ class AppSettings {
     this.language = LanguageMode.system,
     this.notation = ChordNotation.international,
     this.nashville = false,
+    this.chordStyle = ChordStyle.asWritten,
+    this.chordSuperscript = false,
     this.displayMode = DisplayMode.lyricsAndChords,
     this.themeMode = ThemeMode.system,
     this.columns = ColumnMode.auto,
@@ -58,6 +60,12 @@ class AppSettings {
   final LanguageMode language;
   final ChordNotation notation;
   final bool nashville;
+
+  /// Spelling of chord suffixes (ADR-0022).
+  final ChordStyle chordStyle;
+
+  /// Extensions and modifiers raised (ADR-0022).
+  final bool chordSuperscript;
   final DisplayMode displayMode;
   final ThemeMode themeMode;
   final ColumnMode columns;
@@ -124,6 +132,8 @@ class AppSettings {
     LanguageMode? language,
     ChordNotation? notation,
     bool? nashville,
+    ChordStyle? chordStyle,
+    bool? chordSuperscript,
     DisplayMode? displayMode,
     ThemeMode? themeMode,
     ColumnMode? columns,
@@ -140,6 +150,8 @@ class AppSettings {
     language: language ?? this.language,
     notation: notation ?? this.notation,
     nashville: nashville ?? this.nashville,
+    chordStyle: chordStyle ?? this.chordStyle,
+    chordSuperscript: chordSuperscript ?? this.chordSuperscript,
     displayMode: displayMode ?? this.displayMode,
     themeMode: themeMode ?? this.themeMode,
     columns: columns ?? this.columns,
@@ -165,6 +177,8 @@ class AppSettings {
       language: pick(LanguageMode.values, 'language', d.language),
       notation: pick(ChordNotation.values, 'notation', d.notation),
       nashville: prefs.getBool('nashville') ?? d.nashville,
+      chordStyle: pick(ChordStyle.values, 'chordStyle', d.chordStyle),
+      chordSuperscript: prefs.getBool('chordSuperscript') ?? d.chordSuperscript,
       displayMode: pick(DisplayMode.values, 'displayMode', d.displayMode),
       themeMode: pick(ThemeMode.values, 'themeMode', d.themeMode),
       columns: pick(ColumnMode.values, 'columns', d.columns),
@@ -187,6 +201,8 @@ class AppSettings {
     await prefs.setString('language', language.name);
     await prefs.setString('notation', notation.name);
     await prefs.setBool('nashville', nashville);
+    await prefs.setString('chordStyle', chordStyle.name);
+    await prefs.setBool('chordSuperscript', chordSuperscript);
     await prefs.setString('displayMode', displayMode.name);
     await prefs.setString('themeMode', themeMode.name);
     await prefs.setString('columns', columns.name);

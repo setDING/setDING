@@ -84,6 +84,7 @@ Notation alternatives:
 - 2026-11-14: Extended by ADR-0012: the whole ChordPro specification is supported, including chord diagrams (supersedes "chord diagrams are not displayed" and the subset listed above).
 - 2026-11-16: The package also provides source positions for syntax highlighting in the editor (`highlightChordPro`, #35); the directive names are shared by parser and highlighter.
 - 2026-11-16: The editor warns on save about unclosed brackets and environments (`validateChordPro`, #109); saving stays possible.
+- 2026-11-16: The spelling of the chord suffix (standard, jazz, raised extensions) is a further display setting, see ADR-0022.
 
 ## Open points
 

@@ -1070,6 +1070,48 @@ abstract class AppLocalizations {
   /// **'Akkorde als Stufen der Tonart, z. B. 1, 4, 5, 6m. Braucht eine Tonart im Song.'**
   String get settingsNashvilleHint;
 
+  /// No description provided for @settingsChordStyle.
+  ///
+  /// In de, this message translates to:
+  /// **'Akkordschreibweise'**
+  String get settingsChordStyle;
+
+  /// No description provided for @settingsChordStyleHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie Akkorde geschrieben werden, z. B. Am7, Cmaj7, Em7b5 (Standard) oder A−7, CΔ7, Eø7 (Jazz). Der Song selbst bleibt unverändert.'**
+  String get settingsChordStyleHint;
+
+  /// No description provided for @chordStyleAsWritten.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie geschrieben'**
+  String get chordStyleAsWritten;
+
+  /// No description provided for @chordStyleStandard.
+  ///
+  /// In de, this message translates to:
+  /// **'Standard'**
+  String get chordStyleStandard;
+
+  /// No description provided for @chordStyleJazz.
+  ///
+  /// In de, this message translates to:
+  /// **'Jazz'**
+  String get chordStyleJazz;
+
+  /// No description provided for @settingsChordSuperscript.
+  ///
+  /// In de, this message translates to:
+  /// **'Erweiterungen hochstellen'**
+  String get settingsChordSuperscript;
+
+  /// No description provided for @settingsChordSuperscriptHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Erweiterungen und Alterationen klein und hochgestellt anzeigen, z. B. C⁷. Braucht die Schreibweise Standard oder Jazz.'**
+  String get settingsChordSuperscriptHint;
+
   /// No description provided for @settingsDisplayMode.
   ///
   /// In de, this message translates to:

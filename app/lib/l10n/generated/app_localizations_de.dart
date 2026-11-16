@@ -577,6 +577,29 @@ class AppLocalizationsDe extends AppLocalizations {
       'Akkorde als Stufen der Tonart, z. B. 1, 4, 5, 6m. Braucht eine Tonart im Song.';
 
   @override
+  String get settingsChordStyle => 'Akkordschreibweise';
+
+  @override
+  String get settingsChordStyleHint =>
+      'Wie Akkorde geschrieben werden, z. B. Am7, Cmaj7, Em7b5 (Standard) oder A−7, CΔ7, Eø7 (Jazz). Der Song selbst bleibt unverändert.';
+
+  @override
+  String get chordStyleAsWritten => 'Wie geschrieben';
+
+  @override
+  String get chordStyleStandard => 'Standard';
+
+  @override
+  String get chordStyleJazz => 'Jazz';
+
+  @override
+  String get settingsChordSuperscript => 'Erweiterungen hochstellen';
+
+  @override
+  String get settingsChordSuperscriptHint =>
+      'Erweiterungen und Alterationen klein und hochgestellt anzeigen, z. B. C⁷. Braucht die Schreibweise Standard oder Jazz.';
+
+  @override
   String get settingsDisplayMode => 'Inhalt';
 
   @override

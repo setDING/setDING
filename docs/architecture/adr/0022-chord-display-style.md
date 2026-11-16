@@ -1,6 +1,6 @@
 # ADR-0022: Selectable chord display style
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-16
 
 ## Context
@@ -42,7 +42,10 @@ while the ChordPro source stays unchanged. The chord style fits the same pattern
 2. **Global device setting "chord style"** with the values:
    - *As written* (default): today's behaviour, the suffix exactly as in the source.
    - *Standard*: `Cm7`, `Cmaj7`, `Cdim`, `Caug`, `Cm7b5`, `Csus4`, `Cadd9`.
-   - *Jazz*: `C−7`, `CΔ7`, `C°`, `C+`, `Cø`, `Csus4`, `Cadd9`.
+   - *Jazz*: `C−7`, `CΔ7`, `C°`, `C+`, `Cø7`, `Csus4`, `Cadd9`; minor is
+     the minus sign `−` (U+2212), a major seventh is always written with its
+     number (`Δ7`, `Δ9`), half-diminished as `ø7`, and alterations use `♭`/`♯`
+     (`C7♭9♯11`).
 3. **Separate global switch "superscript"**: extension and alterations are rendered
    smaller and raised. It applies to *Standard* and *Jazz*; *As written* ignores it.
 4. **Orthogonal to the other display settings.** Style and superscript combine with
@@ -90,8 +93,17 @@ while the ChordPro source stays unchanged. The chord style fits the same pattern
   *As written* (default), *Standard* and *Jazz*, superscript as a separate switch,
   global device setting only, not set per song.
 
+- 2026-11-16: Accepted by the owner (#196).
+- 2026-11-16: Jazz symbols decided: `−` for minor, `Δ7` (always with the
+  number), `ø7`, `°`, `+`, `♭`/`♯` in alterations. Raised parts are 70 % of
+  the chord size, lifted by 35 %. Jazz spellings in the source (`CΔ7`, `C−7`,
+  `CØ7`) are recognised as chords.
+- 2026-11-16: The printable set list (ADR-0013) and other key displays show
+  only keys (root and minor), so the style does not apply to them.
+- 2026-11-16: Implemented (#196): `ChordSuffix`, `ChordStyle` and
+  `ChordPart` in the `chordpro` package, `ChordText` in the renderer, settings
+  in the display category.
+
 ## Open points
 
-- Exact symbol set for *Jazz* (e.g. `−` vs `-` for minor, `Δ` vs `Δ7` for major
-  seventh) and whether ♭/♯ symbols replace `b`/`#` in alterations.
-- Whether the printable set list (ADR-0013), which shows keys, follows the style.
+- None.

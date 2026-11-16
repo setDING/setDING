@@ -50,6 +50,7 @@
 [G]Chords with markup: [<b>Am</b>]bold chord, [*<i>Rit.</i>]annotation, [N.C.]no chord.
 [G]Optional chords: [(D/F#)]in parentheses, [Cadd9]extensions, [Dsus4]suspended, [G7(b9)]altered.
 [G]German and Dutch names: [Hm]H minor, [Fis]Fis, [Bes]Bes, [Es]Es, [As]As.
+[G]Chord spellings: [Ami7]Ami7, [A-7]A-7, [CΔ7]CΔ7, [Bø]Bø, [C°7]C°7.
 [G]Escaped brackets: \[not a chord\] and an inline chord [C]here.
 {end_of_verse}
 

@@ -861,6 +861,8 @@ class _ChordProPage extends ConsumerWidget {
       capo: overlay.capoFret,
       notation: settings.notation,
       nashville: overlay.nashville ?? settings.nashville,
+      style: settings.chordStyle,
+      superscript: settings.chordSuperscript,
     );
     final lyricsOnly = settings.displayMode == DisplayMode.lyricsOnly;
     final resolver = DiagramResolver(
@@ -953,6 +955,8 @@ class _ChordProPage extends ConsumerWidget {
                             formatter.capo,
                             formatter.notation,
                             formatter.nashville,
+                            formatter.style,
+                            formatter.superscript,
                             lyricsOnly,
                             overlay.notes,
                             collapse,
@@ -1005,6 +1009,8 @@ class _ChordProPage extends ConsumerWidget {
                     formatter.capo,
                     formatter.notation,
                     formatter.nashville,
+                    formatter.style,
+                    formatter.superscript,
                     lyricsOnly,
                     overlay.notes,
                     settings.fontSize,

@@ -13,6 +13,8 @@ Future<TestApp> pumpSong(
   WidgetTester tester,
   String source, {
   int transpose = 0,
+  ChordStyle style = ChordStyle.asWritten,
+  bool superscript = false,
 }) async {
   useTabletSize(tester);
   final app = await TestApp.create(prefs: {'language': 'en'});
@@ -24,7 +26,12 @@ Future<TestApp> pumpSong(
           child: SongBody(
             song: song,
             options: SongRenderOptions(
-              formatter: ChordFormatter.forSong(song, transpose: transpose),
+              formatter: ChordFormatter.forSong(
+                song,
+                transpose: transpose,
+                style: style,
+                superscript: superscript,
+              ),
             ),
           ),
         ),
@@ -114,6 +121,43 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('chord style with raised extensions', (tester) async {
+    final app = await pumpSong(
+      tester,
+      '[Ami7]Hello [Cmaj7]world\n'
+      '{start_of_grid}\n|| Dm7b5 . | G7 . ||\n{end_of_grid}',
+      style: ChordStyle.jazz,
+      superscript: true,
+    );
+    // Root and quality as text, extension raised in its own smaller text.
+    expect(styleOf(tester, 'A−'), isNotNull);
+    expect(styleOf(tester, 'C'), isNotNull);
+    expect(styleOf(tester, 'Dø'), isNotNull); // grid cell
+    expect(find.text('Δ7'), findsOneWidget);
+    expect(find.text('7'), findsNWidgets(3)); // A−7, Dø7, G7
+    final raised = find.text('Δ7');
+    final chord = tester.getRect(
+      find.ancestor(of: raised, matching: find.byType(ChordText)),
+    );
+    expect(tester.getCenter(raised).dy, lessThan(chord.center.dy));
+    expect(
+      tester.widget<Text>(raised).style!.fontSize,
+      lessThan(styleOf(tester, 'C')!.fontSize!),
+    );
+    await app.dispose(tester);
+  });
+
+  testWidgets('chord style without superscript is plain text', (tester) async {
+    final app = await pumpSong(
+      tester,
+      '[Ami7]Hello [Cmaj7]world',
+      style: ChordStyle.standard,
+    );
+    expect(find.text('Am7'), findsOneWidget);
+    expect(find.text('Cmaj7'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
   testWidgets('column breaks start new columns in live mode', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'en'});
@@ -139,39 +183,12 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('layout measurement stays exact with markup and grids', (
-    tester,
-  ) async {
-    useTabletSize(tester);
-    final app = await TestApp.create(prefs: {'language': 'en'});
-    final source = StringBuffer('{title: Mixed}\n{key: G}\n');
-    for (var i = 0; i < 6; i++) {
-      source.writeln('{start_of_verse: Verse $i}');
-      source.writeln(
-        '[G]<b>Bold</b> words [C]and <span size="150%">big</span> ones',
-      );
-      source.writeln('[D]more <i>lyrics</i> here [G]today');
-      source.writeln('{end_of_verse}');
-    }
-    source.writeln(
-      '{start_of_grid}\n|| G . . . | C . . . | D . . . | G . . . ||\n{end_of_grid}',
-    );
-    final song = await tester.runAsync(() async {
-      final id = await app.songs.createSong(source: source.toString());
-      return app.songs.getSong(id);
+  for (final superscript in [false, true]) {
+    testWidgets('layout measurement stays exact with markup and grids'
+        '${superscript ? ' and raised chords' : ''}', (tester) async {
+      await _checkMeasurement(tester, superscript: superscript);
     });
-    await tester.pumpWidget(
-      app.build(home: LiveScreen(items: [LiveItem.song(song!)])),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.byType(SingleChildScrollView), findsNothing);
-    final body = tester.getSize(find.byType(SongBody));
-    final box = tester.getSize(find.byType(FittedBox));
-    expect(body.height, lessThanOrEqualTo(box.height));
-    expect(body.width, lessThanOrEqualTo(box.width + 0.5));
-    await app.dispose(tester);
-  });
+  }
 
   testWidgets('song sequence below the subtitle', (tester) async {
     useTabletSize(tester);
@@ -206,4 +223,45 @@ void main() {
     expect(find.byTooltip('Chorus ×2'), findsOneWidget);
     await app.dispose(tester);
   });
+}
+
+Future<void> _checkMeasurement(
+  WidgetTester tester, {
+  required bool superscript,
+}) async {
+  useTabletSize(tester);
+  final app = await TestApp.create(
+    prefs: {
+      'language': 'en',
+      'chordStyle': 'jazz',
+      'chordSuperscript': superscript,
+    },
+  );
+  final source = StringBuffer('{title: Mixed}\n{key: G}\n');
+  for (var i = 0; i < 6; i++) {
+    source.writeln('{start_of_verse: Verse $i}');
+    source.writeln(
+      '[Gmaj7]<b>Bold</b> words [Cm7b5]and <span size="150%">big</span> ones',
+    );
+    source.writeln('[D]more <i>lyrics</i> here [G]today');
+    source.writeln('{end_of_verse}');
+  }
+  source.writeln(
+    '{start_of_grid}\n|| G . . . | C . . . | D . . . | G . . . ||\n{end_of_grid}',
+  );
+  final song = await tester.runAsync(() async {
+    final id = await app.songs.createSong(source: source.toString());
+    return app.songs.getSong(id);
+  });
+  await tester.pumpWidget(
+    app.build(home: LiveScreen(items: [LiveItem.song(song!)])),
+  );
+  await tester.pumpAndSettle();
+
+  expect(find.byType(SingleChildScrollView), findsNothing);
+  final body = tester.getSize(find.byType(SongBody));
+  final box = tester.getSize(find.byType(FittedBox));
+  expect(body.height, lessThanOrEqualTo(box.height));
+  expect(body.width, lessThanOrEqualTo(box.width + 0.5));
+  await app.dispose(tester);
 }

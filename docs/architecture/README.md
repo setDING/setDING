@@ -47,7 +47,7 @@ A user can be a member of several organizations and bands; roles are defined per
 | Live mode | Tap/swipe page turns, wakelock; each member navigates independently (**no leader sync**) | [ADR-0007](adr/0007-live-mode.md) |
 | Localization | UI in **German (Swiss, `de-CH`) and English**, selectable in the settings | [ADR-0008](adr/0008-localization.md) |
 | Sheet music | **PDF attachments** per song, synced and available offline, shown in live mode | [ADR-0009](adr/0009-pdf-attachments.md) |
-| Chord display style | Suffix parsed into quality, extension and alterations; **device setting** *As written* / *Standard* / *Jazz* plus optional superscript, combinable with B/H and Nashville; source unchanged (proposed) | [ADR-0022](adr/0022-chord-display-style.md) |
+| Chord display style | Suffix parsed into quality, extension and alterations; **device setting** *As written* / *Standard* / *Jazz* plus optional superscript, combinable with B/H and Nashville; source unchanged | [ADR-0022](adr/0022-chord-display-style.md) |
 | ChordPro coverage | **Whole specification** (transpose, grids, markup, conditionals, diagrams, images, delegated environments) | [ADR-0012](adr/0012-full-chordpro-support.md) |
 | SongSelect (CCLI) | **No API integration** (partner program closed); manual import of ChordPro files downloaded from SongSelect | [ADR-0011](adr/0011-songselect-import.md) |
 | Server hosting | **Debian LXC** on Proxmox, PocketBase as systemd service, published via **Cloudflare Tunnel**, daily backups, provisioned with `make server-install` | [ADR-0014](adr/0014-server-hosting.md) |
@@ -97,7 +97,7 @@ flowchart LR
 | Module | Responsibility |
 |---|---|
 | `chordpro` | Parser (ChordPro → AST), chord model (incl. structured suffix, ADR-0022), transposition, Nashville conversion, metadata extraction. Pure Dart package without UI dependencies, easy to test. |
-| `render` | Rendering the AST: chords above lyrics, sections (verse/chorus), one or more columns, auto-fit with song pages in live mode, notation B/H, Nashville numbers |
+| `render` | Rendering the AST: chords above lyrics, sections (verse/chorus), one or more columns, auto-fit with song pages in live mode, notation B/H, Nashville numbers, chord style with raised extensions (ADR-0022) |
 | `pdf` | Displaying PDF attachments (fit to width/page, two-page view) |
 | `data` | Local DB (SQLite, e.g. via `drift`), repositories, domain model |
 | `sync` | Sync between local DB and backend, conflict handling, offline queue. `SyncEngine` runs the order of a sync; the parts per kind of record live in `app/lib/sync/engine/` (songs with conflicts, sets, attachments with downloads, personal adjustments, shared cursors and outbox) |
@@ -263,7 +263,7 @@ See "Open points" in the individual ADRs. The most important:
 16. Web client for management without an installed app? → Flutter web build of the same app at `app.realchord.app`, served by the same PocketBase; local library hidden, live mode with a "not offline-safe" notice, session as long as a tab is open by default ("Stay signed in" optional), local data deleted on sign-out, sign-in required, file import but no export on web (ADR-0018, accepted, #27; import on web since #162). Implemented and deployed in #27 (2026-11-16)
 17. Distributable Linux builds? → `make release`: built in a Debian container with an ISA check (ADR-0019, accepted, #45). CI release builds for Linux, Android (Obtainium) and Windows from a `vX.Y.Z` tag (ADR-0021, accepted, #137). Open: release key (owner), iOS, installers/packaging and code signing
 18. ~~Personal adjustments on shared devices and across devices?~~ → Overlays belong to a user (`owner_id`; `local` for the local library), existing ones are taken over once by the first user who signs in, private, synced in phase 2 with last writer wins and soft delete (ADR-0020, accepted)
-19. Chord display style (pop vs. jazz spelling, superscript extensions)? → Global device setting *As written* (default) / *Standard* / *Jazz* plus a superscript switch, not per song (ADR-0022, proposed, #196). Open: exact jazz symbols, set list PDF
+19. ~~Chord display style (pop vs. jazz spelling, superscript extensions)?~~ → Global device setting *As written* (default) / *Standard* / *Jazz* plus a superscript switch, not per song (ADR-0022, accepted, implemented in #196)
 
 ## 10. ADR index
 
@@ -290,6 +290,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0019](adr/0019-linux-release-builds.md) | Linux release builds | Accepted |
 | [0020](adr/0020-overlays-per-user.md) | Personal adjustments per user, synced with the account | Accepted |
 | [0021](adr/0021-release-builds-github-actions.md) | Release builds on GitHub Actions, Android via Obtainium | Accepted |
-| [0022](adr/0022-chord-display-style.md) | Selectable chord display style | Proposed |
+| [0022](adr/0022-chord-display-style.md) | Selectable chord display style | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.

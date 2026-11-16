@@ -157,6 +157,8 @@ class _SongScreenState extends ConsumerState<SongScreen> {
           capo: overlay.capoFret,
           notation: settings.notation,
           nashville: overlay.nashville ?? settings.nashville,
+          style: settings.chordStyle,
+          superscript: settings.chordSuperscript,
         );
         final hasSourceTitle = parsed.title != null;
 

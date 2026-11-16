@@ -61,4 +61,28 @@ void main() {
     expect(find.byKey(const Key('settings-category-general')), findsOneWidget);
     await app.dispose(tester);
   });
+
+  testWidgets('chord style and raised extensions', (tester) async {
+    useTabletSize(tester);
+    final app = await pumpSettings(tester);
+    await tester.tap(find.byKey(const Key('settings-category-display')));
+    await tester.pumpAndSettle();
+
+    SwitchListTile superscript() => tester.widget<SwitchListTile>(
+      find.widgetWithText(SwitchListTile, 'Raise extensions'),
+    );
+    expect(find.text('Chord style'), findsOneWidget);
+    // Raising needs a style other than "as written".
+    expect(superscript().onChanged, isNull);
+
+    await tester.tap(find.text('Jazz'));
+    await tester.pumpAndSettle();
+    expect(app.prefs.getString('chordStyle'), 'jazz');
+    expect(superscript().onChanged, isNotNull);
+
+    await tester.tap(find.text('Raise extensions'));
+    await tester.pumpAndSettle();
+    expect(app.prefs.getBool('chordSuperscript'), isTrue);
+    await app.dispose(tester);
+  });
 }
