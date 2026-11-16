@@ -137,12 +137,13 @@ class _SongScreenState extends ConsumerState<SongScreen> {
     final attachments =
         ref.watch(attachmentsProvider(widget.songId)).value ?? const [];
     final settings = ref.watch(settingsProvider);
-    final band = ref.watch(currentBandProvider);
 
     return AsyncBody(
       value: songValue,
       data: (song) {
         if (song == null) return const Scaffold();
+        // Permissions of the song's library, wherever it was opened from.
+        final library = ref.watch(libraryProvider(song.libraryId));
         final parsed = parseChordProCached(
           song.chordproSource,
           selectors: ref.watch(selectorsProvider),
@@ -165,7 +166,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                 icon: const Icon(Icons.play_arrow),
                 onPressed: () => LiveScreen.openSong(context, song.id),
               ),
-              if (band.canEditSongs)
+              if (library.canEditSongs)
                 IconButton(
                   tooltip: l10n.editSource,
                   icon: const Icon(Icons.edit_note),
@@ -176,14 +177,16 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   'title' => _editTitle(song),
                   'pdf' => _addAttachment(),
                   'export' => _export(song),
-                  'copyToBand' => copySongsToBand(context, ref, [song.id]),
+                  'copyToBand' => copySongsToBand(context, ref, [
+                    song.id,
+                  ], fromLibraryId: song.libraryId),
                   'delete' => _delete(song),
                   _ => null,
                 },
                 itemBuilder: (_) => [
-                  if (!hasSourceTitle && band.canEditSongs)
+                  if (!hasSourceTitle && library.canEditSongs)
                     PopupMenuItem(value: 'title', child: Text(l10n.editTitle)),
-                  if (band.canEditSongs)
+                  if (library.canEditSongs)
                     PopupMenuItem(
                       value: 'pdf',
                       child: Text(l10n.addAttachment),
@@ -198,7 +201,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                     value: 'copyToBand',
                     child: Text(l10n.copyToBand),
                   ),
-                  if (band.canDeleteSongs)
+                  if (library.canDeleteSongs)
                     PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
                 ],
               ),
@@ -233,9 +236,9 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   attachments: attachments,
                   overlay: overlay,
                   hasChordPro: parsed.hasContent,
-                  onAdd: band.canEditSongs ? _addAttachment : null,
-                  canRename: band.canEditSongs,
-                  canDelete: band.canDeleteSongs,
+                  onAdd: library.canEditSongs ? _addAttachment : null,
+                  canRename: library.canEditSongs,
+                  canDelete: library.canDeleteSongs,
                   onLiveView: (id) =>
                       _updateOverlay((o) => o.copyWith(liveView: Value(id))),
                 ),
@@ -273,7 +276,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   child: ListTile(
                     leading: const Icon(Icons.text_snippet_outlined),
                     title: Text(l10n.noContent),
-                    trailing: !band.canEditSongs
+                    trailing: !library.canEditSongs
                         ? null
                         : FilledButton.tonal(
                             onPressed: () => _editSource(song),

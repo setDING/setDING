@@ -1820,6 +1820,12 @@ abstract class AppLocalizations {
   /// **'Bands verwalten'**
   String get bandManage;
 
+  /// No description provided for @librarySwitch.
+  ///
+  /// In de, this message translates to:
+  /// **'Songbibliothek wechseln'**
+  String get librarySwitch;
+
   /// No description provided for @bandsTitle.
   ///
   /// In de, this message translates to:

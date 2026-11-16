@@ -6,8 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/song_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
-import '../bands/band_switcher.dart';
 import '../bands/copy_to_band.dart';
+import '../bands/library_switcher.dart';
 import '../widgets/dialogs.dart';
 import 'import_dialog.dart';
 import 'song_editor_screen.dart';
@@ -79,10 +79,10 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
     final l10n = AppLocalizations.of(context);
     final songs = ref.watch(songsProvider((query: _query, tag: _tag)));
     final counts = ref.watch(attachmentCountsProvider).value ?? const {};
-    final band = ref.watch(currentBandProvider);
+    final library = ref.watch(currentLibraryProvider);
     final selected = _selected;
-    // Leave selection mode when switching bands.
-    ref.listen(currentBandProvider, (previous, next) {
+    // Leave selection mode when switching libraries.
+    ref.listen(currentLibraryProvider, (previous, next) {
       if (previous?.id != next.id) setState(() => _selected = null);
     });
 
@@ -140,14 +140,19 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                   tooltip: l10n.copyToBand,
                   icon: const Icon(Icons.drive_file_move_outline),
                   onPressed: () async {
-                    await copySongsToBand(context, ref, selected.toList());
+                    await copySongsToBand(
+                      context,
+                      ref,
+                      selected.toList(),
+                      fromLibraryId: library.id,
+                    );
                     if (mounted) setState(() => _selected = null);
                   },
                 ),
               ]
             : [
-                const BandSwitcher(),
-                if (band.canEditSongs) ...[
+                const LibrarySwitcher(),
+                if (library.canEditSongs) ...[
                   // Also on web: imported songs are synced (ADR-0018).
                   IconButton(
                     key: const Key('songs-import'),
@@ -173,7 +178,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                 ),
               ],
       ),
-      floatingActionButton: !band.canEditSongs || selected != null
+      floatingActionButton: !library.canEditSongs || selected != null
           ? null
           : FloatingActionButton.extended(
               heroTag: null,

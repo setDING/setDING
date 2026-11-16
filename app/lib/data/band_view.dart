@@ -47,6 +47,16 @@ class BandView {
 
   bool get isLocal => id == localBandId;
 
+  /// The song library of the band with the user's song permissions.
+  LibraryView get library => isLocal
+      ? LibraryView.local
+      : LibraryView(
+          id: organizationId!,
+          name: organizationName,
+          isOrgAdmin: isOrgAdmin,
+          mayEditSongs: mayEditOrgSongs,
+        );
+
   /// Song library of the band: its organization, or the local library.
   String get libraryId => organizationId ?? localBandId;
 
@@ -87,6 +97,53 @@ class BandView {
     membersCanEditSongs,
     mayEditOrgSongs,
   );
+}
+
+/// A song library as the UI shows it: the local library or an
+/// organization's library, with the signed-in user's song permissions
+/// (ADR-0017). Chosen on the songs tab independently of the band.
+@immutable
+class LibraryView {
+  const LibraryView({
+    required this.id,
+    this.name = '',
+    this.isOrgAdmin = false,
+    this.mayEditSongs = false,
+  });
+
+  /// The local library ("On this device"); everything is allowed.
+  static const local = LibraryView(id: localBandId, mayEditSongs: true);
+
+  /// The local library id or an organization id.
+  final String id;
+
+  /// Organization name; empty for the local library (shown localized).
+  final String name;
+
+  final bool isOrgAdmin;
+
+  /// Organization admin, admin of any of its bands, or member of a band
+  /// that allows song editing.
+  final bool mayEditSongs;
+
+  bool get isLocal => id == localBandId;
+
+  /// Create, import and edit songs and their attachments.
+  bool get canEditSongs => isLocal || mayEditSongs;
+
+  /// Delete songs and attachments (organization admins, ADR-0017).
+  bool get canDeleteSongs => isLocal || isOrgAdmin;
+
+  @override
+  bool operator ==(Object other) =>
+      other is LibraryView &&
+      other.id == id &&
+      other.name == name &&
+      other.isOrgAdmin == isOrgAdmin &&
+      other.mayEditSongs == mayEditSongs;
+
+  @override
+  int get hashCode => Object.hash(id, name, isOrgAdmin, mayEditSongs);
 }
 
 /// An organization of the signed-in user.

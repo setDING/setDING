@@ -93,9 +93,80 @@ final _currentBandIdProvider = Provider<String>(
 );
 
 /// Song library of the current band: its organization (ADR-0017), or the
-/// local library.
-final _currentLibraryIdProvider = Provider<String>(
+/// local library. Sets, their song picker and Live mode use it.
+final _bandLibraryIdProvider = Provider<String>(
   (ref) => ref.watch(currentBandProvider.select((b) => b.libraryId)),
+);
+
+// Song libraries (ADR-0017) ---------------------------------------------------
+
+/// The local library followed by the libraries of the user's
+/// organizations. The web client has no local library (ADR-0018).
+final librariesProvider = StreamProvider<List<LibraryView>>((ref) {
+  final libraries = ref
+      .watch(bandServiceProvider)
+      .watchLibraries(ref.watch(authProvider.select((u) => u?.id)));
+  if (!ref.watch(webClientProvider)) return libraries;
+  return libraries.map(
+    (list) => [
+      for (final l in list)
+        if (!l.isLocal) l,
+    ],
+  );
+});
+
+/// The song library chosen on the songs tab (stored per device),
+/// independent of the band; null until one is chosen.
+class SelectedLibraryNotifier extends Notifier<String?> {
+  static const _key = 'currentLibraryId';
+
+  @override
+  String? build() => ref.watch(sharedPreferencesProvider).getString(_key);
+
+  Future<void> select(String libraryId) async {
+    state = libraryId;
+    await ref.read(sharedPreferencesProvider).setString(_key, libraryId);
+  }
+
+  /// Forgets the choice (web sign-out).
+  Future<void> reset() async {
+    state = null;
+    await ref.read(sharedPreferencesProvider).remove(_key);
+  }
+}
+
+final selectedLibraryIdProvider =
+    NotifierProvider<SelectedLibraryNotifier, String?>(
+      SelectedLibraryNotifier.new,
+    );
+
+/// The song library shown on the songs tab. Without a choice, or when the
+/// chosen library is not available (signed out, left the organization),
+/// the library of the current band.
+final currentLibraryProvider = Provider<LibraryView>((ref) {
+  final libraries =
+      ref.watch(librariesProvider).value ??
+      (ref.watch(webClientProvider)
+          ? const <LibraryView>[]
+          : const [LibraryView.local]);
+  final bandLibrary = ref.watch(_bandLibraryIdProvider);
+  final selected = ref.watch(selectedLibraryIdProvider) ?? bandLibrary;
+  return libraries.where((l) => l.id == selected).firstOrNull ??
+      libraries.where((l) => l.id == bandLibrary).firstOrNull ??
+      libraries.firstOrNull ??
+      LibraryView.local;
+});
+
+/// A song library with the user's permissions, e.g. of the song shown;
+/// without permissions when the user cannot see it (any more).
+final libraryProvider = Provider.family<LibraryView, String>((ref, id) {
+  if (id == localBandId) return LibraryView.local;
+  final libraries = ref.watch(librariesProvider).value ?? const [];
+  return libraries.where((l) => l.id == id).firstOrNull ?? LibraryView(id: id);
+});
+
+final _currentLibraryIdProvider = Provider<String>(
+  (ref) => ref.watch(currentLibraryProvider.select((l) => l.id)),
 );
 
 /// The organizations of the signed-in user.
@@ -117,14 +188,30 @@ final bandMembersProvider = StreamProvider.autoDispose
       (ref, bandId) => ref.watch(bandServiceProvider).watchMembers(bandId),
     );
 
-// Songs of the current library, sets of the current band --------------------------------------------
+// Songs of the current library, sets of the current band ----------------------
 
-final songRepositoryProvider = Provider<SongRepository>(
-  (ref) => SongRepository(
+/// Songs of one library. Operations on a single song (overlays, attachments,
+/// edits) use the song's own library, whichever repository is used.
+final librarySongRepositoryProvider = Provider.family<SongRepository, String>(
+  (ref, libraryId) => SongRepository(
     ref.watch(databaseProvider),
     ref.watch(attachmentStorageProvider),
-    libraryId: ref.watch(_currentLibraryIdProvider),
+    libraryId: libraryId,
     userId: ref.watch(authProvider.select((u) => u?.id)),
+  ),
+);
+
+/// Songs of the library chosen on the songs tab.
+final songRepositoryProvider = Provider<SongRepository>(
+  (ref) => ref.watch(
+    librarySongRepositoryProvider(ref.watch(_currentLibraryIdProvider)),
+  ),
+);
+
+/// Songs of the current band's library, for its sets.
+final bandSongRepositoryProvider = Provider<SongRepository>(
+  (ref) => ref.watch(
+    librarySongRepositoryProvider(ref.watch(_bandLibraryIdProvider)),
   ),
 );
 
@@ -158,6 +245,14 @@ final songsProvider = StreamProvider.autoDispose
       (ref, filter) => ref
           .watch(songRepositoryProvider)
           .watchSongList(query: filter.query, tag: filter.tag),
+    );
+
+/// Songs of the current band's library filtered by search text, for adding
+/// them to a set.
+final bandSongsProvider = StreamProvider.autoDispose
+    .family<List<SongListEntry>, String>(
+      (ref, query) =>
+          ref.watch(bandSongRepositoryProvider).watchSongList(query: query),
     );
 
 /// All tags used in the library.

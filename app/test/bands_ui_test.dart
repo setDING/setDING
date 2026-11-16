@@ -1,8 +1,12 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:realchord/data/database.dart' show localBandId;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:realchord/providers.dart';
 import 'package:realchord/sync/sync_backend.dart';
 import 'package:realchord/ui/bands/bands_screen.dart';
 import 'package:realchord/ui/songs/song_screen.dart';
+import 'package:realchord/ui/songs/songs_screen.dart';
 
 import 'test_app.dart';
 
@@ -35,17 +39,57 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> switchLibrary(WidgetTester tester, String library) async {
+    await tester.tap(find.byKey(const Key('library-switcher')).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(library).last);
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('signed out, the app looks like the single-device MVP', (
     tester,
   ) async {
     final app = await start(tester);
     await openSongs(tester);
-    expect(find.byKey(const Key('band-switcher')), findsNothing);
+    expect(find.byKey(const Key('library-switcher')), findsNothing);
     expect(find.text('New song'), findsOneWidget);
     await app.dispose(tester);
   });
 
-  testWidgets('switching bands shows the library of the organization', (
+  testWidgets('the songs tab switches libraries, not bands', (tester) async {
+    final app = await start(
+      tester,
+      user: _ann,
+      server: (app) {
+        app.backend.addOrganization('o1', 'School', admin: _ann);
+        app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+        app.backend.addBand('b2', 'Jazz', admin: _ann, organizationId: 'o1');
+      },
+    );
+    await app.songs.createSong(source: '{title: Local song}');
+    await openSongs(tester);
+    expect(find.text('Local song'), findsOneWidget);
+    expect(find.byKey(const Key('band-switcher')), findsNothing);
+
+    // One entry per organization, no bands.
+    await tester.tap(find.byKey(const Key('library-switcher')));
+    await tester.pumpAndSettle();
+    expect(find.text('School'), findsOneWidget);
+    expect(find.text('Rock'), findsNothing);
+    expect(find.text('Jazz'), findsNothing);
+    await tester.tap(find.text('School').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Local song'), findsNothing);
+    expect(app.prefs.getString('currentLibraryId'), 'o1');
+    // The band stays as it was.
+    expect(app.prefs.getString('currentBandId'), isNull);
+
+    await switchLibrary(tester, 'On this device');
+    expect(find.text('Local song'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('the band and the song library are chosen independently', (
     tester,
   ) async {
     final app = await start(
@@ -55,15 +99,55 @@ void main() {
           app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1'),
     );
     await app.songs.createSong(source: '{title: Local song}');
-    await openSongs(tester);
-    expect(find.text('Local song'), findsOneWidget);
+    await TestApp.songsIn(app, 'o1').createSong(source: '{title: Org song}');
 
+    // Without a choice, the songs tab follows the band.
     await switchTo(tester, 'Rock');
-    expect(find.text('Local song'), findsNothing);
+    await openSongs(tester);
+    expect(find.text('Org song'), findsOneWidget);
+
+    await switchLibrary(tester, 'On this device');
+    expect(find.text('Local song'), findsOneWidget);
+    expect(find.text('Org song'), findsNothing);
     expect(app.prefs.getString('currentBandId'), 'b1');
 
+    // Switching the band keeps the chosen library.
+    await tester.tap(find.text('Sets').first);
+    await tester.pumpAndSettle();
     await switchTo(tester, 'On this device');
+    await switchTo(tester, 'Rock');
+    await openSongs(tester);
     expect(find.text('Local song'), findsOneWidget);
+    expect(app.prefs.getString('currentLibraryId'), localBandId);
+
+    // Sets pick their songs from the band's library.
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(SongsScreen)),
+    );
+    final picker = container.listen(bandSongsProvider(''), (_, _) {});
+    await tester.runAsync(() => container.read(bandSongsProvider('').future));
+    expect(picker.read().value!.map((s) => s.title), ['Org song']);
+    picker.close();
+    await app.dispose(tester);
+  });
+
+  testWidgets('an organization without own bands is a song library', (
+    tester,
+  ) async {
+    final app = await start(
+      tester,
+      user: _ann,
+      server: (app) {
+        app.backend.addOrganization('o2', 'Choir', admin: _bob);
+        app.backend.addOrgMember('o2', _ann, BandRole.member);
+      },
+    );
+    await TestApp.songsIn(app, 'o2').createSong(source: '{title: Hymn}');
+    await openSongs(tester);
+    await switchLibrary(tester, 'Choir');
+    expect(find.text('Hymn'), findsOneWidget);
+    // Plain organization members may not edit songs.
+    expect(find.text('New song'), findsNothing);
     await app.dispose(tester);
   });
 
@@ -116,7 +200,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('2 songs copied'), findsOneWidget);
 
-    await switchTo(tester, 'Rock');
+    await switchLibrary(tester, 'Rock');
     expect(find.text('Alpha'), findsOneWidget);
     expect(find.text('Beta'), findsOneWidget);
     await app.dispose(tester);

@@ -31,7 +31,7 @@ class _SongPickerState extends ConsumerState<_SongPicker> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final songs = ref.watch(songsProvider((query: _query, tag: null)));
+    final songs = ref.watch(bandSongsProvider(_query));
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.selectSongs),

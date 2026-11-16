@@ -151,8 +151,9 @@ class SongListEntry {
 }
 
 /// Access to songs, attachments and personal overlays of one song library:
-/// the organization of the current band (ADR-0017), or the local library
-/// by default.
+/// an organization's library (ADR-0017), or the local library by default.
+/// Lists and new songs use [libraryId]; operations on a single song use the
+/// song's own library.
 class SongRepository {
   SongRepository(
     this.db,
@@ -170,10 +171,23 @@ class SongRepository {
   /// The signed-in user, or null.
   final String? userId;
 
-  /// Whose personal adjustments are shown and changed (ADR-0020): the
-  /// signed-in user for songs of an organization, the local owner for the
-  /// local library (and without an account).
+  /// Whose personal adjustments of songs in [libraryId] are shown and
+  /// changed (ADR-0020): the signed-in user for songs of an organization,
+  /// the local owner for the local library (and without an account).
   String get overlayOwner => overlayOwnerFor(libraryId, userId);
+
+  /// Library of the song [songId]; [libraryId] if it is unknown.
+  Future<String> _libraryOf(String songId) async =>
+      await (db.selectOnly(db.songs)
+            ..addColumns([db.songs.libraryId])
+            ..where(db.songs.id.equals(songId)))
+          .map((r) => r.read(db.songs.libraryId)!)
+          .getSingleOrNull() ??
+      libraryId;
+
+  /// Owner of the personal adjustments of [songId], by the song's library.
+  Future<String> _overlayOwnerOf(String songId) async =>
+      overlayOwnerFor(await _libraryOf(songId), userId);
 
   /// Songs sorted by `{sorttitle}` (or title); optionally filtered by a
   /// search [query] and a [tag].
@@ -523,18 +537,24 @@ class SongRepository {
   // Personal overlays --------------------------------------------------------
 
   SimpleSelectStatement<$PersonalOverlaysTable, SongOverlay> _overlay(
+    String owner,
     String songId,
-  ) => db.select(db.personalOverlays)
-    ..where((o) => o.ownerId.equals(overlayOwner) & o.songId.equals(songId));
+  ) =>
+      db.select(db.personalOverlays)
+        ..where((o) => o.ownerId.equals(owner) & o.songId.equals(songId));
 
   Stream<SongOverlay> watchOverlay(String songId) =>
-      _overlay(songId)
-          .watchSingleOrNull()
-          .map((o) => o ?? defaultOverlay(songId, ownerId: overlayOwner));
+      Stream.fromFuture(_overlayOwnerOf(songId)).asyncExpand(
+        (owner) => _overlay(owner, songId).watchSingleOrNull().map(
+          (o) => o ?? defaultOverlay(songId, ownerId: owner),
+        ),
+      );
 
-  Future<SongOverlay> getOverlay(String songId) async =>
-      await _overlay(songId).getSingleOrNull() ??
-      defaultOverlay(songId, ownerId: overlayOwner);
+  Future<SongOverlay> getOverlay(String songId) async {
+    final owner = await _overlayOwnerOf(songId);
+    return await _overlay(owner, songId).getSingleOrNull() ??
+        defaultOverlay(songId, ownerId: owner);
+  }
 
   /// No adjustments: as written in the song.
   static SongOverlay defaultOverlay(
@@ -550,25 +570,27 @@ class SongRepository {
   );
 
   /// Saves all fields, including null values (e.g. resetting Nashville to
-  /// the device setting or removing a note), always for [overlayOwner];
-  /// adjustments of organization songs are synced with the account
-  /// (ADR-0020).
+  /// the device setting or removing a note), always for the owner the
+  /// song's library calls for; adjustments of organization songs are synced
+  /// with the account (ADR-0020).
   Future<void> saveOverlay(SongOverlay overlay) => _write(() async {
+    final library = await _libraryOf(overlay.songId);
+    final owner = overlayOwnerFor(library, userId);
     await db
         .into(db.personalOverlays)
         .insertOnConflictUpdate(
           overlay
-              .copyWith(ownerId: overlayOwner)
+              .copyWith(ownerId: owner)
               .toCompanion(false)
               // The server revision is kept as stored.
               .copyWith(revision: const Value.absent()),
         );
-    if (overlayOwner != localOwnerId) {
+    if (owner != localOwnerId) {
       await markDirty(
         db,
         SyncCollection.overlays,
-        overlayRecordId(overlayOwner, overlay.songId),
-        scope: libraryId,
+        overlayRecordId(owner, overlay.songId),
+        scope: library,
       );
     }
   });

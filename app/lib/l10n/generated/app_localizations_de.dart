@@ -977,6 +977,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get bandManage => 'Bands verwalten';
 
   @override
+  String get librarySwitch => 'Songbibliothek wechseln';
+
+  @override
   String get bandsTitle => 'Bands';
 
   @override

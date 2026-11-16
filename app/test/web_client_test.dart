@@ -261,6 +261,24 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('a stored choice of the local song library is not used', (
+    tester,
+  ) async {
+    final app = await start(
+      tester,
+      user: _ann,
+      before: (app) => app.prefs.setString('currentLibraryId', localBandId),
+    );
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HomeScreen)),
+    );
+    expect(container.read(currentLibraryProvider).id, 'org-b1');
+    expect(container.read(librariesProvider).value!.map((l) => l.id), [
+      'org-b1',
+    ]);
+    await app.dispose(tester);
+  });
+
   testWidgets('shows no "Offline ready" status', (tester) async {
     final app = await start(tester, user: _ann);
     // After the start: the band arrives with the first refresh.

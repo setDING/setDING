@@ -7,6 +7,7 @@ import '../providers.dart'
         bandServiceProvider,
         databaseProvider,
         selectedBandIdProvider,
+        selectedLibraryIdProvider,
         webClientProvider;
 import '../settings/settings.dart';
 import 'pocketbase_backend.dart';
@@ -90,6 +91,7 @@ class AuthNotifier extends Notifier<AuthUser?> {
       await ref.read(databaseProvider).clearAll();
       await ref.read(attachmentStorageProvider).deleteAll();
       await ref.read(selectedBandIdProvider.notifier).reset();
+      await ref.read(selectedLibraryIdProvider.notifier).reset();
     } catch (e) {
       _log.error('Could not delete the local data', e);
     }
