@@ -201,13 +201,17 @@ void main() {
     // Longer than the page: smaller.
     expect(await fitToPage(0), lessThan(1.0));
 
-    await tester.flingFrom(
-      Offset(tester.getRect(find.byType(PageView)).center.dx, 700),
-      const Offset(-400, 0),
-      1500,
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('2 / 2'), findsOneWidget);
+    // Swipes turn like taps: the first one scrolls through the run-out
+    // below the song, the second one turns to the next song.
+    for (final expected in ['1 / 2', '2 / 2']) {
+      await tester.flingFrom(
+        Offset(tester.getRect(find.byType(PageView)).center.dx, 700),
+        const Offset(-400, 0),
+        1500,
+      );
+      await tester.pumpAndSettle();
+      expect(find.text(expected), findsOneWidget);
+    }
     // A short song: larger.
     expect(await fitToPage(1), greaterThan(1.0));
     await app.dispose(tester);
@@ -253,6 +257,49 @@ void main() {
     expect(find.text('1 / 2'), findsOneWidget);
     expect(find.text('Page 2/2'), findsOneWidget);
     await tap(left);
+    expect(find.text('Page 1/2'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('swiping turns the pages of a song before the song', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final items = await createSongs(tester, app, [
+      versesSong(16),
+      '{title: Second}\n[D]Two',
+    ]);
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+    final page = tester.getRect(find.byType(PageView));
+    Future<void> swipe(double dx, {double speed = 1500}) async {
+      await tester.flingFrom(page.center, Offset(dx, 0), speed);
+      await tester.pumpAndSettle();
+    }
+
+    expect(find.text('Page 1/2'), findsOneWidget);
+    await swipe(-400);
+    expect(find.text('Page 2/2'), findsOneWidget);
+    expect(find.text('1 / 2'), findsOneWidget);
+
+    await swipe(-400);
+    expect(find.text('2 / 2'), findsOneWidget);
+
+    await swipe(400);
+    expect(find.text('1 / 2'), findsOneWidget);
+    expect(find.text('Page 2/2'), findsOneWidget);
+
+    // A slow but long swipe turns too; a short one does not.
+    await tester.dragFrom(page.center, Offset(page.width * 0.1, 0));
+    await tester.pumpAndSettle();
+    expect(find.text('Page 2/2'), findsOneWidget);
+    await tester.timedDragFrom(
+      page.center,
+      Offset(page.width * 0.4, 0),
+      const Duration(seconds: 2),
+    );
+    await tester.pumpAndSettle();
     expect(find.text('Page 1/2'), findsOneWidget);
     await app.dispose(tester);
   });
@@ -393,6 +440,15 @@ void main() {
     await settle();
     expect(pdfPage(1), findsOneWidget);
     expect(pdfPage(2), findsOneWidget);
+
+    // Swipes turn the spreads like taps.
+    await tester.flingFrom(page.center, const Offset(-400, 0), 1500);
+    await settle();
+    expect(pdfPage(3), findsOneWidget);
+    expect(find.text('1 / 2'), findsOneWidget);
+    await tester.flingFrom(page.center, const Offset(400, 0), 1500);
+    await settle();
+    expect(pdfPage(1), findsOneWidget);
     await app.dispose(tester);
     await settle();
   });
