@@ -16,7 +16,7 @@ leaving the few decisions that must stay with a human clearly marked.
 We use **trunk-based development with short-lived branches and pull requests**, as
 described in detail in [`docs/development/git-workflow.md`](../../development/git-workflow.md):
 
-- Backlog as issues in the self-hosted Forgejo repository, with labels for agents (`agent:ready`, `agent:in-progress`, `needs-human`).
+- Backlog as issues in the GitHub repository, with labels for agents (`agent:ready`, `agent:in-progress`, `needs-human`).
 - One issue = one branch (`<type>/<issue>-<slug>`) = one PR; no direct commits to `main`.
 - Conventional Commits, English, `Co-Authored-By` trailer for agents.
 - Local checks + self-review before a PR is marked ready. During early development the local test gate is binding and CI runs only on manual dispatch; required CI checks return when heading towards version 1.
@@ -41,28 +41,28 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 
 ## Consequences
 
-- CI and branch protection are essential and are set up together with the Flutter project (`tool/check.sh`, Forgejo Actions with a Forgejo runner).
+- CI and branch protection are essential and are set up together with the Flutter project (`tool/check.sh`, GitHub Actions).
 - Quality depends on automated tests and the self-review, so test coverage of the core packages (`chordpro`, `sync`) must be high.
 - The issue tracker becomes the agents' work queue; issues must have clear acceptance criteria.
-- The full workflow needs the Forgejo remote plus an access token for agents (`fj` CLI); without a login, agents fall back to pushing branches and squash-merging locally after the test gate (workflow section 11).
+- The full workflow needs the GitHub remote plus a `gh` login on the development machine; without a login, agents fall back to pushing branches and squash-merging locally after the test gate (workflow section 11).
 
 ## Decision log
 
 - 2026-11-14: Workflow accepted. Agents may merge their own PRs from the start, under the condition that all tests always pass before a merge (test gate).
-- 2026-11-15: Repository host decided: self-hosted **Forgejo** at `github.com`, repository `andi/RealChord` (instead of the assumed GitHub). Issues, PRs and labels live there; agents use the forgejo-cli (`fj`); CI becomes Forgejo Actions. Until agents have an access token, they push their branches and squash-merge locally after the test gate.
+- 2026-11-15: Repository host decided: a self-hosted **Forgejo** instance (instead of the assumed GitHub). Issues, PRs and labels live there; agents use the forgejo-cli (`fj`); CI becomes Forgejo Actions. Until agents have an access token, they push their branches and squash-merge locally after the test gate.
 - 2026-11-15: CLI is forgejo-cli (`fj`) instead of `tea`: built for Forgejo, supports squash merge, drafts ("WIP: ") and AGit PRs.
 - 2026-11-15: CI active: Forgejo Actions workflow `.forgejo/workflows/ci.yml` runs `tool/check.sh` (job `test`) on a global `linux-amd64` runner, installing the pinned Flutter version in a Debian container for every PR and push to `main`. Build jobs and commit-lint follow later.
-- 2026-11-15: CI uses its own image `ghcr.io/tafli/realchord-ci:<flutter version>` (`tool/ci/Dockerfile`, Forgejo container registry) instead of installing Flutter in every run. It is built and pushed with `make ci-image ci-image-push` by the owner (package write token); the runner pulls it with the repository secret `CI_REGISTRY_TOKEN` (package read), since the instance requires sign-in.
-- 2026-11-15: Agents act as the Forgejo user `factoryd` (commit author `andi+factoryd@theboss.ch`, `fj` login, CI registry token) instead of the owner's account, so agent work is distinguishable from the owner's.
+- 2026-11-15: CI uses its own image `realchord-ci:<flutter version>` (`tool/ci/Dockerfile`, Forgejo container registry) instead of installing Flutter in every run. It is built and pushed with `make ci-image ci-image-push` by the owner (package write token); the runner pulls it with the repository secret `CI_REGISTRY_TOKEN` (package read), since the instance requires sign-in.
+- 2026-11-15: Agents act as the Forgejo user `factoryd` (own commit author, `fj` login, CI registry token) instead of the owner's account, so agent work is distinguishable from the owner's.
 - 2026-11-15: Agents have API access: an access token (scopes repository and issue, under the owner's account) is stored by `fj` on the development machine. The normal flow with issues and PRs applies; local squash merges remain only as a fallback without a login (workflow section 11).
 
 - 2026-11-15: CI made manual-only (`workflow_dispatch`) during early development: waiting for the runner slowed development down too much. The test gate is the full local suite (`make check`) on the rebased branch right before the merge; agents do not wait for CI. Decided by the owner.
 - 2026-11-16: After a merge the branch is deleted locally as well (`git branch -D`, since squash-merged branches do not count as merged), not only on the remote (owner request).
 - 2026-11-16: Move to **GitHub** (`github.com/tafli/RealChord`) decided by the owner, to be carried out once #27 is done and all Forgejo issues are closed ([runbook](../../development/github-migration.md), #116). Issues and pull requests keep their numbers (PRs become closed issues), CI becomes GitHub Actions with the image on `ghcr.io`, commits are made with the owner's signed identity instead of `factoryd` (agents marked by `Co-Authored-By`), and **no reference to the Forgejo instance may exist on GitHub**: the history is rewritten before the push (new commit ids, old signatures dropped, every author and committer rewritten to the owner, #127). The workflow sections for GitHub follow in the cutover PR.
+- 2026-11-16: Move to GitHub carried out (#129): issues and PRs imported with their numbers, CI on GitHub Actions with `ghcr.io/tafli/realchord-ci`, agents use `gh`, commits are GPG-signed with the owner's global identity (no repository-local identity), `.forgejo/` removed. The Forgejo repository is archived.
 
 ## Open points
 
-- Carry out the move to GitHub (runbook `docs/development/github-migration.md`, #116); afterwards this ADR and the git workflow describe GitHub instead of Forgejo.
 - Re-enable CI on every PR and push to `main` as a required check (`test`) when heading towards version 1, together with branch protection.
 
 - Build jobs: Android (SDK in the container or a separate image), iOS (needs a macOS runner), Windows (needs a Windows runner).

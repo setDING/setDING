@@ -34,8 +34,8 @@ APK_VERSION := $(shell sed -n 's/^version: *\([^+]*\).*/\1/p' $(APP)/pubspec.yam
 APK_COMMIT  := $(shell git -C $(ROOT) rev-parse --short HEAD 2>/dev/null || echo unknown)
 APK         := $(APP)/build/realchord-$(APK_VERSION)-$(APK_COMMIT).apk
 
-# CI image (tool/ci/Dockerfile) in the Forgejo container registry. The tag is the
-# Flutter version; keep it in sync with .forgejo/workflows/ci.yml.
+# CI image (tool/ci/Dockerfile) in the GitHub container registry. The tag is the
+# Flutter version; keep it in sync with .github/workflows/ci.yml.
 FLUTTER_VERSION ?= 3.50.0
 CI_IMAGE        ?= ghcr.io/tafli/realchord-ci:$(FLUTTER_VERSION)
 DOCKER          ?= docker

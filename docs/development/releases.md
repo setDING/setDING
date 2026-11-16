@@ -15,7 +15,7 @@ The result is `app/build/realchord-<version>-<commit>-linux-x64.tar.gz`
 
 Docker (`DOCKER=podman` works too) and the CI image
 `ghcr.io/tafli/realchord-ci:<flutter-version>` (`make ci-image`, or
-`docker login ghcr.io` to pull it). make builds a local image
+`docker pull` it). make builds a local image
 `realchord-release-linux:<flutter-version>` with the Linux build dependencies and
 runs `flutter build linux --release` in it. Pub packages are cached in the Docker
 volume `realchord-release-pub-cache`.

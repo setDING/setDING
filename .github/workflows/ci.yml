@@ -1,7 +1,5 @@
 # CI for RealChord on GitHub Actions (ADR-0010, docs/development/git-workflow.md
-# section 7). Prepared for the move to GitHub (issue #116,
-# docs/development/github-migration.md); until then Forgejo ignores this file
-# because .forgejo/workflows exists. The cutover deletes .forgejo/.
+# section 7).
 #
 # Runs the test gate (tool/check.sh). During early development it runs only on
 # manual dispatch; the local test gate (`make check`) is binding. Re-enable the

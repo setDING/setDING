@@ -6,11 +6,11 @@
 #
 # Build and push with `make ci-image ci-image-push`; the tag is the Flutter
 # version and must match FLUTTER_VERSION in the Makefile and the image in
-# .forgejo/workflows/ci.yml.
+# .github/workflows/ci.yml.
 FROM node:22-bookworm
 
 # Links the image on ghcr.io to the repository, so GitHub Actions may pull it
-# with GITHUB_TOKEN (after the move to GitHub, issue #116).
+# with GITHUB_TOKEN.
 LABEL org.opencontainers.image.source=https://github.com/tafli/RealChord
 
 ARG FLUTTER_VERSION

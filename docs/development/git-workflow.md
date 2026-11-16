@@ -19,7 +19,7 @@ cases where a human must decide.
 
 ## 2. Work items (issues)
 
-The backlog is kept as issues in the project's **Forgejo** repository
+The backlog is kept as issues in the project's **GitHub** repository
 (`github.com/tafli/RealChord`, see section 12). An agent always works on an issue;
 if none exists for the task, it creates one first.
 
@@ -84,12 +84,12 @@ An agent runs all of the following and only continues when everything passes:
 
 ## 6. Pull requests
 
-- Opened as soon as the branch is pushed. As a **draft** while work is in progress, marked **ready** when section 5 is complete.
+- Opened as soon as the branch is pushed. As a **draft** while work is in progress (`gh pr create --draft`), marked **ready** when section 5 is complete (`gh pr ready`).
 - Title = the future squash commit message (Conventional Commit format).
-- Body follows [`.github/pull_request_template.md`](../../.github/pull_request_template.md) (Forgejo reads PR templates from `.github/` as well as `.forgejo/`): summary, linked issue (`Closes #n`), affected ADRs, how it was tested, open points.
+- Body follows [`.github/pull_request_template.md`](../../.github/pull_request_template.md) : summary, linked issue (`Closes #n`), affected ADRs, how it was tested, open points.
 - Size: aim for **under ~400 changed lines** (generated files excluded). Larger work is split into several PRs, each leaving `main` working.
 - **Merge method: squash merge** only. The branch is deleted after the merge, on the
-  remote (`fj pr merge -d`) **and locally**: switch to `main`, pull, and delete the
+  remote (`gh pr merge --squash --delete-branch`) **and locally**: switch to `main`, pull, and delete the
   local branch with `git branch -D <branch>`. `-D` is needed because Git does not
   recognise a squash-merged branch as merged; check first that the PR is merged.
   Only the agent that owns the branch deletes it (section 3).
@@ -135,23 +135,20 @@ to be decided.
 > **Early development: CI is manual-only.** Waiting for the runner slowed development
 > down too much, so the workflow has only a `workflow_dispatch` trigger and is not a
 > required check; the local test gate (section 6) is binding. Run it by hand when
-> useful (Forgejo → Actions → CI → Run workflow). **When heading towards version 1**,
+> useful (`gh workflow run CI`, or GitHub → Actions → CI → Run workflow). **When heading towards version 1**,
 > re-enable the `pull_request` and `push` triggers in `ci.yml`, make `test` a
 > required check again and enable branch protection (ADR-0010, open points).
 
-CI runs as **Forgejo Actions** (when enabled, on every PR and on every push to `main`):
-[`.forgejo/workflows/ci.yml`](../../.forgejo/workflows/ci.yml), on the global Forgejo
-runner with the label `linux-amd64`, in the project's own CI image
-`ghcr.io/tafli/realchord-ci:<flutter version>` from the Forgejo container
-registry ([`tool/ci/Dockerfile`](../../tool/ci/Dockerfile): Debian, Node for the checkout
-action, python3, clang for native assets, Flutter precached for Linux). The instance
-requires sign-in for packages too, so the job pulls the image with the repository
-secret `CI_REGISTRY_TOKEN` (a token of the agent user `factoryd` with the scope
-*package: read*). `TEST_CONCURRENCY=6` limits the
-parallel test processes: the runner has 8 vCPUs and 12 GB RAM, and one test process
-per visible core can exhaust the memory and hang the run. The first step prints the
-runner's CPUs and memory; a run takes far longer than a local cold run
-(about 1 minute) when the runner lacks resources.
+CI runs as **GitHub Actions** (when enabled, on every PR and on every push to `main`):
+[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml), on a GitHub-hosted
+`ubuntu-latest` runner, in the project's own CI image
+`ghcr.io/tafli/realchord-ci:<flutter version>` from the GitHub container registry
+([`tool/ci/Dockerfile`](../../tool/ci/Dockerfile): Debian, Node for the checkout
+action, python3, clang for native assets, Flutter precached for Linux). The image is
+linked to the repository (label `org.opencontainers.image.source`), so the job pulls
+it with the built-in `GITHUB_TOKEN`; no extra secret is needed. `tool/check.sh`
+runs one test process per core unless `TEST_CONCURRENCY` is set. The first step
+prints the runner's CPUs and memory.
 
 | Check | Content | Status |
 |---|---|---|
@@ -160,11 +157,11 @@ runner's CPUs and memory; a run takes far longer than a local cold run
 | `commit-lint` | PR title follows Conventional Commits | Planned |
 
 **Upgrading Flutter:** set `FLUTTER_VERSION` in the `Makefile`, run
-`make ci-image ci-image-push` (needs `docker login ghcr.io` with a token that
-may write packages – done by the human) and change the image tag in
-`.forgejo/workflows/ci.yml` in the same PR as the code changes for the new version.
+`make ci-image ci-image-push` (needs `docker login ghcr.io` with a token that may
+write packages – done by the human) and change the image tag in
+`.github/workflows/ci.yml` in the same PR as the code changes for the new version.
 
-`fj pr status <index>` shows the checks of a PR; `fj actions tasks` lists the runs.
+`gh pr checks <number>` shows the checks of a PR; `gh run list` lists the runs.
 
 Branch protection on `main`: PR required, required checks green, squash merge only,
 no force push, no deletion.
@@ -211,9 +208,9 @@ Agents may create **proposals** for all of these (an ADR, a draft PR), just not 
 
 ## 11. Without API access (fallback)
 
-Agents create issues and PRs and merge with `fj` (section 12). Only if `fj auth list`
-shows no login for `github.com` on the machine (e.g. a new machine where the
-human has not added the token yet):
+Agents create issues and PRs and merge with `gh` (section 12). Only if `gh auth status`
+shows no login for `github.com` on the machine (e.g. a new machine where the human
+has not logged in yet):
 
 - Work on a branch named as in section 3, commit as in section 4, and **push the
   branch** (`git push -u origin <branch>`).
@@ -226,31 +223,28 @@ human has not added the token yet):
 - Issues that would be created are listed in the handover instead; the human creates
   them or sets up the token.
 
-## 12. Forgejo
+## 12. GitHub
 
-- **Host:** self-hosted Forgejo, repository `github.com/tafli/RealChord`, remote
-  `origin` over SSH (`git@github.com:tafli/RealChord.git`).
-- **Agent user:** agents work as the Forgejo user `factoryd`: commit author
-  `factoryd <andi+factoryd@theboss.ch>` (local git config of the repository), `fj`
-  login and CI registry pulls with tokens of that user. The owner (`andi`) reviews,
-  decides `needs-human` items and owns the repository settings.
-- **CLI:** [forgejo-cli](https://codeberg.org/Cyborus/forgejo-cli) (`fj`, v0.7 or
-  later) for issues, PRs and merges; it finds the repository from the `origin` remote.
-  Login once per machine, done by the human: `fj -H github.com auth login`
-  (browser) or `fj -H github.com auth add-token` (token from stdin). The token is a
-  personal access token with read/write scope for *repository* and *issue*; it is
-  stored by `fj`, never in the repository (section 4). `fj auth list` shows whether a
-  login exists.
-- **AGit:** `fj pr create --agit` (or `git push origin HEAD:refs/for/main -o topic=…`)
-  creates a PR without pushing a branch, if AGit is enabled on the instance.
-- **Closing keywords:** `Closes #n` in the PR body closes the issue on merge, as on
-  GitHub.
-- **Labels:** the labels of section 2 are created once in the repository settings
-  (`fj` 0.7 cannot create labels).
-- **Merge settings:** in the repository settings only *squash* is enabled, and
-  "delete branch after merge" is the default.
+- **Host:** GitHub, repository `github.com/tafli/RealChord`, remote `origin` over
+  SSH (`git@github.com:tafli/RealChord.git`). Moved from a self-hosted Forgejo in
+  November 2026 with the same issue and PR numbers; former pull requests are closed
+  issues labelled `imported:pull-request` ([migration runbook](github-migration.md)).
+- **Commit identity:** commits are made with the owner's global git identity and
+  are **GPG-signed** (commits and tags, `commit.gpgsign`/`tag.gpgsign` in the global
+  git config); there is no repository-local identity. Agent work is recognisable by
+  the `Co-Authored-By` trailer (section 4). If signing fails (locked gpg-agent), the
+  agent stops and asks the human to unlock it; it never commits unsigned.
+- **CLI:** [GitHub CLI](https://cli.github.com/) (`gh`) for issues, PRs, merges and
+  CI runs; it finds the repository from the `origin` remote. Login once per machine,
+  done by the human: `gh auth login`. The token is stored by `gh`, never in the
+  repository (section 4). `gh auth status` shows whether a login exists.
+- **Closing keywords:** `Closes #n` in the PR body closes the issue on merge.
+- **Labels:** the labels of section 2 exist in the repository (`gh label list`;
+  `gh label create` for new ones).
+- **Merge settings:** only *squash* is enabled (commit title = PR title), and
+  branches are deleted after the merge.
 - **Branch protection on `main`** (repository settings → Branches): no direct push,
-  PR required, required status checks from section 7 once a runner exists.
+  PR required, required status checks from section 7 once CI is required again.
 
 ## Quick reference
 
@@ -261,11 +255,11 @@ git switch -c feat/12-chordpro-parser origin/main
 git fetch origin && git rebase origin/main
 tool/check.sh
 git push -u origin feat/12-chordpro-parser
-fj pr create --base main --head feat/12-chordpro-parser \
-  --body-file pr.md "WIP: feat(chordpro): …"   # "WIP: " title prefix = draft
-# … checks pass, self-review done, "WIP: " prefix removed (fj pr edit) …
-fj pr status <index>
-fj pr merge -M squash -d <index>   # only if section 6 "Who merges" allows it
+gh pr create --draft --base main --body-file pr.md --title "feat(chordpro): …"
+# … checks pass, self-review done …
+gh pr ready <number>
+gh pr checks <number>
+gh pr merge --squash --delete-branch <number>   # only if section 6 "Who merges" allows it
 git switch main && git pull --ff-only
 git branch -D feat/12-chordpro-parser   # delete the merged branch locally too
 ```

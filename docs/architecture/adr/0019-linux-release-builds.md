@@ -64,6 +64,6 @@ exist yet, and CI is manual-only during early development.
 
 ## Open points
 
-- Windows release (needs a Windows machine or a Forgejo Windows runner).
+- Windows release (needs a Windows machine or a GitHub Actions Windows runner).
 - Packaging (AppImage/Flatpak) and signing.
 - Move the release build into CI towards version 1.

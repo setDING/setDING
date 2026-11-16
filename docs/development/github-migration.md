@@ -1,8 +1,8 @@
 # Moving the repository from Forgejo to GitHub
 
 > Runbook for the one-time move of the repository from the self-hosted Forgejo to
-> **GitHub, `github.com/tafli/RealChord`** (issue #116, ADR-0010). Prepared, **not
-> executed yet**: it runs once #27 is done and every Forgejo issue is closed.
+> **GitHub, `github.com/tafli/RealChord`** (issues #116, #127, #129; ADR-0010).
+> **Carried out on 2026-11-16**; kept as a record.
 
 ## Goals and rules
 

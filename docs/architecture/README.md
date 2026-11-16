@@ -206,7 +206,7 @@ not yet built or run on a physical Android, iOS or Windows device.
 
 ### Phase 1 status (2026-11-15)
 
-Tracked as Forgejo issues #13–#18 (schema, sign-in, bands and roles, invitations,
+Tracked as issues #13–#18 (schema, sign-in, bands and roles, invitations,
 song/set sync, PDF sync).
 
 - **Server schema (#13):** collections, access rules and hooks in [`server/`](../../server)
@@ -252,7 +252,7 @@ See "Open points" in the individual ADRs. The most important:
 10. ~~PDF details?~~ → All attachments on every device, max. 20 MB per PDF, PDF-only songs allowed, local PDFs in the MVP (ADR-0009)
 11. ~~Server details?~~ → Debian LXC on Proxmox, Cloudflare Tunnel, daily backups, `make server-*` targets (ADR-0014, accepted; [operations guide](../operations/server.md)). Production: `api.realchord.app`. Open: staging container, monitoring
 12. ~~App name and domain?~~ → **RealChord**, domains `realchord.app` / `realchord.ch` ([`docs/app-name-candidates.md`](../app-name-candidates.md)). Code identifiers renamed (`ch.realchord.realchord`). Open: register the domains, trademark check (swissreg/EUIPO)
-13. ~~May agents merge their own PRs?~~ → Yes, from the start, but only when all tests pass (test gate, ADR-0010). Host: self-hosted Forgejo, `github.com/tafli/RealChord`. Agents use `fj` with an access token; during early development the test gate runs locally and CI (Forgejo Actions) is manual-only. Planned: move to GitHub (`github.com/tafli/RealChord`) with issue numbers kept, history rewritten and signed owner commits ([runbook](../development/github-migration.md), #116). Open: re-enable CI as a required check towards version 1, build jobs, branch protection
+13. ~~May agents merge their own PRs?~~ → Yes, from the start, but only when all tests pass (test gate, ADR-0010). Host: GitHub, `github.com/tafli/RealChord` (moved from a self-hosted Forgejo with the issue numbers kept, history rewritten, #116/#129). Agents use `gh`; commits are signed with the owner's identity; during early development the test gate runs locally and CI (GitHub Actions) is manual-only. Open: re-enable CI as a required check towards version 1, build jobs, branch protection
 14. ~~SongSelect import?~~ → No API integration, manual ChordPro import (ADR-0011, accepted). Open: test with a real SongSelect file, show copyright/CCLI number?
 15. ~~Printable set list?~~ → PDF in the client with the `pdf` package and embedded Noto Sans (ADR-0013, accepted). Open: Letter paper, export options, native print dialog
 16. Web client for management without an installed app? → Flutter web build of the same app at `app.realchord.app`, served by the same PocketBase; local library hidden, live mode with a "not offline-safe" notice, session as long as a tab is open by default ("Stay signed in" optional), local data deleted on sign-out, sign-in required and no file import or export on web (ADR-0018, accepted, #27). Implemented and deployed in #27 (2026-11-16)
