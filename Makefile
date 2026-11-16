@@ -125,14 +125,16 @@ backend: ## Start a local PocketBase with the schema and hooks from server/ (PB_
 	@pb=$$($(ROOT)/tool/server/fetch-pocketbase.sh $(PB_VERSION)) && \
 		echo "PocketBase $(PB_VERSION): http://127.0.0.1:$(BACKEND_PORT)/_/  (data: $(DATA_DIR)/pb_data)" && \
 		echo "Create a superuser: $$pb superuser upsert EMAIL PASS --dir $(DATA_DIR)/pb_data" && \
+		REALCHORD_PUBLIC_DIR=$(APP)/build/web \
 		$$pb serve --dir $(DATA_DIR)/pb_data --hooksDir $(ROOT)/server/pb_hooks \
-			--migrationsDir $(ROOT)/server/pb_migrations --http 127.0.0.1:$(BACKEND_PORT)
+			--migrationsDir $(ROOT)/server/pb_migrations --http 127.0.0.1:$(BACKEND_PORT) \
+			--publicDir $(APP)/build/web
 
 web: ## Build the web client into app/build/web (ADR-0018)
 	$(ROOT)/tool/build-web.sh
 
-web-serve: web ## Build the web client and serve it on http://127.0.0.1:8090
-	cd $(APP)/build/web && python3 -m http.server 8090 --bind 127.0.0.1
+web-serve: web ## Build the web client and serve it with the local backend (make backend)
+	$(MAKE) backend
 
 deps: ## Check that all external libraries are the newest versions
 	$(ROOT)/tool/check-deps.sh
@@ -181,8 +183,9 @@ ci-image-push: ## Push the CI image (needs: docker login ghcr.io)
 server-target:
 	@test -n "$(SERVER)" || { echo "Set SERVER to the SSH target, e.g. make $(MAKECMDGOALS) SERVER=root@<ip>"; exit 1; }
 
-server-install: server-target ## Install or update the server (PocketBase PB_VERSION, hooks, migrations)
-	tar -C $(ROOT) -czf - tool/server server/pb_hooks server/pb_migrations | \
+server-install: server-target web ## Install or update the server (PocketBase PB_VERSION, hooks, migrations, web client)
+	tar -C $(ROOT) --transform 's,^app/build/web,web,' -czf - \
+		tool/server server/pb_hooks server/pb_migrations app/build/web | \
 		$(SSH) $(SERVER) 'd=$$(mktemp -d /tmp/realchord-setup.XXXXXX) && tar -C $$d -xzf - && bash $$d/tool/server/install.sh $(PB_VERSION)'
 
 server-status: server-target ## Show services, PocketBase version and backups of the server

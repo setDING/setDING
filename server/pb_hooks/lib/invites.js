@@ -135,6 +135,8 @@ const TEXTS = {
     title: "Einladung zu RealChord",
     invited: (org) => `Du bist eingeladen, ${org} auf RealChord beizutreten.`,
     open: "In RealChord öffnen",
+    browser: "Im Browser öffnen",
+    browserHint: "Oder ohne Installation im Browser verwalten:",
     install:
       "Noch keine App? Installiere RealChord, öffne dann diesen Link nochmals " +
       "oder füge ihn in der App unter «Bands → Beitreten» ein.",
@@ -144,6 +146,8 @@ const TEXTS = {
     title: "Invitation to RealChord",
     invited: (org) => `You are invited to join ${org} on RealChord.`,
     open: "Open in RealChord",
+    browser: "Open in the browser",
+    browserHint: "Or manage without installing, in the browser:",
     install:
       "No app yet? Install RealChord, then open this link again " +
       "or paste it in the app under “Bands → Join”.",
@@ -152,7 +156,14 @@ const TEXTS = {
 };
 
 /// Landing page for people who open a link without the app (ADR-0005).
+/// On the web client's hostname the link opens the web client instead,
+/// which takes the token from the URL (ADR-0018).
 function landing(e) {
+  const web = require(`${__hooks}/lib/web.js`);
+  if (web.isWebHost(e)) {
+    const html = web.index();
+    if (html !== null) return e.html(200, html);
+  }
   const lang = (e.request.header.get("Accept-Language") || "").toLowerCase();
   const t = lang.indexOf("de") === 0 ? TEXTS.de : TEXTS.en;
   const token = e.request.pathValue("token");
@@ -165,7 +176,12 @@ function landing(e) {
     body =
       `<p>${escapeHtml(t.invited(org.getString("name")))}</p>` +
       `<p><a class="button" href="realchord://invite/${escapeHtml(token)}">${escapeHtml(t.open)}</a></p>` +
-      `<p class="hint">${escapeHtml(t.install)}</p>`;
+      `<p class="hint">${escapeHtml(t.install)}</p>` +
+      (web.available()
+        ? `<p class="hint">${escapeHtml(t.browserHint)}</p>` +
+          `<p><a class="button secondary" href="${escapeHtml(web.webUrl())}/invite/${escapeHtml(token)}">` +
+          `${escapeHtml(t.browser)}</a></p>`
+        : "");
   }
   return e.html(
     200,
@@ -175,6 +191,7 @@ function landing(e) {
       `<title>${escapeHtml(t.title)}</title><style>` +
       `body{font-family:system-ui,sans-serif;max-width:32rem;margin:3rem auto;padding:0 1rem;line-height:1.5}` +
       `.button{display:inline-block;padding:.75rem 1.25rem;background:#3f51b5;color:#fff;border-radius:.5rem;text-decoration:none}` +
+      `.secondary{background:#fff;color:#3f51b5;border:1px solid #3f51b5}` +
       `.hint{color:#555}</style></head><body><h1>${escapeHtml(t.title)}</h1>${body}</body></html>`,
   );
 }

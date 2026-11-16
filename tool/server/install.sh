@@ -3,8 +3,8 @@
 #
 # Runs as root ON the server (a Debian LXC container). Idempotent: the same script
 # installs a fresh container and updates an existing one. Normally started from the
-# development machine with `make server-install`, which copies this directory and
-# server/pb_hooks + server/pb_migrations to the server first.
+# development machine with `make server-install`, which copies this directory,
+# server/pb_hooks + server/pb_migrations and the web build (as web/) first.
 #
 #   install.sh <pocketbase-version>     e.g. install.sh 0.40.6
 set -euo pipefail
@@ -104,6 +104,24 @@ for dir in pb_hooks pb_migrations; do
     restart_pb=1
   fi
 done
+
+# --- Web client (ADR-0018) ------------------------------------------------------
+# The Flutter web build, served by PocketBase from pb_public; read on every
+# request, so no restart is needed.
+step "Web client"
+if [ -f "$SETUP_DIR/web/index.html" ]; then
+  if ! diff -r -q "$SETUP_DIR/web" "$PB_HOME/pb_public" >/dev/null 2>&1; then
+    rm -rf "$PB_HOME/pb_public.new"
+    cp -r "$SETUP_DIR/web" "$PB_HOME/pb_public.new"
+    rm -rf "$PB_HOME/pb_public"
+    mv "$PB_HOME/pb_public.new" "$PB_HOME/pb_public"
+    echo "pb_public updated"
+  else
+    echo "unchanged"
+  fi
+else
+  echo "no web build in this setup, pb_public left as it is"
+fi
 
 # --- systemd units -------------------------------------------------------------
 step "systemd units"

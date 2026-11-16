@@ -9,15 +9,18 @@ Wants=network-online.target
 Type=simple
 User=pocketbase
 Group=pocketbase
+# The web client (ADR-0018) is served from pb_public.
+Environment=REALCHORD_PUBLIC_DIR=/opt/pocketbase/pb_public
 # Optional settings for the hooks, e.g. the deep-link verification files
-# (docs/operations/server.md, "Deep links").
+# and REALCHORD_WEB_URL (docs/operations/server.md); they override the above.
 EnvironmentFile=-/etc/realchord/pocketbase.env
 ExecStart=/opt/pocketbase/pocketbase serve \
   --http=127.0.0.1:8090 \
   --dir=/var/lib/pocketbase/pb_data \
   --hooksDir=/opt/pocketbase/pb_hooks \
   --hooksWatch=false \
-  --migrationsDir=/opt/pocketbase/pb_migrations
+  --migrationsDir=/opt/pocketbase/pb_migrations \
+  --publicDir=/opt/pocketbase/pb_public
 Restart=always
 RestartSec=5
 LimitNOFILE=4096

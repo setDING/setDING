@@ -170,12 +170,19 @@ Tracked in issue #27, each step a separate PR:
   (`pdfium.wasm`). Image attachments are not synced (ADR-0012) and need
   nothing extra. Hardened: the web client never falls back to the local
   library, not even while the bands load or with an old stored choice.
+- 2026-11-16: Step "hosting" implemented (#27): `make server-install` builds the
+  web client and installs it to `pb_public`; PocketBase serves it with
+  `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy:
+  credentialless` (credentialless instead of require-corp, so cross-origin
+  resources without CORP headers keep working; browsers without it use the
+  IndexedDB fallback). The build loads CanvasKit from the server, not from
+  Google's CDN. `REALCHORD_WEB_URL` enables "Open in the browser" on the
+  landing page and the `/invite/<token>` route on the web hostname; the server
+  URL of the web client defaults to the page's origin
+  (`--dart-define=REALCHORD_SERVER_URL` for development).
 
 ## Open points
 
 - Supported browsers (OPFS needs current Chrome, Edge, Firefox or Safari; fallback
   to IndexedDB on older ones).
 - Register `app.realchord.app` in the tunnel and DNS (owner).
-- Hosting: send `Cross-Origin-Opener-Policy: same-origin` and
-  `Cross-Origin-Embedder-Policy: require-corp` for the web build, so browsers
-  use OPFS instead of the IndexedDB fallback (step "hosting").

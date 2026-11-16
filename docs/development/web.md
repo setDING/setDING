@@ -7,12 +7,17 @@ above the platform layer is shared with the native apps.
 
 ```bash
 make web          # build into app/build/web (also part of `make check`)
-make web-serve    # build and serve on http://127.0.0.1:8090
+make web-serve    # build, then serve it with the local backend (make backend)
 ```
 
-`tool/build-web.sh` checks `web/sqlite3.wasm`, compiles the drift worker and
-runs `flutter build web`. For hot reload, run `tool/build-web.sh` once (it
-creates `app/web/drift_worker.js`) and then `flutter run -d chrome` in `app/`.
+`make web-serve` serves the web client from the local PocketBase on
+http://127.0.0.1:8090, like production: same origin as the API, with the
+isolation headers. `tool/build-web.sh` checks `web/sqlite3.wasm`, compiles the
+drift worker and runs `flutter build web` (CanvasKit from the server, not the
+CDN). For hot reload, run `tool/build-web.sh` once (it creates
+`app/web/drift_worker.js`), start `make backend`, and run
+`flutter run -d chrome --dart-define=REALCHORD_SERVER_URL=http://127.0.0.1:8090`
+in `app/`. Hosting in production: docs/operations/server.md, step 6.
 
 ## Local database in the browser
 
@@ -75,5 +80,6 @@ adapters are in `lib/platform/browser_storage_web.dart`.
 PDFs on web use pdfrx's own WebAssembly build (`pdfium.wasm`), which
 Flutter copies from the package into `build/web/assets/packages/pdfrx/`.
 
-State of issue #27: hosting (served by PocketBase at `app.realchord.app`)
-follows in its own step.
+Embedded browsers (e.g. the Electron browser pane of tools) may fail to start
+drift's worker under cross-origin isolation; current Chrome, Edge and Firefox
+work, Safari uses the IndexedDB fallback.

@@ -209,6 +209,8 @@ void main() {
       expect(en.raw.headers['content-type'], contains('text/html'));
       expect(en.raw.body, contains('realchord://invite/$t'));
       expect(en.raw.body, contains('The Band'));
+      // No web client configured on this server (see web_test.dart).
+      expect(en.raw.body, isNot(contains('Open in the browser')));
 
       final bad = await pb.guest.send('GET', '/invite/${'A' * 32}');
       expect(bad.raw.body, contains('invalid'));

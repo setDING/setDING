@@ -105,6 +105,34 @@ return 404 and links still work through the landing page, the `realchord://` sch
 pasting and the QR code. Cloudflare must not challenge `/invite/*` and `/.well-known/*`
 (only `/_/*` is behind Access, see step 3).
 
+## 6. Web client (owner, once)
+
+The web client (ADR-0018) is a Flutter web build that `make server-install` builds
+(`make web`) and copies to `/opt/pocketbase/pb_public`; PocketBase serves it
+(`--publicDir`, set in `pocketbase.service`) on every hostname of the tunnel, with
+the headers `Cross-Origin-Opener-Policy: same-origin` and
+`Cross-Origin-Embedder-Policy: credentialless` (hook `web.pb.js`), so browsers keep
+its database in OPFS. The web client calls the API on the hostname it was loaded
+from, so no CORS setting is needed.
+
+1. Tunnel → **Public hostname:** `app.realchord.app` → service `HTTP` →
+   `localhost:8090` (the same PocketBase as `api.realchord.app`). No Access policy
+   for this hostname; the same bot rules as for the API apply.
+2. Add the web client's URL to `/etc/realchord/pocketbase.env`:
+
+   ```bash
+   # Public URL of the web client (ADR-0018).
+   REALCHORD_WEB_URL=https://app.realchord.app
+   ```
+
+3. `systemctl restart pocketbase`.
+
+With `REALCHORD_WEB_URL`, the invitation landing page offers **Open in the browser**
+(`https://app.realchord.app/invite/<token>`), and on that hostname `/invite/<token>`
+opens the web client, which takes the token from the URL. Without it, the web client
+is still reachable on `https://api.realchord.app/`, but the landing page does not
+link to it.
+
 ## Updates
 
 - **Debian security updates:** automatic (unattended-upgrades).
@@ -116,7 +144,9 @@ pasting and the QR code. Cloudflare must not challenge `/invite/*` and `/.well-k
   Never edit collections in the admin UI: such changes are not in the repository and
   are lost or conflict with the next migration.
 - **Local instance for development:** `make backend` starts PocketBase with the
-  repository's schema and hooks on `127.0.0.1:8090` (data in `.dev-data/pb_data`).
+  repository's schema and hooks on `127.0.0.1:8090` (data in `.dev-data/pb_data`);
+  it also serves the last web build (`make web-serve` builds it first).
+- **Web client:** built from the same commit by every `make server-install`.
 - **cloudflared:** updated with the Debian packages (apt repository of Cloudflare).
 
 ## Backups

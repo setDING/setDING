@@ -1,4 +1,5 @@
 import 'package:chordpro/chordpro.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -173,7 +174,7 @@ class AppSettings {
       instrument: prefs.getString('instrument') ?? d.instrument,
       userName: prefs.getString('userName') ?? d.userName,
       diagrams: pick(DiagramsPosition.values, 'diagrams', d.diagrams),
-      serverUrl: prefs.getString('serverUrl') ?? d.serverUrl,
+      serverUrl: prefs.getString('serverUrl') ?? initialServerUrl(),
       syncMode: pick(SyncMode.values, 'syncMode', d.syncMode),
       fontSize: (prefs.getDouble('fontSize') ?? d.fontSize).clamp(
         minFontSize,
@@ -236,3 +237,22 @@ final selectorsProvider = Provider<SelectorContext>((ref) {
   ref.watch(settingsProvider.select((s) => (s.instrument, s.userName)));
   return ref.read(settingsProvider).selectors;
 });
+
+/// The server when none is chosen in the settings:
+/// - [configured]: `--dart-define=REALCHORD_SERVER_URL=...` at build time,
+///   e.g. for `flutter run -d chrome` against a local backend;
+/// - on the web client the page's own origin: it is served by the same
+///   PocketBase (ADR-0018), so the API is same-origin (no CORS);
+/// - otherwise [defaultServerUrl].
+String initialServerUrl({
+  bool web = kIsWeb,
+  Uri? page,
+  String configured = const String.fromEnvironment('REALCHORD_SERVER_URL'),
+}) {
+  if (configured.isNotEmpty) return configured;
+  if (web) {
+    final base = page ?? Uri.base;
+    if (base.scheme == 'http' || base.scheme == 'https') return base.origin;
+  }
+  return defaultServerUrl;
+}

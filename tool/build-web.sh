@@ -33,5 +33,7 @@ echo "$SQLITE3_WASM_SHA256  web/sqlite3.wasm" | sha256sum --check --status ||
 
 dart compile js -O4 --no-source-maps -o web/drift_worker.js web/drift_worker.dart >/dev/null
 rm -f web/drift_worker.js.deps
-flutter build web --no-pub --no-wasm-dry-run "$@" >/dev/null
+# Everything from this server: no CanvasKit or fonts from Google's CDN
+# (privacy, and cross-origin isolation, ADR-0018).
+flutter build web --no-pub --no-wasm-dry-run --no-web-resources-cdn "$@" >/dev/null
 echo "web: built app/build/web (sqlite3 $locked)"

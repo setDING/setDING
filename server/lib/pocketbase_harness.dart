@@ -25,8 +25,12 @@ class PocketBase {
   static const _superuserPassword = 'superuser-password';
 
   /// [environment] is added to the server's environment (e.g. deep-link
-  /// settings read by the hooks).
-  static Future<PocketBase> start({Map<String, String>? environment}) async {
+  /// settings read by the hooks). [publicDir] holds static files (e.g. the
+  /// web client, ADR-0018).
+  static Future<PocketBase> start({
+    Map<String, String>? environment,
+    String? publicDir,
+  }) async {
     final root = _repositoryRoot();
     final binary = await _binary(root);
     final dir = await Directory.systemTemp.createTemp('realchord-pb-');
@@ -59,6 +63,7 @@ class PocketBase {
       '$root/server/pb_migrations',
       '--http',
       '127.0.0.1:$port',
+      if (publicDir != null) ...['--publicDir', publicDir],
     ]);
     final log = StringBuffer();
     process.stdout.transform(utf8.decoder).listen(log.write);
@@ -187,8 +192,10 @@ class Client {
     String method,
     String path, {
     Map<String, dynamic>? body,
+    Map<String, String>? headers,
   }) async {
     final request = http.Request(method, pb.baseUrl.resolve(path));
+    if (headers != null) request.headers.addAll(headers);
     if (_token != null) request.headers['authorization'] = _token;
     if (body != null) {
       request.headers['content-type'] = 'application/json';
