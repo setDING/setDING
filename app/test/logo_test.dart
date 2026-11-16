@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:realchord/ui/widgets/logo.dart';
 
+import 'test_app.dart';
+
 void main() {
   Future<void> pumpSplash(
     WidgetTester tester, {
@@ -73,5 +75,51 @@ void main() {
   test('a slow start does not wait any longer', () {
     expect(SplashScreen.remaining(const Duration(seconds: 1)), Duration.zero);
     expect(SplashScreen.remaining(const Duration(seconds: 3)), Duration.zero);
+  });
+
+  testWidgets('the navigation rail shows the logo mark at the top', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create();
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+
+    final logo = find.byKey(const Key('nav-logo'));
+    expect(
+      find.descendant(of: find.byType(NavigationRail), matching: logo),
+      findsOneWidget,
+    );
+    // Above the first destination, in the top left corner.
+    final rect = tester.getRect(logo);
+    expect(
+      rect.top,
+      lessThan(
+        tester
+            .getTopLeft(
+              find.descendant(
+                of: find.byType(NavigationRail),
+                matching: find.text('Sets'),
+              ),
+            )
+            .dy,
+      ),
+    );
+    expect(rect.left, lessThan(80));
+    expect(find.bySemanticsLabel('RealChord'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('the phone layout has no rail and no logo', (tester) async {
+    tester.view.physicalSize = const Size(400, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final app = await TestApp.create();
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+
+    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byKey(const Key('nav-logo')), findsNothing);
+    await app.dispose(tester);
   });
 }

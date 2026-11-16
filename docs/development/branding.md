@@ -39,6 +39,9 @@ background following the system's light/dark mode.
    in code, so it appears without loading an asset.
 
 The web sign-in screen shows `RealChordLogo` above the form.
+On wide screens (≥ 720 dp) the navigation rail of the home screen shows
+the mark (`RealChordMark`, 40 dp) permanently at its top left. Phones use
+the bottom navigation bar, which has no room for it.
 
 ## App icons
 
