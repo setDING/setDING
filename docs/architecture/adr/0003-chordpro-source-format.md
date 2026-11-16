@@ -73,7 +73,7 @@ Notation alternatives:
 - Transposition and Nashville conversion share a chord model (root, quality, extensions, bass note) in the `chordpro` package; notation (international/German) is applied only at render time.
 - Section labels without an explicit label (e.g. a plain `{start_of_chorus}`) are rendered with a localized default label ("Chorus" / "Refrain", see ADR-0008).
 - The editor in the app is a text editor with live preview; a WYSIWYG editor is not needed. The editor shows chords in international notation, as stored.
-- The `chordpro` package also provides **source positions** (`highlightChordPro`) for syntax highlighting in the editor. The tokenizer follows the parser's rules (directive names, selectors, sections), so editor and parser agree; it is tolerant of incomplete input while typing.
+- The `chordpro` package also provides **source positions** (`highlightChordPro`) for syntax highlighting in the editor. The tokenizer follows the parser's rules (directive names, selectors, sections), so editor and parser agree; it is tolerant of incomplete input while typing. Bracket matching in the editor (`matchBracket`) builds on these tokens.
 
 ## Decision log
 

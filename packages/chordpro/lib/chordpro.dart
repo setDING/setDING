@@ -4,6 +4,7 @@
 library;
 
 export 'src/abc.dart';
+export 'src/brackets.dart';
 export 'src/chord.dart';
 export 'src/chord_tones.dart';
 export 'src/diagrams.dart';

@@ -1,7 +1,8 @@
 import 'package:chordpro/chordpro.dart';
 import 'package:flutter/material.dart';
 
-/// Text controller of the ChordPro editor with syntax highlighting.
+/// Text controller of the ChordPro editor with syntax highlighting and
+/// bracket matching.
 ///
 /// Only [buildTextSpan] differs from [TextEditingController]: text,
 /// selection, undo and IME composing behave as before. The source is
@@ -21,6 +22,13 @@ class ChordProEditingController extends TextEditingController {
     return _tokens;
   }
 
+  /// The bracket next to the cursor and its partner (#37), if any.
+  BracketMatch? get bracketMatch {
+    final sel = selection;
+    if (!sel.isValid || !sel.isCollapsed) return null;
+    return matchBracket(text, sel.baseOffset, tokens: tokens);
+  }
+
   @override
   TextSpan buildTextSpan({
     required BuildContext context,
@@ -29,41 +37,51 @@ class ChordProEditingController extends TextEditingController {
   }) {
     final scheme = Theme.of(context).colorScheme;
     final source = text;
-    final composing = withComposing && value.isComposingRangeValid
-        ? value.composing
-        : TextRange.empty;
+    // Styles laid over the token styles: IME composing, bracket matching.
+    final overlays = <(int, int, TextStyle)>[
+      if (withComposing && value.isComposingRangeValid)
+        (
+          value.composing.start,
+          value.composing.end,
+          const TextStyle(decoration: TextDecoration.underline),
+        ),
+    ];
+    if (bracketMatch case final match?) {
+      final bracketStyle = match.matched
+          ? TextStyle(
+              color: scheme.onTertiaryContainer,
+              backgroundColor: scheme.tertiaryContainer,
+            )
+          : TextStyle(
+              color: scheme.onErrorContainer,
+              backgroundColor: scheme.errorContainer,
+            );
+      for (final at in [match.bracket, ?match.partner]) {
+        overlays.add((at, at + 1, bracketStyle));
+      }
+    }
     final children = <TextSpan>[];
     for (final token in tokens) {
       final kindStyle = chordProTokenStyle(token.kind, scheme);
-      // Split at the composing range so the IME underline stays visible.
       final cuts = <int>{
         token.start,
-        if (composing.isValid &&
-            composing.start > token.start &&
-            composing.start < token.end)
-          composing.start,
-        if (composing.isValid &&
-            composing.end > token.start &&
-            composing.end < token.end)
-          composing.end,
+        for (final (start, end, _) in overlays) ...[
+          if (start > token.start && start < token.end) start,
+          if (end > token.start && end < token.end) end,
+        ],
         token.end,
-      }.toList();
+      }.toList()..sort();
       for (var i = 0; i + 1 < cuts.length; i++) {
         final start = cuts[i];
         final end = cuts[i + 1];
-        final inComposing =
-            composing.isValid &&
-            start >= composing.start &&
-            end <= composing.end;
+        var pieceStyle = kindStyle;
+        for (final (oStart, oEnd, overlay) in overlays) {
+          if (start >= oStart && end <= oEnd) {
+            pieceStyle = (pieceStyle ?? const TextStyle()).merge(overlay);
+          }
+        }
         children.add(
-          TextSpan(
-            text: source.substring(start, end),
-            style: inComposing
-                ? (kindStyle ?? const TextStyle()).merge(
-                    const TextStyle(decoration: TextDecoration.underline),
-                  )
-                : kindStyle,
-          ),
+          TextSpan(text: source.substring(start, end), style: pieceStyle),
         );
       }
     }

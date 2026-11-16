@@ -102,6 +102,43 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('the bracket pair next to the cursor is highlighted', (
+    tester,
+  ) async {
+    final (app, controller) = await pumpEditor(tester, 'la [Am] li [G');
+    final scheme = RealChordApp.theme(Brightness.light).colorScheme;
+    List<(String, Color?)> highlighted() => [
+      for (final (text, style) in renderedSpans(tester))
+        if (style?.backgroundColor != null) (text, style!.backgroundColor),
+    ];
+
+    controller.selection = const TextSelection.collapsed(offset: 4);
+    await tester.pump();
+    expect(highlighted(), [
+      ('[', scheme.tertiaryContainer),
+      (']', scheme.tertiaryContainer),
+    ]);
+    // The rest of the chord keeps its chord style.
+    final am = renderedSpans(tester).firstWhere((s) => s.$1 == 'Am');
+    expect(am.$2!.fontWeight, FontWeight.bold);
+
+    controller.selection = const TextSelection.collapsed(offset: 1);
+    await tester.pump();
+    expect(highlighted(), isEmpty);
+
+    // An unmatched bracket is shown as an error.
+    controller.selection = const TextSelection.collapsed(offset: 11);
+    await tester.pump();
+    expect(highlighted(), [('[', scheme.errorContainer)]);
+
+    // A selection does not highlight brackets.
+    controller.selection = const TextSelection(baseOffset: 3, extentOffset: 7);
+    await tester.pump();
+    expect(highlighted(), isEmpty);
+    expect(renderedSpans(tester).map((s) => s.$1).join(), 'la [Am] li [G');
+    await app.dispose(tester);
+  });
+
   testWidgets('the IME composing range stays underlined', (tester) async {
     final controller = ChordProEditingController(text: '[C]hello');
     controller.value = controller.value.copyWith(

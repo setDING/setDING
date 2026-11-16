@@ -221,6 +221,13 @@ void main() {
           ),
         ),
       );
+      // The cursor after "[" of [*Riff] highlights the bracket pair.
+      tester
+          .widget<TextField>(find.byType(TextField))
+          .controller!
+          .selection = TextSelection.collapsed(
+        offset: _highlightSource.indexOf('[*Riff]') + 1,
+      );
       await _shot(tester, '${lang}_9b_editor_highlighting');
 
       // Song sequence for a set item, built from the parts of the song.
