@@ -69,7 +69,9 @@ Co-Authored-By: Claude <model> <noreply@anthropic.com>
 - **Every commit carries a `Co-Authored-By` trailer naming Claude** – no commit of the
   project is made without it. This includes the squash commit of a PR: merge with
   an explicit body that reports the test gate and ends with the trailer
-  (`gh pr merge --squash --delete-branch --body-file merge.md`).
+  (`gh pr merge --squash --delete-branch --author-email andi@theboss.ch --body-file merge.md`).
+  The squash commit is created by GitHub; `--author-email` gives it the owner's
+  e-mail instead of the account's noreply address.
 - **Never commit secrets** (keys, tokens, signing files, `.env`). Use `.env.example` with placeholders. If a secret was committed: stop, set `needs-human`, do not try to rewrite published history yourself.
 
 ## 5. Before opening a PR (local checks)
@@ -245,7 +247,8 @@ has not logged in yet):
 - **Labels:** the labels of section 2 exist in the repository (`gh label list`;
   `gh label create` for new ones).
 - **Merge settings:** only *squash* is enabled (commit title = PR title), and
-  branches are deleted after the merge.
+  branches are deleted after the merge. Merges use `--author-email andi@theboss.ch`
+  (section 4), so the squash commit carries the owner's e-mail; GitHub signs it.
 - **Branch protection on `main`** (repository settings → Branches): no direct push,
   PR required, required status checks from section 7 once CI is required again.
 
@@ -262,7 +265,7 @@ gh pr create --draft --base main --body-file pr.md --title "feat(chordpro): …"
 # … checks pass, self-review done …
 gh pr ready <number>
 gh pr checks <number>
-gh pr merge --squash --delete-branch --body-file merge.md <number>   # only if section 6 "Who merges" allows it; merge.md ends with the Co-Authored-By trailer
+gh pr merge --squash --delete-branch --author-email andi@theboss.ch --body-file merge.md <number>   # only if section 6 "Who merges" allows it; merge.md ends with the Co-Authored-By trailer
 git switch main && git pull --ff-only
 git branch -D feat/12-chordpro-parser   # delete the merged branch locally too
 ```
