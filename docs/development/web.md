@@ -81,6 +81,13 @@ The session is a `BrowserSessionStore` (`sessionStorage`, `localStorage`,
 tested with fakes (`test/browser_session_store_test.dart`); the browser
 adapters are in `lib/platform/browser_storage_web.dart`.
 
+The click of the drummer mode (ADR-0026) uses SoLoud's WebAssembly build,
+loaded by `assets/packages/flutter_soloud/web/init_soloud.js` in
+`web/index.html` (`test/web_hosting_test.dart` checks the tag). It picks the
+AudioWorklet build when the page is cross-origin isolated, else the
+single-threaded one. The browser starts the audio only after a user gesture;
+the beat is started by a tap.
+
 PDFs on web use pdfrx's own WebAssembly build (`pdfium.wasm`), which
 Flutter copies from the package into `build/web/assets/packages/pdfrx/`.
 

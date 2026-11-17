@@ -66,6 +66,10 @@
       if (splash) splash.remove();
     }, { once: true });
   </script>
+  <!-- Audio engine of the click (flutter_soloud, ADR-0026): picks the
+       AudioWorklet build when the page is cross-origin isolated, else the
+       single-threaded one. -->
+  <script src="assets/packages/flutter_soloud/web/init_soloud.js" defer></script>
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader

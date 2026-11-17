@@ -7,7 +7,8 @@ import '../util/log.dart';
 /// clock: a bar scheduled for a time starts exactly then, sample-accurate.
 abstract class ClickOutput {
   /// Prepares the audio device; false if there is no audio (e.g. no
-  /// device, or the web client).
+  /// device). On web, the browser starts the audio only after a user
+  /// gesture; the beat is started by a tap.
   Future<bool> ensureReady();
 
   /// The engine time of the sound now reaching the speakers or headphones,
@@ -53,7 +54,6 @@ class SoLoudClickOutput implements ClickOutput {
   Future<bool> ensureReady() => _ready ??= _init();
 
   Future<bool> _init() async {
-    if (kIsWeb) return false;
     try {
       if (!_soloud.isInitialized) await _soloud.init(sampleRate: 44100);
       return true;
