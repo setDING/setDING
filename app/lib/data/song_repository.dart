@@ -565,6 +565,12 @@ class SongRepository {
         defaultOverlay(songId, ownerId: owner);
   }
 
+  /// Changes the personal adjustments of a song (song screen, set view).
+  Future<void> updateOverlay(
+    String songId,
+    SongOverlay Function(SongOverlay) change,
+  ) async => saveOverlay(change(await getOverlay(songId)));
+
   /// No adjustments: as written in the song.
   static SongOverlay defaultOverlay(
     String songId, {

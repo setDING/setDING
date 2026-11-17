@@ -23,3 +23,27 @@ AttachmentEntry? imageAttachmentFor(
   }
   return stemMatch;
 }
+
+/// The PDF that live mode shows for a song, or null for its ChordPro text
+/// (ADR-0006, ADR-0009).
+///
+/// [liveView] is the personal choice (an attachment ID, null for ChordPro).
+/// A choice that is no longer a PDF attachment of the song falls back to
+/// ChordPro; a song without ChordPro content ([hasChordPro] false) falls back
+/// to its first PDF. The song screen, the set view and live mode share this
+/// rule.
+AttachmentEntry? livePdfFor(
+  List<AttachmentEntry> attachments,
+  String? liveView, {
+  required bool hasChordPro,
+}) {
+  final pdfs = [
+    for (final a in attachments)
+      if (isPdfFile(a.fileName)) a,
+  ];
+  if (liveView != null) {
+    final chosen = pdfs.where((a) => a.id == liveView).firstOrNull;
+    if (chosen != null) return chosen;
+  }
+  return hasChordPro ? null : pdfs.firstOrNull;
+}

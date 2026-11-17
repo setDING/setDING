@@ -1,10 +1,13 @@
 import 'dart:convert';
 
 import 'package:chordpro/chordpro.dart' as cp;
+import 'package:drift/drift.dart' show Value;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/attachment_lookup.dart';
+import '../../data/attachment_storage.dart';
 import '../../data/database.dart';
 import '../../data/import_export.dart';
 import '../../data/set_repository.dart';
@@ -12,6 +15,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../live/live_screen.dart';
+import '../render/render_cache.dart';
 import '../render/song_header.dart';
 import '../songs/song_screen.dart';
 import '../bands/copy_to_band.dart';
@@ -412,10 +416,17 @@ class _SetItemTile extends ConsumerWidget {
               ),
             ),
       trailing: !canEdit
-          ? _readOnlyKey(context, songKey, item.transpose, notation)
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (song != null) _LiveViewDropdown(song: song),
+                ?_readOnlyKey(context, songKey, item.transpose, notation),
+              ],
+            )
           : Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (song != null) _LiveViewDropdown(song: song),
                 if (song != null)
                   KeyPicker(
                     dense: true,
@@ -459,6 +470,92 @@ class _SetItemTile extends ConsumerWidget {
                 handle,
               ],
             ),
+    );
+  }
+}
+
+/// What the current user sees for [song] in live mode: its ChordPro text or
+/// one of its PDF attachments, switchable right in the set (ADR-0020).
+///
+/// The choice is the personal `liveView` adjustment of the song, so it is
+/// the same in every set and synced with the account; it is not stored on
+/// the set item. Shown only when there is a choice.
+class _LiveViewDropdown extends ConsumerWidget {
+  const _LiveViewDropdown({required this.song});
+
+  final SongEntry song;
+
+  /// Dropdown value for the ChordPro text (null is "nothing selected").
+  static const _chordPro = '';
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final attachments =
+        ref.watch(attachmentsProvider(song.id)).value ??
+        const <AttachmentEntry>[];
+    final pdfs = [
+      for (final a in attachments)
+        if (isPdfFile(a.fileName)) a,
+    ];
+    if (pdfs.isEmpty) return const SizedBox.shrink();
+    final hasChordPro = parseChordProCached(
+      song.chordproSource,
+      selectors: ref.watch(selectorsProvider),
+    ).hasContent;
+    // A single PDF without ChordPro text is no choice.
+    if (!hasChordPro && pdfs.length < 2) return const SizedBox.shrink();
+    final overlay = ref.watch(overlayProvider(song.id)).value;
+    final selected = livePdfFor(
+      attachments,
+      overlay?.liveView,
+      hasChordPro: hasChordPro,
+    );
+
+    Widget label(IconData icon, String text) => Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 18, color: theme.colorScheme.primary),
+        const SizedBox(width: 6),
+        Flexible(child: Text(text, overflow: TextOverflow.ellipsis)),
+      ],
+    );
+    final entries = [
+      if (hasChordPro)
+        (_chordPro, Icons.text_snippet_outlined, l10n.liveViewChordPro),
+      for (final a in pdfs) (a.id, Icons.picture_as_pdf_outlined, a.name),
+    ];
+
+    return Tooltip(
+      message: l10n.liveView,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 200),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            key: ValueKey('live-view-${song.id}'),
+            isDense: true,
+            isExpanded: true,
+            value: selected?.id ?? _chordPro,
+            selectedItemBuilder: (_) => [
+              for (final (_, icon, text) in entries) label(icon, text),
+            ],
+            items: [
+              for (final (value, icon, text) in entries)
+                DropdownMenuItem(value: value, child: label(icon, text)),
+            ],
+            onChanged: (value) {
+              final id = value == null || value == _chordPro ? null : value;
+              ref
+                  .read(songRepositoryProvider)
+                  .updateOverlay(
+                    song.id,
+                    (o) => o.copyWith(liveView: Value(id)),
+                  );
+            },
+          ),
+        ),
+      ),
     );
   }
 }
