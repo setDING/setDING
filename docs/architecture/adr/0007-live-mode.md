@@ -37,6 +37,9 @@ song, all tablets follow automatically. We evaluated whether this is needed.
     taken before the focused widget (an early key handler of the focus manager), so they work whichever widget of live
     mode has the focus, and Space never presses a focused button; while a dialog, sheet or menu opened from live mode
     is on top, and in text fields, the keys stay theirs. Escape leaves live mode.
+  - **Beat (ADR-0026):** while the current song can have a beat, a forward key held for at least 0.6 s starts or
+    stops it and does not turn; a shorter press turns when the key is released (otherwise forward keys turn on
+    key down as before). Enter (also on the number pad) starts and stops the beat.
 - **Page turn modes:** full page, half page (top half already shows the next page), optional auto-scroll based on tempo/duration.
 - **Layout – fit to screen (default, configurable in the settings):** the whole song fits on the screen without scrolling.
   Sections are kept whole and arranged automatically in reading order into 1–4 columns; the arrangement with the largest
@@ -150,6 +153,7 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-17: The brand colour became the night blue of the setDING logo (#319): on a light stage the chords are deep brand blue `#2A3D9C` (about 9:1); the former brand red `#852309` belongs to the new accent "Red", which replaces "Blue". Amber on dark and black is unchanged and matches the brass of the logo.
 - 2026-11-17: Drummer mode accepted (ADR-0026, #325): beat display in the header, count-in overlay, click on the in-ear, song map for drums; a long press (≥ 0.6 s) of the forward key starts/stops the click without turning (one press still turns once), Enter joins the fixed mapping as start/stop of the click. Details in ADR-0026; this ADR is updated when it is implemented.
 - 2026-11-17: Beat display, count-in overlay, edge flash and tempo on stage of the drummer mode (ADR-0026, #333).
+- 2026-11-17: Long press (≥ 0.6 s) of a forward key and Enter start and stop the beat (ADR-0026, #335); with a beat, a short forward press turns on key up.
 
 ## Open points
 

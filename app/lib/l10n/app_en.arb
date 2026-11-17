@@ -205,7 +205,7 @@
   "chorusRepeatAuto": "Automatic",
   "chorusRepeatFull": "Show in full",
   "chorusRepeatLabel": "Label only",
-  "settingsPageTurnHint": "Tap the left or right side of the screen to go back or forward. Page turner (foot pedal) and keyboard: right arrow, down arrow, Page Down and Space forward, left arrow, up arrow and Page Up back.",
+  "settingsPageTurnHint": "Tap the left or right side of the screen to go back or forward. Page turner (foot pedal) and keyboard: right arrow, down arrow, Page Down and Space forward, left arrow, up arrow and Page Up back. With a beat (tempo and beat or click switched on), holding forward or pressing Enter starts and stops it.",
   "settingsSetProgress": "Progress bar of the set",
   "settingsSetProgressHint": "A thin bar above the bottom bar shows the songs of the set and the pages of the current song: the current page in the accent colour, pages still to come in a lighter tone. Pauses and texts are dashed.",
   "settingsBeatSection": "Beat and click",

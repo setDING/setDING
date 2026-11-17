@@ -1331,7 +1331,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsPageTurnHint.
   ///
   /// In de, this message translates to:
-  /// **'Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern. Seitenwender (Fusspedal) und Tastatur: Pfeil rechts, Pfeil ab, Bild ab und Leertaste blättern weiter, Pfeil links, Pfeil auf und Bild auf zurück.'**
+  /// **'Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern. Seitenwender (Fusspedal) und Tastatur: Pfeil rechts, Pfeil ab, Bild ab und Leertaste blättern weiter, Pfeil links, Pfeil auf und Bild auf zurück. Mit Takt (Tempo und Taktanzeige oder Klick eingeschaltet) startet und stoppt ihn langes Drücken von Vorwärts oder Enter.'**
   String get settingsPageTurnHint;
 
   /// No description provided for @settingsSetProgress.
