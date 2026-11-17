@@ -28,10 +28,15 @@ The app is called **RealChord**.
 3. Check the Google Play, Apple App Store and Microsoft Store for "RealChord".
 4. ~~Rename the code and build identifiers~~ – done 2026-11-15: Dart package
    `realchord`, application ID / bundle ID `ch.realchord.realchord`, binary
-   `realchord`, database `realchord.sqlite`, `REALCHORD_DATA_DIR`. Data from before
-   the rename (old app directory on Linux/Windows, `bandchords.sqlite`) is moved on
-   the first start. Android and iOS get a new application ID; nothing was installed
-   there yet.
+   `realchord`, database `realchord.sqlite`, `REALCHORD_DATA_DIR`. A database
+   `bandchords.sqlite` from before the rename is renamed on the first start.
+5. ~~Application ID matching the domain~~ – done 2026-11-17 (#298): application ID /
+   bundle ID **`app.realchord`** (reverse of `realchord.app`, the domain in use)
+   instead of `ch.realchord.realchord`; also the Linux app ID and desktop entry and
+   the Windows company name. The app was not live yet, so nothing is migrated: data
+   in the old app directory stays there, and Android installs of earlier test
+   releases are a separate app that has to be uninstalled by hand. Once the app is
+   in an app store, the ID can never change again.
 
 ## Criteria
 

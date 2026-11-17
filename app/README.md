@@ -45,7 +45,7 @@ A keyboard simulates a Bluetooth page turner (foot pedal) in live mode: right ar
 Page Down and Space turn forward, left arrow and Page Up back, Escape leaves.
 
 Data locations: the database, settings and PDF attachments live in the app's private
-support directory (on Linux `~/.local/share/ch.realchord.realchord/`). Older builds
+support directory (on Linux `~/.local/share/app.realchord/`). Older builds
 stored the database in the documents folder; it is moved on the next start.
 `REALCHORD_DATA_DIR` (development only) overrides the directory for database and PDFs.
 

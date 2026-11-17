@@ -42,7 +42,7 @@ void main() {
     useTabletSize(tester, landscape: false);
     PackageInfo.setMockInitialValues(
       appName: 'RealChord',
-      packageName: 'ch.realchord.realchord',
+      packageName: 'app.realchord',
       version: '0.1.1',
       buildNumber: '3',
       buildSignature: '',

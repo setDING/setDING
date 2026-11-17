@@ -112,6 +112,7 @@ Alternatives for invitations:
 - 2026-11-16: The band switcher is only on the sets tab; the songs tab chooses a song library (organization or local library) independently (#167, ADR-0017).
 - 2026-11-16: Web client implemented (#27): signing in is required; the local library is neither shown nor selectable on web (also not while the bands load or with an old stored choice); without a band the web client offers to manage bands or join with an invitation; the landing page links to `https://app.realchord.app/invite/<token>`, which opens the join screen.
 - 2026-11-17: **ADR-0024** (accepted): the server operator decides whether people may sign up without an invitation (`REALCHORD_REGISTRATION`, default `invite_only`); on closed servers an invitation is also the ticket to create an account, and new organizations come only from operator **founder invitations**.
+- 2026-11-17: Application / bundle ID changed from `ch.realchord.realchord` to `app.realchord` to match the domain `realchord.app` (#298, owner request); the Android App Links and iOS Universal Links verification files name the new ID. Not migrated: the app was not live yet.
 - 2026-11-17: **ADR-0023** (accepted): band roles leader (`admin`) > set planner > member; the band setting `members_can_edit_songs` is replaced by the organization role librarian; band leaders invite into their band; still no guest role.
 
 ## Open points

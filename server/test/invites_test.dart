@@ -317,14 +317,14 @@ void main() {
     test('serves the deep-link verification files', () async {
       final links = await pb.guest.send('GET', '/.well-known/assetlinks.json');
       links.expectStatus(200);
-      expect(links.raw.body, contains('ch.realchord.realchord'));
+      expect(links.raw.body, contains('app.realchord'));
       expect(links.raw.body, contains('"CC:DD"'));
       final apple = await pb.guest.send(
         'GET',
         '/.well-known/apple-app-site-association',
       );
       apple.expectStatus(200);
-      expect(apple.raw.body, contains('TEAM123.ch.realchord.realchord'));
+      expect(apple.raw.body, contains('TEAM123.app.realchord'));
       expect(apple.raw.body, contains('/invite/*'));
     });
   });

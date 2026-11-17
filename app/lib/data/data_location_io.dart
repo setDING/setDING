@@ -40,42 +40,6 @@ Future<File> resolveDatabaseFile(
   return target;
 }
 
-/// The app-private directory used before the rename to RealChord, derived
-/// from the current [supportDir], or null if the platform needs no move.
-///
-/// The directory name comes from the application ID on Linux
-/// (`ch.bandchords.bandchords`) and from company and product name on Windows
-/// (`ch.bandchords\BandChords`). Android and iOS installs with the old
-/// application ID are separate apps; the MVP was never installed there.
-Directory? legacySupportDir(Directory supportDir) {
-  final name = p.basename(supportDir.path);
-  final parent = p.dirname(supportDir.path);
-  if (name == 'ch.realchord.realchord') {
-    return Directory(p.join(parent, 'ch.bandchords.bandchords'));
-  }
-  if (name == 'RealChord' && p.basename(parent) == 'ch.realchord') {
-    return Directory(p.join(p.dirname(parent), 'ch.bandchords', 'BandChords'));
-  }
-  return null;
-}
-
-/// Moves the directory from before the rename to RealChord (database,
-/// attachments, settings) to [supportDir], unless [supportDir] already has
-/// content. An empty [supportDir] is replaced: `path_provider` creates the
-/// directory when it is first asked for it. Returns true if something was
-/// moved.
-Future<bool> migrateLegacySupportDir(Directory supportDir) async {
-  final legacy = legacySupportDir(supportDir);
-  if (legacy == null || !await legacy.exists()) return false;
-  if (await supportDir.exists()) {
-    if (!await supportDir.list().isEmpty) return false;
-    await supportDir.delete();
-  }
-  await supportDir.parent.create(recursive: true);
-  await legacy.rename(supportDir.path);
-  return true;
-}
-
 Future<void> _move(File source, String targetPath) async {
   try {
     await source.rename(targetPath);

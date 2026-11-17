@@ -75,6 +75,10 @@ app, so the APK must be signed with a stable release key, not a per-machine debu
   builds on GitHub Actions with Android installable via Obtainium. The Android build
   needed AGP 9.1.1 (Flutter's minimum) instead of 9.1.0.
 - 2026-11-16: Accepted by the owner.
+- 2026-11-17: Application ID `app.realchord` instead of `ch.realchord.realchord`
+  (#298). For Android this is a different app: installs of the earlier test
+  releases (up to v0.4.0) cannot be updated to it; uninstall them and add the app
+  to Obtainium again. Not live yet, so no migration.
 
 ## Open points
 

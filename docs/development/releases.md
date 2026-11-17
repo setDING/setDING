@@ -107,4 +107,4 @@ unpacked folder once (again after moving the folder; `--uninstall` removes it). 
 installs a desktop entry and the icon for the current user under
 `~/.local/share`. Under Wayland (KDE, GNOME) the window only shows the RealChord
 icon with this entry, because the compositor looks the icon up through the
-`.desktop` file named after the app ID `ch.realchord.realchord`.
+`.desktop` file named after the app ID `app.realchord`.
