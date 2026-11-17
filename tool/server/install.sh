@@ -79,7 +79,9 @@ if [ "$current" != "$PB_VERSION" ]; then
     *) echo "unsupported architecture: $(dpkg --print-architecture)" >&2; exit 1 ;;
   esac
   zip="pocketbase_${PB_VERSION}_linux_${arch}.zip"
-  base="https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}"
+  # PocketBase releases live on ganigeorgiev.com since v0.41 (GitHub is archived at
+  # v0.40.6). This documented URL redirects to the release file.
+  base="https://ganigeorgiev.com/meta/pocketbase/pocketbase/download/v${PB_VERSION}"
   tmp="$(mktemp -d)"
   trap 'rm -rf "$tmp"' EXIT
   curl -fsSL -o "$tmp/$zip" "$base/$zip"

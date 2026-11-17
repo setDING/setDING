@@ -125,6 +125,17 @@ void main() {
       expect(own.status, 426);
     });
 
+    test('an outdated client with an invalid token still gets 426', () async {
+      // The version check runs before PocketBase 0.42's 401 for unknown
+      // tokens, so an outdated app is asked to update, not signed out.
+      final r = await Client(pb, 'not-a-token').send(
+        'GET',
+        '/api/collections/songs/records',
+        headers: version('1.0.0'),
+      );
+      expect(r.status, 426);
+    });
+
     test('superusers are never refused', () async {
       (await pb.superuser.send(
         'GET',

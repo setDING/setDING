@@ -213,9 +213,14 @@ about half a minute per request), so a large import syncs more slowly but comple
   `make server-release` deploys the tag once its release build passed (git workflow
   section 10). The deployed version is in `/opt/pocketbase/pb_hooks/setding-version.txt`
   and in `/api/setding/config` (`serverVersion`).
-- **PocketBase:** read the release notes, change `PB_VERSION` in the `Makefile` in a PR;
+- **PocketBase:** releases are published at
+  <https://ganigeorgiev.com/pocketbase/pocketbase/releases> (the GitHub repository is
+  archived since v0.40.6, so watching it no longer announces updates). Read the release
+  notes, change `PB_VERSION` in the `Makefile` in a PR;
   it reaches production with the next release (`make server-release`). Test it with
-  `make server-install` on a staging container first, once there is one.
+  `make server-install` on a staging container first, once there is one. Take a
+  backup right before deploying a PocketBase update: its internal migrations cannot be
+  undone by going back to the older binary.
 - **Hooks and migrations:** change `server/pb_hooks` / `server/pb_migrations` in a PR
   (data model: ADR-0015, tests in `server/test`, run by `make check`); they reach
   production with the next release. PocketBase is restarted and applies new migrations.
