@@ -17,6 +17,7 @@ class SongHeader extends StatelessWidget {
     this.bandTempo,
     this.hiddenParts = const [],
     this.showTitle = true,
+    this.stage = false,
   });
 
   final String title;
@@ -41,6 +42,11 @@ class SongHeader extends StatelessWidget {
   /// Shows [title]; off where the app bar already shows it (song screen).
   final bool showTitle;
 
+  /// Live mode (ADR-0007): key, capo, tempo and time are what the band
+  /// checks before counting in, so they are shown as large chips beside the
+  /// title (below it on narrow screens) instead of the small info line.
+  final bool stage;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -48,29 +54,50 @@ class SongHeader extends StatelessWidget {
     final layered = setSequence ?? bandSequence;
     final sequence = layered == null ? song.sequence : parseSequence(layered);
     final tempo = bandTempo ?? song.tempo;
-    final keyAndCapo = keyAndCapoText(l10n, formatter);
-    final info = <String>[
-      if (keyAndCapo.isNotEmpty) keyAndCapo,
-      if (tempo != null) l10n.bpm(tempo),
-      ?song.time,
-    ];
+    // On stage the values are chips; elsewhere a small line at the end.
+    final infoChips = <Widget>[];
+    final info = <String>[];
+    if (stage) {
+      final key = keyText(l10n, formatter);
+      final capo = capoText(l10n, formatter);
+      infoChips.addAll([
+        if (key != null) _StageChip(key, key: const Key('stage-key')),
+        if (capo != null) _StageChip(capo, key: const Key('stage-capo')),
+        if (tempo != null)
+          _StageChip(l10n.bpm(tempo), key: const Key('stage-tempo')),
+        if (song.time case final time?)
+          _StageChip(time, key: const Key('stage-time')),
+      ]);
+    } else {
+      final keyAndCapo = keyAndCapoText(l10n, formatter);
+      info.addAll([
+        if (keyAndCapo.isNotEmpty) keyAndCapo,
+        if (tempo != null) l10n.bpm(tempo),
+        ?song.time,
+      ]);
+    }
     final subtitle = [
       if (artist != null && artist!.isNotEmpty) artist!,
       ?song.subtitle,
     ].join(' · ');
+    final titleText = Text(
+      title,
+      style: compact
+          ? theme.textTheme.titleLarge
+          : theme.textTheme.headlineSmall,
+      maxLines: compact ? 1 : null,
+      overflow: compact ? TextOverflow.ellipsis : null,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (showTitle)
-          Text(
-            title,
-            style: compact
-                ? theme.textTheme.titleLarge
-                : theme.textTheme.headlineSmall,
-            maxLines: compact ? 1 : null,
-            overflow: compact ? TextOverflow.ellipsis : null,
-          ),
+        if (showTitle && infoChips.isNotEmpty)
+          _StageTitleRow(title: titleText, chips: infoChips)
+        else if (showTitle)
+          titleText
+        else if (infoChips.isNotEmpty)
+          Wrap(spacing: 8, runSpacing: 6, children: infoChips),
         if (subtitle.isNotEmpty)
           Text(
             subtitle,
@@ -130,19 +157,92 @@ class SongHeader extends StatelessWidget {
   }
 }
 
+/// Minimum width for the stage chips beside the title; narrower headers
+/// show them in a row of their own below the title.
+const _stageChipsBeside = 600.0;
+
+/// Title with the stage chips beside it, or below it on narrow screens.
+class _StageTitleRow extends StatelessWidget {
+  const _StageTitleRow({required this.title, required this.chips});
+
+  final Widget title;
+  final List<Widget> chips;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final narrow = constraints.maxWidth < _stageChipsBeside;
+      final row = Wrap(
+        key: const Key('stage-info'),
+        alignment: narrow ? WrapAlignment.start : WrapAlignment.end,
+        spacing: 8,
+        runSpacing: 6,
+        children: chips,
+      );
+      if (narrow) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [title, const SizedBox(height: 6), row],
+        );
+      }
+      // The chips take the width they need (at most 70 %, then they wrap),
+      // the title the rest.
+      return Row(
+        children: [
+          Expanded(child: title),
+          const SizedBox(width: 16),
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.7),
+            child: row,
+          ),
+        ],
+      );
+    },
+  );
+}
+
+/// One large, high-contrast value of the stage header (key, tempo, …).
+class _StageChip extends StatelessWidget {
+  const _StageChip(this.text, {super.key});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+      decoration: BoxDecoration(
+        color: scheme.primaryContainer,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        text,
+        maxLines: 1,
+        style: theme.textTheme.titleLarge?.copyWith(
+          color: scheme.onPrimaryContainer,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+/// The key part of [keyAndCapoText], e.g. "Key: A"; null without a key.
+String? keyText(AppLocalizations l10n, ChordFormatter formatter) {
+  final asWritten = formatter.effectiveCapo == formatter.songCapo;
+  final key = asWritten ? formatter.formatShapeKey() : formatter.formatKey();
+  return key == null ? null : l10n.keyLabel(key);
+}
+
 /// Key and capo of [formatter], e.g. "Key: A, Capo: 3 (C)". With the song's
 /// own capo the key is the one written (the shapes) and the sounding key
 /// follows the capo; with a personal capo the key is the sounding one and
 /// the shapes follow the capo ("Key: A, Capo: 2 (G)"). Empty without key
 /// and capo.
-String keyAndCapoText(AppLocalizations l10n, ChordFormatter formatter) {
-  final asWritten = formatter.effectiveCapo == formatter.songCapo;
-  final key = asWritten ? formatter.formatShapeKey() : formatter.formatKey();
-  return [
-    if (key != null) l10n.keyLabel(key),
-    ?capoText(l10n, formatter),
-  ].join(', ');
-}
+String keyAndCapoText(AppLocalizations l10n, ChordFormatter formatter) =>
+    [?keyText(l10n, formatter), ?capoText(l10n, formatter)].join(', ');
 
 /// The capo part of [keyAndCapoText], e.g. "Capo: 2 (G)"; null without a
 /// capo.

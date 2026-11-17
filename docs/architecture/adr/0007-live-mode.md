@@ -51,6 +51,9 @@ song, all tablets follow automatically. We evaluated whether this is needed.
   applied. Sections that are no part (unlabelled, tab, grid) stay. The header says which parts are hidden
   ("Hidden (not in the sequence): V3, B"). If the sequence matches none of the song's parts, the song is shown whole.
   A single song played outside a set is always shown whole.
+- **Key and tempo at a glance:** the live header shows the key as played (band arrangement, set item transposition
+  and capo, ADR-0025), the tempo and the time signature as large chips beside the title (below it on narrow
+  screens); the song is fitted to the space below the header. The song screen keeps the compact info line.
 - PDF attachments (ADR-0009) are shown in live mode with the same page-turn input.
 - **Next song prepared ahead:** the direct neighbours of the current item (previous and next) are built and fitted
   before the turn, PDFs opened (landscape spreads also rendered), so turning never shows an empty or half-laid-out
@@ -86,6 +89,7 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-16: Foot pedal / keyboard page turning removed, not needed for now; may be implemented again later (issue #149). Tap and swipe remain.
 - 2026-11-17: In the live mode of a set, only the parts of the song sequence are shown; the header names the hidden parts (issue #257).
 - 2026-11-17: The previous and next item are built and fitted ahead (PDFs opened, landscape spreads rendered), only the direct neighbours are kept (issue #262).
+- 2026-11-17: Key, capo, tempo and time signature are shown as large chips in the live header instead of a small info line (issue #264).
 
 ## Open points
 
