@@ -1675,12 +1675,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get noArtist => 'Ohne Interpret';
 
   @override
-  String get keyFilter => 'Tonart';
-
-  @override
-  String get allKeys => 'Alle Tonarten';
-
-  @override
   String get songConflictTooltip =>
       'Hier und auf dem Server geändert – zum Entscheiden den Song öffnen';
 

@@ -1,6 +1,5 @@
 import 'package:realchord/data/database.dart';
 import 'package:realchord/data/demo_song.dart';
-import 'package:realchord/data/song_repository.dart';
 import 'package:realchord/ui/live/live_screen.dart';
 import 'package:realchord/ui/render/song_header.dart';
 import 'package:realchord/ui/render/song_view.dart';
@@ -325,57 +324,18 @@ void main() {
     // By title: first letters without accents, others under #.
     expect(headers(), ['#', 'A', 'B']);
 
-    await tester.tap(find.byTooltip('Sort'));
+    await tester.tap(find.byKey(const Key('songs-sort')));
     await tester.pumpAndSettle();
-    await tester.tap(
-      find.widgetWithText(CheckedPopupMenuItem<SongSort>, 'Key'),
-    );
+    await tester.tap(find.widgetWithText(MenuItemButton, 'Key'));
     await tester.pumpAndSettle();
     expect(headers(), ['D', 'G', 'No key']);
     expect(app.prefs.getString('songSort'), 'key');
 
-    await tester.tap(find.byTooltip('Sort'));
+    await tester.tap(find.byKey(const Key('songs-sort')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Recently edited'));
+    await tester.tap(find.widgetWithText(MenuItemButton, 'Recently edited'));
     await tester.pumpAndSettle();
     expect(headers(), isEmpty);
-    await app.dispose(tester);
-  });
-
-  testWidgets('song list filters by key from a menu', (tester) async {
-    useTabletSize(tester);
-    final app = await TestApp.create(prefs: {'language': 'en'});
-    await tester.runAsync(() async {
-      await app.songs.createSong(source: '{title: Alpha}\n{key: G}');
-      await app.songs.createSong(source: '{title: Bravo}\n{key: D}');
-      await app.songs.createSong(source: '{title: Charlie}');
-    });
-    await tester.pumpWidget(app.build());
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Songs').first);
-    await tester.pumpAndSettle();
-
-    final chip = find.byKey(const Key('songs-key-filter'));
-    await tester.tap(chip);
-    await tester.pumpAndSettle();
-    expect(find.text('All keys'), findsOneWidget);
-    await tester.tap(find.widgetWithText(MenuItemButton, 'G'));
-    await tester.pumpAndSettle();
-    expect(find.text('Alpha'), findsOneWidget);
-    expect(find.text('Bravo'), findsNothing);
-    expect(find.text('Charlie'), findsNothing);
-    expect(
-      find.descendant(of: chip, matching: find.text('Key: G')),
-      findsOneWidget,
-    );
-
-    // The chip's delete icon shows all songs again.
-    await tester.tap(
-      find.descendant(of: chip, matching: find.byIcon(Icons.clear)),
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('Bravo'), findsOneWidget);
-    expect(find.text('Charlie'), findsOneWidget);
     await app.dispose(tester);
   });
 
