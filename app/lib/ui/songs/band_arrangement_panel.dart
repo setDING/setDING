@@ -139,12 +139,14 @@ class BandArrangementPanel extends ConsumerWidget {
           const SizedBox(height: 8),
           TextButton.icon(
             key: const Key('arrangement-sequence'),
+            style: _flushLeft,
             icon: const Icon(Icons.format_list_numbered),
             label: Text(l10n.arrangementSequence),
             onPressed: () => _editSequence(context, ref),
           ),
           TextButton.icon(
             key: const Key('arrangement-tempo'),
+            style: _flushLeft,
             icon: const Icon(Icons.speed),
             label: Text(l10n.arrangementTempo),
             onPressed: () => _editTempo(context, ref),
@@ -152,6 +154,7 @@ class BandArrangementPanel extends ConsumerWidget {
           if (a != null)
             TextButton.icon(
               key: const Key('arrangement-reset'),
+              style: _flushLeft,
               icon: const Icon(Icons.restart_alt),
               label: Text(l10n.arrangementReset),
               onPressed: () => ref
@@ -163,3 +166,10 @@ class BandArrangementPanel extends ConsumerWidget {
     );
   }
 }
+
+/// Text buttons with their icon at the panel's left edge, in line with the
+/// key picker above them.
+final _flushLeft = TextButton.styleFrom(
+  padding: const EdgeInsetsDirectional.only(end: 12),
+  alignment: AlignmentDirectional.centerStart,
+);
