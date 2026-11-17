@@ -4,6 +4,9 @@ import 'package:chordpro/chordpro.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:realchord/data/database.dart';
+import 'package:realchord/settings/settings.dart';
+import 'package:realchord/ui/live/live_theme.dart';
+import 'package:realchord/ui/render/song_header.dart';
 import 'package:realchord/ui/render/song_style.dart';
 import 'package:realchord/ui/songs/chordpro_editing_controller.dart';
 import 'package:realchord/ui/theme.dart';
@@ -127,6 +130,59 @@ void main() {
     );
     // Amber on dark and black (#263).
     expect(StageColors.dark.chord, const Color(0xFFFFC54D));
+  });
+
+  test('sequence chips of chorus, pre-chorus, bridge and verse differ', () {
+    // Issue #288: with the red seed, the light primary and secondary
+    // containers are the same blush. Checked in the app themes and on the
+    // dark and black stage (#263).
+    final light = appTheme(Brightness.light);
+    final dark = appTheme(Brightness.dark);
+    final schemes = {
+      'light': light.colorScheme,
+      'dark': dark.colorScheme,
+      'stage light': liveTheme(light, LiveAppearance.app).colorScheme,
+      'stage dark': liveTheme(light, LiveAppearance.dark).colorScheme,
+      'stage black': liveTheme(dark, LiveAppearance.black).colorScheme,
+    };
+    // One part of each colour group; "other" parts share the verse colour.
+    const groups = [
+      SequencePart.chorus,
+      SequencePart.preChorus,
+      SequencePart.bridge,
+      SequencePart.verse,
+    ];
+    for (final MapEntry(key: name, value: s) in schemes.entries) {
+      Color bg(SequencePart p) => SongSequenceView.background(s, p);
+      Color fg(SequencePart p) => SongSequenceView.foreground(s, p);
+      for (final part in SequencePart.values) {
+        expect(
+          _contrast(fg(part), bg(part)),
+          greaterThanOrEqualTo(4.5),
+          reason: '$name $part',
+        );
+      }
+      for (var i = 0; i < groups.length; i++) {
+        for (var j = i + 1; j < groups.length; j++) {
+          expect(
+            _deltaE(bg(groups[i]), bg(groups[j])),
+            greaterThan(20),
+            reason: '$name ${groups[i]} / ${groups[j]}',
+          );
+        }
+      }
+      // Pre- and post-chorus belong together, the other parts too.
+      expect(bg(SequencePart.postChorus), bg(SequencePart.preChorus));
+      for (final part in [
+        SequencePart.intro,
+        SequencePart.interlude,
+        SequencePart.solo,
+        SequencePart.outro,
+        SequencePart.other,
+      ]) {
+        expect(bg(part), bg(SequencePart.verse), reason: '$name $part');
+      }
+    }
   });
 
   for (final mode in ['light', 'dark']) {

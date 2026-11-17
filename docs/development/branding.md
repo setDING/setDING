@@ -53,6 +53,31 @@ Colours that are not derived from the scheme: RealChord's own `x_`
 directives in the editor (teal, apart from the warm palette), the
 offline-ready icon (green) and the named ChordPro colours of the songs.
 
+### Sequence chips
+
+The song sequence (`{x_sequence}`) is shown as small chips in the song
+header, the set screen, live mode and the sequence dialog. Their colours
+come from `SongSequenceView.background`/`foreground` in
+`app/lib/ui/render/song_header.dart`, all from the scheme (issue #288):
+
+| Part | Role | Light | Dark (also dark/black stage) |
+|---|---|---|---|
+| Chorus | `primary` / `onPrimary` | `#8F4B3A` / `#FFFFFF` | `#FFB4A2` / `#561F11` |
+| Pre-/post-chorus | light `primaryFixedDim` / `onPrimaryFixed`, dark `primaryContainer` / `onPrimaryContainer` | `#FFB4A2` / `#3A0A02` | `#723425` / `#FFDAD2` |
+| Bridge | `tertiaryContainer` / `onTertiaryContainer` | `#F7E1A6` / `#544519` | `#544519` / `#F7E1A6` |
+| Other parts | `surfaceContainerHighest` / `onSurfaceVariant` | `#F1DFDA` / `#534340` | `#3D3230` / `#D8C2BD` (black stage `#242424`) |
+
+The chorus, the part that comes back most often, is filled with the
+primary colour; pre- and post-chorus use a softer tone of the same hue
+(tone 80 on light, tone 30 on dark), so they read as belonging to it
+without looking the same. The container roles alone cannot tell the parts
+apart: with the red seed, the light `primaryContainer` and
+`secondaryContainer` are both `#FFDAD2`, and `surfaceContainerHighest` is
+almost the same blush. `app/test/theme_test.dart` checks in light, dark and
+on the dark and black stage that the four groups are at least ΔE 20 apart
+(measured: 26 to 73) and that every chip has a text contrast of at least
+4.5:1 (measured: 6.5 to 10).
+
 ## Where the logo is shown
 
 The splash looks the same everywhere: the mark centered (128 dp), the

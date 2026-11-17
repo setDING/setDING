@@ -336,20 +336,34 @@ class SongSequenceView extends StatelessWidget {
     );
   }
 
+  /// Background of the chip of [part] (docs/development/branding.md,
+  /// "Sequence chips").
+  ///
+  /// With the red brand seed the light `primaryContainer`,
+  /// `secondaryContainer` and `surfaceContainerHighest` are all the same
+  /// blush (issue #288), so the parts use clearly different roles: the
+  /// chorus is filled with the primary colour, pre- and post-chorus use a
+  /// softer tone of it (tone 80 on light, tone 30 on dark), the bridge the
+  /// tertiary container (gold) and all other parts a neutral surface.
   static Color background(ColorScheme scheme, SequencePart part) =>
       switch (part) {
-        SequencePart.chorus => scheme.primaryContainer,
-        SequencePart.preChorus ||
-        SequencePart.postChorus => scheme.secondaryContainer,
+        SequencePart.chorus => scheme.primary,
+        SequencePart.preChorus || SequencePart.postChorus =>
+          scheme.brightness == Brightness.light
+              ? scheme.primaryFixedDim
+              : scheme.primaryContainer,
         SequencePart.bridge => scheme.tertiaryContainer,
         _ => scheme.surfaceContainerHighest,
       };
 
+  /// Text (and icon) colour on [background].
   static Color foreground(ColorScheme scheme, SequencePart part) =>
       switch (part) {
-        SequencePart.chorus => scheme.onPrimaryContainer,
-        SequencePart.preChorus ||
-        SequencePart.postChorus => scheme.onSecondaryContainer,
+        SequencePart.chorus => scheme.onPrimary,
+        SequencePart.preChorus || SequencePart.postChorus =>
+          scheme.brightness == Brightness.light
+              ? scheme.onPrimaryFixed
+              : scheme.onPrimaryContainer,
         SequencePart.bridge => scheme.onTertiaryContainer,
         _ => scheme.onSurfaceVariant,
       };
