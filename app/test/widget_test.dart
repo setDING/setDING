@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:chordpro/chordpro.dart' show SequencePart;
 import 'package:realchord/data/database.dart';
 import 'package:realchord/data/demo_song.dart';
 import 'package:realchord/ui/live/live_screen.dart';
@@ -721,6 +722,21 @@ void main() {
       expect(find.byKey(ValueKey('sequence-part-$code')), findsOneWidget);
     }
     expect(find.byKey(const ValueKey('sequence-part-PC')), findsNothing);
+    // The add icon takes the text colour of the part (#288): the chorus
+    // chip is filled with the primary colour, the default icon colour.
+    final scheme = Theme.of(
+      tester.element(find.byKey(const ValueKey('sequence-part-C'))),
+    ).colorScheme;
+    final addIcon = tester.widget<Icon>(
+      find.descendant(
+        of: find.byKey(const ValueKey('sequence-part-C')),
+        matching: find.byIcon(Icons.add),
+      ),
+    );
+    expect(
+      addIcon.color,
+      SongSequenceView.foreground(scheme, SequencePart.chorus),
+    );
     await tester.tap(find.byKey(const ValueKey('sequence-part-C')));
     await tester.pump();
     await tester.tap(find.byKey(const ValueKey('sequence-part-B')));

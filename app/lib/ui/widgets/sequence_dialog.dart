@@ -186,7 +186,11 @@ class _SequenceDialogState extends State<_SequenceDialog> {
         feedback: feedback(item),
         child: ActionChip(
           key: ValueKey('sequence-part-${item.code}'),
-          avatar: const Icon(Icons.add, size: 16),
+          avatar: Icon(
+            Icons.add,
+            size: 16,
+            color: SongSequenceView.foreground(scheme, item.part),
+          ),
           label: chipLabel(item),
           backgroundColor: SongSequenceView.background(scheme, item.part),
           side: BorderSide.none,

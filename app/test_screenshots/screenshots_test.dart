@@ -336,7 +336,7 @@ void main() {
       final ids = await tester.runAsync(() async {
         final a = await app.songs.createSong(source: demoSongSource);
         final b = await app.songs.createSong(
-          source: '{title: Blue Monday Groove}\n{artist: House Band}\n{key: Bb}\n{tag: Blues}\n{x_sequence: I, V, C, V, C x2, O}\n[Bb7]Blues [Eb7]line\n',
+          source: '{title: Blue Monday Groove}\n{artist: House Band}\n{key: Bb}\n{tag: Blues}\n{x_sequence: I, V, PC, C, V, PC, C x2, B, O}\n[Bb7]Blues [Eb7]line\n',
         );
         await app.songs.saveOverlay(
           (await app.songs.getOverlay(
@@ -412,7 +412,23 @@ void main() {
         ),
       );
       await _shot(tester, '${lang}_4_live_$stage');
+      // The second song shows the sequence chips (chorus, pre-chorus,
+      // bridge and other parts, #288) on the stage and in the app theme.
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: LiveScreen(items: items, initialIndex: 1)),
+        ),
+      );
+      await _shot(tester, '${lang}_4_live_${stage}_sequence');
       await app.prefs.setString('liveAppearance', 'app');
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: LiveScreen(items: items, initialIndex: 1)),
+        ),
+      );
+      await _shot(tester, '${lang}_4_live_sequence');
       tester.view.physicalSize = const Size(800, 1280);
       await tester.pumpWidget(
         RepaintBoundary(
