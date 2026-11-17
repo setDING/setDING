@@ -170,7 +170,8 @@ class SyncEngine {
   }) async {
     final libraries = {
       for (final b in bands)
-        if (b.canEditSongs) b.libraryId,
+        // Leaders push their own songs; the server checks each one.
+        if (b.library.canCreateSongs) b.libraryId,
     }..remove(localBandId);
     final setBands = {
       for (final b in bands)

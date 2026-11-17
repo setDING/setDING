@@ -139,7 +139,7 @@ void main() {
       user: _ann,
       server: (app) {
         app.backend.addOrganization('o2', 'Choir', admin: _bob);
-        app.backend.addOrgMember('o2', _ann, BandRole.member);
+        app.backend.addOrgMember('o2', _ann, OrgRole.member);
       },
     );
     await TestApp.songsIn(app, 'o2').createSong(source: '{title: Hymn}');
@@ -269,7 +269,7 @@ void main() {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'en'}, user: _ann);
     app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
-    app.backend.addOrgMember('o1', _bob, BandRole.member);
+    app.backend.addOrgMember('o1', _bob, OrgRole.member);
     await tester.pumpWidget(app.build(home: const BandsScreen()));
     await tester.pumpAndSettle();
 
@@ -288,6 +288,82 @@ void main() {
       unorderedEquals(['ann', 'bob']),
     );
     await app.dispose(tester);
+  });
+
+  group('roles of ADR-0023', () {
+    const cara = AuthUser(id: 'cara', email: 'cara@example.test', name: 'Cara');
+
+    testWidgets('leaders give band roles and invite into their band', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'}, user: _bob);
+      // Cara administers the organization; Bob leads its band.
+      app.backend.addOrganization('o1', 'School', admin: cara);
+      app.backend.addBand('b1', 'Rock', admin: _bob, organizationId: 'o1');
+      final ann = app.backend.addMember('b1', _ann, BandRole.member);
+      await tester.pumpWidget(app.build(home: const BandsScreen()));
+      await tester.pumpAndSettle();
+      expect(find.text('School'), findsOneWidget);
+      expect(find.text('Member'), findsOneWidget); // Bob in the organization
+      await tester.tap(find.text('Rock'));
+      await tester.pumpAndSettle();
+      expect(find.text('Leader'), findsOneWidget);
+
+      await tester.tap(find.byKey(Key('member-menu-${ann.id}')));
+      await tester.pumpAndSettle();
+      expect(find.text('Make leader'), findsOneWidget);
+      await tester.tap(find.text('Make set planner'));
+      await tester.pumpAndSettle();
+      expect(ann.role, BandRole.planner);
+      expect(find.text('Set planner'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('invite-create')));
+      await tester.pumpAndSettle();
+      expect(app.backend.invites.single.bandId, 'b1');
+      await tester.tap(find.text('Close'));
+      await tester.pumpAndSettle();
+      await app.dispose(tester);
+    });
+
+    testWidgets('organization admins make librarians', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'}, user: _ann);
+      app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+      final bob = app.backend.addOrgMember('o1', _bob, OrgRole.member);
+      await tester.pumpWidget(app.build(home: const BandsScreen()));
+      await tester.pumpAndSettle();
+      // The organization (same name, created with the band) comes first.
+      await tester.tap(find.text('Rock').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(Key('person-menu-${bob.id}')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Make librarian'));
+      await tester.pumpAndSettle();
+      expect(bob.role, OrgRole.librarian);
+      expect(find.text('Librarian'), findsOneWidget);
+      await app.dispose(tester);
+    });
+
+    testWidgets('leaders do not edit songs of others', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': 'en', 'currentBandId': 'b1'},
+        user: _bob,
+      );
+      app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+      app.backend.addMember('b1', _bob, BandRole.admin);
+      final id = await TestApp.songsIn(
+        app,
+        'o1',
+        userId: 'ann',
+      ).createSong(source: '{title: Shared}\n[C]x');
+      await tester.pumpWidget(app.build(home: SongScreen(songId: id)));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Edit ChordPro'), findsNothing);
+      expect(find.byTooltip('Attach file'), findsNothing);
+      await app.dispose(tester);
+    });
   });
 
   testWidgets('the last admin cannot step down', (tester) async {
@@ -330,21 +406,18 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('members who may edit songs cannot delete them', (tester) async {
+  testWidgets('leaders edit their own songs but cannot delete them', (
+    tester,
+  ) async {
     useTabletSize(tester);
     final app = await TestApp.create(
       prefs: {'language': 'en', 'currentBandId': 'b1'},
       user: _bob,
     );
-    app.backend.addBand(
-      'b1',
-      'Rock',
-      admin: _ann,
-      organizationId: 'o1',
-      membersCanEditSongs: true,
-    );
-    app.backend.addMember('b1', _bob, BandRole.member);
-    final orgSongs = TestApp.songsIn(app, 'o1');
+    app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+    app.backend.addMember('b1', _bob, BandRole.admin);
+    // Created by Bob on this device (ADR-0023).
+    final orgSongs = TestApp.songsIn(app, 'o1', userId: 'bob');
     final id = await orgSongs.createSong(source: '{title: Shared}\n[C]x');
     await tester.pumpWidget(app.build(home: SongScreen(songId: id)));
     await tester.pumpAndSettle();

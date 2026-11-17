@@ -154,12 +154,14 @@ class _PersonTile extends ConsumerWidget {
     final name = person.userName.isEmpty
         ? (person.userEmail ?? '?')
         : person.userName;
-    final admin = person.role == BandRole.admin;
+    final admin = person.role == OrgRole.admin;
+    Future<void> setRole(OrgRole role) =>
+        runBandAction(context, () => service.setOrgRole(person.id, role));
 
     return ListTile(
       leading: Icon(admin ? Icons.shield_outlined : Icons.person_outline),
       title: Text(isMe ? l10n.bandYou(name) : name),
-      subtitle: Text(roleLabel(l10n, person.role)),
+      subtitle: Text(orgRoleLabel(l10n, person.role)),
       trailing: !isAdmin
           ? null
           : PopupMenuButton<String>(
@@ -167,15 +169,11 @@ class _PersonTile extends ConsumerWidget {
               onSelected: (value) async {
                 switch (value) {
                   case 'admin':
-                    await runBandAction(
-                      context,
-                      () => service.setOrgRole(person.id, BandRole.admin),
-                    );
+                    await setRole(OrgRole.admin);
+                  case 'librarian':
+                    await setRole(OrgRole.librarian);
                   case 'member':
-                    await runBandAction(
-                      context,
-                      () => service.setOrgRole(person.id, BandRole.member),
-                    );
+                    await setRole(OrgRole.member);
                   case 'remove':
                     final ok = await confirm(
                       context,
@@ -192,12 +190,17 @@ class _PersonTile extends ConsumerWidget {
                 }
               },
               itemBuilder: (_) => [
-                if (!admin)
+                if (person.role != OrgRole.admin)
                   PopupMenuItem(
                     value: 'admin',
                     child: Text(l10n.bandMakeAdmin),
                   ),
-                if (admin)
+                if (person.role != OrgRole.librarian)
+                  PopupMenuItem(
+                    value: 'librarian',
+                    child: Text(l10n.orgMakeLibrarian),
+                  ),
+                if (person.role != OrgRole.member)
                   PopupMenuItem(
                     value: 'member',
                     child: Text(l10n.bandMakeMember),

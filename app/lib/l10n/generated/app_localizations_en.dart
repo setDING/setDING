@@ -1058,6 +1058,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bandMakeMember => 'Make member';
 
   @override
+  String get bandRoleLeader => 'Leader';
+
+  @override
+  String get bandRolePlanner => 'Set planner';
+
+  @override
+  String get orgRoleLibrarian => 'Librarian';
+
+  @override
+  String get bandMakeLeader => 'Make leader';
+
+  @override
+  String get bandMakePlanner => 'Make set planner';
+
+  @override
+  String get orgMakeLibrarian => 'Make librarian';
+
+  @override
+  String get orgLibrarianHint =>
+      'Librarians create, edit and delete the organization\'s songs.';
+
+  @override
+  String get bandPlannerHint => 'Set planners put the band\'s sets together.';
+
+  @override
+  String get inviteBandHint =>
+      'Creates a link that is valid for 7 days. Whoever opens it joins the organization and this band.';
+
+  @override
+  String joinQuestionBand(String band, String org) {
+    return 'Join $band ($org)?';
+  }
+
+  @override
+  String get joinExplanationBand =>
+      'You become a member of the organization and of the band and see its songs and sets.';
+
+  @override
   String get bandRemoveMember => 'Remove from band';
 
   @override
@@ -1081,13 +1119,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get bandLeaveMessage =>
       'You will no longer see the band\'s songs and sets. An admin can invite you again.';
-
-  @override
-  String get bandMembersCanEdit => 'Members may edit songs';
-
-  @override
-  String get bandMembersCanEditHint =>
-      'Create, import and edit songs. Deleting and sets stay with the admins.';
 
   @override
   String get bandRefresh => 'Refresh';
@@ -1268,7 +1299,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inviteAskAdmin =>
-      'Ask an admin of the organization for an invitation.';
+      'Ask an admin of the organization or a band leader for an invitation.';
 
   @override
   String get inviteErrorUnknown =>

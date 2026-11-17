@@ -93,7 +93,7 @@ void main() {
   });
 
   test('records the author of each change in updated_by', () async {
-    final pbEdit = await BandFixture.create(pb, membersCanEditSongs: true);
+    final pbEdit = await BandFixture.create(pb, memberIsLibrarian: true);
     final song = await pbEdit.createSong(pbEdit.admin);
     expect(song['updated_by'], pbEdit.admin.id);
     final r = await pbEdit.member.patch('songs', song['id'] as String, {

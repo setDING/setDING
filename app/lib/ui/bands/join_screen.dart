@@ -139,6 +139,11 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
                       ? l10n.joinFoundQuestion(preview.organizationName)
                       : preview.alreadyMember
                       ? l10n.joinAlreadyMember(preview.organizationName)
+                      : preview.bandName != null
+                      ? l10n.joinQuestionBand(
+                          preview.bandName!,
+                          preview.organizationName,
+                        )
                       : l10n.joinQuestion(preview.organizationName),
                   style: theme.textTheme.headlineSmall,
                 ),
@@ -178,6 +183,8 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
                   Text(
                     preview.founder
                         ? l10n.joinFoundExplanation
+                        : preview.bandName != null
+                        ? l10n.joinExplanationBand
                         : l10n.joinExplanation,
                   ),
                   const SizedBox(height: 24),

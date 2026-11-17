@@ -59,8 +59,14 @@ class TestApp {
   late final sets = SetRepository(db, storage);
 
   /// Songs of another library, e.g. an organization (ADR-0017).
-  static SongRepository songsIn(TestApp app, String libraryId) =>
-      SongRepository(app.db, app.storage, libraryId: libraryId);
+  /// Songs of [libraryId] as [userId] writes them (creator and last editor
+  /// of organization songs, ADR-0023).
+  static SongRepository songsIn(
+    TestApp app,
+    String libraryId, {
+    String? userId,
+  }) =>
+      SongRepository(app.db, app.storage, libraryId: libraryId, userId: userId);
 
   static Future<TestApp> create({
     Map<String, Object> prefs = const {},

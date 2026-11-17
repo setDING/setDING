@@ -334,6 +334,27 @@
   },
   "bandMakeAdmin": "Make admin",
   "bandMakeMember": "Make member",
+  "bandRoleLeader": "Leader",
+  "bandRolePlanner": "Set planner",
+  "orgRoleLibrarian": "Librarian",
+  "bandMakeLeader": "Make leader",
+  "bandMakePlanner": "Make set planner",
+  "orgMakeLibrarian": "Make librarian",
+  "orgLibrarianHint": "Librarians create, edit and delete the organization's songs.",
+  "bandPlannerHint": "Set planners put the band's sets together.",
+  "inviteBandHint": "Creates a link that is valid for 7 days. Whoever opens it joins the organization and this band.",
+  "joinQuestionBand": "Join {band} ({org})?",
+  "@joinQuestionBand": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      },
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "joinExplanationBand": "You become a member of the organization and of the band and see its songs and sets.",
   "bandRemoveMember": "Remove from band",
   "bandRemoveTitle": "Remove {name}?",
   "@bandRemoveTitle": {
@@ -361,8 +382,6 @@
     }
   },
   "bandLeaveMessage": "You will no longer see the band's songs and sets. An admin can invite you again.",
-  "bandMembersCanEdit": "Members may edit songs",
-  "bandMembersCanEditHint": "Create, import and edit songs. Deleting and sets stay with the admins.",
   "bandRefresh": "Refresh",
   "bandErrorLastAdmin": "A band needs at least one admin.",
   "bandErrorNotAllowed": "Not allowed, or the band no longer exists.",
@@ -478,7 +497,7 @@
   "inviteRevoke": "Revoke",
   "inviteRevokeTitle": "Revoke link?",
   "inviteRevokeMessage": "The link will stop working. People who already joined stay members.",
-  "inviteAskAdmin": "Ask an admin of the organization for an invitation.",
+  "inviteAskAdmin": "Ask an admin of the organization or a band leader for an invitation.",
   "inviteErrorUnknown": "This invitation does not exist. Check the link.",
   "inviteErrorExpired": "This invitation has expired. Please ask for a new link.",
   "inviteErrorRevoked": "This invitation was revoked. Please ask for a new link.",

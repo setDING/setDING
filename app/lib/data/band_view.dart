@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
 
 import 'band_role.dart';
-import 'database.dart' show localBandId;
+import 'database.dart' show localBandId, SongEntry;
 
 /// A band as the UI shows it: the local library or a band from the server,
 /// with the signed-in user's roles and the resulting permissions
-/// (ADR-0005, ADR-0017).
+/// (ADR-0005, ADR-0017, ADR-0023).
 @immutable
 class BandView {
   const BandView({
@@ -14,9 +14,8 @@ class BandView {
     this.organizationId,
     this.organizationName = '',
     this.role,
-    this.isOrgAdmin = false,
-    this.membersCanEditSongs = false,
-    this.mayEditOrgSongs = false,
+    this.orgRole,
+    this.orgLibrary,
   });
 
   /// The local library ("On this device"); everything is allowed.
@@ -38,40 +37,37 @@ class BandView {
   /// Role in the band; null for organization admins who are no band member.
   final BandRole? role;
 
-  final bool isOrgAdmin;
-  final bool membersCanEditSongs;
+  /// Role in the band's organization; null for the local library.
+  final OrgRole? orgRole;
 
-  /// The user may edit the organization's songs: organization admin, admin
-  /// of any of its bands, or member of a band that allows it.
-  final bool mayEditOrgSongs;
+  /// The song library of the band's organization with the user's song
+  /// permissions; null for the local library (see [library]).
+  final LibraryView? orgLibrary;
 
   bool get isLocal => id == localBandId;
 
-  /// The song library of the band with the user's song permissions.
-  LibraryView get library => isLocal
-      ? LibraryView.local
-      : LibraryView(
-          id: organizationId!,
-          name: organizationName,
-          isOrgAdmin: isOrgAdmin,
-          mayEditSongs: mayEditOrgSongs,
-        );
+  /// Organization admins may do everything in its bands (ADR-0023).
+  bool get isOrgAdmin => orgRole == OrgRole.admin;
+
+  /// Band leader (stored as band `admin`).
+  bool get isBandAdmin => role == BandRole.admin;
 
   /// Song library of the band: its organization, or the local library.
   String get libraryId => organizationId ?? localBandId;
 
-  bool get isBandAdmin => role == BandRole.admin;
+  /// The song library with the user's song permissions.
+  /// Without [orgLibrary], an organization's library allows nothing.
+  LibraryView get library => isLocal
+      ? LibraryView.local
+      : orgLibrary ?? LibraryView(id: libraryId, name: organizationName);
 
-  /// Create, import and edit songs and their attachments.
-  bool get canEditSongs => isLocal || mayEditOrgSongs;
+  /// Create, edit, reorder and delete sets: leaders, set planners and
+  /// organization admins.
+  bool get canManageSets =>
+      isLocal || isBandAdmin || role == BandRole.planner || isOrgAdmin;
 
-  /// Delete songs and attachments (organization admins, ADR-0017).
-  bool get canDeleteSongs => isLocal || isOrgAdmin;
-
-  /// Create, edit, reorder and delete sets.
-  bool get canManageSets => isLocal || isBandAdmin || isOrgAdmin;
-
-  /// Band settings and members (never for the local library).
+  /// Band settings, members and their roles, invitations into the band
+  /// (never for the local library).
   bool get canManageBand => !isLocal && (isBandAdmin || isOrgAdmin);
 
   @override
@@ -82,9 +78,8 @@ class BandView {
       other.organizationId == organizationId &&
       other.organizationName == organizationName &&
       other.role == role &&
-      other.isOrgAdmin == isOrgAdmin &&
-      other.membersCanEditSongs == membersCanEditSongs &&
-      other.mayEditOrgSongs == mayEditOrgSongs;
+      other.orgRole == orgRole &&
+      other.orgLibrary == orgLibrary;
 
   @override
   int get hashCode => Object.hash(
@@ -93,26 +88,26 @@ class BandView {
     organizationId,
     organizationName,
     role,
-    isOrgAdmin,
-    membersCanEditSongs,
-    mayEditOrgSongs,
+    orgRole,
+    orgLibrary,
   );
 }
 
 /// A song library as the UI shows it: the local library or an
 /// organization's library, with the signed-in user's song permissions
-/// (ADR-0017). Chosen on the songs tab independently of the band.
+/// (ADR-0017, ADR-0023). Chosen on the songs tab independently of the band.
 @immutable
 class LibraryView {
   const LibraryView({
     required this.id,
     this.name = '',
-    this.isOrgAdmin = false,
-    this.mayEditSongs = false,
+    this.orgRole,
+    this.isLeader = false,
+    this.userId,
   });
 
   /// The local library ("On this device"); everything is allowed.
-  static const local = LibraryView(id: localBandId, mayEditSongs: true);
+  static const local = LibraryView(id: localBandId);
 
   /// The local library id or an organization id.
   final String id;
@@ -120,30 +115,50 @@ class LibraryView {
   /// Organization name; empty for the local library (shown localized).
   final String name;
 
-  final bool isOrgAdmin;
+  /// Role in the organization; null for the local library.
+  final OrgRole? orgRole;
 
-  /// Organization admin, admin of any of its bands, or member of a band
-  /// that allows song editing.
-  final bool mayEditSongs;
+  /// Leader of at least one band of the organization.
+  final bool isLeader;
+
+  /// The signed-in user, for their own songs.
+  final String? userId;
 
   bool get isLocal => id == localBandId;
 
-  /// Create, import and edit songs and their attachments.
-  bool get canEditSongs => isLocal || mayEditSongs;
+  bool get isOrgAdmin => orgRole == OrgRole.admin;
 
-  /// Delete songs and attachments (organization admins, ADR-0017).
-  bool get canDeleteSongs => isLocal || isOrgAdmin;
+  /// Maintains the library: organization admins and librarians.
+  bool get isLibrarian =>
+      orgRole == OrgRole.admin || orgRole == OrgRole.librarian;
+
+  /// Create and import new songs: librarians and band leaders.
+  bool get canCreateSongs => isLocal || isLibrarian || isLeader;
+
+  /// Edit [song] and its attachments: librarians, and band leaders for the
+  /// songs they created as long as nobody else has changed them.
+  bool canEditSong(SongEntry song) =>
+      isLocal ||
+      isLibrarian ||
+      (isLeader &&
+          userId != null &&
+          song.createdBy == userId &&
+          song.updatedBy == userId);
+
+  /// Delete songs and attachments: librarians.
+  bool get canDeleteSongs => isLocal || isLibrarian;
 
   @override
   bool operator ==(Object other) =>
       other is LibraryView &&
       other.id == id &&
       other.name == name &&
-      other.isOrgAdmin == isOrgAdmin &&
-      other.mayEditSongs == mayEditSongs;
+      other.orgRole == orgRole &&
+      other.isLeader == isLeader &&
+      other.userId == userId;
 
   @override
-  int get hashCode => Object.hash(id, name, isOrgAdmin, mayEditSongs);
+  int get hashCode => Object.hash(id, name, orgRole, isLeader, userId);
 }
 
 /// An organization of the signed-in user.
@@ -157,9 +172,9 @@ class OrganizationView {
 
   final String id;
   final String name;
-  final BandRole role;
+  final OrgRole role;
 
-  bool get isAdmin => role == BandRole.admin;
+  bool get isAdmin => role == OrgRole.admin;
 
   @override
   bool operator ==(Object other) =>

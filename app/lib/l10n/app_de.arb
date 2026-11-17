@@ -483,6 +483,27 @@
   },
   "bandMakeAdmin": "Zum Admin machen",
   "bandMakeMember": "Zum Mitglied machen",
+  "bandRoleLeader": "Leitung",
+  "bandRolePlanner": "Setplanung",
+  "orgRoleLibrarian": "Bibliothek",
+  "bandMakeLeader": "Zur Leitung machen",
+  "bandMakePlanner": "Für die Setplanung einsetzen",
+  "orgMakeLibrarian": "Für die Bibliothek einsetzen",
+  "orgLibrarianHint": "Die Bibliothek erstellt, bearbeitet und löscht die Songs der Organisation.",
+  "bandPlannerHint": "Die Setplanung stellt die Sets der Band zusammen.",
+  "inviteBandHint": "Erstellt einen Link, der 7 Tage gilt. Wer ihn öffnet, wird Mitglied der Organisation und dieser Band.",
+  "joinQuestionBand": "{band} ({org}) beitreten?",
+  "@joinQuestionBand": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      },
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "joinExplanationBand": "Du wirst Mitglied der Organisation und der Band und siehst ihre Songs und Sets.",
   "bandRemoveMember": "Aus der Band entfernen",
   "bandRemoveTitle": "{name} entfernen?",
   "@bandRemoveTitle": {
@@ -510,8 +531,6 @@
     }
   },
   "bandLeaveMessage": "Du siehst die Songs und Sets der Band danach nicht mehr. Ein Admin kann dich wieder einladen.",
-  "bandMembersCanEdit": "Mitglieder dürfen Songs bearbeiten",
-  "bandMembersCanEditHint": "Songs erstellen, importieren und bearbeiten. Löschen und Sets bleiben den Admins vorbehalten.",
   "bandRefresh": "Aktualisieren",
   "bandErrorLastAdmin": "Eine Band braucht mindestens einen Admin.",
   "bandErrorNotAllowed": "Dazu fehlt die Berechtigung, oder die Band gibt es nicht mehr.",
@@ -627,7 +646,7 @@
   "inviteRevoke": "Widerrufen",
   "inviteRevokeTitle": "Link widerrufen?",
   "inviteRevokeMessage": "Der Link funktioniert danach nicht mehr. Wer schon beigetreten ist, bleibt Mitglied.",
-  "inviteAskAdmin": "Für eine Einladung wende dich an einen Admin der Organisation.",
+  "inviteAskAdmin": "Für eine Einladung wende dich an einen Admin der Organisation oder an die Leitung einer Band.",
   "inviteErrorUnknown": "Diese Einladung gibt es nicht. Prüfe den Link.",
   "inviteErrorExpired": "Diese Einladung ist abgelaufen. Bitte um einen neuen Link.",
   "inviteErrorRevoked": "Diese Einladung wurde widerrufen. Bitte um einen neuen Link.",

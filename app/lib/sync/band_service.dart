@@ -110,25 +110,19 @@ class BandService {
     final rights = await _rights(userId);
     return [
       LibraryView.local,
-      for (final o in rights.orgs.values)
-        LibraryView(
-          id: o.id,
-          name: o.name,
-          isOrgAdmin: o.isAdmin,
-          mayEditSongs: rights.mayEditSongs(o.id),
-        ),
+      for (final o in rights.orgs.values) rights.library(o.id),
     ];
   }
 
   /// The organizations of [userId] (sorted by name), their bands, the
-  /// user's band roles and the organization-wide permission to edit songs
-  /// (same as the server rule).
+  /// user's band roles and the song library of each organization with the
+  /// user's song permissions (same as the server rules, ADR-0023).
   Future<
     ({
       Map<String, OrganizationView> orgs,
       List<BandEntry> bands,
       Map<String, BandRole> own,
-      bool Function(String orgId) mayEditSongs,
+      LibraryView Function(String orgId) library,
     })
   >
   _rights(String userId) async {
@@ -144,17 +138,17 @@ class BandService {
       )..where((m) => m.userId.equals(userId))).get())
         m.bandId: m.role,
     };
-    bool mayEditSongs(String orgId) {
-      if (orgs[orgId]!.isAdmin) return true;
-      return bands.any(
-        (b) =>
-            b.organizationId == orgId &&
-            own.containsKey(b.id) &&
-            (own[b.id] == BandRole.admin || b.membersCanEditSongs),
-      );
-    }
+    LibraryView library(String orgId) => LibraryView(
+      id: orgId,
+      name: orgs[orgId]!.name,
+      orgRole: orgs[orgId]!.role,
+      isLeader: bands.any(
+        (b) => b.organizationId == orgId && own[b.id] == BandRole.admin,
+      ),
+      userId: userId,
+    );
 
-    return (orgs: orgs, bands: bands, own: own, mayEditSongs: mayEditSongs);
+    return (orgs: orgs, bands: bands, own: own, library: library);
   }
 
   /// The local library followed by the bands [userId] can see, sorted by
@@ -165,7 +159,7 @@ class BandService {
   }
 
   Future<List<BandView>> _bands(String userId) async {
-    final (:orgs, :bands, :own, :mayEditSongs) = await _rights(userId);
+    final (:orgs, :bands, :own, :library) = await _rights(userId);
     final views = [
       for (final b in bands)
         if (own.containsKey(b.id) || orgs[b.organizationId]!.isAdmin)
@@ -175,9 +169,8 @@ class BandService {
             organizationId: b.organizationId,
             organizationName: orgs[b.organizationId]!.name,
             role: own[b.id],
-            isOrgAdmin: orgs[b.organizationId]!.isAdmin,
-            membersCanEditSongs: b.membersCanEditSongs,
-            mayEditOrgSongs: mayEditSongs(b.organizationId!),
+            orgRole: orgs[b.organizationId]!.role,
+            orgLibrary: library(b.organizationId!),
           ),
     ];
     int byName(String a, String b) =>
@@ -309,7 +302,6 @@ class BandService {
             id: b.id,
             name: b.name,
             organizationId: o.id,
-            membersCanEditSongs: b.membersCanEditSongs,
             revision: b.revision,
             deleted: false,
           ),
@@ -402,9 +394,6 @@ class BandService {
   Future<void> renameBand(String bandId, String name) =>
       _then(backend.updateBand(bandId, name: name));
 
-  Future<void> setMembersCanEditSongs(String bandId, bool value) =>
-      _then(backend.updateBand(bandId, membersCanEditSongs: value));
-
   Future<void> addBandMember(String bandId, String userId, BandRole role) =>
       _then(backend.addBandMember(bandId, userId, role));
 
@@ -418,7 +407,7 @@ class BandService {
   Future<void> renameOrganization(String organizationId, String name) =>
       _then(backend.renameOrganization(organizationId, name));
 
-  Future<void> setOrgRole(String orgMembershipId, BandRole role) =>
+  Future<void> setOrgRole(String orgMembershipId, OrgRole role) =>
       _then(backend.setOrgMemberRole(orgMembershipId, role));
 
   /// Removes a person from the organization (and its bands), or leaves it.

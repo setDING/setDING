@@ -1068,6 +1068,45 @@ class AppLocalizationsDe extends AppLocalizations {
   String get bandMakeMember => 'Zum Mitglied machen';
 
   @override
+  String get bandRoleLeader => 'Leitung';
+
+  @override
+  String get bandRolePlanner => 'Setplanung';
+
+  @override
+  String get orgRoleLibrarian => 'Bibliothek';
+
+  @override
+  String get bandMakeLeader => 'Zur Leitung machen';
+
+  @override
+  String get bandMakePlanner => 'Für die Setplanung einsetzen';
+
+  @override
+  String get orgMakeLibrarian => 'Für die Bibliothek einsetzen';
+
+  @override
+  String get orgLibrarianHint =>
+      'Die Bibliothek erstellt, bearbeitet und löscht die Songs der Organisation.';
+
+  @override
+  String get bandPlannerHint =>
+      'Die Setplanung stellt die Sets der Band zusammen.';
+
+  @override
+  String get inviteBandHint =>
+      'Erstellt einen Link, der 7 Tage gilt. Wer ihn öffnet, wird Mitglied der Organisation und dieser Band.';
+
+  @override
+  String joinQuestionBand(String band, String org) {
+    return '$band ($org) beitreten?';
+  }
+
+  @override
+  String get joinExplanationBand =>
+      'Du wirst Mitglied der Organisation und der Band und siehst ihre Songs und Sets.';
+
+  @override
   String get bandRemoveMember => 'Aus der Band entfernen';
 
   @override
@@ -1091,13 +1130,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get bandLeaveMessage =>
       'Du siehst die Songs und Sets der Band danach nicht mehr. Ein Admin kann dich wieder einladen.';
-
-  @override
-  String get bandMembersCanEdit => 'Mitglieder dürfen Songs bearbeiten';
-
-  @override
-  String get bandMembersCanEditHint =>
-      'Songs erstellen, importieren und bearbeiten. Löschen und Sets bleiben den Admins vorbehalten.';
 
   @override
   String get bandRefresh => 'Aktualisieren';
@@ -1279,7 +1311,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inviteAskAdmin =>
-      'Für eine Einladung wende dich an einen Admin der Organisation.';
+      'Für eine Einladung wende dich an einen Admin der Organisation oder an die Leitung einer Band.';
 
   @override
   String get inviteErrorUnknown =>

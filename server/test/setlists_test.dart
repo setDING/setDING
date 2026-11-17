@@ -52,7 +52,7 @@ void main() {
   });
 
   test('members only read sets', () async {
-    final f = await BandFixture.create(pb, membersCanEditSongs: true);
+    final f = await BandFixture.create(pb, memberIsLibrarian: true);
     final byMember = await f.member.post('setlists', {
       'band': f.id,
       'name': 'Mine',
@@ -68,6 +68,36 @@ void main() {
       'deleted': true,
     });
     expect(delete.status, 404);
+  });
+
+  test('set planners manage sets, not the band (ADR-0023)', () async {
+    final f = await BandFixture.create(pb);
+    final planner = await f.addPlanner();
+    final set = await planner.post('setlists', {'band': f.id, 'name': 'Gig'});
+    set.expectStatus(200);
+    (await planner.patch('setlists', set.json['id'] as String, {
+      'name': 'Big gig',
+    })).expectStatus(200);
+    (await planner.patch('setlists', set.json['id'] as String, {
+      'deleted': true,
+    })).expectStatus(200);
+    expect((await planner.patch('bands', f.id, {'name': 'Mine'})).status, 404);
+    final membership = await f.membershipOf(f.member);
+    final promote = await planner.patch(
+      'memberships',
+      membership['id'] as String,
+      {'role': 'admin'},
+    );
+    expect(promote.status, 404);
+  });
+
+  test('leaders who are no organization admin manage sets', () async {
+    final f = await BandFixture.create(pb);
+    final leader = await f.addLeader();
+    (await leader.post('setlists', {
+      'band': f.id,
+      'name': 'Gig',
+    })).expectStatus(200);
   });
 
   test('outsiders neither see nor create sets', () async {

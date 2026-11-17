@@ -179,6 +179,26 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('a link of a band leader leads into the band (ADR-0023)', (
+    tester,
+  ) async {
+    final app = await pump(tester, _bob, const JoinScreen());
+    app.backend.user = _ann;
+    final invite = await app.backend.createInvite('o1', bandId: 'b1');
+    app.backend.user = _bob;
+    await tester.enterText(find.byKey(const Key('join-link')), invite.url);
+    await tester.tap(find.byKey(const Key('join-continue')));
+    await tester.pumpAndSettle();
+    expect(find.text('Join Rock (School)?'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('join-button')));
+    await tester.pumpAndSettle();
+    expect(
+      app.backend.members.where((m) => m.user.id == 'bob').single.scopeId,
+      'b1',
+    );
+    await app.dispose(tester);
+  });
+
   group('invite-only server (ADR-0024)', () {
     testWidgets('accounts only with a link; the token goes along', (
       tester,
@@ -245,7 +265,7 @@ void main() {
         (m) => m.scopeId == orgId,
       );
       expect(founder.user.id, 'bob');
-      expect(founder.role, BandRole.admin);
+      expect(founder.role, OrgRole.admin);
 
       // Used up.
       app.links.add(Uri.parse(link));

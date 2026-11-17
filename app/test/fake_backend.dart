@@ -118,22 +118,22 @@ class FakeSyncBackend implements SyncBackend {
   final organizations = <String, String>{};
 
   /// People of organizations on the "server".
-  final orgMembers = <FakeMember>[];
+  final orgMembers = <FakeMember<OrgRole>>[];
 
   /// Bands on the "server".
   final bands = <String, FakeBand>{};
 
   /// Band memberships on the "server".
-  final members = <FakeMember>[];
+  final members = <FakeMember<BandRole>>[];
   int _ids = 0;
 
   /// Adds an organization with [admin], e.g. to start a test inside one.
   void addOrganization(String id, String name, {required AuthUser admin}) {
     organizations[id] = name;
-    addOrgMember(id, admin, BandRole.admin);
+    addOrgMember(id, admin, OrgRole.admin);
   }
 
-  FakeMember addOrgMember(String orgId, AuthUser user, BandRole role) {
+  FakeMember<OrgRole> addOrgMember(String orgId, AuthUser user, OrgRole role) {
     final m = FakeMember('om${++_ids}', orgId, user, role);
     orgMembers.add(m);
     return m;
@@ -145,20 +145,19 @@ class FakeSyncBackend implements SyncBackend {
     String name, {
     required AuthUser admin,
     String? organizationId,
-    bool membersCanEditSongs = false,
   }) {
     final orgId = organizationId ?? 'org-$id';
     if (!organizations.containsKey(orgId)) {
       addOrganization(orgId, name, admin: admin);
     }
-    bands[id] = FakeBand(orgId, name, membersCanEditSongs);
+    bands[id] = FakeBand(orgId, name);
     addMember(id, admin, BandRole.admin);
   }
 
-  FakeMember addMember(String bandId, AuthUser user, BandRole role) {
+  FakeMember<BandRole> addMember(String bandId, AuthUser user, BandRole role) {
     final orgId = bands[bandId]!.organizationId;
     if (!orgMembers.any((m) => m.scopeId == orgId && m.user.id == user.id)) {
-      addOrgMember(orgId, user, BandRole.member);
+      addOrgMember(orgId, user, OrgRole.member);
     }
     final m = FakeMember('m${++_ids}', bandId, user, role);
     members.add(m);
@@ -167,7 +166,7 @@ class FakeSyncBackend implements SyncBackend {
 
   bool _isOrgAdmin(String orgId) => orgMembers.any(
     (m) =>
-        m.scopeId == orgId && m.user.id == user?.id && m.role == BandRole.admin,
+        m.scopeId == orgId && m.user.id == user?.id && m.role == OrgRole.admin,
   );
 
   bool _canManageBand(String bandId) =>
@@ -184,7 +183,7 @@ class FakeSyncBackend implements SyncBackend {
     if (user == null) throw const BackendException(BackendErrorKind.signedOut);
   }
 
-  RemoteMember _remote(FakeMember m) => RemoteMember(
+  RemoteMember<R> _remote<R extends Enum>(FakeMember<R> m) => RemoteMember<R>(
     membershipId: m.id,
     userId: m.user.id,
     name: m.user.displayName,
@@ -222,7 +221,6 @@ class FakeSyncBackend implements SyncBackend {
                     id: b.key,
                     organizationId: o.key,
                     name: b.value.name,
-                    membersCanEditSongs: b.value.membersCanEditSongs,
                     revision: 1,
                     members: [
                       for (final m in members)
@@ -234,16 +232,16 @@ class FakeSyncBackend implements SyncBackend {
     ];
   }
 
-  void _keepAdmin(List<FakeMember> list, FakeMember m) {
+  void _keepAdmin<R extends Enum>(List<FakeMember<R>> list, FakeMember<R> m) {
     final others = list.where(
-      (o) => o.scopeId == m.scopeId && o != m && o.role == BandRole.admin,
+      (o) => o.scopeId == m.scopeId && o != m && o.role.name == 'admin',
     );
-    if (m.role == BandRole.admin && others.isEmpty) {
+    if (m.role.name == 'admin' && others.isEmpty) {
       throw const BackendException(BackendErrorKind.lastAdmin);
     }
   }
 
-  FakeMember _find(List<FakeMember> list, String id) {
+  FakeMember<R> _find<R extends Enum>(List<FakeMember<R>> list, String id) {
     final m = list.where((m) => m.id == id).firstOrNull;
     if (m == null) throw const BackendException(BackendErrorKind.notAllowed);
     return m;
@@ -259,13 +257,13 @@ class FakeSyncBackend implements SyncBackend {
   }
 
   @override
-  Future<void> setOrgMemberRole(String orgMembershipId, BandRole role) async {
+  Future<void> setOrgMemberRole(String orgMembershipId, OrgRole role) async {
     _requireUser();
     final m = _find(orgMembers, orgMembershipId);
     if (!_isOrgAdmin(m.scopeId)) {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
-    if (role == BandRole.member) _keepAdmin(orgMembers, m);
+    if (role != OrgRole.admin) _keepAdmin(orgMembers, m);
     m.role = role;
   }
 
@@ -302,20 +300,13 @@ class FakeSyncBackend implements SyncBackend {
   }
 
   @override
-  Future<void> updateBand(
-    String bandId, {
-    String? name,
-    bool? membersCanEditSongs,
-  }) async {
+  Future<void> updateBand(String bandId, {String? name}) async {
     _requireUser();
     final band = bands[bandId];
     if (band == null || !_canManageBand(bandId)) {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
     if (name != null) band.name = name.trim();
-    if (membersCanEditSongs != null) {
-      band.membersCanEditSongs = membersCanEditSongs;
-    }
   }
 
   @override
@@ -390,9 +381,15 @@ class FakeSyncBackend implements SyncBackend {
   }
 
   @override
-  Future<CreatedInvite> createInvite(String organizationId) async {
+  Future<CreatedInvite> createInvite(
+    String organizationId, {
+    String? bandId,
+  }) async {
     _requireUser();
-    if (!_isOrgAdmin(organizationId)) {
+    final allowed =
+        _isOrgAdmin(organizationId) ||
+        (bandId != null && _canManageBand(bandId));
+    if (!allowed) {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
     final token = 'Tok${++_ids}'.padRight(32, 'x');
@@ -402,7 +399,7 @@ class FakeSyncBackend implements SyncBackend {
       token,
       now,
       now.add(const Duration(days: 7)),
-    );
+    )..bandId = bandId;
     invites.add(invite);
     return CreatedInvite(
       id: invite.id,
@@ -412,11 +409,15 @@ class FakeSyncBackend implements SyncBackend {
   }
 
   @override
-  Future<List<InviteInfo>> fetchInvites(String organizationId) async {
+  Future<List<InviteInfo>> fetchInvites(
+    String organizationId, {
+    String? bandId,
+  }) async {
     _requireUser();
     return [
       for (final i in invites.reversed)
-        if (i.organizationId == organizationId)
+        if (i.organizationId == organizationId &&
+            (bandId == null || i.bandId == bandId))
           InviteInfo(
             id: i.id,
             created: i.created,
@@ -444,6 +445,7 @@ class FakeSyncBackend implements SyncBackend {
       organizationId: invite.organizationId,
       organizationName: invite.founder ?? organizations[invite.organizationId]!,
       founder: invite.founder != null,
+      bandName: bands[invite.bandId]?.name,
       status: _inviteStatus(invite),
       alreadyMember: orgMembers.any(
         (m) => m.scopeId == invite.organizationId && m.user.id == user?.id,
@@ -470,14 +472,19 @@ class FakeSyncBackend implements SyncBackend {
     if (invite.founder case final name?) {
       final orgId = 'org${++_ids}';
       organizations[orgId] = name;
-      addOrgMember(orgId, user!, BandRole.admin);
+      addOrgMember(orgId, user!, OrgRole.admin);
       invite.usedBy = user;
       return orgId;
     }
     final orgId = invite.organizationId;
     if (!orgMembers.any((m) => m.scopeId == orgId && m.user.id == user!.id)) {
-      addOrgMember(orgId, user!, BandRole.member);
+      addOrgMember(orgId, user!, OrgRole.member);
       invite.joined.add(user!);
+    }
+    final bandId = invite.bandId;
+    if (bandId != null &&
+        !members.any((m) => m.scopeId == bandId && m.user.id == user!.id)) {
+      addMember(bandId, user!, BandRole.member);
     }
     return orgId;
   }
@@ -738,26 +745,28 @@ class FakeInvite {
 
   /// Name of the organization a founder invitation creates (ADR-0024).
   String? founder;
+
+  /// The band the link also leads into (ADR-0023).
+  String? bandId;
   AuthUser? usedBy;
   final joined = <AuthUser>[];
 }
 
 class FakeBand {
-  FakeBand(this.organizationId, this.name, this.membersCanEditSongs);
+  FakeBand(this.organizationId, this.name);
 
   final String organizationId;
   String name;
-  bool membersCanEditSongs;
 }
 
 /// A membership in an organization or a band ([scopeId]).
-class FakeMember {
+class FakeMember<R extends Enum> {
   FakeMember(this.id, this.scopeId, this.user, this.role);
 
   final String id;
   final String scopeId;
   final AuthUser user;
-  BandRole role;
+  R role;
 }
 
 class _FakeDownloads implements AttachmentDownloads {

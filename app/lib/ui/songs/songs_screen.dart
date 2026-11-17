@@ -152,7 +152,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
               ]
             : [
                 const LibrarySwitcher(),
-                if (library.canEditSongs) ...[
+                if (library.canCreateSongs) ...[
                   // Also on web: imported songs are synced (ADR-0018).
                   IconButton(
                     key: const Key('songs-import'),
@@ -178,7 +178,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                 ),
               ],
       ),
-      floatingActionButton: !library.canEditSongs || selected != null
+      floatingActionButton: !library.canCreateSongs || selected != null
           ? null
           : FloatingActionButton.extended(
               heroTag: null,

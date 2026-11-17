@@ -47,7 +47,7 @@ void main() {
   });
 
   test('members create and edit songs if the band allows it', () async {
-    final f = await BandFixture.create(pb, membersCanEditSongs: true);
+    final f = await BandFixture.create(pb, memberIsLibrarian: true);
     final created = await f.member.post('songs', songBody(f.orgId));
     created.expectStatus(200);
     final r = await f.member.patch('songs', created.json['id'], {
@@ -58,24 +58,111 @@ void main() {
   });
 
   test('outsiders cannot add songs to a band', () async {
-    final f = await BandFixture.create(pb, membersCanEditSongs: true);
+    final f = await BandFixture.create(pb, memberIsLibrarian: true);
     expect((await f.outsider.post('songs', songBody(f.orgId))).status, 400);
   });
 
-  test('only admins delete songs', () async {
-    final f = await BandFixture.create(pb, membersCanEditSongs: true);
-    final song = await f.createSong(f.member);
-    final byMember = await f.member.patch('songs', song['id'], {
+  test('organization admins and librarians delete songs (ADR-0023)', () async {
+    final f = await BandFixture.create(pb, memberIsLibrarian: true);
+    final leader = await f.addLeader();
+    final own = await f.createSong(leader);
+    final byLeader = await leader.patch('songs', own['id'], {
       'deleted': true,
-      'revision': song['revision'],
+      'revision': own['revision'],
     });
-    expect(byMember.status, 404);
-    final byAdmin = await f.admin.patch('songs', song['id'], {
+    expect(byLeader.status, 404);
+    final byLibrarian = await f.member.patch('songs', own['id'], {
       'deleted': true,
-      'revision': song['revision'],
+      'revision': own['revision'],
     });
-    byAdmin.expectStatus(200);
-    expect(byAdmin.json['deleted'], isTrue);
+    byLibrarian.expectStatus(200);
+    expect(byLibrarian.json['deleted'], isTrue);
+    final other = await f.createSong(f.member);
+    (await f.admin.patch('songs', other['id'], {
+      'deleted': true,
+      'revision': other['revision'],
+    })).expectStatus(200);
+  });
+
+  group('own songs of band leaders (ADR-0023)', () {
+    test('the creator is recorded and cannot be changed', () async {
+      final f = await BandFixture.create(pb);
+      final leader = await f.addLeader();
+      final song = await f.createSong(leader);
+      expect(song['created_by'], leader.id);
+      final forged = await leader.patch('songs', song['id'], {
+        'created_by': f.admin.id,
+        'revision': song['revision'],
+      });
+      expect(forged.status, isNot(200));
+      final created = await f.admin.post('songs', {
+        'organization': f.orgId,
+        'title': 'Forged',
+        'created_by': leader.id,
+      });
+      created.expectStatus(200);
+      expect(created.json['created_by'], f.admin.id);
+    });
+
+    test('leaders edit their own songs until someone else does', () async {
+      final f = await BandFixture.create(pb, memberIsLibrarian: true);
+      final leader = await f.addLeader();
+      final song = await f.createSong(leader);
+      final fixed = await leader.patch('songs', song['id'], {
+        'title': 'Fixed',
+        'revision': song['revision'],
+      });
+      fixed.expectStatus(200);
+
+      final byLibrarian = await f.member.patch('songs', song['id'], {
+        'title': 'Maintained',
+        'revision': fixed.json['revision'],
+      });
+      byLibrarian.expectStatus(200);
+      final again = await leader.patch('songs', song['id'], {
+        'title': 'Mine again',
+        'revision': byLibrarian.json['revision'],
+      });
+      expect(again.status, 404);
+    });
+
+    test('leaders do not edit songs of others', () async {
+      final f = await BandFixture.create(pb);
+      final leader = await f.addLeader();
+      final song = await f.createSong(f.admin);
+      final r = await leader.patch('songs', song['id'], {
+        'title': 'Nope',
+        'revision': song['revision'],
+      });
+      expect(r.status, 404);
+    });
+
+    test('a former leader no longer edits their songs', () async {
+      final f = await BandFixture.create(pb);
+      final leader = await f.addLeader();
+      final song = await f.createSong(leader);
+      final membership = await f.membershipOf(leader);
+      (await f.admin.patch('memberships', membership['id'] as String, {
+        'role': 'member',
+      })).expectStatus(200);
+      final r = await leader.patch('songs', song['id'], {
+        'title': 'Nope',
+        'revision': song['revision'],
+      });
+      expect(r.status, 404);
+    });
+  });
+
+  test('set planners and members do not create songs', () async {
+    final f = await BandFixture.create(pb);
+    final planner = await f.addPlanner();
+    for (final user in [planner, f.member]) {
+      final r = await user.post('songs', {
+        'organization': f.orgId,
+        'title': 'Nope',
+      });
+      expect(r.status, 400);
+    }
   });
 
   test('songs cannot be moved to another organization', () async {
@@ -93,7 +180,7 @@ void main() {
 
   group('conflicts', () {
     test('an update based on an old revision is refused with 409', () async {
-      final f = await BandFixture.create(pb, membersCanEditSongs: true);
+      final f = await BandFixture.create(pb, memberIsLibrarian: true);
       final song = await f.createSong(f.admin);
       final first = await f.member.patch('songs', song['id'], {
         'chordpro': '{title: Song}\nMember version',

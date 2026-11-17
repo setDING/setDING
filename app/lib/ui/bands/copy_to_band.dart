@@ -48,7 +48,7 @@ Future<void> copySongsToBand(
   final l10n = AppLocalizations.of(context);
   final libraries = <String, _Library>{
     for (final l in ref.read(librariesProvider).value ?? const <LibraryView>[])
-      if (l.id != fromLibraryId && l.canEditSongs)
+      if (l.id != fromLibraryId && l.canCreateSongs)
         l.id: (
           id: l.id,
           label: l.isLocal ? l10n.bandLocal : l.name,

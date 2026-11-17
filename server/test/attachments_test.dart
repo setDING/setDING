@@ -102,7 +102,7 @@ void main() {
     final s1 = await strict.createSong(strict.admin);
     expect((await upload(strict.member, strict.orgId, s1['id'])).status, 400);
 
-    final relaxed = await BandFixture.create(pb, membersCanEditSongs: true);
+    final relaxed = await BandFixture.create(pb, memberIsLibrarian: true);
     final s2 = await relaxed.createSong(relaxed.admin);
     (await upload(relaxed.member, relaxed.orgId, s2['id'])).expectStatus(200);
   });
@@ -129,17 +129,27 @@ void main() {
     expect(replaced.status, 400);
   });
 
-  test('only admins delete attachments', () async {
-    final f = await BandFixture.create(pb, membersCanEditSongs: true);
-    final song = await f.createSong(f.admin);
-    final created = await upload(f.admin, f.orgId, song['id']);
+  test('organization admins and librarians delete attachments', () async {
+    final f = await BandFixture.create(pb, memberIsLibrarian: true);
+    final leader = await f.addLeader();
+    final song = await f.createSong(leader);
+    final created = await upload(leader, f.orgId, song['id']);
+    created.expectStatus(200);
     final id = created.json['id'] as String;
     expect(
-      (await f.member.patch('attachments', id, {'deleted': true})).status,
+      (await leader.patch('attachments', id, {'deleted': true})).status,
       404,
     );
-    (await f.admin.patch('attachments', id, {
+    (await f.member.patch('attachments', id, {
       'deleted': true,
     })).expectStatus(200);
+  });
+
+  test('leaders attach files only to their own songs (ADR-0023)', () async {
+    final f = await BandFixture.create(pb);
+    final leader = await f.addLeader();
+    final others = await f.createSong(f.admin);
+    final r = await upload(leader, f.orgId, others['id']);
+    expect(r.status, 400);
   });
 }

@@ -390,6 +390,28 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _createdByMeta = const VerificationMeta(
+    'createdBy',
+  );
+  @override
+  late final GeneratedColumn<String> createdBy = GeneratedColumn<String>(
+    'created_by',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedByMeta = const VerificationMeta(
+    'updatedBy',
+  );
+  @override
+  late final GeneratedColumn<String> updatedBy = GeneratedColumn<String>(
+    'updated_by',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _revisionMeta = const VerificationMeta(
     'revision',
   );
@@ -441,6 +463,8 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
     sortArtist,
     searchText,
     tags,
+    createdBy,
+    updatedBy,
     revision,
     updatedAt,
     deleted,
@@ -529,6 +553,18 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
         tags.isAcceptableOrUnknown(data['tags']!, _tagsMeta),
       );
     }
+    if (data.containsKey('created_by')) {
+      context.handle(
+        _createdByMeta,
+        createdBy.isAcceptableOrUnknown(data['created_by']!, _createdByMeta),
+      );
+    }
+    if (data.containsKey('updated_by')) {
+      context.handle(
+        _updatedByMeta,
+        updatedBy.isAcceptableOrUnknown(data['updated_by']!, _updatedByMeta),
+      );
+    }
     if (data.containsKey('revision')) {
       context.handle(
         _revisionMeta,
@@ -602,6 +638,14 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
         DriftSqlType.string,
         data['${effectivePrefix}tags'],
       ),
+      createdBy: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_by'],
+      ),
+      updatedBy: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_by'],
+      ),
       revision: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}revision'],
@@ -650,6 +694,13 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
   /// `{tag}` values, each enclosed in newlines (`\nRock\nLive\n`) so a tag
   /// can be matched exactly with LIKE (schema 2).
   final String? tags;
+
+  /// User who created the song and who changed it last, as the server
+  /// reports them (ADR-0023, schema 11): band leaders may edit their own
+  /// songs as long as nobody else has changed them. Null for the local
+  /// library and for songs created before.
+  final String? createdBy;
+  final String? updatedBy;
   final int revision;
   final DateTime updatedAt;
   final bool deleted;
@@ -665,6 +716,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     this.sortArtist,
     this.searchText,
     this.tags,
+    this.createdBy,
+    this.updatedBy,
     required this.revision,
     required this.updatedAt,
     required this.deleted,
@@ -697,6 +750,12 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     if (!nullToAbsent || tags != null) {
       map['tags'] = Variable<String>(tags);
     }
+    if (!nullToAbsent || createdBy != null) {
+      map['created_by'] = Variable<String>(createdBy);
+    }
+    if (!nullToAbsent || updatedBy != null) {
+      map['updated_by'] = Variable<String>(updatedBy);
+    }
     map['revision'] = Variable<int>(revision);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     map['deleted'] = Variable<bool>(deleted);
@@ -728,6 +787,12 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
           ? const Value.absent()
           : Value(searchText),
       tags: tags == null && nullToAbsent ? const Value.absent() : Value(tags),
+      createdBy: createdBy == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdBy),
+      updatedBy: updatedBy == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedBy),
       revision: Value(revision),
       updatedAt: Value(updatedAt),
       deleted: Value(deleted),
@@ -751,6 +816,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       sortArtist: serializer.fromJson<String?>(json['sortArtist']),
       searchText: serializer.fromJson<String?>(json['searchText']),
       tags: serializer.fromJson<String?>(json['tags']),
+      createdBy: serializer.fromJson<String?>(json['createdBy']),
+      updatedBy: serializer.fromJson<String?>(json['updatedBy']),
       revision: serializer.fromJson<int>(json['revision']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deleted: serializer.fromJson<bool>(json['deleted']),
@@ -771,6 +838,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       'sortArtist': serializer.toJson<String?>(sortArtist),
       'searchText': serializer.toJson<String?>(searchText),
       'tags': serializer.toJson<String?>(tags),
+      'createdBy': serializer.toJson<String?>(createdBy),
+      'updatedBy': serializer.toJson<String?>(updatedBy),
       'revision': serializer.toJson<int>(revision),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deleted': serializer.toJson<bool>(deleted),
@@ -789,6 +858,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     Value<String?> sortArtist = const Value.absent(),
     Value<String?> searchText = const Value.absent(),
     Value<String?> tags = const Value.absent(),
+    Value<String?> createdBy = const Value.absent(),
+    Value<String?> updatedBy = const Value.absent(),
     int? revision,
     DateTime? updatedAt,
     bool? deleted,
@@ -804,6 +875,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     sortArtist: sortArtist.present ? sortArtist.value : this.sortArtist,
     searchText: searchText.present ? searchText.value : this.searchText,
     tags: tags.present ? tags.value : this.tags,
+    createdBy: createdBy.present ? createdBy.value : this.createdBy,
+    updatedBy: updatedBy.present ? updatedBy.value : this.updatedBy,
     revision: revision ?? this.revision,
     updatedAt: updatedAt ?? this.updatedAt,
     deleted: deleted ?? this.deleted,
@@ -827,6 +900,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
           ? data.searchText.value
           : this.searchText,
       tags: data.tags.present ? data.tags.value : this.tags,
+      createdBy: data.createdBy.present ? data.createdBy.value : this.createdBy,
+      updatedBy: data.updatedBy.present ? data.updatedBy.value : this.updatedBy,
       revision: data.revision.present ? data.revision.value : this.revision,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deleted: data.deleted.present ? data.deleted.value : this.deleted,
@@ -847,6 +922,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
           ..write('sortArtist: $sortArtist, ')
           ..write('searchText: $searchText, ')
           ..write('tags: $tags, ')
+          ..write('createdBy: $createdBy, ')
+          ..write('updatedBy: $updatedBy, ')
           ..write('revision: $revision, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deleted: $deleted')
@@ -867,6 +944,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     sortArtist,
     searchText,
     tags,
+    createdBy,
+    updatedBy,
     revision,
     updatedAt,
     deleted,
@@ -886,6 +965,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
           other.sortArtist == this.sortArtist &&
           other.searchText == this.searchText &&
           other.tags == this.tags &&
+          other.createdBy == this.createdBy &&
+          other.updatedBy == this.updatedBy &&
           other.revision == this.revision &&
           other.updatedAt == this.updatedAt &&
           other.deleted == this.deleted);
@@ -903,6 +984,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
   final Value<String?> sortArtist;
   final Value<String?> searchText;
   final Value<String?> tags;
+  final Value<String?> createdBy;
+  final Value<String?> updatedBy;
   final Value<int> revision;
   final Value<DateTime> updatedAt;
   final Value<bool> deleted;
@@ -919,6 +1002,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     this.sortArtist = const Value.absent(),
     this.searchText = const Value.absent(),
     this.tags = const Value.absent(),
+    this.createdBy = const Value.absent(),
+    this.updatedBy = const Value.absent(),
     this.revision = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deleted = const Value.absent(),
@@ -936,6 +1021,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     this.sortArtist = const Value.absent(),
     this.searchText = const Value.absent(),
     this.tags = const Value.absent(),
+    this.createdBy = const Value.absent(),
+    this.updatedBy = const Value.absent(),
     this.revision = const Value.absent(),
     required DateTime updatedAt,
     this.deleted = const Value.absent(),
@@ -956,6 +1043,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     Expression<String>? sortArtist,
     Expression<String>? searchText,
     Expression<String>? tags,
+    Expression<String>? createdBy,
+    Expression<String>? updatedBy,
     Expression<int>? revision,
     Expression<DateTime>? updatedAt,
     Expression<bool>? deleted,
@@ -973,6 +1062,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
       if (sortArtist != null) 'sort_artist': sortArtist,
       if (searchText != null) 'search_text': searchText,
       if (tags != null) 'tags': tags,
+      if (createdBy != null) 'created_by': createdBy,
+      if (updatedBy != null) 'updated_by': updatedBy,
       if (revision != null) 'revision': revision,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deleted != null) 'deleted': deleted,
@@ -992,6 +1083,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     Value<String?>? sortArtist,
     Value<String?>? searchText,
     Value<String?>? tags,
+    Value<String?>? createdBy,
+    Value<String?>? updatedBy,
     Value<int>? revision,
     Value<DateTime>? updatedAt,
     Value<bool>? deleted,
@@ -1009,6 +1102,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
       sortArtist: sortArtist ?? this.sortArtist,
       searchText: searchText ?? this.searchText,
       tags: tags ?? this.tags,
+      createdBy: createdBy ?? this.createdBy,
+      updatedBy: updatedBy ?? this.updatedBy,
       revision: revision ?? this.revision,
       updatedAt: updatedAt ?? this.updatedAt,
       deleted: deleted ?? this.deleted,
@@ -1052,6 +1147,12 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     if (tags.present) {
       map['tags'] = Variable<String>(tags.value);
     }
+    if (createdBy.present) {
+      map['created_by'] = Variable<String>(createdBy.value);
+    }
+    if (updatedBy.present) {
+      map['updated_by'] = Variable<String>(updatedBy.value);
+    }
     if (revision.present) {
       map['revision'] = Variable<int>(revision.value);
     }
@@ -1081,6 +1182,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
           ..write('sortArtist: $sortArtist, ')
           ..write('searchText: $searchText, ')
           ..write('tags: $tags, ')
+          ..write('createdBy: $createdBy, ')
+          ..write('updatedBy: $updatedBy, ')
           ..write('revision: $revision, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deleted: $deleted, ')
@@ -1462,14 +1565,14 @@ class $OrgMembershipsTable extends OrgMemberships
     requiredDuringInsert: false,
   );
   @override
-  late final GeneratedColumnWithTypeConverter<BandRole, String> role =
+  late final GeneratedColumnWithTypeConverter<OrgRole, String> role =
       GeneratedColumn<String>(
         'role',
         aliasedName,
         false,
         type: DriftSqlType.string,
         requiredDuringInsert: true,
-      ).withConverter<BandRole>($OrgMembershipsTable.$converterrole);
+      ).withConverter<OrgRole>($OrgMembershipsTable.$converterrole);
   static const VerificationMeta _revisionMeta = const VerificationMeta(
     'revision',
   );
@@ -1593,8 +1696,8 @@ class $OrgMembershipsTable extends OrgMemberships
     return $OrgMembershipsTable(attachedDatabase, alias);
   }
 
-  static JsonTypeConverter2<BandRole, String, String> $converterrole =
-      const EnumNameConverter<BandRole>(BandRole.values);
+  static JsonTypeConverter2<OrgRole, String, String> $converterrole =
+      const EnumNameConverter<OrgRole>(OrgRole.values);
 }
 
 class OrgMembershipEntry extends DataClass
@@ -1604,7 +1707,10 @@ class OrgMembershipEntry extends DataClass
   final String userId;
   final String userName;
   final String? userEmail;
-  final BandRole role;
+
+  /// Stored by name, so schema 11 kept the values of [BandRole] it had
+  /// before (`admin`, `member`) and added `librarian` (ADR-0023).
+  final OrgRole role;
   final int revision;
   const OrgMembershipEntry({
     required this.id,
@@ -1687,7 +1793,7 @@ class OrgMembershipEntry extends DataClass
     String? userId,
     String? userName,
     Value<String?> userEmail = const Value.absent(),
-    BandRole? role,
+    OrgRole? role,
     int? revision,
   }) => OrgMembershipEntry(
     id: id ?? this.id,
@@ -1755,7 +1861,7 @@ class OrgMembershipsCompanion extends UpdateCompanion<OrgMembershipEntry> {
   final Value<String> userId;
   final Value<String> userName;
   final Value<String?> userEmail;
-  final Value<BandRole> role;
+  final Value<OrgRole> role;
   final Value<int> revision;
   final Value<int> rowid;
   const OrgMembershipsCompanion({
@@ -1774,7 +1880,7 @@ class OrgMembershipsCompanion extends UpdateCompanion<OrgMembershipEntry> {
     required String userId,
     this.userName = const Value.absent(),
     this.userEmail = const Value.absent(),
-    required BandRole role,
+    required OrgRole role,
     this.revision = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -1809,7 +1915,7 @@ class OrgMembershipsCompanion extends UpdateCompanion<OrgMembershipEntry> {
     Value<String>? userId,
     Value<String>? userName,
     Value<String?>? userEmail,
-    Value<BandRole>? role,
+    Value<OrgRole>? role,
     Value<int>? revision,
     Value<int>? rowid,
   }) {
@@ -1910,20 +2016,6 @@ class $BandsTable extends Bands with TableInfo<$BandsTable, BandEntry> {
       'REFERENCES organizations (id)',
     ),
   );
-  static const VerificationMeta _membersCanEditSongsMeta =
-      const VerificationMeta('membersCanEditSongs');
-  @override
-  late final GeneratedColumn<bool> membersCanEditSongs = GeneratedColumn<bool>(
-    'members_can_edit_songs',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("members_can_edit_songs" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
-  );
   static const VerificationMeta _revisionMeta = const VerificationMeta(
     'revision',
   );
@@ -1956,7 +2048,6 @@ class $BandsTable extends Bands with TableInfo<$BandsTable, BandEntry> {
     id,
     name,
     organizationId,
-    membersCanEditSongs,
     revision,
     deleted,
   ];
@@ -1994,15 +2085,6 @@ class $BandsTable extends Bands with TableInfo<$BandsTable, BandEntry> {
         ),
       );
     }
-    if (data.containsKey('members_can_edit_songs')) {
-      context.handle(
-        _membersCanEditSongsMeta,
-        membersCanEditSongs.isAcceptableOrUnknown(
-          data['members_can_edit_songs']!,
-          _membersCanEditSongsMeta,
-        ),
-      );
-    }
     if (data.containsKey('revision')) {
       context.handle(
         _revisionMeta,
@@ -2036,10 +2118,6 @@ class $BandsTable extends Bands with TableInfo<$BandsTable, BandEntry> {
         DriftSqlType.string,
         data['${effectivePrefix}organization_id'],
       ),
-      membersCanEditSongs: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}members_can_edit_songs'],
-      )!,
       revision: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}revision'],
@@ -2063,7 +2141,6 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
 
   /// Organization of the band; null for the local library (schema 4).
   final String? organizationId;
-  final bool membersCanEditSongs;
 
   /// Server revision (ADR-0015); 0 for the local library (schema 4).
   final int revision;
@@ -2074,7 +2151,6 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
     required this.id,
     required this.name,
     this.organizationId,
-    required this.membersCanEditSongs,
     required this.revision,
     required this.deleted,
   });
@@ -2086,7 +2162,6 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
     if (!nullToAbsent || organizationId != null) {
       map['organization_id'] = Variable<String>(organizationId);
     }
-    map['members_can_edit_songs'] = Variable<bool>(membersCanEditSongs);
     map['revision'] = Variable<int>(revision);
     map['deleted'] = Variable<bool>(deleted);
     return map;
@@ -2099,7 +2174,6 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
       organizationId: organizationId == null && nullToAbsent
           ? const Value.absent()
           : Value(organizationId),
-      membersCanEditSongs: Value(membersCanEditSongs),
       revision: Value(revision),
       deleted: Value(deleted),
     );
@@ -2114,9 +2188,6 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       organizationId: serializer.fromJson<String?>(json['organizationId']),
-      membersCanEditSongs: serializer.fromJson<bool>(
-        json['membersCanEditSongs'],
-      ),
       revision: serializer.fromJson<int>(json['revision']),
       deleted: serializer.fromJson<bool>(json['deleted']),
     );
@@ -2128,7 +2199,6 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
       'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String>(name),
       'organizationId': serializer.toJson<String?>(organizationId),
-      'membersCanEditSongs': serializer.toJson<bool>(membersCanEditSongs),
       'revision': serializer.toJson<int>(revision),
       'deleted': serializer.toJson<bool>(deleted),
     };
@@ -2138,7 +2208,6 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
     String? id,
     String? name,
     Value<String?> organizationId = const Value.absent(),
-    bool? membersCanEditSongs,
     int? revision,
     bool? deleted,
   }) => BandEntry(
@@ -2147,7 +2216,6 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
     organizationId: organizationId.present
         ? organizationId.value
         : this.organizationId,
-    membersCanEditSongs: membersCanEditSongs ?? this.membersCanEditSongs,
     revision: revision ?? this.revision,
     deleted: deleted ?? this.deleted,
   );
@@ -2158,9 +2226,6 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
       organizationId: data.organizationId.present
           ? data.organizationId.value
           : this.organizationId,
-      membersCanEditSongs: data.membersCanEditSongs.present
-          ? data.membersCanEditSongs.value
-          : this.membersCanEditSongs,
       revision: data.revision.present ? data.revision.value : this.revision,
       deleted: data.deleted.present ? data.deleted.value : this.deleted,
     );
@@ -2172,7 +2237,6 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('organizationId: $organizationId, ')
-          ..write('membersCanEditSongs: $membersCanEditSongs, ')
           ..write('revision: $revision, ')
           ..write('deleted: $deleted')
           ..write(')'))
@@ -2180,14 +2244,7 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
   }
 
   @override
-  int get hashCode => Object.hash(
-    id,
-    name,
-    organizationId,
-    membersCanEditSongs,
-    revision,
-    deleted,
-  );
+  int get hashCode => Object.hash(id, name, organizationId, revision, deleted);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2195,7 +2252,6 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
           other.id == this.id &&
           other.name == this.name &&
           other.organizationId == this.organizationId &&
-          other.membersCanEditSongs == this.membersCanEditSongs &&
           other.revision == this.revision &&
           other.deleted == this.deleted);
 }
@@ -2204,7 +2260,6 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
   final Value<String> id;
   final Value<String> name;
   final Value<String?> organizationId;
-  final Value<bool> membersCanEditSongs;
   final Value<int> revision;
   final Value<bool> deleted;
   final Value<int> rowid;
@@ -2212,7 +2267,6 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.organizationId = const Value.absent(),
-    this.membersCanEditSongs = const Value.absent(),
     this.revision = const Value.absent(),
     this.deleted = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2221,7 +2275,6 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
     required String id,
     required String name,
     this.organizationId = const Value.absent(),
-    this.membersCanEditSongs = const Value.absent(),
     this.revision = const Value.absent(),
     this.deleted = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2231,7 +2284,6 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
     Expression<String>? id,
     Expression<String>? name,
     Expression<String>? organizationId,
-    Expression<bool>? membersCanEditSongs,
     Expression<int>? revision,
     Expression<bool>? deleted,
     Expression<int>? rowid,
@@ -2240,8 +2292,6 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (organizationId != null) 'organization_id': organizationId,
-      if (membersCanEditSongs != null)
-        'members_can_edit_songs': membersCanEditSongs,
       if (revision != null) 'revision': revision,
       if (deleted != null) 'deleted': deleted,
       if (rowid != null) 'rowid': rowid,
@@ -2252,7 +2302,6 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
     Value<String>? id,
     Value<String>? name,
     Value<String?>? organizationId,
-    Value<bool>? membersCanEditSongs,
     Value<int>? revision,
     Value<bool>? deleted,
     Value<int>? rowid,
@@ -2261,7 +2310,6 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
       id: id ?? this.id,
       name: name ?? this.name,
       organizationId: organizationId ?? this.organizationId,
-      membersCanEditSongs: membersCanEditSongs ?? this.membersCanEditSongs,
       revision: revision ?? this.revision,
       deleted: deleted ?? this.deleted,
       rowid: rowid ?? this.rowid,
@@ -2279,9 +2327,6 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
     }
     if (organizationId.present) {
       map['organization_id'] = Variable<String>(organizationId.value);
-    }
-    if (membersCanEditSongs.present) {
-      map['members_can_edit_songs'] = Variable<bool>(membersCanEditSongs.value);
     }
     if (revision.present) {
       map['revision'] = Variable<int>(revision.value);
@@ -2301,7 +2346,6 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('organizationId: $organizationId, ')
-          ..write('membersCanEditSongs: $membersCanEditSongs, ')
           ..write('revision: $revision, ')
           ..write('deleted: $deleted, ')
           ..write('rowid: $rowid')
@@ -6269,6 +6313,8 @@ typedef $$SongsTableCreateCompanionBuilder = SongsCompanion Function({
   Value<String?> sortArtist,
   Value<String?> searchText,
   Value<String?> tags,
+  Value<String?> createdBy,
+  Value<String?> updatedBy,
   Value<int> revision,
   required DateTime updatedAt,
   Value<bool> deleted,
@@ -6286,6 +6332,8 @@ typedef $$SongsTableUpdateCompanionBuilder = SongsCompanion Function({
   Value<String?> sortArtist,
   Value<String?> searchText,
   Value<String?> tags,
+  Value<String?> createdBy,
+  Value<String?> updatedBy,
   Value<int> revision,
   Value<DateTime> updatedAt,
   Value<bool> deleted,
@@ -6413,6 +6461,16 @@ class $$SongsTableFilterComposer extends Composer<_$AppDatabase, $SongsTable> {
 
   ColumnFilters<String> get tags => $composableBuilder(
     column: $table.tags,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdBy => $composableBuilder(
+    column: $table.createdBy,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get updatedBy => $composableBuilder(
+    column: $table.updatedBy,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6571,6 +6629,16 @@ class $$SongsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get createdBy => $composableBuilder(
+    column: $table.createdBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get updatedBy => $composableBuilder(
+    column: $table.updatedBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get revision => $composableBuilder(
     column: $table.revision,
     builder: (column) => ColumnOrderings(column),
@@ -6634,6 +6702,12 @@ class $$SongsTableAnnotationComposer
 
   GeneratedColumn<String> get tags =>
       $composableBuilder(column: $table.tags, builder: (column) => column);
+
+  GeneratedColumn<String> get createdBy =>
+      $composableBuilder(column: $table.createdBy, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedBy =>
+      $composableBuilder(column: $table.updatedBy, builder: (column) => column);
 
   GeneratedColumn<int> get revision =>
       $composableBuilder(column: $table.revision, builder: (column) => column);
@@ -6763,6 +6837,8 @@ class $$SongsTableTableManager
                 Value<String?> sortArtist = const Value.absent(),
                 Value<String?> searchText = const Value.absent(),
                 Value<String?> tags = const Value.absent(),
+                Value<String?> createdBy = const Value.absent(),
+                Value<String?> updatedBy = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
@@ -6779,6 +6855,8 @@ class $$SongsTableTableManager
                 sortArtist: sortArtist,
                 searchText: searchText,
                 tags: tags,
+                createdBy: createdBy,
+                updatedBy: updatedBy,
                 revision: revision,
                 updatedAt: updatedAt,
                 deleted: deleted,
@@ -6797,6 +6875,8 @@ class $$SongsTableTableManager
                 Value<String?> sortArtist = const Value.absent(),
                 Value<String?> searchText = const Value.absent(),
                 Value<String?> tags = const Value.absent(),
+                Value<String?> createdBy = const Value.absent(),
+                Value<String?> updatedBy = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 required DateTime updatedAt,
                 Value<bool> deleted = const Value.absent(),
@@ -6813,6 +6893,8 @@ class $$SongsTableTableManager
                 sortArtist: sortArtist,
                 searchText: searchText,
                 tags: tags,
+                createdBy: createdBy,
+                updatedBy: updatedBy,
                 revision: revision,
                 updatedAt: updatedAt,
                 deleted: deleted,
@@ -7316,7 +7398,7 @@ typedef $$OrgMembershipsTableCreateCompanionBuilder =
       required String userId,
       Value<String> userName,
       Value<String?> userEmail,
-      required BandRole role,
+      required OrgRole role,
       Value<int> revision,
       Value<int> rowid,
     });
@@ -7327,7 +7409,7 @@ typedef $$OrgMembershipsTableUpdateCompanionBuilder =
       Value<String> userId,
       Value<String> userName,
       Value<String?> userEmail,
-      Value<BandRole> role,
+      Value<OrgRole> role,
       Value<int> revision,
       Value<int> rowid,
     });
@@ -7393,7 +7475,7 @@ class $$OrgMembershipsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnWithTypeConverterFilters<BandRole, BandRole, String> get role =>
+  ColumnWithTypeConverterFilters<OrgRole, OrgRole, String> get role =>
       $composableBuilder(
         column: $table.role,
         builder: (column) => ColumnWithTypeConverterFilters(column),
@@ -7512,7 +7594,7 @@ class $$OrgMembershipsTableAnnotationComposer
   GeneratedColumn<String> get userEmail =>
       $composableBuilder(column: $table.userEmail, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<BandRole, String> get role =>
+  GeneratedColumnWithTypeConverter<OrgRole, String> get role =>
       $composableBuilder(column: $table.role, builder: (column) => column);
 
   GeneratedColumn<int> get revision =>
@@ -7577,7 +7659,7 @@ class $$OrgMembershipsTableTableManager
                 Value<String> userId = const Value.absent(),
                 Value<String> userName = const Value.absent(),
                 Value<String?> userEmail = const Value.absent(),
-                Value<BandRole> role = const Value.absent(),
+                Value<OrgRole> role = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => OrgMembershipsCompanion(
@@ -7597,7 +7679,7 @@ class $$OrgMembershipsTableTableManager
                 required String userId,
                 Value<String> userName = const Value.absent(),
                 Value<String?> userEmail = const Value.absent(),
-                required BandRole role,
+                required OrgRole role,
                 Value<int> revision = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => OrgMembershipsCompanion.insert(
@@ -7679,7 +7761,6 @@ typedef $$BandsTableCreateCompanionBuilder = BandsCompanion Function({
   required String id,
   required String name,
   Value<String?> organizationId,
-  Value<bool> membersCanEditSongs,
   Value<int> revision,
   Value<bool> deleted,
   Value<int> rowid,
@@ -7688,7 +7769,6 @@ typedef $$BandsTableUpdateCompanionBuilder = BandsCompanion Function({
   Value<String> id,
   Value<String> name,
   Value<String?> organizationId,
-  Value<bool> membersCanEditSongs,
   Value<int> revision,
   Value<bool> deleted,
   Value<int> rowid,
@@ -7767,11 +7847,6 @@ class $$BandsTableFilterComposer extends Composer<_$AppDatabase, $BandsTable> {
 
   ColumnFilters<String> get name => $composableBuilder(
     column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get membersCanEditSongs => $composableBuilder(
-    column: $table.membersCanEditSongs,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7878,11 +7953,6 @@ class $$BandsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<bool> get membersCanEditSongs => $composableBuilder(
-    column: $table.membersCanEditSongs,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<int> get revision => $composableBuilder(
     column: $table.revision,
     builder: (column) => ColumnOrderings(column),
@@ -7931,11 +8001,6 @@ class $$BandsTableAnnotationComposer
 
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
-
-  GeneratedColumn<bool> get membersCanEditSongs => $composableBuilder(
-    column: $table.membersCanEditSongs,
-    builder: (column) => column,
-  );
 
   GeneratedColumn<int> get revision =>
       $composableBuilder(column: $table.revision, builder: (column) => column);
@@ -8052,7 +8117,6 @@ class $$BandsTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String?> organizationId = const Value.absent(),
-                Value<bool> membersCanEditSongs = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -8060,7 +8124,6 @@ class $$BandsTableTableManager
                 id: id,
                 name: name,
                 organizationId: organizationId,
-                membersCanEditSongs: membersCanEditSongs,
                 revision: revision,
                 deleted: deleted,
                 rowid: rowid,
@@ -8070,7 +8133,6 @@ class $$BandsTableTableManager
                 required String id,
                 required String name,
                 Value<String?> organizationId = const Value.absent(),
-                Value<bool> membersCanEditSongs = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -8078,7 +8140,6 @@ class $$BandsTableTableManager
                 id: id,
                 name: name,
                 organizationId: organizationId,
-                membersCanEditSongs: membersCanEditSongs,
                 revision: revision,
                 deleted: deleted,
                 rowid: rowid,

@@ -105,8 +105,10 @@ class BackendException implements Exception {
 }
 
 /// A member of an organization or a band as reported by the server.
+/// [R] is [OrgRole] for people of an organization and [BandRole] for band
+/// members (ADR-0023).
 @immutable
-class RemoteMember {
+class RemoteMember<R extends Enum> {
   const RemoteMember({
     required this.membershipId,
     required this.userId,
@@ -122,7 +124,7 @@ class RemoteMember {
 
   /// Only known for the signed-in user (other addresses are not public).
   final String? email;
-  final BandRole role;
+  final R role;
   final int revision;
 }
 
@@ -133,7 +135,6 @@ class RemoteBand {
     required this.id,
     required this.organizationId,
     required this.name,
-    required this.membersCanEditSongs,
     required this.revision,
     required this.members,
   });
@@ -141,9 +142,8 @@ class RemoteBand {
   final String id;
   final String organizationId;
   final String name;
-  final bool membersCanEditSongs;
   final int revision;
-  final List<RemoteMember> members;
+  final List<RemoteMember<BandRole>> members;
 }
 
 /// An organization of the signed-in user (ADR-0017) with its people and the
@@ -161,7 +161,7 @@ class RemoteOrganization {
   final String id;
   final String name;
   final int revision;
-  final List<RemoteMember> members;
+  final List<RemoteMember<OrgRole>> members;
   final List<RemoteBand> bands;
 }
 
@@ -175,6 +175,8 @@ class RemoteSong {
     required this.chordpro,
     this.revision = 0,
     this.deleted = false,
+    this.createdBy,
+    this.updatedBy,
   });
 
   final String id;
@@ -183,6 +185,10 @@ class RemoteSong {
   final String chordpro;
   final int revision;
   final bool deleted;
+
+  /// Creator and last editor (ADR-0023); set by the server, never sent.
+  final String? createdBy;
+  final String? updatedBy;
 }
 
 /// A set as stored on the server: its items as one JSON array
@@ -402,6 +408,7 @@ class InvitePreview {
     required this.status,
     required this.alreadyMember,
     this.founder = false,
+    this.bandName,
   });
 
   /// Empty for a founder invitation (the organization does not exist yet).
@@ -413,6 +420,10 @@ class InvitePreview {
   /// Redeeming founds the organization [organizationName] with the user as
   /// its admin (ADR-0024).
   final bool founder;
+
+  /// The band the link also leads into (invitation of a band leader,
+  /// ADR-0023).
+  final String? bandName;
 }
 
 /// Extracts the token from an invitation link (`https://…/invite/<token>`,
@@ -483,7 +494,7 @@ abstract class SyncBackend {
   Future<void> renameOrganization(String organizationId, String name);
 
   /// Changes the organization role of a person (organization admins).
-  Future<void> setOrgMemberRole(String orgMembershipId, BandRole role);
+  Future<void> setOrgMemberRole(String orgMembershipId, OrgRole role);
 
   /// Removes a person from an organization and its bands (organization
   /// admins), or leaves it (own membership).
@@ -499,11 +510,7 @@ abstract class SyncBackend {
   });
 
   /// Changes band settings (band and organization admins).
-  Future<void> updateBand(
-    String bandId, {
-    String? name,
-    bool? membersCanEditSongs,
-  });
+  Future<void> updateBand(String bandId, {String? name});
 
   /// Adds a person of the band's organization to the band.
   Future<void> addBandMember(String bandId, String userId, BandRole role);
@@ -517,10 +524,17 @@ abstract class SyncBackend {
   // Invitations (ADR-0005, ADR-0017) ---------------------------------------------
 
   /// Creates an invitation link into an organization (organization admins).
-  Future<CreatedInvite> createInvite(String organizationId);
+  /// With [bandId], the link also adds people to that band; band leaders
+  /// may only create such links (ADR-0023).
+  Future<CreatedInvite> createInvite(String organizationId, {String? bandId});
 
-  /// The links of an organization, newest first (organization admins).
-  Future<List<InviteInfo>> fetchInvites(String organizationId);
+  /// The links of an organization, newest first: all of them for
+  /// organization admins, those of the leader's bands otherwise; with
+  /// [bandId] only the links into that band.
+  Future<List<InviteInfo>> fetchInvites(
+    String organizationId, {
+    String? bandId,
+  });
 
   /// Revokes a link; people who joined stay members.
   Future<void> revokeInvite(String inviteId);

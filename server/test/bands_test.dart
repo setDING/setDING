@@ -40,15 +40,13 @@ void main() {
 
     test('only admins change band settings', () async {
       final f = await BandFixture.create(pb);
-      final byMember = await f.member.patch('bands', f.id, {
-        'members_can_edit_songs': true,
-      });
+      final byMember = await f.member.patch('bands', f.id, {'name': 'Mine'});
       expect(byMember.status, 404);
-      final byAdmin = await f.admin.patch('bands', f.id, {
-        'members_can_edit_songs': true,
-      });
+      final byAdmin = await f.admin.patch('bands', f.id, {'name': 'Renamed'});
       byAdmin.expectStatus(200);
-      expect(byAdmin.json['members_can_edit_songs'], isTrue);
+      expect(byAdmin.json['name'], 'Renamed');
+      // The band setting was replaced by the librarian role (ADR-0023).
+      expect(byAdmin.json.containsKey('members_can_edit_songs'), isFalse);
     });
   });
 
