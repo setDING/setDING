@@ -159,7 +159,7 @@ sets of that band like any member; librarian rights concern the library only.
 | Organization-wide switch "all members may edit songs" (ADR-0017 open point) | Simple | All-or-nothing; no named responsibility for the library |
 | Band leaders keep editing existing songs | No lost rights | The cross-band problem stays |
 | Organization admins manage sets only through a band role | Clear separation | Rejected by the owner: organization admins may do everything |
-| Guest role for substitutes (one set only) | Covers substitutes | Library is visible to the whole organization; needs its own decision (ADR-0005 excludes guests) |
+| Guest role for substitutes (one set only) | Covers substitutes from outside | Not needed: substitutes usually play in another band of the organization already and are added to the band as members (owner); the library is visible to the whole organization anyway; ADR-0005 excludes guests |
 
 ## Consequences
 
@@ -183,9 +183,11 @@ sets of that band like any member; librarian rights concern the library only.
   songs** as long as nobody else changed them; **set planners** edit the band
   arrangement like leaders; **band leaders invite** into their own band; members
   who can edit songs today through `members_can_edit_songs` become **librarians**.
+- 2026-11-17: Owner decision: **no guest role**. Substitutes are usually members of
+  another band of the organization already; a band leader adds them to the band
+  as members (and removes them afterwards if wanted).
 
 ## Open points
 
-- Guest role for substitutes (see alternatives); a separate decision.
 - Suggestion workflow (members propose song corrections, librarians accept); a
   separate decision.
