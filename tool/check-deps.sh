@@ -55,6 +55,8 @@ PY
 done
 if [ -f "$ROOT/website/package.json" ]; then
   cd "$ROOT/website"
+  # npm outdated compares the installed packages; a fresh checkout has none yet.
+  [ -d node_modules ] || npm ci --no-audit --no-fund --loglevel=error >/dev/null 2>&1 || true
   # npm outdated exits 1 when it finds something; empty output means up to date.
   json="$(npm outdated --json 2>/dev/null || true)"
   if [ -z "$json" ] && ! npm ping >/dev/null 2>&1; then
