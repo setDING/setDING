@@ -41,6 +41,54 @@ class Directive {
 final _directive = RegExp(
   r'^\{\s*([A-Za-z_][A-Za-z0-9_]*)(?:-([A-Za-z0-9_.]+)(!)?)?(?:\s*:\s*|\s+|(?=\}))(.*?)\s*\}$',
 );
+
+/// A line that starts with a complete directive and goes on after its
+/// closing `}`, such as `{comment: Chorus} (a cappella)` (#309).
+///
+/// ChordPro defines directives as lines that start with `{` and end with
+/// `}`, so this is not a directive: like the reference implementation,
+/// the parser shows the whole line as lyrics.
+class TrailingText {
+  const TrailingText({
+    required this.directive,
+    required this.directiveEnd,
+    required this.textStart,
+    required this.text,
+  });
+
+  /// The directive part, from `{` to `}`.
+  final String directive;
+
+  /// Offsets in the line: just after the `}`, and where the trailing text
+  /// starts.
+  final int directiveEnd;
+  final int textStart;
+
+  /// The trailing text, trimmed.
+  final String text;
+}
+
+/// Splits [line] into a directive and the text after it, or returns null
+/// if [line] is not such a line.
+TrailingText? splitTrailingText(String line) {
+  final start = line.indexOf('{');
+  if (start < 0 || line.substring(0, start).trim().isNotEmpty) return null;
+  if (parseDirective(line) != null) return null;
+  final close = line.indexOf('}', start);
+  if (close < 0) return null;
+  final directive = line.substring(start, close + 1);
+  if (parseDirective(directive) == null) return null;
+  final rest = line.substring(close + 1);
+  final text = rest.trim();
+  if (text.isEmpty) return null;
+  return TrailingText(
+    directive: directive,
+    directiveEnd: close + 1,
+    textStart: close + 1 + rest.indexOf(text),
+    text: text,
+  );
+}
+
 final _attribute = RegExp(
   r'''([A-Za-z_][\w-]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+))''',
 );

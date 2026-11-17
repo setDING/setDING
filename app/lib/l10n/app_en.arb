@@ -695,6 +695,14 @@
       }
     }
   },
+  "problemTextAfterDirective": "Line {line}: text after a directive; the whole line is shown as lyrics.",
+  "@problemTextAfterDirective": {
+    "placeholders": {
+      "line": {
+        "type": "int"
+      }
+    }
+  },
   "moreProblems": "… and {count} more.",
   "@moreProblems": {
     "placeholders": {
@@ -704,6 +712,7 @@
     }
   },
   "saveAnyway": "Save anyway",
+  "fixProblems": "Fix automatically",
   "keepEditing": "Keep editing",
   "webSignInHint": "Sign in to manage organizations, bands, songs and sets in the browser.",
   "webNoBandTitle": "No band yet",

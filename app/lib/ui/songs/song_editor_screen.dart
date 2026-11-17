@@ -41,6 +41,9 @@ const editorTextStyle = TextStyle(
 /// Delay before the preview follows the text.
 const editorPreviewDelay = Duration(milliseconds: 200);
 
+/// Choice in the dialog about problems in the source.
+enum _ProblemAction { save, fix, edit }
+
 class SongEditorScreen extends ConsumerStatefulWidget {
   const SongEditorScreen({super.key, this.songId, this.initialSource});
 
@@ -138,8 +141,12 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
       ChordProProblemKind.unclosedChord => l10n.problemUnclosedChord(p.line),
       ChordProProblemKind.unclosedEnvironment =>
         l10n.problemUnclosedEnvironment(p.line),
+      ChordProProblemKind.textAfterDirective => l10n.problemTextAfterDirective(
+        p.line,
+      ),
     };
-    final save = await showDialog<bool>(
+    final fixable = problems.any(canFixChordProProblem);
+    final action = await showDialog<_ProblemAction>(
       context: context,
       builder: (context) => AlertDialog(
         icon: const Icon(Icons.warning_amber),
@@ -157,18 +164,37 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(context, _ProblemAction.save),
             child: Text(l10n.saveAnyway),
           ),
+          if (fixable)
+            TextButton(
+              onPressed: () => Navigator.pop(context, _ProblemAction.fix),
+              child: Text(l10n.fixProblems),
+            ),
           FilledButton(
             autofocus: true,
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(context, _ProblemAction.edit),
             child: Text(l10n.keepEditing),
           ),
         ],
       ),
     );
-    if (save ?? false) return true;
+    if (action == _ProblemAction.save) return true;
+    if (action == _ProblemAction.fix && mounted) {
+      // Fixes what can be fixed and stays in the editor, so the author
+      // sees the result in the text and the preview before saving (#309).
+      final text = _controller.text;
+      final fixed = fixChordProProblems(text);
+      final first = problems.firstWhere(canFixChordProProblem);
+      final lineStart = text.lastIndexOf('\n', first.start) + 1;
+      _controller.value = TextEditingValue(
+        text: fixed,
+        selection: TextSelection.collapsed(offset: lineStart),
+      );
+      _focus.requestFocus();
+      return false;
+    }
     if (mounted) {
       final first = problems.first;
       _controller.selection = TextSelection(

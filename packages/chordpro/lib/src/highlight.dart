@@ -182,6 +182,22 @@ List<SourceToken> highlightChordPro(String source) {
           section = start;
         }
       }
+    } else if (splitTrailingText(content) case final t?) {
+      // Not a directive by the ChordPro definition (#309): the directive
+      // part looks like one, the text after it is the problem.
+      final head = parseDirective(t.directive)!;
+      _directive(
+        out,
+        lineStart,
+        content.substring(0, t.directiveEnd),
+        lead,
+        head,
+      );
+      out.add(
+        lineStart + t.textStart,
+        lineStart + content.length,
+        SourceTokenKind.error,
+      );
     } else if (trimmed.startsWith('{') && !trimmed.contains('}')) {
       out.add(
         lineStart + lead,

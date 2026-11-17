@@ -2912,6 +2912,12 @@ abstract class AppLocalizations {
   /// **'Zeile {line}: Der Block wird nie beendet und enthält den ganzen Rest des Songs.'**
   String problemUnclosedEnvironment(int line);
 
+  /// No description provided for @problemTextAfterDirective.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeile {line}: Nach der Direktive steht noch Text; die ganze Zeile wird als Liedtext angezeigt.'**
+  String problemTextAfterDirective(int line);
+
   /// No description provided for @moreProblems.
   ///
   /// In de, this message translates to:
@@ -2923,6 +2929,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Trotzdem speichern'**
   String get saveAnyway;
+
+  /// No description provided for @fixProblems.
+  ///
+  /// In de, this message translates to:
+  /// **'Automatisch korrigieren'**
+  String get fixProblems;
 
   /// No description provided for @keepEditing.
   ///

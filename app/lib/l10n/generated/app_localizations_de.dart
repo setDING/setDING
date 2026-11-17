@@ -1665,12 +1665,20 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String problemTextAfterDirective(int line) {
+    return 'Zeile $line: Nach der Direktive steht noch Text; die ganze Zeile wird als Liedtext angezeigt.';
+  }
+
+  @override
   String moreProblems(int count) {
     return '… und $count weitere.';
   }
 
   @override
   String get saveAnyway => 'Trotzdem speichern';
+
+  @override
+  String get fixProblems => 'Automatisch korrigieren';
 
   @override
   String get keepEditing => 'Weiter bearbeiten';
