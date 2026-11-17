@@ -22,6 +22,23 @@ class ChordProEditingController extends TextEditingController {
     return _tokens;
   }
 
+  List<(int, int)> _searchMatches = const [];
+  int? _currentMatch;
+
+  /// Highlighted search matches (#368).
+  List<(int, int)> get searchMatches => _searchMatches;
+
+  /// Index of the current match in [searchMatches], highlighted stronger.
+  int? get currentMatch => _currentMatch;
+
+  /// Highlights [matches] (sorted, without overlaps), [current] stronger.
+  void setSearchMatches(List<(int, int)> matches, int? current) {
+    if (identical(matches, _searchMatches) && current == _currentMatch) return;
+    _searchMatches = matches;
+    _currentMatch = current;
+    notifyListeners();
+  }
+
   /// The bracket next to the cursor and its partner (#37), if any.
   BracketMatch? get bracketMatch {
     final sel = selection;
@@ -60,12 +77,44 @@ class ChordProEditingController extends TextEditingController {
         overlays.add((at, at + 1, bracketStyle));
       }
     }
+    final dark = scheme.brightness == Brightness.dark;
+    final matchStyle = TextStyle(
+      backgroundColor: dark ? _matchDark : _matchLight,
+    );
+    final currentStyle = TextStyle(
+      backgroundColor: dark ? _currentMatchDark : _currentMatchLight,
+    );
+    for (final (i, (start, end)) in _searchMatches.indexed) {
+      if (end > source.length) break;
+      overlays.add((
+        start,
+        end,
+        i == _currentMatch ? currentStyle : matchStyle,
+      ));
+    }
+    // Sorted by start, so each token only looks at the overlays near it;
+    // a search can have thousands of matches.
+    overlays.sort((a, b) => a.$1.compareTo(b.$1));
+    final maxLength = overlays.fold(
+      0,
+      (m, o) => o.$2 - o.$1 > m ? o.$2 - o.$1 : m,
+    );
+    var first = 0;
     final children = <TextSpan>[];
     for (final token in tokens) {
       final kindStyle = chordProTokenStyle(token.kind, scheme);
+      while (first < overlays.length &&
+          overlays[first].$1 + maxLength <= token.start) {
+        first++;
+      }
+      final near = <(int, int, TextStyle)>[];
+      for (var j = first; j < overlays.length; j++) {
+        if (overlays[j].$1 >= token.end) break;
+        if (overlays[j].$2 > token.start) near.add(overlays[j]);
+      }
       final cuts = <int>{
         token.start,
-        for (final (start, end, _) in overlays) ...[
+        for (final (start, end, _) in near) ...[
           if (start > token.start && start < token.end) start,
           if (end > token.start && end < token.end) end,
         ],
@@ -75,7 +124,7 @@ class ChordProEditingController extends TextEditingController {
         final start = cuts[i];
         final end = cuts[i + 1];
         var pieceStyle = kindStyle;
-        for (final (oStart, oEnd, overlay) in overlays) {
+        for (final (oStart, oEnd, overlay) in near) {
           if (start >= oStart && end <= oEnd) {
             pieceStyle = (pieceStyle ?? const TextStyle()).merge(overlay);
           }
@@ -88,6 +137,12 @@ class ChordProEditingController extends TextEditingController {
     return TextSpan(style: style, children: children);
   }
 }
+
+/// Background of search matches and of the current match (light, dark).
+const _matchLight = Color(0x66FFD54F);
+const _matchDark = Color(0x66B28F00);
+const _currentMatchLight = Color(0xFFFFB74D);
+const _currentMatchDark = Color(0xFFB26A00);
 
 /// Colour of setDING's own `x_` directives (light, dark).
 const _customLight = Color(0xFF00796B);

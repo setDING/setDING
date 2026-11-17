@@ -13,6 +13,7 @@ import '../widgets/dialogs.dart';
 import '../widgets/sequence_dialog.dart';
 import 'chordpro_editing_controller.dart';
 import 'editor_autocomplete.dart';
+import 'editor_search.dart';
 import 'editor_toolbar.dart';
 import 'line_number_gutter.dart';
 import 'song_details_dialog.dart';
@@ -300,6 +301,34 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
     );
   }
 
+  bool _searching = false;
+
+  /// Recreates the search bar, so Ctrl+F in an open bar takes the new
+  /// selection and focuses the field again.
+  int _searchGeneration = 0;
+
+  /// Opens the search bar (#368), with the selected text of one line as
+  /// the search text.
+  void _openSearch() {
+    setState(() {
+      _searching = true;
+      _searchGeneration++;
+    });
+  }
+
+  void _closeSearch() {
+    _controller.setSearchMatches(const [], null);
+    setState(() => _searching = false);
+    _focus.requestFocus();
+  }
+
+  String get _selectedQuery {
+    final sel = _controller.selection;
+    if (!sel.isValid || sel.isCollapsed) return '';
+    final selected = sel.textInside(_controller.text);
+    return selected.contains('\n') ? '' : selected;
+  }
+
   /// Runs a line or chord command on the selection (#361).
   void _command(EditorCommand command) {
     final text = _controller.text;
@@ -419,8 +448,20 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
           onDetails: _editDetails,
           onCommand: _command,
           undoController: _undo,
+          onSearch: _openSearch,
         ),
         const Divider(height: 1),
+        if (_searching) ...[
+          EditorSearchBar(
+            key: ValueKey(_searchGeneration),
+            controller: _controller,
+            fieldKey: _fieldKey,
+            scrollController: _scroll,
+            initialQuery: _selectedQuery,
+            onClose: _closeSearch,
+          ),
+          const Divider(height: 1),
+        ],
         Expanded(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -470,6 +511,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
       child: CallbackShortcuts(
         bindings: {
           saveShortcut: _save,
+          searchShortcut: _openSearch,
           for (final snippet in snippets.withShortcut)
             snippet.shortcut!: () => _insert(snippet),
           for (final command in EditorCommand.values)

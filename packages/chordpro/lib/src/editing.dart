@@ -209,3 +209,30 @@ SourceEdit? moveChords(
   }
   return moved ? SourceEdit(result, newBase, newExtent) : null;
 }
+
+/// Ranges `(start, end)` of all occurrences of [query] in [text], ignoring
+/// case, without overlaps (#368). Empty for an empty query.
+List<(int, int)> findInSource(String text, String query) {
+  if (query.isEmpty) return const [];
+  final haystack = text.toLowerCase();
+  final needle = query.toLowerCase();
+  // Lower-casing keeps the length for the scripts of song texts; if it
+  // does not, fall back to a case-insensitive pattern.
+  if (haystack.length != text.length || needle.length != query.length) {
+    return [
+      for (final m in RegExp(
+        RegExp.escape(query),
+        caseSensitive: false,
+      ).allMatches(text))
+        (m.start, m.end),
+    ];
+  }
+  final out = <(int, int)>[];
+  var from = 0;
+  while (true) {
+    final at = haystack.indexOf(needle, from);
+    if (at < 0) return out;
+    out.add((at, at + needle.length));
+    from = at + needle.length;
+  }
+}

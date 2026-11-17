@@ -53,6 +53,9 @@ SingleActivator _key(LogicalKeyboardKey key, {bool shift = false}) =>
 /// Saves the song (Ctrl+S / Cmd+S).
 SingleActivator get saveShortcut => _key(LogicalKeyboardKey.keyS);
 
+/// Opens the search bar (Ctrl+F / Cmd+F).
+SingleActivator get searchShortcut => _key(LogicalKeyboardKey.keyF);
+
 /// Line and chord editing commands of the editor (#361).
 enum EditorCommand {
   moveLinesUp(Icons.move_up),
@@ -405,7 +408,11 @@ class EditorToolbar extends StatelessWidget {
     this.onDetails,
     this.onCommand,
     this.undoController,
+    this.onSearch,
   });
+
+  /// Opens the search bar (#368).
+  final VoidCallback? onSearch;
 
   final EditorSnippets snippets;
   final ValueChanged<EditorSnippet> onInsert;
@@ -455,6 +462,13 @@ class EditorToolbar extends StatelessWidget {
           quick(snippets.comment, l10n.insertComment, '{c: }'),
           for (final group in snippets.groups)
             _GroupMenu(group: group, onInsert: onInsert),
+          if (onSearch case final onSearch?)
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              tooltip: _withShortcut(l10n.searchInSong, searchShortcut),
+              icon: const Icon(Icons.search),
+              onPressed: onSearch,
+            ),
           if (onCommand case final onCommand?)
             _CommandButtons(onCommand: onCommand, undo: undoController),
         ],
