@@ -58,16 +58,18 @@ void main() {
     await tester.pumpAndSettle();
     expect(debugMeasureBlocksCalls, first);
 
-    // The next song is measured once; going back uses the cached fit.
+    // The next song is measured once, ahead of the turn (issue #262):
+    // turning to it and going back use the cached fits.
     final size = tester.getSize(find.byType(PageView));
     final topLeft = tester.getTopLeft(find.byType(PageView));
     await tester.tapAt(topLeft + Offset(size.width * 0.9, size.height / 2));
     await tester.pumpAndSettle();
-    final second = debugMeasureBlocksCalls;
-    expect(second, greaterThan(first));
+    expect(find.text('2 / 2'), findsOneWidget);
+    expect(debugMeasureBlocksCalls, first);
     await tester.tapAt(topLeft + Offset(size.width * 0.1, size.height / 2));
     await tester.pumpAndSettle();
-    expect(debugMeasureBlocksCalls, second);
+    expect(find.text('1 / 2'), findsOneWidget);
+    expect(debugMeasureBlocksCalls, first);
     await app.dispose(tester);
   });
 

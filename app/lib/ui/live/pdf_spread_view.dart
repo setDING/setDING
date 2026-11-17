@@ -60,6 +60,12 @@ class PdfSpreadView extends StatefulWidget {
 }
 
 class _PdfSpreadViewState extends State<PdfSpreadView> {
+  /// The reference given to the document builder. A rebuild creates a new
+  /// reference to the same file; the builder would drop the loaded document
+  /// and its rendered pages for it, so the reference only changes with the
+  /// document (its key).
+  late PdfDocumentRef _documentRef = widget.documentRef;
+
   @override
   void initState() {
     super.initState();
@@ -69,6 +75,9 @@ class _PdfSpreadViewState extends State<PdfSpreadView> {
   @override
   void didUpdateWidget(PdfSpreadView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.documentRef.key != _documentRef.key) {
+      _documentRef = widget.documentRef;
+    }
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller
         ..removeListener(_changed)
@@ -93,7 +102,7 @@ class _PdfSpreadViewState extends State<PdfSpreadView> {
     return ColoredBox(
       color: background,
       child: PdfDocumentViewBuilder(
-        documentRef: widget.documentRef,
+        documentRef: _documentRef,
         loadingBuilder: (context) =>
             const Center(child: CircularProgressIndicator()),
         builder: (context, document) {
