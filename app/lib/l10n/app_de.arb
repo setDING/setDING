@@ -402,6 +402,25 @@
   },
   "audioLatencyApply": "Übernehmen",
   "clickNoAudio": "Auf diesem Gerät gibt es keinen Audio-Ausgang für den Klick.",
+  "beatStart": "Takt starten",
+  "beatStop": "Takt stoppen",
+  "beatDisplayLabel": "Takt",
+  "countInBar": "Takt {bar} von {count}",
+  "@countInBar": {
+    "placeholders": {
+      "bar": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tempoSlower": "Langsamer",
+  "tempoFaster": "Schneller",
+  "tapTempo": "Tempo tippen",
+  "tempoReset": "Zurück zum Tempo des Songs",
+  "clickNoAudioLive": "Kein Audio für den Klick",
   "settingsSongMap": "Song-Landkarte statt Akkorde",
   "settingsSongMapHint": "Der Live-Modus zeigt die Teile des Songs mit einem Stichwort aus dem Text und den Schlagzeug-Notizen.",
   "settingsLiveAppearance": "Aussehen auf der Bühne",

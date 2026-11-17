@@ -267,6 +267,25 @@
   },
   "audioLatencyApply": "Apply",
   "clickNoAudio": "There is no audio output for the click on this device.",
+  "beatStart": "Start the beat",
+  "beatStop": "Stop the beat",
+  "beatDisplayLabel": "Beat",
+  "countInBar": "Bar {bar} of {count}",
+  "@countInBar": {
+    "placeholders": {
+      "bar": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tempoSlower": "Slower",
+  "tempoFaster": "Faster",
+  "tapTempo": "Tap tempo",
+  "tempoReset": "Back to the tempo of the song",
+  "clickNoAudioLive": "No audio for the click",
   "settingsSongMap": "Song map instead of chords",
   "settingsSongMapHint": "Live mode shows the parts of the song with a cue from the lyrics and the drum notes.",
   "settingsLiveAppearance": "Appearance on stage",

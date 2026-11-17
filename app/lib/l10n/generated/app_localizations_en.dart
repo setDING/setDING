@@ -848,6 +848,35 @@ class AppLocalizationsEn extends AppLocalizations {
       'There is no audio output for the click on this device.';
 
   @override
+  String get beatStart => 'Start the beat';
+
+  @override
+  String get beatStop => 'Stop the beat';
+
+  @override
+  String get beatDisplayLabel => 'Beat';
+
+  @override
+  String countInBar(int bar, int count) {
+    return 'Bar $bar of $count';
+  }
+
+  @override
+  String get tempoSlower => 'Slower';
+
+  @override
+  String get tempoFaster => 'Faster';
+
+  @override
+  String get tapTempo => 'Tap tempo';
+
+  @override
+  String get tempoReset => 'Back to the tempo of the song';
+
+  @override
+  String get clickNoAudioLive => 'No audio for the click';
+
+  @override
   String get settingsSongMap => 'Song map instead of chords';
 
   @override
