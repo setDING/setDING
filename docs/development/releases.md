@@ -8,6 +8,7 @@ releases are not covered yet.
 
 1. Merge a `chore(release): vX.Y.Z` PR that sets `version: X.Y.Z+…` in
    `app/pubspec.yaml` (the build number after `+` is ignored by CI).
+   Choose the number by the rules in [Version numbers](#version-numbers).
 2. Tag `main` and push the tag:
 
    ```bash
@@ -30,6 +31,24 @@ suffix (`v1.2.0-beta.1`) become pre-releases, which Obtainium skips by default.
 
 A manual run (GitHub → Actions → Release → Run workflow, or `gh workflow run Release`)
 builds the same files as workflow artifacts without publishing a release.
+
+## Version numbers
+
+setDING uses Semantic Versioning for the whole product (ADR-0028). The rules are
+about whether devices still work with the server:
+
+| Bump | When |
+|---|---|
+| **Major** | Clients of the previous major version no longer work correctly with the server or data; all devices of a band must update |
+| **Minor** | New features that older clients of the same major version tolerate (new fields they ignore, automatic local migrations) |
+| **Patch** | Fixes only, nothing new and nothing incompatible |
+
+Before 1.0.0, a minor bump also covers incompatible changes. Take the highest bump
+implied by the commits since the last tag (`git log --oneline vLAST..`): `feat` →
+minor, `fix`/`perf` → patch, a breaking commit (`!`) → major (minor before 1.0.0).
+When devices must be updated, start the release notes with an **"Update required"**
+section. The server is deployed from `main`, so a server change must not break
+released clients of the current major version.
 
 ## Android release key (once, owner)
 
