@@ -78,6 +78,7 @@ server details (OS, Docker, domain/HTTPS) and the backup concept. They are now k
 - 2026-11-15: The web client (ADR-0018, accepted) is served by the same PocketBase from `pb_public`, deployed with the server targets and published as a second tunnel hostname `app.realchord.app` (tunnel and DNS entry by the owner).
 - 2026-11-15: The container time zone is set to `Europe/Zurich` by `install.sh` (it was `Etc/UTC`, so logs, backup names and the backup timer were an hour off). The clock comes from the Proxmox host; PocketBase keeps storing UTC.
 - 2026-11-16: Web client hosting implemented (#27): `make server-install` builds it from the same commit and installs it to `/opt/pocketbase/pb_public` (`--publicDir`); `REALCHORD_WEB_URL` goes into `pocketbase.env` once the hostname exists (docs/operations/server.md step 6).
+- 2026-11-17: **ADR-0024** (accepted): `pocketbase.env` gains `REALCHORD_REGISTRATION` (`invite_only` default / `open`) and `REALCHORD_EMAIL_VERIFICATION` (`off` default / `required`, needs SMTP); a `make` target creates founder invitations; rate limits for sign-up and invitation routes.
 
 ## Open points
 
