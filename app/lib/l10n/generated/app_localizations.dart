@@ -917,7 +917,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsCategoryMusicianHint.
   ///
   /// In de, this message translates to:
-  /// **'Instrument, Name oder Stimme, Akkorddiagramme'**
+  /// **'Instrument, Stimme, Akkorddiagramme, Takt'**
   String get settingsCategoryMusicianHint;
 
   /// No description provided for @settingsCategoryDisplayHint.
@@ -979,6 +979,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Gesang'**
   String get instrumentVocals;
+
+  /// No description provided for @instrumentDrums.
+  ///
+  /// In de, this message translates to:
+  /// **'Schlagzeug'**
+  String get instrumentDrums;
 
   /// No description provided for @instrumentOther.
   ///
@@ -1339,6 +1345,198 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Ein schmaler Balken über der Fusszeile zeigt die Songs des Sets und die Seiten des aktuellen Songs: die aktuelle Seite in der Akzentfarbe, noch folgende Seiten heller. Pausen und Texte sind gestrichelt.'**
   String get settingsSetProgressHint;
+
+  /// No description provided for @settingsBeatSection.
+  ///
+  /// In de, this message translates to:
+  /// **'Takt und Klick'**
+  String get settingsBeatSection;
+
+  /// No description provided for @settingsBeatSectionHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Tempo und Taktart des Songs oder das Tempo des Band-Arrangements. Standardmässig eingeschaltet, wenn dein Instrument Schlagzeug ist.'**
+  String get settingsBeatSectionHint;
+
+  /// No description provided for @settingsBeatDisplay.
+  ///
+  /// In de, this message translates to:
+  /// **'Taktanzeige'**
+  String get settingsBeatDisplay;
+
+  /// No description provided for @settingsBeatDisplayHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Punkte neben Tempo und Taktart leuchten auf jedem Schlag; beim Einzählen erscheinen grosse Zahlen.'**
+  String get settingsBeatDisplayHint;
+
+  /// No description provided for @settingsEdgeFlash.
+  ///
+  /// In de, this message translates to:
+  /// **'Bildschirmrand blinken lassen'**
+  String get settingsEdgeFlash;
+
+  /// No description provided for @settingsEdgeFlashHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Rand blinkt auf jedem Schlag, die 1 in einer anderen Farbe – sichtbar aus dem Augenwinkel.'**
+  String get settingsEdgeFlashHint;
+
+  /// No description provided for @settingsClick.
+  ///
+  /// In de, this message translates to:
+  /// **'Klick'**
+  String get settingsClick;
+
+  /// No description provided for @settingsClickHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Spielt einen Klick über den Audio-Ausgang des Geräts, z. B. in den In-Ear-Mix.'**
+  String get settingsClickHint;
+
+  /// No description provided for @settingsClickStart.
+  ///
+  /// In de, this message translates to:
+  /// **'Start'**
+  String get settingsClickStart;
+
+  /// No description provided for @settingsClickStartHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Manuell: aufs Tempo tippen, das Vorwärts-Pedal halten oder Enter drücken. Der Wechsel zu einem anderen Song des Sets stoppt den Takt.'**
+  String get settingsClickStartHint;
+
+  /// No description provided for @clickStartAutomatic.
+  ///
+  /// In de, this message translates to:
+  /// **'Bei jedem Song'**
+  String get clickStartAutomatic;
+
+  /// No description provided for @clickStartManual.
+  ///
+  /// In de, this message translates to:
+  /// **'Manuell'**
+  String get clickStartManual;
+
+  /// No description provided for @settingsClickDuration.
+  ///
+  /// In de, this message translates to:
+  /// **'Dauer'**
+  String get settingsClickDuration;
+
+  /// No description provided for @clickDurationSong.
+  ///
+  /// In de, this message translates to:
+  /// **'Ganzer Song'**
+  String get clickDurationSong;
+
+  /// No description provided for @clickDurationCountIn.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur Einzählen'**
+  String get clickDurationCountIn;
+
+  /// No description provided for @settingsCountIn.
+  ///
+  /// In de, this message translates to:
+  /// **'Einzählen'**
+  String get settingsCountIn;
+
+  /// No description provided for @countInOff.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus'**
+  String get countInOff;
+
+  /// No description provided for @countInOneBar.
+  ///
+  /// In de, this message translates to:
+  /// **'1 Takt'**
+  String get countInOneBar;
+
+  /// No description provided for @countInTwoBars.
+  ///
+  /// In de, this message translates to:
+  /// **'2 Takte'**
+  String get countInTwoBars;
+
+  /// No description provided for @settingsClickVolume.
+  ///
+  /// In de, this message translates to:
+  /// **'Lautstärke'**
+  String get settingsClickVolume;
+
+  /// No description provided for @settingsClickAccent.
+  ///
+  /// In de, this message translates to:
+  /// **'Betonung auf der 1'**
+  String get settingsClickAccent;
+
+  /// No description provided for @settingsClickSound.
+  ///
+  /// In de, this message translates to:
+  /// **'Klang'**
+  String get settingsClickSound;
+
+  /// No description provided for @clickSoundClick.
+  ///
+  /// In de, this message translates to:
+  /// **'Klick'**
+  String get clickSoundClick;
+
+  /// No description provided for @clickSoundWoodblock.
+  ///
+  /// In de, this message translates to:
+  /// **'Woodblock'**
+  String get clickSoundWoodblock;
+
+  /// No description provided for @clickSoundBeep.
+  ///
+  /// In de, this message translates to:
+  /// **'Piep'**
+  String get clickSoundBeep;
+
+  /// No description provided for @settingsClickSubdivision.
+  ///
+  /// In de, this message translates to:
+  /// **'Unterteilung'**
+  String get settingsClickSubdivision;
+
+  /// No description provided for @settingsClickSubdivisionHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Leisere Klicks zwischen den Schlägen: Achtel, im 6/8 Triolen.'**
+  String get settingsClickSubdivisionHint;
+
+  /// No description provided for @settingsAudioLatency.
+  ///
+  /// In de, this message translates to:
+  /// **'Audio-Verzögerung'**
+  String get settingsAudioLatency;
+
+  /// No description provided for @settingsAudioLatencyHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Verschiebt die Anzeige, damit sie zum Gehörten passt. Kabel-Kopfhörer brauchen wenig, Bluetooth-Kopfhörer 100–300 ms.'**
+  String get settingsAudioLatencyHint;
+
+  /// No description provided for @audioLatencyValue.
+  ///
+  /// In de, this message translates to:
+  /// **'{ms} ms'**
+  String audioLatencyValue(int ms);
+
+  /// No description provided for @settingsSongMap.
+  ///
+  /// In de, this message translates to:
+  /// **'Song-Landkarte statt Akkorde'**
+  String get settingsSongMap;
+
+  /// No description provided for @settingsSongMapHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Live-Modus zeigt die Teile des Songs mit einem Stichwort aus dem Text und den Schlagzeug-Notizen.'**
+  String get settingsSongMapHint;
 
   /// No description provided for @settingsLiveAppearance.
   ///

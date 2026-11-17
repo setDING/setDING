@@ -20,9 +20,19 @@ const _ann = AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann');
 void main() {
   group('scopes', () {
     test('every setting has a scope', () {
+      // Choices that follow the instrument until set (ADR-0026) are left
+      // out of the JSON while unset; set, they need a scope too.
+      const all = AppSettings(
+        beatDisplay: true,
+        edgeFlash: true,
+        click: true,
+        clickStart: ClickStart.manual,
+        songMap: true,
+      );
+      expect(all.toJson().keys.toSet(), AppSettings.scopes.keys.toSet());
       expect(
-        const AppSettings().toJson().keys.toSet(),
         AppSettings.scopes.keys.toSet(),
+        containsAll(const AppSettings().toJson().keys),
       );
     });
 

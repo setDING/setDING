@@ -495,7 +495,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsCategoryMusicianHint =>
-      'Instrument, Name oder Stimme, Akkorddiagramme';
+      'Instrument, Stimme, Akkorddiagramme, Takt';
 
   @override
   String get settingsCategoryDisplayHint =>
@@ -530,6 +530,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get instrumentVocals => 'Gesang';
+
+  @override
+  String get instrumentDrums => 'Schlagzeug';
 
   @override
   String get instrumentOther => 'Anderes …';
@@ -720,6 +723,112 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get settingsSetProgressHint =>
       'Ein schmaler Balken über der Fusszeile zeigt die Songs des Sets und die Seiten des aktuellen Songs: die aktuelle Seite in der Akzentfarbe, noch folgende Seiten heller. Pausen und Texte sind gestrichelt.';
+
+  @override
+  String get settingsBeatSection => 'Takt und Klick';
+
+  @override
+  String get settingsBeatSectionHint =>
+      'Tempo und Taktart des Songs oder das Tempo des Band-Arrangements. Standardmässig eingeschaltet, wenn dein Instrument Schlagzeug ist.';
+
+  @override
+  String get settingsBeatDisplay => 'Taktanzeige';
+
+  @override
+  String get settingsBeatDisplayHint =>
+      'Punkte neben Tempo und Taktart leuchten auf jedem Schlag; beim Einzählen erscheinen grosse Zahlen.';
+
+  @override
+  String get settingsEdgeFlash => 'Bildschirmrand blinken lassen';
+
+  @override
+  String get settingsEdgeFlashHint =>
+      'Der Rand blinkt auf jedem Schlag, die 1 in einer anderen Farbe – sichtbar aus dem Augenwinkel.';
+
+  @override
+  String get settingsClick => 'Klick';
+
+  @override
+  String get settingsClickHint =>
+      'Spielt einen Klick über den Audio-Ausgang des Geräts, z. B. in den In-Ear-Mix.';
+
+  @override
+  String get settingsClickStart => 'Start';
+
+  @override
+  String get settingsClickStartHint =>
+      'Manuell: aufs Tempo tippen, das Vorwärts-Pedal halten oder Enter drücken. Der Wechsel zu einem anderen Song des Sets stoppt den Takt.';
+
+  @override
+  String get clickStartAutomatic => 'Bei jedem Song';
+
+  @override
+  String get clickStartManual => 'Manuell';
+
+  @override
+  String get settingsClickDuration => 'Dauer';
+
+  @override
+  String get clickDurationSong => 'Ganzer Song';
+
+  @override
+  String get clickDurationCountIn => 'Nur Einzählen';
+
+  @override
+  String get settingsCountIn => 'Einzählen';
+
+  @override
+  String get countInOff => 'Aus';
+
+  @override
+  String get countInOneBar => '1 Takt';
+
+  @override
+  String get countInTwoBars => '2 Takte';
+
+  @override
+  String get settingsClickVolume => 'Lautstärke';
+
+  @override
+  String get settingsClickAccent => 'Betonung auf der 1';
+
+  @override
+  String get settingsClickSound => 'Klang';
+
+  @override
+  String get clickSoundClick => 'Klick';
+
+  @override
+  String get clickSoundWoodblock => 'Woodblock';
+
+  @override
+  String get clickSoundBeep => 'Piep';
+
+  @override
+  String get settingsClickSubdivision => 'Unterteilung';
+
+  @override
+  String get settingsClickSubdivisionHint =>
+      'Leisere Klicks zwischen den Schlägen: Achtel, im 6/8 Triolen.';
+
+  @override
+  String get settingsAudioLatency => 'Audio-Verzögerung';
+
+  @override
+  String get settingsAudioLatencyHint =>
+      'Verschiebt die Anzeige, damit sie zum Gehörten passt. Kabel-Kopfhörer brauchen wenig, Bluetooth-Kopfhörer 100–300 ms.';
+
+  @override
+  String audioLatencyValue(int ms) {
+    return '$ms ms';
+  }
+
+  @override
+  String get settingsSongMap => 'Song-Landkarte statt Akkorde';
+
+  @override
+  String get settingsSongMapHint =>
+      'Der Live-Modus zeigt die Teile des Songs mit einem Stichwort aus dem Text und den Schlagzeug-Notizen.';
 
   @override
   String get settingsLiveAppearance => 'Aussehen auf der Bühne';

@@ -490,7 +490,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsCategoryMusicianHint =>
-      'Instrument, name or voice, chord diagrams';
+      'Instrument, voice, chord diagrams, beat';
 
   @override
   String get settingsCategoryDisplayHint =>
@@ -524,6 +524,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get instrumentVocals => 'Vocals';
+
+  @override
+  String get instrumentDrums => 'Drums';
 
   @override
   String get instrumentOther => 'Other …';
@@ -714,6 +717,112 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsSetProgressHint =>
       'A thin bar above the bottom bar shows the songs of the set and the pages of the current song: the current page in the accent colour, pages still to come in a lighter tone. Pauses and texts are dashed.';
+
+  @override
+  String get settingsBeatSection => 'Beat and click';
+
+  @override
+  String get settingsBeatSectionHint =>
+      'Tempo and time signature of the song, or the tempo of the band\'s arrangement. On by default when your instrument is drums.';
+
+  @override
+  String get settingsBeatDisplay => 'Beat display';
+
+  @override
+  String get settingsBeatDisplayHint =>
+      'Dots next to tempo and time signature light up on every beat; the count-in shows large numbers.';
+
+  @override
+  String get settingsEdgeFlash => 'Flash the edge of the screen';
+
+  @override
+  String get settingsEdgeFlashHint =>
+      'The edge flashes on every beat, the 1 in another colour – visible from the corner of the eye.';
+
+  @override
+  String get settingsClick => 'Click';
+
+  @override
+  String get settingsClickHint =>
+      'Plays a click on the device\'s audio output, e.g. into the in-ear mix.';
+
+  @override
+  String get settingsClickStart => 'Start';
+
+  @override
+  String get settingsClickStartHint =>
+      'Manually: tap the tempo, hold the forward pedal or press Enter. Turning to another song of the set stops the beat.';
+
+  @override
+  String get clickStartAutomatic => 'With each song';
+
+  @override
+  String get clickStartManual => 'Manually';
+
+  @override
+  String get settingsClickDuration => 'Duration';
+
+  @override
+  String get clickDurationSong => 'Whole song';
+
+  @override
+  String get clickDurationCountIn => 'Count-in only';
+
+  @override
+  String get settingsCountIn => 'Count-in';
+
+  @override
+  String get countInOff => 'Off';
+
+  @override
+  String get countInOneBar => '1 bar';
+
+  @override
+  String get countInTwoBars => '2 bars';
+
+  @override
+  String get settingsClickVolume => 'Volume';
+
+  @override
+  String get settingsClickAccent => 'Accent on the 1';
+
+  @override
+  String get settingsClickSound => 'Sound';
+
+  @override
+  String get clickSoundClick => 'Click';
+
+  @override
+  String get clickSoundWoodblock => 'Woodblock';
+
+  @override
+  String get clickSoundBeep => 'Beep';
+
+  @override
+  String get settingsClickSubdivision => 'Subdivisions';
+
+  @override
+  String get settingsClickSubdivisionHint =>
+      'Quieter clicks between the beats: eighths, triplets in 6/8.';
+
+  @override
+  String get settingsAudioLatency => 'Audio delay';
+
+  @override
+  String get settingsAudioLatencyHint =>
+      'Shifts the display so that it matches what you hear. Wired headphones need little, Bluetooth headphones 100–300 ms.';
+
+  @override
+  String audioLatencyValue(int ms) {
+    return '$ms ms';
+  }
+
+  @override
+  String get settingsSongMap => 'Song map instead of chords';
+
+  @override
+  String get settingsSongMapHint =>
+      'Live mode shows the parts of the song with a cue from the lyrics and the drum notes.';
 
   @override
   String get settingsLiveAppearance => 'Appearance on stage';

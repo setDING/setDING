@@ -265,6 +265,7 @@ class _CategoryContent extends ConsumerWidget {
           (v) => notifier.update((s) => s.copyWith(diagrams: v)),
           hint: l10n.settingsDiagramsHint,
         ),
+        ..._beatTiles(l10n, s, notifier),
       ],
       SettingsCategory.display => [
         _Choice(l10n.settingsNotation, s.notation, {
@@ -369,6 +370,7 @@ class _CategoryContent extends ConsumerWidget {
           (v) => notifier.update((s) => s.copyWith(liveAppearance: v)),
           hint: l10n.settingsLiveAppearanceHint,
         ),
+        ..._clickDeviceTiles(l10n, s, notifier),
       ],
       SettingsCategory.about => [const _AboutTiles()],
     };
@@ -449,6 +451,136 @@ class _ScopeNote extends ConsumerWidget {
     );
   }
 }
+
+/// Beat and click in live mode (ADR-0026), personal (ADR-0027): a group of
+/// the musician settings. Edge flash and song map are offered for drums
+/// only; the click's details only while it is on.
+List<Widget> _beatTiles(
+  AppLocalizations l10n,
+  AppSettings s,
+  SettingsNotifier notifier,
+) => [
+  const Divider(),
+  ListTile(
+    key: const Key('settings-beat-section'),
+    leading: const Icon(Icons.timer_outlined),
+    title: Text(l10n.settingsBeatSection),
+    subtitle: Text(l10n.settingsBeatSectionHint),
+  ),
+  SwitchListTile(
+    key: const Key('settings-beat-display'),
+    title: Text(l10n.settingsBeatDisplay),
+    subtitle: Text(l10n.settingsBeatDisplayHint),
+    value: s.showBeat,
+    onChanged: (v) => notifier.update((s) => s.copyWith(beatDisplay: v)),
+  ),
+  if (s.isDrums)
+    SwitchListTile(
+      key: const Key('settings-edge-flash'),
+      title: Text(l10n.settingsEdgeFlash),
+      subtitle: Text(l10n.settingsEdgeFlashHint),
+      value: s.showEdgeFlash,
+      onChanged: (v) => notifier.update((s) => s.copyWith(edgeFlash: v)),
+    ),
+  SwitchListTile(
+    key: const Key('settings-click'),
+    title: Text(l10n.settingsClick),
+    subtitle: Text(l10n.settingsClickHint),
+    value: s.playClick,
+    onChanged: (v) => notifier.update((s) => s.copyWith(click: v)),
+  ),
+  if (s.beatEnabled) ...[
+    _Choice(
+      l10n.settingsClickStart,
+      s.beatStart,
+      {
+        ClickStart.automatic: l10n.clickStartAutomatic,
+        ClickStart.manual: l10n.clickStartManual,
+      },
+      (v) => notifier.update((s) => s.copyWith(clickStart: v)),
+      hint: l10n.settingsClickStartHint,
+    ),
+    _Choice(l10n.settingsCountIn, s.countInBars, {
+      0: l10n.countInOff,
+      1: l10n.countInOneBar,
+      2: l10n.countInTwoBars,
+    }, (v) => notifier.update((s) => s.copyWith(countInBars: v))),
+    _Choice(l10n.settingsClickDuration, s.clickDuration, {
+      ClickDuration.wholeSong: l10n.clickDurationSong,
+      ClickDuration.countIn: l10n.clickDurationCountIn,
+    }, (v) => notifier.update((s) => s.copyWith(clickDuration: v))),
+  ],
+  if (s.playClick) ...[
+    _Choice(l10n.settingsClickSound, s.clickSound, {
+      ClickSound.click: l10n.clickSoundClick,
+      ClickSound.woodblock: l10n.clickSoundWoodblock,
+      ClickSound.beep: l10n.clickSoundBeep,
+    }, (v) => notifier.update((s) => s.copyWith(clickSound: v))),
+    SwitchListTile(
+      title: Text(l10n.settingsClickAccent),
+      value: s.clickAccent,
+      onChanged: (v) => notifier.update((s) => s.copyWith(clickAccent: v)),
+    ),
+    SwitchListTile(
+      title: Text(l10n.settingsClickSubdivision),
+      subtitle: Text(l10n.settingsClickSubdivisionHint),
+      value: s.clickSubdivision,
+      onChanged: (v) => notifier.update((s) => s.copyWith(clickSubdivision: v)),
+    ),
+  ],
+  if (s.isDrums)
+    SwitchListTile(
+      key: const Key('settings-song-map'),
+      title: Text(l10n.settingsSongMap),
+      subtitle: Text(l10n.settingsSongMapHint),
+      value: s.showSongMap,
+      onChanged: (v) => notifier.update((s) => s.copyWith(songMap: v)),
+    ),
+];
+
+/// The click on this device (ADR-0026, ADR-0027): volume and the delay of
+/// the audio output, which depend on the device and its headphones.
+List<Widget> _clickDeviceTiles(
+  AppLocalizations l10n,
+  AppSettings s,
+  SettingsNotifier notifier,
+) => [
+  if (s.playClick) ...[
+    const Divider(),
+    ListTile(
+      key: const Key('settings-click-volume'),
+      leading: const Icon(Icons.volume_up_outlined),
+      title: Text(l10n.settingsClickVolume),
+      subtitle: Slider(
+        value: s.clickVolume,
+        divisions: 20,
+        onChanged: (v) => notifier.update((s) => s.copyWith(clickVolume: v)),
+      ),
+      trailing: Text('${(s.clickVolume * 100).round()} %'),
+    ),
+    ListTile(
+      key: const Key('settings-audio-latency'),
+      title: Text(l10n.settingsAudioLatency),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(l10n.settingsAudioLatencyHint),
+          ),
+          Slider(
+            value: s.audioLatencyMs.toDouble(),
+            max: AppSettings.maxAudioLatencyMs.toDouble(),
+            divisions: AppSettings.maxAudioLatencyMs ~/ 10,
+            onChanged: (v) =>
+                notifier.update((s) => s.copyWith(audioLatencyMs: v.round())),
+          ),
+        ],
+      ),
+      trailing: Text(l10n.audioLatencyValue(s.audioLatencyMs)),
+    ),
+  ],
+];
 
 /// Storage, diagnostic log and version.
 class _AboutTiles extends ConsumerWidget {
@@ -652,6 +784,7 @@ class _InstrumentTile extends StatelessWidget {
       'bass': l10n.instrumentBass,
       'keyboard': l10n.instrumentKeyboard,
       'vocals': l10n.instrumentVocals,
+      'drums': l10n.instrumentDrums,
     };
     final current = settings.instrument.trim().toLowerCase();
     final isPreset = names.containsKey(current);
