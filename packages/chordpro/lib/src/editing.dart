@@ -211,12 +211,17 @@ SourceEdit? moveChords(
   return moved ? SourceEdit(result, newBase, newExtent) : null;
 }
 
-/// Ranges `(start, end)` of all occurrences of [query] in [text], ignoring
-/// case, without overlaps (#368). Empty for an empty query.
-List<(int, int)> findInSource(String text, String query) {
+/// Ranges `(start, end)` of all occurrences of [query] in [text], without
+/// overlaps (#368); ignoring case unless [caseSensitive] (#379). Empty for
+/// an empty query.
+List<(int, int)> findInSource(
+  String text,
+  String query, {
+  bool caseSensitive = false,
+}) {
   if (query.isEmpty) return const [];
-  final haystack = text.toLowerCase();
-  final needle = query.toLowerCase();
+  final haystack = caseSensitive ? text : text.toLowerCase();
+  final needle = caseSensitive ? query : query.toLowerCase();
   // Lower-casing keeps the length for the scripts of song texts; if it
   // does not, fall back to a case-insensitive pattern.
   if (haystack.length != text.length || needle.length != query.length) {

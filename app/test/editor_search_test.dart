@@ -174,4 +174,30 @@ void main() {
     expect(controller.text, ' b a');
     await app.dispose(tester);
   });
+
+  testWidgets('Aa matches upper and lower case exactly', (tester) async {
+    final (app, controller) = await pumpEditor(tester, 'Am am AM');
+    await ctrl(tester, LogicalKeyboardKey.keyH);
+    await tester.enterText(searchField, 'Am');
+    await tester.pump();
+    expect(find.text('1 of 3'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('search-case')));
+    await tester.pump();
+    expect(find.text('1 of 1'), findsOneWidget);
+    expect(controller.searchMatches, [(0, 2)]);
+
+    await tester.enterText(find.byKey(const ValueKey('editor-replace')), 'Em');
+    await tester.tap(find.text('Replace all'));
+    await tester.pumpAndSettle();
+    expect(controller.text, 'Em am AM');
+
+    // The choice is kept when the bar opens again.
+    await tester.tap(find.byTooltip('Close search'));
+    await tester.pumpAndSettle();
+    await ctrl(tester, LogicalKeyboardKey.keyF);
+    await tester.enterText(searchField, 'am');
+    await tester.pump();
+    expect(find.text('1 of 1'), findsOneWidget);
+    await app.dispose(tester);
+  });
 }

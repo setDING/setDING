@@ -1838,6 +1838,12 @@ abstract class AppLocalizations {
   /// **'Mehr'**
   String get editorGroupMore;
 
+  /// No description provided for @searchMatchCase.
+  ///
+  /// In de, this message translates to:
+  /// **'Gross-/Kleinschreibung beachten'**
+  String get searchMatchCase;
+
   /// No description provided for @replaceToggle.
   ///
   /// In de, this message translates to:

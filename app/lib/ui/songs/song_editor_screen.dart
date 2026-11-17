@@ -359,6 +359,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
 
   bool _searching = false;
   bool _replacing = false;
+  bool _caseSensitive = false;
 
   /// Recreates the search bar, so Ctrl+F in an open bar takes the new
   /// selection and focuses the field again.
@@ -547,6 +548,8 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
             scrollController: _scroll,
             initialQuery: _selectedQuery,
             replace: _replacing,
+            caseSensitive: _caseSensitive,
+            onCaseSensitiveChanged: (value) => _caseSensitive = value,
             onClose: _closeSearch,
           ),
           const Divider(height: 1),

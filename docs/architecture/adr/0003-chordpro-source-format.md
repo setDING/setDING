@@ -93,6 +93,7 @@ Notation alternatives:
 - 2026-11-17: Parsed lines, sections and delegated environments know their source line (`sourceLineOf`, kept outside the model in an `Expando`, so the model classes stay unchanged and const). Tapping the editor preview moves the cursor to that line (#372).
 - 2026-11-17: The search bar can replace the current or all matches (#375, Ctrl+H, Cmd+Option+F on Apple); `replaceInSource` is in `editing.dart`, Replace all is one undo step.
 - 2026-11-17: Selected text can be dragged with the mouse (#377): a layer above the text field takes the pointer only where the mouse presses on the selection (touch keeps the text field's own gestures); Ctrl/Alt copies, whole lines drop between lines (`dropText` in `editing.dart`). The editing buttons of the toolbar have a row of their own.
+- 2026-11-17: Search and replace can match case exactly ("Aa" toggle, #379); the choice is kept while the editor is open.
 
 ## Open points
 

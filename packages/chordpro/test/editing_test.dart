@@ -168,6 +168,10 @@ void _searchTests() {
       expect(findInSource('Am [am] AM', 'am'), [(0, 2), (4, 6), (8, 10)]);
     });
 
+    test('matches case exactly when asked to', () {
+      expect(findInSource('Am [am] AM', 'Am', caseSensitive: true), [(0, 2)]);
+    });
+
     test('does not overlap and ignores an empty query', () {
       expect(findInSource('aaaa', 'aa'), [(0, 2), (2, 4)]);
       expect(findInSource('abc', ''), isEmpty);
