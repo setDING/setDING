@@ -24,6 +24,7 @@ import '../render/chord_diagram.dart';
 import '../render/render_cache.dart';
 import '../render/song_image.dart';
 import '../render/song_view.dart';
+import '../sets/set_item_label.dart';
 import '../widgets/key_picker.dart';
 import 'live_theme.dart';
 import 'pdf_spread_view.dart';
@@ -74,8 +75,10 @@ class LiveItem {
     setItemId: setItemId,
   );
 
+  /// The song title, or the name of a pause or text item: its own note,
+  /// otherwise its type label in the current language (#289).
   String title(AppLocalizations l10n) => song == null
-      ? (label ?? '')
+      ? markerTitle(l10n, type, label)
       : (song!.title.isEmpty ? l10n.untitled : song!.title);
 }
 
@@ -1435,7 +1438,7 @@ class _MarkerPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              item.label ?? '',
+              item.title(AppLocalizations.of(context)),
               textAlign: TextAlign.center,
               style: theme.textTheme.displaySmall,
             ),

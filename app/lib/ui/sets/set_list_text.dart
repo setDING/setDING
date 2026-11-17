@@ -4,6 +4,7 @@ import '../../data/database.dart';
 import '../../data/set_repository.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/key_picker.dart';
+import 'set_item_label.dart';
 
 /// Separator between title, key and sequence of a song line.
 const setListSeparator = ' – ';
@@ -45,7 +46,9 @@ class SetList {
 /// Builds the set list: songs are numbered and get the key for this set
 /// (band arrangement and set transposition, ADR-0025, ADR-0006) and their
 /// sequence (set-specific, from the band or from the song); pauses and text
-/// items become markers.
+/// items become markers. A pause without a note of its own shows [pause],
+/// the type label in the current language (#289); a text item without text
+/// is left out.
 SetList buildSetList(
   SetlistEntry set,
   List<SetItemView> items, {
@@ -54,6 +57,7 @@ SetList buildSetList(
   required String Function(DateTime date) formatDate,
   required String untitled,
   required String songMissing,
+  required String pause,
 }) {
   final details = [
     if (set.gigDate case final date?) formatDate(date),
@@ -64,9 +68,11 @@ SetList buildSetList(
   for (final view in items) {
     final item = view.item;
     if (item.type != SetItemType.song) {
-      final note = item.note?.trim() ?? '';
-      if (note.isNotEmpty) {
-        rows.add(SetListMarker(note, pause: item.type == SetItemType.pause));
+      final note = markerNote(item.type, item.note);
+      if (item.type == SetItemType.pause) {
+        rows.add(SetListMarker(note ?? pause, pause: true));
+      } else if (note != null) {
+        rows.add(SetListMarker(note, pause: false));
       }
       continue;
     }
