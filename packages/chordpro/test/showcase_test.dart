@@ -50,6 +50,7 @@ void main() {
       ]);
       expect(song.meta['key'], ['G', 'A']);
       expect(song.tempo, 96);
+      expect(song.meter, Meter.common);
       expect(song.columns, 2);
       expect(song.diagrams, 'bottom');
     });
@@ -295,5 +296,13 @@ void main() {
         "Here's",
       );
     });
+  });
+
+  test('second song: odd meter with a grouping (ADR-0026)', () {
+    final second = parseChordProSongs(source).last;
+    expect(second.meter.toString(), '7/8');
+    expect(second.meter.kind, MeterKind.odd);
+    expect(second.meter.groups, [2, 2, 3]);
+    expect(second.tempo, 210);
   });
 }

@@ -231,6 +231,11 @@ w:Here's a lit-tle tune to play
 {title: Second Song in the Same File}
 {artist: The setDING Band}
 {key: D}
+# An odd meter: counted in eighths, the setDING custom directive
+# {x_time_grouping} sets the accents for the beat display and the click.
+{time: 7/8}
+{x_time_grouping: 2+2+3}
+{tempo: 210}
 {tag: Test}
 
 {start_of_verse}

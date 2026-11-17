@@ -22,7 +22,7 @@ void main() {
     test('suggests names after {, long forms first', () {
       expect(labels('{ti|').take(2), ['title', 'time']);
       expect(labels('{start_of_c|'), ['start_of_chorus']);
-      expect(labels('{x_|'), ['x_sequence']);
+      expect(labels('{x_|'), ['x_sequence', 'x_time_grouping']);
       expect(labels('{so|'), containsAll(['sorttitle', 'soc', 'sov']));
       expect(
         labels('{so|').indexOf('sorttitle'),
