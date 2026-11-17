@@ -1,5 +1,7 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:realchord/providers.dart';
 import 'package:realchord/ui/live/live_screen.dart';
 import 'package:realchord/ui/sets/set_screen.dart';
 import 'package:realchord/ui/sets/sets_screen.dart';
@@ -168,5 +170,101 @@ void main() {
     expect(shownName(tester), 'Fresh');
     expect(find.byType(BackButton), findsNothing);
     await app.dispose(tester);
+  });
+
+  group('collapsed past sets (#282)', () {
+    /// Sets "Next gig" (in 3 days) and "Old gig" (10 days ago, with the
+    /// song "Encore"); the past sets start collapsed.
+    Future<(TestApp, String)> withPastSet(WidgetTester tester) async {
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final old = await tester.runAsync(() async {
+        final song = await app.songs.createSong(
+          source: '{title: Encore}\n[D]Three',
+        );
+        await app.sets.createSet(
+          name: 'Next gig',
+          gigDate: today.add(const Duration(days: 3)),
+        );
+        final old = await app.sets.createSet(
+          name: 'Old gig',
+          gigDate: today.subtract(const Duration(days: 10)),
+        );
+        await app.sets.addSongs(old, [song]);
+        return old;
+      });
+      await tester.pumpWidget(app.build());
+      await tester.pumpAndSettle();
+      return (app, old!);
+    }
+
+    testWidgets('a selected past set stays shown when collapsing', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final (app, _) = await withPastSet(tester);
+      expect(find.text('Old gig'), findsNothing);
+
+      await tester.tap(find.byTooltip('Show past sets'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Old gig'));
+      await tester.pumpAndSettle();
+      expect(shownName(tester), 'Old gig');
+
+      await tester.tap(find.byTooltip('Hide past sets'));
+      await tester.pumpAndSettle();
+      // Only the card in the list is hidden; the set stays next to it.
+      expect(find.byKey(const ValueKey('set-section-past')), findsOneWidget);
+      expect(shownName(tester), 'Old gig');
+      expect(find.text('Encore'), findsOneWidget);
+      expect(find.text('Next gig'), findsOneWidget);
+      await app.dispose(tester);
+    });
+
+    testWidgets('selecting a past set from elsewhere keeps it collapsed', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final (app, old) = await withPastSet(tester);
+      expect(shownName(tester), 'Next gig');
+
+      // As after creating a set with a past date: the set is selected
+      // without a tap in the list.
+      ProviderScope.containerOf(tester.element(find.byType(SetsScreen)))
+          .read(selectedSetProvider.notifier)
+          .select(old);
+      await tester.pumpAndSettle();
+      expect(shownName(tester), 'Old gig');
+      expect(find.text('Encore'), findsOneWidget);
+      expect(find.byTooltip('Show past sets'), findsOneWidget);
+      expect(find.byKey(ValueKey('set-$old')), findsNothing);
+      expect(app.prefs.getBool('pastSetsCollapsed'), isNull);
+      await app.dispose(tester);
+    });
+
+    testWidgets('only past sets: the latest is shown, the list collapsed', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      await tester.runAsync(() async {
+        for (final (name, days) in [('Older gig', 40), ('Last gig', 5)]) {
+          await app.sets.createSet(
+            name: name,
+            gigDate: today.subtract(Duration(days: days)),
+          );
+        }
+      });
+      await tester.pumpWidget(app.build());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Past (2)'), findsOneWidget);
+      expect(find.text('Older gig'), findsNothing);
+      expect(shownName(tester), 'Last gig');
+      await app.dispose(tester);
+    });
   });
 }

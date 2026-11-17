@@ -37,7 +37,7 @@ void main() {
     tester,
   ) async {
     useTabletSize(tester, landscape: false);
-    final app = await withSets(tester);
+    final app = await withSets(tester, prefs: {'pastSetsCollapsed': false});
 
     double top(String text) => tester.getTopLeft(find.text(text)).dy;
     final order = [
@@ -72,11 +72,34 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('past sets collapse, remembered per device', (tester) async {
+  testWidgets('past sets start collapsed without a stored choice', (
+    tester,
+  ) async {
     useTabletSize(tester, landscape: false);
     final app = await withSets(tester);
 
+    expect(app.prefs.getBool('pastSetsCollapsed'), isNull);
+    expect(find.text('Past (2)'), findsOneWidget);
+    expect(find.text('Old gig'), findsNothing);
+    expect(find.text('Last night'), findsNothing);
+    expect(find.text('Tonight'), findsOneWidget);
+    expect(find.text('Rehearsal'), findsOneWidget);
+    expect(find.byTooltip('Show past sets'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('set-section-past')));
+    await tester.pumpAndSettle();
     expect(find.text('Old gig'), findsOneWidget);
+    expect(find.text('Last night'), findsOneWidget);
+    expect(app.prefs.getBool('pastSetsCollapsed'), isFalse);
+    await app.dispose(tester);
+  });
+
+  testWidgets('past sets collapse, remembered per device', (tester) async {
+    useTabletSize(tester, landscape: false);
+    final app = await withSets(tester, prefs: {'pastSetsCollapsed': false});
+
+    expect(find.text('Old gig'), findsOneWidget);
+    expect(find.byTooltip('Hide past sets'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('set-section-past')));
     await tester.pumpAndSettle();
     expect(find.text('Old gig'), findsNothing);

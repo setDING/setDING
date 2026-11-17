@@ -264,7 +264,12 @@ void main() {
     ) async {
       useTabletSize(tester, landscape: false);
       final app = await TestApp.create(
-        prefs: {'language': 'de', 'themeMode': dark ? 'dark' : 'light'},
+        // Past sets expanded, to show all three sections.
+        prefs: {
+          'language': 'de',
+          'themeMode': dark ? 'dark' : 'light',
+          'pastSetsCollapsed': false,
+        },
       );
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);

@@ -23,6 +23,11 @@ const _listPaneWidth = 400.0;
 /// From [setsMasterDetailWidth] on, the selected set ([selectedSetProvider],
 /// by default the next gig) is shown next to the list; narrower screens open
 /// a set as its own page.
+///
+/// The past sets start collapsed ([pastSetsCollapsedProvider], #282).
+/// Collapsing only hides their cards: a selected past set stays shown next
+/// to the list, and selecting one (e.g. a new set with a past date) does not
+/// expand the section, so the stored choice always wins.
 class SetsScreen extends ConsumerWidget {
   const SetsScreen({super.key});
 
