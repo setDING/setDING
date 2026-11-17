@@ -1,6 +1,6 @@
 # ADR-0025: Band arrangements between song and personal overlay
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-17
 
 ## Context
@@ -137,6 +137,7 @@ needed for now (owner); personal notes stay as they are.
 - 2026-11-17: Owner answers: capo stays **personal**; the **songs tab applies** the
   arrangement of the band chosen on the sets tab, with a label; **no band notes**;
   the arrangement holds a **tempo per band**.
+- 2026-11-17: Accepted by the owner.
 
 ## Open points
 

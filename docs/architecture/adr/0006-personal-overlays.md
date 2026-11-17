@@ -60,9 +60,10 @@ size/zoom setting is relevant.
 - 2026-11-15: The song sequence (`{x_sequence}`, ADR-0012) can be overridden per **set item** (layer 2, column `set_items.sequence`, database schema 3, same syntax; null = as in the song). It is edited in the set list and shown in the set list and in live mode started from the set, marked as set-specific; the song itself is never changed. Opening the song on its own shows its original sequence.
 
 - 2026-11-15: Overlays belong to a person and are synced with the account (phase 2): see [ADR-0020](0020-overlays-per-user.md).
+- 2026-11-17: **ADR-0025** (accepted): a band arrangement layer between song and set item
+  (key as transposition, sequence and tempo per band and song). Set item transposition
+  becomes relative to the band's key; personal overlays stay on top. Not implemented yet.
 
 ## Open points
 
-- A band arrangement layer between song and set item (key, sequence and tempo per
-  band and song) is proposed in ADR-0025; it would make set item transposition
-  relative to the band's key.
+- None.
