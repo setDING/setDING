@@ -36,6 +36,11 @@ export default defineConfig({
           translations: { en: 'Sets' },
           items: [{ autogenerate: { directory: 'sets' } }],
         },
+        {
+          label: 'Live-Modus',
+          translations: { en: 'Live mode' },
+          items: [{ autogenerate: { directory: 'live' } }],
+        },
       ],
       lastUpdated: false,
       plugins: [starlightLinksValidator()],

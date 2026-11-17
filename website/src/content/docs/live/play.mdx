@@ -1,0 +1,90 @@
+---
+title: Auf der Bühne
+description: Den Live-Modus starten, umblättern per Tippen, Wischen oder Fusspedal, und die Steuerleiste.
+sidebar:
+  order: 1
+---
+
+import { Image } from 'astro:assets';
+import live from '../../../../../docs/screenshots/live.png';
+
+Der Live-Modus zeigt einen Song im Vollbild, so gross wie möglich, und blättert mit
+einem Tipp, einem Wisch oder einem Fusspedal weiter. Der Bildschirm bleibt an,
+solange der Live-Modus offen ist.
+
+<Image src={live} alt="Live-Modus: ein Song in drei Spalten mit Akkorden, einer persönlichen Notiz und Griffbildern" />
+
+## Live-Modus starten
+
+- **Ein Set:** Öffne das Set und tippe oben auf **Live spielen**. Du blätterst
+  durch alle Songs, Pausen und Texte des Sets.
+- **Ein einzelner Song:** Öffne den Song und tippe auf **Live spielen**.
+
+Mit **Live-Modus beenden** in der Steuerleiste oder der Taste Escape verlässt du ihn
+wieder.
+
+## Umblättern
+
+| Weiter | Zurück |
+|---|---|
+| Tippen im rechten Drittel des Bildschirms | Tippen im linken Drittel |
+| Nach links wischen | Nach rechts wischen |
+| Pfeil rechts, Pfeil ab, Bild ab, Leertaste | Pfeil links, Pfeil auf, Bild auf |
+
+setDING passt jeden Song an den Bildschirm an: Die Abschnitte werden in Spalten
+angeordnet und die Schrift so gross wie möglich gewählt. Ein langer Song wird auf
+mehrere Seiten verteilt; «weiter» blättert zuerst durch die Seiten des Songs, dann
+zum nächsten Eintrag des Sets. Unten steht, wo du bist, z. B. **Seite 1/2**, und
+welcher Song als Nächster kommt.
+
+### Mit einem Fusspedal
+
+Bluetooth-Seitenwender (Fusspedale) melden sich beim Gerät als Tastatur an.
+Koppele das Pedal in den Bluetooth-Einstellungen deines Geräts; setDING versteht
+die Tasten oben ohne weitere Einstellung. Ein Druck blättert genau einmal, auch wenn
+du das Pedal länger hältst.
+
+## Die Steuerleiste
+
+Tippe in die Mitte des Bildschirms, um die Steuerleiste ein- oder auszublenden:
+
+- **Live-Modus beenden**
+- **Set-Übersicht** – alle Einträge des Sets; tippe auf einen, um direkt dorthin zu
+  springen, z. B. wenn ihr die Reihenfolge spontan ändert.
+- **Tonart** – im Set die Tonart dieses Sets für die ganze Band (**Tonart in diesem
+  Set – für die ganze Band**), bei einem einzelnen Song nur deine eigene (**Meine
+  Tonart – nur für mich**).
+- **Schrift kleiner** und **Schrift grösser** – für dich und diesen Song.
+- **An Seite anpassen** – passt den Song wieder an den Bildschirm an.
+- **Akkorde** / **Nashville** – zeigt die Akkorde als Namen oder als
+  Nashville-Nummern. Dafür braucht der Song eine Tonart.
+
+## Was du sonst noch siehst
+
+- **Kopf des Songs:** Titel, die Tonart, wie ihr sie heute spielt, Kapodaster, Tempo
+  und Taktart. Gilt ein Songablauf, zeigt setDING nur dessen Teile und nennt die
+  ausgeblendeten.
+- **Fortschrittsbalken:** Ein schmaler Balken über der Fusszeile zeigt die Songs des
+  Sets und die Seiten des aktuellen Songs, gut sichtbar aus dem Augenwinkel. Pausen
+  und Texte sind gestrichelt.
+- **Pausen und Texte** bekommen eine eigene Seite mit grosser Schrift.
+- **PDF-Noten** werden mit denselben Gesten geblättert, Seite für Seite.
+
+Änderungen, die während des Auftritts vom Server kommen, übernimmt setDING erst,
+wenn du den Live-Modus verlässt. So ändert sich auf der Bühne nichts unerwartet.
+
+Jedes Bandmitglied blättert auf seinem Gerät selbst; die Geräte sind nicht
+miteinander gekoppelt.
+
+## Tipps für den Auftritt
+
+- Prüfe vorher, dass beim Set **Offline bereit** steht
+  (siehe [Offline bereit](/sets/share/)).
+- Hänge das Tablet an das Ladegerät. setDING hält den Bildschirm an, aber nicht den
+  Akku voll. Erscheint **Bildschirm kann sich ausschalten – Energieeinstellungen des
+  Geräts prüfen**, stelle die Bildschirm-Zeitsperre des Geräts länger.
+- Gegen versehentliches Verlassen der App hilft die Bildschirmfixierung von
+  Android.
+- Unter **Einstellungen** → **Bildschirm & Live-Modus** stellst du Schriftgrösse,
+  Spalten, halbes Blättern und das Aussehen auf der Bühne ein, z. B. **Schwarz** für
+  OLED-Bildschirme.
