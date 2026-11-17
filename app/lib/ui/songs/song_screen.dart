@@ -142,9 +142,18 @@ class _SongScreenState extends ConsumerState<SongScreen> {
       title: l10n.deleteSongTitle,
       message: l10n.deleteSongMessage(song.title),
     );
-    if (!ok) return;
-    await _repo.deleteSong(song.id);
+    if (!ok || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final repo = _repo;
+    final deleted = await repo.deleteSong(song.id);
     if (mounted) Navigator.pop(context);
+    showUndo(
+      messenger,
+      l10n.songDeleted(song.title.isEmpty ? l10n.untitled : song.title),
+      undoLabel: l10n.undo,
+      onUndo: () => repo.restoreSong(deleted),
+      onGone: () => repo.purgeFiles(deleted.attachments),
+    );
   }
 
   @override
@@ -892,12 +901,16 @@ class _AttachmentsCard extends ConsumerWidget {
           );
           if (name != null) await repo.renameAttachment(a.id, name);
         } else if (value == 'delete') {
-          final ok = await confirm(
-            context,
-            title: l10n.deleteAttachmentTitle,
-            message: l10n.deleteAttachmentMessage(a.name),
+          // No confirmation: the deletion can be undone (#267).
+          final messenger = ScaffoldMessenger.of(context);
+          final deleted = await repo.deleteAttachment(a);
+          showUndo(
+            messenger,
+            l10n.attachmentDeleted(a.name),
+            undoLabel: l10n.undo,
+            onUndo: () => repo.restoreAttachment(deleted),
+            onGone: () => repo.purgeFiles([a]),
           );
-          if (ok) await repo.deleteAttachment(a);
         }
       },
       itemBuilder: (_) => [

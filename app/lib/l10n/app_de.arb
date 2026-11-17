@@ -113,15 +113,6 @@
   "noAttachments": "Noch keine Anhänge.",
   "attachmentTooLarge": "Die Datei ist grösser als 20 MB und kann nicht angehängt werden.",
   "attachmentName": "Name des Anhangs",
-  "deleteAttachmentTitle": "Anhang löschen?",
-  "deleteAttachmentMessage": "«{name}» wird gelöscht.",
-  "@deleteAttachmentMessage": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "pagesCount": "{count, plural, =1{1 Seite} other{{count} Seiten}}",
   "@pagesCount": {
     "placeholders": {
@@ -888,6 +879,31 @@
   "@gigInDays": {
     "placeholders": {
       "days": {"type": "int"}
+    }
+  },
+  "undo": "Rückgängig",
+  "songDeleted": "«{title}» gelöscht",
+  "@songDeleted": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "setDeleted": "Set «{name}» gelöscht",
+  "@setDeleted": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "attachmentDeleted": "Anhang «{name}» gelöscht",
+  "@attachmentDeleted": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "setItemRemoved": "«{title}» aus dem Set entfernt",
+  "@setItemRemoved": {
+    "placeholders": {
+      "title": {"type": "String"}
     }
   }
 }

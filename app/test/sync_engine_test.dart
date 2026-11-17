@@ -575,6 +575,102 @@ void main() {
       expect(await outbox(), isEmpty);
     });
   });
+  group('undo of deletions (#267)', () {
+    final pdf = Uint8List.fromList('%PDF-1.4 test'.codeUnits);
+
+    test('a pushed song deletion is undone without a conflict', () async {
+      final id = await songs.createSong(source: '{title: Back}');
+      await songs.addAttachment(id, name: 'Score', bytes: pdf);
+      final setId = await sets.createSet(name: 'Gig');
+      await sets.addSongs(setId, [id]);
+      await engine.sync();
+
+      final deleted = await songs.deleteSong(id);
+      await engine.sync();
+      expect(server.songs[id]!.deleted, isTrue);
+      expect(server.sets[setId]!.items, isEmpty);
+
+      await songs.restoreSong(deleted);
+      // The next run first pulls the deletion it pushed itself.
+      final report = await engine.sync();
+      expect(report.error, isNull);
+      expect(report.conflicts, 0);
+      expect(await db.select(db.songConflicts).get(), isEmpty);
+      expect(server.songs[id]!.deleted, isFalse);
+      expect(server.sets[setId]!.items.single.songId, id);
+      expect(await outbox(), isEmpty);
+
+      // Stays restored, with its attachment, after the next pull.
+      await engine.sync();
+      expect((await songs.getSong(id))!.title, 'Back');
+      expect((await songs.getAttachments(id)).single.name, 'Score');
+      expect(server.attachments.values.single.deleted, isFalse);
+    });
+
+    test('an undo before the sync leaves the server unchanged', () async {
+      final id = await songs.createSong(source: '{title: Stay}');
+      await engine.sync();
+      final revision = server.songs[id]!.revision;
+      await songs.restoreSong(await songs.deleteSong(id));
+      final report = await engine.sync();
+      expect(report.conflicts, 0);
+      expect(server.songs[id]!.deleted, isFalse);
+      expect(server.songs[id]!.revision, greaterThan(revision));
+    });
+
+    test('a new song deleted and restored around a sync is created', () async {
+      final id = await songs.createSong(source: '{title: Late}');
+      await songs.addAttachment(id, name: 'Score', bytes: pdf);
+      final deleted = await songs.deleteSong(id);
+      await engine.sync();
+      expect(server.songs, isEmpty);
+
+      await songs.restoreSong(deleted);
+      await engine.sync();
+      expect(server.songs[id]!.title, 'Late');
+      // The file was kept for the undo, so it is uploaded.
+      final a = server.attachments.values.single;
+      expect(a.deleted, isFalse);
+      expect(server.files[a.file], pdf);
+    });
+
+    test('a pushed attachment deletion is undone', () async {
+      final id = await songs.createSong(source: '{title: Song}');
+      await songs.addAttachment(id, name: 'Score', bytes: pdf);
+      await engine.sync();
+      final a = (await songs.getAttachments(id)).single;
+      final deleted = await songs.deleteAttachment(a);
+      await engine.sync();
+      expect(server.attachments[a.id]!.deleted, isTrue);
+
+      await songs.restoreAttachment(deleted);
+      await engine.sync();
+      expect(server.attachments[a.id]!.deleted, isFalse);
+      expect((await songs.getAttachments(id)).single.id, a.id);
+      await songs.purgeFiles([a]);
+      expect(await FileAttachmentStorage(dir).exists(a.fileName), isTrue);
+    });
+
+    test('a pushed set deletion is undone with its items', () async {
+      final id = await songs.createSong(source: '{title: A}');
+      final setId = await sets.createSet(name: 'Gig');
+      await sets.addSongs(setId, [id]);
+      await sets.addMarker(setId, SetItemType.pause, 'Break');
+      await engine.sync();
+      final deleted = await sets.deleteSet(setId);
+      await engine.sync();
+      expect(server.sets[setId]!.deleted, isTrue);
+
+      await sets.restoreSet(deleted);
+      await engine.sync();
+      final remote = server.sets[setId]!;
+      expect(remote.deleted, isFalse);
+      expect([for (final i in remote.items) i.songId ?? i.note], [id, 'Break']);
+      await engine.sync();
+      expect((await sets.watchSets().first).single.itemCount, 2);
+    });
+  });
+
   group('records from before the outbox (#29)', () {
     final pdf = Uint8List.fromList('%PDF-1.4 test'.codeUnits);
 

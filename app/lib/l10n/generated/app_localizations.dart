@@ -380,18 +380,6 @@ abstract class AppLocalizations {
   /// **'Name des Anhangs'**
   String get attachmentName;
 
-  /// No description provided for @deleteAttachmentTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Anhang löschen?'**
-  String get deleteAttachmentTitle;
-
-  /// No description provided for @deleteAttachmentMessage.
-  ///
-  /// In de, this message translates to:
-  /// **'«{name}» wird gelöscht.'**
-  String deleteAttachmentMessage(String name);
-
   /// No description provided for @pagesCount.
   ///
   /// In de, this message translates to:
@@ -2995,6 +2983,36 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{days, plural, =0{Heute} =1{Morgen} other{In {days} Tagen}}'**
   String gigInDays(int days);
+
+  /// No description provided for @undo.
+  ///
+  /// In de, this message translates to:
+  /// **'Rückgängig'**
+  String get undo;
+
+  /// No description provided for @songDeleted.
+  ///
+  /// In de, this message translates to:
+  /// **'«{title}» gelöscht'**
+  String songDeleted(String title);
+
+  /// No description provided for @setDeleted.
+  ///
+  /// In de, this message translates to:
+  /// **'Set «{name}» gelöscht'**
+  String setDeleted(String name);
+
+  /// No description provided for @attachmentDeleted.
+  ///
+  /// In de, this message translates to:
+  /// **'Anhang «{name}» gelöscht'**
+  String attachmentDeleted(String name);
+
+  /// No description provided for @setItemRemoved.
+  ///
+  /// In de, this message translates to:
+  /// **'«{title}» aus dem Set entfernt'**
+  String setItemRemoved(String title);
 }
 
 class _AppLocalizationsDelegate

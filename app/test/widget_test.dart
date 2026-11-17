@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:realchord/data/database.dart';
 import 'package:realchord/data/demo_song.dart';
 import 'package:realchord/ui/live/live_screen.dart';
@@ -5,6 +7,7 @@ import 'package:realchord/ui/render/song_header.dart';
 import 'package:realchord/ui/render/song_view.dart';
 import 'package:realchord/ui/sets/set_screen.dart';
 import 'package:realchord/ui/sets/sets_screen.dart';
+import 'package:realchord/ui/widgets/dialogs.dart';
 import 'package:realchord/ui/widgets/key_picker.dart';
 import 'package:realchord/ui/songs/song_editor_screen.dart';
 import 'package:realchord/ui/songs/song_screen.dart';
@@ -978,6 +981,183 @@ void main() {
       await tester.tap(find.text('Edit ChordPro'));
       await tester.pumpAndSettle();
       expect(find.byType(SongEditorScreen), findsOneWidget);
+      await app.dispose(tester);
+    });
+  });
+
+  group('undo of deletions (#267)', () {
+    Finder appBarMenu() => find.descendant(
+      of: find.byType(AppBar),
+      matching: find.byType(PopupMenuButton<String>),
+    );
+
+    testWidgets('a deleted song comes back with Undo', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final id = await tester.runAsync(
+        () => app.songs.createSong(source: '{title: Gone Soon}\n[C]la'),
+      );
+      await tester.pumpWidget(app.build());
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Songs').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Gone Soon'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(appBarMenu());
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Delete'));
+      await tester.pumpAndSettle();
+      // Songs are still confirmed first: shared with the whole organization.
+      expect(find.text('Delete song?'), findsOneWidget);
+      await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+      await tester.pumpAndSettle();
+      expect(find.byType(SongScreen), findsNothing);
+      expect(find.text('Gone Soon'), findsNothing);
+      expect(find.text('“Gone Soon” deleted'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(SnackBarAction, 'Undo'));
+      await tester.pumpAndSettle();
+      expect(find.text('Gone Soon'), findsOneWidget);
+      expect(
+        (await tester.runAsync(() => app.songs.getSong(id!)))!.deleted,
+        isFalse,
+      );
+      await app.dispose(tester);
+    });
+
+    testWidgets('a removed set item comes back with Undo', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final setId = await tester.runAsync(() async {
+        final a = await app.songs.createSong(source: '{title: First}');
+        final b = await app.songs.createSong(source: '{title: Second}');
+        final setId = await app.sets.createSet(name: 'Gig');
+        await app.sets.addSongs(setId, [a, b]);
+        return setId;
+      });
+      await tester.pumpWidget(app.build(home: SetScreen(setId: setId!)));
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find
+            .byWidgetPredicate((w) => '${w.key}'.contains('set-item-menu-'))
+            .first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Remove from set'));
+      await tester.pumpAndSettle();
+      expect(find.text('First'), findsNothing);
+      expect(find.text('“First” removed from the set'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(SnackBarAction, 'Undo'));
+      await tester.pumpAndSettle();
+      final items = (await tester.runAsync(() => app.sets.getItems(setId)))!;
+      expect(items.map((i) => i.song?.title), ['First', 'Second']);
+      expect(find.text('First'), findsOneWidget);
+      await app.dispose(tester);
+    });
+
+    for (final wide in [false, true]) {
+      testWidgets('a deleted set comes back with Undo '
+          '(${wide ? 'next to the list' : 'own page'})', (tester) async {
+        useTabletSize(tester, landscape: wide);
+        final app = await TestApp.create(prefs: {'language': 'en'});
+        await tester.runAsync(() async {
+          final a = await app.songs.createSong(source: '{title: Opener}');
+          final setId = await app.sets.createSet(name: 'Summer Gig');
+          await app.sets.addSongs(setId, [a]);
+        });
+        await tester.pumpWidget(app.build());
+        await tester.pumpAndSettle();
+        // Wide screens show the set next to the list already.
+        if (!wide) {
+          await tester.tap(find.text('Summer Gig'));
+          await tester.pumpAndSettle();
+        }
+
+        await tester.tap(
+          find.descendant(of: find.byType(SetScreen), matching: appBarMenu()),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Delete'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+        await tester.pumpAndSettle();
+        expect(find.byType(SetScreen), findsNothing);
+        expect(find.text('Summer Gig'), findsNothing);
+        expect(find.text('Set “Summer Gig” deleted'), findsOneWidget);
+
+        await tester.tap(find.widgetWithText(SnackBarAction, 'Undo'));
+        await tester.pumpAndSettle();
+        expect(find.text('Summer Gig'), findsWidgets);
+        expect(find.byType(SetScreen), wide ? findsOneWidget : findsNothing);
+        await app.dispose(tester);
+      });
+    }
+
+    testWidgets('attachments are deleted without asking, with Undo', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final id = await tester.runAsync(() async {
+        final id = await app.songs.createSong(title: 'Sheet only');
+        await app.songs.addAttachment(
+          id,
+          name: 'Lead sheet',
+          bytes: Uint8List.fromList([1, 2, 3]),
+          pages: 1,
+        );
+        await app.songs.addAttachment(
+          id,
+          name: 'Horns',
+          bytes: Uint8List.fromList([4]),
+          pages: 1,
+        );
+        return id;
+      });
+      final files = {
+        for (final a in (await tester.runAsync(
+          () => app.songs.getAttachments(id!),
+        ))!)
+          a.name: a.fileName,
+      };
+      await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+      await tester.pumpAndSettle();
+
+      Future<void> delete(String name) async {
+        await tester.tap(
+          find.descendant(
+            of: find.widgetWithText(ListTile, name),
+            matching: find.byType(PopupMenuButton<String>),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Delete'));
+        await tester.pumpAndSettle();
+      }
+
+      await delete('Lead sheet');
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.text('Lead sheet'), findsNothing);
+      await tester.tap(find.widgetWithText(SnackBarAction, 'Undo'));
+      await tester.pumpAndSettle();
+      expect(find.text('Lead sheet'), findsOneWidget);
+
+      // Without Undo the file goes once the message is gone.
+      await delete('Horns');
+      expect(find.text('Horns'), findsNothing);
+      expect(find.text('Attachment “Horns” deleted'), findsOneWidget);
+      await tester.pump(undoDuration);
+      await tester.pumpAndSettle();
+      expect(find.text('Attachment “Horns” deleted'), findsNothing);
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pumpAndSettle();
+      bool exists(String name) =>
+          File('${app.dir.path}/${files[name]}').existsSync();
+      expect(exists('Horns'), isFalse);
+      expect(exists('Lead sheet'), isTrue);
       await app.dispose(tester);
     });
   });

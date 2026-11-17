@@ -12,6 +12,9 @@ import 'providers.dart';
 import 'settings/settings.dart';
 import 'sync/auth_providers.dart';
 import 'ui/widgets/logo.dart';
+import 'util/log.dart';
+
+const _log = Log('app');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,6 +35,13 @@ Future<void> main() async {
   // After a schema upgrade, fill new columns from the ChordPro sources.
   db.afterUpgrade = (db) => SongRepository(db, storage).refreshAllMetadata();
   await sessionStore.load();
+  // Files of attachments deleted while an undo was offered (#267); before
+  // the UI, so that no new deletion is waiting for its undo.
+  try {
+    await SongRepository(db, storage).purgeDeletedFiles();
+  } catch (e) {
+    _log.warning('Deleted attachment files not purged', e);
+  }
 
   // Add an example song on the very first start. Not on web: the local
   // library it would go to is hidden there (ADR-0018).

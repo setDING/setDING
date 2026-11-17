@@ -137,9 +137,17 @@ class _SetScreenState extends ConsumerState<SetScreen> {
       title: l10n.deleteSetTitle,
       message: l10n.deleteSetMessage(set.name),
     );
-    if (!ok) return;
-    await _repo.deleteSet(set.id);
+    if (!ok || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final repo = _repo;
+    final deleted = await repo.deleteSet(set.id);
     if (mounted && !widget.embedded) Navigator.pop(context);
+    showUndo(
+      messenger,
+      l10n.setDeleted(set.name),
+      undoLabel: l10n.undo,
+      onUndo: () => repo.restoreSet(deleted),
+    );
   }
 
   Future<void> _onReorder(
@@ -325,7 +333,29 @@ class _SetItemTile extends ConsumerWidget {
       ),
     );
 
-    Future<void> remove() => repo.removeItem(setId, item.id);
+    // Name of the item in the message after removing it.
+    final note = item.note?.trim() ?? '';
+    final itemName = switch (item.type) {
+      SetItemType.song =>
+        song == null
+            ? l10n.songMissing
+            : (song.title.isEmpty ? l10n.untitled : song.title),
+      _ when note.isNotEmpty => note,
+      SetItemType.pause => l10n.pause,
+      _ => l10n.textItem,
+    };
+    Future<void> remove() async {
+      final messenger = ScaffoldMessenger.of(context);
+      final removed = await repo.removeItem(setId, item.id);
+      if (removed == null) return;
+      showUndo(
+        messenger,
+        l10n.setItemRemoved(itemName),
+        undoLabel: l10n.undo,
+        onUndo: () => repo.restoreItem(removed),
+      );
+    }
+
     Future<void> editMarker() async {
       final label = await askText(
         context,
@@ -341,7 +371,6 @@ class _SetItemTile extends ConsumerWidget {
       final typeLabel = item.type == SetItemType.pause
           ? l10n.pause
           : l10n.textItem;
-      final note = item.note?.trim() ?? '';
       final hasNote =
           note.isNotEmpty && note.toLowerCase() != typeLabel.toLowerCase();
       return ListTile(
