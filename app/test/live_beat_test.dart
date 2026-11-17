@@ -144,8 +144,8 @@ void main() {
       tester,
       prefs: {'instrument': 'drums', 'clickStart': 'manual'},
     );
-    // The middle of the page (beside the wide song map's panel).
-    final center = tester.getCenter(find.byType(PageView));
+    // The middle of the screen, also beside the wide song map's panel.
+    final center = tester.getCenter(find.byType(LiveScreen));
     await tester.tapAt(center);
     await tester.pump();
     expect(find.byKey(const Key('stage-tempo-controls')), findsOneWidget);

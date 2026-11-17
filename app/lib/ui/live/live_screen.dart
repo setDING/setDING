@@ -493,9 +493,19 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   /// Width of the page area, for the tap zones.
   double _width = 0;
 
-  void _onTap(Offset position) {
-    final x = position.dx;
-    final width = _width;
+  void _onTap(Offset position) => _onStageTap(position.dx + _pageLeft);
+
+  /// Left edge of the page area on the stage: the width of the panel of the
+  /// wide song map, otherwise 0.
+  double _pageLeft = 0;
+
+  /// Width of the whole stage, for the tap zones.
+  double _stageWidth = 0;
+
+  /// The tap zones are thirds of the whole stage (ADR-0007), also beside the
+  /// panel of the wide song map (ADR-0026, #363).
+  void _onStageTap(double x) {
+    final width = _stageWidth > 0 ? _stageWidth : _width;
     if (x < width * 0.3) {
       _previous();
     } else if (x > width * 0.7) {
@@ -636,6 +646,13 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                   // Wide song map (ADR-0026): the beat large and the set on
                   // the left, the song on the right.
                   final wide = showSongMap && outer.maxWidth >= _wideSongMap;
+                  final panelWidth = (outer.maxWidth * 0.36).clamp(
+                    300.0,
+                    480.0,
+                  );
+                  _stageWidth = outer.maxWidth;
+                  // The divider after the panel is one pixel wide.
+                  _pageLeft = wide ? panelWidth + 1 : 0;
                   if (_beat.largeBeat != wide) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       if (mounted) _beat.largeBeat = wide;
@@ -718,14 +735,18 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   SizedBox(
-                                    width: (outer.maxWidth * 0.36).clamp(
-                                      300.0,
-                                      480.0,
-                                    ),
-                                    child: DrumPanel(
-                                      items: items,
-                                      current: _index,
-                                      onSelect: _jumpTo,
+                                    width: panelWidth,
+                                    // Empty areas of the panel are part of the tap zones;
+                                    // the set list and the buttons keep their taps.
+                                    child: GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTapUp: (d) =>
+                                          _onStageTap(d.localPosition.dx),
+                                      child: DrumPanel(
+                                        items: items,
+                                        current: _index,
+                                        onSelect: _jumpTo,
+                                      ),
                                     ),
                                   ),
                                   const VerticalDivider(width: 1),
