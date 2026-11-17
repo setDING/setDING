@@ -68,6 +68,7 @@ class AppSettings {
     this.pageTurn = PageTurnMode.full,
     this.liveAppearance = LiveAppearance.app,
     this.autoFit = true,
+    this.pageHint = true,
     this.chorusRepeat = ChorusRepeat.auto,
     this.fontSize = 20,
     this.instrument = 'guitar',
@@ -99,6 +100,10 @@ class AppSettings {
 
   /// Fit the whole song on the screen (no scrolling) in live mode.
   final bool autoFit;
+
+  /// Marks the corner of the live page: a folded corner while more of the
+  /// song follows, a final barline on its last page (ADR-0007).
+  final bool pageHint;
   final ChorusRepeat chorusRepeat;
 
   /// Base font size for lyrics in logical pixels.
@@ -167,6 +172,7 @@ class AppSettings {
     PageTurnMode? pageTurn,
     LiveAppearance? liveAppearance,
     bool? autoFit,
+    bool? pageHint,
     ChorusRepeat? chorusRepeat,
     double? fontSize,
     String? instrument,
@@ -187,6 +193,7 @@ class AppSettings {
     pageTurn: pageTurn ?? this.pageTurn,
     liveAppearance: liveAppearance ?? this.liveAppearance,
     autoFit: autoFit ?? this.autoFit,
+    pageHint: pageHint ?? this.pageHint,
     chorusRepeat: chorusRepeat ?? this.chorusRepeat,
     instrument: instrument ?? this.instrument,
     userName: userName ?? this.userName,
@@ -220,6 +227,7 @@ class AppSettings {
         d.liveAppearance,
       ),
       autoFit: prefs.getBool('autoFit') ?? d.autoFit,
+      pageHint: prefs.getBool('pageHint') ?? d.pageHint,
       chorusRepeat: pick(ChorusRepeat.values, 'chorusRepeat', d.chorusRepeat),
       instrument: prefs.getString('instrument') ?? d.instrument,
       userName: prefs.getString('userName') ?? d.userName,
@@ -246,6 +254,7 @@ class AppSettings {
     await prefs.setString('pageTurn', pageTurn.name);
     await prefs.setString('liveAppearance', liveAppearance.name);
     await prefs.setBool('autoFit', autoFit);
+    await prefs.setBool('pageHint', pageHint);
     await prefs.setString('chorusRepeat', chorusRepeat.name);
     await prefs.setString('instrument', instrument);
     await prefs.setString('userName', userName);
