@@ -23,6 +23,7 @@ import '../render/song_view.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
 import '../widgets/key_picker.dart';
+import '../widgets/scope_info.dart';
 import '../bands/copy_to_band.dart';
 import '../../sync/sync_controller.dart';
 import 'conflict_banner.dart';
@@ -747,7 +748,12 @@ class _AttachmentsCard extends ConsumerWidget {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               subtitle: pdfs.length > 1 || (hasChordPro && pdfs.isNotEmpty)
-                  ? Text(l10n.liveView)
+                  ? Row(
+                      children: [
+                        Flexible(child: Text(l10n.liveView)),
+                        const ScopeInfo(SettingScope.personal),
+                      ],
+                    )
                   : null,
               trailing: onAdd == null
                   ? null
@@ -833,15 +839,7 @@ class _PersonalHeader extends StatelessWidget {
         Icon(Icons.person_outline, size: 18, color: theme.colorScheme.primary),
         const SizedBox(width: 8),
         Text(l10n.personalAdjustments, style: theme.textTheme.titleSmall),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            l10n.personalAdjustmentsHint,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ),
+        const ScopeInfo(SettingScope.personal),
       ],
     );
   }

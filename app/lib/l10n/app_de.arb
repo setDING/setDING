@@ -129,7 +129,7 @@
       }
     }
   },
-  "liveView": "Im Live-Modus anzeigen – nur für mich",
+  "liveView": "Im Live-Modus anzeigen",
   "liveViewChordPro": "ChordPro-Text",
   "exportSong": "Exportieren",
   "exported": "Exportiert",
@@ -143,7 +143,10 @@
   "fitToPage": "An Seite anpassen",
   "resetAdjustments": "Persönliche Anpassungen zurücksetzen",
   "personalAdjustments": "Persönliche Anpassungen",
-  "personalAdjustmentsHint": "Nur für dich – für alle anderen bleibt der Song unverändert.",
+  "scopePersonal": "Nur für dich – für alle anderen bleibt der Song unverändert.",
+  "scopeSet": "Für dieses Set – gilt für die ganze Band.",
+  "scopeBand": "Für die ganze Band – gilt in allen ihren Sets.",
+  "scopeSong": "Für den Song – ändert ihn für alle in der Organisation.",
   "keyPickerPersonal": "Meine Tonart – nur für mich",
   "keyPickerSet": "Tonart in diesem Set – für die ganze Band",
   "keyPickerBand": "Tonart der Band – für alle ihre Sets",
@@ -409,7 +412,7 @@
   "sequenceEdit": "Songablauf für dieses Set",
   "sequenceFromSet": "Ablauf für dieses Set angepasst",
   "sequenceFromBand": "Abfolge der Band",
-  "arrangementOf": "Arrangement von {band} – für die ganze Band",
+  "arrangementOf": "Arrangement von {band}",
   "@arrangementOf": {
     "placeholders": {
       "band": {

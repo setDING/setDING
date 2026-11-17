@@ -49,7 +49,7 @@
   "deleteAttachmentTitle": "Delete attachment?",
   "deleteAttachmentMessage": "\"{name}\" will be deleted.",
   "pagesCount": "{count, plural, =1{1 page} other{{count} pages}}",
-  "liveView": "Show in live mode – just for me",
+  "liveView": "Show in live mode",
   "liveViewChordPro": "ChordPro text",
   "exportSong": "Export",
   "exported": "Exported",
@@ -63,7 +63,10 @@
   "fitToPage": "Fit to page",
   "resetAdjustments": "Reset personal adjustments",
   "personalAdjustments": "Personal adjustments",
-  "personalAdjustmentsHint": "Only for you – the song stays unchanged for everyone else.",
+  "scopePersonal": "Just for you – the song stays unchanged for everyone else.",
+  "scopeSet": "For this set – applies to the whole band.",
+  "scopeBand": "For the whole band – applies in all its sets.",
+  "scopeSong": "For the song – changes it for everyone in the organization.",
   "keyPickerPersonal": "My key – just for me",
   "keyPickerSet": "Key in this set – for the whole band",
   "keyPickerBand": "Key of the band – for all its sets",
@@ -260,7 +263,7 @@
   "sequenceEdit": "Song sequence for this set",
   "sequenceFromSet": "Sequence changed for this set",
   "sequenceFromBand": "Sequence of the band",
-  "arrangementOf": "Arrangement of {band} – for the whole band",
+  "arrangementOf": "Arrangement of {band}",
   "@arrangementOf": {
     "placeholders": {
       "band": {

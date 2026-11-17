@@ -67,7 +67,12 @@ void main() {
     // ChordPro by default; the pause gets no dropdown.
     expect(find.byType(DropdownButton<String>), findsOneWidget);
     expect(_shown(tester, ids.songId), '');
-    expect(find.byTooltip('Show in live mode – just for me'), findsOneWidget);
+    expect(
+      find.byTooltip(
+        'Show in live mode\nJust for you – the song stays unchanged for everyone else.',
+      ),
+      findsOneWidget,
+    );
     // The key of a set item applies to the whole band, not just to me.
     expect(
       find.byTooltip('Key in this set – for the whole band'),
