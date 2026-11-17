@@ -470,6 +470,18 @@
   "editorGroupInfo": "Song-Infos",
   "editorGroupText": "Text",
   "editorGroupMore": "Mehr",
+  "searchInSong": "Suchen",
+  "searchNoMatches": "Keine Treffer",
+  "searchPrevious": "Vorheriger Treffer",
+  "searchNext": "Nächster Treffer",
+  "searchClose": "Suche schliessen",
+  "searchMatchCount": "{current} von {total}",
+  "@searchMatchCount": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
   "editorGroupLines": "Zeilen",
   "redo": "Wiederholen",
   "moveLinesUp": "Zeile nach oben",

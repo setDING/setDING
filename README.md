@@ -56,7 +56,7 @@ On stage you play from a clean, large display and turn pages with your foot.
 - Import `.cho`, `.chordpro`, `.chopro` and `.txt` files, one by one or as a ZIP –
   including the ChordPro files you download from SongSelect.
 - Attach **PDF sheet music** to any song; it is on every device, offline too.
-- A built-in editor with syntax highlighting, autocompletion, line and chord moving and a live preview.
+- A built-in editor with syntax highlighting, autocompletion, search, line and chord moving and a live preview.
 
 ![The ChordPro editor with insert menus, syntax highlighting and a live preview](docs/screenshots/editor.png)
 

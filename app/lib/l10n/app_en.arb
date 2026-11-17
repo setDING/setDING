@@ -328,6 +328,18 @@
   "editorGroupInfo": "Song info",
   "editorGroupText": "Text",
   "editorGroupMore": "More",
+  "searchInSong": "Search",
+  "searchNoMatches": "No matches",
+  "searchPrevious": "Previous match",
+  "searchNext": "Next match",
+  "searchClose": "Close search",
+  "searchMatchCount": "{current} of {total}",
+  "@searchMatchCount": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
   "editorGroupLines": "Lines",
   "redo": "Redo",
   "moveLinesUp": "Move line up",

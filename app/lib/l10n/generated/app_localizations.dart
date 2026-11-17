@@ -1838,6 +1838,42 @@ abstract class AppLocalizations {
   /// **'Mehr'**
   String get editorGroupMore;
 
+  /// No description provided for @searchInSong.
+  ///
+  /// In de, this message translates to:
+  /// **'Suchen'**
+  String get searchInSong;
+
+  /// No description provided for @searchNoMatches.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Treffer'**
+  String get searchNoMatches;
+
+  /// No description provided for @searchPrevious.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorheriger Treffer'**
+  String get searchPrevious;
+
+  /// No description provided for @searchNext.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächster Treffer'**
+  String get searchNext;
+
+  /// No description provided for @searchClose.
+  ///
+  /// In de, this message translates to:
+  /// **'Suche schliessen'**
+  String get searchClose;
+
+  /// No description provided for @searchMatchCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{current} von {total}'**
+  String searchMatchCount(int current, int total);
+
   /// No description provided for @editorGroupLines.
   ///
   /// In de, this message translates to:

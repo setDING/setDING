@@ -36,6 +36,8 @@ String? _apply(
 }
 
 void main() {
+  _searchTests();
+
   group('moveLines', () {
     SourceEdit? up(String t, int b, int e) => moveLines(t, b, e, up: true);
     SourceEdit? down(String t, int b, int e) => moveLines(t, b, e, up: false);
@@ -154,6 +156,24 @@ void main() {
     test('annotations move too, directives do not', () {
       expect(_apply('a[*Riff|]b', right), 'ab[*Riff|]');
       expect(_apply('{c: [C|]x}', right), isNull);
+    });
+  });
+}
+
+void _searchTests() {
+  group('findInSource', () {
+    test('finds all occurrences ignoring case', () {
+      expect(findInSource('Am [am] AM', 'am'), [(0, 2), (4, 6), (8, 10)]);
+    });
+
+    test('does not overlap and ignores an empty query', () {
+      expect(findInSource('aaaa', 'aa'), [(0, 2), (2, 4)]);
+      expect(findInSource('abc', ''), isEmpty);
+    });
+
+    test('treats the query literally', () {
+      expect(findInSource('[C] x', '[C]'), [(0, 3)]);
+      expect(findInSource('a.b', '.'), [(1, 2)]);
     });
   });
 }

@@ -998,6 +998,26 @@ class AppLocalizationsDe extends AppLocalizations {
   String get editorGroupMore => 'Mehr';
 
   @override
+  String get searchInSong => 'Suchen';
+
+  @override
+  String get searchNoMatches => 'Keine Treffer';
+
+  @override
+  String get searchPrevious => 'Vorheriger Treffer';
+
+  @override
+  String get searchNext => 'Nächster Treffer';
+
+  @override
+  String get searchClose => 'Suche schliessen';
+
+  @override
+  String searchMatchCount(int current, int total) {
+    return '$current von $total';
+  }
+
+  @override
   String get editorGroupLines => 'Zeilen';
 
   @override

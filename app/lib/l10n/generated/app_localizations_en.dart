@@ -992,6 +992,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editorGroupMore => 'More';
 
   @override
+  String get searchInSong => 'Search';
+
+  @override
+  String get searchNoMatches => 'No matches';
+
+  @override
+  String get searchPrevious => 'Previous match';
+
+  @override
+  String get searchNext => 'Next match';
+
+  @override
+  String get searchClose => 'Close search';
+
+  @override
+  String searchMatchCount(int current, int total) {
+    return '$current of $total';
+  }
+
+  @override
   String get editorGroupLines => 'Lines';
 
   @override
