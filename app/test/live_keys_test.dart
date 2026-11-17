@@ -23,7 +23,7 @@ trailer<</Root 1 0 R>>
 }
 
 /// Bluetooth page turners and keyboards turn pages exactly like the
-/// right/left tap zones (ADR-0007, #261).
+/// right/left tap zones (ADR-0007, #261; Arrow Up/Down #286).
 void main() {
   Future<List<LiveItem>> createSongs(
     WidgetTester tester,
@@ -54,11 +54,13 @@ void main() {
 
   const nextKeys = [
     LogicalKeyboardKey.arrowRight,
+    LogicalKeyboardKey.arrowDown,
     LogicalKeyboardKey.pageDown,
     LogicalKeyboardKey.space,
   ];
   const previousKeys = [
     LogicalKeyboardKey.arrowLeft,
+    LogicalKeyboardKey.arrowUp,
     LogicalKeyboardKey.pageUp,
   ];
 
@@ -208,6 +210,11 @@ void main() {
     // The arrow keys move the cursor; the song stays.
     await press(tester, LogicalKeyboardKey.arrowLeft);
     expect(controller.selection.baseOffset, 2);
+    // Up/down in a single-line field: to the start and the end.
+    await press(tester, LogicalKeyboardKey.arrowUp);
+    expect(controller.selection.baseOffset, 0);
+    await press(tester, LogicalKeyboardKey.arrowDown);
+    expect(controller.selection.baseOffset, 3);
     for (final key in [...nextKeys, ...previousKeys]) {
       await press(tester, key);
     }
@@ -219,6 +226,56 @@ void main() {
     expect(find.byType(AlertDialog), findsNothing);
     expect(find.byType(LiveScreen), findsOneWidget);
     await press(tester, LogicalKeyboardKey.pageDown);
+    expect(find.text('2 / 2'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('arrow down/up scroll a song that does not fit, then turn', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    // Without fitting, a long song scrolls instead of being paged.
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'autoFit': false},
+    );
+    final items = await createSongs(tester, app, [
+      versesSong(16),
+      '{title: Second}\n[D]Two',
+    ]);
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+    ScrollPosition position() => tester
+        .state<ScrollableState>(
+          find.descendant(
+            of: find.byType(SingleChildScrollView),
+            matching: find.byType(Scrollable),
+          ),
+        )
+        .position;
+    expect(position().maxScrollExtent, greaterThan(0));
+    expect(position().pixels, 0);
+
+    // Arrow Down scrolls through the song first, like the right tap zone.
+    var offset = 0.0;
+    while (position().pixels < position().maxScrollExtent) {
+      await press(tester, LogicalKeyboardKey.arrowDown);
+      expect(find.text('1 / 2'), findsOneWidget);
+      expect(position().pixels, greaterThan(offset));
+      offset = position().pixels;
+    }
+    // Arrow Up scrolls back before turning to a previous song.
+    await press(tester, LogicalKeyboardKey.arrowUp);
+    expect(position().pixels, lessThan(offset));
+    while (position().pixels > 0) {
+      await press(tester, LogicalKeyboardKey.arrowUp);
+    }
+    expect(find.text('1 / 2'), findsOneWidget);
+
+    // At the end of the song, Arrow Down turns to the next song.
+    while (position().pixels < position().maxScrollExtent) {
+      await press(tester, LogicalKeyboardKey.arrowDown);
+    }
+    await press(tester, LogicalKeyboardKey.arrowDown);
     expect(find.text('2 / 2'), findsOneWidget);
     await app.dispose(tester);
   });
@@ -288,6 +345,7 @@ void main() {
     await settlePdf(tester);
     for (final (next, previous) in [
       (LogicalKeyboardKey.arrowRight, LogicalKeyboardKey.arrowLeft),
+      (LogicalKeyboardKey.arrowDown, LogicalKeyboardKey.arrowUp),
       (LogicalKeyboardKey.pageDown, LogicalKeyboardKey.pageUp),
       (LogicalKeyboardKey.space, LogicalKeyboardKey.pageUp),
     ]) {
@@ -343,6 +401,11 @@ void main() {
 
     await press(LogicalKeyboardKey.space);
     expect(pdfPage(3), findsOneWidget);
+    await press(LogicalKeyboardKey.arrowUp);
+    expect(pdfPage(1), findsOneWidget);
+    await press(LogicalKeyboardKey.arrowDown);
+    expect(pdfPage(3), findsOneWidget);
+    expect(find.text('1 / 2'), findsOneWidget);
     await app.dispose(tester);
     await settlePdf(tester);
   });

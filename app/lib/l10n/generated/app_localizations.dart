@@ -1271,7 +1271,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsPageTurnHint.
   ///
   /// In de, this message translates to:
-  /// **'Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern. Seitenwender (Fusspedal) und Tastatur: Pfeil rechts, Bild ab und Leertaste blättern weiter, Pfeil links und Bild auf zurück.'**
+  /// **'Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern. Seitenwender (Fusspedal) und Tastatur: Pfeil rechts, Pfeil ab, Bild ab und Leertaste blättern weiter, Pfeil links, Pfeil auf und Bild auf zurück.'**
   String get settingsPageTurnHint;
 
   /// No description provided for @settingsLiveAppearance.
