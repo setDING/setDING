@@ -290,6 +290,47 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('organization admins create bands on the organization screen', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'}, user: _ann);
+    app.backend.addOrganization('o1', 'School', admin: _ann);
+    app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+    await tester.pumpWidget(app.build(home: const BandsScreen()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('School'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('org-band-new')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), ' Jazz ');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    final jazz = app.backend.bands.values.singleWhere((b) => b.name == 'Jazz');
+    expect(jazz.organizationId, 'o1');
+    // The new band opens, with Ann as its first admin.
+    expect(find.text('Ann (you)'), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.text('Jazz'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('organization members cannot create bands there', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'}, user: _bob);
+    app.backend.addOrganization('o1', 'School', admin: _ann);
+    app.backend.addOrgMember('o1', _bob, OrgRole.member);
+    await tester.pumpWidget(app.build(home: const BandsScreen()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('School'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('org-band-new')), findsNothing);
+    await app.dispose(tester);
+  });
+
   testWidgets('opening an organization or a band shows who joined meanwhile', (
     tester,
   ) async {
