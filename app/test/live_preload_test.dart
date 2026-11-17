@@ -330,6 +330,15 @@ void main() {
 
     Finder pdfPage(int n, {bool skipOffstage = true}) =>
         find.byKey(ValueKey('pdf-spread-page-$n'), skipOffstage: skipOffstage);
+    // The pages are rendered asynchronously, in real time: under load this
+    // can take longer than settlePdf waits. Wait for them, bounded.
+    final images = find.byType(RawImage, skipOffstage: false);
+    for (var i = 0; i < 30 && images.evaluate().length < 2; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+    }
     // Not on stage yet, but the document is open and its pages rendered.
     expect(find.byType(PdfSpreadView), findsNothing);
     expect(find.byType(PdfSpreadView, skipOffstage: false), findsOneWidget);
