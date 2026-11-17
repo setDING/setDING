@@ -50,6 +50,7 @@ deletes its data. `make branding` regenerates the splash screens and icons from 
 Every change follows [`docs/development/git-workflow.md`](docs/development/git-workflow.md) (ADR-0010). In short:
 
 - Work on an issue; one issue = one branch (`<type>/<issue>-<slug>`) = one PR. **Never commit directly to `main`.**
+- **Every change happens in its own git worktree** (`git worktree add -b <branch> ../RealChord-worktrees/<branch-with-dashes> origin/main`); the project folder always stays on `main` and is only fast-forwarded (`git pull --ff-only`). Remove the worktree after the merge.
 - Conventional Commits in English; **every commit** (including squash merges) carries the `Co-Authored-By: Claude …` trailer.
 - Before marking a PR ready: rebase on `main`, run the checks, update ADRs/docs, complete both ARB files, self-review.
 - **Test gate: all tests must pass before every merge**, run on the final branch state rebased on `main`. Never skip, delete or weaken tests to get green. New or changed behaviour comes with tests.
