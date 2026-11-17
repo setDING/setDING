@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' show Timeline;
 
 import 'package:flutter/scheduler.dart';
 import 'package:material_ui/material_ui.dart';
@@ -59,7 +60,7 @@ class LivePreparation {
   LivePreparation({
     required this.length,
     required int current,
-    this.linesPerStep = 8,
+    this.linesPerStep = 4,
   }) : _current = current {
     complete(current);
   }
@@ -94,6 +95,12 @@ class LivePreparation {
   void complete(int index) {
     final page = this[index];
     if (page._complete) return;
+    // Timeline marker for profiling (docs/development/performance.md): a
+    // page built at once, not prepared in idle time.
+    Timeline.instantSync(
+      'LivePreparation.complete',
+      arguments: {'index': '$index', 'started': '${page._started}'},
+    );
     page
       .._started = true
       .._complete = true
@@ -132,7 +139,7 @@ class LivePreparation {
       Timer.run(() {
         _scheduled = false;
         if (_disposed) return;
-        step();
+        Timeline.timeSync('LivePreparation.step', step);
         if (busy) _schedule();
       });
       binding.scheduleFrame();
