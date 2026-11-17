@@ -992,6 +992,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editorGroupMore => 'More';
 
   @override
+  String get convertChordsOverLyrics => 'Convert chords above lyrics';
+
+  @override
+  String get pastedChordsOverLyrics =>
+      'The pasted text has chords above the lyrics.';
+
+  @override
+  String get convert => 'Convert';
+
+  @override
   String get searchInSong => 'Search';
 
   @override

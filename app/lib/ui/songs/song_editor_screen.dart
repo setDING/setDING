@@ -104,6 +104,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
   /// preview is parsed again only when the text changed, shortly after the
   /// last keystroke.
   void _onChanged() {
+    _checkPaste();
     if (_controller.text == _previewSource) {
       _previewDebounce?.cancel();
       return;
@@ -117,6 +118,59 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
         _preview = _parse(source);
       });
     });
+  }
+
+  /// Text before the last change, to recognise pasted text.
+  late String _lastText = _original;
+
+  /// Offers to convert pasted chords-over-lyrics text to ChordPro (#362).
+  void _checkPaste() {
+    final before = _lastText;
+    final after = _controller.text;
+    if (after == before) return;
+    _lastText = after;
+    if (after.length - before.length < 8) return;
+    var prefix = 0;
+    final shorter = before.length;
+    while (prefix < shorter && before[prefix] == after[prefix]) {
+      prefix++;
+    }
+    var suffix = 0;
+    while (suffix < shorter - prefix &&
+        before[before.length - 1 - suffix] ==
+            after[after.length - 1 - suffix]) {
+      suffix++;
+    }
+    final inserted = after.substring(prefix, after.length - suffix);
+    if (!inserted.contains('\n') || !looksLikeChordsOverLyrics(inserted)) {
+      return;
+    }
+    final start = prefix;
+    final end = after.length - suffix;
+    final l10n = AppLocalizations.of(context);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(l10n.pastedChordsOverLyrics),
+          action: SnackBarAction(
+            label: l10n.convert,
+            onPressed: () {
+              // Only if the text is still as pasted.
+              if (!mounted || _controller.text != after) return;
+              final edit = convertChordsOverLyricsIn(after, start, end);
+              if (edit == null) return;
+              _controller.value = TextEditingValue(
+                text: edit.text,
+                selection: TextSelection(
+                  baseOffset: edit.base,
+                  extentOffset: edit.extent,
+                ),
+              );
+            },
+          ),
+        ),
+      );
   }
 
   Song _parse(String source) =>
@@ -355,6 +409,11 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
       EditorCommand.duplicateLines => duplicateLines(text, base, extent),
       EditorCommand.deleteLines => deleteLines(text, base, extent),
       EditorCommand.toggleComment => toggleComment(text, base, extent),
+      EditorCommand.convertChordsOverLyrics => convertChordsOverLyricsIn(
+        text,
+        base,
+        extent,
+      ),
     };
     if (edit != null) {
       _controller.value = TextEditingValue(
@@ -515,7 +574,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
           for (final snippet in snippets.withShortcut)
             snippet.shortcut!: () => _insert(snippet),
           for (final command in EditorCommand.values)
-            command.activator: () => _command(command),
+            ?command.activator: () => _command(command),
         },
         child: DefaultTabController(
           length: 2,

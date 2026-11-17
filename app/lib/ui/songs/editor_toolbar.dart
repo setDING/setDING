@@ -64,7 +64,8 @@ enum EditorCommand {
   moveChordRight(Icons.chevron_right),
   duplicateLines(Icons.content_copy),
   deleteLines(Icons.delete_sweep_outlined),
-  toggleComment(Icons.tag);
+  toggleComment(Icons.tag),
+  convertChordsOverLyrics(Icons.auto_fix_high);
 
   const EditorCommand(this.icon);
 
@@ -78,12 +79,13 @@ enum EditorCommand {
     duplicateLines => l10n.duplicateLines,
     deleteLines => l10n.deleteLines,
     toggleComment => l10n.toggleComment,
+    convertChordsOverLyrics => l10n.convertChordsOverLyrics,
   };
 
   /// The shortcut shown in menus and tooltips. Alt+↑/↓ as in common code
   /// editors; chords move with Alt+←/→, on Apple with Ctrl+Option+←/→
   /// because Option+←/→ moves the cursor by word there.
-  SingleActivator get shortcut => switch (this) {
+  SingleActivator? get shortcut => switch (this) {
     moveLinesUp => const SingleActivator(LogicalKeyboardKey.arrowUp, alt: true),
     moveLinesDown => const SingleActivator(
       LogicalKeyboardKey.arrowDown,
@@ -102,15 +104,16 @@ enum EditorCommand {
     duplicateLines => _key(LogicalKeyboardKey.keyD),
     deleteLines => _key(LogicalKeyboardKey.keyK, shift: true),
     toggleComment => _key(LogicalKeyboardKey.slash),
+    convertChordsOverLyrics => null,
   };
 
   /// The key combinations of the command: [shortcut] or, for the comment
   /// toggle, also the typed `/`, which needs Shift on Swiss and German
   /// keyboards. One activator, so that a key press matching both runs the
   /// command once.
-  ShortcutActivator get activator => this == toggleComment
+  ShortcutActivator? get activator => this == toggleComment
       ? _AnyActivator([
-          shortcut,
+          ?shortcut,
           CharacterActivator('/', control: !_useMeta, meta: _useMeta),
         ])
       : shortcut;

@@ -4,6 +4,7 @@
 /// applies their result. Each command returns null when it changes nothing.
 library;
 
+import 'chords_over_lyrics.dart';
 import 'highlight.dart';
 
 /// Text and selection after an editing command. [base] and [extent] are
@@ -235,4 +236,25 @@ List<(int, int)> findInSource(String text, String query) {
     out.add((at, at + needle.length));
     from = at + needle.length;
   }
+}
+
+/// Converts chords-over-lyrics text to ChordPro (#362): the lines touched
+/// by the selection, which is then the converted block, or the whole text
+/// when nothing is selected.
+SourceEdit? convertChordsOverLyricsIn(String text, int base, int extent) {
+  if (base == extent) {
+    final converted = convertChordsOverLyrics(text);
+    if (converted == text) return null;
+    final cursor = base.clamp(0, converted.length);
+    return SourceEdit(converted, cursor, cursor);
+  }
+  final (start, end) = _lineBlock(text, base, extent);
+  final block = text.substring(start, end);
+  final converted = convertChordsOverLyrics(block);
+  if (converted == block) return null;
+  return SourceEdit(
+    text.replaceRange(start, end, converted),
+    start,
+    start + converted.length,
+  );
 }

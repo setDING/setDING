@@ -8,6 +8,8 @@ import 'test_app.dart';
 /// Line and chord commands of the ChordPro editor (#361); the text
 /// operations themselves are tested in the chordpro package.
 void main() {
+  convertTests();
+
   Future<(TestApp, TextEditingController)> pumpEditor(
     WidgetTester tester,
     String source,
@@ -173,6 +175,58 @@ void main() {
     await tester.tap(find.text('Duplicate line'));
     await tester.pumpAndSettle();
     expect(controller.text, 'a\nb\nb');
+    await app.dispose(tester);
+  });
+}
+
+void convertTests() {
+  testWidgets('the Lines menu converts chords above lyrics', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    await tester.pumpWidget(
+      app.build(home: const SongEditorScreen(initialSource: 'C    G\nla   la')),
+    );
+    await tester.pumpAndSettle();
+    final controller = tester
+        .widget<TextField>(find.byType(TextField))
+        .controller!;
+    await tester.tap(find.text('Lines'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Convert chords above lyrics'));
+    await tester.pumpAndSettle();
+    expect(controller.text, '[C]la   [G]la');
+    await app.dispose(tester);
+  });
+
+  testWidgets('pasting chords above lyrics offers the conversion', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    await tester.pumpWidget(
+      app.build(home: const SongEditorScreen(initialSource: '{title: T}\n')),
+    );
+    await tester.pumpAndSettle();
+    final controller = tester
+        .widget<TextField>(find.byType(TextField))
+        .controller!;
+    controller.value = const TextEditingValue(
+      text: '{title: T}\nAm      F\nHello there\n',
+      selection: TextSelection.collapsed(offset: 31),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.text('The pasted text has chords above the lyrics.'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Convert'));
+    await tester.pumpAndSettle();
+    expect(controller.text, '{title: T}\n[Am]Hello th[F]ere\n');
+
+    // Typing does not show the hint.
+    controller.text = '${controller.text}x';
+    await tester.pumpAndSettle();
+    expect(find.text('Convert'), findsNothing);
     await app.dispose(tester);
   });
 }

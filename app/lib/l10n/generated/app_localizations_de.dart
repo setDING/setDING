@@ -998,6 +998,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get editorGroupMore => 'Mehr';
 
   @override
+  String get convertChordsOverLyrics => 'Akkorde über Text umwandeln';
+
+  @override
+  String get pastedChordsOverLyrics =>
+      'Der eingefügte Text hat Akkorde über dem Liedtext.';
+
+  @override
+  String get convert => 'Umwandeln';
+
+  @override
   String get searchInSong => 'Suchen';
 
   @override

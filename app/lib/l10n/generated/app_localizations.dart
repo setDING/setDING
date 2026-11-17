@@ -1838,6 +1838,24 @@ abstract class AppLocalizations {
   /// **'Mehr'**
   String get editorGroupMore;
 
+  /// No description provided for @convertChordsOverLyrics.
+  ///
+  /// In de, this message translates to:
+  /// **'Akkorde über Text umwandeln'**
+  String get convertChordsOverLyrics;
+
+  /// No description provided for @pastedChordsOverLyrics.
+  ///
+  /// In de, this message translates to:
+  /// **'Der eingefügte Text hat Akkorde über dem Liedtext.'**
+  String get pastedChordsOverLyrics;
+
+  /// No description provided for @convert.
+  ///
+  /// In de, this message translates to:
+  /// **'Umwandeln'**
+  String get convert;
+
   /// No description provided for @searchInSong.
   ///
   /// In de, this message translates to:
