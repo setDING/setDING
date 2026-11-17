@@ -51,6 +51,11 @@ export default defineConfig({
           translations: { en: 'Bands and roles' },
           items: [{ autogenerate: { directory: 'bands' } }],
         },
+        {
+          label: 'Einstellungen',
+          translations: { en: 'Settings' },
+          items: [{ autogenerate: { directory: 'settings' } }],
+        },
       ],
       lastUpdated: false,
       plugins: [starlightLinksValidator()],

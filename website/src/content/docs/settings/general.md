@@ -1,0 +1,29 @@
+---
+title: Sprache, Design und Speicher
+description: Sprache der App, helles oder dunkles Design, Akzentfarbe, Speicher und Diagnoseprotokoll.
+sidebar:
+  order: 2
+---
+
+## Allgemein
+
+- **Sprache** – **Systemsprache**, **Deutsch** oder **English**. Mit
+  **Systemsprache** folgt setDING der Sprache deines Geräts. Deutsch ist
+  Schweizer Hochdeutsch.
+- **Design** – **Wie System**, **Hell** oder **Dunkel**.
+- **Akzentfarbe** – die Farbe für Schaltflächen und Hervorhebungen, z. B.
+  **setDING-Blau**, **Grün** oder **Violett**.
+
+Diese Einstellungen sind persönlich und gelten auf allen Geräten, auf denen du
+angemeldet bist. Ohne Anmeldung gelten sie nur auf diesem Gerät; nach dem Anmelden
+werden sie mit deinem Konto synchronisiert.
+
+## Speicher & Info
+
+- **PDF-Anhänge belegen …** zeigt, wie viel Platz die PDF-Noten auf diesem Gerät
+  brauchen.
+- **Diagnoseprotokoll kopieren** legt die letzten Meldungen der App in die
+  Zwischenablage, z. B. warum eine Synchronisation fehlschlug. Füge sie in eine
+  Nachricht an die Person ein, die euren Server betreut, oder in ein
+  [Issue auf GitHub](https://github.com/tafli/setDING/issues).
+- Ganz unten steht die **Version** von setDING.
