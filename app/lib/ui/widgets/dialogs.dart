@@ -204,3 +204,33 @@ String formatSemitones(int value) => value > 0
     : value < 0
     ? '−${-value}'
     : '0';
+
+/// How long "Undo" is offered after a deletion.
+const undoDuration = Duration(seconds: 6);
+
+/// Tells that something was deleted and offers "Undo" for [undoDuration]
+/// (#267). [onUndo] restores it; [onGone] runs once the undo is no longer
+/// offered (e.g. to delete files). [messenger] is taken before the screen of
+/// the deleted record is closed, so the message shows on the next one.
+void showUndo(
+  ScaffoldMessengerState messenger,
+  String message, {
+  required String undoLabel,
+  required Future<void> Function() onUndo,
+  Future<void> Function()? onGone,
+}) {
+  messenger.hideCurrentSnackBar();
+  final controller = messenger.showSnackBar(
+    SnackBar(
+      content: Text(message),
+      duration: undoDuration,
+      persist: false,
+      action: SnackBarAction(label: undoLabel, onPressed: onUndo),
+    ),
+  );
+  if (onGone != null) {
+    controller.closed.then((reason) {
+      if (reason != SnackBarClosedReason.action) return onGone();
+    });
+  }
+}

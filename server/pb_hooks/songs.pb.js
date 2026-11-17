@@ -23,22 +23,28 @@ onRecordUpdateRequest((e) => {
 
 // Deleting a song removes the personal adjustments of all users
 // (ADR-0020) and the arrangements of all bands (ADR-0025) for it: soft
-// deletes, so the delta pull carries them to the devices.
+// deletes, so the delta pull carries them to the devices. Restoring the song
+// (undo, #267) restores the ones its deletion removed: those deleted since
+// the song's deletion, i.e. with a higher revision. Ones deleted before stay
+// deleted.
 onRecordUpdateExecute((e) => {
-  const deleting = e.record.getBool("deleted") && !e.record.original().getBool("deleted");
+  const wasDeleted = e.record.original().getBool("deleted");
+  const deleting = e.record.getBool("deleted") && !wasDeleted;
+  const restoring = !e.record.getBool("deleted") && wasDeleted;
+  const deletedAt = e.record.original().getInt("revision");
   e.next();
-  if (!deleting) return;
+  if (!deleting && !restoring) return;
   for (const collection of ["overlays", "arrangements"]) {
     const records = e.app.findRecordsByFilter(
       collection,
-      "song = {:song} && deleted = false",
+      deleting ? "song = {:song} && deleted = false" : "song = {:song} && deleted = true && revision > {:since}",
       "",
       0,
       0,
-      { song: e.record.id },
+      { song: e.record.id, since: deletedAt },
     );
     for (const record of records) {
-      record.set("deleted", true);
+      record.set("deleted", deleting);
       e.app.save(record);
     }
   }

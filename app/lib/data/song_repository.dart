@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 
 import 'attachment_storage.dart';
 import 'database.dart';
+import 'deletions.dart';
 import 'outbox.dart';
 import 'text.dart';
 
@@ -521,45 +522,117 @@ class SongRepository {
         );
       });
 
-  /// Soft-deletes a song, removes it from all sets and deletes its files.
-  Future<void> deleteSong(String id) async {
+  /// Soft-deletes a song with its attachments and removes it from all
+  /// sets. The attachment files are kept for an undo ([restoreSong]) until
+  /// [purgeFiles].
+  Future<DeletedSong> deleteSong(String id) => _write(() async {
     final song = await (db.select(
       db.songs,
     )..where((s) => s.id.equals(id))).getSingleOrNull();
     final files = await (db.select(
       db.attachments,
     )..where((a) => a.songId.equals(id) & a.deleted.equals(false))).get();
-    // Sets that lose the song are changed, too.
-    final sets =
-        await (db.select(db.setlists).join([
-              innerJoin(
-                db.setItems,
-                db.setItems.setId.equalsExp(db.setlists.id),
-              ),
-            ])..where(db.setItems.songId.equals(id)))
-            .map((r) => r.readTable(db.setlists))
+    final setIds =
+        await (db.selectOnly(db.setItems)
+              ..addColumns([db.setItems.setId])
+              ..where(db.setItems.songId.equals(id)))
+            .map((r) => r.read(db.setItems.setId)!)
             .get();
-    await db.transaction(() async {
-      await (db.update(db.songs)..where((s) => s.id.equals(id))).write(
-        SongsCompanion(
-          deleted: const Value(true),
-          updatedAt: Value(DateTime.now()),
-        ),
-      );
-      await (db.update(db.attachments)..where((a) => a.songId.equals(id)))
-          .write(const AttachmentsCompanion(deleted: Value(true)));
-      await (db.delete(db.setItems)..where((i) => i.songId.equals(id))).go();
-      if (song != null) {
-        await markDirty(db, SyncCollection.songs, id, scope: song.libraryId);
+    final items = await itemsToRemove(db, setIds, (i) => i.songId == id);
+    // Sets that lose the song are changed, too.
+    final sets = await (db.select(
+      db.setlists,
+    )..where((s) => s.id.isIn(setIds))).get();
+    await (db.update(db.songs)..where((s) => s.id.equals(id))).write(
+      SongsCompanion(
+        deleted: const Value(true),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+    await (db.update(db.attachments)..where((a) => a.songId.equals(id))).write(
+      const AttachmentsCompanion(deleted: Value(true)),
+    );
+    await (db.delete(db.setItems)..where((i) => i.songId.equals(id))).go();
+    if (song != null) {
+      await markDirty(db, SyncCollection.songs, id, scope: song.libraryId);
+    }
+    for (final set in sets) {
+      await markDirty(db, SyncCollection.setlists, set.id, scope: set.bandId);
+    }
+    return DeletedSong(id, attachments: files, setItems: items);
+  });
+
+  /// Undoes [deleteSong]: the song, its attachments and its set items are
+  /// back, as a new local change that is synced like an edit (#267).
+  Future<void> restoreSong(DeletedSong deleted) => _write(() async {
+    final song = await (db.select(
+      db.songs,
+    )..where((s) => s.id.equals(deleted.songId))).getSingleOrNull();
+    if (song == null) return;
+    await (db.update(db.songs)..where((s) => s.id.equals(song.id))).write(
+      SongsCompanion(
+        deleted: const Value(false),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+    await (db.update(
+          db.attachments,
+        )..where((a) => a.id.isIn([for (final a in deleted.attachments) a.id])))
+        .write(const AttachmentsCompanion(deleted: Value(false)));
+    await markDirty(db, SyncCollection.songs, song.id, scope: song.libraryId);
+    for (final set in await restoreSetItems(db, deleted.setItems)) {
+      await markDirty(db, SyncCollection.setlists, set.id, scope: set.bandId);
+    }
+  });
+
+  /// Deletes the files of [attachments] that are still deleted (also by
+  /// their song) once an undo is no longer possible.
+  Future<void> purgeFiles(Iterable<AttachmentEntry> attachments) async {
+    final ids = [for (final a in attachments) a.id];
+    if (ids.isEmpty) return;
+    final live = await _liveFileNames();
+    final rows = await _attachmentsWithSong(db.attachments.id.isIn(ids));
+    for (final (a, songDeleted) in rows) {
+      if ((a.deleted || songDeleted) && !live.contains(a.fileName)) {
+        await storage.delete(a.fileName);
       }
-      for (final set in sets) {
-        await markDirty(db, SyncCollection.setlists, set.id, scope: set.bandId);
-      }
-    });
-    for (final f in files) {
-      await storage.delete(f.fileName);
     }
   }
+
+  /// Deletes the files of all deleted attachments and of the attachments of
+  /// deleted songs, e.g. left behind when the app was closed while an undo
+  /// was offered. Run at start.
+  Future<void> purgeDeletedFiles() async {
+    final live = await _liveFileNames();
+    final rows = await _attachmentsWithSong(
+      db.attachments.deleted.equals(true) | db.songs.deleted.equals(true),
+    );
+    for (final (a, _) in rows) {
+      if (!live.contains(a.fileName) && await storage.exists(a.fileName)) {
+        await storage.delete(a.fileName);
+      }
+    }
+  }
+
+  /// Attachments matching [filter] and whether their song is deleted.
+  Future<List<(AttachmentEntry, bool)>> _attachmentsWithSong(
+    Expression<bool> filter,
+  ) async =>
+      (await (db.select(db.attachments).join([
+            innerJoin(db.songs, db.songs.id.equalsExp(db.attachments.songId)),
+          ])..where(filter)).get())
+          .map(
+            (r) => (r.readTable(db.attachments), r.readTable(db.songs).deleted),
+          )
+          .toList();
+
+  /// File names of attachments in use (not deleted, song not deleted).
+  Future<Set<String>> _liveFileNames() async => {
+    for (final (a, _) in await _attachmentsWithSong(
+      db.attachments.deleted.equals(false) & db.songs.deleted.equals(false),
+    ))
+      a.fileName,
+  };
 
   // Attachments -------------------------------------------------------------
 
@@ -654,22 +727,49 @@ class SongRepository {
     if (a != null) await _markAttachment(a.id, a.songId, a.fileName);
   });
 
-  Future<void> deleteAttachment(AttachmentEntry attachment) async {
-    await _write(() async {
-      await (db.update(db.attachments)
-            ..where((a) => a.id.equals(attachment.id)))
-          .write(const AttachmentsCompanion(deleted: Value(true)));
-      await _markAttachment(
-        attachment.id,
-        attachment.songId,
-        attachment.fileName,
-      );
-      await (db.update(db.personalOverlays)
-            ..where((o) => o.liveView.equals(attachment.id)))
-          .write(const PersonalOverlaysCompanion(liveView: Value(null)));
-    });
-    await storage.delete(attachment.fileName);
-  }
+  /// Soft-deletes an attachment; its file is kept for an undo
+  /// ([restoreAttachment]) until [purgeFiles].
+  Future<DeletedAttachment> deleteAttachment(AttachmentEntry attachment) =>
+      _write(() async {
+        final owners =
+            await (db.selectOnly(db.personalOverlays)
+                  ..addColumns([db.personalOverlays.ownerId])
+                  ..where(db.personalOverlays.liveView.equals(attachment.id)))
+                .map((r) => r.read(db.personalOverlays.ownerId)!)
+                .get();
+        await (db.update(db.attachments)
+              ..where((a) => a.id.equals(attachment.id)))
+            .write(const AttachmentsCompanion(deleted: Value(true)));
+        await _markAttachment(
+          attachment.id,
+          attachment.songId,
+          attachment.fileName,
+        );
+        await (db.update(db.personalOverlays)
+              ..where((o) => o.liveView.equals(attachment.id)))
+            .write(const PersonalOverlaysCompanion(liveView: Value(null)));
+        return DeletedAttachment(attachment, liveViewOwners: owners);
+      });
+
+  /// Undoes [deleteAttachment], including the live view of personal
+  /// adjustments that showed it (unless changed since).
+  Future<void> restoreAttachment(DeletedAttachment deleted) => _write(() async {
+    final a = deleted.attachment;
+    await (db.update(db.attachments)..where((x) => x.id.equals(a.id))).write(
+      AttachmentsCompanion(
+        deleted: const Value(false),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+    await _markAttachment(a.id, a.songId, a.fileName);
+    await (db.update(db.personalOverlays)..where(
+          (o) =>
+              o.songId.equals(a.songId) &
+              o.ownerId.isIn(deleted.liveViewOwners) &
+              o.liveView.isNull(),
+        ))
+        .write(PersonalOverlaysCompanion(liveView: Value(a.id)));
+  });
 
   /// Runs a change together with its outbox entries ([markDirty]) in one
   /// transaction, so that no change is stored without being synced.

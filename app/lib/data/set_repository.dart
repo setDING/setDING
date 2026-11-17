@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 
 import 'attachment_storage.dart';
 import 'database.dart';
+import 'deletions.dart';
 import 'outbox.dart';
 import 'text.dart';
 
@@ -184,7 +185,9 @@ class SetRepository {
     await _touch(id);
   });
 
-  Future<void> deleteSet(String id) => db.transaction(() async {
+  /// Soft-deletes a set and removes its items; [restoreSet] undoes it.
+  Future<DeletedSet> deleteSet(String id) => db.transaction(() async {
+    final items = await itemsToRemove(db, [id], (_) => true);
     await (db.update(db.setlists)..where((s) => s.id.equals(id))).write(
       SetlistsCompanion(
         deleted: const Value(true),
@@ -193,6 +196,16 @@ class SetRepository {
     );
     await (db.delete(db.setItems)..where((i) => i.setId.equals(id))).go();
     await _touch(id);
+    return DeletedSet(id, items: items);
+  });
+
+  /// Undoes [deleteSet] with its items, as a new change that is synced like
+  /// an edit (#267).
+  Future<void> restoreSet(DeletedSet deleted) => db.transaction(() async {
+    await (db.update(db.setlists)..where((s) => s.id.equals(deleted.setId)))
+        .write(const SetlistsCompanion(deleted: Value(false)));
+    await restoreSetItems(db, deleted.items);
+    await _touch(deleted.setId);
   });
 
   Stream<List<SetItemView>> watchItems(String setId) =>
@@ -270,13 +283,25 @@ class SetRepository {
         await _touchItem(itemId);
       });
 
-  Future<void> removeItem(String setId, String itemId) =>
+  /// Removes an item from a set and returns it for [restoreItem].
+  Future<SetItemEntry?> removeItem(String setId, String itemId) =>
       db.transaction(() async {
+        final removed = (await itemsToRemove(db, [
+          setId,
+        ], (i) => i.id == itemId)).firstOrNull;
         await (db.delete(db.setItems)..where((i) => i.id.equals(itemId))).go();
         final items = await getItems(setId);
         await _writePositions([for (final v in items) v.item.id]);
         await _touch(setId);
+        return removed;
       });
+
+  /// Puts a [removed] item back at its position (#267).
+  Future<void> restoreItem(SetItemEntry removed) => db.transaction(() async {
+    if ((await restoreSetItems(db, [removed])).isNotEmpty) {
+      await _touch(removed.setId);
+    }
+  });
 
   /// Stores the order of [itemIds] as positions 0..n-1.
   Future<void> reorder(String setId, List<String> itemIds) =>

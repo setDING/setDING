@@ -113,4 +113,44 @@ void main() {
     final mine = (await f.member.list('overlays')).single;
     expect(mine['revision'], greaterThan(before['revision'] as int));
   });
+
+  test(
+    'restoring a song restores the adjustments its deletion removed',
+    () async {
+      final f = await BandFixture.create(pb);
+      final song = await f.createSong(f.admin);
+      final mine = await f.member.post(
+        'overlays',
+        overlay(f.member, song['id']),
+      );
+      mine.expectStatus(200);
+      final theirs = await f.admin.post(
+        'overlays',
+        overlay(f.admin, song['id']),
+      );
+      theirs.expectStatus(200);
+      // Removed before the song was deleted: stays removed.
+      (await f.admin.patch('overlays', theirs.json['id'], {
+        'deleted': true,
+      })).expectStatus(200);
+
+      final deleted = await f.admin.patch('songs', song['id'], {
+        'deleted': true,
+        'revision': song['revision'],
+      });
+      deleted.expectStatus(200);
+      final removed = (await f.member.list('overlays')).single;
+      expect(removed['deleted'], isTrue);
+
+      (await f.admin.patch('songs', song['id'], {
+        'deleted': false,
+        'revision': deleted.json['revision'],
+      })).expectStatus(200);
+
+      final restored = (await f.member.list('overlays')).single;
+      expect(restored['deleted'], isFalse);
+      expect(restored['revision'], greaterThan(removed['revision'] as int));
+      expect((await f.admin.list('overlays')).single['deleted'], isTrue);
+    },
+  );
 }

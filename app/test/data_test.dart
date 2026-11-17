@@ -130,6 +130,8 @@ void main() {
 
       await songs.deleteAttachment(list.single);
       expect(await songs.getAttachments(id), isEmpty);
+      // The file is deleted once the deletion can no longer be undone.
+      await songs.purgeFiles(list);
       expect(
         await File('${dir.path}/${list.single.fileName}').exists(),
         isFalse,
@@ -432,6 +434,133 @@ void main() {
         expect((await songs.getOverlay(localSong)).transpose, 5);
       },
     );
+  });
+
+  group('undo of deletions (#267)', () {
+    Future<List<String?>> names(String setId) async => [
+      for (final v in await sets.getItems(setId)) v.song?.title ?? v.item.note,
+    ];
+    bool exists(String fileName) => File('${dir.path}/$fileName').existsSync();
+
+    test('a song comes back with its attachments and set items', () async {
+      final a = await songs.createSong(source: '{title: A}');
+      final b = await songs.createSong(source: '{title: B}');
+      await songs.addAttachment(a, name: 'Score', bytes: Uint8List(1));
+      await songs.addAttachment(a, name: 'Old', bytes: Uint8List(1));
+      final old = (await songs.getAttachments(a))
+          .firstWhere((x) => x.name == 'Old');
+      await songs.deleteAttachment(old);
+      final first = await sets.createSet(name: 'First');
+      await sets.addSongs(first, [a, b, a]);
+      final second = await sets.createSet(name: 'Second');
+      await sets.addSongs(second, [b, a]);
+      await sets.addMarker(second, SetItemType.pause, 'Break');
+
+      final deleted = await songs.deleteSong(a);
+      expect(await songs.getSong(a), isNull);
+      expect(await names(first), ['B']);
+      expect(await names(second), ['B', 'Break']);
+      final score = deleted.attachments.single;
+      expect(score.name, 'Score');
+      expect(exists(score.fileName), isTrue); // kept for the undo
+
+      await songs.restoreSong(deleted);
+      expect((await songs.getSong(a))!.title, 'A');
+      expect(await names(first), ['A', 'B', 'A']);
+      expect(await names(second), ['B', 'A', 'Break']);
+      // Only the attachment deleted with the song comes back.
+      expect((await songs.getAttachments(a)).map((x) => x.name), ['Score']);
+      await songs.purgeFiles(deleted.attachments);
+      expect(exists(score.fileName), isTrue);
+    });
+
+    test('the files of a deleted song go once the undo is gone', () async {
+      final a = await songs.createSong(title: 'A');
+      await songs.addAttachment(a, name: 'Score', bytes: Uint8List(1));
+      final deleted = await songs.deleteSong(a);
+      final file = deleted.attachments.single.fileName;
+      expect(exists(file), isTrue);
+      await songs.purgeFiles(deleted.attachments);
+      expect(exists(file), isFalse);
+    });
+
+    test('files left behind are purged at start', () async {
+      final a = await songs.createSong(title: 'A');
+      final b = await songs.createSong(title: 'B');
+      await songs.addAttachment(a, name: 'Deleted', bytes: Uint8List(1));
+      await songs.addAttachment(b, name: 'Song deleted', bytes: Uint8List(1));
+      await songs.addAttachment(a, name: 'Kept', bytes: Uint8List(1));
+      final all = [
+        ...await songs.getAttachments(a),
+        ...await songs.getAttachments(b),
+      ];
+      String file(String name) =>
+          all.firstWhere((x) => x.name == name).fileName;
+      await songs.deleteAttachment(all.firstWhere((x) => x.name == 'Deleted'));
+      await songs.deleteSong(b);
+
+      await songs.purgeDeletedFiles();
+      expect(exists(file('Deleted')), isFalse);
+      expect(exists(file('Song deleted')), isFalse);
+      expect(exists(file('Kept')), isTrue);
+    });
+
+    test('an attachment comes back with its live view', () async {
+      final a = await songs.createSong(title: 'A');
+      final id = await songs.addAttachment(
+        a,
+        name: 'Score',
+        bytes: Uint8List(1),
+      );
+      await songs.updateOverlay(a, (o) => o.copyWith(liveView: Value(id)));
+      final attachment = (await songs.getAttachments(a)).single;
+
+      final deleted = await songs.deleteAttachment(attachment);
+      expect(await songs.getAttachments(a), isEmpty);
+      expect((await songs.getOverlay(a)).liveView, isNull);
+      expect(exists(attachment.fileName), isTrue);
+
+      await songs.restoreAttachment(deleted);
+      expect((await songs.getAttachments(a)).single.id, id);
+      expect((await songs.getOverlay(a)).liveView, id);
+      await songs.purgeFiles([attachment]);
+      expect(exists(attachment.fileName), isTrue);
+    });
+
+    test('a set comes back with its items', () async {
+      final a = await songs.createSong(source: '{title: A}');
+      final setId = await sets.createSet(name: 'Gig');
+      await sets.addSongs(setId, [a]);
+      await sets.addMarker(setId, SetItemType.text, 'Encore');
+
+      final deleted = await sets.deleteSet(setId);
+      expect(await sets.watchSets().first, isEmpty);
+
+      await sets.restoreSet(deleted);
+      expect((await sets.watchSets().first).single.set.name, 'Gig');
+      expect(await names(setId), ['A', 'Encore']);
+    });
+
+    test('a removed item comes back at its position', () async {
+      final a = await songs.createSong(source: '{title: A}');
+      final b = await songs.createSong(source: '{title: B}');
+      final c = await songs.createSong(source: '{title: C}');
+      final setId = await sets.createSet(name: 'Gig');
+      await sets.addSongs(setId, [a, b, c]);
+      final items = await sets.getItems(setId);
+
+      final removed = await sets.removeItem(setId, items[1].item.id);
+      expect(await names(setId), ['A', 'C']);
+      await sets.restoreItem(removed!);
+      expect(await names(setId), ['A', 'B', 'C']);
+      expect(
+        [for (final v in await sets.getItems(setId)) v.item.position],
+        [0, 1, 2],
+      );
+      // Back already: a second undo changes nothing.
+      await sets.restoreItem(removed);
+      expect(await names(setId), ['A', 'B', 'C']);
+    });
   });
 
   group('SetRepository', () {

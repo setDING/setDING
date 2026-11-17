@@ -47,8 +47,6 @@
   "noAttachments": "No attachments yet.",
   "attachmentTooLarge": "The file is larger than 20 MB and cannot be attached.",
   "attachmentName": "Attachment name",
-  "deleteAttachmentTitle": "Delete attachment?",
-  "deleteAttachmentMessage": "\"{name}\" will be deleted.",
   "pagesCount": "{count, plural, =1{1 page} other{{count} pages}}",
   "liveView": "Show in live mode",
   "liveViewChordPro": "ChordPro text",
@@ -725,5 +723,10 @@
     "placeholders": {
       "days": {"type": "int"}
     }
-  }
+  },
+  "undo": "Undo",
+  "songDeleted": "“{title}” deleted",
+  "setDeleted": "Set “{name}” deleted",
+  "attachmentDeleted": "Attachment “{name}” deleted",
+  "setItemRemoved": "“{title}” removed from the set"
 }

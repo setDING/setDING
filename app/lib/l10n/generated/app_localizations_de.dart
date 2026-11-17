@@ -181,14 +181,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get attachmentName => 'Name des Anhangs';
 
   @override
-  String get deleteAttachmentTitle => 'Anhang löschen?';
-
-  @override
-  String deleteAttachmentMessage(String name) {
-    return '«$name» wird gelöscht.';
-  }
-
-  @override
   String pagesCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -1724,5 +1716,28 @@ class AppLocalizationsDe extends AppLocalizations {
       zero: 'Heute',
     );
     return '$_temp0';
+  }
+
+  @override
+  String get undo => 'Rückgängig';
+
+  @override
+  String songDeleted(String title) {
+    return '«$title» gelöscht';
+  }
+
+  @override
+  String setDeleted(String name) {
+    return 'Set «$name» gelöscht';
+  }
+
+  @override
+  String attachmentDeleted(String name) {
+    return 'Anhang «$name» gelöscht';
+  }
+
+  @override
+  String setItemRemoved(String title) {
+    return '«$title» aus dem Set entfernt';
   }
 }

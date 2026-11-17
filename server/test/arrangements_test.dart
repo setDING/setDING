@@ -118,6 +118,27 @@ void main() {
     );
   });
 
+  test('restoring a song restores its arrangements', () async {
+    final f = await BandFixture.create(pb);
+    final song = await f.createSong(f.admin);
+    final arrangement = await create(f.admin, f, song['id'] as String);
+    final deleted = await f.admin.patch('songs', song['id'] as String, {
+      'deleted': true,
+      'revision': song['revision'],
+    });
+    deleted.expectStatus(200);
+    (await f.admin.patch('songs', song['id'] as String, {
+      'deleted': false,
+      'revision': deleted.json['revision'],
+    })).expectStatus(200);
+    final stored = await f.admin.view(
+      'arrangements',
+      arrangement.json['id'] as String,
+    );
+    expect(stored.json['deleted'], isFalse);
+    expect(stored.json['transpose'], 3);
+  });
+
   test('synced records cannot be hard-deleted', () async {
     final f = await BandFixture.create(pb);
     final song = await f.createSong(f.admin);

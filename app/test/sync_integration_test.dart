@@ -219,6 +219,54 @@ void main() {
     expect(await ArrangementRepository(bob.db).get(band, song), isNull);
   });
 
+  test(
+    'undoing a pushed song deletion restores it everywhere (#267)',
+    () async {
+      final (ann, bob, org, band) = await twoDevices();
+      final song = await ann
+          .songs(org)
+          .createSong(source: '{title: Undo me}\n[C]la');
+      final set = await ann.sets(band).createSet(name: 'Gig');
+      await ann.sets(band).addSongs(set, [song]);
+      await ArrangementRepository(ann.db).save(band, song, transpose: 2);
+      await ann.sync();
+      await bob.sync();
+      final bobs = bob.songs(org);
+      await bobs.saveOverlay(
+        (await bobs.getOverlay(song)).copyWith(transpose: 3),
+      );
+      await bob.sync();
+
+      final deleted = await ann.songs(org).deleteSong(song);
+      await ann.sync();
+      await bob.sync();
+      expect(await bobs.getSong(song), isNull);
+      expect(await bob.sets(band).getItems(set), isEmpty);
+
+      await ann.songs(org).restoreSong(deleted);
+      expect((await ann.sync()).conflicts, 0);
+      await ann.sync();
+      await bob.sync();
+      expect((await bobs.getSong(song))!.title, 'Undo me');
+      expect(
+        (await bob.sets(band).getItems(set)).single.song?.title,
+        'Undo me',
+      );
+      // The server restores what deleting the song removed with it.
+      expect((await bobs.getOverlay(song)).transpose, 3);
+      expect(
+        (await ArrangementRepository(bob.db).get(band, song))!.transpose,
+        2,
+      );
+      expect(
+        (await ArrangementRepository(ann.db).get(band, song))!.transpose,
+        2,
+      );
+      await ann.close();
+      await bob.close();
+    },
+  );
+
   test('sets: last writer wins', () async {
     final (ann, bob, _, band) = await twoDevices();
     final set = await ann.sets(band).createSet(name: 'First');
