@@ -218,7 +218,9 @@ The website and user documentation (`website/`, ADR-0030) is a static build that
 `127.0.0.1:8081` ([`tool/server/Caddyfile`](../../tool/server/Caddyfile), installed by
 [`tool/server/install-site.sh`](../../tool/server/install-site.sh)): files under
 `/_astro/` are cached for a year (their names change with their content), all others
-are revalidated, and `www.` redirects to the bare domain.
+are revalidated, and `www.` redirects to the bare domain. The website comes last
+in a server deploy: if building or installing it fails, the deploy prints a warning
+and still finishes the PocketBase upgrade; fix the cause and run `make server-site`.
 
 1. Tunnel → **Public hostname:** `setding.app` (empty subdomain) → service `HTTP` →
    `localhost:8081`.

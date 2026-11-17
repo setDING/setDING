@@ -31,11 +31,15 @@ fi
 # compiles the drift worker before Flutter would fetch them (#348).
 (cd "$SRC/app" && flutter pub get >/dev/null)
 "$SRC/tool/build-web.sh"
-# The website (ADR-0030); tags from before it have none.
+# The website (ADR-0030); tags from before it have none. A failed website
+# build only skips the website, it never stops the server deploy (#397).
 site=()
 if [ -f "$SRC/website/package.json" ]; then
-  "$SRC/tool/build-site.sh" "$SRC"
-  site=(website/dist)
+  if "$SRC/tool/build-site.sh" "$SRC"; then
+    site=(website/dist)
+  else
+    echo "WARNING: the website build failed; deploying the server without it (make server-site later)." >&2
+  fi
 fi
 
 # Ends up in the server's pb_hooks; PocketBase only loads *.pb.js from there.
