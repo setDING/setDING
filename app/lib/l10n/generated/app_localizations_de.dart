@@ -998,6 +998,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get editorGroupMore => 'Mehr';
 
   @override
+  String get searchMatchCase => 'Gross-/Kleinschreibung beachten';
+
+  @override
   String get replaceToggle => 'Ersetzen';
 
   @override

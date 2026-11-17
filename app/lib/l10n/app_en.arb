@@ -328,6 +328,7 @@
   "editorGroupInfo": "Song info",
   "editorGroupText": "Text",
   "editorGroupMore": "More",
+  "searchMatchCase": "Match case",
   "replaceToggle": "Replace",
   "replaceWith": "Replace with",
   "replace": "Replace",

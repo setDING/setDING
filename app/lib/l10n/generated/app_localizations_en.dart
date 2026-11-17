@@ -992,6 +992,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editorGroupMore => 'More';
 
   @override
+  String get searchMatchCase => 'Match case';
+
+  @override
   String get replaceToggle => 'Replace';
 
   @override

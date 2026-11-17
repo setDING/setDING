@@ -19,7 +19,15 @@ class EditorSearchBar extends StatefulWidget {
     required this.onClose,
     this.initialQuery = '',
     this.replace = false,
+    this.caseSensitive = false,
+    this.onCaseSensitiveChanged,
   });
+
+  /// Whether upper and lower case must match (#379).
+  final bool caseSensitive;
+
+  /// Remembers the case choice for the next time the bar opens.
+  final ValueChanged<bool>? onCaseSensitiveChanged;
 
   /// Opens with the replace row shown and focused.
   final bool replace;
@@ -46,6 +54,8 @@ class _EditorSearchBarState extends State<EditorSearchBar> {
   final _replacement = TextEditingController();
   final _replaceFocus = FocusNode();
   late bool _replacing = widget.replace;
+  late bool _caseSensitive = widget.caseSensitive;
+  bool? _searchedCase;
   List<(int, int)> _matches = const [];
   int? _current;
   String? _searchedText;
@@ -93,10 +103,15 @@ class _EditorSearchBarState extends State<EditorSearchBar> {
   void _update({bool rebuild = true}) {
     final text = widget.controller.text;
     final query = _query.text;
-    if (text == _searchedText && query == _searchedQuery) return;
+    if (text == _searchedText &&
+        query == _searchedQuery &&
+        _caseSensitive == _searchedCase) {
+      return;
+    }
     _searchedText = text;
     _searchedQuery = query;
-    final matches = findInSource(text, query);
+    _searchedCase = _caseSensitive;
+    final matches = findInSource(text, query, caseSensitive: _caseSensitive);
     final sel = widget.controller.selection;
     final from = sel.isValid ? sel.start : 0;
     final index = matches.indexWhere((m) => m.$1 >= from);
@@ -138,6 +153,13 @@ class _EditorSearchBarState extends State<EditorSearchBar> {
     ScaffoldMessenger.maybeOf(context)
       ?..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(l10n.replacedCount(count))));
+  }
+
+  void _toggleCase() {
+    _caseSensitive = !_caseSensitive;
+    widget.onCaseSensitiveChanged?.call(_caseSensitive);
+    _update();
+    if (_current case final current?) _select(current);
   }
 
   void _toggleReplace() {
@@ -243,7 +265,20 @@ class _EditorSearchBarState extends State<EditorSearchBar> {
             ),
           ),
         ),
-        const SizedBox(width: 8),
+        IconButton(
+          key: const ValueKey('search-case'),
+          tooltip: l10n.searchMatchCase,
+          isSelected: _caseSensitive,
+          icon: const Text('Aa'),
+          selectedIcon: const Text(
+            'Aa',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+          onPressed: _toggleCase,
+        ),
         Text(count, style: Theme.of(context).textTheme.bodySmall),
         IconButton(
           tooltip: l10n.searchPrevious,
