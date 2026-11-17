@@ -25,6 +25,7 @@ import '../render/render_cache.dart';
 import '../render/song_image.dart';
 import '../render/song_view.dart';
 import '../widgets/key_picker.dart';
+import 'live_theme.dart';
 import 'pdf_spread_view.dart';
 
 /// One entry of the live sequence.
@@ -316,7 +317,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     }
   }
 
-  Future<void> _showOverview() async {
+  /// [context] is below the stage theme, which the sheet follows.
+  Future<void> _showOverview(BuildContext context) async {
     final l10n = AppLocalizations.of(context);
     final target = await showModalBottomSheet<int>(
       context: context,
@@ -381,6 +383,18 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appearance = ref.watch(
+      settingsProvider.select((s) => s.liveAppearance),
+    );
+    // The stage appearance is independent of the app theme (ADR-0007); the
+    // control bar, the bottom bar and the sheets follow it too.
+    return Theme(
+      data: liveTheme(Theme.of(context), appearance),
+      child: Builder(builder: _buildStage),
+    );
+  }
+
+  Widget _buildStage(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final items = _items;
     final next = _index < items.length - 1 ? items[_index + 1] : null;
@@ -451,7 +465,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                         child: _ControlBar(
                           item: items[_index],
                           onExit: () => Navigator.pop(context),
-                          onOverview: _showOverview,
+                          onOverview: () => _showOverview(context),
                           onAdjust: items[_index].song == null ? null : _adjust,
                           onFit: _fitToPage,
                           onSetKey: _setKey,
@@ -750,21 +764,24 @@ class _LiveItemPage extends ConsumerWidget {
   final SongPageController songPageController;
 
   /// Portrait: one page at a time, fit to width.
-  Widget _portraitPdf(StoredFile file, Key key) => storedPdfViewer(
-    file,
-    key: key,
-    controller: pdfController,
-    params: PdfViewerParams(
-      // No text selection on stage: drags and long presses would
-      // select text instead of moving the sheet.
-      textSelectionParams: const PdfTextSelectionParams(enabled: false),
-      onGeneralTap: (context, controller, details) {
-        if (details.type != PdfViewerGeneralTapType.tap) return false;
-        onTap(details.localPosition);
-        return true;
-      },
-    ),
-  );
+  /// The background around the pages follows the stage appearance.
+  Widget _portraitPdf(StoredFile file, Key key, Color background) =>
+      storedPdfViewer(
+        file,
+        key: key,
+        controller: pdfController,
+        params: PdfViewerParams(
+          backgroundColor: background,
+          // No text selection on stage: drags and long presses would
+          // select text instead of moving the sheet.
+          textSelectionParams: const PdfTextSelectionParams(enabled: false),
+          onGeneralTap: (context, controller, details) {
+            if (details.type != PdfViewerGeneralTapType.tap) return false;
+            onTap(details.localPosition);
+            return true;
+          },
+        ),
+      );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -830,7 +847,11 @@ class _LiveItemPage extends ConsumerWidget {
                 documentRef: storedPdfDocumentRef(stored),
                 controller: spreadController,
               )
-            : _portraitPdf(stored, pdfKey),
+            : _portraitPdf(
+                stored,
+                pdfKey,
+                Theme.of(context).colorScheme.surfaceContainerHighest,
+              ),
       );
     }
     // In a set only the parts of the sequence are shown; which ones are

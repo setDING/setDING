@@ -325,6 +325,17 @@ class _CategoryContent extends ConsumerWidget {
           leading: const Icon(Icons.touch_app_outlined),
           subtitle: Text(l10n.settingsPageTurnHint),
         ),
+        _Choice(
+          l10n.settingsLiveAppearance,
+          s.liveAppearance,
+          {
+            LiveAppearance.app: l10n.liveAppearanceApp,
+            LiveAppearance.dark: l10n.liveAppearanceDark,
+            LiveAppearance.black: l10n.liveAppearanceBlack,
+          },
+          (v) => notifier.update((s) => s.copyWith(liveAppearance: v)),
+          hint: l10n.settingsLiveAppearanceHint,
+        ),
       ],
       SettingsCategory.about => [const _AboutTiles()],
     };

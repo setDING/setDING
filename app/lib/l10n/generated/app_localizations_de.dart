@@ -687,6 +687,22 @@ class AppLocalizationsDe extends AppLocalizations {
       'Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern.';
 
   @override
+  String get settingsLiveAppearance => 'Aussehen auf der Bühne';
+
+  @override
+  String get settingsLiveAppearanceHint =>
+      'Live-Modus unabhängig vom App-Design. Schwarz spart Strom auf OLED-Bildschirmen.';
+
+  @override
+  String get liveAppearanceApp => 'Wie App';
+
+  @override
+  String get liveAppearanceDark => 'Dunkel';
+
+  @override
+  String get liveAppearanceBlack => 'Schwarz';
+
+  @override
   String settingsStorageUsed(String size) {
     return 'PDF-Anhänge belegen $size';
   }

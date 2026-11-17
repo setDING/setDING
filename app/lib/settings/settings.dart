@@ -22,6 +22,19 @@ enum ColumnMode { auto, one, two, three }
 /// How far a page turn moves.
 enum PageTurnMode { full, half }
 
+/// Appearance of live mode on stage, independent of the app theme
+/// (ADR-0007).
+enum LiveAppearance {
+  /// As the app theme (light or dark).
+  app,
+
+  /// Dark, also when the app is light.
+  dark,
+
+  /// True black background, e.g. for OLED screens.
+  black,
+}
+
 /// When syncs start (ADR-0004); "Sync now" is always available.
 enum SyncMode {
   /// At start, after local changes, on server changes and periodically.
@@ -47,6 +60,7 @@ class AppSettings {
     this.themeMode = ThemeMode.system,
     this.columns = ColumnMode.auto,
     this.pageTurn = PageTurnMode.full,
+    this.liveAppearance = LiveAppearance.app,
     this.autoFit = true,
     this.chorusRepeat = ChorusRepeat.auto,
     this.fontSize = 20,
@@ -70,6 +84,9 @@ class AppSettings {
   final ThemeMode themeMode;
   final ColumnMode columns;
   final PageTurnMode pageTurn;
+
+  /// Stage appearance of live mode.
+  final LiveAppearance liveAppearance;
 
   /// Fit the whole song on the screen (no scrolling) in live mode.
   final bool autoFit;
@@ -138,6 +155,7 @@ class AppSettings {
     ThemeMode? themeMode,
     ColumnMode? columns,
     PageTurnMode? pageTurn,
+    LiveAppearance? liveAppearance,
     bool? autoFit,
     ChorusRepeat? chorusRepeat,
     double? fontSize,
@@ -156,6 +174,7 @@ class AppSettings {
     themeMode: themeMode ?? this.themeMode,
     columns: columns ?? this.columns,
     pageTurn: pageTurn ?? this.pageTurn,
+    liveAppearance: liveAppearance ?? this.liveAppearance,
     autoFit: autoFit ?? this.autoFit,
     chorusRepeat: chorusRepeat ?? this.chorusRepeat,
     instrument: instrument ?? this.instrument,
@@ -183,6 +202,11 @@ class AppSettings {
       themeMode: pick(ThemeMode.values, 'themeMode', d.themeMode),
       columns: pick(ColumnMode.values, 'columns', d.columns),
       pageTurn: pick(PageTurnMode.values, 'pageTurn', d.pageTurn),
+      liveAppearance: pick(
+        LiveAppearance.values,
+        'liveAppearance',
+        d.liveAppearance,
+      ),
       autoFit: prefs.getBool('autoFit') ?? d.autoFit,
       chorusRepeat: pick(ChorusRepeat.values, 'chorusRepeat', d.chorusRepeat),
       instrument: prefs.getString('instrument') ?? d.instrument,
@@ -207,6 +231,7 @@ class AppSettings {
     await prefs.setString('themeMode', themeMode.name);
     await prefs.setString('columns', columns.name);
     await prefs.setString('pageTurn', pageTurn.name);
+    await prefs.setString('liveAppearance', liveAppearance.name);
     await prefs.setBool('autoFit', autoFit);
     await prefs.setString('chorusRepeat', chorusRepeat.name);
     await prefs.setString('instrument', instrument);

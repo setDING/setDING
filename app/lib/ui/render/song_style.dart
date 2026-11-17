@@ -45,6 +45,32 @@ abstract final class SongSpacing {
   static const diagramsBlockGap = 0.2;
 }
 
+/// Colours of the song text that differ on stage (ADR-0007).
+@immutable
+class StageColors extends ThemeExtension<StageColors> {
+  const StageColors({required this.chord});
+
+  /// Chord names (and grid chords): stronger than the theme's primary
+  /// colour, with high contrast to the background.
+  final Color chord;
+
+  /// Deep indigo on light backgrounds (contrast about 9:1).
+  static const light = StageColors(chord: Color(0xFF1A3A9E));
+
+  /// Amber on dark and black backgrounds (contrast above 11:1), clearly
+  /// apart from the light lyrics.
+  static const dark = StageColors(chord: Color(0xFFFFC54D));
+
+  @override
+  StageColors copyWith({Color? chord}) =>
+      StageColors(chord: chord ?? this.chord);
+
+  @override
+  StageColors lerp(StageColors? other, double t) => other == null
+      ? this
+      : StageColors(chord: Color.lerp(chord, other.chord, t)!);
+}
+
 /// Text styles of the song items at one font size. Rendering and layout
 /// measurement use the same styles so the measured sizes match.
 class SongTextStyles {
@@ -64,14 +90,18 @@ class SongTextStyles {
           .copyWith(color: theme.colorScheme.onSurface),
       fontSize,
       theme.colorScheme,
+      // Live mode sets a stronger chord colour (ADR-0007).
+      theme.extension<StageColors>()?.chord,
     );
   }
 
-  /// Styles derived from [base] (the default text style of the context).
+  /// Styles derived from [base] (the default text style of the context);
+  /// chords in [chordColor], or the primary colour of [colors].
   factory SongTextStyles.fromBase(
     TextStyle base,
     double fontSize, [
     ColorScheme? colors,
+    Color? chordColor,
   ]) {
     final scheme =
         colors ?? ColorScheme.fromSeed(seedColor: const Color(0xFF3F51B5));
@@ -84,7 +114,7 @@ class SongTextStyles {
       text.copyWith(
         fontSize: fontSize * chordScale,
         fontWeight: FontWeight.w700,
-        color: scheme.primary,
+        color: chordColor ?? scheme.primary,
       ),
       text.copyWith(
         fontSize: fontSize * labelScale,
