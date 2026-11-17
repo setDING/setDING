@@ -5,6 +5,7 @@ import 'chord.dart';
 import 'diagrams.dart';
 import 'grid.dart';
 import 'markup.dart';
+import 'meter.dart';
 import 'sequence.dart';
 
 /// Kind of a song section.
@@ -63,6 +64,15 @@ class Song {
     final value = metaValue('x_sequence');
     return value == null ? const [] : parseSequence(value);
   }
+
+  /// Grouping of an odd meter from the custom directive
+  /// `{x_time_grouping: 2+2+3}` (ADR-0026).
+  String? get timeGrouping => metaValue('x_time_grouping');
+
+  /// The meter from `{time}` and `{x_time_grouping}`; 4/4 when `{time}` is
+  /// missing or unreadable (ADR-0026).
+  Meter get meter =>
+      Meter.tryParse(time, grouping: timeGrouping) ?? Meter.common;
 
   int? get tempo {
     final value = metaValue('tempo');

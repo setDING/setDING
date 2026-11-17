@@ -155,6 +155,7 @@ with the idle-time preparation of the next song (#296).
   stage only until live mode is left, latency compensation with calibration (wired and
   Bluetooth in-ears both occur), song map for drums only.
 - 2026-11-17: Accepted by the owner.
+- 2026-11-17: Meter model and `{x_time_grouping}` implemented in the `chordpro` package (`Meter`, `Song.meter`, #331); the showcase's second song is in 7/8 grouped 2+2+3.
 
 ## Open points
 

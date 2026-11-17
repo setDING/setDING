@@ -150,6 +150,12 @@ Each phase is a separate branch and merge (ADR-0010).
 - 2026-11-17: The song list shows each song's sequence as compact coloured parts and the
   key as a badge in the chosen notation (#243). The raw `{x_sequence}` value is stored
   redundantly in `songs.sequence` (local schema 13) like key and tags.
+- 2026-11-17: setDING custom directive `{x_time_grouping: 2+2+3}` (ADR-0026, #331): the
+  grouping of an odd meter for the beat display and the click, kept as metadata. `{time}`
+  is parsed into a meter (`Song.meter`, 4/4 when missing or unreadable): simple meters
+  count the note value, compound meters (6/8, 9/8, 12/8) the dotted quarter, odd meters
+  (5/8, 7/8, …) the eighth with accents from the grouping; a grouping that does not add
+  up to the numerator is ignored. The first `{time}` applies.
 
 ## Open points
 

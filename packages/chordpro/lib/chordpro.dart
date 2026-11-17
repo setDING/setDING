@@ -17,6 +17,7 @@ export 'src/grid.dart';
 export 'src/highlight.dart';
 export 'src/markup.dart';
 export 'src/metadata.dart';
+export 'src/meter.dart';
 export 'src/notation.dart';
 export 'src/parser.dart';
 export 'src/sequence.dart';
