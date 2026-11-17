@@ -245,6 +245,28 @@
       }
     }
   },
+  "audioLatencyCalibrate": "Measure the audio delay",
+  "audioLatencyCalibrateTitle": "Measure the audio delay",
+  "audioLatencyCalibrateHint": "Put on the headphones you use on stage and tap along with every beat of the click.",
+  "audioLatencyTap": "Tap",
+  "audioLatencyTaps": "{count} taps",
+  "@audioLatencyTaps": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "audioLatencyResult": "Measured: {ms} ms",
+  "@audioLatencyResult": {
+    "placeholders": {
+      "ms": {
+        "type": "int"
+      }
+    }
+  },
+  "audioLatencyApply": "Apply",
+  "clickNoAudio": "There is no audio output for the click on this device.",
   "settingsSongMap": "Song map instead of chords",
   "settingsSongMapHint": "Live mode shows the parts of the song with a cue from the lyrics and the drum notes.",
   "settingsLiveAppearance": "Appearance on stage",

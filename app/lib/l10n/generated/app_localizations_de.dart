@@ -824,6 +824,36 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get audioLatencyCalibrate => 'Audio-Verzögerung messen';
+
+  @override
+  String get audioLatencyCalibrateTitle => 'Audio-Verzögerung messen';
+
+  @override
+  String get audioLatencyCalibrateHint =>
+      'Setze die Kopfhörer auf, die du auf der Bühne trägst, und tippe auf jeden Schlag des Klicks mit.';
+
+  @override
+  String get audioLatencyTap => 'Tippen';
+
+  @override
+  String audioLatencyTaps(int count) {
+    return '$count-mal getippt';
+  }
+
+  @override
+  String audioLatencyResult(int ms) {
+    return 'Gemessen: $ms ms';
+  }
+
+  @override
+  String get audioLatencyApply => 'Übernehmen';
+
+  @override
+  String get clickNoAudio =>
+      'Auf diesem Gerät gibt es keinen Audio-Ausgang für den Klick.';
+
+  @override
   String get settingsSongMap => 'Song-Landkarte statt Akkorde';
 
   @override
