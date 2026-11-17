@@ -1,0 +1,49 @@
+---
+title: Einladungen
+description: Leute per Link oder QR-Code in die Organisation oder direkt in eine Band einladen.
+sidebar:
+  order: 2
+---
+
+Neue Leute kommen mit einem Einladungslink in die Organisation – per Gruppenchat,
+Mail oder QR-Code.
+
+## Einladen
+
+Es gibt zwei Arten von Einladungen:
+
+- **In die Organisation:** Admins der Organisation öffnen die Organisation und
+  tippen auf **Personen einladen**. Wer den Link öffnet, wird Mitglied der
+  Organisation; ein Admin kann die Person danach in eine Band aufnehmen.
+- **Direkt in eine Band:** Die **Leitung** der Band und die Admins öffnen die Band
+  und tippen dort auf **Personen einladen**. Wer den Link öffnet, wird Mitglied der
+  Organisation und dieser Band.
+
+setDING zeigt den **Einladungslink** und einen QR-Code. Teile den Link mit **Link
+kopieren** oder lass den QR-Code scannen. Der Link wird **nur jetzt** angezeigt und
+gilt **7 Tage**; mehrere Leute können denselben Link verwenden.
+
+## Einladungen verwalten
+
+Unter **Einladungslinks** siehst du die Links der Organisation bzw. der Band, wie
+lange sie gelten und wer damit beigetreten ist. **Widerrufen** macht einen Link
+sofort ungültig; wer schon beigetreten ist, bleibt Mitglied.
+
+## Einer Einladung folgen
+
+1. [Installiere setDING](/start/install/).
+2. Öffne den Einladungslink oder scanne den QR-Code. Öffnet sich die App nicht von
+   selbst, kopiere den Link und füge ihn in der App ein: unter **Einstellungen** →
+   **Konto & Synchronisation** → **Mit Einladung beitreten**, oder, wenn du schon
+   angemeldet bist, unter **Bands verwalten** → **Beitreten**.
+3. Melde dich an, oder erstelle ein Konto, falls du noch keines hast.
+4. Bestätige mit **Beitreten**.
+
+Danach siehst du die Songs der Organisation und, bei einer Einladung in eine Band,
+auch deren Sets.
+
+Meldet setDING **Diese Einladung ist abgelaufen** oder **Diese Einladung wurde
+widerrufen**, bitte um einen neuen Link.
+
+Auf vielen Servern lassen sich neue Konten nur mit einem Einladungslink erstellen.
+Dann gilt: zuerst den Link öffnen, dann das Konto erstellen.

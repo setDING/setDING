@@ -46,6 +46,11 @@ export default defineConfig({
           translations: { en: 'Songs' },
           items: [{ autogenerate: { directory: 'songs' } }],
         },
+        {
+          label: 'Bands und Rollen',
+          translations: { en: 'Bands and roles' },
+          items: [{ autogenerate: { directory: 'bands' } }],
+        },
       ],
       lastUpdated: false,
       plugins: [starlightLinksValidator()],

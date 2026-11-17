@@ -23,7 +23,7 @@ In der **Organisation** gibt es Admins, Bibliothekarinnen und Bibliothekare (sie
 pflegen die Songs) und Mitglieder. In einer **Band** gibt es die Bandleitung,
 Set-Planerinnen und Set-Planer (sie stellen Sets zusammen) und Mitglieder. Jede
 Rolle darf alles, was die Rollen darunter dürfen; Admins der Organisation dürfen
-alles.
+alles. Mehr dazu unter [Rollen](/bands/roles/).
 
 ## Einer Band beitreten
 

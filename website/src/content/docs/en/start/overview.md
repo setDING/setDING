@@ -21,7 +21,7 @@ sidebar:
 In an **organization** there are admins, librarians (they look after the songs) and
 members. In a **band** there are band leaders, set planners (they put sets together)
 and members. Every role may do everything the roles below it may do; organization
-admins may do everything.
+admins may do everything. More in [Roles](/en/bands/roles/).
 
 ## Joining a band
 
