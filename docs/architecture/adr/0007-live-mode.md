@@ -52,6 +52,9 @@ song, all tablets follow automatically. We evaluated whether this is needed.
   ("Hidden (not in the sequence): V3, B"). If the sequence matches none of the song's parts, the song is shown whole.
   A single song played outside a set is always shown whole.
 - PDF attachments (ADR-0009) are shown in live mode with the same page-turn input.
+- **Next song prepared ahead:** the direct neighbours of the current item (previous and next) are built and fitted
+  before the turn, PDFs opened (landscape spreads also rendered), so turning never shows an empty or half-laid-out
+  page. Items further away are not kept, so memory stays bounded in long sets.
 - At the end of a song → next item in the set; footer preview "Next: *Title* (key)".
 - Quick jump to any song of the set (set overview), e.g. when the set order changes spontaneously on stage.
 - **Sync freeze:** Incoming changes are not applied automatically in live mode but shown as a discreet notice.
@@ -82,6 +85,7 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-15: Sync is paused while live mode is open; a sync requested meanwhile runs after leaving live mode (issue #17, ADR-0004).
 - 2026-11-16: Foot pedal / keyboard page turning removed, not needed for now; may be implemented again later (issue #149). Tap and swipe remain.
 - 2026-11-17: In the live mode of a set, only the parts of the song sequence are shown; the header names the hidden parts (issue #257).
+- 2026-11-17: The previous and next item are built and fitted ahead (PDFs opened, landscape spreads rendered), only the direct neighbours are kept (issue #262).
 
 ## Open points
 

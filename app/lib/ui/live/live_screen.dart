@@ -415,6 +415,13 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                             child: PageView.builder(
                               controller: _pages,
                               physics: const NeverScrollableScrollPhysics(),
+                              // The direct neighbours are built ahead (one
+                              // page of cache on each side): the next song is
+                              // fitted and its PDF opened (landscape: its
+                              // pages rendered) before the turn. Items
+                              // further away are not kept, so memory stays
+                              // bounded in long sets.
+                              allowImplicitScrolling: true,
                               itemCount: items.length,
                               onPageChanged: (i) => setState(() {
                                 // A song turned to from the front starts at
