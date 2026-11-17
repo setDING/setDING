@@ -1,6 +1,6 @@
 # ADR-0030: Website and user documentation
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-17
 
 ## Context
@@ -76,6 +76,8 @@ Constraints:
 - 2026-11-17: Proposed (#388). The owner chose this repository, deployment through
   `make server-*` and hosting on CT 600 for now; moving the whole server to external
   hosting (e.g. a Swiss VPS) is a separate decision.
+- 2026-11-17: Accepted by the owner (#388). The website does not link to the web
+  client, which is not open to the public.
 
 ## Open points
 
