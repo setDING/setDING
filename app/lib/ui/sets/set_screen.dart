@@ -318,6 +318,16 @@ class _SetItemTile extends ConsumerWidget {
       ),
     );
 
+    Future<void> remove() => repo.removeItem(setId, item.id);
+    Future<void> editMarker() async {
+      final label = await askText(
+        context,
+        title: l10n.edit,
+        initial: item.note ?? '',
+      );
+      if (label != null) await repo.updateMarker(item.id, label);
+    }
+
     if (item.type != SetItemType.song) {
       return ListTile(
         leading: SizedBox(
@@ -336,25 +346,18 @@ class _SetItemTile extends ConsumerWidget {
         subtitle: Text(
           item.type == SetItemType.pause ? l10n.pause : l10n.textItem,
         ),
-        onTap: !canEdit
-            ? null
-            : () async {
-                final label = await askText(
-                  context,
-                  title: l10n.edit,
-                  initial: item.note ?? '',
-                );
-                if (label != null) await repo.updateMarker(item.id, label);
-              },
+        onTap: !canEdit ? null : editMarker,
         trailing: !canEdit
             ? null
             : Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  IconButton(
-                    tooltip: l10n.removeFromSet,
-                    icon: const Icon(Icons.remove_circle_outline),
-                    onPressed: () => repo.removeItem(setId, item.id),
+                  _ItemMenu(
+                    itemId: item.id,
+                    entries: [
+                      (l10n.edit, editMarker),
+                      (l10n.removeFromSet, remove),
+                    ],
                   ),
                   handle,
                 ],
@@ -375,6 +378,32 @@ class _SetItemTile extends ConsumerWidget {
     final songKey = song?.songKey == null
         ? null
         : cp.Key.tryParse(song!.songKey!)?.transpose(band?.transpose ?? 0);
+    final parsed = song == null
+        ? null
+        : parseChordProCached(
+            song.chordproSource,
+            selectors: ref.watch(selectorsProvider),
+          );
+    final hasChordPro = parsed?.hasContent ?? false;
+
+    Future<void> changeSequence() async {
+      final choice = await editSequence(
+        context,
+        title: l10n.sequenceEdit,
+        parts: cp.songParts(parsed!),
+        initial: sequence,
+        original: originalSequence,
+        showOriginal: true,
+        canRestore: item.sequence != null,
+      );
+      if (choice == null) return;
+      // The song's own sequence is no set-specific one.
+      final value = choice.value;
+      await repo.setItemSequence(
+        item.id,
+        value == originalSequence?.trim() ? null : value,
+      );
+    }
 
     return ListTile(
       leading: SizedBox(
@@ -415,84 +444,87 @@ class _SetItemTile extends ConsumerWidget {
                 builder: (_) => SongScreen(songId: song.id),
               ),
             ),
-      trailing: !canEdit
-          ? Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (song != null) _LiveViewDropdown(song: song),
-                ?_readOnlyKey(context, songKey, item.transpose, notation),
-              ],
-            )
-          : Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (song != null) _LiveViewDropdown(song: song),
-                if (song != null)
-                  KeyPicker(
-                    dense: true,
-                    baseKey: songKey,
-                    transpose: item.transpose,
-                    notation: notation,
-                    tooltip: l10n.keyPickerSet,
-                    onChanged: (value) => repo.setItemTranspose(item.id, value),
-                  ),
-                if (song != null)
-                  IconButton(
-                    tooltip: l10n.sequenceEdit,
-                    isSelected: item.sequence != null,
-                    icon: const Icon(Icons.format_list_numbered),
-                    selectedIcon: const Icon(Icons.playlist_play),
-                    onPressed: () async {
-                      final choice = await editSequence(
-                        context,
-                        title: l10n.sequenceEdit,
-                        parts: cp.songParts(
-                          cp.parseChordPro(song.chordproSource),
-                        ),
-                        initial: sequence,
-                        original: originalSequence,
-                        showOriginal: true,
-                        canRestore: item.sequence != null,
-                      );
-                      if (choice == null) return;
-                      // The song's own sequence is no set-specific one.
-                      final value = choice.value;
-                      await repo.setItemSequence(
-                        item.id,
-                        value == originalSequence?.trim() ? null : value,
-                      );
-                    },
-                  ),
-                IconButton(
-                  tooltip: l10n.removeFromSet,
-                  icon: const Icon(Icons.remove_circle_outline),
-                  onPressed: () => repo.removeItem(setId, item.id),
-                ),
-                handle,
+      // Fixed slots, so the controls line up from row to row.
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 48,
+            child: song == null
+                ? null
+                : _LiveViewButton(song: song, hasChordPro: hasChordPro),
+          ),
+          SizedBox(
+            width: 72,
+            child: Align(
+              alignment: AlignmentDirectional.centerEnd,
+              // Transposing a PDF does nothing.
+              child: song == null || !hasChordPro
+                  ? null
+                  : canEdit
+                  ? KeyPicker(
+                      dense: true,
+                      baseKey: songKey,
+                      transpose: item.transpose,
+                      notation: notation,
+                      tooltip: l10n.keyPickerSet,
+                      onChanged: (value) =>
+                          repo.setItemTranspose(item.id, value),
+                    )
+                  : _readOnlyKey(context, songKey, item.transpose, notation),
+            ),
+          ),
+          if (canEdit) ...[
+            _ItemMenu(
+              itemId: item.id,
+              entries: [
+                if (song != null && hasChordPro)
+                  (l10n.sequenceEdit, changeSequence),
+                (l10n.removeFromSet, remove),
               ],
             ),
+            handle,
+          ],
+        ],
+      ),
     );
   }
+}
+
+/// The ⋮ menu of a set item with the actions that are not needed often.
+class _ItemMenu extends StatelessWidget {
+  const _ItemMenu({required this.itemId, required this.entries});
+
+  final String itemId;
+  final List<(String, Future<void> Function())> entries;
+
+  @override
+  Widget build(BuildContext context) => PopupMenuButton<int>(
+    key: ValueKey('set-item-menu-$itemId'),
+    onSelected: (i) => entries[i].$2(),
+    itemBuilder: (_) => [
+      for (final (i, (label, _)) in entries.indexed)
+        PopupMenuItem(value: i, child: Text(label)),
+    ],
+  );
 }
 
 /// What the current user sees for [song] in live mode: its ChordPro text or
 /// one of its PDF attachments, switchable right in the set (ADR-0020).
 ///
-/// The choice is the personal `liveView` adjustment of the song, so it is
-/// the same in every set and synced with the account; it is not stored on
-/// the set item. Shown only when there is a choice.
-class _LiveViewDropdown extends ConsumerWidget {
-  const _LiveViewDropdown({required this.song});
+/// A small icon shows the current choice (text or PDF) and opens a menu with
+/// all of them. The choice is the personal `liveView` adjustment of the
+/// song, so it is the same in every set and synced with the account; it is
+/// not stored on the set item. Shown only when there is a choice.
+class _LiveViewButton extends ConsumerWidget {
+  const _LiveViewButton({required this.song, required this.hasChordPro});
 
   final SongEntry song;
-
-  /// Dropdown value for the ChordPro text (null is "nothing selected").
-  static const _chordPro = '';
+  final bool hasChordPro;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
     final attachments =
         ref.watch(attachmentsProvider(song.id)).value ??
         const <AttachmentEntry>[];
@@ -500,13 +532,10 @@ class _LiveViewDropdown extends ConsumerWidget {
       for (final a in attachments)
         if (isPdfFile(a.fileName)) a,
     ];
-    if (pdfs.isEmpty) return const SizedBox.shrink();
-    final hasChordPro = parseChordProCached(
-      song.chordproSource,
-      selectors: ref.watch(selectorsProvider),
-    ).hasContent;
-    // A single PDF without ChordPro text is no choice.
-    if (!hasChordPro && pdfs.length < 2) return const SizedBox.shrink();
+    // No PDF, or a single PDF without ChordPro text: no choice.
+    if (pdfs.isEmpty || (!hasChordPro && pdfs.length < 2)) {
+      return const SizedBox.shrink();
+    }
     final overlay = ref.watch(overlayProvider(song.id)).value;
     final selected = livePdfFor(
       attachments,
@@ -514,48 +543,48 @@ class _LiveViewDropdown extends ConsumerWidget {
       hasChordPro: hasChordPro,
     );
 
-    Widget label(IconData icon, String text) => Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 18, color: theme.colorScheme.primary),
-        const SizedBox(width: 6),
-        Flexible(child: Text(text, overflow: TextOverflow.ellipsis)),
-      ],
-    );
-    final entries = [
-      if (hasChordPro)
-        (_chordPro, Icons.text_snippet_outlined, l10n.liveViewChordPro),
-      for (final a in pdfs) (a.id, Icons.picture_as_pdf_outlined, a.name),
-    ];
+    void choose(String? attachmentId) => ref
+        .read(songRepositoryProvider)
+        .updateOverlay(
+          song.id,
+          (o) => o.copyWith(liveView: Value(attachmentId)),
+        );
 
-    return Tooltip(
-      message: '${l10n.liveView}\n${l10n.scopePersonal}',
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 200),
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            key: ValueKey('live-view-${song.id}'),
-            isDense: true,
-            isExpanded: true,
-            value: selected?.id ?? _chordPro,
-            selectedItemBuilder: (_) => [
-              for (final (_, icon, text) in entries) label(icon, text),
-            ],
-            items: [
-              for (final (value, icon, text) in entries)
-                DropdownMenuItem(value: value, child: label(icon, text)),
-            ],
-            onChanged: (value) {
-              final id = value == null || value == _chordPro ? null : value;
-              ref
-                  .read(songRepositoryProvider)
-                  .updateOverlay(
-                    song.id,
-                    (o) => o.copyWith(liveView: Value(id)),
-                  );
-            },
+    Widget entry(String? id, IconData icon, String name) => MenuItemButton(
+      key: ValueKey('live-view-option-${id ?? 'chordpro'}'),
+      leadingIcon: Icon(icon),
+      trailingIcon: selected?.id == id ? const Icon(Icons.check) : null,
+      onPressed: () => choose(id),
+      child: Text(name),
+    );
+
+    return MenuAnchor(
+      menuChildren: [
+        // The heading tells what the choice is for, also on touch devices.
+        MenuItemButton(
+          onPressed: null,
+          child: Text(
+            l10n.liveView,
+            style: Theme.of(context).textTheme.labelLarge,
           ),
         ),
+        if (hasChordPro)
+          entry(null, Icons.text_snippet_outlined, l10n.liveViewChordPro),
+        for (final a in pdfs)
+          entry(a.id, Icons.picture_as_pdf_outlined, a.name),
+      ],
+      builder: (context, controller, _) => IconButton(
+        key: ValueKey('live-view-${song.id}'),
+        tooltip:
+            '${l10n.liveView}: ${selected?.name ?? l10n.liveViewChordPro}\n'
+            '${l10n.scopePersonal}',
+        icon: Icon(
+          selected == null
+              ? Icons.text_snippet_outlined
+              : Icons.picture_as_pdf_outlined,
+        ),
+        onPressed: () =>
+            controller.isOpen ? controller.close() : controller.open(),
       ),
     );
   }
