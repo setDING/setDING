@@ -15,9 +15,11 @@ import 'engine/arrangement_sync.dart';
 import 'engine/attachment_sync.dart';
 import 'engine/overlay_sync.dart';
 import 'engine/set_sync.dart';
+import 'engine/settings_sync.dart';
 import 'engine/song_sync.dart';
 import 'engine/sync_store.dart';
 import 'sync_backend.dart';
+import '../settings/user_settings_store.dart';
 import '../util/log.dart';
 
 const _log = Log('sync');
@@ -30,6 +32,7 @@ class SyncReport {
     this.pushed = 0,
     this.conflicts = 0,
     this.downloaded = 0,
+    this.settingsTakenOver = false,
     this.error,
   });
 
@@ -41,6 +44,10 @@ class SyncReport {
 
   /// Attachment files downloaded in this run.
   final int downloaded;
+
+  /// The settings on this device were replaced by the person's settings
+  /// from the account (first sign-in on this device, ADR-0027).
+  final bool settingsTakenOver;
 
   /// Why the run stopped early (e.g. offline), or null.
   final BackendErrorKind? error;
@@ -61,6 +68,7 @@ class SyncEngine {
     this.copies,
     AttachmentStorage? storage,
     this.preloadAttachments = true,
+    this.settings,
   }) : storage = storage ?? copies?.storage {
     final store = SyncStore(db);
     _songs = SongSync(db, backend, store, copies: copies);
@@ -68,7 +76,14 @@ class SyncEngine {
     _attachments = AttachmentSync(db, backend, store, this.storage);
     _overlays = OverlaySync(db, backend, store);
     _arrangements = ArrangementSync(db, backend, store);
+    if (settings case final settings?) {
+      _settings = SettingsSync(db, backend, store, settings);
+    }
   }
+
+  /// The personal settings (ADR-0027); without them, they are not synced.
+  final UserSettingsStore? settings;
+  SettingsSync? _settings;
 
   final AppDatabase db;
 
@@ -110,6 +125,7 @@ class SyncEngine {
     var pushed = 0;
     var conflicts = 0;
     var downloaded = 0;
+    var settingsTakenOver = false;
     try {
       if (refreshBands) await bands.refresh();
       final visible = [
@@ -133,6 +149,11 @@ class SyncEngine {
       }
       // After the songs: an overlay needs its song on this device.
       pulled += await _overlays.pull(user.id);
+      if (_settings case final s?) {
+        final (n, takenOver) = await s.pull(user.id);
+        pulled += n;
+        settingsTakenOver = takenOver;
+      }
       await _enqueueUnsynced(visible, userId: user.id, orgIds: orgIds);
       final p = await _push(user.id);
       pushed += p.$1;
@@ -149,6 +170,7 @@ class SyncEngine {
         pushed: pushed,
         conflicts: conflicts,
         downloaded: downloaded,
+        settingsTakenOver: settingsTakenOver,
       );
     } on BackendException catch (e) {
       _log.warning('Sync stopped', e);
@@ -157,6 +179,7 @@ class SyncEngine {
         pushed: pushed,
         conflicts: conflicts,
         downloaded: downloaded,
+        settingsTakenOver: settingsTakenOver,
         error: e.kind,
       );
     }
@@ -262,6 +285,7 @@ class SyncEngine {
       SyncCollection.attachments,
       SyncCollection.overlays,
       SyncCollection.arrangements,
+      SyncCollection.userSettings,
     ];
     final entries = await db.select(db.syncOutbox).get()
       ..sort(
@@ -284,6 +308,10 @@ class SyncEngine {
           }
         case SyncCollection.arrangements:
           if (await _arrangements.push(entry) == PushResult.done) pushed++;
+        case SyncCollection.userSettings:
+          if (await _settings?.push(entry, userId) == PushResult.done) {
+            pushed++;
+          }
       }
     }
     return (pushed, conflicts);

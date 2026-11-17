@@ -55,6 +55,9 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         databaseProvider.overrideWithValue(db),
+        userSettingsStoreProvider.overrideWithValue(
+          await UserSettingsStore.open(db, prefs),
+        ),
         attachmentStorageProvider.overrideWithValue(FileAttachmentStorage(dir)),
         sessionStoreProvider.overrideWithValue(MemorySessionStore()),
         syncBackendProvider.overrideWithValue(backend),

@@ -23,9 +23,15 @@ const schema7Indexes = [
   'set_items_song',
 ];
 
+/// Turns a current database back into schema 14: no personal settings.
+void downgradeToSchema14(Database raw) {
+  raw.execute('DROP TABLE user_settings');
+}
+
 /// Turns a current database back into schema 13: songs without the
 /// number of ChordPro problems.
 void downgradeToSchema13(Database raw) {
+  downgradeToSchema14(raw);
   raw.execute('ALTER TABLE songs DROP COLUMN chordpro_problems');
 }
 
@@ -463,4 +469,22 @@ void main() {
       await upgraded.close();
     },
   );
+
+  test('upgrades a schema 14 database: personal settings', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    await current.select(current.songs).get();
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema14(raw);
+    raw.execute('PRAGMA user_version = 14');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    await upgraded
+        .into(upgraded.userSettings)
+        .insert(UserSettingsCompanion.insert(ownerId: 'local'));
+    expect(await upgraded.select(upgraded.userSettings).get(), hasLength(1));
+    await upgraded.close();
+  });
 }

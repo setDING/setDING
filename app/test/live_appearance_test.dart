@@ -96,7 +96,6 @@ void main() {
     await tester.tap(find.text('Black'));
     await tester.pumpAndSettle();
     expect(app.prefs.getString('liveAppearance'), 'black');
-    expect(AppSettings.load(app.prefs).liveAppearance, LiveAppearance.black);
     await app.dispose(tester);
   });
 

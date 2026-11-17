@@ -40,6 +40,48 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('personal and device settings are grouped and explained '
+      '(ADR-0027)', (tester) async {
+    useTabletSize(tester);
+    final app = await pumpSettings(tester);
+    final personal = find.byKey(const Key('settings-group-personal'));
+    final device = find.byKey(const Key('settings-group-device'));
+    expect(find.text('Personal – on all your devices'), findsOneWidget);
+    expect(find.text('This device'), findsOneWidget);
+    double top(Finder f) => tester.getTopLeft(f).dy;
+    final general = find.byKey(const Key('settings-category-general'));
+    final display = find.byKey(const Key('settings-category-display'));
+    final live = find.byKey(const Key('settings-category-live'));
+    final account = find.byKey(const Key('settings-category-account'));
+    expect(top(account), lessThan(top(personal)));
+    expect(top(personal), lessThan(top(general)));
+    expect(top(display), lessThan(top(device)));
+    expect(top(device), lessThan(top(live)));
+
+    // Signed out: personal settings are synced after signing in.
+    await tester.tap(display);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('settings-scope-personal')), findsOneWidget);
+    expect(find.textContaining('After signing in'), findsOneWidget);
+    expect(find.text('Font size'), findsNothing);
+
+    await tester.tap(live);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('settings-scope-device')), findsOneWidget);
+    expect(find.textContaining('not synced'), findsOneWidget);
+    expect(find.text('Font size'), findsOneWidget);
+
+    // Signed in: they belong to the account.
+    app.backend.accounts['ann@example.test'] = 'secret';
+    await tester.runAsync(
+      () => app.backend.signIn(email: 'ann@example.test', password: 'secret'),
+    );
+    await tester.tap(display);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('belong to your account'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
   testWidgets('the keyboard opening keeps the settings as built (#297)', (
     tester,
   ) async {
@@ -70,9 +112,14 @@ void main() {
     expect(find.text('Chord notation'), findsOneWidget);
     expect(find.byKey(const Key('settings-category-general')), findsNothing);
 
+    await tester.scrollUntilVisible(
+      find.text('Lyrics only'),
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
     await tester.tap(find.text('Lyrics only'));
     await tester.pumpAndSettle();
-    expect(app.prefs.getString('displayMode'), 'lyricsOnly');
+    expect(app.personal()['displayMode'], 'lyricsOnly');
 
     await tester.pageBack();
     await tester.pumpAndSettle();
@@ -103,8 +150,7 @@ void main() {
 
     await tester.tap(find.byKey(const Key('accent-teal')));
     await tester.pumpAndSettle();
-    expect(app.prefs.getString('accent'), 'teal');
-    expect(AppSettings.load(app.prefs).accent, AccentColor.teal);
+    expect(app.personal()['accent'], 'teal');
     expect(find.text('Teal'), findsOneWidget);
     // The whole app follows the new accent.
     expect(
@@ -145,12 +191,12 @@ void main() {
 
     await tester.tap(find.text('Jazz'));
     await tester.pumpAndSettle();
-    expect(app.prefs.getString('chordStyle'), 'jazz');
+    expect(app.personal()['chordStyle'], 'jazz');
     expect(superscript().onChanged, isNotNull);
 
     await tester.tap(find.text('Raise extensions'));
     await tester.pumpAndSettle();
-    expect(app.prefs.getBool('chordSuperscript'), isTrue);
+    expect(app.personal()['chordSuperscript'], isTrue);
     await app.dispose(tester);
   });
 }

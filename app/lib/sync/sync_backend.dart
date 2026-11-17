@@ -329,6 +329,23 @@ class RemoteOverlay {
   final bool deleted;
 }
 
+/// Personal settings of a user as stored on the server (ADR-0027); [data]
+/// holds the personal settings (layer 4a) by key.
+@immutable
+class RemoteUserSettings {
+  const RemoteUserSettings({
+    required this.id,
+    required this.userId,
+    this.data = const {},
+    this.revision = 0,
+  });
+
+  final String id;
+  final String userId;
+  final Map<String, dynamic> data;
+  final int revision;
+}
+
 /// PDF attachment metadata as stored on the server (ADR-0009, ADR-0017).
 @immutable
 class RemoteAttachment {
@@ -624,6 +641,18 @@ abstract class SyncBackend {
   /// user and returns the server state (last writer wins).
   Future<RemoteOverlay> pushOverlay(
     RemoteOverlay overlay, {
+    required bool create,
+  });
+
+  /// The personal settings of the signed-in user if they changed after
+  /// revision [since], else null (ADR-0027).
+  Future<RemoteUserSettings?> pullUserSettings(int since);
+
+  /// Creates ([create], with all keys) or updates the personal settings of
+  /// the signed-in user; an update merges the keys of [settings] into the
+  /// stored ones (last writer wins per key). Returns the server state.
+  Future<RemoteUserSettings> pushUserSettings(
+    RemoteUserSettings settings, {
     required bool create,
   });
 

@@ -32,7 +32,8 @@ class TestApp {
     this.db,
     this.dir,
     this.prefs,
-    this.backend, {
+    this.backend,
+    this.userSettings, {
     this.web = false,
     SessionStore? sessionStore,
   }) : sessionStore = sessionStore ?? MemorySessionStore();
@@ -45,6 +46,13 @@ class TestApp {
   final AppDatabase db;
   final Directory dir;
   final SharedPreferences prefs;
+
+  /// Personal settings per owner (ADR-0027).
+  final UserSettingsStore userSettings;
+
+  /// The personal setting values of [owner] (default: signed out).
+  Map<String, Object?> personal([String owner = localOwnerId]) =>
+      userSettings.data(owner);
 
   /// Backend used instead of a real server.
   final FakeSyncBackend backend;
@@ -80,11 +88,14 @@ class TestApp {
   }) async {
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
     SharedPreferences.setMockInitialValues(prefs);
+    final db = AppDatabase(NativeDatabase.memory());
+    final preferences = await SharedPreferences.getInstance();
     return TestApp._(
-      AppDatabase(NativeDatabase.memory()),
+      db,
       Directory.systemTemp.createTempSync('setding_widget'),
-      await SharedPreferences.getInstance(),
+      preferences,
       FakeSyncBackend(user: user),
+      await UserSettingsStore.open(db, preferences),
       web: web,
       sessionStore: sessionStore,
     );
@@ -94,6 +105,7 @@ class TestApp {
   List<Override> get overrides => [
     sharedPreferencesProvider.overrideWithValue(prefs),
     databaseProvider.overrideWithValue(db),
+    userSettingsStoreProvider.overrideWithValue(userSettings),
     attachmentStorageProvider.overrideWithValue(storage),
     sessionStoreProvider.overrideWithValue(sessionStore),
     webClientProvider.overrideWithValue(web),

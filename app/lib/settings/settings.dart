@@ -4,10 +4,14 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../sync/auth_providers.dart' show authProvider;
 import '../sync/sync_backend.dart' show defaultServerUrl;
+import '../data/database.dart' show localOwnerId;
 import 'display_options.dart';
+import 'user_settings_store.dart';
 
 export 'display_options.dart';
+export 'user_settings_store.dart';
 
 /// UI language setting (ADR-0008).
 enum LanguageMode { system, de, en }
@@ -53,7 +57,18 @@ enum SyncMode {
   manual,
 }
 
-/// Device settings (layer 4, ADR-0006). Stored locally per device.
+/// Whether a setting follows the person or stays on the device (ADR-0027).
+enum SettingSyncScope {
+  /// Synced with the account: the same on all devices of a person.
+  personal,
+
+  /// Never synced: depends on the screen, audio output or network.
+  device,
+}
+
+/// The settings (layer 4, ADR-0006): personal settings of the current
+/// person (synced with the account, ADR-0027) combined with the settings of
+/// this device. See [scopes].
 @immutable
 class AppSettings {
   const AppSettings({
@@ -204,19 +219,84 @@ class AppSettings {
     syncMode: syncMode ?? this.syncMode,
   );
 
-  static AppSettings load(SharedPreferences prefs) {
+  /// Which settings follow the person (synced with the account) and which
+  /// stay on the device (ADR-0027). Every key of [toJson] has a scope; a
+  /// test checks that a new setting gets one.
+  static const scopes = <String, SettingSyncScope>{
+    'language': SettingSyncScope.personal,
+    'notation': SettingSyncScope.personal,
+    'nashville': SettingSyncScope.personal,
+    'chordStyle': SettingSyncScope.personal,
+    'chordSuperscript': SettingSyncScope.personal,
+    'displayMode': SettingSyncScope.personal,
+    'themeMode': SettingSyncScope.personal,
+    'accent': SettingSyncScope.personal,
+    'setProgress': SettingSyncScope.personal,
+    'chorusRepeat': SettingSyncScope.personal,
+    'instrument': SettingSyncScope.personal,
+    'userName': SettingSyncScope.personal,
+    'diagrams': SettingSyncScope.personal,
+    'columns': SettingSyncScope.device,
+    'pageTurn': SettingSyncScope.device,
+    'liveAppearance': SettingSyncScope.device,
+    'autoFit': SettingSyncScope.device,
+    'fontSize': SettingSyncScope.device,
+    'serverUrl': SettingSyncScope.device,
+    'syncMode': SettingSyncScope.device,
+  };
+
+  /// The keys of [scope].
+  static Iterable<String> keysOf(SettingSyncScope scope) =>
+      scopes.entries.where((e) => e.value == scope).map((e) => e.key);
+
+  /// The settings as JSON values (enums by name), keyed as stored.
+  Map<String, Object> toJson() => {
+    'language': language.name,
+    'notation': notation.name,
+    'nashville': nashville,
+    'chordStyle': chordStyle.name,
+    'chordSuperscript': chordSuperscript,
+    'displayMode': displayMode.name,
+    'themeMode': themeMode.name,
+    'accent': accent.name,
+    'columns': columns.name,
+    'pageTurn': pageTurn.name,
+    'liveAppearance': liveAppearance.name,
+    'autoFit': autoFit,
+    'setProgress': setProgress,
+    'chorusRepeat': chorusRepeat.name,
+    'instrument': instrument,
+    'userName': userName,
+    'diagrams': diagrams.name,
+    'fontSize': fontSize,
+    'serverUrl': serverUrl,
+    'syncMode': syncMode.name,
+  };
+
+  /// Settings from JSON values; a missing key, a value of the wrong type or
+  /// an unknown value (e.g. from a newer app version) gives the default.
+  static AppSettings fromJson(Map<String, Object?> json) {
     T pick<T extends Enum>(List<T> values, String key, T fallback) {
-      final name = prefs.getString(key);
+      final name = json[key];
       return values.firstWhere((v) => v.name == name, orElse: () => fallback);
     }
+
+    bool flag(String key, bool fallback) => switch (json[key]) {
+      final bool b => b,
+      _ => fallback,
+    };
+    String text(String key, String fallback) => switch (json[key]) {
+      final String v => v,
+      _ => fallback,
+    };
 
     const d = AppSettings();
     return AppSettings(
       language: pick(LanguageMode.values, 'language', d.language),
       notation: pick(ChordNotation.values, 'notation', d.notation),
-      nashville: prefs.getBool('nashville') ?? d.nashville,
+      nashville: flag('nashville', d.nashville),
       chordStyle: pick(ChordStyle.values, 'chordStyle', d.chordStyle),
-      chordSuperscript: prefs.getBool('chordSuperscript') ?? d.chordSuperscript,
+      chordSuperscript: flag('chordSuperscript', d.chordSuperscript),
       displayMode: pick(DisplayMode.values, 'displayMode', d.displayMode),
       themeMode: pick(ThemeMode.values, 'themeMode', d.themeMode),
       accent: pick(AccentColor.values, 'accent', d.accent),
@@ -227,42 +307,50 @@ class AppSettings {
         'liveAppearance',
         d.liveAppearance,
       ),
-      autoFit: prefs.getBool('autoFit') ?? d.autoFit,
-      setProgress: prefs.getBool('setProgress') ?? d.setProgress,
+      autoFit: flag('autoFit', d.autoFit),
+      setProgress: flag('setProgress', d.setProgress),
       chorusRepeat: pick(ChorusRepeat.values, 'chorusRepeat', d.chorusRepeat),
-      instrument: prefs.getString('instrument') ?? d.instrument,
-      userName: prefs.getString('userName') ?? d.userName,
+      instrument: text('instrument', d.instrument),
+      userName: text('userName', d.userName),
       diagrams: pick(DiagramsPosition.values, 'diagrams', d.diagrams),
-      serverUrl: prefs.getString('serverUrl') ?? initialServerUrl(),
+      serverUrl: text('serverUrl', d.serverUrl),
       syncMode: pick(SyncMode.values, 'syncMode', d.syncMode),
-      fontSize: (prefs.getDouble('fontSize') ?? d.fontSize).clamp(
-        minFontSize,
-        maxFontSize,
-      ),
+      fontSize: switch (json['fontSize']) {
+        final num v => v.toDouble().clamp(minFontSize, maxFontSize),
+        _ => d.fontSize,
+      },
     );
   }
 
-  Future<void> save(SharedPreferences prefs) async {
-    await prefs.setString('language', language.name);
-    await prefs.setString('notation', notation.name);
-    await prefs.setBool('nashville', nashville);
-    await prefs.setString('chordStyle', chordStyle.name);
-    await prefs.setBool('chordSuperscript', chordSuperscript);
-    await prefs.setString('displayMode', displayMode.name);
-    await prefs.setString('themeMode', themeMode.name);
-    await prefs.setString('accent', accent.name);
-    await prefs.setString('columns', columns.name);
-    await prefs.setString('pageTurn', pageTurn.name);
-    await prefs.setString('liveAppearance', liveAppearance.name);
-    await prefs.setBool('autoFit', autoFit);
-    await prefs.setBool('setProgress', setProgress);
-    await prefs.setString('chorusRepeat', chorusRepeat.name);
-    await prefs.setString('instrument', instrument);
-    await prefs.setString('userName', userName);
-    await prefs.setString('diagrams', diagrams.name);
-    await prefs.setDouble('fontSize', fontSize);
-    await prefs.setString('serverUrl', serverUrl);
-    await prefs.setString('syncMode', syncMode.name);
+  /// The values of [keys] stored in [prefs] (flat keys, as before
+  /// ADR-0027); missing keys are left out.
+  static Map<String, Object> readPrefs(
+    SharedPreferences prefs,
+    Iterable<String> keys,
+  ) => {
+    for (final key in keys)
+      if (prefs.get(key) case final Object value) key: value,
+  };
+
+  /// Stores [values] as flat keys in [prefs].
+  static Future<void> writePrefs(
+    SharedPreferences prefs,
+    Map<String, Object?> values,
+  ) async {
+    for (final MapEntry(:key, :value) in values.entries) {
+      switch (value) {
+        case final bool v:
+          await prefs.setBool(key, v);
+        case final int v:
+          await prefs.setInt(key, v);
+        case final double v:
+          await prefs.setDouble(key, v);
+        case final String v:
+          await prefs.setString(key, v);
+        case null:
+          await prefs.remove(key);
+      }
+    }
   }
 }
 
@@ -281,13 +369,81 @@ final sharedPreferencesProvider = Provider<SharedPreferences>(
   (ref) => throw UnimplementedError('Overridden in main()'),
 );
 
+/// The server URL (a device setting). Separate from [settingsProvider]:
+/// the backend depends on it, and the personal settings depend on the
+/// signed-in user from that backend.
+class ServerUrlNotifier extends Notifier<String> {
+  @override
+  String build() =>
+      ref.watch(sharedPreferencesProvider).getString('serverUrl') ??
+      initialServerUrl();
+
+  Future<void> set(String url) async {
+    state = url;
+    await ref.read(sharedPreferencesProvider).setString('serverUrl', url);
+  }
+}
+
+final serverUrlProvider = NotifierProvider<ServerUrlNotifier, String>(
+  ServerUrlNotifier.new,
+);
+
+/// The owner of the personal settings (ADR-0027): the signed-in user, or
+/// [localOwnerId] while signed out.
+final settingsOwnerProvider = Provider<String>(
+  (ref) => ref.watch(authProvider.select((u) => u?.id)) ?? localOwnerId,
+);
+
+/// Settings of the current owner (personal, ADR-0027) and of this device.
 class SettingsNotifier extends Notifier<AppSettings> {
   @override
-  AppSettings build() => AppSettings.load(ref.watch(sharedPreferencesProvider));
+  AppSettings build() {
+    final owner = ref.watch(settingsOwnerProvider);
+    final store = ref.watch(userSettingsStoreProvider);
+    final serverUrl = ref.watch(serverUrlProvider);
+    // Changes from the sync (ADR-0027); the sync is paused in live mode, so
+    // nothing changes on stage (ADR-0007).
+    final sub = store.changes
+        .where((o) => o == owner)
+        .listen((_) => state = _compose(owner, ref.read(serverUrlProvider)));
+    ref.onDispose(sub.cancel);
+    return _compose(owner, serverUrl);
+  }
+
+  AppSettings _compose(String owner, String serverUrl) {
+    final prefs = ref.read(sharedPreferencesProvider);
+    return AppSettings.fromJson({
+      ...AppSettings.readPrefs(
+        prefs,
+        AppSettings.keysOf(SettingSyncScope.device),
+      ),
+      ...ref.read(userSettingsStoreProvider).data(owner),
+      'serverUrl': serverUrl,
+    });
+  }
 
   Future<void> update(AppSettings Function(AppSettings) change) async {
+    final before = state.toJson();
     state = change(state);
-    await state.save(ref.read(sharedPreferencesProvider));
+    final after = state.toJson();
+    final personal = <String, Object>{};
+    final device = <String, Object>{};
+    for (final MapEntry(:key, :value) in after.entries) {
+      if (before[key] == value) continue;
+      (AppSettings.scopes[key] == SettingSyncScope.personal
+              ? personal
+              : device)[key] =
+          value;
+    }
+    if (device.remove('serverUrl') case final String url) {
+      await ref.read(serverUrlProvider.notifier).set(url);
+    }
+    await AppSettings.writePrefs(ref.read(sharedPreferencesProvider), device);
+    if (personal.isNotEmpty) {
+      await ref
+          .read(userSettingsStoreProvider)
+          .change(ref.read(settingsOwnerProvider), personal);
+    }
   }
 }
 

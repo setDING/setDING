@@ -32,7 +32,8 @@ void main() {
 
     await tester.tap(find.text('Einstellungen').first);
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('settings-category-display')));
+    // Font size is a device setting (ADR-0027).
+    await tester.tap(find.byKey(const Key('settings-category-live')));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.text('Schriftgrösse'),
@@ -58,7 +59,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Settings'), findsWidgets);
-    expect(app.prefs.getString('language'), 'en');
+    expect(app.personal()['language'], 'en');
     await app.dispose(tester);
   });
 
@@ -209,7 +210,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Ukulele'));
     await tester.pumpAndSettle();
-    expect(app.prefs.getString('instrument'), 'ukulele');
+    expect(app.personal()['instrument'], 'ukulele');
     await app.dispose(tester);
   });
 

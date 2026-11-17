@@ -7,7 +7,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:setding/data/database.dart' show SetItemType;
 import 'package:setding/data/demo_song.dart';
-import 'package:setding/settings/settings.dart';
 import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/ui/live/set_progress_bar.dart';
 import 'package:setding/ui/settings_screen.dart';
@@ -250,12 +249,12 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('the live mode settings switch the bar', (tester) async {
+  testWidgets('the display settings switch the bar', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'en'});
     await tester.pumpWidget(app.build(home: const SettingsScreen()));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('settings-category-live')));
+    await tester.tap(find.byKey(const Key('settings-category-display')));
     await tester.pumpAndSettle();
     final tile = find.widgetWithText(SwitchListTile, 'Progress bar of the set');
     await tester.scrollUntilVisible(
@@ -267,8 +266,8 @@ void main() {
     expect(tester.widget<SwitchListTile>(tile).value, isTrue);
     await tester.tap(tile);
     await tester.pumpAndSettle();
-    expect(app.prefs.getBool('setProgress'), isFalse);
-    expect(AppSettings.load(app.prefs).setProgress, isFalse);
+    // A personal setting (ADR-0027).
+    expect(app.personal()['setProgress'], isFalse);
     await app.dispose(tester);
   });
 }

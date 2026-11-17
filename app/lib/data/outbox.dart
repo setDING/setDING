@@ -15,6 +15,9 @@ abstract final class SyncCollection {
   /// Band arrangements (ADR-0025); the outbox record ID is
   /// [arrangementRecordId].
   static const arrangements = 'arrangements';
+
+  /// Personal settings (ADR-0027); the outbox record ID is the user ID.
+  static const userSettings = 'user_settings';
 }
 
 /// Outbox record ID of the arrangement of [bandId] for [songId].
