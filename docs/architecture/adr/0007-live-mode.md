@@ -83,7 +83,8 @@ song, all tablets follow automatically. We evaluated whether this is needed.
   click plays on the device's audio output. Another item of the set stops the beat; with the automatic start the
   next song counts in.
   For drums, a song map (the parts as played with cues and drum notes) can replace the chord sheet, and the footer
-  adds the next song's tempo and time signature.
+  adds the next song's tempo and time signature. On wide screens a panel beside the song map shows the beat large
+  and the set with tempo and time signature; a tap on a song turns to it.
 - **Appearance on stage:** a per-device setting independent of the app theme: *as app* (default), *dark* (also when
   the app is light) or *black* (true black page, very dark bars, e.g. for OLED screens). The live view, its control
   bar, the bottom bar, the set overview and the PDF background follow it. Chords are drawn in a stronger colour than
@@ -157,6 +158,7 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-17: Beat display, count-in overlay, edge flash and tempo on stage of the drummer mode (ADR-0026, #333).
 - 2026-11-17: Long press (≥ 0.6 s) of a forward key and Enter start and stop the beat (ADR-0026, #335); with a beat, a short forward press turns on key up.
 - 2026-11-17: Song map instead of the chord sheet for drums; the footer shows the next song's tempo and time signature for drums (ADR-0026, #336).
+- 2026-11-17: Wide song map: beat large and the set (tap to turn) in a panel left of the song map (ADR-0026, #357).
 
 ## Open points
 

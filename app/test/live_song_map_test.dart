@@ -27,8 +27,12 @@ void main() {
 ''';
   const second = '{title: Two}\n{tempo: 100}\n{time: 4/4}\n[D]Two';
 
-  Future<TestApp> open(WidgetTester tester, Map<String, Object> prefs) async {
-    useTabletSize(tester);
+  Future<TestApp> open(
+    WidgetTester tester,
+    Map<String, Object> prefs, {
+    bool landscape = true,
+  }) async {
+    useTabletSize(tester, landscape: landscape);
     final app = await TestApp.create(prefs: {'language': 'en', ...prefs});
     final items = (await tester.runAsync(() async {
       final items = <LiveItem>[];
@@ -80,5 +84,86 @@ void main() {
     });
     expect(find.byKey(const Key('song-map')), findsNothing);
     await drums.dispose(tester);
+  });
+
+  testWidgets('wide: beat large and the set on the left, a tap turns (#357)', (
+    tester,
+  ) async {
+    final app = await open(tester, {
+      'instrument': 'drums',
+      'clickStart': 'manual',
+    });
+    await tester.pump();
+    expect(find.byKey(const Key('drum-panel')), findsOneWidget);
+    expect(find.byKey(const Key('large-beat')), findsOneWidget);
+    // The dots are in the panel, not beside the title.
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('large-beat')),
+        matching: find.byKey(const Key('beat-dots')),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('stage-info')),
+        matching: find.byKey(const Key('beat-dots')),
+      ),
+      findsNothing,
+    );
+    // The set with tempo and time signature; 6/8 at 96 BPM first.
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('drum-set-0')),
+        matching: find.text('96 BPM · 6/8'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('drum-set-1')),
+        matching: find.text('100 BPM · 4/4'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('1 / 2'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('drum-set-1')));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('2 / 2'), findsOneWidget);
+    expect(
+      tester.widget<ListTile>(find.byKey(const Key('drum-set-1'))).selected,
+      isTrue,
+    );
+
+    // The large start button starts the beat of the current song.
+    await tester.tap(find.byKey(const Key('large-beat-toggle')));
+    await tester.pump();
+    await tester.pump();
+    expect(app.clickOutput.plays, hasLength(1));
+    await tester.tap(find.byKey(const Key('large-beat-toggle')));
+    await tester.pump(const Duration(milliseconds: 300));
+    await app.dispose(tester);
+  });
+
+  testWidgets('narrow: no panel, the dots stay beside the title', (
+    tester,
+  ) async {
+    final app = await open(tester, {
+      'instrument': 'drums',
+      'clickStart': 'manual',
+    }, landscape: false);
+    await tester.pump();
+    expect(find.byKey(const Key('drum-panel')), findsNothing);
+    expect(find.byKey(const Key('song-map')), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('stage-info')),
+        matching: find.byKey(const Key('beat-dots')),
+      ),
+      findsOneWidget,
+    );
+    await app.dispose(tester);
   });
 }

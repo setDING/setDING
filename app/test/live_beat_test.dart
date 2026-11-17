@@ -144,7 +144,8 @@ void main() {
       tester,
       prefs: {'instrument': 'drums', 'clickStart': 'manual'},
     );
-    final center = tester.getCenter(find.byType(LiveScreen));
+    // The middle of the page (beside the wide song map's panel).
+    final center = tester.getCenter(find.byType(PageView));
     await tester.tapAt(center);
     await tester.pump();
     expect(find.byKey(const Key('stage-tempo-controls')), findsOneWidget);
@@ -153,7 +154,13 @@ void main() {
     await tester.pump();
     await tester.tap(find.byKey(const Key('tempo-faster')));
     await tester.pump();
-    expect(find.text('122 BPM *'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('stage-tempo')),
+        matching: find.text('122 BPM *'),
+      ),
+      findsOneWidget,
+    );
     await tester.tap(find.byKey(const Key('tempo-slower')));
     await tester.pump();
     expect(

@@ -894,6 +894,9 @@ class AppLocalizationsDe extends AppLocalizations {
       'Dieser Song hat keine Teile (Strophe, Refrain, …) für eine Song-Landkarte.';
 
   @override
+  String get songMapNoTempo => 'Kein Tempo für diesen Song';
+
+  @override
   String get settingsLiveAppearance => 'Aussehen auf der Bühne';
 
   @override

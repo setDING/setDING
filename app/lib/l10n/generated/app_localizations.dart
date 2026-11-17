@@ -1646,6 +1646,12 @@ abstract class AppLocalizations {
   /// **'Dieser Song hat keine Teile (Strophe, Refrain, …) für eine Song-Landkarte.'**
   String get songMapEmpty;
 
+  /// No description provided for @songMapNoTempo.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Tempo für diesen Song'**
+  String get songMapNoTempo;
+
   /// No description provided for @settingsLiveAppearance.
   ///
   /// In de, this message translates to:

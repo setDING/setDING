@@ -888,6 +888,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'This song has no parts (verse, chorus, …) to show as a song map.';
 
   @override
+  String get songMapNoTempo => 'No tempo for this song';
+
+  @override
   String get settingsLiveAppearance => 'Appearance on stage';
 
   @override
