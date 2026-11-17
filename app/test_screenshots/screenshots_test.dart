@@ -102,6 +102,42 @@ K:G
 void main() {
   setUpAll(() async => _loadFonts());
 
+  testWidgets('song list status icons', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'de'});
+    await tester.runAsync(() async {
+      final a = await app.songs.createSong(source: demoSongSource);
+      await app.songs.createSong(title: 'Hallelujah (Noten)');
+      final c = await app.songs.createSong(
+        source: '{title: Morning Light}\n{artist: House Band}\n{key: D}\n[D]x',
+      );
+      await app.db
+          .into(app.db.songConflicts)
+          .insert(
+            SongConflictsCompanion.insert(
+              songId: c,
+              title: 'Morning Light',
+              chordproSource: '{title: Morning Light}',
+              revision: 2,
+              detectedAt: DateTime.now(),
+            ),
+          );
+      final set = await app.sets.createSet(
+        name: 'Summer Festival',
+        gigDate: DateTime.now().add(const Duration(days: 3)),
+      );
+      await app.sets.addSongs(set, [a]);
+    });
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: UniqueKey(),
+        child: app.build(home: const SongsScreen()),
+      ),
+    );
+    await _shot(tester, 'de_3_songs_status');
+    await app.dispose(tester);
+  });
+
   testWidgets('song list sorted by key', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(

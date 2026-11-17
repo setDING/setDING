@@ -854,5 +854,14 @@
   "sortByRecent": "Zuletzt bearbeitet",
   "noArtist": "Ohne Interpret",
   "keyFilter": "Tonart",
-  "allKeys": "Alle Tonarten"
+  "allKeys": "Alle Tonarten",
+  "songConflictTooltip": "Hier und auf dem Server geändert – zum Entscheiden den Song öffnen",
+  "pdfOnlyTooltip": "Nur Noten (PDF), keine Akkorde",
+  "upcomingGigTooltip": "In «{set}» am {date}",
+  "@upcomingGigTooltip": {
+    "placeholders": {
+      "set": {"type": "String"},
+      "date": {"type": "String"}
+    }
+  }
 }

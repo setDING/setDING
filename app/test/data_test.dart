@@ -254,6 +254,36 @@ void main() {
     expect((await titles(SongSort.recent)).first, 'Charlie');
   });
 
+  test('the song list knows songs without chords (PDF only)', () async {
+    await songs.createSong(title: 'Sheet');
+    await songs.createSong(source: '{title: Chords}\n[G]x');
+    final list = await songs.watchSongList().first;
+    expect(
+      {for (final s in list) s.title: s.hasChords},
+      {'Chords': true, 'Sheet': false},
+    );
+  });
+
+  test('upcoming gigs: the first set from today on per song', () async {
+    final a = await songs.createSong(source: '{title: A}');
+    final b = await songs.createSong(source: '{title: B}');
+    final c = await songs.createSong(source: '{title: C}');
+    final today = DateTime(2027, 6, 10, 15);
+    Future<void> set(String name, DateTime? date, List<String> ids) async {
+      final id = await sets.createSet(name: name, gigDate: date);
+      await sets.addSongs(id, ids);
+    }
+
+    await set('Past', DateTime(2027, 6, 9), [a, b, c]);
+    await set('Later', DateTime(2027, 7, 1), [a, b]);
+    await set('Tonight', DateTime(2027, 6, 10), [a]);
+    await set('Undated', null, [c]);
+    final gigs = await sets.watchUpcomingGigs(today: today).first;
+    expect(gigs.keys, unorderedEquals([a, b]));
+    expect(gigs[a]!.setName, 'Tonight');
+    expect(gigs[b], (setName: 'Later', date: DateTime(2027, 7, 1)));
+  });
+
   test('the song list filters by key, enharmonic spellings alike', () async {
     await songs.createSong(source: '{title: Alpha}\n{key: Bb}');
     await songs.createSong(source: '{title: Bravo}\n{key: A#}');
