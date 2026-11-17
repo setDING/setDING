@@ -55,7 +55,10 @@ void main() {
       transpose: 3,
     );
     final card = find.byKey(const Key('band-arrangement'));
-    expect(find.text('Arrangement of Rock'), findsOneWidget);
+    expect(
+      find.text('Arrangement of Rock – for the whole band'),
+      findsOneWidget,
+    );
     expect(
       find.descendant(of: card, matching: find.textContaining('Key Bb')),
       findsOneWidget,

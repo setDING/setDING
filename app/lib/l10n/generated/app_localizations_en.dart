@@ -118,9 +118,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get attachmentsTooltip => 'Has PDF attachments';
 
   @override
-  String get keyPickerTooltip => 'Choose key';
-
-  @override
   String get keyOriginal => 'Original';
 
   @override
@@ -158,10 +155,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allTags => 'All';
 
   @override
-  String get notes => 'Notes';
+  String get notes => 'My notes';
 
   @override
-  String get notesHint => 'Personal note for this song';
+  String get notesHint => 'Only you see this note.';
 
   @override
   String get editSource => 'Edit ChordPro';
@@ -199,7 +196,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get liveView => 'Show in live mode';
+  String get liveView => 'Show in live mode – just for me';
 
   @override
   String get liveViewChordPro => 'ChordPro text';
@@ -239,6 +236,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get personalAdjustments => 'Personal adjustments';
+
+  @override
+  String get personalAdjustmentsHint =>
+      'Only for you – the song stays unchanged for everyone else.';
+
+  @override
+  String get keyPickerPersonal => 'My key – just for me';
+
+  @override
+  String get keyPickerSet => 'Key in this set – for the whole band';
+
+  @override
+  String get keyPickerBand => 'Key of the band – for all its sets';
 
   @override
   String get editTitle => 'Edit title';
@@ -851,7 +861,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String arrangementOf(String band) {
-    return 'Arrangement of $band';
+    return 'Arrangement of $band – for the whole band';
   }
 
   @override
@@ -872,7 +882,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get arrangementTempoLabel => 'Tempo in BPM (empty = as in the song)';
 
   @override
-  String get arrangementReset => 'Back to the song';
+  String get arrangementReset => 'Reset the band arrangement to the song';
 
   @override
   String sequenceOriginal(Object sequence) {
@@ -1600,7 +1610,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get songDetails => 'Song details';
 
   @override
-  String get songDetailsTooltip => 'Edit title, key, tempo and more';
+  String get songDetailsTooltip =>
+      'Edit title, key, tempo and more of the song – for everyone';
 
   @override
   String get noKey => 'No key';

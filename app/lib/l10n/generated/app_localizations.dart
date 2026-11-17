@@ -278,12 +278,6 @@ abstract class AppLocalizations {
   /// **'Hat PDF-Anhänge'**
   String get attachmentsTooltip;
 
-  /// No description provided for @keyPickerTooltip.
-  ///
-  /// In de, this message translates to:
-  /// **'Tonart wählen'**
-  String get keyPickerTooltip;
-
   /// No description provided for @keyOriginal.
   ///
   /// In de, this message translates to:
@@ -341,13 +335,13 @@ abstract class AppLocalizations {
   /// No description provided for @notes.
   ///
   /// In de, this message translates to:
-  /// **'Notizen'**
+  /// **'Meine Notizen'**
   String get notes;
 
   /// No description provided for @notesHint.
   ///
   /// In de, this message translates to:
-  /// **'Persönliche Notiz zu diesem Song'**
+  /// **'Nur du siehst diese Notiz.'**
   String get notesHint;
 
   /// No description provided for @editSource.
@@ -401,7 +395,7 @@ abstract class AppLocalizations {
   /// No description provided for @liveView.
   ///
   /// In de, this message translates to:
-  /// **'Im Live-Modus anzeigen'**
+  /// **'Im Live-Modus anzeigen – nur für mich'**
   String get liveView;
 
   /// No description provided for @liveViewChordPro.
@@ -481,6 +475,30 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Persönliche Anpassungen'**
   String get personalAdjustments;
+
+  /// No description provided for @personalAdjustmentsHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur für dich – für alle anderen bleibt der Song unverändert.'**
+  String get personalAdjustmentsHint;
+
+  /// No description provided for @keyPickerPersonal.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Tonart – nur für mich'**
+  String get keyPickerPersonal;
+
+  /// No description provided for @keyPickerSet.
+  ///
+  /// In de, this message translates to:
+  /// **'Tonart in diesem Set – für die ganze Band'**
+  String get keyPickerSet;
+
+  /// No description provided for @keyPickerBand.
+  ///
+  /// In de, this message translates to:
+  /// **'Tonart der Band – für alle ihre Sets'**
+  String get keyPickerBand;
 
   /// No description provided for @editTitle.
   ///
@@ -1601,7 +1619,7 @@ abstract class AppLocalizations {
   /// No description provided for @arrangementOf.
   ///
   /// In de, this message translates to:
-  /// **'Arrangement von {band}'**
+  /// **'Arrangement von {band} – für die ganze Band'**
   String arrangementOf(String band);
 
   /// No description provided for @arrangementAsWritten.
@@ -1637,7 +1655,7 @@ abstract class AppLocalizations {
   /// No description provided for @arrangementReset.
   ///
   /// In de, this message translates to:
-  /// **'Zurück zum Song'**
+  /// **'Band-Arrangement auf den Song zurücksetzen'**
   String get arrangementReset;
 
   /// No description provided for @sequenceOriginal.
@@ -2813,7 +2831,7 @@ abstract class AppLocalizations {
   /// No description provided for @songDetailsTooltip.
   ///
   /// In de, this message translates to:
-  /// **'Titel, Tonart, Tempo und mehr bearbeiten'**
+  /// **'Titel, Tonart, Tempo und mehr des Songs bearbeiten – für alle'**
   String get songDetailsTooltip;
 
   /// No description provided for @noKey.
