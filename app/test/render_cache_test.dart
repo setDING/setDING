@@ -62,13 +62,18 @@ void main() {
     // turning to it and going back use the cached fits.
     final size = tester.getSize(find.byType(PageView));
     final topLeft = tester.getTopLeft(find.byType(PageView));
-    await tester.tapAt(topLeft + Offset(size.width * 0.9, size.height / 2));
-    await tester.pumpAndSettle();
-    expect(find.text('2 / 2'), findsOneWidget);
+    // The demo song may be split into pages: those are turned first.
+    Future<void> turnTo(String position, double x) async {
+      for (var i = 0; i < 5 && find.text(position).evaluate().isEmpty; i++) {
+        await tester.tapAt(topLeft + Offset(size.width * x, size.height / 2));
+        await tester.pumpAndSettle();
+      }
+      expect(find.text(position), findsOneWidget);
+    }
+
+    await turnTo('2 / 2', 0.9);
     expect(debugMeasureBlocksCalls, first);
-    await tester.tapAt(topLeft + Offset(size.width * 0.1, size.height / 2));
-    await tester.pumpAndSettle();
-    expect(find.text('1 / 2'), findsOneWidget);
+    await turnTo('1 / 2', 0.1);
     expect(debugMeasureBlocksCalls, first);
     await app.dispose(tester);
   });

@@ -937,6 +937,7 @@ class _ChordProPage extends ConsumerWidget {
               song: parsed,
               formatter: formatter,
               compact: true,
+              stage: true,
               setSequence: setSequence,
               bandSequence: bandSequence,
               bandTempo: bandTempo,
