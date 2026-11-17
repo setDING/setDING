@@ -1,0 +1,74 @@
+---
+title: Organisationen und Bands
+description: Organisation gründen, Bands anlegen, Mitglieder verwalten und zwischen Bands wechseln.
+sidebar:
+  order: 1
+---
+
+Eine **Organisation** ist z. B. eine Musikschule, eine Kirche oder einfach eure Band.
+Ihr gehören die Songs und die Leute. Eine **Band** ist eine Gruppe von Leuten aus
+der Organisation, die zusammen spielt; jede Band hat ihre eigenen Sets und
+Band-Arrangements. Alle Bands einer Organisation teilen dieselbe Songbibliothek.
+
+Für Organisationen und Bands brauchst du ein Konto: **Einstellungen** → **Konto &
+Synchronisation** → **Anmelden** (dort auch **Konto erstellen**). Ohne Konto
+arbeitet setDING nur auf deinem Gerät, in der Band **Auf diesem Gerät**.
+
+## Bands verwalten
+
+Alles zu deinen Organisationen und Bands findest du unter **Einstellungen** →
+**Konto & Synchronisation** → **Bands verwalten**, oder unter **Sets** im Menü
+**Band wechseln**. Die Liste zeigt deine Organisationen mit ihren Bands; tippe auf
+eine Organisation oder Band, um sie zu öffnen.
+
+## Eine Organisation gründen
+
+Wie neue Organisationen entstehen, legt der Betreiber eures Servers fest:
+
+- **Nur mit Einladung** (üblich): Du bekommst vom Server-Betreiber eine
+  Gründungs-Einladung. Öffne den Link, melde dich an oder erstelle ein Konto und
+  tippe auf **Organisation gründen**. Du wirst Admin der neuen Organisation.
+- **Offen:** Tippe unter **Bands verwalten** auf **Neue Band** und wähle als
+  **Organisation** den Eintrag **Neue Organisation**.
+
+## Eine Band anlegen
+
+Admins der Organisation tippen unter **Bands verwalten** auf **Neue Band**, geben
+einen **Bandname** ein und wählen die **Organisation**.
+
+## Die Organisation
+
+In der Organisation sehen alle die **Bands** und die **Personen**. Admins können
+zusätzlich:
+
+- den **Name der Organisation** ändern und weitere Bands anlegen,
+- die Rolle jeder Person ändern (siehe [Rollen](/bands/roles/)),
+- Leute einladen (siehe [Einladungen](/bands/invitations/)),
+- jemanden **Aus der Organisation entfernen**. Die Person verlässt damit auch alle
+  Bands der Organisation.
+
+Mit **Organisation verlassen** trittst du selbst aus; du verlässt dann auch alle
+ihre Bands und siehst ihre Songs nicht mehr.
+
+## Die Band
+
+In der Band siehst du ihre **Mitglieder**. Die **Leitung** der Band und die Admins
+der Organisation können:
+
+- den **Bandname** ändern,
+- mit **Mitglied hinzufügen** Personen der Organisation in die Band aufnehmen,
+- neue Leute direkt in die Band einladen,
+- die Rolle in der Band ändern und jemanden **Aus der Band entfernen**.
+
+Mit **Band verlassen** trittst du selbst aus. Eine Band braucht immer mindestens eine
+Leitung.
+
+## Zwischen Bands wechseln
+
+Bist du in mehreren Bands, wählst du unter **Sets** oben mit **Band wechseln**, mit
+welcher Band du arbeitest: Du siehst dann ihre Sets, und Songs zeigen ihr
+Band-Arrangement. Unter **Songs** wechselst du mit **Songbibliothek wechseln** die
+Organisation.
+
+Ein Set oder Songs bringst du mit **In Band kopieren** in eine andere Band oder
+Organisation.
