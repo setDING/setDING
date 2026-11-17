@@ -89,6 +89,8 @@ void main() {
       LiveAppearance.app,
     });
     await tester.ensureVisible(find.text('Black'));
+    // Lay out the scrolled list before tapping.
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Black'));
     await tester.pumpAndSettle();
     expect(app.prefs.getString('liveAppearance'), 'black');
