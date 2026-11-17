@@ -259,6 +259,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
       context,
       before,
       notation: ref.read(settingsProvider).notation,
+      parts: songParts(_parse(before)),
     );
     if (source == null || !mounted) return;
     if (source != before && _controller.text == before) {

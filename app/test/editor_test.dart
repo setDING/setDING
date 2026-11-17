@@ -338,4 +338,56 @@ void main() {
     expect(field.controller!.text, '{title: T}\n{key: F#m}\n{capo: 3}\nla');
     await app.dispose(tester);
   });
+
+  testWidgets('song details edit the sequence in the dialog of the sets', (
+    tester,
+  ) async {
+    const source = '{title: T}\n{sov}\na\n{eov}\n{soc}\nc\n{eoc}';
+    final (app, field) = await pumpEditor(tester, source);
+    await tester.tap(find.text('Song details'));
+    await tester.pumpAndSettle();
+    final sequence = find.byKey(const ValueKey('songDetail-x_sequence'));
+    expect(
+      find.descendant(of: sequence, matching: find.text('No sequence')),
+      findsOneWidget,
+    );
+
+    await tester.tap(sequence);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('sequence-part-V')));
+    await tester.tap(find.byKey(const ValueKey('sequence-part-C')));
+    await tester.tap(find.byKey(const ValueKey('sequence-part-C')));
+    await tester.pump();
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    // The form shows the new sequence; the source changes only on OK.
+    expect(
+      find.descendant(of: sequence, matching: find.byType(SongSequenceView)),
+      findsOneWidget,
+    );
+    expect(field.controller!.text, source);
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect(
+      field.controller!.text,
+      source.replaceFirst(
+        '{title: T}\n',
+        '{title: T}\n{x_sequence: V, C x2}\n',
+      ),
+    );
+
+    // Clearing the sequence removes the directive.
+    await tester.tap(find.text('Song details'));
+    await tester.pumpAndSettle();
+    await tester.tap(sequence);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('sequence-entry')), findsNWidgets(2));
+    await tester.tap(find.text('Clear'));
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect(field.controller!.text, source);
+    await app.dispose(tester);
+  });
 }

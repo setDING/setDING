@@ -695,5 +695,7 @@
   "songDetails": "Song details",
   "songDetailsTooltip": "Edit title, key, tempo and more of the song – for everyone",
   "noKey": "No key",
-  "timeHint": "e.g. 4/4"
+  "timeHint": "e.g. 4/4",
+  "noSequence": "No sequence",
+  "sequenceChange": "Change song sequence"
 }
