@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -30,6 +32,38 @@ Future<bool> runBandAction(
       ..showSnackBar(SnackBar(content: Text(backendErrorText(l10n, e.kind))));
     return false;
   }
+}
+
+/// A screen of people (organization, band): reloads the organizations and
+/// bands from the server when it opens, whatever the sync mode, so people
+/// who joined meanwhile show up without a restart, and on pull-to-refresh.
+/// Without a connection the stored state stays and nothing is shown.
+class RefreshOnOpen extends ConsumerStatefulWidget {
+  const RefreshOnOpen({super.key, required this.child});
+
+  /// The scrollable content.
+  final Widget child;
+
+  @override
+  ConsumerState<RefreshOnOpen> createState() => _RefreshOnOpenState();
+}
+
+class _RefreshOnOpenState extends ConsumerState<RefreshOnOpen> {
+  @override
+  void initState() {
+    super.initState();
+    // Concurrent refreshes share one request (BandService.refresh).
+    unawaited(
+      ref.read(bandServiceProvider).refresh().then((_) {}, onError: (_) {}),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => RefreshIndicator(
+    onRefresh: () =>
+        runBandAction(context, ref.read(bandServiceProvider).refresh),
+    child: widget.child,
+  );
 }
 
 /// The organizations and bands of the signed-in user (ADR-0005, ADR-0017).

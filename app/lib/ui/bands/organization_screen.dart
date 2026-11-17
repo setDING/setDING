@@ -50,85 +50,87 @@ class OrganizationScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(org.name)),
-      body: ListView(
-        padding: const EdgeInsets.only(bottom: 32),
-        children: [
-          if (org.isAdmin)
-            ListTile(
-              leading: const Icon(Icons.edit_outlined),
-              title: Text(l10n.orgName),
-              subtitle: Text(org.name),
-              onTap: () async {
-                final name = await askText(
-                  context,
-                  title: l10n.orgName,
-                  initial: org.name,
-                );
-                if (name == null || name == org.name || !context.mounted) {
-                  return;
-                }
-                await runBandAction(
-                  context,
-                  () => service.renameOrganization(organizationId, name),
-                );
-              },
-            ),
-          ListTile(
-            leading: const Icon(Icons.library_music_outlined),
-            subtitle: Text(l10n.orgSongsShared),
-          ),
-          header(l10n.orgBands),
-          for (final b in bands)
-            ListTile(
-              leading: const Icon(Icons.groups_outlined),
-              title: Text(b.name),
-              subtitle: Text(bandRoleLabel(l10n, b)),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (_) => BandScreen(bandId: b.id),
-                ),
-              ),
-            ),
-          header(l10n.orgPeople),
-          for (final p in people)
-            _PersonTile(
-              person: p,
-              isAdmin: org.isAdmin,
-              isMe: p.userId == me.id,
-            ),
-          if (org.isAdmin)
-            InvitesSection(organizationId: organizationId)
-          else
-            ListTile(
-              leading: const Icon(Icons.person_add_alt),
-              subtitle: Text(l10n.inviteAskAdmin),
-            ),
-          if (own != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
-              child: OutlinedButton.icon(
-                key: const Key('org-leave'),
-                icon: const Icon(Icons.logout),
-                label: Text(l10n.orgLeave),
-                onPressed: () async {
-                  final ok = await confirm(
+      body: RefreshOnOpen(
+        child: ListView(
+          padding: const EdgeInsets.only(bottom: 32),
+          children: [
+            if (org.isAdmin)
+              ListTile(
+                leading: const Icon(Icons.edit_outlined),
+                title: Text(l10n.orgName),
+                subtitle: Text(org.name),
+                onTap: () async {
+                  final name = await askText(
                     context,
-                    title: l10n.orgLeaveTitle(org.name),
-                    message: l10n.orgLeaveMessage,
-                    action: l10n.orgLeave,
+                    title: l10n.orgName,
+                    initial: org.name,
                   );
-                  if (!ok || !context.mounted) return;
-                  final left = await runBandAction(
+                  if (name == null || name == org.name || !context.mounted) {
+                    return;
+                  }
+                  await runBandAction(
                     context,
-                    () => service.removeOrgMember(own.id),
+                    () => service.renameOrganization(organizationId, name),
                   );
-                  if (left && context.mounted) Navigator.pop(context);
                 },
               ),
+            ListTile(
+              leading: const Icon(Icons.library_music_outlined),
+              subtitle: Text(l10n.orgSongsShared),
             ),
-        ],
+            header(l10n.orgBands),
+            for (final b in bands)
+              ListTile(
+                leading: const Icon(Icons.groups_outlined),
+                title: Text(b.name),
+                subtitle: Text(bandRoleLabel(l10n, b)),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) => BandScreen(bandId: b.id),
+                  ),
+                ),
+              ),
+            header(l10n.orgPeople),
+            for (final p in people)
+              _PersonTile(
+                person: p,
+                isAdmin: org.isAdmin,
+                isMe: p.userId == me.id,
+              ),
+            if (org.isAdmin)
+              InvitesSection(organizationId: organizationId)
+            else
+              ListTile(
+                leading: const Icon(Icons.person_add_alt),
+                subtitle: Text(l10n.inviteAskAdmin),
+              ),
+            if (own != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+                child: OutlinedButton.icon(
+                  key: const Key('org-leave'),
+                  icon: const Icon(Icons.logout),
+                  label: Text(l10n.orgLeave),
+                  onPressed: () async {
+                    final ok = await confirm(
+                      context,
+                      title: l10n.orgLeaveTitle(org.name),
+                      message: l10n.orgLeaveMessage,
+                      action: l10n.orgLeave,
+                    );
+                    if (!ok || !context.mounted) return;
+                    final left = await runBandAction(
+                      context,
+                      () => service.removeOrgMember(own.id),
+                    );
+                    if (left && context.mounted) Navigator.pop(context);
+                  },
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
