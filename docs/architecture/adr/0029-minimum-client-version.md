@@ -1,6 +1,6 @@
 # ADR-0029: Minimum client version enforced by the server
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-17
 
 ## Context
@@ -95,6 +95,7 @@ So, for a release with an incompatible change
 
 - 2026-11-17: Proposed (#339). Resolves the open point "minimum client version" of
   ADR-0028.
+- 2026-11-17: Accepted by the owner (#341).
 
 ## Open points
 
