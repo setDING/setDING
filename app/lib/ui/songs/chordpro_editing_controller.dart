@@ -39,6 +39,18 @@ class ChordProEditingController extends TextEditingController {
     notifyListeners();
   }
 
+  String? _sectioned;
+  List<SourceSection> _sections = const [];
+
+  /// Section environments of the current text, for their backgrounds.
+  List<SourceSection> get sections {
+    if (_sectioned != text) {
+      _sectioned = text;
+      _sections = sourceSections(text, tokens: tokens);
+    }
+    return _sections;
+  }
+
   /// The bracket next to the cursor and its partner (#37), if any.
   BracketMatch? get bracketMatch {
     final sel = selection;
