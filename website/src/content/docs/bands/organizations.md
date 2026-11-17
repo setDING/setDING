@@ -11,7 +11,8 @@ der Organisation, die zusammen spielt; jede Band hat ihre eigenen Sets und
 Band-Arrangements. Alle Bands einer Organisation teilen dieselbe Songbibliothek.
 
 Für Organisationen und Bands brauchst du ein Konto: **Einstellungen** → **Konto &
-Synchronisation** → **Anmelden** (dort auch **Konto erstellen**). Ohne Konto
+Synchronisation** → **Anmelden** (dort auch **Konto erstellen**, siehe
+[Konto und Synchronisation](/settings/account/)). Ohne Konto
 arbeitet setDING nur auf deinem Gerät, in der Band **Auf diesem Gerät**.
 
 ## Bands verwalten

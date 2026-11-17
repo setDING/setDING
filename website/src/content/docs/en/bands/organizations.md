@@ -11,7 +11,8 @@ organization who play together; every band has its own sets and band arrangement
 All bands of an organization share the same song library.
 
 Organizations and bands need an account: **Settings** → **Account & sync** → **Sign
-in** (where you can also **Create account**). Without an account, setDING works on
+in** (where you can also **Create account**, see
+[Account and sync](/en/settings/account/)). Without an account, setDING works on
 your device only, in the band **On this device**.
 
 ## Manage bands
