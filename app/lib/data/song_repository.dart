@@ -21,6 +21,7 @@ class SongMeta {
     this.sortArtist,
     this.tags = const [],
     this.searchText,
+    this.sequence,
   });
 
   factory SongMeta.fromSource(String source) {
@@ -32,6 +33,7 @@ class SongMeta {
       tempo: song.tempo,
       sortTitle: blankToNull(song.sortTitle),
       sortArtist: blankToNull(song.sortArtist),
+      sequence: cp.findSequence(source),
       tags: [
         for (final t in song.tags)
           if (t.trim().isNotEmpty) t.trim(),
@@ -59,6 +61,9 @@ class SongMeta {
 
   /// Lyrics and comments without chords and markup (full-text search).
   final String? searchText;
+
+  /// Raw `{x_sequence}` value (song list).
+  final String? sequence;
 
   /// Tags as stored in the database (see `Songs.tags`).
   String? get tagsColumn => tags.isEmpty ? null : '\n${tags.join('\n')}\n';
@@ -124,6 +129,7 @@ class SongListEntry {
     required this.title,
     this.artist,
     this.songKey,
+    this.sequence,
     this.tags,
   });
 
@@ -131,6 +137,9 @@ class SongListEntry {
   final String title;
   final String? artist;
   final String? songKey;
+
+  /// Raw `{x_sequence}` value of the song.
+  final String? sequence;
 
   /// As stored in the database (see `Songs.tags`).
   final String? tags;
@@ -144,10 +153,11 @@ class SongListEntry {
       other.title == title &&
       other.artist == artist &&
       other.songKey == songKey &&
+      other.sequence == sequence &&
       other.tags == tags;
 
   @override
-  int get hashCode => Object.hash(id, title, artist, songKey, tags);
+  int get hashCode => Object.hash(id, title, artist, songKey, sequence, tags);
 }
 
 /// Access to songs, attachments and personal overlays of one song library:
@@ -207,7 +217,7 @@ class SongRepository {
   Stream<List<SongListEntry>> watchSongList({String query = '', String? tag}) {
     final s = db.songs;
     final q = db.selectOnly(s)
-      ..addColumns([s.id, s.title, s.artist, s.songKey, s.tags])
+      ..addColumns([s.id, s.title, s.artist, s.songKey, s.sequence, s.tags])
       ..where(_filter(query, tag))
       ..orderBy([_order]);
     return q.watch().map(
@@ -218,6 +228,7 @@ class SongRepository {
             title: r.read(s.title)!,
             artist: r.read(s.artist),
             songKey: r.read(s.songKey),
+            sequence: r.read(s.sequence),
             tags: r.read(s.tags),
           ),
       ],
@@ -279,6 +290,7 @@ class SongRepository {
               title: meta.title ?? blankToNull(title) ?? '',
               artist: Value(meta.artist ?? blankToNull(artist)),
               songKey: Value(meta.key),
+              sequence: Value(meta.sequence),
               tempo: Value(meta.tempo),
               sortTitle: Value(meta.sortTitle),
               sortArtist: Value(meta.sortArtist),
@@ -306,6 +318,7 @@ class SongRepository {
           title: Value(meta.title ?? existing.title),
           artist: Value(meta.artist ?? existing.artist),
           songKey: Value(meta.key),
+          sequence: Value(meta.sequence),
           tempo: Value(meta.tempo),
           sortTitle: Value(meta.sortTitle),
           sortArtist: Value(meta.sortArtist),
@@ -362,6 +375,7 @@ class SongRepository {
             sortArtist: Value(meta.sortArtist),
             tags: Value(meta.tagsColumn),
             searchText: Value(meta.searchText),
+            sequence: Value(meta.sequence),
           ),
         );
       }

@@ -217,7 +217,9 @@ void main() {
 
   test('the song list has what lists show, filtered like the songs', () async {
     final a = await songs.createSong(
-      source: '{title: Alpha}\n{artist: Ann}\n{key: G}\n{tag: Rock}\n[G]sun',
+      source:
+          '{title: Alpha}\n{artist: Ann}\n{key: G}\n{tag: Rock}\n'
+          '{x_sequence: V, C x2}\n[G]sun',
     );
     await songs.createSong(source: '{title: Beta}\n[C]rain');
     final list = await songs.watchSongList().first;
@@ -229,9 +231,11 @@ void main() {
         title: 'Alpha',
         artist: 'Ann',
         songKey: 'G',
+        sequence: 'V, C x2',
         tags: '\nRock\n',
       ),
     );
+    expect(list.last.sequence, isNull);
     expect(list.first.tagList, ['Rock']);
     expect(
       (await songs.watchSongList(query: 'rain').first).map((s) => s.title),

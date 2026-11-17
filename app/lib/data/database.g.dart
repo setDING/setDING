@@ -348,6 +348,17 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _sequenceMeta = const VerificationMeta(
+    'sequence',
+  );
+  @override
+  late final GeneratedColumn<String> sequence = GeneratedColumn<String>(
+    'sequence',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _sortTitleMeta = const VerificationMeta(
     'sortTitle',
   );
@@ -459,6 +470,7 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
     artist,
     songKey,
     tempo,
+    sequence,
     sortTitle,
     sortArtist,
     searchText,
@@ -527,6 +539,12 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
       context.handle(
         _tempoMeta,
         tempo.isAcceptableOrUnknown(data['tempo']!, _tempoMeta),
+      );
+    }
+    if (data.containsKey('sequence')) {
+      context.handle(
+        _sequenceMeta,
+        sequence.isAcceptableOrUnknown(data['sequence']!, _sequenceMeta),
       );
     }
     if (data.containsKey('sort_title')) {
@@ -622,6 +640,10 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
         DriftSqlType.int,
         data['${effectivePrefix}tempo'],
       ),
+      sequence: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sequence'],
+      ),
       sortTitle: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}sort_title'],
@@ -683,6 +705,9 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
   final String? songKey;
   final int? tempo;
 
+  /// Raw `{x_sequence}` value, for the song list (schema 13).
+  final String? sequence;
+
   /// `{sorttitle}` / `{sortartist}` for sorting (schema 2).
   final String? sortTitle;
   final String? sortArtist;
@@ -712,6 +737,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     this.artist,
     this.songKey,
     this.tempo,
+    this.sequence,
     this.sortTitle,
     this.sortArtist,
     this.searchText,
@@ -737,6 +763,9 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     }
     if (!nullToAbsent || tempo != null) {
       map['tempo'] = Variable<int>(tempo);
+    }
+    if (!nullToAbsent || sequence != null) {
+      map['sequence'] = Variable<String>(sequence);
     }
     if (!nullToAbsent || sortTitle != null) {
       map['sort_title'] = Variable<String>(sortTitle);
@@ -777,6 +806,9 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       tempo: tempo == null && nullToAbsent
           ? const Value.absent()
           : Value(tempo),
+      sequence: sequence == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sequence),
       sortTitle: sortTitle == null && nullToAbsent
           ? const Value.absent()
           : Value(sortTitle),
@@ -812,6 +844,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       artist: serializer.fromJson<String?>(json['artist']),
       songKey: serializer.fromJson<String?>(json['songKey']),
       tempo: serializer.fromJson<int?>(json['tempo']),
+      sequence: serializer.fromJson<String?>(json['sequence']),
       sortTitle: serializer.fromJson<String?>(json['sortTitle']),
       sortArtist: serializer.fromJson<String?>(json['sortArtist']),
       searchText: serializer.fromJson<String?>(json['searchText']),
@@ -834,6 +867,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       'artist': serializer.toJson<String?>(artist),
       'songKey': serializer.toJson<String?>(songKey),
       'tempo': serializer.toJson<int?>(tempo),
+      'sequence': serializer.toJson<String?>(sequence),
       'sortTitle': serializer.toJson<String?>(sortTitle),
       'sortArtist': serializer.toJson<String?>(sortArtist),
       'searchText': serializer.toJson<String?>(searchText),
@@ -854,6 +888,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     Value<String?> artist = const Value.absent(),
     Value<String?> songKey = const Value.absent(),
     Value<int?> tempo = const Value.absent(),
+    Value<String?> sequence = const Value.absent(),
     Value<String?> sortTitle = const Value.absent(),
     Value<String?> sortArtist = const Value.absent(),
     Value<String?> searchText = const Value.absent(),
@@ -871,6 +906,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     artist: artist.present ? artist.value : this.artist,
     songKey: songKey.present ? songKey.value : this.songKey,
     tempo: tempo.present ? tempo.value : this.tempo,
+    sequence: sequence.present ? sequence.value : this.sequence,
     sortTitle: sortTitle.present ? sortTitle.value : this.sortTitle,
     sortArtist: sortArtist.present ? sortArtist.value : this.sortArtist,
     searchText: searchText.present ? searchText.value : this.searchText,
@@ -892,6 +928,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       artist: data.artist.present ? data.artist.value : this.artist,
       songKey: data.songKey.present ? data.songKey.value : this.songKey,
       tempo: data.tempo.present ? data.tempo.value : this.tempo,
+      sequence: data.sequence.present ? data.sequence.value : this.sequence,
       sortTitle: data.sortTitle.present ? data.sortTitle.value : this.sortTitle,
       sortArtist: data.sortArtist.present
           ? data.sortArtist.value
@@ -918,6 +955,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
           ..write('artist: $artist, ')
           ..write('songKey: $songKey, ')
           ..write('tempo: $tempo, ')
+          ..write('sequence: $sequence, ')
           ..write('sortTitle: $sortTitle, ')
           ..write('sortArtist: $sortArtist, ')
           ..write('searchText: $searchText, ')
@@ -940,6 +978,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     artist,
     songKey,
     tempo,
+    sequence,
     sortTitle,
     sortArtist,
     searchText,
@@ -961,6 +1000,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
           other.artist == this.artist &&
           other.songKey == this.songKey &&
           other.tempo == this.tempo &&
+          other.sequence == this.sequence &&
           other.sortTitle == this.sortTitle &&
           other.sortArtist == this.sortArtist &&
           other.searchText == this.searchText &&
@@ -980,6 +1020,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
   final Value<String?> artist;
   final Value<String?> songKey;
   final Value<int?> tempo;
+  final Value<String?> sequence;
   final Value<String?> sortTitle;
   final Value<String?> sortArtist;
   final Value<String?> searchText;
@@ -998,6 +1039,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     this.artist = const Value.absent(),
     this.songKey = const Value.absent(),
     this.tempo = const Value.absent(),
+    this.sequence = const Value.absent(),
     this.sortTitle = const Value.absent(),
     this.sortArtist = const Value.absent(),
     this.searchText = const Value.absent(),
@@ -1017,6 +1059,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     this.artist = const Value.absent(),
     this.songKey = const Value.absent(),
     this.tempo = const Value.absent(),
+    this.sequence = const Value.absent(),
     this.sortTitle = const Value.absent(),
     this.sortArtist = const Value.absent(),
     this.searchText = const Value.absent(),
@@ -1039,6 +1082,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     Expression<String>? artist,
     Expression<String>? songKey,
     Expression<int>? tempo,
+    Expression<String>? sequence,
     Expression<String>? sortTitle,
     Expression<String>? sortArtist,
     Expression<String>? searchText,
@@ -1058,6 +1102,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
       if (artist != null) 'artist': artist,
       if (songKey != null) 'song_key': songKey,
       if (tempo != null) 'tempo': tempo,
+      if (sequence != null) 'sequence': sequence,
       if (sortTitle != null) 'sort_title': sortTitle,
       if (sortArtist != null) 'sort_artist': sortArtist,
       if (searchText != null) 'search_text': searchText,
@@ -1079,6 +1124,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     Value<String?>? artist,
     Value<String?>? songKey,
     Value<int?>? tempo,
+    Value<String?>? sequence,
     Value<String?>? sortTitle,
     Value<String?>? sortArtist,
     Value<String?>? searchText,
@@ -1098,6 +1144,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
       artist: artist ?? this.artist,
       songKey: songKey ?? this.songKey,
       tempo: tempo ?? this.tempo,
+      sequence: sequence ?? this.sequence,
       sortTitle: sortTitle ?? this.sortTitle,
       sortArtist: sortArtist ?? this.sortArtist,
       searchText: searchText ?? this.searchText,
@@ -1134,6 +1181,9 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     }
     if (tempo.present) {
       map['tempo'] = Variable<int>(tempo.value);
+    }
+    if (sequence.present) {
+      map['sequence'] = Variable<String>(sequence.value);
     }
     if (sortTitle.present) {
       map['sort_title'] = Variable<String>(sortTitle.value);
@@ -1178,6 +1228,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
           ..write('artist: $artist, ')
           ..write('songKey: $songKey, ')
           ..write('tempo: $tempo, ')
+          ..write('sequence: $sequence, ')
           ..write('sortTitle: $sortTitle, ')
           ..write('sortArtist: $sortArtist, ')
           ..write('searchText: $searchText, ')
@@ -6788,6 +6839,7 @@ typedef $$SongsTableCreateCompanionBuilder = SongsCompanion Function({
   Value<String?> artist,
   Value<String?> songKey,
   Value<int?> tempo,
+  Value<String?> sequence,
   Value<String?> sortTitle,
   Value<String?> sortArtist,
   Value<String?> searchText,
@@ -6807,6 +6859,7 @@ typedef $$SongsTableUpdateCompanionBuilder = SongsCompanion Function({
   Value<String?> artist,
   Value<String?> songKey,
   Value<int?> tempo,
+  Value<String?> sequence,
   Value<String?> sortTitle,
   Value<String?> sortArtist,
   Value<String?> searchText,
@@ -6940,6 +6993,11 @@ class $$SongsTableFilterComposer extends Composer<_$AppDatabase, $SongsTable> {
 
   ColumnFilters<int> get tempo => $composableBuilder(
     column: $table.tempo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sequence => $composableBuilder(
+    column: $table.sequence,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7133,6 +7191,11 @@ class $$SongsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get sequence => $composableBuilder(
+    column: $table.sequence,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get sortTitle => $composableBuilder(
     column: $table.sortTitle,
     builder: (column) => ColumnOrderings(column),
@@ -7210,6 +7273,9 @@ class $$SongsTableAnnotationComposer
 
   GeneratedColumn<int> get tempo =>
       $composableBuilder(column: $table.tempo, builder: (column) => column);
+
+  GeneratedColumn<String> get sequence =>
+      $composableBuilder(column: $table.sequence, builder: (column) => column);
 
   GeneratedColumn<String> get sortTitle =>
       $composableBuilder(column: $table.sortTitle, builder: (column) => column);
@@ -7383,6 +7449,7 @@ class $$SongsTableTableManager
                 Value<String?> artist = const Value.absent(),
                 Value<String?> songKey = const Value.absent(),
                 Value<int?> tempo = const Value.absent(),
+                Value<String?> sequence = const Value.absent(),
                 Value<String?> sortTitle = const Value.absent(),
                 Value<String?> sortArtist = const Value.absent(),
                 Value<String?> searchText = const Value.absent(),
@@ -7401,6 +7468,7 @@ class $$SongsTableTableManager
                 artist: artist,
                 songKey: songKey,
                 tempo: tempo,
+                sequence: sequence,
                 sortTitle: sortTitle,
                 sortArtist: sortArtist,
                 searchText: searchText,
@@ -7421,6 +7489,7 @@ class $$SongsTableTableManager
                 Value<String?> artist = const Value.absent(),
                 Value<String?> songKey = const Value.absent(),
                 Value<int?> tempo = const Value.absent(),
+                Value<String?> sequence = const Value.absent(),
                 Value<String?> sortTitle = const Value.absent(),
                 Value<String?> sortArtist = const Value.absent(),
                 Value<String?> searchText = const Value.absent(),
@@ -7439,6 +7508,7 @@ class $$SongsTableTableManager
                 artist: artist,
                 songKey: songKey,
                 tempo: tempo,
+                sequence: sequence,
                 sortTitle: sortTitle,
                 sortArtist: sortArtist,
                 searchText: searchText,
