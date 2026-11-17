@@ -91,4 +91,60 @@ void main() {
       expect(codes('{sot}\ne|--|\n{eot}\n{sog}\n| C |\n{eog}'), isEmpty);
     });
   });
+
+  group('filterBySequence', () {
+    const source =
+        '{c: Capo 2}\n'
+        '{start_of_verse: Intro}\na\n{end_of_verse}\n'
+        '{sov}\nv1\n{eov}\n'
+        '{soc}\nc\n{eoc}\n'
+        '{sov}\nv2\n{eov}\n'
+        '{chorus}\n'
+        '{sov}\nv3\n{eov}\n'
+        '{sob}\nb\n{eob}\n'
+        '{start_of_verse: Coda}\nx\n{end_of_verse}\n'
+        '{sot}\ne|--|\n{eot}';
+
+    List<String> shown(SequenceSelection s) => [
+      for (final e in s.song.elements)
+        switch (e) {
+          Section(lines: [LyricLine l, ...]) => l.text,
+          Section(lines: [CommentLine c, ...]) => c.text,
+          Section(lines: [RawLine r, ...]) => r.text,
+          ChorusRecall() => 'recall',
+          _ => '?',
+        },
+    ];
+
+    test('keeps only the parts of the sequence, in document order', () {
+      final s = filterBySequence(
+        parseChordPro(source),
+        parseSequence('V1, C x2, V2, C, Coda'),
+      );
+      expect(shown(s), ['Capo 2', 'v1', 'c', 'v2', 'recall', 'x', 'e|--|']);
+      expect(s.hidden, ['I', 'V3', 'B']);
+    });
+
+    test('a part without number matches all its numbers', () {
+      final s = filterBySequence(parseChordPro(source), parseSequence('V'));
+      expect(shown(s), ['Capo 2', 'v1', 'v2', 'v3', 'e|--|']);
+      expect(s.hidden, ['I', 'C', 'B', 'Coda']);
+    });
+
+    test('unchanged without sequence or without any matching part', () {
+      final song = parseChordPro(source);
+      for (final sequence in ['', 'Foo, Bar', 'V1, V2, C, I, V3, B, Coda']) {
+        final s = filterBySequence(song, parseSequence(sequence));
+        expect(s.song, same(song), reason: sequence);
+        expect(s.hidden, isEmpty, reason: sequence);
+      }
+    });
+
+    test('keeps the meta data', () {
+      final song = parseChordPro('{title: T}\n{key: G}\n$source');
+      final s = filterBySequence(song, parseSequence('C'));
+      expect(s.song.title, 'T');
+      expect(s.song.keyName, 'G');
+    });
+  });
 }

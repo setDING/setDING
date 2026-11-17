@@ -151,7 +151,17 @@ const sequenceAbbreviations = {
 /// sections of the same part are numbered when there are several.
 /// Unknown labels are kept as written (e.g. `Coda`).
 List<SequenceItem> songParts(Song song) {
-  final found = <({SequencePart part, int? number, String text})>[];
+  final result = <String, SequenceItem>{};
+  for (final item in _sectionParts(song).values) {
+    result.putIfAbsent(item.code, () => item);
+  }
+  return result.values.toList();
+}
+
+/// The part of each section of [song] that is one (see [songParts]).
+Map<Section, SequenceItem> _sectionParts(Song song) {
+  final found =
+      <({Section section, SequencePart part, int? number, String text})>[];
   for (final section in song.sections) {
     final label = section.label?.split('\n').first.trim();
     final text = (label != null && label.isNotEmpty)
@@ -165,7 +175,12 @@ List<SequenceItem> songParts(Song song) {
           };
     if (text.isEmpty) continue;
     final item = _parseItem(text);
-    found.add((part: item.part, number: item.number, text: text));
+    found.add((
+      section: section,
+      part: item.part,
+      number: item.number,
+      text: text,
+    ));
   }
   // Number unlabelled repeats of a part: Verse, Verse → V1, V2.
   final unnumbered = <SequencePart, int>{};
@@ -175,21 +190,90 @@ List<SequenceItem> songParts(Song song) {
     }
   }
   final counters = <SequencePart, int>{};
-  final result = <String, SequenceItem>{};
-  for (final f in found) {
-    var number = f.number;
-    if (f.part != SequencePart.other &&
-        number == null &&
-        unnumbered[f.part]! > 1) {
-      number = counters[f.part] = (counters[f.part] ?? 0) + 1;
-    }
-    final code = f.part == SequencePart.other
-        ? f.text
-        : '${sequenceAbbreviations[f.part]}${number ?? ''}';
-    result.putIfAbsent(
-      code,
-      () => SequenceItem(code: code, part: f.part, number: number),
-    );
+  return {
+    for (final f in found)
+      f.section: () {
+        var number = f.number;
+        if (f.part != SequencePart.other &&
+            number == null &&
+            unnumbered[f.part]! > 1) {
+          number = counters[f.part] = (counters[f.part] ?? 0) + 1;
+        }
+        final code = f.part == SequencePart.other
+            ? f.text
+            : '${sequenceAbbreviations[f.part]}${number ?? ''}';
+        return SequenceItem(code: code, part: f.part, number: number);
+      }(),
+  };
+}
+
+/// [song] reduced to the parts of a [sequence], see [filterBySequence].
+class SequenceSelection {
+  const SequenceSelection(this.song, this.hidden);
+
+  /// The song with only the sections of the sequence.
+  final Song song;
+
+  /// Codes of the hidden parts (`V3`, `B`, `Coda`), in document order and
+  /// without duplicates; empty when nothing is hidden.
+  final List<String> hidden;
+}
+
+/// Keeps only the sections of [song] whose part appears in [sequence]
+/// (`V` matches every verse, `V2` only the second one). Sections that are
+/// no part (no label, tab, grid) stay, and so do delegated environments; a
+/// chorus recall stays when the sequence has a chorus. Order and
+/// repetitions of the sequence are not applied: the song stays in
+/// document order.
+///
+/// When the sequence is empty or matches none of the song's parts (e.g.
+/// unknown codes), the song is returned unchanged.
+SequenceSelection filterBySequence(Song song, List<SequenceItem> sequence) {
+  final parts = _sectionParts(song);
+  if (sequence.isEmpty || parts.isEmpty) {
+    return SequenceSelection(song, const []);
   }
-  return result.values.toList();
+  bool inSequence(SequenceItem part) => sequence.any(
+    (item) => part.part == SequencePart.other
+        ? item.part == SequencePart.other &&
+              _otherKey(item.code) == _otherKey(part.code)
+        : item.part == part.part &&
+              (item.number == null ||
+                  part.number == null ||
+                  item.number == part.number),
+  );
+  if (!parts.values.any(inSequence)) return SequenceSelection(song, const []);
+  final hasChorus = sequence.any((i) => i.part == SequencePart.chorus);
+  final hidden = <String>{};
+  final elements = <SongElement>[];
+  for (final element in song.elements) {
+    final part = element is Section ? parts[element] : null;
+    if (part != null && !inSequence(part)) {
+      hidden.add(part.code);
+    } else if (element is ChorusRecall && !hasChorus) {
+      hidden.add(sequenceAbbreviations[SequencePart.chorus]!);
+    } else {
+      elements.add(element);
+    }
+  }
+  if (hidden.isEmpty) return SequenceSelection(song, const []);
+  return SequenceSelection(
+    Song(
+      meta: song.meta,
+      elements: elements,
+      definitions: song.definitions,
+      columns: song.columns,
+      diagrams: song.diagrams,
+      leadingTranspose: song.leadingTranspose,
+    ),
+    hidden.toList(),
+  );
+}
+
+/// Name and number of an unknown part, without repetitions: `Coda x2` →
+/// `coda`.
+String _otherKey(String code) {
+  final m = _item.firstMatch(code.trim());
+  if (m == null) return code.trim().toLowerCase();
+  return '${m.group(2)!.toLowerCase()}${m.group(3) ?? ''}';
 }
