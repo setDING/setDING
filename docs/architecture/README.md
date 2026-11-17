@@ -47,6 +47,7 @@ A user can be a member of several organizations and bands; roles are defined per
 | Management | **One app with roles** instead of a separate management application | [ADR-0005](adr/0005-single-app-with-roles.md) |
 | Personal settings | **Overlay model**: personal adjustments never change the shared ChordPro text; per user (`local` for the local library), synced with the account | [ADR-0006](adr/0006-personal-overlays.md), [ADR-0020](adr/0020-overlays-per-user.md) |
 | Band arrangements | New layer between song and set item: per band and song a key (transposition), sequence and tempo, maintained by band leaders and set planners, synced per band with last writer wins; set item transposition becomes relative to the band's key | [ADR-0025](adr/0025-band-arrangements.md) |
+| Drummer mode | Drums instrument preset; beat display and count-in in live mode; **click on the in-ear** from a looped one-bar audio buffer (`flutter_soloud`, the audio is the clock), latency compensation; automatic or manual start, long press of the forward pedal or Enter; tempo on stage only for the evening; song map layout for drums | [ADR-0026](adr/0026-drummer-mode.md) |
 | Live mode | Page turns by tap, swipe, Bluetooth page turner or keyboard, wakelock (set again on return to the app, a failure is shown), next song prepared ahead in idle time (no work in the frames of a turn), progress bar of the set with the pages of the current song, stage appearance (dark/black) independent of the app theme; each member navigates independently (**no leader sync**) | [ADR-0007](adr/0007-live-mode.md) |
 | Localization | UI in **German (Swiss, `de-CH`) and English**, selectable in the settings | [ADR-0008](adr/0008-localization.md) |
 | Sheet music | **PDF attachments** per song, synced and available offline, shown in live mode | [ADR-0009](adr/0009-pdf-attachments.md) |
@@ -198,7 +199,7 @@ Notes:
 | **Phase 1** | Backend, login, bands & roles (several admins, several bands per user), sync of songs, sets and PDF files incl. conflict handling |
 | **Phase 2** ✅ | Web client for management at `app.setding.app` (ADR-0018; done in #27), synced personal overlays (per user, ADR-0020; done in #81, #82) |
 | **Towards version 1** | Re-enable CI as a required check on every PR and push to `main` (manual-only during early development, ADR-0010), branch protection; release builds for Linux, Android and Windows exist (ADR-0021), iOS open |
-| **Later** | Configurable page turner key mapping, freehand annotations (stylus), metronome/count-in, MIDI control |
+| **Later** | Configurable page turner key mapping, freehand annotations (stylus), MIDI control; drummer mode with beat display, count-in and click (ADR-0026, accepted, #325) |
 
 ### MVP status (2026-11-14)
 
@@ -277,6 +278,7 @@ See "Open points" in the individual ADRs. The most important:
 20. ~~Finer-grained roles?~~ → ADR-0023 (accepted, #207): organization librarian, band set planner, band leaders create songs and edit only their own (until someone else changes them), invitations by band leaders into their band, `members_can_edit_songs` replaced by the librarian role, no guest role (substitutes are added as band members), organization admins keep all rights; implemented in #215. Open: band arrangement as a follow-up ADR (#216); suggestion workflow for song corrections
 21. ~~Who may create accounts and organizations?~~ → Operator setting `SETDING_REGISTRATION` = `invite_only` (default) or `open`, founder invitations for new organizations by the operator only, optional email verification (`SETDING_EMAIL_VERIFICATION`), no in-app super-admin (ADR-0024, accepted, #209; implemented in #213). Open: limits per organization
 22. ~~How do bands adapt shared songs?~~ → ADR-0025 (accepted, #216): a band arrangement per band and song (key, sequence, tempo) between song and set item, applied in sets and live mode from a set; the song screen shows it only in its own card (#227), now a side panel behind a band icon (#233); capo stays personal, no band notes; implemented in #221
+23. ~~What does a drummer need in live mode?~~ → ADR-0026 (accepted, #325): drums preset, beat display and count-in, click on the in-ear with the audio as the clock and latency compensation, automatic or manual start, long press of the forward pedal or Enter, tempo on stage only for the evening, song map for drums only; BPM per dotted quarter in compound meters, `{x_time_grouping}` for odd meters. Open: background behaviour, bar counts per part
 
 ## 10. ADR index
 
@@ -307,5 +309,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0023](adr/0023-finer-grained-roles.md) | Finer-grained roles for organizations and bands | Accepted |
 | [0024](adr/0024-registration-mode.md) | Registration mode set by the server operator | Accepted |
 | [0025](adr/0025-band-arrangements.md) | Band arrangements between song and personal overlay | Accepted |
+| [0026](adr/0026-drummer-mode.md) | Drummer mode with beat display, count-in and click | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.
