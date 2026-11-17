@@ -463,6 +463,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get liveMorePages => 'More pages of the song follow';
+
+  @override
+  String get liveSongEnd => 'End of the song';
+
+  @override
   String livePosition(int current, int total) {
     return '$current / $total';
   }
@@ -707,6 +713,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsPageTurnHint =>
       'Tap the left or right side of the screen to go back or forward. Page turner (foot pedal) and keyboard: right arrow, down arrow, Page Down and Space forward, left arrow, up arrow and Page Up back.';
+
+  @override
+  String get settingsPageHint => 'Show more pages at a glance';
+
+  @override
+  String get settingsPageHintHint =>
+      'A folded corner at the bottom right shows that more pages of the song follow; on its last page a final barline marks the end.';
 
   @override
   String get settingsLiveAppearance => 'Appearance on stage';

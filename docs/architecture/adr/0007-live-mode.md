@@ -47,6 +47,13 @@ song, all tablets follow automatically. We evaluated whether this is needed.
   (or swiping left/right) turns the pages of the song before turning to the next/previous song; the bottom bar shows the page (e.g. "Page 1/2").
   The *half page* setting does not apply to song pages. Scrolling is used only if the song does not fit even on pages
   (a single section taller than the page at the minimum font size), or when fitting is switched off.
+- **More pages at a glance:** the bottom right corner of the page says whether more of the current song follows, so it
+  is seen from the corner of the eye instead of read in the bottom bar. While a tap or key would still turn within the
+  song (a further song page, a scrolled song not at its end, a further PDF page or spread), a **folded corner** in the
+  accent colour sits in the corner; on the last page a quiet **final barline** (thin and thick line, in the page
+  margin) marks the end of the song. Pauses and texts show neither. It is an overlay above ChordPro and PDF alike and
+  never takes taps, so the right tap zone works under it. On by default, can be switched off in the live settings
+  ("Show more pages at a glance").
 - **Chords or Nashville on stage:** a toggle in the middle of the control bar switches the current song between chord
   names and Nashville numbers (personal per-song Nashville overlay, ADR-0006); it is disabled when the song has no key.
   On narrow screens it gets a row of its own above the other controls.
@@ -61,7 +68,7 @@ song, all tablets follow automatically. We evaluated whether this is needed.
   does, into as many columns as the width allows (each at least 220 px and wide enough for the chord lines) and it
   scrolls.
 - **Settings:** fit to screen on/off, maximum number of columns (automatic = up to 4, or 1/2/3), repeated chorus
-  (automatic / always in full / always as label), base font size, appearance on stage.
+  (automatic / always in full / always as label), base font size, appearance on stage, more pages at a glance.
 - **Appearance on stage:** a per-device setting independent of the app theme: *as app* (default), *dark* (also when
   the app is light) or *black* (true black page, very dark bars, e.g. for OLED screens). The live view, its control
   bar, the bottom bar, the set overview and the PDF background follow it. Chords are drawn in a stronger colour than
@@ -122,6 +129,7 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-17: Down arrow also turns forward and up arrow back, for page turners switched to an up/down mode, with the same behaviour as the other keys (scroll position first, key repeat ignored, text fields of dialogs keep them). Answers the key mapping part of the open point on page turners: a fixed mapping covering both modes instead of a configurable one (issue #286).
 - 2026-11-17: The stage follows the accent colour chosen in the settings: on light the chords use a deep tone of the accent (brand red `#852309` by default), the dark and black stage use the accent's dark scheme; chords on dark and black stay amber for every accent (issue #300).
 - 2026-11-17: The screen stays on reliably: the wake lock counts the open live views and applies changes in order, is set again when the app returns to the foreground, and a wake lock that does not hold is shown in the bottom bar (issue #294).
+- 2026-11-17: A folded corner at the bottom right shows that more of the song follows (song pages, scrolling, PDF pages and spreads), a final barline marks its last page; can be switched off in the live settings (issue #305).
 
 ## Open points
 

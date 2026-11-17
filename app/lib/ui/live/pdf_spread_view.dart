@@ -18,12 +18,28 @@ class PdfSpreadController extends ChangeNotifier {
 
   bool get isReady => _pageCount > 0;
 
+  /// Called while the spread is built; listeners (the page hint of live
+  /// mode) are told about a new page count after the frame.
   void _attach(int pageCount) {
+    final changed = pageCount != _pageCount;
     _pageCount = pageCount;
     if (_first > pageCount) {
       _first = pageCount.isOdd ? pageCount : pageCount - 1;
     }
     if (_first < 1) _first = 1;
+    if (changed) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_disposed) notifyListeners();
+      });
+    }
+  }
+
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 
   void _detach() => _pageCount = 0;

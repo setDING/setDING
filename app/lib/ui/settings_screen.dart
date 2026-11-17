@@ -341,6 +341,12 @@ class _CategoryContent extends ConsumerWidget {
           (v) => notifier.update((s) => s.copyWith(liveAppearance: v)),
           hint: l10n.settingsLiveAppearanceHint,
         ),
+        SwitchListTile(
+          title: Text(l10n.settingsPageHint),
+          subtitle: Text(l10n.settingsPageHintHint),
+          value: s.pageHint,
+          onChanged: (v) => notifier.update((s) => s.copyWith(pageHint: v)),
+        ),
       ],
       SettingsCategory.about => [const _AboutTiles()],
     };

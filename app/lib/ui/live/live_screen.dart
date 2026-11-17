@@ -27,6 +27,7 @@ import '../render/song_view.dart';
 import '../sets/set_item_label.dart';
 import '../widgets/key_picker.dart';
 import 'live_theme.dart';
+import 'page_hint.dart';
 import 'pdf_spread_view.dart';
 
 /// One entry of the live sequence.
@@ -219,6 +220,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       ..release();
     _setFullScreen(false);
     _pages.dispose();
+    _hint.dispose();
     for (final c in _scroll.values) {
       c.dispose();
     }
@@ -240,16 +242,70 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     );
   }
 
-  ScrollController _scrollFor(int index) =>
-      _scroll.putIfAbsent(index, ScrollController.new);
-  PdfViewerController _pdfFor(int index) =>
-      _pdf.putIfAbsent(index, PdfViewerController.new);
-  PdfSpreadController _spreadFor(int index) =>
-      _spread.putIfAbsent(index, PdfSpreadController.new);
+  // Every position of a song (scroll offset, page, PDF page or spread) can
+  // change the corner of the page.
+  ScrollController _scrollFor(int index) => _scroll.putIfAbsent(
+    index,
+    () => ScrollController()..addListener(_scheduleHint),
+  );
+  PdfViewerController _pdfFor(int index) => _pdf.putIfAbsent(index, () {
+    final controller = PdfViewerController()..addListener(_scheduleHint);
+    controller.visibleRenderState.addListener(_scheduleHint);
+    return controller;
+  });
+  PdfSpreadController _spreadFor(int index) => _spread.putIfAbsent(
+    index,
+    () => PdfSpreadController()..addListener(_scheduleHint),
+  );
   _FitController _fitFor(int index) =>
       _fit.putIfAbsent(index, _FitController.new);
-  SongPageController _songPageFor(int index) =>
-      _songPages.putIfAbsent(index, SongPageController.new);
+  SongPageController _songPageFor(int index) => _songPages.putIfAbsent(
+    index,
+    () => SongPageController()..addListener(_scheduleHint),
+  );
+
+  /// The corner of the page (ADR-0007): whether more of the current song
+  /// follows or it ends here; null for pauses and texts.
+  final _hint = ValueNotifier<PageHint?>(null);
+  bool _hintScheduled = false;
+
+  /// Updates [_hint] after the frame, once the song is laid out (the scroll
+  /// extent and the PDF pages are known only then).
+  void _scheduleHint() {
+    if (_hintScheduled) return;
+    _hintScheduled = true;
+    WidgetsBinding.instance
+      ..addPostFrameCallback((_) {
+        _hintScheduled = false;
+        if (mounted) _hint.value = _currentHint();
+      })
+      ..ensureVisualUpdate();
+  }
+
+  /// Mirrors [_next]: more follows when it would turn within the song.
+  PageHint? _currentHint() {
+    if (_items[_index].song == null) return null;
+    final sc = _scroll[_index];
+    if (sc != null && sc.hasClients) {
+      final pos = sc.position;
+      if (pos.hasContentDimensions && pos.pixels < pos.maxScrollExtent - 2) {
+        return PageHint.more;
+      }
+    }
+    final pages = _songPages[_index];
+    if (pages != null && pages.page + 1 < pages.count) return PageHint.more;
+    final spread = _spread[_index];
+    if (spread != null &&
+        spread.isReady &&
+        spread.firstPage + 2 <= spread.pageCount) {
+      return PageHint.more;
+    }
+    final pdf = _pdf[_index];
+    if (pdf != null && pdf.isReady && (pdf.pageNumber ?? 1) < pdf.pageCount) {
+      return PageHint.more;
+    }
+    return PageHint.end;
+  }
 
   double get _step =>
       ref.read(settingsProvider).pageTurn == PageTurnMode.half ? 0.5 : 0.85;
@@ -457,6 +513,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     final items = _items;
     final next = _index < items.length - 1 ? items[_index + 1] : null;
     final theme = Theme.of(context);
+    final showHint = ref.watch(settingsProvider.select((s) => s.pageHint));
+    if (showHint) _scheduleHint();
 
     return Scaffold(
       body: SafeArea(
@@ -480,37 +538,56 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                           onHorizontalDragUpdate: (d) =>
                               _swipe += d.primaryDelta ?? 0,
                           onHorizontalDragEnd: _onSwipeEnd,
-                          child: PageView.builder(
-                            controller: _pages,
-                            physics: const NeverScrollableScrollPhysics(),
-                            // The direct neighbours are built ahead (one
-                            // page of cache on each side): the next song is
-                            // fitted and its PDF opened (landscape: its
-                            // pages rendered) before the turn. Items
-                            // further away are not kept, so memory stays
-                            // bounded in long sets.
-                            allowImplicitScrolling: true,
-                            itemCount: items.length,
-                            onPageChanged: (i) => setState(() {
-                              // A song turned to from the front starts at
-                              // its first page.
-                              if (i > _index) _songPageFor(i).first();
-                              _index = i;
-                            }),
-                            itemBuilder: (context, i) => _LiveItemPage(
-                              item: items[i],
-                              scrollController: _scrollFor(i),
-                              pdfController: _pdfFor(i),
-                              spreadController: _spreadFor(i),
-                              fitController: _fitFor(i),
-                              songPageController: _songPageFor(i),
-                              onTap: _onTap,
+                          // A song laid out anew (e.g. larger text) may
+                          // scroll further or no longer scroll at all.
+                          child: NotificationListener<ScrollMetricsNotification>(
+                            onNotification: (_) {
+                              if (showHint) _scheduleHint();
+                              return false;
+                            },
+                            child: PageView.builder(
+                              controller: _pages,
+                              physics: const NeverScrollableScrollPhysics(),
+                              // The direct neighbours are built ahead (one
+                              // page of cache on each side): the next song is
+                              // fitted and its PDF opened (landscape: its
+                              // pages rendered) before the turn. Items
+                              // further away are not kept, so memory stays
+                              // bounded in long sets.
+                              allowImplicitScrolling: true,
+                              itemCount: items.length,
+                              onPageChanged: (i) => setState(() {
+                                // A song turned to from the front starts at
+                                // its first page.
+                                if (i > _index) _songPageFor(i).first();
+                                _index = i;
+                              }),
+                              itemBuilder: (context, i) => _LiveItemPage(
+                                item: items[i],
+                                scrollController: _scrollFor(i),
+                                pdfController: _pdfFor(i),
+                                spreadController: _spreadFor(i),
+                                fitController: _fitFor(i),
+                                songPageController: _songPageFor(i),
+                                onTap: _onTap,
+                              ),
                             ),
                           ),
                         );
                       },
                     ),
                   ),
+                  // More of the song follows, or it ends here: seen at a
+                  // glance in the corner where the eye ends a page.
+                  if (showHint)
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: ValueListenableBuilder(
+                        valueListenable: _hint,
+                        builder: (context, hint, _) => PageHintMark(hint: hint),
+                      ),
+                    ),
                   if (_controls)
                     Positioned(
                       left: 0,

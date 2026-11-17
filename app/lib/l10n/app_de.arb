@@ -243,6 +243,8 @@
   "liveChordNames": "Akkorde",
   "liveNashville": "Nashville",
   "liveSongPage": "Seite {page}/{count}",
+  "liveMorePages": "Weitere Seiten des Songs folgen",
+  "liveSongEnd": "Ende des Songs",
   "@liveSongPage": {
     "placeholders": {
       "page": {
@@ -340,6 +342,8 @@
   "chorusRepeatFull": "Ganz anzeigen",
   "chorusRepeatLabel": "Nur Hinweis",
   "settingsPageTurnHint": "Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern. Seitenwender (Fusspedal) und Tastatur: Pfeil rechts, Pfeil ab, Bild ab und Leertaste blättern weiter, Pfeil links, Pfeil auf und Bild auf zurück.",
+  "settingsPageHint": "Weitere Seiten auf einen Blick zeigen",
+  "settingsPageHintHint": "Eine umgeknickte Ecke unten rechts zeigt, dass weitere Seiten des Songs folgen; auf der letzten Seite markiert ein Schlussstrich das Ende.",
   "settingsLiveAppearance": "Aussehen auf der Bühne",
   "settingsLiveAppearanceHint": "Live-Modus unabhängig vom App-Design. Schwarz spart Strom auf OLED-Bildschirmen.",
   "liveAppearanceApp": "Wie App",
