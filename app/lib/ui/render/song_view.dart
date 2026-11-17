@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:chordpro/chordpro.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/rendering.dart';
 
 import '../../data/attachment_storage.dart';
 import '../../l10n/generated/app_localizations.dart';
@@ -34,9 +35,9 @@ class SongRenderOptions {
   });
 
   /// Called with the tapped line, section or delegated environment, e.g.
-  /// to move the editor cursor to its source line (#372); null = lines are
-  /// not tappable.
-  final ValueChanged<Object>? onElementTap;
+  /// to move the editor cursor to its source line (#372) and character
+  /// (#381); null = lines are not tappable.
+  final ValueChanged<SourceTap>? onElementTap;
 
   final ChordFormatter formatter;
   final bool lyricsOnly;
@@ -372,16 +373,20 @@ class _SectionBlock extends StatelessWidget {
           );
         case final LyricLine l:
           children.add(
-            Text.rich(
-              markupSpan(l.text, style.lyricsFor(format, inChorus: chorus)),
+            const _TextAt(0).wrap(
+              Text.rich(
+                markupSpan(l.text, style.lyricsFor(format, inChorus: chorus)),
+              ),
             ),
           );
         case final CommentLine c:
           children.add(
-            _Comment(
-              comment: c,
-              textStyle: style.lyricsFor(format),
-              colors: style.colors,
+            const _TextAt(0).wrap(
+              _Comment(
+                comment: c,
+                textStyle: style.lyricsFor(format),
+                colors: style.colors,
+              ),
             ),
           );
         case final RawLine r:
@@ -584,37 +589,53 @@ class _ChordLyricLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = lyricStyle.fontSize ?? 14;
+    // Where each piece starts in the text of the line, for taps (#381).
+    final pieces = chordLinePieces(line, formatter);
+    final plain = line.plainText;
+    final starts = <int>[];
+    var pos = 0;
+    for (final piece in pieces) {
+      final text = piece.text;
+      final at = text.isEmpty ? -1 : plain.indexOf(text, pos);
+      final start = at < 0 ? pos : at;
+      starts.add(start);
+      pos = start + text.length;
+    }
     return Padding(
       padding: EdgeInsets.only(top: size * SongSpacing.chordLineTop),
       child: Wrap(
         crossAxisAlignment: WrapCrossAlignment.end,
         children: [
-          for (final piece in chordLinePieces(line, formatter))
+          for (final (i, piece) in pieces.indexed)
             Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: EdgeInsets.only(
-                    right: piece.chord == null
-                        ? 0
-                        : size * SongSpacing.chordGap,
-                  ),
-                  child: ChordText(
-                    piece.chordParts ?? const [ChordPart(' ')],
-                    style: applyMarkupStyle(chordStyle, piece.chordMarkup),
+                _ChordAt(starts[i], hasChord: piece.chord != null).wrap(
+                  Padding(
+                    padding: EdgeInsets.only(
+                      right: piece.chord == null
+                          ? 0
+                          : size * SongSpacing.chordGap,
+                    ),
+                    child: ChordText(
+                      piece.chordParts ?? const [ChordPart(' ')],
+                      style: applyMarkupStyle(chordStyle, piece.chordMarkup),
+                    ),
                   ),
                 ),
                 if (piece.runs.isEmpty)
-                  Text(' ', style: lyricStyle)
+                  _TextAt(starts[i]).wrap(Text(' ', style: lyricStyle))
                 else
-                  Text.rich(
-                    TextSpan(
-                      style: lyricStyle,
-                      children: [
-                        for (final run in piece.runs)
-                          runSpan(run, lyricStyle, (s) => s, false),
-                      ],
+                  _TextAt(starts[i]).wrap(
+                    Text.rich(
+                      TextSpan(
+                        style: lyricStyle,
+                        children: [
+                          for (final run in piece.runs)
+                            runSpan(run, lyricStyle, (s) => s, false),
+                        ],
+                      ),
                     ),
                   ),
               ],
@@ -625,12 +646,82 @@ class _ChordLyricLine extends StatelessWidget {
   }
 }
 
+/// A tap on the rendered song: the [element] (line, section, delegated
+/// environment) and, where known, the index of the tapped character in
+/// the text of the line without chords and markup ([textIndex]) and
+/// whether the chord above it was tapped ([onChord]).
+class SourceTap {
+  const SourceTap(this.element, {this.textIndex, this.onChord = false});
+
+  final Object element;
+  final int? textIndex;
+  final bool onChord;
+}
+
+/// Marks text that starts at [start] of its line's text, for taps.
+class _TextAt {
+  const _TextAt(this.start);
+
+  final int start;
+
+  Widget wrap(Widget child) => MetaData(metaData: this, child: child);
+}
+
+/// Marks the chord above the text that starts at [start].
+class _ChordAt {
+  const _ChordAt(this.start, {required this.hasChord});
+
+  final int start;
+  final bool hasChord;
+
+  Widget wrap(Widget child) => MetaData(metaData: this, child: child);
+}
+
 /// [child], tappable as [element] when [onTap] is set.
-Widget _tappable(ValueChanged<Object>? onTap, Object? element, Widget child) {
+Widget _tappable(
+  ValueChanged<SourceTap>? onTap,
+  Object? element,
+  Widget child,
+) {
   if (onTap == null || element == null) return child;
-  return GestureDetector(
-    behavior: HitTestBehavior.opaque,
-    onTap: () => onTap(element),
-    child: child,
+  return Builder(
+    builder: (context) => GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapUp: (details) {
+        final box = context.findRenderObject();
+        onTap(
+          box is RenderBox
+              ? _tapAt(element, box, details.globalPosition)
+              : SourceTap(element),
+        );
+      },
+      child: child,
+    ),
   );
+}
+
+/// The character under [global] in the line rendered by [box].
+SourceTap _tapAt(Object element, RenderBox box, Offset global) {
+  final result = BoxHitTestResult();
+  box.hitTest(result, position: box.globalToLocal(global));
+  RenderParagraph? paragraph;
+  for (final entry in result.path) {
+    final target = entry.target;
+    if (target is RenderParagraph) {
+      paragraph ??= target;
+    } else if (target is RenderMetaData) {
+      switch (target.metaData) {
+        case _ChordAt(:final start, :final hasChord):
+          return SourceTap(element, textIndex: start, onChord: hasChord);
+        case _TextAt(:final start):
+          final offset = paragraph == null
+              ? 0
+              : paragraph
+                    .getPositionForOffset(paragraph.globalToLocal(global))
+                    .offset;
+          return SourceTap(element, textIndex: start + offset);
+      }
+    }
+  }
+  return SourceTap(element);
 }

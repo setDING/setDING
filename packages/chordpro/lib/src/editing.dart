@@ -338,3 +338,39 @@ SourceEdit? dropText(
     at + moved.length,
   );
 }
+
+/// Column in the source [line] of the character [textIndex] of its
+/// rendered text, i.e. the text without chords and markup; for a
+/// directive line (`{comment: …}`) of the text of its value (#381). With
+/// [atChord], the column of the `[` of the chord at that position, if
+/// there is one. Indexes past the end give the end of the text.
+int sourceColumn(String line, int textIndex, {bool atChord = false}) {
+  var start = 0;
+  var end = line.length;
+  final trimmed = line.trimLeft();
+  if (trimmed.startsWith('{')) {
+    final colon = line.indexOf(':');
+    final close = line.lastIndexOf('}');
+    if (close >= 0) end = close;
+    start = colon < 0 || colon >= end ? end : colon + 1;
+    while (start < end && (line[start] == ' ' || line[start] == '\t')) {
+      start++;
+    }
+  }
+  var count = 0;
+  var i = start;
+  while (i < end) {
+    final char = line[i];
+    if (char == '[' || char == '<') {
+      final close = line.indexOf(char == '[' ? ']' : '>', i);
+      if (close < 0) break;
+      if (char == '[' && atChord && count == textIndex) return i;
+      i = close + 1;
+      continue;
+    }
+    if (count == textIndex) return i;
+    count++;
+    i++;
+  }
+  return i.clamp(start, end);
+}

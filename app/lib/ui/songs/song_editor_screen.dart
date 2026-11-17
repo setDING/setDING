@@ -388,11 +388,11 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
     return selected.contains('\n') ? '' : selected;
   }
 
-  /// Moves the cursor to the source line of [element], tapped in the
-  /// preview (#372). The preview may lag a moment behind the text; the
-  /// line is then clamped to the text.
-  void _jumpToSource(Object element) {
-    final line = sourceLineOf(element);
+  /// Moves the cursor to the source of [tap] in the preview (#372): its
+  /// line and, where known, the tapped character (#381). The preview may
+  /// lag a moment behind the text; the position is then clamped.
+  void _jumpToSource(SourceTap tap) {
+    final line = sourceLineOf(tap.element);
     if (line == null) return;
     final text = _controller.text;
     var offset = 0;
@@ -400,6 +400,14 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
       final nl = text.indexOf('\n', offset);
       if (nl < 0) break;
       offset = nl + 1;
+    }
+    if (tap.textIndex case final index?) {
+      final lineEnd = text.indexOf('\n', offset);
+      final source = text.substring(
+        offset,
+        lineEnd < 0 ? text.length : lineEnd,
+      );
+      offset += sourceColumn(source, index, atChord: tap.onChord);
     }
     // After the next frame, when on narrow screens the editor tab is
     // built again; with the focus, the editor scrolls to the cursor.
@@ -672,7 +680,7 @@ class _Preview extends ConsumerWidget {
   final Song song;
 
   /// A line or section was tapped: the editor shows its source.
-  final ValueChanged<Object> onTap;
+  final ValueChanged<SourceTap> onTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -704,10 +712,10 @@ class _Preview extends ConsumerWidget {
             options: SongRenderOptions(
               formatter: formatter,
               fontSize: fontSize,
-              onElementTap: (element) {
+              onElementTap: (tap) {
                 // On narrow screens, switch to the editor tab first.
                 DefaultTabController.maybeOf(context)?.index = 0;
-                onTap(element);
+                onTap(tap);
               },
             ),
           ),
