@@ -52,10 +52,13 @@ fi
 if [ -s /root/.ssh/authorized_keys ] && [ -d /etc/ssh/sshd_config.d ]; then
   step "SSH hardening"
   conf=/etc/ssh/sshd_config.d/10-setding.conf
+  rm -f /etc/ssh/sshd_config.d/10-realchord.conf # before the rename (#318)
   new=$'PasswordAuthentication no\nKbdInteractiveAuthentication no\nPermitRootLogin prohibit-password\n'
   if [ "$(cat "$conf" 2>/dev/null)" != "${new%$'\n'}" ]; then
     printf '%s' "$new" >"$conf"
-    sshd -t && systemctl reload ssh
+    # Debian starts sshd through ssh.socket: a plain reload fails while no
+    # sshd runs; new connections read the config anyway.
+    sshd -t && systemctl try-reload-or-restart ssh
   fi
 fi
 
