@@ -20,11 +20,17 @@ RealChord (working title until 2026-11-15: BandChords) is an app that lets bands
 
 | Role | Responsibilities |
 |---|---|
-| **Organization admin** | Manage the organization (e.g. a music school or a church with several bands): invite people, create bands, manage all its bands and its song library |
-| **Admin / band leader** | Manage the band, add organization members to it, create/edit songs, put sets together. A band can have several admins. |
-| **Member** | View sets and use them live, personal adjustments (transposition, notes, font size); edit songs if enabled for the band |
+| **Organization admin** | Manage the organization (e.g. a music school or a church with several bands): invite people, create bands, manage all its bands and its song library; may do everything |
+| **Librarian** *(organization)* | Create, import, edit and delete the organization's songs and attachments |
+| **Band leader** (stored as band `admin`) | Manage the band, add organization members to it, invite people into it, put sets together, create new songs and edit their own. A band can have several leaders. |
+| **Set planner** *(band)* | Create, edit, reorder and delete the band's sets |
+| **Member** | View sets and use them live, personal adjustments (transposition, notes, font size) |
 
-A user can be a member of several organizations and bands; roles are defined per organization and per band (ADR-0005, ADR-0017). ADR-0023 (proposed) refines them: organization roles admin > librarian > member, band roles leader (`admin`) > set planner > member; organization admins keep all rights. The bands of an organization share its song library; nothing is shared across organizations, and users only see the people of their own organizations.
+Librarian and set planner, invitations by band leaders and the narrower song rights
+are decided in ADR-0023 and not implemented yet; until then band admins edit all
+songs and `members_can_edit_songs` applies.
+
+A user can be a member of several organizations and bands; roles are defined per organization and per band (ADR-0005, ADR-0017). ADR-0023 (accepted) refines them: organization roles admin > librarian > member, band roles leader (`admin`) > set planner > member; organization admins keep all rights. The bands of an organization share its song library; nothing is shared across organizations, and users only see the people of their own organizations.
 
 ## 2. Quality goals (prioritized)
 
@@ -54,7 +60,7 @@ A user can be a member of several organizations and bands; roles are defined per
 | Sign-in & session | Email/password via `SyncBackend` (PocketBase SDK, pinned), session in secure storage, kept while offline, refreshed when online, 30-day tokens | [ADR-0016](adr/0016-client-authentication.md) |
 | Registration | Server operator sets `REALCHORD_REGISTRATION` = `invite_only` (default: sign-up only with an invitation, new organizations only via operator **founder invitations**) or `open`, and `REALCHORD_EMAIL_VERIFICATION` = `off` (default) or `required` (needs SMTP); no in-app super-admin; rate limits on sign-up and invitations | [ADR-0024](adr/0024-registration-mode.md) |
 | Organizations | Bands belong to an **organization** that owns the shared song library; organization admins manage people and bands; created automatically for a single band | [ADR-0017](adr/0017-organizations.md) |
-| Finer-grained roles *(proposed)* | Ordered fixed roles: organization admin > **librarian** > member, band leader > **set planner** > member; organization admins may do everything; librarians edit the library (replaces `members_can_edit_songs`), band leaders create new songs and edit only their own; leaders may invite into their band | [ADR-0023](adr/0023-finer-grained-roles.md) |
+| Finer-grained roles | Ordered fixed roles: organization admin > **librarian** > member, band leader > **set planner** > member; organization admins may do everything; librarians edit the library (replaces `members_can_edit_songs`), band leaders create new songs and edit only their own; leaders may invite into their band | [ADR-0023](adr/0023-finer-grained-roles.md) |
 | Server data model | PocketBase collections as migrations, server-wide revision counter, set items as JSON, access rules per role, tested against a real PocketBase | [ADR-0015](adr/0015-server-data-model.md) |
 | Printable set list | PDF generated in the client with the `pdf` package, embedded font, saved via the save dialog; no print plugin yet | [ADR-0013](adr/0013-printable-set-list.md) |
 | Web client | **Flutter web build of the same app** for management without installation, served by PocketBase (`pb_public`) at `app.realchord.app`, same sync engine, sign-in required, ChordPro file import but no export, no offline guarantee in the browser ([guide](../development/web.md)) | [ADR-0018](adr/0018-web-client.md) |
@@ -127,10 +133,10 @@ erDiagram
     ORGANIZATION ||--o{ INVITATION : has
 
     ORGANIZATION { uuid id string name }
-    ORG_MEMBERSHIP { uuid organization_id uuid user_id enum role "admin|member (ADR-0023 proposes librarian)" }
+    ORG_MEMBERSHIP { uuid organization_id uuid user_id enum role "admin|member (librarian: ADR-0023, not implemented yet)" }
     BAND { uuid id uuid organization_id string name bool members_can_edit_songs }
     USER { uuid id string name string email string locale }
-    MEMBERSHIP { uuid band_id uuid user_id enum role "admin|member (ADR-0023 proposes planner)" }
+    MEMBERSHIP { uuid band_id uuid user_id enum role "admin|member (planner: ADR-0023, not implemented yet)" }
     SONG { uuid id string chordpro_source string title string artist string key int tempo int revision timestamp updated_at bool deleted }
     SETLIST { uuid id string name date gig_date string venue int revision }
     SET_ITEM { uuid id uuid set_id uuid song_id int position int transpose string sequence string note string type "song|break|text" }
@@ -266,7 +272,7 @@ See "Open points" in the individual ADRs. The most important:
 17. Distributable Linux builds? → `make release`: built in a Debian container with an ISA check (ADR-0019, accepted, #45). CI release builds for Linux, Android (Obtainium) and Windows from a `vX.Y.Z` tag (ADR-0021, accepted, #137). Open: release key (owner), iOS, installers/packaging and code signing
 18. ~~Personal adjustments on shared devices and across devices?~~ → Overlays belong to a user (`owner_id`; `local` for the local library), existing ones are taken over once by the first user who signs in, private, synced in phase 2 with last writer wins and soft delete (ADR-0020, accepted)
 19. ~~Chord display style (pop vs. jazz spelling, superscript extensions)?~~ → Global device setting *As written* (default) / *Standard* / *Jazz* plus a superscript switch, not per song (ADR-0022, accepted, implemented in #196)
-20. Finer-grained roles? → Proposed in ADR-0023 (#207): organization librarian, band set planner, band leaders create songs and edit only their own (until someone else changes them), invitations by band leaders into their band, `members_can_edit_songs` replaced by the librarian role, no guest role (substitutes are added as band members), organization admins keep all rights. Open: owner decision; band arrangement as a follow-up ADR
+20. ~~Finer-grained roles?~~ → ADR-0023 (accepted, #207): organization librarian, band set planner, band leaders create songs and edit only their own (until someone else changes them), invitations by band leaders into their band, `members_can_edit_songs` replaced by the librarian role, no guest role (substitutes are added as band members), organization admins keep all rights. Open: implementation; band arrangement as a follow-up ADR; suggestion workflow for song corrections
 21. ~~Who may create accounts and organizations?~~ → Operator setting `REALCHORD_REGISTRATION` = `invite_only` (default) or `open`, founder invitations for new organizations by the operator only, optional email verification (`REALCHORD_EMAIL_VERIFICATION`), no in-app super-admin (ADR-0024, accepted, #209; implemented in #213). Open: limits per organization
 
 ## 10. ADR index
@@ -295,7 +301,7 @@ See "Open points" in the individual ADRs. The most important:
 | [0020](adr/0020-overlays-per-user.md) | Personal adjustments per user, synced with the account | Accepted |
 | [0021](adr/0021-release-builds-github-actions.md) | Release builds on GitHub Actions, Android via Obtainium | Accepted |
 | [0022](adr/0022-chord-display-style.md) | Selectable chord display style | Accepted |
-| [0023](adr/0023-finer-grained-roles.md) | Finer-grained roles for organizations and bands | Proposed |
+| [0023](adr/0023-finer-grained-roles.md) | Finer-grained roles for organizations and bands | Accepted |
 | [0024](adr/0024-registration-mode.md) | Registration mode set by the server operator | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.

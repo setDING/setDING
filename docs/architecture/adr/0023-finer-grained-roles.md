@@ -1,6 +1,6 @@
 # ADR-0023: Finer-grained roles for organizations and bands
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-17
 
 ## Context
@@ -186,6 +186,7 @@ sets of that band like any member; librarian rights concern the library only.
 - 2026-11-17: Owner decision: **no guest role**. Substitutes are usually members of
   another band of the organization already; a band leader adds them to the band
   as members (and removes them afterwards if wanted).
+- 2026-11-17: Accepted by the owner.
 
 ## Open points
 
