@@ -45,6 +45,12 @@ song, all tablets follow automatically. We evaluated whether this is needed.
   scrolls.
 - **Settings:** fit to screen on/off, maximum number of columns (automatic = up to 4, or 1/2/3), repeated chorus
   (automatic / always in full / always as label), base font size.
+- **Only the parts of the sequence:** in the live mode of a set, a song with a sequence (set item, band arrangement or
+  the song's own `{x_sequence}`, ADR-0006/ADR-0025) shows only the sections whose part appears in it (`V` matches every
+  verse, `V2` only the second). The song stays in document order; order and repetitions of the sequence are not
+  applied. Sections that are no part (unlabelled, tab, grid) stay. The header says which parts are hidden
+  ("Hidden (not in the sequence): V3, B"). If the sequence matches none of the song's parts, the song is shown whole.
+  A single song played outside a set is always shown whole.
 - PDF attachments (ADR-0009) are shown in live mode with the same page-turn input.
 - At the end of a song → next item in the set; footer preview "Next: *Title* (key)".
 - Quick jump to any song of the set (set overview), e.g. when the set order changes spontaneously on stage.
@@ -75,6 +81,7 @@ between devices – neither over the local network nor via the backend.
 
 - 2026-11-15: Sync is paused while live mode is open; a sync requested meanwhile runs after leaving live mode (issue #17, ADR-0004).
 - 2026-11-16: Foot pedal / keyboard page turning removed, not needed for now; may be implemented again later (issue #149). Tap and swipe remain.
+- 2026-11-17: In the live mode of a set, only the parts of the song sequence are shown; the header names the hidden parts (issue #257).
 
 ## Open points
 

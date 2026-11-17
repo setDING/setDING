@@ -864,5 +864,11 @@
       "date": {"type": "String"}
     }
   },
-  "foundInLyrics": "Im Liedtext gefunden"
+  "foundInLyrics": "Im Liedtext gefunden",
+  "hiddenParts": "Ausgeblendet (nicht im Ablauf): {parts}",
+  "@hiddenParts": {
+    "placeholders": {
+      "parts": {"type": "String"}
+    }
+  }
 }

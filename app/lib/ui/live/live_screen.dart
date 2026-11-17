@@ -826,10 +826,21 @@ class _LiveItemPage extends ConsumerWidget {
             : _portraitPdf(stored, pdfKey),
       );
     }
+    // In a set only the parts of the sequence are shown; which ones are
+    // hidden is shown in the header.
+    final sequence = item.setItemId == null
+        ? null
+        : item.setSequence ??
+              item.arrangement?.sequence ??
+              parsed.metaValue('x_sequence');
+    final selection = sequence == null
+        ? SequenceSelection(parsed, const [])
+        : filterBySequenceCached(parsed, sequence);
     final storage = ref.watch(attachmentStorageProvider);
     return _ChordProPage(
       song: song,
-      parsed: parsed,
+      parsed: selection.song,
+      hiddenParts: selection.hidden,
       overlay: overlay,
       setTranspose: item.bandTranspose + item.setTranspose,
       setSequence: item.setSequence,
@@ -851,6 +862,7 @@ class _ChordProPage extends ConsumerWidget {
   const _ChordProPage({
     required this.song,
     required this.parsed,
+    required this.hiddenParts,
     required this.overlay,
     required this.setTranspose,
     required this.setSequence,
@@ -865,6 +877,9 @@ class _ChordProPage extends ConsumerWidget {
 
   final SongEntry song;
   final Song parsed;
+
+  /// Parts hidden because they are not in the set's sequence.
+  final List<String> hiddenParts;
   final SongOverlay overlay;
 
   /// Band arrangement and set item together (semitones to the song).
@@ -918,6 +933,7 @@ class _ChordProPage extends ConsumerWidget {
               setSequence: setSequence,
               bandSequence: bandSequence,
               bandTempo: bandTempo,
+              hiddenParts: hiddenParts,
             ),
           ),
           Expanded(

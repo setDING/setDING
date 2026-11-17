@@ -533,6 +533,65 @@ void main() {
     );
   }
 
+  testWidgets('live mode of a set shows only the parts of the sequence', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    const source =
+        '{title: Seq}\n{x_sequence: V1, C, V2}\n'
+        '{sov}\nfirst verse\n{eov}\n{soc}\nthe chorus\n{eoc}\n'
+        '{sov}\nsecond verse\n{eov}\n{sob}\nthe bridge\n{eob}\n'
+        '{start_of_verse: Coda}\nthe coda\n{end_of_verse}';
+    final song = await tester.runAsync(() async {
+      final id = await app.songs.createSong(source: source);
+      return app.songs.getSong(id);
+    });
+
+    // In a set: the song's own sequence applies, the set item's replaces it.
+    for (final (setSequence, hidden, shown) in [
+      (
+        null,
+        ['the bridge', 'the coda'],
+        'Hidden (not in the sequence): B, Coda',
+      ),
+      (
+        'C, B',
+        ['first verse', 'the coda'],
+        'Hidden (not in the sequence): V1, V2, Coda',
+      ),
+    ]) {
+      await tester.pumpWidget(
+        app.build(
+          home: LiveScreen(
+            key: UniqueKey(),
+            items: [
+              LiveItem.song(song!, setItemId: 'i1', setSequence: setSequence),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      for (final text in hidden) {
+        expect(find.textContaining(text), findsNothing, reason: text);
+      }
+      expect(find.byKey(const Key('hidden-parts')), findsOneWidget);
+      expect(find.text(shown), findsOneWidget);
+    }
+    expect(find.textContaining('the bridge'), findsWidgets);
+
+    // A single song is shown whole.
+    await tester.pumpWidget(
+      app.build(
+        home: LiveScreen(key: UniqueKey(), items: [LiveItem.song(song!)]),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.textContaining('the bridge'), findsWidgets);
+    expect(find.byKey(const Key('hidden-parts')), findsNothing);
+    await app.dispose(tester);
+  });
+
   testWidgets('live mode scrolls when fitting is switched off', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(

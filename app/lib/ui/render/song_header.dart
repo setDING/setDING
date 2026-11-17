@@ -1,4 +1,4 @@
-import 'package:chordpro/chordpro.dart';
+import 'package:chordpro/chordpro.dart' hide Key;
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/generated/app_localizations.dart';
@@ -15,6 +15,7 @@ class SongHeader extends StatelessWidget {
     this.setSequence,
     this.bandSequence,
     this.bandTempo,
+    this.hiddenParts = const [],
   });
 
   final String title;
@@ -31,6 +32,10 @@ class SongHeader extends StatelessWidget {
 
   /// Tempo of the band arrangement (ADR-0025); replaces the song's own.
   final int? bandTempo;
+
+  /// Parts not shown because they are not in the sequence (live view of a
+  /// set); shown as a hint below the sequence.
+  final List<String> hiddenParts;
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +83,31 @@ class SongHeader extends StatelessWidget {
               compact: compact,
               fromSet: setSequence != null,
               fromBand: setSequence == null && bandSequence != null,
+            ),
+          ),
+        if (hiddenParts.isNotEmpty)
+          Padding(
+            key: const Key('hidden-parts'),
+            padding: const EdgeInsets.only(top: 4),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.visibility_off_outlined,
+                  size: 16,
+                  color: theme.colorScheme.tertiary,
+                ),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    l10n.hiddenParts(hiddenParts.join(', ')),
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: theme.colorScheme.tertiary,
+                    ),
+                    maxLines: compact ? 1 : null,
+                    overflow: compact ? TextOverflow.ellipsis : null,
+                  ),
+                ),
+              ],
             ),
           ),
         if (info.isNotEmpty)

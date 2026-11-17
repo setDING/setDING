@@ -1694,4 +1694,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get foundInLyrics => 'Im Liedtext gefunden';
+
+  @override
+  String hiddenParts(String parts) {
+    return 'Ausgeblendet (nicht im Ablauf): $parts';
+  }
 }

@@ -1679,4 +1679,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get foundInLyrics => 'Found in the lyrics';
+
+  @override
+  String hiddenParts(String parts) {
+    return 'Hidden (not in the sequence): $parts';
+  }
 }

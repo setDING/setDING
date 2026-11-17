@@ -2959,6 +2959,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Im Liedtext gefunden'**
   String get foundInLyrics;
+
+  /// No description provided for @hiddenParts.
+  ///
+  /// In de, this message translates to:
+  /// **'Ausgeblendet (nicht im Ablauf): {parts}'**
+  String hiddenParts(String parts);
 }
 
 class _AppLocalizationsDelegate

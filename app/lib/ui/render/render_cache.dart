@@ -32,3 +32,13 @@ Song parseChordProCached(
   selectors.instrument,
   selectors.user,
 ), () => parseChordPro(source, selectors: selectors));
+
+final _selected = LruCache<(Song, String), SequenceSelection>(32);
+
+/// [filterBySequence] with a cache keyed by the [song] instance (see
+/// [parseChordProCached]) and the raw [sequence].
+SequenceSelection filterBySequenceCached(Song song, String sequence) =>
+    _selected.get((
+      song,
+      sequence,
+    ), () => filterBySequence(song, parseSequence(sequence)));
