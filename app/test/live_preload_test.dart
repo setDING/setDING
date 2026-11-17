@@ -254,9 +254,10 @@ void main() {
     await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
     // Frame by frame: the long song grows in steps.
     final shown = <int>[];
-    // (Zero, not no duration: the steps run between frames, in timers.)
-    for (var i = 0; i < 20; i++) {
-      await tester.pump(Duration.zero);
+    // (With a duration: the steps run between frames, in timers, and not
+    // while an animation runs, e.g. the page hint fading in.)
+    for (var i = 0; i < 40; i++) {
+      await tester.pump(const Duration(milliseconds: 16));
       shown.add(
         [
           for (var v = 1; v <= 6; v++)

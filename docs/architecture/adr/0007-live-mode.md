@@ -86,8 +86,9 @@ song, all tablets follow automatically. We evaluated whether this is needed.
 - **Next song prepared ahead:** the direct neighbours of the current item (previous and next) are built and fitted
   before the turn, PDFs opened (landscape spreads also rendered), so turning never shows an empty or half-laid-out
   page. They are prepared in idle time after a turn, never in the frames of a turn animation, where a long frame
-  would be a visible stutter: the fit runs between frames, the song is built a few lines per frame, and the page
-  left behind is kept until the turn is over and then taken down the same way. A turn to a page that is not fully
+  would be a visible stutter: the fit runs between frames, the song is built a few lines per frame (all its pages,
+  so turning a page of the song only shows another one), and the page left behind is kept until the turn is over
+  and then taken down the same way. A turn to a page that is not fully
   prepared yet (turning faster than the preparation, a jump from the set overview) builds it at once. Items further
   away are not kept, so memory stays bounded in long sets.
 - At the end of a song → next item in the set; footer preview "Next: *Title* (key)".
@@ -134,7 +135,7 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-17: The stage follows the accent colour chosen in the settings: on light the chords use a deep tone of the accent (brand red `#852309` by default), the dark and black stage use the accent's dark scheme; chords on dark and black stay amber for every accent (issue #300).
 - 2026-11-17: The screen stays on reliably: the wake lock counts the open live views and applies changes in order, is set again when the app returns to the foreground, and a wake lock that does not hold is shown in the bottom bar (issue #294).
 - 2026-11-17: A folded corner at the bottom right shows that more of the song follows (song pages, scrolling, PDF pages and spreads), a final barline marks its last page; can be switched off in the live settings (issue #305).
-- 2026-11-17: The neighbours are prepared in idle time after a turn instead of in the first frames of the turn animation: the fit runs between frames, the song is built a few lines per frame, the page left behind is taken down after the turn in the same way; a turn to a page that is not prepared yet builds it at once. Rebuilding the live screen (e.g. when the page changes) no longer builds the songs again (issue #296).
+- 2026-11-17: The neighbours are prepared in idle time after a turn instead of in the first frames of the turn animation: the fit runs between frames, the song is built a few lines per frame, the page left behind is taken down after the turn in the same way; a turn to a page that is not prepared yet builds it at once. All pages of a song are built, so turning a page of the song only shows another one; rebuilding the live screen (e.g. when the page changes) no longer builds the songs again (issue #296).
 
 ## Open points
 
