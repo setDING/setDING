@@ -544,7 +544,91 @@ void main() {
       await app.dispose(tester);
     });
   }
+
+  // Live mode for drums (ADR-0026): the song map with drum notes instead of
+  // the chord sheet, and on wide screens the beat panel with the set.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    _screenshotTest('drummer live mode $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {
+          'language': lang,
+          'themeMode': dark ? 'dark' : 'light',
+          'instrument': 'drums',
+          'clickStart': 'manual',
+        },
+      );
+      final items = await tester.runAsync(() async {
+        final items = <LiveItem>[];
+        for (final source in [
+          lang == 'de' ? _drumsDe : _drums,
+          _drumsNext,
+          demoSongSource,
+        ]) {
+          final id = await app.songs.createSong(source: source);
+          items.add(LiveItem.song((await app.songs.getSong(id))!));
+        }
+        return items;
+      });
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: LiveScreen(items: items!)),
+        ),
+      );
+      await _shot(tester, '${lang}_11_live_drums');
+      await app.dispose(tester);
+    });
+  }
 }
+
+/// A song with drum notes for the drummer screenshot.
+const _drums = '''{title: Highway Lights}
+{artist: House Band}
+{key: E}
+{tempo: 118}
+{time: 4/4}
+{x_sequence: I, V1, PC, C, V2, PC, C x2, B, O}
+{start_of_verse: Intro}
+{comment-drums: Toms, four bars, then full groove}
+{end_of_verse}
+{start_of_verse: Verse 1}
+[E]Headlights on the [A]empty road
+{comment-drums: Rim click, hi-hat closed}
+{end_of_verse}
+{start_of_verse: Pre-Chorus}
+[C#m]Hold on, [B]hold on
+{comment-drums: Build on the floor tom}
+{end_of_verse}
+{start_of_chorus}
+[A]We ride the [E]highway lights
+{comment-drums: Crash on 1, ride cymbal}
+{end_of_chorus}
+{start_of_verse: Verse 2}
+[E]Radio plays our [A]favourite song
+{end_of_verse}
+{start_of_bridge}
+[F#m]Half time [B]here
+{comment-drums: Half time, snare on 3}
+{end_of_bridge}
+{start_of_verse: Outro}
+{comment-drums: Big ending on the cue}
+{end_of_verse}
+''';
+
+/// [_drums] with the drum notes in German.
+final _drumsDe = {
+  'Toms, four bars, then full groove': 'Toms, vier Takte, dann voller Groove',
+  'Rim click, hi-hat closed': 'Rimclick, Hi-Hat geschlossen',
+  'Build on the floor tom': 'Aufbau auf der Floor Tom',
+  'Crash on 1, ride cymbal': 'Crash auf 1, dann Ride',
+  'Half time, snare on 3': 'Halftime, Snare auf 3',
+  'Big ending on the cue': 'Grosser Schluss auf Zeichen',
+}.entries.fold(_drums, (s, e) => s.replaceAll(e.key, e.value));
+
+/// The song after [_drums]; the footer shows its tempo and time signature.
+const _drumsNext =
+    '{title: Blue Monday Groove}\n{tempo: 84}\n{time: 12/8}\n[Bb7]Blues [Eb7]line\n';
 
 const _showcase = r'''{title: ChordPro Showcase}
 {artist: setDING}

@@ -5,6 +5,9 @@ sidebar:
   order: 2
 ---
 
+import { Image } from 'astro:assets';
+import drums from '../../../../../docs/screenshots/drums_de.png';
+
 Hat ein Song ein Tempo, zeigt setDING im Live-Modus den Takt an, zählt ein und
 spielt auf Wunsch einen Klick – zum Beispiel in den In-Ear-Mix. Das Tempo kommt aus
 dem Band-Arrangement oder aus dem Song, die Taktart aus dem Song (ohne Angabe 4/4).
@@ -60,6 +63,8 @@ Songablauf, jeweils mit einem Stichwort aus dem Liedtext und den
 Schlagzeug-Notizen, dazu Tempo und Taktart gross. Die Fusszeile nennt das Tempo und
 die Taktart des nächsten Songs. Auf breiten Bildschirmen zeigt ein Bereich daneben
 den Takt gross und das ganze Set; ein Tipp auf einen Song springt dorthin.
+
+<Image src={drums} alt="Live-Modus mit Schlagzeug: links Tempo, Taktanzeige und das Set, rechts die Teile des Songs mit Stichworten aus dem Liedtext und Schlagzeug-Notizen" />
 
 Schlagzeug-Notizen schreibst du im Song als Abschnitte oder Kommentare nur für
 Schlagzeug, z. B. `{comment-drums: Hi-Hat halb offen}`. Wer ein anderes Instrument
