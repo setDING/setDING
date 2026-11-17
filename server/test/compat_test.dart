@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:setding_server/pocketbase_harness.dart';
 import 'package:test/test.dart';
 
@@ -23,6 +25,30 @@ void main() {
       final r = await pb.guest.send('GET', '/api/setding/config');
       r.expectStatus(200);
       expect(r.json['minClientVersion'], '0.0.0');
+      // Only deploys stamp a version (tool/server/deploy.sh).
+      expect(r.json.containsKey('serverVersion'), isTrue);
+      expect(r.json['serverVersion'], isNull);
+    });
+  });
+
+  group('stamped server version', () {
+    late PocketBase pb;
+    // Where tool/server/deploy.sh puts the stamp; ignored by git.
+    final stamp = File('../server/pb_hooks/setding-version.txt');
+
+    setUpAll(() async {
+      stamp.writeAsStringSync('1.2.3\n');
+      pb = await PocketBase.start();
+    });
+    tearDownAll(() async {
+      await pb.stop();
+      if (stamp.existsSync()) stamp.deleteSync();
+    });
+
+    test('the config route reports the deployed version', () async {
+      final r = await pb.guest.send('GET', '/api/setding/config');
+      r.expectStatus(200);
+      expect(r.json['serverVersion'], '1.2.3');
     });
   });
 

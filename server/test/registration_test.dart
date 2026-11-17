@@ -67,11 +67,10 @@ void main() {
     test('the config route reports the mode without an account', () async {
       final r = await pb.guest.send('GET', '/api/setding/config');
       r.expectStatus(200);
-      expect(r.json, {
-        'registration': 'invite_only',
-        'emailVerification': 'off',
-        'minClientVersion': '0.0.0',
-      });
+      // serverVersion depends on a deploy stamp (compat_test.dart).
+      expect(r.json, containsPair('registration', 'invite_only'));
+      expect(r.json, containsPair('emailVerification', 'off'));
+      expect(r.json, containsPair('minClientVersion', '0.0.0'));
     });
 
     test('sign-up without or with a bad invitation is refused', () async {

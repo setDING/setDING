@@ -24,6 +24,8 @@ routerAdd("GET", "/api/setding/config", (e) => {
     emailVerification: reg.emailVerification(e.app),
     // Lowest app version this server accepts (ADR-0029).
     minClientVersion: require(`${__hooks}/lib/compat.js`).minClientVersion(),
+    // Version deployed with make server-release (git workflow section 10).
+    serverVersion: require(`${__hooks}/lib/compat.js`).serverVersion(),
   });
 });
 

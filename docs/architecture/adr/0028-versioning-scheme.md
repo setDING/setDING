@@ -113,8 +113,10 @@ Pre-releases keep the SemVer suffix `-beta.N` (ADR-0021).
 - 2026-11-17: Open point "minimum client version" resolved by ADR-0029 (#339):
   clients send their version, the server refuses outdated ones with HTTP 426 and
   the app asks for an update.
+- 2026-11-17: Open point "server deploys and releases" resolved (#345): production
+  runs released versions only, deployed with `make server-release` from the tag after
+  its release build passed; the server reports its version (`serverVersion`).
 
 ## Open points
 
-- **Server deploys and releases:** whether `make server-install` should only deploy
-  tagged versions instead of `main`.
+- None.
