@@ -83,5 +83,5 @@ server details (OS, Docker, domain/HTTPS) and the backup concept. They are now k
 
 - Staging container (`staging.` hostname) for testing PocketBase updates and migrations.
 - Monitoring/alerting (e.g. an uptime check on `/api/health`).
-- Registration mode `REALCHORD_REGISTRATION` in `pocketbase.env` and a `make` target for founder invitations (ADR-0024, proposed).
+- Registration mode `REALCHORD_REGISTRATION` and email verification `REALCHORD_EMAIL_VERIFICATION` in `pocketbase.env` and a `make` target for founder invitations (ADR-0024, proposed).
 - Encrypting the PocketBase settings (`--encryptionEnv`) once SMTP/S3 credentials are stored there.

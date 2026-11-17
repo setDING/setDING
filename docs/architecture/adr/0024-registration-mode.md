@@ -81,13 +81,41 @@ REALCHORD_REGISTRATION=invite_only   # or: open
 - The local library ("On this device") stays usable without any account
   (issue #15).
 
+### Email verification
+
+A second operator setting in the same environment file decides whether new
+accounts must confirm their email address:
+
+```
+REALCHORD_EMAIL_VERIFICATION=off   # or: required
+```
+
+| Value | Effect |
+|---|---|
+| `off` *(default)* | Accounts can be used right after sign-up (today's behaviour) |
+| `required` | After sign-up the server sends a verification mail (PocketBase `requestVerification`); signing in and refreshing the session are rejected until the address is confirmed |
+
+- Independent of the registration mode: it can be combined with `invite_only` and
+  with `open`.
+- `required` needs SMTP on the server (ADR-0016 open point). Without SMTP settings
+  the server logs an error at start and keeps `off`, so nobody is locked out by a
+  configuration mistake.
+- A pending invitation token stays valid while the person confirms the address; the
+  app redeems it after the first successful sign-in.
+- Accounts that existed before the setting was turned on are not locked out: the
+  operator marks them verified in the PocketBase admin UI, or they get a verification
+  mail at their next sign-in.
+- A session already stored on a device keeps working offline (ADR-0016); the check
+  applies when the session is refreshed online.
+- The app shows "Confirm your email" after sign-up and on a rejected sign-in, with a
+  button to send the mail again; the public config route also returns this setting.
+
 ### Flood protection in both modes
 
 - PocketBase's built-in **rate limits** are enabled for sign-up, sign-in and the
   invitation routes (configured by the migration or install script).
 - Existing limits stay: 20 MB per PDF (ADR-0009), Cloudflare in front (ADR-0014).
-- Email verification for open servers is left for when SMTP exists (ADR-0016 open
-  point).
+- Optional email verification, see above.
 
 ## Alternatives considered
 
@@ -124,9 +152,12 @@ REALCHORD_REGISTRATION=invite_only   # or: open
   server operator only** (not by organization admins), `invite_only` is the default
   for new servers, and the mode is set in `pocketbase.env` with a restart (no
   settings collection, no extra `make` target for the mode).
+- 2026-11-17: Owner decision: **email verification** is an operator option in the
+  same environment file (`REALCHORD_EMAIL_VERIFICATION=off|required`, default `off`,
+  `required` only takes effect with SMTP).
 
 ## Open points
 
 - Limits per organization (number of songs, attachment storage) as a further cost
   guard.
-- Email verification and a captcha-free spam protection for `open` servers.
+- Spam protection without a captcha for `open` servers.

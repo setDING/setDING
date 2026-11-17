@@ -88,4 +88,4 @@ restarts and is a credential, so it must not be stored in plain text.
 - Changing the name, email and password of the account in the app.
 - Deleting the account (see ADR-0015, open points).
 - Sign-in with OTP or OAuth (Apple/Google) instead of a password.
-- Sign-up only with an invitation token when the server is `invite_only` (ADR-0024, proposed).
+- Sign-up only with an invitation token when the server is `invite_only`, and optional email verification set by the operator (ADR-0024, proposed).
