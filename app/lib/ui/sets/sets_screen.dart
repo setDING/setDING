@@ -6,6 +6,7 @@ import '../../data/database.dart';
 import '../../data/set_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
+import '../account/sync_refresh.dart';
 import '../bands/band_switcher.dart';
 import '../songs/chordpro_problems_badge.dart';
 import '../songs/songs_screen.dart' show songListTwoColumnWidth;
@@ -124,7 +125,13 @@ class _SetsPane extends ConsumerWidget {
         value: sets,
         data: (list) {
           if (list.isEmpty) {
-            return EmptyState(icon: Icons.queue_music, message: l10n.setsEmpty);
+            return SyncRefresh(
+              scrollable: false,
+              child: EmptyState(
+                icon: Icons.queue_music,
+                message: l10n.setsEmpty,
+              ),
+            );
           }
           final today = _today();
           final groups = groupSets(list, today);
@@ -156,10 +163,13 @@ class _SetsPane extends ConsumerWidget {
                 for (final s in groups.past) card(s),
             ],
           ];
-          return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 88),
-            itemCount: rows.length,
-            itemBuilder: (context, i) => rows[i],
+          return SyncRefresh(
+            child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 88),
+              itemCount: rows.length,
+              itemBuilder: (context, i) => rows[i],
+            ),
           );
         },
       ),
