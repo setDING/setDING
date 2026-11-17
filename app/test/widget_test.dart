@@ -78,6 +78,21 @@ void main() {
     expect(find.text('Personal adjustments'), findsOneWidget);
     expect(find.text('My notes'), findsOneWidget);
     expect(find.byTooltip('My key – just for me'), findsOneWidget);
+    // The scope is behind a (?) icon; tapping it shows for whom it applies.
+    final scope = find.byKey(const ValueKey('scope-info-personal'));
+    expect(scope, findsOneWidget);
+    expect(
+      find.text('Just for you – the song stays unchanged for everyone else.'),
+      findsNothing,
+    );
+    await tester.tap(scope);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(
+      find.text('Just for you – the song stays unchanged for everyone else.'),
+      findsOneWidget,
+    );
+    await tester.pump(const Duration(seconds: 6));
+    await tester.pumpAndSettle();
 
     // Choose key A in the dropdown → D/F# becomes E/G#.
     await tester.tap(find.byType(KeyPicker));

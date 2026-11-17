@@ -10,6 +10,7 @@ import '../../settings/settings.dart';
 import '../render/song_header.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/key_picker.dart';
+import '../widgets/scope_info.dart';
 import '../widgets/sequence_dialog.dart';
 
 /// The arrangement of [band] for [song] (ADR-0025): the band's key,
@@ -122,9 +123,16 @@ class BandArrangementCard extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        l10n.arrangementOf(band.name),
-                        style: theme.textTheme.titleSmall,
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              l10n.arrangementOf(band.name),
+                              style: theme.textTheme.titleSmall,
+                            ),
+                          ),
+                          const ScopeInfo(SettingScope.band),
+                        ],
                       ),
                       if (details.isNotEmpty)
                         Text(

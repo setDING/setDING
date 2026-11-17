@@ -196,7 +196,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get liveView => 'Show in live mode – just for me';
+  String get liveView => 'Show in live mode';
 
   @override
   String get liveViewChordPro => 'ChordPro text';
@@ -238,8 +238,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personalAdjustments => 'Personal adjustments';
 
   @override
-  String get personalAdjustmentsHint =>
-      'Only for you – the song stays unchanged for everyone else.';
+  String get scopePersonal =>
+      'Just for you – the song stays unchanged for everyone else.';
+
+  @override
+  String get scopeSet => 'For this set – applies to the whole band.';
+
+  @override
+  String get scopeBand => 'For the whole band – applies in all its sets.';
+
+  @override
+  String get scopeSong =>
+      'For the song – changes it for everyone in the organization.';
 
   @override
   String get keyPickerPersonal => 'My key – just for me';
@@ -861,7 +871,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String arrangementOf(String band) {
-    return 'Arrangement of $band – for the whole band';
+    return 'Arrangement of $band';
   }
 
   @override

@@ -395,7 +395,7 @@ abstract class AppLocalizations {
   /// No description provided for @liveView.
   ///
   /// In de, this message translates to:
-  /// **'Im Live-Modus anzeigen – nur für mich'**
+  /// **'Im Live-Modus anzeigen'**
   String get liveView;
 
   /// No description provided for @liveViewChordPro.
@@ -476,11 +476,29 @@ abstract class AppLocalizations {
   /// **'Persönliche Anpassungen'**
   String get personalAdjustments;
 
-  /// No description provided for @personalAdjustmentsHint.
+  /// No description provided for @scopePersonal.
   ///
   /// In de, this message translates to:
   /// **'Nur für dich – für alle anderen bleibt der Song unverändert.'**
-  String get personalAdjustmentsHint;
+  String get scopePersonal;
+
+  /// No description provided for @scopeSet.
+  ///
+  /// In de, this message translates to:
+  /// **'Für dieses Set – gilt für die ganze Band.'**
+  String get scopeSet;
+
+  /// No description provided for @scopeBand.
+  ///
+  /// In de, this message translates to:
+  /// **'Für die ganze Band – gilt in allen ihren Sets.'**
+  String get scopeBand;
+
+  /// No description provided for @scopeSong.
+  ///
+  /// In de, this message translates to:
+  /// **'Für den Song – ändert ihn für alle in der Organisation.'**
+  String get scopeSong;
 
   /// No description provided for @keyPickerPersonal.
   ///
@@ -1619,7 +1637,7 @@ abstract class AppLocalizations {
   /// No description provided for @arrangementOf.
   ///
   /// In de, this message translates to:
-  /// **'Arrangement von {band} – für die ganze Band'**
+  /// **'Arrangement von {band}'**
   String arrangementOf(String band);
 
   /// No description provided for @arrangementAsWritten.

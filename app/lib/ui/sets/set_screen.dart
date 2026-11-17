@@ -529,7 +529,7 @@ class _LiveViewDropdown extends ConsumerWidget {
     ];
 
     return Tooltip(
-      message: l10n.liveView,
+      message: '${l10n.liveView}\n${l10n.scopePersonal}',
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 200),
         child: DropdownButtonHideUnderline(
