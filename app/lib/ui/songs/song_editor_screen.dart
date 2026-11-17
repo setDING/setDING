@@ -571,6 +571,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
                 controller: _controller,
                 scrollController: _scroll,
                 style: editorTextStyle,
+                focusNode: _focus,
               ),
               Expanded(
                 child: EditorAutocomplete(

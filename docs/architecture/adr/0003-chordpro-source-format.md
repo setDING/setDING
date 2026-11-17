@@ -95,6 +95,7 @@ Notation alternatives:
 - 2026-11-17: Selected text can be dragged with the mouse (#377): a layer above the text field takes the pointer only where the mouse presses on the selection (touch keeps the text field's own gestures); Ctrl/Alt copies, whole lines drop between lines (`dropText` in `editing.dart`). The editing buttons of the toolbar have a row of their own.
 - 2026-11-17: Search and replace can match case exactly ("Aa" toggle, #379); the choice is kept while the editor is open.
 - 2026-11-17: A preview tap goes to the tapped character (#381): the renderer marks each lyrics piece with its position in the line's text (`MetaData`), the editor maps it to the source column (`sourceColumn`, skipping chords and markup); a tapped chord puts the cursor before its `[`.
+- 2026-11-17: Tapping a line number selects the line, dragging over the numbers selects several (#383), so lines can be moved, duplicated or deleted on a tablet without a mouse.
 
 ## Open points
 
