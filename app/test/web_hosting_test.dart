@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:setding/settings/settings.dart';
 import 'package:setding/sync/sync_backend.dart';
@@ -41,5 +43,16 @@ void main() {
   test('invitation links of the web client carry the token', () {
     const token = 'AbCdEfGhIjKlMnOpQrStUv12';
     expect(inviteTokenFrom('https://app.setding.app/invite/$token'), token);
+  });
+
+  test('the web client loads the audio engine of the click', () {
+    // Without this script SoLoud cannot start in the browser (ADR-0026).
+    expect(
+      File('web/index.html').readAsStringSync(),
+      contains(
+        '<script src="assets/packages/flutter_soloud/web/init_soloud.js" '
+        'defer></script>',
+      ),
+    );
   });
 }
