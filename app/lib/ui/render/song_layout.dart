@@ -1,3 +1,4 @@
+import 'dart:developer' show Timeline;
 import 'dart:math' as math;
 
 import 'package:chordpro/chordpro.dart';
@@ -648,112 +649,121 @@ SongFit fitSong(
   DiagramsPosition diagramsPosition = DiagramsPosition.off,
   int maxPages = 1,
 }) {
-  final diagrams =
-      diagramsPosition == DiagramsPosition.off || diagramResolver == null
-      ? const <DiagramData>[]
-      : diagramResolver.allChords();
-  SongFit? best;
-  double bestScore = 0;
-  double? singleColumnFont;
+  // Timeline marker for profiling on devices (docs/development/performance.md).
+  Timeline.startSync('fitSong');
+  try {
+    final diagrams =
+        diagramsPosition == DiagramsPosition.off || diagramResolver == null
+        ? const <DiagramData>[]
+        : diagramResolver.allChords();
+    SongFit? best;
+    double bestScore = 0;
+    double? singleColumnFont;
 
-  final collapseOptions = switch (chorusRepeat) {
-    ChorusRepeat.auto => const [false, true],
-    ChorusRepeat.full => const [false],
-    ChorusRepeat.label => const [true],
-  };
-  for (final collapse in collapseOptions) {
-    final blocks = buildSongBlocks(
-      song,
-      lyricsOnly: lyricsOnly,
-      labeler: labeler,
-      notes: notes,
-      collapseRecalls: collapse,
-      diagrams: diagrams,
-      diagramsOnTop: diagramsPosition == DiagramsPosition.top,
-    );
-    if (blocks.isEmpty) return SongFit(fontSize: baseFontSize, columns: 1);
-    final metrics = measureBlocks(
-      blocks,
-      formatter: formatter,
-      lyricsOnly: lyricsOnly,
-      textScaler: textScaler,
-      baseStyle: baseStyle,
-      diagramResolver: diagramResolver,
-      imageLookup: imageLookup,
-    );
-    final widest = metrics.fold<double>(0, (w, m) => math.max(w, m.minWidth));
-    singleColumnFont ??= widest <= 0 ? maxFontSize : size.width / widest;
+    final collapseOptions = switch (chorusRepeat) {
+      ChorusRepeat.auto => const [false, true],
+      ChorusRepeat.full => const [false],
+      ChorusRepeat.label => const [true],
+    };
+    for (final collapse in collapseOptions) {
+      final blocks = buildSongBlocks(
+        song,
+        lyricsOnly: lyricsOnly,
+        labeler: labeler,
+        notes: notes,
+        collapseRecalls: collapse,
+        diagrams: diagrams,
+        diagramsOnTop: diagramsPosition == DiagramsPosition.top,
+      );
+      if (blocks.isEmpty) return SongFit(fontSize: baseFontSize, columns: 1);
+      final metrics = Timeline.timeSync(
+        'measureBlocks',
+        () => measureBlocks(
+          blocks,
+          formatter: formatter,
+          lyricsOnly: lyricsOnly,
+          textScaler: textScaler,
+          baseStyle: baseStyle,
+          diagramResolver: diagramResolver,
+          imageLookup: imageLookup,
+        ),
+      );
+      final widest = metrics.fold<double>(0, (w, m) => math.max(w, m.minWidth));
+      singleColumnFont ??= widest <= 0 ? maxFontSize : size.width / widest;
 
-    final forced = forcedColumns(blocks);
-    final lowest = forced ?? math.min(minColumns, blocks.length);
-    final highest = forced ?? math.min(maxColumns, blocks.length);
-    for (var k = lowest; k <= highest; k++) {
-      if (forced == null &&
-          k > 1 &&
-          columnWidth(size.width, k, baseFontSize) < minColumnWidth) {
-        continue;
-      }
-      // Breaks in the song decide the columns: no further pages.
-      final pageCount = forced == null ? maxPages : 1;
-      for (var p = 1; p <= pageCount; p++) {
-        // Every page gets at least one block.
-        if (p > 1 && (p - 1) * k >= blocks.length) break;
-        // Start with the largest font the width allows, then shrink until
-        // the tallest column fits (wrapping changes with the font size).
-        var font = widest <= 0
-            ? maxFontSize
-            : size.width / (k * widest + columnGap * (k - 1));
-        font = math.min(font, maxFontSize);
-        var fits = false;
-        for (var i = 0; i < 12 && font >= minFontSize; i++) {
-          final width = columnWidth(size.width, k, font);
-          final heights = [for (final m in metrics) m.height(font, width)];
-          // Pages continue the columns: p pages of k columns are p * k
-          // columns in reading order.
-          final tallest = tallestColumn(
-            heights,
-            columnBreaks(blocks, heights, p * k),
-          );
-          if (tallest <= size.height) {
-            fits = true;
-            break;
-          }
-          font *= size.height / tallest * 0.99;
+      final forced = forcedColumns(blocks);
+      final lowest = forced ?? math.min(minColumns, blocks.length);
+      final highest = forced ?? math.min(maxColumns, blocks.length);
+      for (var k = lowest; k <= highest; k++) {
+        if (forced == null &&
+            k > 1 &&
+            columnWidth(size.width, k, baseFontSize) < minColumnWidth) {
+          continue;
         }
-        if (!fits) continue;
-        font *= fitSafety;
-        // Prefer fewer columns, full choruses and fewer pages unless
-        // clearly better; more pages only for up to the base font size.
-        final penalty = collapse && chorusRepeat == ChorusRepeat.auto
-            ? 0.85
-            : 1.0;
-        final readable = p == 1
-            ? font
-            : math.min(font, baseFontSize) * math.pow(pagePenalty, p - 1);
-        final score = readable * penalty * (1 - 0.03 * (k - 1));
-        if (score > bestScore) {
-          bestScore = score;
-          best = SongFit(
-            fontSize: font,
-            columns: k,
-            pages: p,
-            collapseRecalls: collapse,
-            layout: (blocks: blocks, metrics: metrics),
-          );
+        // Breaks in the song decide the columns: no further pages.
+        final pageCount = forced == null ? maxPages : 1;
+        for (var p = 1; p <= pageCount; p++) {
+          // Every page gets at least one block.
+          if (p > 1 && (p - 1) * k >= blocks.length) break;
+          // Start with the largest font the width allows, then shrink until
+          // the tallest column fits (wrapping changes with the font size).
+          var font = widest <= 0
+              ? maxFontSize
+              : size.width / (k * widest + columnGap * (k - 1));
+          font = math.min(font, maxFontSize);
+          var fits = false;
+          for (var i = 0; i < 12 && font >= minFontSize; i++) {
+            final width = columnWidth(size.width, k, font);
+            final heights = [for (final m in metrics) m.height(font, width)];
+            // Pages continue the columns: p pages of k columns are p * k
+            // columns in reading order.
+            final tallest = tallestColumn(
+              heights,
+              columnBreaks(blocks, heights, p * k),
+            );
+            if (tallest <= size.height) {
+              fits = true;
+              break;
+            }
+            font *= size.height / tallest * 0.99;
+          }
+          if (!fits) continue;
+          font *= fitSafety;
+          // Prefer fewer columns, full choruses and fewer pages unless
+          // clearly better; more pages only for up to the base font size.
+          final penalty = collapse && chorusRepeat == ChorusRepeat.auto
+              ? 0.85
+              : 1.0;
+          final readable = p == 1
+              ? font
+              : math.min(font, baseFontSize) * math.pow(pagePenalty, p - 1);
+          final score = readable * penalty * (1 - 0.03 * (k - 1));
+          if (score > bestScore) {
+            bestScore = score;
+            best = SongFit(
+              fontSize: font,
+              columns: k,
+              pages: p,
+              collapseRecalls: collapse,
+              layout: (blocks: blocks, metrics: metrics),
+            );
+          }
         }
       }
     }
-  }
 
-  if (best != null) return best;
-  // Does not fit: one column, as large as the width allows, scrollable.
-  return SongFit(
-    fontSize: (singleColumnFont ?? baseFontSize).clamp(
-      minFontSize,
-      maxFontSize,
-    ),
-    columns: 1,
-    collapseRecalls: chorusRepeat == ChorusRepeat.label,
-    fits: false,
-  );
+    if (best != null) return best;
+    // Does not fit: one column, as large as the width allows, scrollable.
+    return SongFit(
+      fontSize: (singleColumnFont ?? baseFontSize).clamp(
+        minFontSize,
+        maxFontSize,
+      ),
+      columns: 1,
+      collapseRecalls: chorusRepeat == ChorusRepeat.label,
+      fits: false,
+    );
+  } finally {
+    Timeline.finishSync();
+  }
 }

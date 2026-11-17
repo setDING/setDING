@@ -8,6 +8,7 @@
 #   make start      build and start a test instance (without Flutter tooling)
 #   make reset      delete the test instance's data (fresh start with demo song)
 #   make backend    start a local PocketBase with the repository's schema and hooks
+#   make perf       measure performance on a USB-connected Android device
 #   make apk        build an Android APK for manual installation (sideloading)
 #   make android-keystore  create the Android release key (owner, once)
 #   make release    build the Linux release package (runs on any x86-64 Linux)
@@ -73,7 +74,7 @@ BACKEND_REGISTRATION ?= open
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := REALCHORD_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build web web-serve deps upgrade apk apk-install android-keystore release release-linux release-check reset data-dir backend check test codegen l10n screenshots branding examples doctor clean ci-image \
+.PHONY: help setup dev start build web web-serve deps upgrade apk apk-install android-keystore release release-linux release-check reset data-dir backend check test codegen l10n perf screenshots branding examples doctor clean ci-image \
 	server-target server-install server-status server-logs server-backup server-fetch-backup server-founder-invite server-ssh
 
 help: ## Show this help
@@ -175,6 +176,9 @@ codegen: ## Regenerate the drift database code
 
 l10n: ## Regenerate the translations from the ARB files
 	cd $(APP) && $(FLUTTER) gen-l10n
+
+perf: ## Measure performance on a USB-connected Android device (DEVICE=<id>; docs/development/performance.md)
+	$(ROOT)/tool/perf.sh
 
 screenshots: ## Render screenshots with real fonts to app/build/screenshots/
 	cd $(APP) && $(FLUTTER) test test_screenshots --dart-define=WRITE_SCREENSHOTS=true
