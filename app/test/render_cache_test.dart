@@ -23,6 +23,18 @@ void main() {
     expect(get(2), '3:2');
   });
 
+  test('LRU cache lookup does not create, but counts as a use', () {
+    final cache = LruCache<int, String>(2);
+    expect(cache.lookup(1), isNull);
+    cache.get(1, () => 'one');
+    cache.get(2, () => 'two');
+    expect(cache.lookup(1), 'one'); // now the most recent
+    cache.get(3, () => 'three'); // evicts 2
+    expect(cache.lookup(2), isNull);
+    expect(cache.lookup(1), 'one');
+    expect(cache.lookup(3), 'three');
+  });
+
   test('cached parsing returns the same song for the same input', () {
     const source = '{title: Cached}\n[C]la';
     final a = parseChordProCached(source);
