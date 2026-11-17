@@ -106,4 +106,5 @@ See the ADR index in the architecture README for the current status. In short:
 - Linux release with `make release`, built in a Debian container (ADR-0019)
 - Release builds for Linux, Android and Windows on GitHub Actions from a `vX.Y.Z` tag; Android via Obtainium, signed with the release key from the repository secrets (ADR-0021)
 - Ordered roles: organization admin > librarian > member, band leader > set planner > member; organization admins may do everything (ADR-0023)
+- Band arrangements per band and song (key, sequence, tempo) between song and set item; set item transposition is relative to the band's key (ADR-0025)
 - Registration set by the server operator in `pocketbase.env`: `invite_only` (default, sign-up only with an invitation, new organizations only via operator founder invitations) or `open`; optional email verification (ADR-0024)
