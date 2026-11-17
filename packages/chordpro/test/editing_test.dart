@@ -172,6 +172,15 @@ void _searchTests() {
       expect(findInSource('abc', ''), isEmpty);
     });
 
+    test('replaceInSource replaces all matches', () {
+      const text = 'Am [am] AM';
+      expect(
+        replaceInSource(text, findInSource(text, 'am'), 'Em'),
+        'Em [Em] Em',
+      );
+      expect(replaceInSource(text, const [], 'x'), text);
+    });
+
     test('treats the query literally', () {
       expect(findInSource('[C] x', '[C]'), [(0, 3)]);
       expect(findInSource('a.b', '.'), [(1, 2)]);

@@ -258,3 +258,22 @@ SourceEdit? convertChordsOverLyricsIn(String text, int base, int extent) {
     start + converted.length,
   );
 }
+
+/// [text] with every range of [matches] (sorted, without overlaps, e.g.
+/// from [findInSource]) replaced by [replacement] (#375).
+String replaceInSource(
+  String text,
+  List<(int, int)> matches,
+  String replacement,
+) {
+  final out = StringBuffer();
+  var last = 0;
+  for (final (start, end) in matches) {
+    out
+      ..write(text.substring(last, start))
+      ..write(replacement);
+    last = end;
+  }
+  out.write(text.substring(last));
+  return out.toString();
+}

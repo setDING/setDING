@@ -131,4 +131,47 @@ void main() {
     expect(searchField, findsNothing);
     await app.dispose(tester);
   });
+
+  testWidgets('replaces the current match, then all of them', (tester) async {
+    final (app, controller) = await pumpEditor(tester, 'Am x Am y am');
+    await ctrl(tester, LogicalKeyboardKey.keyH);
+    expect(find.byKey(const ValueKey('editor-replace')), findsOneWidget);
+    await tester.enterText(searchField, 'am');
+    await tester.enterText(find.byKey(const ValueKey('editor-replace')), 'Em7');
+    await tester.pump();
+    expect(find.text('1 of 3'), findsOneWidget);
+
+    // Enter in the replace field replaces and selects the next match.
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+    expect(controller.text, 'Em7 x Am y am');
+    expect(
+      controller.selection,
+      const TextSelection(baseOffset: 6, extentOffset: 8),
+    );
+    expect(find.text('1 of 2'), findsOneWidget);
+
+    await tester.tap(find.text('Replace all'));
+    await tester.pumpAndSettle();
+    expect(controller.text, 'Em7 x Em7 y Em7');
+    expect(find.text('2 replaced'), findsOneWidget);
+    expect(find.text('No matches'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('the toggle shows the replace row', (tester) async {
+    final (app, controller) = await pumpEditor(tester, 'a b a');
+    await ctrl(tester, LogicalKeyboardKey.keyF);
+    expect(find.byKey(const ValueKey('editor-replace')), findsNothing);
+    await tester.tap(find.byTooltip('Replace'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('editor-replace')), findsOneWidget);
+    await tester.enterText(searchField, 'a');
+    await tester.enterText(find.byKey(const ValueKey('editor-replace')), '');
+    await tester.pump();
+    await tester.tap(find.widgetWithText(TextButton, 'Replace'));
+    await tester.pump();
+    expect(controller.text, ' b a');
+    await app.dispose(tester);
+  });
 }

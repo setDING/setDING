@@ -1838,6 +1838,36 @@ abstract class AppLocalizations {
   /// **'Mehr'**
   String get editorGroupMore;
 
+  /// No description provided for @replaceToggle.
+  ///
+  /// In de, this message translates to:
+  /// **'Ersetzen'**
+  String get replaceToggle;
+
+  /// No description provided for @replaceWith.
+  ///
+  /// In de, this message translates to:
+  /// **'Ersetzen durch'**
+  String get replaceWith;
+
+  /// No description provided for @replace.
+  ///
+  /// In de, this message translates to:
+  /// **'Ersetzen'**
+  String get replace;
+
+  /// No description provided for @replaceAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle ersetzen'**
+  String get replaceAll;
+
+  /// No description provided for @replacedCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 ersetzt} other{{count} ersetzt}}'**
+  String replacedCount(int count);
+
   /// No description provided for @convertChordsOverLyrics.
   ///
   /// In de, this message translates to:
