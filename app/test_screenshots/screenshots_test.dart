@@ -9,6 +9,7 @@ import 'package:realchord/ui/live/live_screen.dart';
 import 'package:realchord/ui/sets/set_screen.dart';
 import 'package:realchord/ui/songs/song_editor_screen.dart';
 import 'package:realchord/ui/songs/song_screen.dart';
+import 'package:realchord/ui/songs/songs_screen.dart';
 import 'package:realchord/ui/widgets/logo.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
@@ -130,7 +131,7 @@ void main() {
       final ids = await tester.runAsync(() async {
         final a = await app.songs.createSong(source: demoSongSource);
         final b = await app.songs.createSong(
-          source: '{title: Blue Monday Groove}\n{artist: House Band}\n{key: Bb}\n[Bb7]Blues [Eb7]line\n',
+          source: '{title: Blue Monday Groove}\n{artist: House Band}\n{key: Bb}\n{tag: Blues}\n{x_sequence: I, V, C, V, C x2, O}\n[Bb7]Blues [Eb7]line\n',
         );
         await app.songs.saveOverlay(
           (await app.songs.getOverlay(
@@ -165,6 +166,14 @@ void main() {
         ),
       );
       await _shot(tester, '${lang}_3_song');
+
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: const SongsScreen()),
+        ),
+      );
+      await _shot(tester, '${lang}_3_songs');
 
       final items = await tester.runAsync(
         () async => [

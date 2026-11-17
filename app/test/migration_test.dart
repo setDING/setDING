@@ -23,8 +23,14 @@ const schema7Indexes = [
   'set_items_song',
 ];
 
+/// Turns a current database back into schema 12: songs without sequence.
+void downgradeToSchema12(Database raw) {
+  raw.execute('ALTER TABLE songs DROP COLUMN sequence');
+}
+
 /// Turns a current database back into schema 11: no band arrangements.
 void downgradeToSchema11(Database raw) {
+  downgradeToSchema12(raw);
   raw.execute('DROP TABLE band_arrangements');
 }
 
@@ -402,4 +408,28 @@ void main() {
     expect((await repo.get('b1', song))!.transpose, 2);
     await upgraded.close();
   });
+
+  test(
+    'upgrades a schema 12 database: the song list has the sequence',
+    () async {
+      final current = AppDatabase(NativeDatabase(file));
+      final storage = FileAttachmentStorage(dir);
+      await SongRepository(
+        current,
+        storage,
+      ).createSong(source: '{title: Old}\n{x_sequence: I, V, C}');
+      await current.close();
+
+      final raw = sqlite3.open(file.path);
+      downgradeToSchema12(raw);
+      raw.execute('PRAGMA user_version = 12');
+      raw.close();
+
+      final upgraded = AppDatabase(NativeDatabase(file));
+      final repo = SongRepository(upgraded, storage);
+      upgraded.afterUpgrade = (db) => repo.refreshAllMetadata();
+      expect((await repo.watchSongList().first).single.sequence, 'I, V, C');
+      await upgraded.close();
+    },
+  );
 }

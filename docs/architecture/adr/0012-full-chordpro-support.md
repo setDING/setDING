@@ -151,3 +151,6 @@ Each phase is a separate branch and merge (ADR-0010).
 - 2026-11-17: The song details form also shows the song sequence (`{x_sequence}`) as
   coloured parts and opens the same sequence dialog as the set list (#241); the result is
   written on OK, an empty sequence removes the directive.
+- 2026-11-17: The song list shows each song's sequence as compact coloured parts and the
+  key as a badge in the chosen notation (#243). The raw `{x_sequence}` value is stored
+  redundantly in `songs.sequence` (local schema 13) like key and tags.

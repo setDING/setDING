@@ -1,6 +1,7 @@
 import 'package:realchord/data/database.dart';
 import 'package:realchord/data/demo_song.dart';
 import 'package:realchord/ui/live/live_screen.dart';
+import 'package:realchord/ui/render/song_header.dart';
 import 'package:realchord/ui/render/song_view.dart';
 import 'package:realchord/ui/sets/set_screen.dart';
 import 'package:realchord/ui/sets/sets_screen.dart';
@@ -266,6 +267,38 @@ void main() {
     expect(find.text('Capo: 2 (G)'), findsOneWidget);
     expect(find.text('G'), findsOneWidget);
     expect(find.text('C'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('song list shows the key as a badge and the sequence', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'notation': 'german'},
+    );
+    await tester.runAsync(() async {
+      await app.songs.createSong(
+        source: '{title: Alpha}\n{key: Bb}\n{x_sequence: I, V, C x2}',
+      );
+      await app.songs.createSong(source: '{title: Beta}');
+    });
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Songs').first);
+    await tester.pumpAndSettle();
+
+    // Key in the chosen notation (German: Bb is B), in its own badge.
+    final badge = find.byKey(const ValueKey('song-key-badge'));
+    expect(badge, findsOneWidget);
+    expect(
+      find.descendant(of: badge, matching: find.text('B')),
+      findsOneWidget,
+    );
+    expect(find.bySemanticsLabel(RegExp('Key: B')), findsOneWidget);
+    // The sequence as chips; songs without one show none.
+    expect(find.byType(SongSequenceView), findsOneWidget);
+    expect(find.text('C x2'), findsOneWidget);
     await app.dispose(tester);
   });
 

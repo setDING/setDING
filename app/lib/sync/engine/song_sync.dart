@@ -110,6 +110,7 @@ class SongSync {
             title: meta.title ?? remote.title,
             artist: Value(meta.artist),
             songKey: Value(meta.key),
+            sequence: Value(meta.sequence),
             tempo: Value(meta.tempo),
             sortTitle: Value(meta.sortTitle),
             sortArtist: Value(meta.sortArtist),

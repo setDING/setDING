@@ -1,13 +1,16 @@
 import 'dart:async';
 
+import 'package:chordpro/chordpro.dart' as cp;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/song_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
+import '../../settings/settings.dart';
 import '../bands/copy_to_band.dart';
 import '../bands/library_switcher.dart';
+import '../render/song_header.dart';
 import '../widgets/dialogs.dart';
 import 'import_dialog.dart';
 import 'song_editor_screen.dart';
@@ -285,8 +288,9 @@ class _TagFilter extends ConsumerWidget {
   }
 }
 
-/// List entry for a song.
-class SongTile extends StatelessWidget {
+/// List entry for a song: the key as a badge in front, artist and tags
+/// below the title, and the song sequence as compact chips.
+class SongTile extends ConsumerWidget {
   const SongTile({
     super.key,
     required this.song,
@@ -305,17 +309,41 @@ class SongTile extends StatelessWidget {
   final Widget? leading;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final subtitle = [
+    final notation = ref.watch(settingsProvider.select((s) => s.notation));
+    final details = [
       if (song.artist != null) song.artist!,
-      if (song.songKey != null) song.songKey!,
       ...song.tagList.map((t) => '#$t'),
     ].join(' · ');
+    final sequence = song.sequence == null
+        ? const <cp.SequenceItem>[]
+        : cp.parseSequence(song.sequence!);
+    final key = song.songKey == null
+        ? null
+        : cp.Key.tryParse(song.songKey!)?.format(notation) ?? song.songKey!;
     return ListTile(
-      leading: leading,
+      leading: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ?leading,
+          SongKeyBadge(keyName: key),
+        ],
+      ),
       title: Text(song.title.isEmpty ? l10n.untitled : song.title),
-      subtitle: subtitle.isEmpty ? null : Text(subtitle),
+      subtitle: details.isEmpty && sequence.isEmpty
+          ? null
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (details.isNotEmpty) Text(details),
+                if (sequence.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: SongSequenceView(sequence, compact: true),
+                  ),
+              ],
+            ),
       trailing:
           trailing ??
           (hasAttachments
@@ -326,6 +354,47 @@ class SongTile extends StatelessWidget {
               : null),
       onTap: onTap,
       onLongPress: onLongPress,
+    );
+  }
+}
+
+/// The key of a song in a list, as an outlined badge of fixed width so that
+/// the keys form a column; empty (but as wide) for songs without a key.
+class SongKeyBadge extends StatelessWidget {
+  const SongKeyBadge({super.key, required this.keyName});
+
+  /// Formatted key, or null.
+  final String? keyName;
+
+  static const width = 48.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final name = keyName;
+    if (name == null) return const SizedBox(width: width);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Semantics(
+      label: AppLocalizations.of(context).keyLabel(name),
+      excludeSemantics: true,
+      child: Container(
+        key: const ValueKey('song-key-badge'),
+        constraints: const BoxConstraints(minWidth: width, minHeight: 36),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        decoration: BoxDecoration(
+          border: Border.all(color: scheme.primary, width: 1.5),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          name,
+          maxLines: 1,
+          style: theme.textTheme.titleMedium?.copyWith(
+            color: scheme.primary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
     );
   }
 }

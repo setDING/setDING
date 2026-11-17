@@ -108,6 +108,9 @@ class Songs extends Table {
   TextColumn get songKey => text().nullable()();
   IntColumn get tempo => integer().nullable()();
 
+  /// Raw `{x_sequence}` value, for the song list (schema 13).
+  TextColumn get sequence => text().nullable()();
+
   /// `{sorttitle}` / `{sortartist}` for sorting (schema 2).
   TextColumn get sortTitle => text().nullable()();
   TextColumn get sortArtist => text().nullable()();
@@ -324,7 +327,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -383,7 +386,12 @@ class AppDatabase extends _$AppDatabase {
               songs.libraryId: const CustomExpression<String>('band_id'),
             },
             // Columns of later schemas exist in the rebuilt table already.
-            newColumns: [songs.searchText, songs.createdBy, songs.updatedBy],
+            newColumns: [
+              songs.searchText,
+              songs.createdBy,
+              songs.updatedBy,
+              songs.sequence,
+            ],
           ),
         );
       }
@@ -437,6 +445,12 @@ class AppDatabase extends _$AppDatabase {
       if (from < 12) {
         // Band arrangements (ADR-0025).
         await m.createTable(bandArrangements);
+      }
+      if (from < 13) {
+        // Song sequence for the song list: filled by afterUpgrade
+        // (refreshAllMetadata); before schema 4 the rebuilt table has the
+        // column already.
+        if (from >= 4) await m.addColumn(songs, songs.sequence);
       }
     },
     beforeOpen: (details) async {
