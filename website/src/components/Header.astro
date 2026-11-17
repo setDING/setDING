@@ -1,0 +1,140 @@
+---
+// Starlight's header with links to the documentation and the downloads
+// (ADR-0030), so the landing page needs no sidebar. On narrow screens only
+// the documentation link and a short language switch are shown (the language
+// select sits in the mobile menu, which pages without a sidebar do not have). Based on @astrojs/starlight's Header.astro.
+import config from 'virtual:starlight/user-config';
+import LanguageSelect from 'virtual:starlight/components/LanguageSelect';
+import Search from 'virtual:starlight/components/Search';
+import SiteTitle from 'virtual:starlight/components/SiteTitle';
+import SocialIcons from 'virtual:starlight/components/SocialIcons';
+import ThemeSelect from 'virtual:starlight/components/ThemeSelect';
+
+const shouldRenderSearch =
+  config.pagefind || config.components.Search !== '@astrojs/starlight/components/Search.astro';
+
+const { locale, entry } = Astro.locals.starlightRoute;
+const base = locale ? `/${locale}` : '';
+const en = locale === 'en';
+const isLanding = entry.id === 'index' || entry.id === `${locale}/index` || entry.id === `${locale}`;
+// Both languages use the same page paths (docs/development/website.md).
+const path = Astro.url.pathname;
+const otherLanguage = en
+  ? { label: 'DE', lang: 'de-CH', title: 'Deutsch', href: path.replace(/^\/en(\/|$)/, '/') }
+  : { label: 'EN', lang: 'en', title: 'English', href: `/en${path}` };
+const links = [
+  { label: en ? 'Documentation' : 'Dokumentation', href: `${base}/start/overview/`, docs: true },
+  { label: 'Download', href: `${base}/start/install/`, docs: false },
+];
+---
+
+<div class="header">
+  <div class="title-wrapper sl-flex"><SiteTitle /></div>
+  <div class="sl-flex print:hidden">{shouldRenderSearch && <Search />}</div>
+  <div class="sl-flex print:hidden end-group">
+    <nav class="site-nav" aria-label={en ? 'Main' : 'Hauptnavigation'}>
+      {
+        links.map((link) => (
+          <a
+            href={link.href}
+            class:list={{ 'md-only': !link.docs }}
+            aria-current={link.docs && !isLanding ? 'page' : undefined}
+          >
+            {link.label}
+          </a>
+        ))
+      }
+      <a href={otherLanguage.href} class="sm-only" hreflang={otherLanguage.lang} lang={otherLanguage.lang} title={otherLanguage.title}>
+        {otherLanguage.label}
+      </a>
+    </nav>
+    <div class="sl-hidden md:sl-flex right-group">
+      <div class="sl-flex social-icons"><SocialIcons /></div>
+      <ThemeSelect />
+      <LanguageSelect />
+    </div>
+  </div>
+</div>
+
+<style>
+  .header {
+    display: flex;
+    gap: var(--sl-nav-gap);
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+  }
+  .title-wrapper {
+    overflow: clip;
+    padding: 0.25rem;
+    margin: -0.25rem;
+    min-width: 0;
+  }
+  .end-group,
+  .right-group,
+  .social-icons {
+    gap: 1rem;
+    align-items: center;
+  }
+  .social-icons::after,
+  .site-nav::after {
+    content: '';
+    height: 2rem;
+    border-inline-end: 1px solid var(--sl-color-gray-5);
+  }
+  .site-nav::after {
+    display: none;
+  }
+  .site-nav {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+  .site-nav a {
+    color: var(--sl-color-gray-2);
+    text-decoration: none;
+    font-size: var(--sl-text-sm);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .site-nav a:hover,
+  .site-nav a[aria-current='page'] {
+    color: var(--sl-color-text-accent);
+  }
+  .md-only {
+    display: none;
+  }
+  @media (min-width: 50rem) {
+    .md-only {
+      display: inline;
+    }
+    .sm-only {
+      display: none;
+    }
+    .site-nav::after {
+      display: block;
+    }
+    :global(:root[data-has-sidebar]) {
+      --__sidebar-pad: calc(2 * var(--sl-nav-pad-x));
+    }
+    :global(:root:not([data-has-toc])) {
+      --__toc-width: 0rem;
+    }
+    .header {
+      --__sidebar-width: max(0rem, var(--sl-content-inline-start, 0rem) - var(--sl-nav-pad-x));
+      --__main-column-fr: calc(
+        (
+            100% + var(--__sidebar-pad, 0rem) - var(--__toc-width, var(--sl-sidebar-width)) -
+              (2 * var(--__toc-width, var(--sl-nav-pad-x))) - var(--sl-content-inline-start, 0rem) -
+              var(--sl-content-width)
+          ) / 2
+      );
+      display: grid;
+      grid-template-columns:
+        minmax(calc(var(--__sidebar-width) + max(0rem, var(--__main-column-fr) - var(--sl-nav-gap))), auto)
+        1fr
+        auto;
+      align-content: center;
+    }
+  }
+</style>

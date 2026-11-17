@@ -78,6 +78,9 @@ Constraints:
   hosting (e.g. a Swiss VPS) is a separate decision.
 - 2026-11-17: Accepted by the owner (#388). The website does not link to the web
   client, which is not open to the public.
+- 2026-11-17: The landing page has no sidebar; a custom header
+  (`website/src/components/Header.astro`) links to the documentation and the
+  downloads on every page, with a short language switch on phones (#400).
 
 ## Open points
 

@@ -26,7 +26,10 @@ the site. The build fails on pages that do not compile and on broken internal li
 - Links between pages are absolute without the domain: `/start/install/` and
   `/en/start/install/`.
 - Sidebar: one group per directory, configured in `website/astro.config.mjs`; the
-  order within a group comes from `sidebar.order` in the front matter.
+  order within a group comes from `sidebar.order` in the front matter. The landing
+  page (`index.mdx`) has no sidebar; the header links to the documentation and the
+  downloads (`website/src/components/Header.astro`, which replaces Starlight's
+  header).
 - Screenshots come from `docs/screenshots/` (`make screenshots`); import them in MDX
   (see `index.mdx`) so Astro converts and sizes them. Do not copy them into
   `website/`.
