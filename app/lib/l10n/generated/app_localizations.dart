@@ -1625,8 +1625,14 @@ abstract class AppLocalizations {
   /// No description provided for @sequenceEmpty.
   ///
   /// In de, this message translates to:
-  /// **'Tippe unten auf die Teile, um den Ablauf zusammenzustellen.'**
+  /// **'Tippe unten auf die Teile oder ziehe sie hierher, um den Ablauf zusammenzustellen.'**
   String get sequenceEmpty;
+
+  /// No description provided for @sequenceReorderHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Teil lange drücken, um ihn an eine andere Stelle zu verschieben.'**
+  String get sequenceReorderHint;
 
   /// No description provided for @sequenceSongParts.
   ///

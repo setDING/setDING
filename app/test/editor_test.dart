@@ -1,6 +1,7 @@
 import 'package:realchord/ui/render/song_header.dart';
 import 'package:realchord/ui/songs/song_editor_screen.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -186,6 +187,80 @@ void main() {
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
     expect(field.controller!.text, source);
+    await app.dispose(tester);
+  });
+
+  testWidgets('song sequence entries are moved by drag and drop', (
+    tester,
+  ) async {
+    const source =
+        '{title: T}\n{x_sequence: V, PC, C}\n{sov}\na\n{eov}\n'
+        '{start_of_verse: Pre-Chorus}\nb\n{eov}\n{soc}\nc\n{eoc}\n'
+        '{sob}\nd\n{eob}';
+    final (app, field) = await pumpEditor(tester, source, cursor: 0);
+    await choose(tester, 'Song info', 'Song sequence');
+    final entries = find.byKey(const ValueKey('sequence-entry'));
+    expect(entries, findsNWidgets(3));
+    expect(
+      find.text('Long-press a part to move it to another position.'),
+      findsOneWidget,
+    );
+
+    // Long-presses [from] and drops it on [to].
+    Future<void> drag(Finder from, Finder to) async {
+      final gesture = await tester.startGesture(tester.getCenter(from));
+      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
+      await gesture.moveBy(const Offset(5, 5));
+      await tester.pump();
+      await gesture.moveTo(tester.getCenter(to));
+      await tester.pump();
+      expect(find.byKey(const ValueKey('sequence-drop-marker')), findsWidgets);
+      await gesture.up();
+      await tester.pump();
+    }
+
+    // Move C in front of V: C, V, PC.
+    await drag(entries.at(2), entries.at(0));
+    // Insert the bridge from the parts in front of PC: C, V, B, PC.
+    await drag(find.byKey(const ValueKey('sequence-part-B')), entries.at(2));
+    // Move C onto PC, i.e. to the end: V, B, PC, C.
+    await drag(entries.at(0), entries.at(3));
+    // A tap still appends.
+    await tester.tap(find.byKey(const ValueKey('sequence-part-V')));
+    await tester.pump();
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    expect(
+      field.controller!.text,
+      source.replaceFirst('V, PC, C', 'V, B, PC, C, V'),
+    );
+    await app.dispose(tester);
+  });
+
+  testWidgets('parts dropped on the free space of the sequence are appended', (
+    tester,
+  ) async {
+    const source = '{title: T}\n{sov}\na\n{eov}\n{soc}\nc\n{eoc}';
+    final (app, field) = await pumpEditor(tester, source, cursor: 0);
+    await choose(tester, 'Song info', 'Song sequence');
+    final area = find.byKey(const ValueKey('sequence-drop-area'));
+    for (final code in ['C', 'V']) {
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.byKey(ValueKey('sequence-part-$code'))),
+      );
+      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
+      await gesture.moveTo(tester.getBottomRight(area) - const Offset(8, 8));
+      await tester.pump();
+      await gesture.up();
+      await tester.pump();
+    }
+    expect(find.byKey(const ValueKey('sequence-entry')), findsNWidgets(2));
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    expect(
+      field.controller!.text,
+      source.replaceFirst('{title: T}\n', '{title: T}\n{x_sequence: C, V}\n'),
+    );
     await app.dispose(tester);
   });
 
