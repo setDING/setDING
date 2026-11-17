@@ -1838,6 +1838,60 @@ abstract class AppLocalizations {
   /// **'Mehr'**
   String get editorGroupMore;
 
+  /// No description provided for @editorGroupLines.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeilen'**
+  String get editorGroupLines;
+
+  /// No description provided for @redo.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederholen'**
+  String get redo;
+
+  /// No description provided for @moveLinesUp.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeile nach oben'**
+  String get moveLinesUp;
+
+  /// No description provided for @moveLinesDown.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeile nach unten'**
+  String get moveLinesDown;
+
+  /// No description provided for @moveChordLeft.
+  ///
+  /// In de, this message translates to:
+  /// **'Akkord nach links'**
+  String get moveChordLeft;
+
+  /// No description provided for @moveChordRight.
+  ///
+  /// In de, this message translates to:
+  /// **'Akkord nach rechts'**
+  String get moveChordRight;
+
+  /// No description provided for @duplicateLines.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeile duplizieren'**
+  String get duplicateLines;
+
+  /// No description provided for @deleteLines.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeile löschen'**
+  String get deleteLines;
+
+  /// No description provided for @toggleComment.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeile auskommentieren (#)'**
+  String get toggleComment;
+
   /// No description provided for @insertOptionalChord.
   ///
   /// In de, this message translates to:

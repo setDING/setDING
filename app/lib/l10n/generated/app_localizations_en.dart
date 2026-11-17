@@ -992,6 +992,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editorGroupMore => 'More';
 
   @override
+  String get editorGroupLines => 'Lines';
+
+  @override
+  String get redo => 'Redo';
+
+  @override
+  String get moveLinesUp => 'Move line up';
+
+  @override
+  String get moveLinesDown => 'Move line down';
+
+  @override
+  String get moveChordLeft => 'Move chord left';
+
+  @override
+  String get moveChordRight => 'Move chord right';
+
+  @override
+  String get duplicateLines => 'Duplicate line';
+
+  @override
+  String get deleteLines => 'Delete line';
+
+  @override
+  String get toggleComment => 'Comment out line (#)';
+
+  @override
   String get insertOptionalChord => 'Optional chord';
 
   @override

@@ -1,0 +1,178 @@
+import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:setding/ui/songs/song_editor_screen.dart';
+
+import 'test_app.dart';
+
+/// Line and chord commands of the ChordPro editor (#361); the text
+/// operations themselves are tested in the chordpro package.
+void main() {
+  Future<(TestApp, TextEditingController)> pumpEditor(
+    WidgetTester tester,
+    String source,
+    TextSelection selection,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    await tester.pumpWidget(
+      app.build(home: SongEditorScreen(initialSource: source)),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(TextField));
+    await tester.pump();
+    final controller = tester
+        .widget<TextField>(find.byType(TextField))
+        .controller!;
+    controller.selection = selection;
+    await tester.pump();
+    return (app, controller);
+  }
+
+  Future<void> press(
+    WidgetTester tester,
+    LogicalKeyboardKey key, {
+    LogicalKeyboardKey? modifier,
+    bool shift = false,
+  }) async {
+    if (modifier != null) await tester.sendKeyDownEvent(modifier);
+    if (shift) await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.sendKeyEvent(key);
+    if (shift) await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+    if (modifier != null) await tester.sendKeyUpEvent(modifier);
+    await tester.pump();
+  }
+
+  testWidgets('Alt+arrows move lines and chords', (tester) async {
+    final (app, controller) = await pumpEditor(
+      tester,
+      'one\nt[C]wo\nthree',
+      const TextSelection.collapsed(offset: 6),
+    );
+    await press(
+      tester,
+      LogicalKeyboardKey.arrowDown,
+      modifier: LogicalKeyboardKey.altLeft,
+    );
+    expect(controller.text, 'one\nthree\nt[C]wo');
+    await press(
+      tester,
+      LogicalKeyboardKey.arrowUp,
+      modifier: LogicalKeyboardKey.altLeft,
+    );
+    await press(
+      tester,
+      LogicalKeyboardKey.arrowUp,
+      modifier: LogicalKeyboardKey.altLeft,
+    );
+    expect(controller.text, 't[C]wo\none\nthree');
+    expect(controller.selection, const TextSelection.collapsed(offset: 2));
+
+    await press(
+      tester,
+      LogicalKeyboardKey.arrowRight,
+      modifier: LogicalKeyboardKey.altLeft,
+    );
+    expect(controller.text, 'tw[C]o\none\nthree');
+    await press(
+      tester,
+      LogicalKeyboardKey.arrowLeft,
+      modifier: LogicalKeyboardKey.altLeft,
+    );
+    await press(
+      tester,
+      LogicalKeyboardKey.arrowLeft,
+      modifier: LogicalKeyboardKey.altLeft,
+    );
+    expect(controller.text, '[C]two\none\nthree');
+    await app.dispose(tester);
+  });
+
+  testWidgets('shortcuts duplicate, delete and comment out lines', (
+    tester,
+  ) async {
+    final (app, controller) = await pumpEditor(
+      tester,
+      'a\nb',
+      const TextSelection.collapsed(offset: 0),
+    );
+    await press(
+      tester,
+      LogicalKeyboardKey.keyD,
+      modifier: LogicalKeyboardKey.controlLeft,
+    );
+    expect(controller.text, 'a\na\nb');
+    await press(
+      tester,
+      LogicalKeyboardKey.slash,
+      modifier: LogicalKeyboardKey.controlLeft,
+    );
+    expect(controller.text, 'a\n# a\nb');
+    await press(
+      tester,
+      LogicalKeyboardKey.keyK,
+      modifier: LogicalKeyboardKey.controlLeft,
+      shift: true,
+    );
+    expect(controller.text, 'a\nb');
+    await app.dispose(tester);
+  });
+
+  testWidgets('toolbar buttons move lines and chords, undo and redo', (
+    tester,
+  ) async {
+    final (app, controller) = await pumpEditor(
+      tester,
+      'one\n[G]two',
+      const TextSelection.collapsed(offset: 5),
+    );
+    IconButton undo() =>
+        tester.widget<IconButton>(find.widgetWithIcon(IconButton, Icons.undo));
+    expect(undo().onPressed, isNull);
+    // The undo history records the text after a short pause.
+    await tester.pump(const Duration(seconds: 1));
+
+    await tester.tap(find.byTooltip('Move line up (Alt+↑)'));
+    await tester.pump();
+    expect(controller.text, '[G]two\none');
+    await tester.tap(find.byTooltip('Move chord right (Alt+→)'));
+    await tester.pump();
+    expect(controller.text, 't[G]wo\none');
+
+    // The undo history records the commands.
+    await tester.pump(const Duration(seconds: 1));
+    expect(undo().onPressed, isNotNull);
+    await tester.tap(find.widgetWithIcon(IconButton, Icons.undo));
+    await tester.pump();
+    expect(controller.text, 'one\n[G]two');
+    await tester.tap(find.widgetWithIcon(IconButton, Icons.redo));
+    await tester.pump();
+    expect(controller.text, 't[G]wo\none');
+    await app.dispose(tester);
+  });
+
+  testWidgets('the Lines menu lists all commands', (tester) async {
+    final (app, controller) = await pumpEditor(
+      tester,
+      'a\nb',
+      const TextSelection.collapsed(offset: 3),
+    );
+    await tester.tap(find.text('Lines'));
+    await tester.pumpAndSettle();
+    for (final label in [
+      'Move line up',
+      'Move line down',
+      'Move chord left',
+      'Move chord right',
+      'Duplicate line',
+      'Delete line',
+      'Comment out line (#)',
+    ]) {
+      expect(find.text(label), findsOneWidget);
+    }
+    await tester.tap(find.text('Duplicate line'));
+    await tester.pumpAndSettle();
+    expect(controller.text, 'a\nb\nb');
+    await app.dispose(tester);
+  });
+}

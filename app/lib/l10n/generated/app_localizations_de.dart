@@ -998,6 +998,33 @@ class AppLocalizationsDe extends AppLocalizations {
   String get editorGroupMore => 'Mehr';
 
   @override
+  String get editorGroupLines => 'Zeilen';
+
+  @override
+  String get redo => 'Wiederholen';
+
+  @override
+  String get moveLinesUp => 'Zeile nach oben';
+
+  @override
+  String get moveLinesDown => 'Zeile nach unten';
+
+  @override
+  String get moveChordLeft => 'Akkord nach links';
+
+  @override
+  String get moveChordRight => 'Akkord nach rechts';
+
+  @override
+  String get duplicateLines => 'Zeile duplizieren';
+
+  @override
+  String get deleteLines => 'Zeile löschen';
+
+  @override
+  String get toggleComment => 'Zeile auskommentieren (#)';
+
+  @override
   String get insertOptionalChord => 'Optionaler Akkord';
 
   @override
