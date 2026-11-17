@@ -112,4 +112,4 @@ by band.
 ## Open points
 
 - Moving a band to another organization.
-- An organization-wide setting that lets all organization members edit songs.
+- An organization-wide setting that lets all organization members edit songs. ADR-0023 (proposed) answers this with a `librarian` organization role instead, and limits band admins to creating new songs.
