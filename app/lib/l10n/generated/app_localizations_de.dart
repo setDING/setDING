@@ -965,6 +965,21 @@ class AppLocalizationsDe extends AppLocalizations {
   String get sectionOutro => 'Outro';
 
   @override
+  String get sectionEnding => 'Schluss';
+
+  @override
+  String get sectionTurnaround => 'Turnaround';
+
+  @override
+  String get sectionVamp => 'Vamp';
+
+  @override
+  String get sectionRefrain => 'Refrain';
+
+  @override
+  String get sectionBreakdown => 'Breakdown';
+
+  @override
   String get editorGroupChords => 'Akkorde';
 
   @override
