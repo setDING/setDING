@@ -64,6 +64,7 @@ void main() {
       find.textContaining('Line 3: the block is never ended'),
       findsOneWidget,
     );
+    expect(find.text('Fix automatically'), findsNothing);
 
     // Keep editing: nothing is saved, the first problem is selected.
     await tester.tap(find.text('Keep editing'));
@@ -79,6 +80,40 @@ void main() {
     await tester.pumpAndSettle();
     expect(await stored(tester, app, id), source);
     expect(find.byType(SongEditorScreen), findsNothing);
+    await app.dispose(tester);
+  });
+
+  testWidgets('text after a directive can be fixed (#309)', (tester) async {
+    const source =
+        '{title: T}\n{comment: Chorus} (first time a cappella)\n[G]la\n';
+    final (app, id, controller) = await pumpEditor(tester, source);
+
+    await tester.tap(find.byTooltip('Save'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text(
+        '• Line 2: text after a directive; the whole line is shown as lyrics.',
+      ),
+      findsOneWidget,
+    );
+
+    // Fix: the source is corrected, nothing is saved yet.
+    await tester.tap(find.text('Fix automatically'));
+    await tester.pumpAndSettle();
+    expect(
+      controller.text,
+      '{title: T}\n{comment_italic: (first time a cappella)}\n'
+      '{comment: Chorus}\n[G]la\n',
+    );
+    expect(controller.selection.baseOffset, '{title: T}\n'.length);
+    expect(await stored(tester, app, id), '{title: T}\n');
+    expect(find.byType(SongEditorScreen), findsOneWidget);
+
+    // Now it saves without asking.
+    await tester.tap(find.byTooltip('Save'));
+    await tester.pumpAndSettle();
+    expect(find.text('Check the ChordPro?'), findsNothing);
+    expect(await stored(tester, app, id), controller.text);
     await app.dispose(tester);
   });
 

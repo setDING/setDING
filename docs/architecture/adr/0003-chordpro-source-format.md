@@ -74,7 +74,7 @@ Notation alternatives:
 - Section labels without an explicit label (e.g. a plain `{start_of_chorus}`) are rendered with a localized default label ("Chorus" / "Refrain", see ADR-0008).
 - The editor in the app is a text editor with live preview; a WYSIWYG editor is not needed. The editor shows chords in international notation, as stored.
 - The `chordpro` package also provides **source positions** (`highlightChordPro`) for syntax highlighting in the editor. The tokenizer follows the parser's rules (directive names, selectors, sections), so editor and parser agree; it is tolerant of incomplete input while typing. Bracket matching (`matchBracket`) and autocompletion (`completeChordPro`) in the editor build on these tokens; the directive suggestions come from the parser's own name tables (`chordProDirectives`).
-- The parser stays lenient and never rejects a song. Before saving, the editor warns about places where it probably does not do what the author meant (`validateChordPro`: unclosed `{` or `[`, a delegated environment that is never ended); the author can save anyway.
+- The parser stays lenient and never rejects a song. Before saving, the editor warns about places where it probably does not do what the author meant (`validateChordPro`: unclosed `{` or `[`, a delegated environment that is never ended, text after a directive on the same line); the author can save anyway. Problems with an unambiguous repair can be fixed automatically from the warning (`fixChordProProblems`); the fix always produces spec-conformant ChordPro.
 
 ## Decision log
 
@@ -85,6 +85,7 @@ Notation alternatives:
 - 2026-11-16: The package also provides source positions for syntax highlighting in the editor (`highlightChordPro`, #35); the directive names are shared by parser and highlighter.
 - 2026-11-16: The editor warns on save about unclosed brackets and environments (`validateChordPro`, #109); saving stays possible.
 - 2026-11-16: The spelling of the chord suffix (standard, jazz, raised extensions) is a further display setting, see ADR-0022.
+- 2026-11-17: A directive is a whole line, as in the specification ("lines that start with `{` and end with `}`") and the reference implementation; text after a directive (`{comment: Chorus} (a cappella)`) keeps the line a lyrics line. The editor highlights and reports it and offers a quick fix: plain text becomes `{comment_italic: …}` before the directive, chords, directives and remarks move to a line of their own (#309). The parser is deliberately not made tolerant, so files look the same in other ChordPro programs.
 
 ## Open points
 

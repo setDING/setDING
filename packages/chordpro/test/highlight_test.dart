@@ -133,6 +133,20 @@ void main() {
     ]);
   });
 
+  test('text after a directive (#309)', () {
+    expect(marked('  {comment: Chorus} (first time a cappella) '), [
+      ...marked('  {comment: Chorus}'),
+      ('(first time a cappella) ', K.error),
+    ]);
+    const source = '{soc} [G]la\n{c: a} b}';
+    expectCoverage(highlightChordPro(source), source.length);
+    expect(marked(source), [
+      ...marked('{soc}'),
+      ('[G]la', K.error),
+      ...marked('\n{c: a} b}').where((t) => t.$2 != K.error),
+    ]);
+  });
+
   test('incomplete input', () {
     expect(marked('{title: My'), [('{title: My', K.error)]);
     expect(marked('[G]la [Am'), [('[G]', K.chord), ('[Am', K.error)]);

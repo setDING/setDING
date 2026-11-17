@@ -837,6 +837,14 @@
       }
     }
   },
+  "problemTextAfterDirective": "Zeile {line}: Nach der Direktive steht noch Text; die ganze Zeile wird als Liedtext angezeigt.",
+  "@problemTextAfterDirective": {
+    "placeholders": {
+      "line": {
+        "type": "int"
+      }
+    }
+  },
   "moreProblems": "… und {count} weitere.",
   "@moreProblems": {
     "placeholders": {
@@ -846,6 +854,7 @@
     }
   },
   "saveAnyway": "Trotzdem speichern",
+  "fixProblems": "Automatisch korrigieren",
   "keepEditing": "Weiter bearbeiten",
   "webSignInHint": "Melde dich an, um Organisationen, Bands, Songs und Sets im Browser zu verwalten.",
   "webNoBandTitle": "Noch keine Band",

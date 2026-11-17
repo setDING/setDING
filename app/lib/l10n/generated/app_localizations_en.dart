@@ -1650,12 +1650,20 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String problemTextAfterDirective(int line) {
+    return 'Line $line: text after a directive; the whole line is shown as lyrics.';
+  }
+
+  @override
   String moreProblems(int count) {
     return '… and $count more.';
   }
 
   @override
   String get saveAnyway => 'Save anyway';
+
+  @override
+  String get fixProblems => 'Fix automatically';
 
   @override
   String get keepEditing => 'Keep editing';
