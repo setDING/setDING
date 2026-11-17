@@ -250,6 +250,8 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   ),
                 ],
                 const SizedBox(height: 12),
+                const _PersonalHeader(),
+                const SizedBox(height: 4),
                 _AdjustmentsBar(
                   songKey: parsed.key,
                   formatter: formatter,
@@ -538,6 +540,7 @@ class _AdjustmentsBar extends StatelessWidget {
           baseKey: songKey,
           transpose: overlay.transpose,
           notation: notation,
+          tooltip: l10n.keyPickerPersonal,
           onChanged: (value) => onChanged((o) => o.copyWith(transpose: value)),
         ),
         MenuAnchor(
@@ -810,6 +813,35 @@ class _AttachmentsCard extends ConsumerWidget {
       itemBuilder: (_) => [
         if (canRename) PopupMenuItem(value: 'rename', child: Text(l10n.rename)),
         if (canDelete) PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
+      ],
+    );
+  }
+}
+
+/// Heading of the personal adjustments, so they are not mistaken for
+/// changes to the shared song (ADR-0006).
+class _PersonalHeader extends StatelessWidget {
+  const _PersonalHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    return Row(
+      key: const Key('personal-adjustments'),
+      children: [
+        Icon(Icons.person_outline, size: 18, color: theme.colorScheme.primary),
+        const SizedBox(width: 8),
+        Text(l10n.personalAdjustments, style: theme.textTheme.titleSmall),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            l10n.personalAdjustmentsHint,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
       ],
     );
   }

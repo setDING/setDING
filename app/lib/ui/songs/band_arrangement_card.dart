@@ -167,6 +167,7 @@ class BandArrangementCard extends ConsumerWidget {
                       baseKey: songKey,
                       transpose: a?.transpose ?? 0,
                       notation: notation,
+                      tooltip: l10n.keyPickerBand,
                       onChanged: (value) => _save(ref, transpose: value),
                     ),
                     TextButton.icon(

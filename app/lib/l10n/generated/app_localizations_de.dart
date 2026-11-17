@@ -119,9 +119,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get attachmentsTooltip => 'Hat PDF-Anhänge';
 
   @override
-  String get keyPickerTooltip => 'Tonart wählen';
-
-  @override
   String get keyOriginal => 'Original';
 
   @override
@@ -159,10 +156,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get allTags => 'Alle';
 
   @override
-  String get notes => 'Notizen';
+  String get notes => 'Meine Notizen';
 
   @override
-  String get notesHint => 'Persönliche Notiz zu diesem Song';
+  String get notesHint => 'Nur du siehst diese Notiz.';
 
   @override
   String get editSource => 'ChordPro bearbeiten';
@@ -200,7 +197,7 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get liveView => 'Im Live-Modus anzeigen';
+  String get liveView => 'Im Live-Modus anzeigen – nur für mich';
 
   @override
   String get liveViewChordPro => 'ChordPro-Text';
@@ -240,6 +237,19 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get personalAdjustments => 'Persönliche Anpassungen';
+
+  @override
+  String get personalAdjustmentsHint =>
+      'Nur für dich – für alle anderen bleibt der Song unverändert.';
+
+  @override
+  String get keyPickerPersonal => 'Meine Tonart – nur für mich';
+
+  @override
+  String get keyPickerSet => 'Tonart in diesem Set – für die ganze Band';
+
+  @override
+  String get keyPickerBand => 'Tonart der Band – für alle ihre Sets';
 
   @override
   String get editTitle => 'Titel bearbeiten';
@@ -857,7 +867,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String arrangementOf(String band) {
-    return 'Arrangement von $band';
+    return 'Arrangement von $band – für die ganze Band';
   }
 
   @override
@@ -878,7 +888,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get arrangementTempoLabel => 'Tempo in BPM (leer = wie im Song)';
 
   @override
-  String get arrangementReset => 'Zurück zum Song';
+  String get arrangementReset => 'Band-Arrangement auf den Song zurücksetzen';
 
   @override
   String sequenceOriginal(Object sequence) {
@@ -1615,7 +1625,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get songDetails => 'Songdetails';
 
   @override
-  String get songDetailsTooltip => 'Titel, Tonart, Tempo und mehr bearbeiten';
+  String get songDetailsTooltip =>
+      'Titel, Tonart, Tempo und mehr des Songs bearbeiten – für alle';
 
   @override
   String get noKey => 'Keine Tonart';

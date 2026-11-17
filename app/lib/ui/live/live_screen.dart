@@ -608,6 +608,7 @@ class _ControlBar extends ConsumerWidget {
           baseKey: originalKey,
           transpose: inSet ? item.setTranspose : overlay?.transpose ?? 0,
           notation: ref.watch(settingsProvider.select((s) => s.notation)),
+          tooltip: inSet ? l10n.keyPickerSet : l10n.keyPickerPersonal,
           onChanged: (value) => inSet
               ? onSetKey(value)
               : adjust((o) => o.copyWith(transpose: value)),

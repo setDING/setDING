@@ -433,6 +433,7 @@ class _SetItemTile extends ConsumerWidget {
                     baseKey: songKey,
                     transpose: item.transpose,
                     notation: notation,
+                    tooltip: l10n.keyPickerSet,
                     onChanged: (value) => repo.setItemTranspose(item.id, value),
                   ),
                 if (song != null)

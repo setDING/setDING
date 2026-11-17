@@ -58,7 +58,6 @@
     }
   },
   "attachmentsTooltip": "Hat PDF-Anhänge",
-  "keyPickerTooltip": "Tonart wählen",
   "keyOriginal": "Original",
   "capo": "Kapo",
   "capoValue": "Kapo {fret}",
@@ -106,8 +105,8 @@
     }
   },
   "allTags": "Alle",
-  "notes": "Notizen",
-  "notesHint": "Persönliche Notiz zu diesem Song",
+  "notes": "Meine Notizen",
+  "notesHint": "Nur du siehst diese Notiz.",
   "editSource": "ChordPro bearbeiten",
   "attachments": "Anhänge",
   "addAttachment": "Datei anhängen",
@@ -130,7 +129,7 @@
       }
     }
   },
-  "liveView": "Im Live-Modus anzeigen",
+  "liveView": "Im Live-Modus anzeigen – nur für mich",
   "liveViewChordPro": "ChordPro-Text",
   "exportSong": "Exportieren",
   "exported": "Exportiert",
@@ -144,6 +143,10 @@
   "fitToPage": "An Seite anpassen",
   "resetAdjustments": "Persönliche Anpassungen zurücksetzen",
   "personalAdjustments": "Persönliche Anpassungen",
+  "personalAdjustmentsHint": "Nur für dich – für alle anderen bleibt der Song unverändert.",
+  "keyPickerPersonal": "Meine Tonart – nur für mich",
+  "keyPickerSet": "Tonart in diesem Set – für die ganze Band",
+  "keyPickerBand": "Tonart der Band – für alle ihre Sets",
   "editTitle": "Titel bearbeiten",
   "title": "Titel",
   "artist": "Interpret",
@@ -406,7 +409,7 @@
   "sequenceEdit": "Songablauf für dieses Set",
   "sequenceFromSet": "Ablauf für dieses Set angepasst",
   "sequenceFromBand": "Abfolge der Band",
-  "arrangementOf": "Arrangement von {band}",
+  "arrangementOf": "Arrangement von {band} – für die ganze Band",
   "@arrangementOf": {
     "placeholders": {
       "band": {
@@ -426,7 +429,7 @@
   "arrangementSequence": "Abfolge",
   "arrangementTempo": "Tempo",
   "arrangementTempoLabel": "Tempo in BPM (leer = wie im Song)",
-  "arrangementReset": "Zurück zum Song",
+  "arrangementReset": "Band-Arrangement auf den Song zurücksetzen",
   "sequenceOriginal": "Im Song: {sequence}",
   "sequenceNoneInSong": "Der Song hat keinen Ablauf.",
   "sequenceRestore": "Ablauf des Songs verwenden",
@@ -834,7 +837,7 @@
   "webNoBandTitle": "Noch keine Band",
   "webNoBandMessage": "Du bist noch in keiner Band. Erstelle eine Organisation mit einer Band oder tritt mit einem Einladungslink bei.",
   "songDetails": "Songdetails",
-  "songDetailsTooltip": "Titel, Tonart, Tempo und mehr bearbeiten",
+  "songDetailsTooltip": "Titel, Tonart, Tempo und mehr des Songs bearbeiten – für alle",
   "noKey": "Keine Tonart",
   "timeHint": "z. B. 4/4"
 }

@@ -73,6 +73,12 @@ void main() {
     // Chord above lyrics.
     expect(find.text('D/F#'), findsWidgets);
 
+    // The adjustments are marked as personal, not as changes to the song.
+    expect(find.byKey(const Key('personal-adjustments')), findsOneWidget);
+    expect(find.text('Personal adjustments'), findsOneWidget);
+    expect(find.text('My notes'), findsOneWidget);
+    expect(find.byTooltip('My key – just for me'), findsOneWidget);
+
     // Choose key A in the dropdown → D/F# becomes E/G#.
     await tester.tap(find.byType(KeyPicker));
     await tester.pumpAndSettle();

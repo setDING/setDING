@@ -50,6 +50,7 @@ class KeyPicker extends StatelessWidget {
     required this.transpose,
     required this.notation,
     required this.onChanged,
+    required this.tooltip,
     this.dense = false,
   });
 
@@ -57,6 +58,10 @@ class KeyPicker extends StatelessWidget {
   final int transpose;
   final cp.ChordNotation notation;
   final ValueChanged<int> onChanged;
+
+  /// Says whose key this is (personal, set or band), e.g. "My key – just
+  /// for me", so the scope of the choice is clear.
+  final String tooltip;
 
   /// Compact variant for list rows.
   final bool dense;
@@ -83,7 +88,7 @@ class KeyPicker extends StatelessWidget {
             );
 
     final picker = PopupMenuButton<int>(
-      tooltip: l10n.keyPickerTooltip,
+      tooltip: tooltip,
       initialValue: selected,
       onSelected: (value) {
         if (value != selected) onChanged(value);
