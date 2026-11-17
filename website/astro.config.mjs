@@ -41,6 +41,11 @@ export default defineConfig({
           translations: { en: 'Live mode' },
           items: [{ autogenerate: { directory: 'live' } }],
         },
+        {
+          label: 'Songs',
+          translations: { en: 'Songs' },
+          items: [{ autogenerate: { directory: 'songs' } }],
+        },
       ],
       lastUpdated: false,
       plugins: [starlightLinksValidator()],

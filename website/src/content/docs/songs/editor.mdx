@@ -1,0 +1,84 @@
+---
+title: ChordPro-Editor
+description: Songs im eingebauten Editor schreiben und bearbeiten, mit Einfügemenüs und Vorschau.
+sidebar:
+  order: 2
+---
+
+import { Image } from 'astro:assets';
+import editor from '../../../../../docs/screenshots/editor.png';
+
+Songs sind in [ChordPro](https://www.chordpro.org/) geschrieben, dem offenen Format
+für Akkordblätter: Akkorde stehen in eckigen Klammern direkt im Text, Angaben wie
+Titel oder Tonart in geschweiften Klammern.
+
+```
+{title: Amazing Grace}
+{key: G}
+
+{start_of_verse}
+A[G]mazing [G7]grace, how [C]sweet the [G]sound
+{end_of_verse}
+```
+
+Den Editor öffnest du mit **Neuer Song** oder im Menü ⋮ eines Songs mit
+**ChordPro bearbeiten**.
+
+<Image src={editor} alt="Der ChordPro-Editor mit Einfügemenüs, Syntaxhervorhebung und Live-Vorschau" />
+
+## Text und Vorschau
+
+Auf breiten Bildschirmen stehen Text und Vorschau nebeneinander, auf schmalen
+wechselst du zwischen **Text** und **Vorschau**. Die Vorschau zeigt den Song so, wie
+ihn die Band sieht.
+
+## Einfügen statt tippen
+
+Die Leiste über dem Text fügt ein, was du brauchst, ohne dass du die
+ChordPro-Schreibweise kennen musst:
+
+- **Akkord einfügen**, **Strophe einfügen**, **Refrain einfügen** und
+  **Kommentar einfügen** direkt in der Leiste.
+- **Akkorde** – z. B. **Optionaler Akkord**, **Kein Akkord (N.C.)**,
+  **Akkord-Diagramm**.
+- **Abschnitte** – Intro, Bridge, Solo, Outro und mehr, **Tabulatur**,
+  **Akkord-Raster** und **Refrain wiederholen**.
+- **Song-Infos** – **Titel**, **Interpret**, **Tonart**, **Kapo**, **Tempo (BPM)**,
+  **Taktart**, **Songablauf**, **CCLI-Nummer** und mehr.
+- **Text** – Kommentare, **Fett**, **Kursiv**, **Farbe** und mehr.
+- **Mehr** – **Spaltenumbruch**, **Seitenumbruch**, **Bild**, **ABC-Notation** und
+  mehr.
+
+**Songdetails** bearbeitet Titel, Tonart, Tempo und weitere Angaben in einem
+Formular. Beim Tippen schlägt der Editor passende Akkorde und Direktiven vor.
+
+## Zeilen bearbeiten
+
+Unter **Zeilen** findest du **Zeile nach oben**, **Zeile nach unten**, **Zeile
+duplizieren**, **Zeile löschen** und **Zeile auskommentieren (#)**, dazu **Akkord
+nach links** und **Akkord nach rechts**, um einen Akkord um eine Silbe zu
+verschieben. Ein Tipp auf eine Zeilennummer wählt die ganze Zeile aus.
+**Rückgängig** und **Wiederholen** nehmen Schritte zurück.
+
+## Suchen und ersetzen
+
+**Suchen** findet Text im Song, auf Wunsch mit **Gross-/Kleinschreibung beachten**.
+Mit **Ersetzen** ersetzt du einzelne Treffer oder mit **Alle ersetzen** alle.
+
+## Akkorde über dem Text
+
+Viele Akkordblätter im Internet schreiben die Akkorde in eine eigene Zeile über den
+Text. Fügst du so einen Text ein, bietet setDING an, ihn umzuwandeln
+(**Umwandeln**). Für Text, der schon im Editor steht: **Akkorde über Text
+umwandeln**.
+
+## Speichern
+
+**Speichern** speichert den Song für alle. Findet setDING Stellen, die
+wahrscheinlich nicht wie gewollt angezeigt werden – z. B. eine Klammer, die nicht
+geschlossen wird –, fragt es **ChordPro prüfen?** und nennt die Zeilen. Du kannst
+**Automatisch korrigieren**, **Weiter bearbeiten** oder **Trotzdem speichern**.
+
+Was ChordPro alles kann, zeigt der Beispielsong
+[`feature-showcase.zip`](https://github.com/tafli/setDING/raw/main/docs/examples/feature-showcase.zip):
+importiere ihn und öffne ihn im Editor.
