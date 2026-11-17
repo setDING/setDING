@@ -23,7 +23,7 @@ only after the previous one succeeded:
 
    | File | Content |
    |---|---|
-   | `setding-X.Y.Z-android.apk` | Universal APK, signed with the release key |
+   | `setding-X.Y.Z-android.apk` | APK for arm64 devices, signed with the release key |
    | `setding-X.Y.Z-linux-x64.tar.gz` | Linux bundle, built like `make release-linux` |
    | `setding-X.Y.Z-windows-x64.zip` | Windows build with the Visual C++ runtime |
    | `SHA256SUMS` | Checksums of the files above |
@@ -58,6 +58,13 @@ A **test build** during development is a manual run (GitHub → Actions → Rele
 workflow, or `gh workflow run Release --ref <branch>`). It builds the same files as
 workflow artifacts named `setding-X.Y.Z-buildN-…`, without publishing a release.
 Local builds (`make apk`, `make release`) have no meaningful build number.
+
+**Build caches:** GitHub scopes Actions caches by ref, so a tag build can only
+restore caches written on `main`. The Flutter SDK and the Gradle cache of the Android
+job are therefore written by a test build on `main`
+(`gh workflow run Release --ref main`). Run one after changing the Flutter version
+or the Android build setup, and when no release has run for a week (GitHub evicts
+unused caches after seven days).
 
 ## Version numbers
 

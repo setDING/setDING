@@ -24,8 +24,9 @@ app, so the APK must be signed with a stable release key, not a per-machine debu
   - **Linux** with `make release-linux` on `ubuntu-latest`, i.e. in the same Debian
     container with the ISA check as locally (ADR-0019) →
     `setding-<version>-linux-x64.tar.gz`.
-  - **Android** with `flutter build apk --release` (one universal APK) →
-    `setding-<version>-android.apk`.
+  - **Android** with `flutter build apk --release --target-platform android-arm64`
+    (one arm64 APK) → `setding-<version>-android.apk`. The Gradle distribution,
+    dependencies and build cache are cached with `gradle/actions/setup-gradle`.
   - **Windows** with `flutter build windows --release` on `windows-latest`, zipped
     together with the Visual C++ runtime DLLs → `setding-<version>-windows-x64.zip`.
 - **Version:** the tag must match the version in `app/pubspec.yaml` (`v` + version),
@@ -52,7 +53,8 @@ app, so the APK must be signed with a stable release key, not a per-machine debu
 |---|---|---|
 | Keep building locally (`make release`, `make apk`) | No CI setup | Windows needs a Windows machine; APK signed with a per-machine debug key, so updates break between machines; manual upload |
 | Google Play (internal testing) or F-Droid | Store updates, Play signing | Developer account and review (Play), reproducible-build requirements and own repository (F-Droid); overkill for band members during early development |
-| Split APKs per ABI | ~3× smaller downloads | Obtainium needs an APK filter per device; one universal APK is simpler for now |
+| Split APKs per ABI | ~3× smaller downloads | Still compiles every ABI (no faster build); Obtainium needs an APK filter per device |
+| Universal APK (arm, arm64, x64; until #407) | Runs on 32-bit ARM and x86 devices too | Three Dart AOT and native builds (~10 min) and a ~113 MB APK |
 | Obtainium from GitHub Releases (chosen) | No store account, automatic update checks, free for public repositories | Users must install Obtainium; the release key must be kept safe forever |
 
 ## Consequences
@@ -66,6 +68,11 @@ app, so the APK must be signed with a stable release key, not a per-machine debu
   and vice versa; switching needs an uninstall.
 - The Windows build is a plain zip (no installer, no code signing): SmartScreen
   warns on first start.
+- Release APKs run only on arm64 devices (#407); 32-bit ARM tablets and x86
+  emulators need a local `make apk`.
+- GitHub scopes caches by ref: a tag build restores only caches written on `main`.
+  The Gradle cache is written by manual test builds on `main`
+  (`gh workflow run release.yml --ref main`) and read by tag builds.
 - The tests (`make check`) are not re-run in the release workflow; the tag is on
   `main`, where every merge passed the test gate.
 
@@ -81,10 +88,10 @@ app, so the APK must be signed with a stable release key, not a per-machine debu
   to Obtainium again. Not live yet, so no migration.
 - 2026-11-17: App renamed to **setDING** (#318): artifacts `setding-<version>-…`, application ID `app.setding` (a new app for Android and Obtainium; test installs of RealChord are removed by hand), Obtainium source `https://github.com/tafli/setDING`. The release key stays.
 - 2026-11-17: Build numbers (#345): `pubspec.yaml` no longer carries a build number (it was bumped by hand with every release and said nothing). The run number stays the build number, shared by releases and manual test builds, whose files are named `setding-<version>-build<N>-…`. After the release build passed, `make server-release` updates the server from the tag.
+- 2026-11-17: Faster Android build (#407): the release APK is built for arm64 only instead of a universal APK (arm, arm64, x64), and Gradle is cached with `gradle/actions/setup-gradle`. Agreed with the owner: practically all current Android tablets are arm64. Split APKs were rejected because they still compile every ABI.
 
 ## Open points
 
 - Owner creates the release key (`make android-keystore`) and backs it up.
 - iOS build (needs a macOS runner and an Apple developer account).
 - Windows installer (MSIX/Inno Setup) and code signing; Linux packaging (AppImage/Flatpak).
-- Split APKs per ABI if the APK size becomes a problem.

@@ -11,7 +11,8 @@ Alle Versionen findest du bei den
 ## Android
 
 setDING wird über [Obtainium](https://github.com/ImranR98/Obtainium) installiert
-und aktuell gehalten:
+und aktuell gehalten. Die App läuft auf 64-Bit-ARM-Geräten (arm64), also auf
+praktisch allen aktuellen Tablets.
 
 1. Installiere Obtainium (aus seinen GitHub-Releases oder aus F-Droid).
 2. Tippe in Obtainium auf **Add app**, gib `https://github.com/tafli/setDING` ein
