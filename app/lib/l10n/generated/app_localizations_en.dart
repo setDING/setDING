@@ -709,7 +709,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsPageTurnHint =>
-      'Tap the left or right side of the screen to go back or forward. Page turner (foot pedal) and keyboard: right arrow, down arrow, Page Down and Space forward, left arrow, up arrow and Page Up back.';
+      'Tap the left or right side of the screen to go back or forward. Page turner (foot pedal) and keyboard: right arrow, down arrow, Page Down and Space forward, left arrow, up arrow and Page Up back. With a beat (tempo and beat or click switched on), holding forward or pressing Enter starts and stops it.';
 
   @override
   String get settingsSetProgress => 'Progress bar of the set';

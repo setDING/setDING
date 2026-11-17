@@ -715,7 +715,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsPageTurnHint =>
-      'Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern. Seitenwender (Fusspedal) und Tastatur: Pfeil rechts, Pfeil ab, Bild ab und Leertaste blättern weiter, Pfeil links, Pfeil auf und Bild auf zurück.';
+      'Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern. Seitenwender (Fusspedal) und Tastatur: Pfeil rechts, Pfeil ab, Bild ab und Leertaste blättern weiter, Pfeil links, Pfeil auf und Bild auf zurück. Mit Takt (Tempo und Taktanzeige oder Klick eingeschaltet) startet und stoppt ihn langes Drücken von Vorwärts oder Enter.';
 
   @override
   String get settingsSetProgress => 'Fortschrittsbalken des Sets';

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:chordpro/chordpro.dart' hide Key;
@@ -101,6 +102,13 @@ final _previousKeys = {
   LogicalKeyboardKey.arrowUp,
   LogicalKeyboardKey.pageUp,
 };
+
+/// Keys that start and stop the beat (ADR-0026).
+final _beatKeys = {LogicalKeyboardKey.enter, LogicalKeyboardKey.numpadEnter};
+
+/// A forward key held this long starts or stops the beat instead of
+/// turning (ADR-0026).
+const beatLongPress = Duration(milliseconds: 600);
 
 /// Performance mode (ADR-0007): full screen, screen stays on, page turning
 /// by tap, swipe, page turner or keyboard. The items are loaded once when
@@ -238,6 +246,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   @override
   void dispose() {
     FocusManager.instance.removeEarlyKeyEventHandler(_onKey);
+    _longPress?.cancel();
     _sync.resume();
     _lifecycle.dispose();
     _wakeLock
@@ -434,10 +443,36 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     }
     final key = event.logicalKey;
     final next = _nextKeys.contains(key);
+    if (next && _beat.canBeat(_index)) {
+      // With a beat, a forward key held for [beatLongPress] starts or stops
+      // it and does not turn (ADR-0026); a shorter press turns when it is
+      // released. Key repeat is ignored as before.
+      if (event is KeyDownEvent) {
+        _longPress?.cancel();
+        _longPressed = false;
+        final index = _index;
+        _longPress = Timer(beatLongPress, () {
+          _longPressed = true;
+          if (mounted) _beat.toggle(index);
+        });
+      } else if (event is KeyUpEvent) {
+        final pending = _longPress?.isActive ?? false;
+        _longPress?.cancel();
+        _longPress = null;
+        if (pending && !_longPressed) _next();
+      }
+      return KeyEventResult.handled;
+    }
     if (next || _previousKeys.contains(key)) {
       // One press turns once. A held key (key repeat) does not turn again,
       // so it never races through the pages and songs of the set.
       if (event is KeyDownEvent) next ? _next() : _previous();
+      return KeyEventResult.handled;
+    }
+    if (_beatKeys.contains(key)) {
+      if (event is KeyDownEvent && _beat.canBeat(_index)) {
+        _beat.toggle(_index);
+      }
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.escape) {
@@ -446,6 +481,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     }
     return KeyEventResult.ignored;
   }
+
+  /// Long press of a forward key (ADR-0026).
+  Timer? _longPress;
+  bool _longPressed = false;
 
   /// Width of the page area, for the tap zones.
   double _width = 0;
