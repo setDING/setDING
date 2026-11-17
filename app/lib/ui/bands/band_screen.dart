@@ -87,94 +87,96 @@ class BandScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(bandLabel(l10n, band))),
-      body: ListView(
-        padding: const EdgeInsets.only(bottom: 32),
-        children: [
-          ListTile(
-            leading: const Icon(Icons.domain),
-            title: Text(l10n.bandOrganization),
-            subtitle: Text(band.organizationName),
-          ),
-          if (band.canManageBand) ...[
-            if (band.role == null)
+      body: RefreshOnOpen(
+        child: ListView(
+          padding: const EdgeInsets.only(bottom: 32),
+          children: [
+            ListTile(
+              leading: const Icon(Icons.domain),
+              title: Text(l10n.bandOrganization),
+              subtitle: Text(band.organizationName),
+            ),
+            if (band.canManageBand) ...[
+              if (band.role == null)
+                ListTile(
+                  leading: const Icon(Icons.info_outline),
+                  subtitle: Text(l10n.bandOrgAdminHint),
+                ),
               ListTile(
-                leading: const Icon(Icons.info_outline),
-                subtitle: Text(l10n.bandOrgAdminHint),
-              ),
-            ListTile(
-              leading: const Icon(Icons.edit_outlined),
-              title: Text(l10n.bandName),
-              subtitle: Text(band.name),
-              onTap: () async {
-                final name = await askText(
-                  context,
-                  title: l10n.bandName,
-                  initial: band.name,
-                );
-                if (name == null || name == band.name || !context.mounted) {
-                  return;
-                }
-                await runBandAction(
-                  context,
-                  () => service.renameBand(bandId, name),
-                );
-              },
-            ),
-          ] else
-            ListTile(
-              leading: const Icon(Icons.badge_outlined),
-              title: Text(bandRoleLabel(l10n, band)),
-              subtitle: band.role == BandRole.planner
-                  ? Text(l10n.bandPlannerHint)
-                  : null,
-            ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-            child: Text(
-              l10n.bandMembers,
-              style: Theme.of(context).textTheme.titleSmall
-                  ?.copyWith(color: Theme.of(context).colorScheme.primary),
-            ),
-          ),
-          for (final m in members)
-            _MemberTile(member: m, band: band, isMe: m.userId == me.id),
-          if (band.canManageBand) ...[
-            ListTile(
-              key: const Key('band-add-member'),
-              leading: const Icon(Icons.person_add_alt),
-              title: Text(l10n.bandAddMember),
-              onTap: () => _addMember(context, ref, band, members),
-            ),
-            // New people straight into this band (ADR-0023).
-            InvitesSection(
-              organizationId: band.organizationId!,
-              bandId: band.id,
-            ),
-          ],
-          if (own != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
-              child: OutlinedButton.icon(
-                key: const Key('band-leave'),
-                icon: const Icon(Icons.logout),
-                label: Text(l10n.bandLeave),
-                onPressed: () async {
-                  final ok = await confirm(
+                leading: const Icon(Icons.edit_outlined),
+                title: Text(l10n.bandName),
+                subtitle: Text(band.name),
+                onTap: () async {
+                  final name = await askText(
                     context,
-                    title: l10n.bandLeaveTitle(band.name),
-                    message: l10n.bandLeaveMessage,
-                    action: l10n.bandLeave,
+                    title: l10n.bandName,
+                    initial: band.name,
                   );
-                  if (!ok || !context.mounted) return;
-                  final left = await runBandAction(
+                  if (name == null || name == band.name || !context.mounted) {
+                    return;
+                  }
+                  await runBandAction(
                     context,
-                    () => service.removeMember(own.id),
+                    () => service.renameBand(bandId, name),
                   );
-                  if (left && context.mounted) Navigator.pop(context);
                 },
               ),
+            ] else
+              ListTile(
+                leading: const Icon(Icons.badge_outlined),
+                title: Text(bandRoleLabel(l10n, band)),
+                subtitle: band.role == BandRole.planner
+                    ? Text(l10n.bandPlannerHint)
+                    : null,
+              ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+              child: Text(
+                l10n.bandMembers,
+                style: Theme.of(context).textTheme.titleSmall
+                    ?.copyWith(color: Theme.of(context).colorScheme.primary),
+              ),
             ),
-        ],
+            for (final m in members)
+              _MemberTile(member: m, band: band, isMe: m.userId == me.id),
+            if (band.canManageBand) ...[
+              ListTile(
+                key: const Key('band-add-member'),
+                leading: const Icon(Icons.person_add_alt),
+                title: Text(l10n.bandAddMember),
+                onTap: () => _addMember(context, ref, band, members),
+              ),
+              // New people straight into this band (ADR-0023).
+              InvitesSection(
+                organizationId: band.organizationId!,
+                bandId: band.id,
+              ),
+            ],
+            if (own != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+                child: OutlinedButton.icon(
+                  key: const Key('band-leave'),
+                  icon: const Icon(Icons.logout),
+                  label: Text(l10n.bandLeave),
+                  onPressed: () async {
+                    final ok = await confirm(
+                      context,
+                      title: l10n.bandLeaveTitle(band.name),
+                      message: l10n.bandLeaveMessage,
+                      action: l10n.bandLeave,
+                    );
+                    if (!ok || !context.mounted) return;
+                    final left = await runBandAction(
+                      context,
+                      () => service.removeMember(own.id),
+                    );
+                    if (left && context.mounted) Navigator.pop(context);
+                  },
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

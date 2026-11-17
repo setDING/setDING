@@ -290,6 +290,50 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('opening an organization or a band shows who joined meanwhile', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'}, user: _ann);
+    app.backend.addOrganization('o1', 'School', admin: _ann);
+    app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+    await tester.pumpWidget(app.build(home: const BandsScreen()));
+    await tester.pumpAndSettle();
+
+    // Bob joins with an invitation while Ann's app shows the band list;
+    // no sync runs (widget tests sync only explicitly).
+    app.backend.addOrgMember('o1', _bob, OrgRole.member);
+    app.backend.addMember('b1', _bob, BandRole.member);
+
+    await tester.tap(find.text('School'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bob'), findsOneWidget);
+    await tester.tap(find.text('Rock'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bob'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('pulling down on an organization reloads its people', (
+    tester,
+  ) async {
+    const cara = AuthUser(id: 'cara', email: 'cara@example.test', name: 'Cara');
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'}, user: _ann);
+    app.backend.addOrganization('o1', 'School', admin: _ann);
+    await tester.pumpWidget(app.build(home: const BandsScreen()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('School'));
+    await tester.pumpAndSettle();
+    expect(find.text('Cara'), findsNothing);
+
+    app.backend.addOrgMember('o1', cara, OrgRole.member);
+    await tester.fling(find.text('Ann (you)'), const Offset(0, 400), 1000);
+    await tester.pumpAndSettle();
+    expect(find.text('Cara'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
   group('roles of ADR-0023', () {
     const cara = AuthUser(id: 'cara', email: 'cara@example.test', name: 'Cara');
 
