@@ -35,8 +35,8 @@ make perf DEVICE=<id>     # several devices: id from `adb devices`
 
 | Key | What happens |
 |---|---|
-| `song_list_scroll` | Six flings down and up through the library of 400 songs |
-| `song_search` | Four queries typed letter by letter (120 ms apart), each cleared |
+| `song_list_scroll` | Six flings down and up through the library of 400 songs, in portrait |
+| `song_search` | Four queries typed letter by letter (120 ms apart), each cleared, in portrait; the keyboard opens at the first letter |
 | `live_portrait` | Live mode of the set in portrait, 90 page turns with the arrow key |
 | `live_landscape` | The same in landscape (PDF spreads, more columns) |
 | `editor_typing` | Typing a line into a long song with the live preview |
@@ -81,7 +81,8 @@ three runs); Flutter's first frame (the splash) 0.29 s after the engine starts
 - **Search:** about two frames per query over budget (18–30 ms) when the
   results arrive; the time is in layout and build of the result list
   (highlighted titles and lyrics snippets). Not stage-relevant, slightly
-  visible as a stutter while typing.
+  visible as a stutter while typing. (A closer look in #297 found these
+  frames while the keyboard opens, not when the results arrive; see below.)
 - **Live mode, UI thread:** 6 of 173 frames over budget per orientation,
   i.e. a few dropped frames per run of 90 turns, always at a song change:
   - one frame of 77–97 ms when a song is fitted for the first time
@@ -100,3 +101,52 @@ three runs); Flutter's first frame (the splash) 0.29 s after the engine starts
 - **Accessibility:** with semantics on (accessibility services active), song
   changes cost another 30–55 ms per frame (`SEMANTICS`) for the text of the
   song pages.
+
+### 2026-11-17: song search (#297)
+
+Same tablet, profile builds. The song list and search scenarios now run in
+portrait whatever position the tablet was left in (in landscape the
+keyboard did not resize the app, so its frames were missing from the
+measurement). Before: main at `826edfb` with that change; after: this
+change on the same base. Two runs each, times in ms.
+
+| song_search | frames | build avg | build p99 | build worst | build >16ms | raster avg | raster p99 | raster worst | raster >16ms |
+|---|---|---|---|---|---|---|---|---|---|
+| before, run 1 | 245 | 1.5 | 14.9 | 34.9 | 1 | 7.9 | 12.5 | 13.2 | 0 |
+| before, run 2 | 262 | 1.5 | 12.4 | 41.2 | 2 | 7.9 | 11.9 | 14.1 | 0 |
+| after, run 1 | 233 | 1.1 | 4.2 | 4.6 | 0 | 8.9 | 19.7 | 25.5 | 16 |
+| after, run 2 | 249 | 1.3 | 4.9 | 35.5 | 1 | 8.9 | 17.0 | 25.0 | 29 |
+
+Frames with more than 8 ms of build time: 9–10 per run before, none after
+(the one frame over budget in the second run after is a 33 ms garbage
+collection in `PAINT`). Two earlier runs before the change, without the
+fixed orientation, had 8–9 frames over budget (worst 40–45 ms), like the
+first results above.
+
+**Findings**
+
+- **The slow frames were the keyboard opening, not the results.** All
+  frames over 8 ms fell into the about 0.4 s in which the keyboard opens at
+  the first letter. Once it was open, every frame of the search (results
+  arriving, highlighting, snippets, clearing) took less than 6 ms.
+- In each frame of the keyboard animation the height of the screen
+  changed, and every screen that picks its layout in a `LayoutBuilder`
+  built its whole content again: the song list (the section headers of all
+  400 songs and every visible song), and the sets and settings kept behind
+  the other tabs of the home screen (the settings' category list alone
+  took about 4 ms per frame). `BreakpointBuilder`
+  (`app/lib/ui/widgets/breakpoint_builder.dart`) builds again only when the
+  value it picks from the constraints (wide or not, the number of columns)
+  changes, so the keyboard animation now takes 1–5 ms per frame on the UI
+  thread. The song list also computes its section headers only when the
+  songs, their order, the notation or the language change.
+- A changed search keeps the songs shown until the new songs and their
+  hits are both there, and then replaces them in one frame, instead of a
+  progress indicator, the songs and then their highlighting in separate
+  frames.
+- **Raster thread:** the keyboard animation now runs at up to 60 frames per
+  second instead of about 30, and with the OpenGL ES backend of Impeller
+  its frames take 15–21 ms on the raster thread (`ReactorGLES` flush, as
+  in live mode), so they count as raster frames over budget (16 and 29 per
+  run after, none before). The animation is still smoother than before,
+  where every second frame was dropped on the UI thread.
