@@ -16,6 +16,7 @@ class SongHeader extends StatelessWidget {
     this.bandSequence,
     this.bandTempo,
     this.hiddenParts = const [],
+    this.showTitle = true,
   });
 
   final String title;
@@ -36,6 +37,9 @@ class SongHeader extends StatelessWidget {
   /// Parts not shown because they are not in the sequence (live view of a
   /// set); shown as a hint below the sequence.
   final List<String> hiddenParts;
+
+  /// Shows [title]; off where the app bar already shows it (song screen).
+  final bool showTitle;
 
   @override
   Widget build(BuildContext context) {
@@ -58,14 +62,15 @@ class SongHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: compact
-              ? theme.textTheme.titleLarge
-              : theme.textTheme.headlineSmall,
-          maxLines: compact ? 1 : null,
-          overflow: compact ? TextOverflow.ellipsis : null,
-        ),
+        if (showTitle)
+          Text(
+            title,
+            style: compact
+                ? theme.textTheme.titleLarge
+                : theme.textTheme.headlineSmall,
+            maxLines: compact ? 1 : null,
+            overflow: compact ? TextOverflow.ellipsis : null,
+          ),
         if (subtitle.isNotEmpty)
           Text(
             subtitle,

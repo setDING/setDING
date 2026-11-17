@@ -410,6 +410,68 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('the song screen shows the title once, in the app bar', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final id = await tester.runAsync(
+      () => app.songs.createSong(
+        source: '{title: Only Once}\n{artist: Someone}\n{key: G}\n[G]x',
+      ),
+    );
+    await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+    await tester.pumpAndSettle();
+    expect(find.text('Only Once'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.text('Only Once'),
+      ),
+      findsOneWidget,
+    );
+    // The header keeps the artist.
+    expect(
+      find.descendant(
+        of: find.byType(SongHeader),
+        matching: find.text('Someone'),
+      ),
+      findsOneWidget,
+    );
+    await app.dispose(tester);
+  });
+
+  testWidgets('a break without a note of its own shows its label once', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final setId = await tester.runAsync(() async {
+      final setId = await app.sets.createSet(name: 'Gig');
+      await app.sets.addMarker(setId, SetItemType.pause, 'Break');
+      await app.sets.addMarker(setId, SetItemType.pause, 'Coffee');
+      await app.sets.addMarker(setId, SetItemType.text, '');
+      return setId;
+    });
+    await tester.pumpWidget(app.build(home: SetScreen(setId: setId!)));
+    await tester.pumpAndSettle();
+    // "Break" as the title only; below "Coffee" as the type.
+    expect(find.text('Break'), findsNWidgets(2));
+    expect(find.text('Coffee'), findsOneWidget);
+    final tiles = tester.widgetList<ListTile>(find.byType(ListTile)).toList();
+    final breakTile = tiles.firstWhere(
+      (t) => (t.title as Text?)?.data == 'Break',
+    );
+    expect(breakTile.subtitle, isNull);
+    final coffee = tiles.firstWhere(
+      (t) => (t.title as Text?)?.data == 'Coffee',
+    );
+    expect((coffee.subtitle as Text?)?.data, 'Break');
+    // A text item without text shows its type once.
+    expect(find.text('Text'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
   testWidgets('live mode turns to the next song with taps', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'en'});

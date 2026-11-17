@@ -320,8 +320,10 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                 if (ref.watch(songConflictProvider(song.id)).value
                     case final conflict?)
                   ConflictBanner(conflict: conflict),
+                // The app bar shows the title (#268).
                 SongHeader(
                   title: song.title.isEmpty ? l10n.untitled : song.title,
+                  showTitle: false,
                   artist: song.artist,
                   song: parsed,
                   formatter: formatter,
