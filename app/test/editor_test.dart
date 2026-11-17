@@ -1,4 +1,6 @@
 import 'package:setding/ui/render/song_header.dart';
+import 'package:setding/l10n/generated/app_localizations.dart';
+import 'package:setding/ui/songs/editor_toolbar.dart';
 import 'package:setding/ui/songs/song_editor_screen.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/gestures.dart';
@@ -30,6 +32,9 @@ void main() {
   Future<void> choose(WidgetTester tester, String group, String item) async {
     await tester.tap(find.text(group));
     await tester.pumpAndSettle();
+    // Long menus scroll on a landscape tablet.
+    await tester.ensureVisible(find.text(item).last);
+    await tester.pumpAndSettle();
     await tester.tap(find.text(item).last);
     await tester.pumpAndSettle();
   }
@@ -47,6 +52,38 @@ void main() {
     expect(
       field.controller!.selection.baseOffset,
       '{title: T}\nla la\n{start_of_verse: Pre-chorus}\n'.length,
+    );
+    await app.dispose(tester);
+  });
+
+  testWidgets('section types without an environment are labelled', (
+    tester,
+  ) async {
+    final (app, field) = await pumpEditor(tester, '');
+    await choose(tester, 'Sections', 'Refrain');
+    expect(
+      field.controller!.text,
+      '{start_of_chorus: Refrain}\n\n{end_of_chorus}\n',
+    );
+    field.controller!.text = '';
+    await choose(tester, 'Sections', 'Breakdown');
+    expect(
+      field.controller!.text,
+      '{start_of_verse: Breakdown}\n\n{end_of_verse}\n',
+    );
+    final menu = EditorSnippets(lookupAppLocalizations(const Locale('en')));
+    final sections = menu.groups[1].items.nonNulls.map((s) => s.label);
+    expect(
+      sections,
+      containsAll([
+        'Ending',
+        'Instrumental',
+        'Interlude',
+        'Tag',
+        'Turnaround',
+        'Vamp',
+        'Post-chorus',
+      ]),
     );
     await app.dispose(tester);
   });

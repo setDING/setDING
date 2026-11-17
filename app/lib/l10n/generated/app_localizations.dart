@@ -1772,6 +1772,36 @@ abstract class AppLocalizations {
   /// **'Outro'**
   String get sectionOutro;
 
+  /// No description provided for @sectionEnding.
+  ///
+  /// In de, this message translates to:
+  /// **'Schluss'**
+  String get sectionEnding;
+
+  /// No description provided for @sectionTurnaround.
+  ///
+  /// In de, this message translates to:
+  /// **'Turnaround'**
+  String get sectionTurnaround;
+
+  /// No description provided for @sectionVamp.
+  ///
+  /// In de, this message translates to:
+  /// **'Vamp'**
+  String get sectionVamp;
+
+  /// No description provided for @sectionRefrain.
+  ///
+  /// In de, this message translates to:
+  /// **'Refrain'**
+  String get sectionRefrain;
+
+  /// No description provided for @sectionBreakdown.
+  ///
+  /// In de, this message translates to:
+  /// **'Breakdown'**
+  String get sectionBreakdown;
+
   /// No description provided for @editorGroupChords.
   ///
   /// In de, this message translates to:

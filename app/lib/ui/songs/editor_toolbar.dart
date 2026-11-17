@@ -103,6 +103,13 @@ class EditorSnippets {
       block: true,
       shortcut: shortcut,
     );
+    // Section types ChordPro has no environment for: a standard
+    // environment labelled with the type's name.
+    EditorSnippet labelled(
+      String type,
+      String label, {
+      SingleActivator? shortcut,
+    }) => section(type, label, title: label, shortcut: shortcut);
 
     groups = [
       EditorSnippetGroup(l10n.editorGroupChords, Icons.music_note, [
@@ -136,25 +143,38 @@ class EditorSnippets {
       ]),
       EditorSnippetGroup(l10n.editorGroupSections, Icons.view_agenda_outlined, [
         verse,
-        section(
-          'verse',
-          l10n.sectionPreChorus,
-          title: l10n.sectionPreChorus,
-          shortcut: _key(LogicalKeyboardKey.digit2),
-        ),
         chorus,
         section(
           'bridge',
           l10n.sectionBridge,
           shortcut: _key(LogicalKeyboardKey.digit4),
         ),
-        section('verse', l10n.sectionIntro, title: l10n.sectionIntro),
-        section('verse', l10n.sectionOutro, title: l10n.sectionOutro),
         EditorSnippet(
           label: l10n.insertChorusRecall,
           before: '{chorus}\n',
           block: true,
         ),
+        null,
+        labelled('verse', l10n.sectionIntro),
+        labelled('verse', l10n.sectionOutro),
+        labelled('verse', l10n.sectionEnding),
+        null,
+        labelled('verse', l10n.sectionInstrumental),
+        labelled('verse', l10n.sectionInterlude),
+        labelled('verse', l10n.sectionSolo),
+        null,
+        labelled('verse', l10n.sectionTag),
+        labelled('verse', l10n.sectionTurnaround),
+        labelled('verse', l10n.sectionVamp),
+        labelled('chorus', l10n.sectionRefrain),
+        null,
+        labelled(
+          'verse',
+          l10n.sectionPreChorus,
+          shortcut: _key(LogicalKeyboardKey.digit2),
+        ),
+        labelled('verse', l10n.sectionPostChorus),
+        labelled('verse', l10n.sectionBreakdown),
         null,
         section('tab', l10n.insertTab),
         EditorSnippet(
