@@ -5,6 +5,9 @@ sidebar:
   order: 2
 ---
 
+import { Image } from 'astro:assets';
+import drums from '../../../../../../docs/screenshots/drums.png';
+
 If a song has a tempo, setDING shows the beat in live mode, counts in and, if you
 like, plays a click – into the in-ear mix, for example. The tempo comes from the band
 arrangement or the song, the time signature from the song (4/4 if none is given).
@@ -58,6 +61,8 @@ each with a cue from the lyrics and the drum notes, plus the tempo and time
 signature in large type. The bottom bar names the tempo and time signature of the
 next song. On wide screens, a panel beside it shows the beat in large type and the
 whole set; tap a song to jump to it.
+
+<Image src={drums} alt="Live mode for drums: on the left the tempo, beat display and the set, on the right the parts of the song with lyric cues and drum notes" />
 
 Drum notes are written in the song as sections or comments for drums only, e.g.
 `{comment-drums: half-open hi-hat}`. Anyone with another instrument does not see
