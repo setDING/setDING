@@ -2935,6 +2935,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Alle Tonarten'**
   String get allKeys;
+
+  /// No description provided for @songConflictTooltip.
+  ///
+  /// In de, this message translates to:
+  /// **'Hier und auf dem Server geändert – zum Entscheiden den Song öffnen'**
+  String get songConflictTooltip;
+
+  /// No description provided for @pdfOnlyTooltip.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur Noten (PDF), keine Akkorde'**
+  String get pdfOnlyTooltip;
+
+  /// No description provided for @upcomingGigTooltip.
+  ///
+  /// In de, this message translates to:
+  /// **'In «{set}» am {date}'**
+  String upcomingGigTooltip(String set, String date);
 }
 
 class _AppLocalizationsDelegate

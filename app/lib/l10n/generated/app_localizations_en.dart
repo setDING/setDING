@@ -1664,4 +1664,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get allKeys => 'All keys';
+
+  @override
+  String get songConflictTooltip =>
+      'Changed here and on the server – open the song to decide';
+
+  @override
+  String get pdfOnlyTooltip => 'Sheet music (PDF) only, no chords';
+
+  @override
+  String upcomingGigTooltip(String set, String date) {
+    return 'In “$set” on $date';
+  }
 }

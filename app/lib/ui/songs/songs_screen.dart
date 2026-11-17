@@ -6,13 +6,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database.dart';
 import '../../data/song_repository.dart';
+import '../../data/set_repository.dart';
 import '../../data/text.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../settings/settings.dart';
+import '../../sync/sync_controller.dart';
 import '../bands/copy_to_band.dart';
 import '../bands/library_switcher.dart';
 import '../render/song_header.dart';
+import '../sets/sets_screen.dart' show formatGigDate;
 import '../widgets/dialogs.dart';
 import 'import_dialog.dart';
 import 'song_editor_screen.dart';
@@ -98,6 +101,12 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
     final arrangements = band == null
         ? const <String, BandArrangement>{}
         : ref.watch(bandArrangementsProvider(band.id)).value ?? const {};
+    final conflicts = {
+      for (final c
+          in ref.watch(conflictsProvider).value ?? const <SongConflict>[])
+        c.songId,
+    };
+    final gigs = ref.watch(upcomingGigsProvider(library.id)).value ?? const {};
     final selected = _selected;
     // Leave selection mode when switching libraries.
     ref.listen(currentLibraryProvider, (previous, next) {
@@ -252,6 +261,8 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                           song: list[i],
                           hasAttachments: (counts[list[i].id] ?? 0) > 0,
                           arrangement: arrangements[list[i].id],
+                          hasConflict: conflicts.contains(list[i].id),
+                          nextGig: gigs[list[i].id],
                           bandName: band?.name ?? '',
                           leading: selected == null
                               ? null
@@ -570,10 +581,18 @@ class SongTile extends ConsumerWidget {
     this.leading,
     this.arrangement,
     this.bandName = '',
+    this.hasConflict = false,
+    this.nextGig,
   });
 
   final SongListEntry song;
   final bool hasAttachments;
+
+  /// The song waits for a decision on a sync conflict (ADR-0004).
+  final bool hasConflict;
+
+  /// The next set of the band the song is played in.
+  final UpcomingGig? nextGig;
 
   /// Arrangement of the band chosen on the sets tab (ADR-0025), shown as a
   /// hint below the song, which itself stays as written.
@@ -635,17 +654,54 @@ class SongTile extends ConsumerWidget {
                   ),
               ],
             ),
-      trailing:
-          trailing ??
-          (hasAttachments
-              ? Tooltip(
-                  message: l10n.attachmentsTooltip,
-                  child: const Icon(Icons.picture_as_pdf_outlined),
-                )
-              : null),
+      trailing: trailing ?? _status(context, l10n),
       onTap: onTap,
       onLongPress: onLongPress,
     );
+  }
+
+  /// Status icons: conflict, next gig, sheet music only or attachments.
+  Widget? _status(BuildContext context, AppLocalizations l10n) {
+    final scheme = Theme.of(context).colorScheme;
+    Widget icon(Key key, String message, IconData data, [Color? color]) =>
+        Tooltip(
+          key: key,
+          message: message,
+          child: Icon(data, color: color, semanticLabel: message),
+        );
+    final icons = [
+      if (hasConflict)
+        icon(
+          const ValueKey('song-status-conflict'),
+          l10n.songConflictTooltip,
+          Icons.sync_problem,
+          scheme.error,
+        ),
+      if (nextGig case final gig?)
+        icon(
+          const ValueKey('song-status-gig'),
+          l10n.upcomingGigTooltip(
+            gig.setName,
+            formatGigDate(context, gig.date),
+          ),
+          Icons.event_outlined,
+          scheme.primary,
+        ),
+      if (!song.hasChords)
+        icon(
+          const ValueKey('song-status-pdf-only'),
+          l10n.pdfOnlyTooltip,
+          Icons.picture_as_pdf,
+        )
+      else if (hasAttachments)
+        icon(
+          const ValueKey('song-status-attachments'),
+          l10n.attachmentsTooltip,
+          Icons.picture_as_pdf_outlined,
+        ),
+    ];
+    if (icons.isEmpty) return null;
+    return Row(mainAxisSize: MainAxisSize.min, spacing: 8, children: icons);
   }
 }
 

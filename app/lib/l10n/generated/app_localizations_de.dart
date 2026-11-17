@@ -1679,4 +1679,16 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get allKeys => 'Alle Tonarten';
+
+  @override
+  String get songConflictTooltip =>
+      'Hier und auf dem Server geändert – zum Entscheiden den Song öffnen';
+
+  @override
+  String get pdfOnlyTooltip => 'Nur Noten (PDF), keine Akkorde';
+
+  @override
+  String upcomingGigTooltip(String set, String date) {
+    return 'In «$set» am $date';
+  }
 }

@@ -705,5 +705,8 @@
   "sortByRecent": "Recently edited",
   "noArtist": "No artist",
   "keyFilter": "Key",
-  "allKeys": "All keys"
+  "allKeys": "All keys",
+  "songConflictTooltip": "Changed here and on the server – open the song to decide",
+  "pdfOnlyTooltip": "Sheet music (PDF) only, no chords",
+  "upcomingGigTooltip": "In “{set}” on {date}"
 }

@@ -379,6 +379,60 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('song list shows conflict, gig and PDF-only status', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    await tester.runAsync(() async {
+      final a = await app.songs.createSong(source: '{title: Alpha}\n[G]x');
+      await app.songs.createSong(title: 'Sheet');
+      await app.songs.createSong(source: '{title: Plain}\n[G]x');
+      await app.db
+          .into(app.db.songConflicts)
+          .insert(
+            SongConflictsCompanion.insert(
+              songId: a,
+              title: 'Alpha',
+              chordproSource: '{title: Alpha}',
+              revision: 2,
+              detectedAt: DateTime.now(),
+            ),
+          );
+      final set = await app.sets.createSet(
+        name: 'Summer Festival',
+        gigDate: DateTime.now().add(const Duration(days: 3)),
+      );
+      await app.sets.addSongs(set, [a]);
+    });
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Songs').first);
+    await tester.pumpAndSettle();
+
+    Finder status(String name) => find.byKey(ValueKey('song-status-$name'));
+    expect(status('conflict'), findsOneWidget);
+    expect(status('gig'), findsOneWidget);
+    expect(status('pdf-only'), findsOneWidget);
+    expect(
+      tester.widget<Tooltip>(status('gig')).message,
+      startsWith('In “Summer Festival” on '),
+    );
+    // Same row as their song.
+    final alpha = tester.getCenter(find.text('Alpha')).dy;
+    expect(
+      (tester.getCenter(status('conflict')).dy - alpha).abs(),
+      lessThan(30),
+    );
+    expect(
+      (tester.getCenter(status('pdf-only')).dy -
+              tester.getCenter(find.text('Sheet')).dy)
+          .abs(),
+      lessThan(30),
+    );
+    await app.dispose(tester);
+  });
+
   testWidgets('German notation shows H', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(

@@ -341,6 +341,16 @@ final bandArrangementsProvider = StreamProvider.autoDispose
           ref.watch(arrangementRepositoryProvider).watchBand(bandId),
     );
 
+/// The next gig of each song in the current band's sets, for the song list
+/// of [libraryId]; empty when the band plays from another library.
+final upcomingGigsProvider = StreamProvider.autoDispose
+    .family<Map<String, UpcomingGig>, String>((ref, libraryId) {
+      if (ref.watch(_bandLibraryIdProvider) != libraryId) {
+        return Stream.value(const {});
+      }
+      return ref.watch(setRepositoryProvider).watchUpcomingGigs();
+    });
+
 final setsProvider = StreamProvider<List<SetSummary>>(
   (ref) => ref.watch(setRepositoryProvider).watchSets(),
 );

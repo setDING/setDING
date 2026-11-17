@@ -57,6 +57,7 @@ class SongMeta {
   final int? tempo;
   final String? sortTitle;
   final String? sortArtist;
+
   final List<String> tags;
 
   /// Lyrics and comments without chords and markup (full-text search).
@@ -150,6 +151,7 @@ class SongListEntry {
     this.tags,
     this.sortTitle,
     this.sortArtist,
+    this.hasChords = true,
   });
 
   final String id;
@@ -170,6 +172,10 @@ class SongListEntry {
   final String? sortTitle;
   final String? sortArtist;
 
+  /// The song has ChordPro text; false for songs with sheet music (PDF)
+  /// only.
+  final bool hasChords;
+
   List<String> get tagList => _tags(tags);
 
   @override
@@ -183,7 +189,8 @@ class SongListEntry {
       other.sequence == sequence &&
       other.tags == tags &&
       other.sortTitle == sortTitle &&
-      other.sortArtist == sortArtist;
+      other.sortArtist == sortArtist &&
+      other.hasChords == hasChords;
 
   @override
   int get hashCode => Object.hash(
@@ -196,6 +203,7 @@ class SongListEntry {
     tags,
     sortTitle,
     sortArtist,
+    hasChords,
   );
 }
 
@@ -260,6 +268,7 @@ class SongRepository {
     int? key,
   }) {
     final s = db.songs;
+    final hasChords = s.chordproSource.trim().length.isBiggerThanValue(0);
     final q = db.selectOnly(s)
       ..addColumns([
         s.id,
@@ -271,6 +280,7 @@ class SongRepository {
         s.tags,
         s.sortTitle,
         s.sortArtist,
+        hasChords,
       ])
       ..where(_filter(query, tag))
       // Title, artist and key are sorted in Dart (sortedFor).
@@ -291,6 +301,7 @@ class SongRepository {
             tags: r.read(s.tags),
             sortTitle: r.read(s.sortTitle),
             sortArtist: r.read(s.sortArtist),
+            hasChords: r.read(hasChords) ?? true,
           ),
       ].inKey(key).sortedFor(sort),
     );

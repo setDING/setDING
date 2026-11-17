@@ -17,6 +17,9 @@ class SetItemView {
 }
 
 /// Summary of a set for list views.
+/// The next set a song is played in (see [SetRepository.watchUpcomingGigs]).
+typedef UpcomingGig = ({String setName, DateTime date});
+
 class SetSummary {
   const SetSummary(this.set, this.itemCount);
 
@@ -34,6 +37,33 @@ class SetRepository {
 
   /// Band whose sets are listed and to which new sets belong.
   final String bandId;
+
+  /// For each song in a set of the band with a gig date on [today] or
+  /// later: the first of these sets (by date).
+  Stream<Map<String, UpcomingGig>> watchUpcomingGigs({DateTime? today}) {
+    final now = today ?? DateTime.now();
+    final start = DateTime(now.year, now.month, now.day);
+    final l = db.setlists, i = db.setItems;
+    final q = db.select(i).join([innerJoin(l, l.id.equalsExp(i.setId))])
+      ..where(
+        l.bandId.equals(bandId) &
+            l.deleted.equals(false) &
+            l.gigDate.isBiggerOrEqualValue(start) &
+            i.songId.isNotNull(),
+      )
+      ..orderBy([OrderingTerm.asc(l.gigDate), OrderingTerm.asc(l.name)]);
+    return q.watch().map((rows) {
+      final gigs = <String, UpcomingGig>{};
+      for (final row in rows) {
+        final set = row.readTable(l);
+        gigs.putIfAbsent(
+          row.readTable(i).songId!,
+          () => (setName: set.name, date: set.gigDate!),
+        );
+      }
+      return gigs;
+    });
+  }
 
   Stream<List<SetSummary>> watchSets() {
     final count = db.setItems.id.count();
