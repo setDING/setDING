@@ -5,6 +5,10 @@ sidebar:
   order: 1
 ---
 
+import { Image } from 'astro:assets';
+import organization from '../../../../../docs/screenshots/organization_de.png';
+import band from '../../../../../docs/screenshots/band_de.png';
+
 Eine **Organisation** ist z. B. eine Musikschule, eine Kirche oder einfach deine Band.
 Ihr gehören die Songs und die Leute. Eine **Band** ist eine Gruppe von Leuten aus
 der Organisation, die zusammen spielt; jede Band hat ihre eigenen Sets und
@@ -51,6 +55,8 @@ zusätzlich:
 Mit **Organisation verlassen** trittst du selbst aus; du verlässt dann auch alle
 ihre Bands und siehst ihre Songs nicht mehr.
 
+<Image src={organization} alt="Eine Organisation mit zwei Bands und ihren Personen und Rollen" />
+
 ## Die Band
 
 In der Band siehst du ihre **Mitglieder**. Die **Leitung** der Band und die Admins
@@ -63,6 +69,8 @@ der Organisation können:
 
 Mit **Band verlassen** trittst du selbst aus. Eine Band braucht immer mindestens eine
 Leitung.
+
+<Image src={band} alt="Eine Band mit ihren Mitgliedern, ihren Rollen und «Personen einladen»" />
 
 ## Zwischen Bands wechseln
 

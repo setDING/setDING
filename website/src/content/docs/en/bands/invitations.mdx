@@ -5,6 +5,9 @@ sidebar:
   order: 2
 ---
 
+import { Image } from 'astro:assets';
+import invite from '../../../../../../docs/screenshots/invite.png';
+
 New people join the organization with an invitation link – by group chat, email or
 QR code.
 
@@ -22,6 +25,8 @@ There are two kinds of invitations:
 setDING shows the **Invitation link** and a QR code. Share the link with **Copy
 link** or let people scan the QR code. The link is **only shown now** and is valid
 for **7 days**; several people can use the same link.
+
+<Image src={invite} alt="The invitation link with QR code, “Copy link” and its validity" />
 
 ## Manage invitations
 

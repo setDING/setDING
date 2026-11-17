@@ -12,6 +12,9 @@ import 'package:setding/data/arrangement_repository.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/data/demo_song.dart';
 import 'package:setding/ui/live/live_screen.dart';
+import 'package:setding/ui/bands/band_screen.dart';
+import 'package:setding/ui/bands/organization_screen.dart';
+import 'package:setding/ui/settings_screen.dart';
 import 'package:setding/ui/sets/set_screen.dart';
 import 'package:setding/ui/songs/song_editor_screen.dart';
 import 'package:setding/ui/songs/song_screen.dart';
@@ -577,6 +580,77 @@ void main() {
         ),
       );
       await _shot(tester, '${lang}_11_live_drums');
+      await app.dispose(tester);
+    });
+  }
+
+  // Organization, band and invitation screens for the user documentation
+  // (website, ADR-0030), signed in as the organization admin.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    _screenshotTest('organization and band $lang', (tester) async {
+      useTabletSize(tester);
+      const ann = AuthUser(
+        id: 'ann',
+        email: 'ann@example.test',
+        name: 'Ann Keller',
+      );
+      const people = [
+        AuthUser(id: 'ben', email: 'ben@example.test', name: 'Ben Frei'),
+        AuthUser(id: 'cara', email: 'cara@example.test', name: 'Cara Meier'),
+        AuthUser(id: 'dan', email: 'dan@example.test', name: 'Dan Huber'),
+        AuthUser(id: 'eva', email: 'eva@example.test', name: 'Eva Graf'),
+      ];
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+        user: ann,
+      );
+      final school = lang == 'de' ? 'Musikschule Bern' : 'Music School';
+      app.backend.addOrganization('o1', school, admin: ann);
+      app.backend.addBand('b1', 'Rock Band', admin: ann, organizationId: 'o1');
+      app.backend.addBand('b2', 'Jazz Combo', admin: ann, organizationId: 'o1');
+      app.backend.addOrgMember('o1', people[0], OrgRole.librarian);
+      app.backend.addMember('b1', people[1], BandRole.planner);
+      app.backend.addMember('b1', people[2], BandRole.member);
+      app.backend.addMember('b2', people[3], BandRole.member);
+
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            home: const OrganizationScreen(organizationId: 'o1'),
+          ),
+        ),
+      );
+      await _shot(tester, '${lang}_12_organization');
+
+      // The invitation button is below the people.
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('invite-create')),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.byKey(const Key('invite-create')));
+      await tester.pumpAndSettle();
+      await _shot(tester, '${lang}_13_invite');
+
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: const BandScreen(bandId: 'b1')),
+        ),
+      );
+      await _shot(tester, '${lang}_14_band');
+
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: const SettingsScreen()),
+        ),
+      );
+      await _shot(tester, '${lang}_15_settings');
+      // The musician settings: instrument, voice, diagrams, beat.
+      await tester.tap(find.text(lang == 'de' ? 'Musiker' : 'Musician'));
+      await _shot(tester, '${lang}_16_settings_musician');
       await app.dispose(tester);
     });
   }

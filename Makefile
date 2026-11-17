@@ -188,9 +188,10 @@ l10n: ## Regenerate the translations from the ARB files
 perf: ## Measure performance on a USB-connected Android device (DEVICE=<id>; docs/development/performance.md)
 	$(ROOT)/tool/perf.sh
 
-screenshots: ## Render screenshots with real fonts to app/build/screenshots/
+screenshots: ## Render screenshots with real fonts to app/build/screenshots/ and copy those of the README and website to docs/screenshots/
 	cd $(APP) && $(FLUTTER) test test_screenshots --dart-define=WRITE_SCREENSHOTS=true
 	@echo "Screenshots: $(APP)/build/screenshots/"
+	$(ROOT)/tool/copy-screenshots.sh
 
 branding: ## Regenerate the splash screens, favicon and web icons from app/branding/*.svg
 	$(ROOT)/tool/branding.sh

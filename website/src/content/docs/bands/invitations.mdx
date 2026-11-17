@@ -5,6 +5,9 @@ sidebar:
   order: 2
 ---
 
+import { Image } from 'astro:assets';
+import invite from '../../../../../docs/screenshots/invite_de.png';
+
 Neue Leute kommen mit einem Einladungslink in die Organisation – per Gruppenchat,
 Mail oder QR-Code.
 
@@ -22,6 +25,8 @@ Es gibt zwei Arten von Einladungen:
 setDING zeigt den **Einladungslink** und einen QR-Code. Teile den Link mit **Link
 kopieren** oder lass den QR-Code scannen. Der Link wird **nur jetzt** angezeigt und
 gilt **7 Tage**; mehrere Leute können denselben Link verwenden.
+
+<Image src={invite} alt="Der Einladungslink mit QR-Code, «Link kopieren» und der Gültigkeit" />
 
 ## Einladungen verwalten
 
