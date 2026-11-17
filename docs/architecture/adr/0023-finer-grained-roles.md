@@ -57,7 +57,7 @@ The **`librarian`** role replaces the band setting `members_can_edit_songs`.
 
 | Role | UI (en / de-CH) | Typical person | Responsibilities |
 |---|---|---|---|
-| `admin` | Leader / Leitung | Band leader | Everything of the band: sets, band settings, band members and their band roles; create and import **new** songs into the organization's library |
+| `admin` | Leader / Leitung | Band leader | Everything of the band: sets, band settings, band members and their band roles, invitations into the band; create and import **new** songs into the organization's library and edit **their own** songs (see below) |
 | `planner` *(new)* | Set planner / Setplanung | Musical director, deputy | Create, edit, reorder and delete the band's sets; no people or settings |
 | `member` | Member / Mitglied | Musicians | See the band's sets, play live, personal overlays |
 
@@ -69,9 +69,15 @@ and older clients keep working; only the UI calls it *Leader* / *Leitung*.
 - **Creating and importing new songs** (including "copy to band", issue #15):
   organization admins, librarians and band leaders. A leader needs new songs to
   build sets.
-- **Editing existing songs and attachments:** organization admins and librarians
-  only. A leader who should also maintain songs gets the `librarian` role in the
+- **Editing existing songs and attachments:** organization admins and librarians.
+  A leader who should also maintain songs gets the `librarian` role in the
   organization.
+- **Own songs:** a band leader may edit a song (and its attachments) that they
+  created or imported, as long as nobody else has changed it since
+  (`created_by` and `updated_by` are the leader). This covers fixing an import
+  right away; once a librarian or someone else edits the song, it is maintained
+  by the library. A leader who is no longer a leader of a band of the
+  organization loses this right.
 - **Deleting songs and attachments** (soft delete): organization admins and
   librarians.
 
@@ -87,7 +93,8 @@ Invitations (ADR-0005) keep adding people to the **organization** with the role
 to the organization **and to the leader's band** (band role `member`), so a leader
 can bring a new musician in without an organization admin. Organization admins can
 still invite without a band. A leader may only see and revoke their own band's
-invitations.
+invitations. On an invite-only server (ADR-0024) these links are also the ticket
+for creating an account, like every invitation.
 
 ### Permission matrix
 
@@ -98,12 +105,14 @@ invitations.
 | Create, edit, reorder, delete sets | ✓ all bands | – | ✓ | ✓ | – |
 | Band arrangement (follow-up ADR) | ✓ all bands | – | ✓ | ✓ | – |
 | Create and import new songs | ✓ | ✓ | ✓ | – | – |
-| Edit existing songs and attachments | ✓ | ✓ | – | – | – |
+| Edit existing songs and attachments | ✓ | ✓ | own songs² | – | – |
 | Delete songs and attachments | ✓ | ✓ | – | – | – |
 | Band settings, band members, band roles | ✓ all bands | – | ✓ | – | – |
 | Invite into the organization | ✓ | – | ✓ (into own band) | – | – |
 | Create bands, organization roles | ✓ | – | – | – | – |
 | Leave a band or organization | the person themselves | | | | |
+
+² Songs the leader created or imported and nobody else has changed since.
 
 A person who is a librarian of the organization and a member of a band sees the
 sets of that band like any member; librarian rights concern the library only.
@@ -114,8 +123,11 @@ sets of that band like any member; librarian rights concern the library only.
 - Members of a band with `members_can_edit_songs = true` become **`librarian`** of
   that band's organization (unless they are admins already), so nobody loses a
   right they were given explicitly.
-- Band leaders lose the right to edit **existing** songs; they keep creating new
-  ones. Organization admins give them the `librarian` role where wanted.
+- Band leaders lose the right to edit **existing** songs of others; they keep
+  creating new ones and editing their own. Organization admins give them the
+  `librarian` role where wanted.
+- Songs get a `created_by` field; existing songs keep it empty (nobody counts as
+  their creator), so only librarians and organization admins edit them.
 - The field `bands.members_can_edit_songs` is removed after the migration.
 
 ### Server and client (ADR-0015)
@@ -126,7 +138,8 @@ sets of that band like any member; librarian rights concern the library only.
 - Rules: `setlists` create/update for band `admin` or `planner` or organization
   admin; `songs` and `attachments` create for organization `admin`/`librarian` or
   an `admin` of any band of the organization, update for organization
-  `admin`/`librarian`; `invites` gain an optional `band`, created by its band
+  `admin`/`librarian` or for the creator while they are its last editor and an
+  `admin` of a band of the organization (`created_by`, set by a hook); `invites` gain an optional `band`, created by its band
   leaders or the organization's admins.
 - Client: `BandView` / `LibraryView` derive `canManageSets`, `canCreateSongs`,
   `canEditSongs`, `canDeleteSongs`, `canManageBand` from the new roles; role pickers
@@ -166,13 +179,13 @@ sets of that band like any member; librarian rights concern the library only.
 - 2026-11-17: Proposed with issue #207 after discussing permissions with the owner.
   Owner direction: organization admins keep all rights; finer-grained roles below
   them.
+- 2026-11-17: Owner answers to the open points: band leaders may edit **their own
+  songs** as long as nobody else changed them; **set planners** edit the band
+  arrangement like leaders; **band leaders invite** into their own band; members
+  who can edit songs today through `members_can_edit_songs` become **librarians**.
 
 ## Open points
 
-- Should band leaders be able to edit songs they created themselves (e.g. to fix an
-  import right away), or is the `librarian` role enough?
-- Should set planners also see and manage the band arrangement, or only leaders?
-- Invitations by band leaders: confirm, or keep invitations with organization admins.
 - Guest role for substitutes (see alternatives); a separate decision.
 - Suggestion workflow (members propose song corrections, librarians accept); a
   separate decision.
