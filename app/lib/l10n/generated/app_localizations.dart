@@ -2924,18 +2924,6 @@ abstract class AppLocalizations {
   /// **'Ohne Interpret'**
   String get noArtist;
 
-  /// No description provided for @keyFilter.
-  ///
-  /// In de, this message translates to:
-  /// **'Tonart'**
-  String get keyFilter;
-
-  /// No description provided for @allKeys.
-  ///
-  /// In de, this message translates to:
-  /// **'Alle Tonarten'**
-  String get allKeys;
-
   /// No description provided for @songConflictTooltip.
   ///
   /// In de, this message translates to:

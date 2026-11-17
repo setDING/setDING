@@ -48,9 +48,6 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
   /// Selected tag filter, or null for all songs.
   String? _tag;
 
-  /// Selected key filter (see `keyRank`), or null for all keys.
-  int? _key;
-
   /// Songs selected for copying, or null outside selection mode.
   Set<String>? _selected;
 
@@ -88,9 +85,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final songs = ref.watch(
-      songsProvider((query: _query, tag: _tag, key: _key)),
-    );
+    final songs = ref.watch(songsProvider((query: _query, tag: _tag)));
     final counts = ref.watch(attachmentCountsProvider).value ?? const {};
     final library = ref.watch(currentLibraryProvider);
     final sort = ref.watch(songSortProvider);
@@ -180,27 +175,6 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
               ]
             : [
                 const LibrarySwitcher(),
-                PopupMenuButton<SongSort>(
-                  key: const Key('songs-sort'),
-                  tooltip: l10n.sortSongs,
-                  icon: const Icon(Icons.sort),
-                  initialValue: sort,
-                  onSelected: (value) =>
-                      ref.read(songSortProvider.notifier).select(value),
-                  itemBuilder: (_) => [
-                    for (final (value, label) in [
-                      (SongSort.title, l10n.sortByTitle),
-                      (SongSort.artist, l10n.sortByArtist),
-                      (SongSort.key, l10n.sortByKey),
-                      (SongSort.recent, l10n.sortByRecent),
-                    ])
-                      CheckedPopupMenuItem(
-                        value: value,
-                        checked: value == sort,
-                        child: Text(label),
-                      ),
-                  ],
-                ),
                 if (library.canCreateSongs) ...[
                   // Also on web: imported songs are synced (ADR-0018).
                   IconButton(
@@ -242,12 +216,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
             ),
       body: Column(
         children: [
-          _Filters(
-            tag: _tag,
-            onTag: (tag) => setState(() => _tag = tag),
-            songKey: _key,
-            onKey: (key) => setState(() => _key = key),
-          ),
+          _Filters(tag: _tag, onTag: (tag) => setState(() => _tag = tag)),
           Expanded(
             child: AsyncBody(
               value: songs,
@@ -322,83 +291,66 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
   }
 }
 
-/// Filter chips: the key (a menu of the keys used in the library) and the
-/// tags used in the library (`{tag}`).
+/// Chips above the list: the order (a menu, see [SongSort]) and the tags
+/// used in the library (`{tag}`).
 class _Filters extends ConsumerWidget {
-  const _Filters({
-    required this.tag,
-    required this.onTag,
-    required this.songKey,
-    required this.onKey,
-  });
+  const _Filters({required this.tag, required this.onTag});
 
   final String? tag;
   final ValueChanged<String?> onTag;
 
-  /// Rank of the selected key (see `keyRank`), or null.
-  final int? songKey;
-  final ValueChanged<int?> onKey;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final used = ref.watch(tagsProvider).value ?? const <String>[];
-    final keys = ref.watch(songKeysProvider).value ?? const <cp.Key>[];
-    final notation = ref.watch(settingsProvider.select((s) => s.notation));
+    final sort = ref.watch(songSortProvider);
     // A selected tag stays visible (and can be deselected) even when no
     // song uses it any more, e.g. after deleting its last song.
     final tags = [...used, if (tag case final t? when !used.contains(t)) t];
-    if (tags.isEmpty && keys.isEmpty && songKey == null) {
-      return const SizedBox.shrink();
-    }
-    final l10n = AppLocalizations.of(context);
-    final selectedKey = keys
-        .where((k) => keyRank(k) == songKey)
-        .firstOrNull
-        ?.format(notation);
+    final orders = [
+      (SongSort.title, l10n.sortByTitle),
+      (SongSort.artist, l10n.sortByArtist),
+      (SongSort.key, l10n.sortByKey),
+      (SongSort.recent, l10n.sortByRecent),
+    ];
+    final current = orders.firstWhere((o) => o.$1 == sort).$2;
     return SizedBox(
       height: 48,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         children: [
-          if (keys.isNotEmpty || songKey != null)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: MenuAnchor(
-                menuChildren: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: MenuAnchor(
+              menuChildren: [
+                for (final (value, label) in orders)
                   MenuItemButton(
-                    onPressed: () => onKey(null),
-                    leadingIcon: songKey == null
+                    onPressed: () =>
+                        ref.read(songSortProvider.notifier).select(value),
+                    leadingIcon: value == sort
                         ? const Icon(Icons.check, size: 18)
                         : const SizedBox(width: 18),
-                    child: Text(l10n.allKeys),
+                    child: Text(label),
                   ),
-                  for (final k in keys)
-                    MenuItemButton(
-                      onPressed: () => onKey(keyRank(k)),
-                      leadingIcon: keyRank(k) == songKey
-                          ? const Icon(Icons.check, size: 18)
-                          : const SizedBox(width: 18),
-                      child: Text(k.format(notation)),
-                    ),
-                ],
-                builder: (context, menu, _) => FilterChip(
-                  key: const Key('songs-key-filter'),
-                  avatar: songKey == null
-                      ? const Icon(Icons.music_note_outlined, size: 16)
-                      : null,
-                  label: Text(
-                    selectedKey == null
-                        ? l10n.keyFilter
-                        : l10n.keyLabel(selectedKey),
+              ],
+              builder: (context, menu, _) => Tooltip(
+                message: l10n.sortSongs,
+                child: ActionChip(
+                  key: const Key('songs-sort'),
+                  avatar: const Icon(Icons.sort, size: 18),
+                  label: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(current),
+                      const Icon(Icons.arrow_drop_down, size: 18),
+                    ],
                   ),
-                  selected: songKey != null,
-                  showCheckmark: true,
-                  onSelected: (_) => menu.isOpen ? menu.close() : menu.open(),
-                  onDeleted: songKey == null ? null : () => onKey(null),
+                  onPressed: () => menu.isOpen ? menu.close() : menu.open(),
                 ),
               ),
             ),
+          ),
           if (tags.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(right: 8),

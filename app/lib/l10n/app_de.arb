@@ -853,15 +853,17 @@
   "sortByKey": "Tonart",
   "sortByRecent": "Zuletzt bearbeitet",
   "noArtist": "Ohne Interpret",
-  "keyFilter": "Tonart",
-  "allKeys": "Alle Tonarten",
   "songConflictTooltip": "Hier und auf dem Server geändert – zum Entscheiden den Song öffnen",
   "pdfOnlyTooltip": "Nur Noten (PDF), keine Akkorde",
   "upcomingGigTooltip": "In «{set}» am {date}",
   "@upcomingGigTooltip": {
     "placeholders": {
-      "set": {"type": "String"},
-      "date": {"type": "String"}
+      "set": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
     }
   },
   "foundInLyrics": "Im Liedtext gefunden",
