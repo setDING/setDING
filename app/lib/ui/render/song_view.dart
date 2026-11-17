@@ -61,15 +61,45 @@ class SongRenderOptions {
       : diagramResolver!.allChords();
 }
 
+/// Lines a [SongBlock] counts for [BodyProgress]: a rough measure of what
+/// building and laying it out costs.
+int songBlockLines(SongBlock block) => math.max(1, block.lines.length);
+
+/// Builds a [SongBody] over several frames, for a page that is not shown
+/// yet (live mode, issue #296): only the blocks that start within the first
+/// [value] lines (see [songBlockLines]) are built. Raising it builds the
+/// next blocks without building the others again; lowering it removes
+/// blocks from the end.
+class BodyProgress extends ValueNotifier<int> {
+  BodyProgress() : super(0);
+
+  /// Lines of the body as last built, set by [SongBody]; null when no body
+  /// was built.
+  int? total;
+}
+
 /// Renders the body of a ChordPro song: sections with chords above lyrics,
 /// arranged in [SongRenderOptions.columns] columns. Column breaks in the
 /// song (`{column_break}`) start new columns when more than one column is
 /// used.
 class SongBody extends StatelessWidget {
-  const SongBody({super.key, required this.song, required this.options});
+  const SongBody({
+    super.key,
+    required this.song,
+    required this.options,
+    this.progress,
+    this.firstLine = 0,
+  });
 
   final Song song;
   final SongRenderOptions options;
+
+  /// Builds the blocks in steps; null builds all at once.
+  final BodyProgress? progress;
+
+  /// Lines of the song before this body for [progress], e.g. of the pages
+  /// before it: the pages of a song are built one after the other.
+  final int firstLine;
 
   @override
   Widget build(BuildContext context) {
@@ -103,9 +133,30 @@ class SongBody extends StatelessWidget {
         : b.isRecallLabel
         ? _RecallLabel(block: b, style: style)
         : _SectionBlock(block: b, options: options, style: style);
+    // Lines before each block, for building in steps.
+    final progress = this.progress;
+    final starts = <int>[];
+    var lines = firstLine;
+    for (final b in blocks) {
+      starts.add(lines);
+      lines += songBlockLines(b);
+    }
+    if (progress != null) {
+      progress.total = math.max(progress.total ?? 0, lines);
+    }
     // Keyed by index, so tests can compare rendered and measured heights.
-    Widget render(int i, SongBlock b) =>
-        KeyedSubtree(key: ValueKey(('song-block', i)), child: blockWidget(b));
+    Widget render(int i, SongBlock b) => KeyedSubtree(
+      key: ValueKey(('song-block', i)),
+      child: progress == null
+          ? blockWidget(b)
+          : ValueListenableBuilder<int>(
+              valueListenable: progress,
+              // Built once it is reached; blocks already built are kept.
+              builder: (context, built, child) =>
+                  starts[i] < built ? child! : const SizedBox.shrink(),
+              child: blockWidget(b),
+            ),
+    );
 
     final columns = forcedColumns(blocks) != null && options.columns > 1
         ? forcedColumns(blocks)!

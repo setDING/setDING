@@ -110,6 +110,208 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('a turn neither fits nor builds nor disposes a song', (
+    tester,
+  ) async {
+    // Long frames at the start of the turn animation would be visible
+    // (issue #296): the song after next is prepared once the turn is over,
+    // the song left behind is kept until then.
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final items = await createSongs(tester, app, [
+      '{title: Uno}\n[C]Un',
+      '{title: Dos}\n[D]Deux',
+      '{title: Tres}\n[E]Trois',
+      '{title: Cuatro}\n[F]Quattro',
+    ]);
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+    final page = tester.getRect(find.byType(PageView));
+    await tester.tapAt(Offset(page.right - 20, page.bottom - 20));
+    await tester.pumpAndSettle();
+    expect(find.text('2 / 4'), findsOneWidget);
+    expect(built('Tres'), findsOneWidget);
+
+    final measured = debugMeasureBlocksCalls;
+    await tester.tapAt(Offset(page.right - 20, page.bottom - 20));
+    // The frames of the turn: the song after next is only a placeholder,
+    // the first song is not disposed.
+    for (var t = 0; t < 300; t += 50) {
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(built('Cuatro'), findsNothing);
+      expect(built('Uno'), findsOneWidget);
+    }
+    expect(
+      find.byKey(const Key('live-page-placeholder'), skipOffstage: false),
+      findsOneWidget,
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.text('3 / 4'), findsOneWidget);
+    expect(debugMeasureBlocksCalls, measured);
+    expect(built('Uno'), findsOneWidget);
+
+    // Then, in idle time: the next song is fitted and built, the first
+    // one is taken down.
+    await tester.pumpAndSettle();
+    expect(debugMeasureBlocksCalls, greaterThan(measured));
+    expect(built('Cuatro'), findsOneWidget);
+    expect(built('Quattro'), findsOneWidget);
+    expect(built('Uno'), findsNothing);
+    expect(
+      find.byKey(const Key('live-page-placeholder'), skipOffstage: false),
+      findsNothing,
+    );
+    await app.dispose(tester);
+  });
+
+  testWidgets('turning and the control bar do not build the songs again', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final items = await createSongs(tester, app, [
+      '{title: Alpha}\n[C]One',
+      '{title: Beta}\n[D]Two',
+      '{title: Gamma}\n[E]Three',
+    ]);
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+    SongBody body(String title) => tester
+        .widgetList<SongBody>(find.byType(SongBody, skipOffstage: false))
+        .singleWhere((b) => b.song.title == title);
+    final alpha = body('Alpha');
+    final beta = body('Beta');
+
+    final page = tester.getRect(find.byType(PageView));
+    await tester.tapAt(page.center);
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Exit live mode'), findsOneWidget);
+    expect(body('Alpha'), same(alpha));
+
+    await tester.tapAt(page.center);
+    await tester.pumpAndSettle();
+    await tester.tapAt(Offset(page.right - 20, page.bottom - 20));
+    await tester.pumpAndSettle();
+    expect(find.text('2 / 3'), findsOneWidget);
+    expect(body('Alpha'), same(alpha));
+    expect(body('Beta'), same(beta));
+    await app.dispose(tester);
+  });
+
+  testWidgets('all pages of a song are built, turning one builds nothing', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final verses = [
+      for (var v = 1; v <= 16; v++)
+        '{start_of_verse: Verse $v}\n'
+            '${[for (var l = 1; l <= 4; l++) '[G]page${v}x$l and [C]more words'].join('\n')}\n'
+            '{end_of_verse}',
+    ].join('\n\n');
+    final items = await createSongs(tester, app, ['{title: Paged}\n$verses']);
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+    final indicator = find.byKey(const Key('live-song-page'));
+    expect(indicator, findsOneWidget);
+    final bodies = tester
+        .widgetList<SongBody>(find.byType(SongBody, skipOffstage: false))
+        .toList();
+    expect(bodies.length, greaterThan(1));
+    // Only the first page is on stage, the last verse is built behind it.
+    expect(find.byType(SongBody), findsOneWidget);
+    expect(find.textContaining('page16x4'), findsNothing);
+    expect(
+      find.textContaining('page16x4', skipOffstage: false),
+      findsOneWidget,
+    );
+
+    final page = tester.getRect(find.byType(PageView));
+    await tester.tapAt(Offset(page.right - 20, page.bottom - 20));
+    await tester.pump();
+    expect(tester.widget<Text>(indicator).data, startsWith('Page 2/'));
+    expect(find.byType(SongBody), findsOneWidget);
+    expect(
+      tester.widgetList<SongBody>(find.byType(SongBody, skipOffstage: false)),
+      orderedEquals(bodies),
+    );
+    await app.dispose(tester);
+  });
+
+  testWidgets('the next song is built a few lines per frame', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final verses = [
+      for (var v = 1; v <= 6; v++)
+        '{start_of_verse: Verse $v}\n'
+            '${[for (var l = 1; l <= 4; l++) '[G]verse${v}x$l'].join('\n')}\n'
+            '{end_of_verse}',
+    ].join('\n\n');
+    final items = await createSongs(tester, app, [
+      '{title: First}\n[C]One',
+      '{title: Long}\n$verses',
+    ]);
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    // Frame by frame: the long song grows in steps.
+    final shown = <int>[];
+    // (With a duration: the steps run between frames, in timers, and not
+    // while an animation runs, e.g. the page hint fading in.)
+    for (var i = 0; i < 40; i++) {
+      await tester.pump(const Duration(milliseconds: 16));
+      shown.add(
+        [
+          for (var v = 1; v <= 6; v++)
+            if (find
+                .textContaining('verse${v}x1', skipOffstage: false)
+                .evaluate()
+                .isNotEmpty)
+              v,
+        ].length,
+      );
+    }
+    expect(shown.first, 0);
+    expect(shown.last, 6);
+    // Never all at once.
+    for (var i = 1; i < shown.length; i++) {
+      expect(shown[i] - shown[i - 1], lessThanOrEqualTo(2), reason: '$shown');
+    }
+    // The same as built at once: all lines, in the fitted size.
+    await tester.pumpAndSettle();
+    final page = tester.getRect(find.byType(PageView));
+    await tester.tapAt(Offset(page.right - 20, page.bottom - 20));
+    await tester.pumpAndSettle();
+    expect(find.text('2 / 2'), findsOneWidget);
+    for (var v = 1; v <= 6; v++) {
+      expect(find.textContaining('verse${v}x4'), findsOneWidget);
+    }
+    await app.dispose(tester);
+  });
+
+  testWidgets('turning faster than the preparation shows the whole song', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final items = await createSongs(tester, app, [
+      '{title: First}\n[C]One',
+      '{title: Second}\n[D]Two\n[G]Lines',
+    ]);
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pump();
+    // Not prepared yet.
+    expect(built('Second'), findsNothing);
+    final page = tester.getRect(find.byType(PageView));
+    await tester.tapAt(Offset(page.right - 20, page.bottom - 20));
+    await tester.pump();
+    // Built at once in the first frame of the turn.
+    expect(built('Second'), findsOneWidget);
+    expect(built('Lines'), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(find.text('2 / 2'), findsOneWidget);
+    expect(find.text('Lines'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
   testWidgets('the PDF of the next song is rendered before the turn', (
     tester,
   ) async {

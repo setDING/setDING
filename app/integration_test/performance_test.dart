@@ -93,16 +93,13 @@ void main() {
             matching: find.byType(Scrollable),
           )
           .first;
-      await binding.traceAction(() async {
-        for (var i = 0; i < 6; i++) {
-          await tester.fling(list, const Offset(0, -1200), 4000);
-          await _settle(tester);
-        }
-        for (var i = 0; i < 6; i++) {
-          await tester.fling(list, const Offset(0, 1200), 4000);
-          await _settle(tester);
-        }
-      }, reportKey: 'song_list_scroll');
+      // A fling has many frames: four per part.
+      await _trace(binding, 'song_list_scroll', 12, perPart: 4, (i) async {
+        // Six flings down, then six up.
+        final down = i < 6;
+        await tester.fling(list, Offset(0, down ? -1200 : 1200), 4000);
+        await _settle(tester);
+      });
       recordMemory('songList');
 
       // Search: typed letter by letter, then cleared.
@@ -110,17 +107,17 @@ void main() {
         of: find.byType(SearchBar),
         matching: find.byType(EditableText),
       );
-      await binding.traceAction(() async {
-        for (final query in ['night', 'train home', 'zz', 'love']) {
-          for (var n = 1; n <= query.length; n++) {
-            await tester.enterText(field, query.substring(0, n));
-            await tester.pump(const Duration(milliseconds: 120));
-          }
-          await tester.pump(const Duration(milliseconds: 600));
-          await tester.enterText(field, '');
-          await tester.pump(const Duration(milliseconds: 600));
+      const queries = ['night', 'train home', 'zz', 'love'];
+      await _trace(binding, 'song_search', queries.length, (i) async {
+        final query = queries[i];
+        for (var n = 1; n <= query.length; n++) {
+          await tester.enterText(field, query.substring(0, n));
+          await tester.pump(const Duration(milliseconds: 120));
         }
-      }, reportKey: 'song_search');
+        await tester.pump(const Duration(milliseconds: 600));
+        await tester.enterText(field, '');
+        await tester.pump(const Duration(milliseconds: 600));
+      });
       recordMemory('search');
 
       final context = tester.element(find.byType(HomeScreen));
@@ -136,18 +133,18 @@ void main() {
         unawaited(LiveScreen.openSet(context, seed.setId));
         await tester.pump(const Duration(seconds: 2));
         await _settle(tester);
-        await binding.traceAction(() async {
-          for (var i = 0; i < _setSize * 3; i++) {
-            await _press(
-              tester,
-              LogicalKeyboardKey.arrowRight,
-              PhysicalKeyboardKey.arrowRight,
-            );
-            // Room for the PDF renderer, which works in the background.
-            await tester.pump(const Duration(milliseconds: 400));
-            await _settle(tester);
-          }
-        }, reportKey: name);
+        // Five turns per part: a turn and the preparation of the next song
+        // take many frames.
+        await _trace(binding, name, _setSize * 3, perPart: 5, (i) async {
+          await _press(
+            tester,
+            LogicalKeyboardKey.arrowRight,
+            PhysicalKeyboardKey.arrowRight,
+          );
+          // Room for the PDF renderer, which works in the background.
+          await tester.pump(const Duration(milliseconds: 400));
+          await _settle(tester);
+        });
         recordMemory(name);
         await _press(
           tester,
@@ -169,22 +166,19 @@ void main() {
       await tester.tap(editor);
       await _settle(tester);
       final start = tester.widget<EditableText>(editor).controller.text;
-      await binding.traceAction(() async {
-        var text = start;
-        for (final char in '\n[G]typing a new [D]line of [Em]lyrics'.split(
-          '',
-        )) {
-          text += char;
-          tester.testTextInput.updateEditingValue(
-            TextEditingValue(
-              text: text,
-              selection: TextSelection.collapsed(offset: text.length),
-            ),
-          );
-          await tester.pump(const Duration(milliseconds: 80));
-        }
-        await _settle(tester);
-      }, reportKey: 'editor_typing');
+      var text = start;
+      final typed = '\n[G]typing a new [D]line of [Em]lyrics'.split('');
+      await _trace(binding, 'editor_typing', typed.length + 1, (i) async {
+        if (i == typed.length) return _settle(tester);
+        text += typed[i];
+        tester.testTextInput.updateEditingValue(
+          TextEditingValue(
+            text: text,
+            selection: TextSelection.collapsed(offset: text.length),
+          ),
+        );
+        await tester.pump(const Duration(milliseconds: 80));
+      });
       recordMemory('editor');
 
       binding.reportData = {...?binding.reportData, 'memory': memory};
@@ -194,6 +188,37 @@ void main() {
     // the test default would add their cost to every frame.
     semanticsEnabled: false,
   );
+}
+
+/// Timeline streams for the frame summaries: frames, build/layout events and
+/// the markers of the app, garbage collection. Not 'all': the API stream alone
+/// would fill half of the VM's timeline buffer.
+const _streams = ['Dart', 'Embedder', 'GC'];
+
+/// Runs [count] steps of a scenario and records their timeline as [key].
+///
+/// The VM keeps the timeline in a ring buffer (about 32,000 events), so
+/// scenarios are recorded in parts of [perPart] steps, reported as `key#1`,
+/// `key#2`, …, which the driver joins again (test_driver/perf_driver.dart);
+/// otherwise only the end of a long scenario would be measured.
+Future<void> _trace(
+  IntegrationTestWidgetsFlutterBinding binding,
+  String key,
+  int count,
+  Future<void> Function(int step) step, {
+  int perPart = 10,
+}) async {
+  for (var start = 0, part = 1; start < count; start += perPart, part++) {
+    await binding.traceAction(
+      () async {
+        for (var i = start; i < min(start + perPart, count); i++) {
+          await step(i);
+        }
+      },
+      streams: _streams,
+      reportKey: '$key#$part',
+    );
+  }
 }
 
 /// A key press as a page turner sends it; the physical key is given because
