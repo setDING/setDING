@@ -12,6 +12,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../../sync/sync_controller.dart';
+import '../account/sync_refresh.dart';
 import '../bands/copy_to_band.dart';
 import '../bands/library_switcher.dart';
 import '../render/song_header.dart';
@@ -253,9 +254,12 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
               data: (results) {
                 final (songs: list, :hits, :sort) = results;
                 if (list.isEmpty) {
-                  return EmptyState(
-                    icon: Icons.library_music_outlined,
-                    message: l10n.songsEmpty,
+                  return SyncRefresh(
+                    scrollable: false,
+                    child: EmptyState(
+                      icon: Icons.library_music_outlined,
+                      message: l10n.songsEmpty,
+                    ),
                   );
                 }
                 final sections = _sectionsOf(list, sort, notation, l10n);
@@ -287,11 +291,16 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                           ),
                         ),
                 );
-                return BreakpointBuilder(
-                  select: (constraints) =>
-                      constraints.maxWidth >= songListTwoColumnWidth ? 2 : 1,
-                  builder: (context, columns) =>
-                      _songList(songListRows(sections, columns), columns, tile),
+                return SyncRefresh(
+                  child: BreakpointBuilder(
+                    select: (constraints) =>
+                        constraints.maxWidth >= songListTwoColumnWidth ? 2 : 1,
+                    builder: (context, columns) => _songList(
+                      songListRows(sections, columns),
+                      columns,
+                      tile,
+                    ),
+                  ),
                 );
               },
             ),
@@ -344,6 +353,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
     int columns,
     Widget Function(int song) tile,
   ) => ListView.builder(
+    physics: const AlwaysScrollableScrollPhysics(),
     padding: const EdgeInsets.only(bottom: 88),
     itemCount: rows.length,
     itemBuilder: (context, r) {
