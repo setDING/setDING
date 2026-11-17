@@ -246,11 +246,9 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                       icon: Icons.library_music_outlined,
                       message: l10n.songsEmpty,
                     )
-                  : ListView.builder(
-                      padding: const EdgeInsets.only(bottom: 88),
-                      itemCount: list.length,
-                      itemBuilder: (context, i) {
-                        final tile = SongTile(
+                  : LayoutBuilder(
+                      builder: (context, constraints) {
+                        Widget tile(int i) => SongTile(
                           song: list[i],
                           hasAttachments: (counts[list[i].id] ?? 0) > 0,
                           arrangement: arrangements[list[i].id],
@@ -272,14 +270,34 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                                   ),
                                 ),
                         );
-                        final header = section(list[i]);
-                        if (header == null ||
-                            (i > 0 && section(list[i - 1]) == header)) {
-                          return tile;
-                        }
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [SongSectionHeader(header), tile],
+                        final columns =
+                            constraints.maxWidth >= songListTwoColumnWidth
+                            ? 2
+                            : 1;
+                        final rows = songListRows([
+                          for (final song in list) section(song),
+                        ], columns);
+                        return ListView.builder(
+                          padding: const EdgeInsets.only(bottom: 88),
+                          itemCount: rows.length,
+                          itemBuilder: (context, r) {
+                            final row = rows[r];
+                            if (row.header case final header?) {
+                              return SongSectionHeader(header);
+                            }
+                            if (columns == 1) return tile(row.songs.single);
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                for (var c = 0; c < columns; c++)
+                                  Expanded(
+                                    child: c < row.songs.length
+                                        ? tile(row.songs[c])
+                                        : const SizedBox.shrink(),
+                                  ),
+                              ],
+                            );
+                          },
                         );
                       },
                     ),
@@ -391,6 +409,38 @@ class _Filters extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// From this width the song list has two columns (#251).
+const songListTwoColumnWidth = 900.0;
+
+/// A row of the song list: a section [header], or the indexes of up to
+/// `columns` [songs].
+typedef SongListRow = ({String? header, List<int> songs});
+
+/// The rows of a song list whose songs belong to [sections] (see
+/// [songSection]; null = no sections): a header row where a section starts,
+/// then the songs of the section, [columns] per row. A section starts a new
+/// row, so its header spans all columns.
+List<SongListRow> songListRows(List<String?> sections, int columns) {
+  final rows = <SongListRow>[];
+  var current = <int>[];
+  void flush() {
+    if (current.isEmpty) return;
+    rows.add((header: null, songs: current));
+    current = <int>[];
+  }
+
+  for (final (i, section) in sections.indexed) {
+    if (section != null && (i == 0 || sections[i - 1] != section)) {
+      flush();
+      rows.add((header: section, songs: const <int>[]));
+    }
+    current.add(i);
+    if (current.length == columns) flush();
+  }
+  flush();
+  return rows;
 }
 
 /// Section header of [song] in the list sorted by [sort]: the first letter
