@@ -193,6 +193,9 @@ at their next sign-in (they get a mail).
 minute, sign-in 20 per minute and invitation routes 30 per minute per IP address.
 They rely on the trusted proxy header (section 4, `CF-Connecting-IP`); without it,
 all requests seem to come from the tunnel and share one limit.
+PocketBase's default rules stay active as well, e.g. `*:create` 20 requests per
+5 s and `/api/` 300 per 10 s. The app waits and retries when it hits them (up to
+about half a minute per request), so a large import syncs more slowly but completes.
 
 ## Updates
 

@@ -370,4 +370,34 @@ void main() {
     await ann.close();
     await bob.close();
   });
+
+  test(
+    'a large import gets through the server rate limits (issue #303)',
+    () async {
+      // A server of its own: the other tests run without rate limits.
+      final limited = await PocketBase.start(rateLimits: true);
+      addTearDown(limited.stop);
+      final ann = await Device.create(
+        limited.baseUrl.toString().replaceAll(RegExp(r'/$'), ''),
+      );
+      await ann.backend.signUp(
+        email: email(),
+        password: 'password-123',
+        name: 'Ann',
+      );
+      await ann.backend.createBand(id: const Uuid().v4(), name: 'Rock');
+      final org = (await ann.backend.fetchOrganizations()).single.id;
+      await ann.sync();
+
+      // More songs than PocketBase's default `*:create` limit (20 per 5 s).
+      const count = 30;
+      for (var i = 0; i < count; i++) {
+        await ann.songs(org).createSong(source: '{title: Song $i}\n[G]La');
+      }
+      expect((await ann.sync()).pushed, count);
+      expect(await ann.engine.describeOutbox(), '[]');
+      await ann.close();
+    },
+    timeout: const Timeout(Duration(minutes: 2)),
+  );
 }
