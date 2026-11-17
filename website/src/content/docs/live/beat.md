@@ -1,0 +1,66 @@
+---
+title: Takt, Klick und Schlagzeug
+description: Taktanzeige, Einzählen und Klick im Live-Modus, und die Song-Landkarte für Schlagzeug.
+sidebar:
+  order: 2
+---
+
+Hat ein Song ein Tempo, zeigt setDING im Live-Modus den Takt an, zählt ein und
+spielt auf Wunsch einen Klick – zum Beispiel in den In-Ear-Mix. Das Tempo kommt aus
+dem Band-Arrangement oder aus dem Song, die Taktart aus dem Song (ohne Angabe 4/4).
+
+Eingestellt wird alles unter **Einstellungen** → **Musiker** → **Takt und Klick**.
+Ist dein Instrument **Schlagzeug**, ist das meiste schon eingeschaltet; alle anderen
+schalten ein, was sie brauchen.
+
+## Takt starten und stoppen
+
+- Tippe im Kopf des Songs auf das Tempo, **Takt starten** bzw. **Takt stoppen**.
+- Halte das Vorwärts-Pedal oder die Taste dafür mindestens etwa eine halbe Sekunde
+  gedrückt. Ein kurzer Druck blättert wie immer.
+- Drücke Enter.
+
+Mit **Start** → **Bei jedem Song** zählt jeder Song von selbst ein, sobald er im
+Live-Modus erscheint. Der Wechsel zu einem anderen Eintrag des Sets stoppt den Takt
+immer; das Blättern innerhalb eines Songs nicht.
+
+## Die Einstellungen
+
+- **Taktanzeige** – Punkte neben Tempo und Taktart leuchten auf jedem Schlag, die 1
+  in einer anderen Farbe; beim Einzählen erscheinen grosse Zahlen.
+- **Bildschirmrand blinken lassen** (nur Schlagzeug) – der Rand blinkt auf jedem
+  Schlag, sichtbar aus dem Augenwinkel.
+- **Klick** – spielt den Klick über den Audio-Ausgang des Geräts. Dazu **Klang**
+  (**Klick**, **Woodblock**, **Piep**), **Betonung auf der 1** und **Unterteilung**
+  (leisere Achtel zwischen den Schlägen, im 6/8 Triolen).
+- **Einzählen** – **Aus**, **1 Takt** oder **2 Takte**.
+- **Dauer** – **Ganzer Song** oder **Nur Einzählen**.
+- **Lautstärke** und **Audio-Verzögerung** gelten nur für dieses Gerät.
+
+### Audio-Verzögerung messen
+
+Bluetooth-Kopfhörer spielen den Klick etwas später, als setDING ihn anzeigt. Tippe
+auf **Audio-Verzögerung messen**, setze die Kopfhörer auf, die du auf der Bühne
+trägst, und tippe auf jeden Schlag des Klicks mit. Mit **Übernehmen** verschiebt
+setDING die Anzeige um den gemessenen Wert.
+
+## Tempo auf der Bühne ändern
+
+In der Steuerleiste (Tipp in die Mitte des Bildschirms) änderst du das Tempo für den
+Moment: **Langsamer** und **Schneller** um je 1 BPM, oder **Tempo tippen** im
+gewünschten Tempo. **Zurück zum Tempo des Songs** nimmt die Änderung zurück. Die
+Änderung gilt nur, bis du den Live-Modus verlässt; der Song und das Band-Arrangement
+bleiben unverändert.
+
+## Song-Landkarte für Schlagzeug
+
+Mit dem Instrument **Schlagzeug** kannst du **Song-Landkarte statt Akkorde**
+einschalten. Der Live-Modus zeigt dann statt des Akkordblatts die Teile des Songs im
+Songablauf, jeweils mit einem Stichwort aus dem Liedtext und den
+Schlagzeug-Notizen, dazu Tempo und Taktart gross. Die Fusszeile nennt das Tempo und
+die Taktart des nächsten Songs. Auf breiten Bildschirmen zeigt ein Bereich daneben
+den Takt gross und das ganze Set; ein Tipp auf einen Song springt dorthin.
+
+Schlagzeug-Notizen schreibt ihr im Song als Abschnitte oder Kommentare nur für
+Schlagzeug, z. B. `{comment-drums: Hi-Hat halb offen}`. Wer ein anderes Instrument
+eingestellt hat, sieht sie nicht.
