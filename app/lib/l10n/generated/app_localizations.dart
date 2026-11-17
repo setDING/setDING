@@ -2887,6 +2887,42 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Songablauf ändern'**
   String get sequenceChange;
+
+  /// No description provided for @sortSongs.
+  ///
+  /// In de, this message translates to:
+  /// **'Sortieren'**
+  String get sortSongs;
+
+  /// No description provided for @sortByTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Titel'**
+  String get sortByTitle;
+
+  /// No description provided for @sortByArtist.
+  ///
+  /// In de, this message translates to:
+  /// **'Interpret'**
+  String get sortByArtist;
+
+  /// No description provided for @sortByKey.
+  ///
+  /// In de, this message translates to:
+  /// **'Tonart'**
+  String get sortByKey;
+
+  /// No description provided for @sortByRecent.
+  ///
+  /// In de, this message translates to:
+  /// **'Zuletzt bearbeitet'**
+  String get sortByRecent;
+
+  /// No description provided for @noArtist.
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Interpret'**
+  String get noArtist;
 }
 
 class _AppLocalizationsDelegate

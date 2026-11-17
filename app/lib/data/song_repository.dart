@@ -121,6 +121,22 @@ List<String> _tags(String? column) => [
     if (t.isNotEmpty) t,
 ];
 
+/// Order of the song list.
+enum SongSort {
+  /// By `{sorttitle}` or title.
+  title,
+
+  /// By `{sortartist}` or artist, songs without one last; then by title.
+  artist,
+
+  /// By key (C to B, major before minor), songs without one last; then by
+  /// title.
+  key,
+
+  /// Last edited first.
+  recent,
+}
+
 /// A song as lists show it (see [SongRepository.watchSongList]).
 @immutable
 class SongListEntry {
@@ -132,6 +148,8 @@ class SongListEntry {
     this.tempo,
     this.sequence,
     this.tags,
+    this.sortTitle,
+    this.sortArtist,
   });
 
   final String id;
@@ -148,6 +166,10 @@ class SongListEntry {
   /// As stored in the database (see `Songs.tags`).
   final String? tags;
 
+  /// `{sorttitle}` / `{sortartist}`.
+  final String? sortTitle;
+  final String? sortArtist;
+
   List<String> get tagList => _tags(tags);
 
   @override
@@ -159,11 +181,22 @@ class SongListEntry {
       other.songKey == songKey &&
       other.tempo == tempo &&
       other.sequence == sequence &&
-      other.tags == tags;
+      other.tags == tags &&
+      other.sortTitle == sortTitle &&
+      other.sortArtist == sortArtist;
 
   @override
-  int get hashCode =>
-      Object.hash(id, title, artist, songKey, tempo, sequence, tags);
+  int get hashCode => Object.hash(
+    id,
+    title,
+    artist,
+    songKey,
+    tempo,
+    sequence,
+    tags,
+    sortTitle,
+    sortArtist,
+  );
 }
 
 /// Access to songs, attachments and personal overlays of one song library:
@@ -220,7 +253,11 @@ class SongRepository {
 
   /// Like [watchSongs], with only what a list shows (without the ChordPro
   /// text, which can be long).
-  Stream<List<SongListEntry>> watchSongList({String query = '', String? tag}) {
+  Stream<List<SongListEntry>> watchSongList({
+    String query = '',
+    String? tag,
+    SongSort sort = SongSort.title,
+  }) {
     final s = db.songs;
     final q = db.selectOnly(s)
       ..addColumns([
@@ -231,11 +268,17 @@ class SongRepository {
         s.tempo,
         s.sequence,
         s.tags,
+        s.sortTitle,
+        s.sortArtist,
       ])
       ..where(_filter(query, tag))
-      ..orderBy([_order]);
+      // Title, artist and key are sorted in Dart (sortedFor).
+      ..orderBy(switch (sort) {
+        SongSort.recent => [OrderingTerm.desc(s.updatedAt), _order],
+        _ => [_order],
+      });
     return q.watch().map(
-      (rows) => [
+      (rows) => <SongListEntry>[
         for (final r in rows)
           SongListEntry(
             id: r.read(s.id)!,
@@ -245,8 +288,10 @@ class SongRepository {
             tempo: r.read(s.tempo),
             sequence: r.read(s.sequence),
             tags: r.read(s.tags),
+            sortTitle: r.read(s.sortTitle),
+            sortArtist: r.read(s.sortArtist),
           ),
-      ],
+      ].sortedFor(sort),
     );
   }
 
@@ -638,4 +683,42 @@ class SongRepository {
       );
     }
   });
+}
+
+/// Position of a song's key in the list sorted by key: C to B, major before
+/// minor; songs without a (readable) key last.
+int songKeyRank(String? key) {
+  final parsed = key == null ? null : cp.Key.tryParse(key);
+  return parsed == null ? 24 : parsed.tonic.pitch * 2 + (parsed.minor ? 1 : 0);
+}
+
+extension on List<SongListEntry> {
+  /// Sorted for [sort] without regard to case and accents (SQLite's NOCASE
+  /// only folds ASCII); [SongSort.recent] keeps the database order.
+  List<SongListEntry> sortedFor(SongSort sort) {
+    if (sort == SongSort.recent) return this;
+    final keys = [
+      for (final s in this)
+        (
+          rank: switch (sort) {
+            SongSort.key => songKeyRank(s.songKey),
+            SongSort.artist => s.artist == null ? 1 : 0,
+            _ => 0,
+          },
+          artist: sort == SongSort.artist
+              ? foldForSort(s.sortArtist ?? s.artist ?? '')
+              : '',
+          title: foldForSort(s.sortTitle ?? s.title),
+        ),
+    ];
+    final order = [for (var i = 0; i < length; i++) i]
+      ..sort((a, b) {
+        final x = keys[a], y = keys[b];
+        var c = x.rank.compareTo(y.rank);
+        if (c == 0) c = x.artist.compareTo(y.artist);
+        if (c == 0) c = x.title.compareTo(y.title);
+        return c != 0 ? c : a.compareTo(b);
+      });
+    return [for (final i in order) this[i]];
+  }
 }

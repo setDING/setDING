@@ -846,5 +846,11 @@
   "noKey": "Keine Tonart",
   "timeHint": "z. B. 4/4",
   "noSequence": "Kein Songablauf",
-  "sequenceChange": "Songablauf ändern"
+  "sequenceChange": "Songablauf ändern",
+  "sortSongs": "Sortieren",
+  "sortByTitle": "Titel",
+  "sortByArtist": "Interpret",
+  "sortByKey": "Tonart",
+  "sortByRecent": "Zuletzt bearbeitet",
+  "noArtist": "Ohne Interpret"
 }

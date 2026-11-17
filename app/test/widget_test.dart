@@ -302,6 +302,43 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('song list sorts by key with section headers', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    await tester.runAsync(() async {
+      await app.songs.createSong(source: '{title: Alpha}\n{key: G}');
+      await app.songs.createSong(source: '{title: Ännchen}\n{key: G}');
+      await app.songs.createSong(source: '{title: 99 Luftballons}');
+      await app.songs.createSong(source: '{title: Bravo}\n{key: D}');
+    });
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Songs').first);
+    await tester.pumpAndSettle();
+
+    List<String> headers() => [
+      for (final e
+          in find.byKey(const ValueKey('song-section-header')).evaluate())
+        ((e.widget as Padding).child! as Text).data!,
+    ];
+    // By title: first letters without accents, others under #.
+    expect(headers(), ['#', 'A', 'B']);
+
+    await tester.tap(find.byTooltip('Sort'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Key'));
+    await tester.pumpAndSettle();
+    expect(headers(), ['D', 'G', 'No key']);
+    expect(app.prefs.getString('songSort'), 'key');
+
+    await tester.tap(find.byTooltip('Sort'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Recently edited'));
+    await tester.pumpAndSettle();
+    expect(headers(), isEmpty);
+    await app.dispose(tester);
+  });
+
   testWidgets('German notation shows H', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(

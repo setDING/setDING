@@ -1655,4 +1655,22 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get sequenceChange => 'Songablauf ändern';
+
+  @override
+  String get sortSongs => 'Sortieren';
+
+  @override
+  String get sortByTitle => 'Titel';
+
+  @override
+  String get sortByArtist => 'Interpret';
+
+  @override
+  String get sortByKey => 'Tonart';
+
+  @override
+  String get sortByRecent => 'Zuletzt bearbeitet';
+
+  @override
+  String get noArtist => 'Ohne Interpret';
 }

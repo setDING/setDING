@@ -697,5 +697,11 @@
   "noKey": "No key",
   "timeHint": "e.g. 4/4",
   "noSequence": "No sequence",
-  "sequenceChange": "Change song sequence"
+  "sequenceChange": "Change song sequence",
+  "sortSongs": "Sort",
+  "sortByTitle": "Title",
+  "sortByArtist": "Artist",
+  "sortByKey": "Key",
+  "sortByRecent": "Recently edited",
+  "noArtist": "No artist"
 }
