@@ -113,10 +113,27 @@ K:G
 [Am unclosed
 ''';
 
+/// A screenshot test that renders real elevation shadows.
+///
+/// Flutter tests disable shadows (`debugDisableShadows`), which paints them as
+/// thick black outlines; the screenshots should look like the real app. The
+/// flag is restored before the test ends, as the framework checks it.
+void _screenshotTest(String description, WidgetTesterCallback body) {
+  testWidgets(description, (tester) async {
+    final disabled = debugDisableShadows;
+    debugDisableShadows = false;
+    try {
+      await body(tester);
+    } finally {
+      debugDisableShadows = disabled;
+    }
+  });
+}
+
 void main() {
   setUpAll(() async => _loadFonts());
 
-  testWidgets('song list search hits', (tester) async {
+  _screenshotTest('song list search hits', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'de'});
     await tester.runAsync(() async {
@@ -144,7 +161,7 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('song list status icons', (tester) async {
+  _screenshotTest('song list status icons', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'de'});
     await tester.runAsync(() async {
@@ -180,7 +197,7 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('song list sorted by key', (tester) async {
+  _screenshotTest('song list sorted by key', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(
       prefs: {'language': 'de', 'songSort': 'key'},
@@ -212,7 +229,7 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('song list with a band arrangement', (tester) async {
+  _screenshotTest('song list with a band arrangement', (tester) async {
     useTabletSize(tester);
     const ann = AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann');
     final app = await TestApp.create(
@@ -242,7 +259,7 @@ void main() {
   });
 
   for (final dark in [false, true]) {
-    testWidgets('sets grouped by gig date ${dark ? 'dark' : 'light'}', (
+    _screenshotTest('sets grouped by gig date ${dark ? 'dark' : 'light'}', (
       tester,
     ) async {
       useTabletSize(tester, landscape: false);
@@ -275,7 +292,7 @@ void main() {
   }
 
   for (final dark in [false, true]) {
-    testWidgets('splash ${dark ? 'dark' : 'light'}', (tester) async {
+    _screenshotTest('splash ${dark ? 'dark' : 'light'}', (tester) async {
       tester.view.physicalSize = const Size(1080, 1920);
       tester.view.devicePixelRatio = 2.5;
       tester.platformDispatcher.platformBrightnessTestValue = dark
@@ -297,7 +314,7 @@ void main() {
   }
 
   for (final (lang, dark) in [('de', false), ('en', true)]) {
-    testWidgets('screenshots $lang', (tester) async {
+    _screenshotTest('screenshots $lang', (tester) async {
       useTabletSize(tester);
       final app = await TestApp.create(
         prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
