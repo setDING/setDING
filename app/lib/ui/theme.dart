@@ -1,10 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../settings/settings.dart' show AccentColor;
-import 'widgets/logo.dart' show BrandColors;
 
-/// Seed of the app colour scheme: the red of the logo (issue #269).
-const brandSeed = BrandColors.gradientBottom;
+/// Seed of the app colour scheme: the red of the RealChord logo (issue
+/// #269). The setDING logo is blue and brass (#319); whether the app
+/// colours follow it is still open (docs/development/branding.md).
+const brandSeed = Color(0xFFE8461C);
 
 /// Seed colours and stage chord colours of the accent colours a user can
 /// choose (issue #300, docs/development/branding.md, "Accent colours").

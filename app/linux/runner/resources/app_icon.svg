@@ -1,19 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- setDING mark: a desk bell in front of a set list (docs/development/branding.md). -->
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="0.35" y2="1">
-      <stop offset="0" stop-color="#FFB020"/>
-      <stop offset="1" stop-color="#E8461C"/>
+      <stop offset="0" stop-color="#3D7BFF"/>
+      <stop offset="1" stop-color="#1A2F8F"/>
+    </linearGradient>
+    <linearGradient id="b" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFD34D"/>
+      <stop offset="1" stop-color="#F59E0B"/>
     </linearGradient>
   </defs>
-  <path d="M256 36C386 36 474 92 474 184C474 306 344 434 256 478C168 434 38 306 38 184C38 92 126 36 256 36Z" fill="url(#g)"/>
-  <g stroke="#FFFFFF" stroke-linecap="round" fill="none">
-    <path d="M178 138H334" stroke-width="22"/>
-    <path d="M186 206H326M190 270H322" stroke-width="10" opacity="0.85"/>
-    <path d="M186 138V318M232 138V338M280 138V338M326 138V318" stroke-width="10"/>
+  <rect x="40" y="40" width="432" height="432" rx="120" fill="url(#g)"/>
+  <g id="list" fill="#FFFFFF" opacity="0.28">
+    <rect x="96" y="95" width="250" height="18" rx="9"/>
+    <rect x="96" y="143" width="320" height="18" rx="9"/>
+    <rect x="96" y="191" width="200" height="18" rx="9"/>
+    <rect x="96" y="239" width="300" height="18" rx="9"/>
+    <rect x="96" y="287" width="240" height="18" rx="9"/>
   </g>
-  <g fill="#FFFFFF">
-    <circle cx="326" cy="172" r="21"/>
-    <circle cx="280" cy="238" r="21"/>
-    <circle cx="186" cy="238" r="21"/>
+  <g id="bell" fill="url(#b)">
+    <rect x="242" y="210" width="28" height="15" rx="6"/>
+    <rect x="251" y="222" width="10" height="26" rx="3"/>
+    <path d="M154 358C154 294 199 245 256 245C313 245 358 294 358 358Z"/>
+    <rect x="127" y="369" width="258" height="31" rx="15.5"/>
   </g>
 </svg>

@@ -10,7 +10,6 @@ import 'package:setding/ui/render/song_header.dart';
 import 'package:setding/ui/render/song_style.dart';
 import 'package:setding/ui/songs/chordpro_editing_controller.dart';
 import 'package:setding/ui/theme.dart';
-import 'package:setding/ui/widgets/logo.dart';
 
 import 'test_app.dart';
 
@@ -52,7 +51,6 @@ double _labHue(Color c) {
 void main() {
   test('the scheme is seeded with the logo red', () {
     expect(brandSeed, const Color(0xFFE8461C));
-    expect(brandSeed, BrandColors.gradientBottom);
     for (final brightness in Brightness.values) {
       final seeded = ColorScheme.fromSeed(
         seedColor: brandSeed,

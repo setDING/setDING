@@ -1,7 +1,9 @@
 # Logo and splash screens
 
-The setDING logo is a plectrum with a chord diagram (the *mark*) next to the
-wordmark "setDING" ("Real" in ink, "Chord" in the brand gradient).
+The setDING logo (#319) is a brass desk bell in front of a set list on a
+night-blue rounded tile (the *mark*) next to the wordmark "setDING": "set"
+in ink, "DING" in the tile blue on light and in the bell's brass on dark
+backgrounds. The bell is the "DING" of the name, the list the "set".
 
 ## Sources
 
@@ -14,15 +16,17 @@ wordmark "setDING" ("Real" in ink, "Chord" in the brand gradient).
 | `logo.svg`, `logo-dark.svg` | Mark and wordmark side by side (generated, used in the README) |
 | `generated/` | PNGs for the native splash screens (generated) |
 
-Brand colors: red `#E8461C`, mark gradient `#FFB020` → `#E8461C`, wordmark
-gradient ("Chord") `#FFA41C` → `#E8461C`, ink `#1B1D22`, splash
+Brand colors: tile gradient `#3D7BFF` → `#1A2F8F` (diagonal, also "DING" on
+light), bell gradient `#FFD34D` → `#F59E0B` (vertical, per part of the bell;
+also "DING" on dark), list lines white at 28 %, ink `#1B1D22`, splash
 background `#FFFFFF` (light) and `#121417` (dark). In the app they are
 `BrandColors` in `app/lib/ui/widgets/logo.dart`.
 
 ## App colours
 
-By default the app's colour scheme is derived from the logo red (issue #269;
-other accent colours below):
+By default the app's colour scheme is derived from the red of the former
+RealChord logo (issue #269; other accent colours below). Whether it follows
+the blue and brass of the setDING logo is still open:
 `appColorScheme` in `app/lib/ui/theme.dart` calls
 `ColorScheme.fromSeed(seedColor: Color(0xFFE8461C))` for light and dark
 with Material's default `tonalSpot` variant. It keeps the brand hue but
@@ -138,13 +142,15 @@ the bottom navigation bar, which has no room for it.
 
 ## App icons
 
-`make branding` also writes the app icons, all with the mark on the white
-splash background:
+`make branding` also writes the app icons. Where the platform shapes the icon
+itself (Android adaptive icons, iOS, maskable web icons), the tile's gradient
+is the full-bleed background and the glyph (list and bell) sits on top;
+elsewhere the rounded tile is used as it is:
 
 | Platform | Files |
 |---|---|
-| Android | Adaptive icon (`mipmap-anydpi-v26/ic_launcher.xml`): foreground layer, white background and a monochrome layer for themed icons (Android 13+); legacy `ic_launcher.png` per density |
-| iOS | Every size in `AppIcon.appiconset` (opaque) |
+| Android | Adaptive icon (`mipmap-anydpi-v26/ic_launcher.xml`): gradient background layer, glyph foreground and the glyph as monochrome layer for themed icons (Android 13+), all inside the 66 dp safe zone; legacy `ic_launcher.png` (the tile) per density |
+| iOS | Every size in `AppIcon.appiconset` (opaque, full-bleed; iOS rounds the corners) |
 | Windows | `windows/runner/resources/app_icon.ico` (16–256 px) |
 | Linux | `linux/runner/resources/app_icon.png` and `.svg`, installed into the bundle's `data/`. The window icon is set in `my_application.cc`, which only works under X11. Under Wayland the icon comes from the desktop entry that `install-desktop-entry.sh` (in `linux/packaging/`, shipped in the bundle) installs. `make start` and `make dev` install a hidden entry if there is none yet. |
 | Web | `favicon.png`, `icons/Icon-*.png` (incl. maskable) |

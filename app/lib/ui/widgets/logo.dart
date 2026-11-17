@@ -2,9 +2,13 @@ import 'package:material_ui/material_ui.dart';
 
 /// Brand colors of the setDING logo (sources in `app/branding/`).
 abstract final class BrandColors {
-  /// Top and bottom of the logo gradient.
-  static const gradientTop = Color(0xFFFFB020);
-  static const gradientBottom = Color(0xFFE8461C);
+  /// Top and bottom of the tile gradient (night blue).
+  static const tileTop = Color(0xFF3D7BFF);
+  static const tileBottom = Color(0xFF1A2F8F);
+
+  /// Top and bottom of the bell gradient (brass).
+  static const bellTop = Color(0xFFFFD34D);
+  static const bellBottom = Color(0xFFF59E0B);
 
   /// Text of the wordmark ("set") on light and dark backgrounds.
   static const ink = Color(0xFF1B1D22);
@@ -15,17 +19,25 @@ abstract final class BrandColors {
   static const splashLight = Color(0xFFFFFFFF);
   static const splashDark = Color(0xFF121417);
 
+  /// The tile; also "DING" of the wordmark on light backgrounds.
   static const gradient = LinearGradient(
     // Matches x2=0.35 in mark.svg: slightly diagonal, top to bottom.
     begin: Alignment(-1, -1),
     end: Alignment(-0.3, 1),
-    colors: [gradientTop, gradientBottom],
+    colors: [tileTop, tileBottom],
+  );
+
+  /// The bell; also "DING" of the wordmark on dark backgrounds.
+  static const bellGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [bellTop, bellBottom],
   );
 }
 
-/// The logo mark: a plectrum with a chord diagram. Drawn in code (the same
-/// geometry as `app/branding/mark.svg`), so it shows on the very first frame
-/// without loading an asset.
+/// The logo mark: a desk bell in front of a set list on a blue tile. Drawn
+/// in code (the same geometry as `app/branding/mark.svg`), so it shows on
+/// the very first frame without loading an asset.
 class SetdingMark extends StatelessWidget {
   const SetdingMark({super.key, this.size = 48});
 
@@ -46,67 +58,76 @@ class _MarkPainter extends CustomPainter {
     // mark.svg uses a 512 × 512 view box.
     canvas.scale(size.width / 512, size.height / 512);
 
-    final pick = Path()
-      ..moveTo(256, 36)
-      ..cubicTo(386, 36, 474, 92, 474, 184)
-      ..cubicTo(474, 306, 344, 434, 256, 478)
-      ..cubicTo(168, 434, 38, 306, 38, 184)
-      ..cubicTo(38, 92, 126, 36, 256, 36)
-      ..close();
-    canvas.drawPath(
-      pick,
-      Paint()..shader = BrandColors.gradient.createShader(pick.getBounds()),
+    final tile = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(40, 40, 432, 432),
+      const Radius.circular(120),
+    );
+    canvas.drawRRect(
+      tile,
+      Paint()..shader = BrandColors.gradient.createShader(tile.outerRect),
     );
 
-    Paint line(double width, [double opacity = 1]) => Paint()
-      ..color = Colors.white.withValues(alpha: opacity)
-      ..strokeWidth = width
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
-
-    // Nut, frets and strings.
-    canvas.drawLine(const Offset(178, 138), const Offset(334, 138), line(22));
-    final fret = line(10, 0.85);
-    canvas.drawLine(const Offset(186, 206), const Offset(326, 206), fret);
-    canvas.drawLine(const Offset(190, 270), const Offset(322, 270), fret);
-    final string = line(10);
-    for (final (x, bottom) in [
-      (186.0, 318.0),
-      (232.0, 338.0),
-      (280.0, 338.0),
-      (326.0, 318.0),
+    // The set list.
+    final list = Paint()..color = Colors.white.withValues(alpha: 0.28);
+    for (final (y, width) in const [
+      (95.0, 250.0),
+      (143.0, 320.0),
+      (191.0, 200.0),
+      (239.0, 300.0),
+      (287.0, 240.0),
     ]) {
-      canvas.drawLine(Offset(x, 138), Offset(x, bottom), string);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(96, y, width, 18),
+          const Radius.circular(9),
+        ),
+        list,
+      );
     }
 
-    // Finger positions.
-    final dot = Paint()..color = Colors.white;
-    for (final center in const [
-      Offset(326, 172),
-      Offset(280, 238),
-      Offset(186, 238),
-    ]) {
-      canvas.drawCircle(center, 21, dot);
-    }
+    // The bell: knob, stem, dome and base, each with the brass gradient
+    // over its own bounds (like the SVG's objectBoundingBox gradient).
+    void bell(Path part) => canvas.drawPath(
+      part,
+      Paint()..shader = BrandColors.bellGradient.createShader(part.getBounds()),
+    );
+    Path rounded(double x, double y, double w, double h, double r) => Path()
+      ..addRRect(
+        RRect.fromRectAndRadius(Rect.fromLTWH(x, y, w, h), Radius.circular(r)),
+      );
+    bell(rounded(242, 210, 28, 15, 6));
+    bell(rounded(251, 222, 10, 26, 3));
+    bell(
+      Path()
+        ..moveTo(154, 358)
+        ..cubicTo(154, 294, 199, 245, 256, 245)
+        ..cubicTo(313, 245, 358, 294, 358, 358)
+        ..close(),
+    );
+    bell(rounded(127, 369, 258, 31, 15.5));
   }
 
   @override
   bool shouldRepaint(_MarkPainter oldDelegate) => false;
 }
 
-/// The wordmark "setDING": "set" in [ink], "DING" in the brand gradient.
+/// The wordmark "setDING": "set" in [ink], "DING" in the tile gradient on
+/// light and in the bell gradient on dark backgrounds.
 class SetdingWordmark extends StatelessWidget {
-  const SetdingWordmark({super.key, this.height = 32, this.ink});
+  const SetdingWordmark({super.key, this.height = 32, this.ink, this.dark});
 
   /// Font size of the wordmark.
   final double height;
 
-  /// Color of "set"; defaults to a color readable on the current theme.
+  /// Color of "set"; defaults to a color readable on the background.
   final Color? ink;
+
+  /// Whether the background is dark; defaults to the current theme.
+  final bool? dark;
 
   @override
   Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
+    final dark = this.dark ?? Theme.of(context).brightness == Brightness.dark;
     final style = TextStyle(
       fontFamily: 'NotoSans',
       fontWeight: FontWeight.w700,
@@ -122,7 +143,9 @@ class SetdingWordmark extends StatelessWidget {
           Text('set', style: style),
           ShaderMask(
             blendMode: BlendMode.srcIn,
-            shaderCallback: BrandColors.gradient.createShader,
+            shaderCallback:
+                (dark ? BrandColors.bellGradient : BrandColors.gradient)
+                    .createShader,
             child: Text('DING', style: style),
           ),
         ],
@@ -201,7 +224,7 @@ class SplashScreen extends StatelessWidget {
                     dimension: 28,
                     child: CircularProgressIndicator(
                       strokeWidth: 3,
-                      color: BrandColors.gradientBottom,
+                      color: BrandColors.tileTop,
                     ),
                   ),
                 ),
@@ -216,6 +239,7 @@ class SplashScreen extends StatelessWidget {
                       child: SetdingWordmark(
                         height: 40,
                         ink: dark ? BrandColors.inkDark : BrandColors.ink,
+                        dark: dark,
                       ),
                     ),
                   ),
