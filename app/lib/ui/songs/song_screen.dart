@@ -26,6 +26,7 @@ import '../widgets/key_picker.dart';
 import '../bands/copy_to_band.dart';
 import '../../sync/sync_controller.dart';
 import 'conflict_banner.dart';
+import 'band_arrangement_card.dart';
 import 'song_editor_screen.dart';
 
 /// Shows a song with personal adjustments and its PDF attachments.
@@ -147,13 +148,20 @@ class _SongScreenState extends ConsumerState<SongScreen> {
         if (song == null) return const Scaffold();
         // Permissions of the song's library, wherever it was opened from.
         final library = ref.watch(libraryProvider(song.libraryId));
+        // The arrangement of the band chosen on the sets tab (ADR-0025).
+        final band = ref.watch(arrangementBandProvider(song.libraryId));
+        final arrangement = band == null
+            ? null
+            : ref
+                  .watch(arrangementProvider((band: band.id, song: song.id)))
+                  .value;
         final parsed = parseChordProCached(
           song.chordproSource,
           selectors: ref.watch(selectorsProvider),
         );
         final formatter = ChordFormatter.forSong(
           parsed,
-          transpose: overlay.transpose,
+          transpose: (arrangement?.transpose ?? 0) + overlay.transpose,
           capo: overlay.capoFret,
           notation: settings.notation,
           nashville: overlay.nashville ?? settings.nashville,
@@ -230,10 +238,23 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   artist: song.artist,
                   song: parsed,
                   formatter: formatter,
+                  bandSequence: arrangement?.sequence,
+                  bandTempo: arrangement?.tempo,
                 ),
+                if (band != null &&
+                    (arrangement != null || band.canManageSets)) ...[
+                  const SizedBox(height: 12),
+                  BandArrangementCard(
+                    band: band,
+                    song: song,
+                    parsed: parsed,
+                    arrangement: arrangement,
+                  ),
+                ],
                 const SizedBox(height: 12),
                 _AdjustmentsBar(
-                  songKey: parsed.key,
+                  // Personal changes start from the band's key (ADR-0025).
+                  songKey: parsed.key?.transpose(arrangement?.transpose ?? 0),
                   formatter: formatter,
                   songCapo: parsed.capoFret,
                   notation: settings.notation,

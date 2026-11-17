@@ -5,6 +5,7 @@ import 'package:drift/drift.dart'
     show TableUpdateQuery, UpdateKind, Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:realchord/data/arrangement_repository.dart';
 import 'package:realchord/data/attachment_storage_io.dart';
 import 'package:realchord/data/attachment_storage.dart';
 import 'package:realchord/data/band_copy.dart';
@@ -13,6 +14,7 @@ import 'package:realchord/data/set_repository.dart';
 import 'package:realchord/data/song_repository.dart';
 import 'package:realchord/data/outbox.dart';
 import 'package:realchord/sync/band_service.dart';
+import 'package:realchord/sync/engine/arrangement_sync.dart';
 import 'package:realchord/sync/engine/sync_store.dart';
 import 'package:realchord/sync/sync_backend.dart';
 import 'package:realchord/sync/sync_engine.dart';
@@ -657,6 +659,97 @@ void main() {
     expect((await songs.getSong(local))!.title, 'Mine, changed here');
     final items = await sets.getItems('set1');
     expect(items.map((v) => v.song?.id), ['s7', null]);
+  });
+
+  group('band arrangements (ADR-0025)', () {
+    late ArrangementRepository arrangements;
+
+    setUp(() => arrangements = ArrangementRepository(db));
+
+    test(
+      'pushes an arrangement after its song, once per band and song',
+      () async {
+        final id = await songs.createSong(source: '{title: A}\n{key: G}\n[G]x');
+        await arrangements.save(
+          'b1',
+          id,
+          transpose: 2,
+          sequence: 'V C',
+          tempo: 90,
+        );
+        final report = await engine.sync();
+        expect(report.error, isNull);
+        final stored = server.arrangements.values.single;
+        expect(stored.id, ArrangementSync.serverId('b1', id));
+        expect(
+          (stored.bandId, stored.songId, stored.transpose, stored.sequence),
+          ('b1', id, 2, 'V C'),
+        );
+        expect(stored.tempo, 90);
+        expect((await arrangements.get('b1', id))!.revision, stored.revision);
+        expect(await outbox(), isEmpty);
+
+        // Back to the song: the removal reaches the server.
+        await arrangements.reset('b1', id);
+        expect(await arrangements.get('b1', id), isNull);
+        await engine.sync();
+        expect(server.arrangements.values.single.deleted, isTrue);
+      },
+    );
+
+    test('an unchanged arrangement is no arrangement', () async {
+      final id = await songs.createSong(source: '{title: A}');
+      await arrangements.save('b1', id, transpose: 0, sequence: ' ');
+      expect(await arrangements.get('b1', id), isNull);
+      expect(await outbox(), hasLength(1)); // only the song
+    });
+
+    test('pulls arrangements of the band; last writer wins', () async {
+      final id = await songs.createSong(source: '{title: A}');
+      await engine.sync();
+      server.putArrangement(
+        RemoteArrangement(
+          id: ArrangementSync.serverId('b1', id),
+          bandId: 'b1',
+          songId: id,
+          transpose: -3,
+          tempo: 120,
+        ),
+      );
+      await engine.sync();
+      final local = (await arrangements.get('b1', id))!;
+      expect((local.transpose, local.tempo), (-3, 120));
+
+      // A pending local change wins over the server and is pushed.
+      await arrangements.save('b1', id, transpose: 5);
+      server.putArrangement(
+        RemoteArrangement(
+          id: ArrangementSync.serverId('b1', id),
+          bandId: 'b1',
+          songId: id,
+          transpose: 1,
+        ),
+      );
+      await engine.sync();
+      expect((await arrangements.get('b1', id))!.transpose, 5);
+      expect(server.arrangements.values.single.transpose, 5);
+    });
+
+    test('members cannot push arrangements; the change stays local', () async {
+      final id = await songs.createSong(source: '{title: A}');
+      await engine.sync();
+      server.members.single.role = BandRole.member;
+      server.orgMembers.single.role = OrgRole.member;
+      server.addMember(
+        'b1',
+        const AuthUser(id: 'x', email: 'x', name: 'X'),
+        BandRole.admin,
+      );
+      await arrangements.save('b1', id, transpose: 2);
+      await engine.sync();
+      expect(server.arrangements, isEmpty);
+      expect(await outbox(), isEmpty);
+    });
   });
 
   group('personal adjustments (ADR-0020)', () {

@@ -67,6 +67,9 @@ class SetRepository {
     );
   }
 
+  Future<SetlistEntry?> getSet(String id) =>
+      (db.select(db.setlists)..where((s) => s.id.equals(id))).getSingleOrNull();
+
   Stream<SetlistEntry?> watchSet(String id) =>
       (db.select(db.setlists)
             ..where((s) => s.id.equals(id) & s.deleted.equals(false)))

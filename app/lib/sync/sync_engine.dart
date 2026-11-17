@@ -11,6 +11,7 @@ import '../data/database.dart';
 import '../data/outbox.dart';
 import '../data/song_repository.dart' show SongMeta;
 import 'band_service.dart';
+import 'engine/arrangement_sync.dart';
 import 'engine/attachment_sync.dart';
 import 'engine/overlay_sync.dart';
 import 'engine/set_sync.dart';
@@ -66,6 +67,7 @@ class SyncEngine {
     _sets = SetSync(db, backend, store);
     _attachments = AttachmentSync(db, backend, store, this.storage);
     _overlays = OverlaySync(db, backend, store);
+    _arrangements = ArrangementSync(db, backend, store);
   }
 
   final AppDatabase db;
@@ -88,6 +90,7 @@ class SyncEngine {
   late final SetSync _sets;
   late final AttachmentSync _attachments;
   late final OverlaySync _overlays;
+  late final ArrangementSync _arrangements;
 
   Future<SyncReport>? _running;
 
@@ -125,6 +128,8 @@ class SyncEngine {
       }
       for (final band in visible) {
         pulled += await _sets.pull(band);
+        // After the songs: an arrangement needs its song on this device.
+        pulled += await _arrangements.pull(band);
       }
       // After the songs: an overlay needs its song on this device.
       pulled += await _overlays.pull(user.id);
@@ -214,6 +219,18 @@ class SyncEngine {
         ids,
       );
     }
+    if (setBands.isNotEmpty) {
+      // Band arrangements (ADR-0025), maintained by the same people as sets.
+      final ids = setBands.toList();
+      await enqueue(
+        SyncCollection.arrangements,
+        "SELECT a.band_id || ':' || a.song_id AS id FROM band_arrangements a "
+        'JOIN songs s ON s.id = a.song_id '
+        'WHERE a.revision = 0 AND a.deleted = 0 AND s.deleted = 0 '
+        'AND a.band_id IN (${placeholders(ids.length)})',
+        ids,
+      );
+    }
     if (orgIds.isNotEmpty) {
       // Personal adjustments of this user, e.g. taken over after the
       // upgrade (ADR-0020); any member may sync their own.
@@ -244,6 +261,7 @@ class SyncEngine {
       SyncCollection.setlists,
       SyncCollection.attachments,
       SyncCollection.overlays,
+      SyncCollection.arrangements,
     ];
     final entries = await db.select(db.syncOutbox).get()
       ..sort(
@@ -264,6 +282,8 @@ class SyncEngine {
           if (await _overlays.push(entry, userId) == PushResult.done) {
             pushed++;
           }
+        case SyncCollection.arrangements:
+          if (await _arrangements.push(entry) == PushResult.done) pushed++;
       }
     }
     return (pushed, conflicts);

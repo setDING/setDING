@@ -405,6 +405,28 @@
   "insertNewSong": "Nächster Song in derselben Datei",
   "sequenceEdit": "Songablauf für dieses Set",
   "sequenceFromSet": "Ablauf für dieses Set angepasst",
+  "sequenceFromBand": "Abfolge der Band",
+  "arrangementOf": "Arrangement von {band}",
+  "@arrangementOf": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "arrangementAsWritten": "Wie im Song",
+  "arrangementKey": "Tonart {key}",
+  "@arrangementKey": {
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "arrangementSequence": "Abfolge",
+  "arrangementTempo": "Tempo",
+  "arrangementTempoLabel": "Tempo in BPM (leer = wie im Song)",
+  "arrangementReset": "Zurück zum Song",
   "sequenceOriginal": "Im Song: {sequence}",
   "sequenceNoneInSong": "Der Song hat keinen Ablauf.",
   "sequenceRestore": "Ablauf des Songs verwenden",

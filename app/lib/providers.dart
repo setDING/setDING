@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'data/arrangement_repository.dart';
 import 'data/attachment_storage.dart';
 import 'data/band_copy.dart';
 import 'data/band_view.dart';
@@ -277,6 +278,36 @@ final attachmentCountsProvider = StreamProvider<Map<String, int>>(
 final overlayProvider = StreamProvider.autoDispose.family<SongOverlay, String>(
   (ref, songId) => ref.watch(songRepositoryProvider).watchOverlay(songId),
 );
+
+/// Band arrangements (ADR-0025).
+final arrangementRepositoryProvider = Provider<ArrangementRepository>(
+  (ref) => ArrangementRepository(ref.watch(databaseProvider)),
+);
+
+/// The band whose arrangement applies to songs of [libraryId] outside a
+/// set: the band chosen on the sets tab, if it plays from that library
+/// (ADR-0025); null otherwise (the song is shown as written).
+final arrangementBandProvider = Provider.family<BandView?, String>((
+  ref,
+  libraryId,
+) {
+  final band = ref.watch(currentBandProvider);
+  return !band.isLocal && band.libraryId == libraryId ? band : null;
+});
+
+/// The arrangement of a band for a song, or null.
+final arrangementProvider = StreamProvider.autoDispose
+    .family<BandArrangement?, ({String band, String song})>(
+      (ref, key) =>
+          ref.watch(arrangementRepositoryProvider).watch(key.band, key.song),
+    );
+
+/// The arrangements of a band by song.
+final bandArrangementsProvider = StreamProvider.autoDispose
+    .family<Map<String, BandArrangement>, String>(
+      (ref, bandId) =>
+          ref.watch(arrangementRepositoryProvider).watchBand(bandId),
+    );
 
 final setsProvider = StreamProvider<List<SetSummary>>(
   (ref) => ref.watch(setRepositoryProvider).watchSets(),

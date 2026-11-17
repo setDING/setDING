@@ -1592,6 +1592,54 @@ abstract class AppLocalizations {
   /// **'Ablauf für dieses Set angepasst'**
   String get sequenceFromSet;
 
+  /// No description provided for @sequenceFromBand.
+  ///
+  /// In de, this message translates to:
+  /// **'Abfolge der Band'**
+  String get sequenceFromBand;
+
+  /// No description provided for @arrangementOf.
+  ///
+  /// In de, this message translates to:
+  /// **'Arrangement von {band}'**
+  String arrangementOf(String band);
+
+  /// No description provided for @arrangementAsWritten.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie im Song'**
+  String get arrangementAsWritten;
+
+  /// No description provided for @arrangementKey.
+  ///
+  /// In de, this message translates to:
+  /// **'Tonart {key}'**
+  String arrangementKey(String key);
+
+  /// No description provided for @arrangementSequence.
+  ///
+  /// In de, this message translates to:
+  /// **'Abfolge'**
+  String get arrangementSequence;
+
+  /// No description provided for @arrangementTempo.
+  ///
+  /// In de, this message translates to:
+  /// **'Tempo'**
+  String get arrangementTempo;
+
+  /// No description provided for @arrangementTempoLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Tempo in BPM (leer = wie im Song)'**
+  String get arrangementTempoLabel;
+
+  /// No description provided for @arrangementReset.
+  ///
+  /// In de, this message translates to:
+  /// **'Zurück zum Song'**
+  String get arrangementReset;
+
   /// No description provided for @sequenceOriginal.
   ///
   /// In de, this message translates to:

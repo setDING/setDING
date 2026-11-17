@@ -8,6 +8,7 @@ import 'dart:typed_data';
 import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:realchord/data/arrangement_repository.dart';
 import 'package:realchord/data/attachment_storage_io.dart';
 import 'package:realchord/data/band_copy.dart';
 import 'package:realchord/data/database.dart';
@@ -190,6 +191,33 @@ void main() {
       await bob.close();
     },
   );
+
+  test('band arrangements reach the other device (ADR-0025)', () async {
+    final (ann, bob, org, band) = await twoDevices();
+    final song = await ann
+        .songs(org)
+        .createSong(source: '{title: Shared}\n{key: G}\n[G]Hello');
+    await ArrangementRepository(ann.db)
+        .save(band, song, transpose: 2, sequence: 'V C', tempo: 110);
+    await ann.sync();
+
+    await bob.sync();
+    final seen = await ArrangementRepository(bob.db).get(band, song);
+    expect((seen!.transpose, seen.sequence, seen.tempo), (2, 'V C', 110));
+
+    // Bob is no leader or set planner: his change stays on his device.
+    await ArrangementRepository(bob.db).save(band, song, transpose: 5);
+    await bob.sync();
+    await ann.sync();
+    expect((await ArrangementRepository(ann.db).get(band, song))!.transpose, 2);
+
+    // Back to the song on Ann's device removes it on Bob's.
+    await ArrangementRepository(ann.db).reset(band, song);
+    await ann.sync();
+    await ArrangementRepository(bob.db).reset(band, song);
+    await bob.sync();
+    expect(await ArrangementRepository(bob.db).get(band, song), isNull);
+  });
 
   test('sets: last writer wins', () async {
     final (ann, bob, _, band) = await twoDevices();

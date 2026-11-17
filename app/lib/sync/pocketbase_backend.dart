@@ -674,6 +674,58 @@ class PocketBaseBackend implements SyncBackend {
     );
   });
 
+  static RemoteArrangement _arrangement(RecordModel r) {
+    final tempo = r.getIntValue('tempo');
+    return RemoteArrangement(
+      id: r.id,
+      bandId: r.getStringValue('band'),
+      songId: r.getStringValue('song'),
+      transpose: r.getIntValue('transpose'),
+      sequence: _nonEmpty(r.getStringValue('sequence')),
+      tempo: tempo > 0 ? tempo : null,
+      revision: r.getIntValue('revision'),
+      deleted: r.getBoolValue('deleted'),
+    );
+  }
+
+  @override
+  Future<List<RemoteArrangement>> pullArrangements(
+    String bandId,
+    int since,
+  ) async => [
+    for (final r in await _since('arrangements', 'band', bandId, since))
+      _arrangement(r),
+  ];
+
+  @override
+  Future<RemoteArrangement> pushArrangement(
+    RemoteArrangement arrangement, {
+    required bool create,
+  }) => _signedIn(() async {
+    final body = {
+      'transpose': arrangement.transpose,
+      'sequence': arrangement.sequence ?? '',
+      'tempo': arrangement.tempo ?? 0,
+      'deleted': arrangement.deleted,
+    };
+    return _arrangement(
+      create
+          ? await _pb
+                .collection('arrangements')
+                .create(
+                  body: {
+                    'id': arrangement.id,
+                    'band': arrangement.bandId,
+                    'song': arrangement.songId,
+                    ...body,
+                  },
+                )
+          : await _pb
+                .collection('arrangements')
+                .update(arrangement.id, body: body),
+    );
+  });
+
   @override
   AttachmentDownloads openDownloads() => _PocketBaseDownloads(this);
 
@@ -684,6 +736,7 @@ class PocketBaseBackend implements SyncBackend {
       'setlists',
       'attachments',
       'overlays',
+      'arrangements',
       // Changes of who sees which band (SyncController.bandCollections).
       'organizations',
       'org_memberships',

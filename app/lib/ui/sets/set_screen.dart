@@ -72,10 +72,14 @@ class _SetScreenState extends ConsumerState<SetScreen> {
   Future<SetList?> _setList(SetlistEntry set) async {
     final l10n = AppLocalizations.of(context);
     final items = await _repo.getItems(set.id);
+    final arrangements = await ref
+        .read(arrangementRepositoryProvider)
+        .forBand(set.bandId);
     if (!mounted) return null;
     return buildSetList(
       set,
       items,
+      arrangements: arrangements,
       notation: ref.read(settingsProvider).notation,
       formatDate: (date) => formatGigDate(context, date),
       untitled: l10n.untitled,
@@ -262,6 +266,7 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                           index: i,
                           view: items[i],
                           setId: widget.setId,
+                          bandId: set.bandId,
                           canEdit: canEdit,
                         ),
                       ),
@@ -280,12 +285,16 @@ class _SetItemTile extends ConsumerWidget {
     required this.index,
     required this.view,
     required this.setId,
+    required this.bandId,
     required this.canEdit,
   });
 
   final int index;
   final SetItemView view;
   final String setId;
+
+  /// Band of the set, whose arrangements apply (ADR-0025).
+  final String bandId;
 
   /// Edit, transpose, reorder and remove items (admins, ADR-0005).
   final bool canEdit;
@@ -350,13 +359,18 @@ class _SetItemTile extends ConsumerWidget {
     }
 
     final notation = ref.watch(settingsProvider.select((s) => s.notation));
+    // The band's arrangement is the reference of the set (ADR-0025): its key
+    // and sequence replace the song's, the set item comes on top.
+    final band = song == null
+        ? null
+        : ref.watch(bandArrangementsProvider(bandId)).value?[song.id];
     final originalSequence = song == null
         ? null
-        : cp.findSequence(song.chordproSource);
+        : band?.sequence ?? cp.findSequence(song.chordproSource);
     final sequence = item.sequence ?? originalSequence;
     final songKey = song?.songKey == null
         ? null
-        : cp.Key.tryParse(song!.songKey!);
+        : cp.Key.tryParse(song!.songKey!)?.transpose(band?.transpose ?? 0);
 
     return ListTile(
       leading: SizedBox(
@@ -383,6 +397,7 @@ class _SetItemTile extends ConsumerWidget {
                   cp.parseSequence(sequence),
                   compact: true,
                   fromSet: item.sequence != null,
+                  fromBand: item.sequence == null && band?.sequence != null,
                 ),
               ),
           ],

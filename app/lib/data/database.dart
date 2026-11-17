@@ -231,6 +231,34 @@ class PersonalOverlays extends Table {
   Set<Column> get primaryKey => {ownerId, songId};
 }
 
+/// A band's arrangement of a song (ADR-0025, schema 12): the band's key as
+/// a transposition relative to the song, its sequence and tempo; between
+/// the song and the set item. The primary key (band first) also serves the
+/// lookups per band.
+@DataClassName('BandArrangement')
+class BandArrangements extends Table {
+  TextColumn get bandId => text()();
+  TextColumn get songId => text().references(Songs, #id)();
+
+  /// Semitones relative to the song's key.
+  IntColumn get transpose => integer().withDefault(const Constant(0))();
+
+  /// Song sequence (`{x_sequence}` syntax); null = as in the song.
+  TextColumn get sequence => text().nullable()();
+
+  /// Tempo in BPM; null = as in the song (`{tempo}`).
+  IntColumn get tempo => integer().nullable()();
+
+  /// Server revision; 0 = not on the server.
+  IntColumn get revision => integer().withDefault(const Constant(0))();
+
+  /// Removed ("as in the song"); kept until the removal reached the server.
+  BoolColumn get deleted => boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column> get primaryKey => {bandId, songId};
+}
+
 /// Local changes waiting to be pushed to the server (ADR-0004, schema 5).
 /// One row per record; [version] grows with every change, so a change made
 /// while a push is running is not lost.
@@ -286,6 +314,7 @@ class SongConflicts extends Table {
     Setlists,
     SetItems,
     PersonalOverlays,
+    BandArrangements,
     SyncOutbox,
     SyncCursors,
     SongConflicts,
@@ -295,7 +324,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -404,6 +433,10 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(songs, songs.updatedBy);
         }
         await m.alterTable(TableMigration(bands));
+      }
+      if (from < 12) {
+        // Band arrangements (ADR-0025).
+        await m.createTable(bandArrangements);
       }
     },
     beforeOpen: (details) async {

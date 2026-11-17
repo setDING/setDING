@@ -11,6 +11,19 @@ abstract final class SyncCollection {
   /// Personal adjustments (ADR-0020); the outbox record ID is
   /// [overlayRecordId].
   static const overlays = 'overlays';
+
+  /// Band arrangements (ADR-0025); the outbox record ID is
+  /// [arrangementRecordId].
+  static const arrangements = 'arrangements';
+}
+
+/// Outbox record ID of the arrangement of [bandId] for [songId].
+String arrangementRecordId(String bandId, String songId) => '$bandId:$songId';
+
+/// Band and song of an [arrangementRecordId].
+(String, String) parseArrangementRecordId(String id) {
+  final i = id.indexOf(':');
+  return (id.substring(0, i), id.substring(i + 1));
 }
 
 /// Outbox record ID of the personal adjustments of [ownerId] for [songId].

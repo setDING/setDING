@@ -43,11 +43,13 @@ class SetList {
 }
 
 /// Builds the set list: songs are numbered and get the key for this set
-/// (set transposition, ADR-0006) and their sequence (set-specific or from
-/// the song); pauses and text items become markers.
+/// (band arrangement and set transposition, ADR-0025, ADR-0006) and their
+/// sequence (set-specific, from the band or from the song); pauses and text
+/// items become markers.
 SetList buildSetList(
   SetlistEntry set,
   List<SetItemView> items, {
+  Map<String, BandArrangement> arrangements = const {},
   required cp.ChordNotation notation,
   required String Function(DateTime date) formatDate,
   required String untitled,
@@ -74,18 +76,23 @@ SetList buildSetList(
       rows.add(SetListSong(number, songMissing));
       continue;
     }
+    final band = arrangements[song.id];
+    final transpose = (band?.transpose ?? 0) + item.transpose;
     final base = song.songKey == null ? null : cp.Key.tryParse(song.songKey!);
     final key = base != null
-        ? base.transpose(item.transpose).format(notation)
-        : (normalizeSemitones(item.transpose) == 0
+        ? base.transpose(transpose).format(notation)
+        : (normalizeSemitones(transpose) == 0
               ? null
-              : formatSemitones(item.transpose));
+              : formatSemitones(transpose));
     rows.add(
       SetListSong(
         number,
         song.title.isEmpty ? untitled : song.title,
         key: key,
-        sequence: item.sequence ?? cp.findSequence(song.chordproSource),
+        sequence:
+            item.sequence ??
+            band?.sequence ??
+            cp.findSequence(song.chordproSource),
       ),
     );
   }

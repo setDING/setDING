@@ -191,6 +191,30 @@ class RemoteSong {
   final String? updatedBy;
 }
 
+/// A band arrangement as stored on the server (ADR-0025).
+@immutable
+class RemoteArrangement {
+  const RemoteArrangement({
+    required this.id,
+    required this.bandId,
+    required this.songId,
+    this.transpose = 0,
+    this.sequence,
+    this.tempo,
+    this.revision = 0,
+    this.deleted = false,
+  });
+
+  final String id;
+  final String bandId;
+  final String songId;
+  final int transpose;
+  final String? sequence;
+  final int? tempo;
+  final int revision;
+  final bool deleted;
+}
+
 /// A set as stored on the server: its items as one JSON array
 /// (ADR-0015), each `{id, type, song, transpose, sequence, note}`.
 @immutable
@@ -554,6 +578,17 @@ abstract class SyncBackend {
 
   /// Sets of a band changed after revision [since], in revision order.
   Future<List<RemoteSet>> pullSets(String bandId, int since);
+
+  /// Arrangements of a band changed after revision [since], in revision
+  /// order (ADR-0025).
+  Future<List<RemoteArrangement>> pullArrangements(String bandId, int since);
+
+  /// Creates or updates an arrangement (last writer wins) and returns the
+  /// server state.
+  Future<RemoteArrangement> pushArrangement(
+    RemoteArrangement arrangement, {
+    required bool create,
+  });
 
   /// The current server state of a song, or null if it does not exist.
   Future<RemoteSong?> fetchSong(String id);
