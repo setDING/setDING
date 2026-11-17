@@ -40,6 +40,22 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('the keyboard opening keeps the settings as built (#297)', (
+    tester,
+  ) async {
+    // The settings stay built behind the other tabs of the home screen, so
+    // they would otherwise be built again in each frame while the keyboard
+    // opens for the song search.
+    useTabletSize(tester);
+    final app = await pumpSettings(tester);
+    final account = find.byKey(const Key('settings-category-account'));
+    final before = tester.widget(account);
+    tester.view.viewInsets = const FakeViewPadding(bottom: 400);
+    await tester.pumpAndSettle();
+    expect(identical(tester.widget(account), before), isTrue);
+    await app.dispose(tester);
+  });
+
   testWidgets('narrow: a category opens as its own page', (tester) async {
     tester.view.physicalSize = const Size(400, 800);
     tester.view.devicePixelRatio = 1.0;

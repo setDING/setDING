@@ -16,6 +16,7 @@ import '../bands/copy_to_band.dart';
 import '../bands/library_switcher.dart';
 import '../render/song_header.dart';
 import '../sets/sets_screen.dart' show formatGigDate;
+import '../widgets/breakpoint_builder.dart';
 import '../widgets/dialogs.dart';
 import 'import_dialog.dart';
 import 'song_editor_screen.dart';
@@ -281,21 +282,11 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                           ),
                         ),
                 );
-                // One list per number of columns: when only the height
-                // changes, e.g. while the keyboard opens for the search,
-                // the same list is kept instead of building every visible
-                // song again in each frame (#297).
-                final lists = <int, Widget>{};
-                return LayoutBuilder(
-                  builder: (context, constraints) {
-                    final columns =
-                        constraints.maxWidth >= songListTwoColumnWidth ? 2 : 1;
-                    return lists[columns] ??= _songList(
-                      songListRows(sections, columns),
-                      columns,
-                      tile,
-                    );
-                  },
+                return BreakpointBuilder(
+                  select: (constraints) =>
+                      constraints.maxWidth >= songListTwoColumnWidth ? 2 : 1,
+                  builder: (context, columns) =>
+                      _songList(songListRows(sections, columns), columns, tile),
                 );
               },
             ),
