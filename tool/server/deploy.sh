@@ -23,6 +23,12 @@ case "$version" in
   *-dev+*) echo "Not a release; production deploys use 'make server-release' (git workflow section 10)." ;;
 esac
 
+if ! command -v flutter >/dev/null 2>&1 && [ -x "$HOME/development/flutter/bin/flutter" ]; then
+  export PATH="$HOME/development/flutter/bin:$PATH"
+fi
+# A fresh checkout (make server-release) has no packages yet; build-web.sh
+# compiles the drift worker before Flutter would fetch them (#348).
+(cd "$SRC/app" && flutter pub get >/dev/null)
 "$SRC/tool/build-web.sh"
 
 # Ends up in the server's pb_hooks; PocketBase only loads *.pb.js from there.

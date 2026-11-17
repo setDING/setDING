@@ -57,10 +57,10 @@ gh release view "$tag" --json tagName >/dev/null 2>&1 ||
 echo "run $id passed, GitHub Release $tag published"
 
 step "Deploy $tag to $SERVER"
-# A clean checkout of the tag in the repository's ignored build directory;
-# git removes it again afterwards.
-dir="$ROOT/app/build/server-release-$version"
-git -C "$ROOT" worktree remove --force "$dir" 2>/dev/null || true
+# A clean checkout of the tag OUTSIDE the repository: inside it (e.g. under
+# app/build) Flutter would resolve the outer app's package config and fail
+# (#348). git removes it again afterwards.
+dir="$(mktemp -d "${TMPDIR:-/tmp}/setding-release-$version.XXXXXX")"
 git -C "$ROOT" worktree add -q --detach "$dir" "$tag"
 trap 'git -C "$ROOT" worktree remove --force "$dir"' EXIT
 SRC="$dir" SERVER_VERSION="$version" SERVER="$SERVER" SSH="$SSH" \
