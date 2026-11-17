@@ -129,6 +129,7 @@ class SongListEntry {
     required this.title,
     this.artist,
     this.songKey,
+    this.tempo,
     this.sequence,
     this.tags,
   });
@@ -137,6 +138,9 @@ class SongListEntry {
   final String title;
   final String? artist;
   final String? songKey;
+
+  /// `{tempo}` in BPM.
+  final int? tempo;
 
   /// Raw `{x_sequence}` value of the song.
   final String? sequence;
@@ -153,11 +157,13 @@ class SongListEntry {
       other.title == title &&
       other.artist == artist &&
       other.songKey == songKey &&
+      other.tempo == tempo &&
       other.sequence == sequence &&
       other.tags == tags;
 
   @override
-  int get hashCode => Object.hash(id, title, artist, songKey, sequence, tags);
+  int get hashCode =>
+      Object.hash(id, title, artist, songKey, tempo, sequence, tags);
 }
 
 /// Access to songs, attachments and personal overlays of one song library:
@@ -217,7 +223,15 @@ class SongRepository {
   Stream<List<SongListEntry>> watchSongList({String query = '', String? tag}) {
     final s = db.songs;
     final q = db.selectOnly(s)
-      ..addColumns([s.id, s.title, s.artist, s.songKey, s.sequence, s.tags])
+      ..addColumns([
+        s.id,
+        s.title,
+        s.artist,
+        s.songKey,
+        s.tempo,
+        s.sequence,
+        s.tags,
+      ])
       ..where(_filter(query, tag))
       ..orderBy([_order]);
     return q.watch().map(
@@ -228,6 +242,7 @@ class SongRepository {
             title: r.read(s.title)!,
             artist: r.read(s.artist),
             songKey: r.read(s.songKey),
+            tempo: r.read(s.tempo),
             sequence: r.read(s.sequence),
             tags: r.read(s.tags),
           ),

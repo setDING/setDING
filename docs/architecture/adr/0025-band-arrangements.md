@@ -70,7 +70,9 @@ needed for now (owner); personal notes stay as they are.
   - on the songs tab and when a single song is played live: the song is shown
     **as written**. The song screen shows the arrangement of the band chosen on
     the sets tab (if it plays from this library) only in its own card, where it
-    is also edited.
+    is also edited. The song list (and the song picker of the sets) shows each
+    song as written and adds a small hint, marked with the band icon, for songs
+    that band has an arrangement for: the band's key, tempo and sequence.
 - **Printable set list and set export** (ADR-0013): key, sequence and tempo for the
   set include the arrangement.
 - **Copy to band** (ADR-0017): copying a set into another band of the same
@@ -159,6 +161,11 @@ needed for now (owner); personal notes stay as they are.
   the card above the song into a **side panel** (end drawer) behind a band icon in
   the app bar, with a dot while the band has an arrangement for the song. The
   song stays visible behind the panel, so changes show at once.
+- 2026-11-17: Owner decision (#245): the song list keeps key badge, tempo and
+  sequence of the song as written and shows the arrangement of the band chosen on
+  the sets tab only as a small hint below the song (band icon, the band's key and
+  tempo, its sequence). This refines #227; the song is still never shown in the
+  band's key.
 
 ## Open points
 

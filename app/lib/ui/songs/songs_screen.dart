@@ -4,6 +4,7 @@ import 'package:chordpro/chordpro.dart' as cp;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/database.dart';
 import '../../data/song_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
@@ -83,6 +84,10 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
     final songs = ref.watch(songsProvider((query: _query, tag: _tag)));
     final counts = ref.watch(attachmentCountsProvider).value ?? const {};
     final library = ref.watch(currentLibraryProvider);
+    final band = ref.watch(arrangementBandProvider(library.id));
+    final arrangements = band == null
+        ? const <String, BandArrangement>{}
+        : ref.watch(bandArrangementsProvider(band.id)).value ?? const {};
     final selected = _selected;
     // Leave selection mode when switching libraries.
     ref.listen(currentLibraryProvider, (previous, next) {
@@ -214,6 +219,8 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                       itemBuilder: (context, i) => SongTile(
                         song: list[i],
                         hasAttachments: (counts[list[i].id] ?? 0) > 0,
+                        arrangement: arrangements[list[i].id],
+                        bandName: band?.name ?? '',
                         leading: selected == null
                             ? null
                             : Checkbox(
@@ -288,6 +295,70 @@ class _TagFilter extends ConsumerWidget {
   }
 }
 
+/// What the band's arrangement changes against the song (ADR-0025): its
+/// key, tempo and sequence, marked with a band icon. Only a hint; the song
+/// entry itself stays as written (#227, #245).
+class BandArrangementHint extends StatelessWidget {
+  const BandArrangementHint({
+    super.key,
+    required this.arrangement,
+    required this.songKey,
+    required this.notation,
+    required this.bandName,
+  });
+
+  final BandArrangement arrangement;
+  final cp.Key? songKey;
+  final cp.ChordNotation notation;
+  final String bandName;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final transpose = arrangement.transpose;
+    final details = [
+      if (transpose != 0)
+        l10n.arrangementKey(
+          songKey?.transpose(transpose).format(notation) ??
+              formatSemitones(transpose),
+        ),
+      if (arrangement.tempo case final tempo?) l10n.bpm(tempo),
+    ].join(' · ');
+    final sequence = arrangement.sequence == null
+        ? const <cp.SequenceItem>[]
+        : cp.parseSequence(arrangement.sequence!);
+    final label = l10n.arrangementOf(bandName);
+    return Wrap(
+      key: const ValueKey('band-arrangement-hint'),
+      spacing: 6,
+      runSpacing: 4,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        Tooltip(
+          message: label,
+          child: Icon(
+            Icons.groups_outlined,
+            size: 18,
+            color: scheme.primary,
+            semanticLabel: label,
+          ),
+        ),
+        if (details.isNotEmpty)
+          Text(
+            details,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: scheme.primary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        if (sequence.isNotEmpty) SongSequenceView(sequence, compact: true),
+      ],
+    );
+  }
+}
+
 /// List entry for a song: the key as a badge in front, artist and tags
 /// below the title, and the song sequence as compact chips.
 class SongTile extends ConsumerWidget {
@@ -299,10 +370,19 @@ class SongTile extends ConsumerWidget {
     this.onLongPress,
     this.trailing,
     this.leading,
+    this.arrangement,
+    this.bandName = '',
   });
 
   final SongListEntry song;
   final bool hasAttachments;
+
+  /// Arrangement of the band chosen on the sets tab (ADR-0025), shown as a
+  /// hint below the song, which itself stays as written.
+  final BandArrangement? arrangement;
+
+  /// Name of the band of [arrangement].
+  final String bandName;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
   final Widget? trailing;
@@ -314,14 +394,17 @@ class SongTile extends ConsumerWidget {
     final notation = ref.watch(settingsProvider.select((s) => s.notation));
     final details = [
       if (song.artist != null) song.artist!,
+      if (song.tempo case final tempo?) l10n.bpm(tempo),
       ...song.tagList.map((t) => '#$t'),
     ].join(' · ');
     final sequence = song.sequence == null
         ? const <cp.SequenceItem>[]
         : cp.parseSequence(song.sequence!);
-    final key = song.songKey == null
+    final parsedKey = song.songKey == null
         ? null
-        : cp.Key.tryParse(song.songKey!)?.format(notation) ?? song.songKey!;
+        : cp.Key.tryParse(song.songKey!);
+    final key = parsedKey?.format(notation) ?? song.songKey;
+    final band = arrangement;
     return ListTile(
       leading: Row(
         mainAxisSize: MainAxisSize.min,
@@ -331,7 +414,7 @@ class SongTile extends ConsumerWidget {
         ],
       ),
       title: Text(song.title.isEmpty ? l10n.untitled : song.title),
-      subtitle: details.isEmpty && sequence.isEmpty
+      subtitle: details.isEmpty && sequence.isEmpty && band == null
           ? null
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -341,6 +424,16 @@ class SongTile extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: SongSequenceView(sequence, compact: true),
+                  ),
+                if (band != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: BandArrangementHint(
+                      arrangement: band,
+                      songKey: parsedKey,
+                      notation: notation,
+                      bandName: bandName,
+                    ),
                   ),
               ],
             ),
