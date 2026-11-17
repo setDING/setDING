@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:test/test.dart';
 
 import 'support/fixtures.dart';
-import 'package:realchord_server/pocketbase_harness.dart';
+import 'package:setding_server/pocketbase_harness.dart';
 
 final _pdf = utf8.encode(
   '%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF\n',

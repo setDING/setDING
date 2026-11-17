@@ -7,8 +7,8 @@ import '../data/database.dart' show SetItemEntry, SetItemType;
 
 export '../data/band_role.dart';
 
-/// Default RealChord server (ADR-0014).
-const defaultServerUrl = 'https://api.realchord.app';
+/// Default setDING server (ADR-0014).
+const defaultServerUrl = 'https://api.setding.app';
 
 /// The signed-in user.
 @immutable
@@ -451,7 +451,7 @@ class InvitePreview {
 }
 
 /// Extracts the token from an invitation link (`https://…/invite/<token>`,
-/// `realchord://invite/<token>`) or a pasted token; null if there is none.
+/// `setding://invite/<token>`) or a pasted token; null if there is none.
 String? inviteTokenFrom(String input) {
   final text = input.trim();
   final inLink = RegExp(r'invite/([A-Za-z0-9]{16,64})').firstMatch(text);
@@ -459,7 +459,7 @@ String? inviteTokenFrom(String input) {
   return RegExp(r'^[A-Za-z0-9]{16,64}$').hasMatch(text) ? text : null;
 }
 
-/// Access to the RealChord server (ADR-0004). The app talks to the backend
+/// Access to the setDING server (ADR-0004). The app talks to the backend
 /// only through this interface, so the backend product can be replaced
 /// without touching the rest of the app.
 ///

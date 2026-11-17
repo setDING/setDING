@@ -1,6 +1,6 @@
 # Daily backup of the PocketBase data (ADR-0014). Installed by tool/server/install.sh.
 [Unit]
-Description=Daily RealChord backup
+Description=Daily setDING backup
 
 [Timer]
 OnCalendar=*-*-* 03:30:00

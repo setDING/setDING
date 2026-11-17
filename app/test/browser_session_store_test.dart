@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:realchord/sync/browser_session_store.dart';
+import 'package:setding/sync/browser_session_store.dart';
 
 class _Storage implements KeyValueStorage {
   final values = <String, String>{};

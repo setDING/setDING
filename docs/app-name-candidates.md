@@ -1,9 +1,36 @@
 # App name candidates
 
-> Status: **Decided (2026-11-15): RealChord.** "BandChords" was the working title.
+> Status: **Decided (2026-11-17): setDING.** Called RealChord from 2026-11-15 to
+> 2026-11-17; "BandChords" was the working title.
 > Collected: 2026-11-14
 
-## Decision
+## Decision (2026-11-17): setDING
+
+The app is renamed to **setDING** (#318).
+
+- **Why:** the app is extended with features for drummers, so a name about chords
+  no longer fits.
+- **Idea:** a play on words. Spoken, it sounds like "setting". "Set" is the set
+  of a gig (what the app is about) and a drum set; "DING" is the bright ding of a
+  cymbal bell. In German, "das Set-Ding" is also casually "the thing for our sets".
+- **Spelling:** always **setDING**, also in prose and UI texts. Code and build
+  identifiers are case-insensitive or lower case: `setding` (packages, binary,
+  paths), `Setding` (Dart classes), `SETDING_` (environment variables),
+  application ID `app.setding`.
+- **Domain:** `setding.app` (registered by the owner): `api.setding.app` for the
+  server, `app.setding.app` for the web client. `realchord.app` expires.
+- **Logo:** a new mark and the wordmark "set" + "DING" (#319).
+- **Not migrated:** the app was not live yet, so no data, settings or installs
+  are carried over (database `setding.sqlite`; the BandChords database migration
+  was removed).
+
+### Still to do
+
+1. Trademark search at swissreg.ch and EUIPO/TMview, classes 9 and 42 (to be done by
+   a human).
+2. Check the Google Play, Apple App Store and Microsoft Store for "setDING".
+
+## Earlier decision (2026-11-15): RealChord
 
 The app is called **RealChord**.
 

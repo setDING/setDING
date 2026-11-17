@@ -1,10 +1,10 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:realchord/sync/sync_backend.dart';
-import 'package:realchord/ui/bands/join_screen.dart';
-import 'package:realchord/ui/bands/organization_screen.dart';
-import 'package:realchord/ui/settings_screen.dart';
+import 'package:setding/sync/sync_backend.dart';
+import 'package:setding/ui/bands/join_screen.dart';
+import 'package:setding/ui/bands/organization_screen.dart';
+import 'package:setding/ui/settings_screen.dart';
 
 import 'test_app.dart';
 
@@ -14,10 +14,10 @@ const _bob = AuthUser(id: 'bob', email: 'bob@example.test', name: 'Bob');
 void main() {
   test('finds the token in links and pasted text', () {
     const token = 'AbCdEfGhIjKlMnOpQrStUvWxYz012345';
-    expect(inviteTokenFrom('https://api.realchord.app/invite/$token'), token);
-    expect(inviteTokenFrom(' realchord://invite/$token '), token);
+    expect(inviteTokenFrom('https://api.setding.app/invite/$token'), token);
+    expect(inviteTokenFrom(' setding://invite/$token '), token);
     expect(inviteTokenFrom(token), token);
-    expect(inviteTokenFrom('https://api.realchord.app/invite/short'), isNull);
+    expect(inviteTokenFrom('https://api.setding.app/invite/short'), isNull);
     expect(inviteTokenFrom('hello world'), isNull);
   });
 
@@ -45,7 +45,7 @@ void main() {
     final invite = app.backend.invites.single;
     expect(find.byType(QrImageView), findsOneWidget);
     expect(
-      find.text('https://api.realchord.app/invite/${invite.token}'),
+      find.text('https://api.setding.app/invite/${invite.token}'),
       findsOneWidget,
     );
     await tester.tap(find.text('Close'));
@@ -104,7 +104,7 @@ void main() {
 
     await tester.enterText(
       find.byKey(const Key('join-link')),
-      'https://api.realchord.app/invite/${'Z' * 32}',
+      'https://api.setding.app/invite/${'Z' * 32}',
     );
     await tester.tap(find.byKey(const Key('join-continue')));
     await tester.pumpAndSettle();

@@ -94,16 +94,16 @@ computers:
 
 ### Hosting (ADR-0014)
 
-- The web client is published at **`https://app.realchord.app`**: a second
+- The web client is published at **`https://app.setding.app`**: a second
   hostname of the Cloudflare Tunnel that points to the same PocketBase, which
   serves the web build as static files (`pb_public`). No second server.
 - On web the server URL defaults to the **page's own origin**, so the web client
-  calls the API on `app.realchord.app` itself: same origin, no CORS configuration.
-  The apps keep `https://api.realchord.app`.
+  calls the API on `app.setding.app` itself: same origin, no CORS configuration.
+  The apps keep `https://api.setding.app`.
 - It is deployed with the server targets (`make server-*`), built from the same
   commit as the apps.
 - The invitation landing page (`/invite/<token>`) offers **"Open in the browser"**
-  (`https://app.realchord.app/invite/<token>`) next to the instructions for
+  (`https://app.setding.app/invite/<token>`) next to the instructions for
   installing the app.
 - Adding the tunnel hostname and the DNS record is done by the owner (Cloudflare
   account, ADR-0014).
@@ -197,6 +197,7 @@ Tracked in issue #27, each step a separate PR:
 - 2026-11-16: Owner decision (#162): importing ChordPro files and ZIPs is
   offered on web as well, so songs can be uploaded as files in the browser;
   the imported songs are synced like new songs. Export stays native-only.
+- 2026-11-17: App renamed to **setDING** (#318): the web client is published at `https://app.setding.app` (`SETDING_WEB_URL`), the apps use `https://api.setding.app`.
 
 ## Open points
 

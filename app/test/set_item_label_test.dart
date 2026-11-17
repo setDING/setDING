@@ -4,13 +4,13 @@ import 'package:archive/archive.dart';
 import 'package:chordpro/chordpro.dart' as cp;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:realchord/data/database.dart';
-import 'package:realchord/data/import_export.dart';
-import 'package:realchord/l10n/generated/app_localizations.dart';
-import 'package:realchord/ui/live/live_screen.dart';
-import 'package:realchord/ui/sets/set_item_label.dart';
-import 'package:realchord/ui/sets/set_list_text.dart';
-import 'package:realchord/ui/sets/set_screen.dart';
+import 'package:setding/data/database.dart';
+import 'package:setding/data/import_export.dart';
+import 'package:setding/l10n/generated/app_localizations.dart';
+import 'package:setding/ui/live/live_screen.dart';
+import 'package:setding/ui/sets/set_item_label.dart';
+import 'package:setding/ui/sets/set_list_text.dart';
+import 'package:setding/ui/sets/set_screen.dart';
 
 import 'test_app.dart';
 

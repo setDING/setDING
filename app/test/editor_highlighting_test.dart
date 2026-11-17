@@ -1,9 +1,9 @@
 import 'package:chordpro/chordpro.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:realchord/app.dart';
-import 'package:realchord/ui/songs/chordpro_editing_controller.dart';
-import 'package:realchord/ui/songs/song_editor_screen.dart';
+import 'package:setding/app.dart';
+import 'package:setding/ui/songs/chordpro_editing_controller.dart';
+import 'package:setding/ui/songs/song_editor_screen.dart';
 
 import 'test_app.dart';
 
@@ -34,7 +34,7 @@ void main() {
     await tester.pumpWidget(
       app.build(
         home: Theme(
-          data: RealChordApp.theme(brightness),
+          data: SetdingApp.theme(brightness),
           child: SongEditorScreen(initialSource: source),
         ),
       ),
@@ -54,7 +54,7 @@ void main() {
     final spans = {
       for (final (text, style) in renderedSpans(tester)) text: style,
     };
-    final scheme = RealChordApp.theme(Brightness.light).colorScheme;
+    final scheme = SetdingApp.theme(Brightness.light).colorScheme;
 
     expect(spans['[Am]']!.fontWeight, FontWeight.bold);
     expect(spans['[Am]']!.color, scheme.primary);
@@ -70,7 +70,7 @@ void main() {
 
   testWidgets('every token kind has a style in both themes', (tester) async {
     for (final brightness in Brightness.values) {
-      final scheme = RealChordApp.theme(brightness).colorScheme;
+      final scheme = SetdingApp.theme(brightness).colorScheme;
       final styled = SourceTokenKind.values.where(
         (k) => k != SourceTokenKind.text && k != SourceTokenKind.directiveValue,
       );
@@ -97,7 +97,7 @@ void main() {
     expect(spans.map((s) => s.$1).join(), '[C]la [G]li');
     expect(
       spans.firstWhere((s) => s.$1 == '[G]').$2!.color,
-      RealChordApp.theme(Brightness.dark).colorScheme.primary,
+      SetdingApp.theme(Brightness.dark).colorScheme.primary,
     );
     await app.dispose(tester);
   });
@@ -106,7 +106,7 @@ void main() {
     tester,
   ) async {
     final (app, controller) = await pumpEditor(tester, 'la [Am] li [G');
-    final scheme = RealChordApp.theme(Brightness.light).colorScheme;
+    final scheme = SetdingApp.theme(Brightness.light).colorScheme;
     List<(String, Color?)> highlighted() => [
       for (final (text, style) in renderedSpans(tester))
         if (style?.backgroundColor != null) (text, style!.backgroundColor),

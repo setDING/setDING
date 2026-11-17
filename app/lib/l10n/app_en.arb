@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appTitle": "RealChord",
+  "appTitle": "setDING",
   "navSets": "Sets",
   "navSongs": "Songs",
   "navSettings": "Settings",
@@ -165,7 +165,7 @@
   "themeLight": "Light",
   "themeDark": "Dark",
   "settingsAccent": "Accent colour",
-  "accentBrand": "RealChord red",
+  "accentBrand": "setDING red",
   "accentAmber": "Amber",
   "accentGreen": "Green",
   "accentTeal": "Teal",
@@ -216,7 +216,7 @@
   "settingsLogCopy": "Copy diagnostic log",
   "settingsLogCopyHint": "The app's recent messages, e.g. why a sync failed – to paste into a message to support.",
   "settingsLogCopied": "Diagnostic log copied",
-  "settingsAbout": "RealChord runs locally on this device. All data is available offline.",
+  "settingsAbout": "setDING runs locally on this device. All data is available offline.",
   "settingsVersion": "Version {version}",
   "@settingsVersion": {
     "placeholders": {
@@ -317,7 +317,7 @@
   "exportSetListPdf": "Export set list (PDF for printing)",
   "settingsSectionAccount": "Account & sync",
   "accountSignedOut": "Not signed in",
-  "accountSignedOutHint": "Sign in to share songs and sets with your band. Without an account, RealChord keeps working locally on this device.",
+  "accountSignedOutHint": "Sign in to share songs and sets with your band. Without an account, setDING keeps working locally on this device.",
   "accountSignIn": "Sign in",
   "accountSignUp": "Create account",
   "accountJoin": "Join with invitation",

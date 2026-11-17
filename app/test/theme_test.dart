@@ -3,14 +3,14 @@ import 'dart:math';
 import 'package:chordpro/chordpro.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:realchord/data/database.dart';
-import 'package:realchord/settings/settings.dart';
-import 'package:realchord/ui/live/live_theme.dart';
-import 'package:realchord/ui/render/song_header.dart';
-import 'package:realchord/ui/render/song_style.dart';
-import 'package:realchord/ui/songs/chordpro_editing_controller.dart';
-import 'package:realchord/ui/theme.dart';
-import 'package:realchord/ui/widgets/logo.dart';
+import 'package:setding/data/database.dart';
+import 'package:setding/settings/settings.dart';
+import 'package:setding/ui/live/live_theme.dart';
+import 'package:setding/ui/render/song_header.dart';
+import 'package:setding/ui/render/song_style.dart';
+import 'package:setding/ui/songs/chordpro_editing_controller.dart';
+import 'package:setding/ui/theme.dart';
+import 'package:setding/ui/widgets/logo.dart';
 
 import 'test_app.dart';
 

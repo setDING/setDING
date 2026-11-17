@@ -1,4 +1,4 @@
-# RealChord feature showcase – every ChordPro feature supported by the app.
+# setDING feature showcase – every ChordPro feature supported by the app.
 # All lyrics and music in this file are original and free to use.
 # Import it (or feature-showcase.zip, which also contains the image) via
 # Songs → Import files. The {new_song} at the end creates a second song.
@@ -6,13 +6,13 @@
 {title: Feature Showcase}
 {sorttitle: Showcase, Feature}
 {subtitle: Every directive in one song}
-{artist: The RealChord Band}
-{sortartist: RealChord Band, The}
+{artist: The setDING Band}
+{sortartist: setDING Band, The}
 {composer: A. Composer}
 {composer: B. Composer}
 {lyricist: C. Lyricist}
 {arranger: D. Arranger}
-{copyright: 2026 RealChord (free to use)}
+{copyright: 2026 setDING (free to use)}
 {album: Test Recordings}
 {year: 2026}
 {key: G}
@@ -24,11 +24,11 @@
 {tag: Showcase}
 {meta: mood happy}
 {meta: duet true}
-# RealChord custom directive (x_ prefix, ignored by other ChordPro tools):
+# setDING custom directive (x_ prefix, ignored by other ChordPro tools):
 # song sequence, shown below the subtitle
 # (C=Chorus, V=Verse, PC=Pre-chorus, B=Bridge, I=Intro, O=Outro, …).
 {x_sequence: I, V1, C, V2, PC, C x2, B, O}
-{x_realchord_note: custom directives starting with x_ are ignored}
+{x_setding_note: custom directives starting with x_ are ignored}
 
 # ---------------------------------------------------------------------------
 # Metadata in texts and comment styles
@@ -197,7 +197,7 @@ Serif again (previous font restored).
 
 {start_of_textblock label="Spoken intro" flush="center" align="center" textsize="110%"}
 Ladies and gentlemen,
-<i>please welcome</i> the <b>RealChord Band</b>!
+<i>please welcome</i> the <b>setDING Band</b>!
 {end_of_textblock}
 
 {start_of_abc}
@@ -229,7 +229,7 @@ w:Here's a lit-tle tune to play
 
 {new_song}
 {title: Second Song in the Same File}
-{artist: The RealChord Band}
+{artist: The setDING Band}
 {key: D}
 {tag: Test}
 

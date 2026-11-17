@@ -2,15 +2,15 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:realchord/data/attachment_storage.dart';
-import 'package:realchord/data/attachment_storage_io.dart';
-import 'package:realchord/data/attachment_storage_memory.dart';
+import 'package:setding/data/attachment_storage.dart';
+import 'package:setding/data/attachment_storage_io.dart';
+import 'package:setding/data/attachment_storage_memory.dart';
 
 /// The native (files) and web (memory) storages behave the same (ADR-0018).
 void main() {
   final variants = <String, AttachmentStorage Function()>{
     'FileAttachmentStorage': () {
-      final dir = Directory.systemTemp.createTempSync('realchord_storage');
+      final dir = Directory.systemTemp.createTempSync('setding_storage');
       addTearDown(() => dir.deleteSync(recursive: true));
       return FileAttachmentStorage(Directory('${dir.path}/attachments'));
     },

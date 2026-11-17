@@ -10,7 +10,7 @@ class AppLocalizationsDe extends AppLocalizations {
   AppLocalizationsDe([String locale = 'de']) : super(locale);
 
   @override
-  String get appTitle => 'RealChord';
+  String get appTitle => 'setDING';
 
   @override
   String get navSets => 'Sets';
@@ -588,7 +588,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsAccent => 'Akzentfarbe';
 
   @override
-  String get accentBrand => 'RealChord-Rot';
+  String get accentBrand => 'setDING-Rot';
 
   @override
   String get accentAmber => 'Bernstein';
@@ -754,7 +754,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsAbout =>
-      'RealChord läuft lokal auf diesem Gerät. Alle Daten sind offline verfügbar.';
+      'setDING läuft lokal auf diesem Gerät. Alle Daten sind offline verfügbar.';
 
   @override
   String settingsVersion(String version) {
@@ -1008,7 +1008,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get accountSignedOutHint =>
-      'Melde dich an, um Songs und Sets mit deiner Band zu teilen. Ohne Konto funktioniert RealChord weiterhin lokal auf diesem Gerät.';
+      'Melde dich an, um Songs und Sets mit deiner Band zu teilen. Ohne Konto funktioniert setDING weiterhin lokal auf diesem Gerät.';
 
   @override
   String get accountSignIn => 'Anmelden';

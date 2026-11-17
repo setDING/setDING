@@ -32,7 +32,7 @@ enum SourceTokenKind {
   /// Name of a format or other directive: `{textsize: 12}`, `{define: …}`.
   otherDirective,
 
-  /// Name of a RealChord directive (`x_` prefix): `{x_sequence: …}`.
+  /// Name of a setDING directive (`x_` prefix): `{x_sequence: …}`.
   customDirective,
 
   /// Plain argument of a directive.

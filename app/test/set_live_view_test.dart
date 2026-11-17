@@ -3,11 +3,11 @@ import 'dart:typed_data';
 import 'package:drift/drift.dart' show Value;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:realchord/data/attachment_lookup.dart';
-import 'package:realchord/data/database.dart';
-import 'package:realchord/data/song_repository.dart';
-import 'package:realchord/ui/sets/set_screen.dart';
-import 'package:realchord/ui/widgets/key_picker.dart';
+import 'package:setding/data/attachment_lookup.dart';
+import 'package:setding/data/database.dart';
+import 'package:setding/data/song_repository.dart';
+import 'package:setding/ui/sets/set_screen.dart';
+import 'package:setding/ui/widgets/key_picker.dart';
 
 import 'test_app.dart';
 

@@ -4,14 +4,14 @@
 #
 #   fetch-pocketbase.sh <pocketbase-version>     e.g. fetch-pocketbase.sh 0.40.6
 #
-# The cache is ${REALCHORD_CACHE:-${XDG_CACHE_HOME:-~/.cache}/realchord}; the
+# The cache is ${SETDING_CACHE:-${XDG_CACHE_HOME:-~/.cache}/setding}; the
 # download is verified against the release's checksums.txt.
 set -euo pipefail
 
 PB_VERSION="${1:?usage: fetch-pocketbase.sh <pocketbase-version>}"
 PB_VERSION="${PB_VERSION#v}"
 
-cache="${REALCHORD_CACHE:-${XDG_CACHE_HOME:-$HOME/.cache}/realchord}/pocketbase/$PB_VERSION"
+cache="${SETDING_CACHE:-${XDG_CACHE_HOME:-$HOME/.cache}/setding}/pocketbase/$PB_VERSION"
 bin="$cache/pocketbase"
 
 if [ -x "$bin" ]; then

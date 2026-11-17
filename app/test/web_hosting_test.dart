@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:realchord/settings/settings.dart';
-import 'package:realchord/sync/sync_backend.dart';
+import 'package:setding/settings/settings.dart';
+import 'package:setding/sync/sync_backend.dart';
 
 /// The web client is served by the same PocketBase as the API (ADR-0018).
 void main() {
@@ -8,10 +8,10 @@ void main() {
     expect(
       initialServerUrl(
         web: true,
-        page: Uri.parse('https://app.realchord.app/invite/abc'),
+        page: Uri.parse('https://app.setding.app/invite/abc'),
         configured: '',
       ),
-      'https://app.realchord.app',
+      'https://app.setding.app',
     );
     expect(
       initialServerUrl(
@@ -40,6 +40,6 @@ void main() {
 
   test('invitation links of the web client carry the token', () {
     const token = 'AbCdEfGhIjKlMnOpQrStUv12';
-    expect(inviteTokenFrom('https://app.realchord.app/invite/$token'), token);
+    expect(inviteTokenFrom('https://app.setding.app/invite/$token'), token);
   });
 }

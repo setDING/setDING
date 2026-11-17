@@ -119,7 +119,7 @@ class AppSettings {
   /// Chord diagrams of all chords of a song (ADR-0012).
   final DiagramsPosition diagrams;
 
-  /// RealChord server for accounts and sync (ADR-0004); changeable for a
+  /// setDING server for accounts and sync (ADR-0004); changeable for a
   /// local test server (`make backend`).
   final String serverUrl;
 
@@ -302,7 +302,7 @@ final selectorsProvider = Provider<SelectorContext>((ref) {
 });
 
 /// The server when none is chosen in the settings:
-/// - [configured]: `--dart-define=REALCHORD_SERVER_URL=...` at build time,
+/// - [configured]: `--dart-define=SETDING_SERVER_URL=...` at build time,
 ///   e.g. for `flutter run -d chrome` against a local backend;
 /// - on the web client the page's own origin: it is served by the same
 ///   PocketBase (ADR-0018), so the API is same-origin (no CORS);
@@ -310,7 +310,7 @@ final selectorsProvider = Provider<SelectorContext>((ref) {
 String initialServerUrl({
   bool web = kIsWeb,
   Uri? page,
-  String configured = const String.fromEnvironment('REALCHORD_SERVER_URL'),
+  String configured = const String.fromEnvironment('SETDING_SERVER_URL'),
 }) {
   if (configured.isNotEmpty) return configured;
   if (web) {

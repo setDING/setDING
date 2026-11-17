@@ -5,12 +5,12 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:pdfrx/pdfrx.dart';
-import 'package:realchord/data/database.dart' show SetItemType;
-import 'package:realchord/data/demo_song.dart';
-import 'package:realchord/settings/settings.dart';
-import 'package:realchord/ui/live/live_screen.dart';
-import 'package:realchord/ui/live/set_progress_bar.dart';
-import 'package:realchord/ui/settings_screen.dart';
+import 'package:setding/data/database.dart' show SetItemType;
+import 'package:setding/data/demo_song.dart';
+import 'package:setding/settings/settings.dart';
+import 'package:setding/ui/live/live_screen.dart';
+import 'package:setding/ui/live/set_progress_bar.dart';
+import 'package:setding/ui/settings_screen.dart';
 
 import 'test_app.dart';
 
@@ -63,7 +63,7 @@ void main() {
   }
 
   void usePdfCache() {
-    final cache = Directory.systemTemp.createTempSync('realchord_pdfrx');
+    final cache = Directory.systemTemp.createTempSync('setding_pdfrx');
     addTearDown(() => cache.deleteSync(recursive: true));
     Pdfrx.cacheDirectoryPath = cache.path;
   }

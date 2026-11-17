@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:realchord/settings/settings.dart';
-import 'package:realchord/ui/live/live_screen.dart';
-import 'package:realchord/ui/live/live_theme.dart';
-import 'package:realchord/ui/render/song_style.dart';
-import 'package:realchord/ui/settings_screen.dart';
-import 'package:realchord/ui/theme.dart';
+import 'package:setding/settings/settings.dart';
+import 'package:setding/ui/live/live_screen.dart';
+import 'package:setding/ui/live/live_theme.dart';
+import 'package:setding/ui/render/song_style.dart';
+import 'package:setding/ui/settings_screen.dart';
+import 'package:setding/ui/theme.dart';
 
 import 'test_app.dart';
 

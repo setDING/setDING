@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:realchord/data/arrangement_repository.dart';
-import 'package:realchord/data/attachment_storage_io.dart';
-import 'package:realchord/data/database.dart';
-import 'package:realchord/data/set_repository.dart';
-import 'package:realchord/data/song_repository.dart';
+import 'package:setding/data/arrangement_repository.dart';
+import 'package:setding/data/attachment_storage_io.dart';
+import 'package:setding/data/database.dart';
+import 'package:setding/data/set_repository.dart';
+import 'package:setding/data/song_repository.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -128,7 +128,7 @@ void main() {
 
   setUp(() {
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
-    dir = Directory.systemTemp.createTempSync('realchord_migration');
+    dir = Directory.systemTemp.createTempSync('setding_migration');
     file = File('${dir.path}/db.sqlite');
   });
 

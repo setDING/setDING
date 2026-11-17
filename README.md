@@ -1,22 +1,22 @@
 <h1>
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="app/branding/logo-dark.svg">
-    <img alt="RealChord" src="app/branding/logo.svg" height="64">
+    <img alt="setDING" src="app/branding/logo.svg" height="64">
   </picture>
 </h1>
 
 **Your band's songbook – on every tablet, on every stage, even without Wi-Fi.**
 
 No more stacks of paper, outdated chord sheets or "which key are we playing this
-in?". With RealChord the band leader puts the set together once, and every member
+in?". With setDING the band leader puts the set together once, and every member
 has it on their own tablet: the right songs, in the right order, in the right key.
 On stage you play from a clean, large display and turn pages with your foot.
 
-[**Download the latest release →**](https://github.com/tafli/RealChord/releases/latest)
+[**Download the latest release →**](https://github.com/tafli/setDING/releases/latest)
 
 ![Live mode: a song in three columns with chords, a personal note and chord diagrams](docs/screenshots/live.png)
 
-## Why RealChord?
+## Why setDING?
 
 ### 🎸 Made for the stage
 - **Live mode** in full screen; the screen stays on for the whole gig.
@@ -29,7 +29,7 @@ On stage you play from a clean, large display and turn pages with your foot.
 - Put a set together in minutes: drag & drop songs, add breaks and notes such as
   an announcement or the encore.
 - Set the **key and the sequence per song** for tonight's gig.
-- Every member gets the set on their own device, and RealChord shows when it is
+- Every member gets the set on their own device, and setDING shows when it is
   **ready to play offline**.
 - Print the set list as a PDF or share it as text.
 
@@ -68,17 +68,17 @@ On stage you play from a clean, large display and turn pages with your foot.
 - Manage songs and sets from any computer in the **web app**, no installation needed.
 
 ### 🔒 Your data stays yours
-- RealChord syncs with your **own, self-hosted server** – your songs are not stored
+- setDING syncs with your **own, self-hosted server** – your songs are not stored
   with a third party.
 - Open source under the MIT licence.
 
-## Get RealChord
+## Get setDING
 
 | Platform | How |
 |---|---|
-| **Android** | Install [Obtainium](https://github.com/ImranR98/Obtainium), tap *Add app* and enter `https://github.com/tafli/RealChord`. Obtainium installs RealChord and keeps it up to date. |
-| **Windows** | Download `realchord-<version>-windows-x64.zip` from the [releases](https://github.com/tafli/RealChord/releases/latest), unpack it and start `realchord.exe`. |
-| **Linux** | Download `realchord-<version>-linux-x64.tar.gz` from the [releases](https://github.com/tafli/RealChord/releases/latest), unpack it and start `realchord`. |
+| **Android** | Install [Obtainium](https://github.com/ImranR98/Obtainium), tap *Add app* and enter `https://github.com/tafli/setDING`. Obtainium installs setDING and keeps it up to date. |
+| **Windows** | Download `setding-<version>-windows-x64.zip` from the [releases](https://github.com/tafli/setDING/releases/latest), unpack it and start `setding.exe`. |
+| **Linux** | Download `setding-<version>-linux-x64.tar.gz` from the [releases](https://github.com/tafli/setDING/releases/latest), unpack it and start `setding`. |
 | **iOS** | Coming later. |
 
 The app speaks **English and German** (Swiss Standard German).

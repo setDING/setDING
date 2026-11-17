@@ -4,11 +4,11 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:realchord/sync/pocketbase_backend.dart';
-import 'package:realchord/sync/session_store.dart';
-import 'package:realchord/sync/sync_backend.dart';
+import 'package:setding/sync/pocketbase_backend.dart';
+import 'package:setding/sync/session_store.dart';
+import 'package:setding/sync/sync_backend.dart';
 import 'package:uuid/uuid.dart';
-import 'package:realchord_server/pocketbase_harness.dart';
+import 'package:setding_server/pocketbase_harness.dart';
 
 void main() {
   late PocketBase pb;
@@ -22,7 +22,7 @@ void main() {
 
   var n = 0;
   String email() =>
-      'app${++n}-${DateTime.now().microsecondsSinceEpoch}@realchord.test';
+      'app${++n}-${DateTime.now().microsecondsSinceEpoch}@setding.test';
 
   Future<BackendErrorKind> kindOf(Future<Object?> Function() call) async {
     try {
@@ -99,7 +99,7 @@ void main() {
 
   test('accepts a password reset request', () async {
     final b = PocketBaseBackend(serverUrl: url, store: MemorySessionStore());
-    await b.requestPasswordReset('nobody@realchord.test');
+    await b.requestPasswordReset('nobody@setding.test');
     b.dispose();
   });
 
@@ -401,7 +401,7 @@ void main() {
 
     setUpAll(() async {
       closed = await PocketBase.start(
-        environment: {'REALCHORD_REGISTRATION': 'invite_only'},
+        environment: {'SETDING_REGISTRATION': 'invite_only'},
       );
       closedUrl = closed.baseUrl.toString().replaceAll(RegExp(r'/$'), '');
     });
@@ -439,7 +439,7 @@ void main() {
       })).expectStatus(200);
       final created = await admin.send(
         'POST',
-        '/api/realchord/invites',
+        '/api/setding/invites',
         body: {'organization': org.json['id']},
       );
       final token = created.json['token'] as String;

@@ -8,20 +8,20 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdfrx/pdfrx.dart';
-import 'package:realchord/data/attachment_storage_memory.dart';
-import 'package:realchord/data/database.dart';
-import 'package:realchord/data/import_export.dart';
-import 'package:realchord/data/set_repository.dart';
-import 'package:realchord/data/song_repository.dart';
-import 'package:realchord/providers.dart';
-import 'package:realchord/sync/browser_session_store.dart';
-import 'package:realchord/sync/sync_backend.dart';
-import 'package:realchord/sync/sync_controller.dart';
-import 'package:realchord/ui/home_screen.dart';
-import 'package:realchord/ui/live/live_screen.dart';
-import 'package:realchord/ui/live/pdf_spread_view.dart';
-import 'package:realchord/ui/sets/set_screen.dart';
-import 'package:realchord/ui/sets/sets_screen.dart';
+import 'package:setding/data/attachment_storage_memory.dart';
+import 'package:setding/data/database.dart';
+import 'package:setding/data/import_export.dart';
+import 'package:setding/data/set_repository.dart';
+import 'package:setding/data/song_repository.dart';
+import 'package:setding/providers.dart';
+import 'package:setding/sync/browser_session_store.dart';
+import 'package:setding/sync/sync_backend.dart';
+import 'package:setding/sync/sync_controller.dart';
+import 'package:setding/ui/home_screen.dart';
+import 'package:setding/ui/live/live_screen.dart';
+import 'package:setding/ui/live/pdf_spread_view.dart';
+import 'package:setding/ui/sets/set_screen.dart';
+import 'package:setding/ui/sets/sets_screen.dart';
 
 import 'test_app.dart';
 
@@ -236,7 +236,7 @@ void main() {
   testWidgets('an invitation URL opens the join screen', (tester) async {
     final app = await start(tester);
     expect(find.byKey(const Key('web-sign-in')), findsOneWidget);
-    // The page was opened at https://app.realchord.app/invite/<token>.
+    // The page was opened at https://app.setding.app/invite/<token>.
     final link = app.backend
         .addFounderInvite('Choir')
         .replaceFirst('api.', 'app.');
@@ -305,7 +305,7 @@ void main() {
       WidgetTester tester, {
       bool landscape = true,
     }) async {
-      final cache = Directory.systemTemp.createTempSync('realchord_pdfrx');
+      final cache = Directory.systemTemp.createTempSync('setding_pdfrx');
       addTearDown(() => cache.deleteSync(recursive: true));
       Pdfrx.cacheDirectoryPath = cache.path;
       useTabletSize(tester, landscape: landscape);

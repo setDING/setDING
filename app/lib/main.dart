@@ -59,7 +59,7 @@ Future<void> main() async {
         attachmentStorageProvider.overrideWithValue(storage),
         sessionStoreProvider.overrideWithValue(sessionStore),
       ],
-      child: const RealChordApp(),
+      child: const SetdingApp(),
     ),
   );
 }

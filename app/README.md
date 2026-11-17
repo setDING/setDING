@@ -1,4 +1,4 @@
-# RealChord app
+# setDING app
 
 Flutter client for Android, iOS and Windows (ADR-0002). See the
 [architecture docs](../docs/architecture/README.md) for decisions and scope.
@@ -45,14 +45,14 @@ A keyboard simulates a Bluetooth page turner (foot pedal) in live mode: right ar
 Page Down and Space turn forward, left arrow and Page Up back, Escape leaves.
 
 Data locations: the database, settings and PDF attachments live in the app's private
-support directory (on Linux `~/.local/share/app.realchord/`). Older builds
+support directory (on Linux `~/.local/share/app.setding/`). Older builds
 stored the database in the documents folder; it is moved on the next start.
-`REALCHORD_DATA_DIR` (development only) overrides the directory for database and PDFs.
+`SETDING_DATA_DIR` (development only) overrides the directory for database and PDFs.
 
 ## Android APK for manual installation
 
 `make apk` builds a release APK and copies it to
-`app/build/realchord-<version>-<commit>.apk`. It needs the Android SDK
+`app/build/setding-<version>-<commit>.apk`. It needs the Android SDK
 (`ANDROID_HOME`, default `~/Android/Sdk`) and a JDK 17 or later.
 
 - **Install via USB:** enable USB debugging on the tablet (Settings → About →

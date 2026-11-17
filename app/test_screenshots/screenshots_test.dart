@@ -8,16 +8,16 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import 'package:realchord/data/arrangement_repository.dart';
-import 'package:realchord/data/database.dart';
-import 'package:realchord/data/demo_song.dart';
-import 'package:realchord/ui/live/live_screen.dart';
-import 'package:realchord/ui/sets/set_screen.dart';
-import 'package:realchord/ui/songs/song_editor_screen.dart';
-import 'package:realchord/ui/songs/song_screen.dart';
-import 'package:realchord/ui/songs/songs_screen.dart';
-import 'package:realchord/sync/sync_backend.dart';
-import 'package:realchord/ui/widgets/logo.dart';
+import 'package:setding/data/arrangement_repository.dart';
+import 'package:setding/data/database.dart';
+import 'package:setding/data/demo_song.dart';
+import 'package:setding/ui/live/live_screen.dart';
+import 'package:setding/ui/sets/set_screen.dart';
+import 'package:setding/ui/songs/song_editor_screen.dart';
+import 'package:setding/ui/songs/song_screen.dart';
+import 'package:setding/ui/songs/songs_screen.dart';
+import 'package:setding/sync/sync_backend.dart';
+import 'package:setding/ui/widgets/logo.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -213,7 +213,7 @@ void main() {
     );
     await tester.runAsync(() async {
       for (final (title, artist, key) in [
-        ('Late Train Home', 'RealChord Example', 'G'),
+        ('Late Train Home', 'setDING Example', 'G'),
         ('Ännchen von Tharau', 'Volkslied', 'D'),
         ('Blue Monday Groove', 'House Band', 'Bb'),
         ('Morning Light', 'House Band', 'D'),
@@ -547,7 +547,7 @@ void main() {
 }
 
 const _showcase = r'''{title: ChordPro Showcase}
-{artist: RealChord}
+{artist: setDING}
 {key: D}
 {tempo: 100}
 {c: Key %{key}, %{tempo} BPM}

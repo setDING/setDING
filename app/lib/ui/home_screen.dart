@@ -41,9 +41,9 @@ class _HomeScreenState extends State<HomeScreen> {
               leading: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Semantics(
-                  label: 'RealChord',
+                  label: 'setDING',
                   image: true,
-                  child: const RealChordMark(key: Key('nav-logo'), size: 40),
+                  child: const SetdingMark(key: Key('nav-logo'), size: 40),
                 ),
               ),
               destinations: [

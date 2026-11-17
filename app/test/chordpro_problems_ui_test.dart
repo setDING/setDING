@@ -3,11 +3,11 @@ import 'dart:typed_data';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:realchord/data/import_export.dart';
-import 'package:realchord/sync/sync_backend.dart';
-import 'package:realchord/ui/songs/import_dialog.dart';
-import 'package:realchord/ui/songs/song_editor_screen.dart';
-import 'package:realchord/ui/songs/song_screen.dart';
+import 'package:setding/data/import_export.dart';
+import 'package:setding/sync/sync_backend.dart';
+import 'package:setding/ui/songs/import_dialog.dart';
+import 'package:setding/ui/songs/song_editor_screen.dart';
+import 'package:setding/ui/songs/song_screen.dart';
 
 import 'test_app.dart';
 

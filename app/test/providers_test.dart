@@ -2,13 +2,13 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:drift/drift.dart' show Value;
-import 'package:realchord/data/database.dart';
-import 'package:realchord/data/song_repository.dart';
-import 'package:realchord/providers.dart';
-import 'package:realchord/settings/settings.dart';
-import 'package:realchord/sync/auth_providers.dart';
-import 'package:realchord/sync/sync_backend.dart';
-import 'package:realchord/ui/songs/songs_screen.dart';
+import 'package:setding/data/database.dart';
+import 'package:setding/data/song_repository.dart';
+import 'package:setding/providers.dart';
+import 'package:setding/settings/settings.dart';
+import 'package:setding/sync/auth_providers.dart';
+import 'package:setding/sync/sync_backend.dart';
+import 'package:setding/ui/songs/songs_screen.dart';
 
 import 'test_app.dart';
 

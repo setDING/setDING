@@ -1,6 +1,6 @@
 # Server operations
 
-How the PocketBase backend of RealChord is set up and run. Decisions:
+How the PocketBase backend of setDING is set up and run. Decisions:
 [ADR-0004](../architecture/adr/0004-backend-and-sync.md) (backend and sync) and
 [ADR-0014](../architecture/adr/0014-server-hosting.md) (hosting and operations).
 
@@ -13,7 +13,7 @@ Tablets ──HTTPS──▶ Cloudflare ──tunnel──▶ cloudflared ──
 
 | | |
 |---|---|
-| Public URL | `https://api.realchord.app` (Cloudflare Tunnel) |
+| Public URL | `https://api.setding.app` (Cloudflare Tunnel) |
 | Container | Proxmox CT 600, Debian 13, 2 vCPU, 2 GB RAM, 16 GB disk |
 | LAN address | `192.168.1.40` (SSH as root with key) |
 | Installed | 2026-11-15, PocketBase 0.40.6 |
@@ -60,11 +60,11 @@ authorized key). It ends with a health check.
 Tokens and account settings stay with the owner (ADR-0014).
 
 1. Cloudflare dashboard → **Zero Trust → Networks → Tunnels** → create a tunnel
-   (cloudflared), e.g. `realchord`.
+   (cloudflared), e.g. `setding`.
 2. On the server, run the shown install command once:
    `cloudflared service install <TOKEN>`.
-3. **Public hostname:** e.g. `api.realchord.app` → service `HTTP` → `localhost:8090`.
-4. **Access:** create an Access application for the path `api.realchord.app/_/*` only
+3. **Public hostname:** e.g. `api.setding.app` → service `HTTP` → `localhost:8090`.
+4. **Access:** create an Access application for the path `api.setding.app/_/*` only
    (admin UI), allowing only the owner's email. Do not protect the whole hostname.
 5. **Security → Bots:** make sure Bot Fight Mode or challenges do not apply to this
    hostname (add a WAF skip rule if needed).
@@ -77,8 +77,8 @@ Tokens and account settings stay with the owner (ADR-0014).
    `runuser -u pocketbase -- /opt/pocketbase/pocketbase superuser upsert <email> <password> --dir=/var/lib/pocketbase/pb_data`
    (or open the installer link from `journalctl -u pocketbase` through an SSH tunnel:
    `ssh -L 8090:127.0.0.1:8090 root@<ip>`).
-2. Log in at `https://api.realchord.app/_/` and enable MFA for superusers.
-3. **Settings → Application:** set the application URL to `https://api.realchord.app`.
+2. Log in at `https://api.setding.app/_/` and enable MFA for superusers.
+3. **Settings → Application:** set the application URL to `https://api.setding.app`.
 4. **Settings → Trusted proxy:** header `CF-Connecting-IP`.
 5. **Settings → Mail settings (SMTP):** needed for password reset emails from the
    app (ADR-0016) and for email verification (section 7). Until it is configured,
@@ -86,23 +86,23 @@ Tokens and account settings stay with the owner (ADR-0014).
 
 ## 5. Deep links for invitations (owner, once the apps are signed)
 
-Invitation links are `https://api.realchord.app/invite/<token>` (ADR-0005, ADR-0017).
+Invitation links are `https://api.setding.app/invite/<token>` (ADR-0005, ADR-0017).
 Without the app, the link shows a landing page; with the app, Android opens it
 directly once the domain is verified. The server serves the verification files from
-settings in `/etc/realchord/pocketbase.env` (read by `pocketbase.service`):
+settings in `/etc/setding/pocketbase.env` (read by `pocketbase.service`):
 
 ```bash
 # SHA-256 fingerprint(s) of the Android signing certificate (Play App Signing:
 # Play Console → App integrity), comma-separated.
-REALCHORD_ANDROID_CERT_SHA256=AB:CD:…
+SETDING_ANDROID_CERT_SHA256=AB:CD:…
 # Apple Developer Team ID (for Universal Links, once the iOS app has the
 # Associated Domains capability).
-REALCHORD_APPLE_TEAM_ID=ABCDE12345
+SETDING_APPLE_TEAM_ID=ABCDE12345
 ```
 
 Then `systemctl restart pocketbase` and check
-`https://api.realchord.app/.well-known/assetlinks.json`. Without the file, both URLs
-return 404 and links still work through the landing page, the `realchord://` scheme,
+`https://api.setding.app/.well-known/assetlinks.json`. Without the file, both URLs
+return 404 and links still work through the landing page, the `setding://` scheme,
 pasting and the QR code. Cloudflare must not challenge `/invite/*` and `/.well-known/*`
 (only `/_/*` is behind Access, see step 3).
 
@@ -115,18 +115,18 @@ the headers `Cross-Origin-Opener-Policy: same-origin` and
 `Cross-Origin-Embedder-Policy: credentialless` (hook `web.pb.js`), so browsers keep
 its database in OPFS, and `Cache-Control: no-cache`, so browsers and Cloudflare
 revalidate its files after a deploy instead of keeping the old build for hours. Do not
-add a Cloudflare cache rule with a fixed edge TTL for `app.realchord.app`; after the
+add a Cloudflare cache rule with a fixed edge TTL for `app.setding.app`; after the
 first deploy with this header, purge the hostname's cache once. The web client calls the API on the hostname it was loaded
 from, so no CORS setting is needed.
 
-1. Tunnel → **Public hostname:** `app.realchord.app` → service `HTTP` →
-   `localhost:8090` (the same PocketBase as `api.realchord.app`). No Access policy
+1. Tunnel → **Public hostname:** `app.setding.app` → service `HTTP` →
+   `localhost:8090` (the same PocketBase as `api.setding.app`). No Access policy
    for this hostname; the same bot rules as for the API apply.
-2. Add the web client's URL to `/etc/realchord/pocketbase.env`:
+2. Add the web client's URL to `/etc/setding/pocketbase.env`:
 
    ```bash
    # Public URL of the web client (ADR-0018).
-   REALCHORD_WEB_URL=https://app.realchord.app
+   SETDING_WEB_URL=https://app.setding.app
    ```
 
 3. `systemctl restart pocketbase`.
@@ -140,36 +140,36 @@ from, so no CORS setting is needed.
    Check it with:
 
    ```bash
-   curl -sI https://app.realchord.app/main.dart.js | grep -i cache-control
+   curl -sI https://app.setding.app/main.dart.js | grep -i cache-control
    ```
 
    which must print `cache-control: no-cache`. Users who still see missing icons
    reload once without the cache (Ctrl+Shift+R).
 
-With `REALCHORD_WEB_URL`, the invitation landing page offers **Open in the browser**
-(`https://app.realchord.app/invite/<token>`), and on that hostname `/invite/<token>`
+With `SETDING_WEB_URL`, the invitation landing page offers **Open in the browser**
+(`https://app.setding.app/invite/<token>`), and on that hostname `/invite/<token>`
 opens the web client, which takes the token from the URL. Without it, the web client
-is still reachable on `https://api.realchord.app/`, but the landing page does not
+is still reachable on `https://api.setding.app/`, but the landing page does not
 link to it.
 
 ## 7. Registration and email verification (owner)
 
-Who may create accounts is set in `/etc/realchord/pocketbase.env` (ADR-0024);
+Who may create accounts is set in `/etc/setding/pocketbase.env` (ADR-0024);
 `make server-install` never changes this file:
 
 ```bash
 # invite_only (default): accounts only with an invitation link, new
 # organizations only with a founder invitation. open: anyone may sign up and
 # found organizations.
-REALCHORD_REGISTRATION=invite_only
+SETDING_REGISTRATION=invite_only
 # off (default) or required: new accounts confirm their email address before
 # they can sign in. Needs SMTP (section 4); without it the server logs an
 # error at start and keeps it off.
-REALCHORD_EMAIL_VERIFICATION=off
+SETDING_EMAIL_VERIFICATION=off
 ```
 
 Then `systemctl restart pocketbase`. Check the effective settings with
-`curl -s https://api.realchord.app/api/realchord/config`.
+`curl -s https://api.setding.app/api/setding/config`.
 
 **New organizations on an invite-only server:** create a founder invitation and send
 the link to the person who will run the organization:
@@ -217,9 +217,9 @@ about half a minute per request), so a large import syncs more slowly but comple
 
 ## Backups
 
-- **Daily on the server** (`realchord-backup.timer`, 03:30 Swiss time): SQLite online backup of
+- **Daily on the server** (`setding-backup.timer`, 03:30 Swiss time): SQLite online backup of
   `data.db` (integrity checked) plus the `storage/` files (PDF attachments) as
-  `/var/lib/pocketbase/backups/realchord-<timestamp>.tar.gz`, kept 14 days.
+  `/var/lib/pocketbase/backups/setding-<timestamp>.tar.gz`, kept 14 days.
 - **Off-host:** include the container in the Proxmox backup job (snapshot mode), and
   fetch copies with `make server-fetch-backup`.
 
@@ -231,7 +231,7 @@ On the server (`make server-ssh`):
 systemctl stop pocketbase
 cd /var/lib/pocketbase/pb_data
 rm -f data.db-wal data.db-shm
-tar -xzf /var/lib/pocketbase/backups/realchord-<timestamp>.tar.gz
+tar -xzf /var/lib/pocketbase/backups/setding-<timestamp>.tar.gz
 chown -R pocketbase:pocketbase /var/lib/pocketbase/pb_data
 systemctl start pocketbase
 ```

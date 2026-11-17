@@ -45,16 +45,16 @@ static void my_application_activate(GApplication* application) {
   if (use_header_bar) {
     GtkHeaderBar* header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
     gtk_widget_show(GTK_WIDGET(header_bar));
-    gtk_header_bar_set_title(header_bar, "RealChord");
+    gtk_header_bar_set_title(header_bar, "setDING");
     gtk_header_bar_set_show_close_button(header_bar, TRUE);
     gtk_window_set_titlebar(window, GTK_WIDGET(header_bar));
   } else {
-    gtk_window_set_title(window, "RealChord");
+    gtk_window_set_title(window, "setDING");
   }
 
   gtk_window_set_default_size(window, 1280, 720);
 
-  // RealChord logo as the window icon, from data/ next to the executable.
+  // setDING logo as the window icon, from data/ next to the executable.
   g_autofree gchar* exe = g_file_read_link("/proc/self/exe", nullptr);
   if (exe != nullptr) {
     g_autofree gchar* dir = g_path_get_dirname(exe);

@@ -1,4 +1,4 @@
-# RealChord – Architecture
+# setDING – Architecture
 
 > Status: **Draft for discussion** (most core decisions accepted) · Last updated: 2026-11-17
 >
@@ -7,7 +7,7 @@
 
 ## 1. Goal and context
 
-RealChord (working title until 2026-11-15: BandChords) is an app that lets bands see the chords of their songs on tablets
+setDING (called RealChord until 2026-11-17, working title until 2026-11-15: BandChords) is an app that lets bands see the chords of their songs on tablets
 (Android, iOS, Windows) while performing – similar to SongBook Pro, but focused on
 **sets that are managed together** within a band.
 
@@ -55,12 +55,12 @@ A user can be a member of several organizations and bands; roles are defined per
 | SongSelect (CCLI) | **No API integration** (partner program closed); manual import of ChordPro files downloaded from SongSelect | [ADR-0011](adr/0011-songselect-import.md) |
 | Server hosting | **Debian LXC** on Proxmox, PocketBase as systemd service, published via **Cloudflare Tunnel**, daily backups, provisioned with `make server-install` | [ADR-0014](adr/0014-server-hosting.md) |
 | Sign-in & session | Email/password via `SyncBackend` (PocketBase SDK, pinned), session in secure storage, kept while offline, refreshed when online, 30-day tokens | [ADR-0016](adr/0016-client-authentication.md) |
-| Registration | Server operator sets `REALCHORD_REGISTRATION` = `invite_only` (default: sign-up only with an invitation, new organizations only via operator **founder invitations**) or `open`, and `REALCHORD_EMAIL_VERIFICATION` = `off` (default) or `required` (needs SMTP); no in-app super-admin; rate limits on sign-up and invitations | [ADR-0024](adr/0024-registration-mode.md) |
+| Registration | Server operator sets `SETDING_REGISTRATION` = `invite_only` (default: sign-up only with an invitation, new organizations only via operator **founder invitations**) or `open`, and `SETDING_EMAIL_VERIFICATION` = `off` (default) or `required` (needs SMTP); no in-app super-admin; rate limits on sign-up and invitations | [ADR-0024](adr/0024-registration-mode.md) |
 | Organizations | Bands belong to an **organization** that owns the shared song library; organization admins manage people and bands; created automatically for a single band | [ADR-0017](adr/0017-organizations.md) |
 | Finer-grained roles | Ordered fixed roles: organization admin > **librarian** > member, band leader > **set planner** > member; organization admins may do everything; librarians edit the library (replaces `members_can_edit_songs`), band leaders create new songs and edit only their own; leaders may invite into their band | [ADR-0023](adr/0023-finer-grained-roles.md) |
 | Server data model | PocketBase collections as migrations, server-wide revision counter, set items as JSON, access rules per role, tested against a real PocketBase | [ADR-0015](adr/0015-server-data-model.md) |
 | Printable set list | PDF generated in the client with the `pdf` package, embedded font, saved via the save dialog; no print plugin yet | [ADR-0013](adr/0013-printable-set-list.md) |
-| Web client | **Flutter web build of the same app** for management without installation, served by PocketBase (`pb_public`) at `app.realchord.app`, same sync engine, sign-in required, ChordPro file import but no export, no offline guarantee in the browser ([guide](../development/web.md)) | [ADR-0018](adr/0018-web-client.md) |
+| Web client | **Flutter web build of the same app** for management without installation, served by PocketBase (`pb_public`) at `app.setding.app`, same sync engine, sign-in required, ChordPro file import but no export, no offline guarantee in the browser ([guide](../development/web.md)) | [ADR-0018](adr/0018-web-client.md) |
 | Linux release | `make release`: Linux release built in a **Debian container** (baseline glibc, ISA check) from the committed state ([guide](../development/releases.md)) | [ADR-0019](adr/0019-linux-release-builds.md) |
 | Release builds | A `vX.Y.Z` tag builds **Linux, Android and Windows** on GitHub Actions and publishes a GitHub Release; Android APK signed with a stable release key (repository secrets), installed and updated with **Obtainium** ([guide](../development/releases.md)) | [ADR-0021](adr/0021-release-builds-github-actions.md) |
 
@@ -196,7 +196,7 @@ Notes:
 |---|---|
 | **MVP** ✅ | ChordPro parser & renderer (notation B/H, Nashville), local song library, PDF attachments, creating sets, live mode, import/export, German/English UI – initially **without** a backend (single device) |
 | **Phase 1** | Backend, login, bands & roles (several admins, several bands per user), sync of songs, sets and PDF files incl. conflict handling |
-| **Phase 2** ✅ | Web client for management at `app.realchord.app` (ADR-0018; done in #27), synced personal overlays (per user, ADR-0020; done in #81, #82) |
+| **Phase 2** ✅ | Web client for management at `app.setding.app` (ADR-0018; done in #27), synced personal overlays (per user, ADR-0020; done in #81, #82) |
 | **Towards version 1** | Re-enable CI as a required check on every PR and push to `main` (manual-only during early development, ADR-0010), branch protection; release builds for Linux, Android and Windows exist (ADR-0021), iOS open |
 | **Later** | Configurable page turner key mapping, freehand annotations (stylus), metronome/count-in, MIDI control |
 
@@ -224,7 +224,7 @@ song/set sync, PDF sync).
 
 - **Server schema (#13):** collections, access rules and hooks in [`server/`](../../server)
   (ADR-0015, accepted), tested against a real PocketBase in `make check`; `make backend`
-  starts a local instance. Deployed to `api.realchord.app`.
+  starts a local instance. Deployed to `api.setding.app`.
 - **Sign-in (#14):** account section in the settings (sign up, sign in, sign out,
   password reset, server URL) behind the `SyncBackend` interface; session in the
   platform's secure storage, kept while offline (ADR-0016, accepted). Password reset
@@ -265,17 +265,17 @@ See "Open points" in the individual ADRs. The most important:
 8. ~~Attachments offline?~~ → PDF sheet music yes, audio no (ADR-0001, ADR-0009)
 9. ~~Invitation flow?~~ → Invitation link (reusable, 7 days, revocable, member role) plus QR code (ADR-0005)
 10. ~~PDF details?~~ → All attachments on every device, max. 20 MB per PDF, PDF-only songs allowed, local PDFs in the MVP (ADR-0009)
-11. ~~Server details?~~ → Debian LXC on Proxmox, Cloudflare Tunnel, daily backups, `make server-*` targets (ADR-0014, accepted; [operations guide](../operations/server.md)). Production: `api.realchord.app`. Open: staging container, monitoring
-12. ~~App name and domain?~~ → **RealChord**, domains `realchord.app` / `realchord.ch` ([`docs/app-name-candidates.md`](../app-name-candidates.md)). Code identifiers renamed; application ID `app.realchord`, matching `realchord.app` (#298). Open: register the domains, trademark check (swissreg/EUIPO)
-13. ~~May agents merge their own PRs?~~ → Yes, from the start, but only when all tests pass (test gate, ADR-0010). Host: GitHub, `github.com/tafli/RealChord` (moved from a self-hosted Forgejo with the issue numbers kept, history rewritten, #116/#129). Every change in its own git worktree, the project folder stays on `main`. Agents use `gh`; commits are signed with the owner's identity; during early development the test gate runs locally and CI (GitHub Actions) is manual-only. Open: re-enable CI as a required check towards version 1, build jobs, branch protection
+11. ~~Server details?~~ → Debian LXC on Proxmox, Cloudflare Tunnel, daily backups, `make server-*` targets (ADR-0014, accepted; [operations guide](../operations/server.md)). Production: `api.setding.app`. Open: staging container, monitoring
+12. ~~App name and domain?~~ → **setDING** (renamed from RealChord on 2026-11-17, #318, because the app is extended for drummers), domain `setding.app` ([`docs/app-name-candidates.md`](../app-name-candidates.md)). Code identifiers renamed; application ID `app.setding`. Open: register the domain, new logo (#319), trademark check (swissreg/EUIPO)
+13. ~~May agents merge their own PRs?~~ → Yes, from the start, but only when all tests pass (test gate, ADR-0010). Host: GitHub, `github.com/tafli/setDING` (moved from a self-hosted Forgejo with the issue numbers kept, history rewritten, #116/#129). Every change in its own git worktree, the project folder stays on `main`. Agents use `gh`; commits are signed with the owner's identity; during early development the test gate runs locally and CI (GitHub Actions) is manual-only. Open: re-enable CI as a required check towards version 1, build jobs, branch protection
 14. ~~SongSelect import?~~ → No API integration, manual ChordPro import (ADR-0011, accepted). Open: test with a real SongSelect file, show copyright/CCLI number?
 15. ~~Printable set list?~~ → PDF in the client with the `pdf` package and embedded Noto Sans (ADR-0013, accepted). Open: Letter paper, export options, native print dialog
-16. Web client for management without an installed app? → Flutter web build of the same app at `app.realchord.app`, served by the same PocketBase; local library hidden, live mode with a "not offline-safe" notice, session as long as a tab is open by default ("Stay signed in" optional), local data deleted on sign-out, sign-in required, file import but no export on web (ADR-0018, accepted, #27; import on web since #162). Implemented and deployed in #27 (2026-11-16)
+16. Web client for management without an installed app? → Flutter web build of the same app at `app.setding.app`, served by the same PocketBase; local library hidden, live mode with a "not offline-safe" notice, session as long as a tab is open by default ("Stay signed in" optional), local data deleted on sign-out, sign-in required, file import but no export on web (ADR-0018, accepted, #27; import on web since #162). Implemented and deployed in #27 (2026-11-16)
 17. Distributable Linux builds? → `make release`: built in a Debian container with an ISA check (ADR-0019, accepted, #45). CI release builds for Linux, Android (Obtainium) and Windows from a `vX.Y.Z` tag (ADR-0021, accepted, #137). Open: release key (owner), iOS, installers/packaging and code signing
 18. ~~Personal adjustments on shared devices and across devices?~~ → Overlays belong to a user (`owner_id`; `local` for the local library), existing ones are taken over once by the first user who signs in, private, synced in phase 2 with last writer wins and soft delete (ADR-0020, accepted)
 19. ~~Chord display style (pop vs. jazz spelling, superscript extensions)?~~ → Global device setting *As written* (default) / *Standard* / *Jazz* plus a superscript switch, not per song (ADR-0022, accepted, implemented in #196)
 20. ~~Finer-grained roles?~~ → ADR-0023 (accepted, #207): organization librarian, band set planner, band leaders create songs and edit only their own (until someone else changes them), invitations by band leaders into their band, `members_can_edit_songs` replaced by the librarian role, no guest role (substitutes are added as band members), organization admins keep all rights; implemented in #215. Open: band arrangement as a follow-up ADR (#216); suggestion workflow for song corrections
-21. ~~Who may create accounts and organizations?~~ → Operator setting `REALCHORD_REGISTRATION` = `invite_only` (default) or `open`, founder invitations for new organizations by the operator only, optional email verification (`REALCHORD_EMAIL_VERIFICATION`), no in-app super-admin (ADR-0024, accepted, #209; implemented in #213). Open: limits per organization
+21. ~~Who may create accounts and organizations?~~ → Operator setting `SETDING_REGISTRATION` = `invite_only` (default) or `open`, founder invitations for new organizations by the operator only, optional email verification (`SETDING_EMAIL_VERIFICATION`), no in-app super-admin (ADR-0024, accepted, #209; implemented in #213). Open: limits per organization
 22. ~~How do bands adapt shared songs?~~ → ADR-0025 (accepted, #216): a band arrangement per band and song (key, sequence, tempo) between song and set item, applied in sets and live mode from a set; the song screen shows it only in its own card (#227), now a side panel behind a band icon (#233); capo stays personal, no band notes; implemented in #221
 
 ## 10. ADR index

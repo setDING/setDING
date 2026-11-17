@@ -5,19 +5,19 @@ import 'package:drift/drift.dart'
     show TableUpdateQuery, UpdateKind, Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:realchord/data/arrangement_repository.dart';
-import 'package:realchord/data/attachment_storage_io.dart';
-import 'package:realchord/data/attachment_storage.dart';
-import 'package:realchord/data/band_copy.dart';
-import 'package:realchord/data/database.dart';
-import 'package:realchord/data/set_repository.dart';
-import 'package:realchord/data/song_repository.dart';
-import 'package:realchord/data/outbox.dart';
-import 'package:realchord/sync/band_service.dart';
-import 'package:realchord/sync/engine/arrangement_sync.dart';
-import 'package:realchord/sync/engine/sync_store.dart';
-import 'package:realchord/sync/sync_backend.dart';
-import 'package:realchord/sync/sync_engine.dart';
+import 'package:setding/data/arrangement_repository.dart';
+import 'package:setding/data/attachment_storage_io.dart';
+import 'package:setding/data/attachment_storage.dart';
+import 'package:setding/data/band_copy.dart';
+import 'package:setding/data/database.dart';
+import 'package:setding/data/set_repository.dart';
+import 'package:setding/data/song_repository.dart';
+import 'package:setding/data/outbox.dart';
+import 'package:setding/sync/band_service.dart';
+import 'package:setding/sync/engine/arrangement_sync.dart';
+import 'package:setding/sync/engine/sync_store.dart';
+import 'package:setding/sync/sync_backend.dart';
+import 'package:setding/sync/sync_engine.dart';
 
 import 'fake_backend.dart';
 
@@ -34,7 +34,7 @@ void main() {
   setUp(() async {
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
     db = AppDatabase(NativeDatabase.memory());
-    dir = Directory.systemTemp.createTempSync('realchord_sync');
+    dir = Directory.systemTemp.createTempSync('setding_sync');
     final storage = FileAttachmentStorage(dir);
     server = FakeSyncBackend(user: _ann);
     server.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');

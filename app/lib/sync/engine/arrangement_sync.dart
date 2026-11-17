@@ -23,7 +23,7 @@ class ArrangementSync {
   /// Server record ID of the arrangement of [bandId] for [songId]: the same
   /// on every device, so two devices never create two records.
   static String serverId(String bandId, String songId) =>
-      _uuid.v5(Namespace.url.value, 'realchord:arrangement:$bandId:$songId');
+      _uuid.v5(Namespace.url.value, 'setding:arrangement:$bandId:$songId');
 
   Future<int> pull(BandView band) async {
     final since = await store.cursor(band.id, SyncCollection.arrangements);

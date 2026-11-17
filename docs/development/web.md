@@ -18,7 +18,7 @@ CDN). It then drops `sourceMappingURL` comments that point to source maps the
 build does not ship (`flutter.js.map`); otherwise browser devtools fetch them,
 get `index.html` from the server's SPA fallback and report a source map error. For hot reload, run `tool/build-web.sh` once (it creates
 `app/web/drift_worker.js`), start `make backend`, and run
-`flutter run -d chrome --dart-define=REALCHORD_SERVER_URL=http://127.0.0.1:8090`
+`flutter run -d chrome --dart-define=SETDING_SERVER_URL=http://127.0.0.1:8090`
 in `app/`. Hosting in production: docs/operations/server.md, step 6.
 
 ## Local database in the browser

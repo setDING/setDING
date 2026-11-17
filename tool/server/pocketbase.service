@@ -1,7 +1,7 @@
-# PocketBase backend of RealChord (ADR-0004). Installed by tool/server/install.sh.
+# PocketBase backend of setDING (ADR-0004). Installed by tool/server/install.sh.
 # Listens on localhost only; the Cloudflare tunnel publishes it (ADR-0014).
 [Unit]
-Description=PocketBase (RealChord backend)
+Description=PocketBase (setDING backend)
 After=network-online.target
 Wants=network-online.target
 
@@ -10,10 +10,10 @@ Type=simple
 User=pocketbase
 Group=pocketbase
 # The web client (ADR-0018) is served from pb_public.
-Environment=REALCHORD_PUBLIC_DIR=/opt/pocketbase/pb_public
+Environment=SETDING_PUBLIC_DIR=/opt/pocketbase/pb_public
 # Optional settings for the hooks, e.g. the deep-link verification files
-# and REALCHORD_WEB_URL (docs/operations/server.md); they override the above.
-EnvironmentFile=-/etc/realchord/pocketbase.env
+# and SETDING_WEB_URL (docs/operations/server.md); they override the above.
+EnvironmentFile=-/etc/setding/pocketbase.env
 ExecStart=/opt/pocketbase/pocketbase serve \
   --http=127.0.0.1:8090 \
   --dir=/var/lib/pocketbase/pb_data \

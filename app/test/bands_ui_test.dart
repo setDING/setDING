@@ -1,12 +1,12 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:realchord/data/database.dart' show localBandId;
+import 'package:setding/data/database.dart' show localBandId;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:realchord/providers.dart';
-import 'package:realchord/sync/sync_backend.dart';
-import 'package:realchord/ui/bands/bands_screen.dart';
-import 'package:realchord/ui/songs/song_screen.dart';
-import 'package:realchord/ui/songs/songs_screen.dart';
+import 'package:setding/providers.dart';
+import 'package:setding/sync/sync_backend.dart';
+import 'package:setding/ui/bands/bands_screen.dart';
+import 'package:setding/ui/songs/song_screen.dart';
+import 'package:setding/ui/songs/songs_screen.dart';
 
 import 'test_app.dart';
 

@@ -36,7 +36,7 @@ function isBandMember(app, userId, bandId) {
 }
 
 /// Public base URL of the server: the application URL from the settings
-/// (https://api.realchord.app in production), or the request's host.
+/// (https://api.setding.app in production), or the request's host.
 function baseUrl(e) {
   const url = $app.settings().meta.appURL || "";
   if (url && url.indexOf("localhost") < 0) return url.replace(/\/+$/, "");
@@ -288,26 +288,26 @@ function escapeHtml(text) {
 
 const TEXTS = {
   de: {
-    title: "Einladung zu RealChord",
-    invited: (org) => `Du bist eingeladen, ${org} auf RealChord beizutreten.`,
-    found: (org) => `Du bist eingeladen, die Organisation ${org} auf RealChord zu gründen.`,
-    open: "In RealChord öffnen",
+    title: "Einladung zu setDING",
+    invited: (org) => `Du bist eingeladen, ${org} auf setDING beizutreten.`,
+    found: (org) => `Du bist eingeladen, die Organisation ${org} auf setDING zu gründen.`,
+    open: "In setDING öffnen",
     browser: "Im Browser öffnen",
     browserHint: "Oder ohne Installation im Browser verwalten:",
     install:
-      "Noch keine App? Installiere RealChord, öffne dann diesen Link nochmals " +
+      "Noch keine App? Installiere setDING, öffne dann diesen Link nochmals " +
       "oder füge ihn in der App unter «Bands → Beitreten» ein.",
     invalid: "Diese Einladung ist ungültig, abgelaufen oder widerrufen. Bitte um einen neuen Link.",
   },
   en: {
-    title: "Invitation to RealChord",
-    invited: (org) => `You are invited to join ${org} on RealChord.`,
-    found: (org) => `You are invited to found the organization ${org} on RealChord.`,
-    open: "Open in RealChord",
+    title: "Invitation to setDING",
+    invited: (org) => `You are invited to join ${org} on setDING.`,
+    found: (org) => `You are invited to found the organization ${org} on setDING.`,
+    open: "Open in setDING",
     browser: "Open in the browser",
     browserHint: "Or manage without installing, in the browser:",
     install:
-      "No app yet? Install RealChord, then open this link again " +
+      "No app yet? Install setDING, then open this link again " +
       "or paste it in the app under “Bands → Join”.",
     invalid: "This invitation is invalid, expired or revoked. Please ask for a new link.",
   },
@@ -333,7 +333,7 @@ function landing(e) {
     const org = organizationOf(e.app, invite);
     body =
       `<p>${escapeHtml(isFounder(invite) ? t.found(org.name) : t.invited(org.name))}</p>` +
-      `<p><a class="button" href="realchord://invite/${escapeHtml(token)}">${escapeHtml(t.open)}</a></p>` +
+      `<p><a class="button" href="setding://invite/${escapeHtml(token)}">${escapeHtml(t.open)}</a></p>` +
       `<p class="hint">${escapeHtml(t.install)}</p>` +
       (web.available()
         ? `<p class="hint">${escapeHtml(t.browserHint)}</p>` +
@@ -354,12 +354,12 @@ function landing(e) {
   );
 }
 
-const PACKAGE = "app.realchord";
+const PACKAGE = "app.setding";
 
-/// Android App Links verification; needs REALCHORD_ANDROID_CERT_SHA256 (one
+/// Android App Links verification; needs SETDING_ANDROID_CERT_SHA256 (one
 /// or more comma-separated SHA-256 fingerprints of the signing certificate).
 function assetLinks(e) {
-  const prints = ($os.getenv("REALCHORD_ANDROID_CERT_SHA256") || "")
+  const prints = ($os.getenv("SETDING_ANDROID_CERT_SHA256") || "")
     .split(",")
     .map((s) => s.trim())
     .filter((s) => s);
@@ -370,9 +370,9 @@ function assetLinks(e) {
   }]);
 }
 
-/// iOS Universal Links verification; needs REALCHORD_APPLE_TEAM_ID.
+/// iOS Universal Links verification; needs SETDING_APPLE_TEAM_ID.
 function appleAppSiteAssociation(e) {
-  const team = ($os.getenv("REALCHORD_APPLE_TEAM_ID") || "").trim();
+  const team = ($os.getenv("SETDING_APPLE_TEAM_ID") || "").trim();
   if (!team) throw new NotFoundError();
   return e.json(200, {
     applinks: { details: [{ appIDs: [team + "." + PACKAGE], components: [{ "/": "/invite/*" }] }] },

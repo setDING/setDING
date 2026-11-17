@@ -1,4 +1,4 @@
-# CI for RealChord on GitHub Actions (ADR-0010, docs/development/git-workflow.md
+# CI for setDING on GitHub Actions (ADR-0010, docs/development/git-workflow.md
 # section 7).
 #
 # Runs the test gate (tool/check.sh). During early development it runs only on

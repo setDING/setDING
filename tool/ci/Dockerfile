@@ -1,4 +1,4 @@
-# Flutter base image for RealChord: Debian with Flutter, used as the base of the
+# Flutter base image for setDING: Debian with Flutter, used as the base of the
 # Linux release build (tool/release/linux.Dockerfile, ADR-0019). Originally the CI
 # image; CI now runs on the plain GitHub runner with flutter-action (ADR-0010).
 #
@@ -29,5 +29,5 @@ RUN git clone --quiet --depth 1 --branch "$FLUTTER_VERSION" \
  && flutter precache --no-android --no-ios --no-web --linux \
  && flutter --version
 
-LABEL org.opencontainers.image.title="realchord-ci" \
-      org.opencontainers.image.description="Flutter ${FLUTTER_VERSION} base image for RealChord"
+LABEL org.opencontainers.image.title="setding-ci" \
+      org.opencontainers.image.description="Flutter ${FLUTTER_VERSION} base image for setDING"

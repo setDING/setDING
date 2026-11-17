@@ -1,8 +1,8 @@
 #!/bin/sh
-# Adds RealChord to the application menu of the desktop (for the current user)
-# and installs its icon. Under Wayland the window only shows the RealChord
+# Adds setDING to the application menu of the desktop (for the current user)
+# and installs its icon. Under Wayland the window only shows the setDING
 # icon with this entry: the compositor looks the icon up through the .desktop
-# file named after the app ID (app.realchord).
+# file named after the app ID (app.setding).
 #
 # Usage: ./install-desktop-entry.sh [--hidden] [--if-missing] [--uninstall]
 #   --hidden      only for the icon lookup, not listed in the menu (test builds)
@@ -10,7 +10,7 @@
 #   --uninstall   remove the entry and the icon
 set -eu
 
-id=app.realchord
+id=app.setding
 dir=$(cd "$(dirname "$0")" && pwd)
 data=${XDG_DATA_HOME:-$HOME/.local/share}
 entry="$data/applications/$id.desktop"
@@ -43,7 +43,7 @@ refresh() {
 if $uninstall; then
   rm -f "$entry" "$icons/256x256/apps/$id.png" "$icons/scalable/apps/$id.svg"
   refresh
-  echo "RealChord removed from the application menu."
+  echo "setDING removed from the application menu."
   exit 0
 fi
 
@@ -54,10 +54,10 @@ fi
 mkdir -p "$data/applications" "$icons/256x256/apps" "$icons/scalable/apps"
 cp "$dir/data/app_icon.png" "$icons/256x256/apps/$id.png"
 cp "$dir/data/app_icon.svg" "$icons/scalable/apps/$id.svg"
-sed "s|@EXEC@|$dir/realchord|" "$dir/$id.desktop.in" > "$entry.tmp"
+sed "s|@EXEC@|$dir/setding|" "$dir/$id.desktop.in" > "$entry.tmp"
 if $hidden; then
   echo "NoDisplay=true" >> "$entry.tmp"
 fi
 mv "$entry.tmp" "$entry"
 refresh
-echo "RealChord installed: $entry"
+echo "setDING installed: $entry"

@@ -4,7 +4,7 @@
 # large library on the device and records timelines of the stage-relevant
 # paths. Results: app/build/perf/.
 #
-# The scenarios run in the app's own data directory. A RealChord release
+# The scenarios run in the app's own data directory. A setDING release
 # installation (not debuggable, e.g. from Obtainium) would be replaced by the
 # test build together with its data, so the script refuses to run then.
 set -euo pipefail
@@ -14,7 +14,7 @@ if ! command -v flutter >/dev/null 2>&1 && [ -x "$HOME/development/flutter/bin/f
   export PATH="$HOME/development/flutter/bin:$PATH"
 fi
 ADB="${ADB:-${ANDROID_HOME:-$HOME/Android/Sdk}/platform-tools/adb}"
-PACKAGE=app.realchord
+PACKAGE=app.setding
 
 device=(${DEVICE:+-s "$DEVICE"})
 if ! "$ADB" "${device[@]}" get-state >/dev/null 2>&1; then

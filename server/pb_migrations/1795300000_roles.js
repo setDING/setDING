@@ -61,7 +61,7 @@ migrate(
     const nextRevision = () => {
       const row = new DynamicModel({ revision: 0 });
       app.db()
-        .newQuery("UPDATE realchord_sync SET revision = revision + 1 WHERE id = 1 RETURNING revision")
+        .newQuery("UPDATE setding_sync SET revision = revision + 1 WHERE id = 1 RETURNING revision")
         .one(row);
       return row.revision;
     };

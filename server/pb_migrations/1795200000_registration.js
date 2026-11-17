@@ -26,7 +26,7 @@ migrate(
     const ours = [
       { label: "users:create", audience: "", duration: 60, maxRequests: 5 },
       { label: "*:auth", audience: "", duration: 60, maxRequests: 20 },
-      { label: "/api/realchord/invites/", audience: "", duration: 60, maxRequests: 30 },
+      { label: "/api/setding/invites/", audience: "", duration: 60, maxRequests: 30 },
       { label: "/invite/", audience: "", duration: 60, maxRequests: 30 },
     ];
     const labels = ours.map((r) => r.label);

@@ -4,17 +4,17 @@
 
 // Creates a link for an organization (organization admins). Returns the
 // token once; only its hash is stored.
-routerAdd("POST", "/api/realchord/invites", (e) =>
+routerAdd("POST", "/api/setding/invites", (e) =>
   require(`${__hooks}/lib/invites.js`).create(e), $apis.requireAuth("users"));
 
 // Organization name and state of a link, for "Join X?"; also without an
 // account, before signing up with the link (ADR-0024).
-routerAdd("GET", "/api/realchord/invites/{token}", (e) =>
+routerAdd("GET", "/api/setding/invites/{token}", (e) =>
   require(`${__hooks}/lib/invites.js`).preview(e));
 
 // Joins the organization with the member role, or founds the organization
 // of a founder invitation (ADR-0024).
-routerAdd("POST", "/api/realchord/invites/{token}/redeem", (e) =>
+routerAdd("POST", "/api/setding/invites/{token}/redeem", (e) =>
   require(`${__hooks}/lib/invites.js`).redeem(e), $apis.requireAuth("users"));
 
 // Landing page of the link for people without the app.

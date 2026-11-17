@@ -3,18 +3,18 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
-import 'package:realchord/data/attachment_storage_io.dart';
-import 'package:realchord/data/attachment_lookup.dart';
-import 'package:realchord/data/attachment_storage.dart';
-import 'package:realchord/data/database.dart';
-import 'package:realchord/data/import_export.dart';
-import 'package:realchord/data/set_repository.dart';
-import 'package:realchord/data/song_repository.dart';
-import 'package:realchord/ui/live/live_screen.dart';
-import 'package:realchord/ui/render/abc_view.dart';
-import 'package:realchord/ui/render/song_image.dart';
-import 'package:realchord/ui/render/song_view.dart';
-import 'package:realchord/ui/songs/song_screen.dart';
+import 'package:setding/data/attachment_storage_io.dart';
+import 'package:setding/data/attachment_lookup.dart';
+import 'package:setding/data/attachment_storage.dart';
+import 'package:setding/data/database.dart';
+import 'package:setding/data/import_export.dart';
+import 'package:setding/data/set_repository.dart';
+import 'package:setding/data/song_repository.dart';
+import 'package:setding/ui/live/live_screen.dart';
+import 'package:setding/ui/render/abc_view.dart';
+import 'package:setding/ui/render/song_image.dart';
+import 'package:setding/ui/render/song_view.dart';
+import 'package:setding/ui/songs/song_screen.dart';
 import 'package:drift/native.dart';
 import 'package:chordpro/chordpro.dart' hide Key;
 import 'package:material_ui/material_ui.dart';
@@ -132,7 +132,7 @@ void main() {
 
   test('ZIP import attaches referenced images', () async {
     final db = AppDatabase(NativeDatabase.memory());
-    final dir = Directory.systemTemp.createTempSync('realchord_zip');
+    final dir = Directory.systemTemp.createTempSync('setding_zip');
     final storage = FileAttachmentStorage(dir);
     final songs = SongRepository(db, storage);
     final archive = Archive()

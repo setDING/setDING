@@ -1,12 +1,12 @@
 import 'dart:io';
 
 import 'package:archive/archive.dart';
-import 'package:realchord/data/import_export.dart';
-import 'package:realchord/ui/live/live_screen.dart';
-import 'package:realchord/ui/render/abc_view.dart';
-import 'package:realchord/ui/render/chord_diagram.dart';
-import 'package:realchord/ui/render/song_grid.dart';
-import 'package:realchord/ui/songs/song_screen.dart';
+import 'package:setding/data/import_export.dart';
+import 'package:setding/ui/live/live_screen.dart';
+import 'package:setding/ui/render/abc_view.dart';
+import 'package:setding/ui/render/chord_diagram.dart';
+import 'package:setding/ui/render/song_grid.dart';
+import 'package:setding/ui/songs/song_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';

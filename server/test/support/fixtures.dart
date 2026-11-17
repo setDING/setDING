@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:realchord_server/pocketbase_harness.dart';
+import 'package:setding_server/pocketbase_harness.dart';
 
 final _random = Random.secure();
 

@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:realchord/platform/stage_wake_lock.dart';
-import 'package:realchord/ui/live/live_screen.dart';
+import 'package:setding/platform/stage_wake_lock.dart';
+import 'package:setding/ui/live/live_screen.dart';
 
 import 'test_app.dart';
 

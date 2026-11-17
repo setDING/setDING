@@ -1,6 +1,6 @@
 # Performance on devices
 
-RealChord's first quality goal is reliability on stage (architecture README,
+setDING's first quality goal is reliability on stage (architecture README,
 section 2). Unit and widget tests cannot show whether page turns stay smooth
 on a real tablet, so `make perf` measures the stage-relevant paths on a
 USB-connected Android device (issue #270).
@@ -21,7 +21,7 @@ make perf DEVICE=<id>     # several devices: id from `adb devices`
 - The test runs in the app's **own data directory** on the device. The first
   run seeds 400 songs, two PDF-only songs (a 6-page scan-like PDF close to the
   20 MB limit and a small one) and a set of 30 songs; later runs reuse them.
-  The script refuses to run when a RealChord **release** build (not
+  The script refuses to run when a setDING **release** build (not
   debuggable, e.g. installed with Obtainium) is on the device, because the test
   build would replace it together with its data.
 - Semantics are switched off in the test (the `testWidgets` default would add

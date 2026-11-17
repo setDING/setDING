@@ -2,11 +2,11 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:chordpro/chordpro.dart' show ChordStyle;
-import 'package:realchord/settings/settings.dart';
-import 'package:realchord/data/demo_song.dart';
-import 'package:realchord/ui/live/live_screen.dart';
-import 'package:realchord/ui/render/render_cache.dart';
-import 'package:realchord/ui/render/song_view.dart';
+import 'package:setding/settings/settings.dart';
+import 'package:setding/data/demo_song.dart';
+import 'package:setding/ui/live/live_screen.dart';
+import 'package:setding/ui/render/render_cache.dart';
+import 'package:setding/ui/render/song_view.dart';
 
 import 'test_app.dart';
 

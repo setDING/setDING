@@ -1,5 +1,5 @@
-import 'package:realchord/data/demo_song.dart';
-import 'package:realchord/ui/render/song_view.dart';
+import 'package:setding/data/demo_song.dart';
+import 'package:setding/ui/render/song_view.dart';
 import 'package:chordpro/chordpro.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';

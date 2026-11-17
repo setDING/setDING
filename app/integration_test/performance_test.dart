@@ -8,7 +8,7 @@
 // (test_driver/perf_driver.dart) writes the summaries to build/perf/.
 //
 // Runs in the app's own data directory: never run it on a device that has
-// a RealChord installation with real data.
+// a setDING installation with real data.
 import 'dart:io';
 import 'dart:math';
 import 'dart:async';
@@ -20,19 +20,19 @@ import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:realchord/app.dart';
-import 'package:realchord/bootstrap/platform_services.dart';
-import 'package:realchord/data/attachment_storage.dart';
-import 'package:realchord/data/database.dart';
-import 'package:realchord/data/set_repository.dart';
-import 'package:realchord/data/song_repository.dart';
-import 'package:realchord/providers.dart';
-import 'package:realchord/settings/settings.dart';
-import 'package:realchord/sync/auth_providers.dart';
-import 'package:realchord/ui/home_screen.dart';
-import 'package:realchord/ui/live/live_screen.dart';
-import 'package:realchord/ui/songs/song_editor_screen.dart';
-import 'package:realchord/ui/songs/songs_screen.dart';
+import 'package:setding/app.dart';
+import 'package:setding/bootstrap/platform_services.dart';
+import 'package:setding/data/attachment_storage.dart';
+import 'package:setding/data/database.dart';
+import 'package:setding/data/set_repository.dart';
+import 'package:setding/data/song_repository.dart';
+import 'package:setding/providers.dart';
+import 'package:setding/settings/settings.dart';
+import 'package:setding/sync/auth_providers.dart';
+import 'package:setding/ui/home_screen.dart';
+import 'package:setding/ui/live/live_screen.dart';
+import 'package:setding/ui/songs/song_editor_screen.dart';
+import 'package:setding/ui/songs/songs_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Songs in the library; the set uses the first ones.
@@ -68,7 +68,7 @@ void main() {
             attachmentStorageProvider.overrideWithValue(services.storage),
             sessionStoreProvider.overrideWithValue(services.sessionStore),
           ],
-          child: const RealChordApp(),
+          child: const SetdingApp(),
         ),
       );
       await _settle(tester);

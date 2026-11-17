@@ -9,7 +9,7 @@ function nextRevision(app) {
   app
     .db()
     .newQuery(
-      "UPDATE realchord_sync SET revision = revision + 1 WHERE id = 1 RETURNING revision",
+      "UPDATE setding_sync SET revision = revision + 1 WHERE id = 1 RETURNING revision",
     )
     .one(row);
   return row.revision;

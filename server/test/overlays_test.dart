@@ -1,7 +1,7 @@
 import 'package:test/test.dart';
 
 import 'support/fixtures.dart';
-import 'package:realchord_server/pocketbase_harness.dart';
+import 'package:setding_server/pocketbase_harness.dart';
 
 /// Personal adjustments per user (ADR-0020).
 void main() {

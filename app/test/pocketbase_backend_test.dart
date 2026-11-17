@@ -5,9 +5,9 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:realchord/sync/pocketbase_backend.dart';
-import 'package:realchord/sync/session_store.dart';
-import 'package:realchord/sync/sync_backend.dart';
+import 'package:setding/sync/pocketbase_backend.dart';
+import 'package:setding/sync/session_store.dart';
+import 'package:setding/sync/sync_backend.dart';
 
 const _server = 'https://pb.example.test';
 

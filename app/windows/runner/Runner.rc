@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "app.realchord" "\0"
-            VALUE "FileDescription", "RealChord" "\0"
+            VALUE "CompanyName", "app.setding" "\0"
+            VALUE "FileDescription", "setDING" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "realchord" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 app.realchord. All rights reserved." "\0"
-            VALUE "OriginalFilename", "realchord.exe" "\0"
-            VALUE "ProductName", "RealChord" "\0"
+            VALUE "InternalName", "setding" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 app.setding. All rights reserved." "\0"
+            VALUE "OriginalFilename", "setding.exe" "\0"
+            VALUE "ProductName", "setDING" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

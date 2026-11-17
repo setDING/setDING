@@ -2,9 +2,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:realchord/util/app_version.dart';
-import 'package:realchord/ui/settings_screen.dart';
-import 'package:realchord/util/log.dart';
+import 'package:setding/util/app_version.dart';
+import 'package:setding/ui/settings_screen.dart';
+import 'package:setding/util/log.dart';
 
 import 'test_app.dart';
 
@@ -41,8 +41,8 @@ void main() {
   ) async {
     useTabletSize(tester, landscape: false);
     PackageInfo.setMockInitialValues(
-      appName: 'RealChord',
-      packageName: 'app.realchord',
+      appName: 'setDING',
+      packageName: 'app.setding',
       version: '0.1.1',
       buildNumber: '3',
       buildSignature: '',
@@ -82,7 +82,7 @@ void main() {
     expect(find.text('Version 0.1.1 (3)'), findsOneWidget);
     await tester.tap(find.byKey(const Key('copy-log')));
     await tester.pumpAndSettle();
-    expect(copied, startsWith('RealChord 0.1.1 (3)\n'));
+    expect(copied, startsWith('setDING 0.1.1 (3)\n'));
     expect(copied, contains('[sync] Sync stopped: network'));
     expect(find.text('Diagnostic log copied'), findsOneWidget);
     await app.dispose(tester);

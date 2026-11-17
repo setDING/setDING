@@ -1,6 +1,6 @@
-name: realchord_server
+name: setding_server
 description: >-
-  Tests for the RealChord PocketBase schema, access rules and hooks
+  Tests for the setDING PocketBase schema, access rules and hooks
   (pb_migrations, pb_hooks). They run against a real PocketBase instance;
   lib/pocketbase_harness.dart is also used by the app's integration tests.
 version: 0.1.0

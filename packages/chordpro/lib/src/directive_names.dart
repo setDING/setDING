@@ -106,5 +106,5 @@ const otherDirectives = {
   'ns': false,
 };
 
-/// RealChord's own directives (`x_` prefix, ADR-0012).
+/// setDING's own directives (`x_` prefix, ADR-0012).
 const customDirectives = {'x_sequence'};

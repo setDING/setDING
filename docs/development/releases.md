@@ -1,6 +1,6 @@
 # Release builds
 
-How RealChord is built for distribution: on GitHub Actions from a tag for Linux,
+How setDING is built for distribution: on GitHub Actions from a tag for Linux,
 Android and Windows (ADR-0021), and locally for Linux (ADR-0019). iOS and store
 releases are not covered yet.
 
@@ -11,7 +11,7 @@ releases are not covered yet.
 2. Tag `main` and push the tag:
 
    ```bash
-   git tag -s vX.Y.Z -m "RealChord X.Y.Z" && git push origin vX.Y.Z
+   git tag -s vX.Y.Z -m "setDING X.Y.Z" && git push origin vX.Y.Z
    ```
 
 3. The workflow [`release.yml`](../../.github/workflows/release.yml) builds and
@@ -19,9 +19,9 @@ releases are not covered yet.
 
    | File | Content |
    |---|---|
-   | `realchord-X.Y.Z-android.apk` | Universal APK, signed with the release key |
-   | `realchord-X.Y.Z-linux-x64.tar.gz` | Linux bundle, built like `make release-linux` |
-   | `realchord-X.Y.Z-windows-x64.zip` | Windows build with the Visual C++ runtime |
+   | `setding-X.Y.Z-android.apk` | Universal APK, signed with the release key |
+   | `setding-X.Y.Z-linux-x64.tar.gz` | Linux bundle, built like `make release-linux` |
+   | `setding-X.Y.Z-windows-x64.zip` | Windows build with the Visual C++ runtime |
    | `SHA256SUMS` | Checksums of the files above |
 
 The tag must equal `v` + the version in `pubspec.yaml`, otherwise the workflow fails.
@@ -40,7 +40,7 @@ release key stored in the repository secrets. The owner creates it once:
 make android-keystore
 ```
 
-This writes `~/.local/share/realchord/android-release.jks` and a `key.properties`
+This writes `~/.local/share/setding/android-release.jks` and a `key.properties`
 next to it (override the path with `ANDROID_KEYSTORE=…`), and sets the secrets
 `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and
 `ANDROID_KEY_PASSWORD` with `gh`. **Back up both files** (e.g. in a password
@@ -55,15 +55,15 @@ such an APK cannot be updated by a release APK (uninstall first).
 
 1. Install [Obtainium](https://github.com/ImranR98/Obtainium) (from its GitHub
    releases or F-Droid).
-2. In Obtainium: **Add app** → source URL `https://github.com/tafli/RealChord` → **Add**.
-3. Install RealChord from there. Obtainium checks the GitHub Releases for new
+2. In Obtainium: **Add app** → source URL `https://github.com/tafli/setDING` → **Add**.
+3. Install setDING from there. Obtainium checks the GitHub Releases for new
    versions and offers the update.
 
 An app installed earlier with `make apk` (debug key) must be uninstalled first.
 
 ## Windows
 
-Unpack the zip and run `realchord.exe`. The build is not code-signed, so Windows
+Unpack the zip and run `setding.exe`. The build is not code-signed, so Windows
 SmartScreen warns on the first start ("More info" → "Run anyway").
 
 ## Linux (local)
@@ -72,18 +72,18 @@ SmartScreen warns on the first start ("More info" → "Run anyway").
 make release
 ```
 
-The result is `app/build/realchord-<version>-<commit>-linux-x64.tar.gz`
+The result is `app/build/setding-<version>-<commit>-linux-x64.tar.gz`
 (`make release-linux` does the same). It is built from the **committed** state
 (`HEAD`); commit first, uncommitted changes only print a warning and are not included.
 
 ### Requirements
 
 Docker (`DOCKER=podman` works too). make first builds the Flutter base image
-`realchord-ci:<flutter-version>` from `tool/ci/Dockerfile` if it is missing
+`setding-ci:<flutter-version>` from `tool/ci/Dockerfile` if it is missing
 (`make ci-image` does that by hand), then a local image
-`realchord-release-linux:<flutter-version>` with the Linux build dependencies and
+`setding-release-linux:<flutter-version>` with the Linux build dependencies and
 runs `flutter build linux --release` in it. Pub packages are cached in the Docker
-volume `realchord-release-pub-cache`. CI runs the same target.
+volume `setding-release-pub-cache`. CI runs the same target.
 
 ### Why a container
 
@@ -99,12 +99,12 @@ tool/release/check-isa.sh app/build/linux/x64/debug/bundle
 
 ### Installing
 
-Unpack the archive on the target machine and run `realchord` in the unpacked folder.
+Unpack the archive on the target machine and run `setding` in the unpacked folder.
 Requires GTK 3 and libsecret, which desktop distributions include.
 
-To add RealChord to the application menu, run `./install-desktop-entry.sh` in the
+To add setDING to the application menu, run `./install-desktop-entry.sh` in the
 unpacked folder once (again after moving the folder; `--uninstall` removes it). It
 installs a desktop entry and the icon for the current user under
-`~/.local/share`. Under Wayland (KDE, GNOME) the window only shows the RealChord
+`~/.local/share`. Under Wayland (KDE, GNOME) the window only shows the setDING
 icon with this entry, because the compositor looks the icon up through the
-`.desktop` file named after the app ID `app.realchord`.
+`.desktop` file named after the app ID `app.setding`.

@@ -40,7 +40,7 @@ void main() {
     expect(comment.text, 'Order: V, C');
   });
 
-  test('{sequence} without x_ is not a RealChord directive', () {
+  test('{sequence} without x_ is not a setDING directive', () {
     expect(parseChordPro('{sequence: V, C}').sequence, isEmpty);
   });
 

@@ -23,11 +23,11 @@ app, so the APK must be signed with a stable release key, not a per-machine debu
   for test builds, which publish nothing). Separate jobs build:
   - **Linux** with `make release-linux` on `ubuntu-latest`, i.e. in the same Debian
     container with the ISA check as locally (ADR-0019) →
-    `realchord-<version>-linux-x64.tar.gz`.
+    `setding-<version>-linux-x64.tar.gz`.
   - **Android** with `flutter build apk --release` (one universal APK) →
-    `realchord-<version>-android.apk`.
+    `setding-<version>-android.apk`.
   - **Windows** with `flutter build windows --release` on `windows-latest`, zipped
-    together with the Visual C++ runtime DLLs → `realchord-<version>-windows-x64.zip`.
+    together with the Visual C++ runtime DLLs → `setding-<version>-windows-x64.zip`.
 - **Version:** the tag must match the version in `app/pubspec.yaml` (`v` + version),
   otherwise the release fails. The **build number is the workflow's run number**
   (ADR-0010), so the Android `versionCode` grows with every release.
@@ -35,7 +35,7 @@ app, so the APK must be signed with a stable release key, not a per-machine debu
   notes, all three packages and a `SHA256SUMS` file. Only tags with a suffix
   (`v1.2.0-beta.1`) become pre-releases, because Obtainium ignores pre-releases by
   default.
-- **Android signing:** one release key (PKCS12, RSA 4096, alias `realchord`), created
+- **Android signing:** one release key (PKCS12, RSA 4096, alias `setding`), created
   once by the owner with `make android-keystore` (`tool/release/android-keystore.sh`),
   which stores it as the repository secrets `ANDROID_KEYSTORE_BASE64`,
   `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`. The
@@ -43,7 +43,7 @@ app, so the APK must be signed with a stable release key, not a per-machine debu
   with it and falls back to the debug key when the file is missing (local
   `make apk`). A tag build without the secrets fails rather than publishing an APK
   with a throwaway key.
-- **Obtainium:** users add `https://github.com/tafli/RealChord` as an app source; the
+- **Obtainium:** users add `https://github.com/tafli/setDING` as an app source; the
   release contains exactly one APK, so no filter is needed.
 
 ## Alternatives considered
@@ -79,6 +79,7 @@ app, so the APK must be signed with a stable release key, not a per-machine debu
   (#298). For Android this is a different app: installs of the earlier test
   releases (up to v0.4.0) cannot be updated to it; uninstall them and add the app
   to Obtainium again. Not live yet, so no migration.
+- 2026-11-17: App renamed to **setDING** (#318): artifacts `setding-<version>-…`, application ID `app.setding` (a new app for Android and Obtainium; test installs of RealChord are removed by hand), Obtainium source `https://github.com/tafli/setDING`. The release key stays.
 
 ## Open points
 

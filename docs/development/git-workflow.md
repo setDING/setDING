@@ -20,7 +20,7 @@ cases where a human must decide.
 ## 2. Work items (issues)
 
 The backlog is kept as issues in the project's **GitHub** repository
-(`github.com/tafli/RealChord`, see section 12). An agent always works on an issue;
+(`github.com/tafli/setDING`, see section 12). An agent always works on an issue;
 if none exists for the task, it creates one first.
 
 | Label | Meaning |
@@ -53,30 +53,30 @@ work on an issue labelled `agent:in-progress` by someone else.
 
 ### Worktrees
 
-The project folder (the main checkout, e.g. `~/Projects/RealChord`) **always stays on
+The project folder (the main checkout, e.g. `~/Projects/setDING`) **always stays on
 `main`**. It is only ever updated with `git pull --ff-only`; nobody edits, commits or
 switches branches in it. Every change – by agents and humans, also small docs fixes –
 is made in a separate worktree, so parallel sessions never disturb each other and the
 main checkout is always a clean, current `main` to start from.
 
 - **Location:** a sibling folder of the main checkout,
-  `../RealChord-worktrees/<branch with "/" replaced by "-">`, e.g.
-  `../RealChord-worktrees/feat-12-chordpro-parser`. Outside the repository on
+  `../setDING-worktrees/<branch with "/" replaced by "-">`, e.g.
+  `../setDING-worktrees/feat-12-chordpro-parser`. Outside the repository on
   purpose: tools that scan the tree (`dart format .`, the analyzer, IDE indexing)
   never see a second copy of the code.
 - **Create** the branch and its worktree in one step from the latest `origin/main`:
-  `git fetch origin && git worktree add -b <branch> ../RealChord-worktrees/<dir> origin/main`.
+  `git fetch origin && git worktree add -b <branch> ../setDING-worktrees/<dir> origin/main`.
   All further commands (`make check`, commits, `git push`) run inside the worktree.
   Local data is per worktree (`.dev-data/`, `.dart_tool/`), so the first
   `make check` in a new worktree fetches the packages again.
 - **Tools that offer their own worktrees** (e.g. Claude Code worktree sessions) may
   use their own location, as long as the main checkout stays on `main`.
 - **Remove** the worktree after the merge (section 6):
-  `git worktree remove ../RealChord-worktrees/<dir>`, then delete the branch.
+  `git worktree remove ../setDING-worktrees/<dir>`, then delete the branch.
   `git worktree list` shows the open worktrees; `git worktree prune` cleans up
   entries of folders deleted by hand.
 - **Taking over** a branch of another agent (section 8): fetch it and add a worktree
-  for it (`git worktree add ../RealChord-worktrees/<dir> <branch>`).
+  for it (`git worktree add ../setDING-worktrees/<dir> <branch>`).
 
 ## 4. Commits
 
@@ -255,8 +255,8 @@ has not logged in yet):
 
 ## 12. GitHub
 
-- **Host:** GitHub, repository `github.com/tafli/RealChord`, remote `origin` over
-  SSH (`git@github.com:tafli/RealChord.git`). Moved from a self-hosted Forgejo in
+- **Host:** GitHub, repository `github.com/tafli/setDING`, remote `origin` over
+  SSH (`git@github.com:tafli/setDING.git`). Moved from a self-hosted Forgejo in
   November 2026 with the same issue and PR numbers; former pull requests are closed
   issues labelled `imported:pull-request` ([migration runbook](github-migration.md)).
 - **Commit identity:** commits are made with the owner's global git identity and
@@ -282,8 +282,8 @@ has not logged in yet):
 ```bash
 # in the main checkout (always on main)
 git fetch origin
-git worktree add -b feat/12-chordpro-parser ../RealChord-worktrees/feat-12-chordpro-parser origin/main
-cd ../RealChord-worktrees/feat-12-chordpro-parser
+git worktree add -b feat/12-chordpro-parser ../setDING-worktrees/feat-12-chordpro-parser origin/main
+cd ../setDING-worktrees/feat-12-chordpro-parser
 # … work, commit in Conventional Commit format …
 git fetch origin && git rebase origin/main
 make check
@@ -293,8 +293,8 @@ gh pr create --draft --base main --body-file pr.md --title "feat(chordpro): …"
 gh pr ready <number>
 gh pr checks <number>
 gh pr merge --squash --delete-branch --author-email andi@theboss.ch --body-file merge.md <number>   # only if section 6 "Who merges" allows it; merge.md ends with the Co-Authored-By trailer
-cd ../../RealChord   # back to the main checkout
-git worktree remove ../RealChord-worktrees/feat-12-chordpro-parser
+cd ../../setDING   # back to the main checkout
+git worktree remove ../setDING-worktrees/feat-12-chordpro-parser
 git pull --ff-only
 git branch -D feat/12-chordpro-parser   # delete the merged branch locally too
 ```

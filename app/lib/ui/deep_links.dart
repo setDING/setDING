@@ -11,7 +11,7 @@ import '../util/log.dart';
 const _log = Log('links');
 
 /// Links that open the app (ADR-0005): App Links / Universal Links
-/// (`https://api.realchord.app/invite/<token>`) and `realchord://invite/<token>`,
+/// (`https://api.setding.app/invite/<token>`) and `setding://invite/<token>`,
 /// including the link that started the app. Overridden in tests.
 final incomingLinksProvider = Provider<Stream<Uri>>((ref) {
   try {
