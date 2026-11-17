@@ -30,9 +30,14 @@ import 'song_picker.dart';
 
 /// A set with its ordered items.
 class SetScreen extends ConsumerStatefulWidget {
-  const SetScreen({super.key, required this.setId});
+  const SetScreen({super.key, required this.setId, this.embedded = false});
 
   final String setId;
+
+  /// Shown next to the list of sets on wide screens (#266) instead of as a
+  /// page of its own: no back button, and deleting the set does not leave
+  /// the page.
+  final bool embedded;
 
   @override
   ConsumerState<SetScreen> createState() => _SetScreenState();
@@ -134,7 +139,7 @@ class _SetScreenState extends ConsumerState<SetScreen> {
     );
     if (!ok) return;
     await _repo.deleteSet(set.id);
-    if (mounted) Navigator.pop(context);
+    if (mounted && !widget.embedded) Navigator.pop(context);
   }
 
   Future<void> _onReorder(
@@ -170,6 +175,7 @@ class _SetScreenState extends ConsumerState<SetScreen> {
 
         return Scaffold(
           appBar: AppBar(
+            automaticallyImplyLeading: !widget.embedded,
             title: Text(set.name),
             actions: [
               IconButton(

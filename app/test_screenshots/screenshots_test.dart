@@ -346,14 +346,20 @@ void main() {
       await tester.pumpWidget(
         RepaintBoundary(key: UniqueKey(), child: app.build()),
       );
+      // Wide: the next gig is shown next to the list (#266).
       await _shot(tester, '${lang}_1_sets');
-      await tester.tap(find.text('Summer Festival'));
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: SetScreen(setId: ids![1])),
+        ),
+      );
       await _shot(tester, '${lang}_2_set');
 
       await tester.pumpWidget(
         RepaintBoundary(
           key: UniqueKey(),
-          child: app.build(home: SongScreen(songId: ids![0])),
+          child: app.build(home: SongScreen(songId: ids[0])),
         ),
       );
       await _shot(tester, '${lang}_3_song');
