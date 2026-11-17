@@ -708,5 +708,6 @@
   "allKeys": "All keys",
   "songConflictTooltip": "Changed here and on the server – open the song to decide",
   "pdfOnlyTooltip": "Sheet music (PDF) only, no chords",
-  "upcomingGigTooltip": "In “{set}” on {date}"
+  "upcomingGigTooltip": "In “{set}” on {date}",
+  "foundInLyrics": "Found in the lyrics"
 }

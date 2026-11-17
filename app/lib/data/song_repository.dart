@@ -91,6 +91,14 @@ String? songSearchMatch(String query) {
   return words.map((w) => '"${w.replaceAll('"', '""')}"*').join(' ');
 }
 
+/// Start and end of a search hit in the texts of [SearchHit].
+const hitStart = '\u0002', hitEnd = '\u0003';
+
+/// Where a search matched a song: title and artist with the hits marked
+/// ([hitStart] … [hitEnd]), and a snippet of the lyrics around a hit (null
+/// when the lyrics did not match).
+typedef SearchHit = ({String title, String? artist, String? lyrics});
+
 /// Owner of personal adjustments of songs in [libraryId] for [userId]
 /// (ADR-0020).
 String overlayOwnerFor(String libraryId, String? userId) =>
@@ -331,6 +339,45 @@ class SongRepository {
                 ));
     }
     return filter;
+  }
+
+  /// The hits of a search [query] (see [songSearchMatch]) by song, marked
+  /// by the full-text index itself, so that they follow the same rules as
+  /// the search (word starts, accents ignored).
+  Stream<Map<String, SearchHit>> watchSearchHits(String query) {
+    final match = songSearchMatch(query);
+    if (match == null) return Stream.value(const {});
+    const marks = "'$hitStart', '$hitEnd'";
+    return db
+        .customSelect(
+          'SELECT s.id AS id, highlight(songs_fts, 0, $marks) AS title, '
+          'highlight(songs_fts, 1, $marks) AS artist, '
+          "snippet(songs_fts, 2, $marks, '…', 10) AS lyrics "
+          'FROM songs_fts JOIN songs s ON s.rowid = songs_fts.rowid '
+          'WHERE songs_fts MATCH ? AND s.library_id = ? AND s.deleted = 0',
+          variables: [
+            Variable.withString(match),
+            Variable.withString(libraryId),
+          ],
+          readsFrom: {db.songs},
+        )
+        .watch()
+        .map(
+          (rows) => {
+            for (final r in rows)
+              r.read<String>('id'): (
+                title: r.read<String>('title'),
+                artist: r.readNullable<String>('artist'),
+                lyrics: switch (r.readNullable<String>('lyrics')) {
+                  final l? when l.contains(hitStart) => l.replaceAll(
+                    RegExp(r'\s*\n\s*'),
+                    ' / ',
+                  ),
+                  _ => null,
+                },
+              ),
+          },
+        );
   }
 
   Stream<SongEntry?> watchSong(String id) =>

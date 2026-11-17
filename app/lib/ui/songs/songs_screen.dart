@@ -107,6 +107,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
         c.songId,
     };
     final gigs = ref.watch(upcomingGigsProvider(library.id)).value ?? const {};
+    final hits = ref.watch(searchHitsProvider(_query)).value ?? const {};
     final selected = _selected;
     // Leave selection mode when switching libraries.
     ref.listen(currentLibraryProvider, (previous, next) {
@@ -263,6 +264,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                           arrangement: arrangements[list[i].id],
                           hasConflict: conflicts.contains(list[i].id),
                           nextGig: gigs[list[i].id],
+                          hit: hits[list[i].id],
                           bandName: band?.name ?? '',
                           leading: selected == null
                               ? null
@@ -420,6 +422,25 @@ class _Filters extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// [marked] (see [SearchHit]) as text spans, the hits in [hitStyle].
+List<TextSpan> highlightedSpans(String marked, TextStyle hitStyle) {
+  final spans = <TextSpan>[];
+  var rest = marked;
+  while (rest.isNotEmpty) {
+    final start = rest.indexOf(hitStart);
+    if (start < 0) {
+      spans.add(TextSpan(text: rest));
+      break;
+    }
+    if (start > 0) spans.add(TextSpan(text: rest.substring(0, start)));
+    final end = rest.indexOf(hitEnd, start);
+    final stop = end < 0 ? rest.length : end;
+    spans.add(TextSpan(text: rest.substring(start + 1, stop), style: hitStyle));
+    rest = end < 0 ? '' : rest.substring(end + 1);
+  }
+  return spans;
 }
 
 /// From this width the song list has two columns (#251).
@@ -583,6 +604,7 @@ class SongTile extends ConsumerWidget {
     this.bandName = '',
     this.hasConflict = false,
     this.nextGig,
+    this.hit,
   });
 
   final SongListEntry song;
@@ -593,6 +615,9 @@ class SongTile extends ConsumerWidget {
 
   /// The next set of the band the song is played in.
   final UpcomingGig? nextGig;
+
+  /// Where the current search matched the song, shown highlighted.
+  final SearchHit? hit;
 
   /// Arrangement of the band chosen on the sets tab (ADR-0025), shown as a
   /// hint below the song, which itself stays as written.
@@ -609,11 +634,19 @@ class SongTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final notation = ref.watch(settingsProvider.select((s) => s.notation));
-    final details = [
-      if (song.artist != null) song.artist!,
+    final theme = Theme.of(context);
+    final hitStyle = TextStyle(
+      fontWeight: FontWeight.w700,
+      backgroundColor: theme.colorScheme.tertiaryContainer,
+      color: theme.colorScheme.onTertiaryContainer,
+    );
+    final rest = [
       if (song.tempo case final tempo?) l10n.bpm(tempo),
       ...song.tagList.map((t) => '#$t'),
     ].join(' · ');
+    final artist = hit?.artist ?? song.artist;
+    final details = [?artist, if (rest.isNotEmpty) rest].join(' · ');
+    final lyrics = hit?.lyrics;
     final sequence = song.sequence == null
         ? const <cp.SequenceItem>[]
         : cp.parseSequence(song.sequence!);
@@ -630,13 +663,48 @@ class SongTile extends ConsumerWidget {
           SongKeyBadge(keyName: key),
         ],
       ),
-      title: Text(song.title.isEmpty ? l10n.untitled : song.title),
-      subtitle: details.isEmpty && sequence.isEmpty && band == null
+      title: song.title.isEmpty
+          ? Text(l10n.untitled)
+          : Text.rich(
+              TextSpan(
+                children: highlightedSpans(hit?.title ?? song.title, hitStyle),
+              ),
+            ),
+      subtitle:
+          details.isEmpty && sequence.isEmpty && band == null && lyrics == null
           ? null
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (details.isNotEmpty) Text(details),
+                if (details.isNotEmpty)
+                  Text.rich(
+                    TextSpan(children: highlightedSpans(details, hitStyle)),
+                  ),
+                if (lyrics != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Row(
+                      key: const ValueKey('song-lyrics-hit'),
+                      children: [
+                        Icon(
+                          Icons.lyrics_outlined,
+                          size: 16,
+                          semanticLabel: l10n.foundInLyrics,
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text.rich(
+                            TextSpan(
+                              children: highlightedSpans(lyrics, hitStyle),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontStyle: FontStyle.italic),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 if (sequence.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 4),

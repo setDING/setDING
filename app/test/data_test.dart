@@ -254,6 +254,27 @@ void main() {
     expect((await titles(SongSort.recent)).first, 'Charlie');
   });
 
+  test('search hits are marked where the search matched', () async {
+    String show(String? s) =>
+        (s ?? '').replaceAll(hitStart, '[').replaceAll(hitEnd, ']');
+    final a = await songs.createSong(
+      source: '{title: Ärger im Hof}\n{artist: Ann}\n[G]Sun is shining',
+    );
+    final b = await songs.createSong(
+      source: '{title: Rain}\n{artist: Arge Band}\n[C]Big argument\nnext line',
+    );
+    await songs.createSong(source: '{title: Other}\n[C]nothing');
+    final hits = await songs.watchSearchHits('arg').first;
+    expect(hits.keys, unorderedEquals([a, b]));
+    // Accents ignored, as in the search; only word starts.
+    expect(show(hits[a]!.title), '[Ärger] im Hof');
+    expect(show(hits[a]!.artist), 'Ann');
+    expect(hits[a]!.lyrics, isNull);
+    expect(show(hits[b]!.artist), '[Arge] Band');
+    expect(show(hits[b]!.lyrics), 'Big [argument] / next line');
+    expect(await songs.watchSearchHits('  ').first, isEmpty);
+  });
+
   test('the song list knows songs without chords (PDF only)', () async {
     await songs.createSong(title: 'Sheet');
     await songs.createSong(source: '{title: Chords}\n[G]x');

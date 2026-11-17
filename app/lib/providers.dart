@@ -283,6 +283,15 @@ final bandSongsProvider = StreamProvider.autoDispose
     );
 
 /// All tags used in the library.
+/// Where a search matched the songs of the library (by song); empty
+/// without a search.
+final searchHitsProvider = StreamProvider.autoDispose
+    .family<Map<String, SearchHit>, String>(
+      (ref, query) => query.trim().isEmpty
+          ? Stream.value(const {})
+          : ref.watch(songRepositoryProvider).watchSearchHits(query),
+    );
+
 /// All keys used in the library (see [SongRepository.watchKeys]).
 final songKeysProvider = StreamProvider<List<cp.Key>>(
   (ref) => ref.watch(songRepositoryProvider).watchKeys(),

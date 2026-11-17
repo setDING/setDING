@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:realchord/data/song_repository.dart';
 import 'package:realchord/ui/songs/songs_screen.dart';
 
 import 'test_app.dart';
@@ -27,6 +28,48 @@ void main() {
       'B',
       [1],
     ]);
+  });
+
+  test('marked text becomes spans with the hits styled', () {
+    const hit = TextStyle(fontWeight: FontWeight.bold);
+    final spans = highlightedSpans(
+      'a ${hitStart}bc$hitEnd d ${hitStart}e$hitEnd',
+      hit,
+    );
+    expect(
+      [for (final s in spans) (s.text, s.style == hit)],
+      [('a ', false), ('bc', true), (' d ', false), ('e', true)],
+    );
+    expect(highlightedSpans('plain', hit).single.text, 'plain');
+  });
+
+  testWidgets('a search shows where the lyrics matched', (tester) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    await tester.runAsync(() async {
+      await app.songs.createSong(source: '{title: Alpha}\n[G]Sun is shining');
+      await app.songs.createSong(source: '{title: Sunday}\n[G]Rain');
+    });
+    await tester.pumpWidget(app.build(home: const SongsScreen()));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(SearchBar), 'sun');
+    await tester.pump(songSearchDelay);
+    await tester.pumpAndSettle();
+
+    // Alpha matched in the lyrics: a snippet; Sunday in the title: none.
+    final snippet = find.byKey(const ValueKey('song-lyrics-hit'));
+    expect(snippet, findsOneWidget);
+    expect(
+      find.descendant(
+        of: snippet,
+        matching: find.text('Sun is shining', findRichText: true),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Sunday', findRichText: true), findsOneWidget);
+    await app.dispose(tester);
   });
 
   Future<TestApp> start(WidgetTester tester, Size size) async {

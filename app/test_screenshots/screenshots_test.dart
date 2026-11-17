@@ -102,6 +102,34 @@ K:G
 void main() {
   setUpAll(() async => _loadFonts());
 
+  testWidgets('song list search hits', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'de'});
+    await tester.runAsync(() async {
+      await app.songs.createSong(source: demoSongSource);
+      await app.songs.createSong(
+        source:
+            '{title: Train to Nowhere}\n{artist: House Band}\n{key: E}\n'
+            '[E]Waiting at the station\n[A]For the train that never comes',
+      );
+      await app.songs.createSong(
+        source:
+            '{title: Morning Light}\n{artist: Ann Trainor}\n{key: D}\n'
+            '[D]Morning light on the hill\n[G]The last train leaves at dawn',
+      );
+    });
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: UniqueKey(),
+        child: app.build(home: const SongsScreen()),
+      ),
+    );
+    await tester.enterText(find.byType(SearchBar), 'train');
+    await tester.pump(songSearchDelay);
+    await _shot(tester, 'de_3_songs_search');
+    await app.dispose(tester);
+  });
+
   testWidgets('song list status icons', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'de'});
