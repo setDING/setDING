@@ -588,7 +588,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsAccent => 'Akzentfarbe';
 
   @override
-  String get accentBrand => 'setDING-Rot';
+  String get accentBrand => 'setDING-Blau';
+
+  @override
+  String get accentRed => 'Rot';
 
   @override
   String get accentAmber => 'Bernstein';
@@ -598,9 +601,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get accentTeal => 'Petrol';
-
-  @override
-  String get accentBlue => 'Blau';
 
   @override
   String get accentPurple => 'Violett';

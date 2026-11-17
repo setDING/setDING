@@ -24,25 +24,23 @@ background `#FFFFFF` (light) and `#121417` (dark). In the app they are
 
 ## App colours
 
-By default the app's colour scheme is derived from the red of the former
-RealChord logo (issue #269; other accent colours below). Whether it follows
-the blue and brass of the setDING logo is still open:
+By default the app's colour scheme is derived from the night blue of the
+logo's tile (#319; before, the red of the RealChord logo, issue #269, now
+the accent "Red"; other accent colours below):
 `appColorScheme` in `app/lib/ui/theme.dart` calls
-`ColorScheme.fromSeed(seedColor: Color(0xFFE8461C))` for light and dark
+`ColorScheme.fromSeed(seedColor: Color(0xFF1A2F8F))` for light and dark
 with Material's default `tonalSpot` variant. It keeps the brand hue but
-calm: a muted terracotta instead of the logo's bright vermilion, which would
-compete with the lyrics and sit right next to the error red. (`fidelity`,
-`content` and `vibrant` give a primary of `#B02700`/`#B42900`, almost the
-error red `#BA1A1A`.)
+calm: a muted indigo instead of the logo's saturated blue, which would
+compete with the lyrics.
 
 | Role | Light | Dark |
 |---|---|---|
-| `primary` (chords, key badges, buttons) | `#8F4B3A` | `#FFB4A2` |
-| `tertiaryContainer` (search hits, notes) | `#F7E1A6` | `#544519` |
+| `primary` (chords, key badges, buttons) | `#515B92` | `#BAC3FF` |
+| `tertiaryContainer` (search hits, notes) | `#FFD7F2` | `#5D3C55` |
 | `error` (errors, sync conflicts) | `#BA1A1A` | `#FF7164` (tone 65) |
 | `errorContainer` (conflict banner) | `#FFB4AB` (tone 80) | `#93000A` |
 
-With a red seed, two Material error roles land on the same colour as the
+With a red seed (the accent "Red"), two Material error roles land on the same colour as the
 primary roles, so `appColorScheme` moves them to other tones of the
 Material error palette: the dark `error` (tone 80 would be the pastel of
 the dark `primary`) and the light `errorContainer` (tone 90 would be the
@@ -53,7 +51,7 @@ list differs from the gig icon in both themes.
 
 On stage (live mode, ADR-0007) chords use `StageColors` in
 `app/lib/ui/render/song_style.dart`: on light a deep tone of the accent
-(for the brand red `#852309`, the logo's hue, about 9:1), amber `#FFC54D`
+(for the brand blue `#2A3D9C`, the logo's hue, about 9:1), amber `#FFC54D`
 on dark and black for every accent, both ≥ 7:1.
 Colours that are not derived from the scheme: setDING's own `x_`
 directives in the editor (teal, apart from the warm palette), the
@@ -65,18 +63,18 @@ Users choose the accent colour in the settings (*General → Accent colour*,
 issue #300), stored per device like the other settings (ADR-0006). Instead
 of a free colour picker there is a curated set of seeds
 (`AccentColorPalette` in `app/lib/ui/theme.dart`): each one goes through
-the same `ColorScheme.fromSeed` `tonalSpot` variant as the brand red, so
+the same `ColorScheme.fromSeed` `tonalSpot` variant as the brand blue, so
 light and dark get the same calm tones and contrasts in another hue, and
 the neutral surfaces only take a faint tint of it. The error colours stay
 the same for every accent.
 
 | Accent | Seed | `primary` light | `primary` dark | Light stage chords |
 |---|---|---|---|---|
-| setDING red (default) | `#E8461C` | `#8F4B3A` | `#FFB4A2` | `#852309` |
+| setDING blue (default) | `#1A2F8F` | `#515B92` | `#BAC3FF` | `#2A3D9C` |
+| Red (the RealChord red) | `#E8461C` | `#8F4B3A` | `#FFB4A2` | `#852309` |
 | Amber | `#FFB300` | `#7D570D` | `#F0BE6D` | `#604100` |
 | Green | `#43A047` | `#3B6939` | `#A1D39A` | `#005313` |
 | Teal | `#00897B` | `#006B5F` | `#82D5C7` | `#005048` |
-| Blue | `#1E88E5` | `#39608F` | `#A3C9FE` | `#004881` |
 | Purple | `#8E24AA` | `#794F81` | `#E8B5EF` | `#790096` |
 | Pink | `#D81B60` | `#8E4958` | `#FFB2BF` | `#90003B` |
 
@@ -84,7 +82,8 @@ The light stage chord colour is the seed's hue at HCT tone 30 with its full
 chroma (about 9:1). `app/test/theme_test.dart` runs every colour check of
 this page for every accent and checks that the accents can be told apart
 (primary colours at least ΔE 15 apart in light and in dark; an indigo was
-dropped because its dark primary was too close to the blue one). A new
+dropped because its dark primary was too close to the former blue accent,
+which in turn gave way to the red when the brand became blue, #319). A new
 accent needs a seed and a stage chord colour and must pass these tests.
 
 ### Sequence chips
@@ -96,12 +95,12 @@ come from `SongSequenceView.background`/`foreground` in
 
 | Part | Role | Light | Dark (also dark/black stage) |
 |---|---|---|---|
-| Chorus | `primary` / `onPrimary` | `#8F4B3A` / `#FFFFFF` | `#FFB4A2` / `#561F11` |
-| Pre-/post-chorus | light `primaryFixedDim` / `onPrimaryFixed`, dark `primaryContainer` / `onPrimaryContainer` | `#FFB4A2` / `#3A0A02` | `#723425` / `#FFDAD2` |
-| Bridge | `tertiary` / `onTertiary` | `#6D5D2E` / `#FFFFFF` | `#DAC58D` / `#3C2F04` |
-| Other parts | `surfaceContainerHighest` / `onSurfaceVariant` | `#F1DFDA` / `#534340` | `#3D3230` / `#D8C2BD` (black stage `#242424`) |
+| Chorus | `primary` / `onPrimary` | `#515B92` / `#FFFFFF` | `#BAC3FF` / `#222C61` |
+| Pre-/post-chorus | light `primaryFixedDim` / `onPrimaryFixed`, dark `primaryContainer` / `onPrimaryContainer` | `#BAC3FF` / `#0A154B` | `#394379` / `#DEE0FF` |
+| Bridge | `tertiary` / `onTertiary` | `#76546D` / `#FFFFFF` | `#E5BAD8` / `#44263E` |
+| Other parts | `surfaceContainerHighest` / `onSurfaceVariant` | `#E3E1E9` / `#46464F` | `#34343A` / `#C6C5D0` (black stage `#242424`) |
 
-(Colours for the brand red.) The chorus, the part that comes back most
+(Colours for the brand blue.) The chorus, the part that comes back most
 often, is filled with the primary colour; pre- and post-chorus use a softer
 tone of the same hue (tone 80 on light, tone 30 on dark), so they read as
 belonging to it without looking the same. The bridge is filled with the
@@ -112,8 +111,7 @@ apart: with the red seed, the light `primaryContainer` and
 `secondaryContainer` are both `#FFDAD2`, and `surfaceContainerHighest` is
 almost the same blush. `app/test/theme_test.dart` checks for every accent, in
 light, dark and on the dark and black stage, that the four groups are at
-least ΔE 20 apart (closest: chorus and bridge of the blue accent on light,
-ΔE 21) and that every chip has a text contrast of at least 4.5:1.
+least ΔE 20 apart and that every chip has a text contrast of at least 4.5:1.
 
 ## Where the logo is shown
 

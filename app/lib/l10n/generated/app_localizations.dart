@@ -1091,8 +1091,14 @@ abstract class AppLocalizations {
   /// No description provided for @accentBrand.
   ///
   /// In de, this message translates to:
-  /// **'setDING-Rot'**
+  /// **'setDING-Blau'**
   String get accentBrand;
+
+  /// No description provided for @accentRed.
+  ///
+  /// In de, this message translates to:
+  /// **'Rot'**
+  String get accentRed;
 
   /// No description provided for @accentAmber.
   ///
@@ -1111,12 +1117,6 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Petrol'**
   String get accentTeal;
-
-  /// No description provided for @accentBlue.
-  ///
-  /// In de, this message translates to:
-  /// **'Blau'**
-  String get accentBlue;
 
   /// No description provided for @accentPurple.
   ///

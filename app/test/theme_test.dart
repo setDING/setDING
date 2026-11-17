@@ -10,6 +10,7 @@ import 'package:setding/ui/render/song_header.dart';
 import 'package:setding/ui/render/song_style.dart';
 import 'package:setding/ui/songs/chordpro_editing_controller.dart';
 import 'package:setding/ui/theme.dart';
+import 'package:setding/ui/widgets/logo.dart';
 
 import 'test_app.dart';
 
@@ -46,11 +47,12 @@ double _labHue(Color c) {
   return (atan2(l[2], l[1]) * 180 / pi) % 360;
 }
 
-/// The colour scheme is derived from the logo red (issue #269) or from the
+/// The colour scheme is derived from the logo blue (#319) or from the
 /// accent colour chosen in the settings (issue #300).
 void main() {
-  test('the scheme is seeded with the logo red', () {
-    expect(brandSeed, const Color(0xFFE8461C));
+  test('the scheme is seeded with the logo blue', () {
+    expect(brandSeed, const Color(0xFF1A2F8F));
+    expect(brandSeed, BrandColors.tileBottom);
     for (final brightness in Brightness.values) {
       final seeded = ColorScheme.fromSeed(
         seedColor: brandSeed,
@@ -164,7 +166,7 @@ void main() {
     }
   });
 
-  test('the light stage chord colour has the hue of the logo red', () {
+  test('the light stage chord colour has the hue of the logo blue', () {
     final brand = HSLColor.fromColor(brandSeed).hue;
     final chord = HSLColor.fromColor(StageColors.light.chord).hue;
     expect((chord - brand).abs(), lessThan(5));

@@ -339,7 +339,7 @@ class SongSequenceView extends StatelessWidget {
   /// Background of the chip of [part] (docs/development/branding.md,
   /// "Sequence chips").
   ///
-  /// With the red brand seed the light `primaryContainer`,
+  /// With the red seed (accent red) the light `primaryContainer`,
   /// `secondaryContainer` and `surfaceContainerHighest` are all the same
   /// blush (issue #288), so the parts use clearly different roles: the
   /// chorus is filled with the primary colour, pre- and post-chorus use a

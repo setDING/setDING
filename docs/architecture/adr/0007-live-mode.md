@@ -76,7 +76,7 @@ song, all tablets follow automatically. We evaluated whether this is needed.
 - **Appearance on stage:** a per-device setting independent of the app theme: *as app* (default), *dark* (also when
   the app is light) or *black* (true black page, very dark bars, e.g. for OLED screens). The live view, its control
   bar, the bottom bar, the set overview and the PDF background follow it. Chords are drawn in a stronger colour than
-  elsewhere in the app, with a contrast of at least 7:1 in every variant: deep brand red on light, amber on dark and black.
+  elsewhere in the app, with a contrast of at least 7:1 in every variant: deep brand blue on light, amber on dark and black.
 - **Only the parts of the sequence:** in the live mode of a set, a song with a sequence (set item, band arrangement or
   the song's own `{x_sequence}`, ADR-0006/ADR-0025) shows only the sections whose part appears in it (`V` matches every
   verse, `V2` only the second). The song stays in document order; order and repetitions of the sequence are not
@@ -141,6 +141,7 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-17: A folded corner at the bottom right shows that more of the song follows (song pages, scrolling, PDF pages and spreads), a final barline marks its last page; can be switched off in the live settings (issue #305).
 - 2026-11-17: The folded corner and the final barline are replaced by a progress bar of the set above the bottom bar: thick gaps between the items, thin gaps between the pages of the current song, current page in the accent colour, pauses and texts dashed; the folded corner was too large (issue #311).
 - 2026-11-17: The neighbours are prepared in idle time after a turn instead of in the first frames of the turn animation: the fit runs between frames, the song is built a few lines per frame, the page left behind is taken down after the turn in the same way; a turn to a page that is not prepared yet builds it at once. All pages of a song are built, so turning a page of the song only shows another one; rebuilding the live screen (e.g. when the page changes) no longer builds the songs again (issue #296).
+- 2026-11-17: The brand colour became the night blue of the setDING logo (#319): on a light stage the chords are deep brand blue `#2A3D9C` (about 9:1); the former brand red `#852309` belongs to the new accent "Red", which replaces "Blue". Amber on dark and black is unchanged and matches the brass of the logo.
 
 ## Open points
 

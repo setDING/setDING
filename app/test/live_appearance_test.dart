@@ -112,10 +112,10 @@ void main() {
   });
 
   testWidgets('the stage follows the accent colour (#300)', (tester) async {
-    var app = await pumpLive(tester, accent: 'blue');
-    final light = appTheme(Brightness.light, AccentColor.blue).colorScheme;
+    var app = await pumpLive(tester, accent: 'red');
+    final light = appTheme(Brightness.light, AccentColor.red).colorScheme;
     expect(pageColor(tester), light.surface);
-    expect(chordColor(tester), AccentColor.blue.stageChord);
+    expect(chordColor(tester), AccentColor.red.stageChord);
     await app.dispose(tester);
 
     app = await pumpLive(tester, appearance: 'black', accent: 'green');

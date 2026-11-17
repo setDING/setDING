@@ -162,7 +162,7 @@ void main() {
   });
 
   // Light and dark: the conflict icon (error colour) next to the gig icon
-  // (primary colour) must stay apart with the red brand palette (#269).
+  // (primary colour) must stay apart with every palette (#269).
   for (final dark in [false, true]) {
     _screenshotTest('song list status icons ${dark ? 'dark' : 'light'}', (
       tester,

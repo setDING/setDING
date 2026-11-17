@@ -468,10 +468,10 @@ class _AccentTile extends StatelessWidget {
   static String label(AppLocalizations l10n, AccentColor accent) =>
       switch (accent) {
         AccentColor.brand => l10n.accentBrand,
+        AccentColor.red => l10n.accentRed,
         AccentColor.amber => l10n.accentAmber,
         AccentColor.green => l10n.accentGreen,
         AccentColor.teal => l10n.accentTeal,
-        AccentColor.blue => l10n.accentBlue,
         AccentColor.purple => l10n.accentPurple,
         AccentColor.pink => l10n.accentPink,
       };

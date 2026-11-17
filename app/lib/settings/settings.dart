@@ -37,8 +37,9 @@ enum LiveAppearance {
 
 /// Accent colour of the app (issue #300): a curated set of seeds that each
 /// give a light and a dark colour scheme as calm and readable as the brand
-/// red; the colours are defined in `ui/theme.dart`.
-enum AccentColor { brand, amber, green, teal, blue, purple, pink }
+/// blue; the colours are defined in `ui/theme.dart`. [red] is the colour of
+/// the former RealChord logo.
+enum AccentColor { brand, red, amber, green, teal, purple, pink }
 
 /// When syncs start (ADR-0004); "Sync now" is always available.
 enum SyncMode {
