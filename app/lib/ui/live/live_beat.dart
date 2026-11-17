@@ -40,6 +40,16 @@ class LiveBeat extends ChangeNotifier {
   final _stageTempo = <int, int>{};
   final _tapTempo = TapTempo();
   int? _active;
+  bool _largeBeat = false;
+
+  /// Whether the beat is shown large beside the song map (wide screens,
+  /// ADR-0026); the dots of the header are hidden then.
+  bool get largeBeat => _largeBeat;
+  set largeBeat(bool value) {
+    if (value == _largeBeat) return;
+    _largeBeat = value;
+    notifyListeners();
+  }
 
   /// The item whose beat runs, or null.
   int? get activeIndex => _active;
@@ -292,9 +302,21 @@ class StageTempoChip extends StatelessWidget {
 /// One dot per beat beside the tempo, grouped like the meter; the current
 /// beat lights up, the 1 in the chord colour of the stage.
 class BeatDots extends StatefulWidget {
-  const BeatDots({super.key, required this.index});
+  const BeatDots({
+    super.key,
+    required this.index,
+    this.size = 14,
+    this.panel = false,
+  });
 
   final int index;
+
+  /// Diameter of a dot; accented dots are larger.
+  final double size;
+
+  /// Shown in the beat panel of the wide song map; otherwise in the header,
+  /// where the dots are hidden while the panel shows them.
+  final bool panel;
 
   @override
   State<BeatDots> createState() => _BeatDotsState();
@@ -309,9 +331,11 @@ class _BeatDotsState extends _BeatState<BeatDots> {
     final beat = LiveBeatScope.of(context);
     if (beat == null ||
         !beat.settings.showBeat ||
-        !beat.canBeat(widget.index)) {
+        !beat.canBeat(widget.index) ||
+        (beat.largeBeat && !widget.panel)) {
       return const SizedBox.shrink();
     }
+    final size = widget.size;
     final meter = beat.meterOf(widget.index);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
@@ -322,16 +346,16 @@ class _BeatDotsState extends _BeatState<BeatDots> {
     final dots = <Widget>[];
     var i = 0;
     for (final group in meter.groups) {
-      if (dots.isNotEmpty) dots.add(const SizedBox(width: 8));
+      if (dots.isNotEmpty) dots.add(SizedBox(width: size * 0.6));
       for (var g = 0; g < group; g++, i++) {
         final on = i == lit;
         final accent = accents[i] != BeatAccent.none;
         dots.add(
           Container(
             key: on ? const Key('beat-dot-lit') : null,
-            width: accent ? 18 : 14,
-            height: accent ? 18 : 14,
-            margin: const EdgeInsets.symmetric(horizontal: 3),
+            width: accent ? size * 1.3 : size,
+            height: accent ? size * 1.3 : size,
+            margin: EdgeInsets.symmetric(horizontal: size * 0.2),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: on
@@ -339,7 +363,7 @@ class _BeatDotsState extends _BeatState<BeatDots> {
                   : scheme.surfaceContainerHighest,
               border: Border.all(
                 color: i == 0 ? one : scheme.outlineVariant,
-                width: 2,
+                width: size / 7,
               ),
             ),
           ),
@@ -526,6 +550,147 @@ class StageTempoControls extends StatelessWidget {
           onPressed: () => beat.toggle(index),
         ),
       ],
+    );
+  }
+}
+
+/// Left of the song map on wide screens (ADR-0026): above, the beat of the
+/// current song large; below, the set with tempo and time signature of each
+/// song. A tap on an item of the set turns to it.
+class DrumPanel extends StatelessWidget {
+  const DrumPanel({
+    super.key,
+    required this.items,
+    required this.current,
+    required this.onSelect,
+  });
+
+  final List<LiveItem> items;
+  final int current;
+  final ValueChanged<int> onSelect;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    key: const Key('drum-panel'),
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Expanded(child: _LargeBeat(index: current)),
+      const Divider(height: 1),
+      Expanded(
+        child: _SetList(items: items, current: current, onSelect: onSelect),
+      ),
+    ],
+  );
+}
+
+class _LargeBeat extends StatelessWidget {
+  const _LargeBeat({required this.index});
+
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final beat = LiveBeatScope.of(context);
+    final tempo = beat?.tempoOf(index);
+    if (beat == null || tempo == null) {
+      return Center(
+        child: Text(l10n.songMapNoTempo, style: theme.textTheme.titleMedium),
+      );
+    }
+    final meter = beat.meterOf(index);
+    final running = beat.isRunning(index);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // As large as the width allows for the beats of the bar.
+        final count = meter.beatsPerBar + meter.groups.length;
+        final size = (constraints.maxWidth / (count * 1.8)).clamp(16.0, 72.0);
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            key: const Key('large-beat'),
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                beat.tempoChanged(index)
+                    ? '${l10n.bpm(tempo)} *'
+                    : l10n.bpm(tempo),
+                style: theme.textTheme.displaySmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              Text(
+                [meter.toString(), ?meter.groupingLabel].join('  ·  '),
+                style: theme.textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 16),
+              FittedBox(
+                child: BeatDots(index: index, size: size, panel: true),
+              ),
+              const SizedBox(height: 16),
+              if (beat.canBeat(index))
+                FilledButton.tonalIcon(
+                  key: const Key('large-beat-toggle'),
+                  onPressed: () => beat.toggle(index),
+                  icon: Icon(running ? Icons.stop : Icons.play_arrow),
+                  label: Text(running ? l10n.beatStop : l10n.beatStart),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SetList extends StatelessWidget {
+  const _SetList({
+    required this.items,
+    required this.current,
+    required this.onSelect,
+  });
+
+  final List<LiveItem> items;
+  final int current;
+  final ValueChanged<int> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final beat = LiveBeatScope.of(context);
+    return ListView.builder(
+      key: const Key('drum-set-list'),
+      itemCount: items.length,
+      itemBuilder: (context, i) {
+        final item = items[i];
+        final tempo = item.song == null ? null : beat?.tempoOf(i);
+        final details = [
+          if (tempo != null) l10n.bpm(tempo),
+          if (item.song != null && beat != null) '${beat.meterOf(i)}',
+        ].join(' · ');
+        return ListTile(
+          key: Key('drum-set-$i'),
+          selected: i == current,
+          selectedTileColor: theme.colorScheme.secondaryContainer,
+          leading: Text('${i + 1}', style: theme.textTheme.titleMedium),
+          title: Text(
+            item.title(l10n),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: item.song == null
+                ? theme.textTheme.titleMedium?.copyWith(
+                    fontStyle: FontStyle.italic,
+                  )
+                : theme.textTheme.titleMedium,
+          ),
+          trailing: details.isEmpty
+              ? null
+              : Text(details, style: theme.textTheme.titleMedium),
+          onTap: () => onSelect(i),
+        );
+      },
     );
   }
 }

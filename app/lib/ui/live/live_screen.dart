@@ -483,6 +483,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     return KeyEventResult.ignored;
   }
 
+  /// The pages of the set, kept when the wide song map's panel comes or goes.
+  final _pageAreaKey = GlobalKey();
+
   /// Long press of a forward key (ADR-0026).
   Timer? _longPress;
   bool _longPressed = false;
@@ -551,10 +554,15 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         ),
       ),
     );
-    if (target != null) {
-      _preparation.complete(target);
-      _pages.jumpToPage(target);
-    }
+    if (target != null) _jumpTo(target);
+  }
+
+  /// Turns to item [target] of the set at once (set overview, set list of
+  /// the wide song map).
+  void _jumpTo(int target) {
+    if (target == _index) return;
+    _preparation.complete(target);
+    _pages.jumpToPage(target);
   }
 
   /// Changes the key of the current set item. It is stored on the set item,
@@ -612,6 +620,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       settingsProvider.select((s) => s.setProgress),
     );
     if (showProgress) _scheduleProgress();
+    final showSongMap = ref.watch(
+      settingsProvider.select((s) => s.showSongMap),
+    );
 
     return Scaffold(
       body: SafeArea(
@@ -620,9 +631,20 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
             // The control bar overlays the page, so showing it does not
             // change the page size (and does not fit the song again).
             Expanded(
-              child: Stack(
-                children: [
-                  Positioned.fill(
+              child: LayoutBuilder(
+                builder: (context, outer) {
+                  // Wide song map (ADR-0026): the beat large and the set on
+                  // the left, the song on the right.
+                  final wide = showSongMap && outer.maxWidth >= _wideSongMap;
+                  if (_beat.largeBeat != wide) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) _beat.largeBeat = wide;
+                    });
+                  }
+                  // Keeps the pages (and their state) when the panel comes
+                  // or goes, e.g. when the tablet is turned.
+                  final page = KeyedSubtree(
+                    key: _pageAreaKey,
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         _width = constraints.maxWidth;
@@ -686,26 +708,54 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                         );
                       },
                     ),
-                  ),
-                  // Beat of the drummer mode (ADR-0026); take no taps.
-                  const Positioned.fill(child: EdgeFlash()),
-                  const Positioned.fill(child: CountInOverlay()),
-                  if (_controls)
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      child: _ControlBar(
-                        item: items[_index],
-                        index: _index,
-                        onExit: () => Navigator.pop(context),
-                        onOverview: () => _showOverview(context),
-                        onAdjust: items[_index].song == null ? null : _adjust,
-                        onFit: _fitToPage,
-                        onSetKey: _setKey,
+                  );
+                  return Stack(
+                    children: [
+                      Positioned.fill(
+                        child: !wide
+                            ? page
+                            : Row(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  SizedBox(
+                                    width: (outer.maxWidth * 0.36).clamp(
+                                      300.0,
+                                      480.0,
+                                    ),
+                                    child: DrumPanel(
+                                      items: items,
+                                      current: _index,
+                                      onSelect: _jumpTo,
+                                    ),
+                                  ),
+                                  const VerticalDivider(width: 1),
+                                  Expanded(child: page),
+                                ],
+                              ),
                       ),
-                    ),
-                ],
+                      // Beat of the drummer mode (ADR-0026); take no taps.
+                      const Positioned.fill(child: EdgeFlash()),
+                      const Positioned.fill(child: CountInOverlay()),
+                      if (_controls)
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          child: _ControlBar(
+                            item: items[_index],
+                            index: _index,
+                            onExit: () => Navigator.pop(context),
+                            onOverview: () => _showOverview(context),
+                            onAdjust: items[_index].song == null
+                                ? null
+                                : _adjust,
+                            onFit: _fitToPage,
+                            onSetKey: _setKey,
+                          ),
+                        ),
+                    ],
+                  );
+                },
               ),
             ),
             // Where the set stands and whether more of the song follows,
@@ -844,6 +894,11 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     return '$title ($shown)$beat';
   }
 }
+
+/// Minimum width of the stage for the wide song map: beat and set on the
+/// left, the song on the right (ADR-0026; the breakpoint of the app's other
+/// two-column layouts).
+const _wideSongMap = 900.0;
 
 /// Minimum width for the Nashville toggle in the same row as the controls.
 const _wideControlBar = 720.0;

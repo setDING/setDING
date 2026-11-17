@@ -115,7 +115,9 @@ with the idle-time preparation of the next song (#296).
   sequence (set item, band arrangement or `{x_sequence}`) as blocks with the first lyric
   line as a cue and the drum notes from `-drums` sections and comments; the current
   tempo and meter large at the top; the footer shows the next song with tempo and time
-  signature. No bar counts for now.
+  signature. No bar counts for now. On wide screens a panel left of the map
+  shows the beat large and the set (tempo and time signature per song; a tap
+  turns to it).
 - All colours follow the stage appearance (ADR-0007) with the contrast required there.
 - The beat display and the count-in never block page turns; the preparation of the
   neighbours (#296) runs as before.
@@ -162,6 +164,7 @@ with the idle-time preparation of the next song (#296).
 - 2026-11-17: Live view implemented (#333, `app/lib/ui/live/live_beat.dart`): `LiveBeat` holds which item's beat runs and the tempo on stage per item (forgotten when live mode is left); the tempo chip of the header shows the tempo as played tonight ("121 BPM *" when changed) and starts or stops the beat with a tap; dots per beat beside the time signature (grouped like the meter, the 1 in the stage's chord colour), a count-in overlay with large numbers and "Bar 1 of 2", the edge flash for drums; the control bar gets a row with slower, faster, tap tempo (mean of the last five taps, a pause of two seconds starts again), back to the song's tempo and start/stop. The animated widgets read the metronome in a ticker and redraw only when the lit beat changes. Turning to another item stops the beat; with the automatic start the new song counts in (also the first song when live mode opens). The bottom bar says when the click has no audio.
 - 2026-11-17: Pedal and Enter implemented (#335): only while the current song can have a beat, a forward key turns on key up, and held for 0.6 s it starts or stops the beat without turning; without a beat the forward keys turn on key down as before. Enter and Enter of the number pad start and stop the beat. The open point on page turners that send Enter for turning stays open (to check with real hardware).
 - 2026-11-17: Song map implemented (#336): `songMap()` in the `chordpro` package builds the parts of the sequence (set item, band arrangement or `{x_sequence}`; for a single song its own) in its order with repetitions; a part without a number takes the next section of its kind; without a sequence (or one that matches nothing) the parts in document order, a chorus recall repeating the chorus. Each block shows the part name ("Chorus ×2"), the first lyric line as a cue and the section's comments (with the instrument drums, `{comment-drums: …}` included) in the stage's chord colour; the header keeps key, tempo, time and the beat. The bottom bar adds the next song's tempo and time signature for drums. The personal font scale applies; the song map is not fitted (it scrolls).
+- 2026-11-17: Owner request (#357): on wide screens (from 900 px, the app's two-column breakpoint) the song map is on the right and a panel on the left is split in two: above, the beat of the current song large (tempo, time signature and grouping, large dots, start/stop) instead of the dots beside the title; below, the set with title, tempo and time signature per item, the current one highlighted; a tap on an item turns to it. The pages keep their state when the panel comes or goes (turning the tablet).
 
 ## Open points
 
