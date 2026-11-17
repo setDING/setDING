@@ -284,9 +284,10 @@ final arrangementRepositoryProvider = Provider<ArrangementRepository>(
   (ref) => ArrangementRepository(ref.watch(databaseProvider)),
 );
 
-/// The band whose arrangement applies to songs of [libraryId] outside a
-/// set: the band chosen on the sets tab, if it plays from that library
-/// (ADR-0025); null otherwise (the song is shown as written).
+/// The band whose arrangement the song screen shows for songs of
+/// [libraryId]: the band chosen on the sets tab, if it plays from that
+/// library (ADR-0025); null otherwise. The arrangement is only shown in its
+/// own card there; it applies in sets only.
 final arrangementBandProvider = Provider.family<BandView?, String>((
   ref,
   libraryId,

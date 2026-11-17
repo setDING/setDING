@@ -128,19 +128,13 @@ class LiveScreen extends ConsumerStatefulWidget {
     final container = ProviderScope.containerOf(context, listen: false);
     final song = await container.read(songRepositoryProvider).getSong(songId);
     if (song == null) return;
-    // Outside a set: the arrangement of the band chosen on the sets tab.
-    final band = container.read(arrangementBandProvider(song.libraryId));
-    final arrangement = band == null
-        ? null
-        : await container
-              .read(arrangementRepositoryProvider)
-              .get(band.id, songId);
+    // Outside a set the song is played as written; band arrangements
+    // apply in sets only (ADR-0025).
     if (!context.mounted) return;
     await Navigator.push(
       context,
       MaterialPageRoute<void>(
-        builder: (_) =>
-            LiveScreen(items: [LiveItem.song(song, arrangement: arrangement)]),
+        builder: (_) => LiveScreen(items: [LiveItem.song(song)]),
       ),
     );
   }

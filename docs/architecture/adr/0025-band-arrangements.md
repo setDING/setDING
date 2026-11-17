@@ -67,10 +67,10 @@ needed for now (owner); personal notes stay as they are.
   roadmap); the song keeps its own value.
 - **Where it applies:**
   - in a set and in live mode started from a set: the arrangement of the set's band;
-  - on the songs tab: the arrangement of the band chosen on the sets tab, if it
-    plays from this library. Without one (local library, an organization without
-    that band), the song is shown as written. A label shows which band's arrangement
-    is applied.
+  - on the songs tab and when a single song is played live: the song is shown
+    **as written**. The song screen shows the arrangement of the band chosen on
+    the sets tab (if it plays from this library) only in its own card, where it
+    is also edited.
 - **Printable set list and set export** (ADR-0013): key, sequence and tempo for the
   set include the arrangement.
 - **Copy to band** (ADR-0017): copying a set into another band of the same
@@ -118,7 +118,8 @@ needed for now (owner); personal notes stay as they are.
 | Conflict dialog like songs | No lost change | Effort out of proportion for three small fields |
 | Capo per band | Guitars of a band agree on one capo | Depends on the instrument and person; stays in the personal overlay (owner) |
 | Band notes (one per song or anchored) | Shared hints for the band | Not needed for now (owner) |
-| Arrangements only in sets and live mode | Songs tab always shows the song as written | The band would not see its own key when browsing songs (owner chose the songs tab) |
+| Arrangements only in sets and live mode from a set (chosen since #227) | Songs tab shows the song as written; the band's key is shown in its card | The song screen does not show the song in the band's key |
+| Arrangement applied on the songs tab (chosen first, replaced by #227) | The band sees its own key when browsing songs | Confusing: the band's key appears everywhere in the song, as if the song were changed |
 
 ## Consequences
 
@@ -149,6 +150,11 @@ needed for now (owner); personal notes stay as they are.
   of <band>": key, sequence, tempo, back to the song); live mode shows it but does not
   edit it. The set list shows no tempo (it never did), so only key and sequence
   include the arrangement there.
+- 2026-11-17: Owner decision (#227): the band's key, sequence and tempo are shown
+  and valid **only in the band arrangement**. The song screen (songs tab) shows the
+  song as written and the arrangement only in its card; a single song played live
+  is played as written. Sets, the set list and live mode from a set still apply
+  the arrangement of the set's band.
 
 ## Open points
 

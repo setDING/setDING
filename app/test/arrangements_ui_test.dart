@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:realchord/data/arrangement_repository.dart';
 import 'package:realchord/data/database.dart';
 import 'package:realchord/sync/sync_backend.dart';
+import 'package:realchord/ui/live/live_screen.dart';
 import 'package:realchord/ui/sets/set_list_text.dart';
 import 'package:realchord/ui/songs/song_screen.dart';
 
@@ -44,23 +45,43 @@ void main() {
     return (app, id);
   }
 
-  testWidgets('the song is shown in the band\'s key, sequence and tempo', (
+  testWidgets('the band\'s key, sequence and tempo are only in the card', (
     tester,
   ) async {
     final (app, _) = await start(
       tester,
       user: _bob,
       role: BandRole.member,
-      transpose: 2,
+      transpose: 3,
     );
+    final card = find.byKey(const Key('band-arrangement'));
     expect(find.text('Arrangement of Rock'), findsOneWidget);
-    expect(find.textContaining('Key A'), findsWidgets);
-    expect(find.textContaining('120 BPM'), findsWidgets);
-    expect(find.textContaining('100 BPM'), findsNothing);
-    expect(find.byKey(const ValueKey('sequence-from-band')), findsWidgets);
+    expect(
+      find.descendant(of: card, matching: find.textContaining('Key Bb')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: card, matching: find.textContaining('120 BPM')),
+      findsOneWidget,
+    );
+    // Everywhere else the song is shown as written (G, 100 BPM).
+    expect(find.textContaining('Bb'), findsOneWidget);
+    expect(find.textContaining('120 BPM'), findsOneWidget);
+    expect(find.textContaining('100 BPM'), findsWidgets);
+    expect(find.text('G'), findsWidgets);
     // Members only see it.
     expect(find.byKey(const Key('arrangement-key')), findsNothing);
     expect(find.byKey(const Key('arrangement-reset')), findsNothing);
+    await app.dispose(tester);
+  });
+
+  testWidgets('a single song is played live as written', (tester) async {
+    final (app, _) = await start(tester, user: _ann, transpose: 3);
+    await tester.tap(find.byIcon(Icons.play_arrow));
+    await tester.pumpAndSettle();
+    final live = tester.widget<LiveScreen>(find.byType(LiveScreen));
+    expect(live.items.single.arrangement, isNull);
+    expect(live.items.single.bandTranspose, 0);
     await app.dispose(tester);
   });
 
