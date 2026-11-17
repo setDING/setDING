@@ -13,6 +13,8 @@ class SongHeader extends StatelessWidget {
     required this.formatter,
     this.compact = false,
     this.setSequence,
+    this.bandSequence,
+    this.bandTempo,
   });
 
   final String title;
@@ -21,20 +23,26 @@ class SongHeader extends StatelessWidget {
   final ChordFormatter formatter;
   final bool compact;
 
-  /// Set-specific sequence (layer 2, ADR-0006); replaces the song's own.
+  /// Set-specific sequence (ADR-0006); replaces the band's and the song's.
   final String? setSequence;
+
+  /// Sequence of the band arrangement (ADR-0025); replaces the song's own.
+  final String? bandSequence;
+
+  /// Tempo of the band arrangement (ADR-0025); replaces the song's own.
+  final int? bandTempo;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final sequence = setSequence == null
-        ? song.sequence
-        : parseSequence(setSequence!);
+    final layered = setSequence ?? bandSequence;
+    final sequence = layered == null ? song.sequence : parseSequence(layered);
+    final tempo = bandTempo ?? song.tempo;
     final keyAndCapo = keyAndCapoText(l10n, formatter);
     final info = <String>[
       if (keyAndCapo.isNotEmpty) keyAndCapo,
-      if (song.tempo case final tempo?) l10n.bpm(tempo),
+      if (tempo != null) l10n.bpm(tempo),
       ?song.time,
     ];
     final subtitle = [
@@ -69,6 +77,7 @@ class SongHeader extends StatelessWidget {
               sequence,
               compact: compact,
               fromSet: setSequence != null,
+              fromBand: setSequence == null && bandSequence != null,
             ),
           ),
         if (info.isNotEmpty)
@@ -120,6 +129,7 @@ class SongSequenceView extends StatelessWidget {
     super.key,
     this.compact = false,
     this.fromSet = false,
+    this.fromBand = false,
   });
 
   final List<SequenceItem> sequence;
@@ -127,6 +137,9 @@ class SongSequenceView extends StatelessWidget {
 
   /// Marks a set-specific sequence (layer 2, ADR-0006).
   final bool fromSet;
+
+  /// Marks the sequence of the band arrangement (ADR-0025).
+  final bool fromBand;
 
   @override
   Widget build(BuildContext context) {
@@ -147,6 +160,16 @@ class SongSequenceView extends StatelessWidget {
               child: Icon(
                 Icons.playlist_play,
                 key: const ValueKey('sequence-from-set'),
+                size: compact ? 18 : 20,
+                color: scheme.primary,
+              ),
+            )
+          else if (fromBand)
+            Tooltip(
+              message: l10n.sequenceFromBand,
+              child: Icon(
+                Icons.groups_outlined,
+                key: const ValueKey('sequence-from-band'),
                 size: compact ? 18 : 20,
                 color: scheme.primary,
               ),

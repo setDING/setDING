@@ -62,7 +62,8 @@ size/zoom setting is relevant.
 - 2026-11-15: Overlays belong to a person and are synced with the account (phase 2): see [ADR-0020](0020-overlays-per-user.md).
 - 2026-11-17: **ADR-0025** (accepted): a band arrangement layer between song and set item
   (key as transposition, sequence and tempo per band and song). Set item transposition
-  becomes relative to the band's key; personal overlays stay on top. Not implemented yet.
+  becomes relative to the band's key; personal overlays stay on top.
+- 2026-11-17: Band arrangement layer implemented (#221, ADR-0025): set lists, live mode and the songs tab apply song → band arrangement → set item → personal overlay.
 
 ## Open points
 

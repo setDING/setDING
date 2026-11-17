@@ -138,6 +138,17 @@ needed for now (owner); personal notes stay as they are.
   arrangement of the band chosen on the sets tab, with a label; **no band notes**;
   the arrangement holds a **tempo per band**.
 - 2026-11-17: Accepted by the owner.
+- 2026-11-17: Implemented (#221). Server: collection `arrangements` (migration
+  `1795400000_arrangements.js`, transposition −11…11, tempo 0…400 with 0 = as in
+  the song; deterministic record ID per band and song), soft-deleted with its song.
+  App: table `band_arrangements` (schema 12), `ArrangementRepository` (an arrangement
+  without any change is removed), `ArrangementSync` (pull per band after the sets,
+  push after the songs), applied in the set list, the printable/text set list, live
+  mode (from a set: the set's band; a single song: the band chosen on the sets tab)
+  and on the songs tab. The arrangement is edited on the song screen (card "Arrangement
+  of <band>": key, sequence, tempo, back to the song); live mode shows it but does not
+  edit it. The set list shows no tempo (it never did), so only key and sequence
+  include the arrangement there.
 
 ## Open points
 

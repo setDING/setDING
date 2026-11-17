@@ -529,6 +529,62 @@ class FakeSyncBackend implements SyncBackend {
     return stored;
   }
 
+  /// Band arrangements by record ID (ADR-0025).
+  final arrangements = <String, RemoteArrangement>{};
+
+  /// Simulates a change of an arrangement on another device.
+  RemoteArrangement putArrangement(RemoteArrangement a) {
+    final stored = RemoteArrangement(
+      id: a.id,
+      bandId: a.bandId,
+      songId: a.songId,
+      transpose: a.transpose,
+      sequence: a.sequence,
+      tempo: a.tempo,
+      revision: ++_serverRevision,
+      deleted: a.deleted,
+    );
+    arrangements[a.id] = stored;
+    return stored;
+  }
+
+  @override
+  Future<List<RemoteArrangement>> pullArrangements(
+    String bandId,
+    int since,
+  ) async {
+    _requireUser();
+    return arrangements.values
+        .where((a) => a.bandId == bandId && a.revision > since)
+        .toList()
+      ..sort((a, b) => a.revision.compareTo(b.revision));
+  }
+
+  @override
+  Future<RemoteArrangement> pushArrangement(
+    RemoteArrangement arrangement, {
+    required bool create,
+  }) async {
+    _requireUser();
+    pushCount++;
+    final manager =
+        _isOrgAdmin(bands[arrangement.bandId]?.organizationId ?? '') ||
+        members.any(
+          (m) =>
+              m.scopeId == arrangement.bandId &&
+              m.user.id == user!.id &&
+              m.role != BandRole.member,
+        );
+    if (!manager || songs[arrangement.songId] == null) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    final existing = arrangements[arrangement.id];
+    if (create && existing != null) {
+      throw const BackendException(BackendErrorKind.server);
+    }
+    return putArrangement(arrangement);
+  }
+
   @override
   Future<List<RemoteOverlay>> pullOverlays(int since) async {
     _requireUser();

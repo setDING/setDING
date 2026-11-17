@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:realchord/data/arrangement_repository.dart';
 import 'package:realchord/data/attachment_storage_io.dart';
 import 'package:realchord/data/database.dart';
 import 'package:realchord/data/set_repository.dart';
@@ -22,9 +23,15 @@ const schema7Indexes = [
   'set_items_song',
 ];
 
+/// Turns a current database back into schema 11: no band arrangements.
+void downgradeToSchema11(Database raw) {
+  raw.execute('DROP TABLE band_arrangements');
+}
+
 /// Turns a current database back into schema 10: songs without creator
 /// and last editor, bands with the setting members_can_edit_songs.
 void downgradeToSchema10(Database raw) {
+  downgradeToSchema11(raw);
   raw.execute('ALTER TABLE songs DROP COLUMN created_by');
   raw.execute('ALTER TABLE songs DROP COLUMN updated_by');
   raw.execute(
@@ -372,6 +379,27 @@ void main() {
         .map((r) => r.read<String>('name'))
         .get();
     expect(columns, isNot(contains('members_can_edit_songs')));
+    await upgraded.close();
+  });
+
+  test('upgrades a schema 11 database: band arrangements', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final storage = FileAttachmentStorage(dir);
+    final song = await SongRepository(
+      current,
+      storage,
+    ).createSong(source: '{title: Old}');
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema11(raw);
+    raw.execute('PRAGMA user_version = 11');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final repo = ArrangementRepository(upgraded);
+    await repo.save('b1', song, transpose: 2);
+    expect((await repo.get('b1', song))!.transpose, 2);
     await upgraded.close();
   });
 }

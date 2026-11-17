@@ -75,6 +75,7 @@ Constraints:
 - 2026-11-15: Implemented: "Export set list (PDF for printing)" in the set menu. The
   font size is found by laying out the document from 18 pt down to 12 pt until it fits
   on one page; text and PDF export share one set list model.
+- 2026-11-17: The key and sequence for the set include the band arrangement (ADR-0025): song key + band transposition + set transposition; sequence from the set item, the band or the song.
 
 ## Open points
 

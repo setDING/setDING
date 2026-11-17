@@ -853,6 +853,34 @@ class AppLocalizationsDe extends AppLocalizations {
   String get sequenceFromSet => 'Ablauf für dieses Set angepasst';
 
   @override
+  String get sequenceFromBand => 'Abfolge der Band';
+
+  @override
+  String arrangementOf(String band) {
+    return 'Arrangement von $band';
+  }
+
+  @override
+  String get arrangementAsWritten => 'Wie im Song';
+
+  @override
+  String arrangementKey(String key) {
+    return 'Tonart $key';
+  }
+
+  @override
+  String get arrangementSequence => 'Abfolge';
+
+  @override
+  String get arrangementTempo => 'Tempo';
+
+  @override
+  String get arrangementTempoLabel => 'Tempo in BPM (leer = wie im Song)';
+
+  @override
+  String get arrangementReset => 'Zurück zum Song';
+
+  @override
   String sequenceOriginal(Object sequence) {
     return 'Im Song: $sequence';
   }

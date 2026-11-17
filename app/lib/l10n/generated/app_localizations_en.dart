@@ -847,6 +847,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sequenceFromSet => 'Sequence changed for this set';
 
   @override
+  String get sequenceFromBand => 'Sequence of the band';
+
+  @override
+  String arrangementOf(String band) {
+    return 'Arrangement of $band';
+  }
+
+  @override
+  String get arrangementAsWritten => 'As in the song';
+
+  @override
+  String arrangementKey(String key) {
+    return 'Key $key';
+  }
+
+  @override
+  String get arrangementSequence => 'Sequence';
+
+  @override
+  String get arrangementTempo => 'Tempo';
+
+  @override
+  String get arrangementTempoLabel => 'Tempo in BPM (empty = as in the song)';
+
+  @override
+  String get arrangementReset => 'Back to the song';
+
+  @override
   String sequenceOriginal(Object sequence) {
     return 'In the song: $sequence';
   }

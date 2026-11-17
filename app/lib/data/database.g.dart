@@ -5069,6 +5069,481 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
   }
 }
 
+class $BandArrangementsTable extends BandArrangements
+    with TableInfo<$BandArrangementsTable, BandArrangement> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $BandArrangementsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _bandIdMeta = const VerificationMeta('bandId');
+  @override
+  late final GeneratedColumn<String> bandId = GeneratedColumn<String>(
+    'band_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _songIdMeta = const VerificationMeta('songId');
+  @override
+  late final GeneratedColumn<String> songId = GeneratedColumn<String>(
+    'song_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES songs (id)',
+    ),
+  );
+  static const VerificationMeta _transposeMeta = const VerificationMeta(
+    'transpose',
+  );
+  @override
+  late final GeneratedColumn<int> transpose = GeneratedColumn<int>(
+    'transpose',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _sequenceMeta = const VerificationMeta(
+    'sequence',
+  );
+  @override
+  late final GeneratedColumn<String> sequence = GeneratedColumn<String>(
+    'sequence',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _tempoMeta = const VerificationMeta('tempo');
+  @override
+  late final GeneratedColumn<int> tempo = GeneratedColumn<int>(
+    'tempo',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _revisionMeta = const VerificationMeta(
+    'revision',
+  );
+  @override
+  late final GeneratedColumn<int> revision = GeneratedColumn<int>(
+    'revision',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _deletedMeta = const VerificationMeta(
+    'deleted',
+  );
+  @override
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
+    'deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    bandId,
+    songId,
+    transpose,
+    sequence,
+    tempo,
+    revision,
+    deleted,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'band_arrangements';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<BandArrangement> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('band_id')) {
+      context.handle(
+        _bandIdMeta,
+        bandId.isAcceptableOrUnknown(data['band_id']!, _bandIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bandIdMeta);
+    }
+    if (data.containsKey('song_id')) {
+      context.handle(
+        _songIdMeta,
+        songId.isAcceptableOrUnknown(data['song_id']!, _songIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_songIdMeta);
+    }
+    if (data.containsKey('transpose')) {
+      context.handle(
+        _transposeMeta,
+        transpose.isAcceptableOrUnknown(data['transpose']!, _transposeMeta),
+      );
+    }
+    if (data.containsKey('sequence')) {
+      context.handle(
+        _sequenceMeta,
+        sequence.isAcceptableOrUnknown(data['sequence']!, _sequenceMeta),
+      );
+    }
+    if (data.containsKey('tempo')) {
+      context.handle(
+        _tempoMeta,
+        tempo.isAcceptableOrUnknown(data['tempo']!, _tempoMeta),
+      );
+    }
+    if (data.containsKey('revision')) {
+      context.handle(
+        _revisionMeta,
+        revision.isAcceptableOrUnknown(data['revision']!, _revisionMeta),
+      );
+    }
+    if (data.containsKey('deleted')) {
+      context.handle(
+        _deletedMeta,
+        deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {bandId, songId};
+  @override
+  BandArrangement map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return BandArrangement(
+      bandId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}band_id'],
+      )!,
+      songId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}song_id'],
+      )!,
+      transpose: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}transpose'],
+      )!,
+      sequence: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sequence'],
+      ),
+      tempo: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tempo'],
+      ),
+      revision: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}revision'],
+      )!,
+      deleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}deleted'],
+      )!,
+    );
+  }
+
+  @override
+  $BandArrangementsTable createAlias(String alias) {
+    return $BandArrangementsTable(attachedDatabase, alias);
+  }
+}
+
+class BandArrangement extends DataClass implements Insertable<BandArrangement> {
+  final String bandId;
+  final String songId;
+
+  /// Semitones relative to the song's key.
+  final int transpose;
+
+  /// Song sequence (`{x_sequence}` syntax); null = as in the song.
+  final String? sequence;
+
+  /// Tempo in BPM; null = as in the song (`{tempo}`).
+  final int? tempo;
+
+  /// Server revision; 0 = not on the server.
+  final int revision;
+
+  /// Removed ("as in the song"); kept until the removal reached the server.
+  final bool deleted;
+  const BandArrangement({
+    required this.bandId,
+    required this.songId,
+    required this.transpose,
+    this.sequence,
+    this.tempo,
+    required this.revision,
+    required this.deleted,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['band_id'] = Variable<String>(bandId);
+    map['song_id'] = Variable<String>(songId);
+    map['transpose'] = Variable<int>(transpose);
+    if (!nullToAbsent || sequence != null) {
+      map['sequence'] = Variable<String>(sequence);
+    }
+    if (!nullToAbsent || tempo != null) {
+      map['tempo'] = Variable<int>(tempo);
+    }
+    map['revision'] = Variable<int>(revision);
+    map['deleted'] = Variable<bool>(deleted);
+    return map;
+  }
+
+  BandArrangementsCompanion toCompanion(bool nullToAbsent) {
+    return BandArrangementsCompanion(
+      bandId: Value(bandId),
+      songId: Value(songId),
+      transpose: Value(transpose),
+      sequence: sequence == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sequence),
+      tempo: tempo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(tempo),
+      revision: Value(revision),
+      deleted: Value(deleted),
+    );
+  }
+
+  factory BandArrangement.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return BandArrangement(
+      bandId: serializer.fromJson<String>(json['bandId']),
+      songId: serializer.fromJson<String>(json['songId']),
+      transpose: serializer.fromJson<int>(json['transpose']),
+      sequence: serializer.fromJson<String?>(json['sequence']),
+      tempo: serializer.fromJson<int?>(json['tempo']),
+      revision: serializer.fromJson<int>(json['revision']),
+      deleted: serializer.fromJson<bool>(json['deleted']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'bandId': serializer.toJson<String>(bandId),
+      'songId': serializer.toJson<String>(songId),
+      'transpose': serializer.toJson<int>(transpose),
+      'sequence': serializer.toJson<String?>(sequence),
+      'tempo': serializer.toJson<int?>(tempo),
+      'revision': serializer.toJson<int>(revision),
+      'deleted': serializer.toJson<bool>(deleted),
+    };
+  }
+
+  BandArrangement copyWith({
+    String? bandId,
+    String? songId,
+    int? transpose,
+    Value<String?> sequence = const Value.absent(),
+    Value<int?> tempo = const Value.absent(),
+    int? revision,
+    bool? deleted,
+  }) => BandArrangement(
+    bandId: bandId ?? this.bandId,
+    songId: songId ?? this.songId,
+    transpose: transpose ?? this.transpose,
+    sequence: sequence.present ? sequence.value : this.sequence,
+    tempo: tempo.present ? tempo.value : this.tempo,
+    revision: revision ?? this.revision,
+    deleted: deleted ?? this.deleted,
+  );
+  BandArrangement copyWithCompanion(BandArrangementsCompanion data) {
+    return BandArrangement(
+      bandId: data.bandId.present ? data.bandId.value : this.bandId,
+      songId: data.songId.present ? data.songId.value : this.songId,
+      transpose: data.transpose.present ? data.transpose.value : this.transpose,
+      sequence: data.sequence.present ? data.sequence.value : this.sequence,
+      tempo: data.tempo.present ? data.tempo.value : this.tempo,
+      revision: data.revision.present ? data.revision.value : this.revision,
+      deleted: data.deleted.present ? data.deleted.value : this.deleted,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BandArrangement(')
+          ..write('bandId: $bandId, ')
+          ..write('songId: $songId, ')
+          ..write('transpose: $transpose, ')
+          ..write('sequence: $sequence, ')
+          ..write('tempo: $tempo, ')
+          ..write('revision: $revision, ')
+          ..write('deleted: $deleted')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    bandId,
+    songId,
+    transpose,
+    sequence,
+    tempo,
+    revision,
+    deleted,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is BandArrangement &&
+          other.bandId == this.bandId &&
+          other.songId == this.songId &&
+          other.transpose == this.transpose &&
+          other.sequence == this.sequence &&
+          other.tempo == this.tempo &&
+          other.revision == this.revision &&
+          other.deleted == this.deleted);
+}
+
+class BandArrangementsCompanion extends UpdateCompanion<BandArrangement> {
+  final Value<String> bandId;
+  final Value<String> songId;
+  final Value<int> transpose;
+  final Value<String?> sequence;
+  final Value<int?> tempo;
+  final Value<int> revision;
+  final Value<bool> deleted;
+  final Value<int> rowid;
+  const BandArrangementsCompanion({
+    this.bandId = const Value.absent(),
+    this.songId = const Value.absent(),
+    this.transpose = const Value.absent(),
+    this.sequence = const Value.absent(),
+    this.tempo = const Value.absent(),
+    this.revision = const Value.absent(),
+    this.deleted = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  BandArrangementsCompanion.insert({
+    required String bandId,
+    required String songId,
+    this.transpose = const Value.absent(),
+    this.sequence = const Value.absent(),
+    this.tempo = const Value.absent(),
+    this.revision = const Value.absent(),
+    this.deleted = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : bandId = Value(bandId),
+       songId = Value(songId);
+  static Insertable<BandArrangement> custom({
+    Expression<String>? bandId,
+    Expression<String>? songId,
+    Expression<int>? transpose,
+    Expression<String>? sequence,
+    Expression<int>? tempo,
+    Expression<int>? revision,
+    Expression<bool>? deleted,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (bandId != null) 'band_id': bandId,
+      if (songId != null) 'song_id': songId,
+      if (transpose != null) 'transpose': transpose,
+      if (sequence != null) 'sequence': sequence,
+      if (tempo != null) 'tempo': tempo,
+      if (revision != null) 'revision': revision,
+      if (deleted != null) 'deleted': deleted,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  BandArrangementsCompanion copyWith({
+    Value<String>? bandId,
+    Value<String>? songId,
+    Value<int>? transpose,
+    Value<String?>? sequence,
+    Value<int?>? tempo,
+    Value<int>? revision,
+    Value<bool>? deleted,
+    Value<int>? rowid,
+  }) {
+    return BandArrangementsCompanion(
+      bandId: bandId ?? this.bandId,
+      songId: songId ?? this.songId,
+      transpose: transpose ?? this.transpose,
+      sequence: sequence ?? this.sequence,
+      tempo: tempo ?? this.tempo,
+      revision: revision ?? this.revision,
+      deleted: deleted ?? this.deleted,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (bandId.present) {
+      map['band_id'] = Variable<String>(bandId.value);
+    }
+    if (songId.present) {
+      map['song_id'] = Variable<String>(songId.value);
+    }
+    if (transpose.present) {
+      map['transpose'] = Variable<int>(transpose.value);
+    }
+    if (sequence.present) {
+      map['sequence'] = Variable<String>(sequence.value);
+    }
+    if (tempo.present) {
+      map['tempo'] = Variable<int>(tempo.value);
+    }
+    if (revision.present) {
+      map['revision'] = Variable<int>(revision.value);
+    }
+    if (deleted.present) {
+      map['deleted'] = Variable<bool>(deleted.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BandArrangementsCompanion(')
+          ..write('bandId: $bandId, ')
+          ..write('songId: $songId, ')
+          ..write('transpose: $transpose, ')
+          ..write('sequence: $sequence, ')
+          ..write('tempo: $tempo, ')
+          ..write('revision: $revision, ')
+          ..write('deleted: $deleted, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $SyncOutboxTable extends SyncOutbox
     with TableInfo<$SyncOutboxTable, OutboxEntry> {
   @override
@@ -6048,6 +6523,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $PersonalOverlaysTable personalOverlays = $PersonalOverlaysTable(
     this,
   );
+  late final $BandArrangementsTable bandArrangements = $BandArrangementsTable(
+    this,
+  );
   late final $SyncOutboxTable syncOutbox = $SyncOutboxTable(this);
   late final $SyncCursorsTable syncCursors = $SyncCursorsTable(this);
   late final $SongConflictsTable songConflicts = $SongConflictsTable(this);
@@ -6101,6 +6579,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     setlists,
     setItems,
     personalOverlays,
+    bandArrangements,
     syncOutbox,
     syncCursors,
     songConflicts,
@@ -6399,6 +6878,26 @@ final class $$SongsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$BandArrangementsTable, List<BandArrangement>>
+  _bandArrangementsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.bandArrangements,
+    aliasName: 'songs__id__band_arrangements__song_id',
+  );
+
+  $$BandArrangementsTableProcessedTableManager get bandArrangementsRefs {
+    final manager = $$BandArrangementsTableTableManager(
+      $_db,
+      $_db.bandArrangements,
+    ).filter((f) => f.songId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _bandArrangementsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$SongsTableFilterComposer extends Composer<_$AppDatabase, $SongsTable> {
@@ -6555,6 +7054,31 @@ class $$SongsTableFilterComposer extends Composer<_$AppDatabase, $SongsTable> {
           }) => $$PersonalOverlaysTableFilterComposer(
             $db: $db,
             $table: $db.personalOverlays,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> bandArrangementsRefs(
+    Expression<bool> Function($$BandArrangementsTableFilterComposer f) f,
+  ) {
+    final $$BandArrangementsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.bandArrangements,
+      getReferencedColumn: (t) => t.songId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BandArrangementsTableFilterComposer(
+            $db: $db,
+            $table: $db.bandArrangements,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -6792,6 +7316,31 @@ class $$SongsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> bandArrangementsRefs<T extends Object>(
+    Expression<T> Function($$BandArrangementsTableAnnotationComposer a) f,
+  ) {
+    final $$BandArrangementsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.bandArrangements,
+      getReferencedColumn: (t) => t.songId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BandArrangementsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.bandArrangements,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$SongsTableTableManager
@@ -6811,6 +7360,7 @@ class $$SongsTableTableManager
             bool attachmentsRefs,
             bool setItemsRefs,
             bool personalOverlaysRefs,
+            bool bandArrangementsRefs,
           })
         > {
   $$SongsTableTableManager(_$AppDatabase db, $SongsTable table)
@@ -6913,6 +7463,7 @@ class $$SongsTableTableManager
                 attachmentsRefs = false,
                 setItemsRefs = false,
                 personalOverlaysRefs = false,
+                bandArrangementsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -6920,6 +7471,7 @@ class $$SongsTableTableManager
                     if (attachmentsRefs) db.attachments,
                     if (setItemsRefs) db.setItems,
                     if (personalOverlaysRefs) db.personalOverlays,
+                    if (bandArrangementsRefs) db.bandArrangements,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -6984,6 +7536,26 @@ class $$SongsTableTableManager
                           referencedColumn: 'song_id',
                           typedResults: items,
                         ),
+                      if (bandArrangementsRefs)
+                        await $_getPrefetchedDataByColumns<
+                          SongEntry,
+                          $SongsTable,
+                          BandArrangement,
+                          $BandArrangementsTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SongsTableReferences
+                              ._bandArrangementsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SongsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).bandArrangementsRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'song_id',
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -7008,6 +7580,7 @@ typedef $$SongsTableProcessedTableManager =
         bool attachmentsRefs,
         bool setItemsRefs,
         bool personalOverlaysRefs,
+        bool bandArrangementsRefs,
       })
     >;
 typedef $$OrganizationsTableCreateCompanionBuilder =
@@ -10357,6 +10930,366 @@ typedef $$PersonalOverlaysTableProcessedTableManager =
       SongOverlay,
       PrefetchHooks Function({bool songId})
     >;
+typedef $$BandArrangementsTableCreateCompanionBuilder =
+    BandArrangementsCompanion Function({
+      required String bandId,
+      required String songId,
+      Value<int> transpose,
+      Value<String?> sequence,
+      Value<int?> tempo,
+      Value<int> revision,
+      Value<bool> deleted,
+      Value<int> rowid,
+    });
+typedef $$BandArrangementsTableUpdateCompanionBuilder =
+    BandArrangementsCompanion Function({
+      Value<String> bandId,
+      Value<String> songId,
+      Value<int> transpose,
+      Value<String?> sequence,
+      Value<int?> tempo,
+      Value<int> revision,
+      Value<bool> deleted,
+      Value<int> rowid,
+    });
+
+final class $$BandArrangementsTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $BandArrangementsTable, BandArrangement> {
+  $$BandArrangementsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $SongsTable _songIdTable(_$AppDatabase db) =>
+      db.songs.createAlias('band_arrangements__song_id__songs__id');
+
+  $$SongsTableProcessedTableManager get songId {
+    final $_column = $_itemColumn<String>('song_id')!;
+
+    final manager = $$SongsTableTableManager(
+      $_db,
+      $_db.songs,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_songIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$BandArrangementsTableFilterComposer
+    extends Composer<_$AppDatabase, $BandArrangementsTable> {
+  $$BandArrangementsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get bandId => $composableBuilder(
+    column: $table.bandId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get transpose => $composableBuilder(
+    column: $table.transpose,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sequence => $composableBuilder(
+    column: $table.sequence,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get tempo => $composableBuilder(
+    column: $table.tempo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$SongsTableFilterComposer get songId {
+    final $$SongsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.songId,
+      referencedTable: $db.songs,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SongsTableFilterComposer(
+            $db: $db,
+            $table: $db.songs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$BandArrangementsTableOrderingComposer
+    extends Composer<_$AppDatabase, $BandArrangementsTable> {
+  $$BandArrangementsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get bandId => $composableBuilder(
+    column: $table.bandId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get transpose => $composableBuilder(
+    column: $table.transpose,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sequence => $composableBuilder(
+    column: $table.sequence,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get tempo => $composableBuilder(
+    column: $table.tempo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$SongsTableOrderingComposer get songId {
+    final $$SongsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.songId,
+      referencedTable: $db.songs,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SongsTableOrderingComposer(
+            $db: $db,
+            $table: $db.songs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$BandArrangementsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $BandArrangementsTable> {
+  $$BandArrangementsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get bandId =>
+      $composableBuilder(column: $table.bandId, builder: (column) => column);
+
+  GeneratedColumn<int> get transpose =>
+      $composableBuilder(column: $table.transpose, builder: (column) => column);
+
+  GeneratedColumn<String> get sequence =>
+      $composableBuilder(column: $table.sequence, builder: (column) => column);
+
+  GeneratedColumn<int> get tempo =>
+      $composableBuilder(column: $table.tempo, builder: (column) => column);
+
+  GeneratedColumn<int> get revision =>
+      $composableBuilder(column: $table.revision, builder: (column) => column);
+
+  GeneratedColumn<bool> get deleted =>
+      $composableBuilder(column: $table.deleted, builder: (column) => column);
+
+  $$SongsTableAnnotationComposer get songId {
+    final $$SongsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.songId,
+      referencedTable: $db.songs,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SongsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.songs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$BandArrangementsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $BandArrangementsTable,
+          BandArrangement,
+          $$BandArrangementsTableFilterComposer,
+          $$BandArrangementsTableOrderingComposer,
+          $$BandArrangementsTableAnnotationComposer,
+          $$BandArrangementsTableCreateCompanionBuilder,
+          $$BandArrangementsTableUpdateCompanionBuilder,
+          (BandArrangement, $$BandArrangementsTableReferences),
+          BandArrangement,
+          PrefetchHooks Function({bool songId})
+        > {
+  $$BandArrangementsTableTableManager(
+    _$AppDatabase db,
+    $BandArrangementsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$BandArrangementsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$BandArrangementsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$BandArrangementsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> bandId = const Value.absent(),
+                Value<String> songId = const Value.absent(),
+                Value<int> transpose = const Value.absent(),
+                Value<String?> sequence = const Value.absent(),
+                Value<int?> tempo = const Value.absent(),
+                Value<int> revision = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => BandArrangementsCompanion(
+                bandId: bandId,
+                songId: songId,
+                transpose: transpose,
+                sequence: sequence,
+                tempo: tempo,
+                revision: revision,
+                deleted: deleted,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String bandId,
+                required String songId,
+                Value<int> transpose = const Value.absent(),
+                Value<String?> sequence = const Value.absent(),
+                Value<int?> tempo = const Value.absent(),
+                Value<int> revision = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => BandArrangementsCompanion.insert(
+                bandId: bandId,
+                songId: songId,
+                transpose: transpose,
+                sequence: sequence,
+                tempo: tempo,
+                revision: revision,
+                deleted: deleted,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$BandArrangementsTable, BandArrangement>(table),
+                  $$BandArrangementsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({songId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (songId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.songId,
+                        referencedTable: $$BandArrangementsTableReferences
+                            ._songIdTable(db),
+                        referencedColumn: $$BandArrangementsTableReferences
+                            ._songIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$BandArrangementsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $BandArrangementsTable,
+      BandArrangement,
+      $$BandArrangementsTableFilterComposer,
+      $$BandArrangementsTableOrderingComposer,
+      $$BandArrangementsTableAnnotationComposer,
+      $$BandArrangementsTableCreateCompanionBuilder,
+      $$BandArrangementsTableUpdateCompanionBuilder,
+      (BandArrangement, $$BandArrangementsTableReferences),
+      BandArrangement,
+      PrefetchHooks Function({bool songId})
+    >;
 typedef $$SyncOutboxTableCreateCompanionBuilder = SyncOutboxCompanion Function({
   required String collection,
   required String recordId,
@@ -10957,6 +11890,8 @@ class $AppDatabaseManager {
       $$SetItemsTableTableManager(_db, _db.setItems);
   $$PersonalOverlaysTableTableManager get personalOverlays =>
       $$PersonalOverlaysTableTableManager(_db, _db.personalOverlays);
+  $$BandArrangementsTableTableManager get bandArrangements =>
+      $$BandArrangementsTableTableManager(_db, _db.bandArrangements);
   $$SyncOutboxTableTableManager get syncOutbox =>
       $$SyncOutboxTableTableManager(_db, _db.syncOutbox);
   $$SyncCursorsTableTableManager get syncCursors =>

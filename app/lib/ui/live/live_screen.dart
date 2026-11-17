@@ -31,6 +31,7 @@ import 'pdf_spread_view.dart';
 class LiveItem {
   const LiveItem.song(
     SongEntry this.song, {
+    this.arrangement,
     this.setTranspose = 0,
     this.setSequence,
     this.setItemId,
@@ -39,12 +40,20 @@ class LiveItem {
 
   const LiveItem.marker(this.type, this.label)
     : song = null,
+      arrangement = null,
       setTranspose = 0,
       setSequence = null,
       setItemId = null;
 
   final SetItemType type;
   final SongEntry? song;
+
+  /// The band's arrangement of the song (ADR-0025): key, sequence and tempo
+  /// between the song and the set item.
+  final BandArrangement? arrangement;
+
+  /// The band's key as semitones relative to the song.
+  int get bandTranspose => arrangement?.transpose ?? 0;
 
   /// Transposition from the set item (layer 2, ADR-0006).
   final int setTranspose;
@@ -58,6 +67,7 @@ class LiveItem {
 
   LiveItem withSetTranspose(int value) => LiveItem.song(
     song!,
+    arrangement: arrangement,
     setTranspose: value,
     setSequence: setSequence,
     setItemId: setItemId,
@@ -83,7 +93,15 @@ class LiveScreen extends ConsumerStatefulWidget {
     int index = 0,
   }) async {
     final container = ProviderScope.containerOf(context, listen: false);
-    final views = await container.read(setRepositoryProvider).getItems(setId);
+    final sets = container.read(setRepositoryProvider);
+    final views = await sets.getItems(setId);
+    final set = await sets.getSet(setId);
+    // The arrangements of the set's band (ADR-0025).
+    final arrangements = set == null
+        ? const <String, BandArrangement>{}
+        : await container
+              .read(arrangementRepositoryProvider)
+              .forBand(set.bandId);
     final items = [
       for (final v in views)
         if (v.item.type != SetItemType.song)
@@ -91,6 +109,7 @@ class LiveScreen extends ConsumerStatefulWidget {
         else if (v.song != null)
           LiveItem.song(
             v.song!,
+            arrangement: arrangements[v.song!.id],
             setTranspose: v.item.transpose,
             setSequence: v.item.sequence,
             setItemId: v.item.id,
@@ -108,11 +127,20 @@ class LiveScreen extends ConsumerStatefulWidget {
   static Future<void> openSong(BuildContext context, String songId) async {
     final container = ProviderScope.containerOf(context, listen: false);
     final song = await container.read(songRepositoryProvider).getSong(songId);
-    if (song == null || !context.mounted) return;
+    if (song == null) return;
+    // Outside a set: the arrangement of the band chosen on the sets tab.
+    final band = container.read(arrangementBandProvider(song.libraryId));
+    final arrangement = band == null
+        ? null
+        : await container
+              .read(arrangementRepositoryProvider)
+              .get(band.id, songId);
+    if (!context.mounted) return;
     await Navigator.push(
       context,
       MaterialPageRoute<void>(
-        builder: (_) => LiveScreen(items: [LiveItem.song(song)]),
+        builder: (_) =>
+            LiveScreen(items: [LiveItem.song(song, arrangement: arrangement)]),
       ),
     );
   }
@@ -508,7 +536,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     final shown = parsed == null
         ? key
         : parsed
-              .transpose(item.setTranspose)
+              .transpose(item.bandTranspose + item.setTranspose)
               .format(ref.read(settingsProvider).notation);
     return '$title ($shown)';
   }
@@ -545,9 +573,10 @@ class _ControlBar extends ConsumerWidget {
     // In a set, the key is stored on the set item (the song stays
     // unchanged); a single song uses the personal transposition.
     final inSet = item.setItemId != null;
+    // The band's key is the reference (ADR-0025).
     final originalKey = song?.songKey == null
         ? null
-        : cp.Key.tryParse(song!.songKey!);
+        : cp.Key.tryParse(song!.songKey!)?.transpose(item.bandTranspose);
     final deviceNashville = ref.watch(
       settingsProvider.select((s) => s.nashville),
     );
@@ -810,8 +839,10 @@ class _LiveItemPage extends ConsumerWidget {
       song: song,
       parsed: parsed,
       overlay: overlay,
-      setTranspose: item.setTranspose,
+      setTranspose: item.bandTranspose + item.setTranspose,
       setSequence: item.setSequence,
+      bandSequence: item.arrangement?.sequence,
+      bandTempo: item.arrangement?.tempo,
       scrollController: scrollController,
       fitController: fitController,
       songPageController: songPageController,
@@ -831,6 +862,8 @@ class _ChordProPage extends ConsumerWidget {
     required this.overlay,
     required this.setTranspose,
     required this.setSequence,
+    required this.bandSequence,
+    required this.bandTempo,
     required this.scrollController,
     required this.fitController,
     required this.songPageController,
@@ -841,8 +874,12 @@ class _ChordProPage extends ConsumerWidget {
   final SongEntry song;
   final Song parsed;
   final SongOverlay overlay;
+
+  /// Band arrangement and set item together (semitones to the song).
   final int setTranspose;
   final String? setSequence;
+  final String? bandSequence;
+  final int? bandTempo;
   final ScrollController scrollController;
   final _FitController fitController;
   final SongPageController songPageController;
@@ -887,6 +924,8 @@ class _ChordProPage extends ConsumerWidget {
               formatter: formatter,
               compact: true,
               setSequence: setSequence,
+              bandSequence: bandSequence,
+              bandTempo: bandTempo,
             ),
           ),
           Expanded(
