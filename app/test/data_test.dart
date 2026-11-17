@@ -303,6 +303,29 @@ void main() {
     expect(gigs[b], (setName: 'Later', date: DateTime(2027, 7, 1)));
   });
 
+  test('groups sets into upcoming, undated and past sets', () async {
+    final today = DateTime(2027, 6, 10, 15);
+    for (final (name, date) in [
+      ('Old', DateTime(2027, 1, 5)),
+      ('Later', DateTime(2027, 7, 1)),
+      ('Yesterday', DateTime(2027, 6, 9)),
+      ('Tonight', DateTime(2027, 6, 10)),
+      ('b undated', null),
+      ('A undated', null),
+      ('Also later', DateTime(2027, 7, 1)),
+    ]) {
+      await sets.createSet(name: name, gigDate: date);
+    }
+    final groups = groupSets(await sets.watchSets().first, today);
+    List<String> names(List<SetSummary> list) => [
+      for (final s in list) s.set.name,
+    ];
+    // Today counts as upcoming, as for the song list (above).
+    expect(names(groups.upcoming), ['Tonight', 'Also later', 'Later']);
+    expect(names(groups.undated), ['A undated', 'b undated']);
+    expect(names(groups.past), ['Yesterday', 'Old']);
+  });
+
   test('the song list has what lists show, filtered like the songs', () async {
     final a = await songs.createSong(
       source:

@@ -1693,4 +1693,36 @@ class AppLocalizationsDe extends AppLocalizations {
   String hiddenParts(String parts) {
     return 'Ausgeblendet (nicht im Ablauf): $parts';
   }
+
+  @override
+  String get setsUpcoming => 'Bevorstehend';
+
+  @override
+  String get setsUndated => 'Ohne Datum';
+
+  @override
+  String setsPast(int count) {
+    return 'Vergangen ($count)';
+  }
+
+  @override
+  String get showPastSets => 'Vergangene Sets anzeigen';
+
+  @override
+  String get hidePastSets => 'Vergangene Sets ausblenden';
+
+  @override
+  String get nextGig => 'Nächster Auftritt';
+
+  @override
+  String gigInDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'In $days Tagen',
+      one: 'Morgen',
+      zero: 'Heute',
+    );
+    return '$_temp0';
+  }
 }

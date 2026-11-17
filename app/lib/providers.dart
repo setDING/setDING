@@ -353,6 +353,25 @@ final upcomingGigsProvider = StreamProvider.autoDispose
       return ref.watch(setRepositoryProvider).watchUpcomingGigs();
     });
 
+/// Whether the past sets on the sets tab are collapsed (stored per device,
+/// #265).
+class PastSetsCollapsedNotifier extends Notifier<bool> {
+  static const _key = 'pastSetsCollapsed';
+
+  @override
+  bool build() => ref.watch(sharedPreferencesProvider).getBool(_key) ?? false;
+
+  Future<void> toggle() async {
+    state = !state;
+    await ref.read(sharedPreferencesProvider).setBool(_key, state);
+  }
+}
+
+final pastSetsCollapsedProvider =
+    NotifierProvider<PastSetsCollapsedNotifier, bool>(
+      PastSetsCollapsedNotifier.new,
+    );
+
 final setsProvider = StreamProvider<List<SetSummary>>(
   (ref) => ref.watch(setRepositoryProvider).watchSets(),
 );

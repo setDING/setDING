@@ -1678,4 +1678,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String hiddenParts(String parts) {
     return 'Hidden (not in the sequence): $parts';
   }
+
+  @override
+  String get setsUpcoming => 'Upcoming';
+
+  @override
+  String get setsUndated => 'Without date';
+
+  @override
+  String setsPast(int count) {
+    return 'Past ($count)';
+  }
+
+  @override
+  String get showPastSets => 'Show past sets';
+
+  @override
+  String get hidePastSets => 'Hide past sets';
+
+  @override
+  String get nextGig => 'Next gig';
+
+  @override
+  String gigInDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'In $days days',
+      one: 'Tomorrow',
+      zero: 'Today',
+    );
+    return '$_temp0';
+  }
 }

@@ -708,5 +708,22 @@
   "pdfOnlyTooltip": "Sheet music (PDF) only, no chords",
   "upcomingGigTooltip": "In “{set}” on {date}",
   "foundInLyrics": "Found in the lyrics",
-  "hiddenParts": "Hidden (not in the sequence): {parts}"
+  "hiddenParts": "Hidden (not in the sequence): {parts}",
+  "setsUpcoming": "Upcoming",
+  "setsUndated": "Without date",
+  "setsPast": "Past ({count})",
+  "@setsPast": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "showPastSets": "Show past sets",
+  "hidePastSets": "Hide past sets",
+  "nextGig": "Next gig",
+  "gigInDays": "{days, plural, =0{Today} =1{Tomorrow} other{In {days} days}}",
+  "@gigInDays": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  }
 }

@@ -228,6 +228,39 @@ void main() {
   });
 
   for (final dark in [false, true]) {
+    testWidgets('sets grouped by gig date ${dark ? 'dark' : 'light'}', (
+      tester,
+    ) async {
+      useTabletSize(tester, landscape: false);
+      final app = await TestApp.create(
+        prefs: {'language': 'de', 'themeMode': dark ? 'dark' : 'light'},
+      );
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      await tester.runAsync(() async {
+        for (final (name, venue, days) in [
+          ('Sommerfest', 'Bern', 3),
+          ('Hochzeit Meier', 'Thun', 17),
+          ('Probe', null, null),
+          ('Jazznacht', 'Biel', -12),
+          ('Weihnachtskonzert', 'Luzern', -200),
+        ]) {
+          await app.sets.createSet(
+            name: name,
+            venue: venue,
+            gigDate: days == null ? null : today.add(Duration(days: days)),
+          );
+        }
+      });
+      await tester.pumpWidget(
+        RepaintBoundary(key: UniqueKey(), child: app.build()),
+      );
+      await _shot(tester, 'de_1_sets_grouped${dark ? '_dark' : ''}');
+      await app.dispose(tester);
+    });
+  }
+
+  for (final dark in [false, true]) {
     testWidgets('splash ${dark ? 'dark' : 'light'}', (tester) async {
       tester.view.physicalSize = const Size(1080, 1920);
       tester.view.devicePixelRatio = 2.5;
