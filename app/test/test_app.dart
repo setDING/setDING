@@ -8,6 +8,7 @@ import 'package:realchord/app.dart';
 import 'package:realchord/data/database.dart';
 import 'package:realchord/data/set_repository.dart';
 import 'package:realchord/data/song_repository.dart';
+import 'package:realchord/platform/stage_wake_lock.dart';
 import 'package:realchord/providers.dart';
 import 'package:realchord/settings/settings.dart';
 import 'package:realchord/sync/auth_providers.dart';
@@ -56,6 +57,9 @@ class TestApp {
       ? MemoryAttachmentStorage()
       : FileAttachmentStorage(dir);
   late final songs = SongRepository(db, storage);
+
+  /// The screen's "keep on" switch, instead of the platform's.
+  final wakeLock = FakeWakeLockPlatform();
   late final sets = SetRepository(db, storage);
 
   /// Songs of another library, e.g. an organization (ADR-0017).
@@ -96,6 +100,11 @@ class TestApp {
     syncBackendProvider.overrideWithValue(backend),
     incomingLinksProvider.overrideWithValue(links.stream),
     autoSyncProvider.overrideWithValue(false),
+    stageWakeLockProvider.overrideWith((ref) {
+      final lock = StageWakeLock(wakeLock);
+      ref.onDispose(lock.dispose);
+      return lock;
+    }),
   ];
 
   Widget build({Widget? home}) => ProviderScope(
@@ -113,6 +122,25 @@ class TestApp {
     await links.close();
     dir.deleteSync(recursive: true);
   }
+}
+
+/// Keeps the screen on in memory; [fail] makes it fail like a platform
+/// without a wake lock.
+class FakeWakeLockPlatform implements WakeLockPlatform {
+  /// Whether the screen is kept on.
+  bool on = false;
+
+  /// Turning it on throws.
+  bool fail = false;
+
+  @override
+  Future<void> setEnabled(bool enabled) async {
+    if (enabled && fail) throw UnsupportedError('No wake lock');
+    on = enabled;
+  }
+
+  @override
+  Future<bool> get enabled async => on;
 }
 
 /// Sets a tablet-sized test surface.

@@ -17,6 +17,15 @@ song, all tablets follow automatically. We evaluated whether this is needed.
 ### Live mode (MVP)
 
 - Full screen, **wakelock** active, status bar hidden.
+- **Screen stays on:** a `StageWakeLock` (`app/lib/platform/stage_wake_lock.dart`, on top of `wakelock_plus`) keeps
+  the screen on while a live view is open. It counts the open live views and turns the screen's wake lock off only
+  when none is left, applying each change in order, so leaving live mode and opening it again right away never lets
+  the screen turn off. When the app returns to the foreground the wake lock is set again, since not every platform
+  keeps it in the background. If the platform does not keep the screen on (it throws, or reports it off afterwards,
+  e.g. Linux without a desktop portal or a browser without the Screen Wake Lock API), the bottom bar says so
+  ("The screen may turn off – check the device's power settings") and the log records it. The app cannot stop the
+  power button, an empty battery or the user leaving the app; on stage the tablet belongs on the charger, and
+  leaving the app by accident is up to the operating system (iOS Guided Access, Android screen pinning).
 - **Input:**
   - Tap on the left/right part of the screen, swipe.
   - **Bluetooth page turners** (foot pedals registering as HID keyboards) and keyboards: **right arrow, down arrow,
@@ -112,8 +121,11 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-17: The light stage chord colour follows the brand palette: deep brand red `#852309` instead of indigo (issue #269).
 - 2026-11-17: Down arrow also turns forward and up arrow back, for page turners switched to an up/down mode, with the same behaviour as the other keys (scroll position first, key repeat ignored, text fields of dialogs keep them). Answers the key mapping part of the open point on page turners: a fixed mapping covering both modes instead of a configurable one (issue #286).
 - 2026-11-17: The stage follows the accent colour chosen in the settings: on light the chords use a deep tone of the accent (brand red `#852309` by default), the dark and black stage use the accent's dark scheme; chords on dark and black stay amber for every accent (issue #300).
+- 2026-11-17: The screen stays on reliably: the wake lock counts the open live views and applies changes in order, is set again when the app returns to the foreground, and a wake lock that does not hold is shown in the bottom bar (issue #294).
 
 ## Open points
 
+- Windows: `wakelock_plus` requests only `ES_DISPLAY_REQUIRED`. Check on a real Windows tablet that it does not go to
+  sleep during a long song; if it does, additionally request `ES_SYSTEM_REQUIRED` (issue #294).
 - Which page turner model (for testing on real hardware)? Configurable key mapping needed for pedals sending other keys?
 - Is MIDI control desired (e.g. Program Change from a keyboard/pedalboard)?

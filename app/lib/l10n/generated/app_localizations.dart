@@ -824,6 +824,12 @@ abstract class AppLocalizations {
   /// **'Im Browser nicht offline-sicher – auf der Bühne die App verwenden'**
   String get liveWebNotice;
 
+  /// No description provided for @liveWakeLockNotice.
+  ///
+  /// In de, this message translates to:
+  /// **'Bildschirm kann sich ausschalten – Energieeinstellungen des Geräts prüfen'**
+  String get liveWakeLockNotice;
+
   /// No description provided for @liveEnd.
   ///
   /// In de, this message translates to:

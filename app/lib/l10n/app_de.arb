@@ -236,6 +236,7 @@
     }
   },
   "liveWebNotice": "Im Browser nicht offline-sicher – auf der Bühne die App verwenden",
+  "liveWakeLockNotice": "Bildschirm kann sich ausschalten – Energieeinstellungen des Geräts prüfen",
   "liveEnd": "Ende des Sets",
   "liveSetOverview": "Set-Übersicht",
   "liveExit": "Live-Modus beenden",

@@ -121,6 +121,7 @@
   "songMissing": "Song no longer exists",
   "liveNext": "Next: {title}",
   "liveWebNotice": "Not offline-safe in the browser – use the app on stage",
+  "liveWakeLockNotice": "The screen may turn off – check the device's power settings",
   "liveEnd": "End of set",
   "liveSetOverview": "Set overview",
   "liveExit": "Exit live mode",
