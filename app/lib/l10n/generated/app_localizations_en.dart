@@ -884,6 +884,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Live mode shows the parts of the song with a cue from the lyrics and the drum notes.';
 
   @override
+  String get songMapEmpty =>
+      'This song has no parts (verse, chorus, …) to show as a song map.';
+
+  @override
   String get settingsLiveAppearance => 'Appearance on stage';
 
   @override

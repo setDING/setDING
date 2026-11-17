@@ -1640,6 +1640,12 @@ abstract class AppLocalizations {
   /// **'Der Live-Modus zeigt die Teile des Songs mit einem Stichwort aus dem Text und den Schlagzeug-Notizen.'**
   String get settingsSongMapHint;
 
+  /// No description provided for @songMapEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieser Song hat keine Teile (Strophe, Refrain, …) für eine Song-Landkarte.'**
+  String get songMapEmpty;
+
   /// No description provided for @settingsLiveAppearance.
   ///
   /// In de, this message translates to:

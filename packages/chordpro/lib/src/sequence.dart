@@ -2,6 +2,7 @@
 /// e.g. `{x_sequence: I, V1, C, V2, PC, C x2, B, C, O}`.
 library;
 
+import 'markup.dart';
 import 'song.dart';
 
 /// Kind of a part in a song sequence.
@@ -277,3 +278,110 @@ String _otherKey(String code) {
   if (m == null) return code.trim().toLowerCase();
   return '${m.group(2)!.toLowerCase()}${m.group(3) ?? ''}';
 }
+
+/// One block of the song map of the drummer mode (ADR-0026): a part as it
+/// is played, with a cue from the lyrics and the notes of its section.
+class SongMapEntry {
+  const SongMapEntry({required this.part, this.cue, this.notes = const []});
+
+  /// The part (code, kind, number and repetitions).
+  final SequenceItem part;
+
+  /// The first line of lyrics of the part, without chords and markup.
+  final String? cue;
+
+  /// The comments of the part's section, e.g. drum notes
+  /// (`{comment-drums: …}` with the instrument drums).
+  final List<String> notes;
+}
+
+/// The song as the drummer plays it (ADR-0026): the parts of [sequence] in
+/// its order with its repetitions, each with a cue and the comments of its
+/// section. A part without a number takes the next section of its kind
+/// (`V, C, V, C` → first verse, chorus, second verse, chorus). Without a
+/// sequence, or when it matches none of the song's parts, the parts of the
+/// song in document order (a chorus recall repeats the chorus).
+List<SongMapEntry> songMap(Song song, List<SequenceItem> sequence) {
+  final parts = _sectionParts(song);
+  SongMapEntry entry(SequenceItem part, Section? section) => SongMapEntry(
+    part: part,
+    cue: section == null ? null : _cue(section),
+    notes: section == null ? const [] : _notes(section),
+  );
+
+  final sections = parts.keys.toList();
+  bool matches(SequenceItem item, SequenceItem part) =>
+      part.part == SequencePart.other
+      ? item.part == SequencePart.other &&
+            _otherKey(item.code) == _otherKey(part.code)
+      : item.part == part.part &&
+            (item.number == null ||
+                part.number == null ||
+                item.number == part.number);
+
+  if (sequence.isNotEmpty &&
+      parts.values.any((p) => sequence.any((i) => matches(i, p)))) {
+    final used = <SequencePart, int>{};
+    return [
+      for (final item in sequence)
+        () {
+          final candidates = [
+            for (final s in sections)
+              if (matches(item, parts[s]!)) s,
+          ];
+          Section? section;
+          if (candidates.isNotEmpty) {
+            if (item.number != null || candidates.length == 1) {
+              section = candidates.first;
+            } else {
+              final n = used[item.part] ?? 0;
+              section = candidates[n % candidates.length];
+              used[item.part] = n + 1;
+            }
+          }
+          return entry(item, section);
+        }(),
+    ];
+  }
+
+  final result = <SongMapEntry>[];
+  Section? lastChorus;
+  for (final element in song.elements) {
+    if (element is Section) {
+      final part = parts[element];
+      if (part == null) continue;
+      if (element.kind == SectionKind.chorus) lastChorus = element;
+      result.add(entry(part, element));
+    } else if (element is ChorusRecall) {
+      final chorus = element.chorus ?? lastChorus;
+      final part = chorus == null ? null : parts[chorus];
+      result.add(
+        entry(
+          part ??
+              SequenceItem(
+                code: sequenceAbbreviations[SequencePart.chorus]!,
+                part: SequencePart.chorus,
+              ),
+          chorus,
+        ),
+      );
+    }
+  }
+  return result;
+}
+
+String? _cue(Section section) {
+  for (final line in section.lines) {
+    if (line is LyricLine) {
+      final text = line.plainText.trim();
+      if (text.isNotEmpty) return text;
+    }
+  }
+  return null;
+}
+
+List<String> _notes(Section section) => [
+  for (final line in section.lines)
+    if (line is CommentLine && stripMarkup(line.text).trim().isNotEmpty)
+      stripMarkup(line.text).trim(),
+];

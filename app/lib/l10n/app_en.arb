@@ -288,6 +288,7 @@
   "clickNoAudioLive": "No audio for the click",
   "settingsSongMap": "Song map instead of chords",
   "settingsSongMapHint": "Live mode shows the parts of the song with a cue from the lyrics and the drum notes.",
+  "songMapEmpty": "This song has no parts (verse, chorus, …) to show as a song map.",
   "settingsLiveAppearance": "Appearance on stage",
   "settingsLiveAppearanceHint": "Live mode independent of the app theme. Black saves power on OLED screens.",
   "liveAppearanceApp": "As app",
