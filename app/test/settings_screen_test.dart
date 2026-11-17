@@ -93,8 +93,8 @@ void main() {
     for (final accent in AccentColor.values) {
       expect(find.byKey(Key('accent-${accent.name}')), findsOneWidget);
     }
-    // The brand red is the default.
-    expect(find.text('setDING red'), findsOneWidget);
+    // The brand blue is the default.
+    expect(find.text('setDING blue'), findsOneWidget);
     Color primary() =>
         Theme.of(tester.element(find.text('Accent colour')))
             .colorScheme

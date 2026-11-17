@@ -56,9 +56,9 @@ class StageColors extends ThemeExtension<StageColors> {
   /// colour, with high contrast to the background.
   final Color chord;
 
-  /// Deep brand red on light backgrounds (hue of the logo red, HCT tone
+  /// Deep brand blue on light backgrounds (hue of the logo blue, HCT tone
   /// 30; contrast about 9:1).
-  static const light = StageColors(chord: Color(0xFF852309));
+  static const light = StageColors(chord: Color(0xFF2A3D9C));
 
   /// Amber on dark and black backgrounds (contrast above 11:1), clearly
   /// apart from the light lyrics.

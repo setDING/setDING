@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/ui/widgets/logo.dart';
@@ -121,5 +123,40 @@ void main() {
     expect(find.byType(NavigationBar), findsOneWidget);
     expect(find.byKey(const Key('nav-logo')), findsNothing);
     await app.dispose(tester);
+  });
+
+  test('the drawn mark uses the colours of mark.svg', () {
+    final svg = File('branding/mark.svg').readAsStringSync().toUpperCase();
+    String hex(Color c) =>
+        c.toARGB32().toRadixString(16).substring(2).toUpperCase();
+    for (final color in [
+      BrandColors.tileTop,
+      BrandColors.tileBottom,
+      BrandColors.bellTop,
+      BrandColors.bellBottom,
+    ]) {
+      expect(svg, contains('#${hex(color)}'));
+    }
+  });
+
+  testWidgets('the wordmark uses the bell gradient on dark backgrounds', (
+    tester,
+  ) async {
+    Gradient gradientOf() {
+      final mask = tester.widget<ShaderMask>(find.byType(ShaderMask));
+      final shader = mask.shaderCallback;
+      return shader == BrandColors.bellGradient.createShader
+          ? BrandColors.bellGradient
+          : BrandColors.gradient;
+    }
+
+    await tester.pumpWidget(
+      const MaterialApp(home: SetdingWordmark(dark: true)),
+    );
+    expect(gradientOf(), BrandColors.bellGradient);
+    await tester.pumpWidget(
+      const MaterialApp(home: SetdingWordmark(dark: false)),
+    );
+    expect(gradientOf(), BrandColors.gradient);
   });
 }
