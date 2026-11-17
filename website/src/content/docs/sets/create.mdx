@@ -1,0 +1,80 @@
+---
+title: Set erstellen
+description: Ein Set anlegen, Songs hinzufügen und ordnen, Pausen und Texte einfügen.
+sidebar:
+  order: 1
+---
+
+import { Image } from 'astro:assets';
+import set from '../../../../../docs/screenshots/set.png';
+
+Ein Set sind die Songs eines Auftritts oder einer Probe in der richtigen
+Reihenfolge. Jedes Set gehört zu einer Band; alle Mitglieder der Band sehen es auf
+ihrem Gerät.
+
+Sets erstellen und ändern dürfen die **Leitung** und die **Setplanung** der Band
+sowie die Admins der Organisation. Alle anderen sehen das Set und spielen es, ändern
+es aber nicht.
+
+<Image src={set} alt="Ein Set mit zwei Songs, ihren Tonarten, einer Pause und dem Status «Offline bereit»" />
+
+## Die Liste der Sets
+
+Unter **Sets** siehst du die Sets der gewählten Band. Bist du in mehreren Bands,
+wechselst du sie oben rechts mit **Band wechseln**.
+
+Die Sets sind nach Datum gruppiert: **Bevorstehend**, **Ohne Datum** und
+**Vergangen**. Vergangene Sets sind eingeklappt; tippe auf **Vergangene Sets
+anzeigen**, um sie zu sehen. Das nächste Set ist als **Nächster Auftritt**
+markiert, mit der Anzahl Tage bis dahin.
+
+Ziehst du die Liste nach unten, synchronisiert setDING sofort.
+
+## Ein neues Set anlegen
+
+1. Tippe unter **Sets** auf **Neues Set**.
+2. Gib einen **Name** ein, optional den **Ort** und mit **Datum wählen** das Datum
+   des Auftritts.
+3. Tippe auf **Speichern**.
+
+Name, Ort und Datum änderst du später im Menü ⋮ des Sets mit **Set bearbeiten**.
+
+## Songs hinzufügen
+
+1. Öffne das Set und tippe auf **Songs hinzufügen**.
+2. Wähle die Songs aus; mit **Songs suchen** findest du sie schneller.
+3. Tippe auf **Hinzufügen**. Die Songs kommen ans Ende des Sets.
+
+Die Reihenfolge änderst du, indem du einen Eintrag am Griff rechts nach oben oder
+unten ziehst.
+
+## Pausen und Texte
+
+Im Menü ⋮ des Sets fügst du am Ende des Sets ein:
+
+- **Pause hinzufügen** – eine Pause, optional mit einem Namen.
+- **Text hinzufügen** – ein kurzer Text, z. B. eine Ansage oder die Zugabe.
+
+Ziehe den Eintrag danach an die richtige Stelle.
+
+Pausen und Texte erscheinen im Live-Modus als eigene Seite und in der gedruckten
+Set-Liste als Trennzeile. Mit dem Menü ⋮ des Eintrags kannst du sie
+**Bearbeiten**.
+
+## Einträge entfernen
+
+Im Menü ⋮ eines Eintrags tippst du auf **Aus dem Set entfernen**. Der Song bleibt in
+der Songbibliothek; entfernt wird er nur aus diesem Set. Direkt danach kannst du das
+mit **Rückgängig** noch zurücknehmen.
+
+## Set kopieren und löschen
+
+- **In Band kopieren** kopiert das Set mit allen Einträgen in eine andere Band
+  derselben Organisation, z. B. für eine zweite Besetzung. Dort gelten die
+  Band-Arrangements der anderen Band (siehe [Tonart und Ablauf](/sets/key-and-sequence/)).
+- **Löschen** löscht das Set. Die Songs bleiben erhalten.
+
+## Weiter
+
+- [Tonart und Ablauf](/sets/key-and-sequence/) für jeden Song festlegen
+- [Offline bereit, drucken und teilen](/sets/share/)

@@ -31,6 +31,11 @@ export default defineConfig({
           translations: { en: 'Getting started' },
           items: [{ autogenerate: { directory: 'start' } }],
         },
+        {
+          label: 'Sets',
+          translations: { en: 'Sets' },
+          items: [{ autogenerate: { directory: 'sets' } }],
+        },
       ],
       lastUpdated: false,
       plugins: [starlightLinksValidator()],

@@ -1,0 +1,71 @@
+---
+title: Tonart und Ablauf
+description: Tonart, Songablauf und Tempo pro Band und pro Set festlegen.
+sidebar:
+  order: 2
+---
+
+import { Image } from 'astro:assets';
+import sequence from '../../../../../docs/screenshots/sequence.png';
+
+Ein Song ist so gespeichert, wie er geschrieben wurde. Wie eure Band ihn spielt –
+in welcher Tonart, in welchem Ablauf, in welchem Tempo – legt ihr fest, ohne den Song
+zu ändern. setDING kennt dafür zwei Ebenen:
+
+1. **Band-Arrangement:** wie die Band den Song immer spielt. Gilt in allen Sets der
+   Band.
+2. **Set:** was heute Abend anders ist, z. B. zwei Halbtöne tiefer oder ohne zweite
+   Strophe. Gilt nur in diesem Set.
+
+Was im Set festgelegt ist, gewinnt; sonst gilt das Band-Arrangement, sonst der Song.
+Ändern dürfen beides die **Leitung** und die **Setplanung** der Band sowie die
+Admins der Organisation. Die anderen Bands der Organisation merken davon nichts,
+und jede Musikerin und jeder Musiker kann obendrauf noch für sich selbst
+transponieren oder einen Kapodaster setzen.
+
+## Das Band-Arrangement
+
+1. Wähle unter **Sets** die Band.
+2. Öffne den Song unter **Songs** und tippe oben auf **Band-Arrangement**.
+3. Lege fest:
+   - die Tonart mit **Tonart der Band – für alle ihre Sets**,
+   - den Ablauf mit **Abfolge**,
+   - das Tempo mit **Tempo** (leer lassen heisst: wie im Song).
+
+**Band-Arrangement auf den Song zurücksetzen** löscht das Arrangement wieder. In der
+Songliste zeigt ein Band-Symbol beim Song, dass die Band ein Arrangement dafür hat.
+
+## Die Tonart im Set
+
+In jedem Song des Sets steht rechts die Tonart. Tippe darauf und wähle eine der
+zwölf Tonarten (**Tonart in diesem Set – für die ganze Band**). Hat die Band ein
+Arrangement, ist dessen Tonart der Ausgangspunkt: «−2» heisst zwei Halbtöne unter
+der Tonart der Band.
+
+## Der Songablauf im Set
+
+Der Songablauf sagt, in welcher Reihenfolge die Teile des Songs gespielt werden,
+z. B. `I, V1, C, V2, C x2, B, O` (Intro, Strophe 1, Refrain, Strophe 2, zweimal
+Refrain, Bridge, Outro).
+
+1. Tippe im Menü ⋮ des Songs auf **Songablauf für dieses Set**.
+2. Tippe unter **Teile des Songs** auf die Teile in der Reihenfolge, in der ihr sie
+   spielt, oder ziehe sie in den Ablauf. Einen Teil lange drücken, um ihn zu
+   verschieben; **Leeren** fängt von vorne an.
+3. Mit **Als Text bearbeiten** tippst du den Ablauf auch direkt ein.
+
+<Image src={sequence} alt="Der Songablauf für ein Set wird aus den Teilen des Songs zusammengestellt" />
+
+**Ablauf des Songs verwenden** nimmt einen eigenen Ablauf wieder zurück. Im
+Live-Modus markiert ein Symbol beim Ablauf, woher er kommt: **Ablauf für dieses Set
+angepasst** oder **Abfolge der Band**.
+
+Im Live-Modus zeigt setDING nur die Teile, die im Ablauf vorkommen, und nennt die
+ausgeblendeten Teile im Kopf des Songs. Wer den Song einzeln öffnet, sieht ihn immer
+ganz.
+
+## PDF oder Akkorde im Live-Modus
+
+Hat ein Song PDF-Anhänge, zeigt ein Symbol neben der Tonart, was du im Live-Modus
+siehst: den ChordPro-Text oder eines der PDFs. Tippe darauf, um zu wechseln. Diese
+Wahl gilt nur für dich, in allen Sets.
