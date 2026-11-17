@@ -57,6 +57,7 @@ void main() {
         formatDate: (d) => '${d.day}.${d.month}.${d.year}',
         untitled: 'Untitled',
         songMissing: 'Missing',
+        pause: 'Break',
       ),
     );
     expect(

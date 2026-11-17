@@ -54,6 +54,7 @@ musician).
 
 - 2026-11-14: UI primarily in German and English, selectable in the settings.
 - 2026-11-14: German variant is Swiss Standard German (`de-CH`, no "ß"). A separate de-DE variant is not planned; it could be added later as an extra ARB file if needed.
+- 2026-11-17: Shared data never stores a localized UI label, because band members may use different languages (#289). A break left with its default name is stored without a note and shows the type label of each member's language; for older data, a note that equals the type label in any supported language counts as no note (`ui/sets/set_item_label.dart`). This applies to the set screen, live mode and the set list exports.
 
 ## Open points
 

@@ -143,8 +143,13 @@ class ImportExportService {
   String songFileName(SongEntry song) => '${safeFileName(song.title)}.cho';
 
   /// Exports a set as ZIP: numbered ChordPro files, PDF attachments and a
-  /// plain-text setlist.
-  Future<Uint8List> exportSet(SetlistEntry set) async {
+  /// plain-text setlist. [markerTitle] names pauses and text items in the
+  /// setlist (the UI passes the localized label, #289); by default their
+  /// note.
+  Future<Uint8List> exportSet(
+    SetlistEntry set, {
+    String Function(SetItemEntry item)? markerTitle,
+  }) async {
     final files = <(String, Uint8List)>[];
     final items = await sets.getItems(set.id);
     final setlist = StringBuffer('${set.name}\n\n');
@@ -154,7 +159,12 @@ class ImportExportService {
       final prefix = number.toString().padLeft(2, '0');
       final song = view.song;
       if (view.item.type != SetItemType.song || song == null) {
-        setlist.writeln('$prefix  -- ${view.item.note ?? ''} --');
+        final marker = view.item.type != SetItemType.song;
+        final name =
+            (marker ? markerTitle?.call(view.item) : null) ??
+            view.item.note ??
+            '';
+        setlist.writeln('$prefix  -- $name --');
         continue;
       }
       setlist.writeln(

@@ -24,6 +24,7 @@ import '../widgets/file_actions.dart';
 import '../widgets/key_picker.dart';
 import '../widgets/sequence_dialog.dart';
 import 'set_list_pdf.dart';
+import 'set_item_label.dart';
 import 'set_list_text.dart';
 import 'sets_screen.dart';
 import 'song_picker.dart';
@@ -56,19 +57,27 @@ class _SetScreenState extends ConsumerState<SetScreen> {
 
   Future<void> _addMarker(SetItemType type) async {
     final l10n = AppLocalizations.of(context);
+    final pause = type == SetItemType.pause;
+    // A break needs no note of its own: left empty, it shows the type label
+    // in each member's UI language (#289).
     final label = await askText(
       context,
-      title: type == SetItemType.pause ? l10n.addPause : l10n.addText,
-      initial: type == SetItemType.pause ? l10n.pause : '',
-      hint: type == SetItemType.text ? l10n.textItemHint : null,
+      title: pause ? l10n.addPause : l10n.addText,
+      hint: pause ? l10n.pause : l10n.textItemHint,
+      allowEmpty: pause,
     );
-    if (label != null) await _repo.addMarker(widget.setId, type, label);
+    if (label != null) {
+      await _repo.addMarker(widget.setId, type, markerNote(type, label) ?? '');
+    }
   }
 
   Future<void> _export(SetlistEntry set) async {
     final l10n = AppLocalizations.of(context);
     final service = ref.read(importExportProvider);
-    final bytes = await service.exportSet(set);
+    final bytes = await service.exportSet(
+      set,
+      markerTitle: (item) => markerTitle(l10n, item.type, item.note),
+    );
     final saved = await saveFile(
       service.setFileName(set),
       bytes,
@@ -93,6 +102,7 @@ class _SetScreenState extends ConsumerState<SetScreen> {
       formatDate: (date) => formatGigDate(context, date),
       untitled: l10n.untitled,
       songMissing: l10n.songMissing,
+      pause: l10n.pause,
     );
   }
 
@@ -334,15 +344,12 @@ class _SetItemTile extends ConsumerWidget {
     );
 
     // Name of the item in the message after removing it.
-    final note = item.note?.trim() ?? '';
     final itemName = switch (item.type) {
       SetItemType.song =>
         song == null
             ? l10n.songMissing
             : (song.title.isEmpty ? l10n.untitled : song.title),
-      _ when note.isNotEmpty => note,
-      SetItemType.pause => l10n.pause,
-      _ => l10n.textItem,
+      _ => markerTitle(l10n, item.type, item.note),
     };
     Future<void> remove() async {
       final messenger = ScaffoldMessenger.of(context);
@@ -357,22 +364,26 @@ class _SetItemTile extends ConsumerWidget {
     }
 
     Future<void> editMarker() async {
+      final pause = item.type == SetItemType.pause;
       final label = await askText(
         context,
         title: l10n.edit,
-        initial: item.note ?? '',
+        initial: markerNote(item.type, item.note) ?? '',
+        hint: pause ? l10n.pause : l10n.textItemHint,
+        allowEmpty: pause,
       );
-      if (label != null) await repo.updateMarker(item.id, label);
+      if (label != null) {
+        await repo.updateMarker(item.id, markerNote(item.type, label) ?? '');
+      }
     }
 
     if (item.type != SetItemType.song) {
       // The type label is shown once: as the title without a note of its own
-      // (e.g. a break still named "Break"), otherwise below the note (#268).
-      final typeLabel = item.type == SetItemType.pause
-          ? l10n.pause
-          : l10n.textItem;
-      final hasNote =
-          note.isNotEmpty && note.toLowerCase() != typeLabel.toLowerCase();
+      // (also a break still named "Pause" or "Break" from any UI language),
+      // otherwise below the note (#268, #289).
+      final typeLabel = markerTypeLabel(l10n, item.type);
+      final note = markerNote(item.type, item.note);
+      final hasNote = note != null;
       return ListTile(
         leading: SizedBox(
           width: 32,
@@ -381,7 +392,7 @@ class _SetItemTile extends ConsumerWidget {
           ),
         ),
         title: Text(
-          hasNote ? note : typeLabel,
+          note ?? typeLabel,
           style: theme.textTheme.titleMedium?.copyWith(
             fontStyle: FontStyle.italic,
             color: theme.colorScheme.secondary,
