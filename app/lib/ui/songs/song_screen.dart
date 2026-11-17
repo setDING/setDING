@@ -146,7 +146,9 @@ class _SongScreenState extends ConsumerState<SongScreen> {
         if (song == null) return const Scaffold();
         // Permissions of the song's library, wherever it was opened from.
         final library = ref.watch(libraryProvider(song.libraryId));
-        // The arrangement of the band chosen on the sets tab (ADR-0025).
+        // The arrangement of the band chosen on the sets tab (ADR-0025):
+        // shown and edited in its own card only; the song itself is shown
+        // as written.
         final band = ref.watch(arrangementBandProvider(song.libraryId));
         final arrangement = band == null
             ? null
@@ -159,7 +161,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
         );
         final formatter = ChordFormatter.forSong(
           parsed,
-          transpose: (arrangement?.transpose ?? 0) + overlay.transpose,
+          transpose: overlay.transpose,
           capo: overlay.capoFret,
           notation: settings.notation,
           nashville: overlay.nashville ?? settings.nashville,
@@ -236,8 +238,6 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   artist: song.artist,
                   song: parsed,
                   formatter: formatter,
-                  bandSequence: arrangement?.sequence,
-                  bandTempo: arrangement?.tempo,
                 ),
                 if (band != null &&
                     (arrangement != null || band.canManageSets)) ...[
@@ -251,8 +251,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                 ],
                 const SizedBox(height: 12),
                 _AdjustmentsBar(
-                  // Personal changes start from the band's key (ADR-0025).
-                  songKey: parsed.key?.transpose(arrangement?.transpose ?? 0),
+                  songKey: parsed.key,
                   formatter: formatter,
                   songCapo: parsed.capoFret,
                   notation: settings.notation,
