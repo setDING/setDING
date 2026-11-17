@@ -39,6 +39,7 @@ void main() {
   _searchTests();
   _convertTests();
   _dropTests();
+  _columnTests();
 
   group('moveLines', () {
     SourceEdit? up(String t, int b, int e) => moveLines(t, b, e, up: true);
@@ -249,6 +250,33 @@ void _dropTests() {
 
     test('whole lines dropped at the end of the last line go after it', () {
       expect(_mark(drop('<a\n>b', 3)), 'b\n<a>');
+    });
+  });
+}
+
+void _columnTests() {
+  group('sourceColumn', () {
+    test('skips chords and markup', () {
+      const line = '[C]Hello <b>my</b> [G]friend';
+      expect(sourceColumn(line, 0), 3); // H
+      expect(sourceColumn(line, 6), 12); // m
+      expect(sourceColumn(line, 9), 22); // f
+      expect(sourceColumn(line, 99), line.length);
+    });
+
+    test('a chord tap goes before the bracket', () {
+      const line = '[C]Hello [G]friend';
+      expect(sourceColumn(line, 6, atChord: true), 9);
+      expect(sourceColumn(line, 0, atChord: true), 0);
+      // No chord at that position: the character itself.
+      expect(sourceColumn(line, 2, atChord: true), 5);
+    });
+
+    test('directive lines map into their value', () {
+      const line = '{comment: Play <i>soft</i>}';
+      expect(sourceColumn(line, 0), 10);
+      expect(sourceColumn(line, 5), 18);
+      expect(sourceColumn(line, 99), line.length - 1);
     });
   });
 }
