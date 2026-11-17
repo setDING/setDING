@@ -16,6 +16,14 @@ class LruCache<K, V extends Object> {
     return value;
   }
 
+  /// The cached value of [key] (now the most recently used), or null; does
+  /// not create it.
+  V? lookup(K key) {
+    final value = _entries.remove(key);
+    if (value != null) _entries[key] = value;
+    return value;
+  }
+
   void clear() => _entries.clear();
 }
 

@@ -93,7 +93,8 @@ void main() {
             matching: find.byType(Scrollable),
           )
           .first;
-      await _trace(binding, 'song_list_scroll', 12, (i) async {
+      // A fling has many frames: four per part.
+      await _trace(binding, 'song_list_scroll', 12, perPart: 4, (i) async {
         // Six flings down, then six up.
         final down = i < 6;
         await tester.fling(list, Offset(0, down ? -1200 : 1200), 4000);
@@ -192,24 +193,23 @@ void main() {
 /// would fill half of the VM's timeline buffer.
 const _streams = ['Dart', 'Embedder', 'GC'];
 
-/// Steps per recorded part of a scenario: the VM keeps the timeline in a ring
-/// buffer (about 32,000 events), so long scenarios are recorded in parts that
-/// the driver joins again (test_driver/perf_driver.dart); otherwise only their
-/// end would be measured.
-const _stepsPerPart = 10;
-
-/// Runs [count] steps of a scenario and records their timeline as [key]; in
-/// parts of [_stepsPerPart] steps, reported as `key#1`, `key#2`, ….
+/// Runs [count] steps of a scenario and records their timeline as [key].
+///
+/// The VM keeps the timeline in a ring buffer (about 32,000 events), so
+/// scenarios are recorded in parts of [perPart] steps, reported as `key#1`,
+/// `key#2`, …, which the driver joins again (test_driver/perf_driver.dart);
+/// otherwise only the end of a long scenario would be measured.
 Future<void> _trace(
   IntegrationTestWidgetsFlutterBinding binding,
   String key,
   int count,
-  Future<void> Function(int step) step,
-) async {
-  for (var start = 0, part = 1; start < count; start += _stepsPerPart, part++) {
+  Future<void> Function(int step) step, {
+  int perPart = 10,
+}) async {
+  for (var start = 0, part = 1; start < count; start += perPart, part++) {
     await binding.traceAction(
       () async {
-        for (var i = start; i < min(start + _stepsPerPart, count); i++) {
+        for (var i = start; i < min(start + perPart, count); i++) {
           await step(i);
         }
       },

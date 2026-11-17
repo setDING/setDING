@@ -26,6 +26,7 @@ import '../render/song_image.dart';
 import '../render/song_view.dart';
 import '../sets/set_item_label.dart';
 import '../widgets/key_picker.dart';
+import 'live_preparation.dart';
 import 'live_theme.dart';
 import 'page_hint.dart';
 import 'pdf_spread_view.dart';
@@ -176,6 +177,16 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   final _songPages = <int, SongPageController>{};
   bool _controls = false;
 
+  /// Builds the neighbours of the page on stage in idle time (issue #296).
+  late final LivePreparation _preparation = LivePreparation(
+    length: widget.items.length,
+    current: widget.initialIndex,
+  );
+
+  /// The pages as built, so that rebuilding the live screen (e.g. when the
+  /// page changes) does not build the songs again.
+  final _pageWidgets = <int, Widget>{};
+
   /// The route of live mode: keys are handled only while it is on top.
   ModalRoute<Object?>? _route;
 
@@ -202,6 +213,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     _setFullScreen(true);
     _sync.pause();
     FocusManager.instance.addEarlyKeyEventHandler(_onKey);
+    _preparation.focus(_index);
   }
 
   @override
@@ -230,6 +242,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     for (final c in _songPages.values) {
       c.dispose();
     }
+    _preparation.dispose();
     super.dispose();
   }
 
@@ -337,8 +350,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       }
     }
     if (_index < _items.length - 1) {
-      // The next song starts at its first page.
+      // The next song starts at its first page. It is built already, unless
+      // the turns are faster than the preparation.
       _songPages[_index + 1]?.first();
+      _preparation.complete(_index + 1);
       _pages.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
@@ -365,6 +380,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       return;
     }
     if (_index > 0) {
+      _preparation.complete(_index - 1);
       _pages.previousPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
@@ -465,7 +481,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         ),
       ),
     );
-    if (target != null) _pages.jumpToPage(target);
+    if (target != null) {
+      _preparation.complete(target);
+      _pages.jumpToPage(target);
+    }
   }
 
   /// Changes the key of the current set item. It is stored on the set item,
@@ -474,7 +493,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     final item = _items[_index];
     final id = item.setItemId;
     if (id == null) return;
-    setState(() => _items[_index] = item.withSetTranspose(transpose));
+    setState(() {
+      _items[_index] = item.withSetTranspose(transpose);
+      _pageWidgets.remove(_index);
+    });
     await ref.read(setRepositoryProvider).setItemTranspose(id, transpose);
   }
 
@@ -551,9 +573,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                               // The direct neighbours are built ahead (one
                               // page of cache on each side): the next song is
                               // fitted and its PDF opened (landscape: its
-                              // pages rendered) before the turn. Items
-                              // further away are not kept, so memory stays
-                              // bounded in long sets.
+                              // pages rendered) before the turn, in idle
+                              // time after the previous turn (issue #296).
+                              // Items further away are not kept, so memory
+                              // stays bounded in long sets.
                               allowImplicitScrolling: true,
                               itemCount: items.length,
                               onPageChanged: (i) => setState(() {
@@ -561,16 +584,25 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                 // its first page.
                                 if (i > _index) _songPageFor(i).first();
                                 _index = i;
+                                _preparation.focus(i);
                               }),
-                              itemBuilder: (context, i) => _LiveItemPage(
-                                item: items[i],
-                                scrollController: _scrollFor(i),
-                                pdfController: _pdfFor(i),
-                                spreadController: _spreadFor(i),
-                                fitController: _fitFor(i),
-                                songPageController: _songPageFor(i),
-                                onTap: _onTap,
-                              ),
+                              itemBuilder: (context, i) =>
+                                  _pageWidgets.putIfAbsent(
+                                    i,
+                                    () => PreparedPage(
+                                      preparation: _preparation[i],
+                                      child: _LiveItemPage(
+                                        item: items[i],
+                                        scrollController: _scrollFor(i),
+                                        pdfController: _pdfFor(i),
+                                        spreadController: _spreadFor(i),
+                                        fitController: _fitFor(i),
+                                        songPageController: _songPageFor(i),
+                                        preparation: _preparation[i],
+                                        onTap: _onTap,
+                                      ),
+                                    ),
+                                  ),
                             ),
                           ),
                         );
@@ -892,12 +924,16 @@ class _LiveItemPage extends ConsumerWidget {
     required this.spreadController,
     required this.fitController,
     required this.songPageController,
+    required this.preparation,
     required this.onTap,
   });
 
   final LiveItem item;
   final ScrollController scrollController;
   final PdfViewerController pdfController;
+
+  /// How far the page is built (issue #296).
+  final PagePreparation preparation;
 
   /// Position when the PDF is shown as two pages side by side (landscape).
   final PdfSpreadController spreadController;
@@ -1026,6 +1062,7 @@ class _LiveItemPage extends ConsumerWidget {
       scrollController: scrollController,
       fitController: fitController,
       songPageController: songPageController,
+      preparation: preparation,
       attachments: attachments,
       imageLookup: (src) {
         final image = imageAttachmentFor(attachments, src);
@@ -1048,6 +1085,7 @@ class _ChordProPage extends ConsumerWidget {
     required this.scrollController,
     required this.fitController,
     required this.songPageController,
+    required this.preparation,
     required this.attachments,
     required this.imageLookup,
   });
@@ -1067,6 +1105,10 @@ class _ChordProPage extends ConsumerWidget {
   final ScrollController scrollController;
   final _FitController fitController;
   final SongPageController songPageController;
+
+  /// How far the page is built: a page that is not complete fits the song
+  /// outside of frames and builds it in steps (issue #296).
+  final PagePreparation preparation;
 
   /// Attachments of the song; [imageLookup] finds images among them.
   final List<AttachmentEntry> attachments;
@@ -1115,119 +1157,128 @@ class _ChordProPage extends ConsumerWidget {
             ),
           ),
           Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final size = Size(
-                  constraints.maxWidth - 2 * _margin,
-                  constraints.maxHeight,
-                );
-                final scale = overlay.fontScale;
-                final textScaler = MediaQuery.textScalerOf(context);
-                final baseStyle = DefaultTextStyle.of(context).style;
-                // By content: the list is loaded anew after the page was
-                // disposed.
-                final attachmentsKey = [
-                  for (final a in attachments)
-                    '${a.id}/${a.name}/${a.fileName}',
-                ].join('\n');
-                final locale = Localizations.localeOf(context);
-                if (!settings.autoFit) {
-                  songPageController.attach(1);
-                  final columns = settings.columns == ColumnMode.auto
-                      ? 1
-                      : settings.maxColumns;
-                  final collapse = settings.chorusRepeat == ChorusRepeat.label;
-                  // Fit to page keeps the columns and the chorus display and
-                  // only measures the font scale (on demand: it measures
-                  // every line of the song).
-                  fitController.fontScale = () {
-                    final fit = fitSong(
+            // Rebuilt when the preparation goes on, e.g. once the fit is
+            // there.
+            child: ListenableBuilder(
+              listenable: preparation,
+              builder: (context, _) => LayoutBuilder(
+                builder: (context, constraints) {
+                  final size = Size(
+                    constraints.maxWidth - 2 * _margin,
+                    constraints.maxHeight,
+                  );
+                  final scale = overlay.fontScale;
+                  final textScaler = MediaQuery.textScalerOf(context);
+                  final baseStyle = DefaultTextStyle.of(context).style;
+                  // By content: the list is loaded anew after the page was
+                  // disposed.
+                  final attachmentsKey = [
+                    for (final a in attachments)
+                      '${a.id}/${a.name}/${a.fileName}',
+                  ].join('\n');
+                  final locale = Localizations.localeOf(context);
+                  if (!settings.autoFit) {
+                    songPageController.attach(1);
+                    final columns = settings.columns == ColumnMode.auto
+                        ? 1
+                        : settings.maxColumns;
+                    final collapse =
+                        settings.chorusRepeat == ChorusRepeat.label;
+                    // Fit to page keeps the columns and the chorus display and
+                    // only measures the font scale (on demand: it measures
+                    // every line of the song).
+                    fitController.fontScale = () {
+                      final fit = fitSong(
+                        parsed,
+                        formatter: formatter,
+                        lyricsOnly: lyricsOnly,
+                        labeler: sectionLabeler(l10n),
+                        notes: overlay.notes,
+                        baseFontSize: settings.fontSize,
+                        maxFontSize: settings.fontSize * _maxFontScale,
+                        minFontSize: settings.fontSize * _minFontScale,
+                        size: size,
+                        textScaler: textScaler,
+                        baseStyle: baseStyle,
+                        minColumns: columns,
+                        maxColumns: columns,
+                        chorusRepeat: collapse
+                            ? ChorusRepeat.label
+                            : ChorusRepeat.full,
+                        diagramResolver: resolver,
+                        diagramsPosition: diagrams,
+                        imageLookup: imageLookup,
+                      );
+                      return fit.fits
+                          // A small margin for measurement differences, which
+                          // the fitted view absorbs with a FittedBox.
+                          ? fit.fontSize / settings.fontSize * 0.98
+                          : _minFontScale;
+                    };
+                    // Several columns are measured to split the song; the
+                    // measurement does not depend on the font size.
+                    final layoutKey = (
+                      parsed,
+                      formatter.transpose,
+                      formatter.capo,
+                      formatter.notation,
+                      formatter.nashville,
+                      formatter.style,
+                      formatter.superscript,
+                      lyricsOnly,
+                      overlay.notes,
+                      collapse,
+                      diagrams,
+                      settings.instrument,
+                      textScaler,
+                      baseStyle,
+                      attachmentsKey,
+                      locale,
+                    );
+                    SongLayout measure() => layoutSong(
                       parsed,
                       formatter: formatter,
                       lyricsOnly: lyricsOnly,
                       labeler: sectionLabeler(l10n),
                       notes: overlay.notes,
-                      baseFontSize: settings.fontSize,
-                      maxFontSize: settings.fontSize * _maxFontScale,
-                      minFontSize: settings.fontSize * _minFontScale,
-                      size: size,
-                      textScaler: textScaler,
-                      baseStyle: baseStyle,
-                      minColumns: columns,
-                      maxColumns: columns,
-                      chorusRepeat: collapse
-                          ? ChorusRepeat.label
-                          : ChorusRepeat.full,
+                      collapseRecalls: collapse,
                       diagramResolver: resolver,
                       diagramsPosition: diagrams,
+                      textScaler: textScaler,
+                      baseStyle: baseStyle,
                       imageLookup: imageLookup,
                     );
-                    return fit.fits
-                        // A small margin for measurement differences, which
-                        // the fitted view absorbs with a FittedBox.
-                        ? fit.fontSize / settings.fontSize * 0.98
-                        : _minFontScale;
-                  };
-                  // Several columns are measured to split the song; the
-                  // measurement does not depend on the font size.
-                  final layout = columns <= 1
-                      ? null
-                      : _layouts.get(
-                          (
-                            parsed,
-                            formatter.transpose,
-                            formatter.capo,
-                            formatter.notation,
-                            formatter.nashville,
-                            formatter.style,
-                            formatter.superscript,
-                            lyricsOnly,
-                            overlay.notes,
-                            collapse,
-                            diagrams,
-                            settings.instrument,
-                            textScaler,
-                            baseStyle,
-                            attachmentsKey,
-                            locale,
-                          ),
-                          () => layoutSong(
-                            parsed,
-                            formatter: formatter,
-                            lyricsOnly: lyricsOnly,
-                            labeler: sectionLabeler(l10n),
-                            notes: overlay.notes,
-                            collapseRecalls: collapse,
-                            diagramResolver: resolver,
-                            diagramsPosition: diagrams,
-                            textScaler: textScaler,
-                            baseStyle: baseStyle,
-                            imageLookup: imageLookup,
-                          ),
-                        );
-                  return _scrolling(
-                    size,
-                    _options(
-                      formatter,
-                      lyricsOnly,
-                      settings.fontSize * scale,
-                      columns,
-                      collapse,
-                      resolver,
-                      diagrams,
-                      layout: layout,
-                    ),
-                  );
-                }
-                final songColumns =
-                    settings.columns == ColumnMode.auto &&
-                        parsed.columns != null
-                    ? parsed.columns!.clamp(1, 4)
-                    : null;
-                // Rebuilds (page changes, overlay events) reuse the fit:
-                // fitting measures every line of the song.
-                final fit = _fits.get(
-                  (
+                    SongLayout? layout;
+                    if (columns > 1) {
+                      layout = preparation.complete
+                          ? _layouts.get(layoutKey, measure)
+                          : _layouts.lookup(layoutKey);
+                      if (layout == null) {
+                        return _later(() => _layouts.get(layoutKey, measure));
+                      }
+                    }
+                    return _scrolling(
+                      size,
+                      _options(
+                        formatter,
+                        lyricsOnly,
+                        settings.fontSize * scale,
+                        columns,
+                        collapse,
+                        resolver,
+                        diagrams,
+                        layout: layout,
+                      ),
+                    );
+                  }
+                  final songColumns =
+                      settings.columns == ColumnMode.auto &&
+                          parsed.columns != null
+                      ? parsed.columns!.clamp(1, 4)
+                      : null;
+                  // Rebuilds (page changes, overlay events) reuse the fit:
+                  // fitting measures every line of the song.
+                  final fitKey = (
                     parsed,
                     formatter.transpose,
                     formatter.capo,
@@ -1248,8 +1299,8 @@ class _ChordProPage extends ConsumerWidget {
                     baseStyle,
                     attachmentsKey,
                     locale,
-                  ),
-                  () => fitSong(
+                  );
+                  SongFit fitNow() => fitSong(
                     parsed,
                     formatter: formatter,
                     lyricsOnly: lyricsOnly,
@@ -1269,82 +1320,110 @@ class _ChordProPage extends ConsumerWidget {
                     diagramsPosition: diagrams,
                     imageLookup: imageLookup,
                     maxPages: _maxSongPages,
-                  ),
-                );
-                if (!fit.fits) {
-                  songPageController.attach(1);
-                  return _scrolling(
-                    size,
-                    _options(
-                      formatter,
-                      lyricsOnly,
-                      fit.fontSize * scale,
-                      fit.columns,
-                      fit.collapseRecalls,
-                      resolver,
-                      diagrams,
-                    ),
                   );
-                }
-                final pages = _songPages(fit, scale, size);
-                // Measured at the reference size: valid for any scale.
-                SongRenderOptions options(SongLayout? layout) => _options(
-                  formatter,
-                  lyricsOnly,
-                  fit.fontSize * scale,
-                  pages?.columns ?? fit.columns,
-                  fit.collapseRecalls,
-                  resolver,
-                  diagrams,
-                  layout: layout,
-                );
-                // Does not fit on pages (e.g. a section taller than the
-                // page at a large personal font scale): scrolling.
-                if (pages == null) {
-                  songPageController.attach(1);
-                  return _scrolling(size, options(fit.layout));
-                }
-                songPageController.attach(pages.ends.length);
-                // Fits: no scrolling. FittedBox only shrinks, as a safety net
-                // for small measurement differences (e.g. wrapped notes).
-                return ListenableBuilder(
-                  listenable: songPageController,
-                  builder: (context, _) {
-                    final layout = fit.layout;
-                    final page = songPageController.page;
-                    final start = page == 0 ? 0 : pages.ends[page - 1];
-                    final end = pages.ends[page];
-                    final pageOptions = options(
-                      layout == null || pages.ends.length == 1
-                          ? layout
-                          : (
-                              blocks: layout.blocks.sublist(start, end),
-                              metrics: layout.metrics.sublist(start, end),
-                            ),
-                    );
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: _margin),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.topLeft,
-                        child: SizedBox(
-                          width: size.width,
-                          child: SongBody(
-                            key: ValueKey(('song-page', page)),
-                            song: parsed,
-                            options: pageOptions,
-                          ),
-                        ),
+                  // A page that is prepared ahead fits the song outside of
+                  // frames (issue #296); the page on stage at once.
+                  final fit = preparation.complete
+                      ? _fits.get(fitKey, fitNow)
+                      : _fits.lookup(fitKey);
+                  if (fit == null) {
+                    return _later(() => _fits.get(fitKey, fitNow));
+                  }
+                  if (!fit.fits) {
+                    songPageController.attach(1);
+                    return _scrolling(
+                      size,
+                      _options(
+                        formatter,
+                        lyricsOnly,
+                        fit.fontSize * scale,
+                        fit.columns,
+                        fit.collapseRecalls,
+                        resolver,
+                        diagrams,
                       ),
                     );
-                  },
-                );
-              },
+                  }
+                  final pages = _songPages(fit, scale, size);
+                  // Measured at the reference size: valid for any scale.
+                  SongRenderOptions options(SongLayout? layout) => _options(
+                    formatter,
+                    lyricsOnly,
+                    fit.fontSize * scale,
+                    pages?.columns ?? fit.columns,
+                    fit.collapseRecalls,
+                    resolver,
+                    diagrams,
+                    layout: layout,
+                  );
+                  // Does not fit on pages (e.g. a section taller than the
+                  // page at a large personal font scale): scrolling.
+                  if (pages == null) {
+                    songPageController.attach(1);
+                    return _scrolling(size, options(fit.layout));
+                  }
+                  songPageController.attach(pages.ends.length);
+                  // Built again only when the page changes, not when the
+                  // number of pages is told to the page indicator.
+                  (int, Widget)? shown;
+                  // Fits: no scrolling. FittedBox only shrinks, as a safety net
+                  // for small measurement differences (e.g. wrapped notes).
+                  return ListenableBuilder(
+                    listenable: songPageController,
+                    builder: (context, _) {
+                      final layout = fit.layout;
+                      final page = songPageController.page;
+                      if (shown case (final p, final body) when p == page) {
+                        return body;
+                      }
+                      final start = page == 0 ? 0 : pages.ends[page - 1];
+                      final end = pages.ends[page];
+                      final pageOptions = options(
+                        layout == null || pages.ends.length == 1
+                            ? layout
+                            : (
+                                blocks: layout.blocks.sublist(start, end),
+                                metrics: layout.metrics.sublist(start, end),
+                              ),
+                      );
+                      final body = Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: _margin,
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.topLeft,
+                          child: SizedBox(
+                            width: size.width,
+                            child: SongBody(
+                              key: ValueKey(('song-page', page)),
+                              song: parsed,
+                              options: pageOptions,
+                              progress: preparation.body,
+                            ),
+                          ),
+                        ),
+                      );
+                      shown = (page, body);
+                      return body;
+                    },
+                  );
+                },
+              ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  /// Nothing below the header yet: [work] (fitting or measuring the song)
+  /// runs outside of frames first (issue #296).
+  Widget _later(VoidCallback work) {
+    preparation
+      ..pending = work
+      ..body.total = null;
+    return const SizedBox.shrink();
   }
 
   SongRenderOptions _options(
@@ -1410,7 +1489,11 @@ class _ChordProPage extends ConsumerWidget {
       SingleChildScrollView(
         controller: scrollController,
         padding: EdgeInsets.fromLTRB(_margin, 0, _margin, size.height * 0.25),
-        child: SongBody(song: parsed, options: options),
+        child: SongBody(
+          song: parsed,
+          options: options,
+          progress: preparation.body,
+        ),
       );
 }
 
