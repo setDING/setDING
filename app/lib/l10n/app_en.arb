@@ -44,6 +44,7 @@
   "editSource": "Edit ChordPro",
   "attachments": "Attachments",
   "addAttachment": "Attach file",
+  "noAttachments": "No attachments yet.",
   "attachmentTooLarge": "The file is larger than 20 MB and cannot be attached.",
   "attachmentName": "Attachment name",
   "deleteAttachmentTitle": "Delete attachment?",
@@ -263,6 +264,7 @@
   "sequenceEdit": "Song sequence for this set",
   "sequenceFromSet": "Sequence changed for this set",
   "sequenceFromBand": "Sequence of the band",
+  "bandArrangement": "Band arrangement",
   "arrangementOf": "Arrangement of {band}",
   "@arrangementOf": {
     "placeholders": {

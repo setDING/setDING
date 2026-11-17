@@ -1,9 +1,12 @@
+import 'dart:typed_data';
+
 import 'package:realchord/data/database.dart';
 import 'package:realchord/data/demo_song.dart';
 import 'package:realchord/ui/live/live_screen.dart';
 import 'package:realchord/ui/render/song_view.dart';
 import 'package:realchord/ui/sets/set_screen.dart';
 import 'package:realchord/ui/widgets/key_picker.dart';
+import 'package:realchord/ui/songs/song_editor_screen.dart';
 import 'package:realchord/ui/songs/song_screen.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
@@ -73,7 +76,11 @@ void main() {
     // Chord above lyrics.
     expect(find.text('D/F#'), findsWidgets);
 
-    // The adjustments are marked as personal, not as changes to the song.
+    // The adjustments are in a side panel, marked as personal, not as
+    // changes to the song.
+    expect(find.byKey(const Key('personal-adjustments')), findsNothing);
+    await tester.tap(find.byTooltip('Personal adjustments'));
+    await tester.pumpAndSettle();
     expect(find.byKey(const Key('personal-adjustments')), findsOneWidget);
     expect(find.text('Personal adjustments'), findsOneWidget);
     expect(find.text('My notes'), findsOneWidget);
@@ -151,6 +158,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('C'), findsOneWidget);
 
+    await tester.tap(find.byTooltip('Personal adjustments'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Nashville numbers'));
     await tester.pumpAndSettle();
     expect(find.text('4'), findsOneWidget);
@@ -210,6 +219,8 @@ void main() {
     );
     await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
     await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Personal adjustments'));
+    await tester.pumpAndSettle();
     expect(find.text('Capo: 2 (D), as in song'), findsOneWidget);
     expect(find.text('G'), findsOneWidget); // shapes as written
     // Key of the shapes, the sounding key next to the capo.
@@ -243,6 +254,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Key: A'), findsOneWidget);
 
+    await tester.tap(find.byTooltip('Personal adjustments'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('No capo'));
     await tester.pumpAndSettle();
     expect(find.text('No capo – Key: A'), findsOneWidget);
@@ -596,6 +609,121 @@ void main() {
     await app.dispose(tester);
   });
 
+  group('song screen side panels', () {
+    bool badge(WidgetTester tester, String key) => tester
+        .widget<Badge>(
+          find.descendant(
+            of: find.byKey(Key(key)),
+            matching: find.byType(Badge),
+          ),
+        )
+        .isLabelVisible;
+
+    Future<void> addPdf(TestApp app, String id) => app.songs.addAttachment(
+      id,
+      name: 'Lead sheet',
+      bytes: Uint8List.fromList([1, 2, 3]),
+      pages: 1,
+      extension: 'pdf',
+    );
+
+    testWidgets('the personal icon shows a dot while the song is adjusted', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final id = await tester.runAsync(
+        () => app.songs.createSong(source: '{title: X}\n{key: G}\n[G]One'),
+      );
+      await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+      await tester.pumpAndSettle();
+      expect(badge(tester, 'open-personal-adjustments'), isFalse);
+      // Nothing of the adjustments is above the song any more.
+      expect(find.byTooltip('Larger text'), findsNothing);
+
+      await tester.tap(find.byTooltip('Personal adjustments'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Larger text'));
+      await tester.pumpAndSettle();
+      expect(badge(tester, 'open-personal-adjustments'), isTrue);
+
+      await tester.tap(find.text('Reset personal adjustments'));
+      await tester.pumpAndSettle();
+      expect(badge(tester, 'open-personal-adjustments'), isFalse);
+      // The panel closes with its close button.
+      await tester.tap(find.byTooltip('Close'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('personal-adjustments')), findsNothing);
+      await app.dispose(tester);
+    });
+
+    testWidgets('attachments are in their own panel with a count', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final id = await tester.runAsync(() async {
+        final id = await app.songs.createSong(source: '{title: X}\n[G]One');
+        await addPdf(app, id);
+        return id;
+      });
+      await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+      await tester.pumpAndSettle();
+      expect(find.text('Lead sheet'), findsNothing);
+      final icon = find.byKey(const Key('open-attachments'));
+      expect(
+        find.descendant(of: icon, matching: find.text('1')),
+        findsOneWidget,
+      );
+
+      await tester.tap(icon);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('song-attachments')), findsOneWidget);
+      expect(find.text('Lead sheet'), findsOneWidget);
+      expect(find.text('Attach file'), findsOneWidget);
+      // The live view is chosen there, too.
+      expect(find.text('Show in live mode'), findsOneWidget);
+      await app.dispose(tester);
+    });
+
+    testWidgets('a song without ChordPro keeps its attachments in view', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final id = await tester.runAsync(() async {
+        final id = await app.songs.createSong(source: '{title: Sheet only}');
+        await addPdf(app, id);
+        return id;
+      });
+      await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('open-attachments')), findsNothing);
+      expect(find.text('Lead sheet'), findsOneWidget);
+      expect(find.text('This song has no ChordPro text yet.'), findsOneWidget);
+      await app.dispose(tester);
+    });
+
+    testWidgets('the ChordPro editor opens from the overflow menu', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final id = await tester.runAsync(
+        () => app.songs.createSong(source: '{title: X}\n[G]One'),
+      );
+      await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Edit ChordPro'), findsNothing);
+      await tester.tap(find.byType(PopupMenuButton<String>).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit ChordPro'));
+      await tester.pumpAndSettle();
+      expect(find.byType(SongEditorScreen), findsOneWidget);
+      await app.dispose(tester);
+    });
+  });
+
   group('the song screen fits the song to the screen', () {
     /// [verses] verses of short chord lines.
     String versesSong(int verses) =>
@@ -683,6 +811,8 @@ void main() {
         () => app.songs.createSong(source: versesSong(40)),
       );
       await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Personal adjustments'));
       await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Larger text'));
       await tester.pumpAndSettle();

@@ -54,6 +54,19 @@ void main() {
       role: BandRole.member,
       transpose: 3,
     );
+    // The arrangement is behind its own icon, marked with a dot.
+    expect(find.byKey(const Key('band-arrangement')), findsNothing);
+    final icon = find.byKey(const Key('open-band-arrangement'));
+    expect(
+      tester
+          .widget<Badge>(
+            find.descendant(of: icon, matching: find.byType(Badge)),
+          )
+          .isLabelVisible,
+      isTrue,
+    );
+    await tester.tap(find.byTooltip('Band arrangement'));
+    await tester.pumpAndSettle();
     final card = find.byKey(const Key('band-arrangement'));
     expect(find.text('Arrangement of Rock'), findsOneWidget);
     expect(
@@ -99,6 +112,7 @@ void main() {
   ) async {
     final (app, _) = await start(tester, user: _bob, role: BandRole.member);
     expect(find.byKey(const Key('band-arrangement')), findsNothing);
+    expect(find.byTooltip('Band arrangement'), findsNothing);
     expect(find.textContaining('100 BPM'), findsWidgets);
     await app.dispose(tester);
   });
@@ -107,6 +121,8 @@ void main() {
     tester,
   ) async {
     final (app, id) = await start(tester, user: _bob, role: BandRole.planner);
+    await tester.tap(find.byTooltip('Band arrangement'));
+    await tester.pumpAndSettle();
     expect(find.text('As in the song'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('arrangement-tempo')));
