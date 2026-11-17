@@ -1,6 +1,8 @@
 import 'package:chordpro/chordpro.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../theme.dart';
+
 /// Spacing of the rendered song, in units of the font size. The widgets
 /// (song_view.dart) and the layout measurement (song_layout.dart) both use
 /// these values, so measured heights match the rendered ones.
@@ -54,8 +56,9 @@ class StageColors extends ThemeExtension<StageColors> {
   /// colour, with high contrast to the background.
   final Color chord;
 
-  /// Deep indigo on light backgrounds (contrast about 9:1).
-  static const light = StageColors(chord: Color(0xFF1A3A9E));
+  /// Deep brand red on light backgrounds (hue of the logo red, HCT tone
+  /// 30; contrast about 9:1).
+  static const light = StageColors(chord: Color(0xFF852309));
 
   /// Amber on dark and black backgrounds (contrast above 11:1), clearly
   /// apart from the light lyrics.
@@ -103,8 +106,7 @@ class SongTextStyles {
     ColorScheme? colors,
     Color? chordColor,
   ]) {
-    final scheme =
-        colors ?? ColorScheme.fromSeed(seedColor: const Color(0xFF3F51B5));
+    final scheme = colors ?? _fallbackScheme;
     final text = base.merge(
       TextStyle(fontSize: fontSize, height: lineHeightFactor),
     );
@@ -161,6 +163,9 @@ class SongTextStyles {
   TextStyle gridChordFor(FormatState format) =>
       applyFormatValues(chord, format.valuesFor(FormatTarget.grid));
 }
+
+/// Colours of styles built without a theme (layout measurement).
+final _fallbackScheme = appColorScheme(Brightness.light);
 
 /// Reference size in points for absolute ChordPro sizes (`{textsize: 14}`,
 /// `<span size="14">`): 12 pt corresponds to the normal size of an item.

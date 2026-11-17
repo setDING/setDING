@@ -14,9 +14,44 @@ wordmark "RealChord" ("Real" in ink, "Chord" in the brand gradient).
 | `logo.svg`, `logo-dark.svg` | Mark and wordmark side by side (generated, used in the README) |
 | `generated/` | PNGs for the native splash screens (generated) |
 
-Brand colors: gradient `#FFB020` → `#E8461C`, ink `#1B1D22`, splash
+Brand colors: red `#E8461C`, mark gradient `#FFB020` → `#E8461C`, wordmark
+gradient ("Chord") `#FFA41C` → `#E8461C`, ink `#1B1D22`, splash
 background `#FFFFFF` (light) and `#121417` (dark). In the app they are
 `BrandColors` in `app/lib/ui/widgets/logo.dart`.
+
+## App colours
+
+The app's colour scheme is derived from the logo red (issue #269):
+`appColorScheme` in `app/lib/ui/theme.dart` calls
+`ColorScheme.fromSeed(seedColor: Color(0xFFE8461C))` for light and dark
+with Material's default `tonalSpot` variant. It keeps the brand hue but
+calm: a muted terracotta instead of the logo's bright vermilion, which would
+compete with the lyrics and sit right next to the error red. (`fidelity`,
+`content` and `vibrant` give a primary of `#B02700`/`#B42900`, almost the
+error red `#BA1A1A`.)
+
+| Role | Light | Dark |
+|---|---|---|
+| `primary` (chords, key badges, buttons) | `#8F4B3A` | `#FFB4A2` |
+| `tertiaryContainer` (search hits, notes) | `#F7E1A6` | `#544519` |
+| `error` (errors, sync conflicts) | `#BA1A1A` | `#FF7164` (tone 65) |
+| `errorContainer` (conflict banner) | `#FFB4AB` (tone 80) | `#93000A` |
+
+With a red seed, two Material error roles land on the same colour as the
+primary roles, so `appColorScheme` moves them to other tones of the
+Material error palette: the dark `error` (tone 80 would be the pastel of
+the dark `primary`) and the light `errorContainer` (tone 90 would be the
+blush of `primaryContainer`). `app/test/theme_test.dart` checks that error
+and primary colours stay apart (CIELAB ΔE), the contrast of lyrics, chords
+and editor colours (≥ 4.5:1) and that the sync-conflict icon in the song
+list differs from the gig icon in both themes.
+
+On stage (live mode, ADR-0007) chords use `StageColors` in
+`app/lib/ui/render/song_style.dart`: a deep brand red `#852309` (the logo's
+hue, about 9:1) on light, amber `#FFC54D` on dark and black, both ≥ 7:1.
+Colours that are not derived from the scheme: RealChord's own `x_`
+directives in the editor (teal, apart from the warm palette), the
+offline-ready icon (green) and the named ChordPro colours of the songs.
 
 ## Where the logo is shown
 

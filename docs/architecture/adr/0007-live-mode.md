@@ -54,7 +54,7 @@ song, all tablets follow automatically. We evaluated whether this is needed.
 - **Appearance on stage:** a per-device setting independent of the app theme: *as app* (default), *dark* (also when
   the app is light) or *black* (true black page, very dark bars, e.g. for OLED screens). The live view, its control
   bar, the bottom bar, the set overview and the PDF background follow it. Chords are drawn in a stronger colour than
-  elsewhere in the app, with a contrast of at least 7:1 in every variant: deep indigo on light, amber on dark and black.
+  elsewhere in the app, with a contrast of at least 7:1 in every variant: deep brand red on light, amber on dark and black.
 - **Only the parts of the sequence:** in the live mode of a set, a song with a sequence (set item, band arrangement or
   the song's own `{x_sequence}`, ADR-0006/ADR-0025) shows only the sections whose part appears in it (`V` matches every
   verse, `V2` only the second). The song stays in document order; order and repetitions of the sequence are not
@@ -102,6 +102,7 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-17: Key, capo, tempo and time signature are shown as large chips in the live header instead of a small info line (issue #264).
 - 2026-11-17: Appearance on stage (as app / dark / black) independent of the app theme, with stronger chord colours in live mode (issue #263).
 - 2026-11-17: Page turning with Bluetooth page turners and the keyboard is back, reversing the removal of 2026-11-16 (#149/#152): right arrow, Page Down and Space forward, left arrow and Page Up back, like the tap zones; fixed mapping; key repeat is ignored (one press turns once). Resolves the open point "Foot pedal support again later?" (issue #261).
+- 2026-11-17: The light stage chord colour follows the brand palette: deep brand red `#852309` instead of indigo (issue #269).
 
 ## Open points
 
