@@ -448,38 +448,55 @@ class EditorToolbar extends StatelessWidget {
           ),
         );
     // Wraps instead of scrolling so that every group stays visible, also
-    // in the narrow editor half of the split view.
+    // in the narrow editor half of the split view. The editing buttons
+    // have a row of their own below the insert menus (#377).
+    final onCommand = this.onCommand;
+    final onSearch = this.onSearch;
+    final editRow = onCommand == null && onSearch == null
+        ? null
+        : Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              if (onCommand != null)
+                _CommandButtons(onCommand: onCommand, undo: undoController),
+              if (onSearch != null)
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  tooltip: _withShortcut(l10n.searchInSong, searchShortcut),
+                  icon: const Icon(Icons.search),
+                  onPressed: onSearch,
+                ),
+            ],
+          );
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      child: Wrap(
-        spacing: 6,
-        runSpacing: 4,
-        crossAxisAlignment: WrapCrossAlignment.center,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          if (onDetails != null)
-            Tooltip(
-              message: l10n.songDetailsTooltip,
-              child: TextButton.icon(
-                onPressed: onDetails,
-                icon: const Icon(Icons.edit_note, size: 18),
-                label: Text(l10n.songDetails),
-              ),
-            ),
-          quick(snippets.chord, l10n.insertChord, '[ ]'),
-          quick(snippets.verse, l10n.insertVerse, l10n.sectionVerse),
-          quick(snippets.chorus, l10n.insertChorus, l10n.sectionChorus),
-          quick(snippets.comment, l10n.insertComment, '{c: }'),
-          for (final group in snippets.groups)
-            _GroupMenu(group: group, onInsert: onInsert),
-          if (onSearch case final onSearch?)
-            IconButton(
-              visualDensity: VisualDensity.compact,
-              tooltip: _withShortcut(l10n.searchInSong, searchShortcut),
-              icon: const Icon(Icons.search),
-              onPressed: onSearch,
-            ),
-          if (onCommand case final onCommand?)
-            _CommandButtons(onCommand: onCommand, undo: undoController),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              if (onDetails != null)
+                Tooltip(
+                  message: l10n.songDetailsTooltip,
+                  child: TextButton.icon(
+                    onPressed: onDetails,
+                    icon: const Icon(Icons.edit_note, size: 18),
+                    label: Text(l10n.songDetails),
+                  ),
+                ),
+              quick(snippets.chord, l10n.insertChord, '[ ]'),
+              quick(snippets.verse, l10n.insertVerse, l10n.sectionVerse),
+              quick(snippets.chorus, l10n.insertChorus, l10n.sectionChorus),
+              quick(snippets.comment, l10n.insertComment, '{c: }'),
+              for (final group in snippets.groups)
+                _GroupMenu(group: group, onInsert: onInsert),
+            ],
+          ),
+          if (editRow != null) ...[const SizedBox(height: 4), editRow],
         ],
       ),
     );
