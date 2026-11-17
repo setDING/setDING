@@ -7,6 +7,7 @@ import 'package:realchord/data/attachment_lookup.dart';
 import 'package:realchord/data/database.dart';
 import 'package:realchord/data/song_repository.dart';
 import 'package:realchord/ui/sets/set_screen.dart';
+import 'package:realchord/ui/widgets/key_picker.dart';
 
 import 'test_app.dart';
 
@@ -49,10 +50,23 @@ Future<({String songId, String setId, List<String> pdfIds})> _setup(
   return (songId: songId, setId: setId, pdfIds: pdfIds);
 }
 
-Finder _dropdown(String songId) => find.byKey(ValueKey('live-view-$songId'));
+Finder _button(String songId) => find.byKey(ValueKey('live-view-$songId'));
 
-String? _shown(WidgetTester tester, String songId) =>
-    tester.widget<DropdownButton<String>>(_dropdown(songId)).value;
+/// Any live view button.
+final _anyButton = find.byWidgetPredicate(
+  (w) =>
+      w.key is ValueKey<String> &&
+      (w.key! as ValueKey<String>).value.startsWith('live-view-') &&
+      !(w.key! as ValueKey<String>).value.startsWith('live-view-option-'),
+);
+
+/// The name of the current choice, from the button's tooltip.
+String _shown(WidgetTester tester, String songId) => tester
+    .widget<IconButton>(_button(songId))
+    .tooltip!
+    .split('\n')
+    .first
+    .replaceFirst('Show in live mode: ', '');
 
 void main() {
   testWidgets('set view shows and changes the live view of a song', (
@@ -64,12 +78,14 @@ void main() {
     await tester.pumpWidget(app.build(home: SetScreen(setId: ids.setId)));
     await tester.pumpAndSettle();
 
-    // ChordPro by default; the pause gets no dropdown.
-    expect(find.byType(DropdownButton<String>), findsOneWidget);
-    expect(_shown(tester, ids.songId), '');
+    // ChordPro by default; the pause gets no button.
+    expect(_anyButton, findsOneWidget);
+    expect(_shown(tester, ids.songId), 'ChordPro text');
+    expect(find.byIcon(Icons.text_snippet_outlined), findsOneWidget);
     expect(
       find.byTooltip(
-        'Show in live mode\nJust for you – the song stays unchanged for everyone else.',
+        'Show in live mode: ChordPro text\n'
+        'Just for you – the song stays unchanged for everyone else.',
       ),
       findsOneWidget,
     );
@@ -79,26 +95,29 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(_dropdown(ids.songId));
+    await tester.tap(_button(ids.songId));
     await tester.pumpAndSettle();
-    expect(find.text('ChordPro text'), findsWidgets);
-    await tester.tap(find.text('Drums').last);
+    // The menu names what the choice is for.
+    expect(find.text('Show in live mode'), findsOneWidget);
+    expect(find.text('ChordPro text'), findsOneWidget);
+    await tester.tap(find.text('Drums'));
     await tester.pumpAndSettle();
 
     final overlay = await tester.runAsync(
       () => app.songs.getOverlay(ids.songId),
     );
     expect(overlay!.liveView, ids.pdfIds[1]);
-    expect(_shown(tester, ids.songId), ids.pdfIds[1]);
+    expect(_shown(tester, ids.songId), 'Drums');
+    expect(find.byIcon(Icons.picture_as_pdf_outlined), findsOneWidget);
 
     // And back to ChordPro.
-    await tester.tap(_dropdown(ids.songId));
+    await tester.tap(_button(ids.songId));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('ChordPro text').last);
+    await tester.tap(find.text('ChordPro text'));
     await tester.pumpAndSettle();
     final reset = await tester.runAsync(() => app.songs.getOverlay(ids.songId));
     expect(reset!.liveView, isNull);
-    expect(_shown(tester, ids.songId), '');
+    expect(_shown(tester, ids.songId), 'ChordPro text');
     await app.dispose(tester);
   });
 
@@ -110,11 +129,12 @@ void main() {
     await tester.pumpAndSettle();
 
     // First by name, as the song screen lists them.
-    expect(_shown(tester, ids.songId), ids.pdfIds[1]); // Drums
+    expect(_shown(tester, ids.songId), 'Drums');
     // ChordPro is no option without ChordPro text.
-    await tester.tap(_dropdown(ids.songId));
+    await tester.tap(_button(ids.songId));
     await tester.pumpAndSettle();
     expect(find.text('ChordPro text'), findsNothing);
+    expect(find.text('Lead sheet'), findsOneWidget);
     await app.dispose(tester);
   });
 
@@ -125,11 +145,11 @@ void main() {
     await tester.pumpWidget(app.build(home: SetScreen(setId: ids.setId)));
     await tester.pumpAndSettle();
 
-    expect(_shown(tester, ids.songId), '');
+    expect(_shown(tester, ids.songId), 'ChordPro text');
     await app.dispose(tester);
   });
 
-  testWidgets('no dropdown without a choice', (tester) async {
+  testWidgets('no button without a choice', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'en'});
     final setIds = await tester.runAsync(
@@ -143,8 +163,61 @@ void main() {
     for (final setId in setIds!) {
       await tester.pumpWidget(app.build(home: SetScreen(setId: setId)));
       await tester.pumpAndSettle();
-      expect(find.byType(DropdownButton<String>), findsNothing);
+      expect(_anyButton, findsNothing);
     }
+    await app.dispose(tester);
+  });
+
+  testWidgets('rarely used actions are in the menu of each row', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final ids = (await tester.runAsync(() => _setup(app, pause: true)))!;
+    await tester.pumpWidget(app.build(home: SetScreen(setId: ids.setId)));
+    await tester.pumpAndSettle();
+    // The key stays in the row; no remove buttons in the rows.
+    expect(find.byType(KeyPicker), findsOneWidget);
+    expect(find.byTooltip('Remove from set'), findsNothing);
+    final menus = find.byWidgetPredicate(
+      (w) => '${w.key}'.contains('set-item-menu-'),
+    );
+    expect(menus, findsNWidgets(2)); // song and pause
+
+    await tester.tap(menus.first);
+    await tester.pumpAndSettle();
+    expect(find.text('Song sequence for this set'), findsOneWidget);
+    expect(find.text('Remove from set'), findsOneWidget);
+    await tester.tapAt(Offset.zero);
+    await tester.pumpAndSettle();
+
+    // The pause: edit and remove.
+    await tester.tap(menus.last);
+    await tester.pumpAndSettle();
+    expect(find.text('Edit'), findsOneWidget);
+    await tester.tap(find.text('Remove from set'));
+    await tester.pumpAndSettle();
+    final items = await tester.runAsync(() => app.sets.getItems(ids.setId));
+    expect(items!.single.song?.id, ids.songId);
+    await app.dispose(tester);
+  });
+
+  testWidgets('a song without ChordPro text has no key in the set', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final ids = (await tester.runAsync(() => _setup(app, source: _pdfOnly)))!;
+    await tester.pumpWidget(app.build(home: SetScreen(setId: ids.setId)));
+    await tester.pumpAndSettle();
+    expect(find.byType(KeyPicker), findsNothing);
+    // Its menu has no sequence either: there are no parts to arrange.
+    await tester.tap(
+      find.byWidgetPredicate((w) => '${w.key}'.contains('set-item-menu-')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Song sequence for this set'), findsNothing);
+    expect(find.text('Remove from set'), findsOneWidget);
     await app.dispose(tester);
   });
 

@@ -465,7 +465,11 @@ void main() {
     final chips = find.byKey(const ValueKey('sequence-chip'));
     expect(chips, findsNWidgets(2)); // the song's sequence
 
-    await tester.tap(find.byTooltip('Song sequence for this set'));
+    await tester.tap(
+      find.byWidgetPredicate((w) => '${w.key}'.contains('set-item-menu-')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Song sequence for this set'));
     await tester.pumpAndSettle();
     expect(find.text('In the song: V, C'), findsOneWidget);
     // Only the parts of the song can be added, by tapping them.
@@ -515,7 +519,11 @@ void main() {
     // Back to the song's sequence.
     await tester.pumpWidget(app.build(home: SetScreen(setId: setId)));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Song sequence for this set'));
+    await tester.tap(
+      find.byWidgetPredicate((w) => '${w.key}'.contains('set-item-menu-')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Song sequence for this set'));
     await tester.pumpAndSettle();
     await tester.tap(find.text("Use the song's sequence"));
     await tester.pumpAndSettle();
