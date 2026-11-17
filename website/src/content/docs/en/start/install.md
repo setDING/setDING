@@ -11,7 +11,8 @@ All versions are in the
 ## Android
 
 setDING is installed and kept up to date with
-[Obtainium](https://github.com/ImranR98/Obtainium):
+[Obtainium](https://github.com/ImranR98/Obtainium). It runs on 64-bit ARM devices
+(arm64), which includes practically all current tablets.
 
 1. Install Obtainium (from its GitHub releases or from F-Droid).
 2. In Obtainium, tap **Add app**, enter `https://github.com/tafli/setDING` and tap
