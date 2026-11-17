@@ -1,0 +1,11 @@
+/* setDING brand colours (app/branding/mark.svg) instead of Starlight's default accent. */
+:root {
+  --sl-color-accent-low: #131d4a;
+  --sl-color-accent: #3d7bff;
+  --sl-color-accent-high: #c9d9ff;
+}
+:root[data-theme='light'] {
+  --sl-color-accent-low: #d6e2ff;
+  --sl-color-accent: #1a2f8f;
+  --sl-color-accent-high: #12205f;
+}

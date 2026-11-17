@@ -1,0 +1,47 @@
+# Website and user documentation (development)
+
+The website at https://setding.app – landing page and user documentation – lives in
+[`website/`](../../website) and is built with Astro Starlight (ADR-0030). It needs
+Node.js with npm on the development machine.
+
+## Build and preview
+
+```bash
+make site-dev     # live reload on http://localhost:4321
+make site         # build into website/dist (also part of `make check`)
+```
+
+`make site` (`tool/build-site.sh`) installs the locked packages (`npm ci`) and builds
+the site. The build fails on pages that do not compile and on broken internal links.
+
+## Writing pages
+
+- Pages are Markdown (`.md`) or MDX (`.mdx`, for components and images) in
+  `website/src/content/docs/`. **Swiss Standard German** pages live at the root, the
+  **English** ones under `en/` with the **same path** (`start/install.md` and
+  `en/start/install.md`), so the language switcher finds them. Write both; a page
+  missing in English shows the German one with a notice.
+- German texts follow the app's rules: Swiss Standard German, no "ß", the same terms
+  and button labels as in `app_de.arb` / `app_en.arb`, written in **bold**.
+- Links between pages are absolute without the domain: `/start/install/` and
+  `/en/start/install/`.
+- Sidebar: one group per directory, configured in `website/astro.config.mjs`; the
+  order within a group comes from `sidebar.order` in the front matter.
+- Screenshots come from `docs/screenshots/` (`make screenshots`); import them in MDX
+  (see `index.mdx`) so Astro converts and sizes them. Do not copy them into
+  `website/`.
+
+## Dependencies
+
+`website/package.json` lists the npm packages; `package-lock.json` locks them.
+`tool/check-deps.sh` (part of `make check`) fails if one is not the newest version;
+`make upgrade` runs `npm update`. A new major version needs its range in
+`package.json` raised by hand, then `npm install`.
+
+## Deployment
+
+The server deploys build the website from the same checkout:
+`make server-release` (production, released versions), `make server-install`
+(test instances) and `make server-site` (only the website, from the working tree, for
+documentation fixes between releases). Hosting:
+[server operations, section 8](../operations/server.md#8-website-owner-once).

@@ -3,9 +3,12 @@
 How the PocketBase backend of setDING is set up and run. Decisions:
 [ADR-0004](../architecture/adr/0004-backend-and-sync.md) (backend and sync) and
 [ADR-0014](../architecture/adr/0014-server-hosting.md) (hosting and operations).
+The same container serves the website and user documentation
+([ADR-0030](../architecture/adr/0030-website-and-user-docs.md)).
 
 ```
 Tablets ──HTTPS──▶ Cloudflare ──tunnel──▶ cloudflared ──▶ PocketBase 127.0.0.1:8090
+Browsers ─HTTPS──▶  (setding.app)             └─────────▶ Caddy      127.0.0.1:8081
                                           └──────── Debian LXC on Proxmox ────────┘
 ```
 
@@ -26,8 +29,9 @@ production instance (`root@192.168.1.40`). Override it for another instance, e.g
 |---|---|
 | `make server-release [VERSION=X.Y.Z]` | **Production updates:** after a release, wait for its green build, then deploy from the tag and stamp the version (default: newest tag) |
 | `make server-install` | Install or update everything from the working tree (idempotent); stamped `X.Y.Z-dev+<commit>` unless it is a clean release tag. First install, test instances, emergencies |
+| `make server-site` | Build the website from the working tree and deploy only the website (documentation fixes between releases) |
 | `make server-status` | Services, PocketBase version, health, latest backups, disk |
-| `make server-logs` | Follow the PocketBase and tunnel logs |
+| `make server-logs` | Follow the PocketBase, Caddy and tunnel logs |
 | `make server-backup` | Run a backup now |
 | `make server-fetch-backup` | Copy the latest backup to `.server-backups/` (off-host copy) |
 | `make server-founder-invite NAME="…"` | One-time link that founds the organization `NAME` (section 7) |
@@ -205,6 +209,27 @@ all requests seem to come from the tunnel and share one limit.
 PocketBase's default rules stay active as well, e.g. `*:create` 20 requests per
 5 s and `/api/` 300 per 10 s. The app waits and retries when it hits them (up to
 about half a minute per request), so a large import syncs more slowly but completes.
+
+## 8. Website (owner, once)
+
+The website and user documentation (`website/`, ADR-0030) is a static build that
+`make server-install`, `make server-release` and `make server-site` build
+(`make site`) and copy to `/var/www/setding-site`. Caddy from Debian serves it on
+`127.0.0.1:8081` ([`tool/server/Caddyfile`](../../tool/server/Caddyfile), installed by
+[`tool/server/install-site.sh`](../../tool/server/install-site.sh)): files under
+`/_astro/` are cached for a year (their names change with their content), all others
+are revalidated, and `www.` redirects to the bare domain.
+
+1. Tunnel → **Public hostname:** `setding.app` (empty subdomain) → service `HTTP` →
+   `localhost:8081`.
+2. Tunnel → **Public hostname:** `www.setding.app` → service `HTTP` →
+   `localhost:8081` (Caddy redirects it to `https://setding.app`).
+3. No Access policy for these hostnames. Bot protection may stay on; the website is
+   only read by browsers.
+4. Check `https://setding.app/` and `https://www.setding.app/en/`.
+
+If Cloudflare already has DNS records for `setding.app` or `www`, delete them first;
+the tunnel creates its own CNAME records.
 
 ## Updates
 

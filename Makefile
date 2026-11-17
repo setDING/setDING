@@ -12,6 +12,7 @@
 #   make apk        build an Android APK for manual installation (sideloading)
 #   make android-keystore  create the Android release key (owner, once)
 #   make release    build the Linux release package (runs on any x86-64 Linux)
+#   make site       build the website and user documentation (website/, ADR-0030)
 #   make server-*   install and operate the PocketBase server (SERVER=root@host)
 
 SHELL := /bin/bash
@@ -74,8 +75,8 @@ BACKEND_REGISTRATION ?= open
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := SETDING_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build web web-serve deps upgrade apk apk-install android-keystore release release-linux release-check reset data-dir backend check test codegen l10n perf screenshots branding examples doctor clean ci-image \
-	server-target server-install server-release server-status server-logs server-backup server-fetch-backup server-founder-invite server-ssh
+.PHONY: help setup dev start build web web-serve site site-dev deps upgrade apk apk-install android-keystore release release-linux release-check reset data-dir backend check test codegen l10n perf screenshots branding examples doctor clean ci-image \
+	server-target server-install server-release server-site server-status server-logs server-backup server-fetch-backup server-founder-invite server-ssh
 
 help: ## Show this help
 	@echo "setDING – make targets"
@@ -154,6 +155,12 @@ web: ## Build the web client into app/build/web (ADR-0018)
 web-serve: web ## Build the web client and serve it with the local backend (make backend)
 	$(MAKE) backend
 
+site: ## Build the website and user documentation into website/dist (ADR-0030)
+	$(ROOT)/tool/build-site.sh
+
+site-dev: ## Serve the website with live reload on http://localhost:4321 (docs/development/website.md)
+	cd $(ROOT)/website && npm ci --no-audit --no-fund --loglevel=error && ASTRO_TELEMETRY_DISABLED=1 npx --no-install astro dev
+
 deps: ## Check that all external libraries are the newest versions
 	$(ROOT)/tool/check-deps.sh
 
@@ -161,9 +168,10 @@ upgrade: ## Upgrade all external libraries within their constraints
 	cd $(PACKAGE) && $(DART) pub upgrade
 	cd $(ROOT)/server && $(DART) pub upgrade
 	cd $(APP) && $(FLUTTER) pub upgrade
+	cd $(ROOT)/website && npm update --no-audit --no-fund
 	$(ROOT)/tool/check-deps.sh
 
-check: ## Run all checks (dependencies, format, analysis, l10n, tests, web build) – the test gate
+check: ## Run all checks (dependencies, format, analysis, l10n, tests, web build, website) – the test gate
 	$(ROOT)/tool/check.sh
 
 test: ## Run all tests
@@ -210,13 +218,16 @@ server-install: server-target ## Install or update the server from the working t
 server-release: server-target ## After a release: wait for its green build, then deploy the server from the tag (VERSION=x.y.z, default newest)
 	@SERVER=$(SERVER) SSH="$(SSH)" PB_VERSION=$(PB_VERSION) $(ROOT)/tool/release/deploy-server.sh $(VERSION)
 
+server-site: server-target ## Build the website from the working tree and deploy only the website (ADR-0030)
+	@SERVER=$(SERVER) SSH="$(SSH)" $(ROOT)/tool/server/deploy-site.sh
+
 server-status: server-target ## Show services, PocketBase version and backups of the server
-	@$(SSH) $(SERVER) 'systemctl --no-pager --lines=0 status pocketbase cloudflared setding-backup.timer; \
+	@$(SSH) $(SERVER) 'systemctl --no-pager --lines=0 status pocketbase caddy cloudflared setding-backup.timer; \
 		echo; /opt/pocketbase/pocketbase --version; curl -fsS http://127.0.0.1:8090/api/health; echo; \
 		echo; echo "Backups:"; ls -lh $(SERVER_BACKUPS) | tail -n 5; echo; df -h /'
 
 server-logs: server-target ## Follow the PocketBase and tunnel logs of the server (Ctrl+C to stop)
-	$(SSH) -t $(SERVER) 'journalctl -u pocketbase -u cloudflared -n 100 -f'
+	$(SSH) -t $(SERVER) 'journalctl -u pocketbase -u caddy -u cloudflared -n 100 -f'
 
 server-backup: server-target ## Run a backup on the server now
 	$(SSH) $(SERVER) 'systemctl start setding-backup.service && journalctl -u setding-backup -n 3 -o cat'

@@ -1,0 +1,31 @@
+# Caddy serves the static website and user documentation (ADR-0030) on
+# 127.0.0.1:8081; the Cloudflare Tunnel publishes it as setding.app and
+# www.setding.app (docs/operations/server.md). TLS is Cloudflare's job.
+# Installed by install.sh to /etc/caddy/Caddyfile.
+{
+	auto_https off
+}
+
+http://:8081 {
+	bind 127.0.0.1
+
+	@www header_regexp www Host ^www\.(.+)$
+	redir @www https://{re.www.1}{uri} 308
+
+	root * /var/www/setding-site
+	encode zstd gzip
+	file_server
+
+	# Files under /_astro/ carry a content hash in their name and never change;
+	# everything else is revalidated, so a deploy shows up at once.
+	@hashed path /_astro/*
+	header @hashed Cache-Control "public, max-age=31536000, immutable"
+	@unhashed not path /_astro/*
+	header @unhashed Cache-Control "no-cache"
+
+	handle_errors {
+		@notfound expression {err.status_code} == 404
+		rewrite @notfound /404.html
+		file_server
+	}
+}
