@@ -46,6 +46,7 @@ A user can be a member of several organizations and bands; roles are defined per
 | Backend & sync | **PocketBase**, self-hosted on an existing server, revision-based sync | [ADR-0004](adr/0004-backend-and-sync.md) |
 | Management | **One app with roles** instead of a separate management application | [ADR-0005](adr/0005-single-app-with-roles.md) |
 | Personal settings | **Overlay model**: personal adjustments never change the shared ChordPro text; per user (`local` for the local library), synced with the account | [ADR-0006](adr/0006-personal-overlays.md), [ADR-0020](adr/0020-overlays-per-user.md) |
+| Settings sync | Settings split into **personal** (instrument, voice, notation, chord style, display, theme, language, drummer preferences; synced with the account, last writer wins per key) and **device** (font size, columns, live appearance, server, sync mode, click volume and latency; never synced); fixed per setting and shown in the settings | [ADR-0027](adr/0027-personal-settings-sync.md) |
 | Band arrangements | New layer between song and set item: per band and song a key (transposition), sequence and tempo, maintained by band leaders and set planners, synced per band with last writer wins; set item transposition becomes relative to the band's key | [ADR-0025](adr/0025-band-arrangements.md) |
 | Drummer mode | Drums instrument preset; beat display and count-in in live mode; **click on the in-ear** from a looped one-bar audio buffer (`flutter_soloud`, the audio is the clock), latency compensation; automatic or manual start, long press of the forward pedal or Enter; tempo on stage only for the evening; song map layout for drums | [ADR-0026](adr/0026-drummer-mode.md) |
 | Live mode | Page turns by tap, swipe, Bluetooth page turner or keyboard, wakelock (set again on return to the app, a failure is shown), next song prepared ahead in idle time (no work in the frames of a turn), progress bar of the set with the pages of the current song, stage appearance (dark/black) independent of the app theme; each member navigates independently (**no leader sync**) | [ADR-0007](adr/0007-live-mode.md) |
@@ -131,6 +132,7 @@ erDiagram
     SONG ||--o{ BAND_ARRANGEMENT : "arranged by"
     SONG ||--o{ ATTACHMENT : has
     ORGANIZATION ||--o{ INVITATION : has
+    USER ||--o| USER_SETTINGS : has
 
     ORGANIZATION { uuid id string name }
     ORG_MEMBERSHIP { uuid organization_id uuid user_id enum role "admin|librarian|member" }
@@ -143,6 +145,7 @@ erDiagram
     PERSONAL_OVERLAY { uuid user_id uuid song_id int transpose int capo float font_scale string notes bool nashville string live_view "chordpro|attachment_id" }
     BAND_ARRANGEMENT { uuid band_id uuid song_id int transpose string sequence int tempo int revision bool deleted }
     ATTACHMENT { uuid id uuid song_id string name file pdf int pages int size_bytes int revision bool deleted }
+    USER_SETTINGS { uuid user_id json data int revision }
     INVITATION { uuid id uuid organization_id uuid band_id string founder_name string token_hash uuid created_by timestamp expires_at bool revoked uuid used_by }
 ```
 
@@ -155,7 +158,8 @@ Notes:
 - **`revision`** and **`deleted`** (soft delete) are the basis for sync (see ADR-0004). Deleting a song, set, set item or attachment can be undone for a few seconds from a message with "Undo"; the restore is a normal change with a new revision, attachment files are deleted only once the undo is gone, and the server restores the adjustments and arrangements a song's deletion removed (ADR-0004, ADR-0015, #267).
 - **`ATTACHMENT`** holds PDF sheet music; a song can also consist of attachments only, without ChordPro text (ADR-0009).
 - **On the server** (ADR-0015) set items are stored as a JSON array in the set (`setlists.items`), so a set is always synced as a whole; attachments carry a redundant `band`; songs store only the ChordPro text and the title (other metadata is derived in the client); revisions come from one server-wide counter. Collections: `users`, `organizations`, `org_memberships`, `bands`, `memberships`, `songs`, `attachments`, `setlists`, `overlays` (personal adjustments, private per user, ADR-0020), `invites`.
-- **`USER.locale`** is optional and only used as a default for new devices; the language is set per device (see ADR-0008).
+- **`USER_SETTINGS`** (ADR-0027) holds the personal settings of a user as JSON, private to the user and merged per key; device settings stay on the device.
+- **`USER.locale`** is optional and no longer used: the language is a personal setting synced with the account (ADR-0008, ADR-0027).
 
 ## 6. Key flows
 
@@ -279,6 +283,7 @@ See "Open points" in the individual ADRs. The most important:
 21. ~~Who may create accounts and organizations?~~ → Operator setting `SETDING_REGISTRATION` = `invite_only` (default) or `open`, founder invitations for new organizations by the operator only, optional email verification (`SETDING_EMAIL_VERIFICATION`), no in-app super-admin (ADR-0024, accepted, #209; implemented in #213). Open: limits per organization
 22. ~~How do bands adapt shared songs?~~ → ADR-0025 (accepted, #216): a band arrangement per band and song (key, sequence, tempo) between song and set item, applied in sets and live mode from a set; the song screen shows it only in its own card (#227), now a side panel behind a band icon (#233); capo stays personal, no band notes; implemented in #221
 23. ~~What does a drummer need in live mode?~~ → ADR-0026 (accepted, #325): drums preset, beat display and count-in, click on the in-ear with the audio as the clock and latency compensation, automatic or manual start, long press of the forward pedal or Enter, tempo on stage only for the evening, song map for drums only; BPM per dotted quarter in compound meters, `{x_time_grouping}` for odd meters. Open: background behaviour, bar counts per part
+24. ~~Which settings follow a person across devices?~~ → ADR-0027 (accepted, #328): fixed split into personal settings (synced with the account, per owner like overlays, last writer wins per key; incl. language, theme, accent colour and the drummer preferences) and device settings (never synced; font size, columns, live appearance, server, sync mode, click volume and latency), grouped and marked in the settings; no per-device override in the first version
 
 ## 10. ADR index
 
@@ -310,5 +315,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0024](adr/0024-registration-mode.md) | Registration mode set by the server operator | Accepted |
 | [0025](adr/0025-band-arrangements.md) | Band arrangements between song and personal overlay | Accepted |
 | [0026](adr/0026-drummer-mode.md) | Drummer mode with beat display, count-in and click | Accepted |
+| [0027](adr/0027-personal-settings-sync.md) | Personal settings synced with the account | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.
