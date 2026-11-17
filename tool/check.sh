@@ -59,9 +59,14 @@ if 'ß' in open('lib/l10n/app_de.arb', encoding='utf-8').read():
     sys.exit(1)
 print('l10n: OK (%d keys)' % len(de))
 PY
-  dart format --output=none --set-exit-if-changed lib test
+  dart format --output=none --set-exit-if-changed lib test test_screenshots
   flutter analyze --fatal-infos
   flutter test "${concurrency[@]}"
+  # The screenshot tests drive and render the real screens; without
+  # WRITE_SCREENSHOTS (make screenshots) they write no files. Running them
+  # here keeps UI changes from breaking them silently.
+  step "app (screenshots)"
+  flutter test test_screenshots
   # The web client is a build of the same app (ADR-0018): code that only
   # works on native platforms must not break it.
   step "app (web build)"

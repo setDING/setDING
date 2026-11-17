@@ -177,7 +177,7 @@ l10n: ## Regenerate the translations from the ARB files
 	cd $(APP) && $(FLUTTER) gen-l10n
 
 screenshots: ## Render screenshots with real fonts to app/build/screenshots/
-	cd $(APP) && $(FLUTTER) test test_screenshots
+	cd $(APP) && $(FLUTTER) test test_screenshots --dart-define=WRITE_SCREENSHOTS=true
 	@echo "Screenshots: $(APP)/build/screenshots/"
 
 branding: ## Regenerate the splash screens, favicon and web icons from app/branding/*.svg

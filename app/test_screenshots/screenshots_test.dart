@@ -1,5 +1,10 @@
 // Renders screenshots with real fonts for visual review.
-// Run: flutter test test_screenshots   (output in build/screenshots/)
+// Run: make screenshots   (output in build/screenshots/)
+//
+// The files are only written with --dart-define=WRITE_SCREENSHOTS=true
+// (set by `make screenshots`). Without it, as in the test gate
+// (tool/check.sh), the screens are still built, driven and rendered, so a UI
+// change that breaks the screenshots fails `make check`.
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -21,9 +26,16 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../test/test_app.dart';
 
+const _write = bool.fromEnvironment('WRITE_SCREENSHOTS');
+
+/// The Material fonts of the Flutter SDK running the test: the test runs in
+/// `<sdk>/bin/cache/artifacts/engine/<platform>/flutter_tester`.
+String get _materialFonts =>
+    '${File(Platform.resolvedExecutable).parent.parent.parent.path}'
+    '/material_fonts';
+
 Future<void> _loadFonts() async {
-  final dir =
-      '${Platform.environment['HOME']}/development/flutter/bin/cache/artifacts/material_fonts';
+  final dir = _materialFonts;
   Future<void> load(String family, List<String> files) async {
     final loader = FontLoader(family);
     for (final f in files) {
@@ -70,9 +82,11 @@ Future<void> _shot(WidgetTester tester, String name) async {
   final bytes = await tester.runAsync(
     () => image!.toByteData(format: ui.ImageByteFormat.png),
   );
+  expect(bytes!.lengthInBytes, greaterThan(0));
+  if (!_write) return;
   Directory('build/screenshots').createSync(recursive: true);
   File('build/screenshots/$name.png')
-      .writeAsBytesSync(bytes!.buffer.asUint8List());
+      .writeAsBytesSync(bytes.buffer.asUint8List());
 }
 
 /// Editor content for the highlighting screenshot: one line per token kind.
@@ -448,7 +462,14 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.format_list_numbered).first);
+      // The ⋮ menu of the first set item (the demo song).
+      await tester.tap(
+        find
+            .byWidgetPredicate((w) => '${w.key}'.contains('set-item-menu-'))
+            .first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('set-item-action-sequence')));
       await tester.pumpAndSettle();
       for (final code in ['V1', 'C', 'V2', 'C']) {
         await tester.tap(find.byKey(ValueKey('sequence-part-$code')));

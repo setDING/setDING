@@ -13,3 +13,5 @@ dark theme) and copied from `app/build/screenshots/`:
 | `editor.png` | `en_9_editor.png` |
 
 After a visible UI change, run `make screenshots` and copy the files again.
+The test gate (`make check`) runs the same tests without writing files, so a UI
+change that breaks them fails the check.
