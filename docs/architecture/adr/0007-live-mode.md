@@ -19,9 +19,11 @@ song, all tablets follow automatically. We evaluated whether this is needed.
 - Full screen, **wakelock** active, status bar hidden.
 - **Input:**
   - Tap on the left/right part of the screen, swipe.
-  - **Bluetooth page turners** (foot pedals registering as HID keyboards) and keyboards: **right arrow, Page Down and
-    Space** turn forward, **left arrow and Page Up** back, exactly like the right/left tap zones (the scroll position, the
-    pages of a song and PDF pages/spreads first, then the next/previous song). The mapping is fixed (not configurable).
+  - **Bluetooth page turners** (foot pedals registering as HID keyboards) and keyboards: **right arrow, down arrow,
+    Page Down and Space** turn forward, **left arrow, up arrow and Page Up** back, exactly like the right/left tap zones
+    (the scroll position, the pages of a song and PDF pages/spreads first, then the next/previous song). Down/up arrow
+    cover page turners switched to an up/down mode; in a song that scrolls (it does not fit, or fitting is off) they
+    scroll it first by the same step as the tap zones, not line by line. The mapping is fixed (not configurable).
     One press turns once: a held key (key repeat) does not turn again, so it never races through the set. The keys are
     taken before the focused widget (an early key handler of the focus manager), so they work whichever widget of live
     mode has the focus, and Space never presses a focused button; while a dialog, sheet or menu opened from live mode
@@ -108,8 +110,9 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-17: Appearance on stage (as app / dark / black) independent of the app theme, with stronger chord colours in live mode (issue #263).
 - 2026-11-17: Page turning with Bluetooth page turners and the keyboard is back, reversing the removal of 2026-11-16 (#149/#152): right arrow, Page Down and Space forward, left arrow and Page Up back, like the tap zones; fixed mapping; key repeat is ignored (one press turns once). Resolves the open point "Foot pedal support again later?" (issue #261).
 - 2026-11-17: The light stage chord colour follows the brand palette: deep brand red `#852309` instead of indigo (issue #269).
+- 2026-11-17: Down arrow also turns forward and up arrow back, for page turners switched to an up/down mode, with the same behaviour as the other keys (scroll position first, key repeat ignored, text fields of dialogs keep them). Answers the key mapping part of the open point on page turners: a fixed mapping covering both modes instead of a configurable one (issue #286).
 
 ## Open points
 
-- Which page turner model (for testing on real hardware)? Configurable key mapping needed (e.g. pedals sending arrow up/down)?
+- Which page turner model (for testing on real hardware)? Configurable key mapping needed for pedals sending other keys?
 - Is MIDI control desired (e.g. Program Change from a keyboard/pedalboard)?

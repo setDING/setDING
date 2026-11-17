@@ -174,7 +174,7 @@ Notes:
 ### Performance
 
 1. A member opens the set → live mode (full screen, screen stays on).
-2. Page turns via tap, swipe or a Bluetooth page turner / keyboard (right arrow, Page Down, Space forward; left arrow, Page Up back; ADR-0007).
+2. Page turns via tap, swipe or a Bluetooth page turner / keyboard (right arrow, down arrow, Page Down, Space forward; left arrow, up arrow, Page Up back; ADR-0007).
 3. At the end of a song, "next" automatically moves to the next song in the set.
 4. While in live mode, **no** sync operations change what is displayed (changes are applied after leaving live mode, or only announced discreetly).
 
@@ -209,7 +209,7 @@ target state described in the ADRs, to be completed in later phases:
 | Topic | MVP | Target (ADR) |
 |---|---|---|
 | Personal notes | One text note per song, shown above the song | Notes anchored to a line/section (ADR-0006) |
-| Pedal keys | Fixed mapping (#261): right arrow, Page Down, Space forward; left arrow, Page Up back; a held key turns once | Configurable mapping, possibly later (ADR-0007) |
+| Pedal keys | Fixed mapping (#261, #286): right arrow, down arrow, Page Down, Space forward; left arrow, up arrow, Page Up back; a held key turns once | Configurable mapping, possibly later (ADR-0007) |
 | Auto-scroll | Not implemented | Optional auto-scroll by tempo/duration (ADR-0007) |
 | PDF display | Done (#150): portrait one page fit to width, landscape two pages side by side | Two pages side by side in landscape (ADR-0009) |
 | Bands & roles | One implicit local band, all features available | Roles per band via backend (ADR-0005, phase 1); done in #15, the MVP band became the local library |

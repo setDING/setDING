@@ -330,7 +330,7 @@
   "chorusRepeatAuto": "Automatisch",
   "chorusRepeatFull": "Ganz anzeigen",
   "chorusRepeatLabel": "Nur Hinweis",
-  "settingsPageTurnHint": "Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern. Seitenwender (Fusspedal) und Tastatur: Pfeil rechts, Bild ab und Leertaste blättern weiter, Pfeil links und Bild auf zurück.",
+  "settingsPageTurnHint": "Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern. Seitenwender (Fusspedal) und Tastatur: Pfeil rechts, Pfeil ab, Bild ab und Leertaste blättern weiter, Pfeil links, Pfeil auf und Bild auf zurück.",
   "settingsLiveAppearance": "Aussehen auf der Bühne",
   "settingsLiveAppearanceHint": "Live-Modus unabhängig vom App-Design. Schwarz spart Strom auf OLED-Bildschirmen.",
   "liveAppearanceApp": "Wie App",

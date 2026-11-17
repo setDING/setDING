@@ -80,13 +80,20 @@ class LiveItem {
 }
 
 /// Keys that turn forward / back, exactly like the right / left tap zones
-/// (ADR-0007). Bluetooth page turners register as keyboards and send these.
+/// (ADR-0007). Bluetooth page turners register as keyboards and send these;
+/// some can be switched to send Arrow Down / Arrow Up instead. Like the tap
+/// zones, the arrows up/down scroll a song that does not fit before turning.
 final _nextKeys = {
   LogicalKeyboardKey.arrowRight,
+  LogicalKeyboardKey.arrowDown,
   LogicalKeyboardKey.pageDown,
   LogicalKeyboardKey.space,
 };
-final _previousKeys = {LogicalKeyboardKey.arrowLeft, LogicalKeyboardKey.pageUp};
+final _previousKeys = {
+  LogicalKeyboardKey.arrowLeft,
+  LogicalKeyboardKey.arrowUp,
+  LogicalKeyboardKey.pageUp,
+};
 
 /// Performance mode (ADR-0007): full screen, screen stays on, page turning
 /// by tap, swipe, page turner or keyboard. The items are loaded once when
