@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: setDING auf Android, Windows und Linux installieren oder im Browser nutzen.
+description: setDING auf Android, Windows und Linux installieren.
 sidebar:
   order: 2
 ---
@@ -30,11 +30,6 @@ Die App ist nicht signiert. Beim ersten Start warnt Windows SmartScreen; klicke 
 
 1. Lade `setding-<Version>-linux-x64.tar.gz` herunter.
 2. Entpacke die Datei und starte `setding`.
-
-## Im Browser
-
-Die [Web-App](https://app.setding.app) läuft in jedem aktuellen Browser, ohne
-Installation. Sie eignet sich besonders, um am Computer Songs und Sets zu verwalten.
 
 ## iOS
 

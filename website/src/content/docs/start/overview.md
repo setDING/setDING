@@ -27,8 +27,7 @@ alles.
 
 ## Einer Band beitreten
 
-1. [Installiere setDING](/start/install/) oder öffne die
-   [Web-App](https://app.setding.app).
+1. [Installiere setDING](/start/install/).
 2. Öffne den Einladungslink, den du von der Bandleitung oder einem Admin bekommen
    hast, oder scanne den QR-Code. Du kannst den Link auch in der App unter
    **Beitreten** einfügen.

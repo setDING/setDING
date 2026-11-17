@@ -25,8 +25,7 @@ admins may do everything.
 
 ## Joining a band
 
-1. [Install setDING](/en/start/install/) or open the
-   [web app](https://app.setding.app).
+1. [Install setDING](/en/start/install/).
 2. Open the invitation link you got from the band leader or an admin, or scan the QR
    code. You can also paste the link in the app under **Join**.
 3. Sign in or create an account.

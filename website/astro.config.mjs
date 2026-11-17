@@ -27,7 +27,7 @@ export default defineConfig({
       social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/tafli/setDING' }],
       sidebar: [
         {
-          label: 'Erste Schritte',
+          label: 'Loslegen',
           translations: { en: 'Getting started' },
           items: [{ autogenerate: { directory: 'start' } }],
         },

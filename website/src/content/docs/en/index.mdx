@@ -1,7 +1,7 @@
 ---
 title: Songbook for bands
 description: Your band's songbook – on every tablet, on every stage, even without Wi-Fi.
-template: splash
+tableOfContents: false
 hero:
   title: Your band's songbook on every tablet
   tagline: On every stage, even without Wi-Fi. The band leader puts the set together once, and every member has it on their own device – the right songs, in the right order, in the right key.
@@ -11,13 +11,12 @@ hero:
     - text: Download
       link: /en/start/install/
       icon: right-arrow
-    - text: Open the web app
-      link: https://app.setding.app
+    - text: First steps
+      link: /en/start/overview/
       variant: minimal
-      icon: external
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import { Image } from 'astro:assets';
 import live from '../../../../../docs/screenshots/live.png';
 import set from '../../../../../docs/screenshots/set.png';
@@ -50,7 +49,7 @@ import editor from '../../../../../docs/screenshots/editor.png';
   </Card>
   <Card title="For bands, schools and churches" icon="star">
     Several bands of an organization share one song library. Invite members with a
-    link or a QR code. Manage songs and sets from any computer in the web app.
+    link or a QR code. Roles decide who looks after the songs and who plans sets.
   </Card>
   <Card title="Your data stays yours" icon="approve-check">
     setDING syncs with a self-hosted server. Open source under the MIT licence.
@@ -68,6 +67,9 @@ import editor from '../../../../../docs/screenshots/editor.png';
 
 ## Get started
 
-setDING runs on Android, Windows, Linux and in the browser; iOS follows later.
-[Installing](/en/start/install/) takes a few minutes, then
-[First steps](/en/start/overview/) walks you through the essentials.
+setDING runs on Android, Windows and Linux; iOS follows later.
+
+<CardGrid>
+  <LinkCard title="First steps" href="/en/start/overview/" description="Organization, band, set and song – and how to join a band." />
+  <LinkCard title="Installation" href="/en/start/install/" description="Install setDING on Android, Windows and Linux." />
+</CardGrid>

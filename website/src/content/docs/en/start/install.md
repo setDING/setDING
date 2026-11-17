@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: Install setDING on Android, Windows and Linux, or use it in the browser.
+description: Install setDING on Android, Windows and Linux.
 sidebar:
   order: 2
 ---
@@ -30,11 +30,6 @@ The app is not code-signed. On the first start Windows SmartScreen warns; click
 
 1. Download `setding-<version>-linux-x64.tar.gz`.
 2. Unpack it and start `setding`.
-
-## In the browser
-
-The [web app](https://app.setding.app) runs in any current browser, without
-installation. It is especially handy for managing songs and sets on a computer.
 
 ## iOS
 
