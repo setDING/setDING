@@ -470,6 +470,16 @@
   "editorGroupInfo": "Song-Infos",
   "editorGroupText": "Text",
   "editorGroupMore": "Mehr",
+  "replaceToggle": "Ersetzen",
+  "replaceWith": "Ersetzen durch",
+  "replace": "Ersetzen",
+  "replaceAll": "Alle ersetzen",
+  "replacedCount": "{count, plural, =1{1 ersetzt} other{{count} ersetzt}}",
+  "@replacedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "convertChordsOverLyrics": "Akkorde über Text umwandeln",
   "pastedChordsOverLyrics": "Der eingefügte Text hat Akkorde über dem Liedtext.",
   "convert": "Umwandeln",

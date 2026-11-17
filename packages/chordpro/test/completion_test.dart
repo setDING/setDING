@@ -146,4 +146,9 @@ void main() {
       expect(complete('[C] la|'), isNull);
     });
   });
+
+  test('a cursor at the start of the text suggests nothing', () {
+    expect(completeChordPro(' b a', 0), isNull);
+    expect(completeChordPro('', 0), isNull);
+  });
 }

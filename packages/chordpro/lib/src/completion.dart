@@ -122,7 +122,7 @@ CompletionResult? completeChordPro(
   List<SourceToken>? tokens,
 }) {
   if (cursor < 0 || cursor > source.length) return null;
-  final lineStart = source.lastIndexOf('\n', cursor - 1) + 1;
+  final lineStart = cursor == 0 ? 0 : source.lastIndexOf('\n', cursor - 1) + 1;
   var lineEnd = source.indexOf('\n', cursor);
   if (lineEnd < 0) lineEnd = source.length;
   final before = source.substring(lineStart, cursor);

@@ -56,6 +56,12 @@ SingleActivator get saveShortcut => _key(LogicalKeyboardKey.keyS);
 /// Opens the search bar (Ctrl+F / Cmd+F).
 SingleActivator get searchShortcut => _key(LogicalKeyboardKey.keyF);
 
+/// Opens the search bar with the replace row (Ctrl+H; Cmd+Option+F on
+/// Apple, where Cmd+H hides the app).
+SingleActivator get replaceShortcut => _useMeta
+    ? const SingleActivator(LogicalKeyboardKey.keyF, meta: true, alt: true)
+    : const SingleActivator(LogicalKeyboardKey.keyH, control: true);
+
 /// Line and chord editing commands of the editor (#361).
 enum EditorCommand {
   moveLinesUp(Icons.move_up),

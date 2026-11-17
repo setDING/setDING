@@ -357,6 +357,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
   }
 
   bool _searching = false;
+  bool _replacing = false;
 
   /// Recreates the search bar, so Ctrl+F in an open bar takes the new
   /// selection and focuses the field again.
@@ -364,9 +365,10 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
 
   /// Opens the search bar (#368), with the selected text of one line as
   /// the search text.
-  void _openSearch() {
+  void _openSearch({bool replace = false}) {
     setState(() {
       _searching = true;
+      _replacing = replace;
       _searchGeneration++;
     });
   }
@@ -543,6 +545,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
             fieldKey: _fieldKey,
             scrollController: _scroll,
             initialQuery: _selectedQuery,
+            replace: _replacing,
             onClose: _closeSearch,
           ),
           const Divider(height: 1),
@@ -602,6 +605,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
         bindings: {
           saveShortcut: _save,
           searchShortcut: _openSearch,
+          replaceShortcut: () => _openSearch(replace: true),
           for (final snippet in snippets.withShortcut)
             snippet.shortcut!: () => _insert(snippet),
           for (final command in EditorCommand.values)

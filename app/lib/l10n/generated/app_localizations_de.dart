@@ -998,6 +998,29 @@ class AppLocalizationsDe extends AppLocalizations {
   String get editorGroupMore => 'Mehr';
 
   @override
+  String get replaceToggle => 'Ersetzen';
+
+  @override
+  String get replaceWith => 'Ersetzen durch';
+
+  @override
+  String get replace => 'Ersetzen';
+
+  @override
+  String get replaceAll => 'Alle ersetzen';
+
+  @override
+  String replacedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ersetzt',
+      one: '1 ersetzt',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get convertChordsOverLyrics => 'Akkorde über Text umwandeln';
 
   @override

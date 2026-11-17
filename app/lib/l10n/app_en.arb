@@ -328,6 +328,16 @@
   "editorGroupInfo": "Song info",
   "editorGroupText": "Text",
   "editorGroupMore": "More",
+  "replaceToggle": "Replace",
+  "replaceWith": "Replace with",
+  "replace": "Replace",
+  "replaceAll": "Replace all",
+  "replacedCount": "{count, plural, =1{1 replaced} other{{count} replaced}}",
+  "@replacedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "convertChordsOverLyrics": "Convert chords above lyrics",
   "pastedChordsOverLyrics": "The pasted text has chords above the lyrics.",
   "convert": "Convert",
