@@ -1,4 +1,4 @@
-/// Song sequence (arrangement): RealChord' custom directive `{x_sequence}`,
+/// Song sequence (arrangement): setDING' custom directive `{x_sequence}`,
 /// e.g. `{x_sequence: I, V1, C, V2, PC, C x2, B, C, O}`.
 library;
 

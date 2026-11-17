@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:chordpro/chordpro.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:realchord/data/demo_song.dart';
-import 'package:realchord/l10n/generated/app_localizations.dart';
-import 'package:realchord/ui/render/chord_diagram.dart';
-import 'package:realchord/ui/render/song_view.dart';
+import 'package:setding/data/demo_song.dart';
+import 'package:setding/l10n/generated/app_localizations.dart';
+import 'package:setding/ui/render/chord_diagram.dart';
+import 'package:setding/ui/render/song_view.dart';
 
 /// The layout measurement (song_layout.dart) must match the rendered
 /// widgets (song_view.dart), or fitting a song to the screen in live mode

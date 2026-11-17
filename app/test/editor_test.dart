@@ -1,5 +1,5 @@
-import 'package:realchord/ui/render/song_header.dart';
-import 'package:realchord/ui/songs/song_editor_screen.dart';
+import 'package:setding/ui/render/song_header.dart';
+import 'package:setding/ui/songs/song_editor_screen.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';

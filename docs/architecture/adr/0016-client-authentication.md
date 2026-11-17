@@ -19,7 +19,7 @@ restarts and is a credential, so it must not be stored in plain text.
   (`app/lib/sync/sync_backend.dart`); `PocketBaseBackend` implements it with the
   official **PocketBase Dart SDK**, pinned to an exact version (`pocketbase: 0.26.0`)
   like the server (`PB_VERSION`) and updated deliberately.
-- The server URL is a device setting, default **`https://api.realchord.app`**;
+- The server URL is a device setting, default **`https://api.setding.app`**;
   it can be changed for a local test server (`make backend`). Changing it signs out,
   and a stored session is only used for the server it belongs to.
 
@@ -38,7 +38,7 @@ restarts and is a credential, so it must not be stored in plain text.
   Android Keystore-backed encrypted preferences, Windows Credential Manager /
   DPAPI, libsecret on Linux. If no secure storage is available (e.g. a Linux
   desktop without Secret Service), the app starts signed out instead of failing.
-- Isolated test instances (`REALCHORD_DATA_DIR`, `make dev`) keep their session in
+- Isolated test instances (`SETDING_DATA_DIR`, `make dev`) keep their session in
   a file in their data directory, so they never touch the session of an installed app.
 
 ### Offline behaviour

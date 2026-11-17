@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Consistent backup of the PocketBase data (ADR-0014). Installed as
-# /usr/local/bin/realchord-backup and run daily by realchord-backup.timer.
+# /usr/local/bin/setding-backup and run daily by setding-backup.timer.
 #
 # Uses SQLite's online backup API (safe while PocketBase is running, also in WAL
 # mode) for the database and archives the stored files (PDF attachments).
@@ -29,8 +29,8 @@ sqlite3 "$PB_DATA/data.db" ".backup '$tmp/data.db'"
 files=(-C "$tmp" data.db)
 [ -d "$PB_DATA/storage" ] && files+=(-C "$PB_DATA" storage)
 
-archive="$BACKUP_DIR/realchord-$stamp.tar.gz"
+archive="$BACKUP_DIR/setding-$stamp.tar.gz"
 tar -czf "$archive.part" "${files[@]}"
 mv "$archive.part" "$archive"
-find "$BACKUP_DIR" -name 'realchord-*.tar.gz' -mtime +"$KEEP_DAYS" -delete
+find "$BACKUP_DIR" -name 'setding-*.tar.gz' -mtime +"$KEEP_DAYS" -delete
 echo "backup written: $archive ($(du -h "$archive" | cut -f1))"

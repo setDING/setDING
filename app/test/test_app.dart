@@ -1,21 +1,21 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:realchord/data/attachment_storage.dart';
-import 'package:realchord/data/attachment_storage_io.dart';
-import 'package:realchord/data/attachment_storage_memory.dart';
-import 'package:realchord/app.dart';
-import 'package:realchord/data/database.dart';
-import 'package:realchord/data/set_repository.dart';
-import 'package:realchord/data/song_repository.dart';
-import 'package:realchord/platform/stage_wake_lock.dart';
-import 'package:realchord/providers.dart';
-import 'package:realchord/settings/settings.dart';
-import 'package:realchord/sync/auth_providers.dart';
-import 'package:realchord/sync/session_store.dart';
-import 'package:realchord/sync/sync_backend.dart';
-import 'package:realchord/sync/sync_controller.dart';
-import 'package:realchord/ui/deep_links.dart';
+import 'package:setding/data/attachment_storage.dart';
+import 'package:setding/data/attachment_storage_io.dart';
+import 'package:setding/data/attachment_storage_memory.dart';
+import 'package:setding/app.dart';
+import 'package:setding/data/database.dart';
+import 'package:setding/data/set_repository.dart';
+import 'package:setding/data/song_repository.dart';
+import 'package:setding/platform/stage_wake_lock.dart';
+import 'package:setding/providers.dart';
+import 'package:setding/settings/settings.dart';
+import 'package:setding/sync/auth_providers.dart';
+import 'package:setding/sync/session_store.dart';
+import 'package:setding/sync/sync_backend.dart';
+import 'package:setding/sync/sync_controller.dart';
+import 'package:setding/ui/deep_links.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:material_ui/material_ui.dart';
@@ -82,7 +82,7 @@ class TestApp {
     SharedPreferences.setMockInitialValues(prefs);
     return TestApp._(
       AppDatabase(NativeDatabase.memory()),
-      Directory.systemTemp.createTempSync('realchord_widget'),
+      Directory.systemTemp.createTempSync('setding_widget'),
       await SharedPreferences.getInstance(),
       FakeSyncBackend(user: user),
       web: web,
@@ -109,7 +109,7 @@ class TestApp {
 
   Widget build({Widget? home}) => ProviderScope(
     overrides: overrides,
-    child: RealChordApp(home: home),
+    child: SetdingApp(home: home),
   );
 
   Future<void> dispose(WidgetTester tester) async {

@@ -1,12 +1,12 @@
 import 'package:material_ui/material_ui.dart';
 
-/// Brand colors of the RealChord logo (sources in `app/branding/`).
+/// Brand colors of the setDING logo (sources in `app/branding/`).
 abstract final class BrandColors {
   /// Top and bottom of the logo gradient.
   static const gradientTop = Color(0xFFFFB020);
   static const gradientBottom = Color(0xFFE8461C);
 
-  /// Text of the wordmark ("Real") on light and dark backgrounds.
+  /// Text of the wordmark ("set") on light and dark backgrounds.
   static const ink = Color(0xFF1B1D22);
   static const inkDark = Color(0xFFFFFFFF);
 
@@ -26,8 +26,8 @@ abstract final class BrandColors {
 /// The logo mark: a plectrum with a chord diagram. Drawn in code (the same
 /// geometry as `app/branding/mark.svg`), so it shows on the very first frame
 /// without loading an asset.
-class RealChordMark extends StatelessWidget {
-  const RealChordMark({super.key, this.size = 48});
+class SetdingMark extends StatelessWidget {
+  const SetdingMark({super.key, this.size = 48});
 
   final double size;
 
@@ -94,14 +94,14 @@ class _MarkPainter extends CustomPainter {
   bool shouldRepaint(_MarkPainter oldDelegate) => false;
 }
 
-/// The wordmark "RealChord": "Real" in [ink], "Chord" in the brand gradient.
-class RealChordWordmark extends StatelessWidget {
-  const RealChordWordmark({super.key, this.height = 32, this.ink});
+/// The wordmark "setDING": "set" in [ink], "DING" in the brand gradient.
+class SetdingWordmark extends StatelessWidget {
+  const SetdingWordmark({super.key, this.height = 32, this.ink});
 
   /// Font size of the wordmark.
   final double height;
 
-  /// Color of "Real"; defaults to a color readable on the current theme.
+  /// Color of "set"; defaults to a color readable on the current theme.
   final Color? ink;
 
   @override
@@ -119,11 +119,11 @@ class RealChordWordmark extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Real', style: style),
+          Text('set', style: style),
           ShaderMask(
             blendMode: BlendMode.srcIn,
             shaderCallback: BrandColors.gradient.createShader,
-            child: Text('Chord', style: style),
+            child: Text('DING', style: style),
           ),
         ],
       ),
@@ -132,21 +132,21 @@ class RealChordWordmark extends StatelessWidget {
 }
 
 /// Mark and wordmark side by side.
-class RealChordLogo extends StatelessWidget {
-  const RealChordLogo({super.key, this.height = 40});
+class SetdingLogo extends StatelessWidget {
+  const SetdingLogo({super.key, this.height = 40});
 
   final double height;
 
   @override
   Widget build(BuildContext context) => Semantics(
-    label: 'RealChord',
+    label: 'setDING',
     image: true,
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        RealChordMark(size: height * 1.25),
+        SetdingMark(size: height * 1.25),
         SizedBox(width: height * 0.3),
-        RealChordWordmark(height: height),
+        SetdingWordmark(height: height),
       ],
     ),
   );
@@ -190,10 +190,10 @@ class SplashScreen extends StatelessWidget {
       child: ColoredBox(
         color: dark ? BrandColors.splashDark : BrandColors.splashLight,
         child: Semantics(
-          label: 'RealChord',
+          label: 'setDING',
           child: Stack(
             children: [
-              const Center(child: RealChordMark(size: markSize)),
+              const Center(child: SetdingMark(size: markSize)),
               if (busy)
                 Align(
                   alignment: const Alignment(0, 0.45),
@@ -213,7 +213,7 @@ class SplashScreen extends StatelessWidget {
                   child: SizedBox(
                     width: wordmarkWidth,
                     child: FittedBox(
-                      child: RealChordWordmark(
+                      child: SetdingWordmark(
                         height: 40,
                         ink: dark ? BrandColors.inkDark : BrandColors.ink,
                       ),

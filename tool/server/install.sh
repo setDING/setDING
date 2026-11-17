@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Sets up or updates the RealChord server (PocketBase backend, ADR-0004/ADR-0014).
+# Sets up or updates the setDING server (PocketBase backend, ADR-0004/ADR-0014).
 #
 # Runs as root ON the server (a Debian LXC container). Idempotent: the same script
 # installs a fresh container and updates an existing one. Normally started from the
@@ -51,7 +51,7 @@ fi
 # Only when root has an authorized key, so the script never locks anyone out.
 if [ -s /root/.ssh/authorized_keys ] && [ -d /etc/ssh/sshd_config.d ]; then
   step "SSH hardening"
-  conf=/etc/ssh/sshd_config.d/10-realchord.conf
+  conf=/etc/ssh/sshd_config.d/10-setding.conf
   new=$'PasswordAuthentication no\nKbdInteractiveAuthentication no\nPermitRootLogin prohibit-password\n'
   if [ "$(cat "$conf" 2>/dev/null)" != "${new%$'\n'}" ]; then
     printf '%s' "$new" >"$conf"
@@ -134,11 +134,11 @@ install_unit() {
   return 1
 }
 install_unit pocketbase.service && restart_pb=1
-install_unit realchord-backup.service || true
-install_unit realchord-backup.timer || true
-install -m 755 "$HERE/realchord-backup.sh" /usr/local/bin/realchord-backup
+install_unit setding-backup.service || true
+install_unit setding-backup.timer || true
+install -m 755 "$HERE/setding-backup.sh" /usr/local/bin/setding-backup
 systemctl daemon-reload
-systemctl enable --now pocketbase.service realchord-backup.timer >/dev/null
+systemctl enable --now pocketbase.service setding-backup.timer >/dev/null
 if [ "$restart_pb" -eq 1 ]; then
   systemctl restart pocketbase.service
 fi

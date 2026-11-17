@@ -5,15 +5,15 @@ import 'package:drift/drift.dart'
     show TableUpdateQuery, Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:realchord/data/attachment_storage_io.dart';
-import 'package:realchord/data/attachment_storage.dart';
-import 'package:realchord/data/band_copy.dart';
-import 'package:realchord/data/band_view.dart';
-import 'package:realchord/data/database.dart';
-import 'package:realchord/data/set_repository.dart';
-import 'package:realchord/data/song_repository.dart';
-import 'package:realchord/sync/band_service.dart';
-import 'package:realchord/sync/sync_backend.dart';
+import 'package:setding/data/attachment_storage_io.dart';
+import 'package:setding/data/attachment_storage.dart';
+import 'package:setding/data/band_copy.dart';
+import 'package:setding/data/band_view.dart';
+import 'package:setding/data/database.dart';
+import 'package:setding/data/set_repository.dart';
+import 'package:setding/data/song_repository.dart';
+import 'package:setding/sync/band_service.dart';
+import 'package:setding/sync/sync_backend.dart';
 
 import 'fake_backend.dart';
 
@@ -284,7 +284,7 @@ void main() {
     late AttachmentStorage storage;
 
     setUp(() {
-      dir = Directory.systemTemp.createTempSync('realchord_copy');
+      dir = Directory.systemTemp.createTempSync('setding_copy');
       storage = FileAttachmentStorage(dir);
     });
     tearDown(() => dir.deleteSync(recursive: true));

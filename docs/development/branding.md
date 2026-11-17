@@ -1,7 +1,7 @@
 # Logo and splash screens
 
-The RealChord logo is a plectrum with a chord diagram (the *mark*) next to the
-wordmark "RealChord" ("Real" in ink, "Chord" in the brand gradient).
+The setDING logo is a plectrum with a chord diagram (the *mark*) next to the
+wordmark "setDING" ("Real" in ink, "Chord" in the brand gradient).
 
 ## Sources
 
@@ -51,7 +51,7 @@ On stage (live mode, ADR-0007) chords use `StageColors` in
 `app/lib/ui/render/song_style.dart`: on light a deep tone of the accent
 (for the brand red `#852309`, the logo's hue, about 9:1), amber `#FFC54D`
 on dark and black for every accent, both ≥ 7:1.
-Colours that are not derived from the scheme: RealChord's own `x_`
+Colours that are not derived from the scheme: setDING's own `x_`
 directives in the editor (teal, apart from the warm palette), the
 offline-ready icon (green) and the named ChordPro colours of the songs.
 
@@ -68,7 +68,7 @@ the same for every accent.
 
 | Accent | Seed | `primary` light | `primary` dark | Light stage chords |
 |---|---|---|---|---|
-| RealChord red (default) | `#E8461C` | `#8F4B3A` | `#FFB4A2` | `#852309` |
+| setDING red (default) | `#E8461C` | `#8F4B3A` | `#FFB4A2` | `#852309` |
 | Amber | `#FFB300` | `#7D570D` | `#F0BE6D` | `#604100` |
 | Green | `#43A047` | `#3B6939` | `#A1D39A` | `#005313` |
 | Teal | `#00897B` | `#006B5F` | `#82D5C7` | `#005048` |
@@ -131,9 +131,9 @@ background following the system's light/dark mode.
    while the first sync after signing in loads the bands. The mark is drawn
    in code, so it appears without loading an asset.
 
-The web sign-in screen shows `RealChordLogo` above the form.
+The web sign-in screen shows `SetdingLogo` above the form.
 On wide screens (≥ 720 dp) the navigation rail of the home screen shows
-the mark (`RealChordMark`, 40 dp) permanently at its top left. Phones use
+the mark (`SetdingMark`, 40 dp) permanently at its top left. Phones use
 the bottom navigation bar, which has no room for it.
 
 ## App icons

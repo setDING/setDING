@@ -12,7 +12,7 @@ import 'platform_services.dart';
 Future<PlatformServices> openPlatformServices() async {
   final db = AppDatabase(
     driftDatabase(
-      name: 'realchord',
+      name: 'setding',
       web: DriftWebOptions(
         sqlite3Wasm: Uri.parse('sqlite3.wasm'),
         driftWorker: Uri.parse('drift_worker.js'),
@@ -24,7 +24,7 @@ Future<PlatformServices> openPlatformServices() async {
   final sessionStore = BrowserSessionStore(
     tab: BrowserKeyValueStorage.session(),
     persistent: BrowserKeyValueStorage.local(),
-    channel: BroadcastTabChannel('realchord.session'),
+    channel: BroadcastTabChannel('setding.session'),
     onSignedOutElsewhere: reloadPage,
   );
   return (

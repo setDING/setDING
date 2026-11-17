@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:realchord/ui/widgets/logo.dart';
+import 'package:setding/ui/widgets/logo.dart';
 
 import 'test_app.dart';
 
@@ -31,9 +31,9 @@ void main() {
   ) async {
     await pumpSplash(tester, brightness: Brightness.light);
     expect(tester.takeException(), isNull);
-    expect(find.byType(RealChordMark), findsOneWidget);
-    expect(find.byType(RealChordWordmark), findsOneWidget);
-    expect(find.bySemanticsLabel('RealChord'), findsOneWidget);
+    expect(find.byType(SetdingMark), findsOneWidget);
+    expect(find.byType(SetdingWordmark), findsOneWidget);
+    expect(find.bySemanticsLabel('setDING'), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
@@ -54,12 +54,12 @@ void main() {
 
   testWidgets('the logo has a mark, the wordmark and a label', (tester) async {
     await tester.pumpWidget(
-      const MaterialApp(home: Center(child: RealChordLogo())),
+      const MaterialApp(home: Center(child: SetdingLogo())),
     );
-    expect(find.byType(RealChordMark), findsOneWidget);
-    expect(find.text('Real'), findsOneWidget);
-    expect(find.text('Chord'), findsOneWidget);
-    expect(find.bySemanticsLabel('RealChord'), findsOneWidget);
+    expect(find.byType(SetdingMark), findsOneWidget);
+    expect(find.text('set'), findsOneWidget);
+    expect(find.text('DING'), findsOneWidget);
+    expect(find.bySemanticsLabel('setDING'), findsOneWidget);
   });
 
   test('the splash stays at least one second, counted from the start', () {
@@ -106,7 +106,7 @@ void main() {
       ),
     );
     expect(rect.left, lessThan(80));
-    expect(find.bySemanticsLabel('RealChord'), findsOneWidget);
+    expect(find.bySemanticsLabel('setDING'), findsOneWidget);
     await app.dispose(tester);
   });
 

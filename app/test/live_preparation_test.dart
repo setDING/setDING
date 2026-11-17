@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:realchord/ui/live/live_preparation.dart';
+import 'package:setding/ui/live/live_preparation.dart';
 
 /// The steps in which live mode prepares the pages around the current one
 /// (issue #296).

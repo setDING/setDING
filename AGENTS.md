@@ -4,7 +4,7 @@ Guidance for AI coding agents (and humans) working on this repository.
 
 ## Project
 
-RealChord (formerly the working title BandChords) is an app that shows bands the chords of their songs (ChordPro) on tablets
+setDING (called RealChord until 2026-11-17, working title BandChords) is an app that shows bands the chords of their songs (ChordPro) on tablets
 (Android, iOS, Windows) during a performance. Admins put together sets; band members
 view and play them, offline-first.
 
@@ -50,14 +50,14 @@ deletes its data. `make perf` measures performance on a USB-connected Android de
 Every change follows [`docs/development/git-workflow.md`](docs/development/git-workflow.md) (ADR-0010). In short:
 
 - Work on an issue; one issue = one branch (`<type>/<issue>-<slug>`) = one PR. **Never commit directly to `main`.**
-- **Every change happens in its own git worktree** (`git worktree add -b <branch> ../RealChord-worktrees/<branch-with-dashes> origin/main`); the project folder always stays on `main` and is only fast-forwarded (`git pull --ff-only`). Remove the worktree after the merge.
+- **Every change happens in its own git worktree** (`git worktree add -b <branch> ../setDING-worktrees/<branch-with-dashes> origin/main`); the project folder always stays on `main` and is only fast-forwarded (`git pull --ff-only`). Remove the worktree after the merge.
 - Conventional Commits in English; **every commit** (including squash merges) carries the `Co-Authored-By: Claude …` trailer.
 - Before marking a PR ready: rebase on `main`, run the checks, update ADRs/docs, complete both ARB files, self-review.
 - **Test gate: all tests must pass before every merge**, run on the final branch state rebased on `main`. Never skip, delete or weaken tests to get green. New or changed behaviour comes with tests.
 - Squash merge only; afterwards delete the branch on the remote and locally (`git branch -D`). An agent may merge its own PR when the test gate (full local `make check`) is satisfied and no "human must decide" rule applies; otherwise label `needs-human`.
 - Never end a session with unpushed work: commit, push, and leave a handover comment on the PR.
 - **CI is manual-only during early development**: do not wait for it; local green tests are enough. Re-enable it as a required check when heading towards version 1 (ADR-0010).
-- Remote: **GitHub** (`github.com/tafli/RealChord`), CLI `gh` (logged in on the development machine): issues, PRs and squash merges go through `gh`. Without a login, fall back to workflow section 11.
+- Remote: **GitHub** (`github.com/tafli/setDING`), CLI `gh` (logged in on the development machine): issues, PRs and squash merges go through `gh`. Without a login, fall back to workflow section 11.
 - Commits use the owner's global git identity and are **GPG-signed**; never set a repository-local identity or commit unsigned. Squash merges on GitHub use `gh pr merge --author-email andi@theboss.ch`. Every commit carries the `Co-Authored-By` trailer.
 
 ## External libraries (mandatory)
@@ -74,7 +74,7 @@ are exempt. When adding a library, use its latest version.
 regression test (package and app). When adding or changing a ChordPro feature, extend
 the showcase and its tests, and run `make examples` to rebuild the ZIP.
 
-RealChord-specific directives are custom directives in the sense of the ChordPro
+setDING-specific directives are custom directives in the sense of the ChordPro
 specification and **must start with `x_`** (e.g. `{x_sequence}`); never add directives
 without this prefix that the specification does not define.
 

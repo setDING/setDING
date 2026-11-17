@@ -3,12 +3,12 @@ import 'dart:typed_data';
 
 import 'dart:convert';
 
-import 'package:realchord/data/attachment_storage_io.dart';
-import 'package:realchord/data/attachment_storage.dart';
-import 'package:realchord/data/database.dart';
-import 'package:realchord/data/import_export.dart';
-import 'package:realchord/data/set_repository.dart';
-import 'package:realchord/data/song_repository.dart';
+import 'package:setding/data/attachment_storage_io.dart';
+import 'package:setding/data/attachment_storage.dart';
+import 'package:setding/data/database.dart';
+import 'package:setding/data/import_export.dart';
+import 'package:setding/data/set_repository.dart';
+import 'package:setding/data/song_repository.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -21,7 +21,7 @@ void main() {
 
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
-    dir = await Directory.systemTemp.createTemp('realchord_test');
+    dir = await Directory.systemTemp.createTemp('setding_test');
     final storage = FileAttachmentStorage(dir);
     songs = SongRepository(db, storage);
     sets = SetRepository(db, storage);

@@ -23,10 +23,10 @@ may want an open server.
 ### Registration mode
 
 The **server operator** sets the registration mode in the server environment
-(`/opt/pocketbase/pocketbase.env`, like `REALCHORD_WEB_URL`, ADR-0014):
+(`/opt/pocketbase/pocketbase.env`, like `SETDING_WEB_URL`, ADR-0014):
 
 ```
-REALCHORD_REGISTRATION=invite_only   # or: open
+SETDING_REGISTRATION=invite_only   # or: open
 ```
 
 | Mode | Who can create an account | Who can found an organization |
@@ -58,7 +58,7 @@ REALCHORD_REGISTRATION=invite_only   # or: open
 
 - The operator creates a **founder invitation** on the server, e.g.
   `make server-founder-invite NAME="Music school"`. It is a one-time link in the
-  same format as other invitations (`https://api.realchord.app/invite/<token>`).
+  same format as other invitations (`https://api.setding.app/invite/<token>`).
 - Redeeming it creates the **organization** with the given name (renamable later)
   and makes the person its **admin**; with a new account, the account is created in
   the same step.
@@ -72,7 +72,7 @@ REALCHORD_REGISTRATION=invite_only   # or: open
 
 ### What the app shows
 
-- A small public route (`GET /api/realchord/config`) returns the registration mode.
+- A small public route (`GET /api/setding/config`) returns the registration mode.
 - In `invite_only` mode the account screen offers **Sign in** and **Join with an
   invitation**; "Create account" appears only together with an invitation.
   "Create band" is offered only inside an organization the user administers.
@@ -87,7 +87,7 @@ A second operator setting in the same environment file decides whether new
 accounts must confirm their email address:
 
 ```
-REALCHORD_EMAIL_VERIFICATION=off   # or: required
+SETDING_EMAIL_VERIFICATION=off   # or: required
 ```
 
 | Value | Effect |
@@ -168,6 +168,7 @@ REALCHORD_EMAIL_VERIFICATION=off   # or: required
   sign-in 20, invitation routes 30 per minute. `make backend` stays open for
   development. The test harness starts servers with `open` unless a test asks
   otherwise and turns the rate limits off.
+- 2026-11-17: App renamed to **setDING** (#318): the settings are `SETDING_REGISTRATION` and `SETDING_EMAIL_VERIFICATION`, the public route is `GET /api/setding/config`.
 
 ## Open points
 

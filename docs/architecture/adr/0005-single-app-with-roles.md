@@ -114,8 +114,9 @@ Alternatives for invitations:
 - 2026-11-17: **ADR-0024** (accepted): the server operator decides whether people may sign up without an invitation (`REALCHORD_REGISTRATION`, default `invite_only`); on closed servers an invitation is also the ticket to create an account, and new organizations come only from operator **founder invitations**.
 - 2026-11-17: Application / bundle ID changed from `ch.realchord.realchord` to `app.realchord` to match the domain `realchord.app` (#298, owner request); the Android App Links and iOS Universal Links verification files name the new ID. Not migrated: the app was not live yet.
 - 2026-11-17: **ADR-0023** (accepted): band roles leader (`admin`) > set planner > member; the band setting `members_can_edit_songs` is replaced by the organization role librarian; band leaders invite into their band; still no guest role.
+- 2026-11-17: App renamed to **setDING** (#318): invitation links `https://api.setding.app/invite/<token>`, URL scheme `setding://`, application / bundle ID `app.setding`, verification files on `api.setding.app`. `realchord.app` expires; nothing is migrated (not live yet).
 
 ## Open points
 
-- Activate verified deep links: Android needs the signing certificate fingerprint, iOS Universal Links need the Apple Team ID and the Associated Domains capability (`docs/operations/server.md`, "Deep links"). Until then links open the landing page, the `realchord://` scheme, or are pasted / scanned.
-- Protocol handler for `realchord://` on Windows (MSIX/installer) and Linux (`.desktop` file); until then links are pasted there.
+- Activate verified deep links: Android needs the signing certificate fingerprint, iOS Universal Links need the Apple Team ID and the Associated Domains capability (`docs/operations/server.md`, "Deep links"). Until then links open the landing page, the `setding://` scheme, or are pasted / scanned.
+- Protocol handler for `setding://` on Windows (MSIX/installer) and Linux (`.desktop` file); until then links are pasted there.

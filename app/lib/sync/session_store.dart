@@ -25,7 +25,7 @@ class SecureSessionStore implements SessionStore {
   SecureSessionStore([FlutterSecureStorage? storage])
     : _storage = storage ?? const FlutterSecureStorage();
 
-  static const _key = 'realchord.session';
+  static const _key = 'setding.session';
 
   final FlutterSecureStorage _storage;
   String? _current;

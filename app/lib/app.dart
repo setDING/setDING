@@ -14,8 +14,8 @@ import 'ui/theme.dart';
 
 /// Root widget: theme, localization (ADR-0008), navigation, invitation
 /// links (ADR-0005) and the sign-in gate of the web client (ADR-0018).
-class RealChordApp extends ConsumerStatefulWidget {
-  const RealChordApp({super.key, this.home});
+class SetdingApp extends ConsumerStatefulWidget {
+  const SetdingApp({super.key, this.home});
 
   /// Overrides the start screen (used in tests).
   final Widget? home;
@@ -26,10 +26,10 @@ class RealChordApp extends ConsumerStatefulWidget {
   ]) => appTheme(brightness, accent);
 
   @override
-  ConsumerState<RealChordApp> createState() => _RealChordAppState();
+  ConsumerState<SetdingApp> createState() => _SetdingAppState();
 }
 
-class _RealChordAppState extends ConsumerState<RealChordApp> {
+class _SetdingAppState extends ConsumerState<SetdingApp> {
   final _navigatorKey = GlobalKey<NavigatorState>();
 
   @override
@@ -44,8 +44,8 @@ class _RealChordAppState extends ConsumerState<RealChordApp> {
       navigatorKey: _navigatorKey,
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
       debugShowCheckedModeBanner: false,
-      theme: RealChordApp.theme(Brightness.light, accent),
-      darkTheme: RealChordApp.theme(Brightness.dark, accent),
+      theme: SetdingApp.theme(Brightness.light, accent),
+      darkTheme: SetdingApp.theme(Brightness.dark, accent),
       themeMode: themeMode,
       locale: locale,
       supportedLocales: const [Locale('de', 'CH'), Locale('de'), Locale('en')],

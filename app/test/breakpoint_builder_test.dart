@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:realchord/ui/widgets/breakpoint_builder.dart';
+import 'package:setding/ui/widgets/breakpoint_builder.dart';
 
 /// Layouts that depend only on the width are not built again while only
 /// the height changes, e.g. while the keyboard opens (#297).

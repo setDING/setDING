@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:realchord/settings/settings.dart';
-import 'package:realchord/ui/settings_screen.dart';
-import 'package:realchord/ui/theme.dart';
+import 'package:setding/settings/settings.dart';
+import 'package:setding/ui/settings_screen.dart';
+import 'package:setding/ui/theme.dart';
 
 import 'test_app.dart';
 
@@ -94,7 +94,7 @@ void main() {
       expect(find.byKey(Key('accent-${accent.name}')), findsOneWidget);
     }
     // The brand red is the default.
-    expect(find.text('RealChord red'), findsOneWidget);
+    expect(find.text('setDING red'), findsOneWidget);
     Color primary() =>
         Theme.of(tester.element(find.text('Accent colour')))
             .colorScheme

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:realchord_server/pocketbase_harness.dart';
+import 'package:setding_server/pocketbase_harness.dart';
 import 'package:test/test.dart';
 
 import 'support/fixtures.dart';
@@ -17,7 +17,7 @@ void main() {
 
   int counter = 0;
   String email() =>
-      'new${++counter}-${DateTime.now().microsecondsSinceEpoch}@realchord.test';
+      'new${++counter}-${DateTime.now().microsecondsSinceEpoch}@setding.test';
 
   Future<User> signIn(PocketBase pb, String email) async {
     final auth = await pb.guest.send(
@@ -36,7 +36,7 @@ void main() {
   Future<String> invite(BandFixture f) async {
     final r = await f.admin.send(
       'POST',
-      '/api/realchord/invites',
+      '/api/setding/invites',
       body: {'organization': f.orgId},
     );
     r.expectStatus(200);
@@ -59,13 +59,13 @@ void main() {
 
     setUpAll(
       () async => pb = await PocketBase.start(
-        environment: {'REALCHORD_REGISTRATION': ''},
+        environment: {'SETDING_REGISTRATION': ''},
       ),
     );
     tearDownAll(() => pb.stop());
 
     test('the config route reports the mode without an account', () async {
-      final r = await pb.guest.send('GET', '/api/realchord/config');
+      final r = await pb.guest.send('GET', '/api/setding/config');
       r.expectStatus(200);
       expect(r.json, {
         'registration': 'invite_only',
@@ -86,10 +86,7 @@ void main() {
     test('sign-up with an invitation, then joining', () async {
       final f = await BandFixture.create(pb);
       final token = await invite(f);
-      final preview = await pb.guest.send(
-        'GET',
-        '/api/realchord/invites/$token',
-      );
+      final preview = await pb.guest.send('GET', '/api/setding/invites/$token');
       preview.expectStatus(200);
       expect(preview.field('organization.id'), f.orgId);
       expect(preview.json['member'], isFalse);
@@ -103,7 +100,7 @@ void main() {
       final user = await signIn(pb, address);
       (await user.send(
         'POST',
-        '/api/realchord/invites/$token/redeem',
+        '/api/setding/invites/$token/redeem',
       )).expectStatus(200);
       expect(await user.list('organizations'), hasLength(1));
     });
@@ -150,7 +147,7 @@ void main() {
 
         final preview = await pb.guest.send(
           'GET',
-          '/api/realchord/invites/$token',
+          '/api/setding/invites/$token',
         );
         preview.expectStatus(200);
         expect(preview.json['founder'], isTrue);
@@ -165,7 +162,7 @@ void main() {
         final user = await signIn(pb, address);
         final redeemed = await user.send(
           'POST',
-          '/api/realchord/invites/$token/redeem',
+          '/api/setding/invites/$token/redeem',
         );
         redeemed.expectStatus(200);
         final orgId = redeemed.field('organization.id') as String;
@@ -182,7 +179,7 @@ void main() {
         // Used: neither a second organization nor a sign-up.
         final again = await (await pb.signUpVia(
           token,
-        )).send('POST', '/api/realchord/invites/$token/redeem');
+        )).send('POST', '/api/setding/invites/$token/redeem');
         expect(again.status, 410);
         expect(
           (await pb.guest.post(
@@ -222,13 +219,13 @@ void main() {
 
     setUpAll(
       () async => pb = await PocketBase.start(
-        environment: {'REALCHORD_REGISTRATION': 'open'},
+        environment: {'SETDING_REGISTRATION': 'open'},
       ),
     );
     tearDownAll(() => pb.stop());
 
     test('anyone signs up and founds organizations', () async {
-      final r = await pb.guest.send('GET', '/api/realchord/config');
+      final r = await pb.guest.send('GET', '/api/setding/config');
       expect(r.json['registration'], 'open');
       (await pb.guest.post('users', account(email()))).expectStatus(200);
       final user = await pb.signUp();
@@ -239,17 +236,17 @@ void main() {
   group('email verification', () {
     test('required without SMTP stays off', () async {
       final pb = await PocketBase.start(
-        environment: {'REALCHORD_EMAIL_VERIFICATION': 'required'},
+        environment: {'SETDING_EMAIL_VERIFICATION': 'required'},
       );
       addTearDown(pb.stop);
-      final r = await pb.guest.send('GET', '/api/realchord/config');
+      final r = await pb.guest.send('GET', '/api/setding/config');
       expect(r.json['emailVerification'], 'off');
       await pb.signUp();
     });
 
     test('required with SMTP blocks sign-in until verified', () async {
       final pb = await PocketBase.start(
-        environment: {'REALCHORD_EMAIL_VERIFICATION': 'required'},
+        environment: {'SETDING_EMAIL_VERIFICATION': 'required'},
       );
       addTearDown(pb.stop);
       // SMTP pointing nowhere: sending fails, which only gets logged.
@@ -260,7 +257,7 @@ void main() {
           'smtp': {'enabled': true, 'host': '127.0.0.1', 'port': 1},
         },
       )).expectStatus(200);
-      final r = await pb.guest.send('GET', '/api/realchord/config');
+      final r = await pb.guest.send('GET', '/api/setding/config');
       expect(r.json['emailVerification'], 'required');
 
       final address = email();
@@ -295,7 +292,7 @@ void main() {
         containsAll([
           'users:create',
           '*:auth',
-          '/api/realchord/invites/',
+          '/api/setding/invites/',
           '/invite/',
         ]),
       );
@@ -306,8 +303,7 @@ void main() {
 extension on PocketBase {
   /// Signs up a user with an invitation and signs in (invite-only servers).
   Future<User> signUpVia(String token) async {
-    final address =
-        'via-${DateTime.now().microsecondsSinceEpoch}@realchord.test';
+    final address = 'via-${DateTime.now().microsecondsSinceEpoch}@setding.test';
     // The invitation is used already, so sign up as superuser.
     (await superuser.post('users', {
       'email': address,

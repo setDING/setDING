@@ -8,7 +8,7 @@
 set -euo pipefail
 
 name="${1:?usage: build-linux.sh <name>}"
-src=/tmp/realchord
+src=/tmp/setding
 
 mkdir -p "$src"
 tar -C "$src" -xf -

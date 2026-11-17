@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:realchord/sync/sync_backend.dart';
+import 'package:setding/sync/sync_backend.dart';
 
 /// In-memory [SyncBackend] for widget tests.
 class FakeSyncBackend implements SyncBackend {
@@ -377,7 +377,7 @@ class FakeSyncBackend implements SyncBackend {
       FakeInvite('inv$_ids', '', token, now, now.add(const Duration(days: 7)))
         ..founder = name,
     );
-    return 'https://api.realchord.app/invite/$token';
+    return 'https://api.setding.app/invite/$token';
   }
 
   @override
@@ -403,7 +403,7 @@ class FakeSyncBackend implements SyncBackend {
     invites.add(invite);
     return CreatedInvite(
       id: invite.id,
-      url: 'https://api.realchord.app/invite/$token',
+      url: 'https://api.setding.app/invite/$token',
       expires: invite.expires,
     );
   }

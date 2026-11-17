@@ -1,15 +1,15 @@
 [Desktop Entry]
 Type=Application
 Version=1.5
-Name=RealChord
+Name=setDING
 GenericName=Chord sheets for bands
 GenericName[de]=Akkorde für Bands
 Comment=Chords and sets for bands, on stage and offline
 Comment[de]=Akkorde und Sets für Bands, auf der Bühne und offline
 Exec="@EXEC@"
-Icon=app.realchord
+Icon=app.setding
 Terminal=false
 Categories=AudioVideo;Audio;Music;
 Keywords=chordpro;chords;setlist;band;
 StartupNotify=true
-StartupWMClass=app.realchord
+StartupWMClass=app.setding

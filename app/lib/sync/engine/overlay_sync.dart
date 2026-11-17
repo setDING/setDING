@@ -22,7 +22,7 @@ class OverlaySync {
   /// Server record ID of the adjustments of [userId] for [songId]: the same
   /// on every device, so two devices never create two records.
   static String overlayServerId(String userId, String songId) =>
-      _uuid.v5(Namespace.url.value, 'realchord:overlay:$userId:$songId');
+      _uuid.v5(Namespace.url.value, 'setding:overlay:$userId:$songId');
 
   /// The fields of layer 3 as stored on the server.
   static Map<String, dynamic> overlayData(SongOverlay o) => {

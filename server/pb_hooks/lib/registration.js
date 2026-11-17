@@ -1,9 +1,9 @@
 // Registration mode and email verification set by the server operator in
-// the environment (/etc/realchord/pocketbase.env, ADR-0024).
+// the environment (/etc/setding/pocketbase.env, ADR-0024).
 
-/// "invite_only" (default) or "open" (REALCHORD_REGISTRATION).
+/// "invite_only" (default) or "open" (SETDING_REGISTRATION).
 function mode() {
-  const value = ($os.getenv("REALCHORD_REGISTRATION") || "").trim().toLowerCase();
+  const value = ($os.getenv("SETDING_REGISTRATION") || "").trim().toLowerCase();
   return value === "open" ? "open" : "invite_only";
 }
 
@@ -11,9 +11,9 @@ function inviteOnly() {
   return mode() === "invite_only";
 }
 
-/// Whether REALCHORD_EMAIL_VERIFICATION asks for verification.
+/// Whether SETDING_EMAIL_VERIFICATION asks for verification.
 function verificationRequested() {
-  const value = ($os.getenv("REALCHORD_EMAIL_VERIFICATION") || "").trim().toLowerCase();
+  const value = ($os.getenv("SETDING_EMAIL_VERIFICATION") || "").trim().toLowerCase();
   return value === "required";
 }
 

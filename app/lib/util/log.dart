@@ -60,7 +60,7 @@ class Log {
     if (_recent.length > capacity) _recent.removeAt(0);
     developer.log(
       message,
-      name: 'realchord.$name',
+      name: 'setding.$name',
       level: switch (level) {
         LogLevel.info => 800,
         LogLevel.warning => 900,

@@ -8,17 +8,17 @@ import 'dart:typed_data';
 import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:realchord/data/arrangement_repository.dart';
-import 'package:realchord/data/attachment_storage_io.dart';
-import 'package:realchord/data/band_copy.dart';
-import 'package:realchord/data/database.dart';
-import 'package:realchord/data/set_repository.dart';
-import 'package:realchord/data/song_repository.dart';
-import 'package:realchord/sync/band_service.dart';
-import 'package:realchord/sync/pocketbase_backend.dart';
-import 'package:realchord/sync/session_store.dart';
-import 'package:realchord/sync/sync_engine.dart';
-import 'package:realchord_server/pocketbase_harness.dart';
+import 'package:setding/data/arrangement_repository.dart';
+import 'package:setding/data/attachment_storage_io.dart';
+import 'package:setding/data/band_copy.dart';
+import 'package:setding/data/database.dart';
+import 'package:setding/data/set_repository.dart';
+import 'package:setding/data/song_repository.dart';
+import 'package:setding/sync/band_service.dart';
+import 'package:setding/sync/pocketbase_backend.dart';
+import 'package:setding/sync/session_store.dart';
+import 'package:setding/sync/sync_engine.dart';
+import 'package:setding_server/pocketbase_harness.dart';
 import 'package:uuid/uuid.dart';
 
 /// One device: its own database and session.
@@ -33,7 +33,7 @@ class Device {
   static Future<Device> create(String url) async {
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
     final db = AppDatabase(NativeDatabase.memory());
-    final dir = Directory.systemTemp.createTempSync('realchord_device');
+    final dir = Directory.systemTemp.createTempSync('setding_device');
     final backend = PocketBaseBackend(
       serverUrl: url,
       store: MemorySessionStore(),
@@ -82,7 +82,7 @@ void main() {
 
   var n = 0;
   String email() =>
-      'sync${++n}-${DateTime.now().microsecondsSinceEpoch}@realchord.test';
+      'sync${++n}-${DateTime.now().microsecondsSinceEpoch}@setding.test';
 
   /// Ann (admin) and Bob (band member allowed to edit songs) on two devices.
   Future<(Device, Device, String org, String band)> twoDevices() async {

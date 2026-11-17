@@ -10,7 +10,7 @@ Until now the only desktop target in the `Makefile` was `make build`, a Linux
 failed to start:
 
 ```
-./realchord: CPU ISA level is lower than required
+./setding: CPU ISA level is lower than required
 ```
 
 The development machine runs CachyOS with the `znver4` repositories. Its glibc ships
@@ -26,7 +26,7 @@ exist yet, and CI is manual-only during early development.
 ## Decision
 
 - **`make release`** (currently the same as `make release-linux`) builds the
-  distributable Linux package `app/build/realchord-<version>-<commit>-linux-x64.tar.gz`
+  distributable Linux package `app/build/setding-<version>-<commit>-linux-x64.tar.gz`
   from the **committed** state (`git archive HEAD`); uncommitted changes only cause a
   warning.
 - The build runs `flutter build linux --release` inside a **Debian container**

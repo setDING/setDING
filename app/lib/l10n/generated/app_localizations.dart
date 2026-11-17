@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In de, this message translates to:
-  /// **'RealChord'**
+  /// **'setDING'**
   String get appTitle;
 
   /// No description provided for @navSets.
@@ -1091,7 +1091,7 @@ abstract class AppLocalizations {
   /// No description provided for @accentBrand.
   ///
   /// In de, this message translates to:
-  /// **'RealChord-Rot'**
+  /// **'setDING-Rot'**
   String get accentBrand;
 
   /// No description provided for @accentAmber.
@@ -1397,7 +1397,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAbout.
   ///
   /// In de, this message translates to:
-  /// **'RealChord läuft lokal auf diesem Gerät. Alle Daten sind offline verfügbar.'**
+  /// **'setDING läuft lokal auf diesem Gerät. Alle Daten sind offline verfügbar.'**
   String get settingsAbout;
 
   /// No description provided for @settingsVersion.
@@ -1877,7 +1877,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountSignedOutHint.
   ///
   /// In de, this message translates to:
-  /// **'Melde dich an, um Songs und Sets mit deiner Band zu teilen. Ohne Konto funktioniert RealChord weiterhin lokal auf diesem Gerät.'**
+  /// **'Melde dich an, um Songs und Sets mit deiner Band zu teilen. Ohne Konto funktioniert setDING weiterhin lokal auf diesem Gerät.'**
   String get accountSignedOutHint;
 
   /// No description provided for @accountSignIn.

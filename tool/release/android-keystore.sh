@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Creates the Android release key of RealChord and stores it as GitHub repository
+# Creates the Android release key of setDING and stores it as GitHub repository
 # secrets for the release workflow (make android-keystore, ADR-0021).
 #
 # Run once, by the owner (signing keys are a human decision, git workflow section 9).
@@ -15,7 +15,7 @@
 set -euo pipefail
 
 keystore="${1:?usage: android-keystore.sh <keystore-path>}"
-alias=realchord
+alias=setding
 properties="$(dirname "$keystore")/key.properties"
 
 if [ -e "$keystore" ]; then
@@ -37,7 +37,7 @@ keytool -genkeypair -noprompt \
   -keystore "$keystore" -storetype PKCS12 -storepass "$password" \
   -alias "$alias" -keypass "$password" \
   -keyalg RSA -keysize 4096 -validity 10000 \
-  -dname "CN=RealChord, O=RealChord"
+  -dname "CN=setDING, O=setDING"
 
 cat >"$properties" <<EOF
 storeFile=$keystore

@@ -256,7 +256,7 @@ class _SongParser {
   void _directive(Directive d) {
     final name = d.name;
     // Custom extensions start with x_ (ChordPro spec); other tools ignore
-    // them. RealChord knows {x_sequence} (song sequence), kept as
+    // them. setDING knows {x_sequence} (song sequence), kept as
     // metadata so that %{x_sequence} works; all others are ignored.
     if (name == 'x_sequence') {
       _addMeta('x_sequence', d.plainArgument);

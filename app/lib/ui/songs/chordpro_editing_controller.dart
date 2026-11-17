@@ -89,7 +89,7 @@ class ChordProEditingController extends TextEditingController {
   }
 }
 
-/// Colour of RealChord's own `x_` directives (light, dark).
+/// Colour of setDING's own `x_` directives (light, dark).
 const _customLight = Color(0xFF00796B);
 const _customDark = Color(0xFF80CBC4);
 

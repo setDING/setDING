@@ -1,7 +1,7 @@
-import 'package:realchord/ui/live/live_screen.dart';
-import 'package:realchord/ui/render/chord_diagram.dart';
-import 'package:realchord/ui/render/song_view.dart';
-import 'package:realchord/ui/songs/song_screen.dart';
+import 'package:setding/ui/live/live_screen.dart';
+import 'package:setding/ui/render/chord_diagram.dart';
+import 'package:setding/ui/render/song_view.dart';
+import 'package:setding/ui/songs/song_screen.dart';
 import 'package:chordpro/chordpro.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';

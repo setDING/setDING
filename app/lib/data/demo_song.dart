@@ -1,6 +1,6 @@
-/// Example song added on first start. Original text written for RealChord.
+/// Example song added on first start. Original text written for setDING.
 const demoSongSource = '''{title: Late Train Home}
-{artist: RealChord Example}
+{artist: setDING Example}
 {key: G}
 {tempo: 92}
 {time: 4/4}

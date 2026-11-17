@@ -13,7 +13,7 @@ grids, conditional directives, markup, chord diagrams and delegated environments
 whole specification must be supported.
 
 The specification states that directives are "a friendly request" to the formatter: the
-semantics are defined, the appearance is up to the program. RealChord is a screen-based
+semantics are defined, the appearance is up to the program. setDING is a screen-based
 live app, not a PDF formatter, so page-oriented directives are mapped to the screen
 layout (ADR-0007) where this makes sense.
 
@@ -24,7 +24,7 @@ as listed below. The ChordPro source stays the single source of truth (ADR-0003)
 
 ### Coverage
 
-| Area | Directives / features | Support in RealChord |
+| Area | Directives / features | Support in setDING |
 |---|---|---|
 | Syntax | `name: value`, `name value`, attributes `key="v"`/`key='v'`, labels with `\n`, `#` remarks, `x_…` custom directives | Full; `x_` directives are ignored silently |
 | Preamble | `new_song` / `ns` | A file with several songs is imported as several songs |
@@ -34,7 +34,7 @@ as listed below. The ChordPro source stays the single source of truth (ADR-0003)
 | Markup | Pango subset: `<span …>` (font, size, style, weight, colours, underline, overline, strikethrough, rise), `<b> <i> <u> <s> <sub> <sup> <big> <small> <tt>`, `<strut/>` | Full in lyrics, chords, comments and labels; `href`/bookmarks are ignored |
 | Environments | `chorus`, `verse`, `bridge`, `tab`, `grid`, any `start_of_xxx`, `{chorus}` recall | Full; unknown environments are shown as lyrics |
 | Grids | `shape`, cells, bar lines (`\|`, `\|\|`, `\|.`, `\|:`, `:\|`, `:\|:`, voltas), `.` `/` `~` `%` `%%`, margins, strums | Full, chords transposed |
-| Delegated | `abc`, `ly`, `svg`, `textblock` | SVG and textblock rendered; ABC rendered as notation by RealChord's own engraver (single voice, transposable); Lilypond shown as source with a notice (needs an external program that is not available on tablets) |
+| Delegated | `abc`, `ly`, `svg`, `textblock` | SVG and textblock rendered; ABC rendered as notation by setDING's own engraver (single voice, transposable); Lilypond shown as source with a notice (needs an external program that is not available on tablets) |
 | Images | `image` with `src`, `width`, `height`, `scale`, `align`, … | Images are **attachments** of the song (like PDFs, ADR-0009), found by file name |
 | Chord diagrams | `define`, `chord`, `diagrams` | Diagrams for the instrument chosen in the settings; built-in chord library plus `define`/`chord` |
 | Transposition | `transpose` (`+n`, `-n`, `s`/`f` suffix, cancel, modulation mid-song) | Full; combined with set and personal transposition (ADR-0006) |

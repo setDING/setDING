@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:realchord_server/pocketbase_harness.dart';
+import 'package:setding_server/pocketbase_harness.dart';
 import 'package:test/test.dart';
 
 import 'support/fixtures.dart';
@@ -10,10 +10,10 @@ import 'support/fixtures.dart';
 void main() {
   late PocketBase pb;
   late Directory public;
-  const marker = '<!-- realchord web client -->';
+  const marker = '<!-- setding web client -->';
 
   setUpAll(() async {
-    public = await Directory.systemTemp.createTemp('realchord-public-');
+    public = await Directory.systemTemp.createTemp('setding-public-');
     File('${public.path}/index.html').writeAsStringSync(
       '<!doctype html><html><head><base href="/"></head>'
       '<body>$marker</body></html>',
@@ -22,8 +22,8 @@ void main() {
     pb = await PocketBase.start(
       publicDir: public.path,
       environment: {
-        'REALCHORD_WEB_URL': 'https://web.test/',
-        'REALCHORD_PUBLIC_DIR': public.path,
+        'SETDING_WEB_URL': 'https://web.test/',
+        'SETDING_PUBLIC_DIR': public.path,
       },
     );
   });
@@ -35,7 +35,7 @@ void main() {
   Future<String> token(BandFixture f) async {
     final r = await f.admin.send(
       'POST',
-      '/api/realchord/invites',
+      '/api/setding/invites',
       body: {'organization': f.orgId},
     );
     r.expectStatus(200);
@@ -81,7 +81,7 @@ void main() {
     final t = await token(f);
     final r = await pb.guest.send('GET', '/invite/$t');
     r.expectStatus(200);
-    expect(r.raw.body, contains('realchord://invite/$t'));
+    expect(r.raw.body, contains('setding://invite/$t'));
     expect(r.raw.body, contains('Open in the browser'));
     expect(r.raw.body, contains('href="https://web.test/invite/$t"'));
   });
@@ -96,7 +96,7 @@ void main() {
     );
     r.expectStatus(200);
     expect(r.raw.body, contains(marker));
-    expect(r.raw.body, isNot(contains('realchord://')));
+    expect(r.raw.body, isNot(contains('setding://')));
     expectIsolated(r);
   });
 }

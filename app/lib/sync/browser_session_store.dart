@@ -38,7 +38,7 @@ class BrowserSessionStore implements SessionStore {
     _subscription = channel?.messages.listen(_onMessage);
   }
 
-  static const key = 'realchord.session';
+  static const key = 'setding.session';
   static const _request = 'session?';
   static const _reply = 'session:';
   static const _signedOut = 'signed-out';

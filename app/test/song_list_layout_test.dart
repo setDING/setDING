@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:realchord/data/song_repository.dart';
-import 'package:realchord/ui/songs/songs_screen.dart';
+import 'package:setding/data/song_repository.dart';
+import 'package:setding/ui/songs/songs_screen.dart';
 
 import 'test_app.dart';
 

@@ -203,7 +203,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 padding: const EdgeInsets.all(24),
                 children: [
                   if (widget.gate) ...[
-                    const Center(child: RealChordLogo(height: 36)),
+                    const Center(child: SetdingLogo(height: 36)),
                     const SizedBox(height: 32),
                     Text(
                       _signUp ? l10n.accountSignUp : l10n.accountSignIn,

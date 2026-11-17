@@ -46,7 +46,7 @@ const _line = PdfColor.fromInt(0xffbbbbbb);
 pw.Document _build(SetList list, SetListFonts fonts, double size) {
   final doc = pw.Document(
     title: list.name,
-    creator: 'RealChord',
+    creator: 'setDING',
     theme: pw.ThemeData.withFont(base: fonts.regular, bold: fonts.bold),
   );
   final regular = pw.TextStyle(fontSize: size);

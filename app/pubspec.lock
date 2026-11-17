@@ -931,13 +931,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.0"
-  realchord_server:
-    dependency: "direct dev"
-    description:
-      path: "../server"
-      relative: true
-    source: path
-    version: "0.1.0"
   recase:
     dependency: transitive
     description:
@@ -970,6 +963,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
+  setding_server:
+    dependency: "direct dev"
+    description:
+      path: "../server"
+      relative: true
+    source: path
+    version: "0.1.0"
   shared_preferences:
     dependency: "direct main"
     description:

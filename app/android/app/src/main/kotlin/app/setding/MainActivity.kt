@@ -1,4 +1,4 @@
-package app.realchord
+package app.setding
 
 import io.flutter.embedding.android.FlutterActivity
 

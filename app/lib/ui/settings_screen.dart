@@ -395,7 +395,7 @@ class _AboutTiles extends ConsumerWidget {
             await Clipboard.setData(
               ClipboardData(
                 text: [
-                  if (version != null) 'RealChord $version',
+                  if (version != null) 'setDING $version',
                   Log.export(),
                 ].join('\n'),
               ),

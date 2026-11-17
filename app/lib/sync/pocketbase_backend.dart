@@ -150,7 +150,7 @@ class PocketBaseBackend implements SyncBackend {
 
   @override
   Future<ServerConfig> fetchServerConfig() async {
-    final data = await _sendPublic('/api/realchord/config');
+    final data = await _sendPublic('/api/setding/config');
     return ServerConfig(
       registration: data['registration'] == 'open'
           ? RegistrationMode.open
@@ -359,7 +359,7 @@ class PocketBaseBackend implements SyncBackend {
     String? bandId,
   }) async {
     final data = await _send(
-      '/api/realchord/invites',
+      '/api/setding/invites',
       method: 'POST',
       body: {'organization': organizationId, 'band': ?bandId},
     );
@@ -425,7 +425,7 @@ class PocketBaseBackend implements SyncBackend {
 
   @override
   Future<InvitePreview> previewInvite(String token) async {
-    final data = await _sendPublic('/api/realchord/invites/${_token(token)}');
+    final data = await _sendPublic('/api/setding/invites/${_token(token)}');
     final org = data['organization'] as Map<String, dynamic>;
     return InvitePreview(
       organizationId: org['id'] as String,
@@ -440,7 +440,7 @@ class PocketBaseBackend implements SyncBackend {
   @override
   Future<String> redeemInvite(String token) async {
     final data = await _send(
-      '/api/realchord/invites/${_token(token)}/redeem',
+      '/api/setding/invites/${_token(token)}/redeem',
       method: 'POST',
     );
     return (data['organization'] as Map<String, dynamic>)['id'] as String;

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:realchord_server/pocketbase_harness.dart';
+import 'package:setding_server/pocketbase_harness.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -32,7 +32,7 @@ void main() {
 
   test('anyone can sign up, but not twice with the same email', () async {
     final body = {
-      'email': 'twice@realchord.test',
+      'email': 'twice@setding.test',
       'password': 'password-123',
       'passwordConfirm': 'password-123',
     };

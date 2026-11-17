@@ -4,17 +4,17 @@ import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:realchord/data/attachment_storage_io.dart';
-import 'package:realchord/data/database.dart';
-import 'package:realchord/data/outbox.dart';
-import 'package:realchord/providers.dart';
-import 'package:realchord/settings/settings.dart';
-import 'package:realchord/sync/auth_providers.dart';
-import 'package:realchord/sync/band_service.dart';
-import 'package:realchord/sync/session_store.dart';
-import 'package:realchord/sync/sync_backend.dart';
-import 'package:realchord/sync/sync_controller.dart';
-import 'package:realchord/sync/sync_engine.dart';
+import 'package:setding/data/attachment_storage_io.dart';
+import 'package:setding/data/database.dart';
+import 'package:setding/data/outbox.dart';
+import 'package:setding/providers.dart';
+import 'package:setding/settings/settings.dart';
+import 'package:setding/sync/auth_providers.dart';
+import 'package:setding/sync/band_service.dart';
+import 'package:setding/sync/session_store.dart';
+import 'package:setding/sync/sync_backend.dart';
+import 'package:setding/sync/sync_controller.dart';
+import 'package:setding/sync/sync_engine.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_backend.dart';
@@ -71,7 +71,7 @@ void main() {
   setUp(() {
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
     db = AppDatabase(NativeDatabase.memory());
-    dir = Directory.systemTemp.createTempSync('realchord_mode');
+    dir = Directory.systemTemp.createTempSync('setding_mode');
     backend = FakeSyncBackend(user: _ann);
     engine = _CountingEngine(db, backend);
   });

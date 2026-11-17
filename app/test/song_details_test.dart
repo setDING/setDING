@@ -1,6 +1,6 @@
 import 'package:chordpro/chordpro.dart' as cp;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:realchord/ui/songs/song_details_dialog.dart';
+import 'package:setding/ui/songs/song_details_dialog.dart';
 
 void main() {
   test('offers 12 major and 12 minor keys in the chosen notation', () {

@@ -1,9 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:realchord/sync/sync_backend.dart';
-import 'package:realchord/ui/account/account_section.dart';
-import 'package:realchord/ui/settings_screen.dart';
-import 'package:realchord/util/log.dart';
+import 'package:setding/sync/sync_backend.dart';
+import 'package:setding/ui/account/account_section.dart';
+import 'package:setding/ui/settings_screen.dart';
+import 'package:setding/util/log.dart';
 
 import 'test_app.dart';
 
@@ -190,14 +190,14 @@ void main() {
 
   test('normalizes server URLs', () {
     expect(
-      normalizeServerUrl(' https://api.realchord.app// '),
-      'https://api.realchord.app',
+      normalizeServerUrl(' https://api.setding.app// '),
+      'https://api.setding.app',
     );
     expect(
       normalizeServerUrl('http://localhost:8090'),
       'http://localhost:8090',
     );
-    expect(normalizeServerUrl('api.realchord.app'), isNull);
+    expect(normalizeServerUrl('api.setding.app'), isNull);
     expect(normalizeServerUrl('https://'), isNull);
   });
 }

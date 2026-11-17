@@ -3,13 +3,13 @@ import 'dart:typed_data';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:realchord/data/attachment_storage_memory.dart';
-import 'package:realchord/data/database.dart';
-import 'package:realchord/data/song_repository.dart';
-import 'package:realchord/sync/attachment_fetcher.dart';
-import 'package:realchord/sync/band_service.dart';
-import 'package:realchord/sync/sync_backend.dart';
-import 'package:realchord/sync/sync_engine.dart';
+import 'package:setding/data/attachment_storage_memory.dart';
+import 'package:setding/data/database.dart';
+import 'package:setding/data/song_repository.dart';
+import 'package:setding/sync/attachment_fetcher.dart';
+import 'package:setding/sync/band_service.dart';
+import 'package:setding/sync/sync_backend.dart';
+import 'package:setding/sync/sync_engine.dart';
 
 import 'fake_backend.dart';
 

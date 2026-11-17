@@ -1,6 +1,6 @@
 /// <reference path="../pb_data/types.d.ts" />
 
-// Initial RealChord data model (ADR-0004, ADR-0005, ADR-0009, ADR-0015).
+// Initial setDING data model (ADR-0004, ADR-0005, ADR-0009, ADR-0015).
 //
 // Synced collections (bands, memberships, songs, attachments, setlists) share the
 // sync fields of ADR-0004: a client-generated UUID `id`, a server-assigned
@@ -70,14 +70,14 @@ migrate(
     app
       .db()
       .newQuery(
-        "CREATE TABLE realchord_sync (" +
+        "CREATE TABLE setding_sync (" +
           "id INTEGER PRIMARY KEY CHECK (id = 1), " +
           "revision INTEGER NOT NULL)",
       )
       .execute();
     app
       .db()
-      .newQuery("INSERT INTO realchord_sync (id, revision) VALUES (1, 0)")
+      .newQuery("INSERT INTO setding_sync (id, revision) VALUES (1, 0)")
       .execute();
 
     // --- bands ----------------------------------------------------------------
@@ -337,7 +337,7 @@ migrate(
     ]) {
       app.delete(app.findCollectionByNameOrId(name));
     }
-    app.db().newQuery("DROP TABLE realchord_sync").execute();
+    app.db().newQuery("DROP TABLE setding_sync").execute();
 
     const users = app.findCollectionByNameOrId("users");
     users.listRule = "id = @request.auth.id";

@@ -1,17 +1,17 @@
 import 'dart:io';
 
 import 'package:chordpro/chordpro.dart' show SequencePart;
-import 'package:realchord/data/database.dart';
-import 'package:realchord/data/demo_song.dart';
-import 'package:realchord/ui/live/live_screen.dart';
-import 'package:realchord/ui/render/song_header.dart';
-import 'package:realchord/ui/render/song_view.dart';
-import 'package:realchord/ui/sets/set_screen.dart';
-import 'package:realchord/ui/sets/sets_screen.dart';
-import 'package:realchord/ui/widgets/dialogs.dart';
-import 'package:realchord/ui/widgets/key_picker.dart';
-import 'package:realchord/ui/songs/song_editor_screen.dart';
-import 'package:realchord/ui/songs/song_screen.dart';
+import 'package:setding/data/database.dart';
+import 'package:setding/data/demo_song.dart';
+import 'package:setding/ui/live/live_screen.dart';
+import 'package:setding/ui/render/song_header.dart';
+import 'package:setding/ui/render/song_view.dart';
+import 'package:setding/ui/sets/set_screen.dart';
+import 'package:setding/ui/sets/sets_screen.dart';
+import 'package:setding/ui/widgets/dialogs.dart';
+import 'package:setding/ui/widgets/key_picker.dart';
+import 'package:setding/ui/songs/song_editor_screen.dart';
+import 'package:setding/ui/songs/song_screen.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

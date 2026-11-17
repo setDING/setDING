@@ -7,7 +7,7 @@
 
 Many bands, especially those playing in churches, get their chord sheets from
 [CCLI SongSelect](https://songselect.ccli.com). An import directly from SongSelect into
-RealChord would save the manual download and import of each song.
+setDING would save the manual download and import of each song.
 
 Findings (researched 2026-11-14):
 
@@ -34,7 +34,7 @@ Findings (researched 2026-11-14):
 
 ## Decision
 
-- RealChord does **not** integrate the SongSelect API.
+- setDING does **not** integrate the SongSelect API.
 - The supported way is the **manual import**: users download ChordPro files from
   SongSelect (Premium) and import them with the existing file import (single files or ZIP).
 - The decision is revisited if CCLI reopens the partner program.

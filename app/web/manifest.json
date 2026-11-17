@@ -1,11 +1,11 @@
 {
-    "name": "RealChord",
-    "short_name": "RealChord",
+    "name": "setDING",
+    "short_name": "setDING",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FFFFFF",
     "theme_color": "#E8461C",
-    "description": "RealChord – chords and sets for bands.",
+    "description": "setDING – chords and sets for bands.",
     "prefer_related_applications": false,
     "icons": [
         {

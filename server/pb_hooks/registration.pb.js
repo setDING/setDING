@@ -10,14 +10,14 @@ onBootstrap((e) => {
   const reg = require(`${__hooks}/lib/registration.js`);
   if (reg.verificationRequested() && reg.emailVerification(e.app) === "off") {
     console.error(
-      "REALCHORD_EMAIL_VERIFICATION=required needs SMTP (Settings → Mail settings); " +
+      "SETDING_EMAIL_VERIFICATION=required needs SMTP (Settings → Mail settings); " +
         "email verification stays off.",
     );
   }
 });
 
 // Settings the app needs before signing in or up.
-routerAdd("GET", "/api/realchord/config", (e) => {
+routerAdd("GET", "/api/setding/config", (e) => {
   const reg = require(`${__hooks}/lib/registration.js`);
   return e.json(200, {
     registration: reg.mode(),
@@ -70,7 +70,7 @@ onRecordCreateRequest((e) => {
 //   pocketbase founder-invite "Music school" --dir=… --hooksDir=… --migrationsDir=…
 $app.rootCmd.addCommand(new Command({
   use: "founder-invite [organization name]",
-  short: "Creates a one-time invitation that founds an organization (RealChord)",
+  short: "Creates a one-time invitation that founds an organization (setDING)",
   run: (cmd, args) => {
     const name = (args || []).join(" ").trim();
     if (!name) throw new Error("Usage: founder-invite <organization name>");

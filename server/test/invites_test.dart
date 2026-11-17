@@ -1,4 +1,4 @@
-import 'package:realchord_server/pocketbase_harness.dart';
+import 'package:setding_server/pocketbase_harness.dart';
 import 'package:test/test.dart';
 
 import 'support/fixtures.dart';
@@ -9,8 +9,8 @@ void main() {
   setUpAll(
     () async => pb = await PocketBase.start(
       environment: {
-        'REALCHORD_ANDROID_CERT_SHA256': 'AA:BB, CC:DD',
-        'REALCHORD_APPLE_TEAM_ID': 'TEAM123',
+        'SETDING_ANDROID_CERT_SHA256': 'AA:BB, CC:DD',
+        'SETDING_APPLE_TEAM_ID': 'TEAM123',
       },
     ),
   );
@@ -18,7 +18,7 @@ void main() {
 
   Future<Response> create(Client client, String orgId) => client.send(
     'POST',
-    '/api/realchord/invites',
+    '/api/setding/invites',
     body: {'organization': orgId},
   );
 
@@ -29,7 +29,7 @@ void main() {
   }
 
   Future<Response> redeem(Client client, String token) =>
-      client.send('POST', '/api/realchord/invites/$token/redeem');
+      client.send('POST', '/api/setding/invites/$token/redeem');
 
   group('creating links', () {
     test('organization admins get a link; only the hash is stored', () async {
@@ -94,7 +94,7 @@ void main() {
       final t = await token(f);
       final newcomer = await pb.signUp('Newcomer');
 
-      final preview = await newcomer.send('GET', '/api/realchord/invites/$t');
+      final preview = await newcomer.send('GET', '/api/setding/invites/$t');
       preview.expectStatus(200);
       expect(preview.field('organization.id'), f.orgId);
       expect(preview.json['status'], 'valid');
@@ -172,7 +172,7 @@ void main() {
       expect(revoked.status, 410);
       expect(revoked.field('data.token.code'), 'revoked');
       expect(
-        (await user.send('GET', '/api/realchord/invites/$t')).json['status'],
+        (await user.send('GET', '/api/setding/invites/$t')).json['status'],
         'revoked',
       );
 
@@ -203,7 +203,7 @@ void main() {
   group('band leaders (ADR-0023)', () {
     Future<Response> createForBand(Client client, BandFixture f) => client.send(
       'POST',
-      '/api/realchord/invites',
+      '/api/setding/invites',
       body: {'organization': f.orgId, 'band': f.id},
     );
 
@@ -217,7 +217,7 @@ void main() {
       final t = r.json['token'] as String;
 
       final newcomer = await pb.signUp('Newcomer');
-      final preview = await newcomer.send('GET', '/api/realchord/invites/$t');
+      final preview = await newcomer.send('GET', '/api/setding/invites/$t');
       expect(preview.field('band.id'), f.id);
       (await redeem(newcomer, t)).expectStatus(200);
       final bands = await newcomer.list(
@@ -268,7 +268,7 @@ void main() {
       final other = await BandFixture.create(pb);
       final r = await f.admin.send(
         'POST',
-        '/api/realchord/invites',
+        '/api/setding/invites',
         body: {'organization': f.orgId, 'band': other.id},
       );
       expect(r.status, 400);
@@ -278,15 +278,14 @@ void main() {
       'a band link also lets people sign up on invite-only servers',
       () async {
         final closed = await PocketBase.start(
-          environment: {'REALCHORD_REGISTRATION': 'invite_only'},
+          environment: {'SETDING_REGISTRATION': 'invite_only'},
         );
         addTearDown(closed.stop);
         final f = await BandFixture.create(closed);
         final leader = await f.addLeader();
         final r = await createForBand(leader, f);
         final created = await closed.guest.post('users', {
-          'email':
-              'band-${DateTime.now().microsecondsSinceEpoch}@realchord.test',
+          'email': 'band-${DateTime.now().microsecondsSinceEpoch}@setding.test',
           'password': 'password-123',
           'passwordConfirm': 'password-123',
           'name': 'Drummer',
@@ -304,27 +303,27 @@ void main() {
       final en = await pb.guest.send('GET', '/invite/$t');
       en.expectStatus(200);
       expect(en.raw.headers['content-type'], contains('text/html'));
-      expect(en.raw.body, contains('realchord://invite/$t'));
+      expect(en.raw.body, contains('setding://invite/$t'));
       expect(en.raw.body, contains('The Band'));
       // No web client configured on this server (see web_test.dart).
       expect(en.raw.body, isNot(contains('Open in the browser')));
 
       final bad = await pb.guest.send('GET', '/invite/${'A' * 32}');
       expect(bad.raw.body, contains('invalid'));
-      expect(bad.raw.body, isNot(contains('realchord://')));
+      expect(bad.raw.body, isNot(contains('setding://')));
     });
 
     test('serves the deep-link verification files', () async {
       final links = await pb.guest.send('GET', '/.well-known/assetlinks.json');
       links.expectStatus(200);
-      expect(links.raw.body, contains('app.realchord'));
+      expect(links.raw.body, contains('app.setding'));
       expect(links.raw.body, contains('"CC:DD"'));
       final apple = await pb.guest.send(
         'GET',
         '/.well-known/apple-app-site-association',
       );
       apple.expectStatus(200);
-      expect(apple.raw.body, contains('TEAM123.app.realchord'));
+      expect(apple.raw.body, contains('TEAM123.app.setding'));
       expect(apple.raw.body, contains('/invite/*'));
     });
   });

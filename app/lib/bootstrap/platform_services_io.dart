@@ -16,18 +16,15 @@ Future<PlatformServices> openPlatformServices() async {
   final appSupportDir = await getApplicationSupportDirectory();
   // All data lives in the app's private directory (ADR-0001). On desktop
   // the documents directory is the user's visible "Documents" folder.
-  // REALCHORD_DATA_DIR (development only, see Makefile) runs an isolated
+  // SETDING_DATA_DIR (development only, see Makefile) runs an isolated
   // test instance and never touches existing data.
-  final override = Platform.environment['REALCHORD_DATA_DIR'];
+  final override = Platform.environment['SETDING_DATA_DIR'];
   final isolated = override != null && override.isNotEmpty;
   final supportDir = isolated ? Directory(override) : appSupportDir;
-  final dbFile = await resolveDatabaseFile(
-    supportDir,
-    legacyDir: isolated ? null : await _legacyDocumentsDir(),
-  );
+  final dbFile = await resolveDatabaseFile(supportDir);
   final db = AppDatabase(
     driftDatabase(
-      name: 'realchord',
+      name: 'setding',
       native: DriftNativeOptions(databasePath: () async => dbFile.path),
     ),
   );
@@ -40,13 +37,4 @@ Future<PlatformServices> openPlatformServices() async {
       ? FileSessionStore(File(p.join(supportDir.path, 'session.json')))
       : SecureSessionStore();
   return (db: db, storage: storage, sessionStore: sessionStore);
-}
-
-/// Where earlier versions stored the database, or null if unavailable.
-Future<Directory?> _legacyDocumentsDir() async {
-  try {
-    return await getApplicationDocumentsDirectory();
-  } catch (_) {
-    return null;
-  }
 }

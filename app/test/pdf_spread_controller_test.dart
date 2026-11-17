@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:realchord/ui/live/pdf_spread_view.dart';
+import 'package:setding/ui/live/pdf_spread_view.dart';
 
 /// Turning spreads of two PDF pages in landscape (ADR-0009).
 void main() {

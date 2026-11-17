@@ -5,9 +5,9 @@ import 'dart:typed_data';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdfrx/pdfrx.dart';
-import 'package:realchord/ui/live/live_screen.dart';
-import 'package:realchord/ui/live/pdf_spread_view.dart';
-import 'package:realchord/ui/render/song_view.dart';
+import 'package:setding/ui/live/live_screen.dart';
+import 'package:setding/ui/live/pdf_spread_view.dart';
+import 'package:setding/ui/render/song_view.dart';
 
 import 'test_app.dart';
 
@@ -317,7 +317,7 @@ void main() {
   ) async {
     // Landscape: two pages side by side, rendered at layout.
     useTabletSize(tester);
-    final cache = Directory.systemTemp.createTempSync('realchord_pdfrx');
+    final cache = Directory.systemTemp.createTempSync('setding_pdfrx');
     addTearDown(() => cache.deleteSync(recursive: true));
     Pdfrx.cacheDirectoryPath = cache.path;
     final app = await TestApp.create(prefs: {'language': 'en'});
@@ -371,7 +371,7 @@ void main() {
     tester,
   ) async {
     useTabletSize(tester, landscape: false);
-    final cache = Directory.systemTemp.createTempSync('realchord_pdfrx');
+    final cache = Directory.systemTemp.createTempSync('setding_pdfrx');
     addTearDown(() => cache.deleteSync(recursive: true));
     Pdfrx.cacheDirectoryPath = cache.path;
     final app = await TestApp.create(prefs: {'language': 'en'});

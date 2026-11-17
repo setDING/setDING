@@ -44,7 +44,7 @@ Every synced record has a client-generated **UUID `id`** (the server generates a
 UUID v4 only if none is sent), **`revision`**, **`updated_by`**, **`deleted`** and
 the autodate fields `created`/`updated`.
 
-- **One server-wide revision counter** (table `realchord_sync`). A hook increments
+- **One server-wide revision counter** (table `setding_sync`). A hook increments
   it in the **same transaction** that saves the record; SQLite serializes writes, so
   revisions become visible in increasing order and "all changes since revision X"
   never misses a change. Because the counter is shared, a client can keep a single

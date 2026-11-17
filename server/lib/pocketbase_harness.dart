@@ -32,12 +32,12 @@ class PocketBase {
   /// Token of a superuser; superusers bypass all access rules.
   final String superuserToken;
 
-  static const _superuserEmail = 'root@realchord.test';
+  static const _superuserEmail = 'root@setding.test';
   static const _superuserPassword = 'superuser-password';
 
   /// [environment] is added to the server's environment (e.g. deep-link
   /// settings read by the hooks). Unless it says otherwise, sign-up is open
-  /// (`REALCHORD_REGISTRATION=open`, ADR-0024), so tests can create users.
+  /// (`SETDING_REGISTRATION=open`, ADR-0024), so tests can create users.
   /// [publicDir] holds static files (e.g. the web client, ADR-0018).
   /// The rate limits are turned off after the start unless [rateLimits].
   ///
@@ -50,10 +50,10 @@ class PocketBase {
     bool rateLimits = false,
     String? migrationsBefore,
   }) async {
-    environment = {'REALCHORD_REGISTRATION': 'open', ...?environment};
+    environment = {'SETDING_REGISTRATION': 'open', ...?environment};
     final root = _repositoryRoot();
     final binary = await _binary(root);
-    final dir = await Directory.systemTemp.createTemp('realchord-pb-');
+    final dir = await Directory.systemTemp.createTemp('setding-pb-');
     var migrations = '$root/server/pb_migrations';
     if (migrationsBefore != null) {
       final older = Directory('${dir.path}/pb_migrations')..createSync();
@@ -216,7 +216,7 @@ class PocketBase {
   Future<User> signUp([String? name]) async {
     final n = ++_users;
     final email =
-        'user$n-${DateTime.now().microsecondsSinceEpoch}@realchord.test';
+        'user$n-${DateTime.now().microsecondsSinceEpoch}@setding.test';
     const password = 'password-123';
     // As superuser, so it also works on invite-only servers (ADR-0024).
     final created = await superuser.post('users', {
