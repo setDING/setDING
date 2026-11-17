@@ -478,7 +478,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsSectionDisplay => 'Darstellung';
 
   @override
-  String get settingsSectionLive => 'Live-Modus';
+  String get settingsSectionLive => 'Bildschirm & Live-Modus';
 
   @override
   String get settingsSectionStorage => 'Speicher & Info';
@@ -499,11 +499,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsCategoryDisplayHint =>
-      'Akkord-Notation, Nashville-Zahlen, Inhalt, Schriftgrösse';
+      'Akkord-Notation, Nashville-Zahlen, Inhalt, Refrain, Fortschritt';
 
   @override
   String get settingsCategoryLiveHint =>
-      'An Bildschirm anpassen, Spalten, Refrain, Blättern';
+      'Schriftgrösse, an Bildschirm anpassen, Spalten, Blättern';
 
   @override
   String get settingsCategoryAboutHint =>
@@ -1874,4 +1874,26 @@ class AppLocalizationsDe extends AppLocalizations {
   String setItemRemoved(String title) {
     return '«$title» aus dem Set entfernt';
   }
+
+  @override
+  String get settingsGroupPersonal => 'Persönlich – auf allen deinen Geräten';
+
+  @override
+  String get settingsGroupDevice => 'Dieses Gerät';
+
+  @override
+  String get settingsScopePersonalHint =>
+      'Diese Einstellungen gehören zu deinem Konto und gelten auf allen Geräten, auf denen du angemeldet bist.';
+
+  @override
+  String get settingsScopePersonalSignedOutHint =>
+      'Abgemeldet gelten diese Einstellungen nur auf diesem Gerät. Nach dem Anmelden werden sie mit deinem Konto synchronisiert.';
+
+  @override
+  String get settingsScopeDeviceHint =>
+      'Diese Einstellungen gelten nur auf diesem Gerät und werden nicht synchronisiert.';
+
+  @override
+  String get settingsTakenOver =>
+      'Die Einstellungen deines Kontos wurden übernommen.';
 }

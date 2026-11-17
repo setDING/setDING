@@ -27,7 +27,7 @@ final sessionStoreProvider = Provider<SessionStore>(
 /// new backend; a session belongs to one server.
 final syncBackendProvider = Provider<SyncBackend>((ref) {
   final backend = PocketBaseBackend(
-    serverUrl: ref.watch(settingsProvider.select((s) => s.serverUrl)),
+    serverUrl: ref.watch(serverUrlProvider),
     store: ref.watch(sessionStoreProvider),
   );
   ref.onDispose(backend.dispose);
@@ -60,6 +60,7 @@ class AuthNotifier extends Notifier<AuthUser?> {
       state = user;
       if (signedOut) _clearWebData();
       if (signedIn) _adoptOverlays(user.id);
+      if (signedIn) _ensureSettings(user.id);
       if (signedIn && !_syncRefreshesBands) _refreshBands();
     });
     ref.onDispose(subscription.cancel);
@@ -68,6 +69,7 @@ class AuthNotifier extends Notifier<AuthUser?> {
       if (backend.currentUser == null) await _clearWebData();
       if (backend.currentUser case final user?) {
         await _adoptOverlays(user.id);
+        await _ensureSettings(user.id);
       }
       await backend.refreshSession();
       if (backend.currentUser != null && !_syncRefreshesBands) {
@@ -80,9 +82,17 @@ class AuthNotifier extends Notifier<AuthUser?> {
   /// The sync that starts at start and after signing in (unless manual,
   /// see [SyncController]) refreshes the bands itself; refreshing them here
   /// too would load them twice.
+  ///
+  /// The sync mode is a device setting, read from the stored device
+  /// settings: [settingsProvider] depends on the signed-in user.
   bool get _syncRefreshesBands =>
       ref.read(autoSyncProvider) &&
-      ref.read(settingsProvider).syncMode != SyncMode.manual;
+      AppSettings.fromJson(
+            AppSettings.readPrefs(ref.read(sharedPreferencesProvider), const [
+              'syncMode',
+            ]),
+          ).syncMode !=
+          SyncMode.manual;
 
   static const _adoptedKey = 'overlaysAdopted';
 
@@ -96,12 +106,19 @@ class AuthNotifier extends Notifier<AuthUser?> {
     if (count > 0) _log.info('Took over $count personal adjustments');
   }
 
+  /// Personal settings of [userId] on this device (ADR-0027): at the first
+  /// sign-in a copy of the signed-out settings, until the sync brings the
+  /// person's settings from the server.
+  Future<void> _ensureSettings(String userId) =>
+      ref.read(userSettingsStoreProvider).ensure(userId);
+
   /// The web client keeps local data only while signed in (ADR-0018): it
   /// may run on a shared computer, and browsers may evict storage anyway.
   Future<void> _clearWebData() async {
     if (!ref.read(webClientProvider)) return;
     try {
       await ref.read(databaseProvider).clearAll();
+      await ref.read(userSettingsStoreProvider).reload();
       await ref.read(attachmentStorageProvider).deleteAll();
       await ref.read(selectedBandIdProvider.notifier).reset();
       await ref.read(selectedLibraryIdProvider.notifier).reset();

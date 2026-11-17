@@ -14,10 +14,12 @@ import 'theme.dart';
 import 'widgets/breakpoint_builder.dart';
 import 'widgets/dialogs.dart';
 
-/// The categories of the settings screen.
+/// The categories of the settings screen, in order.
 enum SettingsCategory { account, general, musician, display, live, about }
 
-/// Device settings (layer 4, ADR-0006), grouped into categories.
+/// Settings (layer 4, ADR-0006), grouped into categories: the account on
+/// top, then the personal settings (synced with the account) and the
+/// settings of this device (ADR-0027), so it is clear which are synced.
 ///
 /// On wide screens the categories are listed on the left and the selected one
 /// is shown next to them; on narrow screens the overview lists the categories
@@ -86,6 +88,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
 }
 
 extension on SettingsCategory {
+  /// Personal or device settings; null for the account itself.
+  SettingSyncScope? get scope => switch (this) {
+    SettingsCategory.account => null,
+    SettingsCategory.general ||
+    SettingsCategory.musician ||
+    SettingsCategory.display => SettingSyncScope.personal,
+    SettingsCategory.live || SettingsCategory.about => SettingSyncScope.device,
+  };
+
   IconData get icon => switch (this) {
     SettingsCategory.account => Icons.account_circle_outlined,
     SettingsCategory.general => Icons.tune,
@@ -125,20 +136,28 @@ class _CategoryList extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final narrow = selected == null;
+    final items = <Widget>[];
+    SettingSyncScope? group;
+    for (final c in SettingsCategory.values) {
+      if (c.scope case final scope? when scope != group) {
+        group = scope;
+        items.add(_GroupHeader(scope));
+      }
+      items.add(
+        ListTile(
+          key: Key('settings-category-${c.name}'),
+          leading: Icon(c.icon),
+          title: Text(c.title(l10n)),
+          subtitle: Text(c.hint(l10n)),
+          trailing: narrow ? const Icon(Icons.chevron_right) : null,
+          selected: c == selected,
+          onTap: () => onSelected(c),
+        ),
+      );
+    }
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      children: [
-        for (final c in SettingsCategory.values)
-          ListTile(
-            key: Key('settings-category-${c.name}'),
-            leading: Icon(c.icon),
-            title: Text(c.title(l10n)),
-            subtitle: Text(c.hint(l10n)),
-            trailing: narrow ? const Icon(Icons.chevron_right) : null,
-            selected: c == selected,
-            onTap: () => onSelected(c),
-          ),
-      ],
+      children: items,
     );
   }
 }
@@ -281,6 +300,25 @@ class _CategoryContent extends ConsumerWidget {
           DisplayMode.lyricsAndChords: l10n.displayLyricsAndChords,
           DisplayMode.lyricsOnly: l10n.displayLyricsOnly,
         }, (v) => notifier.update((s) => s.copyWith(displayMode: v))),
+        _Choice(
+          l10n.settingsChorusRepeat,
+          s.chorusRepeat,
+          {
+            ChorusRepeat.auto: l10n.chorusRepeatAuto,
+            ChorusRepeat.full: l10n.chorusRepeatFull,
+            ChorusRepeat.label: l10n.chorusRepeatLabel,
+          },
+          (v) => notifier.update((s) => s.copyWith(chorusRepeat: v)),
+          hint: l10n.settingsChorusRepeatHint,
+        ),
+        SwitchListTile(
+          title: Text(l10n.settingsSetProgress),
+          subtitle: Text(l10n.settingsSetProgressHint),
+          value: s.setProgress,
+          onChanged: (v) => notifier.update((s) => s.copyWith(setProgress: v)),
+        ),
+      ],
+      SettingsCategory.live => [
         ListTile(
           title: Text(l10n.settingsFontSize),
           subtitle: Slider(
@@ -294,8 +332,6 @@ class _CategoryContent extends ConsumerWidget {
           ),
           trailing: Text('${s.fontSize.round()}'),
         ),
-      ],
-      SettingsCategory.live => [
         SwitchListTile(
           title: Text(l10n.settingsAutoFit),
           subtitle: Text(l10n.settingsAutoFitHint),
@@ -313,17 +349,6 @@ class _CategoryContent extends ConsumerWidget {
           },
           (v) => notifier.update((s) => s.copyWith(columns: v)),
           hint: l10n.settingsColumnsHint,
-        ),
-        _Choice(
-          l10n.settingsChorusRepeat,
-          s.chorusRepeat,
-          {
-            ChorusRepeat.auto: l10n.chorusRepeatAuto,
-            ChorusRepeat.full: l10n.chorusRepeatFull,
-            ChorusRepeat.label: l10n.chorusRepeatLabel,
-          },
-          (v) => notifier.update((s) => s.copyWith(chorusRepeat: v)),
-          hint: l10n.settingsChorusRepeatHint,
         ),
         _Choice(l10n.settingsPageTurn, s.pageTurn, {
           PageTurnMode.full: l10n.pageTurnFull,
@@ -344,12 +369,6 @@ class _CategoryContent extends ConsumerWidget {
           (v) => notifier.update((s) => s.copyWith(liveAppearance: v)),
           hint: l10n.settingsLiveAppearanceHint,
         ),
-        SwitchListTile(
-          title: Text(l10n.settingsSetProgress),
-          subtitle: Text(l10n.settingsSetProgressHint),
-          value: s.setProgress,
-          onChanged: (v) => notifier.update((s) => s.copyWith(setProgress: v)),
-        ),
       ],
       SettingsCategory.about => [const _AboutTiles()],
     };
@@ -365,8 +384,68 @@ class _CategoryContent extends ConsumerWidget {
               style: Theme.of(context).textTheme.titleLarge,
             ),
           ),
+        if (category.scope case final scope?) _ScopeNote(scope),
         ...children,
       ],
+    );
+  }
+}
+
+/// Icon of personal (synced) and device settings (ADR-0027).
+IconData scopeIcon(SettingSyncScope scope) => switch (scope) {
+  SettingSyncScope.personal => Icons.cloud_outlined,
+  SettingSyncScope.device => Icons.devices_outlined,
+};
+
+/// Heading of a group of categories in the category list.
+class _GroupHeader extends StatelessWidget {
+  const _GroupHeader(this.scope);
+
+  final SettingSyncScope scope;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final color = theme.colorScheme.primary;
+    return Padding(
+      key: Key('settings-group-${scope.name}'),
+      padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 4),
+      child: Row(
+        children: [
+          Icon(scopeIcon(scope), size: 18, color: color),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(switch (scope) {
+              SettingSyncScope.personal => l10n.settingsGroupPersonal,
+              SettingSyncScope.device => l10n.settingsGroupDevice,
+            }, style: theme.textTheme.titleSmall?.copyWith(color: color)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Explains at the top of a category whether its settings are synced.
+class _ScopeNote extends ConsumerWidget {
+  const _ScopeNote(this.scope);
+
+  final SettingSyncScope scope;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final signedIn = ref.watch(authProvider.select((u) => u != null));
+    return ListTile(
+      key: Key('settings-scope-${scope.name}'),
+      leading: Icon(scopeIcon(scope)),
+      subtitle: Text(switch (scope) {
+        SettingSyncScope.personal when signedIn =>
+          l10n.settingsScopePersonalHint,
+        SettingSyncScope.personal => l10n.settingsScopePersonalSignedOutHint,
+        SettingSyncScope.device => l10n.settingsScopeDeviceHint,
+      }),
     );
   }
 }

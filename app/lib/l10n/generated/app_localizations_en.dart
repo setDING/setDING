@@ -474,7 +474,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSectionDisplay => 'Display';
 
   @override
-  String get settingsSectionLive => 'Live mode';
+  String get settingsSectionLive => 'Screen & live mode';
 
   @override
   String get settingsSectionStorage => 'Storage & info';
@@ -494,11 +494,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsCategoryDisplayHint =>
-      'Chord notation, Nashville numbers, content, font size';
+      'Chord notation, Nashville numbers, content, chorus, progress';
 
   @override
   String get settingsCategoryLiveHint =>
-      'Fit to screen, columns, chorus, page turn';
+      'Font size, fit to screen, columns, page turn';
 
   @override
   String get settingsCategoryAboutHint => 'Storage, diagnostic log and version';
@@ -1859,4 +1859,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String setItemRemoved(String title) {
     return '“$title” removed from the set';
   }
+
+  @override
+  String get settingsGroupPersonal => 'Personal – on all your devices';
+
+  @override
+  String get settingsGroupDevice => 'This device';
+
+  @override
+  String get settingsScopePersonalHint =>
+      'These settings belong to your account and apply on all devices you are signed in on.';
+
+  @override
+  String get settingsScopePersonalSignedOutHint =>
+      'While signed out, these settings apply on this device only. After signing in, they are synced with your account.';
+
+  @override
+  String get settingsScopeDeviceHint =>
+      'These settings apply on this device only and are not synced.';
+
+  @override
+  String get settingsTakenOver =>
+      'The settings of your account have been applied.';
 }

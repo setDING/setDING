@@ -694,6 +694,49 @@ class PocketBaseBackend implements SyncBackend {
     );
   });
 
+  static RemoteUserSettings _userSettings(RecordModel r) {
+    final data = r.get<dynamic>('data');
+    return RemoteUserSettings(
+      id: r.id,
+      userId: r.getStringValue('user'),
+      data: data is Map ? data.cast<String, dynamic>() : const {},
+      revision: r.getIntValue('revision'),
+    );
+  }
+
+  @override
+  Future<RemoteUserSettings?> pullUserSettings(int since) async {
+    final records = await _since(
+      'user_settings',
+      'user',
+      currentUser?.id ?? '',
+      since,
+    );
+    return records.isEmpty ? null : _userSettings(records.last);
+  }
+
+  @override
+  Future<RemoteUserSettings> pushUserSettings(
+    RemoteUserSettings settings, {
+    required bool create,
+  }) => _signedIn(() async {
+    return _userSettings(
+      create
+          ? await _pb
+                .collection('user_settings')
+                .create(
+                  body: {
+                    'id': settings.id,
+                    'user': settings.userId,
+                    'data': settings.data,
+                  },
+                )
+          : await _pb
+                .collection('user_settings')
+                .update(settings.id, body: {'data': settings.data}),
+    );
+  });
+
   static RemoteArrangement _arrangement(RecordModel r) {
     final tempo = r.getIntValue('tempo');
     return RemoteArrangement(
@@ -757,6 +800,7 @@ class PocketBaseBackend implements SyncBackend {
       'attachments',
       'overlays',
       'arrangements',
+      'user_settings',
       // Changes of who sees which band (SyncController.bandCollections).
       'organizations',
       'org_memberships',

@@ -5650,6 +5650,378 @@ class BandArrangementsCompanion extends UpdateCompanion<BandArrangement> {
   }
 }
 
+class $UserSettingsTable extends UserSettings
+    with TableInfo<$UserSettingsTable, UserSettingsRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $UserSettingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _ownerIdMeta = const VerificationMeta(
+    'ownerId',
+  );
+  @override
+  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
+    'owner_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dataMeta = const VerificationMeta('data');
+  @override
+  late final GeneratedColumn<String> data = GeneratedColumn<String>(
+    'data',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  static const VerificationMeta _dirtyKeysMeta = const VerificationMeta(
+    'dirtyKeys',
+  );
+  @override
+  late final GeneratedColumn<String> dirtyKeys = GeneratedColumn<String>(
+    'dirty_keys',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _revisionMeta = const VerificationMeta(
+    'revision',
+  );
+  @override
+  late final GeneratedColumn<int> revision = GeneratedColumn<int>(
+    'revision',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _adoptingMeta = const VerificationMeta(
+    'adopting',
+  );
+  @override
+  late final GeneratedColumn<bool> adopting = GeneratedColumn<bool>(
+    'adopting',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("adopting" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    ownerId,
+    data,
+    dirtyKeys,
+    revision,
+    adopting,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'user_settings';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<UserSettingsRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('owner_id')) {
+      context.handle(
+        _ownerIdMeta,
+        ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ownerIdMeta);
+    }
+    if (data.containsKey('data')) {
+      context.handle(
+        _dataMeta,
+        this.data.isAcceptableOrUnknown(data['data']!, _dataMeta),
+      );
+    }
+    if (data.containsKey('dirty_keys')) {
+      context.handle(
+        _dirtyKeysMeta,
+        dirtyKeys.isAcceptableOrUnknown(data['dirty_keys']!, _dirtyKeysMeta),
+      );
+    }
+    if (data.containsKey('revision')) {
+      context.handle(
+        _revisionMeta,
+        revision.isAcceptableOrUnknown(data['revision']!, _revisionMeta),
+      );
+    }
+    if (data.containsKey('adopting')) {
+      context.handle(
+        _adoptingMeta,
+        adopting.isAcceptableOrUnknown(data['adopting']!, _adoptingMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {ownerId};
+  @override
+  UserSettingsRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return UserSettingsRow(
+      ownerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner_id'],
+      )!,
+      data: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}data'],
+      )!,
+      dirtyKeys: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}dirty_keys'],
+      )!,
+      revision: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}revision'],
+      )!,
+      adopting: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}adopting'],
+      )!,
+    );
+  }
+
+  @override
+  $UserSettingsTable createAlias(String alias) {
+    return $UserSettingsTable(attachedDatabase, alias);
+  }
+}
+
+class UserSettingsRow extends DataClass implements Insertable<UserSettingsRow> {
+  /// Server user ID, or [localOwnerId] while signed out.
+  final String ownerId;
+
+  /// The settings as a JSON object; keys this app version does not know
+  /// (from a newer version on another device) are kept.
+  final String data;
+
+  /// JSON list of the keys changed here and not yet on the server.
+  final String dirtyKeys;
+
+  /// Server revision; 0 = not on the server.
+  final int revision;
+
+  /// Copied from the signed-out settings at the first sign-in on this
+  /// device: replaced by the person's settings from the server, or
+  /// uploaded if the server has none yet (ADR-0027).
+  final bool adopting;
+  const UserSettingsRow({
+    required this.ownerId,
+    required this.data,
+    required this.dirtyKeys,
+    required this.revision,
+    required this.adopting,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['owner_id'] = Variable<String>(ownerId);
+    map['data'] = Variable<String>(data);
+    map['dirty_keys'] = Variable<String>(dirtyKeys);
+    map['revision'] = Variable<int>(revision);
+    map['adopting'] = Variable<bool>(adopting);
+    return map;
+  }
+
+  UserSettingsCompanion toCompanion(bool nullToAbsent) {
+    return UserSettingsCompanion(
+      ownerId: Value(ownerId),
+      data: Value(data),
+      dirtyKeys: Value(dirtyKeys),
+      revision: Value(revision),
+      adopting: Value(adopting),
+    );
+  }
+
+  factory UserSettingsRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return UserSettingsRow(
+      ownerId: serializer.fromJson<String>(json['ownerId']),
+      data: serializer.fromJson<String>(json['data']),
+      dirtyKeys: serializer.fromJson<String>(json['dirtyKeys']),
+      revision: serializer.fromJson<int>(json['revision']),
+      adopting: serializer.fromJson<bool>(json['adopting']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'ownerId': serializer.toJson<String>(ownerId),
+      'data': serializer.toJson<String>(data),
+      'dirtyKeys': serializer.toJson<String>(dirtyKeys),
+      'revision': serializer.toJson<int>(revision),
+      'adopting': serializer.toJson<bool>(adopting),
+    };
+  }
+
+  UserSettingsRow copyWith({
+    String? ownerId,
+    String? data,
+    String? dirtyKeys,
+    int? revision,
+    bool? adopting,
+  }) => UserSettingsRow(
+    ownerId: ownerId ?? this.ownerId,
+    data: data ?? this.data,
+    dirtyKeys: dirtyKeys ?? this.dirtyKeys,
+    revision: revision ?? this.revision,
+    adopting: adopting ?? this.adopting,
+  );
+  UserSettingsRow copyWithCompanion(UserSettingsCompanion data) {
+    return UserSettingsRow(
+      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
+      data: data.data.present ? data.data.value : this.data,
+      dirtyKeys: data.dirtyKeys.present ? data.dirtyKeys.value : this.dirtyKeys,
+      revision: data.revision.present ? data.revision.value : this.revision,
+      adopting: data.adopting.present ? data.adopting.value : this.adopting,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UserSettingsRow(')
+          ..write('ownerId: $ownerId, ')
+          ..write('data: $data, ')
+          ..write('dirtyKeys: $dirtyKeys, ')
+          ..write('revision: $revision, ')
+          ..write('adopting: $adopting')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(ownerId, data, dirtyKeys, revision, adopting);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is UserSettingsRow &&
+          other.ownerId == this.ownerId &&
+          other.data == this.data &&
+          other.dirtyKeys == this.dirtyKeys &&
+          other.revision == this.revision &&
+          other.adopting == this.adopting);
+}
+
+class UserSettingsCompanion extends UpdateCompanion<UserSettingsRow> {
+  final Value<String> ownerId;
+  final Value<String> data;
+  final Value<String> dirtyKeys;
+  final Value<int> revision;
+  final Value<bool> adopting;
+  final Value<int> rowid;
+  const UserSettingsCompanion({
+    this.ownerId = const Value.absent(),
+    this.data = const Value.absent(),
+    this.dirtyKeys = const Value.absent(),
+    this.revision = const Value.absent(),
+    this.adopting = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  UserSettingsCompanion.insert({
+    required String ownerId,
+    this.data = const Value.absent(),
+    this.dirtyKeys = const Value.absent(),
+    this.revision = const Value.absent(),
+    this.adopting = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : ownerId = Value(ownerId);
+  static Insertable<UserSettingsRow> custom({
+    Expression<String>? ownerId,
+    Expression<String>? data,
+    Expression<String>? dirtyKeys,
+    Expression<int>? revision,
+    Expression<bool>? adopting,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (ownerId != null) 'owner_id': ownerId,
+      if (data != null) 'data': data,
+      if (dirtyKeys != null) 'dirty_keys': dirtyKeys,
+      if (revision != null) 'revision': revision,
+      if (adopting != null) 'adopting': adopting,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  UserSettingsCompanion copyWith({
+    Value<String>? ownerId,
+    Value<String>? data,
+    Value<String>? dirtyKeys,
+    Value<int>? revision,
+    Value<bool>? adopting,
+    Value<int>? rowid,
+  }) {
+    return UserSettingsCompanion(
+      ownerId: ownerId ?? this.ownerId,
+      data: data ?? this.data,
+      dirtyKeys: dirtyKeys ?? this.dirtyKeys,
+      revision: revision ?? this.revision,
+      adopting: adopting ?? this.adopting,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (ownerId.present) {
+      map['owner_id'] = Variable<String>(ownerId.value);
+    }
+    if (data.present) {
+      map['data'] = Variable<String>(data.value);
+    }
+    if (dirtyKeys.present) {
+      map['dirty_keys'] = Variable<String>(dirtyKeys.value);
+    }
+    if (revision.present) {
+      map['revision'] = Variable<int>(revision.value);
+    }
+    if (adopting.present) {
+      map['adopting'] = Variable<bool>(adopting.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UserSettingsCompanion(')
+          ..write('ownerId: $ownerId, ')
+          ..write('data: $data, ')
+          ..write('dirtyKeys: $dirtyKeys, ')
+          ..write('revision: $revision, ')
+          ..write('adopting: $adopting, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $SyncOutboxTable extends SyncOutbox
     with TableInfo<$SyncOutboxTable, OutboxEntry> {
   @override
@@ -6632,6 +7004,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $BandArrangementsTable bandArrangements = $BandArrangementsTable(
     this,
   );
+  late final $UserSettingsTable userSettings = $UserSettingsTable(this);
   late final $SyncOutboxTable syncOutbox = $SyncOutboxTable(this);
   late final $SyncCursorsTable syncCursors = $SyncCursorsTable(this);
   late final $SongConflictsTable songConflicts = $SongConflictsTable(this);
@@ -6686,6 +7059,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     setItems,
     personalOverlays,
     bandArrangements,
+    userSettings,
     syncOutbox,
     syncCursors,
     songConflicts,
@@ -11436,6 +11810,215 @@ typedef $$BandArrangementsTableProcessedTableManager =
       BandArrangement,
       PrefetchHooks Function({bool songId})
     >;
+typedef $$UserSettingsTableCreateCompanionBuilder =
+    UserSettingsCompanion Function({
+      required String ownerId,
+      Value<String> data,
+      Value<String> dirtyKeys,
+      Value<int> revision,
+      Value<bool> adopting,
+      Value<int> rowid,
+    });
+typedef $$UserSettingsTableUpdateCompanionBuilder =
+    UserSettingsCompanion Function({
+      Value<String> ownerId,
+      Value<String> data,
+      Value<String> dirtyKeys,
+      Value<int> revision,
+      Value<bool> adopting,
+      Value<int> rowid,
+    });
+
+class $$UserSettingsTableFilterComposer
+    extends Composer<_$AppDatabase, $UserSettingsTable> {
+  $$UserSettingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get data => $composableBuilder(
+    column: $table.data,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dirtyKeys => $composableBuilder(
+    column: $table.dirtyKeys,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get adopting => $composableBuilder(
+    column: $table.adopting,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$UserSettingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $UserSettingsTable> {
+  $$UserSettingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get data => $composableBuilder(
+    column: $table.data,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dirtyKeys => $composableBuilder(
+    column: $table.dirtyKeys,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get adopting => $composableBuilder(
+    column: $table.adopting,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$UserSettingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $UserSettingsTable> {
+  $$UserSettingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get ownerId =>
+      $composableBuilder(column: $table.ownerId, builder: (column) => column);
+
+  GeneratedColumn<String> get data =>
+      $composableBuilder(column: $table.data, builder: (column) => column);
+
+  GeneratedColumn<String> get dirtyKeys =>
+      $composableBuilder(column: $table.dirtyKeys, builder: (column) => column);
+
+  GeneratedColumn<int> get revision =>
+      $composableBuilder(column: $table.revision, builder: (column) => column);
+
+  GeneratedColumn<bool> get adopting =>
+      $composableBuilder(column: $table.adopting, builder: (column) => column);
+}
+
+class $$UserSettingsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $UserSettingsTable,
+          UserSettingsRow,
+          $$UserSettingsTableFilterComposer,
+          $$UserSettingsTableOrderingComposer,
+          $$UserSettingsTableAnnotationComposer,
+          $$UserSettingsTableCreateCompanionBuilder,
+          $$UserSettingsTableUpdateCompanionBuilder,
+          (
+            UserSettingsRow,
+            BaseReferences<_$AppDatabase, $UserSettingsTable, UserSettingsRow>,
+          ),
+          UserSettingsRow,
+          PrefetchHooks Function()
+        > {
+  $$UserSettingsTableTableManager(_$AppDatabase db, $UserSettingsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$UserSettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$UserSettingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$UserSettingsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> ownerId = const Value.absent(),
+                Value<String> data = const Value.absent(),
+                Value<String> dirtyKeys = const Value.absent(),
+                Value<int> revision = const Value.absent(),
+                Value<bool> adopting = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => UserSettingsCompanion(
+                ownerId: ownerId,
+                data: data,
+                dirtyKeys: dirtyKeys,
+                revision: revision,
+                adopting: adopting,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String ownerId,
+                Value<String> data = const Value.absent(),
+                Value<String> dirtyKeys = const Value.absent(),
+                Value<int> revision = const Value.absent(),
+                Value<bool> adopting = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => UserSettingsCompanion.insert(
+                ownerId: ownerId,
+                data: data,
+                dirtyKeys: dirtyKeys,
+                revision: revision,
+                adopting: adopting,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$UserSettingsTable, UserSettingsRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $UserSettingsTable,
+                    UserSettingsRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$UserSettingsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $UserSettingsTable,
+      UserSettingsRow,
+      $$UserSettingsTableFilterComposer,
+      $$UserSettingsTableOrderingComposer,
+      $$UserSettingsTableAnnotationComposer,
+      $$UserSettingsTableCreateCompanionBuilder,
+      $$UserSettingsTableUpdateCompanionBuilder,
+      (
+        UserSettingsRow,
+        BaseReferences<_$AppDatabase, $UserSettingsTable, UserSettingsRow>,
+      ),
+      UserSettingsRow,
+      PrefetchHooks Function()
+    >;
 typedef $$SyncOutboxTableCreateCompanionBuilder = SyncOutboxCompanion Function({
   required String collection,
   required String recordId,
@@ -12038,6 +12621,8 @@ class $AppDatabaseManager {
       $$PersonalOverlaysTableTableManager(_db, _db.personalOverlays);
   $$BandArrangementsTableTableManager get bandArrangements =>
       $$BandArrangementsTableTableManager(_db, _db.bandArrangements);
+  $$UserSettingsTableTableManager get userSettings =>
+      $$UserSettingsTableTableManager(_db, _db.userSettings);
   $$SyncOutboxTableTableManager get syncOutbox =>
       $$SyncOutboxTableTableManager(_db, _db.syncOutbox);
   $$SyncCursorsTableTableManager get syncCursors =>

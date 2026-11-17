@@ -585,6 +585,49 @@ class FakeSyncBackend implements SyncBackend {
     return putArrangement(arrangement);
   }
 
+  /// Personal settings by user ID (ADR-0027).
+  final userSettings = <String, RemoteUserSettings>{};
+
+  /// Simulates a change on another device of the user: merges [data] into
+  /// the stored settings, as the server does.
+  RemoteUserSettings putUserSettings(String userId, Map<String, dynamic> data) {
+    final stored = RemoteUserSettings(
+      id: userSettings[userId]?.id ?? 'settings-$userId',
+      userId: userId,
+      data: {...?userSettings[userId]?.data, ...data},
+      revision: ++_serverRevision,
+    );
+    userSettings[userId] = stored;
+    return stored;
+  }
+
+  @override
+  Future<RemoteUserSettings?> pullUserSettings(int since) async {
+    _requireUser();
+    final s = userSettings[user!.id];
+    return s != null && s.revision > since ? s : null;
+  }
+
+  @override
+  Future<RemoteUserSettings> pushUserSettings(
+    RemoteUserSettings settings, {
+    required bool create,
+  }) async {
+    _requireUser();
+    pushCount++;
+    if (settings.userId != user!.id) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    final existing = userSettings[settings.userId];
+    if (create && existing != null) {
+      throw const BackendException(BackendErrorKind.server);
+    }
+    if (!create && existing == null) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    return putUserSettings(settings.userId, settings.data);
+  }
+
   @override
   Future<List<RemoteOverlay>> pullOverlays(int since) async {
     _requireUser();

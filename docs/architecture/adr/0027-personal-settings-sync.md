@@ -150,6 +150,29 @@ not.
   colour are personal, the live appearance stays per device; no per-device
   override of a personal setting in the first version (can be added later
   if needed).
+- 2026-11-17: Implemented (#338). Details:
+  - Storage as decided (owner choice: Drift table, not `SharedPreferences`):
+    table `user_settings` (schema 15), loaded into memory before the UI
+    (`UserSettingsStore`, `app/lib/settings/user_settings_store.dart`), so
+    language and theme are known from the first frame; writes go through to
+    the table in order. The first start moves the personal values out of
+    `SharedPreferences` to the owner `local`.
+  - The scopes are declared in `AppSettings.scopes`; a test fails if a
+    setting has none. The server URL got its own provider, because the
+    backend depends on it and the personal settings depend on the user
+    signed in through that backend.
+  - Sync in `app/lib/sync/engine/settings_sync.dart`; the server record ID is
+    a UUID v5 of the user. "Settings taken over from the account" is shown
+    as a message after the sync that replaced them.
+  - Settings screen: the account category stays on top; below it the groups
+    *Personal – on all your devices* (general, musician, display) and *This
+    device* (screen & live mode, storage & info). The scope icon (cloud or
+    device) is on the group heading and on the explanation line at the top
+    of each category, not on every single setting. Font size moved to the
+    device category *Screen & live mode*; chorus repeat and the progress bar
+    moved to display.
+  - The drummer settings of ADR-0026 do not exist yet; they get their scope
+    when they are added (see the classification above).
 
 ## Open points
 

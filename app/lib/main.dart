@@ -50,12 +50,17 @@ Future<void> main() async {
     await prefs.setBool('demoSeeded', true);
   }
 
+  // Personal settings (ADR-0027): loaded before the UI, so that language
+  // and theme are known from the first frame.
+  final userSettings = await UserSettingsStore.open(db, prefs);
+
   await SplashScreen.waitForMinimum(splash);
   runApp(
     ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         databaseProvider.overrideWithValue(db),
+        userSettingsStoreProvider.overrideWithValue(userSettings),
         attachmentStorageProvider.overrideWithValue(storage),
         sessionStoreProvider.overrideWithValue(sessionStore),
       ],

@@ -887,7 +887,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsSectionLive.
   ///
   /// In de, this message translates to:
-  /// **'Live-Modus'**
+  /// **'Bildschirm & Live-Modus'**
   String get settingsSectionLive;
 
   /// No description provided for @settingsSectionStorage.
@@ -923,13 +923,13 @@ abstract class AppLocalizations {
   /// No description provided for @settingsCategoryDisplayHint.
   ///
   /// In de, this message translates to:
-  /// **'Akkord-Notation, Nashville-Zahlen, Inhalt, Schriftgrösse'**
+  /// **'Akkord-Notation, Nashville-Zahlen, Inhalt, Refrain, Fortschritt'**
   String get settingsCategoryDisplayHint;
 
   /// No description provided for @settingsCategoryLiveHint.
   ///
   /// In de, this message translates to:
-  /// **'An Bildschirm anpassen, Spalten, Refrain, Blättern'**
+  /// **'Schriftgrösse, an Bildschirm anpassen, Spalten, Blättern'**
   String get settingsCategoryLiveHint;
 
   /// No description provided for @settingsCategoryAboutHint.
@@ -3169,6 +3169,42 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'«{title}» aus dem Set entfernt'**
   String setItemRemoved(String title);
+
+  /// No description provided for @settingsGroupPersonal.
+  ///
+  /// In de, this message translates to:
+  /// **'Persönlich – auf allen deinen Geräten'**
+  String get settingsGroupPersonal;
+
+  /// No description provided for @settingsGroupDevice.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Gerät'**
+  String get settingsGroupDevice;
+
+  /// No description provided for @settingsScopePersonalHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Einstellungen gehören zu deinem Konto und gelten auf allen Geräten, auf denen du angemeldet bist.'**
+  String get settingsScopePersonalHint;
+
+  /// No description provided for @settingsScopePersonalSignedOutHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Abgemeldet gelten diese Einstellungen nur auf diesem Gerät. Nach dem Anmelden werden sie mit deinem Konto synchronisiert.'**
+  String get settingsScopePersonalSignedOutHint;
+
+  /// No description provided for @settingsScopeDeviceHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Einstellungen gelten nur auf diesem Gerät und werden nicht synchronisiert.'**
+  String get settingsScopeDeviceHint;
+
+  /// No description provided for @settingsTakenOver.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Einstellungen deines Kontos wurden übernommen.'**
+  String get settingsTakenOver;
 }
 
 class _AppLocalizationsDelegate

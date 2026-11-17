@@ -24,6 +24,7 @@ final syncEngineProvider = Provider<SyncEngine>(
     copies: ref.watch(bandCopyProvider),
     storage: ref.watch(attachmentStorageProvider),
     preloadAttachments: !ref.watch(webClientProvider),
+    settings: ref.watch(userSettingsStoreProvider),
   ),
 );
 

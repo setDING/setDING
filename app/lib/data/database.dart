@@ -267,6 +267,33 @@ class BandArrangements extends Table {
   Set<Column> get primaryKey => {bandId, songId};
 }
 
+/// Personal settings of one person (layer 4a, ADR-0027, schema 15): the
+/// settings that follow a person to all their devices, as a JSON object
+/// keyed by setting name. Device settings stay in `SharedPreferences`.
+@DataClassName('UserSettingsRow')
+class UserSettings extends Table {
+  /// Server user ID, or [localOwnerId] while signed out.
+  TextColumn get ownerId => text()();
+
+  /// The settings as a JSON object; keys this app version does not know
+  /// (from a newer version on another device) are kept.
+  TextColumn get data => text().withDefault(const Constant('{}'))();
+
+  /// JSON list of the keys changed here and not yet on the server.
+  TextColumn get dirtyKeys => text().withDefault(const Constant('[]'))();
+
+  /// Server revision; 0 = not on the server.
+  IntColumn get revision => integer().withDefault(const Constant(0))();
+
+  /// Copied from the signed-out settings at the first sign-in on this
+  /// device: replaced by the person's settings from the server, or
+  /// uploaded if the server has none yet (ADR-0027).
+  BoolColumn get adopting => boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column> get primaryKey => {ownerId};
+}
+
 /// Local changes waiting to be pushed to the server (ADR-0004, schema 5).
 /// One row per record; [version] grows with every change, so a change made
 /// while a push is running is not lost.
@@ -323,6 +350,7 @@ class SongConflicts extends Table {
     SetItems,
     PersonalOverlays,
     BandArrangements,
+    UserSettings,
     SyncOutbox,
     SyncCursors,
     SongConflicts,
@@ -332,7 +360,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -463,6 +491,11 @@ class AppDatabase extends _$AppDatabase {
         // afterUpgrade (refreshAllMetadata); before schema 4 the rebuilt
         // table has the column already.
         if (from >= 4) await m.addColumn(songs, songs.chordproProblems);
+      }
+      if (from < 15) {
+        // Personal settings per person (ADR-0027); the signed-out values
+        // move here from the device settings when the app starts.
+        await m.createTable(userSettings);
       }
     },
     beforeOpen: (details) async {
