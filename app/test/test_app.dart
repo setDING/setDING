@@ -21,10 +21,12 @@ import 'package:drift/native.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
+import 'package:setding/audio/metronome.dart' show clickOutputProvider;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_backend.dart';
+import 'fake_click_output.dart';
 
 /// App with an in-memory database for widget tests.
 class TestApp {
@@ -101,6 +103,9 @@ class TestApp {
     );
   }
 
+  /// Audio output of the click (ADR-0026), without audio.
+  final clickOutput = FakeClickOutput();
+
   /// Provider overrides of the test app (also for a [ProviderContainer]).
   List<Override> get overrides => [
     sharedPreferencesProvider.overrideWithValue(prefs),
@@ -112,6 +117,7 @@ class TestApp {
     syncBackendProvider.overrideWithValue(backend),
     incomingLinksProvider.overrideWithValue(links.stream),
     autoSyncProvider.overrideWithValue(false),
+    clickOutputProvider.overrideWithValue(clickOutput),
     stageWakeLockProvider.overrideWith((ref) {
       final lock = StageWakeLock(wakeLock);
       ref.onDispose(lock.dispose);

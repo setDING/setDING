@@ -111,6 +111,7 @@ flowchart LR
 | `data` | Local DB (SQLite, e.g. via `drift`), repositories, domain model |
 | `sync` | Sync between local DB and backend, conflict handling, offline queue. `SyncEngine` runs the order of a sync; the parts per kind of record live in `app/lib/sync/engine/` (songs with conflicts, sets, attachments with downloads, personal adjustments, shared cursors and outbox) |
 | `live` | Performance mode: full screen, wakelock, page turns by tap, swipe, page turner or keyboard, set navigation |
+| `audio` | Click of the drummer mode: one bar rendered as WAV and looped by SoLoud on its engine clock, beat timeline, latency calibration (ADR-0026) |
 | `manage` | Create/import songs, ChordPro editor with syntax highlighting, a form for the main metadata (title, key, tempo, …), line numbers, bracket matching, autocompletion, a warning on save for invalid ChordPro and preview, put sets together |
 | `band` | Login, band selection, invitations, roles |
 | `l10n` | UI translations (German, English) and language setting |

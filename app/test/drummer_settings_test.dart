@@ -150,4 +150,41 @@ void main() {
     expect(find.byKey(const Key('settings-edge-flash')), findsOneWidget);
     await app.dispose(tester);
   });
+
+  testWidgets('the audio delay is measured by tapping along (#332)', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'instrument': 'drums'},
+    );
+    await tester.pumpWidget(app.build(home: const SettingsScreen()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('settings-category-live')));
+    await tester.pumpAndSettle();
+    final measure = find.byKey(const Key('settings-audio-latency-measure'));
+    await tester.scrollUntilVisible(
+      measure,
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.tap(measure);
+    await tester.pumpAndSettle();
+
+    final out = app.clickOutput;
+    final start = out.plays.single.at;
+    expect(out.plays.single.until, isNull);
+    // 100 BPM: a beat every 600 ms; the taps come 120 ms after the beats.
+    for (var i = 1; i <= 10; i++) {
+      out.time = start + Duration(milliseconds: i * 600 + 120);
+      await tester.tap(find.byKey(const Key('latency-tap')));
+      await tester.pump();
+    }
+    expect(find.text('Measured: 120 ms'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('latency-apply')));
+    await tester.pumpAndSettle();
+    expect(app.prefs.getInt('audioLatencyMs'), 120);
+    expect(out.stops, isNotEmpty);
+    await app.dispose(tester);
+  });
 }

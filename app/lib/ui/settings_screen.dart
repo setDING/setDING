@@ -10,6 +10,7 @@ import '../sync/auth_providers.dart';
 import '../util/app_version.dart';
 import '../util/log.dart';
 import 'account/account_section.dart';
+import 'settings/latency_calibration.dart';
 import 'theme.dart';
 import 'widgets/breakpoint_builder.dart';
 import 'widgets/dialogs.dart';
@@ -578,6 +579,19 @@ List<Widget> _clickDeviceTiles(
         ],
       ),
       trailing: Text(l10n.audioLatencyValue(s.audioLatencyMs)),
+    ),
+    Builder(
+      builder: (context) => ListTile(
+        key: const Key('settings-audio-latency-measure'),
+        leading: const Icon(Icons.headphones_outlined),
+        title: Text(l10n.audioLatencyCalibrate),
+        onTap: () async {
+          final ms = await showLatencyCalibration(context);
+          if (ms != null) {
+            await notifier.update((s) => s.copyWith(audioLatencyMs: ms));
+          }
+        },
+      ),
     ),
   ],
 ];

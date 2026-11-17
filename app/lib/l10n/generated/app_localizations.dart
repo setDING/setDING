@@ -1526,6 +1526,54 @@ abstract class AppLocalizations {
   /// **'{ms} ms'**
   String audioLatencyValue(int ms);
 
+  /// No description provided for @audioLatencyCalibrate.
+  ///
+  /// In de, this message translates to:
+  /// **'Audio-Verzögerung messen'**
+  String get audioLatencyCalibrate;
+
+  /// No description provided for @audioLatencyCalibrateTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Audio-Verzögerung messen'**
+  String get audioLatencyCalibrateTitle;
+
+  /// No description provided for @audioLatencyCalibrateHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Setze die Kopfhörer auf, die du auf der Bühne trägst, und tippe auf jeden Schlag des Klicks mit.'**
+  String get audioLatencyCalibrateHint;
+
+  /// No description provided for @audioLatencyTap.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippen'**
+  String get audioLatencyTap;
+
+  /// No description provided for @audioLatencyTaps.
+  ///
+  /// In de, this message translates to:
+  /// **'{count}-mal getippt'**
+  String audioLatencyTaps(int count);
+
+  /// No description provided for @audioLatencyResult.
+  ///
+  /// In de, this message translates to:
+  /// **'Gemessen: {ms} ms'**
+  String audioLatencyResult(int ms);
+
+  /// No description provided for @audioLatencyApply.
+  ///
+  /// In de, this message translates to:
+  /// **'Übernehmen'**
+  String get audioLatencyApply;
+
+  /// No description provided for @clickNoAudio.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf diesem Gerät gibt es keinen Audio-Ausgang für den Klick.'**
+  String get clickNoAudio;
+
   /// No description provided for @settingsSongMap.
   ///
   /// In de, this message translates to:

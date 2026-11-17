@@ -380,6 +380,28 @@
       }
     }
   },
+  "audioLatencyCalibrate": "Audio-Verzögerung messen",
+  "audioLatencyCalibrateTitle": "Audio-Verzögerung messen",
+  "audioLatencyCalibrateHint": "Setze die Kopfhörer auf, die du auf der Bühne trägst, und tippe auf jeden Schlag des Klicks mit.",
+  "audioLatencyTap": "Tippen",
+  "audioLatencyTaps": "{count}-mal getippt",
+  "@audioLatencyTaps": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "audioLatencyResult": "Gemessen: {ms} ms",
+  "@audioLatencyResult": {
+    "placeholders": {
+      "ms": {
+        "type": "int"
+      }
+    }
+  },
+  "audioLatencyApply": "Übernehmen",
+  "clickNoAudio": "Auf diesem Gerät gibt es keinen Audio-Ausgang für den Klick.",
   "settingsSongMap": "Song-Landkarte statt Akkorde",
   "settingsSongMapHint": "Der Live-Modus zeigt die Teile des Songs mit einem Stichwort aus dem Text und den Schlagzeug-Notizen.",
   "settingsLiveAppearance": "Aussehen auf der Bühne",

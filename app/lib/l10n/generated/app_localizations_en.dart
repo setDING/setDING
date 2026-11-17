@@ -818,6 +818,36 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get audioLatencyCalibrate => 'Measure the audio delay';
+
+  @override
+  String get audioLatencyCalibrateTitle => 'Measure the audio delay';
+
+  @override
+  String get audioLatencyCalibrateHint =>
+      'Put on the headphones you use on stage and tap along with every beat of the click.';
+
+  @override
+  String get audioLatencyTap => 'Tap';
+
+  @override
+  String audioLatencyTaps(int count) {
+    return '$count taps';
+  }
+
+  @override
+  String audioLatencyResult(int ms) {
+    return 'Measured: $ms ms';
+  }
+
+  @override
+  String get audioLatencyApply => 'Apply';
+
+  @override
+  String get clickNoAudio =>
+      'There is no audio output for the click on this device.';
+
+  @override
   String get settingsSongMap => 'Song map instead of chords';
 
   @override
