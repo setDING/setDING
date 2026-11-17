@@ -872,7 +872,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get sequenceEmpty =>
-      'Tippe unten auf die Teile, um den Ablauf zusammenzustellen.';
+      'Tippe unten auf die Teile oder ziehe sie hierher, um den Ablauf zusammenzustellen.';
+
+  @override
+  String get sequenceReorderHint =>
+      'Teil lange drücken, um ihn an eine andere Stelle zu verschieben.';
 
   @override
   String get sequenceSongParts => 'Teile des Songs';

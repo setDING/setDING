@@ -13,7 +13,8 @@ class SequenceChoice {
 }
 
 /// Edits a song sequence by tapping the parts of the song ([parts], see
-/// `songParts`). [initial] is the sequence to start with. In a set,
+/// `songParts`) or dragging them into place; entries of the sequence can be
+/// moved by drag and drop. [initial] is the sequence to start with. In a set,
 /// [original] is the song's own sequence and [canRestore] offers to go back
 /// to it. Returns null when cancelled.
 Future<SequenceChoice?> editSequence(
@@ -54,6 +55,10 @@ List<_Entry> _entries(String text) => [
         repeat: int.tryParse(m.group(1) ?? m.group(3) ?? m.group(4) ?? '') ?? 1,
       ),
 ];
+
+/// What is being dragged in the dialog: an entry of the sequence ([from] is
+/// its index) or a part from the palette ([from] is null).
+typedef _Drag = ({int? from, _Entry entry});
 
 String _text(List<_Entry> entries) => entries
     .map((e) => e.repeat > 1 ? '${e.code} x${e.repeat}' : e.code)
@@ -108,6 +113,22 @@ class _SequenceDialogState extends State<_SequenceDialog> {
 
   void _remove(int index) => _update(_current..removeAt(index));
 
+  /// Drops [drag] onto the entry at [index] (or after the last entry when
+  /// [index] is the length): a moved entry takes the place of the entry it
+  /// is dropped on, a new part is inserted before it.
+  void _drop(_Drag drag, int index) {
+    final entries = _current;
+    final from = drag.from;
+    if (from == null) {
+      entries.insert(index.clamp(0, entries.length), drag.entry);
+    } else {
+      if (from == index) return;
+      final entry = entries.removeAt(from);
+      entries.insert(index.clamp(0, entries.length), entry);
+    }
+    _update(entries);
+  }
+
   void _save() {
     final value = _controller.text.trim();
     Navigator.pop(context, SequenceChoice(value.isEmpty ? null : value));
@@ -126,39 +147,92 @@ class _SequenceDialogState extends State<_SequenceDialog> {
     final entries = _current;
     final items = parseSequence(_controller.text);
 
-    Widget chip(
-      SequenceItem item, {
-      VoidCallback? onTap,
-      VoidCallback? onDelete,
-    }) {
-      final label = Text(
-        item.code,
-        style: TextStyle(
-          color: SongSequenceView.foreground(scheme, item.part),
-          fontWeight: FontWeight.w600,
+    Text chipLabel(SequenceItem item) => Text(
+      item.code,
+      style: TextStyle(
+        color: SongSequenceView.foreground(scheme, item.part),
+        fontWeight: FontWeight.w600,
+      ),
+    );
+
+    // What follows the pointer while dragging.
+    Widget feedback(SequenceItem item) => Material(
+      type: MaterialType.transparency,
+      child: Chip(
+        label: chipLabel(item),
+        backgroundColor: SongSequenceView.background(scheme, item.part),
+        side: BorderSide(color: scheme.primary, width: 2),
+        elevation: 4,
+      ),
+    );
+
+    // Shows where a dragged part will land.
+    final marker = Container(
+      key: const ValueKey('sequence-drop-marker'),
+      width: 3,
+      height: 32,
+      margin: const EdgeInsets.symmetric(horizontal: 2),
+      decoration: BoxDecoration(
+        color: scheme.primary,
+        borderRadius: BorderRadius.circular(2),
+      ),
+    );
+
+    // A part of the song: tap appends it, long-press drags it into place.
+    Widget part(SequenceItem item) => Tooltip(
+      message: SongSequenceView.partName(l10n, item),
+      child: LongPressDraggable<_Drag>(
+        data: (from: null, entry: (code: item.code, repeat: 1)),
+        feedback: feedback(item),
+        child: ActionChip(
+          key: ValueKey('sequence-part-${item.code}'),
+          avatar: const Icon(Icons.add, size: 16),
+          label: chipLabel(item),
+          backgroundColor: SongSequenceView.background(scheme, item.part),
+          side: BorderSide.none,
+          onPressed: () => _add(item.code),
         ),
+      ),
+    );
+
+    // An entry of the sequence: long-press drags it, dropping a part on it
+    // moves the part to its position.
+    Widget entry(int index) {
+      final item = items[index];
+      final chip = InputChip(
+        key: const ValueKey('sequence-entry'),
+        label: chipLabel(item),
+        backgroundColor: SongSequenceView.background(scheme, item.part),
+        side: BorderSide.none,
+        onDeleted: () => _remove(index),
+        deleteIcon: const Icon(Icons.close, size: 16),
+        deleteIconColor: SongSequenceView.foreground(scheme, item.part),
       );
-      final color = SongSequenceView.background(scheme, item.part);
-      return Tooltip(
-        message: SongSequenceView.partName(l10n, item),
-        child: onDelete != null
-            ? InputChip(
-                key: const ValueKey('sequence-entry'),
-                label: label,
-                backgroundColor: color,
-                side: BorderSide.none,
-                onDeleted: onDelete,
-                deleteIcon: const Icon(Icons.close, size: 16),
-                deleteIconColor: SongSequenceView.foreground(scheme, item.part),
-              )
-            : ActionChip(
-                key: ValueKey('sequence-part-${item.code}'),
-                avatar: const Icon(Icons.add, size: 16),
-                label: label,
-                backgroundColor: color,
-                side: BorderSide.none,
-                onPressed: onTap,
+      return DragTarget<_Drag>(
+        // Accepts its own entry too, so dropping it in place does nothing
+        // instead of moving it to the end.
+        onAcceptWithDetails: (details) => _drop(details.data, index),
+        builder: (context, candidates, _) {
+          final from = candidates.firstOrNull?.from;
+          final hovered = candidates.isNotEmpty && from != index;
+          final after = from != null && from < index;
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (hovered && !after) marker,
+              Tooltip(
+                message: SongSequenceView.partName(l10n, item),
+                child: LongPressDraggable<_Drag>(
+                  data: (from: index, entry: entries[index]),
+                  feedback: feedback(item),
+                  childWhenDragging: Opacity(opacity: 0.3, child: chip),
+                  child: chip,
+                ),
               ),
+              if (hovered && after) marker,
+            ],
+          );
+        },
       );
     }
 
@@ -180,29 +254,45 @@ class _SequenceDialogState extends State<_SequenceDialog> {
                 ),
                 const SizedBox(height: 12),
               ],
-              // The sequence being edited.
-              Container(
-                width: double.infinity,
-                constraints: const BoxConstraints(minHeight: 56),
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  border: Border.all(color: scheme.outline),
-                  borderRadius: BorderRadius.circular(8),
+              // The sequence being edited; dropping on the free space
+              // appends.
+              DragTarget<_Drag>(
+                key: const ValueKey('sequence-drop-area'),
+                onAcceptWithDetails: (details) =>
+                    _drop(details.data, entries.length),
+                builder: (context, candidates, _) => Container(
+                  width: double.infinity,
+                  constraints: const BoxConstraints(minHeight: 56),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: candidates.isEmpty
+                          ? scheme.outline
+                          : scheme.primary,
+                      width: candidates.isEmpty ? 1 : 2,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: entries.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Text(l10n.sequenceEmpty, style: muted),
+                        )
+                      : Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            for (var i = 0; i < items.length; i++) entry(i),
+                            if (candidates.isNotEmpty) marker,
+                          ],
+                        ),
                 ),
-                child: entries.isEmpty
-                    ? Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: Text(l10n.sequenceEmpty, style: muted),
-                      )
-                    : Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: [
-                          for (var i = 0; i < items.length; i++)
-                            chip(items[i], onDelete: () => _remove(i)),
-                        ],
-                      ),
               ),
+              if (entries.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(l10n.sequenceReorderHint, style: muted),
+              ],
               const SizedBox(height: 16),
               Text(
                 songHasParts
@@ -214,10 +304,7 @@ class _SequenceDialogState extends State<_SequenceDialog> {
               Wrap(
                 spacing: 6,
                 runSpacing: 6,
-                children: [
-                  for (final part in parts)
-                    chip(part, onTap: () => _add(part.code)),
-                ],
+                children: [for (final item in parts) part(item)],
               ),
               const SizedBox(height: 8),
               Row(

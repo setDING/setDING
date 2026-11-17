@@ -865,7 +865,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'I Intro · V Verse · PC Pre-chorus · C Chorus · B Bridge · Int Interlude · Solo · T Tag · O Outro · C x2 = twice';
 
   @override
-  String get sequenceEmpty => 'Tap the parts below to build the sequence.';
+  String get sequenceEmpty =>
+      'Tap the parts below to build the sequence, or drag them here.';
+
+  @override
+  String get sequenceReorderHint =>
+      'Long-press a part to move it to another position.';
 
   @override
   String get sequenceSongParts => 'Parts of the song';
