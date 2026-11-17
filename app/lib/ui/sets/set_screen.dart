@@ -330,6 +330,14 @@ class _SetItemTile extends ConsumerWidget {
     }
 
     if (item.type != SetItemType.song) {
+      // The type label is shown once: as the title without a note of its own
+      // (e.g. a break still named "Break"), otherwise below the note (#268).
+      final typeLabel = item.type == SetItemType.pause
+          ? l10n.pause
+          : l10n.textItem;
+      final note = item.note?.trim() ?? '';
+      final hasNote =
+          note.isNotEmpty && note.toLowerCase() != typeLabel.toLowerCase();
       return ListTile(
         leading: SizedBox(
           width: 32,
@@ -338,15 +346,13 @@ class _SetItemTile extends ConsumerWidget {
           ),
         ),
         title: Text(
-          item.note ?? '',
+          hasNote ? note : typeLabel,
           style: theme.textTheme.titleMedium?.copyWith(
             fontStyle: FontStyle.italic,
             color: theme.colorScheme.secondary,
           ),
         ),
-        subtitle: Text(
-          item.type == SetItemType.pause ? l10n.pause : l10n.textItem,
-        ),
+        subtitle: hasNote ? Text(typeLabel) : null,
         onTap: !canEdit ? null : editMarker,
         trailing: !canEdit
             ? null
