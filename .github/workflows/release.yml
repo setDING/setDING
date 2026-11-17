@@ -84,6 +84,14 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      # Caches the Gradle distribution, dependencies and build cache. GitHub scopes
+      # caches by ref: a tag build can only restore caches written on main, so the
+      # action writes only on main (its default) and tag builds read them. A manual
+      # test build on main (gh workflow run release.yml --ref main) seeds or
+      # refreshes the cache.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -118,11 +126,15 @@ jobs:
           keyPassword=$ANDROID_KEY_PASSWORD
           EOF
 
+      # arm64 only (#407): one Dart AOT and native build instead of three (arm, arm64,
+      # x64) shortens the build and shrinks the APK. 32-bit ARM and x86
+      # devices are not supported by release builds (ADR-0021).
       - name: Build APK
         working-directory: app
         run: |
           flutter config --no-analytics >/dev/null
-          flutter build apk --release --build-number "$GITHUB_RUN_NUMBER"
+          flutter build apk --release --target-platform android-arm64 \
+            --build-number "$GITHUB_RUN_NUMBER"
           cp build/app/outputs/flutter-apk/app-release.apk \
             "$GITHUB_WORKSPACE/${{ needs.version.outputs.name }}-android.apk"
 
