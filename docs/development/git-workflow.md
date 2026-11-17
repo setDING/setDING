@@ -48,7 +48,35 @@ work on an issue labelled `agent:in-progress` by someone else.
   - Without an issue (only before a remote exists): omit the number, e.g. `docs/git-workflow`.
 - A branch belongs to the agent that created it. Others do not push to it unless the
   PR is explicitly handed over (see section 8).
-- When several agents work in parallel, each uses its own **git worktree** (one per branch).
+- **Every branch lives in its own git worktree** (see below). The main checkout is
+  never switched to a branch.
+
+### Worktrees
+
+The project folder (the main checkout, e.g. `~/Projects/RealChord`) **always stays on
+`main`**. It is only ever updated with `git pull --ff-only`; nobody edits, commits or
+switches branches in it. Every change – by agents and humans, also small docs fixes –
+is made in a separate worktree, so parallel sessions never disturb each other and the
+main checkout is always a clean, current `main` to start from.
+
+- **Location:** a sibling folder of the main checkout,
+  `../RealChord-worktrees/<branch with "/" replaced by "-">`, e.g.
+  `../RealChord-worktrees/feat-12-chordpro-parser`. Outside the repository on
+  purpose: tools that scan the tree (`dart format .`, the analyzer, IDE indexing)
+  never see a second copy of the code.
+- **Create** the branch and its worktree in one step from the latest `origin/main`:
+  `git fetch origin && git worktree add -b <branch> ../RealChord-worktrees/<dir> origin/main`.
+  All further commands (`make check`, commits, `git push`) run inside the worktree.
+  Local data is per worktree (`.dev-data/`, `.dart_tool/`), so the first
+  `make check` in a new worktree fetches the packages again.
+- **Tools that offer their own worktrees** (e.g. Claude Code worktree sessions) may
+  use their own location, as long as the main checkout stays on `main`.
+- **Remove** the worktree after the merge (section 6):
+  `git worktree remove ../RealChord-worktrees/<dir>`, then delete the branch.
+  `git worktree list` shows the open worktrees; `git worktree prune` cleans up
+  entries of folders deleted by hand.
+- **Taking over** a branch of another agent (section 8): fetch it and add a worktree
+  for it (`git worktree add ../RealChord-worktrees/<dir> <branch>`).
 
 ## 4. Commits
 
@@ -94,8 +122,9 @@ An agent runs all of the following and only continues when everything passes:
 - Body follows [`.github/pull_request_template.md`](../../.github/pull_request_template.md) : summary, linked issue (`Closes #n`), affected ADRs, how it was tested, open points.
 - Size: aim for **under ~400 changed lines** (generated files excluded). Larger work is split into several PRs, each leaving `main` working.
 - **Merge method: squash merge** only. The branch is deleted after the merge, on the
-  remote (`gh pr merge --squash --delete-branch`) **and locally**: switch to `main`, pull, and delete the
-  local branch with `git branch -D <branch>`. `-D` is needed because Git does not
+  remote (`gh pr merge --squash --delete-branch`) **and locally**: remove the
+  worktree (`git worktree remove`, section 3), fast-forward the main checkout
+  (`git pull --ff-only`) and delete the local branch with `git branch -D <branch>`. `-D` is needed because Git does not
   recognise a squash-merged branch as merged; check first that the PR is merged.
   Only the agent that owns the branch deletes it (section 3).
 - **CI must be green** before merging while CI is a required check (see section 7). During early development CI is manual-only and the local test gate applies.
@@ -180,7 +209,7 @@ An agent never ends a session with work only on its local machine:
 3. Write a **handover comment** on the PR: what is done, what is left, known problems, next step.
 
 Another agent may then take over the PR: it comments "Taking over", reassigns the
-issue and continues on the same branch.
+issue and continues on the same branch in its own worktree (section 3).
 
 ## 9. When a human must decide
 
@@ -218,7 +247,7 @@ has not logged in yet):
 - Run the checks from section 5.
 - Rebase on `origin/main` and run the **full test suite** right before merging (test
   gate, section 6). Only merge if it passes.
-- Merge with `git merge --squash <branch>` and a Conventional Commit message that
+- Merge in the main checkout (on `main`) with `git merge --squash <branch>` and a Conventional Commit message that
   reports the test result, push `main`, then delete the branch locally and on the
   remote (`git push origin --delete <branch>`).
 - Issues that would be created are listed in the handover instead; the human creates
@@ -251,17 +280,21 @@ has not logged in yet):
 ## Quick reference
 
 ```bash
+# in the main checkout (always on main)
 git fetch origin
-git switch -c feat/12-chordpro-parser origin/main
+git worktree add -b feat/12-chordpro-parser ../RealChord-worktrees/feat-12-chordpro-parser origin/main
+cd ../RealChord-worktrees/feat-12-chordpro-parser
 # … work, commit in Conventional Commit format …
 git fetch origin && git rebase origin/main
-tool/check.sh
+make check
 git push -u origin feat/12-chordpro-parser
 gh pr create --draft --base main --body-file pr.md --title "feat(chordpro): …"
 # … checks pass, self-review done …
 gh pr ready <number>
 gh pr checks <number>
 gh pr merge --squash --delete-branch --author-email andi@theboss.ch --body-file merge.md <number>   # only if section 6 "Who merges" allows it; merge.md ends with the Co-Authored-By trailer
-git switch main && git pull --ff-only
+cd ../../RealChord   # back to the main checkout
+git worktree remove ../RealChord-worktrees/feat-12-chordpro-parser
+git pull --ff-only
 git branch -D feat/12-chordpro-parser   # delete the merged branch locally too
 ```

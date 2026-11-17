@@ -18,6 +18,7 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 
 - Backlog as issues in the GitHub repository, with labels for agents (`agent:ready`, `agent:in-progress`, `needs-human`).
 - One issue = one branch (`<type>/<issue>-<slug>`) = one PR; no direct commits to `main`.
+- Every branch lives in its own git worktree (`../RealChord-worktrees/<branch>`); the main checkout always stays on `main` and is only fast-forwarded.
 - Conventional Commits, English, `Co-Authored-By` trailer naming Claude on every commit.
 - Local checks + self-review before a PR is marked ready. During early development the local test gate is binding and CI runs only on manual dispatch; required CI checks return when heading towards version 1.
 - **Squash merge** only; branch deleted after merge.
@@ -64,6 +65,7 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 
 - 2026-11-16: CI no longer uses its own image: on GitHub-hosted runners everything but Flutter is preinstalled, and `subosito/flutter-action` (version from `FLUTTER_VERSION` in the `Makefile`, cached) sets Flutter up about as fast as pulling the multi-GB image, without building and pushing an image per Flutter version (#135). `tool/ci/Dockerfile` stays as the local base image of the Linux release build (ADR-0019) and is no longer pushed to `ghcr.io`.
 - 2026-11-16: The release build of section 10 exists for Linux, Android and Windows (`.github/workflows/release.yml`, ADR-0021, accepted, #137): a `vX.Y.Z` tag that matches `pubspec.yaml` builds all three and publishes a GitHub Release; Android updates come through Obtainium. It runs on tags regardless of the manual-only CI.
+- 2026-11-17: Every change is made in its own git worktree, a sibling folder `../RealChord-worktrees/<branch>` outside the repository; the main checkout (project folder) always stays on `main` and is only fast-forwarded. Parallel sessions no longer switch branches under each other's feet. Owner request (#225).
 
 ## Open points
 
