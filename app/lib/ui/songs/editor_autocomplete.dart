@@ -130,8 +130,10 @@ class _EditorAutocompleteState extends State<EditorAutocomplete> {
     if (result == null || event is KeyUpEvent) return KeyEventResult.ignored;
     final key = event.logicalKey;
     final count = result.items.length;
-    if (key == LogicalKeyboardKey.arrowDown ||
-        key == LogicalKeyboardKey.arrowUp) {
+    // Alt+↑/↓ moves lines (#361), it does not walk the list.
+    if ((key == LogicalKeyboardKey.arrowDown ||
+            key == LogicalKeyboardKey.arrowUp) &&
+        !HardwareKeyboard.instance.isAltPressed) {
       final step = key == LogicalKeyboardKey.arrowDown ? 1 : -1;
       setState(() => _highlighted = (_highlighted + step) % count);
       _reveal();

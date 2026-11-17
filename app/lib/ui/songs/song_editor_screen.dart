@@ -70,6 +70,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
   final _focus = FocusNode();
   final _fieldKey = GlobalKey();
   final _scroll = ScrollController();
+  final _undo = UndoHistoryController();
 
   @override
   void initState() {
@@ -126,6 +127,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
     _controller.dispose();
     _focus.dispose();
     _scroll.dispose();
+    _undo.dispose();
     super.dispose();
   }
 
@@ -298,6 +300,45 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
     );
   }
 
+  /// Runs a line or chord command on the selection (#361).
+  void _command(EditorCommand command) {
+    final text = _controller.text;
+    final sel = _controller.selection;
+    final base = sel.isValid ? sel.baseOffset : text.length;
+    final extent = sel.isValid ? sel.extentOffset : text.length;
+    final edit = switch (command) {
+      EditorCommand.moveLinesUp => moveLines(text, base, extent, up: true),
+      EditorCommand.moveLinesDown => moveLines(text, base, extent, up: false),
+      EditorCommand.moveChordLeft => moveChords(
+        text,
+        base,
+        extent,
+        right: false,
+        tokens: _controller.tokens,
+      ),
+      EditorCommand.moveChordRight => moveChords(
+        text,
+        base,
+        extent,
+        right: true,
+        tokens: _controller.tokens,
+      ),
+      EditorCommand.duplicateLines => duplicateLines(text, base, extent),
+      EditorCommand.deleteLines => deleteLines(text, base, extent),
+      EditorCommand.toggleComment => toggleComment(text, base, extent),
+    };
+    if (edit != null) {
+      _controller.value = TextEditingValue(
+        text: edit.text,
+        selection: TextSelection(
+          baseOffset: edit.base,
+          extentOffset: edit.extent,
+        ),
+      );
+    }
+    _focus.requestFocus();
+  }
+
   /// Edits title, key, tempo and more in a form instead of the text (#189).
   Future<void> _editDetails() async {
     final before = _controller.text;
@@ -376,6 +417,8 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
           snippets: snippets,
           onInsert: _insert,
           onDetails: _editDetails,
+          onCommand: _command,
+          undoController: _undo,
         ),
         const Divider(height: 1),
         Expanded(
@@ -398,6 +441,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
                     focusNode: _focus,
                     controller: _controller,
                     scrollController: _scroll,
+                    undoController: _undo,
                     expands: true,
                     maxLines: null,
                     keyboardType: TextInputType.multiline,
@@ -428,6 +472,8 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
           saveShortcut: _save,
           for (final snippet in snippets.withShortcut)
             snippet.shortcut!: () => _insert(snippet),
+          for (final command in EditorCommand.values)
+            command.activator: () => _command(command),
         },
         child: DefaultTabController(
           length: 2,

@@ -1,0 +1,211 @@
+/// Line and chord editing commands of the ChordPro editor (#361).
+///
+/// Pure functions on the source text and the selection, so the editor only
+/// applies their result. Each command returns null when it changes nothing.
+library;
+
+import 'highlight.dart';
+
+/// Text and selection after an editing command. [base] and [extent] are
+/// the selection ends as in Flutter's `TextSelection`.
+class SourceEdit {
+  const SourceEdit(this.text, this.base, this.extent);
+
+  final String text;
+  final int base;
+  final int extent;
+
+  @override
+  bool operator ==(Object other) =>
+      other is SourceEdit &&
+      other.text == text &&
+      other.base == base &&
+      other.extent == extent;
+
+  @override
+  int get hashCode => Object.hash(text, base, extent);
+
+  @override
+  String toString() => 'SourceEdit(${text.length} chars, $base, $extent)';
+}
+
+/// The lines touched by the selection `[base, extent]`: start of the first
+/// line and end of the last line (before its line break). A selection that
+/// ends at the start of a line does not include that line.
+(int, int) _lineBlock(String text, int base, int extent) {
+  var start = base < extent ? base : extent;
+  var end = base < extent ? extent : base;
+  start = start.clamp(0, text.length);
+  end = end.clamp(0, text.length);
+  if (end > start && text[end - 1] == '\n') end--;
+  final blockStart = start == 0 ? 0 : text.lastIndexOf('\n', start - 1) + 1;
+  final nl = text.indexOf('\n', end);
+  return (blockStart, nl < 0 ? text.length : nl);
+}
+
+/// Moves the lines touched by the selection one line up ([up]) or down,
+/// swapping them with the neighbouring line. The selection moves along.
+SourceEdit? moveLines(String text, int base, int extent, {required bool up}) {
+  final (start, end) = _lineBlock(text, base, extent);
+  final block = text.substring(start, end);
+  if (up) {
+    if (start == 0) return null;
+    final prevStart = start == 1 ? 0 : text.lastIndexOf('\n', start - 2) + 1;
+    final prev = text.substring(prevStart, start - 1);
+    final shift = -(prev.length + 1);
+    return SourceEdit(
+      text.replaceRange(prevStart, end, '$block\n$prev'),
+      base + shift,
+      extent + shift,
+    );
+  }
+  if (end >= text.length) return null;
+  final nextEnd = _lineEnd(text, end + 1);
+  final next = text.substring(end + 1, nextEnd);
+  final shift = next.length + 1;
+  return SourceEdit(
+    text.replaceRange(start, nextEnd, '$next\n$block'),
+    base + shift,
+    extent + shift,
+  );
+}
+
+int _lineEnd(String text, int from) {
+  final nl = text.indexOf('\n', from);
+  return nl < 0 ? text.length : nl;
+}
+
+/// Inserts a copy of the lines touched by the selection below them; the
+/// selection moves to the copy.
+SourceEdit duplicateLines(String text, int base, int extent) {
+  final (start, end) = _lineBlock(text, base, extent);
+  final block = text.substring(start, end);
+  final shift = block.length + 1;
+  return SourceEdit(
+    text.replaceRange(end, end, '\n$block'),
+    base + shift,
+    extent + shift,
+  );
+}
+
+/// Deletes the lines touched by the selection; the cursor ends up at the
+/// start of the line that follows them.
+SourceEdit? deleteLines(String text, int base, int extent) {
+  if (text.isEmpty) return null;
+  final (start, end) = _lineBlock(text, base, extent);
+  if (end < text.length) {
+    return SourceEdit(text.replaceRange(start, end + 1, ''), start, start);
+  }
+  // The last line: also remove the line break before it.
+  final from = start > 0 ? start - 1 : start;
+  final cursor = from == 0 ? 0 : text.lastIndexOf('\n', from - 1) + 1;
+  return SourceEdit(text.replaceRange(from, end, ''), cursor, cursor);
+}
+
+final _commentPrefix = RegExp(r'^([ \t]*)# ?');
+
+/// Turns the lines touched by the selection into `#` comment lines, or
+/// back into normal lines when all of them are comments already. Empty
+/// lines stay as they are.
+SourceEdit? toggleComment(String text, int base, int extent) {
+  final (start, end) = _lineBlock(text, base, extent);
+  final lines = text.substring(start, end).split('\n');
+  final filled = lines.where((l) => l.trim().isNotEmpty).toList();
+  if (filled.isEmpty) return null;
+  final uncomment = filled.every(_commentPrefix.hasMatch);
+  // Edits as (offset, removed length, inserted text), in text order.
+  final edits = <(int, int, String)>[];
+  var lineStart = start;
+  for (final line in lines) {
+    if (line.trim().isNotEmpty) {
+      if (uncomment) {
+        final m = _commentPrefix.firstMatch(line)!;
+        final indent = m.group(1)!.length;
+        edits.add((lineStart + indent, m.end - indent, ''));
+      } else {
+        edits.add((lineStart, 0, '# '));
+      }
+    }
+    lineStart += line.length + 1;
+  }
+  var result = text;
+  for (final (at, removed, inserted) in edits.reversed) {
+    result = result.replaceRange(at, at + removed, inserted);
+  }
+  int map(int offset) {
+    var shift = 0;
+    for (final (at, removed, inserted) in edits) {
+      if (offset < at) break;
+      if (offset < at + removed) return at + shift;
+      shift += inserted.length - removed;
+    }
+    return offset + shift;
+  }
+
+  return SourceEdit(result, map(base), map(extent));
+}
+
+const _chordKinds = {
+  SourceTokenKind.chord,
+  SourceTokenKind.annotation,
+  SourceTokenKind.unknownChord,
+};
+
+/// Moves chords one character to the right ([right]) or left within the
+/// lyrics: the chord at the cursor (inside or right next to it), or all
+/// chords in the selection. A chord swaps places with the character next
+/// to it; at the end of a line a space is added. Chords right next to each
+/// other move together. [tokens] are the highlighting tokens of [text], if
+/// already known.
+SourceEdit? moveChords(
+  String text,
+  int base,
+  int extent, {
+  required bool right,
+  List<SourceToken>? tokens,
+}) {
+  tokens ??= highlightChordPro(text);
+  final from = base < extent ? base : extent;
+  final to = base < extent ? extent : base;
+  final chords = [
+    for (final t in tokens)
+      if (_chordKinds.contains(t.kind) &&
+          (from == to
+              ? t.start <= from && from <= t.end
+              : t.start < to && from < t.end))
+        (t.start, t.end),
+  ];
+  if (chords.isEmpty) return null;
+  var result = text;
+  var newBase = base;
+  var newExtent = extent;
+  var moved = false;
+  // From the far end, so that a chord can move into the place the chord
+  // next to it just left, and offsets of the remaining chords stay valid.
+  for (final (start, end) in right ? chords.reversed : chords) {
+    if (right) {
+      final next = end < result.length ? result[end] : '\n';
+      if (next == '[') continue;
+      final inserted = next == '\n';
+      final chord = result.substring(start, end);
+      result = inserted
+          ? result.replaceRange(start, end, ' $chord')
+          : result.replaceRange(start, end + 1, '$next$chord');
+      int map(int o) =>
+          (o >= start && o <= end) || (inserted && o > end) ? o + 1 : o;
+      newBase = map(newBase);
+      newExtent = map(newExtent);
+    } else {
+      if (start == 0) continue;
+      final prev = result[start - 1];
+      if (prev == '\n' || prev == ']') continue;
+      final chord = result.substring(start, end);
+      result = result.replaceRange(start - 1, end, '$chord$prev');
+      int map(int o) => o >= start && o <= end ? o - 1 : o;
+      newBase = map(newBase);
+      newExtent = map(newExtent);
+    }
+    moved = true;
+  }
+  return moved ? SourceEdit(result, newBase, newExtent) : null;
+}

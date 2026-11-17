@@ -53,6 +53,84 @@ SingleActivator _key(LogicalKeyboardKey key, {bool shift = false}) =>
 /// Saves the song (Ctrl+S / Cmd+S).
 SingleActivator get saveShortcut => _key(LogicalKeyboardKey.keyS);
 
+/// Line and chord editing commands of the editor (#361).
+enum EditorCommand {
+  moveLinesUp(Icons.move_up),
+  moveLinesDown(Icons.move_down),
+  moveChordLeft(Icons.chevron_left),
+  moveChordRight(Icons.chevron_right),
+  duplicateLines(Icons.content_copy),
+  deleteLines(Icons.delete_sweep_outlined),
+  toggleComment(Icons.tag);
+
+  const EditorCommand(this.icon);
+
+  final IconData icon;
+
+  String label(AppLocalizations l10n) => switch (this) {
+    moveLinesUp => l10n.moveLinesUp,
+    moveLinesDown => l10n.moveLinesDown,
+    moveChordLeft => l10n.moveChordLeft,
+    moveChordRight => l10n.moveChordRight,
+    duplicateLines => l10n.duplicateLines,
+    deleteLines => l10n.deleteLines,
+    toggleComment => l10n.toggleComment,
+  };
+
+  /// The shortcut shown in menus and tooltips. Alt+↑/↓ as in common code
+  /// editors; chords move with Alt+←/→, on Apple with Ctrl+Option+←/→
+  /// because Option+←/→ moves the cursor by word there.
+  SingleActivator get shortcut => switch (this) {
+    moveLinesUp => const SingleActivator(LogicalKeyboardKey.arrowUp, alt: true),
+    moveLinesDown => const SingleActivator(
+      LogicalKeyboardKey.arrowDown,
+      alt: true,
+    ),
+    moveChordLeft => SingleActivator(
+      LogicalKeyboardKey.arrowLeft,
+      alt: true,
+      control: _useMeta,
+    ),
+    moveChordRight => SingleActivator(
+      LogicalKeyboardKey.arrowRight,
+      alt: true,
+      control: _useMeta,
+    ),
+    duplicateLines => _key(LogicalKeyboardKey.keyD),
+    deleteLines => _key(LogicalKeyboardKey.keyK, shift: true),
+    toggleComment => _key(LogicalKeyboardKey.slash),
+  };
+
+  /// The key combinations of the command: [shortcut] or, for the comment
+  /// toggle, also the typed `/`, which needs Shift on Swiss and German
+  /// keyboards. One activator, so that a key press matching both runs the
+  /// command once.
+  ShortcutActivator get activator => this == toggleComment
+      ? _AnyActivator([
+          shortcut,
+          CharacterActivator('/', control: !_useMeta, meta: _useMeta),
+        ])
+      : shortcut;
+}
+
+/// Accepts a key event when any of [activators] does.
+class _AnyActivator extends ShortcutActivator {
+  const _AnyActivator(this.activators);
+
+  final List<ShortcutActivator> activators;
+
+  @override
+  Iterable<LogicalKeyboardKey>? get triggers => null;
+
+  @override
+  bool accepts(KeyEvent event, HardwareKeyboard state) =>
+      activators.any((a) => a.accepts(event, state));
+
+  @override
+  String debugDescribeKeys() =>
+      activators.map((a) => a.debugDescribeKeys()).join(' | ');
+}
+
 /// All snippets of the editor toolbar, grouped.
 class EditorSnippets {
   EditorSnippets(AppLocalizations l10n)
@@ -325,10 +403,18 @@ class EditorToolbar extends StatelessWidget {
     required this.snippets,
     required this.onInsert,
     this.onDetails,
+    this.onCommand,
+    this.undoController,
   });
 
   final EditorSnippets snippets;
   final ValueChanged<EditorSnippet> onInsert;
+
+  /// Runs a line or chord command; without it, the buttons are hidden.
+  final ValueChanged<EditorCommand>? onCommand;
+
+  /// Undo history of the editor, for the undo and redo buttons.
+  final UndoHistoryController? undoController;
 
   /// Opens the song details form (title, key, tempo, …).
   final VoidCallback? onDetails;
@@ -369,8 +455,85 @@ class EditorToolbar extends StatelessWidget {
           quick(snippets.comment, l10n.insertComment, '{c: }'),
           for (final group in snippets.groups)
             _GroupMenu(group: group, onInsert: onInsert),
+          if (onCommand case final onCommand?)
+            _CommandButtons(onCommand: onCommand, undo: undoController),
         ],
       ),
+    );
+  }
+}
+
+/// Undo/redo and the line and chord commands as icon buttons, for tablets
+/// without a keyboard, plus a menu with all line commands (#361).
+class _CommandButtons extends StatelessWidget {
+  const _CommandButtons({required this.onCommand, this.undo});
+
+  final ValueChanged<EditorCommand> onCommand;
+  final UndoHistoryController? undo;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    Widget button(EditorCommand command) => IconButton(
+      visualDensity: VisualDensity.compact,
+      tooltip: _withShortcut(command.label(l10n), command.shortcut),
+      icon: Icon(command.icon),
+      onPressed: () => onCommand(command),
+    );
+    final undo = this.undo;
+    // Wraps like the toolbar, so narrow editors keep all buttons visible.
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        if (undo != null)
+          ValueListenableBuilder(
+            valueListenable: undo,
+            builder: (context, value, _) => Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  tooltip: l10n.undo,
+                  icon: const Icon(Icons.undo),
+                  onPressed: value.canUndo ? undo.undo : null,
+                ),
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  tooltip: l10n.redo,
+                  icon: const Icon(Icons.redo),
+                  onPressed: value.canRedo ? undo.redo : null,
+                ),
+              ],
+            ),
+          ),
+        button(EditorCommand.moveLinesUp),
+        button(EditorCommand.moveLinesDown),
+        button(EditorCommand.moveChordLeft),
+        button(EditorCommand.moveChordRight),
+        MenuAnchor(
+          menuChildren: [
+            for (final command in EditorCommand.values)
+              MenuItemButton(
+                leadingIcon: Icon(command.icon, size: 20),
+                shortcut: command.shortcut,
+                onPressed: () => onCommand(command),
+                child: Text(command.label(l10n)),
+              ),
+          ],
+          builder: (context, controller, _) => TextButton.icon(
+            onPressed: () =>
+                controller.isOpen ? controller.close() : controller.open(),
+            icon: const Icon(Icons.format_line_spacing, size: 18),
+            label: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(l10n.editorGroupLines),
+                const Icon(Icons.arrow_drop_down),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -414,9 +577,16 @@ String _withShortcut(String text, SingleActivator? shortcut) {
   final keys = [
     if (shortcut.control) 'Ctrl',
     if (shortcut.meta) '⌘',
-    if (shortcut.alt) 'Alt',
+    if (shortcut.alt) _useMeta ? '⌥' : 'Alt',
     if (shortcut.shift) 'Shift',
-    shortcut.trigger.keyLabel,
+    _keyLabels[shortcut.trigger] ?? shortcut.trigger.keyLabel,
   ];
   return '$text (${keys.join('+')})';
 }
+
+final _keyLabels = {
+  LogicalKeyboardKey.arrowUp: '↑',
+  LogicalKeyboardKey.arrowDown: '↓',
+  LogicalKeyboardKey.arrowLeft: '←',
+  LogicalKeyboardKey.arrowRight: '→',
+};
