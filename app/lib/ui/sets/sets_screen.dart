@@ -45,26 +45,118 @@ class SetsScreen extends ConsumerWidget {
             ),
       body: AsyncBody(
         value: sets,
-        data: (list) => list.isEmpty
-            ? EmptyState(icon: Icons.queue_music, message: l10n.setsEmpty)
-            : ListView.builder(
-                padding: const EdgeInsets.fromLTRB(12, 4, 12, 88),
-                itemCount: list.length,
-                itemBuilder: (context, i) => _SetCard(summary: list[i]),
+        data: (list) {
+          if (list.isEmpty) {
+            return EmptyState(icon: Icons.queue_music, message: l10n.setsEmpty);
+          }
+          final now = DateTime.now();
+          final today = DateTime(now.year, now.month, now.day);
+          final groups = groupSets(list, today);
+          final pastCollapsed = ref.watch(pastSetsCollapsedProvider);
+          final rows = <Widget>[
+            if (groups.upcoming.isNotEmpty) ...[
+              _SectionHeader(l10n.setsUpcoming),
+              for (final (i, s) in groups.upcoming.indexed)
+                _SetCard(summary: s, nextGigFrom: i == 0 ? today : null),
+            ],
+            if (groups.undated.isNotEmpty) ...[
+              _SectionHeader(l10n.setsUndated),
+              for (final s in groups.undated) _SetCard(summary: s),
+            ],
+            if (groups.past.isNotEmpty) ...[
+              _SectionHeader(
+                l10n.setsPast(groups.past.length),
+                collapsed: pastCollapsed,
+                onToggle: () =>
+                    ref.read(pastSetsCollapsedProvider.notifier).toggle(),
               ),
+              if (!pastCollapsed)
+                for (final s in groups.past) _SetCard(summary: s),
+            ],
+          ];
+          return ListView.builder(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 88),
+            itemCount: rows.length,
+            itemBuilder: (context, i) => rows[i],
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Header of a section of the sets list; the past sets can be collapsed
+/// with a tap ([onToggle]).
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader(this.label, {this.collapsed = false, this.onToggle});
+
+  final String label;
+  final bool collapsed;
+  final VoidCallback? onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final text = Text(
+      label,
+      style: theme.textTheme.titleSmall?.copyWith(
+        color: theme.colorScheme.primary,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+    final onToggle = this.onToggle;
+    if (onToggle == null) {
+      return Semantics(
+        header: true,
+        child: Padding(
+          key: const ValueKey('set-section-header'),
+          padding: const EdgeInsets.fromLTRB(4, 16, 4, 4),
+          child: text,
+        ),
+      );
+    }
+    return Semantics(
+      header: true,
+      child: InkWell(
+        key: const ValueKey('set-section-past'),
+        borderRadius: BorderRadius.circular(8),
+        onTap: onToggle,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(4, 8, 0, 0),
+          child: Row(
+            children: [
+              Expanded(child: text),
+              Tooltip(
+                message: collapsed ? l10n.showPastSets : l10n.hidePastSets,
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Icon(
+                    collapsed ? Icons.expand_more : Icons.expand_less,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
 class _SetCard extends ConsumerWidget {
-  const _SetCard({required this.summary});
+  const _SetCard({required this.summary, this.nextGigFrom});
 
   final SetSummary summary;
+
+  /// Set for the next gig, highlighted with the days from this day on.
+  final DateTime? nextGigFrom;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final colors = Theme.of(context).colorScheme;
     final set = summary.set;
     final ready = ref.watch(offlineReadyProvider(set.id)).value;
     final details = [
@@ -72,12 +164,35 @@ class _SetCard extends ConsumerWidget {
       if (set.venue != null) set.venue!,
       l10n.itemCount(summary.itemCount),
     ].join(' · ');
+    final next = nextGigFrom;
+    final date = set.gigDate;
 
     return Card(
+      key: next == null ? null : const ValueKey('next-gig'),
+      color: next == null ? null : colors.primaryContainer,
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: const CircleAvatar(child: Icon(Icons.queue_music)),
-        title: Text(set.name),
+        textColor: next == null ? null : colors.onPrimaryContainer,
+        leading: CircleAvatar(
+          backgroundColor: next == null ? null : colors.primary,
+          foregroundColor: next == null ? null : colors.onPrimary,
+          child: Icon(next == null ? Icons.queue_music : Icons.event),
+        ),
+        title: next == null || date == null
+            ? Text(set.name)
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${l10n.nextGig} · ${l10n.gigInDays(daysBetween(next, date))}',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: colors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(set.name),
+                ],
+              ),
         subtitle: Text(details),
         trailing: ready == null ? null : OfflineBadge(ready: ready),
         onTap: () => Navigator.push(
@@ -108,6 +223,14 @@ class OfflineBadge extends StatelessWidget {
     return Tooltip(message: label, child: icon);
   }
 }
+
+/// Calendar days from [from] to [to] (0 for the same day), independent of
+/// the time of day and daylight saving time.
+int daysBetween(DateTime from, DateTime to) => DateTime.utc(
+  to.year,
+  to.month,
+  to.day,
+).difference(DateTime.utc(from.year, from.month, from.day)).inDays;
 
 String formatGigDate(BuildContext context, DateTime date) =>
     DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag())

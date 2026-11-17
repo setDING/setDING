@@ -16,15 +16,53 @@ class SetItemView {
   final SongEntry? song;
 }
 
-/// Summary of a set for list views.
 /// The next set a song is played in (see [SetRepository.watchUpcomingGigs]).
 typedef UpcomingGig = ({String setName, DateTime date});
 
+/// Summary of a set for list views.
 class SetSummary {
   const SetSummary(this.set, this.itemCount);
 
   final SetlistEntry set;
   final int itemCount;
+}
+
+/// The sets of the sets tab by gig date (#265): [upcoming] from [today] on,
+/// next gig first; [undated] by name; [past] most recent first.
+typedef SetGroups = ({
+  List<SetSummary> upcoming,
+  List<SetSummary> undated,
+  List<SetSummary> past,
+});
+
+/// Groups [sets] into upcoming, undated and past sets. A gig on [today]
+/// counts as upcoming, as for the song list's upcoming-gig icon
+/// ([SetRepository.watchUpcomingGigs]).
+SetGroups groupSets(List<SetSummary> sets, DateTime today) {
+  final start = DateTime(today.year, today.month, today.day);
+  int byName(SetSummary a, SetSummary b) =>
+      a.set.name.toLowerCase().compareTo(b.set.name.toLowerCase());
+  final upcoming = <SetSummary>[], undated = <SetSummary>[];
+  final past = <SetSummary>[];
+  for (final s in sets) {
+    final date = s.set.gigDate;
+    (date == null
+            ? undated
+            : date.isBefore(start)
+            ? past
+            : upcoming)
+        .add(s);
+  }
+  upcoming.sort((a, b) {
+    final c = a.set.gigDate!.compareTo(b.set.gigDate!);
+    return c != 0 ? c : byName(a, b);
+  });
+  past.sort((a, b) {
+    final c = b.set.gigDate!.compareTo(a.set.gigDate!);
+    return c != 0 ? c : byName(a, b);
+  });
+  undated.sort(byName);
+  return (upcoming: upcoming, undated: undated, past: past);
 }
 
 /// Access to sets (setlists) and their items of one band (the current

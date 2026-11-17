@@ -872,5 +872,22 @@
     "placeholders": {
       "parts": {"type": "String"}
     }
+  },
+  "setsUpcoming": "Bevorstehend",
+  "setsUndated": "Ohne Datum",
+  "setsPast": "Vergangen ({count})",
+  "@setsPast": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "showPastSets": "Vergangene Sets anzeigen",
+  "hidePastSets": "Vergangene Sets ausblenden",
+  "nextGig": "Nächster Auftritt",
+  "gigInDays": "{days, plural, =0{Heute} =1{Morgen} other{In {days} Tagen}}",
+  "@gigInDays": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
   }
 }

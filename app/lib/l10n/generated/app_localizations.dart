@@ -2953,6 +2953,48 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Ausgeblendet (nicht im Ablauf): {parts}'**
   String hiddenParts(String parts);
+
+  /// No description provided for @setsUpcoming.
+  ///
+  /// In de, this message translates to:
+  /// **'Bevorstehend'**
+  String get setsUpcoming;
+
+  /// No description provided for @setsUndated.
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Datum'**
+  String get setsUndated;
+
+  /// No description provided for @setsPast.
+  ///
+  /// In de, this message translates to:
+  /// **'Vergangen ({count})'**
+  String setsPast(int count);
+
+  /// No description provided for @showPastSets.
+  ///
+  /// In de, this message translates to:
+  /// **'Vergangene Sets anzeigen'**
+  String get showPastSets;
+
+  /// No description provided for @hidePastSets.
+  ///
+  /// In de, this message translates to:
+  /// **'Vergangene Sets ausblenden'**
+  String get hidePastSets;
+
+  /// No description provided for @nextGig.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächster Auftritt'**
+  String get nextGig;
+
+  /// No description provided for @gigInDays.
+  ///
+  /// In de, this message translates to:
+  /// **'{days, plural, =0{Heute} =1{Morgen} other{In {days} Tagen}}'**
+  String gigInDays(int days);
 }
 
 class _AppLocalizationsDelegate
