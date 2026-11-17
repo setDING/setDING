@@ -100,13 +100,13 @@ void main() {
     final band = const Uuid().v4();
     await ann.backend.createBand(id: band, name: 'Rock');
     final org = (await ann.backend.fetchOrganizations()).single.id;
+    // Bob maintains the library with Ann (ADR-0023).
     (await pb.superuser.post('org_memberships', {
       'user': bobUser.id,
       'organization': org,
-      'role': 'member',
+      'role': 'librarian',
     })).expectStatus(200);
     await ann.backend.addBandMember(band, bobUser.id, BandRole.member);
-    await ann.backend.updateBand(band, membersCanEditSongs: true);
     // Loads the organizations and bands on both devices.
     await ann.sync();
     await bob.sync();

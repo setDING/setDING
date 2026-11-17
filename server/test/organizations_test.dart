@@ -271,10 +271,10 @@ void main() {
     });
 
     test(
-      'band admins edit the organization songs but do not delete them',
+      'leaders of another band create songs but edit only their own',
       () async {
         final f = await BandFixture.create(pb);
-        final bandAdmin = await pb.signUp();
+        final leader = await pb.signUp();
         final second = await f.admin.post('bands', {
           'name': 'Second',
           'organization': f.orgId,
@@ -282,28 +282,28 @@ void main() {
         await BandFixture.addMember(
           pb,
           second.json['id'] as String,
-          bandAdmin,
+          leader,
           role: 'admin',
         );
         final song = await f.createSong(f.admin);
-        final edit = await bandAdmin.patch('songs', song['id'] as String, {
-          'title': 'Fixed',
+        final edit = await leader.patch('songs', song['id'] as String, {
+          'title': 'Changed for my band',
           'revision': song['revision'],
         });
-        edit.expectStatus(200);
-        final delete = await bandAdmin.patch('songs', song['id'] as String, {
-          'deleted': true,
-          'revision': edit.json['revision'],
+        expect(edit.status, 404);
+        final own = await leader.post('songs', {
+          'organization': f.orgId,
+          'title': 'Mine',
         });
-        expect(delete.status, 404);
-        (await f.admin.patch('songs', song['id'] as String, {
-          'deleted': true,
-          'revision': edit.json['revision'],
+        own.expectStatus(200);
+        (await leader.patch('songs', own.json['id'] as String, {
+          'title': 'Mine, fixed',
+          'revision': own.json['revision'],
         })).expectStatus(200);
       },
     );
 
-    test('members edit songs only through a band that allows it', () async {
+    test('members edit songs only as librarians (ADR-0023)', () async {
       final f = await BandFixture.create(pb);
       final song = await f.createSong(f.admin);
       final denied = await f.member.patch('songs', song['id'] as String, {
@@ -311,14 +311,25 @@ void main() {
         'revision': song['revision'],
       });
       expect(denied.status, 404);
-      (await f.admin.patch('bands', f.id, {
-        'members_can_edit_songs': true,
+      final m = await pb.superuser.list(
+        'org_memberships',
+        filter: 'organization = "${f.orgId}" && user = "${f.member.id}"',
+      );
+      (await f.admin.patch('org_memberships', m.single['id'] as String, {
+        'role': 'librarian',
       })).expectStatus(200);
       final allowed = await f.member.patch('songs', song['id'] as String, {
         'title': 'Yes',
         'revision': song['revision'],
       });
       allowed.expectStatus(200);
+      // Librarians do not manage people.
+      final role = await f.member.patch(
+        'org_memberships',
+        m.single['id'] as String,
+        {'role': 'admin'},
+      );
+      expect(role.status, 404);
     });
 
     test('organization members without a band only read songs', () async {

@@ -132,7 +132,7 @@ void main() {
       await ann.createBand(id: id, name: 'Rock');
       final orgs = await ann.fetchOrganizations();
       expect(orgs.single.name, 'Rock');
-      expect(orgs.single.members.single.role, BandRole.admin);
+      expect(orgs.single.members.single.role, OrgRole.admin);
       final band = orgs.single.bands.single;
       expect(band.id, id);
       expect(band.organizationId, orgs.single.id);
@@ -220,12 +220,13 @@ void main() {
       final bandId = const Uuid().v4();
       await ann.createBand(id: bandId, name: 'Rock');
       final orgId = (await ann.fetchOrganizations()).single.id;
-      await ann.updateBand(bandId, name: 'Rockers', membersCanEditSongs: true);
+      await ann.updateBand(bandId, name: 'Rockers');
       await ann.renameOrganization(orgId, 'School');
       final org = (await ann.fetchOrganizations()).single;
       expect(org.name, 'School');
       expect(org.bands.single.name, 'Rockers');
-      expect(org.bands.single.membersCanEditSongs, isTrue);
+      expect(org.members.single.role, OrgRole.admin);
+      expect(org.bands.single.members.single.role, BandRole.admin);
       ann.dispose();
     });
   });
@@ -296,6 +297,101 @@ void main() {
       );
       ann.dispose();
       bob.dispose();
+    });
+  });
+
+  group('roles (ADR-0023)', () {
+    test('leaders invite into their band and edit their own songs', () async {
+      final ann = PocketBaseBackend(
+        serverUrl: url,
+        store: MemorySessionStore(),
+      );
+      await ann.signUp(email: email(), password: 'password-123', name: 'Ann');
+      final bandId = const Uuid().v4();
+      await ann.createBand(id: bandId, name: 'Rock');
+      final orgId = (await ann.fetchOrganizations()).single.id;
+
+      // Bob joins with an organization link; Ann makes him leader.
+      final bob = PocketBaseBackend(
+        serverUrl: url,
+        store: MemorySessionStore(),
+      );
+      final bobUser = await bob.signUp(
+        email: email(),
+        password: 'password-123',
+        name: 'Bob',
+      );
+      final orgLink = await ann.createInvite(orgId);
+      await bob.redeemInvite(inviteTokenFrom(orgLink.url)!);
+      await ann.addBandMember(bandId, bobUser.id, BandRole.admin);
+
+      // A link of the leader leads into the band.
+      final link = await bob.createInvite(orgId, bandId: bandId);
+      final token = inviteTokenFrom(link.url)!;
+      final carol = PocketBaseBackend(
+        serverUrl: url,
+        store: MemorySessionStore(),
+      );
+      await carol.signUp(email: email(), password: 'password-123', name: 'C');
+      expect((await carol.previewInvite(token)).bandName, 'Rock');
+      await carol.redeemInvite(token);
+      final carolsBand = (await carol.fetchOrganizations()).single.bands.single;
+      expect(carolsBand.id, bandId);
+      expect((await bob.fetchInvites(orgId, bandId: bandId)).map((i) => i.id), [
+        link.id,
+      ]);
+
+      // Own songs: recorded creator, editable until someone else edits.
+      final song = await bob.pushSong(
+        RemoteSong(
+          id: const Uuid().v4(),
+          organizationId: orgId,
+          title: 'Mine',
+          chordpro: '{title: Mine}',
+        ),
+        create: true,
+      );
+      expect(song.createdBy, bobUser.id);
+      expect(song.updatedBy, bobUser.id);
+      final fixed = await bob.pushSong(
+        RemoteSong(
+          id: song.id,
+          organizationId: orgId,
+          title: 'Mine',
+          chordpro: '{title: Mine}\n[C]Fixed',
+          revision: song.revision,
+        ),
+        create: false,
+      );
+      final byAnn = await ann.pushSong(
+        RemoteSong(
+          id: song.id,
+          organizationId: orgId,
+          title: 'Mine',
+          chordpro: '{title: Mine}\n[C]Maintained',
+          revision: fixed.revision,
+        ),
+        create: false,
+      );
+      expect(byAnn.updatedBy, isNot(bobUser.id));
+      expect(
+        await kindOf(
+          () => bob.pushSong(
+            RemoteSong(
+              id: song.id,
+              organizationId: orgId,
+              title: 'Mine',
+              chordpro: '{title: Mine}\n[C]Again',
+              revision: byAnn.revision,
+            ),
+            create: false,
+          ),
+        ),
+        BackendErrorKind.notAllowed,
+      );
+      ann.dispose();
+      bob.dispose();
+      carol.dispose();
     });
   });
 

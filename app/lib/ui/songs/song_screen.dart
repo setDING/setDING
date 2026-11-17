@@ -161,6 +161,8 @@ class _SongScreenState extends ConsumerState<SongScreen> {
           superscript: settings.chordSuperscript,
         );
         final hasSourceTitle = parsed.title != null;
+        // Band leaders edit only their own songs (ADR-0023).
+        final canEdit = library.canEditSong(song);
 
         return Scaffold(
           appBar: AppBar(
@@ -171,7 +173,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                 icon: const Icon(Icons.play_arrow),
                 onPressed: () => LiveScreen.openSong(context, song.id),
               ),
-              if (library.canEditSongs) ...[
+              if (canEdit) ...[
                 // Same icon as "New PDF song" on the songs tab.
                 IconButton(
                   key: const Key('song-add-attachment'),
@@ -196,7 +198,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   _ => null,
                 },
                 itemBuilder: (_) => [
-                  if (!hasSourceTitle && library.canEditSongs)
+                  if (!hasSourceTitle && canEdit)
                     PopupMenuItem(value: 'title', child: Text(l10n.editTitle)),
                   if (song.chordproSource.trim().isNotEmpty &&
                       !ref.read(webClientProvider))
@@ -246,8 +248,8 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                     attachments: attachments,
                     overlay: overlay,
                     hasChordPro: parsed.hasContent,
-                    onAdd: library.canEditSongs ? _addAttachment : null,
-                    canRename: library.canEditSongs,
+                    onAdd: canEdit ? _addAttachment : null,
+                    canRename: canEdit,
                     canDelete: library.canDeleteSongs,
                     onLiveView: (id) =>
                         _updateOverlay((o) => o.copyWith(liveView: Value(id))),
@@ -279,7 +281,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                     child: ListTile(
                       leading: const Icon(Icons.text_snippet_outlined),
                       title: Text(l10n.noContent),
-                      trailing: !library.canEditSongs
+                      trailing: !canEdit
                           ? null
                           : FilledButton.tonal(
                               onPressed: () => _editSource(song),

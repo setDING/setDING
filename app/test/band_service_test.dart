@@ -62,7 +62,19 @@ void main() {
     expect(people.map((m) => m.userId), unorderedEquals(['ann', 'bob']));
   });
 
-  test('permissions follow the roles (ADR-0017)', () async {
+  SongEntry song({String? createdBy, String? updatedBy}) => SongEntry(
+    id: 's1',
+    libraryId: 'o1',
+    chordproSource: '',
+    title: 'Song',
+    revision: 1,
+    updatedAt: DateTime(2026),
+    deleted: false,
+    createdBy: createdBy,
+    updatedBy: updatedBy,
+  );
+
+  test('permissions follow the roles (ADR-0023)', () async {
     // Ann administers the organization; Bob is a member of "Rock" only.
     backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
     backend.addBand('b2', 'Jazz', admin: _ann, organizationId: 'o1');
@@ -73,46 +85,72 @@ void main() {
     var all = await bands('bob');
     expect(all.map((b) => b.id), [localBandId, 'b1']);
     final rock = band(all, 'b1');
-    expect(rock.canEditSongs, isFalse);
-    expect(rock.canDeleteSongs, isFalse);
+    expect(rock.library.canCreateSongs, isFalse);
+    expect(rock.library.canEditSong(song(createdBy: 'bob')), isFalse);
+    expect(rock.library.canDeleteSongs, isFalse);
     expect(rock.canManageSets, isFalse);
     expect(rock.canManageBand, isFalse);
 
-    // Admin of another band of the organization: edits the shared songs.
+    // Leader of another band of the organization: creates songs and edits
+    // only the own ones, as long as nobody else changed them.
     backend.addMember('b2', _bob, BandRole.admin);
     await service.refresh();
     all = await bands('bob');
-    expect(band(all, 'b1').canEditSongs, isTrue);
+    final library = band(all, 'b1').library;
+    expect(library.canCreateSongs, isTrue);
+    expect(
+      library.canEditSong(song(createdBy: 'bob', updatedBy: 'bob')),
+      isTrue,
+    );
+    expect(
+      library.canEditSong(song(createdBy: 'bob', updatedBy: 'ann')),
+      isFalse,
+    );
+    expect(
+      library.canEditSong(song(createdBy: 'ann', updatedBy: 'ann')),
+      isFalse,
+    );
+    expect(library.canEditSong(song()), isFalse);
+    expect(library.canDeleteSongs, isFalse);
     expect(band(all, 'b1').canManageSets, isFalse);
     expect(band(all, 'b2').canManageSets, isTrue);
-    expect(band(all, 'b2').canDeleteSongs, isFalse);
   });
 
-  test('members may edit songs when their band allows it', () async {
-    backend.addBand(
-      'b1',
-      'Rock',
-      admin: _ann,
-      organizationId: 'o1',
-      membersCanEditSongs: true,
-    );
-    backend.addMember('b1', _bob, BandRole.member);
+  test('set planners manage sets, not the band', () async {
+    backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+    backend.addMember('b1', _bob, BandRole.planner);
     backend.user = _bob;
     await service.refresh();
     final rock = band(await bands('bob'), 'b1');
-    expect(rock.canEditSongs, isTrue);
-    expect(rock.canDeleteSongs, isFalse);
+    expect(rock.canManageSets, isTrue);
+    expect(rock.canManageBand, isFalse);
+    expect(rock.library.canCreateSongs, isFalse);
+  });
+
+  test('librarians maintain the whole library', () async {
+    backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+    backend.addMember('b1', _bob, BandRole.member);
+    backend.orgMembers.singleWhere((m) => m.user.id == 'bob').role =
+        OrgRole.librarian;
+    backend.user = _bob;
+    await service.refresh();
+    final rock = band(await bands('bob'), 'b1');
+    expect(rock.library.canCreateSongs, isTrue);
+    expect(rock.library.canEditSong(song(createdBy: 'ann')), isTrue);
+    expect(rock.library.canDeleteSongs, isTrue);
+    expect(rock.canManageSets, isFalse);
+    expect(rock.canManageBand, isFalse);
   });
 
   test('organization admins see all bands of their organization', () async {
     backend.addBand('b1', 'Rock', admin: _bob, organizationId: 'o1');
-    backend.addOrgMember('o1', _ann, BandRole.admin);
+    backend.addOrgMember('o1', _ann, OrgRole.admin);
     await service.refresh();
     final rock = band(await bands(), 'b1');
     expect(rock.role, isNull);
     expect(rock.canManageBand, isTrue);
     expect(rock.canManageSets, isTrue);
-    expect(rock.canDeleteSongs, isTrue);
+    expect(rock.library.canDeleteSongs, isTrue);
   });
 
   test('an unchanged refresh writes nothing', () async {

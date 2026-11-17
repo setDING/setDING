@@ -14,7 +14,8 @@ String uuid() {
       '${h.substring(16, 20)}-${h.substring(20)}';
 }
 
-/// A band with an admin, a member and an outsider (no membership).
+/// A band with an admin (leader), a member and an outsider (no membership);
+/// with `memberIsLibrarian` the member is a librarian of the organization.
 ///
 /// The band is created without an organization, so the server creates one
 /// with the admin as organization admin (ADR-0017); on an invite-only server
@@ -41,15 +42,12 @@ class BandFixture {
 
   static Future<BandFixture> create(
     PocketBase pb, {
-    bool membersCanEditSongs = false,
+    bool memberIsLibrarian = false,
   }) async {
     final admin = await pb.signUp('Admin');
     final member = await pb.signUp('Member');
     final outsider = await pb.signUp('Outsider');
-    var band = await admin.post('bands', {
-      'name': 'The Band',
-      'members_can_edit_songs': membersCanEditSongs,
-    });
+    var band = await admin.post('bands', {'name': 'The Band'});
     if (band.status == 403) {
       // Invite-only server (ADR-0024): the organization comes first, as a
       // founder invitation would create it.
@@ -61,13 +59,22 @@ class BandFixture {
       band = await admin.post('bands', {
         'name': 'The Band',
         'organization': org.json['id'],
-        'members_can_edit_songs': membersCanEditSongs,
       });
     }
     band.expectStatus(200);
     final id = band.json['id'] as String;
     final orgId = band.json['organization'] as String;
     await addMember(pb, id, member);
+    if (memberIsLibrarian) {
+      // The member maintains the song library (ADR-0023).
+      final m = await pb.superuser.list(
+        'org_memberships',
+        filter: 'organization = "$orgId" && user = "${member.id}"',
+      );
+      (await pb.superuser.patch('org_memberships', m.single['id'] as String, {
+        'role': 'librarian',
+      })).expectStatus(200);
+    }
     return BandFixture._(pb, id, orgId, admin, member, outsider);
   }
 
@@ -109,6 +116,21 @@ class BandFixture {
     });
     r.expectStatus(200);
     return r.json;
+  }
+
+  /// A new person who leads this band but is no organization admin
+  /// (ADR-0023).
+  Future<User> addLeader() async {
+    final leader = await pb.signUp('Leader');
+    await addMember(pb, id, leader, role: 'admin');
+    return leader;
+  }
+
+  /// A new person who plans this band's sets (ADR-0023).
+  Future<User> addPlanner() async {
+    final planner = await pb.signUp('Planner');
+    await addMember(pb, id, planner, role: 'planner');
+    return planner;
   }
 
   /// The membership record of [user] in this band.

@@ -22,8 +22,20 @@ const schema7Indexes = [
   'set_items_song',
 ];
 
+/// Turns a current database back into schema 10: songs without creator
+/// and last editor, bands with the setting members_can_edit_songs.
+void downgradeToSchema10(Database raw) {
+  raw.execute('ALTER TABLE songs DROP COLUMN created_by');
+  raw.execute('ALTER TABLE songs DROP COLUMN updated_by');
+  raw.execute(
+    'ALTER TABLE bands ADD COLUMN members_can_edit_songs INTEGER NOT NULL '
+    'DEFAULT 0 CHECK ("members_can_edit_songs" IN (0, 1))',
+  );
+}
+
 /// Turns a current database back into schema 9: no full-text search.
 void downgradeToSchema9(Database raw) {
+  downgradeToSchema10(raw);
   for (final trigger in ['insert', 'delete', 'update']) {
     raw.execute('DROP TRIGGER songs_fts_$trigger');
   }
@@ -319,6 +331,47 @@ void main() {
     expect((await repo.watchSongs(query: 'hello').first).map((s) => s.title), [
       'Old',
     ]);
+    await upgraded.close();
+  });
+
+  test('upgrades a schema 10 database: roles of ADR-0023', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final storage = FileAttachmentStorage(dir);
+    await SongRepository(current, storage).createSong(source: '{title: Old}');
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema10(raw);
+    raw.execute("INSERT INTO organizations (id, name) VALUES ('o1', 'School')");
+    raw.execute(
+      "INSERT INTO bands (id, name, organization_id, members_can_edit_songs) "
+      "VALUES ('b1', 'Rock', 'o1', 1)",
+    );
+    raw.execute(
+      "INSERT INTO org_memberships (id, organization_id, user_id, role) "
+      "VALUES ('m1', 'o1', 'u1', 'member')",
+    );
+    raw.execute('PRAGMA user_version = 10');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final song = (await upgraded.select(upgraded.songs).get()).single;
+    expect(song.title, 'Old');
+    expect(song.createdBy, isNull);
+    expect(song.updatedBy, isNull);
+    final band = await (upgraded.select(
+      upgraded.bands,
+    )..where((b) => b.id.equals('b1'))).getSingle();
+    expect(band.organizationId, 'o1');
+    expect(
+      (await upgraded.select(upgraded.orgMemberships).get()).single.role,
+      OrgRole.member,
+    );
+    final columns = await upgraded
+        .customSelect('PRAGMA table_info(bands)')
+        .map((r) => r.read<String>('name'))
+        .get();
+    expect(columns, isNot(contains('members_can_edit_songs')));
     await upgraded.close();
   });
 }

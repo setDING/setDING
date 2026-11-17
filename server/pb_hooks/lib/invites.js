@@ -3,6 +3,9 @@
 // token. Links are valid for 7 days, can be used several times, can be
 // revoked, and always grant the member role of the organization.
 //
+// Invitations of a band leader (ADR-0023) also carry the `band`: redeeming
+// one adds the person to the band as well.
+//
 // Founder invitations (ADR-0024) have no organization but a `founder_name`:
 // redeeming one creates that organization with the person as its admin.
 // The server operator creates them (console command `founder-invite`); they
@@ -15,6 +18,20 @@ function isOrgAdmin(app, userId, orgId) {
   return app.countRecords(
     "org_memberships",
     $dbx.hashExp({ user: userId, organization: orgId, role: "admin", deleted: false }),
+  ) > 0;
+}
+
+function isBandLeader(app, userId, bandId) {
+  return app.countRecords(
+    "memberships",
+    $dbx.hashExp({ user: userId, band: bandId, role: "admin", deleted: false }),
+  ) > 0;
+}
+
+function isBandMember(app, userId, bandId) {
+  return app.countRecords(
+    "memberships",
+    $dbx.hashExp({ user: userId, band: bandId, deleted: false }),
   ) > 0;
 }
 
@@ -84,16 +101,36 @@ function createFounder(app, name, base) {
   };
 }
 
+/// Organization admins invite into the organization, optionally into one of
+/// its bands; band leaders invite into their band (ADR-0023).
 function create(e) {
   const userId = e.auth.id;
-  const orgId = (e.requestInfo().body || {}).organization || "";
-  if (!orgId || !isOrgAdmin(e.app, userId, orgId)) {
-    throw new ForbiddenError("Only organization admins can invite people.");
+  const body = e.requestInfo().body || {};
+  const orgId = body.organization || "";
+  const bandId = body.band || "";
+  let allowed = !!orgId && isOrgAdmin(e.app, userId, orgId);
+  if (bandId) {
+    let band = null;
+    try {
+      band = e.app.findRecordById("bands", bandId);
+    } catch (_) {
+      band = null;
+    }
+    if (!band || band.getBool("deleted") || band.getString("organization") !== orgId) {
+      throw new BadRequestError("The band does not belong to the organization.", {
+        band: new ValidationError("invalid_band", "The band does not belong to the organization."),
+      });
+    }
+    allowed = allowed || isBandLeader(e.app, userId, bandId);
+  }
+  if (!allowed) {
+    throw new ForbiddenError("Only organization admins and band leaders can invite people.");
   }
   const token = newToken();
   const expires = expiry();
   const invite = new Record(e.app.findCollectionByNameOrId("invites"));
   invite.set("organization", orgId);
+  if (bandId) invite.set("band", bandId);
   invite.set("token_hash", $security.sha256(token));
   invite.set("expires", expires);
   invite.set("created_by", userId);
@@ -113,16 +150,56 @@ function preview(e) {
   if (!invite) throw new NotFoundError("Unknown invitation.");
   const org = organizationOf(e.app, invite);
   const userId = require(`${__hooks}/lib/sync.js`).requestUserId(e);
+  const bandId = invite.getString("band");
   const member = !!org.id && !!userId && e.app.countRecords(
     "org_memberships",
     $dbx.hashExp({ user: userId, organization: org.id, deleted: false }),
-  ) > 0;
+  ) > 0 && (!bandId || isBandMember(e.app, userId, bandId));
   return e.json(200, {
     organization: org,
+    band: bandOf(e.app, invite),
     status: status(invite),
     member: member,
     founder: isFounder(invite),
   });
+}
+
+/// The band an invitation also leads into, or null.
+function bandOf(app, invite) {
+  const bandId = invite.getString("band");
+  if (!bandId) return null;
+  try {
+    const band = app.findRecordById("bands", bandId);
+    return band.getBool("deleted") ? null : { id: band.id, name: band.getString("name") };
+  } catch (_) {
+    return null;
+  }
+}
+
+/// Adds the user to the band as a member (or back, after leaving); keeps an
+/// existing membership and its role.
+function joinBand(txApp, userId, bandId) {
+  let membership = null;
+  try {
+    membership = txApp.findFirstRecordByFilter(
+      "memberships",
+      "user = {:user} && band = {:band}",
+      { user: userId, band: bandId },
+    );
+  } catch (_) {
+    membership = null;
+  }
+  if (membership && !membership.getBool("deleted")) return false;
+  if (!membership) {
+    membership = new Record(txApp.findCollectionByNameOrId("memberships"));
+    membership.set("user", userId);
+    membership.set("band", bandId);
+  }
+  membership.set("role", "member");
+  membership.set("deleted", false);
+  membership.set("updated_by", userId);
+  txApp.save(membership);
+  return true;
 }
 
 /// Creates the organization of a founder invitation with the user as its
@@ -178,22 +255,25 @@ function redeem(e) {
     }
     if (membership && !membership.getBool("deleted")) {
       alreadyMember = true;
-      return;
+    } else {
+      if (!membership) {
+        membership = new Record(txApp.findCollectionByNameOrId("org_memberships"));
+        membership.set("user", userId);
+        membership.set("organization", orgId);
+      }
+      membership.set("role", "member");
+      membership.set("deleted", false);
+      membership.set("invite", invite.id);
+      membership.set("updated_by", userId);
+      txApp.save(membership);
     }
-    if (!membership) {
-      membership = new Record(txApp.findCollectionByNameOrId("org_memberships"));
-      membership.set("user", userId);
-      membership.set("organization", orgId);
-    }
-    membership.set("role", "member");
-    membership.set("deleted", false);
-    membership.set("invite", invite.id);
-    membership.set("updated_by", userId);
-    txApp.save(membership);
+    const band = bandOf(txApp, invite);
+    if (band && joinBand(txApp, userId, band.id)) alreadyMember = false;
   });
   const org = e.app.findRecordById("organizations", orgId);
   return e.json(200, {
     organization: { id: orgId, name: org.getString("name") },
+    band: bandOf(e.app, invite),
     alreadyMember: alreadyMember,
   });
 }

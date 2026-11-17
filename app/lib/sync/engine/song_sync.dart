@@ -118,6 +118,8 @@ class SongSync {
             revision: Value(remote.revision),
             updatedAt: DateTime.now(),
             deleted: Value(remote.deleted),
+            createdBy: Value(remote.createdBy),
+            updatedBy: Value(remote.updatedBy),
           ),
         );
     if (remote.deleted) {
@@ -158,7 +160,11 @@ class SongSync {
       final stored = await _pushSongOrRecover(remote, create: create);
       await db.transaction(() async {
         await (db.update(db.songs)..where((s) => s.id.equals(song.id))).write(
-          SongsCompanion(revision: Value(stored.revision)),
+          SongsCompanion(
+            revision: Value(stored.revision),
+            createdBy: Value(stored.createdBy),
+            updatedBy: Value(stored.updatedBy),
+          ),
         );
         await store.done(entry);
       });

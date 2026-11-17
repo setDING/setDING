@@ -200,6 +200,103 @@ void main() {
     });
   });
 
+  group('band leaders (ADR-0023)', () {
+    Future<Response> createForBand(Client client, BandFixture f) => client.send(
+      'POST',
+      '/api/realchord/invites',
+      body: {'organization': f.orgId, 'band': f.id},
+    );
+
+    test('leaders invite into their band; people join both', () async {
+      final f = await BandFixture.create(pb);
+      final leader = await f.addLeader();
+      // Not into the organization alone.
+      expect((await create(leader, f.orgId)).status, 403);
+      final r = await createForBand(leader, f);
+      r.expectStatus(200);
+      final t = r.json['token'] as String;
+
+      final newcomer = await pb.signUp('Newcomer');
+      final preview = await newcomer.send('GET', '/api/realchord/invites/$t');
+      expect(preview.field('band.id'), f.id);
+      (await redeem(newcomer, t)).expectStatus(200);
+      final bands = await newcomer.list(
+        'memberships',
+        filter: 'user = "${newcomer.id}"',
+      );
+      expect(bands.single['band'], f.id);
+      expect(bands.single['role'], 'member');
+      final orgs = await newcomer.list(
+        'org_memberships',
+        filter: 'user = "${newcomer.id}"',
+      );
+      expect(orgs.single['role'], 'member');
+
+      // An organization member who is not in the band joins the band.
+      final known = await pb.signUp('Known');
+      await BandFixture.addOrgMember(pb, f.orgId, known);
+      final again = await redeem(known, t);
+      again.expectStatus(200);
+      expect(again.json['alreadyMember'], isFalse);
+      expect(
+        (await known.list(
+          'memberships',
+          filter: 'user = "${known.id}"',
+        )).single['band'],
+        f.id,
+      );
+    });
+
+    test('leaders see and revoke only the links of their band', () async {
+      final f = await BandFixture.create(pb);
+      final leader = await f.addLeader();
+      (await create(f.admin, f.orgId)).expectStatus(200);
+      final mine = await createForBand(leader, f);
+      final listed = await leader.list('invites');
+      expect(listed.map((i) => i['id']), [mine.json['id']]);
+      (await leader.patch('invites', mine.json['id'] as String, {
+        'revoked': true,
+      })).expectStatus(200);
+      expect(await f.admin.list('invites'), hasLength(2));
+    });
+
+    test('set planners, members and other bands cannot invite', () async {
+      final f = await BandFixture.create(pb);
+      final planner = await f.addPlanner();
+      expect((await createForBand(planner, f)).status, 403);
+      expect((await createForBand(f.member, f)).status, 403);
+      final other = await BandFixture.create(pb);
+      final r = await f.admin.send(
+        'POST',
+        '/api/realchord/invites',
+        body: {'organization': f.orgId, 'band': other.id},
+      );
+      expect(r.status, 400);
+    });
+
+    test(
+      'a band link also lets people sign up on invite-only servers',
+      () async {
+        final closed = await PocketBase.start(
+          environment: {'REALCHORD_REGISTRATION': 'invite_only'},
+        );
+        addTearDown(closed.stop);
+        final f = await BandFixture.create(closed);
+        final leader = await f.addLeader();
+        final r = await createForBand(leader, f);
+        final created = await closed.guest.post('users', {
+          'email':
+              'band-${DateTime.now().microsecondsSinceEpoch}@realchord.test',
+          'password': 'password-123',
+          'passwordConfirm': 'password-123',
+          'name': 'Drummer',
+          'invite': r.json['token'],
+        });
+        created.expectStatus(200);
+      },
+    );
+  });
+
   group('web', () {
     test('the landing page links into the app', () async {
       final f = await BandFixture.create(pb);

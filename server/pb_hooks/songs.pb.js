@@ -40,3 +40,11 @@ onRecordUpdateExecute((e) => {
     e.app.save(overlay);
   }
 }, "songs");
+
+// The creator of a song (ADR-0023): band leaders may edit the songs they
+// created as long as nobody else has changed them.
+onRecordCreateRequest((e) => {
+  const userId = require(`${__hooks}/lib/sync.js`).requestUserId(e);
+  if (userId) e.record.set("created_by", userId);
+  e.next();
+}, "songs");

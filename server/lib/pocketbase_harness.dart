@@ -17,6 +17,7 @@ class PocketBase {
     this._dir,
     this._binaryPath,
     this._root,
+    this._environment,
     this.baseUrl,
     this.superuserToken,
   );
@@ -25,6 +26,7 @@ class PocketBase {
   final Directory _dir;
   final String _binaryPath;
   final String _root;
+  final Map<String, String> _environment;
   final Uri baseUrl;
 
   /// Token of a superuser; superusers bypass all access rules.
@@ -38,17 +40,69 @@ class PocketBase {
   /// (`REALCHORD_REGISTRATION=open`, ADR-0024), so tests can create users.
   /// [publicDir] holds static files (e.g. the web client, ADR-0018).
   /// The rate limits are turned off after the start unless [rateLimits].
+  ///
+  /// With [migrationsBefore] (a migration file name) only the older
+  /// migrations run, so a test can create data in the old schema and then
+  /// [upgrade] to apply the rest.
   static Future<PocketBase> start({
     Map<String, String>? environment,
     String? publicDir,
     bool rateLimits = false,
+    String? migrationsBefore,
   }) async {
     environment = {'REALCHORD_REGISTRATION': 'open', ...?environment};
     final root = _repositoryRoot();
     final binary = await _binary(root);
     final dir = await Directory.systemTemp.createTemp('realchord-pb-');
-    final data = '${dir.path}/pb_data';
+    var migrations = '$root/server/pb_migrations';
+    if (migrationsBefore != null) {
+      final older = Directory('${dir.path}/pb_migrations')..createSync();
+      for (final f in Directory(migrations).listSync().whereType<File>()) {
+        final name = f.uri.pathSegments.last;
+        if (name.compareTo(migrationsBefore) < 0) {
+          f.copySync('${older.path}/$name');
+        }
+      }
+      migrations = older.path;
+    }
+    return _launch(
+      binary: binary,
+      root: root,
+      dir: dir,
+      migrations: migrations,
+      environment: environment,
+      publicDir: publicDir,
+      rateLimits: rateLimits,
+    );
+  }
 
+  /// Restarts the server on the same data with all migrations (see
+  /// `migrationsBefore` of [start]); this instance must not be used
+  /// afterwards.
+  Future<PocketBase> upgrade() async {
+    _process.kill();
+    await _process.exitCode;
+    return _launch(
+      binary: _binaryPath,
+      root: _root,
+      dir: _dir,
+      migrations: '$_root/server/pb_migrations',
+      environment: _environment,
+      publicDir: null,
+      rateLimits: false,
+    );
+  }
+
+  static Future<PocketBase> _launch({
+    required String binary,
+    required String root,
+    required Directory dir,
+    required String migrations,
+    required Map<String, String> environment,
+    required String? publicDir,
+    required bool rateLimits,
+  }) async {
+    final data = '${dir.path}/pb_data';
     final upsert = await Process.run(binary, [
       'superuser',
       'upsert',
@@ -57,7 +111,7 @@ class PocketBase {
       '--dir',
       data,
       '--migrationsDir',
-      '$root/server/pb_migrations',
+      migrations,
     ]);
     if (upsert.exitCode != 0) {
       throw StateError('superuser upsert failed: ${upsert.stderr}');
@@ -73,7 +127,7 @@ class PocketBase {
       '--hooksDir',
       '$root/server/pb_hooks',
       '--migrationsDir',
-      '$root/server/pb_migrations',
+      migrations,
       '--http',
       '127.0.0.1:$port',
       if (publicDir != null) ...['--publicDir', publicDir],
@@ -112,6 +166,7 @@ class PocketBase {
       dir,
       binary,
       root,
+      environment,
       baseUrl,
       token as String,
     );

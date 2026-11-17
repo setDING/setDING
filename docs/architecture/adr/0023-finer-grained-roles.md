@@ -187,6 +187,16 @@ sets of that band like any member; librarian rights concern the library only.
   another band of the organization already; a band leader adds them to the band
   as members (and removes them afterwards if wanted).
 - 2026-11-17: Accepted by the owner.
+- 2026-11-17: Implemented (#215). Server: migration `1795300000_roles.js` (roles
+  `librarian` and `planner`, `songs.created_by` set by a hook, `invites.band`, new
+  rules, members of bands with `members_can_edit_songs` become librarians, the field
+  is removed); band invitations in `lib/invites.js`. App: `OrgRole` next to
+  `BandRole`, local schema 11 (`songs.created_by` / `updated_by`, written when the
+  user creates or edits an organization song so the own-song rule also works
+  offline; `bands.members_can_edit_songs` dropped), permissions in `BandView` /
+  `LibraryView` (`canManageSets`, `canCreateSongs`, `canEditSong`, `canDeleteSongs`),
+  role menus on the band and organization screens, invitations on the band screen.
+  The band arrangement follows with its own ADR (#216).
 
 ## Open points
 

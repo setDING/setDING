@@ -369,7 +369,7 @@ void main() {
       final setId = await sets.createSet(name: 'Gig');
       // Ann lost her admin roles meanwhile.
       server.members.single.role = BandRole.member;
-      server.orgMembers.single.role = BandRole.member;
+      server.orgMembers.single.role = OrgRole.member;
       server.addMember(
         'b1',
         const AuthUser(id: 'x', email: 'x', name: 'X'),
@@ -615,7 +615,7 @@ void main() {
       await sets.createSet(name: 'Gig');
       await db.delete(db.syncOutbox).go();
       server.members.single.role = BandRole.member;
-      server.orgMembers.single.role = BandRole.member;
+      server.orgMembers.single.role = OrgRole.member;
       server.addMember(
         'b1',
         const AuthUser(id: 'x', email: 'x', name: 'X'),

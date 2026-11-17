@@ -199,7 +199,8 @@ class PocketBaseBackend implements SyncBackend {
               revision: o.getIntValue('revision'),
               members: [
                 for (final m in orgMembers)
-                  if (m.getStringValue('organization') == o.id) _member(m, me),
+                  if (m.getStringValue('organization') == o.id)
+                    _member(m, me, OrgRole.values, OrgRole.member),
               ],
               bands: [
                 for (final b in bands)
@@ -208,13 +209,11 @@ class PocketBaseBackend implements SyncBackend {
                       id: b.id,
                       organizationId: o.id,
                       name: b.getStringValue('name'),
-                      membersCanEditSongs: b.getBoolValue(
-                        'members_can_edit_songs',
-                      ),
                       revision: b.getIntValue('revision'),
                       members: [
                         for (final m in bandMembers)
-                          if (m.getStringValue('band') == b.id) _member(m, me),
+                          if (m.getStringValue('band') == b.id)
+                            _member(m, me, BandRole.values, BandRole.member),
                       ],
                     ),
               ],
@@ -225,19 +224,25 @@ class PocketBaseBackend implements SyncBackend {
     }
   }
 
-  static RemoteMember _member(RecordModel m, AuthUser me) {
+  /// A membership with its role from [roles] ([fallback] for unknown
+  /// values, e.g. a role of a newer server).
+  static RemoteMember<R> _member<R extends Enum>(
+    RecordModel m,
+    AuthUser me,
+    List<R> roles,
+    R fallback,
+  ) {
     final userId = m.getStringValue('user');
     final user = m.get<RecordModel?>('expand.user');
     final name = user?.getStringValue('name') ?? '';
     final email = user?.getStringValue('email') ?? '';
-    return RemoteMember(
+    final role = m.getStringValue('role');
+    return RemoteMember<R>(
       membershipId: m.id,
       userId: userId,
       name: userId == me.id && name.isEmpty ? me.displayName : name,
       email: userId == me.id ? me.email : (email.isEmpty ? null : email),
-      role: m.getStringValue('role') == 'admin'
-          ? BandRole.admin
-          : BandRole.member,
+      role: roles.where((r) => r.name == role).firstOrNull ?? fallback,
       revision: m.getIntValue('revision'),
     );
   }
@@ -250,7 +255,7 @@ class PocketBaseBackend implements SyncBackend {
   );
 
   @override
-  Future<void> setOrgMemberRole(String orgMembershipId, BandRole role) => _call(
+  Future<void> setOrgMemberRole(String orgMembershipId, OrgRole role) => _call(
     () => _pb
         .collection('org_memberships')
         .update(orgMembershipId, body: {'role': role.name}),
@@ -281,20 +286,8 @@ class PocketBaseBackend implements SyncBackend {
   );
 
   @override
-  Future<void> updateBand(
-    String bandId, {
-    String? name,
-    bool? membersCanEditSongs,
-  }) => _call(
-    () => _pb
-        .collection('bands')
-        .update(
-          bandId,
-          body: {
-            'name': ?name?.trim(),
-            'members_can_edit_songs': ?membersCanEditSongs,
-          },
-        ),
+  Future<void> updateBand(String bandId, {String? name}) => _call(
+    () => _pb.collection('bands').update(bandId, body: {'name': ?name?.trim()}),
   );
 
   @override
@@ -341,11 +334,14 @@ class PocketBaseBackend implements SyncBackend {
   // Invitations -----------------------------------------------------------------
 
   @override
-  Future<CreatedInvite> createInvite(String organizationId) async {
+  Future<CreatedInvite> createInvite(
+    String organizationId, {
+    String? bandId,
+  }) async {
     final data = await _send(
       '/api/realchord/invites',
       method: 'POST',
-      body: {'organization': organizationId},
+      body: {'organization': organizationId, 'band': ?bandId},
     );
     return CreatedInvite(
       id: data['id'] as String,
@@ -355,14 +351,22 @@ class PocketBaseBackend implements SyncBackend {
   }
 
   @override
-  Future<List<InviteInfo>> fetchInvites(String organizationId) async {
+  Future<List<InviteInfo>> fetchInvites(
+    String organizationId, {
+    String? bandId,
+  }) async {
     return _signedIn(() async {
       final filter = _pb.filter('organization = {:org}', {
         'org': organizationId,
       });
       final invites = await _pb
           .collection('invites')
-          .getFullList(filter: filter, sort: '-created');
+          .getFullList(
+            filter: bandId == null
+                ? filter
+                : '$filter && ${_pb.filter('band = {:band}', {'band': bandId})}',
+            sort: '-created',
+          );
       final joined = await _pb
           .collection('org_memberships')
           .getFullList(
@@ -409,6 +413,7 @@ class PocketBaseBackend implements SyncBackend {
       status: _status(data['status'] as String),
       alreadyMember: data['member'] as bool,
       founder: data['founder'] == true,
+      bandName: (data['band'] as Map<String, dynamic>?)?['name'] as String?,
     );
   }
 
@@ -430,7 +435,11 @@ class PocketBaseBackend implements SyncBackend {
     chordpro: r.getStringValue('chordpro'),
     revision: r.getIntValue('revision'),
     deleted: r.getBoolValue('deleted'),
+    createdBy: _nonEmpty(r.getStringValue('created_by')),
+    updatedBy: _nonEmpty(r.getStringValue('updated_by')),
   );
+
+  static String? _nonEmpty(String value) => value.isEmpty ? null : value;
 
   static RemoteSet _set(RecordModel r) {
     final date = r.getStringValue('gig_date');

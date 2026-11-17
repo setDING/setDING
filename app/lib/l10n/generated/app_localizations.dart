@@ -1976,6 +1976,72 @@ abstract class AppLocalizations {
   /// **'Zum Mitglied machen'**
   String get bandMakeMember;
 
+  /// No description provided for @bandRoleLeader.
+  ///
+  /// In de, this message translates to:
+  /// **'Leitung'**
+  String get bandRoleLeader;
+
+  /// No description provided for @bandRolePlanner.
+  ///
+  /// In de, this message translates to:
+  /// **'Setplanung'**
+  String get bandRolePlanner;
+
+  /// No description provided for @orgRoleLibrarian.
+  ///
+  /// In de, this message translates to:
+  /// **'Bibliothek'**
+  String get orgRoleLibrarian;
+
+  /// No description provided for @bandMakeLeader.
+  ///
+  /// In de, this message translates to:
+  /// **'Zur Leitung machen'**
+  String get bandMakeLeader;
+
+  /// No description provided for @bandMakePlanner.
+  ///
+  /// In de, this message translates to:
+  /// **'Für die Setplanung einsetzen'**
+  String get bandMakePlanner;
+
+  /// No description provided for @orgMakeLibrarian.
+  ///
+  /// In de, this message translates to:
+  /// **'Für die Bibliothek einsetzen'**
+  String get orgMakeLibrarian;
+
+  /// No description provided for @orgLibrarianHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Bibliothek erstellt, bearbeitet und löscht die Songs der Organisation.'**
+  String get orgLibrarianHint;
+
+  /// No description provided for @bandPlannerHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Setplanung stellt die Sets der Band zusammen.'**
+  String get bandPlannerHint;
+
+  /// No description provided for @inviteBandHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Erstellt einen Link, der 7 Tage gilt. Wer ihn öffnet, wird Mitglied der Organisation und dieser Band.'**
+  String get inviteBandHint;
+
+  /// No description provided for @joinQuestionBand.
+  ///
+  /// In de, this message translates to:
+  /// **'{band} ({org}) beitreten?'**
+  String joinQuestionBand(String band, String org);
+
+  /// No description provided for @joinExplanationBand.
+  ///
+  /// In de, this message translates to:
+  /// **'Du wirst Mitglied der Organisation und der Band und siehst ihre Songs und Sets.'**
+  String get joinExplanationBand;
+
   /// No description provided for @bandRemoveMember.
   ///
   /// In de, this message translates to:
@@ -2011,18 +2077,6 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Du siehst die Songs und Sets der Band danach nicht mehr. Ein Admin kann dich wieder einladen.'**
   String get bandLeaveMessage;
-
-  /// No description provided for @bandMembersCanEdit.
-  ///
-  /// In de, this message translates to:
-  /// **'Mitglieder dürfen Songs bearbeiten'**
-  String get bandMembersCanEdit;
-
-  /// No description provided for @bandMembersCanEditHint.
-  ///
-  /// In de, this message translates to:
-  /// **'Songs erstellen, importieren und bearbeiten. Löschen und Sets bleiben den Admins vorbehalten.'**
-  String get bandMembersCanEditHint;
 
   /// No description provided for @bandRefresh.
   ///
@@ -2303,7 +2357,7 @@ abstract class AppLocalizations {
   /// No description provided for @inviteAskAdmin.
   ///
   /// In de, this message translates to:
-  /// **'Für eine Einladung wende dich an einen Admin der Organisation.'**
+  /// **'Für eine Einladung wende dich an einen Admin der Organisation oder an die Leitung einer Band.'**
   String get inviteAskAdmin;
 
   /// No description provided for @inviteErrorUnknown.

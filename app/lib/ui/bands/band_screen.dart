@@ -9,10 +9,12 @@ import '../../sync/auth_providers.dart';
 import '../widgets/dialogs.dart';
 import 'band_labels.dart';
 import 'bands_screen.dart';
+import 'invites_section.dart';
 
-/// Settings and members of one band. Band and organization admins rename
-/// the band, allow members to edit songs, add people of the organization,
-/// change roles and remove members; members can leave (ADR-0005, ADR-0017).
+/// Settings and members of one band. Band leaders and organization admins
+/// rename the band, add people of the organization, invite new people into
+/// the band, change roles and remove members; members can leave (ADR-0005,
+/// ADR-0017, ADR-0023).
 class BandScreen extends ConsumerWidget {
   const BandScreen({super.key, required this.bandId});
 
@@ -118,23 +120,12 @@ class BandScreen extends ConsumerWidget {
                 );
               },
             ),
-            SwitchListTile(
-              key: const Key('band-members-can-edit'),
-              secondary: const Icon(Icons.edit_note),
-              title: Text(l10n.bandMembersCanEdit),
-              subtitle: Text(l10n.bandMembersCanEditHint),
-              value: band.membersCanEditSongs,
-              onChanged: (v) => runBandAction(
-                context,
-                () => service.setMembersCanEditSongs(bandId, v),
-              ),
-            ),
           ] else
             ListTile(
               leading: const Icon(Icons.badge_outlined),
               title: Text(bandRoleLabel(l10n, band)),
-              subtitle: band.membersCanEditSongs
-                  ? Text(l10n.bandMembersCanEdit)
+              subtitle: band.role == BandRole.planner
+                  ? Text(l10n.bandPlannerHint)
                   : null,
             ),
           Padding(
@@ -147,13 +138,19 @@ class BandScreen extends ConsumerWidget {
           ),
           for (final m in members)
             _MemberTile(member: m, band: band, isMe: m.userId == me.id),
-          if (band.canManageBand)
+          if (band.canManageBand) ...[
             ListTile(
               key: const Key('band-add-member'),
               leading: const Icon(Icons.person_add_alt),
               title: Text(l10n.bandAddMember),
               onTap: () => _addMember(context, ref, band, members),
             ),
+            // New people straight into this band (ADR-0023).
+            InvitesSection(
+              organizationId: band.organizationId!,
+              bandId: band.id,
+            ),
+          ],
           if (own != null)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
@@ -202,6 +199,8 @@ class _MemberTile extends ConsumerWidget {
         ? (member.userEmail ?? '?')
         : member.userName;
     final isAdmin = member.role == BandRole.admin;
+    Future<void> setRole(BandRole role) =>
+        runBandAction(context, () => service.setRole(member.id, role));
 
     return ListTile(
       leading: Icon(isAdmin ? Icons.shield_outlined : Icons.person_outline),
@@ -214,15 +213,11 @@ class _MemberTile extends ConsumerWidget {
               onSelected: (value) async {
                 switch (value) {
                   case 'admin':
-                    await runBandAction(
-                      context,
-                      () => service.setRole(member.id, BandRole.admin),
-                    );
+                    await setRole(BandRole.admin);
+                  case 'planner':
+                    await setRole(BandRole.planner);
                   case 'member':
-                    await runBandAction(
-                      context,
-                      () => service.setRole(member.id, BandRole.member),
-                    );
+                    await setRole(BandRole.member);
                   case 'remove':
                     final ok = await confirm(
                       context,
@@ -239,12 +234,17 @@ class _MemberTile extends ConsumerWidget {
                 }
               },
               itemBuilder: (_) => [
-                if (!isAdmin)
+                if (member.role != BandRole.admin)
                   PopupMenuItem(
                     value: 'admin',
-                    child: Text(l10n.bandMakeAdmin),
+                    child: Text(l10n.bandMakeLeader),
                   ),
-                if (isAdmin)
+                if (member.role != BandRole.planner)
+                  PopupMenuItem(
+                    value: 'planner',
+                    child: Text(l10n.bandMakePlanner),
+                  ),
+                if (member.role != BandRole.member)
                   PopupMenuItem(
                     value: 'member',
                     child: Text(l10n.bandMakeMember),

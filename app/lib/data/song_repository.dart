@@ -185,6 +185,11 @@ class SongRepository {
           .getSingleOrNull() ??
       libraryId;
 
+  /// Creator and last editor of a change in [library] (ADR-0023): the
+  /// signed-in user for an organization's songs, as the server will record
+  /// it; nobody for the local library.
+  String? _editorIn(String library) => library == localBandId ? null : userId;
+
   /// Owner of the personal adjustments of [songId], by the song's library.
   Future<String> _overlayOwnerOf(String songId) async =>
       overlayOwnerFor(await _libraryOf(songId), userId);
@@ -280,6 +285,8 @@ class SongRepository {
               tags: Value(meta.tagsColumn),
               searchText: Value(meta.searchText),
               updatedAt: DateTime.now(),
+              createdBy: Value(_editorIn(libraryId)),
+              updatedBy: Value(_editorIn(libraryId)),
             ),
           );
       await markDirty(db, SyncCollection.songs, id, scope: libraryId);
@@ -305,6 +312,7 @@ class SongRepository {
           tags: Value(meta.tagsColumn),
           searchText: Value(meta.searchText),
           updatedAt: Value(DateTime.now()),
+          updatedBy: Value(_editorIn(existing.libraryId)),
         ),
       );
       await markDirty(db, SyncCollection.songs, id, scope: existing.libraryId);
@@ -370,6 +378,7 @@ class SongRepository {
             title: Value(title.trim()),
             artist: Value(blankToNull(artist)),
             updatedAt: Value(DateTime.now()),
+            updatedBy: Value(_editorIn(existing.libraryId)),
           ),
         );
         await markDirty(

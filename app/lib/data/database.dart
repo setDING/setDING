@@ -40,7 +40,10 @@ class OrgMemberships extends Table {
   TextColumn get userId => text()();
   TextColumn get userName => text().withDefault(const Constant(''))();
   TextColumn get userEmail => text().nullable()();
-  TextColumn get role => textEnum<BandRole>()();
+
+  /// Stored by name, so schema 11 kept the values of [BandRole] it had
+  /// before (`admin`, `member`) and added `librarian` (ADR-0023).
+  TextColumn get role => textEnum<OrgRole>()();
   IntColumn get revision => integer().withDefault(const Constant(0))();
 
   @override
@@ -56,8 +59,6 @@ class Bands extends Table {
   /// Organization of the band; null for the local library (schema 4).
   TextColumn get organizationId =>
       text().nullable().references(Organizations, #id)();
-  BoolColumn get membersCanEditSongs =>
-      boolean().withDefault(const Constant(false))();
 
   /// Server revision (ADR-0015); 0 for the local library (schema 4).
   IntColumn get revision => integer().withDefault(const Constant(0))();
@@ -118,6 +119,13 @@ class Songs extends Table {
   /// `{tag}` values, each enclosed in newlines (`\nRock\nLive\n`) so a tag
   /// can be matched exactly with LIKE (schema 2).
   TextColumn get tags => text().nullable()();
+
+  /// User who created the song and who changed it last, as the server
+  /// reports them (ADR-0023, schema 11): band leaders may edit their own
+  /// songs as long as nobody else has changed them. Null for the local
+  /// library and for songs created before.
+  TextColumn get createdBy => text().nullable()();
+  TextColumn get updatedBy => text().nullable()();
 
   IntColumn get revision => integer().withDefault(const Constant(0))();
   DateTimeColumn get updatedAt => dateTime()();
@@ -287,7 +295,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -346,7 +354,7 @@ class AppDatabase extends _$AppDatabase {
               songs.libraryId: const CustomExpression<String>('band_id'),
             },
             // Columns of later schemas exist in the rebuilt table already.
-            newColumns: [songs.searchText],
+            newColumns: [songs.searchText, songs.createdBy, songs.updatedBy],
           ),
         );
       }
@@ -386,6 +394,16 @@ class AppDatabase extends _$AppDatabase {
         // Before schema 4 the rebuilt table has the column already.
         if (from >= 4) await m.addColumn(songs, songs.searchText);
         await createSongSearch(m);
+      }
+      if (from < 11) {
+        // Creator and last editor of songs (ADR-0023); before schema 4 the
+        // rebuilt table has the columns already. The band setting
+        // members_can_edit_songs is gone: the table is rebuilt without it.
+        if (from >= 4) {
+          await m.addColumn(songs, songs.createdBy);
+          await m.addColumn(songs, songs.updatedBy);
+        }
+        await m.alterTable(TableMigration(bands));
       }
     },
     beforeOpen: (details) async {

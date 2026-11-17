@@ -9,19 +9,27 @@ import '../../sync/sync_backend.dart';
 import '../widgets/dialogs.dart';
 import 'bands_screen.dart';
 
-/// Invitation links of an organization (organization admins).
+/// Invitation links of an organization (organization admins), or of one
+/// of its bands (band leaders, ADR-0023).
 final invitesProvider = FutureProvider.autoDispose
-    .family<List<InviteInfo>, String>(
-      (ref, orgId) => ref.watch(syncBackendProvider).fetchInvites(orgId),
+    .family<List<InviteInfo>, ({String org, String? band})>(
+      (ref, key) => ref
+          .watch(syncBackendProvider)
+          .fetchInvites(key.org, bandId: key.band),
     );
 
 /// "Invite people" and the list of links of an organization (ADR-0005,
 /// ADR-0017): links are valid for 7 days, can be used several times and be
 /// revoked; admins see who joined with which link.
 class InvitesSection extends ConsumerWidget {
-  const InvitesSection({super.key, required this.organizationId});
+  const InvitesSection({super.key, required this.organizationId, this.bandId});
 
   final String organizationId;
+
+  /// Links into this band: people join the organization and the band.
+  final String? bandId;
+
+  ({String org, String? band}) get _key => (org: organizationId, band: bandId);
 
   Future<void> _create(BuildContext context, WidgetRef ref) async {
     CreatedInvite? invite;
@@ -29,9 +37,9 @@ class InvitesSection extends ConsumerWidget {
       context,
       () async => invite = await ref
           .read(syncBackendProvider)
-          .createInvite(organizationId),
+          .createInvite(organizationId, bandId: bandId),
     );
-    ref.invalidate(invitesProvider(organizationId));
+    ref.invalidate(invitesProvider(_key));
     if (!ok || !context.mounted) return;
     await showDialog<void>(
       context: context,
@@ -42,8 +50,7 @@ class InvitesSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final invites =
-        ref.watch(invitesProvider(organizationId)).value ?? const [];
+    final invites = ref.watch(invitesProvider(_key)).value ?? const [];
     final now = DateTime.now();
     final date = MaterialLocalizations.of(context).formatMediumDate;
 
@@ -54,7 +61,9 @@ class InvitesSection extends ConsumerWidget {
           key: const Key('invite-create'),
           leading: const Icon(Icons.person_add_alt),
           title: Text(l10n.inviteCreate),
-          subtitle: Text(l10n.inviteCreateHint),
+          subtitle: Text(
+            bandId == null ? l10n.inviteCreateHint : l10n.inviteBandHint,
+          ),
           onTap: () => _create(context, ref),
         ),
         if (invites.isNotEmpty)
@@ -100,7 +109,7 @@ class InvitesSection extends ConsumerWidget {
                         context,
                         () => ref.read(syncBackendProvider).revokeInvite(i.id),
                       );
-                      ref.invalidate(invitesProvider(organizationId));
+                      ref.invalidate(invitesProvider(_key));
                     },
                     child: Text(l10n.inviteRevoke),
                   ),
