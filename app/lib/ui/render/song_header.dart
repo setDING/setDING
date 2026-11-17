@@ -18,6 +18,8 @@ class SongHeader extends StatelessWidget {
     this.hiddenParts = const [],
     this.showTitle = true,
     this.stage = false,
+    this.stageTempo,
+    this.stageBeat,
   });
 
   final String title;
@@ -47,6 +49,13 @@ class SongHeader extends StatelessWidget {
   /// title (below it on narrow screens) instead of the small info line.
   final bool stage;
 
+  /// On stage: replaces the tempo chip (the tempo as played tonight, a tap
+  /// starts the beat; ADR-0026).
+  final Widget? stageTempo;
+
+  /// On stage: shown after the time signature (the beat display).
+  final Widget? stageBeat;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -61,12 +70,15 @@ class SongHeader extends StatelessWidget {
       final key = keyText(l10n, formatter);
       final capo = capoText(l10n, formatter);
       infoChips.addAll([
-        if (key != null) _StageChip(key, key: const Key('stage-key')),
-        if (capo != null) _StageChip(capo, key: const Key('stage-capo')),
-        if (tempo != null)
-          _StageChip(l10n.bpm(tempo), key: const Key('stage-tempo')),
+        if (key != null) StageChip(key, key: const Key('stage-key')),
+        if (capo != null) StageChip(capo, key: const Key('stage-capo')),
+        if (stageTempo != null)
+          KeyedSubtree(key: const Key('stage-tempo'), child: stageTempo!)
+        else if (tempo != null)
+          StageChip(l10n.bpm(tempo), key: const Key('stage-tempo')),
         if (song.time case final time?)
-          _StageChip(time, key: const Key('stage-time')),
+          StageChip(time, key: const Key('stage-time')),
+        ?stageBeat,
       ]);
     } else {
       final keyAndCapo = keyAndCapoText(l10n, formatter);
@@ -175,6 +187,7 @@ class _StageTitleRow extends StatelessWidget {
       final row = Wrap(
         key: const Key('stage-info'),
         alignment: narrow ? WrapAlignment.start : WrapAlignment.end,
+        crossAxisAlignment: WrapCrossAlignment.center,
         spacing: 8,
         runSpacing: 6,
         children: chips,
@@ -202,10 +215,13 @@ class _StageTitleRow extends StatelessWidget {
 }
 
 /// One large, high-contrast value of the stage header (key, tempo, …).
-class _StageChip extends StatelessWidget {
-  const _StageChip(this.text, {super.key});
+class StageChip extends StatelessWidget {
+  const StageChip(this.text, {super.key, this.icon});
 
   final String text;
+
+  /// A small icon after the text (e.g. start/stop of the beat).
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -217,13 +233,22 @@ class _StageChip extends StatelessWidget {
         color: scheme.primaryContainer,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(
-        text,
-        maxLines: 1,
-        style: theme.textTheme.titleLarge?.copyWith(
-          color: scheme.onPrimaryContainer,
-          fontWeight: FontWeight.w700,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            text,
+            maxLines: 1,
+            style: theme.textTheme.titleLarge?.copyWith(
+              color: scheme.onPrimaryContainer,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          if (icon != null) ...[
+            const SizedBox(width: 4),
+            Icon(icon, color: scheme.onPrimaryContainer),
+          ],
+        ],
       ),
     );
   }

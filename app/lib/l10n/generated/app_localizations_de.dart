@@ -854,6 +854,35 @@ class AppLocalizationsDe extends AppLocalizations {
       'Auf diesem Gerät gibt es keinen Audio-Ausgang für den Klick.';
 
   @override
+  String get beatStart => 'Takt starten';
+
+  @override
+  String get beatStop => 'Takt stoppen';
+
+  @override
+  String get beatDisplayLabel => 'Takt';
+
+  @override
+  String countInBar(int bar, int count) {
+    return 'Takt $bar von $count';
+  }
+
+  @override
+  String get tempoSlower => 'Langsamer';
+
+  @override
+  String get tempoFaster => 'Schneller';
+
+  @override
+  String get tapTempo => 'Tempo tippen';
+
+  @override
+  String get tempoReset => 'Zurück zum Tempo des Songs';
+
+  @override
+  String get clickNoAudioLive => 'Kein Audio für den Klick';
+
+  @override
   String get settingsSongMap => 'Song-Landkarte statt Akkorde';
 
   @override

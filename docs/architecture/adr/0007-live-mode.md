@@ -72,7 +72,13 @@ song, all tablets follow automatically. We evaluated whether this is needed.
   does, into as many columns as the width allows (each at least 220 px and wide enough for the chord lines) and it
   scrolls.
 - **Settings:** fit to screen on/off, maximum number of columns (automatic = up to 4, or 1/2/3), repeated chorus
-  (automatic / always in full / always as label), base font size, appearance on stage, progress bar of the set.
+  (automatic / always in full / always as label), base font size, appearance on stage, progress bar of the set,
+  beat and click (ADR-0026).
+- **Beat, count-in and click (ADR-0026):** the tempo chip of the header starts and stops the beat of the song (the
+  tempo as played tonight, changeable in the control bar until live mode is left); dots beside the time signature
+  follow the beat, the count-in shows large numbers over the page, for drums the edge of the screen flashes; the
+  click plays on the device's audio output. Another item of the set stops the beat; with the automatic start the
+  next song counts in.
 - **Appearance on stage:** a per-device setting independent of the app theme: *as app* (default), *dark* (also when
   the app is light) or *black* (true black page, very dark bars, e.g. for OLED screens). The live view, its control
   bar, the bottom bar, the set overview and the PDF background follow it. Chords are drawn in a stronger colour than
@@ -143,6 +149,7 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-17: The neighbours are prepared in idle time after a turn instead of in the first frames of the turn animation: the fit runs between frames, the song is built a few lines per frame, the page left behind is taken down after the turn in the same way; a turn to a page that is not prepared yet builds it at once. All pages of a song are built, so turning a page of the song only shows another one; rebuilding the live screen (e.g. when the page changes) no longer builds the songs again (issue #296).
 - 2026-11-17: The brand colour became the night blue of the setDING logo (#319): on a light stage the chords are deep brand blue `#2A3D9C` (about 9:1); the former brand red `#852309` belongs to the new accent "Red", which replaces "Blue". Amber on dark and black is unchanged and matches the brass of the logo.
 - 2026-11-17: Drummer mode accepted (ADR-0026, #325): beat display in the header, count-in overlay, click on the in-ear, song map for drums; a long press (≥ 0.6 s) of the forward key starts/stops the click without turning (one press still turns once), Enter joins the fixed mapping as start/stop of the click. Details in ADR-0026; this ADR is updated when it is implemented.
+- 2026-11-17: Beat display, count-in overlay, edge flash and tempo on stage of the drummer mode (ADR-0026, #333).
 
 ## Open points
 

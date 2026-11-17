@@ -27,6 +27,8 @@ import '../render/song_view.dart';
 import '../sets/set_item_label.dart';
 import '../widgets/key_picker.dart';
 import 'live_preparation.dart';
+import '../../audio/metronome.dart';
+import 'live_beat.dart';
 import 'live_theme.dart';
 import 'set_progress_bar.dart';
 import 'pdf_spread_view.dart';
@@ -196,6 +198,13 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   /// Sync is paused on stage: nothing changes what is shown (ADR-0007).
   late final SyncController _sync = ref.read(syncControllerProvider.notifier);
 
+  /// Beat, count-in and click of this device (ADR-0026).
+  late final LiveBeat _beat = LiveBeat(
+    metronome: ref.read(metronomeProvider),
+    items: _items,
+    settings: () => ref.read(settingsProvider),
+  );
+
   /// The screen stays on while live mode is open (ADR-0007).
   late final StageWakeLock _wakeLock = ref.read(stageWakeLockProvider);
 
@@ -214,6 +223,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     _sync.pause();
     FocusManager.instance.addEarlyKeyEventHandler(_onKey);
     _preparation.focus(_index);
+    // With the automatic start the first song counts in.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _beat.onItemShown(_index);
+    });
   }
 
   @override
@@ -243,6 +256,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       c.dispose();
     }
     _preparation.dispose();
+    _beat.dispose();
     super.dispose();
   }
 
@@ -542,7 +556,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     // control bar, the bottom bar and the sheets follow it too.
     return Theme(
       data: liveTheme(Theme.of(context), appearance, accent),
-      child: Builder(builder: _buildStage),
+      child: LiveBeatScope(
+        beat: _beat,
+        child: Builder(builder: _buildStage),
+      ),
     );
   }
 
@@ -603,6 +620,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                 if (i > _index) _songPageFor(i).first();
                                 _index = i;
                                 _preparation.focus(i);
+                                // Another item stops the beat (ADR-0026).
+                                _beat.onItemShown(i);
                               }),
                               itemBuilder: (context, i) =>
                                   _pageWidgets.putIfAbsent(
@@ -611,6 +630,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                       preparation: _preparation[i],
                                       child: _LiveItemPage(
                                         item: items[i],
+                                        index: i,
                                         scrollController: _scrollFor(i),
                                         pdfController: _pdfFor(i),
                                         spreadController: _spreadFor(i),
@@ -627,6 +647,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                       },
                     ),
                   ),
+                  // Beat of the drummer mode (ADR-0026); take no taps.
+                  const Positioned.fill(child: EdgeFlash()),
+                  const Positioned.fill(child: CountInOverlay()),
                   if (_controls)
                     Positioned(
                       left: 0,
@@ -634,6 +657,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                       bottom: 0,
                       child: _ControlBar(
                         item: items[_index],
+                        index: _index,
                         onExit: () => Navigator.pop(context),
                         onOverview: () => _showOverview(context),
                         onAdjust: items[_index].song == null ? null : _adjust,
@@ -691,6 +715,26 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                     ),
                     const SizedBox(width: 12),
                   ],
+                  // The click was asked for but there is no audio.
+                  ValueListenableBuilder<bool>(
+                    valueListenable: _beat.metronome.clickUnavailable,
+                    builder: (context, unavailable, _) => !unavailable
+                        ? const SizedBox.shrink()
+                        : Flexible(
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: Text(
+                                l10n.clickNoAudioLive,
+                                key: const Key('live-click-notice'),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.error,
+                                ),
+                              ),
+                            ),
+                          ),
+                  ),
                   // The screen may turn off: say so, so the band can
                   // check the device's power settings before the show.
                   if (_wakeLock.failed) ...[
@@ -761,6 +805,7 @@ const _wideControlBar = 720.0;
 class _ControlBar extends ConsumerWidget {
   const _ControlBar({
     required this.item,
+    required this.index,
     required this.onExit,
     required this.onOverview,
     required this.onAdjust,
@@ -769,6 +814,7 @@ class _ControlBar extends ConsumerWidget {
   });
 
   final LiveItem item;
+  final int index;
   final VoidCallback onExit;
   final VoidCallback onOverview;
   final Future<void> Function(SongOverlay Function(SongOverlay))? onAdjust;
@@ -886,10 +932,15 @@ class _ControlBar extends ConsumerWidget {
                 ...trailing,
               ],
             );
-            if (toggle == null || wide) return row;
+            // Tempo on stage (ADR-0026) in a row of its own.
+            final beat = LiveBeatScope.of(context);
+            final tempo = beat != null && beat.canBeat(index)
+                ? StageTempoControls(index: index)
+                : null;
+            if ((toggle == null || wide) && tempo == null) return row;
             return Column(
               mainAxisSize: MainAxisSize.min,
-              children: [toggle, row],
+              children: [?tempo, if (toggle != null && !wide) toggle, row],
             );
           },
         ),
@@ -936,6 +987,7 @@ class _NashvilleToggle extends StatelessWidget {
 class _LiveItemPage extends ConsumerWidget {
   const _LiveItemPage({
     required this.item,
+    required this.index,
     required this.scrollController,
     required this.pdfController,
     required this.spreadController,
@@ -946,6 +998,9 @@ class _LiveItemPage extends ConsumerWidget {
   });
 
   final LiveItem item;
+
+  /// Position of the item in the set.
+  final int index;
   final ScrollController scrollController;
   final PdfViewerController pdfController;
 
@@ -1068,6 +1123,7 @@ class _LiveItemPage extends ConsumerWidget {
         : filterBySequenceCached(parsed, sequence);
     final storage = ref.watch(attachmentStorageProvider);
     return _ChordProPage(
+      index: index,
       song: song,
       parsed: selection.song,
       hiddenParts: selection.hidden,
@@ -1091,6 +1147,7 @@ class _LiveItemPage extends ConsumerWidget {
 
 class _ChordProPage extends ConsumerWidget {
   const _ChordProPage({
+    required this.index,
     required this.song,
     required this.parsed,
     required this.hiddenParts,
@@ -1107,6 +1164,8 @@ class _ChordProPage extends ConsumerWidget {
     required this.imageLookup,
   });
 
+  /// Position of the item in the set.
+  final int index;
   final SongEntry song;
   final Song parsed;
 
@@ -1171,6 +1230,12 @@ class _ChordProPage extends ConsumerWidget {
               bandSequence: bandSequence,
               bandTempo: bandTempo,
               hiddenParts: hiddenParts,
+              // Drummer mode (ADR-0026): the tempo as played tonight
+              // starts the beat; the dots follow it.
+              stageTempo: (bandTempo ?? parsed.tempo) == null
+                  ? null
+                  : StageTempoChip(index: index),
+              stageBeat: BeatDots(index: index),
             ),
           ),
           Expanded(

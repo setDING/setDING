@@ -1574,6 +1574,60 @@ abstract class AppLocalizations {
   /// **'Auf diesem Gerät gibt es keinen Audio-Ausgang für den Klick.'**
   String get clickNoAudio;
 
+  /// No description provided for @beatStart.
+  ///
+  /// In de, this message translates to:
+  /// **'Takt starten'**
+  String get beatStart;
+
+  /// No description provided for @beatStop.
+  ///
+  /// In de, this message translates to:
+  /// **'Takt stoppen'**
+  String get beatStop;
+
+  /// No description provided for @beatDisplayLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Takt'**
+  String get beatDisplayLabel;
+
+  /// No description provided for @countInBar.
+  ///
+  /// In de, this message translates to:
+  /// **'Takt {bar} von {count}'**
+  String countInBar(int bar, int count);
+
+  /// No description provided for @tempoSlower.
+  ///
+  /// In de, this message translates to:
+  /// **'Langsamer'**
+  String get tempoSlower;
+
+  /// No description provided for @tempoFaster.
+  ///
+  /// In de, this message translates to:
+  /// **'Schneller'**
+  String get tempoFaster;
+
+  /// No description provided for @tapTempo.
+  ///
+  /// In de, this message translates to:
+  /// **'Tempo tippen'**
+  String get tapTempo;
+
+  /// No description provided for @tempoReset.
+  ///
+  /// In de, this message translates to:
+  /// **'Zurück zum Tempo des Songs'**
+  String get tempoReset;
+
+  /// No description provided for @clickNoAudioLive.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Audio für den Klick'**
+  String get clickNoAudioLive;
+
   /// No description provided for @settingsSongMap.
   ///
   /// In de, this message translates to:
