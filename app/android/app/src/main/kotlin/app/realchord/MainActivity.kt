@@ -1,4 +1,4 @@
-package ch.realchord.realchord
+package app.realchord
 
 import io.flutter.embedding.android.FlutterActivity
 

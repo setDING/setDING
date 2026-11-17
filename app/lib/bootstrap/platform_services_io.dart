@@ -9,17 +9,11 @@ import '../data/data_location_io.dart';
 import '../data/database.dart';
 import '../sync/session_store.dart';
 import '../sync/session_store_io.dart';
-import '../util/log.dart';
 import 'platform_services.dart';
 
-const _log = Log('app');
-
-/// Opens the services of the native apps. Runs before the settings are read
-/// because data from before the rename to RealChord is moved first, and
-/// shared_preferences lives in the same directory on desktop platforms.
+/// Opens the services of the native apps.
 Future<PlatformServices> openPlatformServices() async {
   final appSupportDir = await getApplicationSupportDirectory();
-  await _migrateLegacySupportDir(appSupportDir);
   // All data lives in the app's private directory (ADR-0001). On desktop
   // the documents directory is the user's visible "Documents" folder.
   // REALCHORD_DATA_DIR (development only, see Makefile) runs an isolated
@@ -54,14 +48,5 @@ Future<Directory?> _legacyDocumentsDir() async {
     return await getApplicationDocumentsDirectory();
   } catch (_) {
     return null;
-  }
-}
-
-/// Moves the app directory from before the rename; never blocks the start.
-Future<void> _migrateLegacySupportDir(Directory supportDir) async {
-  try {
-    await migrateLegacySupportDir(supportDir);
-  } on FileSystemException catch (e) {
-    _log.warning('Could not move data from before the rename', e);
   }
 }

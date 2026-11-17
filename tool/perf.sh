@@ -14,7 +14,7 @@ if ! command -v flutter >/dev/null 2>&1 && [ -x "$HOME/development/flutter/bin/f
   export PATH="$HOME/development/flutter/bin:$PATH"
 fi
 ADB="${ADB:-${ANDROID_HOME:-$HOME/Android/Sdk}/platform-tools/adb}"
-PACKAGE=ch.realchord.realchord
+PACKAGE=app.realchord
 
 device=(${DEVICE:+-s "$DEVICE"})
 if ! "$ADB" "${device[@]}" get-state >/dev/null 2>&1; then

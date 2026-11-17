@@ -2,7 +2,7 @@
 # Adds RealChord to the application menu of the desktop (for the current user)
 # and installs its icon. Under Wayland the window only shows the RealChord
 # icon with this entry: the compositor looks the icon up through the .desktop
-# file named after the app ID (ch.realchord.realchord).
+# file named after the app ID (app.realchord).
 #
 # Usage: ./install-desktop-entry.sh [--hidden] [--if-missing] [--uninstall]
 #   --hidden      only for the icon lookup, not listed in the menu (test builds)
@@ -10,7 +10,7 @@
 #   --uninstall   remove the entry and the icon
 set -eu
 
-id=ch.realchord.realchord
+id=app.realchord
 dir=$(cd "$(dirname "$0")" && pwd)
 data=${XDG_DATA_HOME:-$HOME/.local/share}
 entry="$data/applications/$id.desktop"

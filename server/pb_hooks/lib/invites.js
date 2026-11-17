@@ -354,7 +354,7 @@ function landing(e) {
   );
 }
 
-const PACKAGE = "ch.realchord.realchord";
+const PACKAGE = "app.realchord";
 
 /// Android App Links verification; needs REALCHORD_ANDROID_CERT_SHA256 (one
 /// or more comma-separated SHA-256 fingerprints of the signing certificate).
