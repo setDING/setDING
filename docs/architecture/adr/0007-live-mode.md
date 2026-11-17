@@ -149,3 +149,6 @@ between devices – neither over the local network nor via the backend.
   sleep during a long song; if it does, additionally request `ES_SYSTEM_REQUIRED` (issue #294).
 - Which page turner model (for testing on real hardware)? Configurable key mapping needed for pedals sending other keys?
 - Is MIDI control desired (e.g. Program Change from a keyboard/pedalboard)?
+- Drummer mode (ADR-0026, proposed, #325): beat display in the header, count-in overlay, click on the in-ear,
+  song map for drums; a long press (≥ 0.6 s) of the forward key starts/stops the click without turning, Enter
+  joins the fixed mapping as start/stop. Becomes part of this ADR once ADR-0026 is accepted.
