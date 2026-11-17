@@ -387,6 +387,18 @@ void main() {
         ),
       );
       await _shot(tester, '${lang}_4_live');
+      // Stage appearance independent of the app theme (#263): dark on the
+      // light German app, true black on the dark English one.
+      final stage = lang == 'de' ? 'dark' : 'black';
+      await app.prefs.setString('liveAppearance', stage);
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: LiveScreen(items: items)),
+        ),
+      );
+      await _shot(tester, '${lang}_4_live_$stage');
+      await app.prefs.setString('liveAppearance', 'app');
       tester.view.physicalSize = const Size(800, 1280);
       await tester.pumpWidget(
         RepaintBoundary(

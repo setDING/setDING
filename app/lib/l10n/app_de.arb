@@ -331,6 +331,11 @@
   "chorusRepeatFull": "Ganz anzeigen",
   "chorusRepeatLabel": "Nur Hinweis",
   "settingsPageTurnHint": "Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern.",
+  "settingsLiveAppearance": "Aussehen auf der Bühne",
+  "settingsLiveAppearanceHint": "Live-Modus unabhängig vom App-Design. Schwarz spart Strom auf OLED-Bildschirmen.",
+  "liveAppearanceApp": "Wie App",
+  "liveAppearanceDark": "Dunkel",
+  "liveAppearanceBlack": "Schwarz",
   "settingsStorageUsed": "PDF-Anhänge belegen {size}",
   "@settingsStorageUsed": {
     "placeholders": {

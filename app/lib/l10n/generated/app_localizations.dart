@@ -1274,6 +1274,36 @@ abstract class AppLocalizations {
   /// **'Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern.'**
   String get settingsPageTurnHint;
 
+  /// No description provided for @settingsLiveAppearance.
+  ///
+  /// In de, this message translates to:
+  /// **'Aussehen auf der Bühne'**
+  String get settingsLiveAppearance;
+
+  /// No description provided for @settingsLiveAppearanceHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Live-Modus unabhängig vom App-Design. Schwarz spart Strom auf OLED-Bildschirmen.'**
+  String get settingsLiveAppearanceHint;
+
+  /// No description provided for @liveAppearanceApp.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie App'**
+  String get liveAppearanceApp;
+
+  /// No description provided for @liveAppearanceDark.
+  ///
+  /// In de, this message translates to:
+  /// **'Dunkel'**
+  String get liveAppearanceDark;
+
+  /// No description provided for @liveAppearanceBlack.
+  ///
+  /// In de, this message translates to:
+  /// **'Schwarz'**
+  String get liveAppearanceBlack;
+
   /// No description provided for @settingsStorageUsed.
   ///
   /// In de, this message translates to:

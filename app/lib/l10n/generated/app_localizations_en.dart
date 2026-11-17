@@ -681,6 +681,22 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tap the left or right side of the screen to go back or forward.';
 
   @override
+  String get settingsLiveAppearance => 'Appearance on stage';
+
+  @override
+  String get settingsLiveAppearanceHint =>
+      'Live mode independent of the app theme. Black saves power on OLED screens.';
+
+  @override
+  String get liveAppearanceApp => 'As app';
+
+  @override
+  String get liveAppearanceDark => 'Dark';
+
+  @override
+  String get liveAppearanceBlack => 'Black';
+
+  @override
   String settingsStorageUsed(String size) {
     return 'PDF attachments use $size';
   }

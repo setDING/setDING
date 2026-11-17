@@ -44,7 +44,11 @@ song, all tablets follow automatically. We evaluated whether this is needed.
   does, into as many columns as the width allows (each at least 220 px and wide enough for the chord lines) and it
   scrolls.
 - **Settings:** fit to screen on/off, maximum number of columns (automatic = up to 4, or 1/2/3), repeated chorus
-  (automatic / always in full / always as label), base font size.
+  (automatic / always in full / always as label), base font size, appearance on stage.
+- **Appearance on stage:** a per-device setting independent of the app theme: *as app* (default), *dark* (also when
+  the app is light) or *black* (true black page, very dark bars, e.g. for OLED screens). The live view, its control
+  bar, the bottom bar, the set overview and the PDF background follow it. Chords are drawn in a stronger colour than
+  elsewhere in the app, with a contrast of at least 7:1 in every variant: deep indigo on light, amber on dark and black.
 - **Only the parts of the sequence:** in the live mode of a set, a song with a sequence (set item, band arrangement or
   the song's own `{x_sequence}`, ADR-0006/ADR-0025) shows only the sections whose part appears in it (`V` matches every
   verse, `V2` only the second). The song stays in document order; order and repetitions of the sequence are not
@@ -90,6 +94,7 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-17: In the live mode of a set, only the parts of the song sequence are shown; the header names the hidden parts (issue #257).
 - 2026-11-17: The previous and next item are built and fitted ahead (PDFs opened, landscape spreads rendered), only the direct neighbours are kept (issue #262).
 - 2026-11-17: Key, capo, tempo and time signature are shown as large chips in the live header instead of a small info line (issue #264).
+- 2026-11-17: Appearance on stage (as app / dark / black) independent of the app theme, with stronger chord colours in live mode (issue #263).
 
 ## Open points
 

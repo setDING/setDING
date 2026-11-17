@@ -10,6 +10,7 @@ import 'settings/settings.dart';
 import 'sync/sync_controller.dart';
 import 'ui/deep_links.dart';
 import 'ui/start_screen.dart';
+import 'ui/theme.dart';
 
 /// Root widget: theme, localization (ADR-0008), navigation, invitation
 /// links (ADR-0005) and the sign-in gate of the web client (ADR-0018).
@@ -19,13 +20,7 @@ class RealChordApp extends ConsumerStatefulWidget {
   /// Overrides the start screen (used in tests).
   final Widget? home;
 
-  static ThemeData theme(Brightness brightness) => ThemeData(
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF3F51B5),
-      brightness: brightness,
-    ),
-    useMaterial3: true,
-  );
+  static ThemeData theme(Brightness brightness) => appTheme(brightness);
 
   @override
   ConsumerState<RealChordApp> createState() => _RealChordAppState();
