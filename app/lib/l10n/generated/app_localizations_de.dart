@@ -467,12 +467,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get liveMorePages => 'Weitere Seiten des Songs folgen';
-
-  @override
-  String get liveSongEnd => 'Ende des Songs';
-
-  @override
   String livePosition(int current, int total) {
     return '$current / $total';
   }
@@ -721,11 +715,11 @@ class AppLocalizationsDe extends AppLocalizations {
       'Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern. Seitenwender (Fusspedal) und Tastatur: Pfeil rechts, Pfeil ab, Bild ab und Leertaste blättern weiter, Pfeil links, Pfeil auf und Bild auf zurück.';
 
   @override
-  String get settingsPageHint => 'Weitere Seiten auf einen Blick zeigen';
+  String get settingsSetProgress => 'Fortschrittsbalken des Sets';
 
   @override
-  String get settingsPageHintHint =>
-      'Eine umgeknickte Ecke unten rechts zeigt, dass weitere Seiten des Songs folgen; auf der letzten Seite markiert ein Schlussstrich das Ende.';
+  String get settingsSetProgressHint =>
+      'Ein schmaler Balken über der Fusszeile zeigt die Songs des Sets und die Seiten des aktuellen Songs: die aktuelle Seite in der Akzentfarbe, noch folgende Seiten heller. Pausen und Texte sind gestrichelt.';
 
   @override
   String get settingsLiveAppearance => 'Aussehen auf der Bühne';
