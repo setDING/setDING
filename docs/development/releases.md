@@ -50,6 +50,19 @@ When devices must be updated, start the release notes with an **"Update required
 section. The server is deployed from `main`, so a server change must not break
 released clients of the current major version.
 
+### Releases that require an update
+
+The server refuses apps older than `MIN_CLIENT_VERSION` in
+`server/pb_hooks/lib/compat.js` with HTTP 426, and the app asks for an update
+(ADR-0029). For a release with an incompatible change:
+
+1. The PR with the incompatible change raises `MIN_CLIENT_VERSION` to the coming
+   release version (e.g. `1.0.0`).
+2. Tag the release and wait until the GitHub Release is published, so the new APK
+   and packages can be downloaded (Obtainium).
+3. Only then deploy the server with `make server-install`. Deploying first would
+   lock every band out before an update exists.
+
 ## Android release key (once, owner)
 
 Android only installs updates signed with the same key, so all releases use one

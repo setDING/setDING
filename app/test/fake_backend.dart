@@ -102,7 +102,8 @@ class FakeSyncBackend implements SyncBackend {
 
   @override
   Future<ServerConfig> fetchServerConfig() async {
-    _check();
+    // The config route answers outdated clients too (ADR-0029).
+    if (failWith != BackendErrorKind.updateRequired) _check();
     return config;
   }
 

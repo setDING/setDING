@@ -45,12 +45,14 @@ void main() {
     SessionStore store,
     Future<http.Response> Function(http.Request) handler, {
     List<Duration> rateLimitBackoff = const [Duration.zero, Duration.zero],
+    String? clientVersion,
   }) {
     requests = [];
     return PocketBaseBackend(
       serverUrl: _server,
       store: store,
       rateLimitBackoff: rateLimitBackoff,
+      clientVersion: clientVersion,
       httpClientFactory: () => MockClient((r) {
         requests.add(r);
         return handler(r);
@@ -115,6 +117,81 @@ void main() {
     expect(b.currentUser, isNull);
     await Future<void>.delayed(Duration.zero);
     expect(store.current, isNull);
+  });
+
+  group('minimum client version (ADR-0029)', () {
+    test('sends the app version with every request', () async {
+      final b = backend(
+        MemorySessionStore(),
+        (r) async => _json(200, {'token': _token(), 'record': _record()}),
+        clientVersion: '0.7.0',
+      );
+      await b.signIn(email: 'ann@example.test', password: 'pw');
+      expect(requests, isNotEmpty);
+      for (final r in requests) {
+        expect(r.headers['X-Setding-Version'], '0.7.0');
+      }
+    });
+
+    test('sends no version header without a version', () async {
+      final b = backend(
+        MemorySessionStore(),
+        (r) async => _json(200, {'token': _token(), 'record': _record()}),
+      );
+      await b.signIn(email: 'ann@example.test', password: 'pw');
+      expect(requests.single.headers.containsKey('X-Setding-Version'), false);
+    });
+
+    test('HTTP 426 means the app must be updated', () async {
+      final b = backend(
+        MemorySessionStore(),
+        (r) async => _json(426, {
+          'status': 426,
+          'message': 'Please update setDING.',
+          'data': {'minClientVersion': '1.0.0'},
+        }),
+      );
+      await expectLater(
+        b.signIn(email: 'ann@example.test', password: 'pw'),
+        throwsA(
+          isA<BackendException>().having(
+            (e) => e.kind,
+            'kind',
+            BackendErrorKind.updateRequired,
+          ),
+        ),
+      );
+    });
+
+    test('keeps the session when the refresh is refused with 426', () async {
+      final store = MemorySessionStore(_storedSession());
+      final b = backend(store, (r) async => _json(426, {'status': 426}));
+      await b.refreshSession();
+      expect(b.currentUser, isNotNull);
+      expect(store.current, isNotNull);
+    });
+
+    test('reads the minimum version from the server config', () async {
+      final b = backend(
+        MemorySessionStore(),
+        (r) async => _json(200, {
+          'registration': 'invite_only',
+          'emailVerification': 'off',
+          'minClientVersion': '1.2.0',
+        }),
+      );
+      final config = await b.fetchServerConfig();
+      expect(config.minClientVersion, '1.2.0');
+      expect(config.inviteOnly, isTrue);
+    });
+
+    test('an older server reports no minimum', () async {
+      final b = backend(
+        MemorySessionStore(),
+        (r) async => _json(200, {'registration': 'open'}),
+      );
+      expect((await b.fetchServerConfig()).minClientVersion, isNull);
+    });
   });
 
   test('ignores a session stored for another server', () async {

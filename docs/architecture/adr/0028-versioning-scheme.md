@@ -110,11 +110,11 @@ Pre-releases keep the SemVer suffix `-beta.N` (ADR-0021).
 - 2026-11-17: Proposed (#330) as ADR-0026, renumbered to ADR-0028 because ADR-0026 and ADR-0027 were taken in the meantime. CalVer was considered and not chosen, because the
   version number should tell bands whether their devices remain compatible.
 - 2026-11-17: Accepted by the owner (#337).
+- 2026-11-17: Open point "minimum client version" resolved by ADR-0029 (#339):
+  clients send their version, the server refuses outdated ones with HTTP 426 and
+  the app asks for an update.
 
 ## Open points
 
-- **Minimum client version:** the server could publish the lowest compatible client
-  version (e.g. in a public settings record), and the client could show "Please
-  update setDING" instead of failing to sync. Needs its own issue.
 - **Server deploys and releases:** whether `make server-install` should only deploy
   tagged versions instead of `main`.

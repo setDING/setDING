@@ -110,3 +110,4 @@ See the ADR index in the architecture README for the current status. In short:
 - Band arrangements per band and song (key, sequence, tempo) between song and set item; set item transposition is relative to the band's key (ADR-0025)
 - Registration set by the server operator in `pocketbase.env`: `invite_only` (default, sign-up only with an invitation, new organizations only via operator founder invitations) or `open`; optional email verification (ADR-0024)
 - Semantic Versioning: major = old clients no longer work with the server or data, minor = tolerated features, patch = fixes (ADR-0028)
+- Minimum client version: apps send `X-Setding-Version`, the server answers outdated ones with HTTP 426, the app asks for an update; release before deploying the server (ADR-0029)

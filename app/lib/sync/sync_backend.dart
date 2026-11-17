@@ -88,6 +88,10 @@ enum BackendErrorKind {
   /// Not signed in.
   signedOut,
 
+  /// This app version is older than the server accepts (HTTP 426,
+  /// ADR-0029); the person has to update setDING.
+  updateRequired,
+
   /// Any other error reported by the server.
   server,
 }
@@ -387,6 +391,7 @@ class ServerConfig {
   const ServerConfig({
     this.registration = RegistrationMode.open,
     this.emailVerification = false,
+    this.minClientVersion,
   });
 
   /// Assumed when the server cannot be asked (offline, older server); the
@@ -397,6 +402,10 @@ class ServerConfig {
 
   /// New accounts must confirm their email address before signing in.
   final bool emailVerification;
+
+  /// The lowest app version the server accepts (ADR-0029); null if the
+  /// server does not say (older server, or not reachable).
+  final String? minClientVersion;
 
   bool get inviteOnly => registration == RegistrationMode.inviteOnly;
 }

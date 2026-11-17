@@ -10,6 +10,7 @@ import '../settings/settings.dart';
 import '../data/attachment_storage.dart';
 import 'attachment_fetcher.dart';
 import 'auth_providers.dart';
+import 'sync_backend.dart' show BackendErrorKind;
 import 'sync_engine.dart';
 
 /// Whether syncs start automatically; widget tests turn it off and sync
@@ -174,6 +175,14 @@ class SyncController extends Notifier<SyncStatus> {
     state = state.copyWith(running: true);
     final report = await ref.read(syncEngineProvider).sync(refreshBands: bands);
     if (!ref.mounted) return report;
+    if (report.error == BackendErrorKind.updateRequired) {
+      // Nothing works with this server until the app is updated
+      // (ADR-0029): no automatic retries until the next start; the server
+      // config tells the UI which version is needed.
+      _stopAutomatic();
+      _debounce?.cancel();
+      ref.invalidate(serverConfigProvider);
+    }
     state = SyncStatus(
       lastSync: report.error == null ? DateTime.now() : state.lastSync,
       lastReport: report,

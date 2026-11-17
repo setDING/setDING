@@ -1098,6 +1098,35 @@ class AppLocalizationsEn extends AppLocalizations {
       'The server reported an error. Please try again later.';
 
   @override
+  String get accountErrorUpdateRequired =>
+      'This version of setDING is too old for the server. Please update the app.';
+
+  @override
+  String get updateRequiredTitle => 'Please update setDING';
+
+  @override
+  String get updateRequiredBody =>
+      'The server no longer accepts this version, so nothing is synced. Your changes stay on this device and are sent after the update.';
+
+  @override
+  String updateRequiredVersions(String current, String minimum) {
+    return 'Installed: $current, needed: $minimum or newer.';
+  }
+
+  @override
+  String get updateRequiredHowTo =>
+      'On Android, update it in Obtainium; otherwise download the new version from the setDING releases on GitHub.';
+
+  @override
+  String get updateRequiredReload => 'Reload';
+
+  @override
+  String get updateRequiredCopyLink => 'Copy download link';
+
+  @override
+  String get updateRequiredCopied => 'Link copied.';
+
+  @override
   String get settingsServer => 'Server';
 
   @override

@@ -66,6 +66,7 @@ A user can be a member of several organizations and bands; roles are defined per
 | Linux release | `make release`: Linux release built in a **Debian container** (baseline glibc, ISA check) from the committed state ([guide](../development/releases.md)) | [ADR-0019](adr/0019-linux-release-builds.md) |
 | Release builds | A `vX.Y.Z` tag builds **Linux, Android and Windows** on GitHub Actions and publishes a GitHub Release; Android APK signed with a stable release key (repository secrets), installed and updated with **Obtainium** ([guide](../development/releases.md)) | [ADR-0021](adr/0021-release-builds-github-actions.md) |
 | Versioning | **Semantic Versioning** for the whole product (apps, web client, server): major = old clients no longer work with the server or data (all devices must update), minor = features old clients tolerate, patch = fixes; before 1.0.0 minor also covers incompatible changes; CalVer considered and not chosen ([guide](../development/releases.md)) | [ADR-0028](adr/0028-versioning-scheme.md) |
+| Minimum client version | Clients send `X-Setding-Version`; the server refuses versions below `MIN_CLIENT_VERSION` (in the hooks, raised with an incompatible change) with **HTTP 426**; the app shows "Please update setDING" above the navigation and on the sign-in screen, keeps the session and local changes, stops the automatic sync; release before deploying the server | [ADR-0029](adr/0029-minimum-client-version.md) (proposed) |
 
 ## 4. Building block view
 
@@ -285,7 +286,7 @@ See "Open points" in the individual ADRs. The most important:
 22. ~~How do bands adapt shared songs?~~ → ADR-0025 (accepted, #216): a band arrangement per band and song (key, sequence, tempo) between song and set item, applied in sets and live mode from a set; the song screen shows it only in its own card (#227), now a side panel behind a band icon (#233); capo stays personal, no band notes; implemented in #221
 23. ~~What does a drummer need in live mode?~~ → ADR-0026 (accepted, #325): drums preset, beat display and count-in, click on the in-ear with the audio as the clock and latency compensation, automatic or manual start, long press of the forward pedal or Enter, tempo on stage only for the evening, song map for drums only; BPM per dotted quarter in compound meters, `{x_time_grouping}` for odd meters. Open: background behaviour, bar counts per part
 24. ~~Which settings follow a person across devices?~~ → ADR-0027 (accepted, #328): fixed split into personal settings (synced with the account, per owner like overlays, last writer wins per key; incl. language, theme, accent colour and the drummer preferences) and device settings (never synced; font size, columns, live appearance, server, sync mode, click volume and latency), grouped and marked in the settings; no per-device override in the first version
-25. ~~Versioning scheme (SemVer or CalVer)?~~ → SemVer with bump rules based on client/server compatibility (ADR-0028, accepted, #330). Open: minimum client version announced by the server, deploy only tagged server versions?
+25. ~~Versioning scheme (SemVer or CalVer)?~~ → SemVer with bump rules based on client/server compatibility (ADR-0028, accepted, #330). Minimum client version: server refuses outdated apps with HTTP 426, the app asks for an update (ADR-0029, proposed, #339). Open: deploy only tagged server versions?
 
 ## 10. ADR index
 
@@ -319,5 +320,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0026](adr/0026-drummer-mode.md) | Drummer mode with beat display, count-in and click | Accepted |
 | [0027](adr/0027-personal-settings-sync.md) | Personal settings synced with the account | Accepted |
 | [0028](adr/0028-versioning-scheme.md) | Semantic versioning with setDING-specific bump rules | Accepted |
+| [0029](adr/0029-minimum-client-version.md) | Minimum client version enforced by the server | Proposed |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.

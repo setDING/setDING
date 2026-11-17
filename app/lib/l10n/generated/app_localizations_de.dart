@@ -1106,6 +1106,35 @@ class AppLocalizationsDe extends AppLocalizations {
       'Der Server hat einen Fehler gemeldet. Versuche es später nochmals.';
 
   @override
+  String get accountErrorUpdateRequired =>
+      'Diese Version von setDING ist zu alt für den Server. Bitte aktualisiere die App.';
+
+  @override
+  String get updateRequiredTitle => 'Bitte setDING aktualisieren';
+
+  @override
+  String get updateRequiredBody =>
+      'Der Server akzeptiert diese Version nicht mehr, deshalb wird nichts synchronisiert. Deine Änderungen bleiben auf diesem Gerät und werden nach dem Update übertragen.';
+
+  @override
+  String updateRequiredVersions(String current, String minimum) {
+    return 'Installiert: $current, benötigt: $minimum oder neuer.';
+  }
+
+  @override
+  String get updateRequiredHowTo =>
+      'Auf Android aktualisierst du sie in Obtainium, sonst lädst du die neue Version bei den setDING-Releases auf GitHub herunter.';
+
+  @override
+  String get updateRequiredReload => 'Neu laden';
+
+  @override
+  String get updateRequiredCopyLink => 'Download-Link kopieren';
+
+  @override
+  String get updateRequiredCopied => 'Link kopiert.';
+
+  @override
   String get settingsServer => 'Server';
 
   @override
