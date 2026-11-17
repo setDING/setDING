@@ -64,6 +64,7 @@ A user can be a member of several organizations and bands; roles are defined per
 | Printable set list | PDF generated in the client with the `pdf` package, embedded font, saved via the save dialog; no print plugin yet | [ADR-0013](adr/0013-printable-set-list.md) |
 | Web client | **Flutter web build of the same app** for management without installation, served by PocketBase (`pb_public`) at `app.setding.app`, same sync engine, sign-in required, ChordPro file import but no export, no offline guarantee in the browser ([guide](../development/web.md)) | [ADR-0018](adr/0018-web-client.md) |
 | Website & user docs | **Astro Starlight** in `website/` (de-CH root, en under `/en/`), landing page and user documentation at `setding.app`, built in `make check` with link validation, served by **Caddy** on the server behind the tunnel, deployed with the `make server-*` targets | [ADR-0030](adr/0030-website-and-user-docs.md) |
+| Self-hosting | Other organizations may run their own server: **server package as release asset**, one installer with TLS options (Caddy/Let's Encrypt, Cloudflare Tunnel, own proxy), invitation links name their server, server choice in the app, operator guide on the website | [ADR-0031](adr/0031-self-hosting.md) (proposed) |
 | Linux release | `make release`: Linux release built in a **Debian container** (baseline glibc, ISA check) from the committed state ([guide](../development/releases.md)) | [ADR-0019](adr/0019-linux-release-builds.md) |
 | Release builds | A `vX.Y.Z` tag builds **Linux, Android and Windows** on GitHub Actions and publishes a GitHub Release; Android APK (arm64 only) signed with a stable release key (repository secrets), installed and updated with **Obtainium**; build number = the workflow's run number, shared by releases and manual test builds (none in `pubspec.yaml`); a release is done when its build passed and the server is deployed from the tag ([guide](../development/releases.md)) | [ADR-0021](adr/0021-release-builds-github-actions.md) |
 | Versioning | **Semantic Versioning** for the whole product (apps, web client, server): major = old clients no longer work with the server or data (all devices must update), minor = features old clients tolerate, patch = fixes; before 1.0.0 minor also covers incompatible changes; CalVer considered and not chosen ([guide](../development/releases.md)) | [ADR-0028](adr/0028-versioning-scheme.md) |
@@ -291,6 +292,7 @@ See "Open points" in the individual ADRs. The most important:
 24. ~~Which settings follow a person across devices?~~ → ADR-0027 (accepted, #328): fixed split into personal settings (synced with the account, per owner like overlays, last writer wins per key; incl. language, theme, accent colour and the drummer preferences) and device settings (never synced; font size, columns, live appearance, server, sync mode, click volume and latency), grouped and marked in the settings; no per-device override in the first version
 25. ~~Versioning scheme (SemVer or CalVer)?~~ → SemVer with bump rules based on client/server compatibility (ADR-0028, accepted, #330). Minimum client version: server refuses outdated apps with HTTP 426, the app asks for an update (ADR-0029, accepted, #339). Server deploys: production runs released versions only, `make server-release` after a green release build (#345)
 26. Where do the website and the user documentation live? → `website/` in this repository, Astro Starlight, served by Caddy on the existing server at `setding.app`, deployed with the `make server-*` targets (ADR-0030, accepted, #388). Moving the whole server to external hosting is open
+27. Can others run their own server? → Yes, supported with a release package, an installer and a guide on the website; invitation links name their server (ADR-0031, proposed, #419)
 
 ## 10. ADR index
 
@@ -326,5 +328,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0028](adr/0028-versioning-scheme.md) | Semantic versioning with setDING-specific bump rules | Accepted |
 | [0029](adr/0029-minimum-client-version.md) | Minimum client version enforced by the server | Accepted |
 | [0030](adr/0030-website-and-user-docs.md) | Website and user documentation | Accepted |
+| [0031](adr/0031-self-hosting.md) | Self-hosted servers for other operators | Proposed |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.

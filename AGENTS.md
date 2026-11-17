@@ -112,3 +112,4 @@ See the ADR index in the architecture README for the current status. In short:
 - Semantic Versioning: major = old clients no longer work with the server or data, minor = tolerated features, patch = fixes (ADR-0028)
 - Minimum client version: apps send `X-Setding-Version`, the server answers outdated ones with HTTP 426, the app asks for an update; release before deploying the server (ADR-0029)
 - Website and user documentation at https://setding.app: Astro Starlight in `website/`, de-CH and en, served by Caddy on the server, deployed with the `make server-*` targets (ADR-0030)
+- Self-hosted servers for other operators: release package, installer with TLS options, server-aware invitation links, operator guide on the website (ADR-0031, proposed)
