@@ -40,6 +40,14 @@ List<String> splitChordProSongs(String source) {
   return parts;
 }
 
+final _sourceLines = Expando<int>('sourceLine');
+
+/// The line of the source (0-based, counted over all songs of the source)
+/// that [element] was parsed from: a [Line], or the start directive of a
+/// [Section] or [DelegateSection]. Null if unknown, e.g. for empty lines.
+/// Used to jump from the preview to the source in the editor (#372).
+int? sourceLineOf(Object element) => _sourceLines[element];
+
 /// Parses ChordPro [source] that may contain several songs separated by
 /// `{new_song}` / `{ns}`.
 ///
@@ -56,14 +64,14 @@ List<Song> parseChordProSongs(
       .replaceAll('\r', '\n')
       .split('\n');
   var parser = _SongParser(selectors);
-  for (final line in lines) {
+  for (final (index, line) in lines.indexed) {
     final d = line.trimLeft().startsWith('{') ? parseDirective(line) : null;
     if (d != null && (d.name == 'new_song' || d.name == 'ns')) {
       if (parser.hasAnything) songs.add(parser.finish());
       parser = _SongParser(selectors);
       continue;
     }
-    parser.addLine(line);
+    parser.addSourceLine(line, index);
   }
   if (parser.hasAnything || songs.isEmpty) songs.add(parser.finish());
   return songs;
@@ -173,6 +181,25 @@ class _SongParser {
     }
     current = null;
     explicitSection = false;
+  }
+
+  /// [addLine] that remembers [index] as the source line of the lines,
+  /// sections and delegated environments it creates.
+  void addSourceLine(String rawLine, int index) {
+    final section = current;
+    final known = section?.lines.length ?? 0;
+    final openDelegate = delegate;
+    addLine(rawLine);
+    void mark(Object element) => _sourceLines[element] ??= index;
+    if (delegate case final d? when !identical(d, openDelegate)) mark(d);
+    final now = current;
+    if (now == null) return;
+    if (!identical(now, section)) mark(now);
+    final from = identical(now, section) ? known : 0;
+    for (final line in now.lines.skip(from)) {
+      // Constant lines (empty lines, breaks) are shared objects.
+      if (line is! EmptyLine && line is! BreakLine) mark(line);
+    }
   }
 
   void addLine(String rawLine) {

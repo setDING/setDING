@@ -384,6 +384,31 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
     return selected.contains('\n') ? '' : selected;
   }
 
+  /// Moves the cursor to the source line of [element], tapped in the
+  /// preview (#372). The preview may lag a moment behind the text; the
+  /// line is then clamped to the text.
+  void _jumpToSource(Object element) {
+    final line = sourceLineOf(element);
+    if (line == null) return;
+    final text = _controller.text;
+    var offset = 0;
+    for (var i = 0; i < line; i++) {
+      final nl = text.indexOf('\n', offset);
+      if (nl < 0) break;
+      offset = nl + 1;
+    }
+    // After the next frame, when on narrow screens the editor tab is
+    // built again; with the focus, the editor scrolls to the cursor.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _focus.requestFocus();
+      _controller.selection = TextSelection.collapsed(
+        offset: offset.clamp(0, _controller.text.length),
+      );
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
+  }
+
   /// Runs a line or chord command on the selection (#361).
   void _command(EditorCommand command) {
     final text = _controller.text;
@@ -565,7 +590,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
         ),
       ],
     );
-    final preview = _Preview(song: _preview);
+    final preview = _Preview(song: _preview, onTap: _jumpToSource);
 
     return PopScope(
       canPop: !_dirty,
@@ -628,9 +653,12 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
 }
 
 class _Preview extends ConsumerWidget {
-  const _Preview({required this.song});
+  const _Preview({required this.song, required this.onTap});
 
   final Song song;
+
+  /// A line or section was tapped: the editor shows its source.
+  final ValueChanged<Object> onTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -662,6 +690,11 @@ class _Preview extends ConsumerWidget {
             options: SongRenderOptions(
               formatter: formatter,
               fontSize: fontSize,
+              onElementTap: (element) {
+                // On narrow screens, switch to the editor tab first.
+                DefaultTabController.maybeOf(context)?.index = 0;
+                onTap(element);
+              },
             ),
           ),
         ],

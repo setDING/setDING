@@ -90,6 +90,7 @@ Notation alternatives:
 - 2026-11-17: The editor gets line and chord commands (#361): move lines up/down (Alt+↑/↓), move chords through the lyrics (Alt+←/→, Ctrl+Option on Apple), duplicate/delete lines, toggle `#` comments, plus toolbar buttons for them and for undo/redo. The text operations live in the `chordpro` package (`editing.dart`).
 - 2026-11-17: The editor gets a search bar (Ctrl+F, #368): all matches are highlighted in the source, the current one stronger; `findInSource` (case-insensitive, literal) is in `editing.dart`.
 - 2026-11-17: Section environments get a subtle full-width background by type in the editor, with a coloured bar on the left (#371); `sourceSections` finds them from the highlighting tokens.
+- 2026-11-17: Parsed lines, sections and delegated environments know their source line (`sourceLineOf`, kept outside the model in an `Expando`, so the model classes stay unchanged and const). Tapping the editor preview moves the cursor to that line (#372).
 
 ## Open points
 
