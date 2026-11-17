@@ -79,9 +79,7 @@ class _SetCard extends ConsumerWidget {
         leading: const CircleAvatar(child: Icon(Icons.queue_music)),
         title: Text(set.name),
         subtitle: Text(details),
-        trailing: ready == null
-            ? null
-            : OfflineBadge(ready: ready, compact: true),
+        trailing: ready == null ? null : OfflineBadge(ready: ready),
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute<void>(builder: (_) => SetScreen(setId: set.id)),
@@ -91,12 +89,12 @@ class _SetCard extends ConsumerWidget {
   }
 }
 
-/// "Offline ready" indicator (ADR-0001).
+/// "Offline ready" indicator (ADR-0001): an icon, its meaning in the
+/// tooltip.
 class OfflineBadge extends StatelessWidget {
-  const OfflineBadge({super.key, required this.ready, this.compact = false});
+  const OfflineBadge({super.key, required this.ready});
 
   final bool ready;
-  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -107,8 +105,7 @@ class OfflineBadge extends StatelessWidget {
       ready ? Icons.offline_pin : Icons.cloud_off,
       color: ready ? Colors.green.shade600 : colors.error,
     );
-    if (compact) return Tooltip(message: label, child: icon);
-    return Chip(avatar: icon, label: Text(label));
+    return Tooltip(message: label, child: icon);
   }
 }
 

@@ -238,21 +238,22 @@ class _SetScreenState extends ConsumerState<SetScreen> {
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                child: Wrap(
-                  spacing: 12,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    if (details.isNotEmpty)
-                      Text(
-                        details,
-                        style: Theme.of(context).textTheme.bodyLarge,
+              if (details.isNotEmpty || ready != null)
+                Padding(
+                  // Right: in line with the drag handles of the rows.
+                  padding: const EdgeInsets.fromLTRB(16, 4, 32, 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          details,
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
                       ),
-                    if (ready != null) OfflineBadge(ready: ready),
-                  ],
+                      if (ready != null) OfflineBadge(ready: ready),
+                    ],
+                  ),
                 ),
-              ),
               const Divider(height: 1),
               Expanded(
                 child: items.isEmpty

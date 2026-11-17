@@ -3,6 +3,7 @@ import 'package:realchord/data/demo_song.dart';
 import 'package:realchord/ui/live/live_screen.dart';
 import 'package:realchord/ui/render/song_view.dart';
 import 'package:realchord/ui/sets/set_screen.dart';
+import 'package:realchord/ui/sets/sets_screen.dart';
 import 'package:realchord/ui/widgets/key_picker.dart';
 import 'package:realchord/ui/songs/song_editor_screen.dart';
 import 'package:realchord/ui/songs/song_screen.dart';
@@ -611,7 +612,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Late Train Home'), findsOneWidget);
-    expect(find.text('Offline ready'), findsOneWidget);
+    // An icon, aligned right; its meaning is in the tooltip.
+    final badge = find.byType(OfflineBadge);
+    expect(find.byTooltip('Offline ready'), findsOneWidget);
+    expect(
+      tester.getRect(badge).right,
+      greaterThan(tester.getSize(find.byType(MaterialApp)).width - 40),
+    );
     await app.dispose(tester);
   });
 
