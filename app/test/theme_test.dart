@@ -41,7 +41,14 @@ double _deltaE(Color a, Color b) {
   return sqrt(pow(p[0] - q[0], 2) + pow(p[1] - q[1], 2) + pow(p[2] - q[2], 2));
 }
 
-/// The colour scheme is derived from the logo red (issue #269).
+/// Hue angle (degrees) of [c] in CIELAB.
+double _labHue(Color c) {
+  final l = _lab(c);
+  return (atan2(l[2], l[1]) * 180 / pi) % 360;
+}
+
+/// The colour scheme is derived from the logo red (issue #269) or from the
+/// accent colour chosen in the settings (issue #300).
 void main() {
   test('the scheme is seeded with the logo red', () {
     expect(brandSeed, const Color(0xFFE8461C));
@@ -56,12 +63,54 @@ void main() {
       expect(scheme.surface, seeded.surface, reason: '$brightness');
       expect(appTheme(brightness).colorScheme, scheme);
     }
+    expect(const AppSettings().accent, AccentColor.brand);
+    expect(AccentColor.brand.seed, brandSeed);
+    expect(AccentColor.brand.stageChord, StageColors.light.chord);
+  });
+
+  test('every accent is a tonalSpot scheme of its seed', () {
+    for (final accent in AccentColor.values) {
+      for (final brightness in Brightness.values) {
+        final seeded = ColorScheme.fromSeed(
+          seedColor: accent.seed,
+          brightness: brightness,
+        );
+        final scheme = appColorScheme(brightness, accent);
+        final reason = '$accent $brightness';
+        expect(scheme.primary, seeded.primary, reason: reason);
+        expect(scheme.surface, seeded.surface, reason: reason);
+        expect(scheme.tertiary, seeded.tertiary, reason: reason);
+        expect(appTheme(brightness, accent).colorScheme, scheme);
+        // The error colours do not change with the accent.
+        final brand = appColorScheme(brightness);
+        expect(scheme.error, brand.error, reason: reason);
+        expect(scheme.errorContainer, brand.errorContainer, reason: reason);
+      }
+    }
+  });
+
+  test('the accents can be told apart', () {
+    for (final brightness in Brightness.values) {
+      for (var i = 0; i < AccentColor.values.length; i++) {
+        for (var j = i + 1; j < AccentColor.values.length; j++) {
+          final a = AccentColor.values[i], b = AccentColor.values[j];
+          expect(
+            _deltaE(
+              appColorScheme(brightness, a).primary,
+              appColorScheme(brightness, b).primary,
+            ),
+            greaterThan(15),
+            reason: '$brightness $a / $b',
+          );
+        }
+      }
+    }
   });
 
   test('error colours stay apart from the primary colours', () {
-    for (final brightness in Brightness.values) {
-      final s = appColorScheme(brightness);
-      final reason = '$brightness';
+    for (final (brightness, accent) in _variants) {
+      final s = appColorScheme(brightness, accent);
+      final reason = '$brightness $accent';
       expect(_deltaE(s.error, s.primary), greaterThan(30), reason: reason);
       expect(
         _deltaE(s.errorContainer, s.primaryContainer),
@@ -85,12 +134,12 @@ void main() {
   });
 
   test('lyrics, chords and editor colours have enough contrast', () {
-    for (final brightness in Brightness.values) {
-      final s = appColorScheme(brightness);
-      final reason = '$brightness';
+    for (final (brightness, accent) in _variants) {
+      final s = appColorScheme(brightness, accent);
+      final reason = '$brightness $accent';
       // Lyrics and chords outside live mode (WCAG AA).
       expect(_contrast(s.onSurface, s.surface), greaterThan(4.5));
-      expect(_contrast(s.primary, s.surface), greaterThan(4.5));
+      expect(_contrast(s.primary, s.surface), greaterThan(4.5), reason: reason);
       for (final kind in [
         SourceTokenKind.chord,
         SourceTokenKind.sectionDirective,
@@ -132,18 +181,54 @@ void main() {
     expect(StageColors.dark.chord, const Color(0xFFFFC54D));
   });
 
+  test('the light stage chord colour has the hue of the accent', () {
+    for (final accent in AccentColor.values) {
+      final chord = accent.stageChord;
+      final light = appColorScheme(Brightness.light, accent);
+      final diff = (_labHue(chord) - _labHue(accent.seed)).abs() % 360;
+      expect(min(diff, 360 - diff), lessThan(10), reason: '$accent');
+      expect(_contrast(chord, light.surface), greaterThan(7));
+      // Stronger than the primary colour used outside live mode.
+      expect(
+        _contrast(chord, light.surface),
+        greaterThan(_contrast(light.primary, light.surface)),
+        reason: '$accent',
+      );
+      expect(
+        liveTheme(
+          appTheme(Brightness.light, accent),
+          LiveAppearance.app,
+          accent,
+        ).extension<StageColors>()!.chord,
+        chord,
+      );
+    }
+  });
+
   test('sequence chips of chorus, pre-chorus, bridge and verse differ', () {
     // Issue #288: with the red seed, the light primary and secondary
     // containers are the same blush. Checked in the app themes and on the
-    // dark and black stage (#263).
-    final light = appTheme(Brightness.light);
-    final dark = appTheme(Brightness.dark);
+    // dark and black stage (#263), for every accent (#300).
     final schemes = {
-      'light': light.colorScheme,
-      'dark': dark.colorScheme,
-      'stage light': liveTheme(light, LiveAppearance.app).colorScheme,
-      'stage dark': liveTheme(light, LiveAppearance.dark).colorScheme,
-      'stage black': liveTheme(dark, LiveAppearance.black).colorScheme,
+      for (final a in AccentColor.values) ...{
+        '$a light': appTheme(Brightness.light, a).colorScheme,
+        '$a dark': appTheme(Brightness.dark, a).colorScheme,
+        '$a stage light': liveTheme(
+          appTheme(Brightness.light, a),
+          LiveAppearance.app,
+          a,
+        ).colorScheme,
+        '$a stage dark': liveTheme(
+          appTheme(Brightness.light, a),
+          LiveAppearance.dark,
+          a,
+        ).colorScheme,
+        '$a stage black': liveTheme(
+          appTheme(Brightness.dark, a),
+          LiveAppearance.black,
+          a,
+        ).colorScheme,
+      },
     };
     // One part of each colour group; "other" parts share the verse colour.
     const groups = [
@@ -237,3 +322,9 @@ void main() {
     });
   }
 }
+
+/// Every brightness with every accent colour.
+final _variants = [
+  for (final accent in AccentColor.values)
+    for (final brightness in Brightness.values) (brightness, accent),
+];

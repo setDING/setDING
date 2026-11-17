@@ -20,7 +20,10 @@ class RealChordApp extends ConsumerStatefulWidget {
   /// Overrides the start screen (used in tests).
   final Widget? home;
 
-  static ThemeData theme(Brightness brightness) => appTheme(brightness);
+  static ThemeData theme(
+    Brightness brightness, [
+    AccentColor accent = AccentColor.brand,
+  ]) => appTheme(brightness, accent);
 
   @override
   ConsumerState<RealChordApp> createState() => _RealChordAppState();
@@ -33,6 +36,7 @@ class _RealChordAppState extends ConsumerState<RealChordApp> {
   Widget build(BuildContext context) {
     // Only what the app shell needs: other settings do not rebuild it.
     final themeMode = ref.watch(settingsProvider.select((s) => s.themeMode));
+    final accent = ref.watch(settingsProvider.select((s) => s.accent));
     final locale = ref.watch(settingsProvider.select((s) => s.locale));
     // Keeps the sync running while the app is open (ADR-0004).
     ref.watch(syncControllerProvider);
@@ -40,8 +44,8 @@ class _RealChordAppState extends ConsumerState<RealChordApp> {
       navigatorKey: _navigatorKey,
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
       debugShowCheckedModeBanner: false,
-      theme: RealChordApp.theme(Brightness.light),
-      darkTheme: RealChordApp.theme(Brightness.dark),
+      theme: RealChordApp.theme(Brightness.light, accent),
+      darkTheme: RealChordApp.theme(Brightness.dark, accent),
       themeMode: themeMode,
       locale: locale,
       supportedLocales: const [Locale('de', 'CH'), Locale('de'), Locale('en')],
