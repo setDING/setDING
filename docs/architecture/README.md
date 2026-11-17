@@ -46,7 +46,7 @@ A user can be a member of several organizations and bands; roles are defined per
 | Backend & sync | **PocketBase**, self-hosted on an existing server, revision-based sync | [ADR-0004](adr/0004-backend-and-sync.md) |
 | Management | **One app with roles** instead of a separate management application | [ADR-0005](adr/0005-single-app-with-roles.md) |
 | Personal settings | **Overlay model**: personal adjustments never change the shared ChordPro text; per user (`local` for the local library), synced with the account | [ADR-0006](adr/0006-personal-overlays.md), [ADR-0020](adr/0020-overlays-per-user.md) |
-| Band arrangements *(proposed)* | New layer between song and set item: per band and song a key (transposition), sequence and notes, maintained by band leaders and set planners, synced per band with last writer wins; set item transposition becomes relative to the band's key | [ADR-0025](adr/0025-band-arrangements.md) |
+| Band arrangements *(proposed)* | New layer between song and set item: per band and song a key (transposition), sequence and tempo, maintained by band leaders and set planners, synced per band with last writer wins; set item transposition becomes relative to the band's key | [ADR-0025](adr/0025-band-arrangements.md) |
 | Live mode | Tap/swipe page turns, wakelock; each member navigates independently (**no leader sync**) | [ADR-0007](adr/0007-live-mode.md) |
 | Localization | UI in **German (Swiss, `de-CH`) and English**, selectable in the settings | [ADR-0008](adr/0008-localization.md) |
 | Sheet music | **PDF attachments** per song, synced and available offline, shown in live mode | [ADR-0009](adr/0009-pdf-attachments.md) |
@@ -271,7 +271,7 @@ See "Open points" in the individual ADRs. The most important:
 19. ~~Chord display style (pop vs. jazz spelling, superscript extensions)?~~ → Global device setting *As written* (default) / *Standard* / *Jazz* plus a superscript switch, not per song (ADR-0022, accepted, implemented in #196)
 20. ~~Finer-grained roles?~~ → ADR-0023 (accepted, #207): organization librarian, band set planner, band leaders create songs and edit only their own (until someone else changes them), invitations by band leaders into their band, `members_can_edit_songs` replaced by the librarian role, no guest role (substitutes are added as band members), organization admins keep all rights; implemented in #215. Open: band arrangement as a follow-up ADR (#216); suggestion workflow for song corrections
 21. ~~Who may create accounts and organizations?~~ → Operator setting `REALCHORD_REGISTRATION` = `invite_only` (default) or `open`, founder invitations for new organizations by the operator only, optional email verification (`REALCHORD_EMAIL_VERIFICATION`), no in-app super-admin (ADR-0024, accepted, #209; implemented in #213). Open: limits per organization
-22. How do bands adapt shared songs? → Proposed in ADR-0025 (#216): a band arrangement per band and song (key, sequence, notes) between song and set item. Open: owner decision; capo and tempo per band, songs tab behaviour, anchored band notes
+22. How do bands adapt shared songs? → Proposed in ADR-0025 (#216): a band arrangement per band and song (key, sequence, tempo) between song and set item, also applied on the songs tab for the chosen band; capo stays personal, no band notes. Open: owner decision
 
 ## 10. ADR index
 

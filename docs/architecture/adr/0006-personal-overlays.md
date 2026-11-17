@@ -63,6 +63,6 @@ size/zoom setting is relevant.
 
 ## Open points
 
-- A band arrangement layer between song and set item (key, sequence and notes per
+- A band arrangement layer between song and set item (key, sequence and tempo per
   band and song) is proposed in ADR-0025; it would make set item transposition
   relative to the band's key.

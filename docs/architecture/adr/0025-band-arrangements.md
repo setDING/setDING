@@ -11,7 +11,7 @@ librarians and organization admins. Bands still need to adapt songs for themselv
 
 - a choir sings a song in A, the youth band in C;
 - one band plays verse–chorus–verse–chorus, another adds a bridge and an outro;
-- band notes such as "intro: piano alone" or "last chorus twice, slower".
+- the youth band plays the song faster than the choir.
 
 Today this is only possible in two places, and neither fits:
 
@@ -31,7 +31,7 @@ and left its design to this ADR.
 A new layer between the song and the set item (ADR-0006, applied in this order):
 
 1. **Song** (ChordPro, organization): original key, sequence, everything else.
-2. **Band arrangement** *(new)*, per band and song: the band's key, sequence and notes.
+2. **Band arrangement** *(new)*, per band and song: the band's key, sequence and tempo.
 3. **Set item**, per set: "tonight" on top of the band's key, or another sequence.
 4. **Personal overlay**, per person and song: transposition/capo, notes, font size, …
 5. **Device settings**.
@@ -45,14 +45,15 @@ The arrangement **never changes the song**. A correction of the song by the libr
 |---|---|---|
 | `transpose` | Semitones relative to the song's key (the band's key) | 0 |
 | `sequence` | Song sequence in `{x_sequence}` syntax (ADR-0012) | null = as in the song |
-| `notes` | Text for all band members, shown above the song | null |
+| `tempo` | Tempo in BPM for this band | null = as in the song (`{tempo}`) |
 
 The key is stored as a transposition relative to the song (like set items), so it
 stays correct when the library fixes the song but not its key. The app shows it as
 the resulting key ("C (+3)").
 
 Capo, font size and Nashville stay **personal** (layer 4): they depend on the
-instrument and the person, not the band.
+instrument and the person, not the band. There are **no band notes**: they are not
+needed for now (owner); personal notes stay as they are.
 
 ### How it combines
 
@@ -61,15 +62,16 @@ instrument and the person, not the band.
   below the band's key. Existing set items keep their value: without arrangements
   the band's key is the song's key, so nothing changes for existing sets.
 - **Sequence:** the first that is set wins: set item, arrangement, song.
-- **Notes:** the band's notes and the personal notes are shown separately (band
-  notes first, labelled with the band).
+- **Tempo:** the arrangement's tempo replaces the song's `{tempo}` wherever the app
+  shows or uses it (song header, set list, a later metronome or count-in, ADR-0007
+  roadmap); the song keeps its own value.
 - **Where it applies:**
   - in a set and in live mode started from a set: the arrangement of the set's band;
   - on the songs tab: the arrangement of the band chosen on the sets tab, if it
     plays from this library. Without one (local library, an organization without
     that band), the song is shown as written. A label shows which band's arrangement
     is applied.
-- **Printable set list and set export** (ADR-0013): the key and sequence for the
+- **Printable set list and set export** (ADR-0013): key, sequence and tempo for the
   set include the arrangement.
 - **Copy to band** (ADR-0017): copying a set into another band of the same
   organization keeps its items; the target band's arrangements apply. Copying songs
@@ -85,7 +87,7 @@ instrument and the person, not the band.
 ### Server and sync (ADR-0004, ADR-0015)
 
 - New synced collection `arrangements`: `band`, `song`, `transpose`, `sequence`,
-  `notes`, sync fields; unique per band and song; the song must belong to the band's
+  `tempo`, sync fields; unique per band and song; the song must belong to the band's
   organization.
 - Delta pull per band, like sets; **last writer wins** (like sets): an arrangement is
   small and maintained by a few people, a conflict dialog is not worth it.
@@ -98,7 +100,7 @@ instrument and the person, not the band.
 
 - Local table `band_arrangements` (band, song, the fields, revision; key band + song).
 - Song screen and live mode in a band context: leaders and set planners get a
-  "Band arrangement" section (key, sequence, notes); members see it read-only.
+  "Band arrangement" section (key, sequence, tempo); members see it read-only.
   "Reset to the song" removes the arrangement.
 - The key picker in a set shows the band's key as the reference.
 
@@ -114,6 +116,9 @@ instrument and the person, not the band.
 | Arrangement per organization instead of band | Simpler | Different bands of one organization need different keys |
 | Set item transposition stays relative to the song | No change in meaning | Every set must repeat the band's key; the arrangement would only help outside sets |
 | Conflict dialog like songs | No lost change | Effort out of proportion for three small fields |
+| Capo per band | Guitars of a band agree on one capo | Depends on the instrument and person; stays in the personal overlay (owner) |
+| Band notes (one per song or anchored) | Shared hints for the band | Not needed for now (owner) |
+| Arrangements only in sets and live mode | Songs tab always shows the song as written | The band would not see its own key when browsing songs (owner chose the songs tab) |
 
 ## Consequences
 
@@ -129,14 +134,10 @@ instrument and the person, not the band.
 
 - 2026-11-17: Proposed with issue #216, following ADR-0023 (band leaders and set
   planners maintain band arrangements).
+- 2026-11-17: Owner answers: capo stays **personal**; the **songs tab applies** the
+  arrangement of the band chosen on the sets tab, with a label; **no band notes**;
+  the arrangement holds a **tempo per band**.
 
 ## Open points
 
-- Should the arrangement also hold a capo for the band (e.g. "guitars capo 2"), or
-  does capo stay personal?
-- Should the songs tab apply the arrangement of the band chosen on the sets tab, or
-  always show the song as written (arrangements only in sets and live mode)?
-- Should band notes be anchored to a line or section (like personal notes, ADR-0006),
-  or is one note per song enough for now?
-- Tempo per band (e.g. the youth band plays faster): part of the arrangement, or not
-  needed?
+- None.
