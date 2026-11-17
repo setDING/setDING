@@ -174,11 +174,12 @@ orientation and on the old application ID, had 8–9 frames over budget
 
 ### 2026-11-17: Song changes without work in the turn frames (#296)
 
-Same device. Before: main at `c58d11d`; after: the branch of #296 (main at
-`e696aec` plus the change). Both recorded in parts (above), so the whole live
-scenarios are measured for the first time: about 30 song changes and the
-pages of the long songs and PDFs per orientation, then presses at the end of
-the set. Two runs each; build = UI thread, times in ms.
+Same device. Before: main at `c58d11d`; after: the branch of #296 (runs 1–2 on
+main `e696aec`, run 3 on main `3932921` with the page hint). Both recorded in
+parts (above), so the whole live scenarios are measured for the first time:
+about 30 song changes and the pages of the long songs and PDFs per
+orientation, then presses at the end of the set. Two runs before, three
+after; build = UI thread, times in ms.
 
 | Run | Scenario | frames | build avg | build p99 | build worst | build >16ms | raster >16ms |
 |---|---|---|---|---|---|---|---|
@@ -190,24 +191,26 @@ the set. Two runs each; build = UI thread, times in ms.
 | after 1 | live_landscape | 1285 | 2.8 | 17.9 | 31.9 | 20 | 339 |
 | after 2 | live_portrait | 1304 | 2.7 | 17.6 | 38.1 | 17 | 339 |
 | after 2 | live_landscape | 1272 | 2.7 | 16.6 | 31.2 | 16 | 278 |
+| after 3 | live_portrait | 1299 | 2.7 | 16.7 | 47.7 | 20 | 397 |
+| after 3 | live_landscape | 1288 | 2.7 | 16.7 | 31.4 | 16 | 389 |
 
 The other scenarios did not change (song list, search and editor within the
-spread of earlier runs). Memory (RSS) grows more during live mode than
-before: from the search step to the end of landscape +134/+142 MB before,
-+193/+200 MB after. The recorded timelines stay in the app until the test
-ends (they are reported at the end), and the preparation steps add about
-40,000 timeline events per orientation (119,000 instead of 77,000, 31 instead
-of 20 MB as JSON), which accounts for most of it. Pages are taken down after
-each turn (tests check that only the neighbours stay built). Memory numbers
-of `make perf` include the recorded timelines, so they are an upper bound.
+spread of earlier runs). Memory (RSS) grows more during live mode than before:
+from the search step to the end of landscape +134/+142 MB before, +193/+200 MB
+after. The recorded timelines stay in the app until the test ends (they are
+reported at the end), and the preparation steps add about 40,000 timeline
+events per orientation (119,000 instead of 77,000, 31 instead of 20 MB as
+JSON), which accounts for most of it. Pages are taken down after each turn
+(tests check that only the neighbours stay built). Memory numbers of
+`make perf` include the recorded timelines, so they are an upper bound.
 
-**Before: every song change dropped frames in the turn animation.** Per
-song change and orientation about 2–3 UI frames over budget, all in the
-300 ms turn animation (26 + 30 + 13 of 69 in portrait):
+**Before: every song change dropped frames in the turn animation.** Per song
+change and orientation about 2–3 UI frames over budget, all in the 300 ms turn
+animation (26 + 30 + 13 of 69 in portrait):
 
 - the first frame of the turn built the song after next, which the page view
-  builds when it comes into its cache: `fitSong` 35–93 ms (two
-  `measureBlocks` passes) plus building and laying out the song, 67–187 ms;
+  builds when it comes into its cache: `fitSong` 35–93 ms (two `measureBlocks`
+  passes) plus building and laying out the song, 67–187 ms;
 - the frame in the middle of the turn rebuilt all pages, because the page
   change rebuilt the live screen and with it every song (21–35 ms);
 - the last frame disposed the song left behind (`FINALIZE TREE` 12–20 ms).
@@ -215,24 +218,23 @@ song change and orientation about 2–3 UI frames over budget, all in the
 A long song split into pages also built its next page when it was turned to
 (about 60 ms).
 
-**After:** the neighbours are prepared in idle time after the turn
-(ADR-0007): the fit runs between frames (`LivePreparation.step`), the song is
-built four lines per frame (whole blocks), all its pages included, and the
-song left behind is kept until the turn is over and then taken down in the
-same steps; page widgets are kept, so a rebuild of the live screen does not
-build the songs again. No frame of a turn fits, builds or disposes a song any
-more (no `fitSong` in any frame), and the worst UI frame went from 132–187 ms to 31–38 ms. What is
-left over budget:
+**After:** the neighbours are prepared in idle time after the turn (ADR-0007):
+the fit runs between frames (`LivePreparation.step`), the song is built four
+lines per frame (whole blocks), all its pages included, and the song left
+behind is kept until the turn is over and then taken down in the same steps;
+page widgets are kept, so a rebuild of the live screen does not build the
+songs again. No frame of a turn fits, builds or disposes a song any more (no
+`fitSong` in any frame), and the worst UI frame went from 132–187 ms to 31–48
+ms. What is left over budget:
 
-- most frames are preparation steps in idle time (12–19 per run): laying out
-  a block of the song that is not shown yet takes up to 30 ms on this device
-  (a verse with chords is a few dozen paragraphs). Nothing moves on the
-  screen then, so they are not visible as a stutter;
-- 3–5 frames per run in a turn: the first paint of the page coming in
-  (`PAINT` 13–23 ms) and young-generation garbage collections (`Scavenge`
-  up to 37 ms).
+- most frames are preparation steps in idle time (12–19 per run): laying out a
+  block of the song that is not shown yet takes up to 30 ms on this device (a
+  verse with chords is a few dozen paragraphs). Nothing moves on the screen
+  then, so they are not visible as a stutter;
+- 3–5 frames per run in a turn: the first paint of the page coming in (`PAINT`
+  13–23 ms) and young-generation garbage collections (`Scavenge` up to 45 ms,
+  also in some preparation steps).
 
-The raster thread is unchanged: 250–340 frames over budget in the Impeller
+The raster thread is unchanged: 250–400 frames over budget in the Impeller
 OpenGL ES flush during turn animations (the earlier section counted only the
 end of the scenarios).
-
