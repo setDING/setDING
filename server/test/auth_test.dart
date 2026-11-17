@@ -41,4 +41,30 @@ void main() {
     expect(again.status, 400);
     expect(again.field('data.email.code'), 'validation_not_unique');
   });
+
+  // Since PocketBase 0.42 an unknown or invalidated token is refused with
+  // 401 on every route instead of being ignored. The app signs out on 401
+  // (refreshSession); the Dart SDK never sends an expired token.
+  test('an invalidated token is refused with 401 on every route', () async {
+    final user = await pb.signUp();
+    (await pb.superuser.patch('users', user.id, {
+      'password': 'changed-password-123',
+      'passwordConfirm': 'changed-password-123',
+    })).expectStatus(200);
+    for (final path in [
+      '/api/collections/songs/records',
+      '/api/setding/config',
+      '/api/health',
+    ]) {
+      expect((await user.send('GET', path)).status, 401, reason: path);
+    }
+    final refresh = await user.send(
+      'POST',
+      '/api/collections/users/auth-refresh',
+    );
+    expect(refresh.status, 401);
+    // Without the token the public routes stay open.
+    (await pb.guest.send('GET', '/api/setding/config')).expectStatus(200);
+    (await pb.guest.send('GET', '/api/health')).expectStatus(200);
+  });
 }

@@ -61,7 +61,7 @@ ANDROID_KEYSTORE ?= $(HOME)/.local/share/setding/android-release.jks
 # Override it for another instance, e.g. `make server-install SERVER=root@<ip>`.
 # PB_VERSION is the pinned PocketBase version; updates are deliberate (ADR-0004).
 SERVER          ?= root@192.168.1.40
-PB_VERSION      ?= 0.40.6
+PB_VERSION      ?= 0.42.3
 SSH             ?= ssh
 SERVER_BACKUPS  := /var/lib/pocketbase/backups
 BACKUP_DIR      ?= $(ROOT)/.server-backups
