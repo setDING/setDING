@@ -684,7 +684,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsPageTurnHint =>
-      'Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern.';
+      'Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern. Seitenwender (Fusspedal) und Tastatur: Pfeil rechts, Bild ab und Leertaste blättern weiter, Pfeil links und Bild auf zurück.';
 
   @override
   String get settingsLiveAppearance => 'Aussehen auf der Bühne';

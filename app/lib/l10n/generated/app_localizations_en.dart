@@ -678,7 +678,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsPageTurnHint =>
-      'Tap the left or right side of the screen to go back or forward.';
+      'Tap the left or right side of the screen to go back or forward. Page turner (foot pedal) and keyboard: right arrow, Page Down and Space forward, left arrow and Page Up back.';
 
   @override
   String get settingsLiveAppearance => 'Appearance on stage';

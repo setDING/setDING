@@ -94,7 +94,7 @@ See the ADR index in the architecture README for the current status. In short:
 - PocketBase, self-hosted, revision-based sync (ADR-0004)
 - One app with roles admin/member, several bands per user (ADR-0005)
 - Personal adjustments as overlays, never modifying the shared song (ADR-0006)
-- Live mode with tap/swipe page turns, no leader sync (ADR-0007)
+- Live mode with tap/swipe and page turner/keyboard page turns, no leader sync (ADR-0007)
 - UI localized in de-CH and en, selectable in the settings (ADR-0008)
 - PDF sheet music attachments per song, available offline (ADR-0009)
 - Git workflow with test gate before every merge (ADR-0010)
