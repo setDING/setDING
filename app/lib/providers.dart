@@ -372,6 +372,20 @@ final pastSetsCollapsedProvider =
       PastSetsCollapsedNotifier.new,
     );
 
+/// The set chosen on the sets tab (#266): shown next to the list on wide
+/// screens. Kept outside the widgets, so it survives a change of layout
+/// (e.g. rotating a tablet); null shows the next gig.
+class SelectedSetNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void select(String? setId) => state = setId;
+}
+
+final selectedSetProvider = NotifierProvider<SelectedSetNotifier, String?>(
+  SelectedSetNotifier.new,
+);
+
 final setsProvider = StreamProvider<List<SetSummary>>(
   (ref) => ref.watch(setRepositoryProvider).watchSets(),
 );

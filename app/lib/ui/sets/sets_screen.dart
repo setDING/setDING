@@ -7,18 +7,94 @@ import '../../data/set_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../bands/band_switcher.dart';
+import '../songs/songs_screen.dart' show songListTwoColumnWidth;
 import '../widgets/dialogs.dart';
 import 'set_screen.dart';
 
-/// List of sets (setlists).
+/// Minimum width for showing the list of sets and the selected set side by
+/// side (#266); the same as for the song list's two columns.
+const setsMasterDetailWidth = songListTwoColumnWidth;
+
+/// Width of the list of sets next to the selected set.
+const _listPaneWidth = 400.0;
+
+/// List of sets (setlists), grouped by gig date (#265).
+///
+/// From [setsMasterDetailWidth] on, the selected set ([selectedSetProvider],
+/// by default the next gig) is shown next to the list; narrower screens open
+/// a set as its own page.
 class SetsScreen extends ConsumerWidget {
   const SetsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final list = ref.watch(setsProvider).value ?? const <SetSummary>[];
+    final selected = ref.watch(selectedSetProvider);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final shown = constraints.maxWidth < setsMasterDetailWidth
+            ? null
+            : shownSetId(list, selected, today: _today());
+        if (shown == null) return const _SetsPane();
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(
+              width: _listPaneWidth,
+              child: _SetsPane(shown: shown),
+            ),
+            const VerticalDivider(width: 1),
+            Expanded(
+              child: SetScreen(
+                key: ValueKey(shown),
+                setId: shown,
+                embedded: true,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+DateTime _today() {
+  final now = DateTime.now();
+  return DateTime(now.year, now.month, now.day);
+}
+
+/// The set shown next to the list: [selected] while it is in [sets],
+/// otherwise the next gig, or the first set in the order of the list; null
+/// without sets.
+String? shownSetId(
+  List<SetSummary> sets,
+  String? selected, {
+  required DateTime today,
+}) {
+  if (selected != null && sets.any((s) => s.set.id == selected)) {
+    return selected;
+  }
+  final groups = groupSets(sets, today);
+  return [
+    ...groups.upcoming,
+    ...groups.undated,
+    ...groups.past,
+  ].firstOrNull?.set.id;
+}
+
+/// The list of sets with its app bar; [shown] is the set shown next to it
+/// on wide screens (null on narrow screens, where a set opens as a page).
+class _SetsPane extends ConsumerWidget {
+  const _SetsPane({this.shown});
+
+  final String? shown;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final sets = ref.watch(setsProvider);
     final band = ref.watch(currentBandProvider);
+    final wide = shown != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -32,12 +108,7 @@ class SetsScreen extends ConsumerWidget {
               onPressed: () async {
                 final id = await showSetDialog(context, ref);
                 if (id != null && context.mounted) {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (_) => SetScreen(setId: id),
-                    ),
-                  );
+                  await openSet(context, ref, id, wide: wide);
                 }
               },
               icon: const Icon(Icons.add),
@@ -49,19 +120,24 @@ class SetsScreen extends ConsumerWidget {
           if (list.isEmpty) {
             return EmptyState(icon: Icons.queue_music, message: l10n.setsEmpty);
           }
-          final now = DateTime.now();
-          final today = DateTime(now.year, now.month, now.day);
+          final today = _today();
           final groups = groupSets(list, today);
           final pastCollapsed = ref.watch(pastSetsCollapsedProvider);
+          Widget card(SetSummary s, {DateTime? nextGigFrom}) => _SetCard(
+            summary: s,
+            nextGigFrom: nextGigFrom,
+            selected: s.set.id == shown,
+            onTap: () => openSet(context, ref, s.set.id, wide: wide),
+          );
           final rows = <Widget>[
             if (groups.upcoming.isNotEmpty) ...[
               _SectionHeader(l10n.setsUpcoming),
               for (final (i, s) in groups.upcoming.indexed)
-                _SetCard(summary: s, nextGigFrom: i == 0 ? today : null),
+                card(s, nextGigFrom: i == 0 ? today : null),
             ],
             if (groups.undated.isNotEmpty) ...[
               _SectionHeader(l10n.setsUndated),
-              for (final s in groups.undated) _SetCard(summary: s),
+              for (final s in groups.undated) card(s),
             ],
             if (groups.past.isNotEmpty) ...[
               _SectionHeader(
@@ -71,7 +147,7 @@ class SetsScreen extends ConsumerWidget {
                     ref.read(pastSetsCollapsedProvider.notifier).toggle(),
               ),
               if (!pastCollapsed)
-                for (final s in groups.past) _SetCard(summary: s),
+                for (final s in groups.past) card(s),
             ],
           ];
           return ListView.builder(
@@ -83,6 +159,22 @@ class SetsScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Selects the set [setId]; on narrow screens (not [wide]) it also opens as
+/// its own page.
+Future<void> openSet(
+  BuildContext context,
+  WidgetRef ref,
+  String setId, {
+  required bool wide,
+}) async {
+  ref.read(selectedSetProvider.notifier).select(setId);
+  if (wide) return;
+  await Navigator.push(
+    context,
+    MaterialPageRoute<void>(builder: (_) => SetScreen(setId: setId)),
+  );
 }
 
 /// Header of a section of the sets list; the past sets can be collapsed
@@ -146,12 +238,21 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _SetCard extends ConsumerWidget {
-  const _SetCard({required this.summary, this.nextGigFrom});
+  const _SetCard({
+    required this.summary,
+    required this.onTap,
+    this.nextGigFrom,
+    this.selected = false,
+  });
 
   final SetSummary summary;
+  final VoidCallback onTap;
 
   /// Set for the next gig, highlighted with the days from this day on.
   final DateTime? nextGigFrom;
+
+  /// Shown next to the list (wide screens).
+  final bool selected;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -170,7 +271,15 @@ class _SetCard extends ConsumerWidget {
     return Card(
       key: next == null ? null : const ValueKey('next-gig'),
       color: next == null ? null : colors.primaryContainer,
+      shape: !selected
+          ? null
+          : RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: colors.primary, width: 2),
+            ),
       child: ListTile(
+        key: ValueKey('set-${set.id}'),
+        selected: selected,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         textColor: next == null ? null : colors.onPrimaryContainer,
         leading: CircleAvatar(
@@ -195,10 +304,7 @@ class _SetCard extends ConsumerWidget {
               ),
         subtitle: Text(details),
         trailing: ready == null ? null : OfflineBadge(ready: ready),
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute<void>(builder: (_) => SetScreen(setId: set.id)),
-        ),
+        onTap: onTap,
       ),
     );
   }

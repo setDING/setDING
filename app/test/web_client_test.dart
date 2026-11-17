@@ -20,6 +20,7 @@ import 'package:realchord/sync/sync_controller.dart';
 import 'package:realchord/ui/home_screen.dart';
 import 'package:realchord/ui/live/live_screen.dart';
 import 'package:realchord/ui/live/pdf_spread_view.dart';
+import 'package:realchord/ui/sets/set_screen.dart';
 import 'package:realchord/ui/sets/sets_screen.dart';
 
 import 'test_app.dart';
@@ -291,7 +292,10 @@ void main() {
       bandId: 'b1',
     ).createSet(name: 'Gig');
     await tester.pumpAndSettle();
-    expect(find.text('Gig'), findsOneWidget);
+    // Listed and, on the wide test screen, shown next to the list (#266):
+    // neither has the status.
+    expect(find.text('Gig'), findsNWidgets(2));
+    expect(find.byType(SetScreen), findsOneWidget);
     expect(find.byType(OfflineBadge), findsNothing);
     await app.dispose(tester);
   });
