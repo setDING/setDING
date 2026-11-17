@@ -107,9 +107,9 @@ by band.
   device and independent of the band chosen on the sets tab; without a choice it
   follows the band. Song permissions and personal overlays (ADR-0020) follow the
   library of the song shown.
+- 2026-11-17: **ADR-0024** (accepted): on `invite_only` servers organizations are founded only by redeeming an operator founder invitation; creating a band without an organization is then rejected. On `open` servers the behaviour above stays.
 
 ## Open points
 
 - Moving a band to another organization.
-- Who may found organizations: ADR-0024 (proposed) restricts this to founder invitations on `invite_only` servers.
 - An organization-wide setting that lets all organization members edit songs.

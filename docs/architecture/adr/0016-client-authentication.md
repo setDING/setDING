@@ -80,6 +80,7 @@ restarts and is a credential, so it must not be stored in plain text.
 - 2026-11-15: Session on web (ADR-0018, accepted): kept for the tab only by default, "Stay signed in" unchecked; signing out deletes the local data of that browser; the server URL defaults to the page's origin.
 - 2026-11-15: Signed out, the app offers "Sign in" and "Join with invitation" side by side (issue #31). Joining takes the link first and then offers "Create account" or "Sign in"; afterwards it continues to the invitation.
 - 2026-11-16: Session on web changed by the owner (ADR-0018): it lasts as long as any tab of the web client is open (new tabs take it over, signing out signs out all tabs) instead of one tab only, because the tabs share the local database; a start without a session deletes leftover local data.
+- 2026-11-17: **ADR-0024** (accepted): on `invite_only` servers sign-up needs an invitation token; optional email verification set by the operator blocks sign-in and session refresh until the address is confirmed (stored sessions keep working offline).
 
 ## Open points
 
@@ -88,4 +89,3 @@ restarts and is a credential, so it must not be stored in plain text.
 - Changing the name, email and password of the account in the app.
 - Deleting the account (see ADR-0015, open points).
 - Sign-in with OTP or OAuth (Apple/Google) instead of a password.
-- Sign-up only with an invitation token when the server is `invite_only`, and optional email verification set by the operator (ADR-0024, proposed).

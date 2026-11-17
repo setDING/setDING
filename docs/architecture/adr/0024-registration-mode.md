@@ -1,6 +1,6 @@
 # ADR-0024: Registration mode set by the server operator
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-17
 
 ## Context
@@ -155,6 +155,7 @@ REALCHORD_EMAIL_VERIFICATION=off   # or: required
 - 2026-11-17: Owner decision: **email verification** is an operator option in the
   same environment file (`REALCHORD_EMAIL_VERIFICATION=off|required`, default `off`,
   `required` only takes effect with SMTP).
+- 2026-11-17: Accepted by the owner.
 
 ## Open points
 
