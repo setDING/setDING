@@ -24,6 +24,6 @@ werden sie mit deinem Konto synchronisiert.
   brauchen.
 - **Diagnoseprotokoll kopieren** legt die letzten Meldungen der App in die
   Zwischenablage, z. B. warum eine Synchronisation fehlschlug. Füge sie in eine
-  Nachricht an die Person ein, die euren Server betreut, oder in ein
+  Nachricht an die Person ein, die den Server betreut, oder in ein
   [Issue auf GitHub](https://github.com/tafli/setDING/issues).
 - Ganz unten steht die **Version** von setDING.

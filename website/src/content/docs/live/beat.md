@@ -61,6 +61,6 @@ Schlagzeug-Notizen, dazu Tempo und Taktart gross. Die Fusszeile nennt das Tempo 
 die Taktart des nächsten Songs. Auf breiten Bildschirmen zeigt ein Bereich daneben
 den Takt gross und das ganze Set; ein Tipp auf einen Song springt dorthin.
 
-Schlagzeug-Notizen schreibt ihr im Song als Abschnitte oder Kommentare nur für
+Schlagzeug-Notizen schreibst du im Song als Abschnitte oder Kommentare nur für
 Schlagzeug, z. B. `{comment-drums: Hi-Hat halb offen}`. Wer ein anderes Instrument
 eingestellt hat, sieht sie nicht.

@@ -7,7 +7,7 @@ sidebar:
 
 ## Die Begriffe
 
-- **Organisation:** zum Beispiel eine Musikschule, eine Kirche oder einfach eure
+- **Organisation:** zum Beispiel eine Musikschule, eine Kirche oder einfach deine
   Band. Alle Songs gehören der Organisation, und alle ihre Bands teilen sie.
 - **Band:** eine Gruppe von Leuten aus der Organisation, die zusammen spielt.
   Jede Band hat ihre eigenen Sets und legt für jeden Song ihre Tonart, ihren Ablauf

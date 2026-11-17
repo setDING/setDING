@@ -36,5 +36,5 @@ PDF-Betrachter deines Geräts – zum Beispiel für das Mischpult oder die Bühn
 
 **Als ZIP exportieren** speichert alle Songs des Sets als ChordPro-Dateien mit ihren
 PDF-Anhängen in einem ZIP-Archiv, nummeriert in der Reihenfolge des Sets, dazu die
-Set-Liste als `setlist.txt`. So gebt ihr die Songs an
-jemanden weiter, der nicht in eurer Band ist, oder legt eine Sicherung an.
+Set-Liste als `setlist.txt`. So gibst du die Songs an
+jemanden weiter, der nicht in deiner Band ist, oder legst eine Sicherung an.

@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-Eine **Organisation** ist z. B. eine Musikschule, eine Kirche oder einfach eure Band.
+Eine **Organisation** ist z. B. eine Musikschule, eine Kirche oder einfach deine Band.
 Ihr gehören die Songs und die Leute. Eine **Band** ist eine Gruppe von Leuten aus
 der Organisation, die zusammen spielt; jede Band hat ihre eigenen Sets und
 Band-Arrangements. Alle Bands einer Organisation teilen dieselbe Songbibliothek.
