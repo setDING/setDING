@@ -354,12 +354,12 @@ final upcomingGigsProvider = StreamProvider.autoDispose
     });
 
 /// Whether the past sets on the sets tab are collapsed (stored per device,
-/// #265).
+/// #265). Collapsed until the user expands them on this device (#282).
 class PastSetsCollapsedNotifier extends Notifier<bool> {
   static const _key = 'pastSetsCollapsed';
 
   @override
-  bool build() => ref.watch(sharedPreferencesProvider).getBool(_key) ?? false;
+  bool build() => ref.watch(sharedPreferencesProvider).getBool(_key) ?? true;
 
   Future<void> toggle() async {
     state = !state;
