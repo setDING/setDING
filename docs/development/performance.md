@@ -29,7 +29,14 @@ make perf DEVICE=<id>     # several devices: id from `adb devices`
   as TalkBack is active.
 - `fitSong` and `measureBlocks` emit timeline events, so slow frames can be
   attributed in the timelines (`*.timeline.json`, e.g. in Perfetto or
-  `chrome://tracing`).
+  `chrome://tracing`); so do the preparation of live pages
+  (`LivePreparation.step` between frames, `LivePreparation.complete` when a
+  page has to be built at once).
+- The VM keeps the timeline in a ring buffer of about 32,000 events. The test
+  records only the streams the summaries need (`Dart`, `Embedder`, `GC`) and
+  long scenarios in parts (e.g. ten page turns), which the driver joins again;
+  it warns when a part comes close to the buffer size. Before #296 the live
+  scenarios filled the buffer, so only their last seconds were measured.
 
 ### Scenarios
 

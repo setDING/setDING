@@ -133,7 +133,9 @@ void main() {
         unawaited(LiveScreen.openSet(context, seed.setId));
         await tester.pump(const Duration(seconds: 2));
         await _settle(tester);
-        await _trace(binding, name, _setSize * 3, (i) async {
+        // Five turns per part: a turn and the preparation of the next song
+        // take many frames.
+        await _trace(binding, name, _setSize * 3, perPart: 5, (i) async {
           await _press(
             tester,
             LogicalKeyboardKey.arrowRight,
