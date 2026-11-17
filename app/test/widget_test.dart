@@ -1164,10 +1164,18 @@ void main() {
       await tester.pump(undoDuration);
       await tester.pumpAndSettle();
       expect(find.text('Attachment “Horns” deleted'), findsNothing);
-      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
-      await tester.pumpAndSettle();
       bool exists(String name) =>
           File('${app.dir.path}/${files[name]}').existsSync();
+      // The files are purged with real database and file IO outside the
+      // fake clock, which takes a while on a busy machine (#353): wait for
+      // it in real time, for at most five seconds.
+      for (var i = 0; i < 250 && exists('Horns'); i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump();
+      }
+      await tester.pumpAndSettle();
       expect(exists('Horns'), isFalse);
       expect(exists('Lead sheet'), isTrue);
       await app.dispose(tester);
