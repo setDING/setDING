@@ -55,7 +55,8 @@ musician).
 - 2026-11-14: UI primarily in German and English, selectable in the settings.
 - 2026-11-14: German variant is Swiss Standard German (`de-CH`, no "ß"). A separate de-DE variant is not planned; it could be added later as an extra ARB file if needed.
 - 2026-11-17: Shared data never stores a localized UI label, because band members may use different languages (#289). A break left with its default name is stored without a note and shows the type label of each member's language; for older data, a note that equals the type label in any supported language counts as no note (`ui/sets/set_item_label.dart`). This applies to the set screen, live mode and the set list exports.
+- 2026-11-17: Resolved open point (ADR-0027, accepted, #328): the language is a **personal setting** synced with the account, no longer stored per device. Signed out, the device's own (`local`) value applies. `USER.locale` as a default for new devices is not needed.
 
 ## Open points
 
-- Should the language preference also be synced with the user account (as a default for new devices)?
+- None.
