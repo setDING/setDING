@@ -142,6 +142,7 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-17: The folded corner and the final barline are replaced by a progress bar of the set above the bottom bar: thick gaps between the items, thin gaps between the pages of the current song, current page in the accent colour, pauses and texts dashed; the folded corner was too large (issue #311).
 - 2026-11-17: The neighbours are prepared in idle time after a turn instead of in the first frames of the turn animation: the fit runs between frames, the song is built a few lines per frame, the page left behind is taken down after the turn in the same way; a turn to a page that is not prepared yet builds it at once. All pages of a song are built, so turning a page of the song only shows another one; rebuilding the live screen (e.g. when the page changes) no longer builds the songs again (issue #296).
 - 2026-11-17: The brand colour became the night blue of the setDING logo (#319): on a light stage the chords are deep brand blue `#2A3D9C` (about 9:1); the former brand red `#852309` belongs to the new accent "Red", which replaces "Blue". Amber on dark and black is unchanged and matches the brass of the logo.
+- 2026-11-17: Drummer mode accepted (ADR-0026, #325): beat display in the header, count-in overlay, click on the in-ear, song map for drums; a long press (≥ 0.6 s) of the forward key starts/stops the click without turning (one press still turns once), Enter joins the fixed mapping as start/stop of the click. Details in ADR-0026; this ADR is updated when it is implemented.
 
 ## Open points
 
@@ -149,6 +150,3 @@ between devices – neither over the local network nor via the backend.
   sleep during a long song; if it does, additionally request `ES_SYSTEM_REQUIRED` (issue #294).
 - Which page turner model (for testing on real hardware)? Configurable key mapping needed for pedals sending other keys?
 - Is MIDI control desired (e.g. Program Change from a keyboard/pedalboard)?
-- Drummer mode (ADR-0026, proposed, #325): beat display in the header, count-in overlay, click on the in-ear,
-  song map for drums; a long press (≥ 0.6 s) of the forward key starts/stops the click without turning, Enter
-  joins the fixed mapping as start/stop. Becomes part of this ADR once ADR-0026 is accepted.

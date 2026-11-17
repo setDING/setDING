@@ -1,6 +1,6 @@
 # ADR-0026: Drummer mode with beat display, count-in and click
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-17
 
 ## Context
@@ -154,6 +154,7 @@ with the idle-time preparation of the next song (#296).
   item, start/stop by a long press of the forward pedal and by a key (Enter), tempo on
   stage only until live mode is left, latency compensation with calibration (wired and
   Bluetooth in-ears both occur), song map for drums only.
+- 2026-11-17: Accepted by the owner.
 
 ## Open points
 
