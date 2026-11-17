@@ -30,7 +30,13 @@ class SongRenderOptions {
     this.diagramsPosition = DiagramsPosition.off,
     this.imageLookup,
     this.layout,
+    this.onElementTap,
   });
+
+  /// Called with the tapped line, section or delegated environment, e.g.
+  /// to move the editor cursor to its source line (#372); null = lines are
+  /// not tappable.
+  final ValueChanged<Object>? onElementTap;
 
   final ChordFormatter formatter;
   final bool lyricsOnly;
@@ -116,15 +122,19 @@ class SongBody extends StatelessWidget {
           diagramsOnTop: options.diagramsPosition == DiagramsPosition.top,
         );
     Widget blockWidget(SongBlock b) => b.delegate != null
-        ? DelegateView(
-            delegate: b.delegate!,
-            lyrics: style.lyricsFor(b.startFormat),
-            label: style.labelFor(b.startFormat),
-            mono: style.tabFor(b.startFormat),
-            colors: style.colors,
-            transpose:
-                options.formatter.transpose +
-                options.formatter.leadingTranspose,
+        ? _tappable(
+            options.onElementTap,
+            b.delegate!,
+            DelegateView(
+              delegate: b.delegate!,
+              lyrics: style.lyricsFor(b.startFormat),
+              label: style.labelFor(b.startFormat),
+              mono: style.tabFor(b.startFormat),
+              colors: style.colors,
+              transpose:
+                  options.formatter.transpose +
+                  options.formatter.leadingTranspose,
+            ),
           )
         : b.diagrams != null
         ? _DiagramsBlock(diagrams: b.diagrams!, style: style)
@@ -340,9 +350,14 @@ class _SectionBlock extends StatelessWidget {
     GridGeometry? grid;
     final children = <Widget>[
       if (block.label != null)
-        _Label(text: block.label!, style: style.labelFor(format)),
+        _tappable(
+          options.onElementTap,
+          block.section,
+          _Label(text: block.label!, style: style.labelFor(format)),
+        ),
     ];
     for (final line in block.lines) {
+      final before = children.length;
       switch (line) {
         case final FormatLine l:
           format.apply(l);
@@ -430,6 +445,9 @@ class _SectionBlock extends StatelessWidget {
           children.add(
             SizedBox(height: style.fontSize * SongSpacing.emptyLine),
           );
+      }
+      for (var i = before; i < children.length; i++) {
+        children[i] = _tappable(options.onElementTap, line, children[i]);
       }
     }
     final content = Column(
@@ -605,4 +623,14 @@ class _ChordLyricLine extends StatelessWidget {
       ),
     );
   }
+}
+
+/// [child], tappable as [element] when [onTap] is set.
+Widget _tappable(ValueChanged<Object>? onTap, Object? element, Widget child) {
+  if (onTap == null || element == null) return child;
+  return GestureDetector(
+    behavior: HitTestBehavior.opaque,
+    onTap: () => onTap(element),
+    child: child,
+  );
 }
