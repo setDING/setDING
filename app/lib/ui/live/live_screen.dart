@@ -1363,50 +1363,55 @@ class _ChordProPage extends ConsumerWidget {
                     return _scrolling(size, options(fit.layout));
                   }
                   songPageController.attach(pages.ends.length);
-                  // Built again only when the page changes, not when the
-                  // number of pages is told to the page indicator.
-                  (int, Widget)? shown;
-                  // Fits: no scrolling. FittedBox only shrinks, as a safety net
-                  // for small measurement differences (e.g. wrapped notes).
-                  return ListenableBuilder(
-                    listenable: songPageController,
-                    builder: (context, _) {
-                      final layout = fit.layout;
-                      final page = songPageController.page;
-                      if (shown case (final p, final body) when p == page) {
-                        return body;
-                      }
-                      final start = page == 0 ? 0 : pages.ends[page - 1];
-                      final end = pages.ends[page];
-                      final pageOptions = options(
-                        layout == null || pages.ends.length == 1
-                            ? layout
-                            : (
-                                blocks: layout.blocks.sublist(start, end),
-                                metrics: layout.metrics.sublist(start, end),
-                              ),
-                      );
-                      final body = Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: _margin,
-                        ),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.topLeft,
-                          child: SizedBox(
-                            width: size.width,
-                            child: SongBody(
-                              key: ValueKey(('song-page', page)),
-                              song: parsed,
-                              options: pageOptions,
-                              progress: preparation.body,
-                            ),
+                  // All pages of the song are built (and prepared ahead),
+                  // so turning a page of the song only shows another one.
+                  // Fits: no scrolling. FittedBox only shrinks, as a safety
+                  // net for small measurement differences (e.g. wrapped
+                  // notes).
+                  final layout = fit.layout;
+                  final pageBodies = <Widget>[];
+                  var firstLine = 0;
+                  for (final (page, end) in pages.ends.indexed) {
+                    final start = page == 0 ? 0 : pages.ends[page - 1];
+                    final pageLayout = layout == null || pages.ends.length == 1
+                        ? layout
+                        : (
+                            blocks: layout.blocks.sublist(start, end),
+                            metrics: layout.metrics.sublist(start, end),
+                          );
+                    pageBodies.add(
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.topLeft,
+                        child: SizedBox(
+                          width: size.width,
+                          child: SongBody(
+                            key: ValueKey(('song-page', page)),
+                            song: parsed,
+                            options: options(pageLayout),
+                            progress: preparation.body,
+                            firstLine: firstLine,
                           ),
                         ),
-                      );
-                      shown = (page, body);
-                      return body;
-                    },
+                      ),
+                    );
+                    for (final b in pageLayout?.blocks ?? const <SongBlock>[]) {
+                      firstLine += songBlockLines(b);
+                    }
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: _margin),
+                    child: ListenableBuilder(
+                      listenable: songPageController,
+                      builder: (context, _) => IndexedStack(
+                        index: math.min(
+                          songPageController.page,
+                          pageBodies.length - 1,
+                        ),
+                        sizing: StackFit.expand,
+                        children: pageBodies,
+                      ),
+                    ),
                   );
                 },
               ),

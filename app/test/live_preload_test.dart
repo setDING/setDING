@@ -198,6 +198,46 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('all pages of a song are built, turning one builds nothing', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final verses = [
+      for (var v = 1; v <= 16; v++)
+        '{start_of_verse: Verse $v}\n'
+            '${[for (var l = 1; l <= 4; l++) '[G]page${v}x$l and [C]more words'].join('\n')}\n'
+            '{end_of_verse}',
+    ].join('\n\n');
+    final items = await createSongs(tester, app, ['{title: Paged}\n$verses']);
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+    final indicator = find.byKey(const Key('live-song-page'));
+    expect(indicator, findsOneWidget);
+    final bodies = tester
+        .widgetList<SongBody>(find.byType(SongBody, skipOffstage: false))
+        .toList();
+    expect(bodies.length, greaterThan(1));
+    // Only the first page is on stage, the last verse is built behind it.
+    expect(find.byType(SongBody), findsOneWidget);
+    expect(find.textContaining('page16x4'), findsNothing);
+    expect(
+      find.textContaining('page16x4', skipOffstage: false),
+      findsOneWidget,
+    );
+
+    final page = tester.getRect(find.byType(PageView));
+    await tester.tapAt(Offset(page.right - 20, page.bottom - 20));
+    await tester.pump();
+    expect(tester.widget<Text>(indicator).data, startsWith('Page 2/'));
+    expect(find.byType(SongBody), findsOneWidget);
+    expect(
+      tester.widgetList<SongBody>(find.byType(SongBody, skipOffstage: false)),
+      orderedEquals(bodies),
+    );
+    await app.dispose(tester);
+  });
+
   testWidgets('the next song is built a few lines per frame', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'en'});

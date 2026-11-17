@@ -88,6 +88,7 @@ class SongBody extends StatelessWidget {
     required this.song,
     required this.options,
     this.progress,
+    this.firstLine = 0,
   });
 
   final Song song;
@@ -95,6 +96,10 @@ class SongBody extends StatelessWidget {
 
   /// Builds the blocks in steps; null builds all at once.
   final BodyProgress? progress;
+
+  /// Lines of the song before this body for [progress], e.g. of the pages
+  /// before it: the pages of a song are built one after the other.
+  final int firstLine;
 
   @override
   Widget build(BuildContext context) {
@@ -131,12 +136,14 @@ class SongBody extends StatelessWidget {
     // Lines before each block, for building in steps.
     final progress = this.progress;
     final starts = <int>[];
-    var lines = 0;
+    var lines = firstLine;
     for (final b in blocks) {
       starts.add(lines);
       lines += songBlockLines(b);
     }
-    progress?.total = lines;
+    if (progress != null) {
+      progress.total = math.max(progress.total ?? 0, lines);
+    }
     // Keyed by index, so tests can compare rendered and measured heights.
     Widget render(int i, SongBlock b) => KeyedSubtree(
       key: ValueKey(('song-block', i)),
