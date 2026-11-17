@@ -1676,4 +1676,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String upcomingGigTooltip(String set, String date) {
     return 'In “$set” on $date';
   }
+
+  @override
+  String get foundInLyrics => 'Found in the lyrics';
 }

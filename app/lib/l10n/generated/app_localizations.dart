@@ -2953,6 +2953,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'In «{set}» am {date}'**
   String upcomingGigTooltip(String set, String date);
+
+  /// No description provided for @foundInLyrics.
+  ///
+  /// In de, this message translates to:
+  /// **'Im Liedtext gefunden'**
+  String get foundInLyrics;
 }
 
 class _AppLocalizationsDelegate

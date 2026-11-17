@@ -863,5 +863,6 @@
       "set": {"type": "String"},
       "date": {"type": "String"}
     }
-  }
+  },
+  "foundInLyrics": "Im Liedtext gefunden"
 }
