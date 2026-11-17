@@ -3,6 +3,8 @@ import 'dart:typed_data';
 
 import 'dart:convert';
 
+import 'package:chordpro/chordpro.dart' as cp;
+
 import 'package:realchord/data/attachment_storage_io.dart';
 import 'package:realchord/data/attachment_storage.dart';
 import 'package:realchord/data/database.dart';
@@ -250,6 +252,32 @@ void main() {
         .write(SongsCompanion(updatedAt: Value(DateTime(2020))));
     await songs.updateSource(c, '{title: Charlie}\n{key: Em}\nedited');
     expect((await titles(SongSort.recent)).first, 'Charlie');
+  });
+
+  test('the song list filters by key, enharmonic spellings alike', () async {
+    await songs.createSong(source: '{title: Alpha}\n{key: Bb}');
+    await songs.createSong(source: '{title: Bravo}\n{key: A#}');
+    await songs.createSong(source: '{title: Charlie}\n{key: Bbm}');
+    await songs.createSong(source: '{title: Delta}\n{key: C}');
+    await songs.createSong(source: '{title: Echo}');
+    // One key per pitch and mode, from C to B.
+    final keys = await songs.watchKeys().first;
+    expect(keys.map((k) => k.format(cp.ChordNotation.international)), [
+      'C',
+      'Bb',
+      'Bbm',
+    ]);
+    final bb = keyRank(keys[1]);
+    expect((await songs.watchSongList(key: bb).first).map((s) => s.title), [
+      'Alpha',
+      'Bravo',
+    ]);
+    expect(
+      (await songs.watchSongList(key: bb, query: 'bravo').first).map(
+        (s) => s.title,
+      ),
+      ['Bravo'],
+    );
   });
 
   test('the song list has what lists show, filtered like the songs', () async {

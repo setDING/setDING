@@ -129,6 +129,10 @@ void main() {
       ),
     );
     await _shot(tester, 'de_3_songs_by_key');
+    await tester.tap(find.byKey(const Key('songs-key-filter')));
+    await _shot(tester, 'de_3_songs_key_menu');
+    await tester.tap(find.widgetWithText(MenuItemButton, 'D'));
+    await _shot(tester, 'de_3_songs_key_filter');
     await app.dispose(tester);
   });
 

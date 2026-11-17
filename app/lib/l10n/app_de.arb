@@ -852,5 +852,7 @@
   "sortByArtist": "Interpret",
   "sortByKey": "Tonart",
   "sortByRecent": "Zuletzt bearbeitet",
-  "noArtist": "Ohne Interpret"
+  "noArtist": "Ohne Interpret",
+  "keyFilter": "Tonart",
+  "allKeys": "Alle Tonarten"
 }

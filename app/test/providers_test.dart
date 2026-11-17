@@ -25,7 +25,7 @@ void main() {
 
     final providers = [
       songProvider(id),
-      songsProvider((query: 'on', tag: null)),
+      songsProvider((query: 'on', tag: null, key: null)),
       overlayProvider(id),
       attachmentsProvider(id),
     ];

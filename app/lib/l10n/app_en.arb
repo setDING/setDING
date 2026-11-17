@@ -703,5 +703,7 @@
   "sortByArtist": "Artist",
   "sortByKey": "Key",
   "sortByRecent": "Recently edited",
-  "noArtist": "No artist"
+  "noArtist": "No artist",
+  "keyFilter": "Key",
+  "allKeys": "All keys"
 }

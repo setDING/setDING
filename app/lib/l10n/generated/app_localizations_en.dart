@@ -1658,4 +1658,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noArtist => 'No artist';
+
+  @override
+  String get keyFilter => 'Key';
+
+  @override
+  String get allKeys => 'All keys';
 }
