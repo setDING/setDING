@@ -72,6 +72,47 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('a changed search replaces the list in one step (#297)', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 1280);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    await tester.runAsync(() async {
+      await app.songs.createSong(source: '{title: Alpha}\n[G]Sun is shining');
+      await app.songs.createSong(source: '{title: Sunday}\n[G]Rain');
+      await app.songs.createSong(source: '{title: Beta}\n[G]Snow');
+    });
+    await tester.pumpWidget(app.build(home: const SongsScreen()));
+    await tester.pumpAndSettle();
+    final beta = find.text('Beta', findRichText: true);
+    final snippet = find.byKey(const ValueKey('song-lyrics-hit'));
+    expect(beta, findsOneWidget);
+
+    // Every frame shows either the whole previous list or the results with
+    // their hits highlighted: no progress indicator, no results without
+    // highlighting in between.
+    void expectOneStep() {
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.text('Alpha', findRichText: true), findsOneWidget);
+      expect(snippet.evaluate().length, 1 - beta.evaluate().length);
+    }
+
+    for (final text in ['sun', '']) {
+      await tester.enterText(find.byType(SearchBar), text);
+      await tester.pump(songSearchDelay);
+      for (var i = 0; i < 10; i++) {
+        expectOneStep();
+        await tester.pump();
+      }
+      await tester.pumpAndSettle();
+      expectOneStep();
+      expect(beta, text.isEmpty ? findsOneWidget : findsNothing);
+    }
+    await app.dispose(tester);
+  });
+
   Future<TestApp> start(WidgetTester tester, Size size) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -95,6 +136,26 @@ void main() {
     // The header spans the row, above both songs.
     expect(find.text('A'), findsOneWidget);
     expect(tester.getTopLeft(find.text('A')).dy, lessThan(a.dy));
+    await app.dispose(tester);
+  });
+
+  testWidgets('the keyboard opening keeps the list as it is (#297)', (
+    tester,
+  ) async {
+    final app = await start(tester, const Size(800, 1280));
+    SongTile tile() => tester.widget(find.byType(SongTile).first);
+    final before = tile();
+    // Only the height changes: the songs are not built again.
+    tester.view.viewInsets = const FakeViewPadding(bottom: 500);
+    await tester.pumpAndSettle();
+    expect(identical(tile(), before), isTrue);
+    // A width with another number of columns still gives a new layout.
+    tester.view.physicalSize = const Size(1280, 1280);
+    await tester.pumpAndSettle();
+    expect(
+      tester.getTopLeft(find.text('Another')).dy,
+      tester.getTopLeft(find.text('Alpha')).dy,
+    );
     await app.dispose(tester);
   });
 

@@ -16,6 +16,7 @@ import '../bands/copy_to_band.dart';
 import '../bands/library_switcher.dart';
 import '../render/song_header.dart';
 import '../sets/sets_screen.dart' show formatGigDate;
+import '../widgets/breakpoint_builder.dart';
 import '../widgets/dialogs.dart';
 import 'import_dialog.dart';
 import 'song_editor_screen.dart';
@@ -24,6 +25,14 @@ import 'song_screen.dart';
 /// Delay before a changed search text is applied, so that typing does not
 /// start a database query per keystroke.
 const songSearchDelay = Duration(milliseconds: 250);
+
+/// Songs of the list in the order [sort], with the hits of the search that
+/// found them.
+typedef _Results = ({
+  List<SongListEntry> songs,
+  Map<String, SearchHit> hits,
+  SongSort sort,
+});
 
 /// Song library with search, creation and import.
 class SongsScreen extends ConsumerStatefulWidget {
@@ -50,6 +59,13 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
 
   /// Songs selected for copying, or null outside selection mode.
   Set<String>? _selected;
+
+  /// The songs last shown, with the hits of the same search. They stay while
+  /// the results of a changed search, tag or order load, and are replaced
+  /// once the songs and their hits are both there (#297): one rebuild of the
+  /// list per search instead of a progress indicator, the songs and then
+  /// their highlighting in separate frames.
+  _Results? _shown;
 
   void _toggle(String id) => setState(() {
     final selected = {...?_selected};
@@ -86,12 +102,26 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final songs = ref.watch(songsProvider((query: _query, tag: _tag)));
+    final hits = ref.watch(searchHitsProvider(_query));
+    final sort = ref.watch(songSortProvider);
+    if (songs.hasValue && !songs.isLoading && !hits.isLoading) {
+      _shown = (
+        songs: songs.requireValue,
+        hits: hits.value ?? const {},
+        sort: sort,
+      );
+    }
+    final AsyncValue<_Results> results = switch (_shown) {
+      _ when songs.hasError && !songs.isLoading => AsyncError(
+        songs.error!,
+        songs.stackTrace ?? StackTrace.empty,
+      ),
+      final shown? => AsyncData(shown),
+      null => const AsyncLoading(),
+    };
     final counts = ref.watch(attachmentCountsProvider).value ?? const {};
     final library = ref.watch(currentLibraryProvider);
-    final sort = ref.watch(songSortProvider);
     final notation = ref.watch(settingsProvider.select((s) => s.notation));
-    String? section(SongListEntry song) =>
-        songSection(song, sort, notation: notation, l10n: l10n);
     final band = ref.watch(arrangementBandProvider(library.id));
     final arrangements = band == null
         ? const <String, BandArrangement>{}
@@ -102,7 +132,6 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
         c.songId,
     };
     final gigs = ref.watch(upcomingGigsProvider(library.id)).value ?? const {};
-    final hits = ref.watch(searchHitsProvider(_query)).value ?? const {};
     final selected = _selected;
     // Leave selection mode when switching libraries.
     ref.listen(currentLibraryProvider, (previous, next) {
@@ -153,7 +182,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                   icon: const Icon(Icons.select_all),
                   onPressed: () => setState(
                     () => _selected = {
-                      for (final s in songs.value ?? const <SongListEntry>[])
+                      for (final s in _shown?.songs ?? const <SongListEntry>[])
                         s.id,
                     },
                   ),
@@ -219,76 +248,116 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
           _Filters(tag: _tag, onTag: (tag) => setState(() => _tag = tag)),
           Expanded(
             child: AsyncBody(
-              value: songs,
-              data: (list) => list.isEmpty
-                  ? EmptyState(
-                      icon: Icons.library_music_outlined,
-                      message: l10n.songsEmpty,
-                    )
-                  : LayoutBuilder(
-                      builder: (context, constraints) {
-                        Widget tile(int i) => SongTile(
-                          song: list[i],
-                          hasAttachments: (counts[list[i].id] ?? 0) > 0,
-                          arrangement: arrangements[list[i].id],
-                          hasConflict: conflicts.contains(list[i].id),
-                          nextGig: gigs[list[i].id],
-                          hit: hits[list[i].id],
-                          bandName: band?.name ?? '',
-                          leading: selected == null
-                              ? null
-                              : Checkbox(
-                                  value: selected.contains(list[i].id),
-                                  onChanged: (_) => _toggle(list[i].id),
-                                ),
-                          onLongPress: () => _toggle(list[i].id),
-                          onTap: selected != null
-                              ? () => _toggle(list[i].id)
-                              : () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute<void>(
-                                    builder: (_) =>
-                                        SongScreen(songId: list[i].id),
-                                  ),
-                                ),
-                        );
-                        final columns =
-                            constraints.maxWidth >= songListTwoColumnWidth
-                            ? 2
-                            : 1;
-                        final rows = songListRows([
-                          for (final song in list) section(song),
-                        ], columns);
-                        return ListView.builder(
-                          padding: const EdgeInsets.only(bottom: 88),
-                          itemCount: rows.length,
-                          itemBuilder: (context, r) {
-                            final row = rows[r];
-                            if (row.header case final header?) {
-                              return SongSectionHeader(header);
-                            }
-                            if (columns == 1) return tile(row.songs.single);
-                            return Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                for (var c = 0; c < columns; c++)
-                                  Expanded(
-                                    child: c < row.songs.length
-                                        ? tile(row.songs[c])
-                                        : const SizedBox.shrink(),
-                                  ),
-                              ],
-                            );
-                          },
-                        );
-                      },
-                    ),
+              value: results,
+              data: (results) {
+                final (songs: list, :hits, :sort) = results;
+                if (list.isEmpty) {
+                  return EmptyState(
+                    icon: Icons.library_music_outlined,
+                    message: l10n.songsEmpty,
+                  );
+                }
+                final sections = _sectionsOf(list, sort, notation, l10n);
+                Widget tile(int i) => SongTile(
+                  song: list[i],
+                  hasAttachments: (counts[list[i].id] ?? 0) > 0,
+                  arrangement: arrangements[list[i].id],
+                  hasConflict: conflicts.contains(list[i].id),
+                  nextGig: gigs[list[i].id],
+                  hit: hits[list[i].id],
+                  bandName: band?.name ?? '',
+                  leading: selected == null
+                      ? null
+                      : Checkbox(
+                          value: selected.contains(list[i].id),
+                          onChanged: (_) => _toggle(list[i].id),
+                        ),
+                  onLongPress: () => _toggle(list[i].id),
+                  onTap: selected != null
+                      ? () => _toggle(list[i].id)
+                      : () => Navigator.push(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (_) => SongScreen(songId: list[i].id),
+                          ),
+                        ),
+                );
+                return BreakpointBuilder(
+                  select: (constraints) =>
+                      constraints.maxWidth >= songListTwoColumnWidth ? 2 : 1,
+                  builder: (context, columns) =>
+                      _songList(songListRows(sections, columns), columns, tile),
+                );
+              },
             ),
           ),
         ],
       ),
     );
   }
+
+  /// Section headers of the songs (see [songSection]), computed again only
+  /// when the songs, their order, the notation or the language change.
+  List<String?> _sectionsOf(
+    List<SongListEntry> songs,
+    SongSort sort,
+    cp.ChordNotation notation,
+    AppLocalizations l10n,
+  ) {
+    if (_sections case final c?
+        when identical(c.songs, songs) &&
+            c.sort == sort &&
+            c.notation == notation &&
+            identical(c.l10n, l10n)) {
+      return c.sections;
+    }
+    final sections = [
+      for (final song in songs)
+        songSection(song, sort, notation: notation, l10n: l10n),
+    ];
+    _sections = (
+      songs: songs,
+      sort: sort,
+      notation: notation,
+      l10n: l10n,
+      sections: sections,
+    );
+    return sections;
+  }
+
+  ({
+    List<SongListEntry> songs,
+    SongSort sort,
+    cp.ChordNotation notation,
+    AppLocalizations l10n,
+    List<String?> sections,
+  })?
+  _sections;
+
+  Widget _songList(
+    List<SongListRow> rows,
+    int columns,
+    Widget Function(int song) tile,
+  ) => ListView.builder(
+    padding: const EdgeInsets.only(bottom: 88),
+    itemCount: rows.length,
+    itemBuilder: (context, r) {
+      final row = rows[r];
+      if (row.header case final header?) return SongSectionHeader(header);
+      if (columns == 1) return tile(row.songs.single);
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var c = 0; c < columns; c++)
+            Expanded(
+              child: c < row.songs.length
+                  ? tile(row.songs[c])
+                  : const SizedBox.shrink(),
+            ),
+        ],
+      );
+    },
+  );
 }
 
 /// Chips above the list: the order (a menu, see [SongSort]) and the tags

@@ -11,6 +11,7 @@ import '../util/app_version.dart';
 import '../util/log.dart';
 import 'account/account_section.dart';
 import 'theme.dart';
+import 'widgets/breakpoint_builder.dart';
 import 'widgets/dialogs.dart';
 
 /// The categories of the settings screen.
@@ -39,9 +40,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(l10n.navSettings)),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth < SettingsScreen.wideLayoutWidth) {
+      body: BreakpointBuilder(
+        select: (constraints) =>
+            constraints.maxWidth >= SettingsScreen.wideLayoutWidth,
+        builder: (context, wide) {
+          if (!wide) {
             return _CategoryList(
               onSelected: (c) => Navigator.of(context).push(
                 MaterialPageRoute<void>(

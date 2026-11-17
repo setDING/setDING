@@ -74,6 +74,16 @@ void main() {
       await _settle(tester);
       recordMemory('start');
 
+      // The song list and the search in portrait (one column on a tablet),
+      // whatever position the device was left in: in landscape, the
+      // keyboard did not resize the app on the test tablet, so the frames
+      // while it opens were not measured (#297).
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+      ]);
+      await tester.pump(const Duration(seconds: 2));
+      await _settle(tester);
+
       // Song list: scroll through the library.
       await tester.tap(find.byIcon(Icons.library_music_outlined));
       await _settle(tester);

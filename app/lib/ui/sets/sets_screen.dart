@@ -8,6 +8,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../bands/band_switcher.dart';
 import '../songs/songs_screen.dart' show songListTwoColumnWidth;
+import '../widgets/breakpoint_builder.dart';
 import '../widgets/dialogs.dart';
 import 'set_screen.dart';
 
@@ -35,11 +36,10 @@ class SetsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final list = ref.watch(setsProvider).value ?? const <SetSummary>[];
     final selected = ref.watch(selectedSetProvider);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final shown = constraints.maxWidth < setsMasterDetailWidth
-            ? null
-            : shownSetId(list, selected, today: _today());
+    return BreakpointBuilder(
+      select: (constraints) => constraints.maxWidth >= setsMasterDetailWidth,
+      builder: (context, wide) {
+        final shown = wide ? shownSetId(list, selected, today: _today()) : null;
         if (shown == null) return const _SetsPane();
         return Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
