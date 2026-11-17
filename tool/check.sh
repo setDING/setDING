@@ -59,7 +59,7 @@ if 'ß' in open('lib/l10n/app_de.arb', encoding='utf-8').read():
     sys.exit(1)
 print('l10n: OK (%d keys)' % len(de))
 PY
-  dart format --output=none --set-exit-if-changed lib test test_screenshots
+  dart format --output=none --set-exit-if-changed lib test test_screenshots integration_test test_driver
   flutter analyze --fatal-infos
   flutter test "${concurrency[@]}"
   # The screenshot tests drive and render the real screens; without

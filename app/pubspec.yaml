@@ -42,6 +42,11 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  # Performance measurement on a device (make perf, docs/development/performance.md).
+  integration_test:
+    sdk: flutter
+  flutter_driver:
+    sdk: flutter
   # Starts a real PocketBase with the repository's schema (integration tests).
   realchord_server:
     path: ../server
