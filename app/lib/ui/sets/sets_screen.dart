@@ -7,6 +7,7 @@ import '../../data/set_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../bands/band_switcher.dart';
+import '../songs/chordpro_problems_badge.dart';
 import '../songs/songs_screen.dart' show songListTwoColumnWidth;
 import '../widgets/breakpoint_builder.dart';
 import '../widgets/dialogs.dart';
@@ -265,6 +266,10 @@ class _SetCard extends ConsumerWidget {
     final colors = Theme.of(context).colorScheme;
     final set = summary.set;
     final ready = ref.watch(offlineReadyProvider(set.id)).value;
+    // Songs with ChordPro problems, for who prepares the sets (#314).
+    final problems = ref.watch(currentBandProvider).canManageSets
+        ? (ref.watch(problemSongCountsProvider).value?[set.id] ?? 0)
+        : 0;
     final details = [
       if (set.gigDate != null) formatGigDate(context, set.gigDate!),
       if (set.venue != null) set.venue!,
@@ -308,7 +313,20 @@ class _SetCard extends ConsumerWidget {
                 ],
               ),
         subtitle: Text(details),
-        trailing: ready == null ? null : OfflineBadge(ready: ready),
+        trailing: ready == null && problems == 0
+            ? null
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: 8,
+                children: [
+                  if (problems > 0)
+                    ChordProProblemsBadge(
+                      key: const ValueKey('set-problems'),
+                      message: l10n.setChordProProblemsTooltip(problems),
+                    ),
+                  if (ready != null) OfflineBadge(ready: ready),
+                ],
+              ),
         onTap: onTap,
       ),
     );

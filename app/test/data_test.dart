@@ -200,6 +200,44 @@ void main() {
       expect(await songs.watchTags().first, ['Ballad', 'Rock']);
     });
 
+    test('the import reports songs with ChordPro problems (#314)', () async {
+      final service = ImportExportService(songs, sets);
+      ImportFile file(String name, String text) =>
+          ImportFile(name, Uint8List.fromList(utf8.encode(text)));
+      final result = await service.importFiles([
+        file('ok.cho', '{title: Fine}\n[C]a\n'),
+        file('note.cho', '{title: Washed}\n{c: Chorus} (a cappella)\n[G]b\n'),
+        file('open.cho', '{title: Open}\n[G]b [Am\n{c: x} y\n'),
+        file('broken.cho', '{title: Broken\n[C]a\n'),
+      ]);
+      expect(result.imported, 4);
+      expect(
+        [for (final p in result.problems) (p.title, p.count, p.fixable)],
+        // An unclosed {title} gives no title: the file name stands in.
+        [('Washed', 1, true), ('Open', 2, true), ('broken', 1, false)],
+      );
+      final listed = {
+        for (final s in await songs.watchSongList().first) s.title: s.problems,
+      };
+      expect(listed['Fine'], 0);
+      expect(listed['Washed'], 1);
+
+      // Fixing changes only what can be fixed; the counts follow.
+      expect(
+        await service.fixProblems([for (final p in result.problems) p.songId]),
+        2,
+      );
+      final washed = await songs.getSong(result.problems.first.songId);
+      expect(
+        washed!.chordproSource,
+        '{title: Washed}\n{comment_italic: (a cappella)}\n{c: Chorus}\n'
+        '[G]b\n',
+      );
+      expect(washed.chordproProblems, 0);
+      final open = await songs.getSong(result.problems[1].songId);
+      expect(open!.chordproProblems, 1);
+    });
+
     test('a file with several songs is imported as several songs', () async {
       final service = ImportExportService(songs, sets);
       final result = await service.importFiles([
@@ -663,6 +701,25 @@ void main() {
       // Removing the song with the missing file makes the set ready.
       await songs.deleteSong(b);
       expect(await sets.watchNotOfflineReady().first, {missingSong});
+    });
+
+    test('songs with ChordPro problems per set (#314)', () async {
+      final ok = await songs.createSong(source: '{title: A}\n[C]a');
+      final bad = await songs.createSong(source: '{title: B}\n[C a');
+      final worse = await songs.createSong(source: '{c: x} y\n[C a');
+      final clean = await sets.createSet(name: 'Clean');
+      await sets.addSongs(clean, [ok]);
+      final mixed = await sets.createSet(name: 'Mixed');
+      // The same song twice counts once.
+      await sets.addSongs(mixed, [ok, bad, worse, bad]);
+      await sets.addMarker(mixed, SetItemType.pause, 'Break');
+      expect(await sets.watchProblemSongCounts().first, {mixed: 2});
+
+      // Fixing a song or deleting it updates the counts.
+      await songs.updateSource(bad, '{title: B}\n[C]a');
+      expect(await sets.watchProblemSongCounts().first, {mixed: 1});
+      await songs.deleteSong(worse);
+      expect(await sets.watchProblemSongCounts().first, isEmpty);
     });
   });
 }

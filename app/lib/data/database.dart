@@ -119,6 +119,11 @@ class Songs extends Table {
   /// (search.drift, schema 10).
   TextColumn get searchText => text().nullable()();
 
+  /// Number of places where the ChordPro source probably does not do what
+  /// the author meant (`validateChordPro`, schema 14, #314): derived on
+  /// the device like [searchText], for the warning icons in lists.
+  IntColumn get chordproProblems => integer().withDefault(const Constant(0))();
+
   /// `{tag}` values, each enclosed in newlines (`\nRock\nLive\n`) so a tag
   /// can be matched exactly with LIKE (schema 2).
   TextColumn get tags => text().nullable()();
@@ -327,7 +332,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -391,6 +396,7 @@ class AppDatabase extends _$AppDatabase {
               songs.createdBy,
               songs.updatedBy,
               songs.sequence,
+              songs.chordproProblems,
             ],
           ),
         );
@@ -451,6 +457,12 @@ class AppDatabase extends _$AppDatabase {
         // (refreshAllMetadata); before schema 4 the rebuilt table has the
         // column already.
         if (from >= 4) await m.addColumn(songs, songs.sequence);
+      }
+      if (from < 14) {
+        // ChordPro problems for the warning icons (#314): filled by
+        // afterUpgrade (refreshAllMetadata); before schema 4 the rebuilt
+        // table has the column already.
+        if (from >= 4) await m.addColumn(songs, songs.chordproProblems);
       }
     },
     beforeOpen: (details) async {

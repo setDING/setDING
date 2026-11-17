@@ -23,8 +23,15 @@ const schema7Indexes = [
   'set_items_song',
 ];
 
+/// Turns a current database back into schema 13: songs without the
+/// number of ChordPro problems.
+void downgradeToSchema13(Database raw) {
+  raw.execute('ALTER TABLE songs DROP COLUMN chordpro_problems');
+}
+
 /// Turns a current database back into schema 12: songs without sequence.
 void downgradeToSchema12(Database raw) {
+  downgradeToSchema13(raw);
   raw.execute('ALTER TABLE songs DROP COLUMN sequence');
 }
 
@@ -429,6 +436,30 @@ void main() {
       final repo = SongRepository(upgraded, storage);
       upgraded.afterUpgrade = (db) => repo.refreshAllMetadata();
       expect((await repo.watchSongList().first).single.sequence, 'I, V, C');
+      await upgraded.close();
+    },
+  );
+
+  test(
+    'upgrades a schema 13 database: songs know their ChordPro problems',
+    () async {
+      final current = AppDatabase(NativeDatabase(file));
+      final storage = FileAttachmentStorage(dir);
+      await SongRepository(
+        current,
+        storage,
+      ).createSong(source: '{title: Old}\n{c: Chorus} (a cappella)');
+      await current.close();
+
+      final raw = sqlite3.open(file.path);
+      downgradeToSchema13(raw);
+      raw.execute('PRAGMA user_version = 13');
+      raw.close();
+
+      final upgraded = AppDatabase(NativeDatabase(file));
+      final repo = SongRepository(upgraded, storage);
+      upgraded.afterUpgrade = (db) => repo.refreshAllMetadata();
+      expect((await repo.watchSongList().first).single.problems, 1);
       await upgraded.close();
     },
   );

@@ -7,12 +7,21 @@ import '../../providers.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
 
-/// Shows the import dialog and imports the chosen files.
-Future<void> showImportDialog(BuildContext context) =>
-    showDialog<void>(context: context, builder: (_) => const _ImportDialog());
+/// Shows the import dialog and imports the chosen files. [pick] chooses
+/// them (the platform's file dialog by default; tests pass their files).
+Future<void> showImportDialog(
+  BuildContext context, {
+  Future<List<ImportFile>> Function({List<String>? extensions}) pick =
+      pickFiles,
+}) => showDialog<void>(
+  context: context,
+  builder: (_) => _ImportDialog(pick: pick),
+);
 
 class _ImportDialog extends ConsumerStatefulWidget {
-  const _ImportDialog();
+  const _ImportDialog({required this.pick});
+
+  final Future<List<ImportFile>> Function({List<String>? extensions}) pick;
 
   @override
   ConsumerState<_ImportDialog> createState() => _ImportDialogState();
@@ -22,12 +31,17 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
   bool _german = false;
   bool _busy = false;
 
+  /// After an import with ChordPro problems (#314): the result to report.
+  ImportResult? _result;
+
   Future<void> _import() async {
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
     setState(() => _busy = true);
     try {
-      final files = await pickFiles(extensions: [...chordProExtensions, 'zip']);
+      final files = await widget.pick(
+        extensions: [...chordProExtensions, 'zip'],
+      );
       if (files.isEmpty) {
         setState(() => _busy = false);
         return;
@@ -40,6 +54,15 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
         if (result.skipped.isNotEmpty)
           l10n.importSkipped(result.skipped.join(', ')),
       ].join('\n');
+      if (result.problems.isNotEmpty) {
+        if (mounted) {
+          setState(() {
+            _busy = false;
+            _result = result;
+          });
+        }
+        return;
+      }
       if (mounted) Navigator.pop(context);
       messenger.showSnackBar(SnackBar(content: Text(message)));
     } catch (e) {
@@ -49,9 +72,80 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
     }
   }
 
+  /// Fixes what can be fixed automatically and closes the dialog.
+  Future<void> _fix(ImportResult result) async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _busy = true);
+    try {
+      final fixed = await ref.read(importExportProvider).fixProblems([
+        for (final p in result.problems)
+          if (p.fixable) p.songId,
+      ]);
+      if (mounted) Navigator.pop(context);
+      messenger.showSnackBar(SnackBar(content: Text(l10n.songsFixed(fixed))));
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _busy = false);
+      showMessage(context, l10n.errorGeneric('$e'));
+    }
+  }
+
+  /// The import result with the songs whose ChordPro has problems.
+  Widget _problemsReport(BuildContext context, ImportResult result) {
+    final l10n = AppLocalizations.of(context);
+    const shown = 8;
+    final problems = result.problems;
+    return AlertDialog(
+      key: const Key('import-problems'),
+      icon: const Icon(Icons.warning_amber_rounded),
+      title: Text(l10n.importProblemsTitle),
+      content: SizedBox(
+        width: 440,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              [
+                l10n.importResult(result.imported),
+                if (result.skipped.isNotEmpty)
+                  l10n.importSkipped(result.skipped.join(', ')),
+              ].join('\n'),
+            ),
+            const SizedBox(height: 12),
+            Text(l10n.importProblemsMessage(problems.length)),
+            const SizedBox(height: 8),
+            for (final p in problems.take(shown))
+              Text('• ${l10n.importProblemItem(p.title, p.count)}'),
+            if (problems.length > shown)
+              Text(l10n.moreProblems(problems.length - shown)),
+            const SizedBox(height: 12),
+            Text(
+              l10n.importProblemsHint,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _busy ? null : () => Navigator.pop(context),
+          child: Text(l10n.close),
+        ),
+        if (problems.any((p) => p.fixable))
+          FilledButton(
+            onPressed: _busy ? null : () => _fix(result),
+            child: Text(l10n.fixProblems),
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    if (_result case final result?) return _problemsReport(context, result);
     return AlertDialog(
       title: Text(l10n.importTitle),
       content: SizedBox(

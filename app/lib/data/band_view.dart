@@ -138,12 +138,17 @@ class LibraryView {
   /// Edit [song] and its attachments: librarians, and band leaders for the
   /// songs they created as long as nobody else has changed them.
   bool canEditSong(SongEntry song) =>
+      canEditSongBy(createdBy: song.createdBy, updatedBy: song.updatedBy);
+
+  /// [canEditSong] for a song with this creator and last editor, e.g. from
+  /// a song list.
+  bool canEditSongBy({String? createdBy, String? updatedBy}) =>
       isLocal ||
       isLibrarian ||
       (isLeader &&
           userId != null &&
-          song.createdBy == userId &&
-          song.updatedBy == userId);
+          createdBy == userId &&
+          updatedBy == userId);
 
   /// Delete songs and attachments: librarians.
   bool get canDeleteSongs => isLocal || isLibrarian;

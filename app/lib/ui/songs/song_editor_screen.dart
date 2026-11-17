@@ -45,11 +45,19 @@ const editorPreviewDelay = Duration(milliseconds: 200);
 enum _ProblemAction { save, fix, edit }
 
 class SongEditorScreen extends ConsumerStatefulWidget {
-  const SongEditorScreen({super.key, this.songId, this.initialSource});
+  const SongEditorScreen({
+    super.key,
+    this.songId,
+    this.initialSource,
+    this.selectFirstProblem = false,
+  });
 
   /// Null for a new song.
   final String? songId;
   final String? initialSource;
+
+  /// Select the first ChordPro problem when the editor opens (#314).
+  final bool selectFirstProblem;
 
   @override
   ConsumerState<SongEditorScreen> createState() => _SongEditorScreenState();
@@ -72,6 +80,18 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
     _preview = _parse(_original);
     _previewSource = _original;
     _controller.addListener(_onChanged);
+    if (widget.selectFirstProblem) {
+      final first = validateChordPro(_original).firstOrNull;
+      if (first != null) {
+        _controller.selection = TextSelection(
+          baseOffset: first.start,
+          extentOffset: first.end,
+        );
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _focus.requestFocus();
+        });
+      }
+    }
   }
 
   /// Source of [_preview].

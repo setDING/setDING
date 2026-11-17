@@ -27,6 +27,7 @@ import '../widgets/scope_info.dart';
 import '../widgets/side_panel.dart';
 import '../bands/copy_to_band.dart';
 import '../../sync/sync_controller.dart';
+import 'chordpro_problems_badge.dart';
 import 'conflict_banner.dart';
 import 'band_arrangement_panel.dart';
 import 'song_editor_screen.dart';
@@ -97,13 +98,19 @@ class _SongScreenState extends ConsumerState<SongScreen> {
     }
   }
 
-  Future<void> _editSource(SongEntry song) => Navigator.push(
-    context,
-    MaterialPageRoute<void>(
-      builder: (_) =>
-          SongEditorScreen(songId: song.id, initialSource: song.chordproSource),
-    ),
-  );
+  /// Opens the editor; with [showProblem], the first ChordPro problem is
+  /// selected (#314).
+  Future<void> _editSource(SongEntry song, {bool showProblem = false}) =>
+      Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => SongEditorScreen(
+            songId: song.id,
+            initialSource: song.chordproSource,
+            selectFirstProblem: showProblem,
+          ),
+        ),
+      );
 
   Future<void> _editTitle(SongEntry song) async {
     final l10n = AppLocalizations.of(context);
@@ -257,6 +264,16 @@ class _SongScreenState extends ConsumerState<SongScreen> {
           appBar: AppBar(
             title: Text(song.title.isEmpty ? l10n.untitled : song.title),
             actions: [
+              if (canEdit && song.chordproProblems > 0)
+                IconButton(
+                  key: const Key('song-problems'),
+                  tooltip: l10n.chordProProblemsShow(song.chordproProblems),
+                  icon: Icon(
+                    Icons.warning_amber_rounded,
+                    color: chordProProblemColor(context),
+                  ),
+                  onPressed: () => _editSource(song, showProblem: true),
+                ),
               IconButton(
                 tooltip: l10n.playLive,
                 icon: const Icon(Icons.play_arrow),

@@ -23,11 +23,13 @@ class SongMeta {
     this.tags = const [],
     this.searchText,
     this.sequence,
+    this.problems = 0,
   });
 
   factory SongMeta.fromSource(String source) {
     final song = cp.parseChordPro(source);
     return SongMeta(
+      problems: cp.validateChordPro(source).length,
       title: blankToNull(song.title),
       artist: blankToNull(song.artist),
       key: blankToNull(song.keyName),
@@ -66,6 +68,9 @@ class SongMeta {
 
   /// Raw `{x_sequence}` value (song list).
   final String? sequence;
+
+  /// Number of ChordPro problems (`validateChordPro`, #314).
+  final int problems;
 
   /// Tags as stored in the database (see `Songs.tags`).
   String? get tagsColumn => tags.isEmpty ? null : '\n${tags.join('\n')}\n';
@@ -161,6 +166,9 @@ class SongListEntry {
     this.sortTitle,
     this.sortArtist,
     this.hasChords = true,
+    this.problems = 0,
+    this.createdBy,
+    this.updatedBy,
   });
 
   final String id;
@@ -185,6 +193,14 @@ class SongListEntry {
   /// only.
   final bool hasChords;
 
+  /// Number of ChordPro problems (`validateChordPro`, #314).
+  final int problems;
+
+  /// Creator and last editor, for the edit permission of band leaders
+  /// (ADR-0023).
+  final String? createdBy;
+  final String? updatedBy;
+
   List<String> get tagList => _tags(tags);
 
   @override
@@ -199,7 +215,10 @@ class SongListEntry {
       other.tags == tags &&
       other.sortTitle == sortTitle &&
       other.sortArtist == sortArtist &&
-      other.hasChords == hasChords;
+      other.hasChords == hasChords &&
+      other.problems == problems &&
+      other.createdBy == createdBy &&
+      other.updatedBy == updatedBy;
 
   @override
   int get hashCode => Object.hash(
@@ -213,6 +232,9 @@ class SongListEntry {
     sortTitle,
     sortArtist,
     hasChords,
+    problems,
+    createdBy,
+    updatedBy,
   );
 }
 
@@ -289,6 +311,9 @@ class SongRepository {
         s.sortTitle,
         s.sortArtist,
         hasChords,
+        s.chordproProblems,
+        s.createdBy,
+        s.updatedBy,
       ])
       ..where(_filter(query, tag))
       // Title, artist and key are sorted in Dart (sortedFor).
@@ -310,6 +335,9 @@ class SongRepository {
             sortTitle: r.read(s.sortTitle),
             sortArtist: r.read(s.sortArtist),
             hasChords: r.read(hasChords) ?? true,
+            problems: r.read(s.chordproProblems) ?? 0,
+            createdBy: r.read(s.createdBy),
+            updatedBy: r.read(s.updatedBy),
           ),
       ].sortedFor(sort),
     );
@@ -415,6 +443,7 @@ class SongRepository {
               sortArtist: Value(meta.sortArtist),
               tags: Value(meta.tagsColumn),
               searchText: Value(meta.searchText),
+              chordproProblems: Value(meta.problems),
               updatedAt: DateTime.now(),
               createdBy: Value(_editorIn(libraryId)),
               updatedBy: Value(_editorIn(libraryId)),
@@ -443,6 +472,7 @@ class SongRepository {
           sortArtist: Value(meta.sortArtist),
           tags: Value(meta.tagsColumn),
           searchText: Value(meta.searchText),
+          chordproProblems: Value(meta.problems),
           updatedAt: Value(DateTime.now()),
           updatedBy: Value(_editorIn(existing.libraryId)),
         ),
@@ -495,6 +525,7 @@ class SongRepository {
             tags: Value(meta.tagsColumn),
             searchText: Value(meta.searchText),
             sequence: Value(meta.sequence),
+            chordproProblems: Value(meta.problems),
           ),
         );
       }

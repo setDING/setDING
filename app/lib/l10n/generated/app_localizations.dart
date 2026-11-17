@@ -2906,6 +2906,54 @@ abstract class AppLocalizations {
   /// **'Zeile {line}: Nach der Direktive steht noch Text; die ganze Zeile wird als Liedtext angezeigt.'**
   String problemTextAfterDirective(int line);
 
+  /// No description provided for @chordProProblemsTooltip.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Stelle im ChordPro wird wahrscheinlich nicht wie gewünscht angezeigt} other{{count} Stellen im ChordPro werden wahrscheinlich nicht wie gewünscht angezeigt}}'**
+  String chordProProblemsTooltip(int count);
+
+  /// No description provided for @chordProProblemsShow.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{ChordPro-Problem anzeigen} other{{count} ChordPro-Probleme anzeigen}}'**
+  String chordProProblemsShow(int count);
+
+  /// No description provided for @setChordProProblemsTooltip.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song mit ChordPro-Problemen} other{{count} Songs mit ChordPro-Problemen}}'**
+  String setChordProProblemsTooltip(int count);
+
+  /// No description provided for @importProblemsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Import prüfen'**
+  String get importProblemsTitle;
+
+  /// No description provided for @importProblemsMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 importierter Song enthält Stellen} other{{count} importierte Songs enthalten Stellen}}, die wahrscheinlich nicht wie gewünscht angezeigt werden:'**
+  String importProblemsMessage(int count);
+
+  /// No description provided for @importProblemItem.
+  ///
+  /// In de, this message translates to:
+  /// **'{title} ({count, plural, =1{1 Stelle} other{{count} Stellen}})'**
+  String importProblemItem(String title, int count);
+
+  /// No description provided for @importProblemsHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Songs sind in der Songliste markiert. Automatisch korrigiert werden nur Stellen mit eindeutiger Korrektur; den Rest im Editor beheben.'**
+  String get importProblemsHint;
+
+  /// No description provided for @songsFixed.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{Kein Song korrigiert} =1{1 Song korrigiert} other{{count} Songs korrigiert}}'**
+  String songsFixed(int count);
+
   /// No description provided for @moreProblems.
   ///
   /// In de, this message translates to:

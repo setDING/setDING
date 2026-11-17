@@ -72,6 +72,7 @@ void main() {
     deleted: false,
     createdBy: createdBy,
     updatedBy: updatedBy,
+    chordproProblems: 0,
   );
 
   test('permissions follow the roles (ADR-0023)', () async {
@@ -106,6 +107,9 @@ void main() {
       library.canEditSong(song(createdBy: 'bob', updatedBy: 'ann')),
       isFalse,
     );
+    // The same rule for song lists, which have no full song (#314).
+    expect(library.canEditSongBy(createdBy: 'bob', updatedBy: 'bob'), isTrue);
+    expect(library.canEditSongBy(createdBy: 'bob', updatedBy: 'ann'), isFalse);
     expect(
       library.canEditSong(song(createdBy: 'ann', updatedBy: 'ann')),
       isFalse,

@@ -17,6 +17,7 @@ import '../../settings/settings.dart';
 import '../live/live_screen.dart';
 import '../render/render_cache.dart';
 import '../render/song_header.dart';
+import '../songs/chordpro_problems_badge.dart';
 import '../songs/song_screen.dart';
 import '../bands/copy_to_band.dart';
 import '../widgets/dialogs.dart';
@@ -438,6 +439,13 @@ class _SetItemTile extends ConsumerWidget {
             selectors: ref.watch(selectorsProvider),
           );
     final hasChordPro = parsed?.hasContent ?? false;
+    // Who prepares the set or may fix the song sees its ChordPro problems
+    // (#314).
+    final showProblems =
+        song != null &&
+        song.chordproProblems > 0 &&
+        (canEdit ||
+            ref.watch(libraryProvider(song.libraryId)).canEditSong(song));
 
     Future<void> changeSequence() async {
       final choice = await editSequence(
@@ -465,10 +473,30 @@ class _SetItemTile extends ConsumerWidget {
           child: Text('${index + 1}', style: theme.textTheme.titleMedium),
         ),
       ),
-      title: Text(
-        song == null
-            ? l10n.songMissing
-            : (song.title.isEmpty ? l10n.untitled : song.title),
+      title: Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(
+              text: song == null
+                  ? l10n.songMissing
+                  : (song.title.isEmpty ? l10n.untitled : song.title),
+            ),
+            if (showProblems)
+              WidgetSpan(
+                alignment: PlaceholderAlignment.middle,
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 8),
+                  child: ChordProProblemsBadge(
+                    key: const ValueKey('set-item-problems'),
+                    size: 20,
+                    message: l10n.chordProProblemsTooltip(
+                      song.chordproProblems,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
       subtitle: switch ((song?.artist, sequence)) {
         (null, null) => null,
