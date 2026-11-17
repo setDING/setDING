@@ -23,6 +23,7 @@ void main() {
     WidgetTester tester, {
     String themeMode = 'light',
     String? appearance,
+    String? accent,
   }) async {
     useTabletSize(tester);
     final app = await TestApp.create(
@@ -30,6 +31,7 @@ void main() {
         'language': 'en',
         'themeMode': themeMode,
         'liveAppearance': ?appearance,
+        'accent': ?accent,
       },
     );
     final items = (await tester.runAsync(() async {
@@ -109,6 +111,23 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('the stage follows the accent colour (#300)', (tester) async {
+    var app = await pumpLive(tester, accent: 'blue');
+    final light = appTheme(Brightness.light, AccentColor.blue).colorScheme;
+    expect(pageColor(tester), light.surface);
+    expect(chordColor(tester), AccentColor.blue.stageChord);
+    await app.dispose(tester);
+
+    app = await pumpLive(tester, appearance: 'black', accent: 'green');
+    final dark = appTheme(Brightness.dark, AccentColor.green).colorScheme;
+    expect(bottomBarColor(tester), const Color(0xFF121212));
+    // Amber chords on dark for every accent; the controls use the accent.
+    expect(chordColor(tester), StageColors.dark.chord);
+    final theme = Theme.of(tester.element(find.byType(PageView)));
+    expect(theme.colorScheme.primary, dark.primary);
+    await app.dispose(tester);
+  });
+
   testWidgets('dark on stage although the app is light', (tester) async {
     final app = await pumpLive(tester, appearance: 'dark');
     final dark = appTheme(Brightness.dark).colorScheme;
@@ -164,15 +183,17 @@ void main() {
   });
 
   test('chords have high contrast in every appearance', () {
-    for (final base in [
-      appTheme(Brightness.light),
-      appTheme(Brightness.dark),
+    for (final (base, accent) in [
+      for (final accent in AccentColor.values) ...[
+        (appTheme(Brightness.light, accent), accent),
+        (appTheme(Brightness.dark, accent), accent),
+      ],
     ]) {
       for (final appearance in LiveAppearance.values) {
-        final theme = liveTheme(base, appearance);
+        final theme = liveTheme(base, appearance, accent);
         final chord = theme.extension<StageColors>()!.chord;
         final scheme = theme.colorScheme;
-        final reason = '${base.brightness} $appearance';
+        final reason = '${base.brightness} $appearance $accent';
         // WCAG AAA for normal text.
         expect(
           _contrast(chord, scheme.surface),

@@ -21,7 +21,8 @@ background `#FFFFFF` (light) and `#121417` (dark). In the app they are
 
 ## App colours
 
-The app's colour scheme is derived from the logo red (issue #269):
+By default the app's colour scheme is derived from the logo red (issue #269;
+other accent colours below):
 `appColorScheme` in `app/lib/ui/theme.dart` calls
 `ColorScheme.fromSeed(seedColor: Color(0xFFE8461C))` for light and dark
 with Material's default `tonalSpot` variant. It keeps the brand hue but
@@ -47,11 +48,40 @@ and editor colours (≥ 4.5:1) and that the sync-conflict icon in the song
 list differs from the gig icon in both themes.
 
 On stage (live mode, ADR-0007) chords use `StageColors` in
-`app/lib/ui/render/song_style.dart`: a deep brand red `#852309` (the logo's
-hue, about 9:1) on light, amber `#FFC54D` on dark and black, both ≥ 7:1.
+`app/lib/ui/render/song_style.dart`: on light a deep tone of the accent
+(for the brand red `#852309`, the logo's hue, about 9:1), amber `#FFC54D`
+on dark and black for every accent, both ≥ 7:1.
 Colours that are not derived from the scheme: RealChord's own `x_`
 directives in the editor (teal, apart from the warm palette), the
 offline-ready icon (green) and the named ChordPro colours of the songs.
+
+### Accent colours
+
+Users choose the accent colour in the settings (*General → Accent colour*,
+issue #300), stored per device like the other settings (ADR-0006). Instead
+of a free colour picker there is a curated set of seeds
+(`AccentColorPalette` in `app/lib/ui/theme.dart`): each one goes through
+the same `ColorScheme.fromSeed` `tonalSpot` variant as the brand red, so
+light and dark get the same calm tones and contrasts in another hue, and
+the neutral surfaces only take a faint tint of it. The error colours stay
+the same for every accent.
+
+| Accent | Seed | `primary` light | `primary` dark | Light stage chords |
+|---|---|---|---|---|
+| RealChord red (default) | `#E8461C` | `#8F4B3A` | `#FFB4A2` | `#852309` |
+| Amber | `#FFB300` | `#7D570D` | `#F0BE6D` | `#604100` |
+| Green | `#43A047` | `#3B6939` | `#A1D39A` | `#005313` |
+| Teal | `#00897B` | `#006B5F` | `#82D5C7` | `#005048` |
+| Blue | `#1E88E5` | `#39608F` | `#A3C9FE` | `#004881` |
+| Purple | `#8E24AA` | `#794F81` | `#E8B5EF` | `#790096` |
+| Pink | `#D81B60` | `#8E4958` | `#FFB2BF` | `#90003B` |
+
+The light stage chord colour is the seed's hue at HCT tone 30 with its full
+chroma (about 9:1). `app/test/theme_test.dart` runs every colour check of
+this page for every accent and checks that the accents can be told apart
+(primary colours at least ΔE 15 apart in light and in dark; an indigo was
+dropped because its dark primary was too close to the blue one). A new
+accent needs a seed and a stage chord colour and must pass these tests.
 
 ### Sequence chips
 
@@ -64,19 +94,22 @@ come from `SongSequenceView.background`/`foreground` in
 |---|---|---|---|
 | Chorus | `primary` / `onPrimary` | `#8F4B3A` / `#FFFFFF` | `#FFB4A2` / `#561F11` |
 | Pre-/post-chorus | light `primaryFixedDim` / `onPrimaryFixed`, dark `primaryContainer` / `onPrimaryContainer` | `#FFB4A2` / `#3A0A02` | `#723425` / `#FFDAD2` |
-| Bridge | `tertiaryContainer` / `onTertiaryContainer` | `#F7E1A6` / `#544519` | `#544519` / `#F7E1A6` |
+| Bridge | `tertiary` / `onTertiary` | `#6D5D2E` / `#FFFFFF` | `#DAC58D` / `#3C2F04` |
 | Other parts | `surfaceContainerHighest` / `onSurfaceVariant` | `#F1DFDA` / `#534340` | `#3D3230` / `#D8C2BD` (black stage `#242424`) |
 
-The chorus, the part that comes back most often, is filled with the
-primary colour; pre- and post-chorus use a softer tone of the same hue
-(tone 80 on light, tone 30 on dark), so they read as belonging to it
-without looking the same. The container roles alone cannot tell the parts
+(Colours for the brand red.) The chorus, the part that comes back most
+often, is filled with the primary colour; pre- and post-chorus use a softer
+tone of the same hue (tone 80 on light, tone 30 on dark), so they read as
+belonging to it without looking the same. The bridge is filled with the
+tertiary colour: the pastel `tertiaryContainer` used before was too close
+to the neutral chips of the other parts with several accent colours
+(issue #300). The container roles alone cannot tell the parts
 apart: with the red seed, the light `primaryContainer` and
 `secondaryContainer` are both `#FFDAD2`, and `surfaceContainerHighest` is
-almost the same blush. `app/test/theme_test.dart` checks in light, dark and
-on the dark and black stage that the four groups are at least ΔE 20 apart
-(measured: 26 to 73) and that every chip has a text contrast of at least
-4.5:1 (measured: 6.5 to 10).
+almost the same blush. `app/test/theme_test.dart` checks for every accent, in
+light, dark and on the dark and black stage, that the four groups are at
+least ΔE 20 apart (closest: chorus and bridge of the blue accent on light,
+ΔE 21) and that every chip has a text contrast of at least 4.5:1.
 
 ## Where the logo is shown
 

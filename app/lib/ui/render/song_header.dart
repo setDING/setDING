@@ -343,8 +343,10 @@ class SongSequenceView extends StatelessWidget {
   /// `secondaryContainer` and `surfaceContainerHighest` are all the same
   /// blush (issue #288), so the parts use clearly different roles: the
   /// chorus is filled with the primary colour, pre- and post-chorus use a
-  /// softer tone of it (tone 80 on light, tone 30 on dark), the bridge the
-  /// tertiary container (gold) and all other parts a neutral surface.
+  /// softer tone of it (tone 80 on light, tone 30 on dark), the bridge is
+  /// filled with the tertiary colour and all other parts use a neutral
+  /// surface. The pastel `tertiaryContainer` would be too close to the
+  /// neutral surface with some accent colours (issue #300).
   static Color background(ColorScheme scheme, SequencePart part) =>
       switch (part) {
         SequencePart.chorus => scheme.primary,
@@ -352,7 +354,7 @@ class SongSequenceView extends StatelessWidget {
           scheme.brightness == Brightness.light
               ? scheme.primaryFixedDim
               : scheme.primaryContainer,
-        SequencePart.bridge => scheme.tertiaryContainer,
+        SequencePart.bridge => scheme.tertiary,
         _ => scheme.surfaceContainerHighest,
       };
 
@@ -364,7 +366,7 @@ class SongSequenceView extends StatelessWidget {
           scheme.brightness == Brightness.light
               ? scheme.onPrimaryFixed
               : scheme.onPrimaryContainer,
-        SequencePart.bridge => scheme.onTertiaryContainer,
+        SequencePart.bridge => scheme.onTertiary,
         _ => scheme.onSurfaceVariant,
       };
 

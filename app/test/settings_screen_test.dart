@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:realchord/settings/settings.dart';
 import 'package:realchord/ui/settings_screen.dart';
+import 'package:realchord/ui/theme.dart';
 
 import 'test_app.dart';
 
@@ -59,6 +61,56 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('settings-category-general')), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('the accent colour is chosen from swatches (#300)', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final semantics = tester.ensureSemantics();
+    final app = await pumpSettings(tester);
+    await tester.tap(find.byKey(const Key('settings-category-general')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Accent colour'), findsOneWidget);
+    for (final accent in AccentColor.values) {
+      expect(find.byKey(Key('accent-${accent.name}')), findsOneWidget);
+    }
+    // The brand red is the default.
+    expect(find.text('RealChord red'), findsOneWidget);
+    Color primary() =>
+        Theme.of(tester.element(find.text('Accent colour')))
+            .colorScheme
+            .primary;
+    expect(primary(), appColorScheme(Brightness.light).primary);
+
+    await tester.tap(find.byKey(const Key('accent-teal')));
+    await tester.pumpAndSettle();
+    expect(app.prefs.getString('accent'), 'teal');
+    expect(AppSettings.load(app.prefs).accent, AccentColor.teal);
+    expect(find.text('Teal'), findsOneWidget);
+    // The whole app follows the new accent.
+    expect(
+      primary(),
+      appColorScheme(Brightness.light, AccentColor.teal).primary,
+    );
+    expect(
+      tester.getSemantics(
+        find.descendant(
+          of: find.byKey(const Key('accent-teal')),
+          matching: find.byType(InkResponse),
+        ),
+      ),
+      matchesSemantics(
+        label: 'Teal',
+        isButton: true,
+        hasSelectedState: true,
+        isSelected: true,
+        hasTapAction: true,
+      ),
+    );
+    semantics.dispose();
     await app.dispose(tester);
   });
 

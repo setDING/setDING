@@ -428,13 +428,13 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final appearance = ref.watch(
-      settingsProvider.select((s) => s.liveAppearance),
+    final (appearance, accent) = ref.watch(
+      settingsProvider.select((s) => (s.liveAppearance, s.accent)),
     );
     // The stage appearance is independent of the app theme (ADR-0007); the
     // control bar, the bottom bar and the sheets follow it too.
     return Theme(
-      data: liveTheme(Theme.of(context), appearance),
+      data: liveTheme(Theme.of(context), appearance, accent),
       child: Builder(builder: _buildStage),
     );
   }

@@ -4,25 +4,34 @@ import '../../settings/settings.dart';
 import '../render/song_style.dart' show StageColors;
 import '../theme.dart';
 
-/// The theme of live mode for [appearance]: the app theme [app] (with the
-/// stronger chord colour), always dark, or dark on true black.
-ThemeData liveTheme(ThemeData app, LiveAppearance appearance) {
+/// The theme of live mode for [appearance] and [accent]: the app theme
+/// [app] (with the stronger chord colour), always dark, or dark on true
+/// black.
+ThemeData liveTheme(
+  ThemeData app,
+  LiveAppearance appearance, [
+  AccentColor accent = AccentColor.brand,
+]) {
   final base = switch (appearance) {
     LiveAppearance.app => app,
-    LiveAppearance.dark => _darkTheme,
-    LiveAppearance.black => _blackTheme,
+    LiveAppearance.dark => appTheme(Brightness.dark, accent),
+    LiveAppearance.black => _blackThemes.putIfAbsent(
+      accent,
+      () => _black(appTheme(Brightness.dark, accent)),
+    ),
   };
   return base.copyWith(
     extensions: [
       ...base.extensions.values.where((e) => e is! StageColors),
-      base.brightness == Brightness.dark ? StageColors.dark : StageColors.light,
+      base.brightness == Brightness.dark
+          ? StageColors.dark
+          : StageColors(chord: accent.stageChord),
     ],
   );
 }
 
-/// Built once: the colour scheme is computed from the seed colour.
-final _darkTheme = appTheme(Brightness.dark);
-final _blackTheme = _black(_darkTheme);
+/// Built once per accent.
+final _blackThemes = <AccentColor, ThemeData>{};
 
 /// [dark] on true black: the page is black, bars and panels very dark grey.
 ThemeData _black(ThemeData dark) {

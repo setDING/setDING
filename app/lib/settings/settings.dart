@@ -35,6 +35,11 @@ enum LiveAppearance {
   black,
 }
 
+/// Accent colour of the app (issue #300): a curated set of seeds that each
+/// give a light and a dark colour scheme as calm and readable as the brand
+/// red; the colours are defined in `ui/theme.dart`.
+enum AccentColor { brand, amber, green, teal, blue, purple, pink }
+
 /// When syncs start (ADR-0004); "Sync now" is always available.
 enum SyncMode {
   /// At start, after local changes, on server changes and periodically.
@@ -58,6 +63,7 @@ class AppSettings {
     this.chordSuperscript = false,
     this.displayMode = DisplayMode.lyricsAndChords,
     this.themeMode = ThemeMode.system,
+    this.accent = AccentColor.brand,
     this.columns = ColumnMode.auto,
     this.pageTurn = PageTurnMode.full,
     this.liveAppearance = LiveAppearance.app,
@@ -82,6 +88,9 @@ class AppSettings {
   final bool chordSuperscript;
   final DisplayMode displayMode;
   final ThemeMode themeMode;
+
+  /// Accent colour of the app theme and of live mode.
+  final AccentColor accent;
   final ColumnMode columns;
   final PageTurnMode pageTurn;
 
@@ -153,6 +162,7 @@ class AppSettings {
     bool? chordSuperscript,
     DisplayMode? displayMode,
     ThemeMode? themeMode,
+    AccentColor? accent,
     ColumnMode? columns,
     PageTurnMode? pageTurn,
     LiveAppearance? liveAppearance,
@@ -172,6 +182,7 @@ class AppSettings {
     chordSuperscript: chordSuperscript ?? this.chordSuperscript,
     displayMode: displayMode ?? this.displayMode,
     themeMode: themeMode ?? this.themeMode,
+    accent: accent ?? this.accent,
     columns: columns ?? this.columns,
     pageTurn: pageTurn ?? this.pageTurn,
     liveAppearance: liveAppearance ?? this.liveAppearance,
@@ -200,6 +211,7 @@ class AppSettings {
       chordSuperscript: prefs.getBool('chordSuperscript') ?? d.chordSuperscript,
       displayMode: pick(DisplayMode.values, 'displayMode', d.displayMode),
       themeMode: pick(ThemeMode.values, 'themeMode', d.themeMode),
+      accent: pick(AccentColor.values, 'accent', d.accent),
       columns: pick(ColumnMode.values, 'columns', d.columns),
       pageTurn: pick(PageTurnMode.values, 'pageTurn', d.pageTurn),
       liveAppearance: pick(
@@ -229,6 +241,7 @@ class AppSettings {
     await prefs.setBool('chordSuperscript', chordSuperscript);
     await prefs.setString('displayMode', displayMode.name);
     await prefs.setString('themeMode', themeMode.name);
+    await prefs.setString('accent', accent.name);
     await prefs.setString('columns', columns.name);
     await prefs.setString('pageTurn', pageTurn.name);
     await prefs.setString('liveAppearance', liveAppearance.name);

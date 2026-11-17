@@ -581,6 +581,30 @@ class AppLocalizationsDe extends AppLocalizations {
   String get themeDark => 'Dunkel';
 
   @override
+  String get settingsAccent => 'Akzentfarbe';
+
+  @override
+  String get accentBrand => 'RealChord-Rot';
+
+  @override
+  String get accentAmber => 'Bernstein';
+
+  @override
+  String get accentGreen => 'Grün';
+
+  @override
+  String get accentTeal => 'Petrol';
+
+  @override
+  String get accentBlue => 'Blau';
+
+  @override
+  String get accentPurple => 'Violett';
+
+  @override
+  String get accentPink => 'Rosa';
+
+  @override
   String get settingsNotation => 'Akkord-Notation';
 
   @override

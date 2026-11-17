@@ -1076,6 +1076,54 @@ abstract class AppLocalizations {
   /// **'Dunkel'**
   String get themeDark;
 
+  /// No description provided for @settingsAccent.
+  ///
+  /// In de, this message translates to:
+  /// **'Akzentfarbe'**
+  String get settingsAccent;
+
+  /// No description provided for @accentBrand.
+  ///
+  /// In de, this message translates to:
+  /// **'RealChord-Rot'**
+  String get accentBrand;
+
+  /// No description provided for @accentAmber.
+  ///
+  /// In de, this message translates to:
+  /// **'Bernstein'**
+  String get accentAmber;
+
+  /// No description provided for @accentGreen.
+  ///
+  /// In de, this message translates to:
+  /// **'Grün'**
+  String get accentGreen;
+
+  /// No description provided for @accentTeal.
+  ///
+  /// In de, this message translates to:
+  /// **'Petrol'**
+  String get accentTeal;
+
+  /// No description provided for @accentBlue.
+  ///
+  /// In de, this message translates to:
+  /// **'Blau'**
+  String get accentBlue;
+
+  /// No description provided for @accentPurple.
+  ///
+  /// In de, this message translates to:
+  /// **'Violett'**
+  String get accentPurple;
+
+  /// No description provided for @accentPink.
+  ///
+  /// In de, this message translates to:
+  /// **'Rosa'**
+  String get accentPink;
+
   /// No description provided for @settingsNotation.
   ///
   /// In de, this message translates to:

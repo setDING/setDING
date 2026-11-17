@@ -10,6 +10,7 @@ import '../sync/auth_providers.dart';
 import '../util/app_version.dart';
 import '../util/log.dart';
 import 'account/account_section.dart';
+import 'theme.dart';
 import 'widgets/dialogs.dart';
 
 /// The categories of the settings screen.
@@ -203,6 +204,10 @@ class _CategoryContent extends ConsumerWidget {
           ThemeMode.light: l10n.themeLight,
           ThemeMode.dark: l10n.themeDark,
         }, (v) => notifier.update((s) => s.copyWith(themeMode: v))),
+        _AccentTile(
+          value: s.accent,
+          onChanged: (v) => notifier.update((s) => s.copyWith(accent: v)),
+        ),
       ],
       SettingsCategory.musician => [
         _InstrumentTile(settings: s, notifier: notifier),
@@ -439,6 +444,107 @@ class _Choice<T> extends StatelessWidget {
           ),
         ),
       ],
+    ),
+  );
+}
+
+/// The accent colour (issue #300): one swatch per colour in the current
+/// brightness, the selected one with a check mark.
+class _AccentTile extends StatelessWidget {
+  const _AccentTile({required this.value, required this.onChanged});
+
+  final AccentColor value;
+  final void Function(AccentColor) onChanged;
+
+  static String label(AppLocalizations l10n, AccentColor accent) =>
+      switch (accent) {
+        AccentColor.brand => l10n.accentBrand,
+        AccentColor.amber => l10n.accentAmber,
+        AccentColor.green => l10n.accentGreen,
+        AccentColor.teal => l10n.accentTeal,
+        AccentColor.blue => l10n.accentBlue,
+        AccentColor.purple => l10n.accentPurple,
+        AccentColor.pink => l10n.accentPink,
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final brightness = Theme.of(context).brightness;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ListTile(
+          title: Text(l10n.settingsAccent),
+          subtitle: Text(label(l10n, value)),
+        ),
+        Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 8),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final accent in AccentColor.values)
+                _AccentSwatch(
+                  key: ValueKey('accent-${accent.name}'),
+                  scheme: appTheme(brightness, accent).colorScheme,
+                  label: label(l10n, accent),
+                  selected: accent == value,
+                  onTap: () => onChanged(accent),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AccentSwatch extends StatelessWidget {
+  const _AccentSwatch({
+    super.key,
+    required this.scheme,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final ColorScheme scheme;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+    message: label,
+    child: Semantics(
+      container: true,
+      button: true,
+      selected: selected,
+      label: label,
+      onTap: onTap,
+      excludeSemantics: true,
+      child: InkResponse(
+        onTap: onTap,
+        radius: 26,
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: scheme.primary,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: selected
+                  ? Theme.of(context).colorScheme.onSurface
+                  : Colors.transparent,
+              width: 3,
+            ),
+          ),
+          child: selected
+              ? Icon(Icons.check, color: scheme.onPrimary, size: 24)
+              : null,
+        ),
+      ),
     ),
   );
 }
