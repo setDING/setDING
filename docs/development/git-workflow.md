@@ -229,11 +229,40 @@ Agents may create **proposals** for all of these (an ADR, a draft PR), just not 
 
 ## 10. Versions and releases
 
-- **Semantic versioning**: `MAJOR.MINOR.PATCH`; before the first store release `0.x.y`.
-- A release is a tag `vX.Y.Z` on `main`, created by an agent through a `chore(release): vX.Y.Z` PR that updates the version in `pubspec.yaml` and `CHANGELOG.md` (generated from the Conventional Commits).
-- The build number is the CI run number.
-- Pushing the tag (`git tag -s vX.Y.Z && git push origin vX.Y.Z`, after the release PR is merged) triggers the release build (`.github/workflows/release.yml`, ADR-0021): Linux, Android and Windows, published as a GitHub Release, from which Obtainium updates the Android app ([releases.md](releases.md)). The tag must match the version in `pubspec.yaml`. iOS is not built yet. **Publishing to the stores requires human approval** (protected CI environment).
-- `make release` still builds the Linux package locally (in a container; ADR-0019).
+- **Semantic versioning** (ADR-0028): `MAJOR.MINOR.PATCH`; before 1.0.0 `0.y.z`. What a
+  bump means is defined by client/server compatibility ([releases.md](releases.md#version-numbers)).
+- **Build number:** the run number of the Release workflow, set by CI for every build,
+  releases and manual test builds alike (one counter). It is never set by hand;
+  `pubspec.yaml` holds only `X.Y.Z`. Failed or cancelled runs leave gaps, which is fine:
+  Android only needs a higher `versionCode`. Local builds (`make apk`, `make release`)
+  carry no meaningful build number and are never distributed.
+- **Test builds during development:** a manual run of the Release workflow
+  (`gh workflow run Release --ref <branch>`) builds Linux, Android and Windows with the
+  next build number (`setding-X.Y.Z-buildN-…`) as workflow artifacts, without a release.
+- **A release** is done by an agent in these steps, **each only after the previous one
+  succeeded**:
+  1. `chore(release): vX.Y.Z` PR that sets `version: X.Y.Z` in `app/pubspec.yaml` (and
+     `CHANGELOG.md`, generated from the Conventional Commits); test gate and squash
+     merge as usual.
+  2. Signed tag on the merged `main` and push it:
+     `git tag -s vX.Y.Z -m "setDING X.Y.Z" && git push origin vX.Y.Z`.
+  3. **The release build must pass:** the tag triggers `.github/workflows/release.yml`
+     (ADR-0021), which builds Linux, Android and Windows and publishes the GitHub
+     Release only if all three succeed. Watch it (`gh run watch`). If it fails, nothing
+     is published: fix the cause in a normal PR and release the **next patch version**;
+     a pushed tag is never moved or reused.
+  4. **Update the server:** `make server-release` waits for the tag's build, refuses
+     unless it passed and the GitHub Release exists, then deploys hooks, migrations and
+     the web client from a clean checkout of the tag and stamps the version on the
+     server (`/api/setding/config` → `serverVersion`). Only after this step is the
+     release done.
+  5. Report the release (version, build number, server version) on the release PR.
+- The production server only runs released versions. `make server-install` deploys the
+  working tree and stamps it `X.Y.Z-dev+<commit>`; it is meant for test instances and
+  emergencies, never for routine production updates.
+- iOS is not built yet. **Publishing to the stores requires human approval** (protected
+  CI environment). `make release` still builds the Linux package locally (in a
+  container; ADR-0019).
 - Hotfixes follow the normal flow (`fix/…` branch, `priority:high`), then a patch release.
 
 ## 11. Without API access (fallback)

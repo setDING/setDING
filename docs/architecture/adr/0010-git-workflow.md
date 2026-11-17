@@ -67,6 +67,7 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 - 2026-11-16: The release build of section 10 exists for Linux, Android and Windows (`.github/workflows/release.yml`, ADR-0021, accepted, #137): a `vX.Y.Z` tag that matches `pubspec.yaml` builds all three and publishes a GitHub Release; Android updates come through Obtainium. It runs on tags regardless of the manual-only CI.
 - 2026-11-17: Every change is made in its own git worktree, a sibling folder `../RealChord-worktrees/<branch>` outside the repository; the main checkout (project folder) always stays on `main` and is only fast-forwarded. Parallel sessions no longer switch branches under each other's feet. Owner request (#225).
 - 2026-11-17: App renamed to **setDING** (#318): repository `github.com/tafli/setDING`, worktrees in `../setDING-worktrees/<branch>`, CI image `ghcr.io/tafli/setding-ci`.
+- 2026-11-17: Releases (section 10, #345): the build number is the Release workflow's run number for releases and manual test builds alike and is no longer kept in `pubspec.yaml`; a release is done only after its release build passed and `make server-release` deployed the server from the tag (it refuses otherwise). A failed release build is fixed in a PR and released as the next patch version; pushed tags are never moved. Owner request.
 
 ## Open points
 

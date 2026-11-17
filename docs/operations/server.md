@@ -24,7 +24,8 @@ production instance (`root@192.168.1.40`). Override it for another instance, e.g
 
 | Target | What it does |
 |---|---|
-| `make server-install` | Install or update everything (idempotent) |
+| `make server-release [VERSION=X.Y.Z]` | **Production updates:** after a release, wait for its green build, then deploy from the tag and stamp the version (default: newest tag) |
+| `make server-install` | Install or update everything from the working tree (idempotent); stamped `X.Y.Z-dev+<commit>` unless it is a clean release tag. First install, test instances, emergencies |
 | `make server-status` | Services, PocketBase version, health, latest backups, disk |
 | `make server-logs` | Follow the PocketBase and tunnel logs |
 | `make server-backup` | Run a backup now |
@@ -208,11 +209,16 @@ about half a minute per request), so a large import syncs more slowly but comple
 ## Updates
 
 - **Debian security updates:** automatic (unattended-upgrades).
-- **PocketBase:** read the release notes, change `PB_VERSION` in the `Makefile` in a PR,
-  run `make server-install` (on a staging container first, once there is one).
+- **setDING versions:** production runs released versions only. After a release,
+  `make server-release` deploys the tag once its release build passed (git workflow
+  section 10). The deployed version is in `/opt/pocketbase/pb_hooks/setding-version.txt`
+  and in `/api/setding/config` (`serverVersion`).
+- **PocketBase:** read the release notes, change `PB_VERSION` in the `Makefile` in a PR;
+  it reaches production with the next release (`make server-release`). Test it with
+  `make server-install` on a staging container first, once there is one.
 - **Hooks and migrations:** change `server/pb_hooks` / `server/pb_migrations` in a PR
-  (data model: ADR-0015, tests in `server/test`, run by `make check`), then
-  `make server-install`; PocketBase is restarted and applies new migrations.
+  (data model: ADR-0015, tests in `server/test`, run by `make check`); they reach
+  production with the next release. PocketBase is restarted and applies new migrations.
   Never edit collections in the admin UI: such changes are not in the repository and
   are lost or conflict with the next migration.
 - **Local instance for development:** `make backend` starts PocketBase with the
@@ -220,7 +226,8 @@ about half a minute per request), so a large import syncs more slowly but comple
   it also serves the last web build (`make web-serve` builds it first). Sign-up is
   open there (`BACKEND_REGISTRATION=open`; `make backend BACKEND_REGISTRATION=invite_only`
   tries the invite-only mode).
-- **Web client:** built from the same commit by every `make server-install`.
+- **Web client:** built from the same checkout by every deploy (from the tag with
+  `make server-release`), so it always has the server's version.
 - **cloudflared:** updated with the Debian packages (apt repository of Cloudflare).
 
 ## Backups

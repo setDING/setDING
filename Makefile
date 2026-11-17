@@ -75,7 +75,7 @@ BACKEND_REGISTRATION ?= open
 TEST_ENV := SETDING_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
 .PHONY: help setup dev start build web web-serve deps upgrade apk apk-install android-keystore release release-linux release-check reset data-dir backend check test codegen l10n perf screenshots branding examples doctor clean ci-image \
-	server-target server-install server-status server-logs server-backup server-fetch-backup server-founder-invite server-ssh
+	server-target server-install server-release server-status server-logs server-backup server-fetch-backup server-founder-invite server-ssh
 
 help: ## Show this help
 	@echo "setDING – make targets"
@@ -204,10 +204,11 @@ ci-image: ## Build the Flutter base image of the release build (tool/ci/Dockerfi
 server-target:
 	@test -n "$(SERVER)" || { echo "Set SERVER to the SSH target, e.g. make $(MAKECMDGOALS) SERVER=root@<ip>"; exit 1; }
 
-server-install: server-target web ## Install or update the server (PocketBase PB_VERSION, hooks, migrations, web client)
-	tar -C $(ROOT) --transform 's,^app/build/web,web,' -czf - \
-		tool/server server/pb_hooks server/pb_migrations app/build/web | \
-		$(SSH) $(SERVER) 'd=$$(mktemp -d /tmp/setding-setup.XXXXXX) && tar -C $$d -xzf - && bash $$d/tool/server/install.sh $(PB_VERSION)'
+server-install: server-target ## Install or update the server from the working tree (PocketBase, hooks, migrations, web client; test instances)
+	@SERVER=$(SERVER) SSH="$(SSH)" PB_VERSION=$(PB_VERSION) $(ROOT)/tool/server/deploy.sh
+
+server-release: server-target ## After a release: wait for its green build, then deploy the server from the tag (VERSION=x.y.z, default newest)
+	@SERVER=$(SERVER) SSH="$(SSH)" PB_VERSION=$(PB_VERSION) $(ROOT)/tool/release/deploy-server.sh $(VERSION)
 
 server-status: server-target ## Show services, PocketBase version and backups of the server
 	@$(SSH) $(SERVER) 'systemctl --no-pager --lines=0 status pocketbase cloudflared setding-backup.timer; \

@@ -80,6 +80,7 @@ app, so the APK must be signed with a stable release key, not a per-machine debu
   releases (up to v0.4.0) cannot be updated to it; uninstall them and add the app
   to Obtainium again. Not live yet, so no migration.
 - 2026-11-17: App renamed to **setDING** (#318): artifacts `setding-<version>-…`, application ID `app.setding` (a new app for Android and Obtainium; test installs of RealChord are removed by hand), Obtainium source `https://github.com/tafli/setDING`. The release key stays.
+- 2026-11-17: Build numbers (#345): `pubspec.yaml` no longer carries a build number (it was bumped by hand with every release and said nothing). The run number stays the build number, shared by releases and manual test builds, whose files are named `setding-<version>-build<N>-…`. After the release build passed, `make server-release` updates the server from the tag.
 
 ## Open points
 

@@ -6,9 +6,12 @@ releases are not covered yet.
 
 ## Releasing a version (CI)
 
-1. Merge a `chore(release): vX.Y.Z` PR that sets `version: X.Y.Z+…` in
-   `app/pubspec.yaml` (the build number after `+` is ignored by CI).
-   Choose the number by the rules in [Version numbers](#version-numbers).
+The full sequence and its rules are in the git workflow (section 10); each step
+only after the previous one succeeded:
+
+1. Merge a `chore(release): vX.Y.Z` PR that sets `version: X.Y.Z` in
+   `app/pubspec.yaml`, without a build number (CI sets it). Choose the number by
+   the rules in [Version numbers](#version-numbers).
 2. Tag `main` and push the tag:
 
    ```bash
@@ -25,12 +28,36 @@ releases are not covered yet.
    | `setding-X.Y.Z-windows-x64.zip` | Windows build with the Visual C++ runtime |
    | `SHA256SUMS` | Checksums of the files above |
 
-The tag must equal `v` + the version in `pubspec.yaml`, otherwise the workflow fails.
-The build number (Android `versionCode`) is the workflow's run number. Tags with a
-suffix (`v1.2.0-beta.1`) become pre-releases, which Obtainium skips by default.
+   **The build must pass.** Watch it with `gh run watch`; if a job fails, no release
+   is published. Fix the cause in a PR and release the next patch version; never
+   move or reuse a pushed tag.
+4. Update the server from the tag:
 
-A manual run (GitHub → Actions → Release → Run workflow, or `gh workflow run Release`)
-builds the same files as workflow artifacts without publishing a release.
+   ```bash
+   make server-release            # newest tag; or VERSION=X.Y.Z
+   ```
+
+   It waits for the tag's release build and refuses to deploy unless it passed and
+   the GitHub Release exists. Then it deploys hooks, migrations and the web client
+   from a clean checkout of the tag, stamps the version on the server and checks
+   it (`curl -s https://api.setding.app/api/setding/config` shows
+   `"serverVersion":"X.Y.Z"`).
+
+The tag must equal `v` + the version in `pubspec.yaml`, otherwise the workflow fails.
+Tags with a suffix (`v1.2.0-beta.1`) become pre-releases, which Obtainium skips by
+default.
+
+### Build numbers and test builds
+
+The build number (Android `versionCode`, shown in the settings as `0.8.0 (42)`) is the
+Release workflow's run number. Releases and test builds share this counter, so every
+build that leaves CI has its own number, and a later build always has a higher one.
+It is never written to `pubspec.yaml`. Failed runs leave gaps; that does no harm.
+
+A **test build** during development is a manual run (GitHub → Actions → Release → Run
+workflow, or `gh workflow run Release --ref <branch>`). It builds the same files as
+workflow artifacts named `setding-X.Y.Z-buildN-…`, without publishing a release.
+Local builds (`make apk`, `make release`) have no meaningful build number.
 
 ## Version numbers
 
@@ -60,8 +87,9 @@ The server refuses apps older than `MIN_CLIENT_VERSION` in
    release version (e.g. `1.0.0`).
 2. Tag the release and wait until the GitHub Release is published, so the new APK
    and packages can be downloaded (Obtainium).
-3. Only then deploy the server with `make server-install`. Deploying first would
-   lock every band out before an update exists.
+3. Only then deploy the server with `make server-release`, which waits for the
+   build and the GitHub Release itself. Deploying first would lock every band out
+   before an update exists.
 
 ## Android release key (once, owner)
 

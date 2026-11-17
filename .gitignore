@@ -52,3 +52,6 @@ docs/chordpro/
 
 # GitHub migration work data (tool/github-migration, issue #116)
 .github-migration/
+
+# Version stamp written by deploys and the server tests (tool/server/deploy.sh)
+server/pb_hooks/setding-version.txt

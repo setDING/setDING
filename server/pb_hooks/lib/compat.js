@@ -60,6 +60,19 @@ function minClientVersion() {
   return MIN_CLIENT_VERSION;
 }
 
+/// The setDING version this server was deployed from, stamped by
+/// tool/server/deploy.sh into pb_hooks/setding-version.txt: x.y.z for a
+/// release (make server-release), x.y.z-dev+<commit> otherwise; null when
+/// not deployed that way (local backend, tests).
+function serverVersion() {
+  try {
+    const v = toString($os.readFile(`${__hooks}/setding-version.txt`)).trim();
+    return v || null;
+  } catch (_) {
+    return null;
+  }
+}
+
 /// Whether the request path is checked: the collections API and setDING's
 /// own routes, except the config route the app reads before signing in and
 /// the superusers' collection (the admin UI signs in there). Health,
@@ -94,5 +107,6 @@ module.exports = {
   parse,
   compare,
   minClientVersion,
+  serverVersion,
   requireClientVersion,
 };

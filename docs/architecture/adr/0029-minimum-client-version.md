@@ -96,10 +96,10 @@ So, for a release with an incompatible change
 - 2026-11-17: Proposed (#339). Resolves the open point "minimum client version" of
   ADR-0028.
 - 2026-11-17: Accepted by the owner (#341).
+- 2026-11-17: The deploy order is enforced (#345): `make server-release` deploys the
+  server only after the tag's release build passed and the GitHub Release exists.
 
 ## Open points
 
-- Whether `make server-install` should only deploy tagged versions (ADR-0028); for
-  now the deploy order is a documented step.
 - A direct link to the release page needs a URL launcher; for now the banner copies
   the link.
