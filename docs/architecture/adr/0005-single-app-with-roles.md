@@ -116,3 +116,4 @@ Alternatives for invitations:
 
 - Activate verified deep links: Android needs the signing certificate fingerprint, iOS Universal Links need the Apple Team ID and the Associated Domains capability (`docs/operations/server.md`, "Deep links"). Until then links open the landing page, the `realchord://` scheme, or are pasted / scanned.
 - Protocol handler for `realchord://` on Windows (MSIX/installer) and Linux (`.desktop` file); until then links are pasted there.
+- Sign-up only with an invitation and founder invitations for new organizations are proposed in ADR-0024.

@@ -111,4 +111,5 @@ by band.
 ## Open points
 
 - Moving a band to another organization.
+- Who may found organizations: ADR-0024 (proposed) restricts this to founder invitations on `invite_only` servers.
 - An organization-wide setting that lets all organization members edit songs.

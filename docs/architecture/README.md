@@ -1,6 +1,6 @@
 # RealChord – Architecture
 
-> Status: **Draft for discussion** (most core decisions accepted) · Last updated: 2026-11-16
+> Status: **Draft for discussion** (most core decisions accepted) · Last updated: 2026-11-17
 >
 > This document describes the overall architecture. Individual decisions are recorded
 > as Architecture Decision Records (ADRs) in [`adr/`](adr/).
@@ -52,6 +52,7 @@ A user can be a member of several organizations and bands; roles are defined per
 | SongSelect (CCLI) | **No API integration** (partner program closed); manual import of ChordPro files downloaded from SongSelect | [ADR-0011](adr/0011-songselect-import.md) |
 | Server hosting | **Debian LXC** on Proxmox, PocketBase as systemd service, published via **Cloudflare Tunnel**, daily backups, provisioned with `make server-install` | [ADR-0014](adr/0014-server-hosting.md) |
 | Sign-in & session | Email/password via `SyncBackend` (PocketBase SDK, pinned), session in secure storage, kept while offline, refreshed when online, 30-day tokens | [ADR-0016](adr/0016-client-authentication.md) |
+| Registration *(proposed)* | Server operator sets `REALCHORD_REGISTRATION` = `invite_only` (default: sign-up only with an invitation, new organizations only via operator **founder invitations**) or `open`; no in-app super-admin; rate limits on sign-up and invitations | [ADR-0024](adr/0024-registration-mode.md) |
 | Organizations | Bands belong to an **organization** that owns the shared song library; organization admins manage people and bands; created automatically for a single band | [ADR-0017](adr/0017-organizations.md) |
 | Server data model | PocketBase collections as migrations, server-wide revision counter, set items as JSON, access rules per role, tested against a real PocketBase | [ADR-0015](adr/0015-server-data-model.md) |
 | Printable set list | PDF generated in the client with the `pdf` package, embedded font, saved via the save dialog; no print plugin yet | [ADR-0013](adr/0013-printable-set-list.md) |
@@ -264,6 +265,7 @@ See "Open points" in the individual ADRs. The most important:
 17. Distributable Linux builds? → `make release`: built in a Debian container with an ISA check (ADR-0019, accepted, #45). CI release builds for Linux, Android (Obtainium) and Windows from a `vX.Y.Z` tag (ADR-0021, accepted, #137). Open: release key (owner), iOS, installers/packaging and code signing
 18. ~~Personal adjustments on shared devices and across devices?~~ → Overlays belong to a user (`owner_id`; `local` for the local library), existing ones are taken over once by the first user who signs in, private, synced in phase 2 with last writer wins and soft delete (ADR-0020, accepted)
 19. ~~Chord display style (pop vs. jazz spelling, superscript extensions)?~~ → Global device setting *As written* (default) / *Standard* / *Jazz* plus a superscript switch, not per song (ADR-0022, accepted, implemented in #196)
+21. Who may create accounts and organizations? → Proposed in ADR-0024 (#209): operator setting `invite_only` (default) or `open`, founder invitations for new organizations, no in-app super-admin. Open: owner decision, limits per organization
 
 ## 10. ADR index
 
@@ -291,5 +293,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0020](adr/0020-overlays-per-user.md) | Personal adjustments per user, synced with the account | Accepted |
 | [0021](adr/0021-release-builds-github-actions.md) | Release builds on GitHub Actions, Android via Obtainium | Accepted |
 | [0022](adr/0022-chord-display-style.md) | Selectable chord display style | Accepted |
+| [0024](adr/0024-registration-mode.md) | Registration mode set by the server operator | Proposed |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.
