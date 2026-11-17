@@ -65,6 +65,7 @@ A user can be a member of several organizations and bands; roles are defined per
 | Web client | **Flutter web build of the same app** for management without installation, served by PocketBase (`pb_public`) at `app.setding.app`, same sync engine, sign-in required, ChordPro file import but no export, no offline guarantee in the browser ([guide](../development/web.md)) | [ADR-0018](adr/0018-web-client.md) |
 | Linux release | `make release`: Linux release built in a **Debian container** (baseline glibc, ISA check) from the committed state ([guide](../development/releases.md)) | [ADR-0019](adr/0019-linux-release-builds.md) |
 | Release builds | A `vX.Y.Z` tag builds **Linux, Android and Windows** on GitHub Actions and publishes a GitHub Release; Android APK signed with a stable release key (repository secrets), installed and updated with **Obtainium** ([guide](../development/releases.md)) | [ADR-0021](adr/0021-release-builds-github-actions.md) |
+| Versioning | **Semantic Versioning** for the whole product (apps, web client, server): major = old clients no longer work with the server or data (all devices must update), minor = features old clients tolerate, patch = fixes; before 1.0.0 minor also covers incompatible changes; CalVer considered and not chosen ([guide](../development/releases.md)) | [ADR-0028](adr/0028-versioning-scheme.md) |
 
 ## 4. Building block view
 
@@ -202,7 +203,7 @@ Notes:
 | **MVP** ✅ | ChordPro parser & renderer (notation B/H, Nashville), local song library, PDF attachments, creating sets, live mode, import/export, German/English UI – initially **without** a backend (single device) |
 | **Phase 1** | Backend, login, bands & roles (several admins, several bands per user), sync of songs, sets and PDF files incl. conflict handling |
 | **Phase 2** ✅ | Web client for management at `app.setding.app` (ADR-0018; done in #27), synced personal overlays (per user, ADR-0020; done in #81, #82) |
-| **Towards version 1** | Re-enable CI as a required check on every PR and push to `main` (manual-only during early development, ADR-0010), branch protection; release builds for Linux, Android and Windows exist (ADR-0021), iOS open |
+| **Towards version 1** | Re-enable CI as a required check on every PR and push to `main` (manual-only during early development, ADR-0010), branch protection; release builds for Linux, Android and Windows exist (ADR-0021), iOS open; then release **1.0.0** (ADR-0028) |
 | **Later** | Configurable page turner key mapping, freehand annotations (stylus), MIDI control; drummer mode with beat display, count-in and click (ADR-0026, accepted, #325) |
 
 ### MVP status (2026-11-14)
@@ -284,6 +285,7 @@ See "Open points" in the individual ADRs. The most important:
 22. ~~How do bands adapt shared songs?~~ → ADR-0025 (accepted, #216): a band arrangement per band and song (key, sequence, tempo) between song and set item, applied in sets and live mode from a set; the song screen shows it only in its own card (#227), now a side panel behind a band icon (#233); capo stays personal, no band notes; implemented in #221
 23. ~~What does a drummer need in live mode?~~ → ADR-0026 (accepted, #325): drums preset, beat display and count-in, click on the in-ear with the audio as the clock and latency compensation, automatic or manual start, long press of the forward pedal or Enter, tempo on stage only for the evening, song map for drums only; BPM per dotted quarter in compound meters, `{x_time_grouping}` for odd meters. Open: background behaviour, bar counts per part
 24. ~~Which settings follow a person across devices?~~ → ADR-0027 (accepted, #328): fixed split into personal settings (synced with the account, per owner like overlays, last writer wins per key; incl. language, theme, accent colour and the drummer preferences) and device settings (never synced; font size, columns, live appearance, server, sync mode, click volume and latency), grouped and marked in the settings; no per-device override in the first version
+25. ~~Versioning scheme (SemVer or CalVer)?~~ → SemVer with bump rules based on client/server compatibility (ADR-0028, accepted, #330). Open: minimum client version announced by the server, deploy only tagged server versions?
 
 ## 10. ADR index
 
@@ -316,5 +318,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0025](adr/0025-band-arrangements.md) | Band arrangements between song and personal overlay | Accepted |
 | [0026](adr/0026-drummer-mode.md) | Drummer mode with beat display, count-in and click | Accepted |
 | [0027](adr/0027-personal-settings-sync.md) | Personal settings synced with the account | Accepted |
+| [0028](adr/0028-versioning-scheme.md) | Semantic versioning with setDING-specific bump rules | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.
