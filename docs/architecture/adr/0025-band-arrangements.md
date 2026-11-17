@@ -155,6 +155,10 @@ needed for now (owner); personal notes stay as they are.
   song as written and the arrangement only in its card; a single song played live
   is played as written. Sets, the set list and live mode from a set still apply
   the arrangement of the set's band.
+- 2026-11-17: Owner decision (#233): on the song screen the arrangement moves from
+  the card above the song into a **side panel** (end drawer) behind a band icon in
+  the app bar, with a dot while the band has an arrangement for the song. The
+  song stays visible behind the panel, so changes show at once.
 
 ## Open points
 

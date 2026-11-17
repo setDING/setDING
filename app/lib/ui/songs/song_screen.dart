@@ -24,13 +24,16 @@ import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
 import '../widgets/key_picker.dart';
 import '../widgets/scope_info.dart';
+import '../widgets/side_panel.dart';
 import '../bands/copy_to_band.dart';
 import '../../sync/sync_controller.dart';
 import 'conflict_banner.dart';
-import 'band_arrangement_card.dart';
+import 'band_arrangement_panel.dart';
 import 'song_editor_screen.dart';
 
-/// Shows a song with personal adjustments and its PDF attachments.
+/// Shows a song. The band arrangement, the personal adjustments and the
+/// attachments open in side panels from the app bar, so the song itself
+/// gets the screen.
 class SongScreen extends ConsumerStatefulWidget {
   const SongScreen({
     super.key,
@@ -45,7 +48,21 @@ class SongScreen extends ConsumerStatefulWidget {
   ConsumerState<SongScreen> createState() => _SongScreenState();
 }
 
+/// The side panels of the song screen.
+enum _Panel { band, personal, attachments }
+
 class _SongScreenState extends ConsumerState<SongScreen> {
+  final _scaffold = GlobalKey<ScaffoldState>();
+  _Panel? _panel;
+
+  void _open(_Panel panel) {
+    setState(() => _panel = panel);
+    // The end drawer exists only after the rebuild with the new panel.
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _scaffold.currentState?.openEndDrawer(),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -173,7 +190,61 @@ class _SongScreenState extends ConsumerState<SongScreen> {
         // Band leaders edit only their own songs (ADR-0023).
         final canEdit = library.canEditSong(song);
 
+        final showBand =
+            band != null && (arrangement != null || band.canManageSets);
+        // Songs without ChordPro content show their attachments in the body.
+        final attachmentsInPanel =
+            parsed.hasContent && (canEdit || attachments.isNotEmpty);
+        Widget attachmentsCard({required bool inPanel}) => _AttachmentsCard(
+          attachments: attachments,
+          overlay: overlay,
+          hasChordPro: parsed.hasContent,
+          inPanel: inPanel,
+          onAdd: canEdit ? _addAttachment : null,
+          canRename: canEdit,
+          canDelete: library.canDeleteSongs,
+          onLiveView: (id) =>
+              _updateOverlay((o) => o.copyWith(liveView: Value(id))),
+        );
+
         return Scaffold(
+          key: _scaffold,
+          // The song stays readable behind a side panel.
+          drawerScrimColor: Colors.black12,
+          endDrawerEnableOpenDragGesture: false,
+          endDrawer: switch (_panel) {
+            _Panel.band when band != null => BandArrangementPanel(
+              band: band,
+              song: song,
+              parsed: parsed,
+              arrangement: arrangement,
+            ),
+            _Panel.personal => SidePanel(
+              key: const Key('personal-adjustments'),
+              icon: Icons.tune,
+              title: l10n.personalAdjustments,
+              scope: SettingScope.personal,
+              children: [
+                _AdjustmentsBar(
+                  songKey: parsed.key,
+                  formatter: formatter,
+                  songCapo: parsed.capoFret,
+                  notation: settings.notation,
+                  overlay: overlay,
+                  deviceNashville: settings.nashville,
+                  hasKey: parsed.key != null,
+                  onChanged: _updateOverlay,
+                ),
+              ],
+            ),
+            _Panel.attachments => SidePanel(
+              key: const Key('song-attachments'),
+              icon: Icons.attach_file,
+              title: l10n.attachments,
+              children: [attachmentsCard(inPanel: true)],
+            ),
+            _ => null,
+          },
           appBar: AppBar(
             title: Text(song.title.isEmpty ? l10n.untitled : song.title),
             actions: [
@@ -182,22 +253,32 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                 icon: const Icon(Icons.play_arrow),
                 onPressed: () => LiveScreen.openSong(context, song.id),
               ),
-              if (canEdit) ...[
-                // Same icon as "New PDF song" on the songs tab.
-                IconButton(
-                  key: const Key('song-add-attachment'),
-                  tooltip: l10n.addAttachment,
-                  icon: const Icon(Icons.picture_as_pdf_outlined),
-                  onPressed: _addAttachment,
+              if (showBand)
+                BadgedIconButton(
+                  key: const Key('open-band-arrangement'),
+                  tooltip: l10n.bandArrangement,
+                  icon: Icons.groups_outlined,
+                  active: arrangement != null,
+                  onPressed: () => _open(_Panel.band),
                 ),
-                IconButton(
-                  tooltip: l10n.editSource,
-                  icon: const Icon(Icons.edit_note),
-                  onPressed: () => _editSource(song),
+              BadgedIconButton(
+                key: const Key('open-personal-adjustments'),
+                tooltip: l10n.personalAdjustments,
+                icon: Icons.tune,
+                active: overlay.hasAdjustments,
+                onPressed: () => _open(_Panel.personal),
+              ),
+              if (attachmentsInPanel)
+                BadgedIconButton(
+                  key: const Key('open-attachments'),
+                  tooltip: l10n.attachments,
+                  icon: Icons.attach_file,
+                  count: attachments.length,
+                  onPressed: () => _open(_Panel.attachments),
                 ),
-              ],
               PopupMenuButton<String>(
                 onSelected: (value) => switch (value) {
+                  'source' => _editSource(song),
                   'title' => _editTitle(song),
                   'export' => _export(song),
                   'copyToBand' => copySongsToBand(context, ref, [
@@ -207,6 +288,11 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   _ => null,
                 },
                 itemBuilder: (_) => [
+                  if (canEdit)
+                    PopupMenuItem(
+                      value: 'source',
+                      child: Text(l10n.editSource),
+                    ),
                   if (!hasSourceTitle && canEdit)
                     PopupMenuItem(value: 'title', child: Text(l10n.editTitle)),
                   if (song.chordproSource.trim().isNotEmpty &&
@@ -226,7 +312,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
             ],
           ),
           // The song is fitted to the visible area below the app bar; the
-          // header and the adjustments scroll away above it.
+          // header scrolls away above it.
           body: LayoutBuilder(
             builder: (context, constraints) => ListView(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
@@ -240,41 +326,9 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   song: parsed,
                   formatter: formatter,
                 ),
-                if (band != null &&
-                    (arrangement != null || band.canManageSets)) ...[
+                if (!parsed.hasContent) ...[
                   const SizedBox(height: 12),
-                  BandArrangementCard(
-                    band: band,
-                    song: song,
-                    parsed: parsed,
-                    arrangement: arrangement,
-                  ),
-                ],
-                const SizedBox(height: 12),
-                const _PersonalHeader(),
-                const SizedBox(height: 4),
-                _AdjustmentsBar(
-                  songKey: parsed.key,
-                  formatter: formatter,
-                  songCapo: parsed.capoFret,
-                  notation: settings.notation,
-                  overlay: overlay,
-                  deviceNashville: settings.nashville,
-                  hasKey: parsed.key != null,
-                  onChanged: _updateOverlay,
-                ),
-                if (attachments.isNotEmpty || !parsed.hasContent) ...[
-                  const SizedBox(height: 12),
-                  _AttachmentsCard(
-                    attachments: attachments,
-                    overlay: overlay,
-                    hasChordPro: parsed.hasContent,
-                    onAdd: canEdit ? _addAttachment : null,
-                    canRename: canEdit,
-                    canDelete: library.canDeleteSongs,
-                    onLiveView: (id) =>
-                        _updateOverlay((o) => o.copyWith(liveView: Value(id))),
-                  ),
+                  attachmentsCard(inPanel: false),
                 ],
                 const SizedBox(height: 16),
                 if (parsed.hasContent)
@@ -521,11 +575,6 @@ class _AdjustmentsBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final changed =
-        overlay.transpose != 0 ||
-        overlay.capoFret != null ||
-        overlay.fontScale != 1.0 ||
-        overlay.nashville != null;
     // A capo menu entry followed by the header it leads to, e.g.
     // "No capo – Key: D" (only with a key).
     String withHeader(String label, int? capo) => hasKey
@@ -534,7 +583,7 @@ class _AdjustmentsBar extends StatelessWidget {
 
     return Wrap(
       spacing: 8,
-      runSpacing: 8,
+      runSpacing: 12,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         KeyPicker(
@@ -629,10 +678,10 @@ class _AdjustmentsBar extends StatelessWidget {
             }
           },
         ),
-        if (changed)
-          IconButton(
-            tooltip: l10n.resetAdjustments,
+        if (overlay.hasAdjustments)
+          TextButton.icon(
             icon: const Icon(Icons.restart_alt),
+            label: Text(l10n.resetAdjustments),
             onPressed: () => onChanged(
               (o) => o.copyWith(
                 transpose: 0,
@@ -696,11 +745,15 @@ class _Stepper extends StatelessWidget {
   }
 }
 
+/// The song's PDFs and images and the choice of the live view: in the
+/// attachments panel ([inPanel]) or, for songs without ChordPro content, as
+/// a card in the body.
 class _AttachmentsCard extends ConsumerWidget {
   const _AttachmentsCard({
     required this.attachments,
     required this.overlay,
     required this.hasChordPro,
+    required this.inPanel,
     required this.onAdd,
     required this.onLiveView,
     this.canRename = true,
@@ -710,6 +763,7 @@ class _AttachmentsCard extends ConsumerWidget {
   final List<AttachmentEntry> attachments;
   final SongOverlay overlay;
   final bool hasChordPro;
+  final bool inPanel;
 
   /// Null hides the "add" button (no permission, ADR-0005).
   final VoidCallback? onAdd;
@@ -735,63 +789,91 @@ class _AttachmentsCard extends ConsumerWidget {
       hasChordPro: hasChordPro,
     )?.id;
 
-    return Card.outlined(
-      child: RadioGroup<String?>(
-        groupValue: selected,
-        onChanged: onLiveView,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ListTile(
-              title: Text(
-                l10n.attachments,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              subtitle: pdfs.length > 1 || (hasChordPro && pdfs.isNotEmpty)
-                  ? Row(
-                      children: [
-                        Flexible(child: Text(l10n.liveView)),
-                        const ScopeInfo(SettingScope.personal),
-                      ],
-                    )
-                  : null,
-              trailing: onAdd == null
-                  ? null
-                  : TextButton.icon(
-                      onPressed: onAdd,
-                      icon: const Icon(Icons.add),
-                      label: Text(l10n.addAttachment),
-                    ),
-            ),
-            if (hasChordPro && pdfs.isNotEmpty)
-              RadioListTile<String?>(
-                value: null,
-                title: Text(l10n.liveViewChordPro),
-                secondary: const Icon(Icons.text_snippet_outlined),
-              ),
-            for (final a in pdfs)
-              RadioListTile<String?>(
-                value: a.id,
-                title: Text(a.name),
-                subtitle: Text(
-                  [
-                    if (a.pages != null) l10n.pagesCount(a.pages!),
-                    formatBytes(a.sizeBytes),
-                  ].join(' · '),
-                ),
-                secondary: _menu(context, repo, a),
-              ),
-            for (final a in images)
-              ListTile(
-                leading: const Icon(Icons.image_outlined),
-                title: Text(a.name),
-                subtitle: Text(formatBytes(a.sizeBytes)),
-                trailing: _menu(context, repo, a),
-              ),
-          ],
+    final theme = Theme.of(context);
+    final liveViewLabel = pdfs.length > 1 || (hasChordPro && pdfs.isNotEmpty)
+        ? Row(
+            children: [
+              Flexible(child: Text(l10n.liveView)),
+              const ScopeInfo(SettingScope.personal),
+            ],
+          )
+        : null;
+    final addButton = onAdd == null
+        ? null
+        : TextButton.icon(
+            key: const Key('song-add-attachment'),
+            onPressed: onAdd,
+            icon: const Icon(Icons.add),
+            label: Text(l10n.addAttachment),
+          );
+    final tiles = [
+      if (hasChordPro && pdfs.isNotEmpty)
+        RadioListTile<String?>(
+          value: null,
+          title: Text(l10n.liveViewChordPro),
+          secondary: const Icon(Icons.text_snippet_outlined),
         ),
+      for (final a in pdfs)
+        RadioListTile<String?>(
+          value: a.id,
+          title: Text(a.name),
+          subtitle: Text(
+            [
+              if (a.pages != null) l10n.pagesCount(a.pages!),
+              formatBytes(a.sizeBytes),
+            ].join(' · '),
+          ),
+          secondary: _menu(context, repo, a),
+        ),
+      for (final a in images)
+        ListTile(
+          leading: const Icon(Icons.image_outlined),
+          title: Text(a.name),
+          subtitle: Text(formatBytes(a.sizeBytes)),
+          trailing: _menu(context, repo, a),
+        ),
+    ];
+
+    final list = RadioGroup<String?>(
+      groupValue: selected,
+      onChanged: onLiveView,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: inPanel
+            ? [
+                ?addButton,
+                if (attachments.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      l10n.noAttachments,
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  ),
+                if (liveViewLabel != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: DefaultTextStyle.merge(
+                      style: theme.textTheme.titleSmall,
+                      child: liveViewLabel,
+                    ),
+                  ),
+                ...tiles,
+              ]
+            : [
+                ListTile(
+                  title: Text(
+                    l10n.attachments,
+                    style: theme.textTheme.titleMedium,
+                  ),
+                  subtitle: liveViewLabel,
+                  trailing: addButton,
+                ),
+                ...tiles,
+              ],
       ),
     );
+    return inPanel ? list : Card.outlined(child: list);
   }
 
   Widget? _menu(BuildContext context, SongRepository repo, AttachmentEntry a) {
@@ -824,23 +906,12 @@ class _AttachmentsCard extends ConsumerWidget {
   }
 }
 
-/// Heading of the personal adjustments, so they are not mistaken for
-/// changes to the shared song (ADR-0006).
-class _PersonalHeader extends StatelessWidget {
-  const _PersonalHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    return Row(
-      key: const Key('personal-adjustments'),
-      children: [
-        Icon(Icons.person_outline, size: 18, color: theme.colorScheme.primary),
-        const SizedBox(width: 8),
-        Text(l10n.personalAdjustments, style: theme.textTheme.titleSmall),
-        const ScopeInfo(SettingScope.personal),
-      ],
-    );
-  }
+extension on SongOverlay {
+  /// Whether the song is shown differently from how it is written (the
+  /// notes and the live view are not counted: they add, not change).
+  bool get hasAdjustments =>
+      transpose != 0 ||
+      capoFret != null ||
+      fontScale != 1.0 ||
+      nashville != null;
 }

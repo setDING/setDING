@@ -110,6 +110,7 @@
   "editSource": "ChordPro bearbeiten",
   "attachments": "Anhänge",
   "addAttachment": "Datei anhängen",
+  "noAttachments": "Noch keine Anhänge.",
   "attachmentTooLarge": "Die Datei ist grösser als 20 MB und kann nicht angehängt werden.",
   "attachmentName": "Name des Anhangs",
   "deleteAttachmentTitle": "Anhang löschen?",
@@ -412,6 +413,7 @@
   "sequenceEdit": "Songablauf für dieses Set",
   "sequenceFromSet": "Ablauf für dieses Set angepasst",
   "sequenceFromBand": "Abfolge der Band",
+  "bandArrangement": "Band-Arrangement",
   "arrangementOf": "Arrangement von {band}",
   "@arrangementOf": {
     "placeholders": {

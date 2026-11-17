@@ -170,6 +170,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addAttachment => 'Attach file';
 
   @override
+  String get noAttachments => 'No attachments yet.';
+
+  @override
   String get attachmentTooLarge =>
       'The file is larger than 20 MB and cannot be attached.';
 
@@ -868,6 +871,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sequenceFromBand => 'Sequence of the band';
+
+  @override
+  String get bandArrangement => 'Band arrangement';
 
   @override
   String arrangementOf(String band) {

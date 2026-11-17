@@ -360,8 +360,10 @@ void main() {
       ).createSong(source: '{title: Shared}\n[C]x');
       await tester.pumpWidget(app.build(home: SongScreen(songId: id)));
       await tester.pumpAndSettle();
-      expect(find.byTooltip('Edit ChordPro'), findsNothing);
-      expect(find.byTooltip('Attach file'), findsNothing);
+      expect(find.byTooltip('Attachments'), findsNothing);
+      await tester.tap(find.byType(PopupMenuButton<String>).first);
+      await tester.pumpAndSettle();
+      expect(find.text('Edit ChordPro'), findsNothing);
       await app.dispose(tester);
     });
   });
@@ -422,10 +424,14 @@ void main() {
     await tester.pumpWidget(app.build(home: SongScreen(songId: id)));
     await tester.pumpAndSettle();
 
-    expect(find.byTooltip('Edit ChordPro'), findsOneWidget);
-    expect(find.byTooltip('Attach file'), findsOneWidget);
+    await tester.tap(find.byTooltip('Attachments'));
+    await tester.pumpAndSettle();
+    expect(find.text('Attach file'), findsOneWidget);
+    await tester.tap(find.byTooltip('Close'));
+    await tester.pumpAndSettle();
     await tester.tap(find.byType(PopupMenuButton<String>).first);
     await tester.pumpAndSettle();
+    expect(find.text('Edit ChordPro'), findsOneWidget);
     expect(find.text('Copy to band'), findsOneWidget);
     expect(find.text('Delete'), findsNothing);
     await app.dispose(tester);
@@ -447,8 +453,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byTooltip('Play live'), findsOneWidget);
-    expect(find.byTooltip('Edit ChordPro'), findsNothing);
-    expect(find.byTooltip('Attach file'), findsNothing);
+    expect(find.byTooltip('Attachments'), findsNothing);
+    await tester.tap(find.byType(PopupMenuButton<String>).first);
+    await tester.pumpAndSettle();
+    expect(find.text('Edit ChordPro'), findsNothing);
     await app.dispose(tester);
   });
 }

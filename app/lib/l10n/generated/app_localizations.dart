@@ -362,6 +362,12 @@ abstract class AppLocalizations {
   /// **'Datei anhängen'**
   String get addAttachment;
 
+  /// No description provided for @noAttachments.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Anhänge.'**
+  String get noAttachments;
+
   /// No description provided for @attachmentTooLarge.
   ///
   /// In de, this message translates to:
@@ -1633,6 +1639,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Abfolge der Band'**
   String get sequenceFromBand;
+
+  /// No description provided for @bandArrangement.
+  ///
+  /// In de, this message translates to:
+  /// **'Band-Arrangement'**
+  String get bandArrangement;
 
   /// No description provided for @arrangementOf.
   ///
