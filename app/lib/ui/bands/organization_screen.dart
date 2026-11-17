@@ -13,7 +13,8 @@ import 'bands_screen.dart';
 import 'invites_section.dart';
 
 /// An organization (ADR-0017): its bands and people. Organization admins
-/// rename it and manage people and their roles; everyone can leave.
+/// rename it, create bands in it and manage people and their roles;
+/// everyone can leave.
 class OrganizationScreen extends ConsumerWidget {
   const OrganizationScreen({super.key, required this.organizationId});
 
@@ -91,6 +92,36 @@ class OrganizationScreen extends ConsumerWidget {
                     builder: (_) => BandScreen(bandId: b.id),
                   ),
                 ),
+              ),
+            // Organization admins create bands here (ADR-0017, ADR-0023).
+            if (org.isAdmin)
+              ListTile(
+                key: const Key('org-band-new'),
+                leading: const Icon(Icons.group_add_outlined),
+                title: Text(l10n.bandNew),
+                onTap: () async {
+                  final name = (await askText(
+                    context,
+                    title: l10n.bandNew,
+                    label: l10n.bandName,
+                  ))?.trim();
+                  if (name == null || name.isEmpty || !context.mounted) return;
+                  late String id;
+                  final ok = await runBandAction(
+                    context,
+                    () async => id = await service.createBand(
+                      name,
+                      organizationId: organizationId,
+                    ),
+                  );
+                  if (!ok || !context.mounted) return;
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (_) => BandScreen(bandId: id),
+                    ),
+                  );
+                },
               ),
             header(l10n.orgPeople),
             for (final p in people)
