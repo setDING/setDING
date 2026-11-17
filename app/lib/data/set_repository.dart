@@ -349,6 +349,26 @@ class SetRepository {
   Stream<Set<String>> watchNotOfflineReady() =>
       _offlineQuery().watch().asyncMap(_notReady);
 
+  /// Number of songs with ChordPro problems per set of the band (#314);
+  /// sets without such songs are missing.
+  Stream<Map<String, int>> watchProblemSongCounts() => db
+      .customSelect(
+        'SELECT i.set_id AS set_id, COUNT(DISTINCT s.id) AS songs '
+        'FROM set_items i '
+        'JOIN setlists l ON l.id = i.set_id '
+        'JOIN songs s ON s.id = i.song_id '
+        "WHERE i.type = 'song' AND l.band_id = ? AND s.deleted = 0 "
+        'AND s.chordpro_problems > 0 GROUP BY i.set_id',
+        variables: [Variable.withString(bandId)],
+        readsFrom: {db.setItems, db.setlists, db.songs},
+      )
+      .watch()
+      .map(
+        (rows) => {
+          for (final r in rows) r.read<String>('set_id'): r.read<int>('songs'),
+        },
+      );
+
   /// One row per song item and attachment: the item's set, its song (null
   /// if missing) and an attachment file (null if none).
   Selectable<QueryRow> _offlineQuery({String? setId}) => db.customSelect(

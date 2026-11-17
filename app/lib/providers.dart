@@ -416,6 +416,12 @@ final offlineReadyProvider = FutureProvider.autoDispose.family<bool?, String>((
       .contains(setId);
 });
 
+/// Number of songs with ChordPro problems per set of the current band
+/// (#314).
+final problemSongCountsProvider = StreamProvider.autoDispose<Map<String, int>>(
+  (ref) => ref.watch(setRepositoryProvider).watchProblemSongCounts(),
+);
+
 final storageUsageProvider = FutureProvider<int>((ref) async {
   ref.watch(attachmentCountsProvider);
   return ref.watch(attachmentStorageProvider).usedBytes();

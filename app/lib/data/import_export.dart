@@ -22,12 +22,27 @@ class ImportFile {
   final Uint8List bytes;
 }
 
+/// An imported song whose ChordPro source has problems (#314).
+typedef ImportProblem = ({
+  String songId,
+  String title,
+
+  /// Number of problems (`validateChordPro`).
+  int count,
+
+  /// At least one of them can be fixed automatically.
+  bool fixable,
+});
+
 /// Result of an import.
 class ImportResult {
-  const ImportResult(this.imported, this.skipped);
+  const ImportResult(this.imported, this.skipped, [this.problems = const []]);
 
   final int imported;
   final List<String> skipped;
+
+  /// Imported songs with ChordPro problems, in import order.
+  final List<ImportProblem> problems;
 }
 
 /// Decodes text files leniently (UTF-8 with BOM, fallback Latin-1).
@@ -67,6 +82,7 @@ class ImportExportService {
   }) async {
     var imported = 0;
     final skipped = <String>[];
+    final problems = <ImportProblem>[];
 
     Future<void> importOne(
       String name,
@@ -83,11 +99,18 @@ class ImportExportService {
       final parts = cp.splitChordProSongs(text);
       final base = p.basenameWithoutExtension(name);
       for (var i = 0; i < parts.length; i++) {
-        final id = await songs.createSong(
-          source: parts[i],
-          title: parts.length == 1 ? base : '$base (${i + 1})',
-        );
+        final title = parts.length == 1 ? base : '$base (${i + 1})';
+        final id = await songs.createSong(source: parts[i], title: title);
         imported++;
+        final found = cp.validateChordPro(parts[i]);
+        if (found.isNotEmpty) {
+          problems.add((
+            songId: id,
+            title: cp.parseChordPro(parts[i]).title ?? title,
+            count: found.length,
+            fixable: found.any(cp.canFixChordProProblem),
+          ));
+        }
         // Attach images from the same archive that {image} refers to.
         if (images.isNotEmpty) await _attachImages(id, parts[i], images);
       }
@@ -109,7 +132,23 @@ class ImportExportService {
         await importOne(file.name, file.bytes);
       }
     }
-    return ImportResult(imported, skipped);
+    return ImportResult(imported, skipped, problems);
+  }
+
+  /// Fixes the ChordPro problems of [songIds] that can be fixed
+  /// automatically (`fixChordProProblems`, #314); returns how many songs
+  /// changed.
+  Future<int> fixProblems(Iterable<String> songIds) async {
+    var fixed = 0;
+    for (final id in songIds) {
+      final song = await songs.getSong(id);
+      if (song == null) continue;
+      final source = cp.fixChordProProblems(song.chordproSource);
+      if (source == song.chordproSource) continue;
+      await songs.updateSource(id, source);
+      fixed++;
+    }
+    return fixed;
   }
 
   Future<void> _attachImages(

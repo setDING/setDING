@@ -1649,6 +1649,81 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String chordProProblemsTooltip(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count places in the ChordPro will probably not be shown as intended',
+      one: '1 place in the ChordPro will probably not be shown as intended',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chordProProblemsShow(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Show the $count ChordPro problems',
+      one: 'Show the ChordPro problem',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String setChordProProblemsTooltip(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs with ChordPro problems',
+      one: '1 song with ChordPro problems',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get importProblemsTitle => 'Check the import';
+
+  @override
+  String importProblemsMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count imported songs contain places',
+      one: '1 imported song contains places',
+    );
+    return '$_temp0 that will probably not be shown as intended:';
+  }
+
+  @override
+  String importProblemItem(String title, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count places',
+      one: '1 place',
+    );
+    return '$title ($_temp0)';
+  }
+
+  @override
+  String get importProblemsHint =>
+      'The songs are marked in the song list. Fixing automatically changes only places with a clear repair; fix the rest in the editor.';
+
+  @override
+  String songsFixed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs fixed',
+      one: '1 song fixed',
+      zero: 'No song fixed',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String moreProblems(int count) {
     return '… and $count more.';
   }

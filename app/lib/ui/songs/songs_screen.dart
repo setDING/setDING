@@ -18,6 +18,7 @@ import '../render/song_header.dart';
 import '../sets/sets_screen.dart' show formatGigDate;
 import '../widgets/breakpoint_builder.dart';
 import '../widgets/dialogs.dart';
+import 'chordpro_problems_badge.dart';
 import 'import_dialog.dart';
 import 'song_editor_screen.dart';
 import 'song_screen.dart';
@@ -263,6 +264,10 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                   hasAttachments: (counts[list[i].id] ?? 0) > 0,
                   arrangement: arrangements[list[i].id],
                   hasConflict: conflicts.contains(list[i].id),
+                  showProblems: library.canEditSongBy(
+                    createdBy: list[i].createdBy,
+                    updatedBy: list[i].updatedBy,
+                  ),
                   nextGig: gigs[list[i].id],
                   hit: hits[list[i].id],
                   bandName: band?.name ?? '',
@@ -624,6 +629,7 @@ class SongTile extends ConsumerWidget {
     this.arrangement,
     this.bandName = '',
     this.hasConflict = false,
+    this.showProblems = false,
     this.nextGig,
     this.hit,
   });
@@ -633,6 +639,10 @@ class SongTile extends ConsumerWidget {
 
   /// The song waits for a decision on a sync conflict (ADR-0004).
   final bool hasConflict;
+
+  /// Show a warning if the ChordPro source has problems (#314): only to
+  /// people who may edit the song.
+  final bool showProblems;
 
   /// The next set of the band the song is played in.
   final UpcomingGig? nextGig;
@@ -765,6 +775,11 @@ class SongTile extends ConsumerWidget {
           l10n.songConflictTooltip,
           Icons.sync_problem,
           scheme.error,
+        ),
+      if (showProblems && song.problems > 0)
+        ChordProProblemsBadge(
+          key: const ValueKey('song-status-problems'),
+          message: l10n.chordProProblemsTooltip(song.problems),
         ),
       if (nextGig case final gig?)
         icon(

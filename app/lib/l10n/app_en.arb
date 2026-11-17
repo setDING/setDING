@@ -701,6 +701,59 @@
       }
     }
   },
+  "chordProProblemsTooltip": "{count, plural, =1{1 place in the ChordPro will probably not be shown as intended} other{{count} places in the ChordPro will probably not be shown as intended}}",
+  "@chordProProblemsTooltip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chordProProblemsShow": "{count, plural, =1{Show the ChordPro problem} other{Show the {count} ChordPro problems}}",
+  "@chordProProblemsShow": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setChordProProblemsTooltip": "{count, plural, =1{1 song with ChordPro problems} other{{count} songs with ChordPro problems}}",
+  "@setChordProProblemsTooltip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importProblemsTitle": "Check the import",
+  "importProblemsMessage": "{count, plural, =1{1 imported song contains places} other{{count} imported songs contain places}} that will probably not be shown as intended:",
+  "@importProblemsMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importProblemItem": "{title} ({count, plural, =1{1 place} other{{count} places}})",
+  "@importProblemItem": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importProblemsHint": "The songs are marked in the song list. Fixing automatically changes only places with a clear repair; fix the rest in the editor.",
+  "songsFixed": "{count, plural, =0{No song fixed} =1{1 song fixed} other{{count} songs fixed}}",
+  "@songsFixed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "moreProblems": "… and {count} more.",
   "@moreProblems": {
     "placeholders": {

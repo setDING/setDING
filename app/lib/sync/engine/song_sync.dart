@@ -116,6 +116,7 @@ class SongSync {
             sortArtist: Value(meta.sortArtist),
             tags: Value(meta.tagsColumn),
             searchText: Value(meta.searchText),
+            chordproProblems: Value(meta.problems),
             revision: Value(remote.revision),
             updatedAt: DateTime.now(),
             deleted: Value(remote.deleted),
