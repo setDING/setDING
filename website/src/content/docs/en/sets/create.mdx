@@ -1,0 +1,75 @@
+---
+title: Create a set
+description: Create a set, add and order songs, add breaks and texts.
+sidebar:
+  order: 1
+---
+
+import { Image } from 'astro:assets';
+import set from '../../../../../../docs/screenshots/set.png';
+
+A set is the songs of a gig or a rehearsal in the right order. Every set belongs to
+a band; all members of the band see it on their device.
+
+The band's **Leader** and **Set planner** and the admins of the organization may
+create and change sets. Everybody else sees the set and plays it, but does not
+change it.
+
+<Image src={set} alt="A set with two songs, their keys, a break and the offline-ready status" />
+
+## The list of sets
+
+**Sets** shows the sets of the selected band. If you are in several bands, switch
+between them at the top right with **Switch band**.
+
+The sets are grouped by date: **Upcoming**, **Without date** and **Past**. Past sets
+are collapsed; tap **Show past sets** to see them. The next set is marked as
+**Next gig**, with the number of days until then.
+
+Pull the list down to sync right away.
+
+## Create a new set
+
+1. On **Sets**, tap **New set**.
+2. Enter a **Name**, optionally the **Venue**, and the date of the gig with **Pick
+   date**.
+3. Tap **Save**.
+
+Change the name, venue and date later in the set's ⋮ menu with **Edit set**.
+
+## Add songs
+
+1. Open the set and tap **Add songs**.
+2. Select the songs; **Search songs** finds them faster.
+3. Tap **Add**. The songs are added at the end of the set.
+
+To change the order, drag an item up or down by the handle on the right.
+
+## Breaks and texts
+
+The set's ⋮ menu adds at the end of the set:
+
+- **Add break** – a break, optionally with a name.
+- **Add text** – a short text, e.g. an announcement or the encore.
+
+Then drag the item to the right place.
+
+Breaks and texts get a page of their own in live mode and are separator rows in the
+printed set list. Change them with **Edit** in the item's ⋮ menu.
+
+## Remove items
+
+In an item's ⋮ menu, tap **Remove from set**. The song stays in the song library;
+it is only removed from this set. Right afterwards, **Undo** brings it back.
+
+## Copy and delete a set
+
+- **Copy to band** copies the set with all its items into another band of the same
+  organization, e.g. for a second line-up. There the other band's arrangements
+  apply (see [Key and sequence](/en/sets/key-and-sequence/)).
+- **Delete** deletes the set. The songs are kept.
+
+## Next
+
+- Set the [key and sequence](/en/sets/key-and-sequence/) for each song
+- [Offline ready, print and share](/en/sets/share/)
