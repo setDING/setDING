@@ -35,7 +35,8 @@ with the idle-time preparation of the next song (#296).
 - New instrument preset **Drums** (selector `drums`). Conditional ChordPro sections
   for drums (`{start_of_verse-drums}`, `{comment-drums: …}`) work through the existing
   selector context (ADR-0012).
-- The drummer settings (below) are a group of the live settings. They are **on by
+- The drummer settings (below) are a group of the musician settings (personal,
+  ADR-0027; click volume and audio delay stay on the device). They are **on by
   default** when the instrument is drums and off for other instruments; beat display,
   count-in and click can be switched on by anyone. The **song map** layout is offered
   only for drums.
@@ -156,6 +157,7 @@ with the idle-time preparation of the next song (#296).
   Bluetooth in-ears both occur), song map for drums only.
 - 2026-11-17: Accepted by the owner.
 - 2026-11-17: Meter model and `{x_time_grouping}` implemented in the `chordpro` package (`Meter`, `Song.meter`, #331); the showcase's second song is in 7/8 grouped 2+2+3.
+- 2026-11-17: Drums instrument preset and the drummer settings implemented (#334). Following ADR-0027 they are split: a group "Beat and click" in the personal musician settings (beat display, edge flash, click, start, count-in 0–2 bars, duration, sound, accent, subdivisions, song map), synced with the account; click volume and audio delay (0–500 ms) in the device category *Screen & live mode*. Beat display, click, start, edge flash and song map follow the instrument until set (on and automatic for drums, off and manual otherwise) and are left out of the stored JSON while unset; edge flash and song map are offered for drums only.
 
 ## Open points
 

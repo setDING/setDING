@@ -173,6 +173,7 @@ not.
     moved to display.
   - The drummer settings of ADR-0026 do not exist yet; they get their scope
     when they are added (see the classification above).
+- 2026-11-17: The drummer settings of ADR-0026 added (#334) as classified above; beat display, edge flash, subdivisions and song map are personal too. Choices that follow the instrument until set (beat display, edge flash, click, start, song map) are left out of the JSON while unset, so an unset choice on one device does not override a choice synced from another.
 
 ## Open points
 

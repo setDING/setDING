@@ -45,6 +45,21 @@ enum LiveAppearance {
 /// the former RealChord logo.
 enum AccentColor { brand, red, amber, green, teal, purple, pink }
 
+/// When the beat and the click start in live mode (ADR-0026).
+enum ClickStart {
+  /// With a count-in whenever a song is shown.
+  automatic,
+
+  /// By a tap on the tempo, a long press of the forward pedal or Enter.
+  manual,
+}
+
+/// How long the click plays (ADR-0026).
+enum ClickDuration { wholeSong, countIn }
+
+/// Sound of the click (ADR-0026), synthesised by the click engine.
+enum ClickSound { click, woodblock, beep }
+
 /// When syncs start (ADR-0004); "Sync now" is always available.
 enum SyncMode {
   /// At start, after local changes, on server changes and periodically.
@@ -92,6 +107,18 @@ class AppSettings {
     this.diagrams = DiagramsPosition.off,
     this.serverUrl = defaultServerUrl,
     this.syncMode = SyncMode.onStart,
+    this.beatDisplay,
+    this.edgeFlash,
+    this.click,
+    this.clickStart,
+    this.clickDuration = ClickDuration.wholeSong,
+    this.countInBars = 2,
+    this.clickVolume = 0.8,
+    this.clickAccent = true,
+    this.clickSound = ClickSound.click,
+    this.clickSubdivision = false,
+    this.audioLatencyMs = 0,
+    this.songMap,
   });
 
   final LanguageMode language;
@@ -142,6 +169,57 @@ class AppSettings {
   /// When syncs start.
   final SyncMode syncMode;
 
+  // Beat and click (ADR-0026). The nullable ones follow the instrument
+  // until they are set: on for drums, off for the others.
+
+  /// Beat dots in the live header and the count-in numbers.
+  final bool? beatDisplay;
+
+  /// The edge of the screen flashes on each beat (drums only).
+  final bool? edgeFlash;
+
+  /// Audible click.
+  final bool? click;
+
+  /// Automatic or manual start.
+  final ClickStart? clickStart;
+  final ClickDuration clickDuration;
+
+  /// Bars of the count-in: 0 (none), 1 or 2.
+  final int countInBars;
+
+  /// Volume of the click, 0 to 1.
+  final double clickVolume;
+
+  /// The 1 of a bar sounds different.
+  final bool clickAccent;
+  final ClickSound clickSound;
+
+  /// Quieter clicks between the beats.
+  final bool clickSubdivision;
+
+  /// Delay of the audio output (e.g. Bluetooth headphones); the display is
+  /// shifted by it so that it matches what is heard.
+  final int audioLatencyMs;
+
+  /// Song map instead of the chord sheet (drums only).
+  final bool? songMap;
+
+  static const maxAudioLatencyMs = 500;
+
+  /// Whether the instrument is drums (ADR-0026).
+  bool get isDrums => instrument.trim().toLowerCase() == 'drums';
+
+  bool get showBeat => beatDisplay ?? isDrums;
+  bool get showEdgeFlash => isDrums && (edgeFlash ?? true);
+  bool get playClick => click ?? isDrums;
+  ClickStart get beatStart =>
+      clickStart ?? (isDrums ? ClickStart.automatic : ClickStart.manual);
+  bool get showSongMap => isDrums && (songMap ?? true);
+
+  /// Whether live mode has a beat at all (display or click).
+  bool get beatEnabled => showBeat || playClick || showEdgeFlash;
+
   /// Instrument presets offered in the settings.
   static const instruments = [
     'guitar',
@@ -149,6 +227,7 @@ class AppSettings {
     'bass',
     'keyboard',
     'vocals',
+    'drums',
   ];
 
   /// Selection context for conditional ChordPro directives.
@@ -196,6 +275,18 @@ class AppSettings {
     DiagramsPosition? diagrams,
     String? serverUrl,
     SyncMode? syncMode,
+    bool? beatDisplay,
+    bool? edgeFlash,
+    bool? click,
+    ClickStart? clickStart,
+    ClickDuration? clickDuration,
+    int? countInBars,
+    double? clickVolume,
+    bool? clickAccent,
+    ClickSound? clickSound,
+    bool? clickSubdivision,
+    int? audioLatencyMs,
+    bool? songMap,
   }) => AppSettings(
     language: language ?? this.language,
     notation: notation ?? this.notation,
@@ -217,6 +308,18 @@ class AppSettings {
     fontSize: fontSize ?? this.fontSize,
     serverUrl: serverUrl ?? this.serverUrl,
     syncMode: syncMode ?? this.syncMode,
+    beatDisplay: beatDisplay ?? this.beatDisplay,
+    edgeFlash: edgeFlash ?? this.edgeFlash,
+    click: click ?? this.click,
+    clickStart: clickStart ?? this.clickStart,
+    clickDuration: clickDuration ?? this.clickDuration,
+    countInBars: countInBars ?? this.countInBars,
+    clickVolume: clickVolume ?? this.clickVolume,
+    clickAccent: clickAccent ?? this.clickAccent,
+    clickSound: clickSound ?? this.clickSound,
+    clickSubdivision: clickSubdivision ?? this.clickSubdivision,
+    audioLatencyMs: audioLatencyMs ?? this.audioLatencyMs,
+    songMap: songMap ?? this.songMap,
   );
 
   /// Which settings follow the person (synced with the account) and which
@@ -243,6 +346,20 @@ class AppSettings {
     'fontSize': SettingSyncScope.device,
     'serverUrl': SettingSyncScope.device,
     'syncMode': SettingSyncScope.device,
+    // Beat and click (ADR-0026): how the person likes to play; the volume
+    // and the audio delay depend on the device and its headphones.
+    'beatDisplay': SettingSyncScope.personal,
+    'edgeFlash': SettingSyncScope.personal,
+    'click': SettingSyncScope.personal,
+    'clickStart': SettingSyncScope.personal,
+    'clickDuration': SettingSyncScope.personal,
+    'countInBars': SettingSyncScope.personal,
+    'clickAccent': SettingSyncScope.personal,
+    'clickSound': SettingSyncScope.personal,
+    'clickSubdivision': SettingSyncScope.personal,
+    'songMap': SettingSyncScope.personal,
+    'clickVolume': SettingSyncScope.device,
+    'audioLatencyMs': SettingSyncScope.device,
   };
 
   /// The keys of [scope].
@@ -271,6 +388,19 @@ class AppSettings {
     'fontSize': fontSize,
     'serverUrl': serverUrl,
     'syncMode': syncMode.name,
+    // Unset choices that follow the instrument are left out.
+    'beatDisplay': ?beatDisplay,
+    'edgeFlash': ?edgeFlash,
+    'click': ?click,
+    'clickStart': ?clickStart?.name,
+    'clickDuration': clickDuration.name,
+    'countInBars': countInBars,
+    'clickVolume': clickVolume,
+    'clickAccent': clickAccent,
+    'clickSound': clickSound.name,
+    'clickSubdivision': clickSubdivision,
+    'audioLatencyMs': audioLatencyMs,
+    'songMap': ?songMap,
   };
 
   /// Settings from JSON values; a missing key, a value of the wrong type or
@@ -288,6 +418,21 @@ class AppSettings {
     String text(String key, String fallback) => switch (json[key]) {
       final String v => v,
       _ => fallback,
+    };
+    bool? maybe(String key) => switch (json[key]) {
+      final bool b => b,
+      _ => null,
+    };
+    T? pickOrNull<T extends Enum>(List<T> values, String key) {
+      for (final v in values) {
+        if (v.name == json[key]) return v;
+      }
+      return null;
+    }
+
+    num? number(String key) => switch (json[key]) {
+      final num v => v,
+      _ => null,
     };
 
     const d = AppSettings();
@@ -319,6 +464,29 @@ class AppSettings {
         final num v => v.toDouble().clamp(minFontSize, maxFontSize),
         _ => d.fontSize,
       },
+      beatDisplay: maybe('beatDisplay'),
+      edgeFlash: maybe('edgeFlash'),
+      click: maybe('click'),
+      clickStart: pickOrNull(ClickStart.values, 'clickStart'),
+      clickDuration: pick(
+        ClickDuration.values,
+        'clickDuration',
+        d.clickDuration,
+      ),
+      countInBars: (number('countInBars')?.toInt() ?? d.countInBars).clamp(
+        0,
+        2,
+      ),
+      clickVolume: (number('clickVolume')?.toDouble() ?? d.clickVolume).clamp(
+        0.0,
+        1.0,
+      ),
+      clickAccent: flag('clickAccent', d.clickAccent),
+      clickSound: pick(ClickSound.values, 'clickSound', d.clickSound),
+      clickSubdivision: flag('clickSubdivision', d.clickSubdivision),
+      audioLatencyMs: (number('audioLatencyMs')?.toInt() ?? d.audioLatencyMs)
+          .clamp(0, maxAudioLatencyMs),
+      songMap: maybe('songMap'),
     );
   }
 
