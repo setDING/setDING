@@ -28,7 +28,7 @@ import '../sets/set_item_label.dart';
 import '../widgets/key_picker.dart';
 import 'live_preparation.dart';
 import 'live_theme.dart';
-import 'page_hint.dart';
+import 'set_progress_bar.dart';
 import 'pdf_spread_view.dart';
 
 /// One entry of the live sequence.
@@ -232,7 +232,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       ..release();
     _setFullScreen(false);
     _pages.dispose();
-    _hint.dispose();
+    _progress.dispose();
     for (final c in _scroll.values) {
       c.dispose();
     }
@@ -255,69 +255,85 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     );
   }
 
-  // Every position of a song (scroll offset, page, PDF page or spread) can
-  // change the corner of the page.
+  // Every position of a song (scroll offset, page, PDF page or spread)
+  // moves the progress bar.
   ScrollController _scrollFor(int index) => _scroll.putIfAbsent(
     index,
-    () => ScrollController()..addListener(_scheduleHint),
+    () => ScrollController()..addListener(_scheduleProgress),
   );
   PdfViewerController _pdfFor(int index) => _pdf.putIfAbsent(index, () {
-    final controller = PdfViewerController()..addListener(_scheduleHint);
-    controller.visibleRenderState.addListener(_scheduleHint);
+    final controller = PdfViewerController()..addListener(_scheduleProgress);
+    controller.visibleRenderState.addListener(_scheduleProgress);
     return controller;
   });
   PdfSpreadController _spreadFor(int index) => _spread.putIfAbsent(
     index,
-    () => PdfSpreadController()..addListener(_scheduleHint),
+    () => PdfSpreadController()..addListener(_scheduleProgress),
   );
   _FitController _fitFor(int index) =>
       _fit.putIfAbsent(index, _FitController.new);
   SongPageController _songPageFor(int index) => _songPages.putIfAbsent(
     index,
-    () => SongPageController()..addListener(_scheduleHint),
+    () => SongPageController()..addListener(_scheduleProgress),
   );
 
-  /// The corner of the page (ADR-0007): whether more of the current song
-  /// follows or it ends here; null for pauses and texts.
-  final _hint = ValueNotifier<PageHint?>(null);
-  bool _hintScheduled = false;
+  /// Where the set and the current song stand, for the progress bar
+  /// (ADR-0007).
+  late final _progress = ValueNotifier<StageProgress>((
+    index: _index,
+    pages: 1,
+    page: 0,
+    scroll: null,
+  ));
+  bool _progressScheduled = false;
 
-  /// Updates [_hint] after the frame, once the song is laid out (the scroll
-  /// extent and the PDF pages are known only then).
-  void _scheduleHint() {
-    if (_hintScheduled) return;
-    _hintScheduled = true;
+  /// Updates [_progress] after the frame, once the song is laid out (the
+  /// scroll extent and the PDF pages are known only then).
+  void _scheduleProgress() {
+    if (_progressScheduled) return;
+    _progressScheduled = true;
     WidgetsBinding.instance
       ..addPostFrameCallback((_) {
-        _hintScheduled = false;
-        if (mounted) _hint.value = _currentHint();
+        _progressScheduled = false;
+        if (mounted) _progress.value = _currentProgress();
       })
       ..ensureVisualUpdate();
   }
 
-  /// Mirrors [_next]: more follows when it would turn within the song.
-  PageHint? _currentHint() {
-    if (_items[_index].song == null) return null;
+  /// The position within the current item, in the order [_next] turns.
+  StageProgress _currentProgress() {
+    StageProgress pages(int count, int page) =>
+        (index: _index, pages: count, page: page, scroll: null);
+    if (_items[_index].song == null) return pages(1, 0);
     final sc = _scroll[_index];
-    if (sc != null && sc.hasClients) {
+    if (sc != null && sc.hasClients && sc.position.hasContentDimensions) {
       final pos = sc.position;
-      if (pos.hasContentDimensions && pos.pixels < pos.maxScrollExtent - 2) {
-        return PageHint.more;
+      if (pos.maxScrollExtent > 2) {
+        // Seen so far: up to the bottom of the screen, in steps of 1 %.
+        final seen =
+            (pos.pixels + pos.viewportDimension) /
+            (pos.maxScrollExtent + pos.viewportDimension);
+        return (
+          index: _index,
+          pages: 1,
+          page: 0,
+          scroll: (seen.clamp(0.0, 1.0) * 100).round() / 100,
+        );
       }
     }
-    final pages = _songPages[_index];
-    if (pages != null && pages.page + 1 < pages.count) return PageHint.more;
+    final songPages = _songPages[_index];
+    if (songPages != null && songPages.count > 1) {
+      return pages(songPages.count, songPages.page);
+    }
     final spread = _spread[_index];
-    if (spread != null &&
-        spread.isReady &&
-        spread.firstPage + 2 <= spread.pageCount) {
-      return PageHint.more;
+    if (spread != null && spread.isReady) {
+      return pages((spread.pageCount + 1) ~/ 2, (spread.firstPage - 1) ~/ 2);
     }
     final pdf = _pdf[_index];
-    if (pdf != null && pdf.isReady && (pdf.pageNumber ?? 1) < pdf.pageCount) {
-      return PageHint.more;
+    if (pdf != null && pdf.isReady) {
+      return pages(pdf.pageCount, (pdf.pageNumber ?? 1) - 1);
     }
-    return PageHint.end;
+    return pages(1, 0);
   }
 
   double get _step =>
@@ -535,8 +551,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     final items = _items;
     final next = _index < items.length - 1 ? items[_index + 1] : null;
     final theme = Theme.of(context);
-    final showHint = ref.watch(settingsProvider.select((s) => s.pageHint));
-    if (showHint) _scheduleHint();
+    final showProgress = ref.watch(
+      settingsProvider.select((s) => s.setProgress),
+    );
+    if (showProgress) _scheduleProgress();
 
     return Scaffold(
       body: SafeArea(
@@ -564,7 +582,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                           // scroll further or no longer scroll at all.
                           child: NotificationListener<ScrollMetricsNotification>(
                             onNotification: (_) {
-                              if (showHint) _scheduleHint();
+                              if (showProgress) _scheduleProgress();
                               return false;
                             },
                             child: PageView.builder(
@@ -609,17 +627,6 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                       },
                     ),
                   ),
-                  // More of the song follows, or it ends here: seen at a
-                  // glance in the corner where the eye ends a page.
-                  if (showHint)
-                    Positioned(
-                      right: 0,
-                      bottom: 0,
-                      child: ValueListenableBuilder(
-                        valueListenable: _hint,
-                        builder: (context, hint, _) => PageHintMark(hint: hint),
-                      ),
-                    ),
                   if (_controls)
                     Positioned(
                       left: 0,
@@ -637,6 +644,16 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                 ],
               ),
             ),
+            // Where the set stands and whether more of the song follows,
+            // seen at a glance; below the page, so it never covers text.
+            if (showProgress)
+              ValueListenableBuilder(
+                valueListenable: _progress,
+                builder: (context, progress, _) => SetProgressBar(
+                  markers: [for (final item in items) item.song == null],
+                  progress: progress,
+                ),
+              ),
             Container(
               color: theme.colorScheme.surfaceContainer,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),

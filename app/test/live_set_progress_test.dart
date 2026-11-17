@@ -9,6 +9,7 @@ import 'package:realchord/data/database.dart' show SetItemType;
 import 'package:realchord/data/demo_song.dart';
 import 'package:realchord/settings/settings.dart';
 import 'package:realchord/ui/live/live_screen.dart';
+import 'package:realchord/ui/live/set_progress_bar.dart';
 import 'package:realchord/ui/settings_screen.dart';
 
 import 'test_app.dart';
@@ -29,11 +30,10 @@ trailer<</Root 1 0 R>>
 String _versesSong(int verses) =>
     '{title: Long}\n${List.generate(verses, (_) => '{start_of_verse}\n${List.filled(4, '[C]La la [G]la').join('\n')}\n{end_of_verse}').join('\n')}';
 
-final _more = find.byKey(const Key('live-more-pages'));
-final _end = find.byKey(const Key('live-song-end'));
+final _bar = find.byKey(const Key('live-set-progress'));
 
-/// The corner of the live page shows at a glance whether more of the song
-/// follows (ADR-0007, issue #305).
+/// The progress bar of the set shows where the set stands and whether more
+/// of the current song follows (ADR-0007, issue #311).
 void main() {
   Future<List<LiveItem>> createSongs(
     WidgetTester tester,
@@ -70,42 +70,114 @@ void main() {
 
   Future<void> tapRight(WidgetTester tester, {bool pdf = false}) async {
     final page = tester.getRect(find.byType(PageView));
-    // In the corner, under the mark: it never takes the tap.
-    await tester.tapAt(Offset(page.right - 10, page.bottom - 10));
+    await tester.tapAt(Offset(page.right - 20, page.center.dy));
     pdf ? await settlePdf(tester) : await tester.pumpAndSettle();
   }
 
-  testWidgets('a folded corner shows the next page of a song', (tester) async {
+  StageProgress progress(WidgetTester tester) =>
+      tester.widget<SetProgressBar>(find.byType(SetProgressBar)).progress;
+
+  Color colorOf(WidgetTester tester, String key) =>
+      tester.widget<ColoredBox>(find.byKey(ValueKey(key))).color;
+
+  ColorScheme scheme(WidgetTester tester) =>
+      Theme.of(tester.element(find.byType(SetProgressBar))).colorScheme;
+
+  testWidgets('shows the items of the set and the pages of the song', (
+    tester,
+  ) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'en'});
     final items = await createSongs(tester, app, [
       _versesSong(16),
       '{title: Second}\n[D]Two',
     ]);
-    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpWidget(
+      app.build(
+        home: LiveScreen(
+          items: [...items, const LiveItem.marker(SetItemType.pause, null)],
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
 
-    expect(find.text('Page 1/2'), findsOneWidget);
-    expect(_more, findsOneWidget);
-    expect(_end, findsNothing);
-    // In the bottom right corner of the page.
+    // Across the whole width, between the page and the bottom bar.
     final page = tester.getRect(find.byType(PageView));
-    expect(tester.getBottomRight(_more), page.bottomRight);
+    final bar = tester.getRect(_bar);
+    expect(bar.width, page.width);
+    expect(bar.top, page.bottom);
+    expect(tester.widget<SetProgressBar>(find.byType(SetProgressBar)).markers, [
+      false,
+      false,
+      true,
+    ]);
+
+    expect(find.text('Page 1/2'), findsOneWidget);
+    expect(progress(tester), (index: 0, pages: 2, page: 0, scroll: null));
+    final primary = scheme(tester).primary;
+    // Every segment fills the height of the bar.
+    for (final key in ['progress-page-0', 'progress-page-1']) {
+      expect(tester.getSize(find.byKey(ValueKey(key))).height, bar.height);
+    }
+    expect(
+      tester.getSize(find.byKey(const ValueKey('progress-item-1'))).height,
+      bar.height,
+    );
+    expect(colorOf(tester, 'progress-page-0'), primary);
+    // The next page is still to come: a light accent tone.
+    expect(colorOf(tester, 'progress-page-1'), primary.withValues(alpha: 0.35));
 
     await tapRight(tester);
-    expect(find.text('Page 2/2'), findsOneWidget);
-    expect(_more, findsNothing);
-    expect(_end, findsOneWidget);
+    expect(progress(tester), (index: 0, pages: 2, page: 1, scroll: null));
+    expect(colorOf(tester, 'progress-page-1'), primary);
+    expect(colorOf(tester, 'progress-page-0'), isNot(primary));
 
-    // A song on one page ends on it.
     await tapRight(tester);
-    expect(find.text('2 / 2'), findsOneWidget);
-    expect(_more, findsNothing);
-    expect(_end, findsOneWidget);
+    expect(progress(tester), (index: 1, pages: 1, page: 0, scroll: null));
+    expect(colorOf(tester, 'progress-page-0'), primary);
     await app.dispose(tester);
   });
 
-  testWidgets('a song that scrolls shows more until its end', (tester) async {
+  testWidgets('a pause is dashed, in the accent colour when current', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    await tester.pumpWidget(
+      app.build(
+        home: const LiveScreen(
+          items: [
+            LiveItem.marker(SetItemType.pause, 'Break'),
+            LiveItem.marker(SetItemType.text, 'Hello'),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    Color dashColor(int item) =>
+        (tester
+                    .widget<CustomPaint>(
+                      find.descendant(
+                        of: find.byKey(ValueKey('progress-item-$item')),
+                        matching: find.byType(CustomPaint),
+                      ),
+                    )
+                    .painter!
+                as DashedLinePainter)
+            .color;
+    // Never filled: no page boxes for a pause.
+    expect(find.byKey(const ValueKey('progress-page-0')), findsNothing);
+    expect(dashColor(0), scheme(tester).primary);
+    expect(dashColor(1), isNot(scheme(tester).primary));
+
+    await tapRight(tester);
+    expect(dashColor(1), scheme(tester).primary);
+    expect(dashColor(0), isNot(scheme(tester).primary));
+    await app.dispose(tester);
+  });
+
+  testWidgets('a song that scrolls fills its segment', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(
       prefs: {'language': 'en', 'autoFit': false},
@@ -114,18 +186,19 @@ void main() {
     await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
     await tester.pumpAndSettle();
     expect(find.byType(SingleChildScrollView), findsOneWidget);
-    expect(_more, findsOneWidget);
+    final start = progress(tester).scroll!;
+    expect(start, inExclusiveRange(0, 1));
 
-    for (var i = 0; i < 20 && _more.evaluate().isNotEmpty; i++) {
+    await tapRight(tester);
+    expect(progress(tester).scroll, greaterThan(start));
+    for (var i = 0; i < 20 && progress(tester).scroll! < 1; i++) {
       await tapRight(tester);
     }
-    expect(_more, findsNothing);
-    expect(_end, findsOneWidget);
-    expect(find.text('1 / 1'), findsOneWidget);
+    expect(progress(tester).scroll, 1.0);
     await app.dispose(tester);
   });
 
-  testWidgets('PDF pages show more until the last page', (tester) async {
+  testWidgets('PDF pages are the pages of the song', (tester) async {
     // Portrait: one page at a time in the PDF viewer.
     useTabletSize(tester, landscape: false);
     usePdfCache();
@@ -137,17 +210,15 @@ void main() {
     await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
     await settlePdf(tester);
     expect(find.byType(PdfViewer), findsOneWidget);
-    expect(_more, findsOneWidget);
+    expect(progress(tester), (index: 0, pages: 2, page: 0, scroll: null));
 
     await tapRight(tester, pdf: true);
-    expect(find.text('1 / 2'), findsOneWidget);
-    expect(_more, findsNothing);
-    expect(_end, findsOneWidget);
+    expect(progress(tester), (index: 0, pages: 2, page: 1, scroll: null));
     await app.dispose(tester);
     await settlePdf(tester);
   });
 
-  testWidgets('PDF spreads show more until the last spread', (tester) async {
+  testWidgets('PDF spreads are the pages of the song', (tester) async {
     useTabletSize(tester);
     usePdfCache();
     final app = await TestApp.create(prefs: {'language': 'en'});
@@ -157,57 +228,36 @@ void main() {
     ], pdfOnFirst: _pdfWith(3));
     await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
     await settlePdf(tester);
-    expect(_more, findsOneWidget);
+    expect(progress(tester), (index: 0, pages: 2, page: 0, scroll: null));
 
     await tapRight(tester, pdf: true);
     expect(find.byKey(const ValueKey('pdf-spread-page-3')), findsOneWidget);
-    expect(_more, findsNothing);
-    expect(_end, findsOneWidget);
+    expect(progress(tester), (index: 0, pages: 2, page: 1, scroll: null));
     await app.dispose(tester);
     await settlePdf(tester);
   });
 
-  testWidgets('pauses show no mark', (tester) async {
-    useTabletSize(tester);
-    final app = await TestApp.create(prefs: {'language': 'en'});
-    await tester.pumpWidget(
-      app.build(
-        home: const LiveScreen(
-          items: [LiveItem.marker(SetItemType.pause, 'Break')],
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(_more, findsNothing);
-    expect(_end, findsNothing);
-    await app.dispose(tester);
-  });
-
-  testWidgets('the mark can be switched off in the settings', (tester) async {
+  testWidgets('the bar can be switched off', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(
-      prefs: {'language': 'en', 'pageHint': false},
+      prefs: {'language': 'en', 'setProgress': false},
     );
     final items = await createSongs(tester, app, [_versesSong(16)]);
     await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
     await tester.pumpAndSettle();
     expect(find.text('Page 1/2'), findsOneWidget);
-    expect(_more, findsNothing);
-    expect(_end, findsNothing);
+    expect(_bar, findsNothing);
     await app.dispose(tester);
   });
 
-  testWidgets('the live mode settings switch the mark', (tester) async {
+  testWidgets('the live mode settings switch the bar', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'en'});
     await tester.pumpWidget(app.build(home: const SettingsScreen()));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('settings-category-live')));
     await tester.pumpAndSettle();
-    final tile = find.widgetWithText(
-      SwitchListTile,
-      'Show more pages at a glance',
-    );
+    final tile = find.widgetWithText(SwitchListTile, 'Progress bar of the set');
     await tester.scrollUntilVisible(
       tile,
       200,
@@ -217,8 +267,8 @@ void main() {
     expect(tester.widget<SwitchListTile>(tile).value, isTrue);
     await tester.tap(tile);
     await tester.pumpAndSettle();
-    expect(app.prefs.getBool('pageHint'), isFalse);
-    expect(AppSettings.load(app.prefs).pageHint, isFalse);
+    expect(app.prefs.getBool('setProgress'), isFalse);
+    expect(AppSettings.load(app.prefs).setProgress, isFalse);
     await app.dispose(tester);
   });
 }

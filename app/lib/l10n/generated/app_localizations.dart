@@ -866,18 +866,6 @@ abstract class AppLocalizations {
   /// **'Seite {page}/{count}'**
   String liveSongPage(int page, int count);
 
-  /// No description provided for @liveMorePages.
-  ///
-  /// In de, this message translates to:
-  /// **'Weitere Seiten des Songs folgen'**
-  String get liveMorePages;
-
-  /// No description provided for @liveSongEnd.
-  ///
-  /// In de, this message translates to:
-  /// **'Ende des Songs'**
-  String get liveSongEnd;
-
   /// No description provided for @livePosition.
   ///
   /// In de, this message translates to:
@@ -1340,17 +1328,17 @@ abstract class AppLocalizations {
   /// **'Tippe links oder rechts auf den Bildschirm, um zurück oder weiter zu blättern. Seitenwender (Fusspedal) und Tastatur: Pfeil rechts, Pfeil ab, Bild ab und Leertaste blättern weiter, Pfeil links, Pfeil auf und Bild auf zurück.'**
   String get settingsPageTurnHint;
 
-  /// No description provided for @settingsPageHint.
+  /// No description provided for @settingsSetProgress.
   ///
   /// In de, this message translates to:
-  /// **'Weitere Seiten auf einen Blick zeigen'**
-  String get settingsPageHint;
+  /// **'Fortschrittsbalken des Sets'**
+  String get settingsSetProgress;
 
-  /// No description provided for @settingsPageHintHint.
+  /// No description provided for @settingsSetProgressHint.
   ///
   /// In de, this message translates to:
-  /// **'Eine umgeknickte Ecke unten rechts zeigt, dass weitere Seiten des Songs folgen; auf der letzten Seite markiert ein Schlussstrich das Ende.'**
-  String get settingsPageHintHint;
+  /// **'Ein schmaler Balken über der Fusszeile zeigt die Songs des Sets und die Seiten des aktuellen Songs: die aktuelle Seite in der Akzentfarbe, noch folgende Seiten heller. Pausen und Texte sind gestrichelt.'**
+  String get settingsSetProgressHint;
 
   /// No description provided for @settingsLiveAppearance.
   ///
