@@ -21,6 +21,8 @@ the site. The build fails on pages that do not compile and on broken internal li
   **English** ones under `en/` with the **same path** (`start/install.md` and
   `en/start/install.md`), so the language switcher finds them. Write both; a page
   missing in English shows the German one with a notice.
+- German texts address the reader with **"du"** (never "ihr" or "Sie"); where a
+  sentence is about the whole band, name the band ("legt die Band fest").
 - German texts follow the app's rules: Swiss Standard German, no "ß", the same terms
   and button labels as in `app_de.arb` / `app_en.arb`, written in **bold**.
 - Links between pages are absolute without the domain: `/start/install/` and

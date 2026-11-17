@@ -56,4 +56,4 @@ aktualisierst, steht unter [Installation](/start/install/).
 **Abmelden** beendet die Anmeldung auf diesem Gerät. Songs und Sets auf dem Gerät
 bleiben erhalten.
 
-Das Feld **Server** braucht ihr nur zum Testen; beim Wechsel wirst du abgemeldet.
+Das Feld **Server** brauchst du nur zum Testen; beim Wechsel wirst du abgemeldet.
