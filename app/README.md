@@ -14,11 +14,15 @@ flutter run
 
 Checks (format, analysis, tests) for the whole repository: `../tool/check.sh`.
 
-Screenshots with real fonts for visual review (not part of the test suite):
+Screenshots with real fonts for visual review (`make screenshots` in the
+repository root):
 
 ```bash
-flutter test test_screenshots   # writes build/screenshots/*.png
+flutter test test_screenshots --dart-define=WRITE_SCREENSHOTS=true   # writes build/screenshots/*.png
 ```
+
+`tool/check.sh` runs the screenshot tests without the define: the screens are
+built and rendered, but no files are written.
 
 ## Running locally on Linux (development only)
 

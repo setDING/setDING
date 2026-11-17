@@ -362,8 +362,8 @@ class _SetItemTile extends ConsumerWidget {
                   _ItemMenu(
                     itemId: item.id,
                     entries: [
-                      (l10n.edit, editMarker),
-                      (l10n.removeFromSet, remove),
+                      ('edit', l10n.edit, editMarker),
+                      ('remove', l10n.removeFromSet, remove),
                     ],
                   ),
                   handle,
@@ -486,8 +486,8 @@ class _SetItemTile extends ConsumerWidget {
               itemId: item.id,
               entries: [
                 if (song != null && hasChordPro)
-                  (l10n.sequenceEdit, changeSequence),
-                (l10n.removeFromSet, remove),
+                  ('sequence', l10n.sequenceEdit, changeSequence),
+                ('remove', l10n.removeFromSet, remove),
               ],
             ),
             handle,
@@ -499,19 +499,26 @@ class _SetItemTile extends ConsumerWidget {
 }
 
 /// The ⋮ menu of a set item with the actions that are not needed often.
+///
+/// Each entry has an id for its key (`set-item-action-<id>`), a label and
+/// its action.
 class _ItemMenu extends StatelessWidget {
   const _ItemMenu({required this.itemId, required this.entries});
 
   final String itemId;
-  final List<(String, Future<void> Function())> entries;
+  final List<(String, String, Future<void> Function())> entries;
 
   @override
   Widget build(BuildContext context) => PopupMenuButton<int>(
     key: ValueKey('set-item-menu-$itemId'),
-    onSelected: (i) => entries[i].$2(),
+    onSelected: (i) => entries[i].$3(),
     itemBuilder: (_) => [
-      for (final (i, (label, _)) in entries.indexed)
-        PopupMenuItem(value: i, child: Text(label)),
+      for (final (i, (id, label, _)) in entries.indexed)
+        PopupMenuItem(
+          key: ValueKey('set-item-action-$id'),
+          value: i,
+          child: Text(label),
+        ),
     ],
   );
 }
