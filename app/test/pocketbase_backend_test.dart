@@ -43,12 +43,14 @@ void main() {
 
   PocketBaseBackend backend(
     SessionStore store,
-    Future<http.Response> Function(http.Request) handler,
-  ) {
+    Future<http.Response> Function(http.Request) handler, {
+    List<Duration> rateLimitBackoff = const [Duration.zero, Duration.zero],
+  }) {
     requests = [];
     return PocketBaseBackend(
       serverUrl: _server,
       store: store,
+      rateLimitBackoff: rateLimitBackoff,
       httpClientFactory: () => MockClient((r) {
         requests.add(r);
         return handler(r);
@@ -325,6 +327,150 @@ void main() {
         predicate<http.Request>((r) => r.url.queryParameters['token'] == 'ft'),
       ),
     );
+  });
+
+  group('rate limits (HTTP 429)', () {
+    http.Response tooMany() => _json(429, {
+      'status': 429,
+      'message': 'Too Many Requests.',
+      'data': <String, dynamic>{},
+    });
+    const song = RemoteSong(
+      id: 's1',
+      organizationId: 'o1',
+      title: 'T',
+      chordpro: '',
+      revision: 0,
+    );
+    Map<String, Object> songRecord() => {
+      'id': 's1',
+      'collectionId': 'songs',
+      'collectionName': 'songs',
+      'organization': 'o1',
+      'title': 'T',
+      'chordpro': '',
+      'revision': 7,
+      'deleted': false,
+    };
+
+    test('signed-in requests are retried after a wait', () async {
+      var rejected = 0;
+      final b = backend(MemorySessionStore(_storedSession()), (r) async {
+        if (rejected < 2) {
+          rejected++;
+          return tooMany();
+        }
+        return _json(200, songRecord());
+      });
+      final pushed = await b.pushSong(song, create: true);
+      expect(pushed.revision, 7);
+      expect(requests, hasLength(3));
+      expect(requests.map((r) => r.method), everyElement('POST'));
+    });
+
+    test('pulls are retried as well', () async {
+      var rejected = false;
+      final b = backend(MemorySessionStore(_storedSession()), (r) async {
+        if (!rejected) {
+          rejected = true;
+          return tooMany();
+        }
+        return _json(200, {
+          'page': 1,
+          'perPage': 500,
+          'totalItems': 1,
+          'totalPages': 1,
+          'items': [songRecord()],
+        });
+      });
+      final songs = await b.pullSongs('o1', 0);
+      expect(songs.single.id, 's1');
+      expect(requests, hasLength(2));
+    });
+
+    test('a request still rejected after the last wait fails', () async {
+      final b = backend(
+        MemorySessionStore(_storedSession()),
+        (r) async => tooMany(),
+      );
+      await expectLater(
+        b.pushSong(song, create: true),
+        throwsA(
+          isA<BackendException>().having(
+            (e) => e.kind,
+            'kind',
+            BackendErrorKind.server,
+          ),
+        ),
+      );
+      // The first attempt and one retry per wait.
+      expect(requests, hasLength(3));
+    });
+
+    test('waits as long as configured between the attempts', () async {
+      final times = <DateTime>[];
+      final b = backend(MemorySessionStore(_storedSession()), (r) async {
+        times.add(DateTime.now());
+        return times.length < 2 ? tooMany() : _json(200, songRecord());
+      }, rateLimitBackoff: const [Duration(milliseconds: 200)]);
+      await b.pushSong(song, create: true);
+      expect(
+        times[1].difference(times[0]),
+        greaterThanOrEqualTo(const Duration(milliseconds: 200)),
+      );
+    });
+
+    test('the default waits outlast the default limits', () {
+      final total = PocketBaseBackend.defaultRateLimitBackoff.fold(
+        Duration.zero,
+        (a, b) => a + b,
+      );
+      // PocketBase's longest default window is 10 s (`/api/`).
+      expect(total, greaterThan(const Duration(seconds: 10)));
+    });
+
+    test('signing in is not retried', () async {
+      final b = backend(MemorySessionStore(), (r) async => tooMany());
+      await expectLater(
+        b.signIn(email: 'a@b.test', password: 'x'),
+        throwsA(isA<BackendException>()),
+      );
+      expect(requests, hasLength(1));
+    });
+
+    test('attachment downloads are retried', () async {
+      var rejected = false;
+      final b = backend(MemorySessionStore(_storedSession()), (r) async {
+        if (r.url.path == '/api/files/token') {
+          return _json(200, {'token': 'ft'});
+        }
+        if (!rejected) {
+          rejected = true;
+          return tooMany();
+        }
+        return http.Response.bytes([4, 5], 200);
+      });
+      final downloads = b.openDownloads();
+      final target = StreamController<List<int>>();
+      final received = target.stream.expand((chunk) => chunk).toList();
+      await downloads.download(
+        const RemoteAttachment(
+          id: 'a1',
+          organizationId: 'o1',
+          songId: 's1',
+          name: 'a1',
+          file: 'one.pdf',
+        ),
+        target.sink,
+      );
+      await target.close();
+      downloads.close();
+      expect(await received, [4, 5]);
+      expect(
+        requests.where((r) => r.url.path.startsWith('/api/files/attachments')),
+        hasLength(2),
+      );
+    });
   });
 
   group('errors of signed-in requests', () {

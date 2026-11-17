@@ -18,6 +18,7 @@ class PocketBaseBackend implements SyncBackend {
     required this.serverUrl,
     required SessionStore store,
     http.Client Function()? httpClientFactory,
+    this.rateLimitBackoff = defaultRateLimitBackoff,
   }) : _store = store,
        _httpClientFactory = httpClientFactory ?? http.Client.new {
     _pb = PocketBase(
@@ -39,6 +40,22 @@ class PocketBaseBackend implements SyncBackend {
   }
 
   static const _users = 'users';
+
+  /// Waits before the retries of a request the server rejected with
+  /// HTTP 429 (rate limit): about half a minute in total, longer than the
+  /// windows of PocketBase's default limits (`*:create` 20 per 5 s,
+  /// `/api/` 300 per 10 s), so a large backlog, e.g. after an import, gets
+  /// through instead of stopping the sync (issue #303).
+  static const defaultRateLimitBackoff = [
+    Duration(seconds: 1),
+    Duration(seconds: 2),
+    Duration(seconds: 4),
+    Duration(seconds: 8),
+    Duration(seconds: 16),
+  ];
+
+  /// One wait per retry after HTTP 429; empty: no retries.
+  final List<Duration> rateLimitBackoff;
 
   @override
   final String serverUrl;
@@ -176,9 +193,12 @@ class PocketBaseBackend implements SyncBackend {
       throw const BackendException(BackendErrorKind.signedOut);
     }
     try {
-      Future<List<RecordModel>> all(String collection, {String? expand}) => _pb
-          .collection(collection)
-          .getFullList(filter: 'deleted = false', expand: expand);
+      Future<List<RecordModel>> all(String collection, {String? expand}) =>
+          _retrying(
+            () => _pb
+                .collection(collection)
+                .getFullList(filter: 'deleted = false', expand: expand),
+          );
       // In parallel; Future.wait passes the first ClientException on.
       final [orgs, orgMembers, bands, bandMembers] = await Future.wait([
         all('organizations'),
@@ -501,7 +521,7 @@ class PocketBaseBackend implements SyncBackend {
   @override
   Future<RemoteSong?> fetchSong(String id) async {
     try {
-      return _song(await _pb.collection('songs').getOne(id));
+      return _song(await _retrying(() => _pb.collection('songs').getOne(id)));
     } on ClientException catch (e) {
       if (e.statusCode == 404) return null;
       throw _map(e);
@@ -807,9 +827,29 @@ class PocketBaseBackend implements SyncBackend {
       throw const BackendException(BackendErrorKind.signedOut);
     }
     try {
-      return await request();
+      return await _retrying(request);
     } on ClientException catch (e) {
       throw (map ?? _map)(e);
+    }
+  }
+
+  /// Runs [request] and runs it again after the waits of [rateLimitBackoff]
+  /// while the server rejects it with HTTP 429. Not used for signing in and
+  /// invitations: their limits protect against guessing.
+  Future<T> _retrying<T>(Future<T> Function() request) async {
+    for (var attempt = 0; ; attempt++) {
+      try {
+        return await request();
+      } on ClientException catch (e) {
+        if (e.statusCode != 429 || attempt >= rateLimitBackoff.length) {
+          rethrow;
+        }
+        final wait = rateLimitBackoff[attempt];
+        _log.info(
+          'Rate limited (HTTP 429), retrying in ${wait.inMilliseconds} ms',
+        );
+        await Future<void>.delayed(wait);
+      }
     }
   }
 
@@ -935,7 +975,16 @@ class _PocketBaseDownloads implements AttachmentDownloads {
         '${_backend.serverUrl}/api/files/attachments/'
         '${attachment.id}/${attachment.file}',
       ).replace(queryParameters: {'token': token});
-      final response = await _client.send(http.Request('GET', uri));
+      var response = await _client.send(http.Request('GET', uri));
+      for (final wait in _backend.rateLimitBackoff) {
+        if (response.statusCode != 429) break;
+        await response.stream.drain<void>();
+        _log.info(
+          'Rate limited (HTTP 429), retrying in ${wait.inMilliseconds} ms',
+        );
+        await Future<void>.delayed(wait);
+        response = await _client.send(http.Request('GET', uri));
+      }
       if (response.statusCode != 200) {
         await response.stream.drain<void>();
         throw BackendException(
