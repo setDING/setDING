@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 
 /// Line numbers to the left of the ChordPro editor (#36).
@@ -13,7 +14,12 @@ class LineNumberGutter extends StatefulWidget {
     required this.controller,
     required this.scrollController,
     required this.style,
+    this.focusNode,
   });
+
+  /// Focus of the editor; focused when lines are selected by tapping or
+  /// dragging over the numbers (#383).
+  final FocusNode? focusNode;
 
   /// Key of the editor's [TextField].
   final GlobalKey fieldKey;
@@ -33,6 +39,61 @@ class LineNumberGutter extends StatefulWidget {
 class _LineNumberGutterState extends State<LineNumberGutter> {
   final _paintKey = GlobalKey();
 
+  /// Line where a drag over the numbers started.
+  int? _anchor;
+
+  /// Index of the source line shown at the global vertical position [y].
+  int? _lineAt(double y) {
+    final editable = findRenderEditable(widget.fieldKey);
+    if (editable == null || !editable.hasSize) return null;
+    final left = editable.localToGlobal(Offset.zero).dx;
+    final offset = editable
+        .getPositionForPoint(Offset(left + 1, y))
+        .offset
+        .clamp(0, widget.controller.text.length);
+    return '\n'.allMatches(widget.controller.text.substring(0, offset)).length;
+  }
+
+  /// Selects the lines from [from] to [to] (in any order), each with its
+  /// line break, as a block that the line commands and dragging handle.
+  void _selectLines(int from, int to) {
+    final text = widget.controller.text;
+    final first = from < to ? from : to;
+    final last = from < to ? to : from;
+    int lineStart(int line) {
+      var offset = 0;
+      for (var i = 0; i < line; i++) {
+        final nl = text.indexOf('\n', offset);
+        if (nl < 0) return text.length;
+        offset = nl + 1;
+      }
+      return offset;
+    }
+
+    widget.focusNode?.requestFocus();
+    widget.controller.selection = TextSelection(
+      baseOffset: lineStart(first),
+      extentOffset: lineStart(last + 1),
+    );
+  }
+
+  void _tap(TapUpDetails details) {
+    if (_lineAt(details.globalPosition.dy) case final line?) {
+      _selectLines(line, line);
+    }
+  }
+
+  void _dragStart(DragStartDetails details) {
+    _anchor = _lineAt(details.globalPosition.dy);
+    if (_anchor case final line?) _selectLines(line, line);
+  }
+
+  void _dragUpdate(DragUpdateDetails details) {
+    final anchor = _anchor;
+    final line = _lineAt(details.globalPosition.dy);
+    if (anchor != null && line != null) _selectLines(anchor, line);
+  }
+
   @override
   Widget build(BuildContext context) {
     final LineNumberGutter(:controller, :scrollController, :style) = widget;
@@ -49,17 +110,26 @@ class _LineNumberGutterState extends State<LineNumberGutter> {
         )..layout()).width;
         // A new painter per layout, so a resize (other wrapping) repaints.
         return LayoutBuilder(
-          builder: (context, constraints) => CustomPaint(
-            key: _paintKey,
-            size: Size(
-              digitWidth + 2 * LineNumberGutter.padding,
-              constraints.maxHeight,
-            ),
-            painter: _LineNumberPainter(
-              fieldKey: widget.fieldKey,
-              gutterKey: _paintKey,
-              style: numberStyle,
-              repaint: Listenable.merge([controller, scrollController]),
+          builder: (context, constraints) => GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            // The selection starts at the line first touched.
+            dragStartBehavior: DragStartBehavior.down,
+            onTapUp: _tap,
+            onVerticalDragStart: _dragStart,
+            onVerticalDragUpdate: _dragUpdate,
+            onVerticalDragEnd: (_) => _anchor = null,
+            child: CustomPaint(
+              key: _paintKey,
+              size: Size(
+                digitWidth + 2 * LineNumberGutter.padding,
+                constraints.maxHeight,
+              ),
+              painter: _LineNumberPainter(
+                fieldKey: widget.fieldKey,
+                gutterKey: _paintKey,
+                style: numberStyle,
+                repaint: Listenable.merge([controller, scrollController]),
+              ),
             ),
           ),
         );
