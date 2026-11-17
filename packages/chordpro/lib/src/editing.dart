@@ -277,3 +277,59 @@ String replaceInSource(
   out.write(text.substring(last));
   return out.toString();
 }
+
+/// Moves the text `[start, end)` to [drop] (an offset in the original
+/// text), or copies it there when [copy] is set; the moved text is then
+/// selected (#377). A selection of whole lines is dropped between lines:
+/// [drop] snaps to the start of its line, or to the end of the text when it
+/// is on the end of the last line. Returns null when nothing changes, e.g.
+/// when the text is dropped inside itself.
+SourceEdit? dropText(
+  String text,
+  int start,
+  int end, {
+  required int drop,
+  bool copy = false,
+}) {
+  if (start > end) (start, end) = (end, start);
+  if (start == end) return null;
+  drop = drop.clamp(0, text.length);
+  final atLineStart = start == 0 || text[start - 1] == '\n';
+  final wholeLines =
+      atLineStart && (text[end - 1] == '\n' || end == text.length);
+  var removeStart = start;
+  var moved = text.substring(start, end);
+  if (wholeLines) {
+    if (!moved.endsWith('\n')) {
+      // The last line has no line break: take the one before it along.
+      moved = '$moved\n';
+      if (start > 0 && !copy) removeStart = start - 1;
+    }
+    final dropLineStart = drop == 0 ? 0 : text.lastIndexOf('\n', drop - 1) + 1;
+    final onLastLineEnd =
+        drop == text.length && !text.endsWith('\n') && dropLineStart < drop;
+    if (onLastLineEnd) {
+      // After the last line, which has no line break.
+      moved = '\n${moved.substring(0, moved.length - 1)}';
+    } else {
+      drop = dropLineStart;
+    }
+  }
+  // The selection leaves out the line break added in front of the text.
+  final lead = wholeLines && moved.startsWith('\n') ? 1 : 0;
+  if (copy) {
+    return SourceEdit(
+      text.replaceRange(drop, drop, moved),
+      drop + lead,
+      drop + moved.length,
+    );
+  }
+  if (drop >= removeStart && drop <= end) return null;
+  final without = text.replaceRange(removeStart, end, '');
+  final at = drop > end ? drop - (end - removeStart) : drop;
+  return SourceEdit(
+    without.replaceRange(at, at, moved),
+    at + lead,
+    at + moved.length,
+  );
+}

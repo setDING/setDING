@@ -38,6 +38,7 @@ String? _apply(
 void main() {
   _searchTests();
   _convertTests();
+  _dropTests();
 
   group('moveLines', () {
     SourceEdit? up(String t, int b, int e) => moveLines(t, b, e, up: true);
@@ -206,6 +207,44 @@ void _convertTests() {
 
     test('does nothing without chords over lyrics', () {
       expect(_apply('[C]la|', convertChordsOverLyricsIn), isNull);
+    });
+  });
+}
+
+void _dropTests() {
+  group('dropText', () {
+    SourceEdit? drop(String marked, int at, {bool copy = false}) {
+      final (text, base, extent) = _parse(marked);
+      return dropText(text, base, extent, drop: at, copy: copy);
+    }
+
+    test('moves text within a line, before and after itself', () {
+      // 'one <two> three': move "two" to the end.
+      expect(_mark(drop('one <two> three', 13)), 'one  three<two>');
+      expect(_mark(drop('one two <three>', 0)), '<three>one two ');
+    });
+
+    test('copies text and keeps the original', () {
+      expect(_mark(drop('<ab> cd', 7, copy: true)), 'ab cd<ab>');
+    });
+
+    test('dropping onto itself changes nothing', () {
+      expect(drop('a<bc>d', 2), isNull);
+      expect(drop('a|bc', 0), isNull);
+    });
+
+    test('whole lines drop between lines', () {
+      // Dropped in the middle of "c": goes before the line "c".
+      expect(_mark(drop('<a\n>b\nc\n', 5)), 'b\n<a\n>c\n');
+      expect(_mark(drop('a\nb\n<c\n>', 1)), '<c\n>a\nb\n');
+    });
+
+    test('the last line without a line break moves as a line', () {
+      expect(_mark(drop('a\nb\n<c>', 0)), '<c\n>a\nb');
+    });
+
+    test('whole lines dropped at the end of the last line go after it', () {
+      expect(_mark(drop('<a\n>b', 3)), 'b\n<a>');
     });
   });
 }
