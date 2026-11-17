@@ -58,6 +58,7 @@ Findings (researched 2026-11-14):
 ## Decision log
 
 - 2026-11-14: Accepted. No SongSelect API integration; manual import of ChordPro files downloaded from SongSelect.
+- 2026-11-17: Text in the "chords above lyrics" format (copied from the web) is converted to ChordPro in the editor (#362): a Lines menu command for the selection or the whole song, and a hint with a Convert action after pasting such text. Strict chord detection (`convertChordsOverLyrics` in the `chordpro` package); headers in brackets (`[Chorus]`) become `{comment: …}`.
 
 ## Findings from a real SongSelect file (2026-11-14)
 

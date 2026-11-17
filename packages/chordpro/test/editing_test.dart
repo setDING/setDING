@@ -37,6 +37,7 @@ String? _apply(
 
 void main() {
   _searchTests();
+  _convertTests();
 
   group('moveLines', () {
     SourceEdit? up(String t, int b, int e) => moveLines(t, b, e, up: true);
@@ -174,6 +175,28 @@ void _searchTests() {
     test('treats the query literally', () {
       expect(findInSource('[C] x', '[C]'), [(0, 3)]);
       expect(findInSource('a.b', '.'), [(1, 2)]);
+    });
+  });
+}
+
+void _convertTests() {
+  group('convertChordsOverLyricsIn', () {
+    test('converts the whole text without a selection', () {
+      expect(
+        _apply('|C   G\nla  la', convertChordsOverLyricsIn),
+        '|[C]la  [G]la',
+      );
+    });
+
+    test('converts only the selected lines and selects them', () {
+      expect(
+        _apply('C\nx\n<G\nla>', convertChordsOverLyricsIn),
+        'C\nx\n<[G]la>',
+      );
+    });
+
+    test('does nothing without chords over lyrics', () {
+      expect(_apply('[C]la|', convertChordsOverLyricsIn), isNull);
     });
   });
 }

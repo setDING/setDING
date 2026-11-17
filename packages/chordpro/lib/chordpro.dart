@@ -7,6 +7,7 @@ export 'src/abc.dart';
 export 'src/brackets.dart';
 export 'src/chord.dart';
 export 'src/chord_tones.dart';
+export 'src/chords_over_lyrics.dart';
 export 'src/completion.dart';
 export 'src/diagrams.dart';
 export 'src/editing.dart';
