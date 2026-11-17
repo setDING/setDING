@@ -6,7 +6,7 @@
 ## Context
 
 During a performance the hands are on the instrument. Page turning must be possible
-via a minimal gesture (tap, swipe) or, later possibly, a foot pedal. The screen must not turn off and the display
+via a minimal gesture (tap, swipe) or a foot pedal. The screen must not turn off and the display
 must not change unexpectedly.
 
 A feature found in some apps is a "leader sync": when the band leader picks the next
@@ -19,7 +19,13 @@ song, all tablets follow automatically. We evaluated whether this is needed.
 - Full screen, **wakelock** active, status bar hidden.
 - **Input:**
   - Tap on the left/right part of the screen, swipe.
-  - Foot pedals (Bluetooth page turners registering as HID keyboards) are **not supported for now** (removed in #149); they may return later. Escape leaves live mode.
+  - **Bluetooth page turners** (foot pedals registering as HID keyboards) and keyboards: **right arrow, Page Down and
+    Space** turn forward, **left arrow and Page Up** back, exactly like the right/left tap zones (the scroll position, the
+    pages of a song and PDF pages/spreads first, then the next/previous song). The mapping is fixed (not configurable).
+    One press turns once: a held key (key repeat) does not turn again, so it never races through the set. The keys are
+    taken before the focused widget (an early key handler of the focus manager), so they work whichever widget of live
+    mode has the focus, and Space never presses a focused button; while a dialog, sheet or menu opened from live mode
+    is on top, and in text fields, the keys stay theirs. Escape leaves live mode.
 - **Page turn modes:** full page, half page (top half already shows the next page), optional auto-scroll based on tempo/duration.
 - **Layout – fit to screen (default, configurable in the settings):** the whole song fits on the screen without scrolling.
   Sections are kept whole and arranged automatically in reading order into 1–4 columns; the arrangement with the largest
@@ -95,10 +101,11 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-17: The previous and next item are built and fitted ahead (PDFs opened, landscape spreads rendered), only the direct neighbours are kept (issue #262).
 - 2026-11-17: Key, capo, tempo and time signature are shown as large chips in the live header instead of a small info line (issue #264).
 - 2026-11-17: Appearance on stage (as app / dark / black) independent of the app theme, with stronger chord colours in live mode (issue #263).
+- 2026-11-17: Page turning with Bluetooth page turners and the keyboard is back, reversing the removal of 2026-11-16 (#149/#152): right arrow, Page Down and Space forward, left arrow and Page Up back, like the tap zones; fixed mapping; key repeat is ignored (one press turns once). Resolves the open point "Foot pedal support again later?" (issue #261).
 
 ## Open points
 
-- Foot pedal support again later? Which page turner model (for testing)?
+- Which page turner model (for testing on real hardware)? Configurable key mapping needed (e.g. pedals sending arrow up/down)?
 - Is MIDI control desired (e.g. Program Change from a keyboard/pedalboard)?
 - 2026-11-16: Fit-to-page button in the live control bar next to the font size buttons; resets the personal font scale to the fitted size (issue #173).
 - 2026-11-16: Fit to page also works with fitting switched off: it measures the font scale that fits the page (issue #175).

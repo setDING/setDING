@@ -502,11 +502,6 @@ void main() {
     expect(find.text('Next: Second (D)'), findsOneWidget);
     expect(find.text('1 / 3'), findsOneWidget);
 
-    // Keys no longer turn pages (pedal support removed, #149).
-    await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
-    await tester.pumpAndSettle();
-    expect(find.text('1 / 3'), findsOneWidget);
-
     final size = tester.getSize(find.byType(PageView));
     final topLeft = tester.getTopLeft(find.byType(PageView));
     final right = topLeft + Offset(size.width * 0.9, size.height / 2);

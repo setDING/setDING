@@ -20,7 +20,7 @@ On stage you play from a clean, large display and turn pages with your foot.
 
 ### 🎸 Made for the stage
 - **Live mode** in full screen; the screen stays on for the whole gig.
-- **Turn pages with a tap or a swipe** –
+- **Turn pages with a tap, a swipe or a Bluetooth page turner** (foot pedal) –
   your hands stay on your instrument.
 - At the end of a song, "next" takes you straight to the next song of the set.
 - **Works completely offline.** No network, no login, no loading on stage.

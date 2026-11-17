@@ -195,7 +195,7 @@
   "chorusRepeatAuto": "Automatic",
   "chorusRepeatFull": "Show in full",
   "chorusRepeatLabel": "Label only",
-  "settingsPageTurnHint": "Tap the left or right side of the screen to go back or forward.",
+  "settingsPageTurnHint": "Tap the left or right side of the screen to go back or forward. Page turner (foot pedal) and keyboard: right arrow, Page Down and Space forward, left arrow and Page Up back.",
   "settingsLiveAppearance": "Appearance on stage",
   "settingsLiveAppearanceHint": "Live mode independent of the app theme. Black saves power on OLED screens.",
   "liveAppearanceApp": "As app",

@@ -79,9 +79,18 @@ class LiveItem {
       : (song!.title.isEmpty ? l10n.untitled : song!.title);
 }
 
+/// Keys that turn forward / back, exactly like the right / left tap zones
+/// (ADR-0007). Bluetooth page turners register as keyboards and send these.
+final _nextKeys = {
+  LogicalKeyboardKey.arrowRight,
+  LogicalKeyboardKey.pageDown,
+  LogicalKeyboardKey.space,
+};
+final _previousKeys = {LogicalKeyboardKey.arrowLeft, LogicalKeyboardKey.pageUp};
+
 /// Performance mode (ADR-0007): full screen, screen stays on, page turning
-/// by tap or swipe. The items are loaded once when live
-/// mode starts, so incoming changes never alter what is on stage.
+/// by tap, swipe, page turner or keyboard. The items are loaded once when
+/// live mode starts, so incoming changes never alter what is on stage.
 class LiveScreen extends ConsumerStatefulWidget {
   const LiveScreen({super.key, required this.items, this.initialIndex = 0});
 
@@ -154,8 +163,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   final _spread = <int, PdfSpreadController>{};
   final _fit = <int, _FitController>{};
   final _songPages = <int, SongPageController>{};
-  final _focus = FocusNode();
   bool _controls = false;
+
+  /// The route of live mode: keys are handled only while it is on top.
+  ModalRoute<Object?>? _route;
 
   /// Items as shown; the key of a set item can be changed during live mode.
   late final List<LiveItem> _items = [...widget.items];
@@ -168,10 +179,18 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     super.initState();
     _setStageMode(true);
     _sync.pause();
+    FocusManager.instance.addEarlyKeyEventHandler(_onKey);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _route = ModalRoute.of(context);
   }
 
   @override
   void dispose() {
+    FocusManager.instance.removeEarlyKeyEventHandler(_onKey);
     _sync.resume();
     _setStageMode(false);
     _pages.dispose();
@@ -184,7 +203,6 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     for (final c in _songPages.values) {
       c.dispose();
     }
-    _focus.dispose();
     super.dispose();
   }
 
@@ -275,12 +293,30 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     }
   }
 
-  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+  /// Page turner and keyboard (ADR-0007). An early handler of the focus
+  /// manager: it sees every key before the focused widget, so the keys work
+  /// whichever widget of live mode has the focus (a button of the control
+  /// bar, the PDF viewer) or none, and Space never presses a focused button.
+  KeyEventResult _onKey(KeyEvent event) {
+    // Dialogs, sheets and menus opened from live mode are routes on top of
+    // it: their keys, text fields included, stay theirs.
+    if (!mounted || !(_route?.isCurrent ?? true)) {
       return KeyEventResult.ignored;
     }
-    if (event.logicalKey == LogicalKeyboardKey.escape) {
-      Navigator.maybePop(context);
+    final focus = FocusManager.instance.primaryFocus?.context;
+    if (focus?.findAncestorStateOfType<EditableTextState>() != null) {
+      return KeyEventResult.ignored;
+    }
+    final key = event.logicalKey;
+    final next = _nextKeys.contains(key);
+    if (next || _previousKeys.contains(key)) {
+      // One press turns once. A held key (key repeat) does not turn again,
+      // so it never races through the pages and songs of the set.
+      if (event is KeyDownEvent) next ? _next() : _previous();
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.escape) {
+      if (event is KeyDownEvent) Navigator.maybePop(context);
       return KeyEventResult.handled;
     }
     return KeyEventResult.ignored;
@@ -351,7 +387,6 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       ),
     );
     if (target != null) _pages.jumpToPage(target);
-    _focus.requestFocus();
   }
 
   /// Changes the key of the current set item. It is stored on the set item,
@@ -401,143 +436,135 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: Focus(
-        focusNode: _focus,
-        autofocus: true,
-        onKeyEvent: _onKey,
-        child: SafeArea(
-          child: Column(
-            children: [
-              // The control bar overlays the page, so showing it does not
-              // change the page size (and does not fit the song again).
-              Expanded(
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          _width = constraints.maxWidth;
-                          return GestureDetector(
-                            behavior: HitTestBehavior.translucent,
-                            onTapUp: (d) => _onTap(d.localPosition),
-                            // Swipes turn pages like taps: the pages of a
-                            // song first, then the next/previous song.
-                            onHorizontalDragStart: (_) => _swipe = 0,
-                            onHorizontalDragUpdate: (d) =>
-                                _swipe += d.primaryDelta ?? 0,
-                            onHorizontalDragEnd: _onSwipeEnd,
-                            child: PageView.builder(
-                              controller: _pages,
-                              physics: const NeverScrollableScrollPhysics(),
-                              // The direct neighbours are built ahead (one
-                              // page of cache on each side): the next song is
-                              // fitted and its PDF opened (landscape: its
-                              // pages rendered) before the turn. Items
-                              // further away are not kept, so memory stays
-                              // bounded in long sets.
-                              allowImplicitScrolling: true,
-                              itemCount: items.length,
-                              onPageChanged: (i) => setState(() {
-                                // A song turned to from the front starts at
-                                // its first page.
-                                if (i > _index) _songPageFor(i).first();
-                                _index = i;
-                              }),
-                              itemBuilder: (context, i) => _LiveItemPage(
-                                item: items[i],
-                                scrollController: _scrollFor(i),
-                                pdfController: _pdfFor(i),
-                                spreadController: _spreadFor(i),
-                                fitController: _fitFor(i),
-                                songPageController: _songPageFor(i),
-                                onTap: _onTap,
-                              ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // The control bar overlays the page, so showing it does not
+            // change the page size (and does not fit the song again).
+            Expanded(
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        _width = constraints.maxWidth;
+                        return GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onTapUp: (d) => _onTap(d.localPosition),
+                          // Swipes turn pages like taps: the pages of a
+                          // song first, then the next/previous song.
+                          onHorizontalDragStart: (_) => _swipe = 0,
+                          onHorizontalDragUpdate: (d) =>
+                              _swipe += d.primaryDelta ?? 0,
+                          onHorizontalDragEnd: _onSwipeEnd,
+                          child: PageView.builder(
+                            controller: _pages,
+                            physics: const NeverScrollableScrollPhysics(),
+                            // The direct neighbours are built ahead (one
+                            // page of cache on each side): the next song is
+                            // fitted and its PDF opened (landscape: its
+                            // pages rendered) before the turn. Items
+                            // further away are not kept, so memory stays
+                            // bounded in long sets.
+                            allowImplicitScrolling: true,
+                            itemCount: items.length,
+                            onPageChanged: (i) => setState(() {
+                              // A song turned to from the front starts at
+                              // its first page.
+                              if (i > _index) _songPageFor(i).first();
+                              _index = i;
+                            }),
+                            itemBuilder: (context, i) => _LiveItemPage(
+                              item: items[i],
+                              scrollController: _scrollFor(i),
+                              pdfController: _pdfFor(i),
+                              spreadController: _spreadFor(i),
+                              fitController: _fitFor(i),
+                              songPageController: _songPageFor(i),
+                              onTap: _onTap,
                             ),
-                          );
-                        },
-                      ),
-                    ),
-                    if (_controls)
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        child: _ControlBar(
-                          item: items[_index],
-                          onExit: () => Navigator.pop(context),
-                          onOverview: () => _showOverview(context),
-                          onAdjust: items[_index].song == null ? null : _adjust,
-                          onFit: _fitToPage,
-                          onSetKey: _setKey,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              Container(
-                color: theme.colorScheme.surfaceContainer,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 6,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        next == null
-                            ? l10n.liveEnd
-                            : l10n.liveNext(_nextLabel(next, l10n)),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleSmall,
-                      ),
-                    ),
-                    // Web: no offline guarantee (ADR-0018).
-                    if (ref.watch(webClientProvider)) ...[
-                      const SizedBox(width: 12),
-                      Icon(
-                        Icons.cloud_off,
-                        size: 18,
-                        color: theme.colorScheme.error,
-                      ),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        child: Text(
-                          l10n.liveWebNotice,
-                          key: const Key('live-web-notice'),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.error,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                    ],
-                    ListenableBuilder(
-                      listenable: _songPageFor(_index),
-                      builder: (context, _) {
-                        final pages = _songPageFor(_index);
-                        if (pages.count <= 1) return const SizedBox.shrink();
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 16),
-                          child: Text(
-                            l10n.liveSongPage(pages.page + 1, pages.count),
-                            key: const Key('live-song-page'),
-                            style: theme.textTheme.titleSmall,
                           ),
                         );
                       },
                     ),
-                    Text(
-                      l10n.livePosition(_index + 1, items.length),
+                  ),
+                  if (_controls)
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: _ControlBar(
+                        item: items[_index],
+                        onExit: () => Navigator.pop(context),
+                        onOverview: () => _showOverview(context),
+                        onAdjust: items[_index].song == null ? null : _adjust,
+                        onFit: _fitToPage,
+                        onSetKey: _setKey,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Container(
+              color: theme.colorScheme.surfaceContainer,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      next == null
+                          ? l10n.liveEnd
+                          : l10n.liveNext(_nextLabel(next, l10n)),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.titleSmall,
                     ),
+                  ),
+                  // Web: no offline guarantee (ADR-0018).
+                  if (ref.watch(webClientProvider)) ...[
+                    const SizedBox(width: 12),
+                    Icon(
+                      Icons.cloud_off,
+                      size: 18,
+                      color: theme.colorScheme.error,
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        l10n.liveWebNotice,
+                        key: const Key('live-web-notice'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.error,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
                   ],
-                ),
+                  ListenableBuilder(
+                    listenable: _songPageFor(_index),
+                    builder: (context, _) {
+                      final pages = _songPageFor(_index);
+                      if (pages.count <= 1) return const SizedBox.shrink();
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 16),
+                        child: Text(
+                          l10n.liveSongPage(pages.page + 1, pages.count),
+                          key: const Key('live-song-page'),
+                          style: theme.textTheme.titleSmall,
+                        ),
+                      );
+                    },
+                  ),
+                  Text(
+                    l10n.livePosition(_index + 1, items.length),
+                    style: theme.textTheme.titleSmall,
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
