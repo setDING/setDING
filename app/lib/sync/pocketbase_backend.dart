@@ -19,8 +19,12 @@ class PocketBaseBackend implements SyncBackend {
     required SessionStore store,
     http.Client Function()? httpClientFactory,
     this.rateLimitBackoff = defaultRateLimitBackoff,
+    this.clientVersion,
   }) : _store = store,
-       _httpClientFactory = httpClientFactory ?? http.Client.new {
+       _httpClientFactory = _versioned(
+         httpClientFactory ?? http.Client.new,
+         clientVersion,
+       ) {
     _pb = PocketBase(
       serverUrl,
       authStore: AsyncAuthStore(
@@ -29,7 +33,7 @@ class PocketBaseBackend implements SyncBackend {
             _store.write(jsonEncode({'server': serverUrl, 'auth': data})),
         clear: _store.delete,
       ),
-      httpClientFactory: httpClientFactory,
+      httpClientFactory: _httpClientFactory,
     );
     // The SDK would drop an expired token before every request, also while
     // offline; refreshSession decides instead (offline-first, ADR-0001).
@@ -56,6 +60,18 @@ class PocketBaseBackend implements SyncBackend {
 
   /// One wait per retry after HTTP 429; empty: no retries.
   final List<Duration> rateLimitBackoff;
+
+  /// The app version sent with every request (ADR-0029), so the server can
+  /// refuse outdated clients; null sends none (the server assumes 0.0.0).
+  final String? clientVersion;
+
+  /// Header with [clientVersion]; read by the server's `lib/compat.js`.
+  static const versionHeader = 'X-Setding-Version';
+
+  static http.Client Function() _versioned(
+    http.Client Function() factory,
+    String? version,
+  ) => version == null ? factory : () => _VersionClient(factory(), version);
 
   @override
   final String serverUrl;
@@ -156,6 +172,7 @@ class PocketBaseBackend implements SyncBackend {
           ? RegistrationMode.open
           : RegistrationMode.inviteOnly,
       emailVerification: data['emailVerification'] == 'required',
+      minClientVersion: data['minClientVersion'] as String?,
     );
   }
 
@@ -914,6 +931,10 @@ class PocketBaseBackend implements SyncBackend {
     if (e.statusCode == 0) {
       return BackendException(BackendErrorKind.network, e.originalError);
     }
+    // The server refuses this app version (ADR-0029).
+    if (e.statusCode == 426) {
+      return BackendException(BackendErrorKind.updateRequired, e.response);
+    }
     if (invite && e.statusCode == 410) {
       final data = e.response['data'];
       final code = data is Map && data['token'] is Map
@@ -1053,4 +1074,21 @@ class _PocketBaseDownloads implements AttachmentDownloads {
 
   @override
   void close() => _client.close();
+}
+
+/// Adds the app version to every request (ADR-0029).
+class _VersionClient extends http.BaseClient {
+  _VersionClient(this._inner, this._version);
+
+  final http.Client _inner;
+  final String _version;
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) {
+    request.headers[PocketBaseBackend.versionHeader] = _version;
+    return _inner.send(request);
+  }
+
+  @override
+  void close() => _inner.close();
 }

@@ -23,12 +23,18 @@ final sessionStoreProvider = Provider<SessionStore>(
   (ref) => throw UnimplementedError('Overridden in main()'),
 );
 
+/// The version of this app sent to the server (ADR-0029), e.g. `0.7.0`;
+/// overridden in main() from the platform's package info. Null sends no
+/// version (tests).
+final clientVersionProvider = Provider<String?>((ref) => null);
+
 /// The backend for the configured server. Changing the server URL creates a
 /// new backend; a session belongs to one server.
 final syncBackendProvider = Provider<SyncBackend>((ref) {
   final backend = PocketBaseBackend(
     serverUrl: ref.watch(serverUrlProvider),
     store: ref.watch(sessionStoreProvider),
+    clientVersion: ref.watch(clientVersionProvider),
   );
   ref.onDispose(backend.dispose);
   return backend;

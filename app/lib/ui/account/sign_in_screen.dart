@@ -8,7 +8,9 @@ import '../../sync/sync_backend.dart';
 import '../../util/log.dart';
 import '../bands/join_screen.dart';
 import '../widgets/dialogs.dart';
+import '../../util/semver.dart';
 import '../widgets/logo.dart';
+import '../widgets/update_required_banner.dart';
 
 const _log = Log('account');
 
@@ -38,6 +40,7 @@ String backendErrorText(
     l10n.bandErrorFounderInvitationRequired,
   BackendErrorKind.conflict => l10n.accountErrorConflict,
   BackendErrorKind.signedOut => l10n.accountErrorSignedOut,
+  BackendErrorKind.updateRequired => l10n.accountErrorUpdateRequired,
   BackendErrorKind.server => l10n.accountErrorServer,
 };
 
@@ -178,8 +181,14 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
     final browserSession =
         ref.watch(sessionStoreProvider) is BrowserSessionStore;
-    final inviteOnly =
-        ref.watch(serverConfigProvider).value?.inviteOnly ?? false;
+    final config = ref.watch(serverConfigProvider).value;
+    final inviteOnly = config?.inviteOnly ?? false;
+    // The server no longer accepts this version (ADR-0029): say so before
+    // anyone tries to sign in.
+    final min = config?.minClientVersion;
+    final current = ref.watch(clientVersionProvider);
+    final outdated =
+        min != null && current != null && isOlderThan(current, min);
     // New accounts only with an invitation on invite-only servers (ADR-0024).
     final canSignUp = !inviteOnly || widget.invite != null;
     if (!canSignUp && _signUp) _signUp = false;
@@ -202,6 +211,13 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(24),
                 children: [
+                  if (outdated) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: UpdateRequiredBanner(minVersion: min),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                   if (widget.gate) ...[
                     const Center(child: SetdingLogo(height: 36)),
                     const SizedBox(height: 32),

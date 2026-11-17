@@ -22,6 +22,8 @@ routerAdd("GET", "/api/setding/config", (e) => {
   return e.json(200, {
     registration: reg.mode(),
     emailVerification: reg.emailVerification(e.app),
+    // Lowest app version this server accepts (ADR-0029).
+    minClientVersion: require(`${__hooks}/lib/compat.js`).minClientVersion(),
   });
 });
 

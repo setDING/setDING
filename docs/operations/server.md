@@ -189,6 +189,14 @@ turning verification on, mark accounts that were created before as verified in t
 admin UI (collection `users`, field `verified`), or let them confirm their address
 at their next sign-in (they get a mail).
 
+**Minimum app version** (ADR-0029): the server refuses apps older than
+`MIN_CLIENT_VERSION` in `server/pb_hooks/lib/compat.js` with HTTP 426, and the app
+asks for an update. `SETDING_MIN_CLIENT_VERSION=1.2.0` in `pocketbase.env` can raise
+it further, e.g. to lock out a broken release; it never lowers it. The admin UI and
+superusers are never refused. After a release with a raised minimum, deploy the
+server only once the GitHub Release is published
+([releases](../development/releases.md#releases-that-require-an-update)).
+
 **Rate limits** (Settings → Rate limits) are enabled by a migration: sign-up 5 per
 minute, sign-in 20 per minute and invitation routes 30 per minute per IP address.
 They rely on the trusted proxy header (section 4, `CF-Connecting-IP`); without it,

@@ -70,6 +70,7 @@ void main() {
       expect(r.json, {
         'registration': 'invite_only',
         'emailVerification': 'off',
+        'minClientVersion': '0.0.0',
       });
     });
 

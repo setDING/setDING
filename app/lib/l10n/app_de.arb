@@ -495,6 +495,24 @@
   "accountErrorInvalidEmail": "Die E-Mail-Adresse ist ungültig.",
   "accountErrorWeakPassword": "Das Passwort erfüllt die Anforderungen des Servers nicht.",
   "accountErrorServer": "Der Server hat einen Fehler gemeldet. Versuche es später nochmals.",
+  "accountErrorUpdateRequired": "Diese Version von setDING ist zu alt für den Server. Bitte aktualisiere die App.",
+  "updateRequiredTitle": "Bitte setDING aktualisieren",
+  "updateRequiredBody": "Der Server akzeptiert diese Version nicht mehr, deshalb wird nichts synchronisiert. Deine Änderungen bleiben auf diesem Gerät und werden nach dem Update übertragen.",
+  "updateRequiredVersions": "Installiert: {current}, benötigt: {minimum} oder neuer.",
+  "@updateRequiredVersions": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "minimum": {
+        "type": "String"
+      }
+    }
+  },
+  "updateRequiredHowTo": "Auf Android aktualisierst du sie in Obtainium, sonst lädst du die neue Version bei den setDING-Releases auf GitHub herunter.",
+  "updateRequiredReload": "Neu laden",
+  "updateRequiredCopyLink": "Download-Link kopieren",
+  "updateRequiredCopied": "Link kopiert.",
   "settingsServer": "Server",
   "settingsServerHint": "Nur für Tests ändern. Beim Wechsel wirst du abgemeldet.",
   "settingsServerInvalid": "Die Adresse muss mit http:// oder https:// beginnen.",

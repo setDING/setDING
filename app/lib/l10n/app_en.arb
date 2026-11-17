@@ -353,6 +353,24 @@
   "accountErrorInvalidEmail": "The email address is not valid.",
   "accountErrorWeakPassword": "The password does not meet the server's requirements.",
   "accountErrorServer": "The server reported an error. Please try again later.",
+  "accountErrorUpdateRequired": "This version of setDING is too old for the server. Please update the app.",
+  "updateRequiredTitle": "Please update setDING",
+  "updateRequiredBody": "The server no longer accepts this version, so nothing is synced. Your changes stay on this device and are sent after the update.",
+  "updateRequiredVersions": "Installed: {current}, needed: {minimum} or newer.",
+  "@updateRequiredVersions": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "minimum": {
+        "type": "String"
+      }
+    }
+  },
+  "updateRequiredHowTo": "On Android, update it in Obtainium; otherwise download the new version from the setDING releases on GitHub.",
+  "updateRequiredReload": "Reload",
+  "updateRequiredCopyLink": "Copy download link",
+  "updateRequiredCopied": "Link copied.",
   "settingsServer": "Server",
   "settingsServerHint": "Only change for testing. Changing it signs you out.",
   "settingsServerInvalid": "The address must start with http:// or https://.",

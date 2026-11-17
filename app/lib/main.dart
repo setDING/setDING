@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
@@ -35,6 +36,8 @@ Future<void> main() async {
   // After a schema upgrade, fill new columns from the ChordPro sources.
   db.afterUpgrade = (db) => SongRepository(db, storage).refreshAllMetadata();
   await sessionStore.load();
+  // Sent with every request, so the server can ask for an update (ADR-0029).
+  final version = (await PackageInfo.fromPlatform()).version;
   // Files of attachments deleted while an undo was offered (#267); before
   // the UI, so that no new deletion is waiting for its undo.
   try {
@@ -63,6 +66,7 @@ Future<void> main() async {
         userSettingsStoreProvider.overrideWithValue(userSettings),
         attachmentStorageProvider.overrideWithValue(storage),
         sessionStoreProvider.overrideWithValue(sessionStore),
+        clientVersionProvider.overrideWithValue(version),
       ],
       child: const SetdingApp(),
     ),

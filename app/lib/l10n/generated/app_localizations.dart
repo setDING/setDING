@@ -2048,6 +2048,54 @@ abstract class AppLocalizations {
   /// **'Der Server hat einen Fehler gemeldet. Versuche es später nochmals.'**
   String get accountErrorServer;
 
+  /// No description provided for @accountErrorUpdateRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Version von setDING ist zu alt für den Server. Bitte aktualisiere die App.'**
+  String get accountErrorUpdateRequired;
+
+  /// No description provided for @updateRequiredTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte setDING aktualisieren'**
+  String get updateRequiredTitle;
+
+  /// No description provided for @updateRequiredBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Server akzeptiert diese Version nicht mehr, deshalb wird nichts synchronisiert. Deine Änderungen bleiben auf diesem Gerät und werden nach dem Update übertragen.'**
+  String get updateRequiredBody;
+
+  /// No description provided for @updateRequiredVersions.
+  ///
+  /// In de, this message translates to:
+  /// **'Installiert: {current}, benötigt: {minimum} oder neuer.'**
+  String updateRequiredVersions(String current, String minimum);
+
+  /// No description provided for @updateRequiredHowTo.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf Android aktualisierst du sie in Obtainium, sonst lädst du die neue Version bei den setDING-Releases auf GitHub herunter.'**
+  String get updateRequiredHowTo;
+
+  /// No description provided for @updateRequiredReload.
+  ///
+  /// In de, this message translates to:
+  /// **'Neu laden'**
+  String get updateRequiredReload;
+
+  /// No description provided for @updateRequiredCopyLink.
+  ///
+  /// In de, this message translates to:
+  /// **'Download-Link kopieren'**
+  String get updateRequiredCopyLink;
+
+  /// No description provided for @updateRequiredCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Link kopiert.'**
+  String get updateRequiredCopied;
+
   /// No description provided for @settingsServer.
   ///
   /// In de, this message translates to:
