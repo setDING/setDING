@@ -110,10 +110,6 @@ Each phase is a separate branch and merge (ADR-0010).
   inline key/meter changes and `w:` lyrics, single voice. Lines break at bar lines to fit
   the column; the tune follows the set and personal transposition. Multiple voices,
   slurs and decorations are not drawn. All phases of this ADR are done.
-
-## Open points
-
-- ABC: multiple voices (`V:`), slurs and decorations are not drawn yet.
 - 2026-11-15: BandChords extension `{sequence: C, V1, PC, C x2, B}` (also written
   `{x_sequence}` for portability) holds the song sequence (arrangement). It is metadata
   (`%{sequence}` works) and is shown as small chips below the subtitle in the song view,
@@ -154,3 +150,7 @@ Each phase is a separate branch and merge (ADR-0010).
 - 2026-11-17: The song list shows each song's sequence as compact coloured parts and the
   key as a badge in the chosen notation (#243). The raw `{x_sequence}` value is stored
   redundantly in `songs.sequence` (local schema 13) like key and tags.
+
+## Open points
+
+- ABC: multiple voices (`V:`), slurs and decorations are not drawn yet.
