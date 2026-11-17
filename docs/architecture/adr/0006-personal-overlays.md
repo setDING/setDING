@@ -64,6 +64,7 @@ size/zoom setting is relevant.
   (key as transposition, sequence and tempo per band and song). Set item transposition
   becomes relative to the band's key; personal overlays stay on top.
 - 2026-11-17: Band arrangement layer implemented (#221, ADR-0025): set lists, live mode and the songs tab apply song → band arrangement → set item → personal overlay.
+- 2026-11-17: The live view (ChordPro text or one of the song's PDF attachments, ADR-0009) can also be chosen in the **set list**, with a dropdown per song that has a choice (#219). Unlike the key and the sequence (set item, band arrangement), it stays a personal adjustment (layer 3, `personal_overlays.live_view`, synced with the account per ADR-0020), not a set item field: it applies to the person and the song in every set. The song screen, the set list and live mode share one fallback rule (`livePdfFor`): a chosen attachment that no longer exists falls back to ChordPro, a song without ChordPro content to its first PDF.
 
 ## Open points
 

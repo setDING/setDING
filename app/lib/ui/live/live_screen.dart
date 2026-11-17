@@ -782,14 +782,11 @@ class _LiveItemPage extends ConsumerWidget {
 
     // Set again below when the song is shown as ChordPro.
     fitController.fontScale = null;
-    AttachmentEntry? pdf;
-    if (overlay.liveView != null) {
-      pdf = attachments.where((a) => a.id == overlay.liveView).firstOrNull;
-    }
-    if (pdf == null && !parsed.hasContent) {
-      pdf = attachments.where((a) => isPdfFile(a.fileName)).firstOrNull;
-    }
-    if (pdf != null && !isPdfFile(pdf.fileName)) pdf = null;
+    final pdf = livePdfFor(
+      attachments,
+      overlay.liveView,
+      hasChordPro: parsed.hasContent,
+    );
     if (pdf != null) {
       songPageController.attach(1);
       var file = ref.watch(attachmentStorageProvider).file(pdf.fileName);

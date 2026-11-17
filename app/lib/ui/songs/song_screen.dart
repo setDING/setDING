@@ -55,10 +55,8 @@ class _SongScreenState extends ConsumerState<SongScreen> {
 
   SongRepository get _repo => ref.read(songRepositoryProvider);
 
-  Future<void> _updateOverlay(SongOverlay Function(SongOverlay) change) async {
-    final current = await _repo.getOverlay(widget.songId);
-    await _repo.saveOverlay(change(current));
-  }
+  Future<void> _updateOverlay(SongOverlay Function(SongOverlay) change) =>
+      _repo.updateOverlay(widget.songId, change);
 
   Future<void> _addAttachment() async {
     final l10n = AppLocalizations.of(context);
@@ -728,8 +726,11 @@ class _AttachmentsCard extends ConsumerWidget {
       for (final a in attachments)
         if (!isPdfFile(a.fileName)) a,
     ];
-    final selected =
-        overlay.liveView ?? (hasChordPro ? null : pdfs.firstOrNull?.id);
+    final selected = livePdfFor(
+      attachments,
+      overlay.liveView,
+      hasChordPro: hasChordPro,
+    )?.id;
 
     return Card.outlined(
       child: RadioGroup<String?>(
