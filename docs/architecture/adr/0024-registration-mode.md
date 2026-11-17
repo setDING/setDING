@@ -93,6 +93,7 @@ REALCHORD_REGISTRATION=invite_only   # or: open
 
 | Option | Pros | Cons |
 |---|---|---|
+| Organization admins may also issue founder invitations | Less work for the operator | Anyone who becomes an organization admin can open the server again; rejected by the owner |
 | **Operator setting `open` / `invite_only`, founder invitations** (chosen) | Closed by default, no in-app super-admin, works for private and public servers | One more server setting and invitation kind |
 | Status quo (open sign-up) | No work | Anyone can fill the server; costs |
 | Sign-up open, only organization creation restricted | Accounts are cheap | Accounts still pile up (spam, password reset mails later); does not meet the owner's goal |
@@ -119,11 +120,13 @@ REALCHORD_REGISTRATION=invite_only   # or: open
 
 - 2026-11-17: Proposed with issue #209. Owner requirement: the server operator can
   turn off sign-up without an invitation to avoid floods and costs.
+- 2026-11-17: Owner confirmed the draft: founder invitations are issued **by the
+  server operator only** (not by organization admins), `invite_only` is the default
+  for new servers, and the mode is set in `pocketbase.env` with a restart (no
+  settings collection, no extra `make` target for the mode).
 
 ## Open points
 
-- Should an organization admin be able to issue founder invitations for *new*
-  organizations, or only the operator?
 - Limits per organization (number of songs, attachment storage) as a further cost
   guard.
 - Email verification and a captcha-free spam protection for `open` servers.
