@@ -1649,4 +1649,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get timeHint => 'z. B. 4/4';
+
+  @override
+  String get noSequence => 'Kein Songablauf';
+
+  @override
+  String get sequenceChange => 'Songablauf ändern';
 }

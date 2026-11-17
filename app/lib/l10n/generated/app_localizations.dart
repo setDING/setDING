@@ -2875,6 +2875,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'z. B. 4/4'**
   String get timeHint;
+
+  /// No description provided for @noSequence.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Songablauf'**
+  String get noSequence;
+
+  /// No description provided for @sequenceChange.
+  ///
+  /// In de, this message translates to:
+  /// **'Songablauf ändern'**
+  String get sequenceChange;
 }
 
 class _AppLocalizationsDelegate

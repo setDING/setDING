@@ -844,5 +844,7 @@
   "songDetails": "Songdetails",
   "songDetailsTooltip": "Titel, Tonart, Tempo und mehr des Songs bearbeiten – für alle",
   "noKey": "Keine Tonart",
-  "timeHint": "z. B. 4/4"
+  "timeHint": "z. B. 4/4",
+  "noSequence": "Kein Songablauf",
+  "sequenceChange": "Songablauf ändern"
 }

@@ -148,3 +148,6 @@ Each phase is a separate branch and merge (ADR-0010).
   #201). With the song's own `{capo}` the key is the one written (the chord shapes) and
   the sounding key follows the capo; with a personal capo (ADR-0006) the key is the
   sounding one and the shapes follow the capo ("Key: A, Capo: 2 (G)").
+- 2026-11-17: The song details form also shows the song sequence (`{x_sequence}`) as
+  coloured parts and opens the same sequence dialog as the set list (#241); the result is
+  written on OK, an empty sequence removes the directive.

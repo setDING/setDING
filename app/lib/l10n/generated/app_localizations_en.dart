@@ -1634,4 +1634,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timeHint => 'e.g. 4/4';
+
+  @override
+  String get noSequence => 'No sequence';
+
+  @override
+  String get sequenceChange => 'Change song sequence';
 }

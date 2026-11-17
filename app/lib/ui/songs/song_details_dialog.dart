@@ -3,25 +3,38 @@ import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/generated/app_localizations.dart';
+import '../render/song_header.dart';
+import '../widgets/sequence_dialog.dart';
 
 /// Metadata directives edited in the song details form, in form order.
-const songDetailFields = ['title', 'artist', 'key', 'capo', 'tempo', 'time'];
+const songDetailFields = [
+  'title',
+  'artist',
+  'key',
+  'capo',
+  'tempo',
+  'time',
+  'x_sequence',
+];
 
 /// Highest capo fret offered, as in the song view.
 const maxCapoFret = 9;
 
 /// Shows a form with the main metadata of [source] (title, artist, key,
-/// capo, tempo, time signature) and returns the source with the changed
+/// capo, tempo, time signature, sequence) and returns the source with the changed
 /// directives, or null when cancelled. The ChordPro text stays the source of
 /// truth (ADR-0003): the form only edits its directives. Keys are shown in
-/// [notation] and written in international notation.
+/// [notation] and written in international notation. The sequence is
+/// built from [parts] (see `songParts`) in the same dialog as in a set.
 Future<String?> editSongDetails(
   BuildContext context,
   String source, {
   cp.ChordNotation notation = cp.ChordNotation.international,
+  List<cp.SequenceItem> parts = const [],
 }) => showDialog<String>(
   context: context,
-  builder: (_) => _SongDetailsDialog(source: source, notation: notation),
+  builder: (_) =>
+      _SongDetailsDialog(source: source, notation: notation, parts: parts),
 );
 
 /// One entry of a dropdown: the value written to the source and its label.
@@ -56,10 +69,15 @@ List<DetailOption> keyDetailOptions(String current, cp.ChordNotation notation) {
 }
 
 class _SongDetailsDialog extends StatefulWidget {
-  const _SongDetailsDialog({required this.source, required this.notation});
+  const _SongDetailsDialog({
+    required this.source,
+    required this.notation,
+    required this.parts,
+  });
 
   final String source;
   final cp.ChordNotation notation;
+  final List<cp.SequenceItem> parts;
 
   @override
   State<_SongDetailsDialog> createState() => _SongDetailsDialogState();
@@ -81,6 +99,25 @@ class _SongDetailsDialogState extends State<_SongDetailsDialog> {
       c.dispose();
     }
     super.dispose();
+  }
+
+  Future<void> _editSequence() async {
+    final l10n = AppLocalizations.of(context);
+    final current = _values['x_sequence']!;
+    final choice = await editSequence(
+      context,
+      title: l10n.sequenceLabel,
+      parts: widget.parts,
+      initial: current.isEmpty ? null : current,
+    );
+    if (choice == null || !mounted) return;
+    setState(
+      // A brace or line break would end the directive.
+      () => _values['x_sequence'] = (choice.value ?? '').replaceAll(
+        RegExp(r'[{}\n]'),
+        '',
+      ),
+    );
   }
 
   void _apply() {
@@ -117,7 +154,7 @@ class _SongDetailsDialogState extends State<_SongDetailsDialog> {
         FilteringTextInputFormatter.deny(RegExp(r'[{}\n]')),
       ],
       textInputAction: TextInputAction.next,
-      onFieldSubmitted: name == songDetailFields.last ? (_) => _apply() : null,
+      onFieldSubmitted: name == 'time' ? (_) => _apply() : null,
     );
     Widget dropdown(
       String name,
@@ -153,6 +190,7 @@ class _SongDetailsDialogState extends State<_SongDetailsDialog> {
       ],
     );
 
+    final sequence = _values['x_sequence']!;
     final capo = _values['capo']!;
     final frets = [for (var f = 1; f <= maxCapoFret; f++) '$f'];
     // The capo options show the sounding key, as the song header does.
@@ -190,6 +228,31 @@ class _SongDetailsDialogState extends State<_SongDetailsDialog> {
               pair(
                 field('tempo', l10n.metaTempo, number: true),
                 field('time', l10n.metaTime, hint: l10n.timeHint),
+              ),
+              const SizedBox(height: 8),
+              // The sequence is edited in the dialog of the sets, not typed.
+              InkWell(
+                key: const ValueKey('songDetail-x_sequence'),
+                onTap: _editSequence,
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: l10n.sequenceLabel,
+                    suffixIcon: Icon(
+                      Icons.edit_outlined,
+                      semanticLabel: l10n.sequenceChange,
+                    ),
+                  ),
+                  child: sequence.isEmpty
+                      ? Text(
+                          l10n.noSequence,
+                          style: TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant,
+                          ),
+                        )
+                      : SongSequenceView(cp.parseSequence(sequence)),
+                ),
               ),
             ],
           ),
