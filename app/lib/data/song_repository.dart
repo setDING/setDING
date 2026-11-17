@@ -257,6 +257,7 @@ class SongRepository {
     String query = '',
     String? tag,
     SongSort sort = SongSort.title,
+    int? key,
   }) {
     final s = db.songs;
     final q = db.selectOnly(s)
@@ -291,7 +292,7 @@ class SongRepository {
             sortTitle: r.read(s.sortTitle),
             sortArtist: r.read(s.sortArtist),
           ),
-      ].sortedFor(sort),
+      ].inKey(key).sortedFor(sort),
     );
   }
 
@@ -393,6 +394,28 @@ class SongRepository {
   }
 
   /// All tags used in the library, sorted.
+  /// The keys used in the library, one per key (enharmonic spellings
+  /// count once), from C to B, major before minor.
+  Stream<List<cp.Key>> watchKeys() =>
+      (db.selectOnly(db.songs, distinct: true)
+            ..addColumns([db.songs.songKey])
+            ..where(
+              db.songs.deleted.equals(false) &
+                  db.songs.libraryId.equals(libraryId) &
+                  db.songs.songKey.isNotNull(),
+            ))
+          .watch()
+          .map((rows) {
+            final byRank = <int, cp.Key>{};
+            for (final r in rows) {
+              final key = cp.Key.tryParse(r.read(db.songs.songKey)!);
+              if (key != null) byRank.putIfAbsent(keyRank(key), () => key);
+            }
+            return [
+              for (final rank in byRank.keys.toList()..sort()) byRank[rank]!,
+            ];
+          });
+
   Stream<List<String>> watchTags() =>
       (db.selectOnly(db.songs)
             ..addColumns([db.songs.tags])
@@ -689,10 +712,22 @@ class SongRepository {
 /// minor; songs without a (readable) key last.
 int songKeyRank(String? key) {
   final parsed = key == null ? null : cp.Key.tryParse(key);
-  return parsed == null ? 24 : parsed.tonic.pitch * 2 + (parsed.minor ? 1 : 0);
+  return parsed == null ? 24 : keyRank(parsed);
 }
 
+/// Position of [key] among the 24 keys (C, Cm, C#, C#m, … B, Bm); the same
+/// for enharmonic spellings (Bb and A#).
+int keyRank(cp.Key key) => key.tonic.pitch * 2 + (key.minor ? 1 : 0);
+
 extension on List<SongListEntry> {
+  /// The songs in the key of rank [key] (see [keyRank]); all when null.
+  List<SongListEntry> inKey(int? key) => key == null
+      ? this
+      : [
+          for (final s in this)
+            if (songKeyRank(s.songKey) == key) s,
+        ];
+
   /// Sorted for [sort] without regard to case and accents (SQLite's NOCASE
   /// only folds ASCII); [SongSort.recent] keeps the database order.
   List<SongListEntry> sortedFor(SongSort sort) {

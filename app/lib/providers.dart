@@ -1,3 +1,4 @@
+import 'package:chordpro/chordpro.dart' as cp;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -262,12 +263,13 @@ final songSortProvider = NotifierProvider<SongSortNotifier, SongSort>(
 
 /// Songs filtered by search text and optional tag, in the chosen order.
 final songsProvider = StreamProvider.autoDispose
-    .family<List<SongListEntry>, ({String query, String? tag})>(
+    .family<List<SongListEntry>, ({String query, String? tag, int? key})>(
       (ref, filter) => ref
           .watch(songRepositoryProvider)
           .watchSongList(
             query: filter.query,
             tag: filter.tag,
+            key: filter.key,
             sort: ref.watch(songSortProvider),
           ),
     );
@@ -281,6 +283,11 @@ final bandSongsProvider = StreamProvider.autoDispose
     );
 
 /// All tags used in the library.
+/// All keys used in the library (see [SongRepository.watchKeys]).
+final songKeysProvider = StreamProvider<List<cp.Key>>(
+  (ref) => ref.watch(songRepositoryProvider).watchKeys(),
+);
+
 final tagsProvider = StreamProvider<List<String>>(
   (ref) => ref.watch(songRepositoryProvider).watchTags(),
 );

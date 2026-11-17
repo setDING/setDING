@@ -1673,4 +1673,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get noArtist => 'Ohne Interpret';
+
+  @override
+  String get keyFilter => 'Tonart';
+
+  @override
+  String get allKeys => 'Alle Tonarten';
 }
