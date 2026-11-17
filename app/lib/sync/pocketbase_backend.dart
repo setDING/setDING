@@ -93,6 +93,7 @@ class PocketBaseBackend implements SyncBackend {
     required String email,
     required String password,
     required String name,
+    String? invite,
   }) async {
     try {
       await _pb
@@ -103,6 +104,7 @@ class PocketBaseBackend implements SyncBackend {
               'password': password,
               'passwordConfirm': password,
               'name': name.trim(),
+              'invite': ?invite,
             },
           );
     } on ClientException catch (e) {
@@ -118,6 +120,26 @@ class PocketBaseBackend implements SyncBackend {
     } on ClientException catch (e) {
       throw _map(e);
     }
+  }
+
+  @override
+  Future<void> requestVerification(String email) async {
+    try {
+      await _pb.collection(_users).requestVerification(email.trim());
+    } on ClientException catch (e) {
+      throw _map(e);
+    }
+  }
+
+  @override
+  Future<ServerConfig> fetchServerConfig() async {
+    final data = await _sendPublic('/api/realchord/config');
+    return ServerConfig(
+      registration: data['registration'] == 'open'
+          ? RegistrationMode.open
+          : RegistrationMode.inviteOnly,
+      emailVerification: data['emailVerification'] == 'required',
+    );
   }
 
   @override
@@ -373,18 +395,20 @@ class PocketBaseBackend implements SyncBackend {
   static InviteStatus _status(String value) => switch (value) {
     'expired' => InviteStatus.expired,
     'revoked' => InviteStatus.revoked,
+    'used' => InviteStatus.used,
     _ => InviteStatus.valid,
   };
 
   @override
   Future<InvitePreview> previewInvite(String token) async {
-    final data = await _send('/api/realchord/invites/${_token(token)}');
+    final data = await _sendPublic('/api/realchord/invites/${_token(token)}');
     final org = data['organization'] as Map<String, dynamic>;
     return InvitePreview(
       organizationId: org['id'] as String,
       organizationName: org['name'] as String,
       status: _status(data['status'] as String),
       alreadyMember: data['member'] as bool,
+      founder: data['founder'] == true,
     );
   }
 
@@ -692,6 +716,17 @@ class PocketBaseBackend implements SyncBackend {
     return (result as Map).cast<String, dynamic>();
   }, map: (e) => _map(e, invite: true));
 
+  /// A server route that also answers without an account (ADR-0024); sends
+  /// the session if there is one.
+  Future<Map<String, dynamic>> _sendPublic(String path) async {
+    try {
+      final result = await _pb.send<dynamic>(path);
+      return (result as Map).cast<String, dynamic>();
+    } on ClientException catch (e) {
+      throw _map(e, invite: true);
+    }
+  }
+
   /// Only well-formed tokens go into a URL path.
   static String _token(String token) {
     if (inviteTokenFrom(token) != token) {
@@ -738,15 +773,33 @@ class PocketBaseBackend implements SyncBackend {
       final code = data is Map && data['token'] is Map
           ? (data['token'] as Map)['code']
           : null;
-      return BackendException(
-        code == 'revoked'
-            ? BackendErrorKind.inviteRevoked
-            : BackendErrorKind.inviteExpired,
-        e.response,
-      );
+      return BackendException(switch (code) {
+        'revoked' => BackendErrorKind.inviteRevoked,
+        'used' => BackendErrorKind.inviteUsed,
+        _ => BackendErrorKind.inviteExpired,
+      }, e.response);
     }
     if (invite && e.statusCode == 404) {
       return BackendException(BackendErrorKind.inviteUnknown, e.response);
+    }
+    final data = e.response['data'];
+    String? codeOf(String field) {
+      final error = data is Map ? data[field] : null;
+      return error is Map ? error['code'] as String? : null;
+    }
+
+    // Registration settings of the server (ADR-0024).
+    if (codeOf('invite') == 'invitation_required') {
+      return BackendException(BackendErrorKind.invitationRequired, e.response);
+    }
+    if (codeOf('email') == 'email_not_verified') {
+      return BackendException(BackendErrorKind.emailNotVerified, e.response);
+    }
+    if (codeOf('organization') == 'founder_invitation_required') {
+      return BackendException(
+        BackendErrorKind.founderInvitationRequired,
+        e.response,
+      );
     }
     if (credentials && e.statusCode == 400) {
       return BackendException(BackendErrorKind.invalidCredentials, e.response);

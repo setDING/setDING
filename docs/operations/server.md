@@ -29,6 +29,7 @@ production instance (`root@192.168.1.40`). Override it for another instance, e.g
 | `make server-logs` | Follow the PocketBase and tunnel logs |
 | `make server-backup` | Run a backup now |
 | `make server-fetch-backup` | Copy the latest backup to `.server-backups/` (off-host copy) |
+| `make server-founder-invite NAME="…"` | One-time link that founds the organization `NAME` (section 7) |
 | `make server-ssh` | Shell on the server |
 
 ## 1. Create the container (owner, Proxmox)
@@ -80,8 +81,8 @@ Tokens and account settings stay with the owner (ADR-0014).
 3. **Settings → Application:** set the application URL to `https://api.realchord.app`.
 4. **Settings → Trusted proxy:** header `CF-Connecting-IP`.
 5. **Settings → Mail settings (SMTP):** needed for password reset emails from the
-   app (ADR-0016). Until it is configured, reset requests are accepted but no email
-   is sent.
+   app (ADR-0016) and for email verification (section 7). Until it is configured,
+   reset requests are accepted but no email is sent.
 
 ## 5. Deep links for invitations (owner, once the apps are signed)
 
@@ -151,6 +152,48 @@ opens the web client, which takes the token from the URL. Without it, the web cl
 is still reachable on `https://api.realchord.app/`, but the landing page does not
 link to it.
 
+## 7. Registration and email verification (owner)
+
+Who may create accounts is set in `/etc/realchord/pocketbase.env` (ADR-0024);
+`make server-install` never changes this file:
+
+```bash
+# invite_only (default): accounts only with an invitation link, new
+# organizations only with a founder invitation. open: anyone may sign up and
+# found organizations.
+REALCHORD_REGISTRATION=invite_only
+# off (default) or required: new accounts confirm their email address before
+# they can sign in. Needs SMTP (section 4); without it the server logs an
+# error at start and keeps it off.
+REALCHORD_EMAIL_VERIFICATION=off
+```
+
+Then `systemctl restart pocketbase`. Check the effective settings with
+`curl -s https://api.realchord.app/api/realchord/config`.
+
+**New organizations on an invite-only server:** create a founder invitation and send
+the link to the person who will run the organization:
+
+```bash
+make server-founder-invite NAME="Music school"
+```
+
+It prints the link (`url`), valid for 7 days and usable once. Opening it in the
+app lets the person sign up (or sign in) and founds the organization with them as
+its admin; they then create bands and invite people. A fresh server starts the
+same way. To revoke an unused founder invitation, set `revoked` on it in the
+admin UI (collection `invites`, rows without an organization).
+
+**Existing accounts** keep working when the mode or verification changes. When
+turning verification on, mark accounts that were created before as verified in the
+admin UI (collection `users`, field `verified`), or let them confirm their address
+at their next sign-in (they get a mail).
+
+**Rate limits** (Settings → Rate limits) are enabled by a migration: sign-up 5 per
+minute, sign-in 20 per minute and invitation routes 30 per minute per IP address.
+They rely on the trusted proxy header (section 4, `CF-Connecting-IP`); without it,
+all requests seem to come from the tunnel and share one limit.
+
 ## Updates
 
 - **Debian security updates:** automatic (unattended-upgrades).
@@ -163,7 +206,9 @@ link to it.
   are lost or conflict with the next migration.
 - **Local instance for development:** `make backend` starts PocketBase with the
   repository's schema and hooks on `127.0.0.1:8090` (data in `.dev-data/pb_data`);
-  it also serves the last web build (`make web-serve` builds it first).
+  it also serves the last web build (`make web-serve` builds it first). Sign-up is
+  open there (`BACKEND_REGISTRATION=open`; `make backend BACKEND_REGISTRATION=invite_only`
+  tries the invite-only mode).
 - **Web client:** built from the same commit by every `make server-install`.
 - **cloudflared:** updated with the Debian packages (apt repository of Cloudflare).
 

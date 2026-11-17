@@ -236,11 +236,14 @@ void main() {
     final app = await start(tester);
     expect(find.byKey(const Key('web-sign-in')), findsOneWidget);
     // The page was opened at https://app.realchord.app/invite/<token>.
-    app.links.add(
-      Uri.parse('https://app.realchord.app/invite/AbCdEfGhIjKlMnOpQrStUv12'),
-    );
+    final link = app.backend
+        .addFounderInvite('Choir')
+        .replaceFirst('api.', 'app.');
+    app.links.add(Uri.parse(link));
     await tester.pumpAndSettle();
     expect(find.widgetWithText(AppBar, 'Join'), findsOneWidget);
+    // The link is checked first, also signed out (ADR-0024).
+    expect(find.text('Found Choir?'), findsOneWidget);
     // Signed out: it offers to create an account or sign in first.
     expect(find.byKey(const Key('join-sign-up')), findsOneWidget);
     await app.dispose(tester);

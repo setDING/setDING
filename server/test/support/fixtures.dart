@@ -17,8 +17,9 @@ String uuid() {
 /// A band with an admin, a member and an outsider (no membership).
 ///
 /// The band is created without an organization, so the server creates one
-/// with the admin as organization admin (ADR-0017); the member belongs to
-/// the organization and the band.
+/// with the admin as organization admin (ADR-0017); on an invite-only server
+/// (ADR-0024) the organization is created first. The member belongs to the
+/// organization and the band.
 class BandFixture {
   BandFixture._(
     this.pb,
@@ -45,10 +46,24 @@ class BandFixture {
     final admin = await pb.signUp('Admin');
     final member = await pb.signUp('Member');
     final outsider = await pb.signUp('Outsider');
-    final band = await admin.post('bands', {
+    var band = await admin.post('bands', {
       'name': 'The Band',
       'members_can_edit_songs': membersCanEditSongs,
     });
+    if (band.status == 403) {
+      // Invite-only server (ADR-0024): the organization comes first, as a
+      // founder invitation would create it.
+      final org = await pb.superuser.post('organizations', {
+        'name': 'The Band',
+      });
+      org.expectStatus(200);
+      await addOrgMember(pb, org.json['id'] as String, admin, role: 'admin');
+      band = await admin.post('bands', {
+        'name': 'The Band',
+        'organization': org.json['id'],
+        'members_can_edit_songs': membersCanEditSongs,
+      });
+    }
     band.expectStatus(200);
     final id = band.json['id'] as String;
     final orgId = band.json['organization'] as String;

@@ -2396,6 +2396,78 @@ abstract class AppLocalizations {
   /// **'Ich habe schon ein Konto'**
   String get joinHaveAccount;
 
+  /// No description provided for @inviteErrorUsed.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Einladung wurde bereits verwendet. Bitte um einen neuen Link.'**
+  String get inviteErrorUsed;
+
+  /// No description provided for @accountErrorInvitationRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieser Server nimmt neue Konten nur mit einem Einladungslink an.'**
+  String get accountErrorInvitationRequired;
+
+  /// No description provided for @accountErrorEmailNotVerified.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte bestätige zuerst deine E-Mail-Adresse. Wir haben dir eine neue Mail geschickt.'**
+  String get accountErrorEmailNotVerified;
+
+  /// No description provided for @bandErrorFounderInvitationRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Organisationen brauchen eine Gründungs-Einladung vom Server-Betreiber.'**
+  String get bandErrorFounderInvitationRequired;
+
+  /// No description provided for @accountInviteOnlyHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Konten brauchen auf diesem Server einen Einladungslink.'**
+  String get accountInviteOnlyHint;
+
+  /// No description provided for @accountVerifyEmail.
+  ///
+  /// In de, this message translates to:
+  /// **'Fast geschafft: Wir haben eine Mail an {email} geschickt. Bestätige deine Adresse mit dem Link darin und melde dich dann an.'**
+  String accountVerifyEmail(String email);
+
+  /// No description provided for @accountVerifyResend.
+  ///
+  /// In de, this message translates to:
+  /// **'Mail erneut senden'**
+  String get accountVerifyResend;
+
+  /// No description provided for @accountVerifySent.
+  ///
+  /// In de, this message translates to:
+  /// **'Mail gesendet.'**
+  String get accountVerifySent;
+
+  /// No description provided for @joinFoundQuestion.
+  ///
+  /// In de, this message translates to:
+  /// **'{org} gründen?'**
+  String joinFoundQuestion(String org);
+
+  /// No description provided for @joinFoundExplanation.
+  ///
+  /// In de, this message translates to:
+  /// **'Du erstellst die Organisation und wirst ihr Admin. Danach kannst du Bands anlegen und Leute einladen.'**
+  String get joinFoundExplanation;
+
+  /// No description provided for @joinFoundButton.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisation gründen'**
+  String get joinFoundButton;
+
+  /// No description provided for @joinFoundDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Du hast {org} gegründet.'**
+  String joinFoundDone(String org);
+
   /// No description provided for @syncTitle.
   ///
   /// In de, this message translates to:

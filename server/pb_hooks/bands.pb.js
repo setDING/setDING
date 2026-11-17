@@ -2,12 +2,16 @@
 
 // Every band belongs to an organization (ADR-0017). A band created without
 // one gets a new organization of the same name with the creator as admin;
-// both are saved in the same transaction as the band.
+// both are saved in the same transaction as the band. On an invite-only
+// server this is refused: organizations come from founder invitations
+// (ADR-0024).
 onRecordCreateRequest((e) => {
   e.app.runInTransaction((txApp) => {
     e.app = txApp;
     const userId = require(`${__hooks}/lib/sync.js`).requestUserId(e);
     if (userId && !e.record.getString("organization")) {
+      // Not on an invite-only server (ADR-0024).
+      require(`${__hooks}/lib/registration.js`).requireOrganizationCreation(e);
       const org = new Record(txApp.findCollectionByNameOrId("organizations"));
       org.set("name", e.record.getString("name"));
       org.set("updated_by", userId);

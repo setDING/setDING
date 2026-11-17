@@ -68,6 +68,19 @@ enum BackendErrorKind {
   /// The invitation link was revoked by an admin.
   inviteRevoked,
 
+  /// The founder invitation was used already (ADR-0024).
+  inviteUsed,
+
+  /// The server only accepts new accounts with an invitation (ADR-0024).
+  invitationRequired,
+
+  /// The email address is not confirmed yet; the server sent a mail
+  /// (ADR-0024).
+  emailNotVerified,
+
+  /// New organizations need a founder invitation on this server (ADR-0024).
+  founderInvitationRequired,
+
   /// The song was changed on the server since the local change was based on
   /// it (ADR-0004); the user decides.
   conflict,
@@ -315,7 +328,31 @@ class RemoteAttachment {
 }
 
 /// State of an invitation link.
-enum InviteStatus { valid, expired, revoked }
+/// `used` only for founder invitations, which can be used once (ADR-0024).
+enum InviteStatus { valid, expired, revoked, used }
+
+/// Who may create accounts on the server (ADR-0024).
+enum RegistrationMode { open, inviteOnly }
+
+/// Settings of the server the app needs before signing in (ADR-0024).
+@immutable
+class ServerConfig {
+  const ServerConfig({
+    this.registration = RegistrationMode.open,
+    this.emailVerification = false,
+  });
+
+  /// Assumed when the server cannot be asked (offline, older server); the
+  /// server still enforces its own settings.
+  static const unknown = ServerConfig();
+
+  final RegistrationMode registration;
+
+  /// New accounts must confirm their email address before signing in.
+  final bool emailVerification;
+
+  bool get inviteOnly => registration == RegistrationMode.inviteOnly;
+}
 
 /// A new invitation link; the URL is only available right after creating it
 /// (the server stores a hash of the token).
@@ -364,12 +401,18 @@ class InvitePreview {
     required this.organizationName,
     required this.status,
     required this.alreadyMember,
+    this.founder = false,
   });
 
+  /// Empty for a founder invitation (the organization does not exist yet).
   final String organizationId;
   final String organizationName;
   final InviteStatus status;
   final bool alreadyMember;
+
+  /// Redeeming founds the organization [organizationName] with the user as
+  /// its admin (ADR-0024).
+  final bool founder;
 }
 
 /// Extracts the token from an invitation link (`https://…/invite/<token>`,
@@ -402,15 +445,26 @@ abstract class SyncBackend {
   /// Signs in with email and password.
   Future<AuthUser> signIn({required String email, required String password});
 
-  /// Creates an account and signs in.
+  /// Creates an account and signs in. On an invite-only server the
+  /// [invite] token is required (ADR-0024); it is not redeemed here. If the
+  /// server requires email verification, signing in fails with
+  /// [BackendErrorKind.emailNotVerified] after the account was created.
   Future<AuthUser> signUp({
     required String email,
     required String password,
     required String name,
+    String? invite,
   });
 
   /// Asks the server to send a password reset email.
   Future<void> requestPasswordReset(String email);
+
+  /// Asks the server to send the email verification mail again.
+  Future<void> requestVerification(String email);
+
+  /// Registration mode and email verification of the server; works without
+  /// an account (ADR-0024).
+  Future<ServerConfig> fetchServerConfig();
 
   /// Refreshes the stored session if the server is reachable. Network errors
   /// are ignored (offline); a session rejected by the server is cleared.
@@ -471,7 +525,8 @@ abstract class SyncBackend {
   /// Revokes a link; people who joined stay members.
   Future<void> revokeInvite(String inviteId);
 
-  /// The organization and state of a link.
+  /// The organization and state of a link; works without an account
+  /// (ADR-0024).
   Future<InvitePreview> previewInvite(String token);
 
   /// Joins the organization of a link as member; returns its ID.

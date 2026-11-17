@@ -16,29 +16,43 @@ const _log = Log('account');
 const minPasswordLength = 8;
 
 /// Message for a failed backend call.
-String backendErrorText(AppLocalizations l10n, BackendErrorKind kind) =>
-    switch (kind) {
-      BackendErrorKind.network => l10n.accountErrorNetwork,
-      BackendErrorKind.invalidCredentials =>
-        l10n.accountErrorInvalidCredentials,
-      BackendErrorKind.emailTaken => l10n.accountErrorEmailTaken,
-      BackendErrorKind.invalidEmail => l10n.accountErrorInvalidEmail,
-      BackendErrorKind.weakPassword => l10n.accountErrorWeakPassword,
-      BackendErrorKind.lastAdmin => l10n.bandErrorLastAdmin,
-      BackendErrorKind.notAllowed => l10n.bandErrorNotAllowed,
-      BackendErrorKind.notOrgMember => l10n.bandErrorNotOrgMember,
-      BackendErrorKind.inviteUnknown => l10n.inviteErrorUnknown,
-      BackendErrorKind.inviteExpired => l10n.inviteErrorExpired,
-      BackendErrorKind.inviteRevoked => l10n.inviteErrorRevoked,
-      BackendErrorKind.conflict => l10n.accountErrorConflict,
-      BackendErrorKind.signedOut => l10n.accountErrorSignedOut,
-      BackendErrorKind.server => l10n.accountErrorServer,
-    };
+String backendErrorText(
+  AppLocalizations l10n,
+  BackendErrorKind kind,
+) => switch (kind) {
+  BackendErrorKind.network => l10n.accountErrorNetwork,
+  BackendErrorKind.invalidCredentials => l10n.accountErrorInvalidCredentials,
+  BackendErrorKind.emailTaken => l10n.accountErrorEmailTaken,
+  BackendErrorKind.invalidEmail => l10n.accountErrorInvalidEmail,
+  BackendErrorKind.weakPassword => l10n.accountErrorWeakPassword,
+  BackendErrorKind.lastAdmin => l10n.bandErrorLastAdmin,
+  BackendErrorKind.notAllowed => l10n.bandErrorNotAllowed,
+  BackendErrorKind.notOrgMember => l10n.bandErrorNotOrgMember,
+  BackendErrorKind.inviteUnknown => l10n.inviteErrorUnknown,
+  BackendErrorKind.inviteExpired => l10n.inviteErrorExpired,
+  BackendErrorKind.inviteRevoked => l10n.inviteErrorRevoked,
+  BackendErrorKind.inviteUsed => l10n.inviteErrorUsed,
+  BackendErrorKind.invitationRequired => l10n.accountErrorInvitationRequired,
+  BackendErrorKind.emailNotVerified => l10n.accountErrorEmailNotVerified,
+  BackendErrorKind.founderInvitationRequired =>
+    l10n.bandErrorFounderInvitationRequired,
+  BackendErrorKind.conflict => l10n.accountErrorConflict,
+  BackendErrorKind.signedOut => l10n.accountErrorSignedOut,
+  BackendErrorKind.server => l10n.accountErrorServer,
+};
 
 /// Sign in or create an account. Closes itself after success, unless it is
 /// the [gate] of the web client, which the app replaces after signing in.
+///
+/// On an invite-only server (ADR-0024) an account can only be created with
+/// an [invite] token; otherwise the screen points to joining with a link.
 class SignInScreen extends ConsumerStatefulWidget {
-  const SignInScreen({super.key, this.signUp = false, this.gate = false});
+  const SignInScreen({
+    super.key,
+    this.signUp = false,
+    this.gate = false,
+    this.invite,
+  });
 
   /// Start in "create account" mode.
   final bool signUp;
@@ -46,6 +60,9 @@ class SignInScreen extends ConsumerStatefulWidget {
   /// The start screen of the web client, where signing in is required
   /// (ADR-0018): no back button, and a way to join with an invitation.
   final bool gate;
+
+  /// Invitation token sent with a sign-up (ADR-0024); the caller redeems it.
+  final String? invite;
 
   @override
   ConsumerState<SignInScreen> createState() => _SignInScreenState();
@@ -62,6 +79,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   bool _busy = false;
   String? _error;
 
+  /// Address that still has to be confirmed (ADR-0024).
+  String? _unverified;
+
   @override
   void dispose() {
     _name.dispose();
@@ -76,6 +96,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     setState(() {
       _busy = true;
       _error = null;
+      _unverified = null;
     });
     final backend = ref.read(syncBackendProvider);
     if (ref.read(sessionStoreProvider) case final BrowserSessionStore store) {
@@ -87,18 +108,43 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           email: _email.text,
           password: _password.text,
           name: _name.text,
+          invite: widget.invite,
         );
       } else {
         await backend.signIn(email: _email.text, password: _password.text);
       }
       if (mounted && !widget.gate) Navigator.of(context).pop(true);
     } on BackendException catch (e) {
-      _log.warning(_signUp ? 'Sign-up failed' : 'Sign-in failed', e);
       if (!mounted) return;
+      if (e.kind == BackendErrorKind.emailNotVerified) {
+        // The account exists; sign in once the address is confirmed.
+        _log.info('Email address not confirmed yet');
+        setState(() {
+          _busy = false;
+          _signUp = false;
+          _unverified = _email.text.trim();
+        });
+        return;
+      }
+      _log.warning(_signUp ? 'Sign-up failed' : 'Sign-in failed', e);
       setState(() {
         _busy = false;
         _error = backendErrorText(AppLocalizations.of(context), e.kind);
       });
+    }
+  }
+
+  Future<void> _resendVerification() async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref.read(syncBackendProvider).requestVerification(_unverified!);
+      messenger.showSnackBar(SnackBar(content: Text(l10n.accountVerifySent)));
+    } on BackendException catch (e) {
+      _log.warning('Verification mail failed', e);
+      messenger.showSnackBar(
+        SnackBar(content: Text(backendErrorText(l10n, e.kind))),
+      );
     }
   }
 
@@ -132,6 +178,11 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
     final browserSession =
         ref.watch(sessionStoreProvider) is BrowserSessionStore;
+    final inviteOnly =
+        ref.watch(serverConfigProvider).value?.inviteOnly ?? false;
+    // New accounts only with an invitation on invite-only servers (ADR-0024).
+    final canSignUp = !inviteOnly || widget.invite != null;
+    if (!canSignUp && _signUp) _signUp = false;
 
     return Scaffold(
       appBar: AppBar(
@@ -243,6 +294,21 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       subtitle: Text(l10n.accountKeepSignedInHint),
                     ),
                   ],
+                  if (_unverified case final email?) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n.accountVerifyEmail(email),
+                      key: const Key('account-verify'),
+                    ),
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: TextButton(
+                        key: const Key('account-verify-resend'),
+                        onPressed: _busy ? null : _resendVerification,
+                        child: Text(l10n.accountVerifyResend),
+                      ),
+                    ),
+                  ],
                   if (_error != null) ...[
                     const SizedBox(height: 16),
                     Text(
@@ -265,23 +331,34 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                           ),
                   ),
                   const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: _busy
-                        ? null
-                        : () => setState(() {
-                            _signUp = !_signUp;
-                            _error = null;
-                          }),
-                    child: Text(
-                      _signUp ? l10n.accountToSignIn : l10n.accountToSignUp,
+                  if (canSignUp)
+                    TextButton(
+                      key: const Key('account-toggle'),
+                      onPressed: _busy
+                          ? null
+                          : () => setState(() {
+                              _signUp = !_signUp;
+                              _error = null;
+                            }),
+                      child: Text(
+                        _signUp ? l10n.accountToSignIn : l10n.accountToSignUp,
+                      ),
+                    )
+                  else
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(
+                        l10n.accountInviteOnlyHint,
+                        key: const Key('account-invite-only'),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
-                  ),
                   if (!_signUp)
                     TextButton(
                       onPressed: _busy ? null : _resetPassword,
                       child: Text(l10n.accountForgotPassword),
                     ),
-                  if (widget.gate)
+                  if ((widget.gate || !canSignUp) && widget.invite == null)
                     TextButton.icon(
                       key: const Key('account-open-join'),
                       icon: const Icon(Icons.link),
