@@ -8,8 +8,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdfrx/pdfrx.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../../platform/stage_wake_lock.dart';
 import '../../sync/sync_controller.dart';
 import '../../data/attachment_lookup.dart';
 import '../../data/attachment_storage.dart';
@@ -184,10 +184,21 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   /// Sync is paused on stage: nothing changes what is shown (ADR-0007).
   late final SyncController _sync = ref.read(syncControllerProvider.notifier);
 
+  /// The screen stays on while live mode is open (ADR-0007).
+  late final StageWakeLock _wakeLock = ref.read(stageWakeLockProvider);
+
+  /// Sets the wake lock again when the app returns to the foreground: not
+  /// every platform keeps it while the app is in the background.
+  late final AppLifecycleListener _lifecycle;
+
   @override
   void initState() {
     super.initState();
-    _setStageMode(true);
+    _wakeLock
+      ..addListener(_onWakeLockChanged)
+      ..acquire();
+    _lifecycle = AppLifecycleListener(onResume: _wakeLock.reassert);
+    _setFullScreen(true);
     _sync.pause();
     FocusManager.instance.addEarlyKeyEventHandler(_onKey);
   }
@@ -202,7 +213,11 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   void dispose() {
     FocusManager.instance.removeEarlyKeyEventHandler(_onKey);
     _sync.resume();
-    _setStageMode(false);
+    _lifecycle.dispose();
+    _wakeLock
+      ..removeListener(_onWakeLockChanged)
+      ..release();
+    _setFullScreen(false);
     _pages.dispose();
     for (final c in _scroll.values) {
       c.dispose();
@@ -216,12 +231,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     super.dispose();
   }
 
-  Future<void> _setStageMode(bool on) async {
-    try {
-      await (on ? WakelockPlus.enable() : WakelockPlus.disable());
-    } catch (_) {
-      // Not available on this platform (e.g. tests).
-    }
+  /// Shows or hides the wake lock notice in the bottom bar.
+  void _onWakeLockChanged() => setState(() {});
+
+  Future<void> _setFullScreen(bool on) async {
     await SystemChrome.setEnabledSystemUIMode(
       on ? SystemUiMode.immersiveSticky : SystemUiMode.edgeToEdge,
     );
@@ -543,6 +556,28 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                       child: Text(
                         l10n.liveWebNotice,
                         key: const Key('live-web-notice'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.error,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                  ],
+                  // The screen may turn off: say so, so the band can
+                  // check the device's power settings before the show.
+                  if (_wakeLock.failed) ...[
+                    Icon(
+                      Icons.screen_lock_portrait,
+                      size: 18,
+                      color: theme.colorScheme.error,
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        l10n.liveWakeLockNotice,
+                        key: const Key('live-wakelock-notice'),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.bodySmall?.copyWith(

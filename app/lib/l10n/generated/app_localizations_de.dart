@@ -443,6 +443,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Im Browser nicht offline-sicher – auf der Bühne die App verwenden';
 
   @override
+  String get liveWakeLockNotice =>
+      'Bildschirm kann sich ausschalten – Energieeinstellungen des Geräts prüfen';
+
+  @override
   String get liveEnd => 'Ende des Sets';
 
   @override

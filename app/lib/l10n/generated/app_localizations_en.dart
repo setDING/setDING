@@ -439,6 +439,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Not offline-safe in the browser – use the app on stage';
 
   @override
+  String get liveWakeLockNotice =>
+      'The screen may turn off – check the device\'s power settings';
+
+  @override
   String get liveEnd => 'End of set';
 
   @override
