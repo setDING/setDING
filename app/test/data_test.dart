@@ -218,7 +218,7 @@ void main() {
   test('the song list has what lists show, filtered like the songs', () async {
     final a = await songs.createSong(
       source:
-          '{title: Alpha}\n{artist: Ann}\n{key: G}\n{tag: Rock}\n'
+          '{title: Alpha}\n{artist: Ann}\n{key: G}\n{tempo: 96}\n{tag: Rock}\n'
           '{x_sequence: V, C x2}\n[G]sun',
     );
     await songs.createSong(source: '{title: Beta}\n[C]rain');
@@ -231,6 +231,7 @@ void main() {
         title: 'Alpha',
         artist: 'Ann',
         songKey: 'G',
+        tempo: 96,
         sequence: 'V, C x2',
         tags: '\nRock\n',
       ),

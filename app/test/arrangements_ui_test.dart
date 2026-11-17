@@ -5,8 +5,10 @@ import 'package:realchord/data/arrangement_repository.dart';
 import 'package:realchord/data/database.dart';
 import 'package:realchord/sync/sync_backend.dart';
 import 'package:realchord/ui/live/live_screen.dart';
+import 'package:realchord/ui/render/song_header.dart';
 import 'package:realchord/ui/sets/set_list_text.dart';
 import 'package:realchord/ui/songs/song_screen.dart';
+import 'package:realchord/ui/songs/songs_screen.dart';
 
 import 'test_app.dart';
 
@@ -44,6 +46,55 @@ void main() {
     await tester.pumpAndSettle();
     return (app, id);
   }
+
+  testWidgets('the song list keeps the song and hints at the arrangement', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'currentBandId': 'b1'},
+      user: _ann,
+    );
+    app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+    await tester.runAsync(() async {
+      final songs = TestApp.songsIn(app, 'o1');
+      final id = await songs.createSong(
+        source: '{title: Late Train}\n{key: G}\n{tempo: 100}\n[G]x',
+      );
+      await songs.createSong(source: '{title: Other}\n{key: D}');
+      await ArrangementRepository(app.db)
+          .save('b1', id, transpose: 2, sequence: 'V, C', tempo: 120);
+    });
+    await tester.pumpWidget(app.build(home: const SongsScreen()));
+    await tester.pumpAndSettle();
+
+    // The song as written: its key badge and tempo.
+    final badges = find.byKey(const ValueKey('song-key-badge'));
+    expect(
+      find.descendant(of: badges, matching: find.text('G')),
+      findsOneWidget,
+    );
+    expect(find.text('100 BPM'), findsOneWidget);
+    // Only the arranged song gets the hint: the band's key, tempo, sequence.
+    final hint = find.byKey(const ValueKey('band-arrangement-hint'));
+    expect(hint, findsOneWidget);
+    expect(
+      find.descendant(of: hint, matching: find.text('Key A · 120 BPM')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: hint,
+        matching: find.byTooltip('Arrangement of Rock'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: hint, matching: find.byType(SongSequenceView)),
+      findsOneWidget,
+    );
+    await app.dispose(tester);
+  });
 
   testWidgets('the band\'s key, sequence and tempo are only in the card', (
     tester,

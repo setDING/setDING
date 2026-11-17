@@ -3,6 +3,7 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:realchord/data/arrangement_repository.dart';
 import 'package:realchord/data/database.dart';
 import 'package:realchord/data/demo_song.dart';
 import 'package:realchord/ui/live/live_screen.dart';
@@ -10,6 +11,7 @@ import 'package:realchord/ui/sets/set_screen.dart';
 import 'package:realchord/ui/songs/song_editor_screen.dart';
 import 'package:realchord/ui/songs/song_screen.dart';
 import 'package:realchord/ui/songs/songs_screen.dart';
+import 'package:realchord/sync/sync_backend.dart';
 import 'package:realchord/ui/widgets/logo.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
@@ -99,6 +101,35 @@ K:G
 
 void main() {
   setUpAll(() async => _loadFonts());
+
+  testWidgets('song list with a band arrangement', (tester) async {
+    useTabletSize(tester);
+    const ann = AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann');
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'currentBandId': 'b1'},
+      user: ann,
+    );
+    app.backend.addBand('b1', 'Rock', admin: ann, organizationId: 'o1');
+    await tester.runAsync(() async {
+      final songs = TestApp.songsIn(app, 'o1');
+      final id = await songs.createSong(source: demoSongSource);
+      await songs.createSong(
+        source:
+            '{title: Blue Monday Groove}\n{artist: House Band}\n{key: Bb}\n'
+            '{tempo: 92}\n{tag: Blues}\n{x_sequence: I, V, C, V, C x2, O}\n',
+      );
+      await ArrangementRepository(app.db)
+          .save('b1', id, transpose: 2, sequence: 'I, V, C, C, O', tempo: 104);
+    });
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: UniqueKey(),
+        child: app.build(home: const SongsScreen()),
+      ),
+    );
+    await _shot(tester, 'en_3_songs_band');
+    await app.dispose(tester);
+  });
 
   for (final dark in [false, true]) {
     testWidgets('splash ${dark ? 'dark' : 'light'}', (tester) async {

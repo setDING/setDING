@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/database.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../songs/songs_screen.dart';
@@ -32,6 +33,11 @@ class _SongPickerState extends ConsumerState<_SongPicker> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final songs = ref.watch(bandSongsProvider(_query));
+    final currentBand = ref.watch(currentBandProvider);
+    final band = ref.watch(arrangementBandProvider(currentBand.libraryId));
+    final arrangements = band == null
+        ? const <String, BandArrangement>{}
+        : ref.watch(bandArrangementsProvider(band.id)).value ?? const {};
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.selectSongs),
@@ -75,6 +81,8 @@ class _SongPickerState extends ConsumerState<_SongPicker> {
                   final index = _selected.indexOf(song.id);
                   return SongTile(
                     song: song,
+                    arrangement: arrangements[song.id],
+                    bandName: band?.name ?? '',
                     leading: Checkbox(
                       value: index >= 0,
                       onChanged: (_) => _toggle(song.id),
