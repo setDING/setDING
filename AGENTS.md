@@ -105,4 +105,5 @@ See the ADR index in the architecture README for the current status. In short:
 - Sign-in through the `SyncBackend` interface, session in secure storage and kept while offline (ADR-0016)
 - Linux release with `make release`, built in a Debian container (ADR-0019)
 - Release builds for Linux, Android and Windows on GitHub Actions from a `vX.Y.Z` tag; Android via Obtainium, signed with the release key from the repository secrets (ADR-0021)
+- Ordered roles: organization admin > librarian > member, band leader > set planner > member; organization admins may do everything (ADR-0023)
 - Registration set by the server operator in `pocketbase.env`: `invite_only` (default, sign-up only with an invitation, new organizations only via operator founder invitations) or `open`; optional email verification (ADR-0024)
