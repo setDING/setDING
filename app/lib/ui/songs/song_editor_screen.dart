@@ -16,6 +16,7 @@ import 'editor_autocomplete.dart';
 import 'editor_search.dart';
 import 'editor_toolbar.dart';
 import 'line_number_gutter.dart';
+import 'section_backgrounds.dart';
 import 'song_details_dialog.dart';
 
 const newSongTemplate = '''{title: }
@@ -536,20 +537,25 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
                   controller: _controller,
                   focusNode: _focus,
                   fieldKey: _fieldKey,
-                  child: TextField(
-                    key: _fieldKey,
-                    focusNode: _focus,
+                  child: SectionBackgrounds(
+                    fieldKey: _fieldKey,
                     controller: _controller,
                     scrollController: _scroll,
-                    undoController: _undo,
-                    expands: true,
-                    maxLines: null,
-                    keyboardType: TextInputType.multiline,
-                    textAlignVertical: TextAlignVertical.top,
-                    style: editorTextStyle,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.fromLTRB(4, 16, 16, 16),
+                    child: TextField(
+                      key: _fieldKey,
+                      focusNode: _focus,
+                      controller: _controller,
+                      scrollController: _scroll,
+                      undoController: _undo,
+                      expands: true,
+                      maxLines: null,
+                      keyboardType: TextInputType.multiline,
+                      textAlignVertical: TextAlignVertical.top,
+                      style: editorTextStyle,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.fromLTRB(4, 16, 16, 16),
+                      ),
                     ),
                   ),
                 ),

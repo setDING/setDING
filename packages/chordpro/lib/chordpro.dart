@@ -25,4 +25,5 @@ export 'src/parser.dart';
 export 'src/sequence.dart';
 export 'src/song.dart';
 export 'src/source_metadata.dart';
+export 'src/source_sections.dart';
 export 'src/validation.dart';
