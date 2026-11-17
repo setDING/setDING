@@ -129,9 +129,6 @@ else
   echo "no web build in this setup, pb_public left as it is"
 fi
 
-# --- Website (ADR-0030) --------------------------------------------------------
-bash "$HERE/install-site.sh" "$SETUP_DIR"
-
 # --- systemd units -------------------------------------------------------------
 step "systemd units"
 install_unit() {
@@ -182,4 +179,14 @@ if systemctl is-active --quiet cloudflared; then
   echo "Cloudflare tunnel: running"
 else
   echo "Cloudflare tunnel: not connected yet (run 'cloudflared service install <TOKEN>', see docs/operations/server.md)"
+fi
+
+# --- Website (ADR-0030) --------------------------------------------------------
+# Last, after PocketBase is upgraded and answers: a failure here (e.g. installing
+# or starting Caddy) must not interrupt the server upgrade, so it is reported
+# as a warning and the deploy still succeeds (#397).
+if ! bash "$HERE/install-site.sh" "$SETUP_DIR"; then
+  echo >&2
+  echo "WARNING: the website step failed; PocketBase is upgraded and running." >&2
+  echo "WARNING: see 'journalctl -u caddy', fix it and run 'make server-site'." >&2
 fi
