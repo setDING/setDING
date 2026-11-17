@@ -1,0 +1,79 @@
+---
+title: ChordPro editor
+description: Write and edit songs in the built-in editor, with insert menus and a preview.
+sidebar:
+  order: 2
+---
+
+import { Image } from 'astro:assets';
+import editor from '../../../../../../docs/screenshots/editor.png';
+
+Songs are written in [ChordPro](https://www.chordpro.org/), the open format for
+chord sheets: chords go in square brackets right inside the lyrics, details such as
+the title or key in curly brackets.
+
+```
+{title: Amazing Grace}
+{key: G}
+
+{start_of_verse}
+A[G]mazing [G7]grace, how [C]sweet the [G]sound
+{end_of_verse}
+```
+
+Open the editor with **New song**, or with **Edit ChordPro** in a song's ⋮ menu.
+
+<Image src={editor} alt="The ChordPro editor with insert menus, syntax highlighting and a live preview" />
+
+## Text and preview
+
+On wide screens the text and the preview are side by side; on narrow ones you switch
+between **Text** and **Preview**. The preview shows the song the way the band sees
+it.
+
+## Insert instead of typing
+
+The bar above the text inserts what you need without you having to know the
+ChordPro syntax:
+
+- **Insert chord**, **Insert verse**, **Insert chorus** and **Insert comment** right
+  in the bar.
+- **Chords** – e.g. **Optional chord**, **No chord (N.C.)**, **Chord diagram**.
+- **Sections** – intro, bridge, solo, outro and more, **Tab**, **Chord grid** and
+  **Repeat chorus**.
+- **Song info** – **Title**, **Artist**, **Key**, **Capo**, **Tempo (BPM)**, **Time
+  signature**, **Song sequence**, **CCLI number** and more.
+- **Text** – comments, **Bold**, **Italic**, **Colour** and more.
+- **More** – **Column break**, **Page break**, **Image**, **ABC notation** and more.
+
+**Song details** edits the title, key, tempo and other details in a form. While you
+type, the editor suggests matching chords and directives.
+
+## Edit lines
+
+**Lines** has **Move line up**, **Move line down**, **Duplicate line**, **Delete
+line** and **Comment out line (#)**, plus **Move chord left** and **Move chord
+right** to move a chord by one syllable. Tapping a line number selects the whole
+line. **Undo** and **Redo** step back and forth.
+
+## Search and replace
+
+**Search** finds text in the song, with **Match case** if you like. **Replace**
+replaces single matches, **Replace all** all of them.
+
+## Chords above lyrics
+
+Many chord sheets on the internet write the chords on a line of their own above the
+lyrics. When you paste such a text, setDING offers to convert it (**Convert**). For
+text that is already in the editor: **Convert chords above lyrics**.
+
+## Save
+
+**Save** saves the song for everyone. If setDING finds places that will probably not
+be shown as intended – e.g. a bracket that is never closed – it asks **Check the
+ChordPro?** and names the lines. You can **Fix automatically**, **Keep editing** or
+**Save anyway**.
+
+To see everything ChordPro can do, import the sample song
+[`feature-showcase.zip`](https://github.com/tafli/setDING/raw/main/docs/examples/feature-showcase.zip)
+and open it in the editor.
