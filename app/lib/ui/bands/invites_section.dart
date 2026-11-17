@@ -71,14 +71,16 @@ class InvitesSection extends ConsumerWidget {
             leading: Icon(switch (i.statusAt(now)) {
               InviteStatus.valid => Icons.link,
               InviteStatus.expired => Icons.timer_off_outlined,
-              InviteStatus.revoked => Icons.link_off,
+              // Only founder invitations are used up; admins do not list them.
+              InviteStatus.revoked || InviteStatus.used => Icons.link_off,
             }),
             title: Text(switch (i.statusAt(now)) {
               InviteStatus.valid => l10n.inviteStatusValid(
                 date(i.expires.toLocal()),
               ),
               InviteStatus.expired => l10n.inviteStatusExpired,
-              InviteStatus.revoked => l10n.inviteStatusRevoked,
+              InviteStatus.revoked ||
+              InviteStatus.used => l10n.inviteStatusRevoked,
             }),
             subtitle: Text(
               l10n.inviteJoined(i.joined.length, i.joined.join(', ')),

@@ -12,10 +12,19 @@ import 'package:http_parser/http_parser.dart';
 /// (`PB_VERSION` in the Makefile) is downloaded with
 /// `tool/server/fetch-pocketbase.sh`.
 class PocketBase {
-  PocketBase._(this._process, this._dir, this.baseUrl, this.superuserToken);
+  PocketBase._(
+    this._process,
+    this._dir,
+    this._binaryPath,
+    this._root,
+    this.baseUrl,
+    this.superuserToken,
+  );
 
   final Process _process;
   final Directory _dir;
+  final String _binaryPath;
+  final String _root;
   final Uri baseUrl;
 
   /// Token of a superuser; superusers bypass all access rules.
@@ -25,12 +34,16 @@ class PocketBase {
   static const _superuserPassword = 'superuser-password';
 
   /// [environment] is added to the server's environment (e.g. deep-link
-  /// settings read by the hooks). [publicDir] holds static files (e.g. the
-  /// web client, ADR-0018).
+  /// settings read by the hooks). Unless it says otherwise, sign-up is open
+  /// (`REALCHORD_REGISTRATION=open`, ADR-0024), so tests can create users.
+  /// [publicDir] holds static files (e.g. the web client, ADR-0018).
+  /// The rate limits are turned off after the start unless [rateLimits].
   static Future<PocketBase> start({
     Map<String, String>? environment,
     String? publicDir,
+    bool rateLimits = false,
   }) async {
+    environment = {'REALCHORD_REGISTRATION': 'open', ...?environment};
     final root = _repositoryRoot();
     final binary = await _binary(root);
     final dir = await Directory.systemTemp.createTemp('realchord-pb-');
@@ -94,8 +107,41 @@ class PocketBase {
       }),
     );
     final token = (jsonDecode(auth.body) as Map<String, dynamic>)['token'];
-    return PocketBase._(process, dir, baseUrl, token as String);
+    final pb = PocketBase._(
+      process,
+      dir,
+      binary,
+      root,
+      baseUrl,
+      token as String,
+    );
+    if (!rateLimits) {
+      final r = await pb.superuser.send(
+        'PATCH',
+        '/api/settings',
+        body: {
+          'rateLimits': {'enabled': false},
+        },
+      );
+      r.expectStatus(200);
+    }
+    return pb;
   }
+
+  /// Runs a console command of the server's binary on its data, with the
+  /// repository's hooks (e.g. `founder-invite`, ADR-0024).
+  Future<ProcessResult> command(
+    List<String> args, {
+    Map<String, String>? environment,
+  }) => Process.run(_binaryPath, [
+    ...args,
+    '--dir',
+    '${_dir.path}/pb_data',
+    '--hooksDir',
+    '$_root/server/pb_hooks',
+    '--migrationsDir',
+    '$_root/server/pb_migrations',
+  ], environment: environment);
 
   Future<void> stop() async {
     _process.kill();
@@ -117,7 +163,8 @@ class PocketBase {
     final email =
         'user$n-${DateTime.now().microsecondsSinceEpoch}@realchord.test';
     const password = 'password-123';
-    final created = await guest.post('users', {
+    // As superuser, so it also works on invite-only servers (ADR-0024).
+    final created = await superuser.post('users', {
       'email': email,
       'password': password,
       'passwordConfirm': password,

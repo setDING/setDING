@@ -179,6 +179,117 @@ void main() {
     await app.dispose(tester);
   });
 
+  group('invite-only server (ADR-0024)', () {
+    testWidgets('accounts only with a link; the token goes along', (
+      tester,
+    ) async {
+      final app = await pump(tester, null, const SettingsScreen());
+      app.backend.config = const ServerConfig(
+        registration: RegistrationMode.inviteOnly,
+      );
+      final link = (await _invite(app)).url;
+
+      // Signing in directly offers no sign-up, only joining with a link.
+      await tester.tap(find.byKey(const Key('account-open-sign-in')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('account-toggle')), findsNothing);
+      expect(find.byKey(const Key('account-invite-only')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('account-open-join')));
+      await tester.pumpAndSettle();
+
+      // The link is checked before signing up.
+      await tester.enterText(find.byKey(const Key('join-link')), link);
+      await tester.tap(find.byKey(const Key('join-continue')));
+      await tester.pumpAndSettle();
+      expect(find.text('Join School?'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('join-sign-up')));
+      await tester.pumpAndSettle();
+      for (final (key, value) in [
+        ('account-name', 'Bob'),
+        ('account-email', 'bob@example.test'),
+        ('account-password', 'long-enough'),
+        ('account-password-confirm', 'long-enough'),
+      ]) {
+        await tester.enterText(find.byKey(Key(key)), value);
+      }
+      await tester.tap(find.byKey(const Key('account-submit')));
+      await tester.pumpAndSettle();
+      expect(app.backend.signUpInvites, [inviteTokenFrom(link)]);
+
+      await tester.tap(find.byKey(const Key('join-button')));
+      await tester.pumpAndSettle();
+      expect(
+        app.backend.orgMembers.where((m) => m.user.email == 'bob@example.test'),
+        hasLength(1),
+      );
+      await app.dispose(tester);
+    });
+
+    testWidgets('a founder invitation founds the organization', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'}, user: _bob);
+      await tester.pumpWidget(app.build());
+      await tester.pumpAndSettle();
+      final link = app.backend.addFounderInvite('Choir');
+
+      app.links.add(Uri.parse(link));
+      await tester.pumpAndSettle();
+      expect(find.text('Found Choir?'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('join-button')));
+      await tester.pumpAndSettle();
+
+      final orgId = app.backend.organizations.entries
+          .singleWhere((e) => e.value == 'Choir')
+          .key;
+      final founder = app.backend.orgMembers.singleWhere(
+        (m) => m.scopeId == orgId,
+      );
+      expect(founder.user.id, 'bob');
+      expect(founder.role, BandRole.admin);
+
+      // Used up.
+      app.links.add(Uri.parse(link));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('was used already'), findsOneWidget);
+      await app.dispose(tester);
+    });
+
+    testWidgets('asks to confirm the email address after signing up', (
+      tester,
+    ) async {
+      final app = await pump(tester, null, const SettingsScreen());
+      app.backend.config = const ServerConfig(emailVerification: true);
+      await tester.tap(find.byKey(const Key('account-open-sign-in')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('account-toggle')));
+      await tester.pumpAndSettle();
+      for (final (key, value) in [
+        ('account-name', 'Bob'),
+        ('account-email', 'bob@example.test'),
+        ('account-password', 'long-enough'),
+        ('account-password-confirm', 'long-enough'),
+      ]) {
+        await tester.enterText(find.byKey(Key(key)), value);
+      }
+      await tester.tap(find.byKey(const Key('account-submit')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('account-verify')), findsOneWidget);
+      expect(find.textContaining('bob@example.test'), findsWidgets);
+
+      await tester.tap(find.byKey(const Key('account-verify-resend')));
+      await tester.pumpAndSettle();
+      expect(app.backend.verificationRequests, ['bob@example.test']);
+      expect(find.text('Mail sent.'), findsOneWidget);
+
+      // Confirmed: signing in works.
+      app.backend.unverified.clear();
+      await tester.tap(find.byKey(const Key('account-submit')));
+      await tester.pumpAndSettle();
+      expect(app.backend.user?.email, 'bob@example.test');
+      await app.dispose(tester);
+    });
+  });
+
   testWidgets('an invitation link opens the join screen', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'en'}, user: _bob);

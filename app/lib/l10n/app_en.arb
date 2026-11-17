@@ -515,6 +515,39 @@
   },
   "joinSignInFirst": "Sign in or create an account to join.",
   "joinHaveAccount": "I already have an account",
+  "inviteErrorUsed": "This invitation was used already. Please ask for a new link.",
+  "accountErrorInvitationRequired": "This server only accepts new accounts with an invitation link.",
+  "accountErrorEmailNotVerified": "Please confirm your email address first. We sent you a new mail.",
+  "bandErrorFounderInvitationRequired": "New organizations need a founder invitation from the server operator.",
+  "accountInviteOnlyHint": "New accounts need an invitation link on this server.",
+  "accountVerifyEmail": "Almost done: we sent a mail to {email}. Confirm your address with the link in it, then sign in.",
+  "@accountVerifyEmail": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "accountVerifyResend": "Send the mail again",
+  "accountVerifySent": "Mail sent.",
+  "joinFoundQuestion": "Found {org}?",
+  "@joinFoundQuestion": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "joinFoundExplanation": "You create the organization and become its admin. Then you can create bands and invite people.",
+  "joinFoundButton": "Found organization",
+  "joinFoundDone": "You founded {org}.",
+  "@joinFoundDone": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
   "syncTitle": "Sync",
   "syncNow": "Sync now",
   "settingsSyncMode": "Sync",

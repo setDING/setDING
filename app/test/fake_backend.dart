@@ -18,6 +18,16 @@ class FakeSyncBackend implements SyncBackend {
   BackendErrorKind? failWith;
 
   final resetRequests = <String>[];
+  final verificationRequests = <String>[];
+
+  /// Registration settings reported by [fetchServerConfig] (ADR-0024).
+  ServerConfig config = ServerConfig.unknown;
+
+  /// Accounts whose address is not confirmed (sign-in fails).
+  final unverified = <String>{};
+
+  /// Invitation tokens of the last sign-ups.
+  final signUpInvites = <String?>[];
   int refreshCount = 0;
   final _changes = StreamController<AuthUser?>.broadcast();
 
@@ -45,6 +55,9 @@ class FakeSyncBackend implements SyncBackend {
     if (accounts[email.trim()] != password) {
       throw const BackendException(BackendErrorKind.invalidCredentials);
     }
+    if (unverified.contains(email.trim())) {
+      throw const BackendException(BackendErrorKind.emailNotVerified);
+    }
     final u = AuthUser(id: 'u-$email', email: email.trim(), name: '');
     _set(u);
     return u;
@@ -55,12 +68,21 @@ class FakeSyncBackend implements SyncBackend {
     required String email,
     required String password,
     required String name,
+    String? invite,
   }) async {
     _check();
+    if (config.inviteOnly && invite == null) {
+      throw const BackendException(BackendErrorKind.invitationRequired);
+    }
     if (accounts.containsKey(email.trim())) {
       throw const BackendException(BackendErrorKind.emailTaken);
     }
     accounts[email.trim()] = password;
+    signUpInvites.add(invite);
+    if (config.emailVerification) {
+      unverified.add(email.trim());
+      throw const BackendException(BackendErrorKind.emailNotVerified);
+    }
     final u = AuthUser(id: 'u-$email', email: email.trim(), name: name.trim());
     _set(u);
     return u;
@@ -70,6 +92,18 @@ class FakeSyncBackend implements SyncBackend {
   Future<void> requestPasswordReset(String email) async {
     _check();
     resetRequests.add(email);
+  }
+
+  @override
+  Future<void> requestVerification(String email) async {
+    _check();
+    verificationRequests.add(email);
+  }
+
+  @override
+  Future<ServerConfig> fetchServerConfig() async {
+    _check();
+    return config;
   }
 
   @override
@@ -261,6 +295,9 @@ class FakeSyncBackend implements SyncBackend {
     if (organizationId != null && !_isOrgAdmin(organizationId)) {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
+    if (organizationId == null && config.inviteOnly) {
+      throw const BackendException(BackendErrorKind.founderInvitationRequired);
+    }
     addBand(id, name.trim(), admin: user!, organizationId: organizationId);
   }
 
@@ -337,7 +374,20 @@ class FakeSyncBackend implements SyncBackend {
 
   InviteStatus _inviteStatus(FakeInvite i) => i.revoked
       ? InviteStatus.revoked
+      : (i.founder != null && i.usedBy != null)
+      ? InviteStatus.used
       : (i.expires.isBefore(now) ? InviteStatus.expired : InviteStatus.valid);
+
+  /// A founder invitation for a new organization [name] (ADR-0024), as the
+  /// server operator creates it; returns its link.
+  String addFounderInvite(String name) {
+    final token = 'Fnd${++_ids}'.padRight(32, 'x');
+    invites.add(
+      FakeInvite('inv$_ids', '', token, now, now.add(const Duration(days: 7)))
+        ..founder = name,
+    );
+    return 'https://api.realchord.app/invite/$token';
+  }
 
   @override
   Future<CreatedInvite> createInvite(String organizationId) async {
@@ -385,17 +435,18 @@ class FakeSyncBackend implements SyncBackend {
 
   @override
   Future<InvitePreview> previewInvite(String token) async {
-    _requireUser();
+    _check();
     final invite = _invite(token);
     if (invite == null) {
       throw const BackendException(BackendErrorKind.inviteUnknown);
     }
     return InvitePreview(
       organizationId: invite.organizationId,
-      organizationName: organizations[invite.organizationId]!,
+      organizationName: invite.founder ?? organizations[invite.organizationId]!,
+      founder: invite.founder != null,
       status: _inviteStatus(invite),
       alreadyMember: orgMembers.any(
-        (m) => m.scopeId == invite.organizationId && m.user.id == user!.id,
+        (m) => m.scopeId == invite.organizationId && m.user.id == user?.id,
       ),
     );
   }
@@ -412,7 +463,16 @@ class FakeSyncBackend implements SyncBackend {
         throw const BackendException(BackendErrorKind.inviteExpired);
       case InviteStatus.revoked:
         throw const BackendException(BackendErrorKind.inviteRevoked);
+      case InviteStatus.used:
+        throw const BackendException(BackendErrorKind.inviteUsed);
       case InviteStatus.valid:
+    }
+    if (invite.founder case final name?) {
+      final orgId = 'org${++_ids}';
+      organizations[orgId] = name;
+      addOrgMember(orgId, user!, BandRole.admin);
+      invite.usedBy = user;
+      return orgId;
     }
     final orgId = invite.organizationId;
     if (!orgMembers.any((m) => m.scopeId == orgId && m.user.id == user!.id)) {
@@ -675,6 +735,10 @@ class FakeInvite {
   final DateTime created;
   final DateTime expires;
   bool revoked = false;
+
+  /// Name of the organization a founder invitation creates (ADR-0024).
+  String? founder;
+  AuthUser? usedBy;
   final joined = <AuthUser>[];
 }
 

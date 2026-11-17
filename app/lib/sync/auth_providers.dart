@@ -34,6 +34,19 @@ final syncBackendProvider = Provider<SyncBackend>((ref) {
   return backend;
 });
 
+/// Registration settings of the configured server (ADR-0024); assumes an
+/// open server if it cannot be asked (offline, older server), since the
+/// server enforces its own settings anyway.
+final serverConfigProvider = FutureProvider<ServerConfig>((ref) async {
+  final backend = ref.watch(syncBackendProvider);
+  try {
+    return await backend.fetchServerConfig();
+  } on BackendException catch (e) {
+    _log.info('Server settings not available: $e');
+    return ServerConfig.unknown;
+  }
+});
+
 /// The signed-in user, or null. Refreshes a stored session once when the
 /// backend is created (ignored while offline) and loads the user's bands
 /// after signing in or starting signed in.

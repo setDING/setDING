@@ -1338,6 +1338,54 @@ class AppLocalizationsDe extends AppLocalizations {
   String get joinHaveAccount => 'Ich habe schon ein Konto';
 
   @override
+  String get inviteErrorUsed =>
+      'Diese Einladung wurde bereits verwendet. Bitte um einen neuen Link.';
+
+  @override
+  String get accountErrorInvitationRequired =>
+      'Dieser Server nimmt neue Konten nur mit einem Einladungslink an.';
+
+  @override
+  String get accountErrorEmailNotVerified =>
+      'Bitte bestätige zuerst deine E-Mail-Adresse. Wir haben dir eine neue Mail geschickt.';
+
+  @override
+  String get bandErrorFounderInvitationRequired =>
+      'Neue Organisationen brauchen eine Gründungs-Einladung vom Server-Betreiber.';
+
+  @override
+  String get accountInviteOnlyHint =>
+      'Neue Konten brauchen auf diesem Server einen Einladungslink.';
+
+  @override
+  String accountVerifyEmail(String email) {
+    return 'Fast geschafft: Wir haben eine Mail an $email geschickt. Bestätige deine Adresse mit dem Link darin und melde dich dann an.';
+  }
+
+  @override
+  String get accountVerifyResend => 'Mail erneut senden';
+
+  @override
+  String get accountVerifySent => 'Mail gesendet.';
+
+  @override
+  String joinFoundQuestion(String org) {
+    return '$org gründen?';
+  }
+
+  @override
+  String get joinFoundExplanation =>
+      'Du erstellst die Organisation und wirst ihr Admin. Danach kannst du Bands anlegen und Leute einladen.';
+
+  @override
+  String get joinFoundButton => 'Organisation gründen';
+
+  @override
+  String joinFoundDone(String org) {
+    return 'Du hast $org gegründet.';
+  }
+
+  @override
   String get syncTitle => 'Synchronisation';
 
   @override

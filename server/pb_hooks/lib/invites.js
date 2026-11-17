@@ -2,6 +2,11 @@
 // `<app URL>/invite/<token>`; the server stores only the SHA-256 hash of the
 // token. Links are valid for 7 days, can be used several times, can be
 // revoked, and always grant the member role of the organization.
+//
+// Founder invitations (ADR-0024) have no organization but a `founder_name`:
+// redeeming one creates that organization with the person as its admin.
+// The server operator creates them (console command `founder-invite`); they
+// can be used once (`used_by`).
 
 const VALID_DAYS = 7;
 const TOKEN_LENGTH = 32;
@@ -30,11 +35,53 @@ function findByToken(app, token) {
   }
 }
 
-/// "valid", "expired" or "revoked".
+function isFounder(invite) {
+  return !invite.getString("organization") && !!invite.getString("founder_name");
+}
+
+/// "valid", "expired", "revoked" or "used" (founder invitations).
 function status(invite) {
   if (invite.getBool("revoked")) return "revoked";
+  if (isFounder(invite) && invite.getString("used_by")) return "used";
   if (invite.getDateTime("expires").unix() < new DateTime().unix()) return "expired";
   return "valid";
+}
+
+function newToken() {
+  return $security.randomString(TOKEN_LENGTH);
+}
+
+function expiry() {
+  return new Date(Date.now() + VALID_DAYS * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .replace("T", " ");
+}
+
+/// Organization of an invitation as shown before joining: the existing one,
+/// or the one a founder invitation creates (no id yet).
+function organizationOf(app, invite) {
+  if (isFounder(invite)) return { id: "", name: invite.getString("founder_name") };
+  const orgId = invite.getString("organization");
+  return { id: orgId, name: app.findRecordById("organizations", orgId).getString("name") };
+}
+
+/// Creates a founder invitation for a new organization `name` (server
+/// operator only, ADR-0024). Returns the token once.
+function createFounder(app, name, base) {
+  name = String(name || "").trim();
+  if (!name) throw new Error("The organization needs a name.");
+  const token = newToken();
+  const invite = new Record(app.findCollectionByNameOrId("invites"));
+  invite.set("founder_name", name);
+  invite.set("token_hash", $security.sha256(token));
+  invite.set("expires", expiry());
+  app.save(invite);
+  return {
+    id: invite.id,
+    token: token,
+    url: base.replace(/\/+$/, "") + "/invite/" + token,
+    expires: invite.getDateTime("expires").string(),
+  };
 }
 
 function create(e) {
@@ -43,10 +90,8 @@ function create(e) {
   if (!orgId || !isOrgAdmin(e.app, userId, orgId)) {
     throw new ForbiddenError("Only organization admins can invite people.");
   }
-  const token = $security.randomString(TOKEN_LENGTH);
-  const expires = new Date(Date.now() + VALID_DAYS * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .replace("T", " ");
+  const token = newToken();
+  const expires = expiry();
   const invite = new Record(e.app.findCollectionByNameOrId("invites"));
   invite.set("organization", orgId);
   invite.set("token_hash", $security.sha256(token));
@@ -61,19 +106,49 @@ function create(e) {
   });
 }
 
+/// Also answers without an account, so the app can show "Join X?" before
+/// signing up (ADR-0024).
 function preview(e) {
   const invite = findByToken(e.app, e.request.pathValue("token"));
   if (!invite) throw new NotFoundError("Unknown invitation.");
-  const orgId = invite.getString("organization");
-  const org = e.app.findRecordById("organizations", orgId);
-  const member = e.app.countRecords(
+  const org = organizationOf(e.app, invite);
+  const userId = require(`${__hooks}/lib/sync.js`).requestUserId(e);
+  const member = !!org.id && !!userId && e.app.countRecords(
     "org_memberships",
-    $dbx.hashExp({ user: e.auth.id, organization: orgId, deleted: false }),
+    $dbx.hashExp({ user: userId, organization: org.id, deleted: false }),
   ) > 0;
   return e.json(200, {
-    organization: { id: orgId, name: org.getString("name") },
+    organization: org,
     status: status(invite),
     member: member,
+    founder: isFounder(invite),
+  });
+}
+
+/// Creates the organization of a founder invitation with the user as its
+/// admin (pb_hooks/organizations.pb.js) and marks the invitation used.
+function redeemFounder(e, invite, userId) {
+  let orgId = "";
+  e.app.runInTransaction((txApp) => {
+    const fresh = txApp.findRecordById("invites", invite.id);
+    if (fresh.getString("used_by")) {
+      throw new ApiError(410, "The invitation is used.", {
+        token: new ValidationError("used", "The invitation is used."),
+      });
+    }
+    const org = new Record(txApp.findCollectionByNameOrId("organizations"));
+    org.set("name", fresh.getString("founder_name"));
+    org.set("updated_by", userId);
+    txApp.save(org);
+    orgId = org.id;
+    fresh.set("used_by", userId);
+    txApp.save(fresh);
+  });
+  const org = e.app.findRecordById("organizations", orgId);
+  return e.json(200, {
+    organization: { id: orgId, name: org.getString("name") },
+    alreadyMember: false,
+    founder: true,
   });
 }
 
@@ -87,6 +162,7 @@ function redeem(e) {
     });
   }
   const userId = e.auth.id;
+  if (isFounder(invite)) return redeemFounder(e, invite, userId);
   const orgId = invite.getString("organization");
   let alreadyMember = false;
   e.app.runInTransaction((txApp) => {
@@ -134,6 +210,7 @@ const TEXTS = {
   de: {
     title: "Einladung zu RealChord",
     invited: (org) => `Du bist eingeladen, ${org} auf RealChord beizutreten.`,
+    found: (org) => `Du bist eingeladen, die Organisation ${org} auf RealChord zu gründen.`,
     open: "In RealChord öffnen",
     browser: "Im Browser öffnen",
     browserHint: "Oder ohne Installation im Browser verwalten:",
@@ -145,6 +222,7 @@ const TEXTS = {
   en: {
     title: "Invitation to RealChord",
     invited: (org) => `You are invited to join ${org} on RealChord.`,
+    found: (org) => `You are invited to found the organization ${org} on RealChord.`,
     open: "Open in RealChord",
     browser: "Open in the browser",
     browserHint: "Or manage without installing, in the browser:",
@@ -172,9 +250,9 @@ function landing(e) {
   if (!invite || status(invite) !== "valid") {
     body = `<p>${escapeHtml(t.invalid)}</p>`;
   } else {
-    const org = e.app.findRecordById("organizations", invite.getString("organization"));
+    const org = organizationOf(e.app, invite);
     body =
-      `<p>${escapeHtml(t.invited(org.getString("name")))}</p>` +
+      `<p>${escapeHtml(isFounder(invite) ? t.found(org.name) : t.invited(org.name))}</p>` +
       `<p><a class="button" href="realchord://invite/${escapeHtml(token)}">${escapeHtml(t.open)}</a></p>` +
       `<p class="hint">${escapeHtml(t.install)}</p>` +
       (web.available()
@@ -221,4 +299,16 @@ function appleAppSiteAssociation(e) {
   });
 }
 
-module.exports = { create, preview, redeem, landing, assetLinks, appleAppSiteAssociation };
+module.exports = {
+  baseUrl,
+  findByToken,
+  status,
+  isFounder,
+  create,
+  createFounder,
+  preview,
+  redeem,
+  landing,
+  assetLinks,
+  appleAppSiteAssociation,
+};

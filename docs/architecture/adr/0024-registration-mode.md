@@ -156,6 +156,18 @@ REALCHORD_EMAIL_VERIFICATION=off   # or: required
   same environment file (`REALCHORD_EMAIL_VERIFICATION=off|required`, default `off`,
   `required` only takes effect with SMTP).
 - 2026-11-17: Accepted by the owner.
+- 2026-11-17: Implemented (#213): `pb_hooks/registration.pb.js` and
+  `lib/registration.js` (mode, sign-up check, verification, config route,
+  console command `founder-invite`), founder invitations in `lib/invites.js`
+  (fields `founder_name` and `used_by` on `invites`, migration
+  `1795200000_registration.js`, which also enables the rate limits), the
+  invitation preview answers without an account, `make server-founder-invite`;
+  the app reads the settings (`serverConfigProvider`), signs up with the
+  invitation token, shows "confirm your email" with a resend button and offers
+  new organizations only on open servers. Rate limits per IP: sign-up 5,
+  sign-in 20, invitation routes 30 per minute. `make backend` stays open for
+  development. The test harness starts servers with `open` unless a test asks
+  otherwise and turns the rate limits off.
 
 ## Open points
 

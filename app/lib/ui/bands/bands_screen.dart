@@ -39,15 +39,19 @@ class BandsScreen extends ConsumerWidget {
   Future<void> _create(
     BuildContext context,
     WidgetRef ref,
-    List<OrganizationView> orgs,
-  ) async {
+    List<OrganizationView> orgs, {
+    required bool inviteOnly,
+  }) async {
     final adminOrgs = [
       for (final o in orgs)
         if (o.isAdmin) o,
     ];
     final result = await showDialog<({String name, String? orgId})>(
       context: context,
-      builder: (_) => _NewBandDialog(organizations: adminOrgs),
+      builder: (_) => _NewBandDialog(
+        organizations: adminOrgs,
+        newOrganization: !inviteOnly,
+      ),
     );
     if (result == null || !context.mounted) return;
     late String id;
@@ -69,6 +73,12 @@ class BandsScreen extends ConsumerWidget {
     final bands = ref.watch(bandsProvider).value ?? const <BandView>[];
     final current = ref.watch(currentBandProvider);
     final service = ref.read(bandServiceProvider);
+    // On invite-only servers new organizations come from founder invitations
+    // (ADR-0024): bands only inside organizations the user administers.
+    final inviteOnly =
+        ref.watch(serverConfigProvider).value?.inviteOnly ?? false;
+    final canCreate =
+        user != null && (!inviteOnly || orgs.any((o) => o.isAdmin));
 
     Widget body;
     if (user == null) {
@@ -151,12 +161,13 @@ class BandsScreen extends ConsumerWidget {
             ),
         ],
       ),
-      floatingActionButton: user == null
+      floatingActionButton: !canCreate
           ? null
           : FloatingActionButton.extended(
               key: const Key('band-new'),
               heroTag: null,
-              onPressed: () => _create(context, ref, orgs),
+              onPressed: () =>
+                  _create(context, ref, orgs, inviteOnly: inviteOnly),
               icon: const Icon(Icons.group_add_outlined),
               label: Text(l10n.bandNew),
             ),
@@ -168,10 +179,17 @@ class BandsScreen extends ConsumerWidget {
 /// Name and organization of a new band. Without organizations to choose
 /// from, the server creates a new organization of the same name.
 class _NewBandDialog extends StatefulWidget {
-  const _NewBandDialog({required this.organizations});
+  const _NewBandDialog({
+    required this.organizations,
+    this.newOrganization = true,
+  });
 
   /// Organizations in which the user may create bands (admins).
   final List<OrganizationView> organizations;
+
+  /// Whether "new organization" can be chosen (not on invite-only servers,
+  /// ADR-0024).
+  final bool newOrganization;
 
   @override
   State<_NewBandDialog> createState() => _NewBandDialogState();
@@ -223,10 +241,11 @@ class _NewBandDialogState extends State<_NewBandDialog> {
                 items: [
                   for (final o in widget.organizations)
                     DropdownMenuItem(value: o.id, child: Text(o.name)),
-                  DropdownMenuItem(
-                    value: null,
-                    child: Text(l10n.bandNewOrganization),
-                  ),
+                  if (widget.newOrganization)
+                    DropdownMenuItem(
+                      value: null,
+                      child: Text(l10n.bandNewOrganization),
+                    ),
                 ],
                 onChanged: (v) => setState(() => _orgId = v),
               ),

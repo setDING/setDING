@@ -664,6 +664,39 @@
   },
   "joinSignInFirst": "Melde dich an oder erstelle ein Konto, um beizutreten.",
   "joinHaveAccount": "Ich habe schon ein Konto",
+  "inviteErrorUsed": "Diese Einladung wurde bereits verwendet. Bitte um einen neuen Link.",
+  "accountErrorInvitationRequired": "Dieser Server nimmt neue Konten nur mit einem Einladungslink an.",
+  "accountErrorEmailNotVerified": "Bitte bestätige zuerst deine E-Mail-Adresse. Wir haben dir eine neue Mail geschickt.",
+  "bandErrorFounderInvitationRequired": "Neue Organisationen brauchen eine Gründungs-Einladung vom Server-Betreiber.",
+  "accountInviteOnlyHint": "Neue Konten brauchen auf diesem Server einen Einladungslink.",
+  "accountVerifyEmail": "Fast geschafft: Wir haben eine Mail an {email} geschickt. Bestätige deine Adresse mit dem Link darin und melde dich dann an.",
+  "@accountVerifyEmail": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "accountVerifyResend": "Mail erneut senden",
+  "accountVerifySent": "Mail gesendet.",
+  "joinFoundQuestion": "{org} gründen?",
+  "@joinFoundQuestion": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "joinFoundExplanation": "Du erstellst die Organisation und wirst ihr Admin. Danach kannst du Bands anlegen und Leute einladen.",
+  "joinFoundButton": "Organisation gründen",
+  "joinFoundDone": "Du hast {org} gegründet.",
+  "@joinFoundDone": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
   "syncTitle": "Synchronisation",
   "syncNow": "Jetzt synchronisieren",
   "settingsSyncMode": "Synchronisieren",

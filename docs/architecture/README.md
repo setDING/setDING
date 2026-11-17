@@ -265,7 +265,7 @@ See "Open points" in the individual ADRs. The most important:
 17. Distributable Linux builds? → `make release`: built in a Debian container with an ISA check (ADR-0019, accepted, #45). CI release builds for Linux, Android (Obtainium) and Windows from a `vX.Y.Z` tag (ADR-0021, accepted, #137). Open: release key (owner), iOS, installers/packaging and code signing
 18. ~~Personal adjustments on shared devices and across devices?~~ → Overlays belong to a user (`owner_id`; `local` for the local library), existing ones are taken over once by the first user who signs in, private, synced in phase 2 with last writer wins and soft delete (ADR-0020, accepted)
 19. ~~Chord display style (pop vs. jazz spelling, superscript extensions)?~~ → Global device setting *As written* (default) / *Standard* / *Jazz* plus a superscript switch, not per song (ADR-0022, accepted, implemented in #196)
-21. ~~Who may create accounts and organizations?~~ → Operator setting `REALCHORD_REGISTRATION` = `invite_only` (default) or `open`, founder invitations for new organizations by the operator only, optional email verification (`REALCHORD_EMAIL_VERIFICATION`), no in-app super-admin (ADR-0024, accepted, #209). Open: implementation, limits per organization
+21. ~~Who may create accounts and organizations?~~ → Operator setting `REALCHORD_REGISTRATION` = `invite_only` (default) or `open`, founder invitations for new organizations by the operator only, optional email verification (`REALCHORD_EMAIL_VERIFICATION`), no in-app super-admin (ADR-0024, accepted, #209; implemented in #213). Open: limits per organization
 
 ## 10. ADR index
 

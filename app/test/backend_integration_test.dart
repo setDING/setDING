@@ -298,4 +298,81 @@ void main() {
       bob.dispose();
     });
   });
+
+  group('invite-only server (ADR-0024)', () {
+    late PocketBase closed;
+    late String closedUrl;
+
+    setUpAll(() async {
+      closed = await PocketBase.start(
+        environment: {'REALCHORD_REGISTRATION': 'invite_only'},
+      );
+      closedUrl = closed.baseUrl.toString().replaceAll(RegExp(r'/$'), '');
+    });
+    tearDownAll(() => closed.stop());
+
+    test('sign-up needs a link, which also works signed out', () async {
+      final guest = PocketBaseBackend(
+        serverUrl: closedUrl,
+        store: MemorySessionStore(),
+      );
+      final config = await guest.fetchServerConfig();
+      expect(config.inviteOnly, isTrue);
+      expect(config.emailVerification, isFalse);
+      expect(
+        await kindOf(
+          () => guest.signUp(
+            email: email(),
+            password: 'password-123',
+            name: 'Eve',
+          ),
+        ),
+        BackendErrorKind.invitationRequired,
+      );
+
+      // An organization admin (created by the operator) invites.
+      final admin = await closed.signUp('Ann');
+      final org = await closed.superuser.post('organizations', {
+        'name': 'School',
+      });
+      org.expectStatus(200);
+      (await closed.superuser.post('org_memberships', {
+        'user': admin.id,
+        'organization': org.json['id'],
+        'role': 'admin',
+      })).expectStatus(200);
+      final created = await admin.send(
+        'POST',
+        '/api/realchord/invites',
+        body: {'organization': org.json['id']},
+      );
+      final token = created.json['token'] as String;
+
+      final preview = await guest.previewInvite(token);
+      expect(preview.organizationName, 'School');
+      expect(preview.founder, isFalse);
+
+      await guest.signUp(
+        email: email(),
+        password: 'password-123',
+        name: 'Bob',
+        invite: token,
+      );
+      expect(await guest.redeemInvite(token), org.json['id']);
+      expect(
+        await kindOf(() => guest.createBand(id: const Uuid().v4(), name: 'X')),
+        BackendErrorKind.founderInvitationRequired,
+      );
+      guest.dispose();
+    });
+
+    test('an unreachable server reports a network error', () async {
+      final backend = PocketBaseBackend(
+        serverUrl: 'http://127.0.0.1:1',
+        store: MemorySessionStore(),
+      );
+      expect(await kindOf(backend.fetchServerConfig), BackendErrorKind.network);
+      backend.dispose();
+    });
+  });
 }

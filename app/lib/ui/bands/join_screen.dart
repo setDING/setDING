@@ -8,8 +8,11 @@ import '../../sync/sync_backend.dart';
 import '../account/sign_in_screen.dart';
 
 /// Joins an organization with an invitation link (ADR-0005, ADR-0017):
-/// opened by a deep link or by pasting the link. Signing in comes first;
-/// joining needs a connection once.
+/// opened by a deep link or by pasting the link. The link is checked first,
+/// also without an account; then the person signs in or creates an account
+/// with the link (needed on invite-only servers, ADR-0024) and joins. A
+/// founder invitation founds the organization instead. Joining needs a
+/// connection once.
 class JoinScreen extends ConsumerStatefulWidget {
   const JoinScreen({super.key, this.initialLink});
 
@@ -67,10 +70,6 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
       return;
     }
     _token = token;
-    if (ref.read(authProvider) == null) {
-      setState(() => _preview = null);
-      return;
-    }
     await _run(() async {
       final preview = await ref.read(syncBackendProvider).previewInvite(token);
       if (mounted) setState(() => _preview = preview);
@@ -86,7 +85,13 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
       await ref.read(syncBackendProvider).redeemInvite(_token!);
       await ref.read(bandServiceProvider).refresh();
       messenger.showSnackBar(
-        SnackBar(content: Text(l10n.joinDone(preview.organizationName))),
+        SnackBar(
+          content: Text(
+            preview.founder
+                ? l10n.joinFoundDone(preview.organizationName)
+                : l10n.joinDone(preview.organizationName),
+          ),
+        ),
       );
       navigator.pop(true);
     });
@@ -123,7 +128,28 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
                   onSubmitted: (_) => _check(),
                 ),
                 const SizedBox(height: 16),
-                if (!signedIn && _token != null) ...[
+                FilledButton(
+                  key: const Key('join-continue'),
+                  onPressed: _busy ? null : _check,
+                  child: Text(l10n.joinContinue),
+                ),
+              ] else ...[
+                Text(
+                  preview.founder
+                      ? l10n.joinFoundQuestion(preview.organizationName)
+                      : preview.alreadyMember
+                      ? l10n.joinAlreadyMember(preview.organizationName)
+                      : l10n.joinQuestion(preview.organizationName),
+                  style: theme.textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 16),
+                if (preview.status != InviteStatus.valid)
+                  Text(switch (preview.status) {
+                    InviteStatus.expired => l10n.inviteErrorExpired,
+                    InviteStatus.used => l10n.inviteErrorUsed,
+                    _ => l10n.inviteErrorRevoked,
+                  }, style: TextStyle(color: theme.colorScheme.error))
+                else if (!signedIn) ...[
                   Text(l10n.joinSignInFirst),
                   const SizedBox(height: 16),
                   FilledButton(
@@ -131,7 +157,8 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute<bool>(
-                        builder: (_) => const SignInScreen(signUp: true),
+                        builder: (_) =>
+                            SignInScreen(signUp: true, invite: _token),
                       ),
                     ),
                     child: Text(l10n.accountSignUp),
@@ -142,39 +169,24 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute<bool>(
-                        builder: (_) => const SignInScreen(),
+                        builder: (_) => SignInScreen(invite: _token),
                       ),
                     ),
                     child: Text(l10n.joinHaveAccount),
                   ),
-                ] else
-                  FilledButton(
-                    key: const Key('join-continue'),
-                    onPressed: _busy ? null : _check,
-                    child: Text(l10n.joinContinue),
-                  ),
-              ] else ...[
-                Text(
-                  preview.alreadyMember
-                      ? l10n.joinAlreadyMember(preview.organizationName)
-                      : l10n.joinQuestion(preview.organizationName),
-                  style: theme.textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 16),
-                if (preview.status != InviteStatus.valid)
+                ] else if (!preview.alreadyMember) ...[
                   Text(
-                    preview.status == InviteStatus.expired
-                        ? l10n.inviteErrorExpired
-                        : l10n.inviteErrorRevoked,
-                    style: TextStyle(color: theme.colorScheme.error),
-                  )
-                else if (!preview.alreadyMember) ...[
-                  Text(l10n.joinExplanation),
+                    preview.founder
+                        ? l10n.joinFoundExplanation
+                        : l10n.joinExplanation,
+                  ),
                   const SizedBox(height: 24),
                   FilledButton(
                     key: const Key('join-button'),
                     onPressed: _busy ? null : _join,
-                    child: Text(l10n.joinButton),
+                    child: Text(
+                      preview.founder ? l10n.joinFoundButton : l10n.joinButton,
+                    ),
                   ),
                 ],
               ],

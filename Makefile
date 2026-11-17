@@ -66,13 +66,15 @@ SERVER_BACKUPS  := /var/lib/pocketbase/backups
 BACKUP_DIR      ?= $(ROOT)/.server-backups
 # Local PocketBase (make backend); its data lives in DATA_DIR like the test instance.
 BACKEND_PORT    ?= 8090
+# Sign-up mode of the local backend (ADR-0024); open, so the app can create accounts.
+BACKEND_REGISTRATION ?= open
 
 # Redirects the app's private data to DATA_DIR: REALCHORD_DATA_DIR for the
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := REALCHORD_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
 .PHONY: help setup dev start build web web-serve deps upgrade apk apk-install android-keystore release release-linux release-check reset data-dir backend check test codegen l10n screenshots branding examples doctor clean ci-image \
-	server-target server-install server-status server-logs server-backup server-fetch-backup server-ssh
+	server-target server-install server-status server-logs server-backup server-fetch-backup server-founder-invite server-ssh
 
 help: ## Show this help
 	@echo "RealChord – make targets"
@@ -140,7 +142,7 @@ backend: ## Start a local PocketBase with the schema and hooks from server/ (PB_
 	@pb=$$($(ROOT)/tool/server/fetch-pocketbase.sh $(PB_VERSION)) && \
 		echo "PocketBase $(PB_VERSION): http://127.0.0.1:$(BACKEND_PORT)/_/  (data: $(DATA_DIR)/pb_data)" && \
 		echo "Create a superuser: $$pb superuser upsert EMAIL PASS --dir $(DATA_DIR)/pb_data" && \
-		REALCHORD_PUBLIC_DIR=$(APP)/build/web \
+		REALCHORD_PUBLIC_DIR=$(APP)/build/web REALCHORD_REGISTRATION=$(BACKEND_REGISTRATION) \
 		$$pb serve --dir $(DATA_DIR)/pb_data --hooksDir $(ROOT)/server/pb_hooks \
 			--migrationsDir $(ROOT)/server/pb_migrations --http 127.0.0.1:$(BACKEND_PORT) \
 			--publicDir $(APP)/build/web
@@ -220,6 +222,12 @@ server-fetch-backup: server-target ## Copy the latest server backup to BACKUP_DI
 		test -n "$$latest" || { echo "No backup on the server yet"; exit 1; }; \
 		$(SSH) $(SERVER) "cat '$$latest'" >"$(BACKUP_DIR)/$$(basename $$latest)"; \
 		echo "Saved $(BACKUP_DIR)/$$(basename $$latest)"
+
+server-founder-invite: server-target ## Create a one-time link that founds an organization (NAME="…", ADR-0024)
+	@test -n "$(NAME)" || { echo 'Set NAME, e.g. make server-founder-invite NAME="Music school"'; exit 1; }
+	@printf '%s' "$(NAME)" | $(SSH) $(SERVER) 'n=$$(cat); runuser -u pocketbase -- /opt/pocketbase/pocketbase founder-invite "$$n" \
+		--dir=/var/lib/pocketbase/pb_data --hooksDir=/opt/pocketbase/pb_hooks --migrationsDir=/opt/pocketbase/pb_migrations 2>&1' | \
+		grep -o '{"id".*}' || { echo "Creating the founder invitation failed"; exit 1; }
 
 server-ssh: server-target ## Open a shell on the server
 	$(SSH) $(SERVER)
