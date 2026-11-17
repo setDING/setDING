@@ -30,6 +30,7 @@ import '../widgets/key_picker.dart';
 import 'live_preparation.dart';
 import '../../audio/metronome.dart';
 import 'live_beat.dart';
+import 'song_map_view.dart';
 import 'live_theme.dart';
 import 'set_progress_bar.dart';
 import 'pdf_spread_view.dart';
@@ -726,7 +727,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                     child: Text(
                       next == null
                           ? l10n.liveEnd
-                          : l10n.liveNext(_nextLabel(next, l10n)),
+                          : l10n.liveNext(_nextLabel(_index + 1, l10n)),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.titleSmall,
@@ -824,17 +825,23 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     );
   }
 
-  String _nextLabel(LiveItem item, AppLocalizations l10n) {
+  String _nextLabel(int index, AppLocalizations l10n) {
+    final item = _items[index];
     final key = item.song?.songKey;
     final title = item.title(l10n);
-    if (key == null) return title;
+    // For the drums the next song's tempo and time signature (ADR-0026).
+    final tempo = _beat.settings.showSongMap ? _beat.tempoOf(index) : null;
+    final beat = tempo == null
+        ? ''
+        : ' · ${l10n.bpm(tempo)} · ${_beat.meterOf(index)}';
+    if (key == null) return '$title$beat';
     final parsed = cp.Key.tryParse(key);
     final shown = parsed == null
         ? key
         : parsed
               .transpose(item.bandTranspose + item.setTranspose)
               .format(ref.read(settingsProvider).notation);
-    return '$title ($shown)';
+    return '$title ($shown)$beat';
   }
 }
 
@@ -1160,9 +1167,17 @@ class _LiveItemPage extends ConsumerWidget {
     final selection = sequence == null
         ? SequenceSelection(parsed, const [])
         : filterBySequenceCached(parsed, sequence);
+    // Drummer mode (ADR-0026): the parts as played instead of the chords.
+    final map = ref.watch(settingsProvider.select((s) => s.showSongMap))
+        ? songMap(
+            parsed,
+            parseSequence(sequence ?? parsed.metaValue('x_sequence') ?? ''),
+          )
+        : null;
     final storage = ref.watch(attachmentStorageProvider);
     return _ChordProPage(
       index: index,
+      songMap: map,
       song: song,
       parsed: selection.song,
       hiddenParts: selection.hidden,
@@ -1187,6 +1202,7 @@ class _LiveItemPage extends ConsumerWidget {
 class _ChordProPage extends ConsumerWidget {
   const _ChordProPage({
     required this.index,
+    required this.songMap,
     required this.song,
     required this.parsed,
     required this.hiddenParts,
@@ -1205,6 +1221,9 @@ class _ChordProPage extends ConsumerWidget {
 
   /// Position of the item in the set.
   final int index;
+
+  /// The song map instead of the song (drums, ADR-0026); null for the song.
+  final List<SongMapEntry>? songMap;
   final SongEntry song;
   final Song parsed;
 
@@ -1298,6 +1317,22 @@ class _ChordProPage extends ConsumerWidget {
                       '${a.id}/${a.name}/${a.fileName}',
                   ].join('\n');
                   final locale = Localizations.localeOf(context);
+                  final map = songMap;
+                  if (map != null) {
+                    songPageController.attach(1);
+                    fitController.fontScale = null;
+                    return SongMapView(
+                      entries: map,
+                      scale: scale,
+                      controller: scrollController,
+                      padding: EdgeInsets.fromLTRB(
+                        _margin,
+                        0,
+                        _margin,
+                        size.height * 0.25,
+                      ),
+                    );
+                  }
                   if (!settings.autoFit) {
                     songPageController.attach(1);
                     final columns = settings.columns == ColumnMode.auto

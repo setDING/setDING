@@ -423,6 +423,7 @@
   "clickNoAudioLive": "Kein Audio für den Klick",
   "settingsSongMap": "Song-Landkarte statt Akkorde",
   "settingsSongMapHint": "Der Live-Modus zeigt die Teile des Songs mit einem Stichwort aus dem Text und den Schlagzeug-Notizen.",
+  "songMapEmpty": "Dieser Song hat keine Teile (Strophe, Refrain, …) für eine Song-Landkarte.",
   "settingsLiveAppearance": "Aussehen auf der Bühne",
   "settingsLiveAppearanceHint": "Live-Modus unabhängig vom App-Design. Schwarz spart Strom auf OLED-Bildschirmen.",
   "liveAppearanceApp": "Wie App",

@@ -890,6 +890,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Der Live-Modus zeigt die Teile des Songs mit einem Stichwort aus dem Text und den Schlagzeug-Notizen.';
 
   @override
+  String get songMapEmpty =>
+      'Dieser Song hat keine Teile (Strophe, Refrain, …) für eine Song-Landkarte.';
+
+  @override
   String get settingsLiveAppearance => 'Aussehen auf der Bühne';
 
   @override
