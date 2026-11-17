@@ -159,6 +159,7 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-17: Long press (≥ 0.6 s) of a forward key and Enter start and stop the beat (ADR-0026, #335); with a beat, a short forward press turns on key up.
 - 2026-11-17: Song map instead of the chord sheet for drums; the footer shows the next song's tempo and time signature for drums (ADR-0026, #336).
 - 2026-11-17: Wide song map: beat large and the set (tap to turn) in a panel left of the song map (ADR-0026, #357).
+- 2026-11-17: In the wide song map the tap zones are thirds of the whole screen, empty areas of the panel included (ADR-0026, #363).
 
 ## Open points
 

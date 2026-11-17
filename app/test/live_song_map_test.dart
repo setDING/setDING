@@ -166,4 +166,47 @@ void main() {
     );
     await app.dispose(tester);
   });
+
+  testWidgets('wide: the tap zones are thirds of the whole screen (#363)', (
+    tester,
+  ) async {
+    final app = await open(tester, {
+      'instrument': 'drums',
+      'clickStart': 'manual',
+    });
+    await tester.pump();
+    final screen = tester.getRect(find.byType(LiveScreen));
+    final panel = tester.getRect(find.byKey(const Key('drum-panel')));
+    expect(panel.right, greaterThan(screen.width * 0.3));
+
+    // The middle of the screen shows the control bar.
+    await tester.tapAt(screen.center);
+    await tester.pump();
+    expect(find.byIcon(Icons.close), findsOneWidget);
+    await tester.tapAt(screen.center);
+    await tester.pump();
+    expect(find.byIcon(Icons.close), findsNothing);
+
+    // The right third turns forward: the song map scrolls first if it
+    // does not fit (as a song does, ADR-0007), then the next song.
+    for (var i = 0; i < 5 && find.text('2 / 2').evaluate().isEmpty; i++) {
+      await tester.tapAt(Offset(screen.width * 0.85, screen.center.dy));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+    }
+    expect(find.text('2 / 2'), findsOneWidget);
+
+    // An empty area of the panel in the left third turns back.
+    await tester.tapAt(Offset(screen.left + 12, panel.top + 12));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('1 / 2'), findsOneWidget);
+
+    // The set list keeps its taps.
+    await tester.tap(find.byKey(const Key('drum-set-1')));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('2 / 2'), findsOneWidget);
+    await app.dispose(tester);
+  });
 }
