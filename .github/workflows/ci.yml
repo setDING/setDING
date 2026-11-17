@@ -40,6 +40,14 @@ jobs:
           flutter-version: ${{ steps.flutter.outputs.version }}
           cache: true
 
+      # The website (ADR-0030) is built by the test gate.
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+
       - name: Versions and runner resources
         run: |
           flutter --version

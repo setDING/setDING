@@ -4,7 +4,8 @@
 # Runs as root ON the server (a Debian LXC container). Idempotent: the same script
 # installs a fresh container and updates an existing one. Normally started from the
 # development machine with `make server-install`, which copies this directory,
-# server/pb_hooks + server/pb_migrations and the web build (as web/) first.
+# server/pb_hooks + server/pb_migrations, the web build (as web/) and the website
+# build (as site/) first.
 #
 #   install.sh <pocketbase-version>     e.g. install.sh 0.40.6
 set -euo pipefail
@@ -127,6 +128,9 @@ if [ -f "$SETUP_DIR/web/index.html" ]; then
 else
   echo "no web build in this setup, pb_public left as it is"
 fi
+
+# --- Website (ADR-0030) --------------------------------------------------------
+bash "$HERE/install-site.sh" "$SETUP_DIR"
 
 # --- systemd units -------------------------------------------------------------
 step "systemd units"

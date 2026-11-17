@@ -1,0 +1,74 @@
+---
+title: Songbook für Bands
+description: Die Akkorde eurer Songs auf jedem Tablet – auf jeder Bühne, auch ohne WLAN.
+template: splash
+hero:
+  title: Euer Songbook auf jedem Tablet
+  tagline: Auf jeder Bühne, auch ohne WLAN. Die Bandleitung stellt das Set einmal zusammen, und alle haben es auf ihrem Gerät – die richtigen Songs, in der richtigen Reihenfolge, in der richtigen Tonart.
+  image:
+    file: ../../../../app/branding/mark.svg
+  actions:
+    - text: Herunterladen
+      link: /start/install/
+      icon: right-arrow
+    - text: Web-App öffnen
+      link: https://app.setding.app
+      variant: minimal
+      icon: external
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import live from '../../../../docs/screenshots/live.png';
+import set from '../../../../docs/screenshots/set.png';
+import song from '../../../../docs/screenshots/song.png';
+import editor from '../../../../docs/screenshots/editor.png';
+
+<Image src={live} alt="Live-Modus: ein Song in drei Spalten mit Akkorden, einer persönlichen Notiz und Griffbildern" />
+
+## Warum setDING?
+
+<CardGrid>
+  <Card title="Für die Bühne gemacht" icon="rocket">
+    Live-Modus im Vollbild, der Bildschirm bleibt an. Umblättern per Tippen, Wischen
+    oder mit einem Bluetooth-Fusspedal – die Hände bleiben am Instrument.
+    Funktioniert komplett offline.
+  </Card>
+  <Card title="Sets für die ganze Band" icon="list-format">
+    Songs per Drag & Drop zum Set zusammenstellen, Pausen und Notizen einfügen,
+    Tonart und Ablauf pro Song festlegen. Alle bekommen das Set auf ihr Gerät, und
+    setDING zeigt, wann es offline bereit ist.
+  </Card>
+  <Card title="Jede und jeder sieht es auf ihre Art" icon="setting">
+    Transponieren mit einem Tipp, Kapodaster, Schriftgrösse, B- oder H-Notation oder
+    Nashville-Zahlen. Persönliche Notizen ändern den Song nie für den Rest der Band.
+  </Card>
+  <Card title="Eure Songs, euer Format" icon="document">
+    Songs sind [ChordPro](https://www.chordpro.org/) – der offene Standard für
+    Akkordblätter. Import einzeln oder als ZIP, PDF-Noten anhängen, eingebauter
+    Editor mit Live-Vorschau.
+  </Card>
+  <Card title="Für Bands, Schulen und Kirchen" icon="star">
+    Mehrere Bands einer Organisation teilen eine Song-Bibliothek. Mitglieder per
+    Link oder QR-Code einladen. Songs und Sets am Computer in der Web-App verwalten.
+  </Card>
+  <Card title="Eure Daten bleiben eure" icon="approve-check">
+    setDING synchronisiert mit einem selbst betriebenen Server. Open Source unter
+    der MIT-Lizenz.
+  </Card>
+</CardGrid>
+
+## So sieht es aus
+
+<CardGrid>
+  <Image src={set} alt="Ein Set mit zwei Songs, ihren Tonarten, einer Pause und dem Status «Offline bereit»" />
+  <Image src={song} alt="Ein Song mit Einstellungen für Tonart, Kapodaster, Schriftgrösse, Nashville-Zahlen und einer persönlichen Notiz" />
+</CardGrid>
+
+<Image src={editor} alt="Der ChordPro-Editor mit Einfügemenüs, Syntaxhervorhebung und Live-Vorschau" />
+
+## Loslegen
+
+setDING gibt es für Android, Windows, Linux und als Web-App; iOS folgt später.
+Die [Installation](/start/install/) dauert ein paar Minuten, danach führt
+[Erste Schritte](/start/overview/) durch das Wichtigste.

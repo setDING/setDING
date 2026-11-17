@@ -73,4 +73,9 @@ PY
   "$ROOT/tool/build-web.sh"
 fi
 
+# Website and user documentation (ADR-0030): the build fails on broken
+# internal links and on pages that do not compile.
+step "website"
+"$ROOT/tool/build-site.sh"
+
 step "All checks passed"
