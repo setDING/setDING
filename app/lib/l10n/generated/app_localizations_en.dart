@@ -1640,4 +1640,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sequenceChange => 'Change song sequence';
+
+  @override
+  String get sortSongs => 'Sort';
+
+  @override
+  String get sortByTitle => 'Title';
+
+  @override
+  String get sortByArtist => 'Artist';
+
+  @override
+  String get sortByKey => 'Key';
+
+  @override
+  String get sortByRecent => 'Recently edited';
+
+  @override
+  String get noArtist => 'No artist';
 }

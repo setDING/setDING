@@ -102,6 +102,36 @@ K:G
 void main() {
   setUpAll(() async => _loadFonts());
 
+  testWidgets('song list sorted by key', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(
+      prefs: {'language': 'de', 'songSort': 'key'},
+    );
+    await tester.runAsync(() async {
+      for (final (title, artist, key) in [
+        ('Late Train Home', 'RealChord Example', 'G'),
+        ('Ännchen von Tharau', 'Volkslied', 'D'),
+        ('Blue Monday Groove', 'House Band', 'Bb'),
+        ('Morning Light', 'House Band', 'D'),
+        ('Open Road', null, null),
+      ]) {
+        await app.songs.createSong(
+          source:
+              '{title: $title}\n${artist == null ? '' : '{artist: $artist}\n'}'
+              '${key == null ? '' : '{key: $key}\n'}{x_sequence: V, C, V, C}\n',
+        );
+      }
+    });
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: UniqueKey(),
+        child: app.build(home: const SongsScreen()),
+      ),
+    );
+    await _shot(tester, 'de_3_songs_by_key');
+    await app.dispose(tester);
+  });
+
   testWidgets('song list with a band arrangement', (tester) async {
     useTabletSize(tester);
     const ann = AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann');

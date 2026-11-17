@@ -240,12 +240,36 @@ final importExportProvider = Provider<ImportExportService>(
   ),
 );
 
-/// Songs filtered by search text and optional tag.
+/// Order of the song list (stored per device).
+class SongSortNotifier extends Notifier<SongSort> {
+  static const _key = 'songSort';
+
+  @override
+  SongSort build() {
+    final stored = ref.watch(sharedPreferencesProvider).getString(_key);
+    return SongSort.values.asNameMap()[stored] ?? SongSort.title;
+  }
+
+  Future<void> select(SongSort sort) async {
+    state = sort;
+    await ref.read(sharedPreferencesProvider).setString(_key, sort.name);
+  }
+}
+
+final songSortProvider = NotifierProvider<SongSortNotifier, SongSort>(
+  SongSortNotifier.new,
+);
+
+/// Songs filtered by search text and optional tag, in the chosen order.
 final songsProvider = StreamProvider.autoDispose
     .family<List<SongListEntry>, ({String query, String? tag})>(
       (ref, filter) => ref
           .watch(songRepositoryProvider)
-          .watchSongList(query: filter.query, tag: filter.tag),
+          .watchSongList(
+            query: filter.query,
+            tag: filter.tag,
+            sort: ref.watch(songSortProvider),
+          ),
     );
 
 /// Songs of the current band's library filtered by search text, for adding

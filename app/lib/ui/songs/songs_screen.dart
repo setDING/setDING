@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database.dart';
 import '../../data/song_repository.dart';
+import '../../data/text.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../settings/settings.dart';
@@ -84,6 +85,10 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
     final songs = ref.watch(songsProvider((query: _query, tag: _tag)));
     final counts = ref.watch(attachmentCountsProvider).value ?? const {};
     final library = ref.watch(currentLibraryProvider);
+    final sort = ref.watch(songSortProvider);
+    final notation = ref.watch(settingsProvider.select((s) => s.notation));
+    String? section(SongListEntry song) =>
+        songSection(song, sort, notation: notation, l10n: l10n);
     final band = ref.watch(arrangementBandProvider(library.id));
     final arrangements = band == null
         ? const <String, BandArrangement>{}
@@ -160,6 +165,27 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
               ]
             : [
                 const LibrarySwitcher(),
+                PopupMenuButton<SongSort>(
+                  key: const Key('songs-sort'),
+                  tooltip: l10n.sortSongs,
+                  icon: const Icon(Icons.sort),
+                  initialValue: sort,
+                  onSelected: (value) =>
+                      ref.read(songSortProvider.notifier).select(value),
+                  itemBuilder: (_) => [
+                    for (final (value, label) in [
+                      (SongSort.title, l10n.sortByTitle),
+                      (SongSort.artist, l10n.sortByArtist),
+                      (SongSort.key, l10n.sortByKey),
+                      (SongSort.recent, l10n.sortByRecent),
+                    ])
+                      CheckedPopupMenuItem(
+                        value: value,
+                        checked: value == sort,
+                        child: Text(label),
+                      ),
+                  ],
+                ),
                 if (library.canCreateSongs) ...[
                   // Also on web: imported songs are synced (ADR-0018).
                   IconButton(
@@ -216,28 +242,39 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                   : ListView.builder(
                       padding: const EdgeInsets.only(bottom: 88),
                       itemCount: list.length,
-                      itemBuilder: (context, i) => SongTile(
-                        song: list[i],
-                        hasAttachments: (counts[list[i].id] ?? 0) > 0,
-                        arrangement: arrangements[list[i].id],
-                        bandName: band?.name ?? '',
-                        leading: selected == null
-                            ? null
-                            : Checkbox(
-                                value: selected.contains(list[i].id),
-                                onChanged: (_) => _toggle(list[i].id),
-                              ),
-                        onLongPress: () => _toggle(list[i].id),
-                        onTap: selected != null
-                            ? () => _toggle(list[i].id)
-                            : () => Navigator.push(
-                                context,
-                                MaterialPageRoute<void>(
-                                  builder: (_) =>
-                                      SongScreen(songId: list[i].id),
+                      itemBuilder: (context, i) {
+                        final tile = SongTile(
+                          song: list[i],
+                          hasAttachments: (counts[list[i].id] ?? 0) > 0,
+                          arrangement: arrangements[list[i].id],
+                          bandName: band?.name ?? '',
+                          leading: selected == null
+                              ? null
+                              : Checkbox(
+                                  value: selected.contains(list[i].id),
+                                  onChanged: (_) => _toggle(list[i].id),
                                 ),
-                              ),
-                      ),
+                          onLongPress: () => _toggle(list[i].id),
+                          onTap: selected != null
+                              ? () => _toggle(list[i].id)
+                              : () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                    builder: (_) =>
+                                        SongScreen(songId: list[i].id),
+                                  ),
+                                ),
+                        );
+                        final header = section(list[i]);
+                        if (header == null ||
+                            (i > 0 && section(list[i - 1]) == header)) {
+                          return tile;
+                        }
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [SongSectionHeader(header), tile],
+                        );
+                      },
                     ),
             ),
           ),
@@ -290,6 +327,56 @@ class _TagFilter extends ConsumerWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Section header of [song] in the list sorted by [sort]: the first letter
+/// of the title (without accents; `#` for anything else), the artist, or the
+/// key in [notation]. Null when sorted by last edit (no sections).
+String? songSection(
+  SongListEntry song,
+  SongSort sort, {
+  required cp.ChordNotation notation,
+  required AppLocalizations l10n,
+}) => switch (sort) {
+  SongSort.title => _initial(song.sortTitle ?? song.title),
+  SongSort.artist => song.artist ?? l10n.noArtist,
+  SongSort.key =>
+    song.songKey == null
+        ? l10n.noKey
+        : cp.Key.tryParse(song.songKey!)?.format(notation) ?? l10n.noKey,
+  SongSort.recent => null,
+};
+
+String _initial(String title) {
+  final folded = foldForSort(title.trim());
+  final c = folded.isEmpty ? '' : folded[0].toUpperCase();
+  return RegExp(r'^[A-Z]$').hasMatch(c) ? c : '#';
+}
+
+/// Header of a section in the song list.
+class SongSectionHeader extends StatelessWidget {
+  const SongSectionHeader(this.label, {super.key});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Semantics(
+      header: true,
+      child: Padding(
+        key: const ValueKey('song-section-header'),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+        child: Text(
+          label,
+          style: theme.textTheme.titleSmall?.copyWith(
+            color: theme.colorScheme.primary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ),
     );
   }

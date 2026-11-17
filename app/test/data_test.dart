@@ -215,6 +215,43 @@ void main() {
     });
   });
 
+  test('the song list sorts by title, artist, key or last edit', () async {
+    final c = await songs.createSong(source: '{title: Charlie}\n{key: Em}');
+    await songs.createSong(source: '{title: Alpha}\n{artist: Zoe}\n{key: G}');
+    await songs.createSong(source: '{title: Bravo}\n{artist: Ann}\n{key: E}');
+    await songs.createSong(source: '{title: Delta}\n{artist: ann}');
+    Future<List<String>> titles(SongSort sort) async =>
+        (await songs.watchSongList(sort: sort).first)
+            .map((s) => s.title)
+            .toList();
+
+    expect(await titles(SongSort.title), [
+      'Alpha',
+      'Bravo',
+      'Charlie',
+      'Delta',
+    ]);
+    // Accents do not move a title to the end.
+    final umlaut = await songs.createSong(source: '{title: Ärger}');
+    expect((await titles(SongSort.title))[1], 'Ärger');
+    await songs.deleteSong(umlaut);
+    // Without artist last; case-insensitive; then by title.
+    expect(await titles(SongSort.artist), [
+      'Bravo',
+      'Delta',
+      'Alpha',
+      'Charlie',
+    ]);
+    // C to B, major before minor, without key last.
+    expect(await titles(SongSort.key), ['Bravo', 'Charlie', 'Alpha', 'Delta']);
+    // Times are stored in seconds: the others were edited long ago.
+    await db
+        .update(db.songs)
+        .write(SongsCompanion(updatedAt: Value(DateTime(2020))));
+    await songs.updateSource(c, '{title: Charlie}\n{key: Em}\nedited');
+    expect((await titles(SongSort.recent)).first, 'Charlie');
+  });
+
   test('the song list has what lists show, filtered like the songs', () async {
     final a = await songs.createSong(
       source:
