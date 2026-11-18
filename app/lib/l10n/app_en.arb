@@ -1130,5 +1130,32 @@
   "songDisplayDemoSong": "Demo song",
   "songDisplayLibrarySong": "Song from the library …",
   "songDisplayPickSong": "Song for the preview",
-  "songDisplayResizePreview": "Drag to resize the preview"
+  "songDisplayResizePreview": "Drag to resize the preview",
+  "appUpdateTitle": "Updates",
+  "appUpdateAvailable": "setDING {version} is available.",
+  "@appUpdateAvailable": {
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "example": "0.9.0"
+      }
+    }
+  },
+  "appUpdateInstall": "Install",
+  "appUpdateLater": "Later",
+  "appUpdateInstallTitle": "Install setDING {version}?",
+  "@appUpdateInstallTitle": {
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "example": "0.9.0"
+      }
+    }
+  },
+  "appUpdateInstallBody": "setDING closes, installs the new version and starts again. Your data stays on this device.",
+  "appUpdateDownloading": "Downloading the update …",
+  "appUpdateFailed": "The update could not be installed. Please try again later.",
+  "appUpdateChecking": "Checking for updates …",
+  "appUpdateCurrent": "setDING is up to date. Tap to check again.",
+  "appUpdateCheckFailed": "Could not check for updates (no connection?). Tap to try again."
 }

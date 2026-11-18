@@ -4615,6 +4615,72 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Vorschau grösser oder kleiner ziehen'**
   String get songDisplayResizePreview;
+
+  /// No description provided for @appUpdateTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Updates'**
+  String get appUpdateTitle;
+
+  /// No description provided for @appUpdateAvailable.
+  ///
+  /// In de, this message translates to:
+  /// **'setDING {version} ist verfügbar.'**
+  String appUpdateAvailable(String version);
+
+  /// No description provided for @appUpdateInstall.
+  ///
+  /// In de, this message translates to:
+  /// **'Installieren'**
+  String get appUpdateInstall;
+
+  /// No description provided for @appUpdateLater.
+  ///
+  /// In de, this message translates to:
+  /// **'Später'**
+  String get appUpdateLater;
+
+  /// No description provided for @appUpdateInstallTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'setDING {version} installieren?'**
+  String appUpdateInstallTitle(String version);
+
+  /// No description provided for @appUpdateInstallBody.
+  ///
+  /// In de, this message translates to:
+  /// **'setDING wird geschlossen, die neue Version installiert und wieder gestartet. Deine Daten bleiben auf diesem Gerät.'**
+  String get appUpdateInstallBody;
+
+  /// No description provided for @appUpdateDownloading.
+  ///
+  /// In de, this message translates to:
+  /// **'Update wird heruntergeladen …'**
+  String get appUpdateDownloading;
+
+  /// No description provided for @appUpdateFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Update konnte nicht installiert werden. Bitte versuche es später nochmals.'**
+  String get appUpdateFailed;
+
+  /// No description provided for @appUpdateChecking.
+  ///
+  /// In de, this message translates to:
+  /// **'Suche nach Updates …'**
+  String get appUpdateChecking;
+
+  /// No description provided for @appUpdateCurrent.
+  ///
+  /// In de, this message translates to:
+  /// **'setDING ist auf dem neusten Stand. Tippen, um erneut zu suchen.'**
+  String get appUpdateCurrent;
+
+  /// No description provided for @appUpdateCheckFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Konnte nicht nach Updates suchen (keine Verbindung?). Tippen, um es nochmals zu versuchen.'**
+  String get appUpdateCheckFailed;
 }
 
 class _AppLocalizationsDelegate

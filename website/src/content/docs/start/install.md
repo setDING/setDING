@@ -21,11 +21,20 @@ praktisch allen aktuellen Tablets.
 
 ## Windows
 
-1. Lade `setding-<Version>-windows-x64.zip` herunter.
-2. Entpacke die Datei und starte `setding.exe`.
+1. Lade `setding-<Version>-windows-x64-setup.exe` herunter und starte die Datei.
+   Sie installiert setDING für deinen Windows-Benutzer, ohne Administratorrechte.
+2. Die App ist nicht signiert, deshalb warnt Windows SmartScreen einmal; klicke
+   auf **Weitere Informationen** und dann auf **Trotzdem ausführen**.
 
-Die App ist nicht signiert. Beim ersten Start warnt Windows SmartScreen; klicke auf
-**Weitere Informationen** und dann auf **Trotzdem ausführen**.
+Danach sucht setDING bei jedem Start nach einer neuen Version und bietet sie in
+einem Hinweis über der Navigation an (und unter **Einstellungen → Speicher & Info → Updates**).
+**Installieren** lädt sie herunter, schliesst setDING, aktualisiert die App und
+startet sie wieder; deine Daten bleiben erhalten. Eine neuere Setup-Datei von Hand
+zu starten, bewirkt dasselbe.
+
+Lieber ohne Installation? `setding-<Version>-windows-x64.zip` enthält dieselbe
+App: entpacken und `setding.exe` starten. Diese Kopie aktualisiert sich nicht
+selbst.
 
 ## Linux
 

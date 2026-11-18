@@ -153,9 +153,22 @@ of the two apps) or paste the link under "Bands → Join". Remove the beta with
 
 ## Windows
 
-Unpack the zip and run `setding.exe`. The build is not code-signed, so Windows
-SmartScreen warns on the first start ("More info" → "Run anyway"). Distribution
-through the Microsoft Store (signed, automatic updates) is proposed in ADR-0035.
+The release contains the installer `setding-X.Y.Z-windows-x64-setup.exe` (Inno
+Setup, `app/windows/installer/setding.iss`, ADR-0035) and the portable zip. The
+setup installs per user without administrator rights and updates an existing
+installation in place. The installed app checks the latest GitHub release at every
+start and installs a newer one after a tap: it downloads the setup, checks it
+against `SHA256SUMS` and runs it silently. So every release must contain the setup
+**and** `SHA256SUMS` (the `publish` job does both); pre-releases are not offered.
+
+Nothing is code-signed, so Windows SmartScreen warns when the downloaded setup (or
+the zip's `setding.exe`) is first started ("More info" → "Run anyway"). Updates from
+inside the app do not trigger the warning.
+
+To try the setup before a release, start a test build
+(`gh workflow run release.yml --ref <branch>`) and download the `windows` artifact
+from the run. Never change the `AppId` in `setding.iss`: it identifies the
+installation that updates replace.
 
 ## Linux (local)
 

@@ -2,8 +2,9 @@
 #
 # A tag vX.Y.Z on main builds the Linux, Android and Windows release and publishes
 # them as a GitHub Release; Obtainium installs and updates the Android app from
-# there. A manual run (workflow_dispatch) only builds the artifacts (a test build),
-# it publishes nothing. The build number is the run number of this workflow (git
+# there, the Windows app updates itself from its setup (ADR-0035). A manual run
+# (workflow_dispatch) only builds the artifacts (a test build), it publishes
+# nothing. The build number is the run number of this workflow (git
 # workflow, section 10): releases and test builds share one counter, so the Android
 # versionCode grows with every build and identifies it. pubspec.yaml carries no
 # build number. Test build files are named with it (setding-0.8.0-build42-…).
@@ -185,11 +186,32 @@ jobs:
           }
           Compress-Archive -Path $dir -DestinationPath "$name.zip"
 
+      # The setup (ADR-0035): installs per user and updates an existing
+      # installation in place; the app downloads and runs it for updates.
+      # Inno Setup is on the runner image; installed if a new image lacks it.
+      - name: Setup
+        shell: pwsh
+        run: |
+          $name = "${{ needs.version.outputs.name }}-windows-x64"
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            choco install innosetup -y --no-progress
+          }
+          & $iscc /Q `
+            "/DAppVersion=${{ needs.version.outputs.version }}" `
+            "/DSourceDir=$PWD\staging\$name" `
+            "/DOutputDir=$PWD" `
+            "/DOutputBase=$name-setup" `
+            app\windows\installer\setding.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Upload
         uses: actions/upload-artifact@v7
         with:
           name: windows
-          path: ${{ needs.version.outputs.name }}-windows-x64.zip
+          path: |
+            ${{ needs.version.outputs.name }}-windows-x64.zip
+            ${{ needs.version.outputs.name }}-windows-x64-setup.exe
           if-no-files-found: error
 
   publish:
