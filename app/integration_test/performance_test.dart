@@ -58,6 +58,8 @@ void main() {
       // No demo song and no sync: only the seeded data is measured.
       await prefs.setBool('demoSeeded', true);
       final seed = await _seed(services.db, services.storage, prefs);
+      // Personal settings, loaded before the UI as in main() (ADR-0027).
+      final userSettings = await UserSettingsStore.open(services.db, prefs);
       recordMemory('afterSeed');
 
       await tester.pumpWidget(
@@ -65,6 +67,7 @@ void main() {
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefs),
             databaseProvider.overrideWithValue(services.db),
+            userSettingsStoreProvider.overrideWithValue(userSettings),
             attachmentStorageProvider.overrideWithValue(services.storage),
             sessionStoreProvider.overrideWithValue(services.sessionStore),
           ],
