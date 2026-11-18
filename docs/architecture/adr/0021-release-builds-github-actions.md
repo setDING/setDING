@@ -68,7 +68,7 @@ app, so the APK must be signed with a stable release key, not a per-machine debu
 - APKs built locally with `make apk` (debug key) cannot be updated by release APKs
   and vice versa; switching needs an uninstall.
 - The Windows build is a plain zip (no installer, no code signing): SmartScreen
-  warns on first start. ADR-0035 (proposed) adds an installer
+  warns on first start. ADR-0035 (accepted) adds an installer
   with in-app updates; still unsigned.
 - Release APKs run only on arm64 devices (#407); 32-bit ARM tablets and x86
   emulators need a local `make apk`.

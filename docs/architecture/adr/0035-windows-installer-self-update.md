@@ -1,6 +1,6 @@
 # ADR-0035: Windows installer with in-app updates
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-18
 
 ## Context
@@ -106,6 +106,9 @@ itself does not get it.
   (`latestClientVersion`) instead of GitHub `releases/latest`; *Install* is an
   action of the ADR-0036 SnackBar and *Storage & info* tile instead of a banner
   and settings tile of its own (owner, after #499).
+- 2026-11-18: Accepted by the owner after a successful test install of the setup
+  on Windows (test build of #495); the in-app update is tested with the next
+  release.
 
 ## Open points
 
