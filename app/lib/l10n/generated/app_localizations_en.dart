@@ -1477,8 +1477,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsServer => 'Server';
 
   @override
-  String get settingsServerHint =>
-      'Only change for testing. Changing it signs you out.';
+  String get settingsServerHint => 'Changing it signs you out.';
 
   @override
   String get settingsServerInvalid =>

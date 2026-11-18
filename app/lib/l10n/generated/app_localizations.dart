@@ -2717,7 +2717,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsServerHint.
   ///
   /// In de, this message translates to:
-  /// **'Nur für Tests ändern. Beim Wechsel wirst du abgemeldet.'**
+  /// **'Beim Wechsel wirst du abgemeldet.'**
   String get settingsServerHint;
 
   /// No description provided for @settingsServerInvalid.

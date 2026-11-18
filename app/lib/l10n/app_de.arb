@@ -671,7 +671,7 @@
   "updateRequiredCopyLink": "Download-Link kopieren",
   "updateRequiredCopied": "Link kopiert.",
   "settingsServer": "Server",
-  "settingsServerHint": "Nur für Tests ändern. Beim Wechsel wirst du abgemeldet.",
+  "settingsServerHint": "Beim Wechsel wirst du abgemeldet.",
   "settingsServerInvalid": "Die Adresse muss mit http:// oder https:// beginnen.",
   "bandLocal": "Auf diesem Gerät",
   "bandLocalHint": "Nur auf diesem Gerät, wird nicht synchronisiert.",
