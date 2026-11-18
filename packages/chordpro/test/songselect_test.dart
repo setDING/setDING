@@ -69,6 +69,30 @@ void main() {
     expect(sections[1].lines, hasLength(2));
   });
 
+  test('comments before a heading do not hide it', () {
+    final sections = parseChordPro(
+      '{comment_italic: (first time a cappella)}\n'
+      '{comment: Chorus}\n'
+      '[G]Line one\n'
+      '[Em7]Line two\n',
+    ).sections.toList();
+    expect(
+      [for (final s in sections) (s.kind, s.label, s.lines.length)],
+      [(SectionKind.none, null, 1), (SectionKind.chorus, 'Chorus', 2)],
+    );
+    final note = sections.first.lines.single as CommentLine;
+    expect(note.text, '(first time a cappella)');
+    expect(note.style, CommentStyle.italic);
+    expect(sourceLineOf(sections.last), 1);
+  });
+
+  test('lyrics before a heading comment keep the paragraph unlabelled', () {
+    final sections = parseChordPro(
+      '[G]Lyrics\n{comment: Chorus}\n[C]more\n',
+    ).sections.toList();
+    expect(sections.single.kind, SectionKind.none);
+  });
+
   test('ordinary comments are not treated as headings', () {
     final section = song.sections.elementAt(5);
     expect(section.kind, SectionKind.none);
