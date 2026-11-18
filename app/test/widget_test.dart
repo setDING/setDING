@@ -959,6 +959,65 @@ void main() {
       await app.dispose(tester);
     });
 
+    testWidgets('a PDF opens without changing the live view choice', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final (id, pdfId) = (await tester.runAsync(() async {
+        final id = await app.songs.createSong(source: '{title: X}\n[G]One');
+        final pdfId = await app.songs.addAttachment(
+          id,
+          name: 'Lead sheet',
+          bytes: Uint8List.fromList([1, 2, 3]),
+          pages: 1,
+          extension: 'pdf',
+        );
+        return (id, pdfId);
+      }))!;
+      await tester.pumpWidget(app.build(home: SongScreen(songId: id)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('open-attachments')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(ValueKey('open-attachment-$pdfId')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      final live = tester.widget<LiveScreen>(find.byType(LiveScreen));
+      expect(live.items.single.attachmentId, pdfId);
+      // The personal live view stays on ChordPro.
+      final overlay = await tester.runAsync(() => app.songs.getOverlay(id));
+      expect(overlay!.liveView, isNull);
+      await app.dispose(tester);
+    });
+
+    testWidgets('an image attachment opens full screen', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final id = await tester.runAsync(() async {
+        final id = await app.songs.createSong(source: '{title: X}\n[G]One');
+        await app.songs.addAttachment(
+          id,
+          name: 'photo.svg',
+          bytes: Uint8List.fromList(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"/>'
+                .codeUnits,
+          ),
+          extension: 'svg',
+        );
+        return id;
+      });
+      await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('open-attachments')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('photo.svg'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('image-attachment')), findsOneWidget);
+      await app.dispose(tester);
+    });
+
     testWidgets('a song without ChordPro keeps its attachments in view', (
       tester,
     ) async {

@@ -32,6 +32,7 @@ import '../bands/copy_to_band.dart';
 import '../../sync/sync_controller.dart';
 import 'chordpro_problems_badge.dart';
 import 'conflict_banner.dart';
+import 'image_attachment_view.dart';
 import 'band_arrangement_panel.dart';
 import 'song_editor_screen.dart';
 import 'song_links_panel.dart';
@@ -227,6 +228,9 @@ class _SongScreenState extends ConsumerState<SongScreen> {
           canDelete: library.canDeleteSongs,
           onLiveView: (id) =>
               _updateOverlay((o) => o.copyWith(liveView: Value(id))),
+          onOpen: (a) => isPdfFile(a.fileName)
+              ? LiveScreen.openSong(context, song.id, attachmentId: a.id)
+              : showImageAttachment(context, a),
         );
 
         return Scaffold(
@@ -935,6 +939,7 @@ class _AttachmentsCard extends ConsumerWidget {
     required this.inPanel,
     required this.onAdd,
     required this.onLiveView,
+    required this.onOpen,
     this.canRename = true,
     this.canDelete = true,
   });
@@ -949,6 +954,9 @@ class _AttachmentsCard extends ConsumerWidget {
   final bool canRename;
   final bool canDelete;
   final void Function(String? attachmentId) onLiveView;
+
+  /// Shows an attachment without changing the live view choice (#507).
+  final void Function(AttachmentEntry attachment) onOpen;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1002,14 +1010,15 @@ class _AttachmentsCard extends ConsumerWidget {
               formatBytes(a.sizeBytes),
             ].join(' · '),
           ),
-          secondary: _menu(context, repo, a),
+          secondary: _actions(context, repo, a),
         ),
       for (final a in images)
         ListTile(
           leading: const Icon(Icons.image_outlined),
           title: Text(a.name),
           subtitle: Text(formatBytes(a.sizeBytes)),
-          trailing: _menu(context, repo, a),
+          trailing: _actions(context, repo, a),
+          onTap: () => onOpen(a),
         ),
     ];
 
@@ -1053,6 +1062,27 @@ class _AttachmentsCard extends ConsumerWidget {
       ),
     );
     return inPanel ? list : Card.outlined(child: list);
+  }
+
+  /// The open button and the menu of an attachment.
+  Widget _actions(
+    BuildContext context,
+    SongRepository repo,
+    AttachmentEntry a,
+  ) {
+    final menu = _menu(context, repo, a);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          key: ValueKey('open-attachment-${a.id}'),
+          tooltip: AppLocalizations.of(context).openAttachment,
+          icon: const Icon(Icons.visibility_outlined),
+          onPressed: () => onOpen(a),
+        ),
+        ?menu,
+      ],
+    );
   }
 
   Widget? _menu(BuildContext context, SongRepository repo, AttachmentEntry a) {

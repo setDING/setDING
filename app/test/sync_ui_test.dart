@@ -170,4 +170,35 @@ void main() {
     expect(find.byKey(const Key('live-web-notice')), findsNothing);
     await app.dispose(tester);
   });
+
+  testWidgets('an opened attachment replaces the ChordPro text (#507)', (
+    tester,
+  ) async {
+    final app = await setup(tester);
+    final songs = TestApp.songsIn(app, 'o1');
+    final id = await songs.createSong(source: '{title: Both}\n[G]Line');
+    await app.db
+        .into(app.db.attachments)
+        .insert(
+          AttachmentsCompanion.insert(
+            id: 'a1',
+            songId: id,
+            name: 'Score',
+            fileName: 'a1.pdf',
+            remoteFile: const Value('a1_x.pdf'),
+            sizeBytes: 10,
+            updatedAt: DateTime(2026),
+          ),
+        );
+    final song = await tester.runAsync(() => songs.getSong(id));
+    await tester.pumpWidget(
+      app.build(
+        home: LiveScreen(items: [LiveItem.song(song!, attachmentId: 'a1')]),
+      ),
+    );
+    await tester.pumpAndSettle();
+    // The PDF is chosen although the personal live view is ChordPro.
+    expect(find.byKey(const Key('pdf-missing')), findsOneWidget);
+    await app.dispose(tester);
+  });
 }
