@@ -13,6 +13,7 @@ import '../data/song_repository.dart' show SongMeta;
 import 'band_service.dart';
 import 'engine/arrangement_sync.dart';
 import 'engine/attachment_sync.dart';
+import 'engine/annotation_sync.dart';
 import 'engine/overlay_sync.dart';
 import 'engine/set_sync.dart';
 import 'engine/settings_sync.dart';
@@ -75,6 +76,7 @@ class SyncEngine {
     _sets = SetSync(db, backend, store);
     _attachments = AttachmentSync(db, backend, store, this.storage);
     _overlays = OverlaySync(db, backend, store);
+    _annotations = AnnotationSync(db, backend, store);
     _arrangements = ArrangementSync(db, backend, store);
     if (settings case final settings?) {
       _settings = SettingsSync(db, backend, store, settings);
@@ -105,6 +107,7 @@ class SyncEngine {
   late final SetSync _sets;
   late final AttachmentSync _attachments;
   late final OverlaySync _overlays;
+  late final AnnotationSync _annotations;
   late final ArrangementSync _arrangements;
 
   Future<SyncReport>? _running;
@@ -149,6 +152,7 @@ class SyncEngine {
       }
       // After the songs: an overlay needs its song on this device.
       pulled += await _overlays.pull(user.id);
+      pulled += await _annotations.pull(user.id);
       if (_settings case final s?) {
         final (n, takenOver) = await s.pull(user.id);
         pulled += n;
@@ -266,6 +270,15 @@ class SyncEngine {
         'AND s.library_id IN (${placeholders(libs.length)})',
         [userId, ...libs],
       );
+      // Freehand annotations of this user not on the server (ADR-0032).
+      await enqueue(
+        SyncCollection.annotations,
+        "SELECT DISTINCT a.owner_id || ':' || a.song_id || ':' || a.target "
+        'AS id FROM annotations a JOIN songs s ON s.id = a.song_id '
+        'WHERE a.pending > 0 AND a.owner_id = ? AND s.deleted = 0 '
+        'AND s.library_id IN (${placeholders(libs.length)})',
+        [userId, ...libs],
+      );
     }
     if (added > 0) {
       db.notifyUpdates({
@@ -284,6 +297,7 @@ class SyncEngine {
       SyncCollection.setlists,
       SyncCollection.attachments,
       SyncCollection.overlays,
+      SyncCollection.annotations,
       SyncCollection.arrangements,
       SyncCollection.userSettings,
     ];
@@ -304,6 +318,10 @@ class SyncEngine {
           if (await _attachments.push(entry) == PushResult.done) pushed++;
         case SyncCollection.overlays:
           if (await _overlays.push(entry, userId) == PushResult.done) {
+            pushed++;
+          }
+        case SyncCollection.annotations:
+          if (await _annotations.push(entry, userId) == PushResult.done) {
             pushed++;
           }
         case SyncCollection.arrangements:

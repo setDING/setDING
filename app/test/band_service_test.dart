@@ -5,6 +5,7 @@ import 'package:drift/drift.dart'
     show TableUpdateQuery, Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:setding/data/annotation_repository.dart';
 import 'package:setding/data/attachment_storage_io.dart';
 import 'package:setding/data/attachment_storage.dart';
 import 'package:setding/data/band_copy.dart';
@@ -303,6 +304,34 @@ void main() {
           SongRepository(db, storage, libraryId: 'o1', userId: user);
       expect((await org('ann').getOverlay(copy)).capo, 2);
       expect((await org('bob').getOverlay(copy)).capo, 0);
+    });
+
+    test('a copy gets the annotations of the person who copies', () async {
+      final local = SongRepository(db, storage, userId: 'ann');
+      final id = await local.createSong(source: '{title: Mine}');
+      const stroke = AnnotationStroke(
+        id: 'x',
+        tool: AnnotationTool.pen,
+        width: 0.004,
+        points: [0.1, 0.1, 0.2, 0.2],
+      );
+      await AnnotationRepository(db, userId: 'ann').apply(id, put: [stroke]);
+
+      final copy = (await BandCopyService(
+        db,
+        storage,
+        userId: 'ann',
+      ).copySongs([id], 'o1')).single;
+      final ann = await AnnotationRepository(
+        db,
+        userId: 'ann',
+      ).watch(copy).first;
+      expect(ann.single.points, stroke.points);
+      expect(ann.single.id, isNot('x'), reason: 'a new stroke');
+      expect(
+        await AnnotationRepository(db, userId: 'bob').watch(copy).first,
+        isEmpty,
+      );
     });
 
     test('a copied attachment gets its own server file', () async {

@@ -232,6 +232,10 @@ class PersonalOverlays extends Table {
   /// What live mode shows: null = ChordPro, otherwise an attachment ID.
   TextColumn get liveView => text().nullable()();
 
+  /// Freehand annotations of this song hidden (ADR-0032, schema 16).
+  BoolColumn get hideAnnotations =>
+      boolean().withDefault(const Constant(false))();
+
   /// Server revision; 0 = not on the server (schema 9, ADR-0020).
   IntColumn get revision => integer().withDefault(const Constant(0))();
 
@@ -294,6 +298,37 @@ class UserSettings extends Table {
   Set<Column> get primaryKey => {ownerId};
 }
 
+/// Personal freehand annotations (ADR-0032, schema 16): one row per stroke
+/// or stamp. The strokes of an owner for a song and target are one record
+/// on the server, merged per stroke ID.
+@TableIndex(name: 'annotations_owner_song', columns: {#ownerId, #songId})
+@DataClassName('AnnotationRow')
+class Annotations extends Table {
+  /// UUID of the stroke.
+  TextColumn get id => text()();
+
+  /// Server user ID, or [localOwnerId] (as for personal overlays).
+  TextColumn get ownerId => text()();
+  TextColumn get songId => text().references(Songs, #id)();
+
+  /// What is annotated: empty for the ChordPro text, otherwise the ID of a
+  /// PDF attachment.
+  TextColumn get target => text().withDefault(const Constant(''))();
+
+  /// The stroke as JSON (`AnnotationStroke.toJson`); null for an erased
+  /// stroke whose erase is not on the server yet (tombstone).
+  TextColumn get stroke => text().nullable()();
+
+  /// Last change in milliseconds since the epoch; also the drawing order.
+  IntColumn get updatedAt => integer()();
+
+  /// Grows with every local change not yet pushed; 0 = as on the server.
+  IntColumn get pending => integer().withDefault(const Constant(0))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 /// Local changes waiting to be pushed to the server (ADR-0004, schema 5).
 /// One row per record; [version] grows with every change, so a change made
 /// while a push is running is not lost.
@@ -351,6 +386,7 @@ class SongConflicts extends Table {
     PersonalOverlays,
     BandArrangements,
     UserSettings,
+    Annotations,
     SyncOutbox,
     SyncCursors,
     SongConflicts,
@@ -360,7 +396,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -442,6 +478,8 @@ class AppDatabase extends _$AppDatabase {
         // members (schema 7). Rebuilding a table above may already have
         // created some of them.
         for (final index in localIndexes) {
+          // Tables of later schemas do not exist yet.
+          if (index == annotationsOwnerSong) continue;
           await customStatement('DROP INDEX IF EXISTS ${index.entityName}');
           await m.createIndex(index);
         }
@@ -453,7 +491,11 @@ class AppDatabase extends _$AppDatabase {
         await m.alterTable(
           TableMigration(
             personalOverlays,
-            newColumns: [personalOverlays.ownerId, personalOverlays.revision],
+            newColumns: [
+              personalOverlays.ownerId,
+              personalOverlays.revision,
+              personalOverlays.hideAnnotations,
+            ],
           ),
         );
       } else if (from < 9) {
@@ -496,6 +538,15 @@ class AppDatabase extends _$AppDatabase {
         // Personal settings per person (ADR-0027); the signed-out values
         // move here from the device settings when the app starts.
         await m.createTable(userSettings);
+      }
+      if (from < 16) {
+        // Freehand annotations (ADR-0032); before schema 8 the rebuilt
+        // overlay table has the column already.
+        if (from >= 8) {
+          await m.addColumn(personalOverlays, personalOverlays.hideAnnotations);
+        }
+        await m.createTable(annotations);
+        await m.createIndex(annotationsOwnerSong);
       }
     },
     beforeOpen: (details) async {

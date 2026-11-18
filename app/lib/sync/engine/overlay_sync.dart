@@ -32,6 +32,7 @@ class OverlaySync {
     'notes': o.notes,
     'nashville': o.nashville,
     'live_view': o.liveView,
+    'hide_annotations': o.hideAnnotations,
   };
 
   Future<int> pull(String userId) async {
@@ -77,6 +78,7 @@ class OverlaySync {
                 notes: Value(d['notes'] as String?),
                 nashville: Value(d['nashville'] as bool?),
                 liveView: Value(d['live_view'] as String?),
+                hideAnnotations: Value(d['hide_annotations'] == true),
                 revision: Value(o.revision),
               ),
             );

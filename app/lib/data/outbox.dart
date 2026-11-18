@@ -18,6 +18,21 @@ abstract final class SyncCollection {
 
   /// Personal settings (ADR-0027); the outbox record ID is the user ID.
   static const userSettings = 'user_settings';
+
+  /// Freehand annotations (ADR-0032); the outbox record ID is
+  /// [annotationRecordId].
+  static const annotations = 'annotations';
+}
+
+/// Outbox record ID of the annotations of [ownerId] on [songId]: its
+/// ChordPro text ([target] empty) or a PDF attachment.
+String annotationRecordId(String ownerId, String songId, String target) =>
+    '$ownerId:$songId:$target';
+
+/// Owner, song and target of an [annotationRecordId].
+(String, String, String) parseAnnotationRecordId(String id) {
+  final parts = id.split(':');
+  return (parts[0], parts[1], parts.length > 2 ? parts[2] : '');
 }
 
 /// Outbox record ID of the arrangement of [bandId] for [songId].
