@@ -169,3 +169,22 @@ void useTabletSize(WidgetTester tester, {bool landscape = true}) {
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
 }
+
+/// Opens the settings category [name] (`SettingsCategory.name`): scrolls
+/// the category list (the first list on the screen) until it is fully
+/// visible, as not all categories fit on smaller screens, and taps it.
+Future<void> tapSettingsCategory(WidgetTester tester, String name) async {
+  final category = find.byKey(Key('settings-category-$name'));
+  for (final delta in [100.0, -100.0]) {
+    if (category.evaluate().isNotEmpty) break;
+    await tester.scrollUntilVisible(
+      category,
+      delta,
+      scrollable: find.byType(Scrollable).first,
+    );
+  }
+  await tester.ensureVisible(category);
+  await tester.pumpAndSettle();
+  await tester.tap(category);
+  await tester.pumpAndSettle();
+}

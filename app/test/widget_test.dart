@@ -33,7 +33,7 @@ void main() {
     await tester.tap(find.text('Einstellungen').first);
     await tester.pumpAndSettle();
     // Font size is a device setting (ADR-0027).
-    await tester.tap(find.byKey(const Key('settings-category-live')));
+    await tapSettingsCategory(tester, 'live');
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.text('Schriftgrösse'),

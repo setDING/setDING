@@ -666,7 +666,16 @@ void main() {
       await _shot(tester, '${lang}_16_settings_musician');
       await tester.tap(find.byKey(const Key('settings-category-general')));
       await _shot(tester, '${lang}_18_settings_general');
-      await tester.tap(find.byKey(const Key('settings-category-live')));
+      // Song display styles (ADR-0033) with a preset of colours.
+      await tester.tap(find.byKey(const Key('settings-category-songDisplay')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('song-display-preset-colorCoded')));
+      await _shot(tester, '${lang}_20_settings_song_display');
+      // Not every category fits on a landscape tablet.
+      final live = find.byKey(const Key('settings-category-live'));
+      await tester.ensureVisible(live);
+      await tester.pumpAndSettle();
+      await tester.tap(live);
       await _shot(tester, '${lang}_19_settings_live');
       await app.dispose(tester);
     });

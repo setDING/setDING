@@ -83,7 +83,7 @@ void main() {
     final app = await TestApp.create(prefs: {'language': 'en'});
     await tester.pumpWidget(app.build(home: const SettingsScreen()));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('settings-category-live')));
+    await tapSettingsCategory(tester, 'live');
     await tester.pumpAndSettle();
     expect(find.text('Appearance on stage'), findsOneWidget);
     final choice = find.byType(SegmentedButton<LiveAppearance>);

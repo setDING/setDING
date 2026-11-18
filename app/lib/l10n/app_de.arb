@@ -491,7 +491,9 @@
   "replacedCount": "{count, plural, =1{1 ersetzt} other{{count} ersetzt}}",
   "@replacedCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "convertChordsOverLyrics": "Akkorde über Text umwandeln",
@@ -505,8 +507,12 @@
   "searchMatchCount": "{current} von {total}",
   "@searchMatchCount": {
     "placeholders": {
-      "current": {"type": "int"},
-      "total": {"type": "int"}
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "editorGroupLines": "Zeilen",
@@ -1217,5 +1223,86 @@
   "stampStop": "Stopp",
   "stampEye": "Hinschauen",
   "stampExclamation": "Wichtig",
-  "stampStar": "Stern"
+  "stampStar": "Stern",
+  "settingsSectionSongDisplay": "Songdarstellung",
+  "settingsCategorySongDisplayHint": "Stile pro Abschnitt: Akkorde, Text, Überschriften, Balken",
+  "songDisplayPreview": "Vorschau",
+  "songDisplayPreset": "Vorlage",
+  "songDisplayPresetClassic": "Klassisch",
+  "songDisplayPresetColorCoded": "Farbcodiert",
+  "songDisplayPresetChorusFocus": "Refrain im Fokus",
+  "songDisplayPresetSinger": "Gesang",
+  "songDisplayPresetGuitar": "Gitarre",
+  "songDisplayPresetMinimal": "Minimal",
+  "songDisplayPresetCustom": "Eigene",
+  "songDisplayDiscardTitle": "Eigene Stile verwerfen?",
+  "songDisplayDiscardMessage": "Die Vorlage «{name}» ersetzt deine angepassten Stile.",
+  "@songDisplayDiscardMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "songDisplayDiscard": "Verwerfen",
+  "songDisplaySection": "Abschnitt",
+  "songDisplayTypeStandard": "Standard",
+  "songDisplayTypeIntro": "Intro",
+  "songDisplayTypeVerse": "Strophe",
+  "songDisplayTypePreChorus": "Pre-Chorus",
+  "songDisplayTypeChorus": "Refrain",
+  "songDisplayTypeBridge": "Bridge",
+  "songDisplayTypeInterlude": "Zwischenspiel",
+  "songDisplayTypeOutro": "Outro",
+  "songDisplayStandardHint": "Grundstil für alle Abschnitte ohne eigenen Stil und für Abschnitte, die nicht erkannt werden (z. B. Tab, Grid, eigene Namen).",
+  "songDisplayStyle": "Stil",
+  "songDisplayOwnStyle": "Eigener Stil",
+  "songDisplayLike": "Wie {name}",
+  "@songDisplayLike": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "songDisplayInheritsHint": "Übernimmt alles von: {chain}. Änderungen dort wirken auch hier.",
+  "@songDisplayInheritsHint": {
+    "placeholders": {
+      "chain": {
+        "type": "String"
+      }
+    }
+  },
+  "songDisplayChords": "Akkorde",
+  "songDisplayLyrics": "Liedtext",
+  "songDisplayHeading": "Überschrift",
+  "songDisplayBar": "Einrückungsbalken",
+  "songDisplayBold": "Fett",
+  "songDisplayItalic": "Kursiv",
+  "songDisplaySize": "Grösse",
+  "songDisplayColor": "Farbe",
+  "songDisplayShowHeading": "Überschrift anzeigen",
+  "songDisplayShowBar": "Balken anzeigen",
+  "songDisplayBarWidth": "Breite",
+  "songDisplayIndent": "Einrückung",
+  "songDisplayTint": "Hintergrund tönen",
+  "songDisplaySizeSmall": "S",
+  "songDisplaySizeMedium": "M",
+  "songDisplaySizeLarge": "L",
+  "songDisplaySizeExtraLarge": "XL",
+  "songDisplayBarThin": "Dünn",
+  "songDisplayBarMedium": "Mittel",
+  "songDisplayBarWide": "Breit",
+  "songDisplayIndentNone": "Keine",
+  "songDisplayIndentNormal": "Normal",
+  "songDisplayIndentLarge": "Gross",
+  "songColorAuto": "Automatisch",
+  "songColorBlue": "Blau",
+  "songColorAmber": "Bernstein",
+  "songColorRed": "Rot",
+  "songColorGreen": "Grün",
+  "songColorTeal": "Türkis",
+  "songColorPurple": "Violett",
+  "songColorPink": "Pink",
+  "songColorGrey": "Grau"
 }

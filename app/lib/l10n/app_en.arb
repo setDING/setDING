@@ -349,7 +349,9 @@
   "replacedCount": "{count, plural, =1{1 replaced} other{{count} replaced}}",
   "@replacedCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "convertChordsOverLyrics": "Convert chords above lyrics",
@@ -363,8 +365,12 @@
   "searchMatchCount": "{current} of {total}",
   "@searchMatchCount": {
     "placeholders": {
-      "current": {"type": "int"},
-      "total": {"type": "int"}
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "editorGroupLines": "Lines",
@@ -1023,5 +1029,65 @@
   "stampStop": "Stop",
   "stampEye": "Look",
   "stampExclamation": "Important",
-  "stampStar": "Star"
+  "stampStar": "Star",
+  "settingsSectionSongDisplay": "Song display",
+  "settingsCategorySongDisplayHint": "Styles per section: chords, lyrics, headings, bars",
+  "songDisplayPreview": "Preview",
+  "songDisplayPreset": "Preset",
+  "songDisplayPresetClassic": "Classic",
+  "songDisplayPresetColorCoded": "Colour-coded",
+  "songDisplayPresetChorusFocus": "Chorus focus",
+  "songDisplayPresetSinger": "Vocals",
+  "songDisplayPresetGuitar": "Guitar",
+  "songDisplayPresetMinimal": "Minimal",
+  "songDisplayPresetCustom": "Custom",
+  "songDisplayDiscardTitle": "Discard custom styles?",
+  "songDisplayDiscardMessage": "The preset “{name}” replaces your custom styles.",
+  "songDisplayDiscard": "Discard",
+  "songDisplaySection": "Section",
+  "songDisplayTypeStandard": "Standard",
+  "songDisplayTypeIntro": "Intro",
+  "songDisplayTypeVerse": "Verse",
+  "songDisplayTypePreChorus": "Pre-chorus",
+  "songDisplayTypeChorus": "Chorus",
+  "songDisplayTypeBridge": "Bridge",
+  "songDisplayTypeInterlude": "Interlude",
+  "songDisplayTypeOutro": "Outro",
+  "songDisplayStandardHint": "Base style for every section without its own style and for sections that are not recognised (e.g. tabs, grids, custom names).",
+  "songDisplayStyle": "Style",
+  "songDisplayOwnStyle": "Own style",
+  "songDisplayLike": "Like {name}",
+  "songDisplayInheritsHint": "Takes everything from: {chain}. Changes there apply here too.",
+  "songDisplayChords": "Chords",
+  "songDisplayLyrics": "Lyrics",
+  "songDisplayHeading": "Heading",
+  "songDisplayBar": "Indent bar",
+  "songDisplayBold": "Bold",
+  "songDisplayItalic": "Italic",
+  "songDisplaySize": "Size",
+  "songDisplayColor": "Colour",
+  "songDisplayShowHeading": "Show heading",
+  "songDisplayShowBar": "Show bar",
+  "songDisplayBarWidth": "Width",
+  "songDisplayIndent": "Indent",
+  "songDisplayTint": "Tint background",
+  "songDisplaySizeSmall": "S",
+  "songDisplaySizeMedium": "M",
+  "songDisplaySizeLarge": "L",
+  "songDisplaySizeExtraLarge": "XL",
+  "songDisplayBarThin": "Thin",
+  "songDisplayBarMedium": "Medium",
+  "songDisplayBarWide": "Wide",
+  "songDisplayIndentNone": "None",
+  "songDisplayIndentNormal": "Normal",
+  "songDisplayIndentLarge": "Large",
+  "songColorAuto": "Automatic",
+  "songColorBlue": "Blue",
+  "songColorAmber": "Amber",
+  "songColorRed": "Red",
+  "songColorGreen": "Green",
+  "songColorTeal": "Teal",
+  "songColorPurple": "Purple",
+  "songColorPink": "Pink",
+  "songColorGrey": "Grey"
 }
