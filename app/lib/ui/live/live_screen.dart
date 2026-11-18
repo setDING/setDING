@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdfrx/pdfrx.dart';
 
+import '../../data/annotation.dart' show LayoutFingerprint, textHash;
 import '../../platform/stage_wake_lock.dart';
 import '../../sync/sync_controller.dart';
 import '../../data/attachment_lookup.dart';
@@ -19,13 +20,18 @@ import '../../data/song_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../settings/settings.dart';
+import '../annotations/annotated_page.dart';
+import '../annotations/annotation_editor.dart';
+import '../annotations/annotation_toolbar.dart';
 import '../platform/stored_file_view.dart';
+import '../render/line_marks.dart';
 import '../render/song_header.dart';
 import '../render/chord_diagram.dart';
 import '../render/render_cache.dart';
 import '../render/song_image.dart';
 import '../render/song_view.dart';
 import '../sets/set_item_label.dart';
+import '../widgets/dialogs.dart';
 import '../widgets/key_picker.dart';
 import 'live_preparation.dart';
 import '../../audio/metronome.dart';
@@ -217,6 +223,42 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   /// The screen stays on while live mode is open (ADR-0007).
   late final StageWakeLock _wakeLock = ref.read(stageWakeLockProvider);
 
+  /// Drawing mode for freehand annotations (ADR-0032); the pages share it.
+  late final AnnotationEditor _annotations =
+      AnnotationEditor(ref.read(annotationRepositoryProvider))
+        ..fingerDraws = ref.read(settingsProvider).annotationFinger
+        ..addListener(_onAnnotations);
+
+  void _onAnnotations() {
+    // Drawing with a finger is a device setting (ADR-0032).
+    final finger = _annotations.fingerDraws;
+    if (finger != ref.read(settingsProvider).annotationFinger) {
+      ref
+          .read(settingsProvider.notifier)
+          .update((s) => s.copyWith(annotationFinger: finger));
+    }
+    if (_drawing != _annotations.active) {
+      setState(() => _drawing = _annotations.active);
+    }
+  }
+
+  bool _drawing = false;
+
+  /// Deletes all annotations of a song, with "Undo" (#267).
+  Future<void> _deleteAnnotations(String songId) async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final repo = ref.read(annotationRepositoryProvider);
+    final removed = await repo.deleteAll(songId);
+    if (removed.isEmpty) return;
+    showUndo(
+      messenger,
+      l10n.annotationsDeleted,
+      undoLabel: l10n.undo,
+      onUndo: () => repo.restoreAll(songId, removed),
+    );
+  }
+
   /// Sets the wake lock again when the app returns to the foreground: not
   /// every platform keeps it while the app is in the background. Stops the
   /// beat when the app is hidden, unless the settings keep it (#424).
@@ -279,6 +321,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     }
     _preparation.dispose();
     _beat.dispose();
+    _annotations
+      ..removeListener(_onAnnotations)
+      ..dispose();
     super.dispose();
   }
 
@@ -498,7 +543,13 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.escape) {
-      if (event is KeyDownEvent) Navigator.maybePop(context);
+      if (event is KeyDownEvent) {
+        if (_annotations.active) {
+          _annotations.active = false;
+        } else {
+          Navigator.maybePop(context);
+        }
+      }
       return KeyEventResult.handled;
     }
     return KeyEventResult.ignored;
@@ -635,6 +686,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     final (appearance, accent) = ref.watch(
       settingsProvider.select((s) => (s.liveAppearance, s.accent)),
     );
+    _annotations.repository = ref.watch(annotationRepositoryProvider);
     // The stage appearance is independent of the app theme (ADR-0007); the
     // control bar, the bottom bar and the sheets follow it too.
     return Theme(
@@ -758,6 +810,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                         songPageController: _songPageFor(i),
                                         preparation: _preparation[i],
                                         onTap: _onTap,
+                                        annotations: _annotations,
                                       ),
                                     ),
                                   ),
@@ -824,7 +877,23 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                       // Beat of the drummer mode (ADR-0026); take no taps.
                       const Positioned.fill(child: EdgeFlash()),
                       const Positioned.fill(child: CountInOverlay()),
-                      if (_controls)
+                      // Drawing mode (ADR-0032): the tools instead of the
+                      // controls, until "Done".
+                      if (_drawing)
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          child: AnnotationToolbar(
+                            editor: _annotations,
+                            onDone: () => _annotations.active = false,
+                            onDeleteAll: switch (items[_index].song) {
+                              final song? => () => _deleteAnnotations(song.id),
+                              null => null,
+                            },
+                          ),
+                        )
+                      else if (_controls)
                         Positioned(
                           left: 0,
                           right: 0,
@@ -841,6 +910,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                 : _adjust,
                             onFit: _fitToPage,
                             onSetKey: _setKey,
+                            onDraw: items[_index].song == null || showSongMap
+                                ? null
+                                : () => _annotations.active = true,
                           ),
                         ),
                     ],
@@ -1023,6 +1095,7 @@ class _ControlBar extends ConsumerWidget {
     required this.onAdjust,
     required this.onFit,
     required this.onSetKey,
+    this.onDraw,
   });
 
   final LiveItem item;
@@ -1032,6 +1105,9 @@ class _ControlBar extends ConsumerWidget {
   final Future<void> Function(SongOverlay Function(SongOverlay))? onAdjust;
   final VoidCallback onFit;
   final ValueChanged<int> onSetKey;
+
+  /// Starts drawing mode (ADR-0032); null when the item cannot be drawn on.
+  final VoidCallback? onDraw;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1078,6 +1154,35 @@ class _ControlBar extends ConsumerWidget {
         icon: const Icon(Icons.format_list_numbered),
         onPressed: onOverview,
       ),
+    ];
+    final annotated =
+        song != null &&
+        (ref.watch(annotationCountProvider(song.id)).value ?? 0) > 0;
+    final annotationsShown = ref.watch(
+      settingsProvider.select((s) => s.showAnnotations),
+    );
+    // Freehand annotations (ADR-0032): draw, and show or hide them.
+    final annotationButtons = <Widget>[
+      if (annotated)
+        IconButton(
+          key: const Key('live-annotations-visible'),
+          tooltip: annotationsShown
+              ? l10n.annotationsHide
+              : l10n.annotationsShow,
+          icon: Icon(
+            annotationsShown ? Icons.visibility : Icons.visibility_off,
+          ),
+          onPressed: () => ref
+              .read(settingsProvider.notifier)
+              .update((s) => s.copyWith(showAnnotations: !annotationsShown)),
+        ),
+      if (onDraw case final draw?)
+        IconButton(
+          key: const Key('live-annotations-draw'),
+          tooltip: l10n.annotationsDraw,
+          icon: const Icon(Icons.draw),
+          onPressed: draw,
+        ),
     ];
     final trailing = <Widget>[
       if (adjust != null) ...[
@@ -1136,9 +1241,12 @@ class _ControlBar extends ConsumerWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final wide = constraints.maxWidth >= _wideControlBar;
+            // On narrow screens the annotation buttons go with the toggle
+            // into the row above.
             final row = Row(
               children: [
                 ...leading,
+                if (wide) ...annotationButtons,
                 const Spacer(),
                 if (toggle != null && wide) ...[toggle, const Spacer()],
                 ...trailing,
@@ -1153,10 +1261,22 @@ class _ControlBar extends ConsumerWidget {
                     child: StageTempoControls(index: index),
                   )
                 : null;
-            if ((toggle == null || wide) && tempo == null) return row;
+            final narrowExtras = wide ? null : [?toggle, ...annotationButtons];
+            if ((narrowExtras == null || narrowExtras.isEmpty) &&
+                tempo == null) {
+              return row;
+            }
             return Column(
               mainAxisSize: MainAxisSize.min,
-              children: [?tempo, if (toggle != null && !wide) toggle, row],
+              children: [
+                ?tempo,
+                if (narrowExtras != null && narrowExtras.isNotEmpty)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: narrowExtras,
+                  ),
+                row,
+              ],
             );
           },
         ),
@@ -1211,6 +1331,7 @@ class _LiveItemPage extends ConsumerWidget {
     required this.songPageController,
     required this.preparation,
     required this.onTap,
+    required this.annotations,
   });
 
   final LiveItem item;
@@ -1236,25 +1357,51 @@ class _LiveItemPage extends ConsumerWidget {
   /// Page of a song split into pages.
   final SongPageController songPageController;
 
+  /// Drawing mode for freehand annotations (ADR-0032).
+  final AnnotationEditor annotations;
+
+  /// Freehand annotations on page [number] of the PDF [attachmentId].
+  Widget _pdfAnnotations(
+    String songId,
+    String attachmentId,
+    int number, {
+    required bool hidden,
+  }) => AnnotatedPage(
+    key: ValueKey(('pdf-annotations', attachmentId, number)),
+    songId: songId,
+    target: attachmentId,
+    page: number,
+    editor: annotations,
+    hidden: hidden,
+    child: const SizedBox.expand(),
+  );
+
   /// Portrait: one page at a time, fit to width.
   /// The background around the pages follows the stage appearance.
-  Widget _portraitPdf(StoredFile file, Key key, Color background) =>
-      storedPdfViewer(
-        file,
-        key: key,
-        controller: pdfController,
-        params: PdfViewerParams(
-          backgroundColor: background,
-          // No text selection on stage: drags and long presses would
-          // select text instead of moving the sheet.
-          textSelectionParams: const PdfTextSelectionParams(enabled: false),
-          onGeneralTap: (context, controller, details) {
-            if (details.type != PdfViewerGeneralTapType.tap) return false;
-            onTap(details.localPosition);
-            return true;
-          },
-        ),
-      );
+  Widget _portraitPdf(
+    StoredFile file,
+    Key key,
+    Color background, {
+    required Widget Function(int pageNumber) pageOverlay,
+  }) => storedPdfViewer(
+    file,
+    key: key,
+    controller: pdfController,
+    params: PdfViewerParams(
+      backgroundColor: background,
+      // No text selection on stage: drags and long presses would
+      // select text instead of moving the sheet.
+      textSelectionParams: const PdfTextSelectionParams(enabled: false),
+      onGeneralTap: (context, controller, details) {
+        if (details.type != PdfViewerGeneralTapType.tap) return false;
+        onTap(details.localPosition);
+        return true;
+      },
+      pageOverlaysBuilder: (context, pageRect, page) => [
+        Positioned.fill(child: pageOverlay(page.pageNumber)),
+      ],
+    ),
+  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1312,6 +1459,12 @@ class _LiveItemPage extends ConsumerWidget {
       // Landscape: two pages side by side, fitted to the screen (ADR-0009).
       final stored = file;
       final pdfKey = ValueKey(pdf.id);
+      Widget annotationsOn(int number) => _pdfAnnotations(
+        song.id,
+        pdf.id,
+        number,
+        hidden: overlay.hideAnnotations,
+      );
       return LayoutBuilder(
         builder: (context, constraints) =>
             constraints.maxWidth > constraints.maxHeight
@@ -1319,11 +1472,13 @@ class _LiveItemPage extends ConsumerWidget {
                 key: pdfKey,
                 documentRef: storedPdfDocumentRef(stored),
                 controller: spreadController,
+                pageOverlay: annotationsOn,
               )
             : _portraitPdf(
                 stored,
                 pdfKey,
                 Theme.of(context).colorScheme.surfaceContainerHighest,
+                pageOverlay: annotationsOn,
               ),
       );
     }
@@ -1347,6 +1502,8 @@ class _LiveItemPage extends ConsumerWidget {
     final storage = ref.watch(attachmentStorageProvider);
     return _ChordProPage(
       index: index,
+      annotations: annotations,
+      shownSequence: sequence ?? '',
       songMap: map,
       song: song,
       parsed: selection.song,
@@ -1372,6 +1529,8 @@ class _LiveItemPage extends ConsumerWidget {
 class _ChordProPage extends ConsumerWidget {
   const _ChordProPage({
     required this.index,
+    required this.annotations,
+    required this.shownSequence,
     required this.songMap,
     required this.song,
     required this.parsed,
@@ -1391,6 +1550,13 @@ class _ChordProPage extends ConsumerWidget {
 
   /// Position of the item in the set.
   final int index;
+
+  /// Drawing mode for freehand annotations (ADR-0032).
+  final AnnotationEditor annotations;
+
+  /// The sequence shown (set, band or song), empty for all parts: part of
+  /// the layout annotations are drawn on.
+  final String shownSequence;
 
   /// The song map instead of the song (drums, ADR-0026); null for the song.
   final List<SongMapEntry>? songMap;
@@ -1697,6 +1863,9 @@ class _ChordProPage extends ConsumerWidget {
                   final layout = fit.layout;
                   final pageBodies = <Widget>[];
                   var firstLine = 0;
+                  final font = fit.fontSize * scale;
+                  final content = textHash(song.chordproSource);
+                  final songLines = songLineMarks(parsed);
                   for (final (page, end) in pages.ends.indexed) {
                     final start = page == 0 ? 0 : pages.ends[page - 1];
                     final pageLayout = layout == null || pages.ends.length == 1
@@ -1706,17 +1875,38 @@ class _ChordProPage extends ConsumerWidget {
                             metrics: layout.metrics.sublist(start, end),
                           );
                     pageBodies.add(
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.topLeft,
-                        child: SizedBox(
+                      // Freehand annotations of this page (ADR-0032).
+                      AnnotatedPage(
+                        key: ValueKey(('song-page-annotations', page)),
+                        songId: song.id,
+                        page: page,
+                        layout: LayoutFingerprint(
+                          mode: 'page',
+                          pages: pages.ends.length,
                           width: size.width,
-                          child: SongBody(
-                            key: ValueKey(('song-page', page)),
-                            song: parsed,
-                            options: options(pageLayout),
-                            progress: preparation.body,
-                            firstLine: firstLine,
+                          height: size.height,
+                          font: font,
+                          columns: pages.columns,
+                          lyricsOnly: lyricsOnly,
+                          content: content,
+                          sequence: shownSequence,
+                        ),
+                        font: font,
+                        songLines: songLines,
+                        editor: annotations,
+                        hidden: overlay.hideAnnotations,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.topLeft,
+                          child: SizedBox(
+                            width: size.width,
+                            child: SongBody(
+                              key: ValueKey(('song-page', page)),
+                              song: parsed,
+                              options: options(pageLayout),
+                              progress: preparation.body,
+                              firstLine: firstLine,
+                            ),
                           ),
                         ),
                       ),
@@ -1820,10 +2010,29 @@ class _ChordProPage extends ConsumerWidget {
       SingleChildScrollView(
         controller: scrollController,
         padding: EdgeInsets.fromLTRB(_margin, 0, _margin, size.height * 0.25),
-        child: SongBody(
-          song: parsed,
-          options: options,
-          progress: preparation.body,
+        // Freehand annotations of the scrolled song (ADR-0032).
+        child: AnnotatedPage(
+          songId: song.id,
+          page: 0,
+          layout: LayoutFingerprint(
+            mode: 'scroll',
+            width: size.width,
+            height: size.height,
+            font: options.fontSize,
+            columns: options.columns,
+            lyricsOnly: options.lyricsOnly,
+            content: textHash(song.chordproSource),
+            sequence: shownSequence,
+          ),
+          font: options.fontSize,
+          songLines: songLineMarks(parsed),
+          editor: annotations,
+          hidden: overlay.hideAnnotations,
+          child: SongBody(
+            song: parsed,
+            options: options,
+            progress: preparation.body,
+          ),
         ),
       );
 }

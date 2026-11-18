@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 
+import '../../data/annotation.dart' show LayoutFingerprint, textHash;
 import '../../data/attachment_lookup.dart';
 import '../../data/attachment_storage.dart';
 import '../../data/database.dart';
@@ -14,6 +15,7 @@ import '../../data/song_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../settings/settings.dart';
+import '../annotations/annotated_page.dart';
 import '../live/live_screen.dart';
 import '../render/chord_diagram.dart';
 import '../render/render_cache.dart';
@@ -251,6 +253,12 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   hasKey: parsed.key != null,
                   onChanged: _updateOverlay,
                 ),
+                const SizedBox(height: 16),
+                _AnnotationsSection(
+                  songId: song.id,
+                  overlay: overlay,
+                  onChanged: _updateOverlay,
+                ),
               ],
             ),
             _Panel.attachments => SidePanel(
@@ -291,7 +299,14 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                 key: const Key('open-personal-adjustments'),
                 tooltip: l10n.personalAdjustments,
                 icon: Icons.tune,
-                active: overlay.hasAdjustments,
+                // Freehand annotations change how the song looks, too.
+                active:
+                    overlay.hasAdjustments ||
+                    (!overlay.hideAnnotations &&
+                        settings.showAnnotations &&
+                        (ref.watch(annotationCountProvider(song.id)).value ??
+                                0) >
+                            0),
                 onPressed: () => _open(_Panel.personal),
               ),
               if (attachmentsInPanel)
@@ -361,6 +376,8 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                 const SizedBox(height: 16),
                 if (parsed.hasContent)
                   _FittedSongBody(
+                    songId: song.id,
+                    source: song.chordproSource,
                     song: parsed,
                     overlay: overlay,
                     formatter: formatter,
@@ -408,6 +425,8 @@ class _SongScreenState extends ConsumerState<SongScreen> {
 /// many columns as needed, up to what the width allows, and scrolls.
 class _FittedSongBody extends ConsumerWidget {
   const _FittedSongBody({
+    required this.songId,
+    required this.source,
     required this.song,
     required this.overlay,
     required this.formatter,
@@ -416,6 +435,10 @@ class _FittedSongBody extends ConsumerWidget {
     required this.imageLookup,
   });
 
+  final String songId;
+
+  /// The ChordPro text, for the layout of freehand annotations.
+  final String source;
   final Song song;
   final SongOverlay overlay;
   final ChordFormatter formatter;
@@ -525,9 +548,14 @@ class _FittedSongBody extends ConsumerWidget {
             columns--;
           }
         }
-        return SongBody(
-          song: song,
-          options: options(font, columns, fit.collapseRecalls, layout),
+        return _annotated(
+          font,
+          columns,
+          lyricsOnly,
+          SongBody(
+            song: song,
+            options: options(font, columns, fit.collapseRecalls, layout),
+          ),
         );
       }
     }
@@ -551,19 +579,108 @@ class _FittedSongBody extends ConsumerWidget {
       ),
     );
     final font = settings.fontSize * scale;
-    return SongBody(
-      song: song,
-      options: options(
-        font,
-        scrollColumns(
-          layout,
-          fontSize: font,
-          size: page,
-          maxColumns: maxColumns,
+    final columns = scrollColumns(
+      layout,
+      fontSize: font,
+      size: page,
+      maxColumns: maxColumns,
+    );
+    return _annotated(
+      font,
+      columns,
+      lyricsOnly,
+      SongBody(song: song, options: options(font, columns, collapse, layout)),
+    );
+  }
+
+  /// The person's freehand annotations over [body], shown at their lines:
+  /// they are drawn in live mode, whose pages this screen does not have
+  /// (ADR-0032).
+  Widget _annotated(double font, int columns, bool lyricsOnly, Widget body) =>
+      AnnotatedPage(
+        songId: songId,
+        page: 0,
+        layout: LayoutFingerprint(
+          mode: 'screen',
+          width: page.width,
+          height: page.height,
+          font: font,
+          columns: columns,
+          lyricsOnly: lyricsOnly,
+          content: textHash(source),
         ),
-        collapse,
-        layout,
-      ),
+        font: font,
+        hidden: overlay.hideAnnotations,
+        child: body,
+      );
+}
+
+/// Freehand annotations in the personal panel (ADR-0032): how many there
+/// are, whether they are shown for this song, and deleting them all.
+class _AnnotationsSection extends ConsumerWidget {
+  const _AnnotationsSection({
+    required this.songId,
+    required this.overlay,
+    required this.onChanged,
+  });
+
+  final String songId;
+  final SongOverlay overlay;
+  final Future<void> Function(SongOverlay Function(SongOverlay)) onChanged;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final count = ref.watch(annotationCountProvider(songId)).value ?? 0;
+    return Column(
+      key: const Key('annotations-section'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.draw_outlined, size: 20),
+            const SizedBox(width: 8),
+            Text(l10n.annotationsPanelTitle, style: theme.textTheme.titleSmall),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          l10n.annotationsCount(count),
+          key: const Key('annotations-count'),
+          style: theme.textTheme.bodySmall,
+        ),
+        if (count > 0) ...[
+          SwitchListTile(
+            key: const Key('annotations-show'),
+            contentPadding: EdgeInsets.zero,
+            title: Text(l10n.annotationsPanelShow),
+            value: !overlay.hideAnnotations,
+            onChanged: (show) =>
+                onChanged((o) => o.copyWith(hideAnnotations: !show)),
+          ),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: TextButton.icon(
+              key: const Key('annotations-delete-all'),
+              icon: const Icon(Icons.delete_outline),
+              label: Text(l10n.annotationsDeleteAll),
+              onPressed: () async {
+                final messenger = ScaffoldMessenger.of(context);
+                final repo = ref.read(annotationRepositoryProvider);
+                final removed = await repo.deleteAll(songId);
+                if (removed.isEmpty) return;
+                showUndo(
+                  messenger,
+                  l10n.annotationsDeleted,
+                  undoLabel: l10n.undo,
+                  onUndo: () => repo.restoreAll(songId, removed),
+                );
+              },
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

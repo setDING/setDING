@@ -130,6 +130,8 @@ class AppSettings {
     this.clickSubdivision = false,
     this.audioLatencyMs = 0,
     this.songMap,
+    this.showAnnotations = true,
+    this.annotationFinger = false,
   });
 
   final LanguageMode language;
@@ -217,6 +219,13 @@ class AppSettings {
   /// Song map instead of the chord sheet (drums only).
   final bool? songMap;
 
+  /// Personal freehand annotations are shown (ADR-0032).
+  final bool showAnnotations;
+
+  /// Fingers draw annotations too, not only a stylus or a mouse; for
+  /// devices without a stylus (ADR-0032).
+  final bool annotationFinger;
+
   static const maxAudioLatencyMs = 500;
 
   /// Whether the instrument is drums (ADR-0026).
@@ -300,6 +309,8 @@ class AppSettings {
     bool? clickSubdivision,
     int? audioLatencyMs,
     bool? songMap,
+    bool? showAnnotations,
+    bool? annotationFinger,
   }) => AppSettings(
     language: language ?? this.language,
     notation: notation ?? this.notation,
@@ -334,6 +345,8 @@ class AppSettings {
     clickSubdivision: clickSubdivision ?? this.clickSubdivision,
     audioLatencyMs: audioLatencyMs ?? this.audioLatencyMs,
     songMap: songMap ?? this.songMap,
+    showAnnotations: showAnnotations ?? this.showAnnotations,
+    annotationFinger: annotationFinger ?? this.annotationFinger,
   );
 
   /// Which settings follow the person (synced with the account) and which
@@ -375,6 +388,10 @@ class AppSettings {
     'songMap': SettingSyncScope.personal,
     'clickVolume': SettingSyncScope.device,
     'audioLatencyMs': SettingSyncScope.device,
+    // Freehand annotations (ADR-0032): whether to see them follows the
+    // person; drawing with a finger depends on the device having a stylus.
+    'showAnnotations': SettingSyncScope.personal,
+    'annotationFinger': SettingSyncScope.device,
   };
 
   /// The keys of [scope].
@@ -417,6 +434,8 @@ class AppSettings {
     'clickSubdivision': clickSubdivision,
     'audioLatencyMs': audioLatencyMs,
     'songMap': ?songMap,
+    'showAnnotations': showAnnotations,
+    'annotationFinger': annotationFinger,
   };
 
   /// Settings from JSON values; a missing key, a value of the wrong type or
@@ -508,6 +527,8 @@ class AppSettings {
       audioLatencyMs: (number('audioLatencyMs')?.toInt() ?? d.audioLatencyMs)
           .clamp(0, maxAudioLatencyMs),
       songMap: maybe('songMap'),
+      showAnnotations: flag('showAnnotations', d.showAnnotations),
+      annotationFinger: flag('annotationFinger', d.annotationFinger),
     );
   }
 

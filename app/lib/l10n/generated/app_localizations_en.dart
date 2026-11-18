@@ -2196,4 +2196,180 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsTakenOver =>
       'The settings of your account have been applied.';
+
+  @override
+  String get annotationsDraw => 'Draw annotations';
+
+  @override
+  String get annotationsShow => 'Show annotations';
+
+  @override
+  String get annotationsHide => 'Hide annotations';
+
+  @override
+  String get annotationPen => 'Pen';
+
+  @override
+  String get annotationHighlighter => 'Highlighter';
+
+  @override
+  String get annotationEraser => 'Eraser (whole stroke)';
+
+  @override
+  String get annotationPartialEraser => 'Eraser (part of a stroke)';
+
+  @override
+  String get annotationLasso => 'Select (lasso)';
+
+  @override
+  String get annotationStamps => 'Stamps';
+
+  @override
+  String get annotationStampsMusic => 'Music marks';
+
+  @override
+  String get annotationStampsRepeats => 'Repeats';
+
+  @override
+  String get annotationStampsCues => 'Cues';
+
+  @override
+  String annotationColor(Object number) {
+    return 'Colour $number';
+  }
+
+  @override
+  String get annotationSize => 'Line width';
+
+  @override
+  String get annotationSmaller => 'Smaller';
+
+  @override
+  String get annotationLarger => 'Larger';
+
+  @override
+  String get annotationDeleteSelection => 'Delete selection';
+
+  @override
+  String get annotationUndo => 'Undo';
+
+  @override
+  String get annotationRedo => 'Redo';
+
+  @override
+  String get annotationMore => 'More';
+
+  @override
+  String get annotationDrawWithFinger => 'Draw with finger';
+
+  @override
+  String get annotationDone => 'Done';
+
+  @override
+  String get annotationsDeleteAll => 'Delete all annotations of this song';
+
+  @override
+  String get annotationsDeleted => 'Annotations deleted';
+
+  @override
+  String get annotationsOtherLayout => 'Drawn for another view';
+
+  @override
+  String get annotationsOtherLayoutLandscape => 'Drawn in landscape';
+
+  @override
+  String get annotationsOtherLayoutPortrait => 'Drawn in portrait';
+
+  @override
+  String annotationsOrphaned(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count annotations without their line',
+      one: '1 annotation without its line',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get annotationsPanelTitle => 'Freehand annotations';
+
+  @override
+  String get annotationsPanelShow => 'Show my annotations';
+
+  @override
+  String annotationsCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count annotations',
+      one: '1 annotation',
+      zero: 'None yet: draw them in live mode',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsShowAnnotations => 'Show freehand annotations';
+
+  @override
+  String get settingsShowAnnotationsHint =>
+      'Your own drawings on songs and sheet music';
+
+  @override
+  String get settingsAnnotationFinger => 'Draw annotations with a finger';
+
+  @override
+  String get settingsAnnotationFingerHint =>
+      'For devices without a stylus; otherwise fingers keep turning pages';
+
+  @override
+  String get stampFermata => 'Fermata';
+
+  @override
+  String get stampBreath => 'Breath mark';
+
+  @override
+  String get stampCrescendo => 'Crescendo';
+
+  @override
+  String get stampDecrescendo => 'Decrescendo';
+
+  @override
+  String get stampRitardando => 'Ritardando';
+
+  @override
+  String get stampAccent => 'Accent';
+
+  @override
+  String stampRepeat(Object times) {
+    return 'Play $times×';
+  }
+
+  @override
+  String get stampRepeatStart => 'Repeat start';
+
+  @override
+  String get stampRepeatEnd => 'Repeat end';
+
+  @override
+  String get stampCoda => 'Coda';
+
+  @override
+  String get stampSegno => 'Segno';
+
+  @override
+  String get stampGlasses => 'Watch out';
+
+  @override
+  String get stampStop => 'Stop';
+
+  @override
+  String get stampEye => 'Look';
+
+  @override
+  String get stampExclamation => 'Important';
+
+  @override
+  String get stampStar => 'Star';
 }

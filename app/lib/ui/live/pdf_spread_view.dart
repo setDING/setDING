@@ -66,10 +66,15 @@ class PdfSpreadView extends StatefulWidget {
     super.key,
     required this.documentRef,
     required this.controller,
+    this.pageOverlay,
   });
 
   final PdfDocumentRef documentRef;
   final PdfSpreadController controller;
+
+  /// Laid over each page, exactly on the page (e.g. freehand annotations,
+  /// ADR-0032).
+  final Widget Function(int pageNumber)? pageOverlay;
 
   @override
   State<PdfSpreadView> createState() => _PdfSpreadViewState();
@@ -125,16 +130,37 @@ class _PdfSpreadViewState extends State<PdfSpreadView> {
           if (document == null) return const SizedBox.expand();
           final controller = widget.controller.._attach(document.pages.length);
           final first = controller.firstPage;
-          Widget page(int number) => number > document.pages.length
-              ? const SizedBox.shrink()
-              : PdfPageView(
-                  key: ValueKey('pdf-spread-page-$number'),
-                  document: document,
-                  pageNumber: number,
-                  alignment: number == first
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
-                );
+          Widget page(int number) {
+            if (number > document.pages.length) return const SizedBox.shrink();
+            final alignment = number == first
+                ? Alignment.centerRight
+                : Alignment.centerLeft;
+            final view = PdfPageView(
+              key: ValueKey('pdf-spread-page-$number'),
+              document: document,
+              pageNumber: number,
+              alignment: alignment,
+            );
+            final overlay = widget.pageOverlay;
+            if (overlay == null) return view;
+            final pdfPage = document.pages[number - 1];
+            return LayoutBuilder(
+              builder: (context, box) => Stack(
+                children: [
+                  Positioned.fill(child: view),
+                  Positioned.fromRect(
+                    rect: fittedPageRect(
+                      box.biggest,
+                      pdfPage.width / pdfPage.height,
+                      alignment,
+                    ),
+                    child: overlay(number),
+                  ),
+                ],
+              ),
+            );
+          }
+
           return Padding(
             padding: const EdgeInsets.all(8),
             child: Row(
@@ -150,4 +176,13 @@ class _PdfSpreadViewState extends State<PdfSpreadView> {
       ),
     );
   }
+}
+
+/// Where a page of [aspect] (width / height) is drawn in [box] when it is
+/// fitted (contained) and aligned with [alignment].
+Rect fittedPageRect(Size box, double aspect, Alignment alignment) {
+  final size = box.width / box.height > aspect
+      ? Size(box.height * aspect, box.height)
+      : Size(box.width, box.width / aspect);
+  return alignment.inscribe(size, Offset.zero & box);
 }

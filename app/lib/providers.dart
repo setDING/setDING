@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'data/annotation_repository.dart';
 import 'data/arrangement_repository.dart';
 import 'data/attachment_storage.dart';
 import 'data/band_copy.dart';
@@ -310,6 +311,28 @@ final attachmentCountsProvider = StreamProvider<Map<String, int>>(
 
 final overlayProvider = StreamProvider.autoDispose.family<SongOverlay, String>(
   (ref, songId) => ref.watch(songRepositoryProvider).watchOverlay(songId),
+);
+
+/// Personal freehand annotations (ADR-0032).
+final annotationRepositoryProvider = Provider<AnnotationRepository>(
+  (ref) => AnnotationRepository(
+    ref.watch(databaseProvider),
+    userId: ref.watch(authProvider.select((u) => u?.id)),
+  ),
+);
+
+/// The strokes on a song's ChordPro text (`target` empty) or on one of its
+/// PDF attachments.
+final annotationsProvider = StreamProvider.autoDispose
+    .family<List<AnnotationStroke>, ({String songId, String target})>(
+      (ref, key) => ref
+          .watch(annotationRepositoryProvider)
+          .watch(key.songId, target: key.target),
+    );
+
+/// Number of strokes on a song (text and attachments).
+final annotationCountProvider = StreamProvider.autoDispose.family<int, String>(
+  (ref, songId) => ref.watch(annotationRepositoryProvider).watchCount(songId),
 );
 
 /// Band arrangements (ADR-0025).

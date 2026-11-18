@@ -2211,4 +2211,180 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get settingsTakenOver =>
       'Die Einstellungen deines Kontos wurden übernommen.';
+
+  @override
+  String get annotationsDraw => 'Freihand-Notizen zeichnen';
+
+  @override
+  String get annotationsShow => 'Notizen anzeigen';
+
+  @override
+  String get annotationsHide => 'Notizen ausblenden';
+
+  @override
+  String get annotationPen => 'Stift';
+
+  @override
+  String get annotationHighlighter => 'Leuchtstift';
+
+  @override
+  String get annotationEraser => 'Radierer (ganzer Strich)';
+
+  @override
+  String get annotationPartialEraser => 'Radierer (Teil eines Strichs)';
+
+  @override
+  String get annotationLasso => 'Auswählen (Lasso)';
+
+  @override
+  String get annotationStamps => 'Stempel';
+
+  @override
+  String get annotationStampsMusic => 'Musikzeichen';
+
+  @override
+  String get annotationStampsRepeats => 'Wiederholungen';
+
+  @override
+  String get annotationStampsCues => 'Hinweise';
+
+  @override
+  String annotationColor(Object number) {
+    return 'Farbe $number';
+  }
+
+  @override
+  String get annotationSize => 'Strichbreite';
+
+  @override
+  String get annotationSmaller => 'Kleiner';
+
+  @override
+  String get annotationLarger => 'Grösser';
+
+  @override
+  String get annotationDeleteSelection => 'Auswahl löschen';
+
+  @override
+  String get annotationUndo => 'Rückgängig';
+
+  @override
+  String get annotationRedo => 'Wiederholen';
+
+  @override
+  String get annotationMore => 'Mehr';
+
+  @override
+  String get annotationDrawWithFinger => 'Mit dem Finger zeichnen';
+
+  @override
+  String get annotationDone => 'Fertig';
+
+  @override
+  String get annotationsDeleteAll => 'Alle Notizen dieses Songs löschen';
+
+  @override
+  String get annotationsDeleted => 'Notizen gelöscht';
+
+  @override
+  String get annotationsOtherLayout => 'Für eine andere Ansicht gezeichnet';
+
+  @override
+  String get annotationsOtherLayoutLandscape => 'Im Querformat gezeichnet';
+
+  @override
+  String get annotationsOtherLayoutPortrait => 'Im Hochformat gezeichnet';
+
+  @override
+  String annotationsOrphaned(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Notizen ohne ihre Zeile',
+      one: '1 Notiz ohne ihre Zeile',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get annotationsPanelTitle => 'Freihand-Notizen';
+
+  @override
+  String get annotationsPanelShow => 'Meine Notizen anzeigen';
+
+  @override
+  String annotationsCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Notizen',
+      one: '1 Notiz',
+      zero: 'Noch keine: im Live-Modus zeichnen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsShowAnnotations => 'Freihand-Notizen anzeigen';
+
+  @override
+  String get settingsShowAnnotationsHint =>
+      'Deine eigenen Zeichnungen auf Songs und Noten';
+
+  @override
+  String get settingsAnnotationFinger => 'Notizen mit dem Finger zeichnen';
+
+  @override
+  String get settingsAnnotationFingerHint =>
+      'Für Geräte ohne Stift; sonst blättern die Finger weiter';
+
+  @override
+  String get stampFermata => 'Fermate';
+
+  @override
+  String get stampBreath => 'Atemzeichen';
+
+  @override
+  String get stampCrescendo => 'Crescendo';
+
+  @override
+  String get stampDecrescendo => 'Decrescendo';
+
+  @override
+  String get stampRitardando => 'Ritardando';
+
+  @override
+  String get stampAccent => 'Akzent';
+
+  @override
+  String stampRepeat(Object times) {
+    return '$times× spielen';
+  }
+
+  @override
+  String get stampRepeatStart => 'Wiederholung Anfang';
+
+  @override
+  String get stampRepeatEnd => 'Wiederholung Ende';
+
+  @override
+  String get stampCoda => 'Coda';
+
+  @override
+  String get stampSegno => 'Segno';
+
+  @override
+  String get stampGlasses => 'Aufpassen';
+
+  @override
+  String get stampStop => 'Stopp';
+
+  @override
+  String get stampEye => 'Hinschauen';
+
+  @override
+  String get stampExclamation => 'Wichtig';
+
+  @override
+  String get stampStar => 'Stern';
 }
