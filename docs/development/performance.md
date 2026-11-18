@@ -238,3 +238,50 @@ ms. What is left over budget:
 The raster thread is unchanged: 250–400 frames over budget in the Impeller
 OpenGL ES flush during turn animations (the earlier section counted only the
 end of the scenarios).
+
+### 2026-11-18: Raster thread and rendering backend (#312)
+
+Same tablet, profile builds of main at `1ae9fd4` (v0.9.0), one run per
+backend. The question was whether the raster frames over budget in live mode
+and in the search (sections above) come from the Impeller OpenGL ES backend
+and whether another backend avoids them. Raster thread, times in ms.
+
+| Scenario | Impeller GLES avg | p99 | worst | >16ms | Skia avg | p99 | worst | >16ms |
+|---|---|---|---|---|---|---|---|---|
+| song_list_scroll | 8.6 | 11.0 | 17.6 | 1 | 5.2 | 8.0 | 13.5 | 0 |
+| song_search | 8.0 | 15.7 | 25.0 | 2 | 5.4 | 7.7 | 14.7 | 0 |
+| live_portrait | 12.6 | 30.2 | 63.1 | 402 | 5.4 | 22.6 | 61.9 | 46 |
+| live_landscape | 11.4 | 34.7 | 59.8 | 276 | 5.4 | 19.1 | 56.0 | 77 |
+| editor_typing | 6.1 | 9.3 | 9.3 | 0 | 4.3 | 7.2 | 7.8 | 0 |
+
+The UI thread and memory were the same with both backends.
+
+- **Impeller Vulkan** (`io.flutter.embedding.android.ImpellerBackend` =
+  `vulkan` in the manifest) does not start on this tablet: the engine aborts
+  with `Check failed: android_context_->IsValid(). Could not create surface
+  from invalid Android context.` (Adreno Vulkan driver from December 2020).
+  Impeller does not fall back to OpenGL ES when Vulkan is forced, so forcing
+  it would break the app on such devices.
+- **Skia** (`io.flutter.embedding.android.EnableImpeller` = `false`) halves
+  the average raster time and cuts the live-mode frames over budget by a
+  factor of 4–9; the worst frames (about 60 ms) remain. Flutter logs that
+  this opt-out is deprecated and will be removed in an upcoming release.
+- **Impeller OpenGL ES** (the default on this tablet) is still where the
+  time goes: the flush in `ReactorGLES` during turn animations. Live mode
+  redraws text-heavy pages of 1600 × 2560 px in every frame of a turn, and
+  this Adreno 615 has little headroom for it.
+- **Song search:** 2 raster frames over budget in this run, compared with
+  16–29 per run after #297. One run does not tell whether this changed.
+- The GPU clock hypothesis (#297) was not checked: the clock in
+  `/sys/class/kgsl` is not readable without root on this device.
+- The app has no expensive layers in live mode or the search (no blur,
+  shader masks or clips; the count-in overlay paints nothing while hidden).
+
+**Decision: setDING stays on Impeller** (the Flutter default). The tablet is
+not a recent device, newer ones use Impeller with Vulkan, and the Skia
+opt-out is going away, so building on it would only postpone the problem.
+The raster frames over budget on older Adreno GPUs with OpenGL ES are a
+known limitation; no blank pages or missed page turns were seen.
+
+`make perf` was broken from #340 until this measurement: the test did not
+override the personal settings store, which `main()` provides since then.
