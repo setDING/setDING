@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:pocketbase/pocketbase.dart';
 
+import '../platform/http_client.dart';
 import '../platform/network_error.dart';
 import 'session_store.dart';
 import 'sync_backend.dart';
@@ -22,7 +23,7 @@ class PocketBaseBackend implements SyncBackend {
     this.clientVersion,
   }) : _store = store,
        _httpClientFactory = _versioned(
-         httpClientFactory ?? http.Client.new,
+         httpClientFactory ?? createHttpClient,
          clientVersion,
        ) {
     _pb = PocketBase(
