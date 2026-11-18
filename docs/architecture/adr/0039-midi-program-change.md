@@ -1,6 +1,6 @@
 # ADR-0039: MIDI program change per song in live mode
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-18
 
 ## Context
@@ -210,6 +210,7 @@ settings** (layer 4b, ADR-0027), never synced:
   the first implementation step is a prototype on all platforms with a real Nord
   Stage 3 (`flutter_midi_command` offers `sendData` for raw bytes); the later
   stages stay listed in this ADR, with issues only once one is taken up.
+- 2026-11-18: Accepted by the owner (#510).
 
 ## Open points
 
