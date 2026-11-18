@@ -178,6 +178,32 @@ class AppLocalizationsDe extends AppLocalizations {
       'Die Datei ist grösser als 20 MB und kann nicht angehängt werden.';
 
   @override
+  String get songLinks => 'Quellen';
+
+  @override
+  String get noSongLinks =>
+      'Noch keine Quellen. Füge Aufnahmen auf YouTube, Spotify usw. hinzu.';
+
+  @override
+  String get addSongLink => 'Link hinzufügen';
+
+  @override
+  String get songLinkUrl => 'Link (URL)';
+
+  @override
+  String get songLinkLabel => 'Beschriftung (optional)';
+
+  @override
+  String get songLinkLabelHint => 'Live 2009';
+
+  @override
+  String get songLinkInvalid =>
+      'Gib einen Weblink ein, der mit https:// beginnt (ohne |).';
+
+  @override
+  String get songLinkFailed => 'Der Link konnte nicht geöffnet werden.';
+
+  @override
   String get attachmentName => 'Name des Anhangs';
 
   @override

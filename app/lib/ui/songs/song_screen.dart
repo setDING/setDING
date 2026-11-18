@@ -34,10 +34,11 @@ import 'chordpro_problems_badge.dart';
 import 'conflict_banner.dart';
 import 'band_arrangement_panel.dart';
 import 'song_editor_screen.dart';
+import 'song_links_panel.dart';
 
-/// Shows a song. The band arrangement, the personal adjustments and the
-/// attachments open in side panels from the app bar, so the song itself
-/// gets the screen.
+/// Shows a song. The band arrangement, the personal adjustments, the
+/// sources and the attachments open in side panels from the app bar, so the
+/// song itself gets the screen.
 class SongScreen extends ConsumerStatefulWidget {
   const SongScreen({
     super.key,
@@ -53,7 +54,7 @@ class SongScreen extends ConsumerStatefulWidget {
 }
 
 /// The side panels of the song screen.
-enum _Panel { band, personal, attachments }
+enum _Panel { band, personal, attachments, links }
 
 class _SongScreenState extends ConsumerState<SongScreen> {
   final _scaffold = GlobalKey<ScaffoldState>();
@@ -209,6 +210,8 @@ class _SongScreenState extends ConsumerState<SongScreen> {
         // Band leaders edit only their own songs (ADR-0023).
         final canEdit = library.canEditSong(song);
 
+        // Sources (`{x_link}`): recordings to listen to.
+        final links = parsed.links;
         final showBand =
             band != null && (arrangement != null || band.canManageSets);
         // Songs without ChordPro content show their attachments in the body.
@@ -262,6 +265,15 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                 ),
               ],
             ),
+            _Panel.links => SongLinksPanel(
+              links: links,
+              onAdd: canEdit
+                  ? (url, label) => _repo.updateSource(
+                      song.id,
+                      addSourceLink(song.chordproSource, url, label: label),
+                    )
+                  : null,
+            ),
             _Panel.attachments => SidePanel(
               key: const Key('song-attachments'),
               icon: Icons.attach_file,
@@ -305,6 +317,14 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                             0),
                 onPressed: () => _open(_Panel.personal),
               ),
+              if (links.isNotEmpty || canEdit)
+                BadgedIconButton(
+                  key: const Key('open-song-links'),
+                  tooltip: l10n.songLinks,
+                  icon: Icons.headphones_outlined,
+                  count: links.length,
+                  onPressed: () => _open(_Panel.links),
+                ),
               if (attachmentsInPanel)
                 BadgedIconButton(
                   key: const Key('open-attachments'),

@@ -177,6 +177,32 @@ class AppLocalizationsEn extends AppLocalizations {
       'The file is larger than 20 MB and cannot be attached.';
 
   @override
+  String get songLinks => 'Sources';
+
+  @override
+  String get noSongLinks =>
+      'No sources yet. Add recordings on YouTube, Spotify and the like.';
+
+  @override
+  String get addSongLink => 'Add link';
+
+  @override
+  String get songLinkUrl => 'Link (URL)';
+
+  @override
+  String get songLinkLabel => 'Label (optional)';
+
+  @override
+  String get songLinkLabelHint => 'Live 2009';
+
+  @override
+  String get songLinkInvalid =>
+      'Enter a web link starting with https:// (without |).';
+
+  @override
+  String get songLinkFailed => 'The link could not be opened.';
+
+  @override
   String get attachmentName => 'Attachment name';
 
   @override

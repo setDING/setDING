@@ -107,4 +107,4 @@ const otherDirectives = {
 };
 
 /// setDING's own directives (`x_` prefix, ADR-0012).
-const customDirectives = {'x_sequence', 'x_time_grouping'};
+const customDirectives = {'x_sequence', 'x_time_grouping', 'x_link'};

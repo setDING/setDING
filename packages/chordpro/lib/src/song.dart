@@ -4,6 +4,7 @@ library;
 import 'chord.dart';
 import 'diagrams.dart';
 import 'grid.dart';
+import 'links.dart';
 import 'markup.dart';
 import 'meter.dart';
 import 'sequence.dart';
@@ -68,6 +69,13 @@ class Song {
   /// Grouping of an odd meter from the custom directive
   /// `{x_time_grouping: 2+2+3}` (ADR-0026).
   String? get timeGrouping => metaValue('x_time_grouping');
+
+  /// Sources of the song from the custom directive `{x_link: URL | Label}`,
+  /// in document order; values without a usable URL are skipped.
+  List<SongLink> get links => [
+    for (final value in meta['x_link'] ?? const <String>[])
+      ?parseSongLink(value),
+  ];
 
   /// The meter from `{time}` and `{x_time_grouping}`; 4/4 when `{time}` is
   /// missing or unreadable (ADR-0026).

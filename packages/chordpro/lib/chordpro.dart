@@ -17,6 +17,7 @@ export 'src/format.dart';
 export 'src/formatter.dart';
 export 'src/grid.dart';
 export 'src/highlight.dart';
+export 'src/links.dart';
 export 'src/markup.dart';
 export 'src/metadata.dart';
 export 'src/meter.dart';

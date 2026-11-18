@@ -28,6 +28,11 @@
 # song sequence, shown below the subtitle
 # (C=Chorus, V=Verse, PC=Pre-chorus, B=Bridge, I=Intro, O=Outro, …).
 {x_sequence: I, V1, C, V2, PC, C x2, B, O}
+# Sources (recordings), listed in the song's Sources panel: URL, then an
+# optional label after "|". The URL may contain spaces.
+{x_link: https://www.youtube.com/results?search_query=setding | Live video}
+{x_link: https://example.com/setding demo.mp3 | Demo recording}
+{x_link: open.spotify.com/search/setding}
 {x_setding_note: custom directives starting with x_ are ignored}
 
 # ---------------------------------------------------------------------------

@@ -374,6 +374,54 @@ abstract class AppLocalizations {
   /// **'Die Datei ist grösser als 20 MB und kann nicht angehängt werden.'**
   String get attachmentTooLarge;
 
+  /// No description provided for @songLinks.
+  ///
+  /// In de, this message translates to:
+  /// **'Quellen'**
+  String get songLinks;
+
+  /// No description provided for @noSongLinks.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Quellen. Füge Aufnahmen auf YouTube, Spotify usw. hinzu.'**
+  String get noSongLinks;
+
+  /// No description provided for @addSongLink.
+  ///
+  /// In de, this message translates to:
+  /// **'Link hinzufügen'**
+  String get addSongLink;
+
+  /// No description provided for @songLinkUrl.
+  ///
+  /// In de, this message translates to:
+  /// **'Link (URL)'**
+  String get songLinkUrl;
+
+  /// No description provided for @songLinkLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Beschriftung (optional)'**
+  String get songLinkLabel;
+
+  /// No description provided for @songLinkLabelHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Live 2009'**
+  String get songLinkLabelHint;
+
+  /// No description provided for @songLinkInvalid.
+  ///
+  /// In de, this message translates to:
+  /// **'Gib einen Weblink ein, der mit https:// beginnt (ohne |).'**
+  String get songLinkInvalid;
+
+  /// No description provided for @songLinkFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Link konnte nicht geöffnet werden.'**
+  String get songLinkFailed;
+
   /// No description provided for @attachmentName.
   ///
   /// In de, this message translates to:
