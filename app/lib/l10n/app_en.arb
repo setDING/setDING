@@ -527,7 +527,7 @@
   "updateRequiredCopyLink": "Copy download link",
   "updateRequiredCopied": "Link copied.",
   "settingsServer": "Server",
-  "settingsServerHint": "Only change for testing. Changing it signs you out.",
+  "settingsServerHint": "Changing it signs you out.",
   "settingsServerInvalid": "The address must start with http:// or https://.",
   "bandLocal": "On this device",
   "bandLocalHint": "Only on this device, not synced.",

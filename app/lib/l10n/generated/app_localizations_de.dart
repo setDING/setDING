@@ -1479,8 +1479,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsServer => 'Server';
 
   @override
-  String get settingsServerHint =>
-      'Nur für Tests ändern. Beim Wechsel wirst du abgemeldet.';
+  String get settingsServerHint => 'Beim Wechsel wirst du abgemeldet.';
 
   @override
   String get settingsServerInvalid =>
