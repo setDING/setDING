@@ -206,6 +206,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playLive => 'Play live';
 
   @override
+  String get live => 'Live';
+
+  @override
   String get nashville => 'Nashville numbers';
 
   @override
