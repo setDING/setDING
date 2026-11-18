@@ -7,6 +7,7 @@ import 'grid.dart';
 import 'links.dart';
 import 'markup.dart';
 import 'meter.dart';
+import 'section_heading.dart';
 import 'sequence.dart';
 
 /// Kind of a song section.
@@ -138,6 +139,9 @@ class Section extends SongElement {
 
   /// Whether lines are preformatted (tab).
   bool get isPreformatted => kind == SectionKind.tab;
+
+  /// Musical role, derived from the name (ADR-0033).
+  SectionRole get role => sectionRoleOf(this);
 }
 
 /// `{chorus}` – repeats the most recent chorus.

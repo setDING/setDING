@@ -23,6 +23,8 @@ export 'src/metadata.dart';
 export 'src/meter.dart';
 export 'src/notation.dart';
 export 'src/parser.dart';
+export 'src/section_heading.dart'
+    show SectionRole, sectionRoleOf, sectionRoleOfName;
 export 'src/sequence.dart';
 export 'src/song.dart';
 export 'src/source_metadata.dart';

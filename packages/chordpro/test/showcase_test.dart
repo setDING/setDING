@@ -133,6 +133,17 @@ void main() {
       final heading = song.sections.firstWhere((s) => s.label == 'Chorus 2');
       expect(heading.kind, SectionKind.chorus);
 
+      // Roles for the song display styles (ADR-0033).
+      expect(
+        song.sections.firstWhere((s) => s.name == 'outro').role,
+        SectionRole.outro,
+      );
+      expect(heading.role, SectionRole.chorus);
+      expect(
+        song.sections.firstWhere((s) => s.label == 'Intro grid').role,
+        SectionRole.standard,
+      );
+
       // The editor colours the heading section like the parser reads it.
       final editor = sourceSections(source).where(
         (s) =>
