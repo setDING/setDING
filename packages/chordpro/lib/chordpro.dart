@@ -5,6 +5,7 @@ library;
 
 export 'src/abc.dart';
 export 'src/brackets.dart';
+export 'src/ccli_grid.dart';
 export 'src/chord.dart';
 export 'src/chord_tones.dart';
 export 'src/chords_over_lyrics.dart';

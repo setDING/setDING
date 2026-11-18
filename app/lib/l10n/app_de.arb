@@ -499,6 +499,16 @@
   "convertChordsOverLyrics": "Akkorde über Text umwandeln",
   "pastedChordsOverLyrics": "Der eingefügte Text hat Akkorde über dem Liedtext.",
   "convert": "Umwandeln",
+  "convertCcliGrids": "Taktzeilen in Chord-Grid umwandeln",
+  "ccliGridsHint": "{count, plural, =1{Ein Block mit Taktzeilen kann} other{{count} Blöcke mit Taktzeilen können}} als Chord-Grid dargestellt werden.",
+  "@ccliGridsHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hideHint": "Hinweis ausblenden",
   "searchInSong": "Suchen",
   "searchNoMatches": "Keine Treffer",
   "searchPrevious": "Vorheriger Treffer",

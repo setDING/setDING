@@ -4,6 +4,7 @@
 /// applies their result. Each command returns null when it changes nothing.
 library;
 
+import 'ccli_grid.dart';
 import 'chords_over_lyrics.dart';
 import 'highlight.dart';
 
@@ -262,6 +263,27 @@ SourceEdit? convertChordsOverLyricsIn(String text, int base, int extent) {
     start,
     start + converted.length,
   );
+}
+
+/// Converts CCLI bar lines to grid sections (#481): the blocks touched by
+/// the selection, which then covers the converted sections, or all blocks
+/// when nothing is selected; the cursor then moves to the first section.
+SourceEdit? convertCcliGridsIn(String text, int base, int extent) {
+  var grids = findCcliGrids(text);
+  if (base != extent) {
+    final (start, end) = _lineBlock(text, base, extent);
+    grids = [
+      for (final g in grids)
+        if (g.linesStart <= end && g.end >= start) g,
+    ];
+  }
+  if (grids.isEmpty) return null;
+  final converted = convertCcliGrids(text, grids);
+  final first = grids.first.start;
+  if (base == extent) return SourceEdit(converted, first, first);
+  final last = grids.last;
+  final end = last.end + converted.length - text.length;
+  return SourceEdit(converted, first, end);
 }
 
 /// [text] with every range of [matches] (sorted, without overlaps, e.g.

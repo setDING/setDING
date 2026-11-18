@@ -1970,6 +1970,24 @@ abstract class AppLocalizations {
   /// **'Umwandeln'**
   String get convert;
 
+  /// No description provided for @convertCcliGrids.
+  ///
+  /// In de, this message translates to:
+  /// **'Taktzeilen in Chord-Grid umwandeln'**
+  String get convertCcliGrids;
+
+  /// No description provided for @ccliGridsHint.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Ein Block mit Taktzeilen kann} other{{count} Blöcke mit Taktzeilen können}} als Chord-Grid dargestellt werden.'**
+  String ccliGridsHint(int count);
+
+  /// No description provided for @hideHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Hinweis ausblenden'**
+  String get hideHint;
+
   /// No description provided for @searchInSong.
   ///
   /// In de, this message translates to:
