@@ -16,6 +16,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../annotations/annotated_page.dart';
+import '../live/live_play_button.dart';
 import '../live/live_screen.dart';
 import '../render/chord_diagram.dart';
 import '../render/render_cache.dart';
@@ -282,11 +283,6 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   ),
                   onPressed: () => _editSource(song, showProblem: true),
                 ),
-              IconButton(
-                tooltip: l10n.playLive,
-                icon: const Icon(Icons.play_arrow),
-                onPressed: () => LiveScreen.openSong(context, song.id),
-              ),
               if (showBand)
                 BadgedIconButton(
                   key: const Key('open-band-arrangement'),
@@ -349,6 +345,9 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   if (library.canDeleteSongs)
                     PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
                 ],
+              ),
+              LivePlayButton(
+                onPressed: () => LiveScreen.openSong(context, song.id),
               ),
             ],
           ),

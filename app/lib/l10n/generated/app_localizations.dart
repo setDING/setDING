@@ -416,6 +416,12 @@ abstract class AppLocalizations {
   /// **'Live spielen'**
   String get playLive;
 
+  /// No description provided for @live.
+  ///
+  /// In de, this message translates to:
+  /// **'Live'**
+  String get live;
+
   /// No description provided for @nashville.
   ///
   /// In de, this message translates to:

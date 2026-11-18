@@ -207,6 +207,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get playLive => 'Live spielen';
 
   @override
+  String get live => 'Live';
+
+  @override
   String get nashville => 'Nashville-Nummern';
 
   @override

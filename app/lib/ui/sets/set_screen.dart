@@ -14,6 +14,7 @@ import '../../data/set_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../settings/settings.dart';
+import '../live/live_play_button.dart';
 import '../live/live_screen.dart';
 import '../render/render_cache.dart';
 import '../render/song_header.dart';
@@ -197,13 +198,6 @@ class _SetScreenState extends ConsumerState<SetScreen> {
             automaticallyImplyLeading: !widget.embedded,
             title: Text(set.name),
             actions: [
-              IconButton(
-                tooltip: l10n.playLive,
-                icon: const Icon(Icons.play_arrow),
-                onPressed: items.isEmpty
-                    ? null
-                    : () => LiveScreen.openSet(context, set.id),
-              ),
               PopupMenuButton<String>(
                 onSelected: (value) => switch (value) {
                   'pause' => _addMarker(SetItemType.pause),
@@ -249,6 +243,11 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                     PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
                   ],
                 ],
+              ),
+              LivePlayButton(
+                onPressed: items.isEmpty
+                    ? null
+                    : () => LiveScreen.openSet(context, set.id),
               ),
             ],
           ),

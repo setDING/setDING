@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:setding/providers.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:setding/ui/bands/bands_screen.dart';
+import 'package:setding/ui/live/live_play_button.dart';
 import 'package:setding/ui/songs/song_screen.dart';
 import 'package:setding/ui/songs/songs_screen.dart';
 
@@ -538,6 +539,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byTooltip('Play live'), findsOneWidget);
+    // The live button is the last action of the app bar (#444).
+    expect(
+      tester.widget<AppBar>(find.byType(AppBar)).actions!.last,
+      isA<LivePlayButton>(),
+    );
     expect(find.byTooltip('Attachments'), findsNothing);
     await tester.tap(find.byType(PopupMenuButton<String>).first);
     await tester.pumpAndSettle();

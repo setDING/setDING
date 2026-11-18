@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/providers.dart';
+import 'package:setding/ui/live/live_play_button.dart';
 import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/ui/sets/set_screen.dart';
 import 'package:setding/ui/sets/sets_screen.dart';
@@ -43,14 +44,8 @@ void main() {
     return screens.isEmpty ? null : screens.single;
   }
 
-  String shownName(WidgetTester tester) => tester
-      .widget<Text>(
-        find.descendant(
-          of: find.byType(AppBar).last,
-          matching: find.byType(Text),
-        ),
-      )
-      .data!;
+  String shownName(WidgetTester tester) =>
+      (tester.widget<AppBar>(find.byType(AppBar).last).title! as Text).data!;
 
   testWidgets('wide: the next gig is shown next to the list', (tester) async {
     useTabletSize(tester);
@@ -124,6 +119,14 @@ void main() {
     useTabletSize(tester);
     final app = await withSets(tester);
 
+    // The live button is the last action of the app bar (#444).
+    final bar = tester.widget<AppBar>(
+      find.descendant(
+        of: find.byType(SetScreen),
+        matching: find.byType(AppBar),
+      ),
+    );
+    expect(bar.actions!.last, isA<LivePlayButton>());
     await tester.tap(find.byTooltip('Play live'));
     await tester.pumpAndSettle();
     expect(find.byType(LiveScreen), findsOneWidget);
