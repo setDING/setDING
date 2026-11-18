@@ -69,26 +69,56 @@ Every SBOM carries in `metadata.component`:
 usual. The hash binds the SBOM to one file; without it, the SBOM would only
 describe "a setDING X.Y.Z".
 
-### Components
+### Components: only what is shipped
 
-- Dart packages from `app/pubspec.lock` with versions, `purl` (`pkg:pub/…`),
-  licences and hashes as far as the generator provides them; the path packages
-  under `packages/` as first-party components.
-- Android additionally: the resolved Gradle dependencies of the release build
-  (`pkg:maven/…`), generated in the Android job where Gradle already resolves them.
-- Every app: the Flutter engine as an explicit component (`pkg:github/flutter/flutter@<version>`,
-  licence BSD-3-Clause) with the version from the `Makefile`.
-- The dependency graph (`dependencies`) is kept where the generator provides it.
+An SBOM lists **only components that are in its file**. `pubspec.lock` alone is
+not enough: it lists dev dependencies and the plugin implementations of every
+platform. The components of an asset are therefore determined from its own build:
+
+- **Dart packages compiled into the app:** the release build writes the sizes of
+  the compiled code per library (`--extra-gen-snapshot-options=--print-instructions-sizes-to=<file>`,
+  the data behind `flutter build --analyze-size`); a package is listed if code
+  from it is in the AOT snapshot. Packages the compiler drops (dev dependencies,
+  code behind conditional imports for other platforms, unused packages) do not
+  appear.
+- **Packages that ship assets** (fonts, images) are listed if their files are in
+  the bundle (`flutter_assets/packages/<name>/`).
+- **Native plugins:** listed for the platform only if `.flutter-plugins-dependencies`
+  of the build names them for that platform.
+- **Android:** the Gradle dependencies of `releaseRuntimeClasspath` only (no test
+  or debug configurations), `pkg:maven/…`, generated in the Android job where
+  Gradle already resolves them.
+- **Flutter engine:** an explicit component (`pkg:github/flutter/flutter@<version>`,
+  licence BSD-3-Clause) with the version from the `Makefile`, in every app.
+- Versions, `purl` (`pkg:pub/…`), licences and hashes of the Dart packages come
+  from `pubspec.lock` and the generator; the path packages under `packages/` are
+  first-party components. The dependency graph is kept for the listed components.
+
+If a package cannot be attributed (neither code, assets nor a native part), the
+SBOM step fails instead of guessing, so the rules are extended deliberately.
 
 ### Generation
 
 - **cdxgen** (CycloneDX project, Apache-2.0) generates the Dart part (`-t dart`)
   and the Gradle part (`-t gradle`); **cyclonedx-cli** merges them for Android.
-- A script in `tool/sbom/` then sets `metadata` as above (`jq`) and adds the
-  Flutter engine, so the metadata do not depend on the generator's defaults
-  (directory name `app`, no version).
+- A script in `tool/sbom/` then removes the Dart components that are not shipped
+  (rules above), sets `metadata` as above and adds the Flutter engine, so neither
+  the components nor the metadata depend on the generator's defaults (directory
+  name `app`, no version, every package in the lock file).
 - The tools are used in their newest version (owner rule); they run in the
   release jobs and in `make sbom`, not inside the app.
+
+### Evaluation on GitHub
+
+The SBOMs are for the people who receive a release. The ongoing evaluation runs on
+GitHub on the same data, from the repository:
+
+- **Dependency graph and Dependabot alerts** (to be switched on by the owner in the
+  repository settings; free for public repositories) report known vulnerabilities
+  of the Dart packages from `pubspec.lock`; the Android Gradle dependencies are
+  submitted with `gradle/actions/dependency-submission` in the Android job.
+- **Licence check:** `actions/dependency-review-action` with an allow list of
+  MIT-compatible licences, once CI runs on pull requests again (ADR-0010).
 
 ### Checks
 
@@ -112,10 +142,13 @@ describe "a setDING X.Y.Z".
 
 - Every release carries four additional small JSON assets; the release workflow
   gets one step per build job plus a check.
-- Vulnerability scans and the licence check can build on the SBOMs (follow-ups).
-- The Dart part lists the platform implementations of all platforms (a superset,
-  see open points): an SBOM may name a package that is not in that file, but it
-  does not leave out one that is.
+- Vulnerabilities and licences are evaluated on GitHub (Dependabot, dependency
+  review), not by our own tooling.
+- The release build writes the instruction-size file in addition; the SBOM
+  script depends on its format (a Dart VM option), which may change with a
+  Flutter upgrade; the failing check above makes such a change visible.
+- The SBOMs are precise at package level: a listed package may contribute only
+  part of its code, but no package is listed that is not in the file.
 - The SBOMs describe the dependencies, not the exact build environment (Flutter
   SDK tooling, Gradle, Inno Setup compiler); that is not their purpose.
 
@@ -123,14 +156,17 @@ describe "a setDING X.Y.Z".
 
 - 2026-11-18: Proposed (#505) on the owner's request; the owner chose CycloneDX
   and asked for correct application data (name, version) in every SBOM.
+- 2026-11-18: The owner asked that an SBOM lists as little as possible that is not
+  shipped: components are taken from the asset's build (compiled code, assets,
+  native plugins per platform, Gradle release classpath) instead of the whole
+  lock file. Evaluation (vulnerabilities, licences) runs on GitHub. No server SBOM
+  while the server is not released.
 
 ## Open points
 
-- Filter the federated plugin implementations of other platforms out of each
-  SBOM, so that every SBOM lists only what is in its file.
-- SBOM for the server deployment (PocketBase version, web client) from
-  `make server-release`, which has no release asset to hash.
-- Licence check against the MIT-compatibility rule in `make check`, and a
-  vulnerability scan (osv-scanner), based on the SBOMs.
+- Server SBOM (PocketBase, web client): later, once the server is released as an
+  artifact of its own.
+- Owner: switch on the dependency graph and Dependabot alerts in the repository
+  settings.
 - Attesting the SBOMs (`actions/attest-sbom`).
 - iOS, once there is an iOS build.
