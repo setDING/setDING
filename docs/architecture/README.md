@@ -54,6 +54,7 @@ A user can be a member of several organizations and bands; roles are defined per
 | Localization | UI in **German (Swiss, `de-CH`) and English**, selectable in the settings | [ADR-0008](adr/0008-localization.md) |
 | Sheet music | **PDF attachments** per song, synced and available offline, shown in live mode | [ADR-0009](adr/0009-pdf-attachments.md) |
 | Chord display style | Suffix parsed into quality, extension and alterations; **device setting** *As written* / *Standard* / *Jazz* plus optional superscript, combinable with B/H and Nashville; source unchanged | [ADR-0022](adr/0022-chord-display-style.md) |
+| Song display styles | *Proposed:* personal **Song display** settings: Standard style plus seven fixed section types (intro, verse, pre-chorus, chorus, bridge, interlude, outro) derived from the section name, each with its own style or **inheriting from a chosen type**; chords, lyrics, heading, indent bar and tint; curated palette with light and dark tones; presets; explicit colours beat song directives, inline markup always wins; live mode and song view, not the editor preview | [ADR-0033](adr/0033-song-display-styles.md) |
 | ChordPro coverage | **Whole specification** (transpose, grids, markup, conditionals, diagrams, images, delegated environments) | [ADR-0012](adr/0012-full-chordpro-support.md) |
 | SongSelect (CCLI) | **No API integration** (partner program closed); manual import of ChordPro files downloaded from SongSelect | [ADR-0011](adr/0011-songselect-import.md) |
 | Server hosting | **Debian LXC** on Proxmox, PocketBase as systemd service, published via **Cloudflare Tunnel**, daily backups, provisioned with `make server-install`, updated after each release with `make server-release` (from the tag, version stamped, only after a green release build) | [ADR-0014](adr/0014-server-hosting.md) |
@@ -108,7 +109,7 @@ flowchart LR
 | Module | Responsibility |
 |---|---|
 | `chordpro` | Parser (ChordPro → AST), chord model (incl. structured suffix, ADR-0022), transposition, Nashville conversion, metadata extraction. Pure Dart package without UI dependencies, easy to test. |
-| `render` | Rendering the AST: chords above lyrics, sections (verse/chorus), one or more columns, auto-fit with song pages in live mode, notation B/H, Nashville numbers, chord style with raised extensions (ADR-0022) |
+| `render` | Rendering the AST: chords above lyrics, sections (verse/chorus), one or more columns, auto-fit with song pages in live mode, notation B/H, Nashville numbers, chord style with raised extensions (ADR-0022), song display styles per section type (ADR-0033, proposed) |
 | `pdf` | Displaying PDF attachments (fit to width/page, two-page view) |
 | `data` | Local DB (SQLite, e.g. via `drift`), repositories, domain model |
 | `sync` | Sync between local DB and backend, conflict handling, offline queue. `SyncEngine` runs the order of a sync; the parts per kind of record live in `app/lib/sync/engine/` (songs with conflicts, sets, attachments with downloads, personal adjustments, shared cursors and outbox) |
@@ -216,6 +217,7 @@ Notes:
 | **Website** | Landing page and user documentation at `setding.app` (ADR-0030, #388): skeleton with first steps and installation; remaining chapters, privacy policy and legal notice follow |
 | **Towards version 1** | Re-enable CI as a required check on every PR and push to `main` (manual-only during early development, ADR-0010), branch protection; release builds for Linux, Android and Windows exist (ADR-0021), iOS open; then release **1.0.0** (ADR-0028) |
 | **Freehand annotations** ✅ | Personal freehand notes on songs and PDF pages, synced and editable (ADR-0032, implemented in #428) |
+| **Song display styles** | Personal styles per section type for live mode and the song view (ADR-0033, proposed, #471) |
 | **Later** | Configurable page turner key mapping, band annotations shared with the band (follow-up of ADR-0032), MIDI control |
 
 ### MVP status (2026-11-14)
@@ -300,6 +302,7 @@ See "Open points" in the individual ADRs. The most important:
 25. ~~Versioning scheme (SemVer or CalVer)?~~ → SemVer with bump rules based on client/server compatibility (ADR-0028, accepted, #330). Minimum client version: server refuses outdated apps with HTTP 426, the app asks for an update (ADR-0029, accepted, #339). Server deploys: production runs released versions only, `make server-release` after a green release build (#345)
 26. Where do the website and the user documentation live? → `website/` in this repository, Astro Starlight, served by Caddy on the existing server at `setding.app`, deployed with the `make server-*` targets (ADR-0030, accepted, #388). Moving the whole server to external hosting is open
 27. How can people draw their own notes on a song? → ADR-0032 (accepted, #429): personal freehand annotations drawn in live mode (ChordPro pages and PDF), page coordinates with a line anchor as fallback on another layout, per song, synced per person with a per-stroke merge, editable with eraser, lasso and undo; stamps for music marks, repeats and cues; drawing mode via the menu only; band annotations in a later ADR. Implemented in #428; the client warns from 80 % of the 1 MB limit per song and target and refuses new strokes beyond it. Open: confirm the limit with real annotations, a check on real hardware
+28. How can musicians adapt how songs look per section (chorus, bridge, solo …)? → ADR-0033 (proposed, #471): personal song display styles, Standard plus seven fixed section types with inheritance from a chosen type, curated palette, presets; explicit colours beat song directives, markup always wins; live mode and song view. Open: exact palette tones
 
 ## 10. ADR index
 
@@ -336,5 +339,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0029](adr/0029-minimum-client-version.md) | Minimum client version enforced by the server | Accepted |
 | [0030](adr/0030-website-and-user-docs.md) | Website and user documentation | Accepted |
 | [0032](adr/0032-freehand-annotations.md) | Personal freehand annotations on songs | Accepted |
+| [0033](adr/0033-song-display-styles.md) | Song display styles per section type | Proposed |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.
