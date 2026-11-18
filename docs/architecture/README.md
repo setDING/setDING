@@ -306,7 +306,7 @@ See "Open points" in the individual ADRs. The most important:
 27. How can people draw their own notes on a song? → ADR-0032 (accepted, #429): personal freehand annotations drawn in live mode (ChordPro pages and PDF), page coordinates with a line anchor as fallback on another layout, per song, synced per person with a per-stroke merge, editable with eraser, lasso and undo; stamps for music marks, repeats and cues; drawing mode via the menu only; band annotations in a later ADR. Implemented in #428; the client warns from 80 % of the 1 MB limit per song and target and refuses new strokes beyond it. Open: confirm the limit with real annotations, a check on real hardware
 28. How can musicians adapt how songs look per section (chorus, bridge, solo …)? → ADR-0033 (accepted, #471): personal song display styles, Standard plus seven fixed section types with inheritance from a chosen type, curated palette, presets; explicit colours beat song directives, markup always wins; live mode and song view. Implemented in #473–#476 (`app/lib/settings/song_display.dart`, `app/lib/ui/render/song_display_colors.dart`, `app/lib/ui/settings/song_display_settings.dart`)
 29. Why does the Windows app fail to connect when the server is reachable? → Dart on Windows only trusts roots already in the Windows store, which may lack the ISRG roots of Let's Encrypt; the Windows client bundles ISRG Root X1/X2 (ADR-0034, proposed, #489). Open: bundle the newer Let's Encrypt roots once chains without the X2 cross-sign are served
-30. How do people learn about a new version before the server requires it? → ADR-0036 (proposed, #498): the server reports the release it was deployed from (`latestClientVersion`), installed release builds check it at most daily and show a dot, a settings tile and a one-time SnackBar, never in live mode. Open: a switch to turn it off, release notes in the app
+30. How do people learn about a new version before the server requires it? → ADR-0036 (accepted, #498), implemented in #499: the server reports the release it was deployed from (`latestClientVersion`), installed release builds check it at most daily and show a dot, a settings tile and a one-time SnackBar, never in live mode. Open: a switch to turn it off, release notes in the app
 
 ## 10. ADR index
 
@@ -345,6 +345,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0032](adr/0032-freehand-annotations.md) | Personal freehand annotations on songs | Accepted |
 | [0033](adr/0033-song-display-styles.md) | Song display styles per section type | Accepted |
 | [0034](adr/0034-bundled-root-certificates.md) | Bundled root certificates for the Windows client | Proposed |
-| [0036](adr/0036-update-check.md) | Unobtrusive update check at the start | Proposed |
+| [0036](adr/0036-update-check.md) | Unobtrusive update check at the start | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.

@@ -1,6 +1,6 @@
 # ADR-0036: Unobtrusive update check at the start
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-18
 
 ## Context
@@ -71,7 +71,8 @@ a banner in the middle of a set is not acceptable (ADR-0007).
 
 ## Decision log
 
-- 2026-11-18: Proposed (#498).
+- 2026-11-18: Proposed (#498), implemented in #499.
+- 2026-11-18: Accepted by the owner.
 
 ## Open points
 
