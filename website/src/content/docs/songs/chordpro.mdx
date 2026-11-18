@@ -1,0 +1,206 @@
+---
+title: ChordPro-Syntax
+description: Die wichtigsten ChordPro-Angaben und die setDING-Direktiven für Songablauf, Taktart und Schlagzeug.
+sidebar:
+  order: 3
+---
+
+import { Image } from 'astro:assets';
+import drums from '../../../../../docs/screenshots/drums_de.png';
+
+Songs sind in [ChordPro](https://www.chordpro.org/chordpro/) geschrieben, einem
+offenen Textformat für Akkordblätter. Eine ChordPro-Datei ist reiner Text: du kannst
+sie im [eingebauten Editor](/songs/editor/) schreiben, mit jedem Texteditor
+bearbeiten und mit anderen ChordPro-Programmen austauschen. Diese Seite zeigt das
+Wichtigste; setDING unterstützt die ganze Spezifikation.
+
+## Die Grundregeln
+
+- **Akkorde** stehen in eckigen Klammern direkt vor der Silbe, auf der sie
+  gespielt werden: `A[G]mazing [G7]grace`.
+- **Direktiven** stehen in geschweiften Klammern auf einer eigenen Zeile:
+  `{title: Amazing Grace}`. Sie geben Song-Infos an, öffnen und schliessen
+  Abschnitte oder schreiben Kommentare.
+- Zeilen, die mit `#` beginnen, sind Notizen in der Datei und werden nie angezeigt.
+
+```
+{title: Amazing Grace}
+{artist: John Newton}
+{key: G}
+{tempo: 72}
+{time: 3/4}
+
+{start_of_verse: Strophe 1}
+A[G]mazing [G7]grace, how [C]sweet the [G]sound
+That [G]saved a wretch like [D]me
+{end_of_verse}
+
+{start_of_chorus}
+[C]Refrain [G]text
+{end_of_chorus}
+
+{comment: Langsam ausklingen lassen}
+{chorus}
+```
+
+## Song-Infos
+
+| Direktive | Bedeutung |
+|---|---|
+| `{title: …}`, `{subtitle: …}` | Titel und Untertitel |
+| `{artist: …}`, `{composer: …}`, `{lyricist: …}` | Interpret, Komponist, Texter |
+| `{key: G}` | Tonart; Ausgangspunkt fürs Transponieren und für Nashville-Zahlen |
+| `{capo: 2}` | Kapodaster |
+| `{tempo: 96}` | Tempo in BPM für Takt und Klick |
+| `{time: 4/4}` | Taktart (ohne Angabe 4/4) |
+| `{duration: 3:45}` | Dauer |
+| `{ccli: 12345}`, `{copyright: …}` | CCLI-Nummer und Copyright |
+
+## Abschnitte
+
+Ein Abschnitt beginnt mit `{start_of_…}` und endet mit `{end_of_…}`. Der Text nach
+dem Doppelpunkt ist die Beschriftung.
+
+| Abschnitt | Direktiven |
+|---|---|
+| Strophe | `{start_of_verse: Strophe 1}` … `{end_of_verse}` (kurz `sov` / `eov`) |
+| Refrain | `{start_of_chorus}` … `{end_of_chorus}` (kurz `soc` / `eoc`) |
+| Bridge | `{start_of_bridge}` … `{end_of_bridge}` |
+| Eigene Teile | z. B. `{start_of_intro}` … `{end_of_intro}`, ebenso `outro`, `solo` |
+| Tabulatur | `{start_of_tab}` … `{end_of_tab}` |
+| Akkord-Raster | `{start_of_grid}` … `{end_of_grid}` |
+
+`{chorus}` wiederholt den letzten Refrain, ohne ihn nochmals abzuschreiben.
+`{comment: …}` (kurz `{c: …}`) zeigt einen Hinweis an, z. B. «2× spielen».
+
+Die Beschriftung bestimmt auch, welcher **Teil** des Songs ein Abschnitt ist:
+«Strophe 2», «Verse 2», «Refrain», «Pre-Chorus», «Bridge», «Intro» und «Outro»
+erkennt setDING auf Deutsch und Englisch. Abschnitte ohne Beschriftung zählen nach
+ihrer Art (Strophe, Refrain, Bridge). Darauf baut der [Songablauf](#songablauf-x_sequence)
+auf.
+
+## Nur für ein Instrument oder eine Stimme
+
+Hängst du an eine Direktive einen Bindestrich und einen Namen an, sieht sie nur, wer
+in den Einstellungen unter **Musiker** dieses Instrument (**Mein Instrument**) oder
+diesen Namen (**Mein Name oder meine Stimme**) eingetragen hat:
+
+```
+{comment-guitar: Capo 2, Picking}
+{comment-drums: Hi-Hat halb offen}
+{comment-guitar!: für alle ausser Gitarre}
+
+{start_of_verse-alto: Alt}
+Nur die Altstimme sieht diese Strophe.
+{end_of_verse}
+```
+
+Die Instrumente heissen `guitar`, `ukulele`, `bass`, `keyboard`, `vocals` und
+`drums`. Ein `!` am Ende kehrt die Bedingung um.
+
+## setDING-Direktiven
+
+Was ChordPro nicht kennt, ergänzt setDING mit eigenen Direktiven. Sie beginnen alle
+mit `x_`, wie es die ChordPro-Spezifikation für eigene Erweiterungen vorsieht. Andere
+ChordPro-Programme ignorieren sie, deine Songs bleiben also austauschbar.
+
+### Songablauf: `{x_sequence}`
+
+Der Songablauf sagt, in welcher Reihenfolge die Band die Teile spielt:
+
+```
+{x_sequence: I, V1, C, V2, PC, C x2, B, O}
+```
+
+- Die Teile werden durch Kommas getrennt.
+- Eine Zahl wählt einen bestimmten Teil: `V2` ist die zweite Strophe, `V` passt auf
+  alle Strophen.
+- Wiederholungen schreibst du als `C x2`, `2x C` oder `C (2x)`.
+- Unbekannte Namen (z. B. `Coda`) passen auf einen Abschnitt mit genau dieser
+  Beschriftung.
+
+| Teil | Abkürzungen |
+|---|---|
+| Intro | `I`, `In`, `Intro` |
+| Strophe | `V`, `Vs`, `Verse`, `S`, `Str`, `Strophe` |
+| Pre-Chorus | `PC`, `Pre`, `PR`, `Pre-Chorus`, `Prerefrain` |
+| Refrain | `C`, `Ch`, `Chorus`, `R`, `Ref`, `Refrain` |
+| Post-Chorus | `PoC`, `Post-Chorus` |
+| Bridge | `B`, `Br`, `Bridge` |
+| Zwischenspiel | `Int`, `Interlude`, `Zw`, `Zwischenspiel` |
+| Instrumental | `Inst`, `Instr`, `Instrumental` |
+| Solo | `Solo` |
+| Tag | `T`, `Tag` |
+| Outro | `O`, `Out`, `Outro`, `End`, `Ending`, `Schluss` |
+
+Den Ablauf siehst du unter dem Untertitel des Songs. Im Live-Modus zeigt setDING nur
+die Teile, die darin vorkommen, und die Song-Landkarte fürs Schlagzeug folgt genau
+dieser Reihenfolge. Spielt deine Band den Song anders, legt sie den Ablauf im
+Band-Arrangement oder im Set fest, ohne den Song zu ändern; siehe
+[Tonart und Ablauf](/sets/key-and-sequence/).
+
+### Betonungen im ungeraden Takt: `{x_time_grouping}`
+
+Ungerade Taktarten wie 5/8 oder 7/8 zählt setDING in Achteln und betont nur die 1.
+Mit `{x_time_grouping}` gibst du an, wie die Achtel gruppiert sind; die Taktanzeige
+und der Klick betonen dann den Anfang jeder Gruppe:
+
+```
+{time: 7/8}
+{x_time_grouping: 2+2+3}
+{tempo: 210}
+```
+
+## Songs für Schlagzeug
+
+Für das Schlagzeug zählen vor allem drei Dinge im Song: Tempo, Taktart und
+Ablauf. Daraus macht setDING im Live-Modus Taktanzeige, Einzählen, Klick und die
+[Song-Landkarte](/live/beat/#song-landkarte-für-schlagzeug).
+
+- `{tempo: …}` ist das Tempo in BPM. Bei einfachen Taktarten (2/4, 3/4, 4/4) gilt
+  es pro Viertel, bei 6/8, 9/8 und 12/8 pro punktierter Viertel – so, wie Bands
+  das Tempo angeben –, bei ungeraden Taktarten pro Achtel.
+- `{time: …}` ist die Taktart. Es gelten das erste `{tempo}` und das erste `{time}`
+  im Song.
+- `{x_sequence: …}` ordnet die Song-Landkarte.
+- Schlagzeug-Notizen schreibst du mit `-drums`. Die Song-Landkarte zeigt sie beim
+  Teil, in dem sie stehen, zusammen mit der ersten Textzeile als Stichwort. Wer ein
+  anderes Instrument spielt, sieht sie nicht.
+
+```
+{title: Beispiel}
+{key: E}
+{tempo: 128}
+{time: 4/4}
+{x_sequence: I, V1, C, V2, C, B, C x2, O}
+
+{start_of_intro}
+{comment-drums: 4 Takte nur Toms, dann voll}
+[E] [A] [E] [B]
+{end_of_intro}
+
+{start_of_verse: Strophe 1}
+{comment-drums: Hi-Hat geschlossen, Snare auf 2 und 4}
+[E]Erste Zeile der [A]Strophe
+{end_of_verse}
+
+{start_of_chorus}
+{comment-drums: Ride, Crash auf jede 1}
+[A]Refrain zum [E]Mitsingen
+{end_of_chorus}
+
+{start_of_bridge}
+{comment-drums: Halftime}
+[C#m]Bridge-[A]Text
+{end_of_bridge}
+```
+
+<Image src={drums} alt="Live-Modus mit Schlagzeug: links Tempo, Taktanzeige und das Set, rechts die Teile des Songs mit Stichworten aus dem Liedtext und Schlagzeug-Notizen" />
+
+## Alles auf einen Blick
+
+Der Beispielsong
+[`feature-showcase.zip`](https://github.com/tafli/setDING/raw/main/docs/examples/feature-showcase.zip)
+verwendet jede Direktive, die setDING kennt. Importiere ihn unter **Songs** und
+öffne ihn im Editor. Die vollständige Beschreibung des Formats steht in der
+[ChordPro-Spezifikation](https://www.chordpro.org/chordpro/).
