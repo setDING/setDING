@@ -1,6 +1,6 @@
 # ADR-0032: Personal freehand annotations on songs
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-18
 
 ## Context
@@ -267,6 +267,7 @@ release (ADR-0028); no minimum client version change (ADR-0029).
     read-only (line anchor).
   - Stamps in the first version: music marks, repeats and cues.
 - 2026-11-18: Numbered 0032, as ADR-0031 is taken by the self-hosting proposal (#420).
+- 2026-11-18: Accepted by the owner (#429); implementation in #428.
 
 ## Open points
 
