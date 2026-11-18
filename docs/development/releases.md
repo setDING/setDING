@@ -25,6 +25,7 @@ only after the previous one succeeded:
    |---|---|
    | `setding-X.Y.Z-android.apk` | APK for arm64 devices, signed with the release key |
    | `setding-X.Y.Z-linux-x64.tar.gz` | Linux bundle, built like `make release-linux` |
+   | `setding-X.Y.Z-windows-x64-setup.exe` | Windows installer, from which the installed app updates itself (ADR-0035) |
    | `setding-X.Y.Z-windows-x64.zip` | Windows build with the Visual C++ runtime |
    | `SHA256SUMS` | Checksums of the files above |
 
