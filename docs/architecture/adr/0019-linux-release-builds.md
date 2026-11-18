@@ -51,7 +51,8 @@ exist yet, and CI is manual-only during early development.
 - Distributable Linux builds no longer depend on the development machine's distribution
   or CPU. `make build` / `make start` stay debug builds for local testing only.
 - The bundle still needs GTK 3 and libsecret on the target system (standard on desktop
-  distributions). Packaging formats (AppImage, Flatpak) and signing are not covered.
+  distributions). Packaging formats and signing are not covered here; the AppImage
+  next to the tar.gz comes with ADR-0038.
 - When CI release builds come (ADR-0010, towards version 1), they should use the same
   container and scripts, so local and CI releases stay identical.
 
@@ -69,6 +70,10 @@ exist yet, and CI is manual-only during early development.
   and ISA check), with `RELEASE_NAME` without the commit and `BUILD_NUMBER` set to the
   run number; Windows is built on a GitHub Windows runner.
 
+- 2026-11-18: The open point "Packaging (AppImage/Flatpak)" is taken up by ADR-0038
+  (accepted, #503): the same container build also packs an AppImage that updates
+  itself.
+
 ## Open points
 
-- Packaging (AppImage/Flatpak) and signing.
+- Flatpak and signing.

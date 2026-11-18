@@ -1,8 +1,9 @@
-/// Updates of the Windows app from the GitHub releases (ADR-0035).
+/// Updates of the installed app from the GitHub releases: the Windows app
+/// installed with the setup (ADR-0035) and the Linux AppImage (ADR-0038).
 ///
-/// Which version is current comes from the update check (ADR-0036); the
-/// installed app (Inno Setup) downloads that release's setup, checks it
-/// against the release's `SHA256SUMS` and runs it silently.
+/// Which version is current comes from the update check (ADR-0036); the app
+/// downloads that release's setup or AppImage, checks it against the
+/// release's `SHA256SUMS` and installs it.
 library;
 
 import 'dart:convert';
@@ -11,9 +12,23 @@ import 'package:http/http.dart' as http;
 
 import '../sync/update_check.dart' show releasesUrl;
 
-/// The end of the setup's file name in a release
-/// (`setding-<version>-windows-x64-setup.exe`).
-const setupSuffix = '-windows-x64-setup.exe';
+/// How this app updates itself.
+enum SelfUpdateKind {
+  /// The Windows app installed with the setup (ADR-0035): the new setup runs
+  /// silently over the installation.
+  windowsSetup('-windows-x64-setup.exe'),
+
+  /// The Linux AppImage (ADR-0038): the new AppImage replaces the file.
+  appImage('-linux-x64.AppImage');
+
+  const SelfUpdateKind(this.suffix);
+
+  /// The end of the file name in a release (`setding-<version><suffix>`).
+  final String suffix;
+
+  /// The file of [version] in its release.
+  String fileName(String version) => 'setding-$version$suffix';
+}
 
 /// Arguments for an update without questions: Inno Setup closes the running
 /// app, installs over it and starts it again (`[Run]` without
@@ -24,7 +39,7 @@ const installerArguments = ['/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART'];
 Uri releaseFileUrl(String version, String name) =>
     Uri.parse('$releasesUrl/download/v$version/$name');
 
-/// The setup of a release with its expected checksum.
+/// The setup or AppImage of a release with its expected checksum.
 class AvailableUpdate {
   const AvailableUpdate({
     required this.version,
@@ -36,13 +51,13 @@ class AvailableUpdate {
   /// The release version without `v`, e.g. `0.9.0`.
   final String version;
 
-  /// The file name of the setup.
+  /// The file name of the setup or AppImage.
   final String setupName;
 
-  /// Where the setup is downloaded from.
+  /// Where it is downloaded from.
   final Uri setupUrl;
 
-  /// The expected SHA-256 of the setup, lower-case hex.
+  /// The expected SHA-256 of the file, lower-case hex.
   final String sha256;
 }
 
@@ -56,12 +71,16 @@ class UpdateException implements Exception {
   String toString() => 'UpdateException: $message';
 }
 
-/// The setup of the release of [version] (from the update check, ADR-0036)
-/// and its checksum from the release's `SHA256SUMS`. Throws
-/// [UpdateException] if the release has no setup with a checksum (e.g. one
-/// built before ADR-0035).
-Future<AvailableUpdate> fetchUpdate(http.Client client, String version) async {
-  final name = 'setding-$version$setupSuffix';
+/// The file of [kind] in the release of [version] (from the update check,
+/// ADR-0036) and its checksum from the release's `SHA256SUMS`. Throws
+/// [UpdateException] if the release has no such file with a checksum (e.g.
+/// one built before ADR-0035 or ADR-0038).
+Future<AvailableUpdate> fetchUpdate(
+  http.Client client,
+  String version,
+  SelfUpdateKind kind,
+) async {
+  final name = kind.fileName(version);
   final response = await client.get(releaseFileUrl(version, 'SHA256SUMS'));
   if (response.statusCode != 200) {
     throw UpdateException('SHA256SUMS: HTTP ${response.statusCode}');

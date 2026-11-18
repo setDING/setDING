@@ -2,16 +2,13 @@ import 'package:http/http.dart' as http;
 
 import '../update/app_update.dart';
 
-/// The web client is updated by reloading it (ADR-0018), never by a setup.
-bool isInstalledWithSetup() => false;
+/// The web client is updated by reloading it (ADR-0018), never by itself.
+SelfUpdateKind? detectSelfUpdateKind() => null;
 
-/// Not available on the web (see [isInstalledWithSetup]).
-Future<String> downloadVerifiedUpdate(
+/// Not available on the web (see [detectSelfUpdateKind]).
+Future<void> installUpdateAndExit(
   http.Client client,
-  AvailableUpdate update, {
+  AvailableUpdate update,
+  SelfUpdateKind kind, {
   void Function(double progress)? onProgress,
-}) => throw UnsupportedError('No setup on the web');
-
-/// Not available on the web (see [isInstalledWithSetup]).
-Future<void> runInstallerAndExit(String setupPath) =>
-    throw UnsupportedError('No setup on the web');
+}) => throw UnsupportedError('No self-update on the web');
