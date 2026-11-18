@@ -22,7 +22,8 @@ onRecordUpdateRequest((e) => {
 }, "songs");
 
 // Deleting a song removes the personal adjustments of all users
-// (ADR-0020) and the arrangements of all bands (ADR-0025) for it: soft
+// (ADR-0020), the arrangements of all bands (ADR-0025) and the freehand
+// annotations of all users (ADR-0032) for it: soft
 // deletes, so the delta pull carries them to the devices. Restoring the song
 // (undo, #267) restores the ones its deletion removed: those deleted since
 // the song's deletion, i.e. with a higher revision. Ones deleted before stay
@@ -34,7 +35,7 @@ onRecordUpdateExecute((e) => {
   const deletedAt = e.record.original().getInt("revision");
   e.next();
   if (!deleting && !restoring) return;
-  for (const collection of ["overlays", "arrangements"]) {
+  for (const collection of ["overlays", "arrangements", "annotations"]) {
     const records = e.app.findRecordsByFilter(
       collection,
       deleting ? "song = {:song} && deleted = false" : "song = {:song} && deleted = true && revision > {:since}",
