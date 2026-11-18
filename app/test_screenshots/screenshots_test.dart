@@ -6,6 +6,7 @@
 // (tool/check.sh), the screens are still built, driven and rendered, so a UI
 // change that breaks the screenshots fails `make check`.
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:setding/data/arrangement_repository.dart';
@@ -22,6 +23,7 @@ import 'package:setding/ui/songs/songs_screen.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:setding/ui/widgets/logo.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:drift/drift.dart' show Value;
@@ -372,6 +374,14 @@ void main() {
         ),
       );
       await _shot(tester, '${lang}_2_set');
+      // The ⋮ menu of the set: print, share and export the set list.
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AppBar),
+          matching: find.byType(PopupMenuButton<String>),
+        ),
+      );
+      await _shot(tester, '${lang}_2b_set_menu');
 
       await tester.pumpWidget(
         RepaintBoundary(
@@ -404,6 +414,9 @@ void main() {
         ),
       );
       await _shot(tester, '${lang}_4_live');
+      // A tap in the middle shows the control bar.
+      await tester.tapAt(tester.getRect(find.byType(PageView)).center);
+      await _shot(tester, '${lang}_4b_live_controls');
       // Stage appearance independent of the app theme (#263): dark on the
       // light German app, true black on the dark English one.
       final stage = lang == 'de' ? 'dark' : 'black';
@@ -651,10 +664,109 @@ void main() {
       // The musician settings: instrument, voice, diagrams, beat.
       await tester.tap(find.text(lang == 'de' ? 'Musiker' : 'Musician'));
       await _shot(tester, '${lang}_16_settings_musician');
+      await tester.tap(find.byKey(const Key('settings-category-general')));
+      await _shot(tester, '${lang}_18_settings_general');
+      await tester.tap(find.byKey(const Key('settings-category-live')));
+      await _shot(tester, '${lang}_19_settings_live');
+      await app.dispose(tester);
+    });
+  }
+
+  // Freehand notes in live mode (ADR-0032): a highlighted line, a circled
+  // chord, an arrow and a stamp, drawn with the stylus; once with the
+  // toolbar of drawing mode, once while playing.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    _screenshotTest('freehand notes $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      final items = await tester.runAsync(() async {
+        final id = await app.songs.createSong(source: demoSongSource);
+        return [LiveItem.song((await app.songs.getSong(id))!)];
+      });
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: LiveScreen(items: items!)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final page = tester.getRect(find.byType(PageView));
+      await tester.tapAt(page.center);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('live-annotations-draw')));
+      await tester.pumpAndSettle();
+
+      Future<void> stroke(List<Offset> points) async {
+        final g = await tester.startGesture(
+          page.topLeft + points.first,
+          kind: PointerDeviceKind.stylus,
+        );
+        for (final p in points.skip(1)) {
+          await g.moveTo(page.topLeft + p);
+          await tester.pump();
+        }
+        await g.up();
+        await tester.pumpAndSettle();
+      }
+
+      Future<void> pick(String key) async {
+        await tester.tap(find.byKey(Key(key)));
+        await tester.pumpAndSettle();
+      }
+
+      List<Offset> ellipse(Offset c, double rx, double ry) => [
+        for (var i = 0; i <= 26; i++)
+          c +
+              Offset(
+                rx * math.cos(i * math.pi / 12 - 0.4),
+                ry * math.sin(i * math.pi / 12 - 0.4),
+              ),
+      ];
+
+      List<Offset> line(Offset from, Offset to) => [
+        for (var i = 0; i <= 12; i++) Offset.lerp(from, to, i / 12)!,
+      ];
+
+      // Highlighter: the first line of the chorus.
+      await pick('annotation-tool-highlighter');
+      await pick('annotation-color-3');
+      await stroke(line(_noteSpots.highlightFrom, _noteSpots.highlightTo));
+      // Pen: circle a chord, draw an arrow to it.
+      await pick('annotation-tool-pen');
+      await pick('annotation-color-0');
+      await stroke(ellipse(_noteSpots.circle, 42, 20));
+      await pick('annotation-color-1');
+      final (from, to) = (_noteSpots.arrowFrom, _noteSpots.arrowTo);
+      await stroke(line(from, to));
+      final dir = (to - from) / (to - from).distance;
+      final perp = Offset(-dir.dy, dir.dx);
+      await stroke([to - dir * 22 + perp * 12, to, to - dir * 22 - perp * 12]);
+      // Stamp: a fermata where the band holds.
+      await pick('annotation-tool-stamp');
+      await tester.tap(find.byKey(const Key('annotation-stamp-fermata')).last);
+      await tester.pumpAndSettle();
+      await stroke([_noteSpots.stamp]);
+      await pick('annotation-tool-pen');
+      await _shot(tester, '${lang}_17_annotations');
+
+      await pick('annotation-done');
+      await _shot(tester, '${lang}_17b_annotations_live');
       await app.dispose(tester);
     });
   }
 }
+
+/// Where the freehand notes screenshot draws, relative to the live page.
+const _noteSpots = (
+  highlightFrom: Offset(36, 472),
+  highlightTo: Offset(352, 472),
+  circle: Offset(283, 121),
+  arrowFrom: Offset(480, 175),
+  arrowTo: Offset(335, 130),
+  stamp: Offset(392, 612),
+);
 
 /// A song with drum notes for the drummer screenshot.
 const _drums = '''{title: Highway Lights}

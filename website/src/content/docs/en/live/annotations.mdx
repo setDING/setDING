@@ -5,6 +5,10 @@ sidebar:
   order: 3
 ---
 
+import { Image } from 'astro:assets';
+import drawing from '../../../../../../docs/screenshots/annotations.png';
+import notes from '../../../../../../docs/screenshots/annotations_live.png';
+
 You can draw on songs and PDF sheet music in live mode: circle a chord, draw an
 arrow from the verse to the chorus, highlight a line or put a fermata where the band
 holds. Your annotations are **yours alone** – nobody else in the band sees them –
@@ -43,6 +47,8 @@ Escape key ends drawing mode.
 The colours stay readable on the dark and black stage appearance: each colour has a
 lighter shade there.
 
+<Image src={drawing} alt="Drawing in live mode: a circled chord, an arrow, a highlighted line and a fermata, with the toolbar below: pen, highlighter, erasers, lasso, stamps, colours and «Done»" />
+
 ## Same view, exact place
 
 Annotations stay exactly where you drew them as long as the song looks the same –
@@ -73,3 +79,5 @@ until you erase some.
 
 The song screen shows your annotations too, next to their lines; you draw in live
 mode only.
+
+<Image src={notes} alt="The annotations while playing, with the control bar below: the eye shows or hides them, the pen starts drawing" />
