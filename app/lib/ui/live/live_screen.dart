@@ -1700,6 +1700,7 @@ class _ChordProPage extends ConsumerWidget {
                         diagramResolver: resolver,
                         diagramsPosition: diagrams,
                         imageLookup: imageLookup,
+                        display: settings.songDisplay,
                       );
                       return fit.fits
                           // A small margin for measurement differences, which
@@ -1726,6 +1727,7 @@ class _ChordProPage extends ConsumerWidget {
                       baseStyle,
                       attachmentsKey,
                       locale,
+                      settings.songDisplay,
                     );
                     SongLayout measure() => layoutSong(
                       parsed,
@@ -1739,6 +1741,7 @@ class _ChordProPage extends ConsumerWidget {
                       textScaler: textScaler,
                       baseStyle: baseStyle,
                       imageLookup: imageLookup,
+                      display: settings.songDisplay,
                     );
                     SongLayout? layout;
                     if (columns > 1) {
@@ -1759,6 +1762,7 @@ class _ChordProPage extends ConsumerWidget {
                         collapse,
                         resolver,
                         diagrams,
+                        settings.songDisplay,
                         layout: layout,
                       ),
                     );
@@ -1791,6 +1795,7 @@ class _ChordProPage extends ConsumerWidget {
                     baseStyle,
                     attachmentsKey,
                     locale,
+                    settings.songDisplay,
                   );
                   SongFit fitNow() => fitSong(
                     parsed,
@@ -1812,6 +1817,7 @@ class _ChordProPage extends ConsumerWidget {
                     diagramsPosition: diagrams,
                     imageLookup: imageLookup,
                     maxPages: _maxSongPages,
+                    display: settings.songDisplay,
                   );
                   // A page that is prepared ahead fits the song outside of
                   // frames (issue #296); the page on stage at once.
@@ -1833,6 +1839,7 @@ class _ChordProPage extends ConsumerWidget {
                         fit.collapseRecalls,
                         resolver,
                         diagrams,
+                        settings.songDisplay,
                       ),
                     );
                   }
@@ -1846,6 +1853,7 @@ class _ChordProPage extends ConsumerWidget {
                     fit.collapseRecalls,
                     resolver,
                     diagrams,
+                    settings.songDisplay,
                     layout: layout,
                   );
                   // Does not fit on pages (e.g. a section taller than the
@@ -1954,7 +1962,8 @@ class _ChordProPage extends ConsumerWidget {
     int columns,
     bool collapseRecalls,
     DiagramResolver resolver,
-    DiagramsPosition diagrams, {
+    DiagramsPosition diagrams,
+    SongDisplay display, {
     SongLayout? layout,
   }) => SongRenderOptions(
     formatter: formatter,
@@ -1967,6 +1976,7 @@ class _ChordProPage extends ConsumerWidget {
     diagramsPosition: diagrams,
     imageLookup: imageLookup,
     layout: layout,
+    display: display,
   );
 
   /// Columns and pages of a fitted song at the personal font [scale]; null

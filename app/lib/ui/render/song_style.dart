@@ -1,7 +1,9 @@
 import 'package:chordpro/chordpro.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../settings/song_display.dart';
 import '../theme.dart';
+import 'song_display_colors.dart';
 
 /// Spacing of the rendered song, in units of the font size. The widgets
 /// (song_view.dart) and the layout measurement (song_layout.dart) both use
@@ -9,10 +11,6 @@ import '../theme.dart';
 abstract final class SongSpacing {
   /// Space below every block (section, notes card, chorus label).
   static const blockGap = 0.8;
-
-  /// Indent of a chorus next to its border, plus the border in pixels.
-  static const chorusIndent = 0.6;
-  static const chorusBorderPixels = 3.0;
 
   /// Height of an empty line.
   static const emptyLine = 0.6;
@@ -45,6 +43,28 @@ abstract final class SongSpacing {
 
   /// Space below the chord diagrams of the song.
   static const diagramsBlockGap = 0.2;
+
+  /// Padding inside a tinted section (ADR-0033): left and right, top and
+  /// bottom.
+  static const tintPaddingHorizontal = 0.3;
+  static const tintPaddingVertical = 0.15;
+
+  /// Opacity of the tint of a section on light and on dark backgrounds.
+  static const tintAlphaLight = 0.08;
+  static const tintAlphaDark = 0.12;
+
+  /// Space left of the content of a section in [style] (bar, indent and
+  /// tint padding), per unit of font size.
+  static double sectionLeft(SectionStyle style) =>
+      style.leftUnits + (style.tint ? tintPaddingHorizontal : 0);
+
+  /// Space right of the content of a section in [style].
+  static double sectionRight(SectionStyle style) =>
+      style.tint ? tintPaddingHorizontal : 0;
+
+  /// Space above and below the content of a section in [style].
+  static double sectionVertical(SectionStyle style) =>
+      style.tint ? 2 * tintPaddingVertical : 0;
 }
 
 /// Colours of the song text that differ on stage (ADR-0007).
@@ -84,28 +104,38 @@ class SongTextStyles {
     this.label,
     this.mono,
     this.colors,
+    this.sections,
   );
 
-  factory SongTextStyles.of(BuildContext context, double fontSize) {
+  /// Styles for the song in [context], with the section styles of
+  /// [display] (ADR-0033; [SongDisplay.classic] when null).
+  factory SongTextStyles.of(
+    BuildContext context,
+    double fontSize, {
+    SongDisplay? display,
+  }) {
     final theme = Theme.of(context);
     return SongTextStyles.fromBase(
       DefaultTextStyle.of(context).style
           .copyWith(color: theme.colorScheme.onSurface),
       fontSize,
-      theme.colorScheme,
+      colors: theme.colorScheme,
       // Live mode sets a stronger chord colour (ADR-0007).
-      theme.extension<StageColors>()?.chord,
+      chordColor: theme.extension<StageColors>()?.chord,
+      display: display,
     );
   }
 
   /// Styles derived from [base] (the default text style of the context);
-  /// chords in [chordColor], or the primary colour of [colors].
+  /// chords in [chordColor], or the primary colour of [colors]; sections
+  /// in the styles of [display].
   factory SongTextStyles.fromBase(
     TextStyle base,
-    double fontSize, [
+    double fontSize, {
     ColorScheme? colors,
     Color? chordColor,
-  ]) {
+    SongDisplay? display,
+  }) {
     final scheme = colors ?? _fallbackScheme;
     final text = base.merge(
       TextStyle(fontSize: fontSize, height: lineHeightFactor),
@@ -120,12 +150,13 @@ class SongTextStyles {
       ),
       text.copyWith(
         fontSize: fontSize * labelScale,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w700,
         letterSpacing: 0.8,
         color: scheme.secondary,
       ),
       text.copyWith(fontFamily: 'monospace', fontSize: fontSize * monoScale),
       scheme,
+      (display ?? SongDisplay.classic).resolve(),
     );
   }
 
@@ -141,27 +172,117 @@ class SongTextStyles {
   final TextStyle mono;
   final ColorScheme colors;
 
-  /// Lyrics style with the format directives in effect.
-  TextStyle lyricsFor(FormatState format, {bool inChorus = false}) =>
-      applyFormatValues(lyrics, format.lyricsValues(inChorus: inChorus));
+  /// The section styles in effect per section role (ADR-0033).
+  final Map<SectionRole, SectionStyle> sections;
 
-  TextStyle chordFor(FormatState format) =>
-      applyFormatValues(chord, format.valuesFor(FormatTarget.chord));
+  /// The style of sections with [role].
+  SectionStyle sectionStyle(SectionRole role) => sections[role]!;
 
-  TextStyle labelFor(FormatState format) =>
-      applyFormatValues(label, format.valuesFor(FormatTarget.label));
+  /// The palette tone of [color] on the background of [colors], or null
+  /// for [SongColor.auto].
+  Color? paletteColor(SongColor color) =>
+      songColorValue(color, colors.brightness);
+
+  /// Applies weight, slant and size of a section style before the format
+  /// directives, so a directive's size multiplies with it; an explicitly
+  /// chosen colour is applied after them and wins (ADR-0033). Inline
+  /// markup is applied later, when the spans are built, and wins over
+  /// both.
+  TextStyle _styled(
+    TextStyle base,
+    FormatValues values, {
+    required bool bold,
+    required bool italic,
+    double size = 1,
+    SongColor color = SongColor.auto,
+  }) {
+    final styled = applyFormatValues(
+      base.copyWith(
+        fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
+        fontStyle: italic ? FontStyle.italic : FontStyle.normal,
+        fontSize: (base.fontSize ?? fontSize) * size,
+      ),
+      values,
+    );
+    final explicit = paletteColor(color);
+    return explicit == null ? styled : styled.copyWith(color: explicit);
+  }
+
+  /// Lyrics style with the format directives in effect; in the style of
+  /// sections with [role], or neutral (comments, notes) when null.
+  TextStyle lyricsFor(
+    FormatState format, {
+    bool inChorus = false,
+    SectionRole? role,
+  }) {
+    final values = format.lyricsValues(inChorus: inChorus);
+    if (role == null) return applyFormatValues(lyrics, values);
+    final s = sectionStyle(role);
+    return _styled(
+      lyrics,
+      values,
+      bold: s.textBold,
+      italic: s.textItalic,
+      color: s.textColor,
+    );
+  }
+
+  TextStyle chordFor(
+    FormatState format, {
+    SectionRole role = SectionRole.standard,
+  }) => _chordStyle(format.valuesFor(FormatTarget.chord), role);
+
+  TextStyle _chordStyle(
+    FormatValues values,
+    SectionRole role, {
+    bool sized = true,
+  }) {
+    final s = sectionStyle(role);
+    return _styled(
+      chord,
+      values,
+      bold: s.chordBold,
+      italic: s.chordItalic,
+      size: sized ? s.chordSize.factor : 1,
+      color: s.chordColor,
+    );
+  }
+
+  /// Section labels (also of placeholders and delegated environments).
+  TextStyle labelFor(
+    FormatState format, {
+    SectionRole role = SectionRole.standard,
+  }) {
+    final s = sectionStyle(role);
+    return _styled(
+      label,
+      format.valuesFor(FormatTarget.label),
+      bold: s.labelBold,
+      italic: s.labelItalic,
+      size: s.labelSize.factor,
+      color: s.labelColor,
+    );
+  }
+
+  /// Colour of the indent bar and the tint of sections with [role].
+  Color barColor(SectionRole role) =>
+      paletteColor(sectionStyle(role).barColor) ?? colors.primary;
 
   TextStyle tabFor(FormatState format) =>
       applyFormatValues(mono, format.valuesFor(FormatTarget.tab));
 
-  /// Grid text (bars, margins) and grid chords.
+  /// Grid text (bars, margins) and grid chords; the chord size of a
+  /// section style does not apply to grids, whose cells are as high as
+  /// their text.
   TextStyle gridFor(FormatState format) => applyFormatValues(
     lyrics.copyWith(fontSize: fontSize * chordScale),
     format.valuesFor(FormatTarget.grid),
   );
 
-  TextStyle gridChordFor(FormatState format) =>
-      applyFormatValues(chord, format.valuesFor(FormatTarget.grid));
+  TextStyle gridChordFor(
+    FormatState format, {
+    SectionRole role = SectionRole.standard,
+  }) => _chordStyle(format.valuesFor(FormatTarget.grid), role, sized: false);
 }
 
 /// Colours of styles built without a theme (layout measurement).
