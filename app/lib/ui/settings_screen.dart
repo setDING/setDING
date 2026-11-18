@@ -10,6 +10,7 @@ import '../sync/auth_providers.dart';
 import '../util/app_version.dart';
 import '../util/log.dart';
 import 'account/account_section.dart';
+import 'bands/bands_settings.dart';
 import 'settings/latency_calibration.dart';
 import 'settings/song_display_settings.dart';
 import 'theme.dart';
@@ -19,6 +20,7 @@ import 'widgets/dialogs.dart';
 /// The categories of the settings screen, in order.
 enum SettingsCategory {
   account,
+  bands,
   general,
   musician,
   display,
@@ -27,29 +29,34 @@ enum SettingsCategory {
   about,
 }
 
-/// Settings (layer 4, ADR-0006), grouped into categories: the account on
-/// top, then the personal settings (synced with the account) and the
+/// Settings (layer 4, ADR-0006), grouped into categories: the account and,
+/// when signed in, the organizations and bands on top, then the personal settings (synced with the account) and the
 /// settings of this device (ADR-0027), so it is clear which are synced.
 ///
 /// On wide screens the categories are listed on the left and the selected one
 /// is shown next to them; on narrow screens the overview lists the categories
 /// and each one opens as its own page.
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   /// Minimum width for showing the categories and their content side by side.
   static const wideLayoutWidth = 640.0;
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   SettingsCategory _selected = SettingsCategory.account;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    // After signing out the organizations and bands are no longer listed.
+    final signedIn = ref.watch(authProvider.select((u) => u != null));
+    final selected = _selected.visible(signedIn: signedIn)
+        ? _selected
+        : SettingsCategory.account;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.navSettings)),
       body: BreakpointBuilder(
@@ -71,7 +78,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               SizedBox(
                 width: 300,
                 child: _CategoryList(
-                  selected: _selected,
+                  selected: selected,
                   onSelected: (c) => setState(() => _selected = c),
                 ),
               ),
@@ -82,8 +89,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 720),
                     child: _CategoryContent(
-                      key: ValueKey(_selected),
-                      category: _selected,
+                      key: ValueKey(selected),
+                      category: selected,
                       showTitle: true,
                     ),
                   ),
@@ -98,9 +105,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 }
 
 extension on SettingsCategory {
-  /// Personal or device settings; null for the account itself.
+  /// Personal or device settings; null for the account and the
+  /// organizations and bands, which belong to the account.
   SettingSyncScope? get scope => switch (this) {
-    SettingsCategory.account => null,
+    SettingsCategory.account || SettingsCategory.bands => null,
     SettingsCategory.general ||
     SettingsCategory.musician ||
     SettingsCategory.display ||
@@ -110,6 +118,7 @@ extension on SettingsCategory {
 
   IconData get icon => switch (this) {
     SettingsCategory.account => Icons.account_circle_outlined,
+    SettingsCategory.bands => Icons.groups_outlined,
     SettingsCategory.general => Icons.tune,
     SettingsCategory.musician => Icons.music_note_outlined,
     SettingsCategory.display => Icons.text_fields,
@@ -120,6 +129,7 @@ extension on SettingsCategory {
 
   String title(AppLocalizations l10n) => switch (this) {
     SettingsCategory.account => l10n.settingsSectionAccount,
+    SettingsCategory.bands => l10n.settingsSectionBands,
     SettingsCategory.general => l10n.settingsSectionGeneral,
     SettingsCategory.musician => l10n.settingsSectionMusician,
     SettingsCategory.display => l10n.settingsSectionDisplay,
@@ -128,8 +138,14 @@ extension on SettingsCategory {
     SettingsCategory.about => l10n.settingsSectionStorage,
   };
 
+  /// Whether the category is listed: the organizations and bands only for
+  /// signed-in users; what they may do there depends on their roles.
+  bool visible({required bool signedIn}) =>
+      this != SettingsCategory.bands || signedIn;
+
   String hint(AppLocalizations l10n) => switch (this) {
     SettingsCategory.account => l10n.settingsCategoryAccountHint,
+    SettingsCategory.bands => l10n.settingsCategoryBandsHint,
     SettingsCategory.general => l10n.settingsCategoryGeneralHint,
     SettingsCategory.musician => l10n.settingsCategoryMusicianHint,
     SettingsCategory.display => l10n.settingsCategoryDisplayHint,
@@ -140,19 +156,21 @@ extension on SettingsCategory {
 }
 
 /// The list of categories; [selected] is highlighted in the wide layout.
-class _CategoryList extends StatelessWidget {
+class _CategoryList extends ConsumerWidget {
   const _CategoryList({required this.onSelected, this.selected});
 
   final SettingsCategory? selected;
   final ValueChanged<SettingsCategory> onSelected;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final narrow = selected == null;
+    final signedIn = ref.watch(authProvider.select((u) => u != null));
     final items = <Widget>[];
     SettingSyncScope? group;
     for (final c in SettingsCategory.values) {
+      if (!c.visible(signedIn: signedIn)) continue;
       if (c.scope case final scope? when scope != group) {
         group = scope;
         items.add(_GroupHeader(scope));
@@ -229,6 +247,7 @@ class _CategoryContent extends ConsumerWidget {
             },
           ),
       ],
+      SettingsCategory.bands => [const BandsSettings()],
       SettingsCategory.general => [
         _Choice(l10n.settingsLanguage, s.language, {
           LanguageMode.system: l10n.languageSystem,

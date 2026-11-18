@@ -6,7 +6,6 @@ import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../../sync/auth_providers.dart';
 import '../widgets/dialogs.dart';
-import '../bands/bands_screen.dart';
 import '../bands/join_screen.dart';
 import 'sign_in_screen.dart';
 import 'sync_tile.dart';
@@ -58,18 +57,6 @@ class AccountSection extends ConsumerWidget {
             ),
           ),
         if (user != null) const SyncTile(),
-        if (user != null)
-          ListTile(
-            key: const Key('account-bands'),
-            leading: const Icon(Icons.groups_outlined),
-            title: Text(l10n.bandsTitle),
-            subtitle: Text(l10n.bandManage),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute<void>(builder: (_) => const BandsScreen()),
-            ),
-          ),
         ListTile(
           leading: const Icon(Icons.dns_outlined),
           title: Text(l10n.settingsServer),
