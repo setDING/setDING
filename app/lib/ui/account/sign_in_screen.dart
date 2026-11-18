@@ -79,6 +79,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _confirm = TextEditingController();
   late bool _signUp = widget.signUp;
   bool _keepSignedIn = false;
+
+  /// Whether the password fields show their text (eye button).
+  bool _showPassword = false;
   bool _busy = false;
   String? _error;
 
@@ -259,8 +262,21 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     controller: _password,
                     decoration: InputDecoration(
                       labelText: l10n.accountPassword,
+                      suffixIcon: IconButton(
+                        key: const Key('account-password-visibility'),
+                        icon: Icon(
+                          _showPassword
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                        ),
+                        tooltip: _showPassword
+                            ? l10n.accountPasswordHide
+                            : l10n.accountPasswordShow,
+                        onPressed: () =>
+                            setState(() => _showPassword = !_showPassword),
+                      ),
                     ),
-                    obscureText: true,
+                    obscureText: !_showPassword,
                     textInputAction: _signUp
                         ? TextInputAction.next
                         : TextInputAction.done,
@@ -288,7 +304,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       decoration: InputDecoration(
                         labelText: l10n.accountPasswordConfirm,
                       ),
-                      obscureText: true,
+                      obscureText: !_showPassword,
                       textInputAction: TextInputAction.done,
                       validator: (v) => v != _password.text
                           ? l10n.accountPasswordMismatch

@@ -1384,6 +1384,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get accountPasswordConfirm => 'Passwort bestätigen';
 
   @override
+  String get accountPasswordShow => 'Passwort anzeigen';
+
+  @override
+  String get accountPasswordHide => 'Passwort verbergen';
+
+  @override
   String get accountKeepSignedIn => 'Angemeldet bleiben';
 
   @override

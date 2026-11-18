@@ -625,6 +625,8 @@
   "accountEmail": "E-Mail",
   "accountPassword": "Passwort",
   "accountPasswordConfirm": "Passwort bestätigen",
+  "accountPasswordShow": "Passwort anzeigen",
+  "accountPasswordHide": "Passwort verbergen",
   "accountKeepSignedIn": "Angemeldet bleiben",
   "accountKeepSignedInHint": "Nur auf deinem eigenen Gerät. Sonst endet die Anmeldung, wenn du den Browser schliesst.",
   "accountName": "Name",

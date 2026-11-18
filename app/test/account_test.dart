@@ -63,6 +63,39 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('the eye button shows and hides the passwords', (tester) async {
+    final app = await pumpSettings(tester);
+    await tester.tap(find.byKey(const Key('account-open-sign-in')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('No account yet? Create one'));
+    await tester.pumpAndSettle();
+
+    bool obscured(String key) => tester
+        .widget<EditableText>(
+          find.descendant(
+            of: find.byKey(Key(key)),
+            matching: find.byType(EditableText),
+          ),
+        )
+        .obscureText;
+
+    expect(obscured('account-password'), isTrue);
+    expect(obscured('account-password-confirm'), isTrue);
+    expect(find.byTooltip('Show password'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('account-password-visibility')));
+    await tester.pumpAndSettle();
+    expect(obscured('account-password'), isFalse);
+    expect(obscured('account-password-confirm'), isFalse);
+    expect(find.byTooltip('Hide password'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('account-password-visibility')));
+    await tester.pumpAndSettle();
+    expect(obscured('account-password'), isTrue);
+    expect(obscured('account-password-confirm'), isTrue);
+    await app.dispose(tester);
+  });
+
   testWidgets('shows and logs a network error', (tester) async {
     Log.clear();
     final app = await pumpSettings(tester);

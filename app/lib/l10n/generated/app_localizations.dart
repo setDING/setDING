@@ -2540,6 +2540,18 @@ abstract class AppLocalizations {
   /// **'Passwort bestätigen'**
   String get accountPasswordConfirm;
 
+  /// No description provided for @accountPasswordShow.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort anzeigen'**
+  String get accountPasswordShow;
+
+  /// No description provided for @accountPasswordHide.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort verbergen'**
+  String get accountPasswordHide;
+
   /// No description provided for @accountKeepSignedIn.
   ///
   /// In de, this message translates to:
