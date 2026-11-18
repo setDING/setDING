@@ -50,9 +50,12 @@ class ClickConfig {
 /// from the start, so the beat never drifts and a slow frame only delays
 /// the drawing.
 class Metronome {
-  Metronome({ClickOutput? output, Duration Function()? wallClock})
-    : _output = output, // ignore: prefer_initializing_formals
-      _wallClock = wallClock ?? _defaultWallClock();
+  Metronome({
+    ClickOutput? output,
+    Duration Function()? wallClock,
+    this.readyTimeout = const Duration(seconds: 3),
+  }) : _output = output, // ignore: prefer_initializing_formals
+       _wallClock = wallClock ?? _defaultWallClock();
 
   static const _log = Log('metronome');
 
@@ -62,6 +65,11 @@ class Metronome {
 
   static const minBpm = 20;
   static const maxBpm = 400;
+
+  /// How long the start waits for the audio output. Some devices never
+  /// answer (the audio engine hangs while it opens the device); the beat
+  /// then runs without the click instead of not at all.
+  final Duration readyTimeout;
 
   static Duration Function() _defaultWallClock() {
     final watch = Stopwatch()..start();
@@ -109,7 +117,13 @@ class Metronome {
     _countInOnly = countInOnly && countInBars > 0;
     var audio = false;
     if (config.enabled && _output != null) {
-      audio = await _output.ensureReady();
+      audio = await _output.ensureReady().timeout(
+        readyTimeout,
+        onTimeout: () {
+          _log.warning('The audio output did not answer; beat without click');
+          return false;
+        },
+      );
       clickUnavailable.value = !audio;
     } else {
       clickUnavailable.value = false;
