@@ -21,6 +21,7 @@ class LivePlayButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
     const key = Key('play-live');
     const icon = Icon(Icons.play_arrow);
     final labelled = MediaQuery.sizeOf(context).width >= labelWidth;
@@ -48,6 +49,15 @@ class LivePlayButton extends StatelessWidget {
               key: key,
               tooltip: l10n.playLive,
               onPressed: onPressed,
+              // The app bar's icon theme (onSurfaceVariant) would override the
+              // filled default (onPrimary) and leave the icon unreadable on
+              // the primary colour (#450).
+              style: IconButton.styleFrom(
+                foregroundColor: scheme.onPrimary,
+                disabledForegroundColor: scheme.onSurface.withValues(
+                  alpha: 0.38,
+                ),
+              ),
               icon: icon,
             ),
         ],
