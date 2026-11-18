@@ -48,7 +48,13 @@ void main() {
       ]) {
         expect(AppSettings.scopes[key], SettingSyncScope.device, reason: key);
       }
-      for (final key in ['instrument', 'userName', 'notation', 'language']) {
+      for (final key in [
+        'instrument',
+        'userName',
+        'notation',
+        'language',
+        'songDisplay',
+      ]) {
         expect(AppSettings.scopes[key], SettingSyncScope.personal, reason: key);
       }
     });

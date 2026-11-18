@@ -8,9 +8,11 @@ import '../sync/auth_providers.dart' show authProvider;
 import '../sync/sync_backend.dart' show defaultServerUrl;
 import '../data/database.dart' show localOwnerId;
 import 'display_options.dart';
+import 'song_display.dart';
 import 'user_settings_store.dart';
 
 export 'display_options.dart';
+export 'song_display.dart';
 export 'user_settings_store.dart';
 
 /// UI language setting (ADR-0008).
@@ -132,6 +134,7 @@ class AppSettings {
     this.songMap,
     this.showAnnotations = true,
     this.annotationFinger = false,
+    this.songDisplay = SongDisplay.classic,
   });
 
   final LanguageMode language;
@@ -226,6 +229,9 @@ class AppSettings {
   /// devices without a stylus (ADR-0032).
   final bool annotationFinger;
 
+  /// Styles of the song display per section type (ADR-0033).
+  final SongDisplay songDisplay;
+
   static const maxAudioLatencyMs = 500;
 
   /// Whether the instrument is drums (ADR-0026).
@@ -311,6 +317,7 @@ class AppSettings {
     bool? songMap,
     bool? showAnnotations,
     bool? annotationFinger,
+    SongDisplay? songDisplay,
   }) => AppSettings(
     language: language ?? this.language,
     notation: notation ?? this.notation,
@@ -347,6 +354,7 @@ class AppSettings {
     songMap: songMap ?? this.songMap,
     showAnnotations: showAnnotations ?? this.showAnnotations,
     annotationFinger: annotationFinger ?? this.annotationFinger,
+    songDisplay: songDisplay ?? this.songDisplay,
   );
 
   /// Which settings follow the person (synced with the account) and which
@@ -392,6 +400,8 @@ class AppSettings {
     // person; drawing with a finger depends on the device having a stylus.
     'showAnnotations': SettingSyncScope.personal,
     'annotationFinger': SettingSyncScope.device,
+    // Song display styles (ADR-0033): a reading habit of the person.
+    'songDisplay': SettingSyncScope.personal,
   };
 
   /// The keys of [scope].
@@ -436,6 +446,7 @@ class AppSettings {
     'songMap': ?songMap,
     'showAnnotations': showAnnotations,
     'annotationFinger': annotationFinger,
+    'songDisplay': songDisplay.toJsonString(),
   };
 
   /// Settings from JSON values; a missing key, a value of the wrong type or
@@ -529,6 +540,10 @@ class AppSettings {
       songMap: maybe('songMap'),
       showAnnotations: flag('showAnnotations', d.showAnnotations),
       annotationFinger: flag('annotationFinger', d.annotationFinger),
+      songDisplay: switch (json['songDisplay']) {
+        final String v => SongDisplay.fromJsonString(v),
+        _ => d.songDisplay,
+      },
     );
   }
 
