@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:chordpro/chordpro.dart';
@@ -213,6 +214,37 @@ void main() {
       expect(m.position()!.beat, 2);
       await m.start(meter: fourFour, bpm: 60);
       expect(m.clickUnavailable.value, isFalse);
+      await m.stop();
+    });
+
+    test('an audio output that does not answer: the beat runs without '
+        'the click', () async {
+      var wall = Duration.zero;
+      final out = FakeClickOutput()..ready = Completer<bool>();
+      final m = Metronome(
+        output: out,
+        wallClock: () => wall,
+        readyTimeout: const Duration(milliseconds: 20),
+      );
+      await m.start(
+        meter: fourFour,
+        bpm: 60,
+        config: const ClickConfig(enabled: true),
+      );
+      expect(m.running.value, isTrue);
+      expect(m.clickUnavailable.value, isTrue);
+      expect(out.plays, isEmpty);
+      wall = Metronome.lead + const Duration(milliseconds: 1100);
+      expect(m.position()!.beat, 1);
+      // Once the output answers, the next start plays the click.
+      out.ready!.complete(true);
+      await m.start(
+        meter: fourFour,
+        bpm: 60,
+        config: const ClickConfig(enabled: true),
+      );
+      expect(m.clickUnavailable.value, isFalse);
+      expect(out.plays, hasLength(1));
       await m.stop();
     });
 

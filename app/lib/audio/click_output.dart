@@ -6,8 +6,8 @@ import '../util/log.dart';
 /// Audio output for the click (ADR-0026). The time is the engine's own
 /// clock: a bar scheduled for a time starts exactly then, sample-accurate.
 abstract class ClickOutput {
-  /// Prepares the audio device; false if there is no audio (e.g. no
-  /// device). On web, the browser starts the audio only after a user
+  /// Prepares the audio device and starts it; false if there is no audio
+  /// (e.g. no device, or the device does not start). On web, the browser starts the audio only after a user
   /// gesture; the beat is started by a tap.
   Future<bool> ensureReady();
 
@@ -43,7 +43,7 @@ class SoLoudClickOutput implements ClickOutput {
   static const _log = Log('click');
 
   final SoLoud _soloud;
-  Future<bool>? _ready;
+  Future<void>? _engine;
   final _wall = Stopwatch()..start();
   Duration _lastEngine = Duration.zero;
   Duration _lastEngineWall = Duration.zero;
@@ -51,16 +51,26 @@ class SoLoudClickOutput implements ClickOutput {
   var _loads = 0;
 
   @override
-  Future<bool> ensureReady() => _ready ??= _init();
-
-  Future<bool> _init() async {
+  Future<bool> ensureReady() async {
     try {
-      if (!_soloud.isInitialized) await _soloud.init(sampleRate: 44100);
+      await (_engine ??= _init());
+      // The engine stops the device when it is idle and starts it again for
+      // a voice off the UI thread, where a failure only leaves silence and a
+      // standing engine clock. Starting it here reports the failure.
+      await _soloud.startAudioDevice();
       return true;
     } catch (e) {
       _log.warning('No audio output for the click', e);
-      _ready = null;
       return false;
+    }
+  }
+
+  Future<void> _init() async {
+    try {
+      if (!_soloud.isInitialized) await _soloud.init(sampleRate: 44100);
+    } catch (_) {
+      _engine = null;
+      rethrow;
     }
   }
 

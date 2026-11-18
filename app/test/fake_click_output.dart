@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:setding/audio/click_output.dart';
@@ -8,6 +9,9 @@ class FakeClickOutput implements ClickOutput {
   FakeClickOutput({this.available = true});
 
   bool available;
+
+  /// While set, [ensureReady] waits for it (an audio device that hangs).
+  Completer<bool>? ready;
   Duration time = Duration.zero;
   final loaded = <Uint8List>[];
   final unloaded = <Object>[];
@@ -16,7 +20,7 @@ class FakeClickOutput implements ClickOutput {
   final volumes = <double>[];
 
   @override
-  Future<bool> ensureReady() async => available;
+  Future<bool> ensureReady() async => ready?.future ?? available;
 
   @override
   Duration now() => time;
