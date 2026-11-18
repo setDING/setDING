@@ -96,6 +96,7 @@ Notation alternatives:
 - 2026-11-17: Search and replace can match case exactly ("Aa" toggle, #379); the choice is kept while the editor is open.
 - 2026-11-17: A preview tap goes to the tapped character (#381): the renderer marks each lyrics piece with its position in the line's text (`MetaData`), the editor maps it to the source column (`sourceColumn`, skipping chords and markup); a tapped chord puts the cursor before its `[`.
 - 2026-11-17: Tapping a line number selects the line, dragging over the numbers selects several (#383), so lines can be moved, duplicated or deleted on a tablet without a mouse.
+- 2026-11-18: Sections marked only with a heading comment such as `{comment: Verse 1}` (SongSelect) also get a background in the editor (#463). `sourceSections` now reads the source line by line with the parser's rules (a normal comment heading in an implicit paragraph, before any lyrics and after other comments only (#465), ending with the paragraph, before the next section or recall, or at an end directive); the heading words live in `section_heading.dart`, shared by parser and editor.
 
 ## Open points
 
