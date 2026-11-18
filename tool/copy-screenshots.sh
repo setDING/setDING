@@ -25,6 +25,12 @@ map=(
   band 14_band
   settings 15_settings
   settings_musician 16_settings_musician
+  settings_general 18_settings_general
+  settings_live 19_settings_live
+  set_menu 2b_set_menu
+  live_controls 4b_live_controls
+  annotations 17_annotations
+  annotations_live 17b_annotations_live
 )
 
 for ((i = 0; i < ${#map[@]}; i += 2)); do

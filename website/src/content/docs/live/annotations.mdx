@@ -5,6 +5,10 @@ sidebar:
   order: 3
 ---
 
+import { Image } from 'astro:assets';
+import drawing from '../../../../../docs/screenshots/annotations_de.png';
+import notes from '../../../../../docs/screenshots/annotations_live_de.png';
+
 Im Live-Modus kannst du auf Songs und PDF-Noten zeichnen: einen Akkord einkreisen,
 einen Pfeil von der Strophe zum Refrain ziehen, eine Zeile markieren oder eine
 Fermate setzen, wo die Band hält. Deine Notizen gehören **nur dir** – niemand sonst in
@@ -46,6 +50,8 @@ Bildschirm. **Fertig** oder die Escape-Taste beendet das Zeichnen.
 Die Farben bleiben auch in der dunklen und schwarzen Bühnenansicht lesbar: Jede Farbe
 hat dort einen helleren Ton.
 
+<Image src={drawing} alt="Zeichnen im Live-Modus: ein eingekreister Akkord, ein Pfeil, eine markierte Zeile und eine Fermate, unten die Werkzeugleiste mit Stift, Leuchtstift, Radierern, Lasso, Stempeln, Farben und «Fertig»" />
+
 ## Gleiche Ansicht, genauer Ort
 
 Notizen bleiben genau dort, wo du sie gezeichnet hast, solange der Song gleich
@@ -76,3 +82,5 @@ wieder gespeichert, wenn du etwas löschst.
 
 Auch der Song-Bildschirm zeigt deine Notizen, neben ihren Zeilen; gezeichnet wird nur
 im Live-Modus.
+
+<Image src={notes} alt="Die Notizen beim Spielen, unten die Steuerleiste mit dem Auge zum Ein- und Ausblenden und dem Stift zum Zeichnen" />

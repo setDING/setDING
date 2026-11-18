@@ -35,6 +35,12 @@ the site. The build fails on pages that do not compile and on broken internal li
 - Screenshots come from `docs/screenshots/` (`make screenshots`); import them in MDX
   (see `index.mdx`) so Astro converts and sizes them. Do not copy them into
   `website/`.
+- **Every page that documents a feature shows it in a screenshot** (in both
+  languages). A new or visibly changed feature comes with a screenshot test in
+  `app/test_screenshots/screenshots_test.dart`, a line in
+  `tool/copy-screenshots.sh` and the image on its page; see
+  [`docs/screenshots/README.md`](../screenshots/README.md). Pages that only explain
+  concepts or installation (`start/`, `bands/roles`) need none.
 
 ## Dependencies
 
