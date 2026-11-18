@@ -70,13 +70,37 @@ class AnnotationRepository {
             .watchSingle();
       });
 
+  /// Estimated size in bytes of the strokes of [songId] on [target] as the
+  /// server stores them: each stroke and each tombstone with its ID.
+  Stream<int> watchSize(String songId, {String target = ''}) =>
+      Stream.fromFuture(_ownerOf(songId))
+          .asyncExpand((o) => _sizeQuery(o.$1, songId, target).watchSingle());
+
+  Selectable<int> _sizeQuery(String owner, String songId, String target) => db
+      .customSelect(
+        // A tombstone ({"deleted":true,"t":…}) is about 35 bytes; "id":
+        // and separators about 6.
+        'SELECT COALESCE(SUM(LENGTH(id) + 6 + '
+        'COALESCE(LENGTH(stroke), 35)), 0) AS size FROM annotations '
+        'WHERE owner_id = ? AND song_id = ? AND target = ?',
+        variables: [
+          Variable.withString(owner),
+          Variable.withString(songId),
+          Variable.withString(target),
+        ],
+        readsFrom: {db.annotations},
+      )
+      .map((r) => r.read<int>('size'));
+
   static List<AnnotationStroke> _decode(List<AnnotationRow> rows) => [
     for (final r in rows)
       ?AnnotationStroke.fromJson(r.id, jsonDecode(r.stroke!)),
   ];
 
   /// Adds or replaces the strokes [put] and erases the strokes [remove], in
-  /// one change that is synced as one (ADR-0032).
+  /// one change that is synced as one (ADR-0032). Throws
+  /// [AnnotationsFullException] and stores nothing when the change would
+  /// grow the strokes of [songId] on [target] beyond [annotationMaxBytes].
   Future<void> apply(
     String songId, {
     String target = '',
@@ -84,6 +108,9 @@ class AnnotationRepository {
     Iterable<String> remove = const [],
   }) => db.transaction(() async {
     final (owner, library) = await _ownerOf(songId);
+    final sizeBefore = put.isEmpty
+        ? 0
+        : await _sizeQuery(owner, songId, target).getSingle();
     var now = _clock().millisecondsSinceEpoch;
     for (final s in put) {
       await db.customInsert(
@@ -126,6 +153,13 @@ class AnnotationRepository {
           updates: {db.annotations},
           updateKind: UpdateKind.update,
         );
+      }
+    }
+    if (put.isNotEmpty) {
+      final size = await _sizeQuery(owner, songId, target).getSingle();
+      // Rolls the transaction back; shrinking an oversized set is fine.
+      if (size > annotationMaxBytes && size > sizeBefore) {
+        throw const AnnotationsFullException();
       }
     }
     if (owner != localOwnerId && (ids.isNotEmpty || put.isNotEmpty)) {

@@ -47,6 +47,14 @@ class AnnotatedPage extends ConsumerWidget {
     final shown =
         ref.watch(settingsProvider.select((s) => s.showAnnotations)) && !hidden;
     if (editor == null && (strokes.isEmpty || !shown)) return child;
+    final size = editor == null
+        ? 0
+        : ref
+                  .watch(
+                    annotationSizeProvider((songId: songId, target: target)),
+                  )
+                  .value ??
+              0;
     return AnnotationLayer(
       songId: songId,
       target: target,
@@ -57,6 +65,7 @@ class AnnotatedPage extends ConsumerWidget {
       songLines: songLines,
       editor: editor,
       visible: shown,
+      fill: size / annotationMaxBytes,
       child: child,
     );
   }

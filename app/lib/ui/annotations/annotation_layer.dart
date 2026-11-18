@@ -30,6 +30,7 @@ class AnnotationLayer extends StatefulWidget {
     this.songLines,
     this.editor,
     this.visible = true,
+    this.fill = 0,
     required this.child,
   });
 
@@ -58,6 +59,10 @@ class AnnotationLayer extends StatefulWidget {
 
   /// The annotations are shown (hidden ones still show while drawing).
   final bool visible;
+
+  /// Share of [annotationMaxBytes] the strokes on [target] take: drawing
+  /// mode warns when they are nearly full.
+  final double fill;
 
   final Widget child;
 
@@ -569,6 +574,9 @@ class _AnnotationLayerState extends State<AnnotationLayer> {
                   if (s.layout case final l? when !current.matches(l)) l,
               ];
         final orphans = editing ? shown.where((p) => p.orphan).length : 0;
+        final full = editing && (_editor!.full || widget.fill >= 1);
+        final nearlyFull =
+            editing && !full && widget.fill >= annotationWarnShare;
         final preview = _drawing;
         return Stack(
           children: [
@@ -628,7 +636,7 @@ class _AnnotationLayerState extends State<AnnotationLayer> {
                   },
                 ),
               ),
-            if (others.isNotEmpty || orphans > 0)
+            if (others.isNotEmpty || orphans > 0 || full || nearlyFull)
               Positioned(
                 top: 4,
                 right: 4,
@@ -641,6 +649,11 @@ class _AnnotationLayerState extends State<AnnotationLayer> {
                       ? _OtherLayout.portrait
                       : _OtherLayout.other,
                   orphans: orphans,
+                  fill: full
+                      ? 1
+                      : nearlyFull
+                      ? widget.fill
+                      : null,
                 ),
               ),
           ],
@@ -740,45 +753,61 @@ class _StrokesPainter extends CustomPainter {
 enum _OtherLayout { landscape, portrait, other }
 
 /// Hints while drawing: strokes drawn for another layout (placed at their
-/// lines) and strokes whose line is gone.
+/// lines), strokes whose line is gone, and annotations that are (nearly)
+/// full.
 class _Hints extends StatelessWidget {
-  const _Hints({required this.otherLayout, required this.orphans});
+  const _Hints({
+    required this.otherLayout,
+    required this.orphans,
+    required this.fill,
+  });
 
   final _OtherLayout? otherLayout;
   final int orphans;
+
+  /// Share of [annotationMaxBytes] used when nearly full, 1 when full;
+  /// null otherwise.
+  final double? fill;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    Widget chip(IconData icon, String text, Key key) => Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Material(
-        key: key,
-        color: theme.colorScheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: 16,
-                color: theme.colorScheme.onSecondaryContainer,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                text,
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: theme.colorScheme.onSecondaryContainer,
+    Widget chip(IconData icon, String text, Key key, {bool error = false}) {
+      final background = error
+          ? theme.colorScheme.errorContainer
+          : theme.colorScheme.secondaryContainer;
+      final foreground = error
+          ? theme.colorScheme.onErrorContainer
+          : theme.colorScheme.onSecondaryContainer;
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Material(
+          key: key,
+          color: background,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 16, color: foreground),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    text,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: foreground,
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
+    }
+
     return IgnorePointer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -795,6 +824,19 @@ class _Hints extends StatelessWidget {
               l10n.annotationsOrphaned(orphans),
               const Key('annotations-orphaned'),
             ),
+          if (fill case final f?)
+            f >= 1
+                ? chip(
+                    Icons.block,
+                    l10n.annotationsFull,
+                    const Key('annotations-full'),
+                    error: true,
+                  )
+                : chip(
+                    Icons.warning_amber,
+                    l10n.annotationsNearlyFull((f * 100).floor()),
+                    const Key('annotations-nearly-full'),
+                  ),
         ],
       ),
     );

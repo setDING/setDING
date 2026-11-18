@@ -584,3 +584,19 @@ bool strokeNear(List<double> points, double x, double y, double radius) {
   }
   return false;
 }
+
+/// Most stroke data the server keeps per song and target (the `data` field
+/// of an `annotations` record, ADR-0032), in bytes.
+const annotationMaxBytes = 1000000;
+
+/// From this share of [annotationMaxBytes] on, drawing mode warns.
+const annotationWarnShare = 0.8;
+
+/// New strokes would make the annotations of a song and target larger than
+/// [annotationMaxBytes]: they are not stored.
+class AnnotationsFullException implements Exception {
+  const AnnotationsFullException();
+
+  @override
+  String toString() => 'AnnotationsFullException';
+}

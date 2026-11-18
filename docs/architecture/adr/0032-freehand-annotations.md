@@ -154,7 +154,9 @@ Tombstones older than 90 days are pruned by the hook on the next write.
 One record per song and target (instead of one per stroke) keeps the number
 of requests and records small: a song with 200 strokes is one request, which
 matters for the server's rate limits (ADR-0004). The `data` field is limited
-to 1 MB per record; the client refuses new strokes beyond that and says so.
+to 1 MB per record; the client estimates the size per song and target,
+warns in drawing mode from 80 % on and refuses new strokes beyond 1 MB
+(erasing always works).
 
 Pull uses the delta cursor per user, like overlays; the outbox and the
 live-mode pause of the sync apply unchanged (annotations from another device
@@ -293,14 +295,22 @@ release (ADR-0028); no minimum client version change (ADR-0029).
     their line like all others.
   - The **1 MB limit** is enforced by the server; the client does not warn
     before it is reached (a push beyond it is refused and logged).
+    *(Superseded by the next entry.)*
   - Placements are computed per page when it is built (the rendered lines
     are collected once after layout) rather than in the render cache; live
     preparation builds the next song's pages and with them its
     annotations.
+- 2026-11-18: Owner review of the differences: the control-bar pen button,
+  orphans in place and strokes kept in lyrics-only mode are **confirmed**.
+  The client now **warns and refuses** before the 1 MB limit: it estimates
+  the size of the strokes and tombstones per song and target, drawing mode
+  shows "nearly full" from 80 % and "full" beyond 1 MB, and a change that
+  would grow the strokes beyond the limit is not stored (undo history
+  unchanged); erasing always works.
 
 ## Open points
 
 - Size limit of 1 MB of stroke data per song and target: confirm after a
-  test with real annotations; warn in the client before it is reached?
+  test with real annotations.
 - Check on real hardware: stylus palm rejection, pressure, and drawing in
   the PDF viewer while it can be zoomed.

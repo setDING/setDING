@@ -44,6 +44,7 @@ class AnnotationEditor extends ChangeNotifier {
     if (value == _active) return;
     _active = value;
     _selection = null;
+    _full = false;
     if (!value) {
       _undo.clear();
       _redo.clear();
@@ -120,6 +121,12 @@ class AnnotationEditor extends ChangeNotifier {
   final _undo = <_Change>[];
   final _redo = <_Change>[];
 
+  bool _full = false;
+
+  /// The last change was refused: the song's annotations are at
+  /// [annotationMaxBytes]. Cleared by the next stored change.
+  bool get full => _full;
+
   bool get canUndo => _undo.isNotEmpty;
   bool get canRedo => _redo.isNotEmpty;
 
@@ -133,28 +140,52 @@ class AnnotationEditor extends ChangeNotifier {
     List<AnnotationStroke> after = const [],
   }) async {
     if (before.isEmpty && after.isEmpty) return;
-    _undo.add((songId: songId, target: target, before: before, after: after));
+    final change = (
+      songId: songId,
+      target: target,
+      before: before,
+      after: after,
+    );
+    _undo.add(change);
+    final redo = [..._redo];
     _redo.clear();
     notifyListeners();
-    await _store(songId, target, before, after);
+    if (!await _store(songId, target, before, after)) {
+      _undo.remove(change);
+      _redo.addAll(redo);
+      notifyListeners();
+    }
   }
 
-  Future<void> _store(
+  /// Stores a change; false when it was refused because the annotations
+  /// are full.
+  Future<bool> _store(
     String songId,
     String target,
     List<AnnotationStroke> before,
     List<AnnotationStroke> after,
-  ) {
+  ) async {
     final kept = {for (final s in after) s.id};
-    return repository.apply(
-      songId,
-      target: target,
-      put: after,
-      remove: [
-        for (final s in before)
-          if (!kept.contains(s.id)) s.id,
-      ],
-    );
+    try {
+      await repository.apply(
+        songId,
+        target: target,
+        put: after,
+        remove: [
+          for (final s in before)
+            if (!kept.contains(s.id)) s.id,
+        ],
+      );
+    } on AnnotationsFullException {
+      _full = true;
+      notifyListeners();
+      return false;
+    }
+    if (_full) {
+      _full = false;
+      notifyListeners();
+    }
+    return true;
   }
 
   Future<void> undo() async {
@@ -163,7 +194,10 @@ class AnnotationEditor extends ChangeNotifier {
     _redo.add(c);
     _selection = null;
     notifyListeners();
-    await _store(c.songId, c.target, c.after, c.before);
+    if (!await _store(c.songId, c.target, c.after, c.before)) {
+      _undo.add(_redo.removeLast());
+      notifyListeners();
+    }
   }
 
   Future<void> redo() async {
@@ -172,7 +206,10 @@ class AnnotationEditor extends ChangeNotifier {
     _undo.add(c);
     _selection = null;
     notifyListeners();
-    await _store(c.songId, c.target, c.before, c.after);
+    if (!await _store(c.songId, c.target, c.before, c.after)) {
+      _redo.add(_undo.removeLast());
+      notifyListeners();
+    }
   }
 
   /// Sets the colour of new strokes and of the selection.

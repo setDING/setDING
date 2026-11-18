@@ -2307,6 +2307,15 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get annotationsFull =>
+      'Notizen voll: zum Weiterzeichnen etwas löschen';
+
+  @override
+  String annotationsNearlyFull(int percent) {
+    return 'Notizen zu $percent % voll';
+  }
+
+  @override
   String get annotationsPanelTitle => 'Freihand-Notizen';
 
   @override

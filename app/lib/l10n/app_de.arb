@@ -1177,6 +1177,15 @@
   "annotationsOtherLayoutLandscape": "Im Querformat gezeichnet",
   "annotationsOtherLayoutPortrait": "Im Hochformat gezeichnet",
   "annotationsOrphaned": "{count, plural, =1{1 Notiz ohne ihre Zeile} other{{count} Notizen ohne ihre Zeile}}",
+  "annotationsFull": "Notizen voll: zum Weiterzeichnen etwas löschen",
+  "annotationsNearlyFull": "Notizen zu {percent} % voll",
+  "@annotationsNearlyFull": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
   "annotationsPanelTitle": "Freihand-Notizen",
   "annotationsPanelShow": "Meine Notizen anzeigen",
   "annotationsCount": "{count, plural, =0{Noch keine: im Live-Modus zeichnen} =1{1 Notiz} other{{count} Notizen}}",

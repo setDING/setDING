@@ -2292,6 +2292,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get annotationsFull => 'Annotations full: erase some to draw more';
+
+  @override
+  String annotationsNearlyFull(int percent) {
+    return 'Annotations $percent % full';
+  }
+
+  @override
   String get annotationsPanelTitle => 'Freehand annotations';
 
   @override

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -263,6 +264,62 @@ void main() {
     await tester.tap(find.text('Undo'));
     await tester.pumpAndSettle();
     expect(find.byType(AnnotationLayer), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('nearly full warns; full refuses new strokes', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final items = await createSongs(tester, app, sources);
+    final songId = items.first.song!.id;
+    // About 0.8 MB on a page not shown.
+    final big = AnnotationStroke(
+      id: 'big',
+      tool: AnnotationTool.pen,
+      width: 0.004,
+      page: 99,
+      points: [for (var i = 0; i < 50000; i++) (i % 9973) / 10000],
+    );
+    await tester.runAsync(
+      () => AnnotationRepository(app.db).apply(
+        songId,
+        put: [
+          for (final id in ['a', 'b', 'c'])
+            AnnotationStroke.fromJson(id, big.toJson())!,
+        ],
+      ),
+    );
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+    await startDrawing(tester);
+    expect(find.byKey(const Key('annotations-nearly-full')), findsOneWidget);
+    expect(find.textContaining('% full'), findsOneWidget);
+
+    // Beyond the limit (e.g. synced from another device): drawing is refused.
+    final owner = (await rows(tester, app)).first.ownerId;
+    await tester.runAsync(
+      () => app.db
+          .into(app.db.annotations)
+          .insert(
+            AnnotationsCompanion.insert(
+              id: 'synced',
+              ownerId: owner,
+              songId: songId,
+              stroke: Value(jsonEncode(big.toJson())),
+              updatedAt: 0,
+            ),
+          ),
+    );
+    await tester.pumpAndSettle();
+    final page = tester.getRect(find.byType(PageView));
+    await stylusLine(
+      tester,
+      Offset(page.left + 100, page.center.dy),
+      const Offset(200, 0),
+    );
+    expect(await rows(tester, app), hasLength(4));
+    expect(find.byKey(const Key('annotations-full')), findsOneWidget);
+    expect(find.byKey(const Key('annotations-nearly-full')), findsNothing);
     await app.dispose(tester);
   });
 }

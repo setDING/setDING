@@ -330,6 +330,15 @@ final annotationsProvider = StreamProvider.autoDispose
           .watch(key.songId, target: key.target),
     );
 
+/// Estimated size in bytes of the strokes on a song's text or attachment,
+/// against [annotationMaxBytes].
+final annotationSizeProvider = StreamProvider.autoDispose
+    .family<int, ({String songId, String target})>(
+      (ref, key) => ref
+          .watch(annotationRepositoryProvider)
+          .watchSize(key.songId, target: key.target),
+    );
+
 /// Number of strokes on a song (text and attachments).
 final annotationCountProvider = StreamProvider.autoDispose.family<int, String>(
   (ref, songId) => ref.watch(annotationRepositoryProvider).watchCount(songId),

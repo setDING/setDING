@@ -3932,6 +3932,18 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 Notiz ohne ihre Zeile} other{{count} Notizen ohne ihre Zeile}}'**
   String annotationsOrphaned(num count);
 
+  /// No description provided for @annotationsFull.
+  ///
+  /// In de, this message translates to:
+  /// **'Notizen voll: zum Weiterzeichnen etwas löschen'**
+  String get annotationsFull;
+
+  /// No description provided for @annotationsNearlyFull.
+  ///
+  /// In de, this message translates to:
+  /// **'Notizen zu {percent} % voll'**
+  String annotationsNearlyFull(int percent);
+
   /// No description provided for @annotationsPanelTitle.
   ///
   /// In de, this message translates to:

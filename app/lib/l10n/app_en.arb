@@ -990,6 +990,8 @@
   "annotationsOtherLayoutLandscape": "Drawn in landscape",
   "annotationsOtherLayoutPortrait": "Drawn in portrait",
   "annotationsOrphaned": "{count, plural, =1{1 annotation without its line} other{{count} annotations without their line}}",
+  "annotationsFull": "Annotations full: erase some to draw more",
+  "annotationsNearlyFull": "Annotations {percent} % full",
   "annotationsPanelTitle": "Freehand annotations",
   "annotationsPanelShow": "Show my annotations",
   "annotationsCount": "{count, plural, =0{None yet: draw them in live mode} =1{1 annotation} other{{count} annotations}}",
