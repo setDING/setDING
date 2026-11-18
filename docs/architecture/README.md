@@ -59,6 +59,7 @@ A user can be a member of several organizations and bands; roles are defined per
 | SongSelect (CCLI) | **No API integration** (partner program closed); manual import of ChordPro files downloaded from SongSelect | [ADR-0011](adr/0011-songselect-import.md) |
 | Server hosting | **Debian LXC** on Proxmox, PocketBase as systemd service, published via **Cloudflare Tunnel**, daily backups, provisioned with `make server-install`, updated after each release with `make server-release` (from the tag, version stamped, only after a green release build) | [ADR-0014](adr/0014-server-hosting.md) |
 | Sign-in & session | Email/password via `SyncBackend` (PocketBase SDK, pinned), session in secure storage, kept while offline, refreshed when online, 30-day tokens | [ADR-0016](adr/0016-client-authentication.md) |
+| Windows TLS trust | The Windows client trusts the system roots **plus the bundled ISRG roots X1/X2** (Let's Encrypt), since Windows adds missing roots only on demand and Dart does not trigger that | [ADR-0034](adr/0034-bundled-root-certificates.md) |
 | Registration | Server operator sets `SETDING_REGISTRATION` = `invite_only` (default: sign-up only with an invitation, new organizations only via operator **founder invitations**) or `open`, and `SETDING_EMAIL_VERIFICATION` = `off` (default) or `required` (needs SMTP); no in-app super-admin; rate limits on sign-up and invitations | [ADR-0024](adr/0024-registration-mode.md) |
 | Organizations | Bands belong to an **organization** that owns the shared song library; organization admins manage people and bands; created automatically for a single band | [ADR-0017](adr/0017-organizations.md) |
 | Finer-grained roles | Ordered fixed roles: organization admin > **librarian** > member, band leader > **set planner** > member; organization admins may do everything; librarians edit the library (replaces `members_can_edit_songs`), band leaders create new songs and edit only their own; leaders may invite into their band | [ADR-0023](adr/0023-finer-grained-roles.md) |
@@ -303,6 +304,7 @@ See "Open points" in the individual ADRs. The most important:
 26. Where do the website and the user documentation live? → `website/` in this repository, Astro Starlight, served by Caddy on the existing server at `setding.app`, deployed with the `make server-*` targets (ADR-0030, accepted, #388). Moving the whole server to external hosting is open
 27. How can people draw their own notes on a song? → ADR-0032 (accepted, #429): personal freehand annotations drawn in live mode (ChordPro pages and PDF), page coordinates with a line anchor as fallback on another layout, per song, synced per person with a per-stroke merge, editable with eraser, lasso and undo; stamps for music marks, repeats and cues; drawing mode via the menu only; band annotations in a later ADR. Implemented in #428; the client warns from 80 % of the 1 MB limit per song and target and refuses new strokes beyond it. Open: confirm the limit with real annotations, a check on real hardware
 28. How can musicians adapt how songs look per section (chorus, bridge, solo …)? → ADR-0033 (accepted, #471): personal song display styles, Standard plus seven fixed section types with inheritance from a chosen type, curated palette, presets; explicit colours beat song directives, markup always wins; live mode and song view. Implemented in #473–#476 (`app/lib/settings/song_display.dart`, `app/lib/ui/render/song_display_colors.dart`, `app/lib/ui/settings/song_display_settings.dart`)
+29. Why does the Windows app fail to connect when the server is reachable? → Dart on Windows only trusts roots already in the Windows store, which may lack the ISRG roots of Let's Encrypt; the Windows client bundles ISRG Root X1/X2 (ADR-0034, proposed, #489). Open: bundle the newer Let's Encrypt roots once chains without the X2 cross-sign are served
 
 ## 10. ADR index
 
@@ -340,5 +342,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0030](adr/0030-website-and-user-docs.md) | Website and user documentation | Accepted |
 | [0032](adr/0032-freehand-annotations.md) | Personal freehand annotations on songs | Accepted |
 | [0033](adr/0033-song-display-styles.md) | Song display styles per section type | Accepted |
+| [0034](adr/0034-bundled-root-certificates.md) | Bundled root certificates for the Windows client | Proposed |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.
