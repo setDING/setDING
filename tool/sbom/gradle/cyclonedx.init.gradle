@@ -3,7 +3,12 @@
 //   ./gradlew :app:cyclonedxDirectBom --init-script <this file> -PsbomOutput=<file.json>
 // Only releaseRuntimeClasspath counts: what the release APK contains.
 initscript {
-    repositories { gradlePluginPortal() }
+    // The plugin's own dependencies (cyclonedx-core-java, maven-core) live on
+    // Maven Central; the plugin portal only forwards there and failed to in CI.
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
     dependencies {
         classpath 'org.cyclonedx.bom:org.cyclonedx.bom.gradle.plugin:3.6.1'
     }
