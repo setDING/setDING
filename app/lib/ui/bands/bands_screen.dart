@@ -66,53 +66,108 @@ class _RefreshOnOpenState extends ConsumerState<RefreshOnOpen> {
   );
 }
 
+/// Whether the signed-in user may create a band: on invite-only servers new
+/// organizations come from founder invitations (ADR-0024), so bands only
+/// inside organizations the user administers.
+bool canCreateBand(WidgetRef ref) {
+  final user = ref.watch(authProvider);
+  final orgs = ref.watch(organizationsProvider).value ?? const [];
+  final inviteOnly = ref.watch(serverConfigProvider).value?.inviteOnly ?? false;
+  return user != null && (!inviteOnly || orgs.any((o) => o.isAdmin));
+}
+
+/// Asks for a new band and creates it, then selects it.
+Future<void> createBand(BuildContext context, WidgetRef ref) async {
+  final orgs = ref.read(organizationsProvider).value ?? const [];
+  final inviteOnly = ref.read(serverConfigProvider).value?.inviteOnly ?? false;
+  final adminOrgs = [
+    for (final o in orgs)
+      if (o.isAdmin) o,
+  ];
+  final result = await showDialog<({String name, String? orgId})>(
+    context: context,
+    builder: (_) =>
+        _NewBandDialog(organizations: adminOrgs, newOrganization: !inviteOnly),
+  );
+  if (result == null || !context.mounted) return;
+  late String id;
+  final ok = await runBandAction(
+    context,
+    () async => id = await ref
+        .read(bandServiceProvider)
+        .createBand(result.name, organizationId: result.orgId),
+  );
+  if (!ok || !context.mounted) return;
+  await ref.read(selectedBandIdProvider.notifier).select(id);
+}
+
+/// The organizations of the signed-in user, each followed by its bands
+/// (ADR-0005, ADR-0017); a tap opens the organization or band. Admin
+/// actions are offered there depending on the role (ADR-0023).
+class OrganizationBandTiles extends ConsumerWidget {
+  const OrganizationBandTiles({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final orgs = ref.watch(organizationsProvider).value ?? const [];
+    final bands = ref.watch(bandsProvider).value ?? const <BandView>[];
+    final current = ref.watch(currentBandProvider);
+    return Column(
+      children: [
+        for (final o in orgs) ...[
+          ListTile(
+            key: Key('org-${o.id}'),
+            leading: const Icon(Icons.domain),
+            title: Text(o.name, style: Theme.of(context).textTheme.titleMedium),
+            subtitle: Text(
+              o.isAdmin ? l10n.bandRoleOrgAdmin : l10n.bandRoleMember,
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (_) => OrganizationScreen(organizationId: o.id),
+              ),
+            ),
+          ),
+          for (final b in bands)
+            if (b.organizationId == o.id)
+              ListTile(
+                contentPadding: const EdgeInsets.only(left: 56, right: 16),
+                leading: Icon(
+                  b.id == current.id
+                      ? Icons.check_circle
+                      : Icons.groups_outlined,
+                ),
+                title: Text(bandLabel(l10n, b)),
+                subtitle: Text(bandRoleLabel(l10n, b)),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) => BandScreen(bandId: b.id),
+                  ),
+                ),
+              ),
+          const Divider(),
+        ],
+      ],
+    );
+  }
+}
+
 /// The organizations and bands of the signed-in user (ADR-0005, ADR-0017).
 class BandsScreen extends ConsumerWidget {
   const BandsScreen({super.key});
-
-  Future<void> _create(
-    BuildContext context,
-    WidgetRef ref,
-    List<OrganizationView> orgs, {
-    required bool inviteOnly,
-  }) async {
-    final adminOrgs = [
-      for (final o in orgs)
-        if (o.isAdmin) o,
-    ];
-    final result = await showDialog<({String name, String? orgId})>(
-      context: context,
-      builder: (_) => _NewBandDialog(
-        organizations: adminOrgs,
-        newOrganization: !inviteOnly,
-      ),
-    );
-    if (result == null || !context.mounted) return;
-    late String id;
-    final ok = await runBandAction(
-      context,
-      () async => id = await ref
-          .read(bandServiceProvider)
-          .createBand(result.name, organizationId: result.orgId),
-    );
-    if (!ok || !context.mounted) return;
-    await ref.read(selectedBandIdProvider.notifier).select(id);
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final user = ref.watch(authProvider);
     final orgs = ref.watch(organizationsProvider).value ?? const [];
-    final bands = ref.watch(bandsProvider).value ?? const <BandView>[];
-    final current = ref.watch(currentBandProvider);
     final service = ref.read(bandServiceProvider);
-    // On invite-only servers new organizations come from founder invitations
-    // (ADR-0024): bands only inside organizations the user administers.
-    final inviteOnly =
-        ref.watch(serverConfigProvider).value?.inviteOnly ?? false;
-    final canCreate =
-        user != null && (!inviteOnly || orgs.any((o) => o.isAdmin));
+    final canCreate = canCreateBand(ref);
 
     Widget body;
     if (user == null) {
@@ -128,48 +183,7 @@ class BandsScreen extends ConsumerWidget {
         onRefresh: () => runBandAction(context, service.refresh),
         child: ListView(
           padding: const EdgeInsets.only(bottom: 88),
-          children: [
-            for (final o in orgs) ...[
-              ListTile(
-                key: Key('org-${o.id}'),
-                leading: const Icon(Icons.domain),
-                title: Text(
-                  o.name,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                subtitle: Text(
-                  o.isAdmin ? l10n.bandRoleOrgAdmin : l10n.bandRoleMember,
-                ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (_) => OrganizationScreen(organizationId: o.id),
-                  ),
-                ),
-              ),
-              for (final b in bands)
-                if (b.organizationId == o.id)
-                  ListTile(
-                    contentPadding: const EdgeInsets.only(left: 56, right: 16),
-                    leading: Icon(
-                      b.id == current.id
-                          ? Icons.check_circle
-                          : Icons.groups_outlined,
-                    ),
-                    title: Text(bandLabel(l10n, b)),
-                    subtitle: Text(bandRoleLabel(l10n, b)),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute<void>(
-                        builder: (_) => BandScreen(bandId: b.id),
-                      ),
-                    ),
-                  ),
-              const Divider(),
-            ],
-          ],
+          children: const [OrganizationBandTiles()],
         ),
       );
     }
@@ -200,8 +214,7 @@ class BandsScreen extends ConsumerWidget {
           : FloatingActionButton.extended(
               key: const Key('band-new'),
               heroTag: null,
-              onPressed: () =>
-                  _create(context, ref, orgs, inviteOnly: inviteOnly),
+              onPressed: () => createBand(context, ref),
               icon: const Icon(Icons.group_add_outlined),
               label: Text(l10n.bandNew),
             ),
@@ -210,8 +223,6 @@ class BandsScreen extends ConsumerWidget {
   }
 }
 
-/// Name and organization of a new band. Without organizations to choose
-/// from, the server creates a new organization of the same name.
 class _NewBandDialog extends StatefulWidget {
   const _NewBandDialog({
     required this.organizations,

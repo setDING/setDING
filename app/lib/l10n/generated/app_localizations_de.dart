@@ -517,7 +517,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsCategoryAccountHint =>
-      'Anmeldung, Bands, Server und Synchronisation';
+      'Anmeldung, Server und Synchronisation';
 
   @override
   String get settingsCategoryGeneralHint => 'Sprache und Design';
@@ -2425,6 +2425,17 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get stampStar => 'Stern';
+
+  @override
+  String get settingsSectionBands => 'Organisation & Bands';
+
+  @override
+  String get settingsCategoryBandsHint =>
+      'Organisationen, Bands, Mitglieder und Einladungen';
+
+  @override
+  String get settingsBandsJoinHint =>
+      'Mit einem Einladungslink einer Organisation oder Band beitreten.';
 
   @override
   String get settingsSectionSongDisplay => 'Songdarstellung';

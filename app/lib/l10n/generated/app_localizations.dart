@@ -959,7 +959,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsCategoryAccountHint.
   ///
   /// In de, this message translates to:
-  /// **'Anmeldung, Bands, Server und Synchronisation'**
+  /// **'Anmeldung, Server und Synchronisation'**
   String get settingsCategoryAccountHint;
 
   /// No description provided for @settingsCategoryGeneralHint.
@@ -4135,6 +4135,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Stern'**
   String get stampStar;
+
+  /// No description provided for @settingsSectionBands.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisation & Bands'**
+  String get settingsSectionBands;
+
+  /// No description provided for @settingsCategoryBandsHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisationen, Bands, Mitglieder und Einladungen'**
+  String get settingsCategoryBandsHint;
+
+  /// No description provided for @settingsBandsJoinHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit einem Einladungslink einer Organisation oder Band beitreten.'**
+  String get settingsBandsJoinHint;
 
   /// No description provided for @settingsSectionSongDisplay.
   ///

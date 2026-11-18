@@ -512,7 +512,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSectionMusician => 'Musician';
 
   @override
-  String get settingsCategoryAccountHint => 'Sign-in, bands, server and sync';
+  String get settingsCategoryAccountHint => 'Sign-in, server and sync';
 
   @override
   String get settingsCategoryGeneralHint => 'Language and theme';
@@ -2409,6 +2409,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stampStar => 'Star';
+
+  @override
+  String get settingsSectionBands => 'Organization & bands';
+
+  @override
+  String get settingsCategoryBandsHint =>
+      'Organizations, bands, members and invitations';
+
+  @override
+  String get settingsBandsJoinHint =>
+      'Join an organization or band with an invitation link.';
 
   @override
   String get settingsSectionSongDisplay => 'Song display';

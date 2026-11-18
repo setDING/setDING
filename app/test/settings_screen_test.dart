@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/settings/settings.dart';
+import 'package:setding/sync/sync_backend.dart';
 import 'package:setding/ui/settings_screen.dart';
 import 'package:setding/ui/theme.dart';
 
@@ -39,6 +40,8 @@ void main() {
     final app = await pumpSettings(tester);
 
     for (final c in SettingsCategory.values) {
+      // Organizations and bands only when signed in (see below).
+      if (c == SettingsCategory.bands) continue;
       final category = find.byKey(Key('settings-category-${c.name}'));
       await reveal(tester, category);
       expect(category, findsOneWidget);
@@ -224,6 +227,66 @@ void main() {
     await tester.tap(find.text('Raise extensions'));
     await tester.pumpAndSettle();
     expect(app.personal()['chordSuperscript'], isTrue);
+    await app.dispose(tester);
+  });
+
+  testWidgets('organizations and bands are their own category, only when '
+      'signed in (#480)', (tester) async {
+    useTabletSize(tester);
+    const ann = AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann');
+    final app = await TestApp.create(prefs: {'language': 'en'}, user: ann);
+    app.backend.addBand('b1', 'Rock', admin: ann, organizationId: 'o1');
+    await tester.pumpWidget(app.build(home: const SettingsScreen()));
+    await tester.pumpAndSettle();
+
+    // Account & sync no longer lists the bands.
+    expect(find.text('Manage bands'), findsNothing);
+    final bands = find.byKey(const Key('settings-category-bands'));
+    expect(bands, findsOneWidget);
+    double top(Finder f) => tester.getTopLeft(f).dy;
+    expect(
+      top(find.byKey(const Key('settings-category-account'))),
+      lessThan(top(bands)),
+    );
+    expect(
+      top(bands),
+      lessThan(top(find.byKey(const Key('settings-group-personal')))),
+    );
+
+    await tester.tap(bands);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('org-o1')), findsOneWidget);
+    expect(find.text('Rock'), findsWidgets);
+    expect(find.byKey(const Key('settings-bands-join')), findsOneWidget);
+    // An organization admin may create bands.
+    expect(find.byKey(const Key('settings-bands-new')), findsOneWidget);
+
+    // Signed out, the category disappears and the account is shown.
+    await tester.runAsync(app.backend.signOut);
+    await tester.pumpAndSettle();
+    expect(bands, findsNothing);
+    expect(find.text('Not signed in'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('members see their bands but cannot create one on an '
+      'invite-only server (#480)', (tester) async {
+    useTabletSize(tester);
+    const ann = AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann');
+    const bob = AuthUser(id: 'bob', email: 'bob@example.test', name: 'Bob');
+    final app = await TestApp.create(prefs: {'language': 'en'}, user: bob);
+    app.backend.config = const ServerConfig(
+      registration: RegistrationMode.inviteOnly,
+    );
+    app.backend.addBand('b1', 'Rock', admin: ann, organizationId: 'o1');
+    app.backend.addOrgMember('o1', bob, OrgRole.member);
+    await tester.pumpWidget(app.build(home: const SettingsScreen()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('settings-category-bands')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('org-o1')), findsOneWidget);
+    expect(find.byKey(const Key('settings-bands-join')), findsOneWidget);
+    expect(find.byKey(const Key('settings-bands-new')), findsNothing);
     await app.dispose(tester);
   });
 }
