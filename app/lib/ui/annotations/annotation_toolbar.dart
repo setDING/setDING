@@ -34,11 +34,11 @@ class AnnotationToolbar extends StatelessWidget {
     return ListenableBuilder(
       listenable: editor,
       builder: (context, _) {
-        Widget tool(DrawingTool t, IconData icon, String tooltip) => IconButton(
+        Widget tool(DrawingTool t, Widget icon, String tooltip) => IconButton(
           key: Key('annotation-tool-${t.name}'),
           tooltip: tooltip,
           isSelected: editor.tool == t,
-          icon: Icon(icon),
+          icon: icon,
           onPressed: () => editor.tool = t,
         );
         final selection = editor.selection != null;
@@ -59,25 +59,29 @@ class AnnotationToolbar extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               child: Row(
                 children: [
-                  tool(DrawingTool.pen, Icons.edit, l10n.annotationPen),
+                  tool(
+                    DrawingTool.pen,
+                    const Icon(Icons.edit),
+                    l10n.annotationPen,
+                  ),
                   tool(
                     DrawingTool.highlighter,
-                    Icons.border_color,
+                    const Icon(Icons.border_color),
                     l10n.annotationHighlighter,
                   ),
                   tool(
                     DrawingTool.eraser,
-                    Icons.cleaning_services_outlined,
+                    const EraserIcon(),
                     l10n.annotationEraser,
                   ),
                   tool(
                     DrawingTool.partialEraser,
-                    Icons.content_cut,
+                    const EraserIcon(partial: true),
                     l10n.annotationPartialEraser,
                   ),
                   tool(
                     DrawingTool.lasso,
-                    Icons.highlight_alt,
+                    const Icon(Icons.highlight_alt),
                     l10n.annotationLasso,
                   ),
                   _StampPicker(editor: editor),
@@ -185,6 +189,87 @@ class AnnotationToolbar extends StatelessWidget {
       },
     );
   }
+}
+
+/// An eraser above a line, drawn in the [IconTheme]'s colour and size:
+/// Material Icons has no eraser glyph. The whole-stroke eraser stands above
+/// an intact squiggle (it removes what it touches as a whole); the partial
+/// eraser ([partial]) above a straight line with a gap under its tip.
+class EraserIcon extends StatelessWidget {
+  const EraserIcon({super.key, this.partial = false});
+
+  final bool partial;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = IconTheme.of(context);
+    final size = theme.size ?? 24;
+    return SizedBox.square(
+      dimension: size,
+      child: CustomPaint(
+        painter: _EraserPainter(
+          partial: partial,
+          color: theme.color ?? Theme.of(context).colorScheme.onSurface,
+        ),
+      ),
+    );
+  }
+}
+
+class _EraserPainter extends CustomPainter {
+  _EraserPainter({required this.partial, required this.color});
+
+  final bool partial;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Drawn on a 24 × 24 grid like the Material icons.
+    final scale = size.width / 24;
+    canvas.scale(scale);
+    final line = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final fill = Paint()..color = color;
+
+    // The eraser, tilted by 45°: a filled rubber tip at the lower left and
+    // an outlined sleeve.
+    canvas.save();
+    canvas.translate(14, 9);
+    canvas.rotate(-0.785398); // -45°
+    const body = Rect.fromLTRB(-8.5, -4, 8.5, 4);
+    final rubber = RRect.fromRectAndCorners(
+      Rect.fromLTRB(body.left, body.top, -2.5, body.bottom),
+      topLeft: const Radius.circular(1.5),
+      bottomLeft: const Radius.circular(1.5),
+    );
+    canvas.drawRRect(rubber, fill);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(body, const Radius.circular(1.5)),
+      line,
+    );
+    canvas.restore();
+
+    if (partial) {
+      // A straight line, interrupted where the tip has rubbed it out.
+      canvas.drawLine(const Offset(2, 21), const Offset(5, 21), line);
+      canvas.drawLine(const Offset(13, 21), const Offset(22, 21), line);
+    } else {
+      // An intact squiggle: the stroke that is removed as a whole.
+      final squiggle = Path()
+        ..moveTo(2, 21)
+        ..cubicTo(6, 18, 8, 18, 11, 21)
+        ..cubicTo(14, 24, 17, 24, 22, 20);
+      canvas.drawPath(squiggle, line);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_EraserPainter old) =>
+      old.partial != partial || old.color != color;
 }
 
 class _Divider extends StatelessWidget {

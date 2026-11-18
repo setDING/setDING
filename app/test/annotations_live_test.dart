@@ -145,6 +145,29 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('both erasers show an eraser icon, not a brush or scissors', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final items = await createSongs(tester, app, sources);
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+    await startDrawing(tester);
+
+    EraserIcon iconOf(String key) => tester.widget<EraserIcon>(
+      find.descendant(
+        of: find.byKey(Key(key)),
+        matching: find.byType(EraserIcon),
+      ),
+    );
+    expect(iconOf('annotation-tool-eraser').partial, isFalse);
+    expect(iconOf('annotation-tool-partialEraser').partial, isTrue);
+    expect(find.byIcon(Icons.cleaning_services_outlined), findsNothing);
+    expect(find.byIcon(Icons.content_cut), findsNothing);
+    await app.dispose(tester);
+  });
+
   testWidgets('erase, undo, stamp, lasso and delete', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'en'});
