@@ -1070,6 +1070,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get convert => 'Convert';
 
   @override
+  String get convertCcliGrids => 'Convert CCLI bar lines to chord grids';
+
+  @override
+  String ccliGridsHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count blocks of CCLI bar lines',
+      one: 'A block of CCLI bar lines',
+    );
+    return '$_temp0 can be shown as a chord grid.';
+  }
+
+  @override
+  String get hideHint => 'Hide hint';
+
+  @override
   String get searchInSong => 'Search';
 
   @override

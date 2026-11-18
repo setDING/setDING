@@ -51,6 +51,18 @@ class ChordProEditingController extends TextEditingController {
     return _sections;
   }
 
+  String? _gridChecked;
+  List<CcliGrid> _ccliGrids = const [];
+
+  /// CCLI bar lines that can be converted to grid sections (#481).
+  List<CcliGrid> get ccliGrids {
+    if (_gridChecked != text) {
+      _gridChecked = text;
+      _ccliGrids = findCcliGrids(text);
+    }
+    return _ccliGrids;
+  }
+
   /// The bracket next to the cursor and its partner (#37), if any.
   BracketMatch? get bracketMatch {
     final sel = selection;
@@ -88,6 +100,16 @@ class ChordProEditingController extends TextEditingController {
       for (final at in [match.bracket, ?match.partner]) {
         overlays.add((at, at + 1, bracketStyle));
       }
+    }
+    // CCLI bar lines that can become a grid section: a dotted line, as a
+    // hint rather than an error (#481).
+    final gridHint = TextStyle(
+      decoration: TextDecoration.underline,
+      decorationStyle: TextDecorationStyle.dotted,
+      decorationColor: scheme.tertiary,
+    );
+    for (final grid in ccliGrids) {
+      overlays.add((grid.linesStart, grid.end, gridHint));
     }
     final dark = scheme.brightness == Brightness.dark;
     final matchStyle = TextStyle(

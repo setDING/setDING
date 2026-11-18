@@ -229,4 +229,56 @@ void convertTests() {
     expect(find.text('Convert'), findsNothing);
     await app.dispose(tester);
   });
+
+  group('CCLI bar lines (#481)', () {
+    const source = '{comment: Turnaround}\n[|][G] [.] [C] [.][|][D][|]\n';
+    const converted =
+        '{start_of_grid shape="2x4" label="Turnaround"}\n'
+        '| G . C . | D . . . |\n{end_of_grid}\n';
+
+    Future<(TestApp, TextEditingController)> pump(WidgetTester tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      await tester.pumpWidget(
+        app.build(home: const SongEditorScreen(initialSource: source)),
+      );
+      await tester.pumpAndSettle();
+      final controller = tester
+          .widget<TextField>(find.byType(TextField))
+          .controller!;
+      return (app, controller);
+    }
+
+    testWidgets('a hint offers the conversion', (tester) async {
+      final (app, controller) = await pump(tester);
+      expect(
+        find.text('A block of CCLI bar lines can be shown as a chord grid.'),
+        findsOneWidget,
+      );
+      await tester.tap(find.widgetWithText(TextButton, 'Convert'));
+      await tester.pumpAndSettle();
+      expect(controller.text, converted);
+      expect(find.byType(CcliGridHint), findsNothing);
+      await app.dispose(tester);
+    });
+
+    testWidgets('the hint can be hidden', (tester) async {
+      final (app, controller) = await pump(tester);
+      await tester.tap(find.byTooltip('Hide hint'));
+      await tester.pumpAndSettle();
+      expect(find.byType(CcliGridHint), findsNothing);
+      expect(controller.text, source);
+      await app.dispose(tester);
+    });
+
+    testWidgets('the Lines menu converts them', (tester) async {
+      final (app, controller) = await pump(tester);
+      await tester.tap(find.text('Lines'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Convert CCLI bar lines to chord grids'));
+      await tester.pumpAndSettle();
+      expect(controller.text, converted);
+      await app.dispose(tester);
+    });
+  });
 }

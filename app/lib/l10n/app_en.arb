@@ -357,6 +357,16 @@
   "convertChordsOverLyrics": "Convert chords above lyrics",
   "pastedChordsOverLyrics": "The pasted text has chords above the lyrics.",
   "convert": "Convert",
+  "convertCcliGrids": "Convert CCLI bar lines to chord grids",
+  "ccliGridsHint": "{count, plural, =1{A block of CCLI bar lines} other{{count} blocks of CCLI bar lines}} can be shown as a chord grid.",
+  "@ccliGridsHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hideHint": "Hide hint",
   "searchInSong": "Search",
   "searchNoMatches": "No matches",
   "searchPrevious": "Previous match",

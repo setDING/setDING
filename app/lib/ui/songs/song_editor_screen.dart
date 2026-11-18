@@ -452,6 +452,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
         base,
         extent,
       ),
+      EditorCommand.convertCcliGrids => convertCcliGridsIn(text, base, extent),
     };
     if (edit != null) {
       _controller.value = TextEditingValue(
@@ -462,6 +463,21 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
         ),
       );
     }
+    _focus.requestFocus();
+  }
+
+  /// Hint on CCLI bar lines hidden by the author for this editor (#481).
+  bool _ccliHintHidden = false;
+
+  /// Converts all CCLI bar lines to grid sections (#481).
+  void _convertCcliGrids() {
+    final text = _controller.text;
+    final edit = convertCcliGridsIn(text, 0, 0);
+    if (edit == null) return;
+    _controller.value = TextEditingValue(
+      text: edit.text,
+      selection: TextSelection.collapsed(offset: edit.base),
+    );
     _focus.requestFocus();
   }
 
@@ -562,6 +578,19 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
           ),
           const Divider(height: 1),
         ],
+        if (!_ccliHintHidden)
+          ListenableBuilder(
+            listenable: _controller,
+            builder: (context, _) {
+              final count = _controller.ccliGrids.length;
+              if (count == 0) return const SizedBox.shrink();
+              return CcliGridHint(
+                count: count,
+                onConvert: () => _convertCcliGrids(),
+                onHide: () => setState(() => _ccliHintHidden = true),
+              );
+            },
+          ),
         Expanded(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -721,6 +750,52 @@ class _Preview extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Hint above the editor that the song has CCLI bar lines that can be
+/// converted to grid sections (#481).
+class CcliGridHint extends StatelessWidget {
+  const CcliGridHint({
+    super.key,
+    required this.count,
+    required this.onConvert,
+    required this.onHide,
+  });
+
+  final int count;
+  final VoidCallback onConvert;
+  final VoidCallback onHide;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: scheme.tertiaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 4, 4),
+        child: Row(
+          children: [
+            Icon(Icons.grid_on, size: 20, color: scheme.onTertiaryContainer),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                l10n.ccliGridsHint(count),
+                style: TextStyle(color: scheme.onTertiaryContainer),
+              ),
+            ),
+            TextButton(onPressed: onConvert, child: Text(l10n.convert)),
+            IconButton(
+              tooltip: l10n.hideHint,
+              icon: const Icon(Icons.close),
+              color: scheme.onTertiaryContainer,
+              onPressed: onHide,
+            ),
+          ],
+        ),
       ),
     );
   }

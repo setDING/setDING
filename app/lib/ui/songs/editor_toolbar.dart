@@ -71,7 +71,8 @@ enum EditorCommand {
   duplicateLines(Icons.content_copy),
   deleteLines(Icons.delete_sweep_outlined),
   toggleComment(Icons.tag),
-  convertChordsOverLyrics(Icons.auto_fix_high);
+  convertChordsOverLyrics(Icons.auto_fix_high),
+  convertCcliGrids(Icons.grid_on);
 
   const EditorCommand(this.icon);
 
@@ -86,6 +87,7 @@ enum EditorCommand {
     deleteLines => l10n.deleteLines,
     toggleComment => l10n.toggleComment,
     convertChordsOverLyrics => l10n.convertChordsOverLyrics,
+    convertCcliGrids => l10n.convertCcliGrids,
   };
 
   /// The shortcut shown in menus and tooltips. Alt+↑/↓ as in common code
@@ -110,7 +112,7 @@ enum EditorCommand {
     duplicateLines => _key(LogicalKeyboardKey.keyD),
     deleteLines => _key(LogicalKeyboardKey.keyK, shift: true),
     toggleComment => _key(LogicalKeyboardKey.slash),
-    convertChordsOverLyrics => null,
+    convertChordsOverLyrics || convertCcliGrids => null,
   };
 
   /// The key combinations of the command: [shortcut] or, for the comment

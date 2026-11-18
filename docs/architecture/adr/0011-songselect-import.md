@@ -59,6 +59,7 @@ Findings (researched 2026-11-14):
 
 - 2026-11-14: Accepted. No SongSelect API integration; manual import of ChordPro files downloaded from SongSelect.
 - 2026-11-17: Text in the "chords above lyrics" format (copied from the web) is converted to ChordPro in the editor (#362): a Lines menu command for the selection or the whole song, and a hint with a Convert action after pasting such text. Strict chord detection (`convertChordsOverLyrics` in the `chordpro` package); headers in brackets (`[Chorus]`) become `{comment: …}`.
+- 2026-11-18: SongSelect bar lines in chord brackets (`[|][G/B] [C2] [.] [.][|]`, `[||:]`, `[:||]`) can be converted to `{start_of_grid}` sections in the editor (#481): a dotted hint on the lines, a hint bar with Convert, and a Lines menu command for the selection or all blocks. The comment before the block becomes the grid label unless lyrics follow; the shape comes from the longest row and measure, shorter measures are filled with empty cells (`findCcliGrids`/`convertCcliGrids` in the `chordpro` package). Nothing is converted automatically on import.
 
 ## Findings from a real SongSelect file (2026-11-14)
 
