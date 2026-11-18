@@ -319,6 +319,15 @@ class _CategoryContent extends ConsumerWidget {
           value: s.setProgress,
           onChanged: (v) => notifier.update((s) => s.copyWith(setProgress: v)),
         ),
+        // Freehand annotations (ADR-0032).
+        SwitchListTile(
+          key: const Key('settings-show-annotations'),
+          title: Text(l10n.settingsShowAnnotations),
+          subtitle: Text(l10n.settingsShowAnnotationsHint),
+          value: s.showAnnotations,
+          onChanged: (v) =>
+              notifier.update((s) => s.copyWith(showAnnotations: v)),
+        ),
       ],
       SettingsCategory.live => [
         ListTile(
@@ -372,6 +381,15 @@ class _CategoryContent extends ConsumerWidget {
           hint: l10n.settingsLiveAppearanceHint,
         ),
         ..._clickDeviceTiles(l10n, s, notifier),
+        // Freehand annotations (ADR-0032).
+        SwitchListTile(
+          key: const Key('settings-annotation-finger'),
+          title: Text(l10n.settingsAnnotationFinger),
+          subtitle: Text(l10n.settingsAnnotationFingerHint),
+          value: s.annotationFinger,
+          onChanged: (v) =>
+              notifier.update((s) => s.copyWith(annotationFinger: v)),
+        ),
       ],
       SettingsCategory.about => [const _AboutTiles()],
     };

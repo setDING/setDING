@@ -530,6 +530,26 @@ class FakeSyncBackend implements SyncBackend {
     return stored;
   }
 
+  /// Freehand annotations by record ID (ADR-0032).
+  final annotations = <String, RemoteAnnotations>{};
+
+  /// Simulates a change on another device of [a]'s user: the strokes of
+  /// [a] are merged into the stored ones by stroke ID, as on the server.
+  RemoteAnnotations putAnnotations(RemoteAnnotations a, {bool? deleted}) {
+    final existing = annotations[a.id];
+    final stored = RemoteAnnotations(
+      id: a.id,
+      userId: a.userId,
+      songId: a.songId,
+      attachmentId: a.attachmentId,
+      data: {...?existing?.data, ...a.data},
+      revision: ++_serverRevision,
+      deleted: deleted ?? existing?.deleted ?? a.deleted,
+    );
+    annotations[a.id] = stored;
+    return stored;
+  }
+
   /// Band arrangements by record ID (ADR-0025).
   final arrangements = <String, RemoteArrangement>{};
 
@@ -627,6 +647,40 @@ class FakeSyncBackend implements SyncBackend {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
     return putUserSettings(settings.userId, settings.data);
+  }
+
+  @override
+  Future<List<RemoteAnnotations>> pullAnnotations(int since) async {
+    _requireUser();
+    return annotations.values
+        .where((a) => a.userId == user!.id && a.revision > since)
+        .toList()
+      ..sort((a, b) => a.revision.compareTo(b.revision));
+  }
+
+  @override
+  Future<RemoteAnnotations> pushAnnotations(
+    RemoteAnnotations a, {
+    required bool create,
+  }) async {
+    _requireUser();
+    pushCount++;
+    final song = songs[a.songId];
+    if (a.userId != user!.id ||
+        song == null ||
+        !orgMembers.any(
+          (m) => m.scopeId == song.organizationId && m.user.id == user!.id,
+        )) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    final existing = annotations[a.id];
+    if (create && existing != null) {
+      throw const BackendException(BackendErrorKind.server);
+    }
+    if (!create && existing == null) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    return putAnnotations(a);
   }
 
   @override

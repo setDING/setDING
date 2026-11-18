@@ -187,6 +187,32 @@ class BandCopyService {
             ),
           );
     }
+    // The current person's freehand annotations (ADR-0032), as new strokes
+    // on the copies of the song and its attachments; synced as records that
+    // never reached the server.
+    final strokes =
+        await (db.select(db.annotations)..where(
+              (x) =>
+                  x.songId.equals(songId) &
+                  x.ownerId.equals(overlayOwnerFor(song.libraryId, userId)) &
+                  x.stroke.isNotNull(),
+            ))
+            .get();
+    for (final x in strokes) {
+      final target = x.target.isEmpty ? '' : attachmentCopies[x.target];
+      if (target == null) continue;
+      await db
+          .into(db.annotations)
+          .insert(
+            x.copyWith(
+              id: _uuid.v4(),
+              ownerId: overlayOwnerFor(targetLibraryId, userId),
+              songId: newId,
+              target: target,
+              pending: 1,
+            ),
+          );
+    }
     await markDirty(db, SyncCollection.songs, newId, scope: targetLibraryId);
     for (final a in attachments) {
       if (!isPdfFile(a.fileName)) continue;

@@ -23,8 +23,16 @@ const schema7Indexes = [
   'set_items_song',
 ];
 
+/// Turns a current database back into schema 15: no freehand annotations.
+void downgradeToSchema15(Database raw) {
+  raw.execute('DROP INDEX annotations_owner_song');
+  raw.execute('DROP TABLE annotations');
+  raw.execute('ALTER TABLE personal_overlays DROP COLUMN hide_annotations');
+}
+
 /// Turns a current database back into schema 14: no personal settings.
 void downgradeToSchema14(Database raw) {
+  downgradeToSchema15(raw);
   raw.execute('DROP TABLE user_settings');
 }
 
@@ -485,6 +493,42 @@ void main() {
         .into(upgraded.userSettings)
         .insert(UserSettingsCompanion.insert(ownerId: 'local'));
     expect(await upgraded.select(upgraded.userSettings).get(), hasLength(1));
+    await upgraded.close();
+  });
+
+  test('upgrades a schema 15 database: freehand annotations', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final repo = SongRepository(current, FileAttachmentStorage(dir));
+    final song = await repo.createSong(source: '{title: Song}');
+    await repo.saveOverlay(
+      (await repo.getOverlay(song)).copyWith(transpose: 2),
+    );
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema15(raw);
+    raw.execute('PRAGMA user_version = 15');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final overlay = await upgraded
+        .select(upgraded.personalOverlays)
+        .getSingle();
+    expect((overlay.transpose, overlay.hideAnnotations), (2, false));
+    await upgraded
+        .into(upgraded.annotations)
+        .insert(
+          AnnotationsCompanion.insert(
+            id: 'a1',
+            ownerId: 'local',
+            songId: song,
+            updatedAt: 1,
+          ),
+        );
+    expect(await upgraded.select(upgraded.annotations).get(), hasLength(1));
+    final raw2 = sqlite3.open(file.path);
+    expect(indexNames(raw2), contains('annotations_owner_song'));
+    raw2.close();
     await upgraded.close();
   });
 }

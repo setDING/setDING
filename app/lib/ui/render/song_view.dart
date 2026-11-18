@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart';
 import '../../data/attachment_storage.dart';
 import '../../l10n/generated/app_localizations.dart';
 import 'chord_diagram.dart';
+import 'line_marks.dart';
 import 'song_blocks.dart';
 import 'song_delegates.dart';
 import 'song_image.dart';
@@ -123,18 +124,21 @@ class SongBody extends StatelessWidget {
           diagramsOnTop: options.diagramsPosition == DiagramsPosition.top,
         );
     Widget blockWidget(SongBlock b) => b.delegate != null
-        ? _tappable(
-            options.onElementTap,
-            b.delegate!,
-            DelegateView(
-              delegate: b.delegate!,
-              lyrics: style.lyricsFor(b.startFormat),
-              label: style.labelFor(b.startFormat),
-              mono: style.tabFor(b.startFormat),
-              colors: style.colors,
-              transpose:
-                  options.formatter.transpose +
-                  options.formatter.leadingTranspose,
+        ? markLine(
+            b.delegate,
+            _tappable(
+              options.onElementTap,
+              b.delegate!,
+              DelegateView(
+                delegate: b.delegate!,
+                lyrics: style.lyricsFor(b.startFormat),
+                label: style.labelFor(b.startFormat),
+                mono: style.tabFor(b.startFormat),
+                colors: style.colors,
+                transpose:
+                    options.formatter.transpose +
+                    options.formatter.leadingTranspose,
+              ),
             ),
           )
         : b.diagrams != null
@@ -351,10 +355,13 @@ class _SectionBlock extends StatelessWidget {
     GridGeometry? grid;
     final children = <Widget>[
       if (block.label != null)
-        _tappable(
-          options.onElementTap,
+        markLine(
           block.section,
-          _Label(text: block.label!, style: style.labelFor(format)),
+          _tappable(
+            options.onElementTap,
+            block.section,
+            _Label(text: block.label!, style: style.labelFor(format)),
+          ),
         ),
     ];
     for (final line in block.lines) {
@@ -452,7 +459,11 @@ class _SectionBlock extends StatelessWidget {
           );
       }
       for (var i = before; i < children.length; i++) {
-        children[i] = _tappable(options.onElementTap, line, children[i]);
+        // Anchors for freehand annotations (ADR-0032).
+        children[i] = markLine(
+          line,
+          _tappable(options.onElementTap, line, children[i]),
+        );
       }
     }
     final content = Column(

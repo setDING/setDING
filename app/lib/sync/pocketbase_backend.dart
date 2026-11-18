@@ -711,6 +711,56 @@ class PocketBaseBackend implements SyncBackend {
     );
   });
 
+  static RemoteAnnotations _annotations(RecordModel r) {
+    final data = r.get<dynamic>('data');
+    final attachment = r.getStringValue('attachment');
+    return RemoteAnnotations(
+      id: r.id,
+      userId: r.getStringValue('user'),
+      songId: r.getStringValue('song'),
+      attachmentId: attachment.isEmpty ? null : attachment,
+      data: data is Map ? data.cast<String, dynamic>() : const {},
+      revision: r.getIntValue('revision'),
+      deleted: r.getBoolValue('deleted'),
+    );
+  }
+
+  @override
+  Future<List<RemoteAnnotations>> pullAnnotations(int since) async => [
+    for (final r in await _since(
+      'annotations',
+      'user',
+      currentUser?.id ?? '',
+      since,
+    ))
+      _annotations(r),
+  ];
+
+  @override
+  Future<RemoteAnnotations> pushAnnotations(
+    RemoteAnnotations annotations, {
+    required bool create,
+  }) => _signedIn(() async {
+    final body = {'data': annotations.data};
+    return _annotations(
+      create
+          ? await _pb
+                .collection('annotations')
+                .create(
+                  body: {
+                    'id': annotations.id,
+                    'user': annotations.userId,
+                    'song': annotations.songId,
+                    'attachment': ?annotations.attachmentId,
+                    ...body,
+                  },
+                )
+          : await _pb
+                .collection('annotations')
+                .update(annotations.id, body: body),
+    );
+  });
+
   static RemoteUserSettings _userSettings(RecordModel r) {
     final data = r.get<dynamic>('data');
     return RemoteUserSettings(
@@ -818,6 +868,7 @@ class PocketBaseBackend implements SyncBackend {
       'overlays',
       'arrangements',
       'user_settings',
+      'annotations',
       // Changes of who sees which band (SyncController.bandCollections).
       'organizations',
       'org_memberships',

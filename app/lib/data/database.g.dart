@@ -4665,6 +4665,21 @@ class $PersonalOverlaysTable extends PersonalOverlays
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _hideAnnotationsMeta = const VerificationMeta(
+    'hideAnnotations',
+  );
+  @override
+  late final GeneratedColumn<bool> hideAnnotations = GeneratedColumn<bool>(
+    'hide_annotations',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("hide_annotations" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _revisionMeta = const VerificationMeta(
     'revision',
   );
@@ -4688,6 +4703,7 @@ class $PersonalOverlaysTable extends PersonalOverlays
     notes,
     nashville,
     liveView,
+    hideAnnotations,
     revision,
   ];
   @override
@@ -4758,6 +4774,15 @@ class $PersonalOverlaysTable extends PersonalOverlays
         liveView.isAcceptableOrUnknown(data['live_view']!, _liveViewMeta),
       );
     }
+    if (data.containsKey('hide_annotations')) {
+      context.handle(
+        _hideAnnotationsMeta,
+        hideAnnotations.isAcceptableOrUnknown(
+          data['hide_annotations']!,
+          _hideAnnotationsMeta,
+        ),
+      );
+    }
     if (data.containsKey('revision')) {
       context.handle(
         _revisionMeta,
@@ -4809,6 +4834,10 @@ class $PersonalOverlaysTable extends PersonalOverlays
         DriftSqlType.string,
         data['${effectivePrefix}live_view'],
       ),
+      hideAnnotations: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}hide_annotations'],
+      )!,
       revision: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}revision'],
@@ -4843,6 +4872,9 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
   /// What live mode shows: null = ChordPro, otherwise an attachment ID.
   final String? liveView;
 
+  /// Freehand annotations of this song hidden (ADR-0032, schema 16).
+  final bool hideAnnotations;
+
   /// Server revision; 0 = not on the server (schema 9, ADR-0020).
   final int revision;
   const SongOverlay({
@@ -4855,6 +4887,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     this.notes,
     this.nashville,
     this.liveView,
+    required this.hideAnnotations,
     required this.revision,
   });
   @override
@@ -4877,6 +4910,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     if (!nullToAbsent || liveView != null) {
       map['live_view'] = Variable<String>(liveView);
     }
+    map['hide_annotations'] = Variable<bool>(hideAnnotations);
     map['revision'] = Variable<int>(revision);
     return map;
   }
@@ -4900,6 +4934,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       liveView: liveView == null && nullToAbsent
           ? const Value.absent()
           : Value(liveView),
+      hideAnnotations: Value(hideAnnotations),
       revision: Value(revision),
     );
   }
@@ -4919,6 +4954,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       notes: serializer.fromJson<String?>(json['notes']),
       nashville: serializer.fromJson<bool?>(json['nashville']),
       liveView: serializer.fromJson<String?>(json['liveView']),
+      hideAnnotations: serializer.fromJson<bool>(json['hideAnnotations']),
       revision: serializer.fromJson<int>(json['revision']),
     );
   }
@@ -4935,6 +4971,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       'notes': serializer.toJson<String?>(notes),
       'nashville': serializer.toJson<bool?>(nashville),
       'liveView': serializer.toJson<String?>(liveView),
+      'hideAnnotations': serializer.toJson<bool>(hideAnnotations),
       'revision': serializer.toJson<int>(revision),
     };
   }
@@ -4949,6 +4986,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     Value<String?> notes = const Value.absent(),
     Value<bool?> nashville = const Value.absent(),
     Value<String?> liveView = const Value.absent(),
+    bool? hideAnnotations,
     int? revision,
   }) => SongOverlay(
     ownerId: ownerId ?? this.ownerId,
@@ -4960,6 +4998,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     notes: notes.present ? notes.value : this.notes,
     nashville: nashville.present ? nashville.value : this.nashville,
     liveView: liveView.present ? liveView.value : this.liveView,
+    hideAnnotations: hideAnnotations ?? this.hideAnnotations,
     revision: revision ?? this.revision,
   );
   SongOverlay copyWithCompanion(PersonalOverlaysCompanion data) {
@@ -4973,6 +5012,9 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       notes: data.notes.present ? data.notes.value : this.notes,
       nashville: data.nashville.present ? data.nashville.value : this.nashville,
       liveView: data.liveView.present ? data.liveView.value : this.liveView,
+      hideAnnotations: data.hideAnnotations.present
+          ? data.hideAnnotations.value
+          : this.hideAnnotations,
       revision: data.revision.present ? data.revision.value : this.revision,
     );
   }
@@ -4989,6 +5031,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
           ..write('notes: $notes, ')
           ..write('nashville: $nashville, ')
           ..write('liveView: $liveView, ')
+          ..write('hideAnnotations: $hideAnnotations, ')
           ..write('revision: $revision')
           ..write(')'))
         .toString();
@@ -5005,6 +5048,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     notes,
     nashville,
     liveView,
+    hideAnnotations,
     revision,
   );
   @override
@@ -5020,6 +5064,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
           other.notes == this.notes &&
           other.nashville == this.nashville &&
           other.liveView == this.liveView &&
+          other.hideAnnotations == this.hideAnnotations &&
           other.revision == this.revision);
 }
 
@@ -5033,6 +5078,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
   final Value<String?> notes;
   final Value<bool?> nashville;
   final Value<String?> liveView;
+  final Value<bool> hideAnnotations;
   final Value<int> revision;
   final Value<int> rowid;
   const PersonalOverlaysCompanion({
@@ -5045,6 +5091,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     this.notes = const Value.absent(),
     this.nashville = const Value.absent(),
     this.liveView = const Value.absent(),
+    this.hideAnnotations = const Value.absent(),
     this.revision = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -5058,6 +5105,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     this.notes = const Value.absent(),
     this.nashville = const Value.absent(),
     this.liveView = const Value.absent(),
+    this.hideAnnotations = const Value.absent(),
     this.revision = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : songId = Value(songId);
@@ -5071,6 +5119,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     Expression<String>? notes,
     Expression<bool>? nashville,
     Expression<String>? liveView,
+    Expression<bool>? hideAnnotations,
     Expression<int>? revision,
     Expression<int>? rowid,
   }) {
@@ -5084,6 +5133,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
       if (notes != null) 'notes': notes,
       if (nashville != null) 'nashville': nashville,
       if (liveView != null) 'live_view': liveView,
+      if (hideAnnotations != null) 'hide_annotations': hideAnnotations,
       if (revision != null) 'revision': revision,
       if (rowid != null) 'rowid': rowid,
     });
@@ -5099,6 +5149,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     Value<String?>? notes,
     Value<bool?>? nashville,
     Value<String?>? liveView,
+    Value<bool>? hideAnnotations,
     Value<int>? revision,
     Value<int>? rowid,
   }) {
@@ -5112,6 +5163,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
       notes: notes ?? this.notes,
       nashville: nashville ?? this.nashville,
       liveView: liveView ?? this.liveView,
+      hideAnnotations: hideAnnotations ?? this.hideAnnotations,
       revision: revision ?? this.revision,
       rowid: rowid ?? this.rowid,
     );
@@ -5147,6 +5199,9 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     if (liveView.present) {
       map['live_view'] = Variable<String>(liveView.value);
     }
+    if (hideAnnotations.present) {
+      map['hide_annotations'] = Variable<bool>(hideAnnotations.value);
+    }
     if (revision.present) {
       map['revision'] = Variable<int>(revision.value);
     }
@@ -5168,6 +5223,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
           ..write('notes: $notes, ')
           ..write('nashville: $nashville, ')
           ..write('liveView: $liveView, ')
+          ..write('hideAnnotations: $hideAnnotations, ')
           ..write('revision: $revision, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -6016,6 +6072,470 @@ class UserSettingsCompanion extends UpdateCompanion<UserSettingsRow> {
           ..write('dirtyKeys: $dirtyKeys, ')
           ..write('revision: $revision, ')
           ..write('adopting: $adopting, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $AnnotationsTable extends Annotations
+    with TableInfo<$AnnotationsTable, AnnotationRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AnnotationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ownerIdMeta = const VerificationMeta(
+    'ownerId',
+  );
+  @override
+  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
+    'owner_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _songIdMeta = const VerificationMeta('songId');
+  @override
+  late final GeneratedColumn<String> songId = GeneratedColumn<String>(
+    'song_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES songs (id)',
+    ),
+  );
+  static const VerificationMeta _targetMeta = const VerificationMeta('target');
+  @override
+  late final GeneratedColumn<String> target = GeneratedColumn<String>(
+    'target',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _strokeMeta = const VerificationMeta('stroke');
+  @override
+  late final GeneratedColumn<String> stroke = GeneratedColumn<String>(
+    'stroke',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pendingMeta = const VerificationMeta(
+    'pending',
+  );
+  @override
+  late final GeneratedColumn<int> pending = GeneratedColumn<int>(
+    'pending',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    ownerId,
+    songId,
+    target,
+    stroke,
+    updatedAt,
+    pending,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'annotations';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AnnotationRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('owner_id')) {
+      context.handle(
+        _ownerIdMeta,
+        ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ownerIdMeta);
+    }
+    if (data.containsKey('song_id')) {
+      context.handle(
+        _songIdMeta,
+        songId.isAcceptableOrUnknown(data['song_id']!, _songIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_songIdMeta);
+    }
+    if (data.containsKey('target')) {
+      context.handle(
+        _targetMeta,
+        target.isAcceptableOrUnknown(data['target']!, _targetMeta),
+      );
+    }
+    if (data.containsKey('stroke')) {
+      context.handle(
+        _strokeMeta,
+        stroke.isAcceptableOrUnknown(data['stroke']!, _strokeMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('pending')) {
+      context.handle(
+        _pendingMeta,
+        pending.isAcceptableOrUnknown(data['pending']!, _pendingMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AnnotationRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AnnotationRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      ownerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner_id'],
+      )!,
+      songId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}song_id'],
+      )!,
+      target: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}target'],
+      )!,
+      stroke: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}stroke'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      pending: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pending'],
+      )!,
+    );
+  }
+
+  @override
+  $AnnotationsTable createAlias(String alias) {
+    return $AnnotationsTable(attachedDatabase, alias);
+  }
+}
+
+class AnnotationRow extends DataClass implements Insertable<AnnotationRow> {
+  /// UUID of the stroke.
+  final String id;
+
+  /// Server user ID, or [localOwnerId] (as for personal overlays).
+  final String ownerId;
+  final String songId;
+
+  /// What is annotated: empty for the ChordPro text, otherwise the ID of a
+  /// PDF attachment.
+  final String target;
+
+  /// The stroke as JSON (`AnnotationStroke.toJson`); null for an erased
+  /// stroke whose erase is not on the server yet (tombstone).
+  final String? stroke;
+
+  /// Last change in milliseconds since the epoch; also the drawing order.
+  final int updatedAt;
+
+  /// Grows with every local change not yet pushed; 0 = as on the server.
+  final int pending;
+  const AnnotationRow({
+    required this.id,
+    required this.ownerId,
+    required this.songId,
+    required this.target,
+    this.stroke,
+    required this.updatedAt,
+    required this.pending,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['owner_id'] = Variable<String>(ownerId);
+    map['song_id'] = Variable<String>(songId);
+    map['target'] = Variable<String>(target);
+    if (!nullToAbsent || stroke != null) {
+      map['stroke'] = Variable<String>(stroke);
+    }
+    map['updated_at'] = Variable<int>(updatedAt);
+    map['pending'] = Variable<int>(pending);
+    return map;
+  }
+
+  AnnotationsCompanion toCompanion(bool nullToAbsent) {
+    return AnnotationsCompanion(
+      id: Value(id),
+      ownerId: Value(ownerId),
+      songId: Value(songId),
+      target: Value(target),
+      stroke: stroke == null && nullToAbsent
+          ? const Value.absent()
+          : Value(stroke),
+      updatedAt: Value(updatedAt),
+      pending: Value(pending),
+    );
+  }
+
+  factory AnnotationRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AnnotationRow(
+      id: serializer.fromJson<String>(json['id']),
+      ownerId: serializer.fromJson<String>(json['ownerId']),
+      songId: serializer.fromJson<String>(json['songId']),
+      target: serializer.fromJson<String>(json['target']),
+      stroke: serializer.fromJson<String?>(json['stroke']),
+      updatedAt: serializer.fromJson<int>(json['updatedAt']),
+      pending: serializer.fromJson<int>(json['pending']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'ownerId': serializer.toJson<String>(ownerId),
+      'songId': serializer.toJson<String>(songId),
+      'target': serializer.toJson<String>(target),
+      'stroke': serializer.toJson<String?>(stroke),
+      'updatedAt': serializer.toJson<int>(updatedAt),
+      'pending': serializer.toJson<int>(pending),
+    };
+  }
+
+  AnnotationRow copyWith({
+    String? id,
+    String? ownerId,
+    String? songId,
+    String? target,
+    Value<String?> stroke = const Value.absent(),
+    int? updatedAt,
+    int? pending,
+  }) => AnnotationRow(
+    id: id ?? this.id,
+    ownerId: ownerId ?? this.ownerId,
+    songId: songId ?? this.songId,
+    target: target ?? this.target,
+    stroke: stroke.present ? stroke.value : this.stroke,
+    updatedAt: updatedAt ?? this.updatedAt,
+    pending: pending ?? this.pending,
+  );
+  AnnotationRow copyWithCompanion(AnnotationsCompanion data) {
+    return AnnotationRow(
+      id: data.id.present ? data.id.value : this.id,
+      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
+      songId: data.songId.present ? data.songId.value : this.songId,
+      target: data.target.present ? data.target.value : this.target,
+      stroke: data.stroke.present ? data.stroke.value : this.stroke,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      pending: data.pending.present ? data.pending.value : this.pending,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AnnotationRow(')
+          ..write('id: $id, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('songId: $songId, ')
+          ..write('target: $target, ')
+          ..write('stroke: $stroke, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('pending: $pending')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, ownerId, songId, target, stroke, updatedAt, pending);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AnnotationRow &&
+          other.id == this.id &&
+          other.ownerId == this.ownerId &&
+          other.songId == this.songId &&
+          other.target == this.target &&
+          other.stroke == this.stroke &&
+          other.updatedAt == this.updatedAt &&
+          other.pending == this.pending);
+}
+
+class AnnotationsCompanion extends UpdateCompanion<AnnotationRow> {
+  final Value<String> id;
+  final Value<String> ownerId;
+  final Value<String> songId;
+  final Value<String> target;
+  final Value<String?> stroke;
+  final Value<int> updatedAt;
+  final Value<int> pending;
+  final Value<int> rowid;
+  const AnnotationsCompanion({
+    this.id = const Value.absent(),
+    this.ownerId = const Value.absent(),
+    this.songId = const Value.absent(),
+    this.target = const Value.absent(),
+    this.stroke = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.pending = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AnnotationsCompanion.insert({
+    required String id,
+    required String ownerId,
+    required String songId,
+    this.target = const Value.absent(),
+    this.stroke = const Value.absent(),
+    required int updatedAt,
+    this.pending = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       ownerId = Value(ownerId),
+       songId = Value(songId),
+       updatedAt = Value(updatedAt);
+  static Insertable<AnnotationRow> custom({
+    Expression<String>? id,
+    Expression<String>? ownerId,
+    Expression<String>? songId,
+    Expression<String>? target,
+    Expression<String>? stroke,
+    Expression<int>? updatedAt,
+    Expression<int>? pending,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (ownerId != null) 'owner_id': ownerId,
+      if (songId != null) 'song_id': songId,
+      if (target != null) 'target': target,
+      if (stroke != null) 'stroke': stroke,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (pending != null) 'pending': pending,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AnnotationsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? ownerId,
+    Value<String>? songId,
+    Value<String>? target,
+    Value<String?>? stroke,
+    Value<int>? updatedAt,
+    Value<int>? pending,
+    Value<int>? rowid,
+  }) {
+    return AnnotationsCompanion(
+      id: id ?? this.id,
+      ownerId: ownerId ?? this.ownerId,
+      songId: songId ?? this.songId,
+      target: target ?? this.target,
+      stroke: stroke ?? this.stroke,
+      updatedAt: updatedAt ?? this.updatedAt,
+      pending: pending ?? this.pending,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (ownerId.present) {
+      map['owner_id'] = Variable<String>(ownerId.value);
+    }
+    if (songId.present) {
+      map['song_id'] = Variable<String>(songId.value);
+    }
+    if (target.present) {
+      map['target'] = Variable<String>(target.value);
+    }
+    if (stroke.present) {
+      map['stroke'] = Variable<String>(stroke.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<int>(updatedAt.value);
+    }
+    if (pending.present) {
+      map['pending'] = Variable<int>(pending.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AnnotationsCompanion(')
+          ..write('id: $id, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('songId: $songId, ')
+          ..write('target: $target, ')
+          ..write('stroke: $stroke, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('pending: $pending, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -7005,6 +7525,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $UserSettingsTable userSettings = $UserSettingsTable(this);
+  late final $AnnotationsTable annotations = $AnnotationsTable(this);
   late final $SyncOutboxTable syncOutbox = $SyncOutboxTable(this);
   late final $SyncCursorsTable syncCursors = $SyncCursorsTable(this);
   late final $SongConflictsTable songConflicts = $SongConflictsTable(this);
@@ -7040,6 +7561,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'set_items_song',
     'CREATE INDEX set_items_song ON set_items (song_id)',
   );
+  late final Index annotationsOwnerSong = Index(
+    'annotations_owner_song',
+    'CREATE INDEX annotations_owner_song ON annotations (owner_id, song_id)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -7060,6 +7585,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     personalOverlays,
     bandArrangements,
     userSettings,
+    annotations,
     syncOutbox,
     syncCursors,
     songConflicts,
@@ -7071,6 +7597,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     setlistsBand,
     setItemsSet,
     setItemsSong,
+    annotationsOwnerSong,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -7382,6 +7909,24 @@ final class $$SongsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$AnnotationsTable, List<AnnotationRow>>
+  _annotationsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.annotations,
+    aliasName: 'songs__id__annotations__song_id',
+  );
+
+  $$AnnotationsTableProcessedTableManager get annotationsRefs {
+    final manager = $$AnnotationsTableTableManager(
+      $_db,
+      $_db.annotations,
+    ).filter((f) => f.songId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_annotationsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$SongsTableFilterComposer extends Composer<_$AppDatabase, $SongsTable> {
@@ -7573,6 +8118,31 @@ class $$SongsTableFilterComposer extends Composer<_$AppDatabase, $SongsTable> {
           }) => $$BandArrangementsTableFilterComposer(
             $db: $db,
             $table: $db.bandArrangements,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> annotationsRefs(
+    Expression<bool> Function($$AnnotationsTableFilterComposer f) f,
+  ) {
+    final $$AnnotationsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.annotations,
+      getReferencedColumn: (t) => t.songId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AnnotationsTableFilterComposer(
+            $db: $db,
+            $table: $db.annotations,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -7853,6 +8423,31 @@ class $$SongsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> annotationsRefs<T extends Object>(
+    Expression<T> Function($$AnnotationsTableAnnotationComposer a) f,
+  ) {
+    final $$AnnotationsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.annotations,
+      getReferencedColumn: (t) => t.songId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AnnotationsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.annotations,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$SongsTableTableManager
@@ -7873,6 +8468,7 @@ class $$SongsTableTableManager
             bool setItemsRefs,
             bool personalOverlaysRefs,
             bool bandArrangementsRefs,
+            bool annotationsRefs,
           })
         > {
   $$SongsTableTableManager(_$AppDatabase db, $SongsTable table)
@@ -7984,6 +8580,7 @@ class $$SongsTableTableManager
                 setItemsRefs = false,
                 personalOverlaysRefs = false,
                 bandArrangementsRefs = false,
+                annotationsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -7992,6 +8589,7 @@ class $$SongsTableTableManager
                     if (setItemsRefs) db.setItems,
                     if (personalOverlaysRefs) db.personalOverlays,
                     if (bandArrangementsRefs) db.bandArrangements,
+                    if (annotationsRefs) db.annotations,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -8076,6 +8674,26 @@ class $$SongsTableTableManager
                           referencedColumn: 'song_id',
                           typedResults: items,
                         ),
+                      if (annotationsRefs)
+                        await $_getPrefetchedDataByColumns<
+                          SongEntry,
+                          $SongsTable,
+                          AnnotationRow,
+                          $AnnotationsTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SongsTableReferences
+                              ._annotationsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SongsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).annotationsRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'song_id',
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -8101,6 +8719,7 @@ typedef $$SongsTableProcessedTableManager =
         bool setItemsRefs,
         bool personalOverlaysRefs,
         bool bandArrangementsRefs,
+        bool annotationsRefs,
       })
     >;
 typedef $$OrganizationsTableCreateCompanionBuilder =
@@ -11045,6 +11664,7 @@ typedef $$PersonalOverlaysTableCreateCompanionBuilder =
       Value<String?> notes,
       Value<bool?> nashville,
       Value<String?> liveView,
+      Value<bool> hideAnnotations,
       Value<int> revision,
       Value<int> rowid,
     });
@@ -11059,6 +11679,7 @@ typedef $$PersonalOverlaysTableUpdateCompanionBuilder =
       Value<String?> notes,
       Value<bool?> nashville,
       Value<String?> liveView,
+      Value<bool> hideAnnotations,
       Value<int> revision,
       Value<int> rowid,
     });
@@ -11135,6 +11756,11 @@ class $$PersonalOverlaysTableFilterComposer
 
   ColumnFilters<String> get liveView => $composableBuilder(
     column: $table.liveView,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get hideAnnotations => $composableBuilder(
+    column: $table.hideAnnotations,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -11216,6 +11842,11 @@ class $$PersonalOverlaysTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get hideAnnotations => $composableBuilder(
+    column: $table.hideAnnotations,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get revision => $composableBuilder(
     column: $table.revision,
     builder: (column) => ColumnOrderings(column),
@@ -11277,6 +11908,11 @@ class $$PersonalOverlaysTableAnnotationComposer
 
   GeneratedColumn<String> get liveView =>
       $composableBuilder(column: $table.liveView, builder: (column) => column);
+
+  GeneratedColumn<bool> get hideAnnotations => $composableBuilder(
+    column: $table.hideAnnotations,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get revision =>
       $composableBuilder(column: $table.revision, builder: (column) => column);
@@ -11344,6 +11980,7 @@ class $$PersonalOverlaysTableTableManager
                 Value<String?> notes = const Value.absent(),
                 Value<bool?> nashville = const Value.absent(),
                 Value<String?> liveView = const Value.absent(),
+                Value<bool> hideAnnotations = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PersonalOverlaysCompanion(
@@ -11356,6 +11993,7 @@ class $$PersonalOverlaysTableTableManager
                 notes: notes,
                 nashville: nashville,
                 liveView: liveView,
+                hideAnnotations: hideAnnotations,
                 revision: revision,
                 rowid: rowid,
               ),
@@ -11370,6 +12008,7 @@ class $$PersonalOverlaysTableTableManager
                 Value<String?> notes = const Value.absent(),
                 Value<bool?> nashville = const Value.absent(),
                 Value<String?> liveView = const Value.absent(),
+                Value<bool> hideAnnotations = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PersonalOverlaysCompanion.insert(
@@ -11382,6 +12021,7 @@ class $$PersonalOverlaysTableTableManager
                 notes: notes,
                 nashville: nashville,
                 liveView: liveView,
+                hideAnnotations: hideAnnotations,
                 revision: revision,
                 rowid: rowid,
               ),
@@ -12019,6 +12659,359 @@ typedef $$UserSettingsTableProcessedTableManager =
       UserSettingsRow,
       PrefetchHooks Function()
     >;
+typedef $$AnnotationsTableCreateCompanionBuilder =
+    AnnotationsCompanion Function({
+      required String id,
+      required String ownerId,
+      required String songId,
+      Value<String> target,
+      Value<String?> stroke,
+      required int updatedAt,
+      Value<int> pending,
+      Value<int> rowid,
+    });
+typedef $$AnnotationsTableUpdateCompanionBuilder =
+    AnnotationsCompanion Function({
+      Value<String> id,
+      Value<String> ownerId,
+      Value<String> songId,
+      Value<String> target,
+      Value<String?> stroke,
+      Value<int> updatedAt,
+      Value<int> pending,
+      Value<int> rowid,
+    });
+
+final class $$AnnotationsTableReferences
+    extends BaseReferences<_$AppDatabase, $AnnotationsTable, AnnotationRow> {
+  $$AnnotationsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $SongsTable _songIdTable(_$AppDatabase db) =>
+      db.songs.createAlias('annotations__song_id__songs__id');
+
+  $$SongsTableProcessedTableManager get songId {
+    final $_column = $_itemColumn<String>('song_id')!;
+
+    final manager = $$SongsTableTableManager(
+      $_db,
+      $_db.songs,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_songIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$AnnotationsTableFilterComposer
+    extends Composer<_$AppDatabase, $AnnotationsTable> {
+  $$AnnotationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get target => $composableBuilder(
+    column: $table.target,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get stroke => $composableBuilder(
+    column: $table.stroke,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pending => $composableBuilder(
+    column: $table.pending,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$SongsTableFilterComposer get songId {
+    final $$SongsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.songId,
+      referencedTable: $db.songs,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SongsTableFilterComposer(
+            $db: $db,
+            $table: $db.songs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AnnotationsTableOrderingComposer
+    extends Composer<_$AppDatabase, $AnnotationsTable> {
+  $$AnnotationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get target => $composableBuilder(
+    column: $table.target,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get stroke => $composableBuilder(
+    column: $table.stroke,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pending => $composableBuilder(
+    column: $table.pending,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$SongsTableOrderingComposer get songId {
+    final $$SongsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.songId,
+      referencedTable: $db.songs,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SongsTableOrderingComposer(
+            $db: $db,
+            $table: $db.songs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AnnotationsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AnnotationsTable> {
+  $$AnnotationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get ownerId =>
+      $composableBuilder(column: $table.ownerId, builder: (column) => column);
+
+  GeneratedColumn<String> get target =>
+      $composableBuilder(column: $table.target, builder: (column) => column);
+
+  GeneratedColumn<String> get stroke =>
+      $composableBuilder(column: $table.stroke, builder: (column) => column);
+
+  GeneratedColumn<int> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get pending =>
+      $composableBuilder(column: $table.pending, builder: (column) => column);
+
+  $$SongsTableAnnotationComposer get songId {
+    final $$SongsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.songId,
+      referencedTable: $db.songs,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SongsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.songs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AnnotationsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AnnotationsTable,
+          AnnotationRow,
+          $$AnnotationsTableFilterComposer,
+          $$AnnotationsTableOrderingComposer,
+          $$AnnotationsTableAnnotationComposer,
+          $$AnnotationsTableCreateCompanionBuilder,
+          $$AnnotationsTableUpdateCompanionBuilder,
+          (AnnotationRow, $$AnnotationsTableReferences),
+          AnnotationRow,
+          PrefetchHooks Function({bool songId})
+        > {
+  $$AnnotationsTableTableManager(_$AppDatabase db, $AnnotationsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AnnotationsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AnnotationsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AnnotationsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> ownerId = const Value.absent(),
+                Value<String> songId = const Value.absent(),
+                Value<String> target = const Value.absent(),
+                Value<String?> stroke = const Value.absent(),
+                Value<int> updatedAt = const Value.absent(),
+                Value<int> pending = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AnnotationsCompanion(
+                id: id,
+                ownerId: ownerId,
+                songId: songId,
+                target: target,
+                stroke: stroke,
+                updatedAt: updatedAt,
+                pending: pending,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String ownerId,
+                required String songId,
+                Value<String> target = const Value.absent(),
+                Value<String?> stroke = const Value.absent(),
+                required int updatedAt,
+                Value<int> pending = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AnnotationsCompanion.insert(
+                id: id,
+                ownerId: ownerId,
+                songId: songId,
+                target: target,
+                stroke: stroke,
+                updatedAt: updatedAt,
+                pending: pending,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$AnnotationsTable, AnnotationRow>(table),
+                  $$AnnotationsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({songId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (songId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.songId,
+                        referencedTable: $$AnnotationsTableReferences
+                            ._songIdTable(db),
+                        referencedColumn: $$AnnotationsTableReferences
+                            ._songIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$AnnotationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AnnotationsTable,
+      AnnotationRow,
+      $$AnnotationsTableFilterComposer,
+      $$AnnotationsTableOrderingComposer,
+      $$AnnotationsTableAnnotationComposer,
+      $$AnnotationsTableCreateCompanionBuilder,
+      $$AnnotationsTableUpdateCompanionBuilder,
+      (AnnotationRow, $$AnnotationsTableReferences),
+      AnnotationRow,
+      PrefetchHooks Function({bool songId})
+    >;
 typedef $$SyncOutboxTableCreateCompanionBuilder = SyncOutboxCompanion Function({
   required String collection,
   required String recordId,
@@ -12623,6 +13616,8 @@ class $AppDatabaseManager {
       $$BandArrangementsTableTableManager(_db, _db.bandArrangements);
   $$UserSettingsTableTableManager get userSettings =>
       $$UserSettingsTableTableManager(_db, _db.userSettings);
+  $$AnnotationsTableTableManager get annotations =>
+      $$AnnotationsTableTableManager(_db, _db.annotations);
   $$SyncOutboxTableTableManager get syncOutbox =>
       $$SyncOutboxTableTableManager(_db, _db.syncOutbox);
   $$SyncCursorsTableTableManager get syncCursors =>

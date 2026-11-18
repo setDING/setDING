@@ -333,6 +333,33 @@ class RemoteOverlay {
   final bool deleted;
 }
 
+/// Freehand annotations of a user on a song as stored on the server
+/// (ADR-0032): one record per user, song and target (the ChordPro text, or
+/// the PDF attachment [attachmentId]); [data] maps stroke IDs to strokes or
+/// tombstones. An update is merged per stroke ID by the server.
+@immutable
+class RemoteAnnotations {
+  const RemoteAnnotations({
+    required this.id,
+    required this.userId,
+    required this.songId,
+    this.attachmentId,
+    this.data = const {},
+    this.revision = 0,
+    this.deleted = false,
+  });
+
+  final String id;
+  final String userId;
+  final String songId;
+
+  /// Null for the ChordPro text.
+  final String? attachmentId;
+  final Map<String, dynamic> data;
+  final int revision;
+  final bool deleted;
+}
+
 /// Personal settings of a user as stored on the server (ADR-0027); [data]
 /// holds the personal settings (layer 4a) by key.
 @immutable
@@ -650,6 +677,18 @@ abstract class SyncBackend {
   /// user and returns the server state (last writer wins).
   Future<RemoteOverlay> pushOverlay(
     RemoteOverlay overlay, {
+    required bool create,
+  });
+
+  /// Annotation records of the signed-in user changed after revision
+  /// [since], in revision order (ADR-0032).
+  Future<List<RemoteAnnotations>> pullAnnotations(int since);
+
+  /// Creates ([create]) or updates an annotation record of the signed-in
+  /// user with the strokes in [RemoteAnnotations.data] (merged per stroke on
+  /// the server) and returns the server state.
+  Future<RemoteAnnotations> pushAnnotations(
+    RemoteAnnotations annotations, {
     required bool create,
   });
 

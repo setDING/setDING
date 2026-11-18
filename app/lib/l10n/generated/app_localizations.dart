@@ -3763,6 +3763,324 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Die Einstellungen deines Kontos wurden übernommen.'**
   String get settingsTakenOver;
+
+  /// No description provided for @annotationsDraw.
+  ///
+  /// In de, this message translates to:
+  /// **'Freihand-Notizen zeichnen'**
+  String get annotationsDraw;
+
+  /// No description provided for @annotationsShow.
+  ///
+  /// In de, this message translates to:
+  /// **'Notizen anzeigen'**
+  String get annotationsShow;
+
+  /// No description provided for @annotationsHide.
+  ///
+  /// In de, this message translates to:
+  /// **'Notizen ausblenden'**
+  String get annotationsHide;
+
+  /// No description provided for @annotationPen.
+  ///
+  /// In de, this message translates to:
+  /// **'Stift'**
+  String get annotationPen;
+
+  /// No description provided for @annotationHighlighter.
+  ///
+  /// In de, this message translates to:
+  /// **'Leuchtstift'**
+  String get annotationHighlighter;
+
+  /// No description provided for @annotationEraser.
+  ///
+  /// In de, this message translates to:
+  /// **'Radierer (ganzer Strich)'**
+  String get annotationEraser;
+
+  /// No description provided for @annotationPartialEraser.
+  ///
+  /// In de, this message translates to:
+  /// **'Radierer (Teil eines Strichs)'**
+  String get annotationPartialEraser;
+
+  /// No description provided for @annotationLasso.
+  ///
+  /// In de, this message translates to:
+  /// **'Auswählen (Lasso)'**
+  String get annotationLasso;
+
+  /// No description provided for @annotationStamps.
+  ///
+  /// In de, this message translates to:
+  /// **'Stempel'**
+  String get annotationStamps;
+
+  /// No description provided for @annotationStampsMusic.
+  ///
+  /// In de, this message translates to:
+  /// **'Musikzeichen'**
+  String get annotationStampsMusic;
+
+  /// No description provided for @annotationStampsRepeats.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederholungen'**
+  String get annotationStampsRepeats;
+
+  /// No description provided for @annotationStampsCues.
+  ///
+  /// In de, this message translates to:
+  /// **'Hinweise'**
+  String get annotationStampsCues;
+
+  /// No description provided for @annotationColor.
+  ///
+  /// In de, this message translates to:
+  /// **'Farbe {number}'**
+  String annotationColor(Object number);
+
+  /// No description provided for @annotationSize.
+  ///
+  /// In de, this message translates to:
+  /// **'Strichbreite'**
+  String get annotationSize;
+
+  /// No description provided for @annotationSmaller.
+  ///
+  /// In de, this message translates to:
+  /// **'Kleiner'**
+  String get annotationSmaller;
+
+  /// No description provided for @annotationLarger.
+  ///
+  /// In de, this message translates to:
+  /// **'Grösser'**
+  String get annotationLarger;
+
+  /// No description provided for @annotationDeleteSelection.
+  ///
+  /// In de, this message translates to:
+  /// **'Auswahl löschen'**
+  String get annotationDeleteSelection;
+
+  /// No description provided for @annotationUndo.
+  ///
+  /// In de, this message translates to:
+  /// **'Rückgängig'**
+  String get annotationUndo;
+
+  /// No description provided for @annotationRedo.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederholen'**
+  String get annotationRedo;
+
+  /// No description provided for @annotationMore.
+  ///
+  /// In de, this message translates to:
+  /// **'Mehr'**
+  String get annotationMore;
+
+  /// No description provided for @annotationDrawWithFinger.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit dem Finger zeichnen'**
+  String get annotationDrawWithFinger;
+
+  /// No description provided for @annotationDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Fertig'**
+  String get annotationDone;
+
+  /// No description provided for @annotationsDeleteAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Notizen dieses Songs löschen'**
+  String get annotationsDeleteAll;
+
+  /// No description provided for @annotationsDeleted.
+  ///
+  /// In de, this message translates to:
+  /// **'Notizen gelöscht'**
+  String get annotationsDeleted;
+
+  /// No description provided for @annotationsOtherLayout.
+  ///
+  /// In de, this message translates to:
+  /// **'Für eine andere Ansicht gezeichnet'**
+  String get annotationsOtherLayout;
+
+  /// No description provided for @annotationsOtherLayoutLandscape.
+  ///
+  /// In de, this message translates to:
+  /// **'Im Querformat gezeichnet'**
+  String get annotationsOtherLayoutLandscape;
+
+  /// No description provided for @annotationsOtherLayoutPortrait.
+  ///
+  /// In de, this message translates to:
+  /// **'Im Hochformat gezeichnet'**
+  String get annotationsOtherLayoutPortrait;
+
+  /// No description provided for @annotationsOrphaned.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Notiz ohne ihre Zeile} other{{count} Notizen ohne ihre Zeile}}'**
+  String annotationsOrphaned(num count);
+
+  /// No description provided for @annotationsFull.
+  ///
+  /// In de, this message translates to:
+  /// **'Notizen voll: zum Weiterzeichnen etwas löschen'**
+  String get annotationsFull;
+
+  /// No description provided for @annotationsNearlyFull.
+  ///
+  /// In de, this message translates to:
+  /// **'Notizen zu {percent} % voll'**
+  String annotationsNearlyFull(int percent);
+
+  /// No description provided for @annotationsPanelTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Freihand-Notizen'**
+  String get annotationsPanelTitle;
+
+  /// No description provided for @annotationsPanelShow.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Notizen anzeigen'**
+  String get annotationsPanelShow;
+
+  /// No description provided for @annotationsCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{Noch keine: im Live-Modus zeichnen} =1{1 Notiz} other{{count} Notizen}}'**
+  String annotationsCount(num count);
+
+  /// No description provided for @settingsShowAnnotations.
+  ///
+  /// In de, this message translates to:
+  /// **'Freihand-Notizen anzeigen'**
+  String get settingsShowAnnotations;
+
+  /// No description provided for @settingsShowAnnotationsHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine eigenen Zeichnungen auf Songs und Noten'**
+  String get settingsShowAnnotationsHint;
+
+  /// No description provided for @settingsAnnotationFinger.
+  ///
+  /// In de, this message translates to:
+  /// **'Notizen mit dem Finger zeichnen'**
+  String get settingsAnnotationFinger;
+
+  /// No description provided for @settingsAnnotationFingerHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Für Geräte ohne Stift; sonst blättern die Finger weiter'**
+  String get settingsAnnotationFingerHint;
+
+  /// No description provided for @stampFermata.
+  ///
+  /// In de, this message translates to:
+  /// **'Fermate'**
+  String get stampFermata;
+
+  /// No description provided for @stampBreath.
+  ///
+  /// In de, this message translates to:
+  /// **'Atemzeichen'**
+  String get stampBreath;
+
+  /// No description provided for @stampCrescendo.
+  ///
+  /// In de, this message translates to:
+  /// **'Crescendo'**
+  String get stampCrescendo;
+
+  /// No description provided for @stampDecrescendo.
+  ///
+  /// In de, this message translates to:
+  /// **'Decrescendo'**
+  String get stampDecrescendo;
+
+  /// No description provided for @stampRitardando.
+  ///
+  /// In de, this message translates to:
+  /// **'Ritardando'**
+  String get stampRitardando;
+
+  /// No description provided for @stampAccent.
+  ///
+  /// In de, this message translates to:
+  /// **'Akzent'**
+  String get stampAccent;
+
+  /// No description provided for @stampRepeat.
+  ///
+  /// In de, this message translates to:
+  /// **'{times}× spielen'**
+  String stampRepeat(Object times);
+
+  /// No description provided for @stampRepeatStart.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederholung Anfang'**
+  String get stampRepeatStart;
+
+  /// No description provided for @stampRepeatEnd.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederholung Ende'**
+  String get stampRepeatEnd;
+
+  /// No description provided for @stampCoda.
+  ///
+  /// In de, this message translates to:
+  /// **'Coda'**
+  String get stampCoda;
+
+  /// No description provided for @stampSegno.
+  ///
+  /// In de, this message translates to:
+  /// **'Segno'**
+  String get stampSegno;
+
+  /// No description provided for @stampGlasses.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufpassen'**
+  String get stampGlasses;
+
+  /// No description provided for @stampStop.
+  ///
+  /// In de, this message translates to:
+  /// **'Stopp'**
+  String get stampStop;
+
+  /// No description provided for @stampEye.
+  ///
+  /// In de, this message translates to:
+  /// **'Hinschauen'**
+  String get stampEye;
+
+  /// No description provided for @stampExclamation.
+  ///
+  /// In de, this message translates to:
+  /// **'Wichtig'**
+  String get stampExclamation;
+
+  /// No description provided for @stampStar.
+  ///
+  /// In de, this message translates to:
+  /// **'Stern'**
+  String get stampStar;
 }
 
 class _AppLocalizationsDelegate

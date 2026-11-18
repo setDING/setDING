@@ -5,6 +5,7 @@ import 'package:drift/drift.dart'
     show TableUpdateQuery, UpdateKind, Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:setding/data/annotation_repository.dart';
 import 'package:setding/data/arrangement_repository.dart';
 import 'package:setding/data/attachment_storage_io.dart';
 import 'package:setding/data/attachment_storage.dart';
@@ -14,6 +15,7 @@ import 'package:setding/data/set_repository.dart';
 import 'package:setding/data/song_repository.dart';
 import 'package:setding/data/outbox.dart';
 import 'package:setding/sync/band_service.dart';
+import 'package:setding/sync/engine/annotation_sync.dart';
 import 'package:setding/sync/engine/arrangement_sync.dart';
 import 'package:setding/sync/engine/sync_store.dart';
 import 'package:setding/sync/sync_backend.dart';
@@ -974,6 +976,170 @@ void main() {
       await engine.sync();
       expect(server.overlays.values.single.data['capo_fret'], 3);
       expect(await outbox(), isEmpty);
+    });
+  });
+
+  group('freehand annotations (ADR-0032)', () {
+    late AnnotationRepository mine;
+
+    setUp(() async {
+      mine = AnnotationRepository(db, userId: 'ann');
+      server.putSong(remoteSong('s1', '{title: Song}\n[C]Hello'));
+      await engine.sync();
+    });
+
+    AnnotationStroke stroke(String id, {int color = 0}) => AnnotationStroke(
+      id: id,
+      tool: AnnotationTool.pen,
+      color: color,
+      width: 0.004,
+      points: const [0.1, 0.1, 0.2, 0.2],
+    );
+
+    String recordId([String target = '']) =>
+        AnnotationSync.serverId('ann', 's1', target);
+
+    Future<List<String>> shown() async => [
+      for (final s in await mine.watch('s1').first) '${s.id}:${s.color}',
+    ];
+
+    test('pushes new strokes in one record shared by all devices', () async {
+      await mine.apply('s1', put: [stroke('a'), stroke('b')]);
+      expect(await mine.watchCount('s1').first, 2);
+      final report = await engine.sync();
+      expect(report.error, isNull);
+      final remote = server.annotations[recordId()]!;
+      expect(remote.userId, 'ann');
+      expect(remote.attachmentId, isNull);
+      expect(remote.data.keys, unorderedEquals(['a', 'b']));
+      expect((remote.data['a'] as Map)['t'], isA<int>());
+      expect(await outbox(), isEmpty);
+      final rows = await db.select(db.annotations).get();
+      expect(rows.map((r) => r.pending), [0, 0]);
+    });
+
+    test('erasing sends a tombstone and forgets the stroke here', () async {
+      await mine.apply('s1', put: [stroke('a'), stroke('b')]);
+      await engine.sync();
+      await mine.apply('s1', remove: ['a']);
+      expect(await shown(), ['b:0']);
+      await engine.sync();
+      expect(server.annotations[recordId()]!.data['a'], {
+        'deleted': true,
+        't': isA<int>(),
+      });
+      expect((await db.select(db.annotations).get()).map((r) => r.id), ['b']);
+    });
+
+    test('strokes of two devices are merged per stroke', () async {
+      await mine.apply('s1', put: [stroke('a'), stroke('b')]);
+      await engine.sync();
+      // The other device recolours b and adds c.
+      server.putAnnotations(
+        RemoteAnnotations(
+          id: recordId(),
+          userId: 'ann',
+          songId: 's1',
+          data: {
+            'b': stroke('b', color: 3).toJson(),
+            'c': stroke('c', color: 1).toJson(),
+          },
+        ),
+      );
+      // Meanwhile here: a recoloured, not pushed yet.
+      await mine.apply('s1', put: [stroke('a', color: 5)]);
+      await engine.sync();
+      expect(await shown(), unorderedEquals(['a:5', 'b:3', 'c:1']));
+      final data = server.annotations[recordId()]!.data;
+      expect((data['a'] as Map)['color'], 5);
+      expect((data['c'] as Map)['color'], 1);
+    });
+
+    test('a pending local change wins over the pulled stroke', () async {
+      await mine.apply('s1', put: [stroke('a')]);
+      await engine.sync();
+      await mine.apply('s1', put: [stroke('a', color: 4)]);
+      server.putAnnotations(
+        RemoteAnnotations(
+          id: recordId(),
+          userId: 'ann',
+          songId: 's1',
+          data: {'a': stroke('a', color: 2).toJson()},
+        ),
+      );
+      await engine.sync();
+      expect(await shown(), ['a:4']);
+      expect((server.annotations[recordId()]!.data['a'] as Map)['color'], 4);
+    });
+
+    test('pulls strokes and erases of another device', () async {
+      server.putAnnotations(
+        RemoteAnnotations(
+          id: recordId(),
+          userId: 'ann',
+          songId: 's1',
+          data: {'x': stroke('x').toJson()},
+        ),
+      );
+      await engine.sync();
+      expect(await shown(), ['x:0']);
+      expect(await outbox(), isEmpty);
+
+      server.putAnnotations(
+        RemoteAnnotations(
+          id: recordId(),
+          userId: 'ann',
+          songId: 's1',
+          data: {'x': annotationTombstone(1)},
+        ),
+      );
+      await engine.sync();
+      expect(await shown(), isEmpty);
+    });
+
+    test('a record deleted with its song is removed here', () async {
+      server.putAnnotations(
+        RemoteAnnotations(
+          id: recordId(),
+          userId: 'ann',
+          songId: 's1',
+          data: {'x': stroke('x').toJson()},
+        ),
+      );
+      await engine.sync();
+      server.putAnnotations(server.annotations[recordId()]!, deleted: true);
+      await engine.sync();
+      expect(await db.select(db.annotations).get(), isEmpty);
+    });
+
+    test('delete all and undo', () async {
+      await mine.apply('s1', put: [stroke('a'), stroke('b')]);
+      await engine.sync();
+      final removed = await mine.deleteAll('s1');
+      expect(removed.map((s) => s.stroke.id), ['a', 'b']);
+      expect(await shown(), isEmpty);
+      await mine.restoreAll('s1', removed);
+      expect(await shown(), ['a:0', 'b:0']);
+      await engine.sync();
+      final data = server.annotations[recordId()]!.data;
+      expect(data.values.every((v) => (v as Map)['deleted'] != true), isTrue);
+    });
+
+    test('the local library and other people are never pushed', () async {
+      final local = SongRepository(
+        db,
+        FileAttachmentStorage(dir),
+        userId: 'ann',
+      );
+      final own = await local.createSong(source: '{title: Mine}');
+      await mine.apply(own, put: [stroke('l')]);
+      final bob = AnnotationRepository(db, userId: 'bob');
+      await bob.apply('s1', put: [stroke('bob')]);
+      expect(await mine.watch(own).first, hasLength(1));
+      expect(await shown(), isEmpty, reason: "Bob's strokes are his own");
+      await engine.sync();
+      expect(server.annotations, isEmpty);
+      expect((await outbox()).single.recordId, 'bob:s1:');
     });
   });
 
