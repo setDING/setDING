@@ -22,6 +22,7 @@ import live from '../../../../docs/screenshots/live_de.png';
 import set from '../../../../docs/screenshots/set_de.png';
 import song from '../../../../docs/screenshots/song_de.png';
 import editor from '../../../../docs/screenshots/editor_de.png';
+import drums from '../../../../docs/screenshots/drums_de.png';
 
 <Image src={live} alt="Live-Modus: ein Song in drei Spalten mit Akkorden, einer persönlichen Notiz und Griffbildern" />
 
@@ -37,6 +38,10 @@ import editor from '../../../../docs/screenshots/editor_de.png';
     Songs per Drag & Drop zum Set zusammenstellen, Pausen und Notizen einfügen,
     Tonart und Ablauf pro Song festlegen. Alle in der Band bekommen das Set auf ihr Gerät, und
     setDING zeigt, wann es offline bereit ist.
+  </Card>
+  <Card title="Auch für das Schlagzeug" icon="seti:audio">
+    Tempo, Taktart und Songablauf statt Akkorde, Einzählen und ein exakter Klick
+    in den In-Ear – ein Modus nur für Schlagzeug.
   </Card>
   <Card title="Du siehst es auf deine Art" icon="setting">
     Transponieren mit einem Tipp, Kapodaster, Schriftgrösse, B- oder H-Notation oder
@@ -56,6 +61,29 @@ import editor from '../../../../docs/screenshots/editor_de.png';
     der MIT-Lizenz.
   </Card>
 </CardGrid>
+
+## Endlich auch für das Schlagzeug
+
+Akkord-Apps denken an Gitarre, Keyboard und Gesang. setDING hat einen eigenen
+Live-Modus für das Schlagzeug: Statt des Akkordblatts zeigt die
+**Song-Landkarte** die Teile des Songs im Ablauf der Band, jeweils mit einem
+Stichwort aus dem Liedtext und deinen Schlagzeug-Notizen. Daneben stehen Tempo und
+Taktart gross, die Schläge leuchten mit, und das ganze Set ist einen Tipp entfernt.
+
+- **Einzählen und Klick** – ein oder zwei Takte Einzählen und ein Klick, der vom
+  Audio-Ausgang getaktet wird, nicht von einem Timer. Mit gemessener Verzögerung
+  auch für Bluetooth-In-Ears.
+- **Hände am Set** – Takt starten mit dem Fusspedal (lange drücken) oder
+  automatisch bei jedem Song; der Bildschirmrand blinkt im Takt.
+- **Tempo auf der Bühne** – schneller, langsamer oder antippen, nur für heute
+  Abend.
+- **Ungerade Taktarten** – 6/8 im gefühlten Puls, 7/8 als 2+2+3 betont.
+- **Notizen nur für dich** – `{comment-drums: …}` sieht nur, wer Schlagzeug spielt.
+
+<Image src={drums} alt="Live-Modus mit Schlagzeug: links Tempo, Taktanzeige und das Set, rechts die Teile des Songs mit Stichworten aus dem Liedtext und Schlagzeug-Notizen" />
+
+Mehr dazu: [Takt, Klick und Schlagzeug](/live/beat/) und
+[ChordPro-Syntax](/songs/chordpro/#songs-für-schlagzeug).
 
 ## So sieht es aus
 
