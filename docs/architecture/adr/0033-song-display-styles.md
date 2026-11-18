@@ -166,10 +166,11 @@ The design was worked out with the owner in an interactive mock-up
   like all other widths (0.15 of the font size instead of a fixed 3 px);
   the chord size of a style does not apply to chord grids, whose rows are
   as high as their text.
+- 2026-11-18: Implemented in #473–#476 with the user documentation; the
+  palette tones are in `song_display_colors.dart`, a test checks a
+  contrast of at least 4.5:1 on every app and live background.
 
 ## Open points
 
-- Exact palette tones and their contrast check, decided during
-  implementation and covered by a test.
 - Where the preset selection is offered besides the settings (e.g. in the
   live menu) – not planned for the first version.

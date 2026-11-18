@@ -217,7 +217,7 @@ Notes:
 | **Website** | Landing page and user documentation at `setding.app` (ADR-0030, #388): skeleton with first steps and installation; remaining chapters, privacy policy and legal notice follow |
 | **Towards version 1** | Re-enable CI as a required check on every PR and push to `main` (manual-only during early development, ADR-0010), branch protection; release builds for Linux, Android and Windows exist (ADR-0021), iOS open; then release **1.0.0** (ADR-0028) |
 | **Freehand annotations** ✅ | Personal freehand notes on songs and PDF pages, synced and editable (ADR-0032, implemented in #428) |
-| **Song display styles** | Personal styles per section type for live mode and the song view (ADR-0033, accepted, #471) |
+| **Song display styles** ✅ | Personal styles per section type for live mode and the song view (ADR-0033, implemented in #473–#476, #471) |
 | **Later** | Configurable page turner key mapping, band annotations shared with the band (follow-up of ADR-0032), MIDI control |
 
 ### MVP status (2026-11-14)
@@ -302,7 +302,7 @@ See "Open points" in the individual ADRs. The most important:
 25. ~~Versioning scheme (SemVer or CalVer)?~~ → SemVer with bump rules based on client/server compatibility (ADR-0028, accepted, #330). Minimum client version: server refuses outdated apps with HTTP 426, the app asks for an update (ADR-0029, accepted, #339). Server deploys: production runs released versions only, `make server-release` after a green release build (#345)
 26. Where do the website and the user documentation live? → `website/` in this repository, Astro Starlight, served by Caddy on the existing server at `setding.app`, deployed with the `make server-*` targets (ADR-0030, accepted, #388). Moving the whole server to external hosting is open
 27. How can people draw their own notes on a song? → ADR-0032 (accepted, #429): personal freehand annotations drawn in live mode (ChordPro pages and PDF), page coordinates with a line anchor as fallback on another layout, per song, synced per person with a per-stroke merge, editable with eraser, lasso and undo; stamps for music marks, repeats and cues; drawing mode via the menu only; band annotations in a later ADR. Implemented in #428; the client warns from 80 % of the 1 MB limit per song and target and refuses new strokes beyond it. Open: confirm the limit with real annotations, a check on real hardware
-28. How can musicians adapt how songs look per section (chorus, bridge, solo …)? → ADR-0033 (accepted, #471): personal song display styles, Standard plus seven fixed section types with inheritance from a chosen type, curated palette, presets; explicit colours beat song directives, markup always wins; live mode and song view. Open: exact palette tones
+28. How can musicians adapt how songs look per section (chorus, bridge, solo …)? → ADR-0033 (accepted, #471): personal song display styles, Standard plus seven fixed section types with inheritance from a chosen type, curated palette, presets; explicit colours beat song directives, markup always wins; live mode and song view. Implemented in #473–#476 (`app/lib/settings/song_display.dart`, `app/lib/ui/render/song_display_colors.dart`, `app/lib/ui/settings/song_display_settings.dart`)
 
 ## 10. ADR index
 

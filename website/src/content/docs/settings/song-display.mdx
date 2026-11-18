@@ -1,0 +1,88 @@
+---
+title: Songdarstellung
+description: Stile pro Abschnitt – Akkorde, Liedtext, Überschriften, Balken und Farben für Strophe, Refrain, Solo und mehr.
+sidebar:
+  order: 2
+---
+
+import { Image } from 'astro:assets';
+import shot from '../../../../../docs/screenshots/settings_song_display_de.png';
+
+Unter **Einstellungen → Songdarstellung** legst du fest, wie die Abschnitte eines
+Songs im **Live-Modus** und in der **Song-Ansicht** aussehen: zum Beispiel den
+Refrain fett mit einem breiten Balken, die Bridge kursiv oder die Akkorde des Solos
+in Bernstein. Die Einstellung ist **persönlich** und gilt auf allen deinen Geräten.
+Der Song selbst bleibt für alle unverändert, und die Vorschau im Editor zeigt ihn
+immer ohne deine Stile.
+
+<Image src={shot} alt="Die Einstellungen «Songdarstellung» mit Vorschau, Vorlagen und den Abschnitten" />
+
+## Vorlagen
+
+Oben siehst du eine **Vorschau** mit allen Abschnitten im Aussehen deiner Bühne.
+Darunter wählst du eine **Vorlage**:
+
+- **Klassisch** – wie bisher: fette Akkorde, ein dünner Balken beim Refrain.
+- **Farbcodiert** – jeder Abschnitt hat seine Farbe für Balken, Überschrift und
+  Akkorde.
+- **Refrain im Fokus** – der Refrain fett, mit breitem Balken und getöntem
+  Hintergrund; die Bridge kursiv.
+- **Gesang** – der Text im Vordergrund, Akkorde klein und grau.
+- **Gitarre** – grosse Akkorde, der Text zurückgenommen; Bridge und Solo fallen auf.
+- **Minimal** – keine Balken, nur die Überschrift des Refrains.
+
+Sobald du etwas änderst, wird daraus **Eigene**. Wählst du danach wieder eine
+Vorlage, fragt setDING, ob deine eigenen Stile verworfen werden sollen.
+
+## Abschnitte
+
+setDING erkennt die Abschnitte am Namen, aus `{start_of_…}` oder aus einer
+Überschrift als Kommentar wie `{c: Solo}` (siehe [ChordPro](/songs/chordpro/)):
+
+| Abschnitt | Erkannt aus |
+|---|---|
+| Intro | Intro |
+| Strophe | Verse, Vers, Strophe |
+| Pre-Chorus | Pre-Chorus, Pre-Refrain |
+| Refrain | Chorus, Refrain |
+| Bridge | Bridge |
+| Zwischenspiel | Interlude, Instrumental, Zwischenspiel, Solo, Turnaround, Vamp |
+| Outro | Outro, Ending, Schluss, Coda, Tag |
+
+**Standard** ist der Grundstil: Er gilt für jeden Abschnitt ohne eigenen Stil und
+für alles, was nicht erkannt wird, z. B. Tabulaturen, Akkord-Raster oder eigene
+Namen.
+
+## Eigener Stil oder übernehmen
+
+Jeder Abschnitt hat entweder einen **eigenen Stil** oder übernimmt den Stil eines
+anderen Abschnitts (**Wie …**). So stellst du zum Beispiel nur das Zwischenspiel
+ein, und Intro und Outro sehen gleich aus. Am Anfang übernehmen Intro und Outro den
+Stil des Zwischenspiels, der Pre-Chorus den der Strophe und alle anderen den
+Standard. In der Auswahl eines Abschnitts mit einem Ring statt einem Punkt siehst
+du, dass er übernimmt.
+
+Ein Abschnitt kann nicht von einem Abschnitt übernehmen, der schon von ihm
+übernimmt; solche Einträge sind ausgegraut.
+
+## Was du einstellen kannst
+
+- **Akkorde** – fett, kursiv, Grösse (S, M, L) und Farbe.
+- **Liedtext** – fett, kursiv und Farbe.
+- **Überschrift** – anzeigen oder nicht, fett, kursiv, Grösse (S, M, L, XL) und
+  Farbe.
+- **Einrückungsbalken** – anzeigen oder nicht, Breite und Farbe; dazu die
+  **Einrückung** und ein **getönter Hintergrund**.
+
+Die Farben stammen aus einer festen Auswahl, die auf hellem, dunklem und schwarzem
+Hintergrund gut lesbar ist. **Automatisch** (A) behält die übliche Farbe.
+
+## Formatierung im Song
+
+Manche Songs bringen eigene Formatierungen mit:
+
+- Eine Farbe, die du **ausdrücklich wählst**, gilt vor einer Farbe aus dem Song
+  (z. B. `{chordcolour: red}`). Mit **Automatisch** gilt die Farbe aus dem Song.
+- **Grössen** wirken zusammen: Grosse Akkorde in deinem Stil und `{chordsize: 120%}`
+  im Song ergeben noch grössere Akkorde.
+- **Hervorhebungen im Text** wie `<b>leise!</b>` gelten immer.
