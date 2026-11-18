@@ -38,3 +38,6 @@ RUN apt-get update -qq \
  && ./appimagetool.AppImage --appimage-extract >/dev/null \
  && mv squashfs-root appimagetool \
  && rm appimagetool.AppImage
+
+# Recorded in the AppImage SBOM (ADR-0037).
+ENV APPIMAGE_RUNTIME_VERSION=${APPIMAGE_RUNTIME_VERSION}

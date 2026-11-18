@@ -8,6 +8,8 @@
 # workflow, section 10): releases and test builds share one counter, so the Android
 # versionCode grows with every build and identifies it. pubspec.yaml carries no
 # build number. Test build files are named with it (setding-0.8.0-build42-…).
+# Every asset gets a CycloneDX SBOM next to it (<asset>.cdx.json, ADR-0037),
+# generated and checked in its build job and validated in the sbom job.
 name: Release
 
 on:
@@ -71,6 +73,8 @@ jobs:
           path: |
             app/build/${{ needs.version.outputs.name }}-linux-x64.tar.gz
             app/build/${{ needs.version.outputs.name }}-linux-x64.AppImage
+            app/build/${{ needs.version.outputs.name }}-linux-x64.tar.gz.cdx.json
+            app/build/${{ needs.version.outputs.name }}-linux-x64.AppImage.cdx.json
           if-no-files-found: error
 
   android:
@@ -137,9 +141,25 @@ jobs:
         run: |
           flutter config --no-analytics >/dev/null
           flutter build apk --release --target-platform android-arm64 \
-            --build-number "$GITHUB_RUN_NUMBER"
+            --build-number "$GITHUB_RUN_NUMBER" \
+            --extra-gen-snapshot-options=--print-instructions-sizes-to="$PWD/build/instruction-sizes.json"
           cp build/app/outputs/flutter-apk/app-release.apk \
             "$GITHUB_WORKSPACE/${{ needs.version.outputs.name }}-android.apk"
+
+      # SBOM (ADR-0037): the Gradle release classpath from the CycloneDX Gradle
+      # plugin (applied by an init script), then the SBOM of the APK.
+      - name: SBOM
+        run: |
+          apk="${{ needs.version.outputs.name }}-android.apk"
+          (cd app/android && ./gradlew -q :app:cyclonedxDirectBom \
+            --init-script "$GITHUB_WORKSPACE/tool/sbom/gradle/cyclonedx.init.gradle" \
+            -PsbomOutput="$GITHUB_WORKSPACE/app/build/gradle-bom.json")
+          tool/sbom.sh generate --platform android --app app --artifact "$apk" \
+            --instruction-sizes app/build/instruction-sizes.json \
+            --gradle-bom app/build/gradle-bom.json \
+            --build "$GITHUB_RUN_NUMBER" --commit "$GITHUB_SHA"
+          tool/sbom.sh check --sbom "$apk.cdx.json" --artifact "$apk" \
+            --version "${{ needs.version.outputs.version }}"
 
       - name: Signing certificate
         run: |
@@ -150,7 +170,9 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: android
-          path: ${{ needs.version.outputs.name }}-android.apk
+          path: |
+            ${{ needs.version.outputs.name }}-android.apk
+            ${{ needs.version.outputs.name }}-android.apk.cdx.json
           if-no-files-found: error
 
   windows:
@@ -173,7 +195,8 @@ jobs:
         shell: bash
         run: |
           flutter config --no-analytics >/dev/null
-          flutter build windows --release --build-number "$GITHUB_RUN_NUMBER"
+          flutter build windows --release --build-number "$GITHUB_RUN_NUMBER" \
+            --extra-gen-snapshot-options=--print-instructions-sizes-to="$(cygpath -m "$PWD")/build/instruction-sizes.json"
 
       # Flutter apps need the Visual C++ runtime; ship its DLLs next to the
       # executable so the zip runs on a Windows without the redistributable.
@@ -207,18 +230,88 @@ jobs:
             app\windows\installer\setding.iss
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      # SBOM (ADR-0037): the zip and the setup ship the same files. Shipped
+      # besides the app: the Visual C++ runtime DLLs and, in the setup, the
+      # Inno Setup installer and uninstaller.
+      - name: SBOM components
+        shell: pwsh
+        run: |
+          $dir = "staging\${{ needs.version.outputs.name }}-windows-x64"
+          $runtime = @(foreach ($dll in 'msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll') {
+            $file = Get-Item "$dir\$dll"
+            [ordered]@{
+              type = 'library'
+              'bom-ref' = "msvc/$dll"
+              name = $dll
+              version = $file.VersionInfo.ProductVersion
+              description = 'Microsoft Visual C++ Redistributable'
+              supplier = @{ name = 'Microsoft Corporation' }
+              hashes = @(@{ alg = 'SHA-256'; content = (Get-FileHash $file -Algorithm SHA256).Hash.ToLower() })
+              licenses = @(@{ license = @{ name = 'Microsoft Visual C++ Redistributable'; url = 'https://visualstudio.microsoft.com/license-terms/' } })
+            }
+          })
+          $iscc = Get-Item "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          $inno = [ordered]@{
+            type = 'application'
+            'bom-ref' = 'innosetup'
+            name = 'Inno Setup'
+            version = $iscc.VersionInfo.ProductVersion
+            description = 'Installer and uninstaller of the setup'
+            licenses = @(@{ license = @{ name = 'Inno Setup License'; url = 'https://jrsoftware.org/files/is/license.txt' } })
+            externalReferences = @(@{ type = 'website'; url = 'https://jrsoftware.org/isinfo.php' })
+          }
+          ConvertTo-Json -Depth 8 -InputObject $runtime | Set-Content -Encoding utf8NoBOM sbom-zip.json
+          ConvertTo-Json -Depth 8 -InputObject ($runtime + $inno) | Set-Content -Encoding utf8NoBOM sbom-setup.json
+
+      - name: SBOM
+        shell: bash
+        run: |
+          name="${{ needs.version.outputs.name }}-windows-x64"
+          common=(--platform windows-x64 --app app --contents "$name.zip"
+            --instruction-sizes app/build/instruction-sizes.json
+            --build "$GITHUB_RUN_NUMBER" --commit "$GITHUB_SHA")
+          tool/sbom.sh generate "${common[@]}" --artifact "$name.zip" \
+            --extra-components sbom-zip.json
+          tool/sbom.sh generate "${common[@]}" --artifact "$name-setup.exe" \
+            --extra-components sbom-setup.json
+          for file in "$name.zip" "$name-setup.exe"; do
+            tool/sbom.sh check --sbom "$file.cdx.json" --artifact "$file" \
+              --version "${{ needs.version.outputs.version }}"
+          done
+
       - name: Upload
         uses: actions/upload-artifact@v7
         with:
           name: windows
           path: |
             ${{ needs.version.outputs.name }}-windows-x64.zip
+            ${{ needs.version.outputs.name }}-windows-x64.zip.cdx.json
             ${{ needs.version.outputs.name }}-windows-x64-setup.exe
+            ${{ needs.version.outputs.name }}-windows-x64-setup.exe.cdx.json
           if-no-files-found: error
+
+  # Validates every SBOM against the CycloneDX specification (ADR-0037), also
+  # for test builds; their content was checked in the build jobs.
+  sbom:
+    needs: [linux, android, windows]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Validate
+        run: tool/sbom/validate.sh dist/*.cdx.json
 
   publish:
     if: github.ref_type == 'tag'
-    needs: [version, linux, android, windows]
+    needs: [version, linux, android, windows, sbom]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

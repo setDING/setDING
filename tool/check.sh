@@ -43,6 +43,14 @@ dart format --output=none --set-exit-if-changed .
 dart analyze --fatal-infos
 dart test "${concurrency[@]}"
 
+# SBOM generator of the release assets (ADR-0037).
+step "tool/sbom"
+cd "$ROOT/tool/sbom"
+dart pub get >/dev/null
+dart format --output=none --set-exit-if-changed .
+dart analyze --fatal-infos
+dart test "${concurrency[@]}"
+
 if [ -d "$ROOT/app" ]; then
   step "app"
   cd "$ROOT/app"
