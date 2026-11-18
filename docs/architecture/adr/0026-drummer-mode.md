@@ -117,7 +117,9 @@ with the idle-time preparation of the next song (#296).
   tempo and meter large at the top; the footer shows the next song with tempo and time
   signature. No bar counts for now. On wide screens a panel left of the map
   shows the beat large and the set (tempo and time signature per song; a tap
-  turns to it).
+  turns to it). On phones (shortest side below 600 px) this panel is the
+  whole stage, without the song map: beat above the set in portrait, beside it
+  in landscape.
 - All colours follow the stage appearance (ADR-0007) with the contrast required there.
 - The beat display and the count-in never block page turns; the preparation of the
   neighbours (#296) runs as before.
@@ -167,6 +169,7 @@ with the idle-time preparation of the next song (#296).
 - 2026-11-17: Owner request (#357): on wide screens (from 900 px, the app's two-column breakpoint) the song map is on the right and a panel on the left is split in two: above, the beat of the current song large (tempo, time signature and grouping, large dots, start/stop) instead of the dots beside the title; below, the set with title, tempo and time signature per item, the current one highlighted; a tap on an item turns to it. The pages keep their state when the panel comes or goes (turning the tablet).
 - 2026-11-17: Owner decision (#363): in the wide song map the tap zones (back, control bar, forward; ADR-0007) are thirds of the whole screen, not of the song area, so the middle tap is in the middle of the screen. Empty areas of the panel take part (the left third lies in the panel and turns back); the set list and the start button keep their taps.
 - 2026-11-17: Click on the web client: the click engine had been switched off on web (no audio, the beat display only). SoLoud runs in the browser too, so the web client now loads `init_soloud.js` in `web/index.html` and plays the click like the apps; the browser starts the audio on the tap that starts the beat. With the server's cross-origin isolation headers SoLoud uses its AudioWorklet build, else the single-threaded one. On web the playhead time equals the engine time (no render-ahead ring), so the latency calibration covers the browser's output delay.
+- 2026-11-18: Owner decision (#421): on small screens (phones, shortest side of the stage below 600 px; it takes precedence over the 900 px breakpoint, so phones in landscape count too) the song map is not shown; the drum panel fills the stage: in portrait the large beat above the set list, in landscape the beat on the left and the set on the right. There is no swipe in this view: the drummer picks the song in the set list; the page turner and the keyboard turn from song to song (no song map to scroll), and taps on empty areas of the panel keep the tap zones. In landscape the line below the page ("Next: …") is hidden while it has no notice to show, as the set list shows what comes next. The control bar leaves out key, font size, fit and Nashville (they change the song, which is not shown) and scales the tempo row down to the width of the phone. Tablets in portrait keep the song map.
 
 ## Open points
 

@@ -364,6 +364,11 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       ref.read(settingsProvider).pageTurn == PageTurnMode.half ? 0.5 : 0.85;
 
   void _next() {
+    // Small screens show no song (ADR-0026): every turn is a song.
+    if (_compact) {
+      if (_index < _items.length - 1) _jumpTo(_index + 1);
+      return;
+    }
     final sc = _scroll[_index];
     if (sc != null && sc.hasClients) {
       final pos = sc.position;
@@ -402,6 +407,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   }
 
   void _previous() {
+    if (_compact) {
+      if (_index > 0) _jumpTo(_index - 1);
+      return;
+    }
     final sc = _scroll[_index];
     if (sc != null && sc.hasClients && sc.position.pixels > 2) {
       final pos = sc.position;
@@ -501,6 +510,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
 
   /// Width of the whole stage, for the tap zones.
   double _stageWidth = 0;
+
+  /// Whether the stage shows only the beat and the set (small screens in
+  /// drummer mode, ADR-0026).
+  bool _compact = false;
 
   /// The tap zones are thirds of the whole stage (ADR-0007), also beside the
   /// panel of the wide song map (ADR-0026, #363).
@@ -633,6 +646,14 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     final showSongMap = ref.watch(
       settingsProvider.select((s) => s.showSongMap),
     );
+    final web = ref.watch(webClientProvider);
+    // Small screens in landscape (ADR-0026): the set list shows what comes
+    // next; the line below only shows for its notices, so the set has room.
+    final screen = MediaQuery.sizeOf(context);
+    final compactLandscape =
+        showSongMap &&
+        screen.shortestSide < _compactDrums &&
+        screen.width > screen.height;
 
     return Scaffold(
       body: SafeArea(
@@ -643,19 +664,27 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
             Expanded(
               child: LayoutBuilder(
                 builder: (context, outer) {
+                  // Small screens (phones, ADR-0026): only the beat and the
+                  // set, no song map; the set list turns.
+                  final compact =
+                      showSongMap &&
+                      math.min(outer.maxWidth, outer.maxHeight) < _compactDrums;
                   // Wide song map (ADR-0026): the beat large and the set on
                   // the left, the song on the right.
-                  final wide = showSongMap && outer.maxWidth >= _wideSongMap;
+                  final wide =
+                      showSongMap && !compact && outer.maxWidth >= _wideSongMap;
                   final panelWidth = (outer.maxWidth * 0.36).clamp(
                     300.0,
                     480.0,
                   );
                   _stageWidth = outer.maxWidth;
+                  _compact = compact;
                   // The divider after the panel is one pixel wide.
                   _pageLeft = wide ? panelWidth + 1 : 0;
-                  if (_beat.largeBeat != wide) {
+                  final largeBeat = wide || compact;
+                  if (_beat.largeBeat != largeBeat) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) _beat.largeBeat = wide;
+                      if (mounted) _beat.largeBeat = largeBeat;
                     });
                   }
                   // Keeps the pages (and their state) when the panel comes
@@ -729,7 +758,33 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                   return Stack(
                     children: [
                       Positioned.fill(
-                        child: !wide
+                        child: compact
+                            ? Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  // The pages stay built for the page
+                                  // controller and the preparation, unseen.
+                                  Offstage(child: page),
+                                  // Empty areas of the panel are the tap
+                                  // zones; the set list and the buttons keep
+                                  // their taps.
+                                  GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTapUp: (d) =>
+                                        _onStageTap(d.localPosition.dx),
+                                    child: DrumPanel(
+                                      items: items,
+                                      current: _index,
+                                      onSelect: _jumpTo,
+                                      direction:
+                                          outer.maxWidth > outer.maxHeight
+                                          ? Axis.horizontal
+                                          : Axis.vertical,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : !wide
                             ? page
                             : Row(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -767,7 +822,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                             index: _index,
                             onExit: () => Navigator.pop(context),
                             onOverview: () => _showOverview(context),
-                            onAdjust: items[_index].song == null
+                            // Key, font and Nashville change the song,
+                            // which small screens do not show (ADR-0026).
+                            onAdjust: items[_index].song == null || compact
                                 ? null
                                 : _adjust,
                             onFit: _fitToPage,
@@ -789,105 +846,122 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                   progress: progress,
                 ),
               ),
-            Container(
-              color: theme.colorScheme.surfaceContainer,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      next == null
-                          ? l10n.liveEnd
-                          : l10n.liveNext(_nextLabel(_index + 1, l10n)),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleSmall,
-                    ),
-                  ),
-                  // Web: no offline guarantee (ADR-0018).
-                  if (ref.watch(webClientProvider)) ...[
-                    const SizedBox(width: 12),
-                    Icon(
-                      Icons.cloud_off,
-                      size: 18,
-                      color: theme.colorScheme.error,
-                    ),
-                    const SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        l10n.liveWebNotice,
-                        key: const Key('live-web-notice'),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.error,
+            ValueListenableBuilder<bool>(
+              valueListenable: _beat.metronome.clickUnavailable,
+              builder: (context, clickUnavailable, bar) =>
+                  compactLandscape &&
+                      !web &&
+                      !clickUnavailable &&
+                      !_wakeLock.failed
+                  ? const SizedBox.shrink(key: Key('live-info-hidden'))
+                  : bar!,
+              child: Container(
+                key: const Key('live-info'),
+                color: theme.colorScheme.surfaceContainer,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ),
+                child: Row(
+                  children: [
+                    if (compactLandscape)
+                      const Spacer()
+                    else
+                      Expanded(
+                        child: Text(
+                          next == null
+                              ? l10n.liveEnd
+                              : l10n.liveNext(_nextLabel(_index + 1, l10n)),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleSmall,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                  ],
-                  // The click was asked for but there is no audio.
-                  ValueListenableBuilder<bool>(
-                    valueListenable: _beat.metronome.clickUnavailable,
-                    builder: (context, unavailable, _) => !unavailable
-                        ? const SizedBox.shrink()
-                        : Flexible(
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 12),
-                              child: Text(
-                                l10n.clickNoAudioLive,
-                                key: const Key('live-click-notice'),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.error,
+                    // Web: no offline guarantee (ADR-0018).
+                    if (web) ...[
+                      const SizedBox(width: 12),
+                      Icon(
+                        Icons.cloud_off,
+                        size: 18,
+                        color: theme.colorScheme.error,
+                      ),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          l10n.liveWebNotice,
+                          key: const Key('live-web-notice'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.error,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
+                    // The click was asked for but there is no audio.
+                    ValueListenableBuilder<bool>(
+                      valueListenable: _beat.metronome.clickUnavailable,
+                      builder: (context, unavailable, _) => !unavailable
+                          ? const SizedBox.shrink()
+                          : Flexible(
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 12),
+                                child: Text(
+                                  l10n.clickNoAudioLive,
+                                  key: const Key('live-click-notice'),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.error,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                  ),
-                  // The screen may turn off: say so, so the band can
-                  // check the device's power settings before the show.
-                  if (_wakeLock.failed) ...[
-                    Icon(
-                      Icons.screen_lock_portrait,
-                      size: 18,
-                      color: theme.colorScheme.error,
                     ),
-                    const SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        l10n.liveWakeLockNotice,
-                        key: const Key('live-wakelock-notice'),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.error,
+                    // The screen may turn off: say so, so the band can
+                    // check the device's power settings before the show.
+                    if (_wakeLock.failed) ...[
+                      Icon(
+                        Icons.screen_lock_portrait,
+                        size: 18,
+                        color: theme.colorScheme.error,
+                      ),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          l10n.liveWakeLockNotice,
+                          key: const Key('live-wakelock-notice'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.error,
+                          ),
                         ),
                       ),
+                      const SizedBox(width: 12),
+                    ],
+                    ListenableBuilder(
+                      listenable: _songPageFor(_index),
+                      builder: (context, _) {
+                        final pages = _songPageFor(_index);
+                        if (pages.count <= 1) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 16),
+                          child: Text(
+                            l10n.liveSongPage(pages.page + 1, pages.count),
+                            key: const Key('live-song-page'),
+                            style: theme.textTheme.titleSmall,
+                          ),
+                        );
+                      },
                     ),
-                    const SizedBox(width: 12),
+                    Text(
+                      l10n.livePosition(_index + 1, items.length),
+                      style: theme.textTheme.titleSmall,
+                    ),
                   ],
-                  ListenableBuilder(
-                    listenable: _songPageFor(_index),
-                    builder: (context, _) {
-                      final pages = _songPageFor(_index);
-                      if (pages.count <= 1) return const SizedBox.shrink();
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 16),
-                        child: Text(
-                          l10n.liveSongPage(pages.page + 1, pages.count),
-                          key: const Key('live-song-page'),
-                          style: theme.textTheme.titleSmall,
-                        ),
-                      );
-                    },
-                  ),
-                  Text(
-                    l10n.livePosition(_index + 1, items.length),
-                    style: theme.textTheme.titleSmall,
-                  ),
-                ],
+                ),
               ),
             ),
           ],
@@ -920,6 +994,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
 /// left, the song on the right (ADR-0026; the breakpoint of the app's other
 /// two-column layouts).
 const _wideSongMap = 900.0;
+
+/// Below this shortest side of the stage (phones), drummer mode shows only
+/// the beat and the set, no song map (ADR-0026, #421).
+const _compactDrums = 600.0;
 
 /// Minimum width for the Nashville toggle in the same row as the controls.
 const _wideControlBar = 720.0;
@@ -1056,8 +1134,12 @@ class _ControlBar extends ConsumerWidget {
             );
             // Tempo on stage (ADR-0026) in a row of its own.
             final beat = LiveBeatScope.of(context);
+            // Scaled down on phones rather than cut off (#421).
             final tempo = beat != null && beat.canBeat(index)
-                ? StageTempoControls(index: index)
+                ? FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: StageTempoControls(index: index),
+                  )
                 : null;
             if ((toggle == null || wide) && tempo == null) return row;
             return Column(

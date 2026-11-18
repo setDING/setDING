@@ -556,26 +556,36 @@ class StageTempoControls extends StatelessWidget {
 
 /// Left of the song map on wide screens (ADR-0026): above, the beat of the
 /// current song large; below, the set with tempo and time signature of each
-/// song. A tap on an item of the set turns to it.
+/// song. A tap on an item of the set turns to it. On small screens it is the
+/// whole stage: in landscape ([Axis.horizontal]) the beat on the left and
+/// the set on the right.
 class DrumPanel extends StatelessWidget {
   const DrumPanel({
     super.key,
     required this.items,
     required this.current,
     required this.onSelect,
+    this.direction = Axis.vertical,
   });
 
   final List<LiveItem> items;
   final int current;
   final ValueChanged<int> onSelect;
 
+  /// Beat and set one above the other or side by side.
+  final Axis direction;
+
   @override
-  Widget build(BuildContext context) => Column(
+  Widget build(BuildContext context) => Flex(
     key: const Key('drum-panel'),
+    direction: direction,
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       Expanded(child: _LargeBeat(index: current)),
-      const Divider(height: 1),
+      if (direction == Axis.vertical)
+        const Divider(height: 1)
+      else
+        const VerticalDivider(width: 1),
       Expanded(
         child: _SetList(items: items, current: current, onSelect: onSelect),
       ),
