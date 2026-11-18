@@ -154,7 +154,8 @@ of the two apps) or paste the link under "Bands → Join". Remove the beta with
 ## Windows
 
 Unpack the zip and run `setding.exe`. The build is not code-signed, so Windows
-SmartScreen warns on the first start ("More info" → "Run anyway").
+SmartScreen warns on the first start ("More info" → "Run anyway"). Distribution
+through the Microsoft Store (signed, automatic updates) is proposed in ADR-0035.
 
 ## Linux (local)
 

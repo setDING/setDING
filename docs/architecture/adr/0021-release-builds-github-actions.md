@@ -67,7 +67,7 @@ app, so the APK must be signed with a stable release key, not a per-machine debu
 - APKs built locally with `make apk` (debug key) cannot be updated by release APKs
   and vice versa; switching needs an uninstall.
 - The Windows build is a plain zip (no installer, no code signing): SmartScreen
-  warns on first start.
+  warns on first start. ADR-0035 (proposed) adds the Microsoft Store.
 - Release APKs run only on arm64 devices (#407); 32-bit ARM tablets and x86
   emulators need a local `make apk`.
 - GitHub scopes caches by ref: a tag build restores only caches written on `main`.
@@ -89,9 +89,10 @@ app, so the APK must be signed with a stable release key, not a per-machine debu
 - 2026-11-17: App renamed to **setDING** (#318): artifacts `setding-<version>-…`, application ID `app.setding` (a new app for Android and Obtainium; test installs of RealChord are removed by hand), Obtainium source `https://github.com/tafli/setDING`. The release key stays.
 - 2026-11-17: Build numbers (#345): `pubspec.yaml` no longer carries a build number (it was bumped by hand with every release and said nothing). The run number stays the build number, shared by releases and manual test builds, whose files are named `setding-<version>-build<N>-…`. After the release build passed, `make server-release` updates the server from the tag.
 - 2026-11-17: Faster Android build (#407): the release APK is built for arm64 only instead of a universal APK (arm, arm64, x64), and Gradle is cached with `gradle/actions/setup-gradle`. Agreed with the owner: practically all current Android tablets are arm64. Split APKs were rejected because they still compile every ABI.
+- 2026-11-18: Windows installer and code signing moved out of the open points: ADR-0035 (proposed, #494) proposes the Microsoft Store (MSIX signed by Microsoft, automatic updates); the zip stays.
 
 ## Open points
 
 - Owner creates the release key (`make android-keystore`) and backs it up.
 - iOS build (needs a macOS runner and an Apple developer account).
-- Windows installer (MSIX/Inno Setup) and code signing; Linux packaging (AppImage/Flatpak).
+- Linux packaging (AppImage/Flatpak).
