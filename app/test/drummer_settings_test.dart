@@ -52,12 +52,17 @@ void main() {
     final unset = const AppSettings(instrument: 'drums').toJson();
     expect(unset.containsKey('click'), isFalse);
     expect(unset.containsKey('clickStart'), isFalse);
+    expect(
+      AppSettings.fromJson(unset).clickInBackground,
+      ClickInBackground.stop,
+    );
 
     final json = const AppSettings(instrument: 'drums')
         .copyWith(
           click: false,
           clickStart: ClickStart.manual,
           clickDuration: ClickDuration.countIn,
+          clickInBackground: ClickInBackground.keepPlaying,
           countInBars: 1,
           clickVolume: 0.5,
           clickAccent: false,
@@ -71,6 +76,7 @@ void main() {
     expect(loaded.playClick, isFalse);
     expect(loaded.beatStart, ClickStart.manual);
     expect(loaded.clickDuration, ClickDuration.countIn);
+    expect(loaded.clickInBackground, ClickInBackground.keepPlaying);
     expect(loaded.countInBars, 1);
     expect(loaded.clickVolume, 0.5);
     expect(loaded.clickAccent, isFalse);

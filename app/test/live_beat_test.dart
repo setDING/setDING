@@ -202,4 +202,50 @@ void main() {
     }
     expect(tap.add(ms(9400 + 0)), isNotNull);
   });
+
+  group('in the background (#424)', () {
+    Future<void> hide(WidgetTester tester) async {
+      tester.binding
+        ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+        ..handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      await tester.pump();
+    }
+
+    Future<void> show(WidgetTester tester) async {
+      tester.binding
+        ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+        ..handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pump();
+    }
+
+    testWidgets('the beat and the click stop by default', (tester) async {
+      final (app, _) = await open(tester, prefs: {'instrument': 'drums'});
+      final out = app.clickOutput;
+      expect(out.plays, hasLength(1));
+      expect(out.stops, isEmpty);
+
+      await hide(tester);
+      expect(out.stops, hasLength(1));
+      await show(tester);
+      // Not started again by itself.
+      expect(out.plays, hasLength(1));
+      expect(find.byIcon(Icons.play_arrow), findsWidgets);
+      await app.dispose(tester);
+    });
+
+    testWidgets('they keep playing when the settings say so', (tester) async {
+      final (app, _) = await open(
+        tester,
+        prefs: {'instrument': 'drums', 'clickInBackground': 'keepPlaying'},
+      );
+      final out = app.clickOutput;
+      expect(out.plays, hasLength(1));
+
+      await hide(tester);
+      expect(out.stops, isEmpty);
+      await show(tester);
+      expect(out.stops, isEmpty);
+      await app.dispose(tester);
+    });
+  });
 }

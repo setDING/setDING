@@ -510,6 +510,16 @@ List<Widget> _beatTiles(
       ClickDuration.wholeSong: l10n.clickDurationSong,
       ClickDuration.countIn: l10n.clickDurationCountIn,
     }, (v) => notifier.update((s) => s.copyWith(clickDuration: v))),
+    _Choice(
+      l10n.settingsClickInBackground,
+      s.clickInBackground,
+      {
+        ClickInBackground.stop: l10n.clickInBackgroundStop,
+        ClickInBackground.keepPlaying: l10n.clickInBackgroundKeepPlaying,
+      },
+      (v) => notifier.update((s) => s.copyWith(clickInBackground: v)),
+      hint: l10n.settingsClickInBackgroundHint,
+    ),
   ],
   if (s.playClick) ...[
     _Choice(l10n.settingsClickSound, s.clickSound, {

@@ -218,7 +218,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   late final StageWakeLock _wakeLock = ref.read(stageWakeLockProvider);
 
   /// Sets the wake lock again when the app returns to the foreground: not
-  /// every platform keeps it while the app is in the background.
+  /// every platform keeps it while the app is in the background. Stops the
+  /// beat when the app is hidden, unless the settings keep it (#424).
   late final AppLifecycleListener _lifecycle;
 
   @override
@@ -227,7 +228,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     _wakeLock
       ..addListener(_onWakeLockChanged)
       ..acquire();
-    _lifecycle = AppLifecycleListener(onResume: _wakeLock.reassert);
+    _lifecycle = AppLifecycleListener(
+      onResume: _wakeLock.reassert,
+      onHide: _onHide,
+    );
     _setFullScreen(true);
     _sync.pause();
     FocusManager.instance.addEarlyKeyEventHandler(_onKey);
@@ -236,6 +240,14 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _beat.onItemShown(_index);
     });
+  }
+
+  /// The app went to the background (minimised, another app, the screen
+  /// locked; not a split screen, where it stays visible).
+  void _onHide() {
+    if (_beat.settings.clickInBackground == ClickInBackground.stop) {
+      _beat.stop();
+    }
   }
 
   @override
