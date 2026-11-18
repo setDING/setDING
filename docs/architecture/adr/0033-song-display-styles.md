@@ -113,7 +113,9 @@ The design was worked out with the owner in an interactive mock-up
 10. **Layout.** Bar width, indent and heading size become per-type values in
     the renderer and in the layout measurement, so columns, song pages and
     auto-fit stay exact. `SongSpacing.chorusIndent` and
-    `chorusBorderPixels` become the values of the *Classic* preset.
+    `chorusBorderPixels` are replaced by the indent *normal* (0.6) and the
+    bar width *thin* (0.15 of the font size, 3 px at 20 px) of the
+    *Classic* chorus.
 11. All texts in both ARB files (ADR-0008); type names are UI texts, the
     recognised synonyms are not.
 
@@ -160,6 +162,10 @@ The design was worked out with the owner in an interactive mock-up
   palette, precedence rules, personal scope, live mode and song view only,
   bold = 700 everywhere.
 - 2026-11-18: Accepted by the owner.
+- 2026-11-18: Implementation details (#471): the thin bar is relative
+  like all other widths (0.15 of the font size instead of a fixed 3 px);
+  the chord size of a style does not apply to chord grids, whose rows are
+  as high as their text.
 
 ## Open points
 

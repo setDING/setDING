@@ -501,6 +501,7 @@ class _FittedSongBody extends ConsumerWidget {
       [for (final a in attachments) '${a.id}/${a.name}/${a.fileName}']
           .join('\n'),
       Localizations.localeOf(context),
+      settings.songDisplay,
     );
 
     SongRenderOptions options(
@@ -519,6 +520,7 @@ class _FittedSongBody extends ConsumerWidget {
       diagramsPosition: diagrams,
       imageLookup: imageLookup,
       layout: layout,
+      display: settings.songDisplay,
     );
 
     if (settings.autoFit && page.width > 0 && page.height > 0) {
@@ -549,6 +551,7 @@ class _FittedSongBody extends ConsumerWidget {
           diagramResolver: resolver,
           diagramsPosition: diagrams,
           imageLookup: imageLookup,
+          display: settings.songDisplay,
         ),
       );
       if (fit.fits && fit.layout != null) {
@@ -595,6 +598,7 @@ class _FittedSongBody extends ConsumerWidget {
         textScaler: textScaler,
         baseStyle: baseStyle,
         imageLookup: imageLookup,
+        display: settings.songDisplay,
       ),
     );
     final font = settings.fontSize * scale;

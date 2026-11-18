@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 
 import '../../data/attachment_storage.dart';
 import '../../l10n/generated/app_localizations.dart';
+import '../../settings/song_display.dart';
 import 'chord_diagram.dart';
 import 'line_marks.dart';
 import 'song_blocks.dart';
@@ -33,7 +34,12 @@ class SongRenderOptions {
     this.imageLookup,
     this.layout,
     this.onElementTap,
+    this.display,
   });
+
+  /// Section styles (ADR-0033); null = [SongDisplay.classic], e.g. for the
+  /// neutral preview of the editor.
+  final SongDisplay? display;
 
   /// Called with the tapped line, section or delegated environment, e.g.
   /// to move the editor cursor to its source line (#372) and character
@@ -111,7 +117,11 @@ class SongBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = SongTextStyles.of(context, options.fontSize);
+    final style = SongTextStyles.of(
+      context,
+      options.fontSize,
+      display: options.display,
+    );
     final blocks =
         options.layout?.blocks ??
         buildSongBlocks(
@@ -199,6 +209,7 @@ class SongBody extends StatelessWidget {
               baseStyle: DefaultTextStyle.of(context).style,
               diagramResolver: options.diagramResolver,
               imageLookup: options.imageLookup,
+              display: options.display,
             );
         final heights = [
           for (final m in metrics) m.height(options.fontSize, width),
@@ -318,7 +329,7 @@ class _RecallLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final labelStyle = style.labelFor(block.startFormat);
+    final labelStyle = style.labelFor(block.startFormat, role: block.role);
     return Padding(
       padding: EdgeInsets.only(bottom: style.fontSize * SongSpacing.blockGap),
       child: Row(
@@ -352,15 +363,20 @@ class _SectionBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final format = block.startFormat.copy();
     final chorus = block.isChorus;
+    final role = block.role;
+    final section = style.sectionStyle(role);
     GridGeometry? grid;
     final children = <Widget>[
-      if (block.label != null)
+      if (block.label != null && section.showLabel)
         markLine(
           block.section,
           _tappable(
             options.onElementTap,
             block.section,
-            _Label(text: block.label!, style: style.labelFor(format)),
+            _Label(
+              text: block.label!,
+              style: style.labelFor(format, role: role),
+            ),
           ),
         ),
     ];
@@ -374,15 +390,18 @@ class _SectionBlock extends StatelessWidget {
             _ChordLyricLine(
               line: l,
               formatter: options.formatter,
-              lyricStyle: style.lyricsFor(format, inChorus: chorus),
-              chordStyle: style.chordFor(format),
+              lyricStyle: style.lyricsFor(format, inChorus: chorus, role: role),
+              chordStyle: style.chordFor(format, role: role),
             ),
           );
         case final LyricLine l:
           children.add(
             const _TextAt(0).wrap(
               Text.rich(
-                markupSpan(l.text, style.lyricsFor(format, inChorus: chorus)),
+                markupSpan(
+                  l.text,
+                  style.lyricsFor(format, inChorus: chorus, role: role),
+                ),
               ),
             ),
           );
@@ -402,7 +421,7 @@ class _SectionBlock extends StatelessWidget {
           );
         case final GridLine g:
           final text = style.gridFor(format);
-          final chordStyle = style.gridChordFor(format);
+          final chordStyle = style.gridChordFor(format, role: role);
           grid ??= _gridGeometry(context, block.lines, text, chordStyle);
           children.add(
             GridRowView(
@@ -472,22 +491,37 @@ class _SectionBlock extends StatelessWidget {
     );
     return Padding(
       padding: EdgeInsets.only(bottom: style.fontSize * SongSpacing.blockGap),
-      child: chorus
-          ? Container(
-              padding: EdgeInsets.only(
-                left: style.fontSize * SongSpacing.chorusIndent,
+      child: _sectionFrame(section, style.barColor(role), content),
+    );
+  }
+
+  /// Bar, indent and tint of the section style (ADR-0033); measured the
+  /// same way in song_layout.dart.
+  Widget _sectionFrame(SectionStyle section, Color barColor, Widget content) {
+    final f = style.fontSize;
+    final bar = section.bar ? section.barWidth.units * f : 0.0;
+    final left = SongSpacing.sectionLeft(section) * f - bar;
+    final right = SongSpacing.sectionRight(section) * f;
+    final vertical = SongSpacing.sectionVertical(section) * f / 2;
+    if (bar == 0 && left == 0 && right == 0 && vertical == 0) return content;
+    final dark = style.colors.brightness == Brightness.dark;
+    return Container(
+      padding: EdgeInsets.fromLTRB(left, vertical, right, vertical),
+      decoration: BoxDecoration(
+        color: section.tint
+            ? barColor.withValues(
+                alpha: dark
+                    ? SongSpacing.tintAlphaDark
+                    : SongSpacing.tintAlphaLight,
+              )
+            : null,
+        border: bar == 0
+            ? null
+            : Border(
+                left: BorderSide(color: barColor, width: bar),
               ),
-              decoration: BoxDecoration(
-                border: Border(
-                  left: BorderSide(
-                    color: style.colors.primary,
-                    width: SongSpacing.chorusBorderPixels,
-                  ),
-                ),
-              ),
-              child: content,
-            )
-          : content,
+      ),
+      child: content,
     );
   }
 

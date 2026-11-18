@@ -12,6 +12,7 @@ import 'song_image.dart';
 import 'song_grid.dart';
 import 'song_style.dart';
 import '../../settings/display_options.dart';
+import '../../settings/song_display.dart';
 export '../../settings/display_options.dart' show ChorusRepeat;
 
 // Layout measurement ----------------------------------------------------------
@@ -101,6 +102,7 @@ List<BlockMetrics> measureBlocks(
   TextStyle? baseStyle,
   DiagramResolver? diagramResolver,
   ImageLookup? imageLookup,
+  SongDisplay? display,
 }) {
   debugMeasureBlocksCalls++;
   final painter = TextPainter(
@@ -110,6 +112,7 @@ List<BlockMetrics> measureBlocks(
   final styles = SongTextStyles.fromBase(
     baseStyle ?? const TextStyle(),
     _referenceFontSize,
+    display: display,
   );
   try {
     return [
@@ -212,7 +215,9 @@ BlockMetrics _measure(
   }
 
   final format = block.startFormat.copy();
-  final labelStyle = styles.labelFor(format);
+  final role = block.role;
+  final section = styles.sectionStyle(role);
+  final labelStyle = styles.labelFor(format, role: role);
   if (block.isRecallLabel) {
     return BlockMetrics(
       fixedHeight:
@@ -230,13 +235,13 @@ BlockMetrics _measure(
   }
 
   final chorus = block.isChorus;
-  final indent = chorus
-      ? SongSpacing.chorusIndent + SongSpacing.chorusBorderPixels / f
-      : 0.0;
-  var fixed = SongSpacing.blockGap;
+  // Bar, indent and tint of the section style (ADR-0033).
+  final indent =
+      SongSpacing.sectionLeft(section) + SongSpacing.sectionRight(section);
+  var fixed = SongSpacing.blockGap + SongSpacing.sectionVertical(section);
   var minWidth = 0.0;
   final wrapping = <({double width, double lineHeight, double padding})>[];
-  if (block.label != null) {
+  if (block.label != null && section.showLabel) {
     fixed += _labelLines(block.label!) * lineUnits(labelStyle);
     minWidth = _labelWidth(block.label!, labelStyle, spanWidth);
   }
@@ -248,8 +253,8 @@ BlockMetrics _measure(
       case final FormatLine l:
         format.apply(l);
       case final LyricLine l when !lyricsOnly && l.hasChords:
-        final lyric = styles.lyricsFor(format, inChorus: chorus);
-        final chord = styles.chordFor(format);
+        final lyric = styles.lyricsFor(format, inChorus: chorus, role: role);
+        final chord = styles.chordFor(format, role: role);
         final pieces = chordLinePieces(l, formatter);
         var lineWidth = 0.0;
         var tallestLyric = lineUnits(lyric);
@@ -286,7 +291,7 @@ BlockMetrics _measure(
             tallestLyric;
         minWidth = math.max(minWidth, lineWidth);
       case final LyricLine l:
-        final lyric = styles.lyricsFor(format, inChorus: chorus);
+        final lyric = styles.lyricsFor(format, inChorus: chorus, role: role);
         wrapping.add((
           width: spanWidth(markupSpan(l.text, lyric, forMeasuring: true)),
           lineHeight: lineUnits(lyric) * markupSizeFactor(l.text),
@@ -318,7 +323,7 @@ BlockMetrics _measure(
         minWidth = math.max(minWidth, width(r.text, style));
       case final GridLine g:
         final text = styles.gridFor(format);
-        final chordStyle = styles.gridChordFor(format);
+        final chordStyle = styles.gridChordFor(format, role: role);
         final size = text.fontSize ?? f;
         double gridWidth(String s, {bool chord = false}) =>
             width(s, chord ? chordStyle : text) * f / size;
@@ -339,7 +344,7 @@ BlockMetrics _measure(
         // Placeholder: icon (one unit) or label, whichever is taller.
         fixed +=
             2 * SongSpacing.lineItemPadding +
-            math.max(lineUnits(labelStyle), 1.0);
+            math.max(lineUnits(styles.labelFor(format)), 1.0);
       case BreakLine():
         break;
       case EmptyLine():
@@ -481,6 +486,7 @@ SongLayout layoutSong(
   required TextScaler textScaler,
   TextStyle? baseStyle,
   ImageLookup? imageLookup,
+  SongDisplay? display,
 }) {
   final blocks = buildSongBlocks(
     song,
@@ -504,6 +510,7 @@ SongLayout layoutSong(
       baseStyle: baseStyle,
       diagramResolver: diagramResolver,
       imageLookup: imageLookup,
+      display: display,
     ),
   );
 }
@@ -648,6 +655,7 @@ SongFit fitSong(
   DiagramResolver? diagramResolver,
   DiagramsPosition diagramsPosition = DiagramsPosition.off,
   int maxPages = 1,
+  SongDisplay? display,
 }) {
   // Timeline marker for profiling on devices (docs/development/performance.md).
   Timeline.startSync('fitSong');
@@ -686,6 +694,7 @@ SongFit fitSong(
           baseStyle: baseStyle,
           diagramResolver: diagramResolver,
           imageLookup: imageLookup,
+          display: display,
         ),
       );
       final widest = metrics.fold<double>(0, (w, m) => math.max(w, m.minWidth));

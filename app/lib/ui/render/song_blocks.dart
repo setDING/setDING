@@ -81,6 +81,12 @@ class SongBlock {
   final FormatState startFormat;
 
   bool get isChorus => section?.kind == SectionKind.chorus;
+
+  /// Role whose style the block is shown in (ADR-0033): the label of a
+  /// repeated chorus is shown like the chorus.
+  SectionRole get role => isRecallLabel
+      ? SectionRole.chorus
+      : section?.role ?? SectionRole.standard;
 }
 
 /// Default label for a section kind (localized), or null for none.

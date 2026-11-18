@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:setding/data/demo_song.dart';
 import 'package:setding/l10n/generated/app_localizations.dart';
+import 'package:setding/settings/song_display.dart';
 import 'package:setding/ui/render/chord_diagram.dart';
 import 'package:setding/ui/render/song_view.dart';
 
@@ -38,86 +39,103 @@ void main() {
         '{soc}\n[C]Chorus [G]line\n{eoc}\n{chorus}\n'
         // An empty line inside a section.
         '{sov}\n[C]One\n\n[G]Two\n{eov}\n',
+    // Section roles with their own styles in the presets (ADR-0033).
+    'roles':
+        '{title: Roles}\n{c: Intro}\n[G] [D]\n\n{c: Verse 1}\n[G]One [D]two\n\n'
+        '{c: Pre-Chorus}\n[Am]Up we [C]go\n\n{soc: Chorus}\n[C]Sing a [G]long '
+        'line that wraps in narrow columns\n{eoc}\n{chorus}\n\n'
+        '{c: Solo}\n[Em] [C] [G] [D]\n\n{sob}\n[Am]Bridge\n{eob}\n\n'
+        '{start_of_grid label="Intro grid"}\n| G . | D . |\n{end_of_grid}\n\n'
+        '{c: Outro}\n[C] [G]\n',
   };
+  // Every preset changes labels, bars, indents, tints and chord sizes.
+  final displays = [
+    for (final p in SongDisplayPreset.values)
+      if (p != SongDisplayPreset.custom) SongDisplay.preset(p),
+  ];
 
   for (final MapEntry(key: name, value: source) in songs.entries) {
-    testWidgets('measured heights match the rendered blocks: $name', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(1600, 4000);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-      final song = parseChordPro(source);
-      final formatter = ChordFormatter.forSong(song);
-      final resolver = DiagramResolver(
-        song,
-        formatter,
-        DiagramInstrument.guitar,
-      );
-      late List<BlockMetrics> metrics;
-      late List<SongBlock> blocks;
-      await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          locale: const Locale('en'),
-          home: Material(
-            child: SingleChildScrollView(
-              child: SizedBox(
-                width: width,
-                child: Builder(
-                  builder: (context) {
-                    final options = SongRenderOptions(
-                      formatter: formatter,
-                      fontSize: fontSize,
-                      notes:
-                          'A personal note that is long enough to wrap '
-                          'onto a second line in the card',
-                      diagramResolver: resolver,
-                      diagramsPosition: DiagramsPosition.bottom,
-                    );
-                    blocks = buildSongBlocks(
-                      song,
-                      lyricsOnly: false,
-                      labeler: sectionLabeler(AppLocalizations.of(context)),
-                      notes: options.notes,
-                      diagrams: options.songDiagrams,
-                    );
-                    metrics = measureBlocks(
-                      blocks,
-                      formatter: formatter,
-                      lyricsOnly: false,
-                      textScaler: MediaQuery.textScalerOf(context),
-                      baseStyle: DefaultTextStyle.of(context).style,
-                      diagramResolver: resolver,
-                    );
-                    return SongBody(song: song, options: options);
-                  },
+    for (final display in displays) {
+      testWidgets('measured heights match the rendered blocks: $name, '
+          '${display.preset.name}', (tester) async {
+        tester.view.physicalSize = const Size(1600, 4000);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final song = parseChordPro(source);
+        final formatter = ChordFormatter.forSong(song);
+        final resolver = DiagramResolver(
+          song,
+          formatter,
+          DiagramInstrument.guitar,
+        );
+        late List<BlockMetrics> metrics;
+        late List<SongBlock> blocks;
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('en'),
+            home: Material(
+              child: SingleChildScrollView(
+                child: SizedBox(
+                  width: width,
+                  child: Builder(
+                    builder: (context) {
+                      final options = SongRenderOptions(
+                        formatter: formatter,
+                        fontSize: fontSize,
+                        notes:
+                            'A personal note that is long enough to wrap '
+                            'onto a second line in the card',
+                        diagramResolver: resolver,
+                        diagramsPosition: DiagramsPosition.bottom,
+                        display: display,
+                      );
+                      blocks = buildSongBlocks(
+                        song,
+                        lyricsOnly: false,
+                        labeler: sectionLabeler(AppLocalizations.of(context)),
+                        notes: options.notes,
+                        diagrams: options.songDiagrams,
+                      );
+                      metrics = measureBlocks(
+                        blocks,
+                        formatter: formatter,
+                        lyricsOnly: false,
+                        textScaler: MediaQuery.textScalerOf(context),
+                        baseStyle: DefaultTextStyle.of(context).style,
+                        diagramResolver: resolver,
+                        display: display,
+                      );
+                      return SongBody(song: song, options: options);
+                    },
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      final report = <String>[];
-      for (var i = 0; i < metrics.length; i++) {
-        final rendered = tester
-            .getSize(find.byKey(ValueKey(('song-block', i))))
-            .height;
-        final measured = metrics[i].height(fontSize, width);
-        // Never smaller than what is drawn, beyond the safety margin of
-        // fitSong (text lines are rounded up to whole pixels when drawn);
-        // a little generous is fine (wrapping is estimated).
-        if (measured < rendered * fitSafety || measured > rendered * 1.15 + 4) {
-          report.add(
-            'block $i (${describe(blocks[i])}): '
-            'measured $measured, rendered $rendered',
-          );
+        final report = <String>[];
+        for (var i = 0; i < metrics.length; i++) {
+          final rendered = tester
+              .getSize(find.byKey(ValueKey(('song-block', i))))
+              .height;
+          final measured = metrics[i].height(fontSize, width);
+          // Never smaller than what is drawn, beyond the safety margin of
+          // fitSong (text lines are rounded up to whole pixels when drawn);
+          // a little generous is fine (wrapping is estimated).
+          if (measured < rendered * fitSafety ||
+              measured > rendered * 1.15 + 4) {
+            report.add(
+              'block $i (${describe(blocks[i])}): '
+              'measured $measured, rendered $rendered',
+            );
+          }
         }
-      }
-      expect(report, isEmpty);
-    });
+        expect(report, isEmpty);
+      });
+    }
   }
 }
