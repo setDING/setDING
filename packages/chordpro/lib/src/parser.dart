@@ -166,9 +166,18 @@ class _SongParser {
     if (section != null && !explicitSection) {
       // SongSelect and other sources mark sections with a comment heading
       // such as `{comment: Verse 1}` instead of `{start_of_verse}`.
-      final heading = _headingSection(section);
-      if (heading != null) {
-        elements[elements.indexOf(section)] = heading;
+      // Comments before the heading (e.g. `{comment_italic: first time a
+      // cappella}`) stay in an unlabelled section of their own.
+      final split = _headingSection(section);
+      if (split != null) {
+        final (:preface, :heading) = split;
+        final index = elements.indexOf(section);
+        elements[index] = heading;
+        if (preface != null) {
+          elements.insert(index, preface);
+          _sourceLines[preface] = _sourceLines[section];
+          _trimEmptyLines(preface.lines);
+        }
         section = heading;
       }
     }
@@ -542,21 +551,34 @@ final _heading = RegExp(
 
 /// Turns an implicit section starting with a heading comment into a
 /// labelled section, e.g. `{comment: Chorus 1}` → chorus "Chorus 1".
-Section? _headingSection(Section section) {
-  if (section.kind != SectionKind.none || section.lines.isEmpty) return null;
-  final first = section.lines.first;
-  if (first is! CommentLine || first.style != CommentStyle.normal) return null;
-  final match = _heading.firstMatch(first.text.trim());
-  if (match == null) return null;
-  final kind = switch (match.group(1)!.toLowerCase()) {
-    'chorus' || 'refrain' => SectionKind.chorus,
-    'verse' || 'vers' || 'strophe' => SectionKind.verse,
-    'bridge' => SectionKind.bridge,
-    _ => SectionKind.custom,
-  };
-  return Section(
-    kind: kind,
-    label: first.text.trim(),
-    lines: section.lines.sublist(1),
-  );
+///
+/// Other comments may precede the heading; they are returned as an
+/// unlabelled [preface] section shown before the labelled one.
+({Section? preface, Section heading})? _headingSection(Section section) {
+  if (section.kind != SectionKind.none) return null;
+  for (var i = 0; i < section.lines.length; i++) {
+    final line = section.lines[i];
+    if (line is EmptyLine) continue;
+    if (line is! CommentLine) return null;
+    if (line.style != CommentStyle.normal) continue;
+    final match = _heading.firstMatch(line.text.trim());
+    if (match == null) continue;
+    final kind = switch (match.group(1)!.toLowerCase()) {
+      'chorus' || 'refrain' => SectionKind.chorus,
+      'verse' || 'vers' || 'strophe' => SectionKind.verse,
+      'bridge' => SectionKind.bridge,
+      _ => SectionKind.custom,
+    };
+    final heading = Section(
+      kind: kind,
+      label: line.text.trim(),
+      lines: section.lines.sublist(i + 1),
+    );
+    _sourceLines[heading] = _sourceLines[line] ?? _sourceLines[section];
+    final preface = i == 0
+        ? null
+        : Section(kind: SectionKind.none, lines: section.lines.sublist(0, i));
+    return (preface: preface, heading: heading);
+  }
+  return null;
 }
