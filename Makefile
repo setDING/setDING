@@ -132,7 +132,7 @@ release: release-linux ## Build the release packages locally (Linux; a vX.Y.Z ta
 release-check:
 	@git -C $(ROOT) diff --quiet HEAD || echo "warning: uncommitted changes are not part of the release (built from commit $(APK_COMMIT))"
 
-release-linux: release-check ## Build the Linux release in a container (app/build/setding-<version>-<commit>-linux-x64.tar.gz)
+release-linux: release-check ## Build the Linux release in a container (app/build/setding-<version>-<commit>-linux-x64.tar.gz and .AppImage)
 	@$(DOCKER) image inspect $(CI_IMAGE) >/dev/null 2>&1 || $(MAKE) ci-image
 	$(DOCKER) build -q --build-arg CI_IMAGE=$(CI_IMAGE) -t $(RELEASE_IMAGE) -f $(ROOT)/tool/release/linux.Dockerfile $(ROOT)/tool/release
 	@mkdir -p $(APP)/build
@@ -140,7 +140,7 @@ release-linux: release-check ## Build the Linux release in a container (app/buil
 		-v $(ROOT)/tool/release:/release:ro -v $(APP)/build:/out -v setding-release-pub-cache:/root/.pub-cache \
 		-e HOST_UID=$$(id -u) -e HOST_GID=$$(id -g) -e BUILD_NUMBER=$(BUILD_NUMBER) \
 		$(RELEASE_IMAGE) /release/build-linux.sh $(RELEASE_NAME)-linux-x64
-	@echo "Linux release: $(APP)/build/$(RELEASE_NAME)-linux-x64.tar.gz"
+	@echo "Linux release: $(APP)/build/$(RELEASE_NAME)-linux-x64.tar.gz and .AppImage"
 
 reset: ## Delete all data of the test instance
 	rm -rf "$(DATA_DIR)"

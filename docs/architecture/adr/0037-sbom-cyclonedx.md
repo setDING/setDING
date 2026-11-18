@@ -171,3 +171,6 @@ GitHub on the same data, from the repository:
   settings.
 - Attesting the SBOMs (`actions/attest-sbom`).
 - iOS, once there is an iOS build.
+- The Linux AppImage (ADR-0038, #504) is a fifth release asset: it needs its own
+  SBOM (`setding-<version>-linux-x64.AppImage.cdx.json`) with the components of the
+  tar.gz plus the AppImage type-2 runtime (which contains libfuse).

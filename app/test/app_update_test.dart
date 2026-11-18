@@ -51,20 +51,51 @@ const _ann = AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann');
 void main() {
   group('fetchUpdate', () {
     test('finds the setup of the version and its checksum', () async {
-      final update = await fetchUpdate(_github(), '0.9.0');
+      final update = await fetchUpdate(
+        _github(),
+        '0.9.0',
+        SelfUpdateKind.windowsSetup,
+      );
       expect(update.version, '0.9.0');
       expect(update.setupName, 'setding-0.9.0-windows-x64-setup.exe');
       expect(update.setupUrl, Uri.parse(_setup));
       expect(update.sha256, _setupHash);
     });
 
+    test('finds the AppImage of the version (ADR-0038)', () async {
+      final update = await fetchUpdate(
+        _github(
+          sums:
+              '$_setupHash  setding-0.9.0-windows-x64-setup.exe\n'
+              '${'a' * 64}  setding-0.9.0-linux-x64.AppImage\n',
+        ),
+        '0.9.0',
+        SelfUpdateKind.appImage,
+      );
+      expect(update.setupName, 'setding-0.9.0-linux-x64.AppImage');
+      expect(
+        update.setupUrl.toString(),
+        'https://github.com/tafli/setDING/releases/download/v0.9.0/'
+        'setding-0.9.0-linux-x64.AppImage',
+      );
+      expect(update.sha256, 'a' * 64);
+    });
+
     test('fails without a checksum for the setup or without SHA256SUMS', () {
       expect(
-        fetchUpdate(_github(sums: '${'1' * 64}  other.exe\n'), '0.9.0'),
+        fetchUpdate(
+          _github(sums: '${'1' * 64}  other.exe\n'),
+          '0.9.0',
+          SelfUpdateKind.windowsSetup,
+        ),
         throwsA(isA<UpdateException>()),
       );
       expect(
-        fetchUpdate(_github(sumsStatus: 404), '0.9.0'),
+        fetchUpdate(
+          _github(sumsStatus: 404),
+          '0.9.0',
+          SelfUpdateKind.windowsSetup,
+        ),
         throwsA(isA<UpdateException>()),
       );
     });
@@ -123,6 +154,57 @@ void main() {
     expect(isInstalledWithSetup(executable: exe, windows: false), isFalse);
   });
 
+  test('only the Linux app started as an AppImage updates itself', () {
+    final dir = Directory.systemTemp.createTempSync('setding_appimage');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final file = File('${dir.path}/setding.AppImage')..createSync();
+    expect(
+      runningAppImage(environment: {'APPIMAGE': file.path}, linux: true),
+      file.path,
+    );
+    // The unpacked tar.gz: no AppImage runtime.
+    expect(runningAppImage(environment: {}, linux: true), isNull);
+    expect(
+      runningAppImage(
+        environment: {'APPIMAGE': '${dir.path}/gone'},
+        linux: true,
+      ),
+      isNull,
+    );
+    expect(
+      runningAppImage(environment: {'APPIMAGE': file.path}, linux: false),
+      isNull,
+    );
+  });
+
+  test('a downloaded AppImage replaces the old one, executable', () async {
+    final dir = Directory.systemTemp.createTempSync('setding_appimage');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final target = File('${dir.path}/setding.AppImage')
+      ..writeAsStringSync('old');
+    await Process.run('chmod', ['750', target.path]);
+    final path = await downloadVerifiedUpdate(
+      _github(),
+      AvailableUpdate(
+        version: '0.9.0',
+        setupName: 'setding-0.9.0-linux-x64.AppImage',
+        setupUrl: Uri.parse(_setup),
+        sha256: _setupHash,
+      ),
+      to: '${target.path}.update',
+    );
+    await replaceAppImage(path, target.path);
+    expect(target.readAsBytesSync(), _setupBytes);
+    expect(File(path).existsSync(), isFalse);
+    expect(target.statSync().mode & 0x1ff, 0x1e8); // 0750
+
+    // A file that lost its executable bit gets it back.
+    await Process.run('chmod', ['644', target.path]);
+    File(path).writeAsStringSync('new');
+    await replaceAppImage(path, target.path);
+    expect(target.statSync().mode & 0x1ff, 0x1ed); // 0755
+  }, skip: Platform.isWindows);
+
   group('installableUpdateProvider', () {
     ProviderContainer container({
       required bool supported,
@@ -131,7 +213,9 @@ void main() {
     }) {
       final c = ProviderContainer(
         overrides: [
-          selfUpdateSupportedProvider.overrideWithValue(supported),
+          selfUpdateKindProvider.overrideWithValue(
+            supported ? SelfUpdateKind.windowsSetup : null,
+          ),
           clientVersionProvider.overrideWithValue('0.8.0'),
           updateCheckProvider.overrideWithBuild((ref, _) => checked),
           serverConfigProvider.overrideWith(
@@ -188,7 +272,9 @@ void main() {
         ...app.overrides,
         clientVersionProvider.overrideWithValue('0.8.0'),
         updateCheckEnabledProvider.overrideWithValue(enabled),
-        selfUpdateSupportedProvider.overrideWithValue(supported),
+        selfUpdateKindProvider.overrideWithValue(
+          supported ? SelfUpdateKind.windowsSetup : null,
+        ),
       ],
       child: SetdingApp(home: home),
     );

@@ -25,6 +25,7 @@ only after the previous one succeeded:
    |---|---|
    | `setding-X.Y.Z-android.apk` | APK for arm64 devices, signed with the release key |
    | `setding-X.Y.Z-linux-x64.tar.gz` | Linux bundle, built like `make release-linux` |
+   | `setding-X.Y.Z-linux-x64.AppImage` | The same bundle as an AppImage, which updates itself (ADR-0038) |
    | `setding-X.Y.Z-windows-x64-setup.exe` | Windows installer, from which the installed app updates itself (ADR-0035) |
    | `setding-X.Y.Z-windows-x64.zip` | Windows build with the Visual C++ runtime |
    | `SHA256SUMS` | Checksums of the files above |
@@ -180,8 +181,8 @@ installation that updates replace.
 make release
 ```
 
-The result is `app/build/setding-<version>-<commit>-linux-x64.tar.gz`
-(`make release-linux` does the same). It is built from the **committed** state
+The result is `app/build/setding-<version>-<commit>-linux-x64.tar.gz` and the same
+bundle as `….AppImage` (`make release-linux` does the same). It is built from the **committed** state
 (`HEAD`); commit first, uncommitted changes only print a warning and are not included.
 
 ### Requirements
@@ -216,3 +217,17 @@ installs a desktop entry and the icon for the current user under
 `~/.local/share`. Under Wayland (KDE, GNOME) the window only shows the setDING
 icon with this entry, because the compositor looks the icon up through the
 `.desktop` file named after the app ID `app.setding`.
+
+### AppImage
+
+`tool/release/build-linux.sh` also packs the bundle as an AppImage (ADR-0038) with
+appimagetool and the type-2 runtime; both are downloaded into the release image and
+pinned by version and SHA-256 in `tool/release/linux.Dockerfile` (update both values
+together). Make the AppImage executable and start it; it needs FUSE (`fusermount`),
+which desktop distributions include.
+
+The AppImage updates itself: it learns about a newer release from the update check
+(`latestClientVersion`, ADR-0036), downloads `setding-X.Y.Z-linux-x64.AppImage` from
+the release of the tag `vX.Y.Z`, checks it against `SHA256SUMS`, replaces its own file
+and restarts. Every release must therefore contain the AppImage under this name. The
+unpacked tar.gz never updates itself.

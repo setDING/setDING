@@ -1,19 +1,26 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/generated/app_localizations.dart';
 import '../../platform/http_client.dart';
 import '../../platform/self_update.dart';
 import '../../update/app_update.dart';
+import '../../update/update_providers.dart';
 import '../../util/log.dart';
 import 'dialogs.dart';
 
 const _log = Log('update');
 
-/// Downloads and installs [version] after asking (ADR-0035): the setup closes
-/// setDING, installs the new version and starts it again. Never without a
-/// tap, so an update never restarts the app during a performance.
+/// Downloads and installs [version] after asking (ADR-0035, ADR-0038):
+/// setDING closes, the new version is installed and starts again. Never
+/// without a tap, so an update never restarts the app during a performance.
 Future<void> installAppUpdate(BuildContext context, String version) async {
   final l10n = AppLocalizations.of(context);
+  final kind = ProviderScope.containerOf(
+    context,
+    listen: false,
+  ).read(selfUpdateKindProvider);
+  if (kind == null) return;
   final ok = await confirm(
     context,
     title: l10n.appUpdateInstallTitle(version),
@@ -42,14 +49,14 @@ Future<void> installAppUpdate(BuildContext context, String version) async {
   );
   final client = createHttpClient();
   try {
-    final update = await fetchUpdate(client, version);
-    final setup = await downloadVerifiedUpdate(
+    final update = await fetchUpdate(client, version, kind);
+    _log.info('Installing $version (${kind.name})');
+    await installUpdateAndExit(
       client,
       update,
+      kind,
       onProgress: (v) => progress.value = v,
     );
-    _log.info('Installing $version');
-    await runInstallerAndExit(setup);
   } catch (e) {
     _log.warning('Update $version not installed', e);
     navigator.pop();

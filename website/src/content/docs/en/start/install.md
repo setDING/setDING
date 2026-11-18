@@ -36,15 +36,25 @@ app: unpack it and start `setding.exe`. This copy does not update itself.
 
 ## Linux
 
-1. Download `setding-<version>-linux-x64.tar.gz`.
-2. Unpack it and start `setding`.
+1. Download `setding-<version>-linux-x64.AppImage`.
+2. Make it executable (in the file manager under *Properties*, or with
+   `chmod +x setding-*.AppImage`) and start it.
+
+When a new version is available (see [Updates](#updates)), setDING offers
+**Install**. It downloads the new AppImage, replaces the file, closes and starts
+again; your data stays. The file must be in a folder you can write to (e.g. your
+home folder). If the AppImage does not start, FUSE is missing; install your
+distribution's `fuse3` package.
+
+Prefer no AppImage? `setding-<version>-linux-x64.tar.gz` contains the same app:
+unpack it and start `setding`. This copy does not update itself.
 
 ## Updates
 
 setDING checks once a day whether a newer version is available. A dot then
 appears on **Settings**, and **Settings → Storage & info** shows the new version
-with a link to its download page (on Windows with **Install**, if you installed
-setDING with the setup). The hint never appears in live mode.
+with a link to its download page (with **Install** on Windows if you installed
+setDING with the setup, and for the Linux AppImage). The hint never appears in live mode.
 
 ## iOS
 
