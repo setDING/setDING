@@ -49,6 +49,7 @@ class LiveItem {
     this.setTranspose = 0,
     this.setSequence,
     this.setItemId,
+    this.attachmentId,
   }) : type = SetItemType.song,
        label = null;
 
@@ -57,7 +58,8 @@ class LiveItem {
       arrangement = null,
       setTranspose = 0,
       setSequence = null,
-      setItemId = null;
+      setItemId = null,
+      attachmentId = null;
 
   final SetItemType type;
   final SongEntry? song;
@@ -77,6 +79,11 @@ class LiveItem {
 
   /// The set item this entry comes from; null when a single song is played.
   final String? setItemId;
+
+  /// A PDF attachment to show instead of the personal live view choice,
+  /// when an attachment is opened from the song screen (#507). The choice
+  /// itself is not changed.
+  final String? attachmentId;
   final String? label;
 
   LiveItem withSetTranspose(int value) => LiveItem.song(
@@ -85,6 +92,7 @@ class LiveItem {
     setTranspose: value,
     setSequence: setSequence,
     setItemId: setItemId,
+    attachmentId: attachmentId,
   );
 
   /// The song title, or the name of a pause or text item: its own note,
@@ -163,7 +171,13 @@ class LiveScreen extends ConsumerStatefulWidget {
     );
   }
 
-  static Future<void> openSong(BuildContext context, String songId) async {
+  /// Opens a song by itself; [attachmentId] shows that PDF attachment
+  /// instead of the personal live view choice (#507).
+  static Future<void> openSong(
+    BuildContext context,
+    String songId, {
+    String? attachmentId,
+  }) async {
     final container = ProviderScope.containerOf(context, listen: false);
     final song = await container.read(songRepositoryProvider).getSong(songId);
     if (song == null) return;
@@ -173,7 +187,9 @@ class LiveScreen extends ConsumerStatefulWidget {
     await Navigator.push(
       context,
       MaterialPageRoute<void>(
-        builder: (_) => LiveScreen(items: [LiveItem.song(song)]),
+        builder: (_) => LiveScreen(
+          items: [LiveItem.song(song, attachmentId: attachmentId)],
+        ),
       ),
     );
   }
@@ -1423,7 +1439,7 @@ class _LiveItemPage extends ConsumerWidget {
     fitController.fontScale = null;
     final pdf = livePdfFor(
       attachments,
-      overlay.liveView,
+      item.attachmentId ?? overlay.liveView,
       hasChordPro: parsed.hasContent,
     );
     if (pdf != null) {

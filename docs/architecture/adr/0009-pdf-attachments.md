@@ -70,6 +70,7 @@ synced and displayed.
 - 2026-11-15: On web (ADR-0018, accepted) attachments are fetched on demand instead of preloaded; the apps keep all attachments offline.
 - 2026-11-16: On-demand loading implemented (#27): the web sync skips file downloads; the live view downloads a PDF when it is opened (one shared download per file, kept in memory until signing out) and explains a failed download.
 - 2026-11-16: Two pages side by side in landscape implemented (#150): live mode shows spreads fitted to the screen and turns a spread at a time; portrait keeps the scrollable viewer with one page per turn.
+- 2026-11-18: Attachments can be opened from the song screen without changing the live view choice (#507): a PDF opens in live mode for that song only, an image in a full-screen, zoomable view.
 
 ## Open points
 

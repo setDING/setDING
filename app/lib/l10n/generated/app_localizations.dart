@@ -3542,6 +3542,18 @@ abstract class AppLocalizations {
   /// **'Das PDF konnte nicht vom Server geladen werden. Prüfe die Verbindung und öffne den Song erneut.'**
   String get pdfLoadFailed;
 
+  /// No description provided for @openAttachment.
+  ///
+  /// In de, this message translates to:
+  /// **'Anzeigen'**
+  String get openAttachment;
+
+  /// No description provided for @imageMissing.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Bild ist nicht auf diesem Gerät.'**
+  String get imageMissing;
+
   /// No description provided for @syncMissingFiles.
   ///
   /// In de, this message translates to:

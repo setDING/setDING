@@ -851,6 +851,8 @@
   "accountErrorConflict": "The song was changed on the server in the meantime.",
   "pdfMissing": "The PDF is not on this device yet. It is downloaded with the next sync.",
   "pdfLoadFailed": "The PDF could not be loaded from the server. Check the connection and open the song again.",
+  "openAttachment": "Open",
+  "imageMissing": "The image is not on this device.",
   "syncMissingFiles": "{count, plural, =1{1 PDF is still being downloaded.} other{{count} PDFs are still being downloaded.}}",
   "@syncMissingFiles": {
     "placeholders": {

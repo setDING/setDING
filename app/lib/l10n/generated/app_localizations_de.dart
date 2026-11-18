@@ -2014,6 +2014,12 @@ class AppLocalizationsDe extends AppLocalizations {
       'Das PDF konnte nicht vom Server geladen werden. Prüfe die Verbindung und öffne den Song erneut.';
 
   @override
+  String get openAttachment => 'Anzeigen';
+
+  @override
+  String get imageMissing => 'Das Bild ist nicht auf diesem Gerät.';
+
+  @override
   String syncMissingFiles(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

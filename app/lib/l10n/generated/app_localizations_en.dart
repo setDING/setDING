@@ -1999,6 +1999,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'The PDF could not be loaded from the server. Check the connection and open the song again.';
 
   @override
+  String get openAttachment => 'Open';
+
+  @override
+  String get imageMissing => 'The image is not on this device.';
+
+  @override
   String syncMissingFiles(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
