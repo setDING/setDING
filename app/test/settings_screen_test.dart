@@ -14,6 +14,24 @@ void main() {
     return app;
   }
 
+  /// Scrolls the category list (the first list) until [finder] is built
+  /// and fully visible: not all categories fit on a landscape tablet.
+  Future<void> reveal(
+    WidgetTester tester,
+    Finder finder, {
+    double delta = 100,
+  }) async {
+    if (finder.evaluate().isEmpty) {
+      await tester.scrollUntilVisible(
+        finder,
+        delta,
+        scrollable: find.byType(Scrollable).first,
+      );
+    }
+    await tester.ensureVisible(finder);
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('wide: categories on the left, the selected one next to them', (
     tester,
   ) async {
@@ -21,8 +39,15 @@ void main() {
     final app = await pumpSettings(tester);
 
     for (final c in SettingsCategory.values) {
-      expect(find.byKey(Key('settings-category-${c.name}')), findsOneWidget);
+      final category = find.byKey(Key('settings-category-${c.name}'));
+      await reveal(tester, category);
+      expect(category, findsOneWidget);
     }
+    await reveal(
+      tester,
+      find.byKey(const Key('settings-category-account')),
+      delta: -100,
+    );
     // The account category is shown first.
     expect(find.text('Not signed in'), findsOneWidget);
     expect(find.text('Language'), findsNothing);
@@ -33,6 +58,7 @@ void main() {
     expect(find.text('Theme'), findsOneWidget);
     expect(find.text('Not signed in'), findsNothing);
 
+    await reveal(tester, find.byKey(const Key('settings-category-live')));
     await tester.tap(find.byKey(const Key('settings-category-live')));
     await tester.pumpAndSettle();
     expect(find.text('Fit song to screen'), findsOneWidget);
@@ -65,6 +91,7 @@ void main() {
     expect(find.textContaining('After signing in'), findsOneWidget);
     expect(find.text('Font size'), findsNothing);
 
+    await reveal(tester, live);
     await tester.tap(live);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('settings-scope-device')), findsOneWidget);

@@ -2409,4 +2409,192 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stampStar => 'Star';
+
+  @override
+  String get settingsSectionSongDisplay => 'Song display';
+
+  @override
+  String get settingsCategorySongDisplayHint =>
+      'Styles per section: chords, lyrics, headings, bars';
+
+  @override
+  String get songDisplayPreview => 'Preview';
+
+  @override
+  String get songDisplayPreset => 'Preset';
+
+  @override
+  String get songDisplayPresetClassic => 'Classic';
+
+  @override
+  String get songDisplayPresetColorCoded => 'Colour-coded';
+
+  @override
+  String get songDisplayPresetChorusFocus => 'Chorus focus';
+
+  @override
+  String get songDisplayPresetSinger => 'Vocals';
+
+  @override
+  String get songDisplayPresetGuitar => 'Guitar';
+
+  @override
+  String get songDisplayPresetMinimal => 'Minimal';
+
+  @override
+  String get songDisplayPresetCustom => 'Custom';
+
+  @override
+  String get songDisplayDiscardTitle => 'Discard custom styles?';
+
+  @override
+  String songDisplayDiscardMessage(String name) {
+    return 'The preset “$name” replaces your custom styles.';
+  }
+
+  @override
+  String get songDisplayDiscard => 'Discard';
+
+  @override
+  String get songDisplaySection => 'Section';
+
+  @override
+  String get songDisplayTypeStandard => 'Standard';
+
+  @override
+  String get songDisplayTypeIntro => 'Intro';
+
+  @override
+  String get songDisplayTypeVerse => 'Verse';
+
+  @override
+  String get songDisplayTypePreChorus => 'Pre-chorus';
+
+  @override
+  String get songDisplayTypeChorus => 'Chorus';
+
+  @override
+  String get songDisplayTypeBridge => 'Bridge';
+
+  @override
+  String get songDisplayTypeInterlude => 'Interlude';
+
+  @override
+  String get songDisplayTypeOutro => 'Outro';
+
+  @override
+  String get songDisplayStandardHint =>
+      'Base style for every section without its own style and for sections that are not recognised (e.g. tabs, grids, custom names).';
+
+  @override
+  String get songDisplayStyle => 'Style';
+
+  @override
+  String get songDisplayOwnStyle => 'Own style';
+
+  @override
+  String songDisplayLike(String name) {
+    return 'Like $name';
+  }
+
+  @override
+  String songDisplayInheritsHint(String chain) {
+    return 'Takes everything from: $chain. Changes there apply here too.';
+  }
+
+  @override
+  String get songDisplayChords => 'Chords';
+
+  @override
+  String get songDisplayLyrics => 'Lyrics';
+
+  @override
+  String get songDisplayHeading => 'Heading';
+
+  @override
+  String get songDisplayBar => 'Indent bar';
+
+  @override
+  String get songDisplayBold => 'Bold';
+
+  @override
+  String get songDisplayItalic => 'Italic';
+
+  @override
+  String get songDisplaySize => 'Size';
+
+  @override
+  String get songDisplayColor => 'Colour';
+
+  @override
+  String get songDisplayShowHeading => 'Show heading';
+
+  @override
+  String get songDisplayShowBar => 'Show bar';
+
+  @override
+  String get songDisplayBarWidth => 'Width';
+
+  @override
+  String get songDisplayIndent => 'Indent';
+
+  @override
+  String get songDisplayTint => 'Tint background';
+
+  @override
+  String get songDisplaySizeSmall => 'S';
+
+  @override
+  String get songDisplaySizeMedium => 'M';
+
+  @override
+  String get songDisplaySizeLarge => 'L';
+
+  @override
+  String get songDisplaySizeExtraLarge => 'XL';
+
+  @override
+  String get songDisplayBarThin => 'Thin';
+
+  @override
+  String get songDisplayBarMedium => 'Medium';
+
+  @override
+  String get songDisplayBarWide => 'Wide';
+
+  @override
+  String get songDisplayIndentNone => 'None';
+
+  @override
+  String get songDisplayIndentNormal => 'Normal';
+
+  @override
+  String get songDisplayIndentLarge => 'Large';
+
+  @override
+  String get songColorAuto => 'Automatic';
+
+  @override
+  String get songColorBlue => 'Blue';
+
+  @override
+  String get songColorAmber => 'Amber';
+
+  @override
+  String get songColorRed => 'Red';
+
+  @override
+  String get songColorGreen => 'Green';
+
+  @override
+  String get songColorTeal => 'Teal';
+
+  @override
+  String get songColorPurple => 'Purple';
+
+  @override
+  String get songColorPink => 'Pink';
+
+  @override
+  String get songColorGrey => 'Grey';
 }

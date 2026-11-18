@@ -4135,6 +4135,366 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Stern'**
   String get stampStar;
+
+  /// No description provided for @settingsSectionSongDisplay.
+  ///
+  /// In de, this message translates to:
+  /// **'Songdarstellung'**
+  String get settingsSectionSongDisplay;
+
+  /// No description provided for @settingsCategorySongDisplayHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Stile pro Abschnitt: Akkorde, Text, Überschriften, Balken'**
+  String get settingsCategorySongDisplayHint;
+
+  /// No description provided for @songDisplayPreview.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorschau'**
+  String get songDisplayPreview;
+
+  /// No description provided for @songDisplayPreset.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorlage'**
+  String get songDisplayPreset;
+
+  /// No description provided for @songDisplayPresetClassic.
+  ///
+  /// In de, this message translates to:
+  /// **'Klassisch'**
+  String get songDisplayPresetClassic;
+
+  /// No description provided for @songDisplayPresetColorCoded.
+  ///
+  /// In de, this message translates to:
+  /// **'Farbcodiert'**
+  String get songDisplayPresetColorCoded;
+
+  /// No description provided for @songDisplayPresetChorusFocus.
+  ///
+  /// In de, this message translates to:
+  /// **'Refrain im Fokus'**
+  String get songDisplayPresetChorusFocus;
+
+  /// No description provided for @songDisplayPresetSinger.
+  ///
+  /// In de, this message translates to:
+  /// **'Gesang'**
+  String get songDisplayPresetSinger;
+
+  /// No description provided for @songDisplayPresetGuitar.
+  ///
+  /// In de, this message translates to:
+  /// **'Gitarre'**
+  String get songDisplayPresetGuitar;
+
+  /// No description provided for @songDisplayPresetMinimal.
+  ///
+  /// In de, this message translates to:
+  /// **'Minimal'**
+  String get songDisplayPresetMinimal;
+
+  /// No description provided for @songDisplayPresetCustom.
+  ///
+  /// In de, this message translates to:
+  /// **'Eigene'**
+  String get songDisplayPresetCustom;
+
+  /// No description provided for @songDisplayDiscardTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Eigene Stile verwerfen?'**
+  String get songDisplayDiscardTitle;
+
+  /// No description provided for @songDisplayDiscardMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Vorlage «{name}» ersetzt deine angepassten Stile.'**
+  String songDisplayDiscardMessage(String name);
+
+  /// No description provided for @songDisplayDiscard.
+  ///
+  /// In de, this message translates to:
+  /// **'Verwerfen'**
+  String get songDisplayDiscard;
+
+  /// No description provided for @songDisplaySection.
+  ///
+  /// In de, this message translates to:
+  /// **'Abschnitt'**
+  String get songDisplaySection;
+
+  /// No description provided for @songDisplayTypeStandard.
+  ///
+  /// In de, this message translates to:
+  /// **'Standard'**
+  String get songDisplayTypeStandard;
+
+  /// No description provided for @songDisplayTypeIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Intro'**
+  String get songDisplayTypeIntro;
+
+  /// No description provided for @songDisplayTypeVerse.
+  ///
+  /// In de, this message translates to:
+  /// **'Strophe'**
+  String get songDisplayTypeVerse;
+
+  /// No description provided for @songDisplayTypePreChorus.
+  ///
+  /// In de, this message translates to:
+  /// **'Pre-Chorus'**
+  String get songDisplayTypePreChorus;
+
+  /// No description provided for @songDisplayTypeChorus.
+  ///
+  /// In de, this message translates to:
+  /// **'Refrain'**
+  String get songDisplayTypeChorus;
+
+  /// No description provided for @songDisplayTypeBridge.
+  ///
+  /// In de, this message translates to:
+  /// **'Bridge'**
+  String get songDisplayTypeBridge;
+
+  /// No description provided for @songDisplayTypeInterlude.
+  ///
+  /// In de, this message translates to:
+  /// **'Zwischenspiel'**
+  String get songDisplayTypeInterlude;
+
+  /// No description provided for @songDisplayTypeOutro.
+  ///
+  /// In de, this message translates to:
+  /// **'Outro'**
+  String get songDisplayTypeOutro;
+
+  /// No description provided for @songDisplayStandardHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Grundstil für alle Abschnitte ohne eigenen Stil und für Abschnitte, die nicht erkannt werden (z. B. Tab, Grid, eigene Namen).'**
+  String get songDisplayStandardHint;
+
+  /// No description provided for @songDisplayStyle.
+  ///
+  /// In de, this message translates to:
+  /// **'Stil'**
+  String get songDisplayStyle;
+
+  /// No description provided for @songDisplayOwnStyle.
+  ///
+  /// In de, this message translates to:
+  /// **'Eigener Stil'**
+  String get songDisplayOwnStyle;
+
+  /// No description provided for @songDisplayLike.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie {name}'**
+  String songDisplayLike(String name);
+
+  /// No description provided for @songDisplayInheritsHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Übernimmt alles von: {chain}. Änderungen dort wirken auch hier.'**
+  String songDisplayInheritsHint(String chain);
+
+  /// No description provided for @songDisplayChords.
+  ///
+  /// In de, this message translates to:
+  /// **'Akkorde'**
+  String get songDisplayChords;
+
+  /// No description provided for @songDisplayLyrics.
+  ///
+  /// In de, this message translates to:
+  /// **'Liedtext'**
+  String get songDisplayLyrics;
+
+  /// No description provided for @songDisplayHeading.
+  ///
+  /// In de, this message translates to:
+  /// **'Überschrift'**
+  String get songDisplayHeading;
+
+  /// No description provided for @songDisplayBar.
+  ///
+  /// In de, this message translates to:
+  /// **'Einrückungsbalken'**
+  String get songDisplayBar;
+
+  /// No description provided for @songDisplayBold.
+  ///
+  /// In de, this message translates to:
+  /// **'Fett'**
+  String get songDisplayBold;
+
+  /// No description provided for @songDisplayItalic.
+  ///
+  /// In de, this message translates to:
+  /// **'Kursiv'**
+  String get songDisplayItalic;
+
+  /// No description provided for @songDisplaySize.
+  ///
+  /// In de, this message translates to:
+  /// **'Grösse'**
+  String get songDisplaySize;
+
+  /// No description provided for @songDisplayColor.
+  ///
+  /// In de, this message translates to:
+  /// **'Farbe'**
+  String get songDisplayColor;
+
+  /// No description provided for @songDisplayShowHeading.
+  ///
+  /// In de, this message translates to:
+  /// **'Überschrift anzeigen'**
+  String get songDisplayShowHeading;
+
+  /// No description provided for @songDisplayShowBar.
+  ///
+  /// In de, this message translates to:
+  /// **'Balken anzeigen'**
+  String get songDisplayShowBar;
+
+  /// No description provided for @songDisplayBarWidth.
+  ///
+  /// In de, this message translates to:
+  /// **'Breite'**
+  String get songDisplayBarWidth;
+
+  /// No description provided for @songDisplayIndent.
+  ///
+  /// In de, this message translates to:
+  /// **'Einrückung'**
+  String get songDisplayIndent;
+
+  /// No description provided for @songDisplayTint.
+  ///
+  /// In de, this message translates to:
+  /// **'Hintergrund tönen'**
+  String get songDisplayTint;
+
+  /// No description provided for @songDisplaySizeSmall.
+  ///
+  /// In de, this message translates to:
+  /// **'S'**
+  String get songDisplaySizeSmall;
+
+  /// No description provided for @songDisplaySizeMedium.
+  ///
+  /// In de, this message translates to:
+  /// **'M'**
+  String get songDisplaySizeMedium;
+
+  /// No description provided for @songDisplaySizeLarge.
+  ///
+  /// In de, this message translates to:
+  /// **'L'**
+  String get songDisplaySizeLarge;
+
+  /// No description provided for @songDisplaySizeExtraLarge.
+  ///
+  /// In de, this message translates to:
+  /// **'XL'**
+  String get songDisplaySizeExtraLarge;
+
+  /// No description provided for @songDisplayBarThin.
+  ///
+  /// In de, this message translates to:
+  /// **'Dünn'**
+  String get songDisplayBarThin;
+
+  /// No description provided for @songDisplayBarMedium.
+  ///
+  /// In de, this message translates to:
+  /// **'Mittel'**
+  String get songDisplayBarMedium;
+
+  /// No description provided for @songDisplayBarWide.
+  ///
+  /// In de, this message translates to:
+  /// **'Breit'**
+  String get songDisplayBarWide;
+
+  /// No description provided for @songDisplayIndentNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine'**
+  String get songDisplayIndentNone;
+
+  /// No description provided for @songDisplayIndentNormal.
+  ///
+  /// In de, this message translates to:
+  /// **'Normal'**
+  String get songDisplayIndentNormal;
+
+  /// No description provided for @songDisplayIndentLarge.
+  ///
+  /// In de, this message translates to:
+  /// **'Gross'**
+  String get songDisplayIndentLarge;
+
+  /// No description provided for @songColorAuto.
+  ///
+  /// In de, this message translates to:
+  /// **'Automatisch'**
+  String get songColorAuto;
+
+  /// No description provided for @songColorBlue.
+  ///
+  /// In de, this message translates to:
+  /// **'Blau'**
+  String get songColorBlue;
+
+  /// No description provided for @songColorAmber.
+  ///
+  /// In de, this message translates to:
+  /// **'Bernstein'**
+  String get songColorAmber;
+
+  /// No description provided for @songColorRed.
+  ///
+  /// In de, this message translates to:
+  /// **'Rot'**
+  String get songColorRed;
+
+  /// No description provided for @songColorGreen.
+  ///
+  /// In de, this message translates to:
+  /// **'Grün'**
+  String get songColorGreen;
+
+  /// No description provided for @songColorTeal.
+  ///
+  /// In de, this message translates to:
+  /// **'Türkis'**
+  String get songColorTeal;
+
+  /// No description provided for @songColorPurple.
+  ///
+  /// In de, this message translates to:
+  /// **'Violett'**
+  String get songColorPurple;
+
+  /// No description provided for @songColorPink.
+  ///
+  /// In de, this message translates to:
+  /// **'Pink'**
+  String get songColorPink;
+
+  /// No description provided for @songColorGrey.
+  ///
+  /// In de, this message translates to:
+  /// **'Grau'**
+  String get songColorGrey;
 }
 
 class _AppLocalizationsDelegate

@@ -11,12 +11,21 @@ import '../util/app_version.dart';
 import '../util/log.dart';
 import 'account/account_section.dart';
 import 'settings/latency_calibration.dart';
+import 'settings/song_display_settings.dart';
 import 'theme.dart';
 import 'widgets/breakpoint_builder.dart';
 import 'widgets/dialogs.dart';
 
 /// The categories of the settings screen, in order.
-enum SettingsCategory { account, general, musician, display, live, about }
+enum SettingsCategory {
+  account,
+  general,
+  musician,
+  display,
+  songDisplay,
+  live,
+  about,
+}
 
 /// Settings (layer 4, ADR-0006), grouped into categories: the account on
 /// top, then the personal settings (synced with the account) and the
@@ -94,7 +103,8 @@ extension on SettingsCategory {
     SettingsCategory.account => null,
     SettingsCategory.general ||
     SettingsCategory.musician ||
-    SettingsCategory.display => SettingSyncScope.personal,
+    SettingsCategory.display ||
+    SettingsCategory.songDisplay => SettingSyncScope.personal,
     SettingsCategory.live || SettingsCategory.about => SettingSyncScope.device,
   };
 
@@ -103,6 +113,7 @@ extension on SettingsCategory {
     SettingsCategory.general => Icons.tune,
     SettingsCategory.musician => Icons.music_note_outlined,
     SettingsCategory.display => Icons.text_fields,
+    SettingsCategory.songDisplay => Icons.palette_outlined,
     SettingsCategory.live => Icons.play_circle_outline,
     SettingsCategory.about => Icons.info_outline,
   };
@@ -112,6 +123,7 @@ extension on SettingsCategory {
     SettingsCategory.general => l10n.settingsSectionGeneral,
     SettingsCategory.musician => l10n.settingsSectionMusician,
     SettingsCategory.display => l10n.settingsSectionDisplay,
+    SettingsCategory.songDisplay => l10n.settingsSectionSongDisplay,
     SettingsCategory.live => l10n.settingsSectionLive,
     SettingsCategory.about => l10n.settingsSectionStorage,
   };
@@ -121,6 +133,7 @@ extension on SettingsCategory {
     SettingsCategory.general => l10n.settingsCategoryGeneralHint,
     SettingsCategory.musician => l10n.settingsCategoryMusicianHint,
     SettingsCategory.display => l10n.settingsCategoryDisplayHint,
+    SettingsCategory.songDisplay => l10n.settingsCategorySongDisplayHint,
     SettingsCategory.live => l10n.settingsCategoryLiveHint,
     SettingsCategory.about => l10n.settingsCategoryAboutHint,
   };
@@ -232,6 +245,7 @@ class _CategoryContent extends ConsumerWidget {
           onChanged: (v) => notifier.update((s) => s.copyWith(accent: v)),
         ),
       ],
+      SettingsCategory.songDisplay => [const SongDisplaySettings()],
       SettingsCategory.musician => [
         _InstrumentTile(settings: s, notifier: notifier),
         ListTile(
