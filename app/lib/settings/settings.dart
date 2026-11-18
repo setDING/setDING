@@ -57,6 +57,16 @@ enum ClickStart {
 /// How long the click plays (ADR-0026).
 enum ClickDuration { wholeSong, countIn }
 
+/// What the beat and the click do when the app goes to the background
+/// (minimised, another app opened, the screen locked; ADR-0026, #424).
+enum ClickInBackground {
+  /// They stop; the beat is started again by hand.
+  stop,
+
+  /// They keep playing (e.g. to look at another app during a song).
+  keepPlaying,
+}
+
 /// Sound of the click (ADR-0026), synthesised by the click engine.
 enum ClickSound { click, woodblock, beep }
 
@@ -112,6 +122,7 @@ class AppSettings {
     this.click,
     this.clickStart,
     this.clickDuration = ClickDuration.wholeSong,
+    this.clickInBackground = ClickInBackground.stop,
     this.countInBars = 2,
     this.clickVolume = 0.8,
     this.clickAccent = true,
@@ -184,6 +195,7 @@ class AppSettings {
   /// Automatic or manual start.
   final ClickStart? clickStart;
   final ClickDuration clickDuration;
+  final ClickInBackground clickInBackground;
 
   /// Bars of the count-in: 0 (none), 1 or 2.
   final int countInBars;
@@ -280,6 +292,7 @@ class AppSettings {
     bool? click,
     ClickStart? clickStart,
     ClickDuration? clickDuration,
+    ClickInBackground? clickInBackground,
     int? countInBars,
     double? clickVolume,
     bool? clickAccent,
@@ -313,6 +326,7 @@ class AppSettings {
     click: click ?? this.click,
     clickStart: clickStart ?? this.clickStart,
     clickDuration: clickDuration ?? this.clickDuration,
+    clickInBackground: clickInBackground ?? this.clickInBackground,
     countInBars: countInBars ?? this.countInBars,
     clickVolume: clickVolume ?? this.clickVolume,
     clickAccent: clickAccent ?? this.clickAccent,
@@ -353,6 +367,7 @@ class AppSettings {
     'click': SettingSyncScope.personal,
     'clickStart': SettingSyncScope.personal,
     'clickDuration': SettingSyncScope.personal,
+    'clickInBackground': SettingSyncScope.personal,
     'countInBars': SettingSyncScope.personal,
     'clickAccent': SettingSyncScope.personal,
     'clickSound': SettingSyncScope.personal,
@@ -394,6 +409,7 @@ class AppSettings {
     'click': ?click,
     'clickStart': ?clickStart?.name,
     'clickDuration': clickDuration.name,
+    'clickInBackground': clickInBackground.name,
     'countInBars': countInBars,
     'clickVolume': clickVolume,
     'clickAccent': clickAccent,
@@ -472,6 +488,11 @@ class AppSettings {
         ClickDuration.values,
         'clickDuration',
         d.clickDuration,
+      ),
+      clickInBackground: pick(
+        ClickInBackground.values,
+        'clickInBackground',
+        d.clickInBackground,
       ),
       countInBars: (number('countInBars')?.toInt() ?? d.countInBars).clamp(
         0,

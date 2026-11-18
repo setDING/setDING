@@ -775,6 +775,19 @@ class AppLocalizationsDe extends AppLocalizations {
   String get clickDurationCountIn => 'Nur Einzählen';
 
   @override
+  String get settingsClickInBackground => 'Im Hintergrund';
+
+  @override
+  String get settingsClickInBackgroundHint =>
+      'Wenn die App verkleinert, eine andere App geöffnet oder der Bildschirm gesperrt wird.';
+
+  @override
+  String get clickInBackgroundStop => 'Stoppen';
+
+  @override
+  String get clickInBackgroundKeepPlaying => 'Weiterspielen';
+
+  @override
   String get settingsCountIn => 'Einzählen';
 
   @override

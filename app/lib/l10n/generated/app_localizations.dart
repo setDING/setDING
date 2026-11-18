@@ -1436,6 +1436,30 @@ abstract class AppLocalizations {
   /// **'Nur Einzählen'**
   String get clickDurationCountIn;
 
+  /// No description provided for @settingsClickInBackground.
+  ///
+  /// In de, this message translates to:
+  /// **'Im Hintergrund'**
+  String get settingsClickInBackground;
+
+  /// No description provided for @settingsClickInBackgroundHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Wenn die App verkleinert, eine andere App geöffnet oder der Bildschirm gesperrt wird.'**
+  String get settingsClickInBackgroundHint;
+
+  /// No description provided for @clickInBackgroundStop.
+  ///
+  /// In de, this message translates to:
+  /// **'Stoppen'**
+  String get clickInBackgroundStop;
+
+  /// No description provided for @clickInBackgroundKeepPlaying.
+  ///
+  /// In de, this message translates to:
+  /// **'Weiterspielen'**
+  String get clickInBackgroundKeepPlaying;
+
   /// No description provided for @settingsCountIn.
   ///
   /// In de, this message translates to:
