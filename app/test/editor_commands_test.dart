@@ -252,7 +252,7 @@ void convertTests() {
     testWidgets('a hint offers the conversion', (tester) async {
       final (app, controller) = await pump(tester);
       expect(
-        find.text('A block of CCLI bar lines can be shown as a chord grid.'),
+        find.text('A block of bar lines can be shown as a chord grid.'),
         findsOneWidget,
       );
       await tester.tap(find.widgetWithText(TextButton, 'Convert'));
@@ -275,7 +275,7 @@ void convertTests() {
       final (app, controller) = await pump(tester);
       await tester.tap(find.text('Lines'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Convert CCLI bar lines to chord grids'));
+      await tester.tap(find.text('Convert bar lines to chord grids'));
       await tester.pumpAndSettle();
       expect(controller.text, converted);
       await app.dispose(tester);

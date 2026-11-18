@@ -1973,13 +1973,13 @@ abstract class AppLocalizations {
   /// No description provided for @convertCcliGrids.
   ///
   /// In de, this message translates to:
-  /// **'CCLI-Taktzeilen in Chord-Grid umwandeln'**
+  /// **'Taktzeilen in Chord-Grid umwandeln'**
   String get convertCcliGrids;
 
   /// No description provided for @ccliGridsHint.
   ///
   /// In de, this message translates to:
-  /// **'{count, plural, =1{Ein Block mit CCLI-Taktzeilen kann} other{{count} Blöcke mit CCLI-Taktzeilen können}} als Chord-Grid dargestellt werden.'**
+  /// **'{count, plural, =1{Ein Block mit Taktzeilen kann} other{{count} Blöcke mit Taktzeilen können}} als Chord-Grid dargestellt werden.'**
   String ccliGridsHint(int count);
 
   /// No description provided for @hideHint.

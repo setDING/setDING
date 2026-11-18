@@ -1076,15 +1076,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get convert => 'Umwandeln';
 
   @override
-  String get convertCcliGrids => 'CCLI-Taktzeilen in Chord-Grid umwandeln';
+  String get convertCcliGrids => 'Taktzeilen in Chord-Grid umwandeln';
 
   @override
   String ccliGridsHint(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count Blöcke mit CCLI-Taktzeilen können',
-      one: 'Ein Block mit CCLI-Taktzeilen kann',
+      other: '$count Blöcke mit Taktzeilen können',
+      one: 'Ein Block mit Taktzeilen kann',
     );
     return '$_temp0 als Chord-Grid dargestellt werden.';
   }

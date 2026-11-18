@@ -499,8 +499,8 @@
   "convertChordsOverLyrics": "Akkorde über Text umwandeln",
   "pastedChordsOverLyrics": "Der eingefügte Text hat Akkorde über dem Liedtext.",
   "convert": "Umwandeln",
-  "convertCcliGrids": "CCLI-Taktzeilen in Chord-Grid umwandeln",
-  "ccliGridsHint": "{count, plural, =1{Ein Block mit CCLI-Taktzeilen kann} other{{count} Blöcke mit CCLI-Taktzeilen können}} als Chord-Grid dargestellt werden.",
+  "convertCcliGrids": "Taktzeilen in Chord-Grid umwandeln",
+  "ccliGridsHint": "{count, plural, =1{Ein Block mit Taktzeilen kann} other{{count} Blöcke mit Taktzeilen können}} als Chord-Grid dargestellt werden.",
   "@ccliGridsHint": {
     "placeholders": {
       "count": {
