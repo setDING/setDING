@@ -270,4 +270,45 @@ void main() {
       await app.dispose(tester);
     });
   });
+
+  // In the real app bar of a set on a phone, the icon of the icon-only live
+  // button is onPrimary on primary, also in the dark theme (#450).
+  testWidgets('narrow, dark: the live button icon is readable', (tester) async {
+    tester.view.physicalSize = const Size(400, 860);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'themeMode': 'dark'},
+    );
+    await tester.runAsync(() async {
+      final song = await app.songs.createSong(
+        source: '{title: Opener}\n[C]One',
+      );
+      final set = await app.sets.createSet(name: 'Gig');
+      await app.sets.addSongs(set, [song]);
+    });
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Gig'));
+    await tester.pumpAndSettle();
+
+    final button = find.byKey(const Key('play-live'));
+    expect(tester.widget(button), isA<IconButton>());
+    final scheme = Theme.of(tester.element(button)).colorScheme;
+    expect(scheme.brightness, Brightness.dark);
+    final background = tester
+        .widget<Material>(
+          find.descendant(of: button, matching: find.byType(Material)).first,
+        )
+        .color;
+    final icon = tester.widget<RichText>(
+      find.descendant(
+        of: find.byIcon(Icons.play_arrow),
+        matching: find.byType(RichText),
+      ),
+    );
+    expect(background, scheme.primary);
+    expect(icon.text.style?.color, scheme.onPrimary);
+    await app.dispose(tester);
+  });
 }
