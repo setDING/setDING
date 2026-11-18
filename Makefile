@@ -10,6 +10,7 @@
 #   make backend    start a local PocketBase with the repository's schema and hooks
 #   make perf       measure performance on a USB-connected Android device
 #   make apk        build an Android APK for manual installation (sideloading)
+#   make android-install  install the local build as "setDING Beta" next to a release
 #   make android-keystore  create the Android release key (owner, once)
 #   make release    build the Linux release package (runs on any x86-64 Linux)
 #   make site       build the website and user documentation (website/, ADR-0030)
@@ -38,6 +39,11 @@ ADB         ?= $(ANDROID_HOME)/platform-tools/adb
 APK_VERSION := $(shell sed -n 's/^version: *\([^+]*\).*/\1/p' $(APP)/pubspec.yaml)
 APK_COMMIT  := $(shell git -C $(ROOT) rev-parse --short HEAD 2>/dev/null || echo unknown)
 APK         := $(APP)/build/setding-$(APK_VERSION)-$(APK_COMMIT).apk
+# Beta build (make android-install): own application ID app.setding.beta, so it is
+# installed next to a release installation with its own data. DEVICE=<id> picks a
+# device when several are connected; BETA_MODE=debug|profile|release.
+BETA_MODE   ?= release
+BETA_APK    := $(APP)/build/app/outputs/flutter-apk/app-$(BETA_MODE).apk
 
 # Flutter version used for development; CI reads it from here
 # (.github/workflows/ci.yml). CI_IMAGE (tool/ci/Dockerfile) is a local base image
@@ -75,7 +81,7 @@ BACKEND_REGISTRATION ?= open
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := SETDING_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build web web-serve site site-dev deps upgrade apk apk-install android-keystore release release-linux release-check reset data-dir backend check test codegen l10n perf screenshots branding examples doctor clean ci-image \
+.PHONY: help setup dev start build web web-serve site site-dev deps upgrade apk apk-install android-install android-keystore release release-linux release-check reset data-dir backend check test codegen l10n perf screenshots branding examples doctor clean ci-image \
 	server-target server-install server-release server-site server-status server-logs server-backup server-fetch-backup server-founder-invite server-ssh
 
 help: ## Show this help
@@ -113,6 +119,13 @@ apk: ## Build an Android release APK for manual installation (app/build/setding-
 
 apk-install: apk ## Build the APK and install it on a USB-connected device (adb, USB debugging on)
 	$(ADB) install -r $(APK)
+
+android-install: ## Install the local build as "setDING Beta" (app.setding.beta) next to a release on a USB device (DEVICE=<id>)
+	@test -d "$(ANDROID_HOME)" || { echo "Android SDK not found. Install it or set ANDROID_HOME=/path/to/sdk"; exit 1; }
+	@$(ADB) $(if $(DEVICE),-s $(DEVICE)) get-state >/dev/null 2>&1 || { echo "No Android device connected (USB debugging on; DEVICE=<id> for several)"; exit 1; }
+	cd $(APP) && SETDING_ANDROID_BETA=1 $(FLUTTER) build apk --$(BETA_MODE)
+	$(ADB) $(if $(DEVICE),-s $(DEVICE)) install -r $(BETA_APK)
+	$(ADB) $(if $(DEVICE),-s $(DEVICE)) shell monkey -p app.setding.beta -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
 
 android-keystore: ## Create the Android release key and store it as GitHub secrets (owner only, once)
 	$(ROOT)/tool/release/android-keystore.sh $(ANDROID_KEYSTORE)

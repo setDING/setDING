@@ -4,7 +4,7 @@
          here only shows in release builds. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="setDING"
+        android:label="${appLabel}"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
