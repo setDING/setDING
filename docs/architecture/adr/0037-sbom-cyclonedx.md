@@ -94,6 +94,9 @@ platform. The components of an asset are therefore determined from its own build
   the SBOM has none for them.
 - **Windows:** the Visual C++ runtime DLLs shipped next to the app (version and
   hash from the files) and, in the setup's SBOM, Inno Setup.
+- **AppImage** (ADR-0038): the bundle of the tar.gz plus the AppImage type-2
+  runtime (version and hash of the pinned file, MIT) with the libfuse linked
+  into it (LGPL 2.1).
 - **Android:** the Gradle dependencies of `releaseRuntimeClasspath` only (no test
   or debug configurations), `pkg:maven/…`, with licences and hashes, generated in
   the Android job where Gradle already resolves them. Removed from it: the Gradle
@@ -209,6 +212,8 @@ GitHub on the same data, from the repository:
   Native libraries of build hooks and the Windows runtime and installer are
   listed as components; specification 1.6; Gradle dependency submission waits
   for the dependency graph.
+- 2026-11-18: The Linux AppImage (ADR-0038, #504) is a release asset too and gets
+  its own SBOM with the AppImage runtime.
 
 ## Open points
 
