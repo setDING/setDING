@@ -121,6 +121,63 @@ void main() {
     await app.dispose(tester);
   });
 
+  test('grid columns are as wide as their content (#484)', () {
+    final song = parseChordPro(
+      '{start_of_grid}\n'
+      '| G C . . | D Em . . |\n'
+      '| Am7(4) . . . | D . . . |\n'
+      '{end_of_grid}',
+    );
+    // One unit per character.
+    double width(String text, {bool chord = false}) => text.length.toDouble();
+    final formatter = ChordFormatter.forSong(song);
+    final geometry = GridGeometry.of(
+      song.sections.single.lines,
+      formatter,
+      width,
+    );
+    final c = geometry.columns;
+    expect(c.length, 11);
+    expect(c[1], 6 + GridGeometry.cellPadding); // "Am7(4)" over "G"
+    expect(c[2], 1 + GridGeometry.cellPadding); // "C" over an empty cell
+    expect(c[3], GridGeometry.emptyCell); // empty in both rows
+    expect(c[4], GridGeometry.emptyCell);
+    // Both rows are equally wide, so their bars line up.
+    final rows = [
+      for (final line in song.sections.single.lines)
+        if (line is GridLine) line.row,
+    ];
+    expect(
+      geometry.rowWidth(rows.first, formatter, width),
+      geometry.rowWidth(rows.last, formatter, width),
+    );
+  });
+
+  testWidgets('a grid wider than the page is scaled down as a whole', (
+    tester,
+  ) async {
+    final row = List.filled(8, '| Am7(4) . . . ').join();
+    final app = await pumpSong(
+      tester,
+      '{start_of_grid}\n$row|\n| C . . . |\n{end_of_grid}',
+    );
+    // No overflow, and both rows share one scale so the cells line up.
+    expect(tester.takeException(), isNull);
+    final rows = find.byType(GridRowView);
+    expect(rows, findsNWidgets(2));
+    final width = tester.getSize(find.byType(SongBody)).width;
+    expect(tester.getSize(rows.first).width, lessThanOrEqualTo(width));
+    final boxes = find.descendant(of: rows, matching: find.byType(FittedBox));
+    expect(boxes, findsNWidgets(2));
+    final firstBar = find.descendant(of: rows.first, matching: find.text('|'));
+    final secondBar = find.descendant(of: rows.last, matching: find.text('|'));
+    expect(
+      tester.getRect(firstBar.at(1)).left,
+      moreOrLessEquals(tester.getRect(secondBar.at(1)).left, epsilon: 0.5),
+    );
+    await app.dispose(tester);
+  });
+
   testWidgets('chord style with raised extensions', (tester) async {
     final app = await pumpSong(
       tester,

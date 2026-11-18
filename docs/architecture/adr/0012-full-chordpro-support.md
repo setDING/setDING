@@ -164,6 +164,11 @@ Each phase is a separate branch and merge (ADR-0010).
   from the host). The song view lists them in a "Sources" side panel and opens them
   outside the app (`url_launcher`); people who may edit the song add links there
   (`addSourceLink`). Not shown in live mode or on the printable set list.
+- 2026-11-18: Grids are laid out like a table (#484): the n-th element of every row is in
+  column n, each column as wide as its widest element; columns empty in every row stay
+  narrow. This deviates from equal cells in the reference implementation, so that grids
+  with many empty beats (e.g. converted SongSelect bar lines) stay compact. A grid wider
+  than the available width is scaled down as a whole, keeping its columns aligned.
 
 ## Open points
 
