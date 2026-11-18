@@ -220,7 +220,7 @@ Notes:
 | **Phase 1** | Backend, login, bands & roles (several admins, several bands per user), sync of songs, sets and PDF files incl. conflict handling |
 | **Phase 2** ✅ | Web client for management at `app.setding.app` (ADR-0018; done in #27), synced personal overlays (per user, ADR-0020; done in #81, #82) |
 | **Website** | Landing page and user documentation at `setding.app` (ADR-0030, #388): skeleton with first steps and installation; remaining chapters, privacy policy and legal notice follow |
-| **Towards version 1** | Re-enable CI as a required check on every PR and push to `main` (manual-only during early development, ADR-0010), branch protection; release builds for Linux, Android and Windows exist (ADR-0021), Windows installer with in-app updates (ADR-0035), CycloneDX SBOM per release asset (ADR-0037, proposed), iOS open; then release **1.0.0** (ADR-0028) |
+| **Towards version 1** | Re-enable CI as a required check on every PR and push to `main` (manual-only during early development, ADR-0010), branch protection; release builds for Linux, Android and Windows exist (ADR-0021), Windows installer with in-app updates (ADR-0035), CycloneDX SBOM per release asset (ADR-0037), iOS open; then release **1.0.0** (ADR-0028) |
 | **Freehand annotations** ✅ | Personal freehand notes on songs and PDF pages, synced and editable (ADR-0032, implemented in #428) |
 | **Song display styles** ✅ | Personal styles per section type for live mode and the song view (ADR-0033, implemented in #473–#476, #471) |
 | **Later** | Configurable page turner key mapping, band annotations shared with the band (follow-up of ADR-0032), MIDI control |
@@ -311,7 +311,7 @@ See "Open points" in the individual ADRs. The most important:
 29. Why does the Windows app fail to connect when the server is reachable? → Dart on Windows only trusts roots already in the Windows store, which may lack the ISRG roots of Let's Encrypt; the Windows client bundles ISRG Root X1/X2 (ADR-0034, proposed, #489). Open: bundle the newer Let's Encrypt roots once chains without the X2 cross-sign are served
 30. How do people learn about a new version before the server requires it? → ADR-0036 (accepted, #498), implemented in #499: the server reports the release it was deployed from (`latestClientVersion`), installed release builds check it at most daily and show a dot, a settings tile and a one-time SnackBar, never in live mode. Open: a switch to turn it off, release notes in the app
 31. How do Windows users install and update setDING without the "unknown publisher" warning? → Inno Setup installer with in-app updates (ADR-0035, accepted, #494, implemented in #495): the version to install comes from the update check of ADR-0036, the app downloads the setup from the GitHub release, verifies it against `SHA256SUMS` and installs it after a tap; the Microsoft Store was dropped because of its ID verification, code signing needs an identity check too, so SmartScreen warns once at the first install. Open: signing (SignPath), `setding://` links on Windows
-32. Which components are in a release, and are we affected by a vulnerability? → One CycloneDX SBOM per release asset with the application's name, version and the asset's hash (ADR-0037, proposed, #505). listing only shipped components, evaluated on GitHub (Dependabot, dependency review). Open: server SBOM once the server is released, switching on Dependabot
+32. Which components are in a release, and are we affected by a vulnerability? → One CycloneDX SBOM per release asset with the application's name, version and the asset's hash (ADR-0037, accepted, #505). listing only shipped components, evaluated on GitHub (Dependabot, dependency review). Open: server SBOM once the server is released, switching on Dependabot
 
 ## 10. ADR index
 
@@ -352,6 +352,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0034](adr/0034-bundled-root-certificates.md) | Bundled root certificates for the Windows client | Proposed |
 | [0035](adr/0035-windows-installer-self-update.md) | Windows installer with in-app updates | Accepted |
 | [0036](adr/0036-update-check.md) | Unobtrusive update check at the start | Accepted |
-| [0037](adr/0037-sbom-cyclonedx.md) | SBOM in CycloneDX per release artifact | Proposed |
+| [0037](adr/0037-sbom-cyclonedx.md) | SBOM in CycloneDX per release artifact | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.

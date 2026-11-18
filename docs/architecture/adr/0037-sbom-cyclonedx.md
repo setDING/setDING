@@ -1,6 +1,6 @@
 # ADR-0037: SBOM in CycloneDX per release artifact
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-18
 
 ## Context
@@ -161,6 +161,7 @@ GitHub on the same data, from the repository:
   native plugins per platform, Gradle release classpath) instead of the whole
   lock file. Evaluation (vulnerabilities, licences) runs on GitHub. No server SBOM
   while the server is not released.
+- 2026-11-18: Accepted by the owner.
 
 ## Open points
 
