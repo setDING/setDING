@@ -26,6 +26,8 @@ routerAdd("GET", "/api/setding/config", (e) => {
     minClientVersion: require(`${__hooks}/lib/compat.js`).minClientVersion(),
     // Version deployed with make server-release (git workflow section 10).
     serverVersion: require(`${__hooks}/lib/compat.js`).serverVersion(),
+    // Newest app release, for the update hint (ADR-0035).
+    latestClientVersion: require(`${__hooks}/lib/compat.js`).latestClientVersion(),
   });
 });
 

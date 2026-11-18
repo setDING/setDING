@@ -174,6 +174,7 @@ class PocketBaseBackend implements SyncBackend {
           : RegistrationMode.inviteOnly,
       emailVerification: data['emailVerification'] == 'required',
       minClientVersion: data['minClientVersion'] as String?,
+      latestClientVersion: data['latestClientVersion'] as String?,
     );
   }
 

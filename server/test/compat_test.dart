@@ -28,6 +28,8 @@ void main() {
       // Only deploys stamp a version (tool/server/deploy.sh).
       expect(r.json.containsKey('serverVersion'), isTrue);
       expect(r.json['serverVersion'], isNull);
+      expect(r.json.containsKey('latestClientVersion'), isTrue);
+      expect(r.json['latestClientVersion'], isNull);
     });
   });
 
@@ -49,6 +51,29 @@ void main() {
       final r = await pb.guest.send('GET', '/api/setding/config');
       r.expectStatus(200);
       expect(r.json['serverVersion'], '1.2.3');
+      // A release deploy reports the newest app release (ADR-0035).
+      expect(r.json['latestClientVersion'], '1.2.3');
+    });
+  });
+
+  group('server deployed from a working tree', () {
+    late PocketBase pb;
+    final stamp = File('../server/pb_hooks/setding-version.txt');
+
+    setUpAll(() async {
+      stamp.writeAsStringSync('1.2.4-dev+abc1234\n');
+      pb = await PocketBase.start();
+    });
+    tearDownAll(() async {
+      await pb.stop();
+      if (stamp.existsSync()) stamp.deleteSync();
+    });
+
+    test('reports no newest release', () async {
+      final r = await pb.guest.send('GET', '/api/setding/config');
+      r.expectStatus(200);
+      expect(r.json['serverVersion'], '1.2.4-dev+abc1234');
+      expect(r.json['latestClientVersion'], isNull);
     });
   });
 

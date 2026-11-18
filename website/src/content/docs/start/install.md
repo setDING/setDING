@@ -32,6 +32,13 @@ Die App ist nicht signiert. Beim ersten Start warnt Windows SmartScreen; klicke 
 1. Lade `setding-<Version>-linux-x64.tar.gz` herunter.
 2. Entpacke die Datei und starte `setding`.
 
+## Updates
+
+setDING prüft einmal am Tag, ob eine neuere Version verfügbar ist. Dann erscheint
+ein Punkt bei **Einstellungen**, und unter **Einstellungen → Speicher & Info**
+steht die neue Version mit einem Link zur Download-Seite. Im Live-Modus erscheint
+der Hinweis nie.
+
 ## iOS
 
 Folgt später.

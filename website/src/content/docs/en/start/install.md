@@ -32,6 +32,12 @@ The app is not code-signed. On the first start Windows SmartScreen warns; click
 1. Download `setding-<version>-linux-x64.tar.gz`.
 2. Unpack it and start `setding`.
 
+## Updates
+
+setDING checks once a day whether a newer version is available. A dot then
+appears on **Settings**, and **Settings → Storage & info** shows the new version
+with a link to its download page. The hint never appears in live mode.
+
 ## iOS
 
 Coming later.

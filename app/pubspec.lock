@@ -475,10 +475,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_soloud
-      sha256: c30fbcf0e38d59e69602fafd965ed75392ace9ecb22938d99ac96fd0545383b1
+      sha256: d7c2e20c7bf7afdd70d14ed48e741b13f175f0496b92c12eebf3dda455e2581e
       url: "https://pub.dev"
     source: hosted
-    version: "5.3.0"
+    version: "5.3.1"
   flutter_svg:
     dependency: "direct main"
     description:

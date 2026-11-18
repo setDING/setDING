@@ -7,9 +7,9 @@ import '../../platform/reload.dart';
 import '../../sync/auth_providers.dart';
 import '../../sync/sync_backend.dart';
 import '../../sync/sync_controller.dart';
+import '../../sync/update_check.dart' show releasesUrl;
 
-/// Where new versions of the installed apps are published (ADR-0021).
-const releasesUrl = 'https://github.com/tafli/setDING/releases';
+export '../../sync/update_check.dart' show releasesUrl;
 
 /// Whether the server refused this app version (ADR-0029).
 final updateRequiredProvider = Provider<bool>(

@@ -2708,6 +2708,24 @@ abstract class AppLocalizations {
   /// **'Link kopiert.'**
   String get updateRequiredCopied;
 
+  /// No description provided for @updateAvailableTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'setDING {version} ist verfügbar'**
+  String updateAvailableTitle(String version);
+
+  /// No description provided for @updateAvailableDetails.
+  ///
+  /// In de, this message translates to:
+  /// **'Details'**
+  String get updateAvailableDetails;
+
+  /// No description provided for @updateAvailableInstalled.
+  ///
+  /// In de, this message translates to:
+  /// **'Installiert: {current}.'**
+  String updateAvailableInstalled(String current);
+
   /// No description provided for @settingsServer.
   ///
   /// In de, this message translates to:

@@ -2,11 +2,13 @@ import 'package:chordpro/chordpro.dart' hide Key;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/generated/app_localizations.dart';
 import '../providers.dart';
 import '../settings/settings.dart';
 import '../sync/auth_providers.dart';
+import '../sync/update_check.dart';
 import '../util/app_version.dart';
 import '../util/log.dart';
 import 'account/account_section.dart';
@@ -167,6 +169,7 @@ class _CategoryList extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final narrow = selected == null;
     final signedIn = ref.watch(authProvider.select((u) => u != null));
+    final update = ref.watch(updateCheckProvider) != null;
     final items = <Widget>[];
     SettingSyncScope? group;
     for (final c in SettingsCategory.values) {
@@ -178,7 +181,10 @@ class _CategoryList extends ConsumerWidget {
       items.add(
         ListTile(
           key: Key('settings-category-${c.name}'),
-          leading: Icon(c.icon),
+          leading: Badge(
+            isLabelVisible: update && c == SettingsCategory.about,
+            child: Icon(c.icon),
+          ),
           title: Text(c.title(l10n)),
           subtitle: Text(c.hint(l10n)),
           trailing: narrow ? const Icon(Icons.chevron_right) : null,
@@ -666,8 +672,28 @@ class _AboutTiles extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final usage = ref.watch(storageUsageProvider).value;
     final version = ref.watch(appVersionProvider).value;
+    final update = ref.watch(updateCheckProvider);
+    final current = ref.watch(clientVersionProvider);
     return Column(
       children: [
+        // A newer release (ADR-0035).
+        if (update != null)
+          ListTile(
+            key: const Key('update-available'),
+            leading: const Icon(Icons.system_update),
+            title: Text(l10n.updateAvailableTitle(update)),
+            subtitle: Text(
+              [
+                if (current != null) l10n.updateAvailableInstalled(current),
+                l10n.updateRequiredHowTo,
+              ].join(' '),
+            ),
+            trailing: const Icon(Icons.open_in_new),
+            onTap: () => launchUrl(
+              releasePageUrl(update),
+              mode: LaunchMode.externalApplication,
+            ),
+          ),
         ListTile(
           leading: const Icon(Icons.sd_storage_outlined),
           title: Text(l10n.settingsStorageUsed(formatBytes(usage ?? 0))),

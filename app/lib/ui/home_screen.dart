@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/generated/app_localizations.dart';
 import '../sync/sync_controller.dart';
+import '../sync/update_check.dart';
 import 'sets/sets_screen.dart';
 import 'settings_screen.dart';
 import 'songs/songs_screen.dart';
@@ -24,6 +26,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   static const _pages = [SetsScreen(), SongsScreen(), SettingsScreen()];
 
+  /// How long the hint about a newer release stays (ADR-0035).
+  static const _updateHintDuration = Duration(seconds: 6);
+
+  @override
+  void initState() {
+    super.initState();
+    // A newer release (ADR-0035): one short hint per version. Also for an
+    // update already known from an earlier start.
+    ref.listenManual(updateCheckProvider, (_, version) {
+      if (version == null) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _notify(version));
+    }, fireImmediately: true);
+  }
+
+  /// Shows the hint for [version] once. Only while the main navigation is on
+  /// top, so never in live mode or while editing; otherwise on a later start.
+  void _notify(String version) {
+    if (!mounted || !(ModalRoute.of(context)?.isCurrent ?? true)) return;
+    final check = ref.read(updateCheckProvider.notifier);
+    if (!check.shouldNotify(version)) return;
+    check.markNotified(version);
+    final l10n = AppLocalizations.of(context);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          key: const Key('update-available-snackbar'),
+          // Goes away by itself, despite the action: a hint, not a question.
+          persist: false,
+          duration: _updateHintDuration,
+          content: Text(l10n.updateAvailableTitle(version)),
+          action: SnackBarAction(
+            label: l10n.updateAvailableDetails,
+            onPressed: () => launchUrl(
+              releasePageUrl(version),
+              mode: LaunchMode.externalApplication,
+            ),
+          ),
+        ),
+      );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -34,11 +78,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         showMessage(context, l10n.settingsTakenOver);
       }
     });
+    // A dot on the settings, where the update is described (ADR-0035).
+    final update = ref.watch(updateCheckProvider) != null;
     final destinations = [
-      (Icons.queue_music_outlined, Icons.queue_music, l10n.navSets),
-      (Icons.library_music_outlined, Icons.library_music, l10n.navSongs),
-      (Icons.settings_outlined, Icons.settings, l10n.navSettings),
+      (Icons.queue_music_outlined, Icons.queue_music, l10n.navSets, false),
+      (Icons.library_music_outlined, Icons.library_music, l10n.navSongs, false),
+      (Icons.settings_outlined, Icons.settings, l10n.navSettings, update),
     ];
+    Widget icon(IconData data, bool dot) => Badge(
+      key: dot ? const Key('update-available-dot') : null,
+      isLabelVisible: dot,
+      child: Icon(data),
+    );
     final pages = IndexedStack(index: _tab, children: _pages);
     // Above all tabs when the server refused this version (ADR-0029); the
     // banner takes the top inset, so the app bars below do not add it again.
@@ -74,10 +125,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
               destinations: [
-                for (final (icon, selected, label) in destinations)
+                for (final (outlined, selected, label, dot) in destinations)
                   NavigationRailDestination(
-                    icon: Icon(icon),
-                    selectedIcon: Icon(selected),
+                    icon: icon(outlined, dot),
+                    selectedIcon: icon(selected, dot),
                     label: Text(label),
                   ),
               ],
@@ -94,10 +145,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         selectedIndex: _tab,
         onDestinationSelected: (i) => setState(() => _tab = i),
         destinations: [
-          for (final (icon, selected, label) in destinations)
+          for (final (outlined, selected, label, dot) in destinations)
             NavigationDestination(
-              icon: Icon(icon),
-              selectedIcon: Icon(selected),
+              icon: icon(outlined, dot),
+              selectedIcon: icon(selected, dot),
               label: label,
             ),
         ],
