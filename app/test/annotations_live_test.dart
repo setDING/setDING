@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:setding/data/annotation_repository.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/ui/annotations/annotation_layer.dart';
+import 'package:setding/ui/annotations/annotation_toolbar.dart';
 import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/ui/songs/song_screen.dart';
 
@@ -106,6 +107,41 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('annotation-toolbar')), findsNothing);
     expect(find.byType(LiveScreen), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('the toolbar buttons are large enough for a tablet', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final items = await createSongs(tester, app, sources);
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+    await startDrawing(tester);
+
+    for (final key in [
+      'annotation-tool-pen',
+      'annotation-tool-eraser',
+      'annotation-tool-stamp',
+      'annotation-color-0',
+      'annotation-size',
+      'annotation-undo',
+      'annotation-more',
+      'annotation-done',
+    ]) {
+      final size = tester.getSize(find.byKey(Key(key)));
+      expect(
+        size.height,
+        greaterThanOrEqualTo(annotationToolbarButtonSize),
+        reason: key,
+      );
+      expect(
+        size.width,
+        greaterThanOrEqualTo(annotationToolbarButtonSize),
+        reason: key,
+      );
+    }
     await app.dispose(tester);
   });
 

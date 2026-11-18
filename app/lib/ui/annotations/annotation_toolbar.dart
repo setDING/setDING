@@ -5,6 +5,11 @@ import '../../l10n/generated/app_localizations.dart';
 import 'annotation_editor.dart';
 import 'annotation_paint.dart';
 
+/// Touch target of the toolbar's buttons: larger than Material's 48 dp, so
+/// they are easy to hit on a tablet on stage.
+const annotationToolbarButtonSize = 56.0;
+const _iconSize = 32.0;
+
 /// The tools of drawing mode in live mode (ADR-0032): pen, highlighter,
 /// erasers, lasso and stamps, colour and size, the selection's actions,
 /// undo/redo and "done".
@@ -40,123 +45,140 @@ class AnnotationToolbar extends StatelessWidget {
         return Material(
           key: const Key('annotation-toolbar'),
           color: theme.colorScheme.surfaceContainerHigh,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Row(
-              children: [
-                tool(DrawingTool.pen, Icons.edit, l10n.annotationPen),
-                tool(
-                  DrawingTool.highlighter,
-                  Icons.border_color,
-                  l10n.annotationHighlighter,
-                ),
-                tool(
-                  DrawingTool.eraser,
-                  Icons.cleaning_services_outlined,
-                  l10n.annotationEraser,
-                ),
-                tool(
-                  DrawingTool.partialEraser,
-                  Icons.content_cut,
-                  l10n.annotationPartialEraser,
-                ),
-                tool(
-                  DrawingTool.lasso,
-                  Icons.highlight_alt,
-                  l10n.annotationLasso,
-                ),
-                _StampPicker(editor: editor),
-                const _Divider(),
-                for (var i = 0; i < annotationColorCount; i++)
-                  _ColorDot(
-                    index: i,
-                    selected: editor.color == i,
-                    onTap: () => editor.color = i,
+          child: IconButtonTheme(
+            data: IconButtonThemeData(
+              style: IconButton.styleFrom(
+                iconSize: _iconSize,
+                minimumSize: const Size.square(annotationToolbarButtonSize),
+                padding: const EdgeInsets.all(12),
+                visualDensity: VisualDensity.standard,
+              ),
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Row(
+                children: [
+                  tool(DrawingTool.pen, Icons.edit, l10n.annotationPen),
+                  tool(
+                    DrawingTool.highlighter,
+                    Icons.border_color,
+                    l10n.annotationHighlighter,
                   ),
-                IconButton(
-                  key: const Key('annotation-size'),
-                  tooltip: l10n.annotationSize,
-                  onPressed: () => editor.size = (editor.size + 1) % 3,
-                  icon: SizedBox.square(
-                    dimension: 24,
-                    child: Center(
-                      child: Container(
-                        width: 6.0 + editor.size * 6,
-                        height: 6.0 + editor.size * 6,
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.onSurface,
-                          shape: BoxShape.circle,
+                  tool(
+                    DrawingTool.eraser,
+                    Icons.cleaning_services_outlined,
+                    l10n.annotationEraser,
+                  ),
+                  tool(
+                    DrawingTool.partialEraser,
+                    Icons.content_cut,
+                    l10n.annotationPartialEraser,
+                  ),
+                  tool(
+                    DrawingTool.lasso,
+                    Icons.highlight_alt,
+                    l10n.annotationLasso,
+                  ),
+                  _StampPicker(editor: editor),
+                  const _Divider(),
+                  for (var i = 0; i < annotationColorCount; i++)
+                    _ColorDot(
+                      index: i,
+                      selected: editor.color == i,
+                      onTap: () => editor.color = i,
+                    ),
+                  IconButton(
+                    key: const Key('annotation-size'),
+                    tooltip: l10n.annotationSize,
+                    onPressed: () => editor.size = (editor.size + 1) % 3,
+                    icon: SizedBox.square(
+                      dimension: _iconSize,
+                      child: Center(
+                        child: Container(
+                          width: 8.0 + editor.size * 8,
+                          height: 8.0 + editor.size * 8,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.onSurface,
+                            shape: BoxShape.circle,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                if (selection) ...[
+                  if (selection) ...[
+                    const _Divider(),
+                    IconButton(
+                      key: const Key('annotation-selection-smaller'),
+                      tooltip: l10n.annotationSmaller,
+                      icon: const Icon(Icons.zoom_out),
+                      onPressed: () => editor.act(SelectionAction.smaller),
+                    ),
+                    IconButton(
+                      key: const Key('annotation-selection-larger'),
+                      tooltip: l10n.annotationLarger,
+                      icon: const Icon(Icons.zoom_in),
+                      onPressed: () => editor.act(SelectionAction.larger),
+                    ),
+                    IconButton(
+                      key: const Key('annotation-selection-delete'),
+                      tooltip: l10n.annotationDeleteSelection,
+                      icon: const Icon(Icons.delete_outline),
+                      onPressed: () => editor.act(SelectionAction.delete),
+                    ),
+                  ],
                   const _Divider(),
                   IconButton(
-                    key: const Key('annotation-selection-smaller'),
-                    tooltip: l10n.annotationSmaller,
-                    icon: const Icon(Icons.zoom_out),
-                    onPressed: () => editor.act(SelectionAction.smaller),
+                    key: const Key('annotation-undo'),
+                    tooltip: l10n.annotationUndo,
+                    icon: const Icon(Icons.undo),
+                    onPressed: editor.canUndo ? editor.undo : null,
                   ),
                   IconButton(
-                    key: const Key('annotation-selection-larger'),
-                    tooltip: l10n.annotationLarger,
-                    icon: const Icon(Icons.zoom_in),
-                    onPressed: () => editor.act(SelectionAction.larger),
+                    key: const Key('annotation-redo'),
+                    tooltip: l10n.annotationRedo,
+                    icon: const Icon(Icons.redo),
+                    onPressed: editor.canRedo ? editor.redo : null,
                   ),
-                  IconButton(
-                    key: const Key('annotation-selection-delete'),
-                    tooltip: l10n.annotationDeleteSelection,
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: () => editor.act(SelectionAction.delete),
+                  PopupMenuButton<String>(
+                    key: const Key('annotation-more'),
+                    tooltip: l10n.annotationMore,
+                    iconSize: _iconSize,
+                    itemBuilder: (context) => [
+                      CheckedPopupMenuItem(
+                        key: const Key('annotation-finger'),
+                        value: 'finger',
+                        checked: editor.fingerDraws,
+                        child: Text(l10n.annotationDrawWithFinger),
+                      ),
+                      if (onDeleteAll != null)
+                        PopupMenuItem(
+                          key: const Key('annotation-delete-all'),
+                          value: 'delete-all',
+                          child: Text(l10n.annotationsDeleteAll),
+                        ),
+                    ],
+                    onSelected: (value) => switch (value) {
+                      'finger' => editor.fingerDraws = !editor.fingerDraws,
+                      'delete-all' => onDeleteAll?.call(),
+                      _ => null,
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton.icon(
+                    key: const Key('annotation-done'),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(0, annotationToolbarButtonSize),
+                      iconSize: 28,
+                      textStyle: theme.textTheme.titleMedium,
+                      visualDensity: VisualDensity.standard,
+                    ),
+                    onPressed: onDone,
+                    icon: const Icon(Icons.check),
+                    label: Text(l10n.annotationDone),
                   ),
                 ],
-                const _Divider(),
-                IconButton(
-                  key: const Key('annotation-undo'),
-                  tooltip: l10n.annotationUndo,
-                  icon: const Icon(Icons.undo),
-                  onPressed: editor.canUndo ? editor.undo : null,
-                ),
-                IconButton(
-                  key: const Key('annotation-redo'),
-                  tooltip: l10n.annotationRedo,
-                  icon: const Icon(Icons.redo),
-                  onPressed: editor.canRedo ? editor.redo : null,
-                ),
-                PopupMenuButton<String>(
-                  key: const Key('annotation-more'),
-                  tooltip: l10n.annotationMore,
-                  itemBuilder: (context) => [
-                    CheckedPopupMenuItem(
-                      key: const Key('annotation-finger'),
-                      value: 'finger',
-                      checked: editor.fingerDraws,
-                      child: Text(l10n.annotationDrawWithFinger),
-                    ),
-                    if (onDeleteAll != null)
-                      PopupMenuItem(
-                        key: const Key('annotation-delete-all'),
-                        value: 'delete-all',
-                        child: Text(l10n.annotationsDeleteAll),
-                      ),
-                  ],
-                  onSelected: (value) => switch (value) {
-                    'finger' => editor.fingerDraws = !editor.fingerDraws,
-                    'delete-all' => onDeleteAll?.call(),
-                    _ => null,
-                  },
-                ),
-                const SizedBox(width: 8),
-                FilledButton.icon(
-                  key: const Key('annotation-done'),
-                  onPressed: onDone,
-                  icon: const Icon(Icons.check),
-                  label: Text(l10n.annotationDone),
-                ),
-              ],
+              ),
             ),
           ),
         );
@@ -170,7 +192,7 @@ class _Divider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      const SizedBox(height: 32, child: VerticalDivider(width: 16));
+      const SizedBox(height: 40, child: VerticalDivider(width: 16));
 }
 
 class _ColorDot extends StatelessWidget {
@@ -193,12 +215,12 @@ class _ColorDot extends StatelessWidget {
       child: InkResponse(
         key: Key('annotation-color-$index'),
         onTap: onTap,
-        radius: 20,
+        radius: annotationToolbarButtonSize / 2,
         child: Padding(
-          padding: const EdgeInsets.all(6),
+          padding: const EdgeInsets.all(12),
           child: Container(
-            width: 24,
-            height: 24,
+            width: annotationToolbarButtonSize - 24,
+            height: annotationToolbarButtonSize - 24,
             decoration: BoxDecoration(
               color: annotationColor(index, theme.brightness),
               shape: BoxShape.circle,
@@ -227,10 +249,11 @@ class _StampPicker extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final color = theme.colorScheme.onSurface;
-    Widget preview(AnnotationStamp stamp) => SizedBox.square(
-      dimension: 28,
-      child: CustomPaint(painter: _StampPreview(stamp, color)),
-    );
+    Widget preview(AnnotationStamp stamp, {double size = 28}) =>
+        SizedBox.square(
+          dimension: size,
+          child: CustomPaint(painter: _StampPreview(stamp, color)),
+        );
     PopupMenuEntry<AnnotationStamp> header(String text) => PopupMenuItem(
       enabled: false,
       height: 32,
@@ -250,8 +273,9 @@ class _StampPicker extends StatelessWidget {
     return PopupMenuButton<AnnotationStamp>(
       key: const Key('annotation-tool-stamp'),
       tooltip: l10n.annotationStamps,
+      iconSize: _iconSize,
       icon: editor.tool == DrawingTool.stamp
-          ? preview(editor.stamp)
+          ? preview(editor.stamp, size: _iconSize)
           : const Icon(Icons.approval),
       style: IconButton.styleFrom(
         backgroundColor: editor.tool == DrawingTool.stamp
