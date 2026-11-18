@@ -57,7 +57,9 @@ stored the database in the documents folder; it is moved on the next start.
 
 - **Install via USB:** enable USB debugging on the tablet (Settings → About →
   tap "Build number" seven times, then Developer options → USB debugging), connect
-  it and run `make apk-install` (`adb install -r`, keeps the app's data).
+  it and run `make android-install`. It installs the build as the separate app
+  "setDING Beta" next to a release installation
+  ([releases.md](../docs/development/releases.md)).
 - **Install without a cable:** copy the APK to the tablet (cloud drive, chat, USB
   stick), open it in the file manager and allow "Install unknown apps" for that app
   when asked.

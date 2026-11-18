@@ -81,7 +81,7 @@ BACKEND_REGISTRATION ?= open
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := SETDING_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build web web-serve site site-dev deps upgrade apk apk-install android-install android-keystore release release-linux release-check reset data-dir backend check test codegen l10n perf screenshots branding examples doctor clean ci-image \
+.PHONY: help setup dev start build web web-serve site site-dev deps upgrade apk android-install android-keystore release release-linux release-check reset data-dir backend check test codegen l10n perf screenshots branding examples doctor clean ci-image \
 	server-target server-install server-release server-site server-status server-logs server-backup server-fetch-backup server-founder-invite server-ssh
 
 help: ## Show this help
@@ -116,9 +116,6 @@ apk: ## Build an Android release APK for manual installation (app/build/setding-
 	cd $(APP) && $(FLUTTER) build apk --release
 	cp $(APP)/build/app/outputs/flutter-apk/app-release.apk $(APK)
 	@echo "APK: $(APK)"
-
-apk-install: apk ## Build the APK and install it on a USB-connected device (adb, USB debugging on)
-	$(ADB) install -r $(APK)
 
 android-install: ## Install the local build as "setDING Beta" (app.setding.beta) next to a release on a USB device (DEVICE=<id>)
 	@test -d "$(ANDROID_HOME)" || { echo "Android SDK not found. Install it or set ANDROID_HOME=/path/to/sdk"; exit 1; }
