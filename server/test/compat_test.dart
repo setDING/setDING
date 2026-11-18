@@ -51,7 +51,7 @@ void main() {
       final r = await pb.guest.send('GET', '/api/setding/config');
       r.expectStatus(200);
       expect(r.json['serverVersion'], '1.2.3');
-      // A release deploy reports the newest app release (ADR-0035).
+      // A release deploy reports the newest app release (ADR-0036).
       expect(r.json['latestClientVersion'], '1.2.3');
     });
   });

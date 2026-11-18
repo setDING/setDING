@@ -4615,6 +4615,36 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Vorschau grösser oder kleiner ziehen'**
   String get songDisplayResizePreview;
+
+  /// No description provided for @appUpdateInstall.
+  ///
+  /// In de, this message translates to:
+  /// **'Installieren'**
+  String get appUpdateInstall;
+
+  /// No description provided for @appUpdateInstallTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'setDING {version} installieren?'**
+  String appUpdateInstallTitle(String version);
+
+  /// No description provided for @appUpdateInstallBody.
+  ///
+  /// In de, this message translates to:
+  /// **'setDING wird geschlossen, die neue Version installiert und wieder gestartet. Deine Daten bleiben auf diesem Gerät.'**
+  String get appUpdateInstallBody;
+
+  /// No description provided for @appUpdateDownloading.
+  ///
+  /// In de, this message translates to:
+  /// **'Update wird heruntergeladen …'**
+  String get appUpdateDownloading;
+
+  /// No description provided for @appUpdateFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Update konnte nicht installiert werden. Bitte versuche es später nochmals.'**
+  String get appUpdateFailed;
 }
 
 class _AppLocalizationsDelegate

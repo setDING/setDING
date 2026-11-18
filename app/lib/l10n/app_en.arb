@@ -1130,5 +1130,18 @@
   "songDisplayDemoSong": "Demo song",
   "songDisplayLibrarySong": "Song from the library …",
   "songDisplayPickSong": "Song for the preview",
-  "songDisplayResizePreview": "Drag to resize the preview"
+  "songDisplayResizePreview": "Drag to resize the preview",
+  "appUpdateInstall": "Install",
+  "appUpdateInstallTitle": "Install setDING {version}?",
+  "@appUpdateInstallTitle": {
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "example": "0.9.0"
+      }
+    }
+  },
+  "appUpdateInstallBody": "setDING closes, installs the new version and starts again. Your data stays on this device.",
+  "appUpdateDownloading": "Downloading the update …",
+  "appUpdateFailed": "The update could not be installed. Please try again later."
 }

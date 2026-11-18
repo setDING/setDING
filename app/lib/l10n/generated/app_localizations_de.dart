@@ -2686,4 +2686,23 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get songDisplayResizePreview => 'Vorschau grösser oder kleiner ziehen';
+
+  @override
+  String get appUpdateInstall => 'Installieren';
+
+  @override
+  String appUpdateInstallTitle(String version) {
+    return 'setDING $version installieren?';
+  }
+
+  @override
+  String get appUpdateInstallBody =>
+      'setDING wird geschlossen, die neue Version installiert und wieder gestartet. Deine Daten bleiben auf diesem Gerät.';
+
+  @override
+  String get appUpdateDownloading => 'Update wird heruntergeladen …';
+
+  @override
+  String get appUpdateFailed =>
+      'Das Update konnte nicht installiert werden. Bitte versuche es später nochmals.';
 }

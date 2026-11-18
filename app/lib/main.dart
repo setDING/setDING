@@ -69,7 +69,7 @@ Future<void> main() async {
         attachmentStorageProvider.overrideWithValue(storage),
         sessionStoreProvider.overrideWithValue(sessionStore),
         clientVersionProvider.overrideWithValue(version),
-        // New releases only for installed release builds (ADR-0035).
+        // New releases only for installed release builds (ADR-0036).
         updateCheckEnabledProvider.overrideWithValue(
           !kIsWeb && kReleaseMode && !info.packageName.endsWith('.beta'),
         ),

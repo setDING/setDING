@@ -9,6 +9,7 @@ import '../providers.dart';
 import '../settings/settings.dart';
 import '../sync/auth_providers.dart';
 import '../sync/update_check.dart';
+import '../update/update_providers.dart';
 import '../util/app_version.dart';
 import '../util/log.dart';
 import 'account/account_section.dart';
@@ -16,6 +17,7 @@ import 'bands/bands_settings.dart';
 import 'settings/latency_calibration.dart';
 import 'settings/song_display_settings.dart';
 import 'theme.dart';
+import 'widgets/app_update.dart';
 import 'widgets/breakpoint_builder.dart';
 import 'widgets/dialogs.dart';
 
@@ -674,9 +676,11 @@ class _AboutTiles extends ConsumerWidget {
     final version = ref.watch(appVersionProvider).value;
     final update = ref.watch(updateCheckProvider);
     final current = ref.watch(clientVersionProvider);
+    // The Windows app installs it itself (ADR-0035).
+    final installable = ref.watch(installableUpdateProvider);
     return Column(
       children: [
-        // A newer release (ADR-0035).
+        // A newer release (ADR-0036).
         if (update != null)
           ListTile(
             key: const Key('update-available'),
@@ -685,10 +689,16 @@ class _AboutTiles extends ConsumerWidget {
             subtitle: Text(
               [
                 if (current != null) l10n.updateAvailableInstalled(current),
-                l10n.updateRequiredHowTo,
+                if (installable == null) l10n.updateRequiredHowTo,
               ].join(' '),
             ),
-            trailing: const Icon(Icons.open_in_new),
+            trailing: installable != null
+                ? FilledButton(
+                    key: const Key('update-available-install'),
+                    onPressed: () => installAppUpdate(context, installable),
+                    child: Text(l10n.appUpdateInstall),
+                  )
+                : const Icon(Icons.open_in_new),
             onTap: () => launchUrl(
               releasePageUrl(update),
               mode: LaunchMode.externalApplication,

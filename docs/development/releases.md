@@ -153,8 +153,25 @@ of the two apps) or paste the link under "Bands → Join". Remove the beta with
 
 ## Windows
 
-Unpack the zip and run `setding.exe`. The build is not code-signed, so Windows
-SmartScreen warns on the first start ("More info" → "Run anyway").
+The release contains the installer `setding-X.Y.Z-windows-x64-setup.exe` (Inno
+Setup, `app/windows/installer/setding.iss`, ADR-0035) and the portable zip. The
+setup installs per user without administrator rights and updates an existing
+installation in place. The installed app learns about a newer release from the
+update check (`latestClientVersion`, ADR-0036) and installs it after a tap: it
+downloads `setding-X.Y.Z-windows-x64-setup.exe` from the release of the tag
+`vX.Y.Z`, checks it against that release's `SHA256SUMS` and runs it silently. So
+every release must contain the setup **and** `SHA256SUMS` under these names (the
+`publish` job does both), and the server is deployed from the tag only after the
+release exists (`make server-release` checks this).
+
+Nothing is code-signed, so Windows SmartScreen warns when the downloaded setup (or
+the zip's `setding.exe`) is first started ("More info" → "Run anyway"). Updates from
+inside the app do not trigger the warning.
+
+To try the setup before a release, start a test build
+(`gh workflow run release.yml --ref <branch>`) and download the `windows` artifact
+from the run. Never change the `AppId` in `setding.iss`: it identifies the
+installation that updates replace.
 
 ## Linux (local)
 

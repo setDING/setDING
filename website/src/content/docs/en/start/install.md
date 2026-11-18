@@ -21,11 +21,18 @@ setDING is installed and kept up to date with
 
 ## Windows
 
-1. Download `setding-<version>-windows-x64.zip`.
-2. Unpack it and start `setding.exe`.
+1. Download `setding-<version>-windows-x64-setup.exe` and run it. It installs
+   setDING for your Windows user, without administrator rights.
+2. The app is not code-signed, so Windows SmartScreen warns once; click
+   **More info**, then **Run anyway**.
 
-The app is not code-signed. On the first start Windows SmartScreen warns; click
-**More info**, then **Run anyway**.
+When a new version is available (see [Updates](#updates)), setDING offers
+**Install** in the hint and under **Settings → Storage & info**. It downloads the
+new version, closes setDING, updates it and starts it again; your data stays.
+Running a newer setup by hand does the same.
+
+Prefer no installation? `setding-<version>-windows-x64.zip` contains the same
+app: unpack it and start `setding.exe`. This copy does not update itself.
 
 ## Linux
 
@@ -36,7 +43,8 @@ The app is not code-signed. On the first start Windows SmartScreen warns; click
 
 setDING checks once a day whether a newer version is available. A dot then
 appears on **Settings**, and **Settings → Storage & info** shows the new version
-with a link to its download page. The hint never appears in live mode.
+with a link to its download page (on Windows with **Install**, if you installed
+setDING with the setup). The hint never appears in live mode.
 
 ## iOS
 

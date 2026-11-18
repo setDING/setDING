@@ -16,7 +16,7 @@ const releasesUrl = 'https://github.com/tafli/setDING/releases';
 Uri releasePageUrl(String version) =>
     Uri.parse('$releasesUrl/tag/v${version.replaceFirst(RegExp('^v'), '')}');
 
-/// Whether this build looks for new releases (ADR-0035): installed release
+/// Whether this build looks for new releases (ADR-0036): installed release
 /// builds only, not the web client (the server always serves the current
 /// build), debug builds or the Android beta build. Overridden in main().
 final updateCheckEnabledProvider = Provider<bool>((ref) => false);
@@ -27,7 +27,7 @@ bool isUpdate(String latest, String current) =>
     compareVersions(latest, current) > 0 &&
     (!isPrerelease(latest) || isPrerelease(current));
 
-/// The newer app version that is available, or null (ADR-0035).
+/// The newer app version that is available, or null (ADR-0036).
 ///
 /// Asks the server (`/api/setding/config`, `latestClientVersion`) a few
 /// seconds after the start, at most once per [interval]; the answer is kept
