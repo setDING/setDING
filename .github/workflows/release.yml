@@ -250,12 +250,21 @@ jobs:
               licenses = @(@{ license = @{ name = 'Microsoft Visual C++ Redistributable'; url = 'https://visualstudio.microsoft.com/license-terms/' } })
             }
           })
-          $iscc = Get-Item "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          # ISCC.exe carries no product version; the installer's uninstall
+          # entry does (also when installed by choco).
+          $innoVersion = $null
+          foreach ($root in 'HKLM:\SOFTWARE\WOW6432Node', 'HKLM:\SOFTWARE', 'HKCU:\SOFTWARE') {
+            $key = "$root\Microsoft\Windows\CurrentVersion\Uninstall\Inno Setup 6_is1"
+            if (Test-Path $key) { $innoVersion = (Get-ItemProperty $key).DisplayVersion; break }
+          }
+          if ($innoVersion -notmatch '^[1-9]\d*\.\d+') {
+            throw "Inno Setup version not found ('$innoVersion')"
+          }
           $inno = [ordered]@{
             type = 'application'
             'bom-ref' = 'innosetup'
             name = 'Inno Setup'
-            version = $iscc.VersionInfo.ProductVersion
+            version = $innoVersion
             description = 'Installer and uninstaller of the setup'
             licenses = @(@{ license = @{ name = 'Inno Setup License'; url = 'https://jrsoftware.org/files/is/license.txt' } })
             externalReferences = @(@{ type = 'website'; url = 'https://jrsoftware.org/isinfo.php' })
