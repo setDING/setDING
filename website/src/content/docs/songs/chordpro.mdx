@@ -151,6 +151,23 @@ und der Klick betonen dann den Anfang jeder Gruppe:
 {tempo: 210}
 ```
 
+### Quellen: `{x_link}`
+
+Mit `{x_link}` hängst du Aufnahmen an einen Song, zum Beispiel auf YouTube, Spotify
+oder Apple Music. Nach der URL folgt optional eine Beschriftung, getrennt mit `|`.
+Ohne `|` gilt der ganze Text als URL, sie darf also auch Leerzeichen enthalten. Die
+Direktive darf mehrfach vorkommen:
+
+```
+{x_link: https://www.youtube.com/watch?v=… | Live 2009}
+{x_link: https://open.spotify.com/track/… | Studioversion}
+{x_link: https://example.com/unsere probe.mp3}
+```
+
+In der Song-Ansicht öffnet das Kopfhörer-Symbol die Quellen; ein Tipp öffnet den Link
+in der App des Dienstes oder im Browser. Wer den Song bearbeiten darf, fügt dort auch
+Links hinzu. Im Live-Modus erscheinen die Quellen nicht.
+
 ## Songs für Schlagzeug
 
 Für das Schlagzeug zählen vor allem drei Dinge im Song: Tempo, Taktart und

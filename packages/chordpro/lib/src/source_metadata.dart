@@ -4,6 +4,7 @@
 library;
 
 import 'directive_names.dart';
+import 'links.dart';
 
 /// A metadata directive found in the source: [start]/[end] cover the value.
 class _Found {
@@ -108,4 +109,22 @@ String setSourceMetadata(String source, String name, String? value) {
     found.end,
     needsSeparator ? ': $text' : text,
   );
+}
+
+final _linkLine = RegExp(r'^[ \t]*\{[ \t]*x_link\b');
+
+/// Adds `{x_link: url | label}` to [source]: after the last `{x_link}` of
+/// the first song, otherwise at the end of the header (song sources).
+String addSourceLink(String source, String url, {String? label}) {
+  final directive = songLinkDirective(url, label: label);
+  int? after;
+  for (final (_, end, line) in _lines(source)) {
+    if (_linkLine.hasMatch(line)) after = end;
+  }
+  if (after != null) {
+    return source.replaceRange(after, after, '\n$directive');
+  }
+  final pos = metadataHeaderEnd(source);
+  final prefix = pos > 0 && source[pos - 1] != '\n' ? '\n' : '';
+  return source.replaceRange(pos, pos, '$prefix$directive\n');
 }

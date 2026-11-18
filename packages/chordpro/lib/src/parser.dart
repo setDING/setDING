@@ -293,9 +293,9 @@ class _SongParser {
   void _directive(Directive d) {
     final name = d.name;
     // Custom extensions start with x_ (ChordPro spec); other tools ignore
-    // them. setDING knows {x_sequence} (song sequence) and
-    // {x_time_grouping} (ADR-0026), kept as metadata so that %{x_sequence}
-    // works; all others are ignored.
+    // them. setDING knows {x_sequence} (song sequence),
+    // {x_time_grouping} (ADR-0026) and {x_link} (song sources), kept as
+    // metadata so that %{x_sequence} works; all others are ignored.
     if (customDirectives.contains(name)) {
       _addMeta(name, d.plainArgument);
       return;

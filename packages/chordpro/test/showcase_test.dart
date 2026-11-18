@@ -49,6 +49,19 @@ void main() {
         SequencePart.outro,
       ]);
       expect(song.meta['key'], ['G', 'A']);
+      expect(song.links.map((l) => (l.service, l.label, l.uri.toString())), [
+        (
+          LinkService.youtube,
+          'Live video',
+          'https://www.youtube.com/results?search_query=setding',
+        ),
+        (
+          LinkService.other,
+          'Demo recording',
+          'https://example.com/setding%20demo.mp3',
+        ),
+        (LinkService.spotify, null, 'https://open.spotify.com/search/setding'),
+      ]);
       expect(song.tempo, 96);
       expect(song.meter, Meter.common);
       expect(song.columns, 2);

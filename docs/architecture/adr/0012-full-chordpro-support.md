@@ -156,6 +156,14 @@ Each phase is a separate branch and merge (ADR-0010).
   count the note value, compound meters (6/8, 9/8, 12/8) the dotted quarter, odd meters
   (5/8, 7/8, …) the eighth with accents from the grouping; a grouping that does not add
   up to the numerator is ignored. The first `{time}` applies.
+- 2026-11-18: setDING custom directive `{x_link: URL | Label}` for song sources such as
+  YouTube or Spotify recordings (#469). It can be repeated; the optional label follows
+  the last `|`, so a URL without label may contain spaces. Kept as metadata in the
+  ChordPro text (ADR-0003, no separate field or sync change), parsed into `Song.links`
+  (only `http`/`https` URLs; a missing scheme gets `https://`; the service is detected
+  from the host). The song view lists them in a "Sources" side panel and opens them
+  outside the app (`url_launcher`); people who may edit the song add links there
+  (`addSourceLink`). Not shown in live mode or on the printable set list.
 
 ## Open points
 
