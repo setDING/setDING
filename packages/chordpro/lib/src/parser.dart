@@ -8,6 +8,7 @@ import 'directive.dart';
 import 'directive_names.dart';
 import 'grid.dart';
 import 'metadata.dart';
+import 'section_heading.dart';
 import 'song.dart';
 
 /// Parses ChordPro [source] into a [Song] (the first song if the file
@@ -541,14 +542,6 @@ void _trimEmptyLines(List<Line> lines) {
   }
 }
 
-final _heading = RegExp(
-  r'^(pre[\s-]?chorus|pre[\s-]?refrain|post[\s-]?chorus|chorus|refrain|'
-  r'verse|vers|strophe|bridge|intro|outro|tag|interlude|instrumental|'
-  r'zwischenspiel|ending|schluss|coda|solo|vamp|turnaround)'
-  r'(\s*\d+[a-z]?)?(\s*\(.*\))?\s*:?$',
-  caseSensitive: false,
-);
-
 /// Turns an implicit section starting with a heading comment into a
 /// labelled section, e.g. `{comment: Chorus 1}` → chorus "Chorus 1".
 ///
@@ -561,14 +554,8 @@ final _heading = RegExp(
     if (line is EmptyLine) continue;
     if (line is! CommentLine) return null;
     if (line.style != CommentStyle.normal) continue;
-    final match = _heading.firstMatch(line.text.trim());
-    if (match == null) continue;
-    final kind = switch (match.group(1)!.toLowerCase()) {
-      'chorus' || 'refrain' => SectionKind.chorus,
-      'verse' || 'vers' || 'strophe' => SectionKind.verse,
-      'bridge' => SectionKind.bridge,
-      _ => SectionKind.custom,
-    };
+    final kind = headingSectionKind(line.text);
+    if (kind == null) continue;
     final heading = Section(
       kind: kind,
       label: line.text.trim(),

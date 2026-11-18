@@ -56,6 +56,11 @@ void main() {
     controller.text = '{sob}\nx';
     await tester.pump();
     expect(painter(tester).lastPainted.map((p) => p.$2), ['bridge']);
+
+    // Sections marked only with a heading comment, as in SongSelect (#463).
+    controller.text = '{comment: Verse 1}\na\n\n{c: Chorus}\nb';
+    await tester.pump();
+    expect(painter(tester).lastPainted.map((p) => p.$2), ['verse', 'chorus']);
     await app.dispose(tester);
   });
 }

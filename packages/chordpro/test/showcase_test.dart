@@ -119,6 +119,17 @@ void main() {
       expect(song.elements.whereType<ChorusRecall>(), hasLength(2));
       final heading = song.sections.firstWhere((s) => s.label == 'Chorus 2');
       expect(heading.kind, SectionKind.chorus);
+
+      // The editor colours the heading section like the parser reads it.
+      final editor = sourceSections(source).where(
+        (s) =>
+            source.substring(s.start, s.end).startsWith('{comment: Chorus 2}'),
+      );
+      expect(editor.single.type, 'chorus');
+      expect(
+        source.substring(editor.single.start, editor.single.end),
+        endsWith('becomes a chorus section.'),
+      );
     });
 
     test('chords: markup, annotations, optional, German names, escapes', () {

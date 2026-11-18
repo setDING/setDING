@@ -46,7 +46,7 @@ class ChordProEditingController extends TextEditingController {
   List<SourceSection> get sections {
     if (_sectioned != text) {
       _sectioned = text;
-      _sections = sourceSections(text, tokens: tokens);
+      _sections = sourceSections(text);
     }
     return _sections;
   }
