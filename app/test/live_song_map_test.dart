@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/ui/live/live_screen.dart';
@@ -31,8 +32,17 @@ void main() {
     WidgetTester tester,
     Map<String, Object> prefs, {
     bool landscape = true,
+    bool phone = false,
   }) async {
-    useTabletSize(tester, landscape: landscape);
+    if (phone) {
+      tester.view.physicalSize = landscape
+          ? const Size(844, 390)
+          : const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+    } else {
+      useTabletSize(tester, landscape: landscape);
+    }
     final app = await TestApp.create(prefs: {'language': 'en', ...prefs});
     final items = (await tester.runAsync(() async {
       final items = <LiveItem>[];
@@ -207,6 +217,80 @@ void main() {
     await tester.pump();
     await tester.pump();
     expect(find.text('2 / 2'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('phone portrait: beat above, the set below, no song map (#421)', (
+    tester,
+  ) async {
+    final app = await open(
+      tester,
+      {'instrument': 'drums', 'clickStart': 'manual'},
+      landscape: false,
+      phone: true,
+    );
+    await tester.pump();
+    expect(find.byKey(const Key('drum-panel')), findsOneWidget);
+    expect(find.byKey(const Key('song-map')), findsNothing);
+    final beat = tester.getRect(find.byKey(const Key('large-beat')));
+    final set = tester.getRect(find.byKey(const Key('drum-set-list')));
+    expect(beat.bottom, lessThanOrEqualTo(set.top));
+    // The panel is the whole stage.
+    final screen = tester.getRect(find.byType(LiveScreen));
+    expect(
+      tester.getRect(find.byKey(const Key('drum-panel'))).width,
+      screen.width,
+    );
+    // The dots only in the large beat.
+    expect(find.byKey(const Key('beat-dots')), findsOneWidget);
+    expect(find.text('1 / 2'), findsOneWidget);
+
+    // A tap on a song of the set turns to it.
+    await tester.tap(find.byKey(const Key('drum-set-1')));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('2 / 2'), findsOneWidget);
+
+    // The page turner turns songs, there is no song map to scroll.
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('1 / 2'), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('2 / 2'), findsOneWidget);
+
+    // The middle of an empty area shows the control bar, to leave.
+    await tester.tapAt(Offset(screen.center.dx, beat.top + 4));
+    await tester.pump();
+    expect(find.byIcon(Icons.close), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('phone landscape: beat left, the set right, no next line '
+      '(#421)', (tester) async {
+    final app = await open(tester, {
+      'instrument': 'drums',
+      'clickStart': 'manual',
+    }, phone: true);
+    await tester.pump();
+    expect(find.byKey(const Key('drum-panel')), findsOneWidget);
+    expect(find.byKey(const Key('song-map')), findsNothing);
+    final beat = tester.getRect(find.byKey(const Key('large-beat')));
+    final set = tester.getRect(find.byKey(const Key('drum-set-list')));
+    expect(beat.right, lessThanOrEqualTo(set.left));
+    // The set shows what comes next: no line below.
+    expect(find.byKey(const Key('live-info')), findsNothing);
+    expect(find.textContaining('Next'), findsNothing);
+
+    await tester.tap(find.byKey(const Key('drum-set-1')));
+    await tester.pump();
+    await tester.pump();
+    expect(
+      tester.widget<ListTile>(find.byKey(const Key('drum-set-1'))).selected,
+      isTrue,
+    );
     await app.dispose(tester);
   });
 }
