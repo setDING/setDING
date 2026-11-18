@@ -8,6 +8,8 @@
 #   allow (`pub upgrade` gets them there).
 # - npm packages of the website (website/package.json, ADR-0030) must be the
 #   latest release; `make upgrade` runs `npm update`.
+# - the CycloneDX Gradle plugin of the SBOM (tool/sbom/gradle, ADR-0037) must be
+#   the latest release on the Gradle plugin portal (raised by hand).
 # Needs the pub.dev and npm registries; without network the check is skipped
 # with a warning.
 set -euo pipefail
@@ -19,7 +21,7 @@ if ! command -v flutter >/dev/null 2>&1 && [ -x "$HOME/development/flutter/bin/f
 fi
 
 status=0
-for dir in packages/chordpro server app; do
+for dir in packages/chordpro server tool/sbom app; do
   cd "$ROOT/$dir"
   if [ "$dir" = app ]; then pub=(flutter pub); else pub=(dart pub); fi
   if ! json="$("${pub[@]}" outdated --json 2>/dev/null)"; then
@@ -74,6 +76,20 @@ if problems:
 print('deps: website: OK')
 PY
   fi
+fi
+
+# CycloneDX Gradle plugin of the SBOM (ADR-0037).
+init="$ROOT/tool/sbom/gradle/cyclonedx.init.gradle"
+current="$(sed -n "s/.*org.cyclonedx.bom.gradle.plugin:\([^']*\)'.*/\1/p" "$init")"
+metadata=https://plugins.gradle.org/m2/org/cyclonedx/bom/org.cyclonedx.bom.gradle.plugin/maven-metadata.xml
+if ! latest="$(curl -fsS "$metadata" 2>/dev/null | sed -n 's:.*<release>\(.*\)</release>.*:\1:p')" || [ -z "$latest" ]; then
+  echo "deps: tool/sbom/gradle: could not query the Gradle plugin portal (offline?), skipped" >&2
+elif [ "$current" != "$latest" ]; then
+  echo "deps: tool/sbom/gradle: outdated:"
+  echo "  org.cyclonedx.bom $current -> $latest (raise it in $init)"
+  status=1
+else
+  echo "deps: tool/sbom/gradle: OK"
 fi
 
 exit $status

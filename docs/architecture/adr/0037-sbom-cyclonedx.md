@@ -39,7 +39,8 @@ files of the build, in the build job of each artifact.
 
 ### Format and scope
 
-- **CycloneDX** (JSON, current specification version) is the only SBOM format.
+- **CycloneDX** (JSON, specification 1.6, the newest version `cyclonedx-cli`
+  validates) is the only SBOM format.
 - **One SBOM per release asset**, named after the asset:
   `setding-<version>-android.apk.cdx.json`,
   `setding-<version>-linux-x64.tar.gz.cdx.json`,
@@ -81,32 +82,65 @@ platform. The components of an asset are therefore determined from its own build
   from it is in the AOT snapshot. Packages the compiler drops (dev dependencies,
   code behind conditional imports for other platforms, unused packages) do not
   appear.
-- **Packages that ship assets** (fonts, images) are listed if their files are in
-  the bundle (`flutter_assets/packages/<name>/`).
+- **Packages that ship assets** (fonts, shaders, images) are listed if their files
+  are in the shipped archive (`flutter_assets/packages/<name>/`).
 - **Native plugins:** listed for the platform only if `.flutter-plugins-dependencies`
-  of the build names them for that platform.
+  of the build names them for that platform and they are not dev dependencies.
+- **Native libraries of build hooks** (e.g. SQLite of `sqlite3`, PDFium of
+  `pdfium_dart`, the Xiph codecs of `flutter_soloud`): listed from the build's
+  `native_assets.json` as a component per shipped file, with the SHA-256 of the
+  file in the archive and the providing package (property `setding:provided-by`,
+  dependency of that package); the build hooks report no version or licence, so
+  the SBOM has none for them.
+- **Windows:** the Visual C++ runtime DLLs shipped next to the app (version and
+  hash from the files) and, in the setup's SBOM, Inno Setup.
+- **AppImage** (ADR-0038): the bundle of the tar.gz plus the AppImage type-2
+  runtime (version and hash of the pinned file, MIT) with the libfuse linked
+  into it (LGPL 2.1).
 - **Android:** the Gradle dependencies of `releaseRuntimeClasspath` only (no test
-  or debug configurations), `pkg:maven/…`, generated in the Android job where
-  Gradle already resolves them.
-- **Flutter engine:** an explicit component (`pkg:github/flutter/flutter@<version>`,
-  licence BSD-3-Clause) with the version from the `Makefile`, in every app.
-- Versions, `purl` (`pkg:pub/…`), licences and hashes of the Dart packages come
-  from `pubspec.lock` and the generator; the path packages under `packages/` are
-  first-party components. The dependency graph is kept for the listed components.
+  or debug configurations), `pkg:maven/…`, with licences and hashes, generated in
+  the Android job where Gradle already resolves them. Removed from it: the Gradle
+  projects of the Flutter plugins (they are their Dart packages, which take over
+  their dependencies), the `io.flutter` artifacts (the Flutter component; the
+  engine jars of other ABIs are not in the arm64 APK) and `type=pom` entries
+  (BOMs and Kotlin multiplatform root modules without code).
+- **Flutter:** one component for the engine, the framework and the Dart runtime
+  (`pkg:github/flutter/flutter@<version>`, licence BSD-3-Clause, version of the
+  building SDK); the SDK packages (`flutter`, `flutter_localizations`, …) are
+  part of it.
+- Versions, `purl` (`pkg:pub/…`) and archive hashes of the Dart packages come
+  from `pubspec.lock`, their licences from pub.dev (see below); the path packages
+  under `packages/` are first-party components (MIT). The dependency graph
+  (`flutter pub deps`, Gradle) is kept for the listed components.
 
-If a package cannot be attributed (neither code, assets nor a native part), the
-SBOM step fails instead of guessing, so the rules are extended deliberately.
+The SBOM step fails instead of guessing when something does not fit these rules:
+a shipped package that is not in `pubspec.lock`, a native asset that is not in
+the archive, an unsupported package source, a package without a licence or a
+licence missing from the SPDX table.
 
 ### Generation
 
-- **cdxgen** (CycloneDX project, Apache-2.0) generates the Dart part (`-t dart`)
-  and the Gradle part (`-t gradle`); **cyclonedx-cli** merges them for Android.
-- A script in `tool/sbom/` then removes the Dart components that are not shipped
-  (rules above), sets `metadata` as above and adds the Flutter engine, so neither
-  the components nor the metadata depend on the generator's defaults (directory
-  name `app`, no version, every package in the lock file).
-- The tools are used in their newest version (owner rule); they run in the
-  release jobs and in `make sbom`, not inside the app.
+- **Own Dart tool `tool/sbom`** (`tool/sbom.sh generate|check`, tested in
+  `make check`): reads `pubspec.lock`, the instruction sizes,
+  `.flutter-plugins-dependencies`, `native_assets.json`, `flutter pub deps` and
+  the shipped archive itself (APK, zip, tar.gz; the setup uses the zip's
+  contents), applies the rules above and writes the whole document, so neither
+  the components nor the metadata depend on a generator's defaults.
+- **Licences of Dart packages** from pub.dev's analysis (the `license:` tags of
+  the version's score, mapped to SPDX ids by a table in the tool).
+- **Android:** the official **CycloneDX Gradle plugin**, applied to `:app` by an
+  init script (`tool/sbom/gradle/cyclonedx.init.gradle`) without touching the
+  build files; the tool merges its document.
+- **Linux:** generated inside the release container (`tool/release/build-linux.sh`),
+  so `make release-linux` produces the same SBOM locally; `make sbom` also
+  validates it.
+- **Validation:** the official **cyclonedx-cli** (`tool/sbom/validate.sh`)
+  validates every SBOM against the schema in the `sbom` job of the release
+  workflow, also for test builds.
+- External tools are used in their newest version (owner rule); `make check`
+  fails on an outdated Gradle plugin, `validate.sh` takes the newest
+  cyclonedx-cli release. They run in the release jobs and in `make sbom`, not
+  inside the app.
 
 ### Evaluation on GitHub
 
@@ -115,8 +149,8 @@ GitHub on the same data, from the repository:
 
 - **Dependency graph and Dependabot alerts** (to be switched on by the owner in the
   repository settings; free for public repositories) report known vulnerabilities
-  of the Dart packages from `pubspec.lock`; the Android Gradle dependencies are
-  submitted with `gradle/actions/dependency-submission` in the Android job.
+  of the Dart packages from `pubspec.lock`; once they are on, the Android Gradle
+  dependencies are submitted with `gradle/actions/dependency-submission`.
 - **Licence check:** `actions/dependency-review-action` with an allow list of
   MIT-compatible licences, once CI runs on pull requests again (ADR-0010).
 
@@ -140,13 +174,20 @@ GitHub on the same data, from the repository:
 
 ## Consequences
 
-- Every release carries four additional small JSON assets; the release workflow
-  gets one step per build job plus a check.
+- Every release carries four additional JSON assets; the release workflow gets
+  SBOM steps in the build jobs and an `sbom` job that validates them.
+- The SBOM step needs pub.dev (licences) and the Gradle plugin portal; a release
+  build fails if they are unreachable.
+- The tool is ours to maintain: a new kind of shipped component (another package
+  source, a new licence, a new platform such as iOS) needs a deliberate change.
 - Vulnerabilities and licences are evaluated on GitHub (Dependabot, dependency
   review), not by our own tooling.
-- The release build writes the instruction-size file in addition; the SBOM
-  script depends on its format (a Dart VM option), which may change with a
-  Flutter upgrade; the failing check above makes such a change visible.
+- The release build writes the instruction-size file in addition; the tool
+  depends on its format (a Dart VM option), which may change with a Flutter
+  upgrade; the tool fails if the file names no packages, which makes such a
+  change visible.
+- Native libraries of build hooks have no version or licence in the SBOM, only
+  their hash and the package that ships them.
 - The SBOMs are precise at package level: a listed package may contribute only
   part of its code, but no package is listed that is not in the file.
 - The SBOMs describe the dependencies, not the exact build environment (Flutter
@@ -162,13 +203,27 @@ GitHub on the same data, from the repository:
   lock file. Evaluation (vulnerabilities, licences) runs on GitHub. No server SBOM
   while the server is not released.
 - 2026-11-18: Accepted by the owner.
+- 2026-11-18: Implementation (#505): an own Dart tool instead of cdxgen, agreed
+  with the owner after a search for existing tools. cdxgen, Syft and Trivy read
+  `pubspec.lock` without licences (cdxgen also wrote local paths into the SBOM),
+  sbomify-action adds licences but no filtering; none can tell what is shipped,
+  which the tool has to do anyway. Licences come from pub.dev, Android
+  dependencies from the CycloneDX Gradle plugin, validation from cyclonedx-cli.
+  Native libraries of build hooks and the Windows runtime and installer are
+  listed as components; specification 1.6; Gradle dependency submission waits
+  for the dependency graph.
+- 2026-11-18: The Linux AppImage (ADR-0038, #504) is a release asset too and gets
+  its own SBOM with the AppImage runtime.
 
 ## Open points
 
 - Server SBOM (PocketBase, web client): later, once the server is released as an
   artifact of its own.
 - Owner: switch on the dependency graph and Dependabot alerts in the repository
-  settings.
+  settings; then submit the Android Gradle dependencies
+  (`gradle/actions/dependency-submission`).
+- Versions and licences of the native libraries of build hooks (SQLite, PDFium,
+  Xiph codecs), if the hooks start to report them.
 - Attesting the SBOMs (`actions/attest-sbom`).
 - iOS, once there is an iOS build.
 - The Linux AppImage (ADR-0038, #504) is a fifth release asset: it needs its own

@@ -1,0 +1,20 @@
+name: setding_sbom
+description: >-
+  Generates and checks the CycloneDX SBOM of a setDING release asset
+  (ADR-0037): only the components that are shipped in the asset, with the
+  application's name, version and the asset's SHA-256.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  archive: ^4.7.1
+  args: ^2.7.0
+  crypto: ^3.0.8
+  yaml: ^3.1.4
+
+dev_dependencies:
+  lints: ^6.1.0
+  test: ^1.33.0

@@ -13,6 +13,7 @@
 #   make android-install  install the local build as "setDING Beta" next to a release
 #   make android-keystore  create the Android release key (owner, once)
 #   make release    build the Linux release package (runs on any x86-64 Linux)
+#   make sbom       build the Linux release with its CycloneDX SBOM and validate it
 #   make site       build the website and user documentation (website/, ADR-0030)
 #   make server-*   install and operate the PocketBase server (SERVER=root@host)
 
@@ -38,6 +39,8 @@ export ANDROID_HOME ?= $(HOME)/Android/Sdk
 ADB         ?= $(ANDROID_HOME)/platform-tools/adb
 APK_VERSION := $(shell sed -n 's/^version: *\([^+]*\).*/\1/p' $(APP)/pubspec.yaml)
 APK_COMMIT  := $(shell git -C $(ROOT) rev-parse --short HEAD 2>/dev/null || echo unknown)
+# Full commit of the Linux release build: archived and recorded in its SBOM.
+RELEASE_COMMIT := $(shell git -C $(ROOT) rev-parse HEAD 2>/dev/null || echo unknown)
 APK         := $(APP)/build/setding-$(APK_VERSION)-$(APK_COMMIT).apk
 # Beta build (make android-install): own application ID app.setding.beta, so it is
 # installed next to a release installation with its own data. DEVICE=<id> picks a
@@ -81,7 +84,7 @@ BACKEND_REGISTRATION ?= open
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := SETDING_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build web web-serve site site-dev deps upgrade apk android-install android-keystore release release-linux release-check reset data-dir backend check test codegen l10n perf screenshots branding examples doctor clean ci-image \
+.PHONY: help setup dev start build web web-serve site site-dev deps upgrade apk android-install android-keystore release release-linux release-check sbom reset data-dir backend check test codegen l10n perf screenshots branding examples doctor clean ci-image \
 	server-target server-install server-release server-site server-status server-logs server-backup server-fetch-backup server-founder-invite server-ssh
 
 help: ## Show this help
@@ -132,15 +135,21 @@ release: release-linux ## Build the release packages locally (Linux; a vX.Y.Z ta
 release-check:
 	@git -C $(ROOT) diff --quiet HEAD || echo "warning: uncommitted changes are not part of the release (built from commit $(APK_COMMIT))"
 
-release-linux: release-check ## Build the Linux release in a container (app/build/setding-<version>-<commit>-linux-x64.tar.gz and .AppImage)
+release-linux: release-check ## Build the Linux release and its SBOMs in a container (app/build/setding-<version>-<commit>-linux-x64.tar.gz and .AppImage, each with .cdx.json)
 	@$(DOCKER) image inspect $(CI_IMAGE) >/dev/null 2>&1 || $(MAKE) ci-image
 	$(DOCKER) build -q --build-arg CI_IMAGE=$(CI_IMAGE) -t $(RELEASE_IMAGE) -f $(ROOT)/tool/release/linux.Dockerfile $(ROOT)/tool/release
 	@mkdir -p $(APP)/build
-	git -C $(ROOT) archive HEAD | $(DOCKER) run --rm -i \
+	git -C $(ROOT) archive $(RELEASE_COMMIT) | $(DOCKER) run --rm -i \
 		-v $(ROOT)/tool/release:/release:ro -v $(APP)/build:/out -v setding-release-pub-cache:/root/.pub-cache \
 		-e HOST_UID=$$(id -u) -e HOST_GID=$$(id -g) -e BUILD_NUMBER=$(BUILD_NUMBER) \
+		-e COMMIT=$(RELEASE_COMMIT) \
 		$(RELEASE_IMAGE) /release/build-linux.sh $(RELEASE_NAME)-linux-x64
 	@echo "Linux release: $(APP)/build/$(RELEASE_NAME)-linux-x64.tar.gz and .AppImage"
+	@echo "SBOMs:         $(APP)/build/$(RELEASE_NAME)-linux-x64.{tar.gz,AppImage}.cdx.json"
+
+sbom: release-linux ## Build the Linux release with its CycloneDX SBOMs and validate them (ADR-0037)
+	$(ROOT)/tool/sbom/validate.sh $(APP)/build/$(RELEASE_NAME)-linux-x64.tar.gz.cdx.json \
+		$(APP)/build/$(RELEASE_NAME)-linux-x64.AppImage.cdx.json
 
 reset: ## Delete all data of the test instance
 	rm -rf "$(DATA_DIR)"
@@ -177,6 +186,7 @@ deps: ## Check that all external libraries are the newest versions
 upgrade: ## Upgrade all external libraries within their constraints
 	cd $(PACKAGE) && $(DART) pub upgrade
 	cd $(ROOT)/server && $(DART) pub upgrade
+	cd $(ROOT)/tool/sbom && $(DART) pub upgrade
 	cd $(APP) && $(FLUTTER) pub upgrade
 	cd $(ROOT)/website && npm update --no-audit --no-fund
 	$(ROOT)/tool/check-deps.sh

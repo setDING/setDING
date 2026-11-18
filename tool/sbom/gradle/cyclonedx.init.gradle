@@ -1,0 +1,27 @@
+// Applies the CycloneDX Gradle plugin to the Android app project (ADR-0037)
+// without touching the build files:
+//   ./gradlew :app:cyclonedxDirectBom --init-script <this file> -PsbomOutput=<file.json>
+// Only releaseRuntimeClasspath counts: what the release APK contains.
+initscript {
+    // The plugin's own dependencies (cyclonedx-core-java, maven-core) live on
+    // Maven Central; the plugin portal only forwards there and failed to in CI.
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.cyclonedx.bom:org.cyclonedx.bom.gradle.plugin:3.6.1'
+    }
+}
+
+// Included builds (Flutter's Gradle plugin) have no :app project and are skipped.
+rootProject { root ->
+    def app = root.findProject(':app')
+    if (app == null) return
+    app.apply plugin: org.cyclonedx.gradle.CyclonedxPlugin
+    app.tasks.named('cyclonedxDirectBom') {
+        includeConfigs = ['releaseRuntimeClasspath']
+        jsonOutput = root.file(root.property('sbomOutput'))
+        xmlOutput.convention(null as RegularFile)
+    }
+}
