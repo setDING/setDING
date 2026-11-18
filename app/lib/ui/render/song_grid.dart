@@ -10,28 +10,70 @@ typedef GridTextWidth = double Function(String text, {bool chord});
 
 /// Geometry of a grid section, in units of the grid font size. Shared by
 /// rendering and layout measurement (ADR-0012).
+///
+/// The grid is laid out like a table (#484): the n-th element of every row
+/// (bar line or cell) is in column n, and each column is as wide as its
+/// widest element. Columns that are empty in every row stay narrow.
 class GridGeometry {
-  const GridGeometry({required this.cell, required this.left});
+  const GridGeometry({required this.columns, required this.left});
 
-  /// Width of one cell.
-  final double cell;
+  /// Width of each column.
+  final List<double> columns;
 
   /// Width of the left margin.
   final double left;
 
   static const rowHeight = 1.25 + 0.3;
   static const barPadding = 0.3;
-  static const minCell = 1.6;
+
+  /// Width of a cell with chords or marks, and of an empty cell.
+  static const minCell = 1.2;
+  static const emptyCell = 0.8;
+
+  /// Space after the text of a cell.
+  static const cellPadding = 0.5;
 
   /// Width of a bar symbol.
   static double barWidth(String symbol, GridTextWidth width) =>
       math.max(0.9, width(symbol) + barPadding);
 
+  /// Width that [token] needs on its own.
+  static double tokenWidth(
+    GridToken token,
+    ChordFormatter formatter,
+    GridTextWidth width,
+  ) => switch (token) {
+    GridBar(:final symbol) => barWidth(symbol, width),
+    GridChords(:final chords) => math.max(
+      minCell,
+      width(chords.map(formatter.format).join(' '), chord: true) + cellPadding,
+    ),
+    GridMark(symbol: GridSymbol.empty) => emptyCell,
+    GridMark(:final symbol) => math.max(
+      minCell,
+      width(gridMarkText(symbol)) + cellPadding,
+    ),
+    GridStrum() => math.max(
+      emptyCell,
+      width(token.symbol, chord: true) + cellPadding,
+    ),
+  };
+
+  /// Width of the element at [index] of a row.
+  double columnWidth(
+    int index,
+    GridToken token,
+    ChordFormatter formatter,
+    GridTextWidth width,
+  ) => index < columns.length
+      ? columns[index]
+      : tokenWidth(token, formatter, width);
+
   /// Width of a whole row.
   double rowWidth(GridRow row, ChordFormatter formatter, GridTextWidth width) {
     var total = row.leftMargin == null && left == 0 ? 0.0 : left;
-    for (final token in row.tokens) {
-      total += token is GridBar ? barWidth(token.symbol, width) : cell;
+    for (final (i, token) in row.tokens.indexed) {
+      total += columnWidth(i, token, formatter, width);
     }
     final right = row.rightMargin;
     if (right != null) total += 0.5 + width(right);
@@ -44,7 +86,7 @@ class GridGeometry {
     ChordFormatter formatter,
     GridTextWidth width,
   ) {
-    var cell = minCell;
+    final columns = <double>[];
     var left = 0.0;
     for (final line in lines) {
       if (line is! GridLine) continue;
@@ -52,20 +94,16 @@ class GridGeometry {
       if (row.leftMargin != null) {
         left = math.max(left, width(row.leftMargin!) + 0.6);
       }
-      for (final token in row.tokens) {
-        if (token is GridChords) {
-          // Several chords in one cell may spill into the next cell, so
-          // only single chords decide the cell width.
-          for (final chord in token.chords) {
-            cell = math.max(
-              cell,
-              width(formatter.format(chord), chord: true) + 0.5,
-            );
-          }
+      for (final (i, token) in row.tokens.indexed) {
+        final w = tokenWidth(token, formatter, width);
+        if (i < columns.length) {
+          columns[i] = math.max(columns[i], w);
+        } else {
+          columns.add(w);
         }
       }
     }
-    return GridGeometry(cell: cell, left: left);
+    return GridGeometry(columns: columns, left: left);
   }
 }
 
@@ -92,6 +130,7 @@ class GridRowView extends StatelessWidget {
     super.key,
     required this.row,
     required this.geometry,
+    this.gridWidth,
     required this.formatter,
     required this.textStyle,
     required this.chordStyle,
@@ -100,6 +139,12 @@ class GridRowView extends StatelessWidget {
 
   final GridRow row;
   final GridGeometry geometry;
+
+  /// Width of the widest row of the grid, in units of the font size. A
+  /// grid wider than the available width is scaled down as a whole, so
+  /// that its columns stay aligned (#484).
+  final double? gridWidth;
+
   final ChordFormatter formatter;
 
   /// Style for margins, bars and marks.
@@ -134,12 +179,13 @@ class GridRowView extends StatelessWidget {
           ),
         ),
     ];
-    for (final token in row.tokens) {
+    for (final (i, token) in row.tokens.indexed) {
+      final columnWidth = geometry.columnWidth(i, token, formatter, width);
       switch (token) {
         case final GridBar bar:
           children.add(
             SizedBox(
-              width: GridGeometry.barWidth(bar.symbol, width) * size,
+              width: columnWidth * size,
               child: Text(
                 row.hideBars ? '' : bar.symbol,
                 textAlign: TextAlign.center,
@@ -153,7 +199,13 @@ class GridRowView extends StatelessWidget {
           );
         case final GridChords cell:
           children.add(
-            _cell('', chordStyle, size, chord: gridChordParts(cell, formatter)),
+            _cell(
+              '',
+              chordStyle,
+              size,
+              columnWidth,
+              chord: gridChordParts(cell, formatter),
+            ),
           );
         case final GridMark mark:
           children.add(
@@ -161,10 +213,11 @@ class GridRowView extends StatelessWidget {
               gridMarkText(mark.symbol),
               textStyle.copyWith(color: barColor),
               size,
+              columnWidth,
             ),
           );
         case final GridStrum strum:
-          children.add(_cell(strum.symbol, chordStyle, size));
+          children.add(_cell(strum.symbol, chordStyle, size, columnWidth));
       }
     }
     if (row.rightMargin != null) {
@@ -178,19 +231,41 @@ class GridRowView extends StatelessWidget {
       );
     }
     painter.dispose();
-    return Padding(
+    final view = Padding(
       padding: EdgeInsets.symmetric(vertical: 0.15 * size),
       child: Row(mainAxisSize: MainAxisSize.min, children: children),
+    );
+    final full = gridWidth == null ? null : gridWidth! * size;
+    if (full == null || full <= 0) return view;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final available = constraints.maxWidth;
+        if (!available.isFinite || full <= available) return view;
+        // Every row of the grid gets the width of the widest one and the
+        // same scale, so the cells stay in columns.
+        return SizedBox(
+          width: available,
+          child: FittedBox(
+            fit: BoxFit.fitWidth,
+            alignment: Alignment.centerLeft,
+            child: SizedBox(
+              width: full,
+              child: Align(alignment: Alignment.centerLeft, child: view),
+            ),
+          ),
+        );
+      },
     );
   }
 
   Widget _cell(
     String text,
     TextStyle style,
-    double size, {
+    double size,
+    double columnWidth, {
     List<ChordPart>? chord,
   }) => SizedBox(
-    width: geometry.cell * size,
+    width: columnWidth * size,
     child: Padding(
       padding: EdgeInsets.only(left: 0.25 * size),
       child: chord != null

@@ -365,7 +365,7 @@ class _SectionBlock extends StatelessWidget {
     final chorus = block.isChorus;
     final role = block.role;
     final section = style.sectionStyle(role);
-    GridGeometry? grid;
+    (GridGeometry, double)? grid;
     final children = <Widget>[
       if (block.label != null && section.showLabel)
         markLine(
@@ -426,7 +426,8 @@ class _SectionBlock extends StatelessWidget {
           children.add(
             GridRowView(
               row: g.row,
-              geometry: grid,
+              geometry: grid.$1,
+              gridWidth: grid.$2,
               formatter: options.formatter,
               textStyle: text,
               chordStyle: chordStyle,
@@ -528,7 +529,9 @@ class _SectionBlock extends StatelessWidget {
   (StoredFile, ImageBox)? _image(ImageLine line) =>
       resolveImage(line, options.imageLookup);
 
-  GridGeometry _gridGeometry(
+  /// Geometry of the grid lines in [lines] and the width of the widest
+  /// row, in units of the grid font size.
+  (GridGeometry, double) _gridGeometry(
     BuildContext context,
     List<Line> lines,
     TextStyle text,
@@ -539,16 +542,23 @@ class _SectionBlock extends StatelessWidget {
       textScaler: MediaQuery.textScalerOf(context),
     );
     final size = text.fontSize ?? 14;
-    final geometry = GridGeometry.of(lines, options.formatter, (
-      s, {
-      bool chord = false,
-    }) {
+    double width(String s, {bool chord = false}) {
       painter.text = TextSpan(text: s, style: chord ? chordStyle : text);
       painter.layout();
       return painter.width / size;
-    });
+    }
+
+    final geometry = GridGeometry.of(lines, options.formatter, width);
+    var widest = 0.0;
+    for (final line in lines) {
+      if (line is! GridLine) continue;
+      widest = math.max(
+        widest,
+        geometry.rowWidth(line.row, options.formatter, width),
+      );
+    }
     painter.dispose();
-    return geometry;
+    return (geometry, widest);
   }
 }
 
