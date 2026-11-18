@@ -73,7 +73,7 @@ function serverVersion() {
   }
 }
 
-/// The newest app release (ADR-0035): the version this server was deployed
+/// The newest app release (ADR-0036): the version this server was deployed
 /// from with make server-release, which only runs after the GitHub Release
 /// is published. Null for a working tree deployed with make server-install
 /// (x.y.z-dev+<commit>), the local backend and tests.

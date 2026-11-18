@@ -13,7 +13,7 @@ import 'test_app.dart';
 
 const _ann = AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann');
 
-/// Unobtrusive hint when a newer release exists (ADR-0035).
+/// Unobtrusive hint when a newer release exists (ADR-0036).
 void main() {
   group('isUpdate', () {
     test('only newer versions', () {

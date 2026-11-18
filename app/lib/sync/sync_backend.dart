@@ -435,7 +435,7 @@ class ServerConfig {
   /// server does not say (older server, or not reachable).
   final String? minClientVersion;
 
-  /// The newest app release (ADR-0035); null if the server does not say
+  /// The newest app release (ADR-0036); null if the server does not say
   /// (older server, deployed from a working tree, or not reachable).
   final String? latestClientVersion;
 

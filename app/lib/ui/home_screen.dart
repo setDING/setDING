@@ -5,9 +5,11 @@ import 'package:url_launcher/url_launcher.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../sync/sync_controller.dart';
 import '../sync/update_check.dart';
+import '../update/update_providers.dart';
 import 'sets/sets_screen.dart';
 import 'settings_screen.dart';
 import 'songs/songs_screen.dart';
+import 'widgets/app_update.dart';
 import 'widgets/dialogs.dart';
 import 'widgets/logo.dart';
 import 'widgets/update_required_banner.dart';
@@ -26,13 +28,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   static const _pages = [SetsScreen(), SongsScreen(), SettingsScreen()];
 
-  /// How long the hint about a newer release stays (ADR-0035).
+  /// How long the hint about a newer release stays (ADR-0036).
   static const _updateHintDuration = Duration(seconds: 6);
 
   @override
   void initState() {
     super.initState();
-    // A newer release (ADR-0035): one short hint per version. Also for an
+    // A newer release (ADR-0036): one short hint per version. Also for an
     // update already known from an earlier start.
     ref.listenManual(updateCheckProvider, (_, version) {
       if (version == null) return;
@@ -57,13 +59,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           persist: false,
           duration: _updateHintDuration,
           content: Text(l10n.updateAvailableTitle(version)),
-          action: SnackBarAction(
-            label: l10n.updateAvailableDetails,
-            onPressed: () => launchUrl(
-              releasePageUrl(version),
-              mode: LaunchMode.externalApplication,
-            ),
-          ),
+          // The Windows app installs it itself (ADR-0035), after asking.
+          action: ref.read(installableUpdateProvider) == version
+              ? SnackBarAction(
+                  key: const Key('update-available-install'),
+                  label: l10n.appUpdateInstall,
+                  onPressed: () => installAppUpdate(context, version),
+                )
+              : SnackBarAction(
+                  label: l10n.updateAvailableDetails,
+                  onPressed: () => launchUrl(
+                    releasePageUrl(version),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                ),
         ),
       );
   }
@@ -78,7 +87,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         showMessage(context, l10n.settingsTakenOver);
       }
     });
-    // A dot on the settings, where the update is described (ADR-0035).
+    // A dot on the settings, where the update is described (ADR-0036).
     final update = ref.watch(updateCheckProvider) != null;
     final destinations = [
       (Icons.queue_music_outlined, Icons.queue_music, l10n.navSets, false),

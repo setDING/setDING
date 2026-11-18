@@ -8,6 +8,8 @@ import '../../sync/auth_providers.dart';
 import '../../sync/sync_backend.dart';
 import '../../sync/sync_controller.dart';
 import '../../sync/update_check.dart' show releasesUrl;
+import '../../update/update_providers.dart';
+import 'app_update.dart';
 
 export '../../sync/update_check.dart' show releasesUrl;
 
@@ -35,6 +37,8 @@ class UpdateRequiredBanner extends ConsumerWidget {
     final min =
         minVersion ?? ref.watch(serverConfigProvider).value?.minClientVersion;
     final current = ref.watch(clientVersionProvider);
+    // The Windows app installs a newer release itself (ADR-0035).
+    final update = ref.watch(installableUpdateProvider);
 
     return Material(
       key: const Key('update-required-banner'),
@@ -66,7 +70,8 @@ class UpdateRequiredBanner extends ConsumerWidget {
                           l10n.updateRequiredBody,
                           if (min != null && current != null)
                             l10n.updateRequiredVersions(current, min),
-                          if (!canReload) l10n.updateRequiredHowTo,
+                          if (!canReload && update == null)
+                            l10n.updateRequiredHowTo,
                         ].join(' '),
                         style: TextStyle(color: scheme.onErrorContainer),
                       ),
@@ -77,7 +82,13 @@ class UpdateRequiredBanner extends ConsumerWidget {
             ),
             Align(
               alignment: AlignmentDirectional.centerEnd,
-              child: canReload
+              child: update != null
+                  ? FilledButton(
+                      key: const Key('update-install'),
+                      onPressed: () => installAppUpdate(context, update),
+                      child: Text(l10n.appUpdateInstall),
+                    )
+                  : canReload
                   ? TextButton(
                       key: const Key('update-reload'),
                       onPressed: reloadApp,

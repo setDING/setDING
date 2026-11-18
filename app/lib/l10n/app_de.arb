@@ -1346,18 +1346,7 @@
   "songDisplayLibrarySong": "Song aus der Bibliothek …",
   "songDisplayPickSong": "Song für die Vorschau",
   "songDisplayResizePreview": "Vorschau grösser oder kleiner ziehen",
-  "appUpdateTitle": "Updates",
-  "appUpdateAvailable": "setDING {version} ist verfügbar.",
-  "@appUpdateAvailable": {
-    "placeholders": {
-      "version": {
-        "type": "String",
-        "example": "0.9.0"
-      }
-    }
-  },
   "appUpdateInstall": "Installieren",
-  "appUpdateLater": "Später",
   "appUpdateInstallTitle": "setDING {version} installieren?",
   "@appUpdateInstallTitle": {
     "placeholders": {
@@ -1369,8 +1358,5 @@
   },
   "appUpdateInstallBody": "setDING wird geschlossen, die neue Version installiert und wieder gestartet. Deine Daten bleiben auf diesem Gerät.",
   "appUpdateDownloading": "Update wird heruntergeladen …",
-  "appUpdateFailed": "Das Update konnte nicht installiert werden. Bitte versuche es später nochmals.",
-  "appUpdateChecking": "Suche nach Updates …",
-  "appUpdateCurrent": "setDING ist auf dem neusten Stand. Tippen, um erneut zu suchen.",
-  "appUpdateCheckFailed": "Konnte nicht nach Updates suchen (keine Verbindung?). Tippen, um es nochmals zu versuchen."
+  "appUpdateFailed": "Das Update konnte nicht installiert werden. Bitte versuche es später nochmals."
 }

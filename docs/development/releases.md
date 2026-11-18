@@ -156,10 +156,13 @@ of the two apps) or paste the link under "Bands → Join". Remove the beta with
 The release contains the installer `setding-X.Y.Z-windows-x64-setup.exe` (Inno
 Setup, `app/windows/installer/setding.iss`, ADR-0035) and the portable zip. The
 setup installs per user without administrator rights and updates an existing
-installation in place. The installed app checks the latest GitHub release at every
-start and installs a newer one after a tap: it downloads the setup, checks it
-against `SHA256SUMS` and runs it silently. So every release must contain the setup
-**and** `SHA256SUMS` (the `publish` job does both); pre-releases are not offered.
+installation in place. The installed app learns about a newer release from the
+update check (`latestClientVersion`, ADR-0036) and installs it after a tap: it
+downloads `setding-X.Y.Z-windows-x64-setup.exe` from the release of the tag
+`vX.Y.Z`, checks it against that release's `SHA256SUMS` and runs it silently. So
+every release must contain the setup **and** `SHA256SUMS` under these names (the
+`publish` job does both), and the server is deployed from the tag only after the
+release exists (`make server-release` checks this).
 
 Nothing is code-signed, so Windows SmartScreen warns when the downloaded setup (or
 the zip's `setding.exe`) is first started ("More info" → "Run anyway"). Updates from

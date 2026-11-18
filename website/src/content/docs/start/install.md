@@ -26,10 +26,10 @@ praktisch allen aktuellen Tablets.
 2. Die App ist nicht signiert, deshalb warnt Windows SmartScreen einmal; klicke
    auf **Weitere Informationen** und dann auf **Trotzdem ausführen**.
 
-Danach sucht setDING bei jedem Start nach einer neuen Version und bietet sie in
-einem Hinweis über der Navigation an (und unter **Einstellungen → Speicher & Info → Updates**).
-**Installieren** lädt sie herunter, schliesst setDING, aktualisiert die App und
-startet sie wieder; deine Daten bleiben erhalten. Eine neuere Setup-Datei von Hand
+Ist eine neue Version verfügbar (siehe [Updates](#updates)), bietet setDING im
+Hinweis und unter **Einstellungen → Speicher & Info** **Installieren** an. Das lädt
+sie herunter, schliesst setDING, aktualisiert die App und startet sie wieder;
+deine Daten bleiben erhalten. Eine neuere Setup-Datei von Hand
 zu starten, bewirkt dasselbe.
 
 Lieber ohne Installation? `setding-<Version>-windows-x64.zip` enthält dieselbe
@@ -45,8 +45,9 @@ selbst.
 
 setDING prüft einmal am Tag, ob eine neuere Version verfügbar ist. Dann erscheint
 ein Punkt bei **Einstellungen**, und unter **Einstellungen → Speicher & Info**
-steht die neue Version mit einem Link zur Download-Seite. Im Live-Modus erscheint
-der Hinweis nie.
+steht die neue Version mit einem Link zur Download-Seite (unter Windows mit
+**Installieren**, wenn du setDING mit der Setup-Datei installiert hast). Im
+Live-Modus erscheint der Hinweis nie.
 
 ## iOS
 

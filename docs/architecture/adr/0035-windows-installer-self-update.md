@@ -39,16 +39,20 @@ itself does not get it.
   - The data stays in `%APPDATA%` (Flutter's application support folder), outside
     the installation, so updates and uninstalling never touch it.
 - **In-app update (Windows, installed with the setup only):**
-  - At every start, the app asks GitHub for the latest release
-    (`api.github.com/repos/tafli/setDING/releases/latest`; pre-releases are never
-    offered) and compares it with its version (SemVer, ADR-0028). No automatic
-    retries; offline it simply finds nothing.
-  - A newer version is offered in a banner above the navigation ("Later" hides it
-    until the next start) and under *Settings → Storage & info → Updates*, where a
-    tap checks again. The "Please update setDING" banner (ADR-0029) offers
-    "Install" instead of copying the link.
-  - **Install** asks first, downloads the setup into a temporary folder, checks it
-    against the release's `SHA256SUMS` (deleted on mismatch), starts it with
+  - **Which version** is current comes from the update check of ADR-0036 (the
+    server's `latestClientVersion`, at most once a day, pre-releases only for
+    pre-release users); the app does not ask GitHub for the latest release. When
+    the server refuses this version (ADR-0029) before the check knew of a newer
+    one, the version comes from the server config.
+  - **Where it is offered:** the existing hints of ADR-0036 get an *Install*
+    action: the one-time SnackBar (instead of *Details*) and the tile under
+    *Settings → Storage & info* (instead of the how-to text). The "Please update
+    setDING" banner (ADR-0029) offers *Install* instead of copying the link. No
+    banner of its own.
+  - **Install** asks first, then downloads `setding-<version>-windows-x64-setup.exe`
+    and `SHA256SUMS` from the GitHub release of the tag `v<version>` into a
+    temporary folder, checks the setup against its checksum (deleted on mismatch),
+    starts it with
     `/VERYSILENT /SUPPRESSMSGBOXES /NORESTART` and ends the app. The setup's `[Run]`
     entry starts the new version afterwards.
   - Never without a tap, so an update never restarts the app during a performance.
@@ -70,22 +74,24 @@ itself does not get it.
 | Self-distributed MSIX with `.appinstaller` | Automatic updates by Windows | Needs a trusted signing certificate anyway; self-signed ones must be imported on every device |
 | winget package | Command-line install and update without SmartScreen prompt | Users must run `winget upgrade`; manifest PRs per release |
 | Automatic silent update without asking | No tap needed | Could restart the app on stage; the person decides when |
-| **Inno Setup + in-app update (chosen)** | No account or identity check, free, per-user install without admin rights, updates like Obtainium, works offline-first | One SmartScreen warning on the first install, publisher shown as unknown, relies on GitHub releases and the checksum file of the same release |
+| Own update check against GitHub `releases/latest` at every start, with its own banner and settings tile (first version of this ADR) | Independent of the server | A second update signal next to ADR-0036, a request to GitHub at every start, another banner |
+| **Inno Setup + in-app update (chosen)** | No account or identity check, free, per-user install without admin rights, updates like Obtainium, works offline-first | One SmartScreen warning on the first install, publisher shown as unknown, relies on the update check (ADR-0036), GitHub releases and the checksum file of the same release |
 
 ## Consequences
 
 - Windows users install once (one SmartScreen confirmation) and then update from
   inside the app; running a newer setup by hand works as well.
-- The app talks to GitHub once per start (only the Windows app installed with the
-  setup); GitHub sees the IP address. Unauthenticated API requests are limited to
-  60 per hour and IP, far above one per start.
+- The app only talks to GitHub when the person taps *Install*; GitHub then sees
+  the IP address. Knowing about a new version needs a server deployed from that
+  release (ADR-0036); every release must contain the setup and `SHA256SUMS` under
+  the names above.
 - The checksum comes from the same GitHub release as the setup: it protects against
   broken or truncated downloads, not against a compromised repository. A signature
   (e.g. SignPath) would add that later.
 - Switching from the zip to the setup keeps the data: both use the same
   `%APPDATA%` folder. The old zip folder can be deleted.
 - The setup itself is only tested by a release build on GitHub Actions (there is no
-  Windows machine in `make check`); the update logic (release lookup, checksum,
+  Windows machine in `make check`); the update logic (checksum lookup, verified
   download, installed-with-setup check) and the UI are covered by `make check`.
 - Inno Setup's German messages are German German (they may contain "ß"); the app UI
   stays de-CH (ADR-0008).
@@ -96,6 +102,10 @@ itself does not get it.
   The owner declined the Store's ID and selfie verification; changed to an Inno
   Setup installer with in-app updates from the GitHub releases, no code signing for
   now.
+- 2026-11-18: The version to install comes from the update check of ADR-0036
+  (`latestClientVersion`) instead of GitHub `releases/latest`; *Install* is an
+  action of the ADR-0036 SnackBar and *Storage & info* tile instead of a banner
+  and settings tile of its own (owner, after #499).
 
 ## Open points
 

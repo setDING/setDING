@@ -2672,18 +2672,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get songDisplayResizePreview => 'Drag to resize the preview';
 
   @override
-  String get appUpdateTitle => 'Updates';
-
-  @override
-  String appUpdateAvailable(String version) {
-    return 'setDING $version is available.';
-  }
-
-  @override
   String get appUpdateInstall => 'Install';
-
-  @override
-  String get appUpdateLater => 'Later';
 
   @override
   String appUpdateInstallTitle(String version) {
@@ -2700,14 +2689,4 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get appUpdateFailed =>
       'The update could not be installed. Please try again later.';
-
-  @override
-  String get appUpdateChecking => 'Checking for updates …';
-
-  @override
-  String get appUpdateCurrent => 'setDING is up to date. Tap to check again.';
-
-  @override
-  String get appUpdateCheckFailed =>
-      'Could not check for updates (no connection?). Tap to try again.';
 }

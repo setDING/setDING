@@ -11,6 +11,7 @@ import 'package:setding/app.dart';
 import 'package:setding/platform/self_update_io.dart';
 import 'package:setding/sync/auth_providers.dart';
 import 'package:setding/sync/sync_backend.dart';
+import 'package:setding/sync/update_check.dart';
 import 'package:setding/ui/home_screen.dart';
 import 'package:setding/ui/settings_screen.dart';
 import 'package:setding/update/app_update.dart';
@@ -28,120 +29,42 @@ const _setup =
 final _setupBytes = utf8.encode('the setup');
 final _setupHash = sha256.convert(_setupBytes).toString();
 
-/// A GitHub "latest release" answer.
-Map<String, Object?> _release({
-  String tag = 'v0.9.0',
-  bool prerelease = false,
-  bool withSetup = true,
-  bool withSums = true,
-}) => {
-  'tag_name': tag,
-  'draft': false,
-  'prerelease': prerelease,
-  'assets': [
-    {
-      'name': 'setding-0.9.0-windows-x64.zip',
-      'browser_download_url': 'https://example.test/zip',
-    },
-    if (withSetup)
-      {
-        'name': 'setding-0.9.0-windows-x64-setup.exe',
-        'browser_download_url': _setup,
-      },
-    if (withSums) {'name': 'SHA256SUMS', 'browser_download_url': _sums},
-  ],
-};
-
-/// GitHub with [release] as the latest release and [sums] as its checksums.
-MockClient _github(Object? release, {String? sums, int status = 200}) =>
+/// The GitHub release v0.9.0 with [sums] as its checksums.
+MockClient _github({String? sums, int sumsStatus = 200}) =>
     MockClient((request) async {
       final url = request.url.toString();
-      if (url == 'https://api.github.com/repos/tafli/setDING/releases/latest') {
-        expect(request.headers['Accept'], 'application/vnd.github+json');
-        return http.Response(jsonEncode(release), status);
-      }
       if (url == _sums) {
         return http.Response(
           sums ??
               '${'0' * 64}  setding-0.9.0-windows-x64.zip\n'
                   '$_setupHash  setding-0.9.0-windows-x64-setup.exe\n',
-          200,
+          sumsStatus,
         );
       }
       if (url == _setup) return http.Response.bytes(_setupBytes, 200);
       return http.Response('not found', 404);
     });
 
+const _ann = AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann');
+
 /// Updates of the Windows app from the GitHub releases (ADR-0035).
 void main() {
-  group('fetchAvailableUpdate', () {
-    test('offers a newer release with its setup and checksum', () async {
-      final update = await fetchAvailableUpdate(
-        _github(_release()),
-        currentVersion: '0.8.2',
-      );
-      expect(update, isNotNull);
-      expect(update!.version, '0.9.0');
+  group('fetchUpdate', () {
+    test('finds the setup of the version and its checksum', () async {
+      final update = await fetchUpdate(_github(), '0.9.0');
+      expect(update.version, '0.9.0');
       expect(update.setupName, 'setding-0.9.0-windows-x64-setup.exe');
       expect(update.setupUrl, Uri.parse(_setup));
       expect(update.sha256, _setupHash);
     });
 
-    test('offers nothing for the same or an older version', () async {
-      for (final current in ['0.9.0', '0.10.0', '1.0.0']) {
-        expect(
-          await fetchAvailableUpdate(
-            _github(_release()),
-            currentVersion: current,
-          ),
-          isNull,
-          reason: current,
-        );
-      }
-    });
-
-    test(
-      'offers nothing for pre-releases and releases without a setup',
-      () async {
-        for (final release in [
-          _release(prerelease: true),
-          _release(withSetup: false),
-          _release(withSums: false),
-        ]) {
-          expect(
-            await fetchAvailableUpdate(
-              _github(release),
-              currentVersion: '0.8.0',
-            ),
-            isNull,
-          );
-        }
-      },
-    );
-
-    test('offers nothing before the first release', () async {
+    test('fails without a checksum for the setup or without SHA256SUMS', () {
       expect(
-        await fetchAvailableUpdate(
-          _github({'message': 'Not Found'}, status: 404),
-          currentVersion: '0.8.0',
-        ),
-        isNull,
-      );
-    });
-
-    test('fails without a checksum for the setup or on server errors', () {
-      expect(
-        fetchAvailableUpdate(
-          _github(_release(), sums: '${'1' * 64}  other.exe\n'),
-          currentVersion: '0.8.0',
-        ),
+        fetchUpdate(_github(sums: '${'1' * 64}  other.exe\n'), '0.9.0'),
         throwsA(isA<UpdateException>()),
       );
       expect(
-        fetchAvailableUpdate(
-          _github({'message': 'rate limited'}, status: 403),
-          currentVersion: '0.8.0',
-        ),
+        fetchUpdate(_github(sumsStatus: 404), '0.9.0'),
         throwsA(isA<UpdateException>()),
       );
     });
@@ -171,7 +94,7 @@ void main() {
     test('saves the setup when the checksum matches', () async {
       final progress = <double>[];
       final path = await downloadVerifiedUpdate(
-        _github(_release()),
+        _github(),
         update(_setupHash),
         into: dir,
         onProgress: progress.add,
@@ -182,11 +105,7 @@ void main() {
 
     test('refuses and deletes a setup with another checksum', () async {
       await expectLater(
-        downloadVerifiedUpdate(
-          _github(_release()),
-          update('0' * 64),
-          into: dir,
-        ),
+        downloadVerifiedUpdate(_github(), update('0' * 64), into: dir),
         throwsA(isA<UpdateException>()),
       );
       expect(dir.listSync(), isEmpty);
@@ -204,175 +123,189 @@ void main() {
     expect(isInstalledWithSetup(executable: exe, windows: false), isFalse);
   });
 
-  group('UI', () {
-    final update = AvailableUpdate(
-      version: '0.9.0',
-      setupName: 'setding-0.9.0-windows-x64-setup.exe',
-      setupUrl: Uri.parse(_setup),
-      sha256: _setupHash,
-    );
+  group('installableUpdateProvider', () {
+    ProviderContainer container({
+      required bool supported,
+      String? checked,
+      String? latest,
+    }) {
+      final c = ProviderContainer(
+        overrides: [
+          selfUpdateSupportedProvider.overrideWithValue(supported),
+          clientVersionProvider.overrideWithValue('0.8.0'),
+          updateCheckProvider.overrideWithBuild((ref, _) => checked),
+          serverConfigProvider.overrideWith(
+            (ref) async => ServerConfig(latestClientVersion: latest),
+          ),
+        ],
+      );
+      addTearDown(c.dispose);
+      return c;
+    }
 
+    test('the version from the update check (ADR-0036)', () {
+      expect(
+        container(
+          supported: true,
+          checked: '0.9.0',
+        ).read(installableUpdateProvider),
+        '0.9.0',
+      );
+    });
+
+    test('nothing where the app does not update itself', () {
+      expect(
+        container(
+          supported: false,
+          checked: '0.9.0',
+        ).read(installableUpdateProvider),
+        isNull,
+      );
+    });
+
+    test('falls back to the server config, newer versions only', () async {
+      for (final (latest, expected) in [
+        ('0.9.0', '0.9.0'),
+        ('0.8.0', null),
+        (null, null),
+      ]) {
+        final c = container(supported: true, latest: latest);
+        c.listen(installableUpdateProvider, (_, _) {});
+        await c.read(serverConfigProvider.future);
+        expect(c.read(installableUpdateProvider), expected, reason: latest);
+      }
+    });
+  });
+
+  group('UI', () {
     Widget build(
-      TestApp app,
-      Widget home, {
-      required Future<AvailableUpdate?> Function() check,
+      TestApp app, {
+      bool supported = true,
+      bool enabled = true,
+      Widget home = const HomeScreen(),
     }) => ProviderScope(
       overrides: [
         ...app.overrides,
         clientVersionProvider.overrideWithValue('0.8.0'),
-        selfUpdateSupportedProvider.overrideWithValue(true),
-        availableUpdateProvider.overrideWith((ref) => check()),
+        updateCheckEnabledProvider.overrideWithValue(enabled),
+        selfUpdateSupportedProvider.overrideWithValue(supported),
       ],
       child: SetdingApp(home: home),
     );
 
-    testWidgets('the banner offers a newer version until put off', (
+    Future<TestApp> create(WidgetTester tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': 'en', 'currentBandId': 'b1'},
+        user: _ann,
+      );
+      app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+      app.backend.config = const ServerConfig(latestClientVersion: '0.9.0');
+      return app;
+    }
+
+    Future<void> afterStartDelay(WidgetTester tester) async {
+      await tester.pump(UpdateCheck.startDelay);
+      await tester.pumpAndSettle();
+    }
+
+    final snackbar = find.byKey(const Key('update-available-snackbar'));
+    final install = find.byKey(const Key('update-available-install'));
+
+    Future<void> openAbout(WidgetTester tester) async {
+      final about = find.byKey(const Key('settings-category-about'));
+      await tester.scrollUntilVisible(
+        about,
+        300,
+        scrollable: find
+            .descendant(
+              of: find.byType(SettingsScreen),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      await tester.tap(about);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('the one-time hint offers to install, after asking', (
       tester,
     ) async {
-      useTabletSize(tester);
-      final app = await TestApp.create(prefs: {'language': 'en'});
-      await tester.pumpWidget(
-        build(app, const HomeScreen(), check: () async => update),
-      );
-      await tester.pumpAndSettle();
-      expect(find.byKey(const Key('app-update-banner')), findsOneWidget);
-      expect(find.text('setDING 0.9.0 is available.'), findsOneWidget);
+      final app = await create(tester);
+      await tester.pumpWidget(build(app));
+      await afterStartDelay(tester);
+      expect(snackbar, findsOneWidget);
+      expect(find.text('setDING 0.9.0 is available'), findsOneWidget);
+      expect(install, findsOneWidget);
+      expect(find.text('Details'), findsNothing);
 
       // Installing asks first; cancelling changes nothing.
-      await tester.tap(find.byKey(const Key('app-update-install')));
+      await tester.tap(install);
       await tester.pumpAndSettle();
       expect(find.text('Install setDING 0.9.0?'), findsOneWidget);
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('app-update-progress')), findsNothing);
-
-      await tester.tap(find.byKey(const Key('app-update-later')));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const Key('app-update-banner')), findsNothing);
       await app.dispose(tester);
     });
 
-    testWidgets('no banner when the app is current', (tester) async {
-      useTabletSize(tester);
-      final app = await TestApp.create(prefs: {'language': 'en'});
-      await tester.pumpWidget(
-        build(app, const HomeScreen(), check: () async => null),
+    testWidgets('the Storage & info tile offers to install', (tester) async {
+      final app = await create(tester);
+      await tester.pumpWidget(build(app, home: const SettingsScreen()));
+      await afterStartDelay(tester);
+      await openAbout(tester);
+      expect(find.byKey(const Key('update-available')), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('update-available')),
+          matching: install,
+        ),
+        findsOneWidget,
       );
+      // Installing replaces the how-to text.
+      expect(find.textContaining('Obtainium'), findsNothing);
+
+      await tester.tap(install);
       await tester.pumpAndSettle();
-      expect(find.byKey(const Key('app-update-banner')), findsNothing);
+      expect(find.text('Install setDING 0.9.0?'), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      await app.dispose(tester);
+    });
+
+    testWidgets('no install action where the app does not update itself', (
+      tester,
+    ) async {
+      final app = await create(tester);
+      await tester.pumpWidget(
+        build(app, supported: false, home: const SettingsScreen()),
+      );
+      await afterStartDelay(tester);
+      await openAbout(tester);
+      expect(find.byKey(const Key('update-available')), findsOneWidget);
+      expect(install, findsNothing);
+      expect(find.textContaining('Obtainium'), findsOneWidget);
       await app.dispose(tester);
     });
 
     testWidgets('a refused version offers to install the update', (
       tester,
     ) async {
-      useTabletSize(tester);
-      final app = await TestApp.create(
-        prefs: {'language': 'en', 'currentBandId': 'b1'},
-        user: const AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann'),
-      );
-      await tester.pumpWidget(
-        build(app, const HomeScreen(), check: () async => update),
-      );
+      final app = await create(tester);
+      // Before the daily check knew of the update: from the server config.
+      await tester.pumpWidget(build(app, enabled: false));
       await tester.pumpAndSettle();
-      app.backend.config = const ServerConfig(minClientVersion: '0.9.0');
+      app.backend.config = const ServerConfig(
+        minClientVersion: '0.9.0',
+        latestClientVersion: '0.9.0',
+      );
       app.backend.failWith = BackendErrorKind.updateRequired;
       await syncNow(tester);
 
-      // The update-required banner replaces the offer and installs directly.
       expect(find.byKey(const Key('update-required-banner')), findsOneWidget);
-      expect(find.byKey(const Key('app-update-banner')), findsNothing);
       expect(find.byKey(const Key('update-install')), findsOneWidget);
       expect(find.byKey(const Key('update-copy-link')), findsNothing);
       expect(find.textContaining('Obtainium'), findsNothing);
-      await app.dispose(tester);
-    });
-
-    Future<void> openCategory(WidgetTester tester) async {
-      final category = find.byKey(const Key('settings-category-about'));
-      if (category.evaluate().isEmpty) {
-        await tester.scrollUntilVisible(
-          category,
-          100,
-          scrollable: find.byType(Scrollable).first,
-        );
-      }
-      await tester.ensureVisible(category);
-      await tester.pumpAndSettle();
-      await tester.tap(category);
-      await tester.pumpAndSettle();
-    }
-
-    Future<void> openAbout(WidgetTester tester) async {
-      await openCategory(tester);
-      await tester.ensureVisible(find.byKey(const Key('app-update-tile')));
-      await tester.pumpAndSettle();
-    }
-
-    testWidgets('the settings show the update and check again on tap', (
-      tester,
-    ) async {
-      useTabletSize(tester);
-      final app = await TestApp.create(prefs: {'language': 'en'});
-      var checks = 0;
-      AvailableUpdate? next;
-      await tester.pumpWidget(
-        build(
-          app,
-          const SettingsScreen(),
-          check: () async {
-            checks++;
-            return next;
-          },
-        ),
-      );
-      await tester.pumpAndSettle();
-      await openAbout(tester);
-      expect(
-        find.text('setDING is up to date. Tap to check again.'),
-        findsOneWidget,
-      );
-      expect(find.byKey(const Key('app-update-tile-install')), findsNothing);
-
-      next = update;
-      final before = checks;
-      await tester.tap(find.byKey(const Key('app-update-tile')));
-      await tester.pumpAndSettle();
-      expect(checks, before + 1);
-      expect(find.text('setDING 0.9.0 is available.'), findsWidgets);
-      expect(find.byKey(const Key('app-update-tile-install')), findsOneWidget);
-      await app.dispose(tester);
-    });
-
-    testWidgets('a failed check says so in the settings', (tester) async {
-      useTabletSize(tester);
-      final app = await TestApp.create(prefs: {'language': 'en'});
-      await tester.pumpWidget(
-        build(
-          app,
-          const SettingsScreen(),
-          check: () async => throw const UpdateException('offline'),
-        ),
-      );
-      await tester.pumpAndSettle();
-      await openAbout(tester);
-      expect(
-        find.textContaining('Could not check for updates'),
-        findsOneWidget,
-      );
-      await app.dispose(tester);
-    });
-
-    testWidgets('no update tile where the app does not update itself', (
-      tester,
-    ) async {
-      useTabletSize(tester);
-      final app = await TestApp.create(prefs: {'language': 'en'});
-      await tester.pumpWidget(app.build(home: const SettingsScreen()));
-      await tester.pumpAndSettle();
-      await openCategory(tester);
-      expect(find.byKey(const Key('app-version')), findsOneWidget);
-      expect(find.byKey(const Key('app-update-tile')), findsNothing);
       await app.dispose(tester);
     });
   });
