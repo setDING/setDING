@@ -120,10 +120,7 @@ void main() {
     await tester.pumpWidget(app.build(home: const SettingsScreen()));
     await tester.pumpAndSettle();
 
-    Future<void> category(String name) async {
-      await tester.tap(find.byKey(Key('settings-category-$name')));
-      await tester.pumpAndSettle();
-    }
+    Future<void> category(String name) => tapSettingsCategory(tester, name);
 
     Future<void> show(String key, {double delta = 200}) async {
       await tester.scrollUntilVisible(
@@ -166,7 +163,7 @@ void main() {
     );
     await tester.pumpWidget(app.build(home: const SettingsScreen()));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('settings-category-live')));
+    await tapSettingsCategory(tester, 'live');
     await tester.pumpAndSettle();
     final measure = find.byKey(const Key('settings-audio-latency-measure'));
     await tester.scrollUntilVisible(
