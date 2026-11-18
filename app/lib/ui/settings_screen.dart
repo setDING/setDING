@@ -16,6 +16,7 @@ import '../util/log.dart';
 import 'account/account_section.dart';
 import 'bands/bands_settings.dart';
 import 'settings/latency_calibration.dart';
+import 'settings/midi_test_screen.dart';
 import 'settings/song_display_settings.dart';
 import 'theme.dart';
 import 'widgets/app_update.dart';
@@ -454,6 +455,17 @@ class _CategoryContent extends ConsumerWidget {
           value: s.annotationFinger,
           onChanged: (v) =>
               notifier.update((s) => s.copyWith(annotationFinger: v)),
+        ),
+        // Prototype of MIDI program changes (ADR-0039, #512).
+        ListTile(
+          key: const Key('settings-midi-test'),
+          leading: const Icon(Icons.piano_outlined),
+          title: Text(l10n.midiTestTitle),
+          subtitle: Text(l10n.midiTestTileHint),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const MidiTestScreen()),
+          ),
         ),
       ],
       SettingsCategory.about => [const _AboutTiles()],

@@ -4771,6 +4771,203 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Alle Änderungen'**
   String get whatsNewAllChanges;
+
+  /// No description provided for @midiTestTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'MIDI-Test (Prototyp)'**
+  String get midiTestTitle;
+
+  /// No description provided for @midiTestTileHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Einen Programmwechsel an ein per USB verbundenes Keyboard senden, z. B. einen Nord Stage 3'**
+  String get midiTestTileHint;
+
+  /// No description provided for @midiTestHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Sendet einen Programmwechsel an ein per USB verbundenes Keyboard, um MIDI auf diesem Gerät zu testen. Was das Keyboard sendet, z. B. wenn du darauf ein Programm oder einen Song wählst, erscheint im Protokoll.'**
+  String get midiTestHint;
+
+  /// No description provided for @midiTestDevices.
+  ///
+  /// In de, this message translates to:
+  /// **'Geräte'**
+  String get midiTestDevices;
+
+  /// No description provided for @midiTestRefresh.
+  ///
+  /// In de, this message translates to:
+  /// **'Erneut suchen'**
+  String get midiTestRefresh;
+
+  /// No description provided for @midiTestNoDevices.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein MIDI-Gerät gefunden. Verbinde das Keyboard per USB und suche erneut.'**
+  String get midiTestNoDevices;
+
+  /// No description provided for @midiTestConnect.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbinden'**
+  String get midiTestConnect;
+
+  /// No description provided for @midiTestDisconnect.
+  ///
+  /// In de, this message translates to:
+  /// **'Trennen'**
+  String get midiTestDisconnect;
+
+  /// No description provided for @midiTestConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbunden'**
+  String get midiTestConnected;
+
+  /// No description provided for @midiTestChannel.
+  ///
+  /// In de, this message translates to:
+  /// **'MIDI-Kanal'**
+  String get midiTestChannel;
+
+  /// No description provided for @midiTestModeNordProgram.
+  ///
+  /// In de, this message translates to:
+  /// **'Nord-Programm'**
+  String get midiTestModeNordProgram;
+
+  /// No description provided for @midiTestModeNordSong.
+  ///
+  /// In de, this message translates to:
+  /// **'Nord-Song'**
+  String get midiTestModeNordSong;
+
+  /// No description provided for @midiTestModeNordLive.
+  ///
+  /// In de, this message translates to:
+  /// **'Nord Live'**
+  String get midiTestModeNordLive;
+
+  /// No description provided for @midiTestModeRaw.
+  ///
+  /// In de, this message translates to:
+  /// **'Rohwerte'**
+  String get midiTestModeRaw;
+
+  /// No description provided for @midiTestBank.
+  ///
+  /// In de, this message translates to:
+  /// **'Bank'**
+  String get midiTestBank;
+
+  /// No description provided for @midiTestNumber.
+  ///
+  /// In de, this message translates to:
+  /// **'Nummer (1–50)'**
+  String get midiTestNumber;
+
+  /// No description provided for @midiTestLive.
+  ///
+  /// In de, this message translates to:
+  /// **'Live-Speicher'**
+  String get midiTestLive;
+
+  /// No description provided for @midiTestMsb.
+  ///
+  /// In de, this message translates to:
+  /// **'Bank Select MSB (CC 0, 0–127)'**
+  String get midiTestMsb;
+
+  /// No description provided for @midiTestLsb.
+  ///
+  /// In de, this message translates to:
+  /// **'Bank Select LSB (CC 32, 0–127)'**
+  String get midiTestLsb;
+
+  /// No description provided for @midiTestProgram.
+  ///
+  /// In de, this message translates to:
+  /// **'Programm (1–128)'**
+  String get midiTestProgram;
+
+  /// No description provided for @midiTestEmptyNotSent.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein leeres Bank Select wird nicht gesendet.'**
+  String get midiTestEmptyNotSent;
+
+  /// No description provided for @midiTestInvalid.
+  ///
+  /// In de, this message translates to:
+  /// **'Werte prüfen'**
+  String get midiTestInvalid;
+
+  /// No description provided for @midiTestSend.
+  ///
+  /// In de, this message translates to:
+  /// **'Senden'**
+  String get midiTestSend;
+
+  /// No description provided for @midiTestLog.
+  ///
+  /// In de, this message translates to:
+  /// **'Protokoll'**
+  String get midiTestLog;
+
+  /// No description provided for @midiTestCopy.
+  ///
+  /// In de, this message translates to:
+  /// **'Protokoll kopieren'**
+  String get midiTestCopy;
+
+  /// No description provided for @midiTestCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Protokoll kopiert'**
+  String get midiTestCopied;
+
+  /// No description provided for @midiTestClear.
+  ///
+  /// In de, this message translates to:
+  /// **'Protokoll leeren'**
+  String get midiTestClear;
+
+  /// No description provided for @midiTestSent.
+  ///
+  /// In de, this message translates to:
+  /// **'Gesendet: {bytes}'**
+  String midiTestSent(String bytes);
+
+  /// No description provided for @midiTestReceivedCc.
+  ///
+  /// In de, this message translates to:
+  /// **'Empfangen: CC {controller} = {value} (Kanal {channel}) – {bytes}'**
+  String midiTestReceivedCc(
+    int controller,
+    int value,
+    int channel,
+    String bytes,
+  );
+
+  /// No description provided for @midiTestReceivedPc.
+  ///
+  /// In de, this message translates to:
+  /// **'Empfangen: Programmwechsel {number} (Wert {program}, Kanal {channel}) – {bytes}'**
+  String midiTestReceivedPc(int number, int program, int channel, String bytes);
+
+  /// No description provided for @midiTestReceivedOther.
+  ///
+  /// In de, this message translates to:
+  /// **'Empfangen: {bytes}'**
+  String midiTestReceivedOther(String bytes);
+
+  /// No description provided for @midiTestError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler: {message}'**
+  String midiTestError(String message);
 }
 
 class _AppLocalizationsDelegate

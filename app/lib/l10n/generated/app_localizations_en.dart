@@ -2758,4 +2758,123 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get whatsNewAllChanges => 'All changes';
+
+  @override
+  String get midiTestTitle => 'MIDI test (prototype)';
+
+  @override
+  String get midiTestTileHint =>
+      'Send a program change to a keyboard connected by USB, e.g. a Nord Stage 3';
+
+  @override
+  String get midiTestHint =>
+      'Sends a program change to a keyboard connected by USB, to test MIDI on this device. What the keyboard sends, e.g. when you select a program or song on it, appears in the log.';
+
+  @override
+  String get midiTestDevices => 'Devices';
+
+  @override
+  String get midiTestRefresh => 'Search again';
+
+  @override
+  String get midiTestNoDevices =>
+      'No MIDI device found. Connect the keyboard by USB and search again.';
+
+  @override
+  String get midiTestConnect => 'Connect';
+
+  @override
+  String get midiTestDisconnect => 'Disconnect';
+
+  @override
+  String get midiTestConnected => 'Connected';
+
+  @override
+  String get midiTestChannel => 'MIDI channel';
+
+  @override
+  String get midiTestModeNordProgram => 'Nord program';
+
+  @override
+  String get midiTestModeNordSong => 'Nord song';
+
+  @override
+  String get midiTestModeNordLive => 'Nord live';
+
+  @override
+  String get midiTestModeRaw => 'Raw values';
+
+  @override
+  String get midiTestBank => 'Bank';
+
+  @override
+  String get midiTestNumber => 'Number (1–50)';
+
+  @override
+  String get midiTestLive => 'Live memory';
+
+  @override
+  String get midiTestMsb => 'Bank select MSB (CC 0, 0–127)';
+
+  @override
+  String get midiTestLsb => 'Bank select LSB (CC 32, 0–127)';
+
+  @override
+  String get midiTestProgram => 'Program (1–128)';
+
+  @override
+  String get midiTestEmptyNotSent => 'An empty bank select is not sent.';
+
+  @override
+  String get midiTestInvalid => 'Check the values';
+
+  @override
+  String get midiTestSend => 'Send';
+
+  @override
+  String get midiTestLog => 'Log';
+
+  @override
+  String get midiTestCopy => 'Copy log';
+
+  @override
+  String get midiTestCopied => 'Log copied';
+
+  @override
+  String get midiTestClear => 'Clear log';
+
+  @override
+  String midiTestSent(String bytes) {
+    return 'Sent: $bytes';
+  }
+
+  @override
+  String midiTestReceivedCc(
+    int controller,
+    int value,
+    int channel,
+    String bytes,
+  ) {
+    return 'Received: CC $controller = $value (channel $channel) – $bytes';
+  }
+
+  @override
+  String midiTestReceivedPc(
+    int number,
+    int program,
+    int channel,
+    String bytes,
+  ) {
+    return 'Received: program change $number (value $program, channel $channel) – $bytes';
+  }
+
+  @override
+  String midiTestReceivedOther(String bytes) {
+    return 'Received: $bytes';
+  }
+
+  @override
+  String midiTestError(String message) {
+    return 'Error: $message';
+  }
 }

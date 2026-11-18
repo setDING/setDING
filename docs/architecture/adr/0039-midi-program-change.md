@@ -211,6 +211,16 @@ settings** (layer 4b, ADR-0027), never synced:
   Stage 3 (`flutter_midi_command` offers `sendData` for raw bytes); the later
   stages stay listed in this ADR, with issues only once one is taken up.
 - 2026-11-18: Accepted by the owner (#510).
+- 2026-11-18: Prototype implemented (#512): `flutter_midi_command` 1.4 behind
+  `MidiOutput` (`app/lib/midi/`), the message bytes and the Nord Stage 3
+  addressing in `midi_message.dart`, and a "MIDI test (prototype)" screen in
+  the *Screen & live mode* settings that lists USB MIDI devices, sends Nord
+  programs, songs, live memories or raw values on a chosen channel and logs
+  what the keyboard sends back (to find the song addressing). The plugin
+  requires the Android MIDI feature in its manifest; the app overrides it to
+  optional. Linux loads `libasound.so.2` at run time; the web plugin asks for
+  MIDI access with SysEx, so Chrome shows the stronger permission prompt.
+  Results on the real keyboard are pending.
 
 ## Open points
 

@@ -1178,5 +1178,90 @@
       }
     }
   },
-  "whatsNewAllChanges": "All changes"
+  "whatsNewAllChanges": "All changes",
+  "midiTestTitle": "MIDI test (prototype)",
+  "midiTestTileHint": "Send a program change to a keyboard connected by USB, e.g. a Nord Stage 3",
+  "midiTestHint": "Sends a program change to a keyboard connected by USB, to test MIDI on this device. What the keyboard sends, e.g. when you select a program or song on it, appears in the log.",
+  "midiTestDevices": "Devices",
+  "midiTestRefresh": "Search again",
+  "midiTestNoDevices": "No MIDI device found. Connect the keyboard by USB and search again.",
+  "midiTestConnect": "Connect",
+  "midiTestDisconnect": "Disconnect",
+  "midiTestConnected": "Connected",
+  "midiTestChannel": "MIDI channel",
+  "midiTestModeNordProgram": "Nord program",
+  "midiTestModeNordSong": "Nord song",
+  "midiTestModeNordLive": "Nord live",
+  "midiTestModeRaw": "Raw values",
+  "midiTestBank": "Bank",
+  "midiTestNumber": "Number (1–50)",
+  "midiTestLive": "Live memory",
+  "midiTestMsb": "Bank select MSB (CC 0, 0–127)",
+  "midiTestLsb": "Bank select LSB (CC 32, 0–127)",
+  "midiTestProgram": "Program (1–128)",
+  "midiTestEmptyNotSent": "An empty bank select is not sent.",
+  "midiTestInvalid": "Check the values",
+  "midiTestSend": "Send",
+  "midiTestLog": "Log",
+  "midiTestCopy": "Copy log",
+  "midiTestCopied": "Log copied",
+  "midiTestClear": "Clear log",
+  "midiTestSent": "Sent: {bytes}",
+  "@midiTestSent": {
+    "placeholders": {
+      "bytes": {
+        "type": "String"
+      }
+    }
+  },
+  "midiTestReceivedCc": "Received: CC {controller} = {value} (channel {channel}) – {bytes}",
+  "@midiTestReceivedCc": {
+    "placeholders": {
+      "controller": {
+        "type": "int"
+      },
+      "value": {
+        "type": "int"
+      },
+      "channel": {
+        "type": "int"
+      },
+      "bytes": {
+        "type": "String"
+      }
+    }
+  },
+  "midiTestReceivedPc": "Received: program change {number} (value {program}, channel {channel}) – {bytes}",
+  "@midiTestReceivedPc": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "program": {
+        "type": "int"
+      },
+      "channel": {
+        "type": "int"
+      },
+      "bytes": {
+        "type": "String"
+      }
+    }
+  },
+  "midiTestReceivedOther": "Received: {bytes}",
+  "@midiTestReceivedOther": {
+    "placeholders": {
+      "bytes": {
+        "type": "String"
+      }
+    }
+  },
+  "midiTestError": "Error: {message}",
+  "@midiTestError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  }
 }

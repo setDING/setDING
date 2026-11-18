@@ -1393,5 +1393,90 @@
       }
     }
   },
-  "whatsNewAllChanges": "Alle Änderungen"
+  "whatsNewAllChanges": "Alle Änderungen",
+  "midiTestTitle": "MIDI-Test (Prototyp)",
+  "midiTestTileHint": "Einen Programmwechsel an ein per USB verbundenes Keyboard senden, z. B. einen Nord Stage 3",
+  "midiTestHint": "Sendet einen Programmwechsel an ein per USB verbundenes Keyboard, um MIDI auf diesem Gerät zu testen. Was das Keyboard sendet, z. B. wenn du darauf ein Programm oder einen Song wählst, erscheint im Protokoll.",
+  "midiTestDevices": "Geräte",
+  "midiTestRefresh": "Erneut suchen",
+  "midiTestNoDevices": "Kein MIDI-Gerät gefunden. Verbinde das Keyboard per USB und suche erneut.",
+  "midiTestConnect": "Verbinden",
+  "midiTestDisconnect": "Trennen",
+  "midiTestConnected": "Verbunden",
+  "midiTestChannel": "MIDI-Kanal",
+  "midiTestModeNordProgram": "Nord-Programm",
+  "midiTestModeNordSong": "Nord-Song",
+  "midiTestModeNordLive": "Nord Live",
+  "midiTestModeRaw": "Rohwerte",
+  "midiTestBank": "Bank",
+  "midiTestNumber": "Nummer (1–50)",
+  "midiTestLive": "Live-Speicher",
+  "midiTestMsb": "Bank Select MSB (CC 0, 0–127)",
+  "midiTestLsb": "Bank Select LSB (CC 32, 0–127)",
+  "midiTestProgram": "Programm (1–128)",
+  "midiTestEmptyNotSent": "Ein leeres Bank Select wird nicht gesendet.",
+  "midiTestInvalid": "Werte prüfen",
+  "midiTestSend": "Senden",
+  "midiTestLog": "Protokoll",
+  "midiTestCopy": "Protokoll kopieren",
+  "midiTestCopied": "Protokoll kopiert",
+  "midiTestClear": "Protokoll leeren",
+  "midiTestSent": "Gesendet: {bytes}",
+  "@midiTestSent": {
+    "placeholders": {
+      "bytes": {
+        "type": "String"
+      }
+    }
+  },
+  "midiTestReceivedCc": "Empfangen: CC {controller} = {value} (Kanal {channel}) – {bytes}",
+  "@midiTestReceivedCc": {
+    "placeholders": {
+      "controller": {
+        "type": "int"
+      },
+      "value": {
+        "type": "int"
+      },
+      "channel": {
+        "type": "int"
+      },
+      "bytes": {
+        "type": "String"
+      }
+    }
+  },
+  "midiTestReceivedPc": "Empfangen: Programmwechsel {number} (Wert {program}, Kanal {channel}) – {bytes}",
+  "@midiTestReceivedPc": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "program": {
+        "type": "int"
+      },
+      "channel": {
+        "type": "int"
+      },
+      "bytes": {
+        "type": "String"
+      }
+    }
+  },
+  "midiTestReceivedOther": "Empfangen: {bytes}",
+  "@midiTestReceivedOther": {
+    "placeholders": {
+      "bytes": {
+        "type": "String"
+      }
+    }
+  },
+  "midiTestError": "Fehler: {message}",
+  "@midiTestError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  }
 }
