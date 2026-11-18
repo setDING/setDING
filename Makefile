@@ -39,6 +39,8 @@ export ANDROID_HOME ?= $(HOME)/Android/Sdk
 ADB         ?= $(ANDROID_HOME)/platform-tools/adb
 APK_VERSION := $(shell sed -n 's/^version: *\([^+]*\).*/\1/p' $(APP)/pubspec.yaml)
 APK_COMMIT  := $(shell git -C $(ROOT) rev-parse --short HEAD 2>/dev/null || echo unknown)
+# Full commit of the Linux release build: archived and recorded in its SBOM.
+RELEASE_COMMIT := $(shell git -C $(ROOT) rev-parse HEAD 2>/dev/null || echo unknown)
 APK         := $(APP)/build/setding-$(APK_VERSION)-$(APK_COMMIT).apk
 # Beta build (make android-install): own application ID app.setding.beta, so it is
 # installed next to a release installation with its own data. DEVICE=<id> picks a
@@ -137,10 +139,10 @@ release-linux: release-check ## Build the Linux release and its SBOMs in a conta
 	@$(DOCKER) image inspect $(CI_IMAGE) >/dev/null 2>&1 || $(MAKE) ci-image
 	$(DOCKER) build -q --build-arg CI_IMAGE=$(CI_IMAGE) -t $(RELEASE_IMAGE) -f $(ROOT)/tool/release/linux.Dockerfile $(ROOT)/tool/release
 	@mkdir -p $(APP)/build
-	git -C $(ROOT) archive HEAD | $(DOCKER) run --rm -i \
+	git -C $(ROOT) archive $(RELEASE_COMMIT) | $(DOCKER) run --rm -i \
 		-v $(ROOT)/tool/release:/release:ro -v $(APP)/build:/out -v setding-release-pub-cache:/root/.pub-cache \
 		-e HOST_UID=$$(id -u) -e HOST_GID=$$(id -g) -e BUILD_NUMBER=$(BUILD_NUMBER) \
-		-e COMMIT=$$(git -C $(ROOT) rev-parse HEAD) \
+		-e COMMIT=$(RELEASE_COMMIT) \
 		$(RELEASE_IMAGE) /release/build-linux.sh $(RELEASE_NAME)-linux-x64
 	@echo "Linux release: $(APP)/build/$(RELEASE_NAME)-linux-x64.tar.gz and .AppImage"
 	@echo "SBOMs:         $(APP)/build/$(RELEASE_NAME)-linux-x64.{tar.gz,AppImage}.cdx.json"
