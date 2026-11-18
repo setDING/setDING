@@ -160,10 +160,12 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-17: Song map instead of the chord sheet for drums; the footer shows the next song's tempo and time signature for drums (ADR-0026, #336).
 - 2026-11-17: Wide song map: beat large and the set (tap to turn) in a panel left of the song map (ADR-0026, #357).
 - 2026-11-17: In the wide song map the tap zones are thirds of the whole screen, empty areas of the panel included (ADR-0026, #363).
+- 2026-11-18: MIDI program changes per song in live mode proposed in ADR-0039 (#510): when a song becomes current, its personal keyboard program is sent over USB; page turning by MIDI stays open.
 
 ## Open points
 
 - Windows: `wakelock_plus` requests only `ES_DISPLAY_REQUIRED`. Check on a real Windows tablet that it does not go to
   sleep during a long song; if it does, additionally request `ES_SYSTEM_REQUIRED` (issue #294).
 - Which page turner model (for testing on real hardware)? Configurable key mapping needed for pedals sending other keys?
-- Is MIDI control desired (e.g. Program Change from a keyboard/pedalboard)?
+- MIDI control: program changes sent to a keyboard are proposed in ADR-0039; page turning by MIDI from a keyboard or
+  pedalboard is still open.
