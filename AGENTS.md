@@ -42,7 +42,7 @@ The documentation must always reflect the current state of the project:
 Use the `Makefile` in the repository root (`make help`): `make check` is the test gate,
 `make dev` / `make start` run an isolated local test instance on Linux, `make reset`
 deletes its data. `make android-install` installs the local build as "setDING Beta" (`app.setding.beta`) next to a release on a USB-connected Android device (see [`docs/development/releases.md`](docs/development/releases.md)). `make perf` measures performance on a USB-connected Android device (see [`docs/development/performance.md`](docs/development/performance.md)). `make branding` regenerates the splash screens and icons from the logo sources (see [`docs/development/branding.md`](docs/development/branding.md)). `make web` builds the web client (see [`docs/development/web.md`](docs/development/web.md), ADR-0018), `make site` builds the website and user documentation at https://setding.app (see [`docs/development/website.md`](docs/development/website.md), ADR-0030), `make release` builds the distributable Linux package
-(see [`docs/development/releases.md`](docs/development/releases.md), ADR-0019). `make server-*` installs and operates the PocketBase server over SSH; after a release, `make server-release` deploys it from the tag once the release build passed
+(see [`docs/development/releases.md`](docs/development/releases.md), ADR-0019), `make sbom` also its CycloneDX SBOM and validates it (ADR-0037). `make server-*` installs and operates the PocketBase server over SSH; after a release, `make server-release` deploys it from the tag once the release build passed
 (see [`docs/operations/server.md`](docs/operations/server.md), ADR-0014).
 
 ## Git workflow (mandatory)
@@ -111,4 +111,5 @@ See the ADR index in the architecture README for the current status. In short:
 - Registration set by the server operator in `pocketbase.env`: `invite_only` (default, sign-up only with an invitation, new organizations only via operator founder invitations) or `open`; optional email verification (ADR-0024)
 - Semantic Versioning: major = old clients no longer work with the server or data, minor = tolerated features, patch = fixes (ADR-0028)
 - Minimum client version: apps send `X-Setding-Version`, the server answers outdated ones with HTTP 426, the app asks for an update; release before deploying the server (ADR-0029)
+- One CycloneDX SBOM per release asset (`<asset>.cdx.json`) from the own Dart tool `tool/sbom`: only shipped components, `setDING` with the release version and the asset's SHA-256; vulnerabilities and licences evaluated on GitHub (ADR-0037)
 - Website and user documentation at https://setding.app: Astro Starlight in `website/`, de-CH and en, served by Caddy on the server, deployed with the `make server-*` targets (ADR-0030)

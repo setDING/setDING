@@ -28,6 +28,7 @@ only after the previous one succeeded:
    | `setding-X.Y.Z-linux-x64.AppImage` | The same bundle as an AppImage, which updates itself (ADR-0038) |
    | `setding-X.Y.Z-windows-x64-setup.exe` | Windows installer, from which the installed app updates itself (ADR-0035) |
    | `setding-X.Y.Z-windows-x64.zip` | Windows build with the Visual C++ runtime |
+   | `<file>.cdx.json` | CycloneDX SBOM of each file above ([SBOM](#sbom), ADR-0037) |
    | `SHA256SUMS` | Checksums of the files above |
 
    **The build must pass.** Watch it with `gh run watch`; if a job fails, no release
@@ -175,14 +176,50 @@ To try the setup before a release, start a test build
 from the run. Never change the `AppId` in `setding.iss`: it identifies the
 installation that updates replace.
 
+## SBOM
+
+Every release file gets a CycloneDX SBOM next to it (`<file>.cdx.json`,
+ADR-0037). It names `setDING`, the release version and the SHA-256 of exactly
+that file, and lists only what the file ships: the Dart packages compiled into
+the app, packages with bundled assets, the platform's plugins, native libraries
+of build hooks (SQLite, PDFium, …), the Flutter version, on Android the Gradle
+release dependencies, on Windows the Visual C++ runtime (and Inno Setup in the
+setup), in the AppImage its runtime (with libfuse). Licences come from pub.dev and the Maven POMs.
+
+The generator is the Dart tool in [`tool/sbom`](../../tool/sbom) (tests in
+`make check`). Each build job of `release.yml` runs `tool/sbom.sh generate` and
+`tool/sbom.sh check` (name, version, hash); the `sbom` job validates all SBOMs
+with cyclonedx-cli (`tool/sbom/validate.sh`). The build needs pub.dev and the
+Gradle plugin portal.
+
+Locally:
+
+```bash
+make sbom          # Linux release (tar.gz, AppImage) with its SBOMs, validated
+tool/sbom.sh check --sbom <file>.cdx.json --artifact <file> --version X.Y.Z
+```
+
+For another platform, build with
+`--extra-gen-snapshot-options=--print-instructions-sizes-to=<abs. path>` and run
+`tool/sbom.sh generate --platform android|windows-x64 --app app --artifact <file>
+--instruction-sizes <path>` (Android also `--gradle-bom`, see the Android job).
+
+When the tool stops (a package without a licence, an unknown licence, a shipped
+package missing from `pubspec.lock`, a native library missing from the file), fix
+the cause or extend the tool deliberately; never drop the check.
+
+Vulnerabilities and licences are evaluated on GitHub (Dependabot, dependency
+review; ADR-0037).
+
 ## Linux (local)
 
 ```bash
 make release
 ```
 
-The result is `app/build/setding-<version>-<commit>-linux-x64.tar.gz` and the same
-bundle as `….AppImage` (`make release-linux` does the same). It is built from the **committed** state
+The result is `app/build/setding-<version>-<commit>-linux-x64.tar.gz`, the same
+bundle as `….AppImage` and an SBOM for each (`….cdx.json`; `make release-linux`
+does the same; it needs pub.dev for the SBOMs' licences). It is built from the **committed** state
 (`HEAD`); commit first, uncommitted changes only print a warning and are not included.
 
 ### Requirements
