@@ -14,6 +14,11 @@ val keystoreProperties = Properties().apply {
     if (file.exists()) file.inputStream().use { load(it) }
 }
 
+// Beta build for testing next to a release installation (make android-install):
+// SETDING_ANDROID_BETA=1 gives the app its own ID (app.setding.beta), its own data
+// and the label "setDING Beta". Release and CI builds leave it unset.
+val betaBuild = providers.environmentVariable("SETDING_ANDROID_BETA").orNull == "1"
+
 android {
     namespace = "app.setding"
     compileSdk = flutter.compileSdkVersion
@@ -25,8 +30,7 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "app.setding"
+        applicationId = if (betaBuild) "app.setding.beta" else "app.setding"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -37,6 +41,7 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["appLabel"] = if (betaBuild) "setDING Beta" else "setDING"
     }
 
     signingConfigs {

@@ -128,6 +128,27 @@ such an APK cannot be updated by a release APK (uninstall first).
 
 An app installed earlier with `make apk` (debug key) must be uninstalled first.
 
+## Testing a local build next to a release (Android)
+
+```bash
+make android-install
+```
+
+builds the working tree and installs it on the USB-connected device (USB debugging
+on) as **setDING Beta** with its own application ID `app.setding.beta`, then starts
+it. It is a separate app next to the release from Obtainium: its own data, sign-in
+and settings, so the release installation stays untouched. Running it again updates
+the beta in place. `DEVICE=<id>` picks a device when several are connected (`adb
+devices`), `BETA_MODE=debug|profile` builds another mode (default `release`).
+
+The beta is switched on by the environment variable `SETDING_ANDROID_BETA=1`
+(`app/android/app/build.gradle.kts`); `make apk` and the CI release builds don't
+set it. Invitation links over `https://api.setding.app/invite/…` open only the
+release app automatically (the server's App Links file names `app.setding`); in the
+beta, use the invitation page's open button (`setding://`, Android then asks which
+of the two apps) or paste the link under "Bands → Join". Remove the beta with
+`adb uninstall app.setding.beta`.
+
 ## Windows
 
 Unpack the zip and run `setding.exe`. The build is not code-signed, so Windows
