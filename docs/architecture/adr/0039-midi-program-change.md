@@ -16,6 +16,15 @@ among them the **Nord Stage 3** of the owner's band, switch programs by MIDI:
   the keyboard's global channel when "Program Change" reception is switched on in
   its MIDI menu. The bank select must come before the program change.
 
+Since OS 2 the Nord Stage 3 also has **Songs** (a set of programs as song
+parts). According to users in the Nord User Forum, bank select MSB 0 addresses
+programs and MSB 1 songs, and an OS update changed the song numbering; Nord
+publishes no MIDI chart for this. A program change without the full bank select
+was handled differently depending on the panel mode until a Nord OS fix.
+
+setDING is meant for any band, not only the owner's, so Nord users who work with
+programs and those who work with Nord songs both have to be served.
+
 ADR-0007 lists "Is MIDI control desired?" as an open point. ADR-0026 already
 added a native dependency for audio, so a native MIDI dependency is not new in
 kind.
@@ -78,15 +87,25 @@ settings** (layer 4b, ADR-0027), never synced:
 | MIDI program changes | on / off | off |
 | Output | a connected USB MIDI device, remembered by name | none |
 | Profile | Nord Stage 3, Generic | Nord Stage 3 |
+| Nord addresses (Nord profile only) | Programs, Songs | Programs |
 | Channel | 1–16 | 1 |
 
-- **Nord Stage 3 profile:** bank A–H and program 1–50 (sent as CC 0 = 0,
-  CC 32 = bank, Program Change = program − 1), or live memory 1–5 (Program Change
-  50–54, no bank select). The settings explain that "Program Change" reception
-  must be on in the Nord's MIDI menu and that the channel is the Nord's global
-  channel.
+- **Nord Stage 3 profile** with a device setting **"Nord addresses: Programs |
+  Songs"**, chosen by the keyboard player (default Programs):
+  - *Programs:* bank A–H and program 1–50 (sent as CC 0 = 0, CC 32 = bank,
+    Program Change = program − 1), or live memory 1–5 (Program Change 50–54).
+  - *Songs:* a Nord song addressed with CC 0 = 1, CC 32 and Program Change, as
+    far as the prototype confirms it (see below).
+  - The full bank select (MSB and LSB) is always sent before the program change,
+    so the result does not depend on the Nord's current panel mode.
+  - A stored value is shown by its MSB (program or song), so values entered in the
+    other mode stay readable after the setting changes.
+  - The settings explain that "Program Change" reception must be on in the Nord's
+    MIDI menu, that the channel is the Nord's global channel, and that the
+    numbering of songs depends on the Nord's OS version.
 - **Generic profile:** bank select MSB and LSB (each optional, 0–127) and program
-  1–128.
+  1–128. It is also the fallback for every case a profile does not cover, e.g. a
+  Nord OS version with another numbering.
 - Further profiles can be added without a data change.
 
 ### Editing
@@ -124,8 +143,14 @@ settings** (layer 4b, ADR-0027), never synced:
 - Implementation with **`flutter_midi_command`** (BSD-3-Clause, compatible with
   MIT; newest version, licence notice shipped): USB MIDI on Android, Windows and
   Linux, and Web MIDI in the browser. Bank select and program change are sent as
-  raw MIDI bytes; the implementation checks first that this works on every
-  platform and falls back to another library from the table below if it does not.
+  raw MIDI bytes with `sendData` (or `sendDataAwaitingDelivery`).
+- **Prototype first:** the first implementation issue is a prototype that sends
+  bank select and program change from Android, Windows, Linux and Chrome to a
+  real Nord Stage 3, in both Programs and Songs mode, and records the Nord's OS
+  version and the song addressing that works. The feature is built only after
+  it; if the library fails on a platform, another one from the table below is
+  chosen, and if songs cannot be addressed reliably, the Songs mode is left out
+  (the generic profile stays as the way out).
 - **Web:** Chrome and Edge, after the browser's permission prompt; other browsers
   show a hint that MIDI is not available there. Live mode on web keeps its notice
   (ADR-0018).
@@ -141,6 +166,7 @@ settings** (layer 4b, ADR-0027), never synced:
 | Personal per band and song | Different sounds per band possible | New table and sync for a rare case (owner) |
 | Directive in the ChordPro text (`{x_midi: …}`) | Travels with the song | Changes the shared song for one person's keyboard (contradicts ADR-0006); kept for later as program changes per section |
 | Key in the overlay `data` JSON | No server migration | Older clients erase it when they change the overlay |
+| Nord programs only | Documented by Nord, no OS-dependent numbering | Keyboard players who organize their sounds as Nord songs are left out; setDING is for every band (owner) |
 | Raw values only, no profiles | Simplest | Musicians think in "Bank C, program 13", not in CC 32 = 2, PC = 12 |
 | USB and Bluetooth in the first version | Wireless on stage | Pairing and permissions per platform, no Bluetooth on Linux and web; USB is the most reliable (owner) |
 | Sending also outside live mode | Practising at home switches sounds too | The keyboard would switch while songs are browsed or edited (owner) |
@@ -159,11 +185,13 @@ settings** (layer 4b, ADR-0027), never synced:
 - Local schema: `personal_overlays.midi`; the overlay sync pushes and pulls it.
 - New device settings category (or group in *Screen & live mode*) with UI texts in
   `app_de.arb` and `app_en.arb`.
-- Tests: profile translation (Nord Stage 3 and generic, both directions), the
+- Tests: profile translation (Nord Stage 3 programs and songs, generic, both
+  directions), the
   live mode sends exactly once per song change and never for prepared neighbours,
   nothing for songs without a program or for breaks, overlay sync of `midi`
   (including an older client's push that leaves it untouched, server test).
-  Manual test with a Nord Stage 3 on Android, Windows and in Chrome.
+  Manual test with a Nord Stage 3 on Android, Windows, Linux and in Chrome
+  (first in the prototype).
 - The user documentation (ADR-0030) gets a page on connecting a keyboard.
 - ADR-0007's open point on MIDI control is answered by this ADR.
 
@@ -176,13 +204,18 @@ settings** (layer 4b, ADR-0027), never synced:
   Windows devices.
 - 2026-11-18: Stored in a separate `overlays.midi` field instead of the overlay
   `data` JSON, because older clients rewrite `data` without unknown keys.
+- 2026-11-18: Owner answers on the open points: the "Test" button is part of the
+  first version; the Nord profile serves both programs and Nord songs, chosen by
+  the keyboard player in the device settings, since setDING is for every band;
+  the first implementation step is a prototype on all platforms with a real Nord
+  Stage 3 (`flutter_midi_command` offers `sendData` for raw bytes); the later
+  stages stay listed in this ADR, with issues only once one is taken up.
 
 ## Open points
 
-- Does `flutter_midi_command` send raw bank select and program change on every
-  platform (Android USB host, Windows, Linux ALSA, Web MIDI)?
-- A Nord User Forum report says bank select was not always applied in the Nord
-  Stage 3's song mode; check with the real keyboard.
-- Is the "Test" button wanted in the first version?
-- Later: learning the program from the keyboard, program changes per section,
-  page turning by MIDI, Bluetooth, several target devices, iOS.
+- Prototype results: does `flutter_midi_command` deliver bank select and program
+  change on Android (USB host), Windows, Linux and in Chrome, and which addressing
+  selects Nord songs on the current Nord Stage 3 OS?
+- Later stages (issues only when taken up): learning the program from the
+  keyboard, program changes per section, page turning by MIDI, Bluetooth, several
+  target devices, further device profiles, iOS.
