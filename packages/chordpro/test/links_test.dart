@@ -121,4 +121,46 @@ void main() {
       );
     });
   });
+
+  group('replaceSourceLink', () {
+    const source =
+        '{title: T}\n{x_link: nonsense}\n{x_link: https://a.com}\n'
+        '  {x_link: https://b.com | B}\n{key: G}\n\nLa';
+
+    test('replaces the link at the index of Song.links', () {
+      expect(parseChordPro(source).links.map((l) => l.domain), [
+        'a.com',
+        'b.com',
+      ]);
+      expect(
+        replaceSourceLink(source, 1, 'https://c.com', label: 'C'),
+        '{title: T}\n{x_link: nonsense}\n{x_link: https://a.com}\n'
+        '  {x_link: https://c.com | C}\n{key: G}\n\nLa',
+      );
+      expect(
+        replaceSourceLink(source, 0, 'https://c.com'),
+        '{title: T}\n{x_link: nonsense}\n{x_link: https://c.com}\n'
+        '  {x_link: https://b.com | B}\n{key: G}\n\nLa',
+      );
+    });
+
+    test('removes the line without a URL', () {
+      expect(
+        replaceSourceLink(source, 0, null),
+        '{title: T}\n{x_link: nonsense}\n'
+        '  {x_link: https://b.com | B}\n{key: G}\n\nLa',
+      );
+      expect(
+        replaceSourceLink('{title: T}\n{x_link: https://a.com}', 0, null),
+        '{title: T}',
+      );
+      expect(replaceSourceLink('{x_link: https://a.com}', 0, null), '');
+    });
+
+    test('leaves the source unchanged without such a link', () {
+      expect(replaceSourceLink(source, 2, 'https://c.com'), source);
+      const twoSongs = '{title: A}\n{new_song}\n{x_link: https://x.com}';
+      expect(replaceSourceLink(twoSongs, 0, null), twoSongs);
+    });
+  });
 }

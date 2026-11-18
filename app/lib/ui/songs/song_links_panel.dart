@@ -35,13 +35,21 @@ IconData linkServiceIcon(LinkService service) => switch (service) {
 };
 
 /// Side panel with the sources of a song (`{x_link}`): recordings on
-/// YouTube, Spotify and the like, opened outside the app. With [onAdd],
-/// people who may edit the song add a link.
+/// YouTube, Spotify and the like, opened outside the app. With [onAdd]
+/// and [onChange], people who may edit the song add, edit and remove links.
 class SongLinksPanel extends StatelessWidget {
-  const SongLinksPanel({super.key, required this.links, this.onAdd});
+  const SongLinksPanel({
+    super.key,
+    required this.links,
+    this.onAdd,
+    this.onChange,
+  });
 
   final List<SongLink> links;
   final Future<void> Function(String url, String? label)? onAdd;
+
+  /// Replaces the link at an index of [links]; a null url removes it.
+  final Future<void> Function(int index, String? url, String? label)? onChange;
 
   Future<void> _open(BuildContext context, SongLink link) async {
     final l10n = AppLocalizations.of(context);
@@ -57,9 +65,17 @@ class SongLinksPanel extends StatelessWidget {
   Future<void> _add(BuildContext context) async {
     final result = await showDialog<({String url, String? label})>(
       context: context,
-      builder: (_) => const _AddLinkDialog(),
+      builder: (_) => const _LinkDialog(),
     );
-    if (result != null) await onAdd!(result.url, result.label);
+    if (result?.url case final url?) await onAdd!(url, result!.label);
+  }
+
+  Future<void> _edit(BuildContext context, int index) async {
+    final result = await showDialog<({String? url, String? label})>(
+      context: context,
+      builder: (_) => _LinkDialog(link: links[index]),
+    );
+    if (result != null) await onChange!(index, result.url, result.label);
   }
 
   @override
@@ -81,7 +97,7 @@ class SongLinksPanel extends StatelessWidget {
               ),
             ),
           ),
-        for (final link in links)
+        for (final (index, link) in links.indexed)
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: Icon(linkServiceIcon(link.service)),
@@ -95,7 +111,14 @@ class SongLinksPanel extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            trailing: const Icon(Icons.open_in_new, size: 20),
+            trailing: onChange == null
+                ? const Icon(Icons.open_in_new, size: 20)
+                : IconButton(
+                    key: Key('edit-song-link-$index'),
+                    tooltip: l10n.editSongLink,
+                    icon: const Icon(Icons.edit_outlined, size: 20),
+                    onPressed: () => _edit(context, index),
+                  ),
             onTap: () => _open(context, link),
           ),
         if (onAdd != null) ...[
@@ -114,17 +137,20 @@ class SongLinksPanel extends StatelessWidget {
   }
 }
 
-/// Asks for the URL and an optional label of a new source.
-class _AddLinkDialog extends StatefulWidget {
-  const _AddLinkDialog();
+/// Asks for the URL and an optional label of a new source, or edits
+/// [link]. Pops the url and label; a null url removes [link].
+class _LinkDialog extends StatefulWidget {
+  const _LinkDialog({this.link});
+
+  final SongLink? link;
 
   @override
-  State<_AddLinkDialog> createState() => _AddLinkDialogState();
+  State<_LinkDialog> createState() => _LinkDialogState();
 }
 
-class _AddLinkDialogState extends State<_AddLinkDialog> {
-  final _url = TextEditingController();
-  final _label = TextEditingController();
+class _LinkDialogState extends State<_LinkDialog> {
+  late final _url = TextEditingController(text: widget.link?.uri.toString());
+  late final _label = TextEditingController(text: widget.link?.label);
   bool _invalid = false;
 
   @override
@@ -146,11 +172,22 @@ class _AddLinkDialogState extends State<_AddLinkDialog> {
     Navigator.pop(context, (url: url, label: label.isEmpty ? null : label));
   }
 
+  Future<void> _delete() async {
+    final l10n = AppLocalizations.of(context);
+    final ok = await confirm(
+      context,
+      title: l10n.deleteSongLink,
+      message: l10n.deleteSongLinkMessage,
+    );
+    if (ok && mounted) Navigator.pop(context, (url: null, label: null));
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final editing = widget.link != null;
     return AlertDialog(
-      title: Text(l10n.addSongLink),
+      title: Text(editing ? l10n.editSongLink : l10n.addSongLink),
       content: SizedBox(
         width: 420,
         child: Column(
@@ -159,7 +196,7 @@ class _AddLinkDialogState extends State<_AddLinkDialog> {
             TextField(
               key: const Key('song-link-url'),
               controller: _url,
-              autofocus: true,
+              autofocus: !editing,
               keyboardType: TextInputType.url,
               onChanged: (_) {
                 if (_invalid) setState(() => _invalid = false);
@@ -185,11 +222,20 @@ class _AddLinkDialogState extends State<_AddLinkDialog> {
         ),
       ),
       actions: [
+        if (editing)
+          TextButton(
+            key: const Key('delete-song-link'),
+            onPressed: _delete,
+            child: Text(l10n.delete),
+          ),
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: Text(l10n.cancel),
         ),
-        FilledButton(onPressed: _submit, child: Text(l10n.add)),
+        FilledButton(
+          onPressed: _submit,
+          child: Text(editing ? l10n.save : l10n.add),
+        ),
       ],
     );
   }
