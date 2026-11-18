@@ -1304,5 +1304,11 @@
   "songColorTeal": "Türkis",
   "songColorPurple": "Violett",
   "songColorPink": "Pink",
-  "songColorGrey": "Grau"
+  "songColorGrey": "Grau",
+  "songDisplayCustomise": "Anpassen",
+  "songDisplayEditorTitle": "Songdarstellung anpassen",
+  "songDisplayDemoSong": "Demo-Song",
+  "songDisplayLibrarySong": "Song aus der Bibliothek …",
+  "songDisplayPickSong": "Song für die Vorschau",
+  "songDisplayResizePreview": "Vorschau grösser oder kleiner ziehen"
 }

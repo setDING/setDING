@@ -1089,5 +1089,11 @@
   "songColorTeal": "Teal",
   "songColorPurple": "Purple",
   "songColorPink": "Pink",
-  "songColorGrey": "Grey"
+  "songColorGrey": "Grey",
+  "songDisplayCustomise": "Customise",
+  "songDisplayEditorTitle": "Customise song display",
+  "songDisplayDemoSong": "Demo song",
+  "songDisplayLibrarySong": "Song from the library …",
+  "songDisplayPickSong": "Song for the preview",
+  "songDisplayResizePreview": "Drag to resize the preview"
 }

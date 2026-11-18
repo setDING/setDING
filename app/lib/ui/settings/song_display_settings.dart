@@ -1,12 +1,17 @@
+import 'dart:math' as math;
+
 import 'package:chordpro/chordpro.dart' hide Key;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/generated/app_localizations.dart';
 import '../../settings/settings.dart';
+import '../../providers.dart';
 import '../live/live_theme.dart';
+import '../render/render_cache.dart';
 import '../render/song_display_colors.dart';
 import '../render/song_view.dart';
+import '../sets/song_picker.dart';
 import '../widgets/dialogs.dart';
 
 /// Song shown in the preview: every section type once. Original text
@@ -75,38 +80,155 @@ String _colorName(AppLocalizations l10n, SongColor color) => switch (color) {
   SongColor.grey => l10n.songColorGrey,
 };
 
-/// The song display settings (ADR-0033): a preview, the presets, and the
-/// styles of the selected section type.
-class SongDisplaySettings extends ConsumerStatefulWidget {
-  const SongDisplaySettings({super.key});
+/// The song of the preview on this device (UI state, not synced): a song
+/// ID, or null for the demo song.
+class PreviewSongNotifier extends Notifier<String?> {
+  static const prefsKey = 'songDisplayPreviewSong';
 
   @override
-  ConsumerState<SongDisplaySettings> createState() =>
-      _SongDisplaySettingsState();
+  String? build() => ref.watch(sharedPreferencesProvider).getString(prefsKey);
+
+  Future<void> set(String? id) async {
+    state = id;
+    final prefs = ref.read(sharedPreferencesProvider);
+    if (id == null) {
+      await prefs.remove(prefsKey);
+    } else {
+      await prefs.setString(prefsKey, id);
+    }
+  }
 }
 
-class _SongDisplaySettingsState extends ConsumerState<SongDisplaySettings> {
+final songDisplayPreviewSongProvider =
+    NotifierProvider<PreviewSongNotifier, String?>(PreviewSongNotifier.new);
+
+void _setDisplay(WidgetRef ref, SongDisplay display) => ref
+    .read(settingsProvider.notifier)
+    .update((s) => s.copyWith(songDisplay: display));
+
+/// Chooses preset [p]; asks first when it replaces custom styles.
+Future<void> _choosePreset(
+  BuildContext context,
+  WidgetRef ref,
+  SongDisplay current,
+  SongDisplayPreset p,
+) async {
+  final l10n = AppLocalizations.of(context);
+  if (current.preset == SongDisplayPreset.custom &&
+      !await confirm(
+        context,
+        title: l10n.songDisplayDiscardTitle,
+        message: l10n.songDisplayDiscardMessage(songDisplayPresetName(l10n, p)),
+        action: l10n.songDisplayDiscard,
+      )) {
+    return;
+  }
+  _setDisplay(ref, SongDisplay.preset(p));
+}
+
+/// The presets of the song display.
+class _PresetChips extends ConsumerWidget {
+  const _PresetChips({required this.display});
+
+  final SongDisplay display;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final p in SongDisplayPreset.values)
+            if (p != SongDisplayPreset.custom ||
+                display.preset == SongDisplayPreset.custom)
+              ChoiceChip(
+                key: Key('song-display-preset-${p.name}'),
+                label: Text(songDisplayPresetName(l10n, p)),
+                selected: display.preset == p,
+                onSelected: p == SongDisplayPreset.custom
+                    ? null
+                    : (_) => _choosePreset(context, ref, display, p),
+              ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The song display category of the settings (ADR-0033): the presets, a
+/// button to the editor and a preview.
+class SongDisplaySettings extends ConsumerWidget {
+  const SongDisplaySettings({super.key});
+
+  /// Height of the preview in the settings.
+  static const previewHeight = 360.0;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final display = ref.watch(settingsProvider.select((s) => s.songDisplay));
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _Heading(l10n.songDisplayPreset),
+        _PresetChips(display: display),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: FilledButton.icon(
+              key: const Key('song-display-customise'),
+              icon: const Icon(Icons.tune),
+              label: Text(l10n.songDisplayCustomise),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const SongDisplayEditorScreen(),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: SizedBox(
+            height: previewHeight,
+            child: SongDisplayPreview(display: display),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The editor of the song display over the whole screen: on wide screens
+/// the controls on the left and the preview next to them, on narrow ones
+/// the preview pinned on top (resizable) and the controls below, so the
+/// effect of a change is always in view (#478).
+class SongDisplayEditorScreen extends ConsumerStatefulWidget {
+  const SongDisplayEditorScreen({super.key});
+
+  /// From this width the preview is shown next to the controls.
+  static const sideBySideWidth = 760.0;
+
+  /// Width of the controls next to the preview.
+  static const controlsWidth = 380.0;
+
+  @override
+  ConsumerState<SongDisplayEditorScreen> createState() =>
+      _SongDisplayEditorState();
+}
+
+class _SongDisplayEditorState extends ConsumerState<SongDisplayEditorScreen> {
   SectionRole _role = SectionRole.standard;
 
-  void _set(SongDisplay display) => ref
-      .read(settingsProvider.notifier)
-      .update((s) => s.copyWith(songDisplay: display));
+  /// Height of the pinned preview on narrow screens; null = 40 %.
+  double? _previewHeight;
 
-  Future<void> _choosePreset(SongDisplay current, SongDisplayPreset p) async {
-    final l10n = AppLocalizations.of(context);
-    if (current.preset == SongDisplayPreset.custom &&
-        !await confirm(
-          context,
-          title: l10n.songDisplayDiscardTitle,
-          message: l10n.songDisplayDiscardMessage(
-            songDisplayPresetName(l10n, p),
-          ),
-          action: l10n.songDisplayDiscard,
-        )) {
-      return;
-    }
-    _set(SongDisplay.preset(p));
-  }
+  void _set(SongDisplay display) => _setDisplay(ref, display);
 
   @override
   Widget build(BuildContext context) {
@@ -120,35 +242,12 @@ class _SongDisplaySettingsState extends ConsumerState<SongDisplaySettings> {
     void change(SectionStyle Function(SectionStyle) f) =>
         _set(display.withType(_role, TypeStyle(style: f(style))));
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    final controls = ListView(
+      key: const Key('song-display-controls'),
+      padding: const EdgeInsets.only(bottom: 32),
       children: [
-        _Heading(l10n.songDisplayPreview),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: _Preview(display: display, settings: settings),
-        ),
         _Heading(l10n.songDisplayPreset),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final p in SongDisplayPreset.values)
-                if (p != SongDisplayPreset.custom ||
-                    display.preset == SongDisplayPreset.custom)
-                  ChoiceChip(
-                    key: Key('song-display-preset-${p.name}'),
-                    label: Text(songDisplayPresetName(l10n, p)),
-                    selected: display.preset == p,
-                    onSelected: p == SongDisplayPreset.custom
-                        ? null
-                        : (_) => _choosePreset(display, p),
-                  ),
-            ],
-          ),
-        ),
+        _PresetChips(display: display),
         _Heading(l10n.songDisplaySection),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -337,6 +436,72 @@ class _SongDisplaySettingsState extends ConsumerState<SongDisplaySettings> {
         ],
       ],
     );
+    final preview = SongDisplayPreview(display: display, role: _role);
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.songDisplayEditorTitle)),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth >= SongDisplayEditorScreen.sideBySideWidth) {
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(
+                  width: SongDisplayEditorScreen.controlsWidth,
+                  child: controls,
+                ),
+                const VerticalDivider(width: 1),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: preview,
+                  ),
+                ),
+              ],
+            );
+          }
+          final max = constraints.maxHeight;
+          final height = (_previewHeight ?? max * 0.4)
+              .clamp(math.min(120.0, max / 2), math.max(120.0, max - 160))
+              .toDouble();
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                height: height,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  child: preview,
+                ),
+              ),
+              Semantics(
+                label: l10n.songDisplayResizePreview,
+                child: GestureDetector(
+                  key: const Key('song-display-resize'),
+                  behavior: HitTestBehavior.opaque,
+                  onVerticalDragUpdate: (d) =>
+                      setState(() => _previewHeight = height + d.delta.dy),
+                  child: SizedBox(
+                    height: 24,
+                    child: Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.outline,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(child: controls),
+            ],
+          );
+        },
+      ),
+    );
   }
 }
 
@@ -352,53 +517,186 @@ String _chain(AppLocalizations l10n, SongDisplay display, SectionRole role) {
   return names.join(' → ');
 }
 
-/// The preview song in the live appearance of this device.
-class _Preview extends StatelessWidget {
-  const _Preview({required this.display, required this.settings});
+/// The preview: the demo song or a song from the library (chosen per
+/// device), in the live appearance of this device and in [display]. When
+/// [role] changes, it scrolls to the first section of that type.
+class SongDisplayPreview extends ConsumerStatefulWidget {
+  const SongDisplayPreview({super.key, required this.display, this.role});
 
   final SongDisplay display;
-  final AppSettings settings;
+  final SectionRole? role;
+
+  @override
+  ConsumerState<SongDisplayPreview> createState() => _SongDisplayPreviewState();
+}
+
+class _SongDisplayPreviewState extends ConsumerState<SongDisplayPreview> {
+  final _scroll = ScrollController();
+  final _body = GlobalKey();
+  List<SongBlock> _blocks = const [];
+
+  @override
+  void didUpdateWidget(SongDisplayPreview old) {
+    super.didUpdateWidget(old);
+    final role = widget.role;
+    if (role != null && role != old.role) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollTo(role));
+    }
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  /// Scrolls to the first block shown in the style of [role], if any.
+  void _scrollTo(SectionRole role) {
+    final index = _blocks.indexWhere((b) => b.role == role);
+    final root = _body.currentContext;
+    if (index < 0 || root == null || !mounted) return;
+    final key = ValueKey(('song-block', index));
+    Element? found;
+    void visit(Element e) {
+      if (found != null) return;
+      if (e.widget.key == key) {
+        found = e;
+        return;
+      }
+      e.visitChildElements(visit);
+    }
+
+    (root as Element).visitChildElements(visit);
+    final target = found;
+    if (target == null) return;
+    Scrollable.ensureVisible(
+      target,
+      alignment: 0.05,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+    );
+  }
+
+  Future<void> _chooseSong(String choice) async {
+    final notifier = ref.read(songDisplayPreviewSongProvider.notifier);
+    if (choice == 'demo') {
+      await notifier.set(null);
+      return;
+    }
+    final l10n = AppLocalizations.of(context);
+    final id = await pickSong(context, title: l10n.songDisplayPickSong);
+    if (id != null) await notifier.set(id);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final settings = ref.watch(settingsProvider);
+    final songId = ref.watch(songDisplayPreviewSongProvider);
+    // A deleted or missing song falls back to the demo song.
+    final entry = songId == null ? null : ref.watch(songProvider(songId)).value;
+    final song = parseChordProCached(
+      entry?.chordproSource ?? songDisplayPreviewSource,
+      selectors: ref.watch(selectorsProvider),
+    );
+    final lyricsOnly = settings.displayMode == DisplayMode.lyricsOnly;
+    _blocks = buildSongBlocks(
+      song,
+      lyricsOnly: lyricsOnly,
+      labeler: sectionLabeler(l10n),
+    );
     final theme = liveTheme(
       Theme.of(context),
       settings.liveAppearance,
       settings.accent,
     );
-    final song = parseChordPro(songDisplayPreviewSource);
-    return Theme(
-      data: theme,
-      child: Builder(
-        builder: (context) => Material(
-          key: const Key('song-display-preview'),
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          clipBehavior: Clip.antiAlias,
-          child: DefaultTextStyle.merge(
-            style: TextStyle(color: theme.colorScheme.onSurface),
-            child: LayoutBuilder(
-              builder: (context, constraints) => Padding(
-                padding: const EdgeInsets.all(16),
-                child: SongBody(
-                  song: song,
-                  options: SongRenderOptions(
-                    formatter: ChordFormatter.forSong(
-                      song,
-                      notation: settings.notation,
-                      style: settings.chordStyle,
-                      superscript: settings.chordSuperscript,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.songDisplayPreview,
+                style: Theme.of(context).textTheme.titleSmall
+                    ?.copyWith(color: Theme.of(context).colorScheme.primary),
+              ),
+            ),
+            PopupMenuButton<String>(
+              key: const Key('song-display-preview-song'),
+              tooltip: l10n.songDisplayPickSong,
+              onSelected: _chooseSong,
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  key: const Key('song-display-preview-demo'),
+                  value: 'demo',
+                  child: Text(l10n.songDisplayDemoSong),
+                ),
+                PopupMenuItem(
+                  key: const Key('song-display-preview-library'),
+                  value: 'library',
+                  child: Text(l10n.songDisplayLibrarySong),
+                ),
+              ],
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 220),
+                      child: Text(
+                        entry?.title ?? l10n.songDisplayDemoSong,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    fontSize: 16,
-                    columns: constraints.maxWidth >= 520 ? 2 : 1,
-                    display: display,
+                    const Icon(Icons.arrow_drop_down),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Expanded(
+          child: Theme(
+            data: theme,
+            child: Material(
+              key: const Key('song-display-preview'),
+              color: theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(12),
+              clipBehavior: Clip.antiAlias,
+              child: DefaultTextStyle.merge(
+                style: TextStyle(color: theme.colorScheme.onSurface),
+                child: LayoutBuilder(
+                  builder: (context, constraints) => SingleChildScrollView(
+                    controller: _scroll,
+                    padding: const EdgeInsets.all(16),
+                    child: KeyedSubtree(
+                      key: _body,
+                      child: SongBody(
+                        song: song,
+                        options: SongRenderOptions(
+                          formatter: ChordFormatter.forSong(
+                            song,
+                            notation: settings.notation,
+                            style: settings.chordStyle,
+                            superscript: settings.chordSuperscript,
+                          ),
+                          lyricsOnly: lyricsOnly,
+                          fontSize: 16,
+                          columns: constraints.maxWidth >= 520 ? 2 : 1,
+                          display: widget.display,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -554,8 +852,8 @@ class _Colors extends StatelessWidget {
                   onTap: () => onChanged(color),
                   radius: 20,
                   child: Container(
-                    width: 32,
-                    height: 32,
+                    width: 28,
+                    height: 28,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,

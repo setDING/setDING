@@ -18,8 +18,25 @@ Future<List<String>> pickSongs(BuildContext context) async =>
     ) ??
     const [];
 
+/// Lets the user select one song, e.g. for a preview; null when the picker
+/// was closed without a choice.
+Future<String?> pickSong(BuildContext context, {required String title}) async {
+  final ids = await Navigator.push<List<String>>(
+    context,
+    MaterialPageRoute(
+      fullscreenDialog: true,
+      builder: (_) => _SongPicker(single: true, title: title),
+    ),
+  );
+  return ids == null || ids.isEmpty ? null : ids.first;
+}
+
 class _SongPicker extends ConsumerStatefulWidget {
-  const _SongPicker();
+  const _SongPicker({this.single = false, this.title});
+
+  /// One song: a tap chooses it and closes the picker.
+  final bool single;
+  final String? title;
 
   @override
   ConsumerState<_SongPicker> createState() => _SongPickerState();
@@ -40,19 +57,21 @@ class _SongPickerState extends ConsumerState<_SongPicker> {
         : ref.watch(bandArrangementsProvider(band.id)).value ?? const {};
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.selectSongs),
+        title: Text(widget.title ?? l10n.selectSongs),
         actions: [
-          Center(child: Text(l10n.selectedCount(_selected.length))),
-          const SizedBox(width: 8),
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: FilledButton(
-              onPressed: _selected.isEmpty
-                  ? null
-                  : () => Navigator.pop(context, _selected),
-              child: Text(l10n.add),
+          if (!widget.single) ...[
+            Center(child: Text(l10n.selectedCount(_selected.length))),
+            const SizedBox(width: 8),
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: FilledButton(
+                onPressed: _selected.isEmpty
+                    ? null
+                    : () => Navigator.pop(context, _selected),
+                child: Text(l10n.add),
+              ),
             ),
-          ),
+          ],
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(64),
@@ -83,14 +102,18 @@ class _SongPickerState extends ConsumerState<_SongPicker> {
                     song: song,
                     arrangement: arrangements[song.id],
                     bandName: band?.name ?? '',
-                    leading: Checkbox(
-                      value: index >= 0,
-                      onChanged: (_) => _toggle(song.id),
-                    ),
+                    leading: widget.single
+                        ? null
+                        : Checkbox(
+                            value: index >= 0,
+                            onChanged: (_) => _toggle(song.id),
+                          ),
                     trailing: index >= 0
                         ? CircleAvatar(radius: 14, child: Text('${index + 1}'))
                         : const SizedBox.shrink(),
-                    onTap: () => _toggle(song.id),
+                    onTap: widget.single
+                        ? () => Navigator.pop(context, [song.id])
+                        : () => _toggle(song.id),
                   );
                 },
               ),
