@@ -1,6 +1,6 @@
 # ADR-0033: Song display styles per section type
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-18
 
 ## Context
@@ -159,6 +159,7 @@ The design was worked out with the owner in an interactive mock-up
   Standard plus seven fixed types, inheritance from a chosen type, curated
   palette, precedence rules, personal scope, live mode and song view only,
   bold = 700 everywhere.
+- 2026-11-18: Accepted by the owner.
 
 ## Open points
 
