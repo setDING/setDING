@@ -1474,6 +1474,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updateRequiredCopied => 'Link copied.';
 
   @override
+  String updateAvailableTitle(String version) {
+    return 'setDING $version is available';
+  }
+
+  @override
+  String get updateAvailableDetails => 'Details';
+
+  @override
+  String updateAvailableInstalled(String current) {
+    return 'Installed: $current.';
+  }
+
+  @override
   String get settingsServer => 'Server';
 
   @override

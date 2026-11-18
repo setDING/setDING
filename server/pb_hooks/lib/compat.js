@@ -73,6 +73,16 @@ function serverVersion() {
   }
 }
 
+/// The newest app release (ADR-0035): the version this server was deployed
+/// from with make server-release, which only runs after the GitHub Release
+/// is published. Null for a working tree deployed with make server-install
+/// (x.y.z-dev+<commit>), the local backend and tests.
+function latestClientVersion() {
+  const v = serverVersion();
+  if (!v || v.includes("+") || !parse(v)) return null;
+  return v.replace(/^v/, "");
+}
+
 /// Whether the request path is checked: the collections API and setDING's
 /// own routes, except the config route the app reads before signing in and
 /// the superusers' collection (the admin UI signs in there). Health,
@@ -108,5 +118,6 @@ module.exports = {
   compare,
   minClientVersion,
   serverVersion,
+  latestClientVersion,
   requireClientVersion,
 };

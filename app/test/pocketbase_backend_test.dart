@@ -178,10 +178,12 @@ void main() {
           'registration': 'invite_only',
           'emailVerification': 'off',
           'minClientVersion': '1.2.0',
+          'latestClientVersion': '1.4.0',
         }),
       );
       final config = await b.fetchServerConfig();
       expect(config.minClientVersion, '1.2.0');
+      expect(config.latestClientVersion, '1.4.0');
       expect(config.inviteOnly, isTrue);
     });
 
@@ -190,7 +192,9 @@ void main() {
         MemorySessionStore(),
         (r) async => _json(200, {'registration': 'open'}),
       );
-      expect((await b.fetchServerConfig()).minClientVersion, isNull);
+      final config = await b.fetchServerConfig();
+      expect(config.minClientVersion, isNull);
+      expect(config.latestClientVersion, isNull);
     });
   });
 

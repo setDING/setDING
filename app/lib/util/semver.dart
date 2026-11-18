@@ -38,6 +38,9 @@ int compareVersions(String a, String b) {
 bool isOlderThan(String version, String minimum) =>
     compareVersions(version, minimum) < 0;
 
+/// Whether [version] is a pre-release such as `1.0.0-beta.1`.
+bool isPrerelease(String version) => _parse(version).$2.isNotEmpty;
+
 (List<int>, List<String>) _parse(String version) {
   final m = _pattern.firstMatch(version.trim());
   if (m == null) return (const [0, 0, 0], const []);

@@ -670,6 +670,23 @@
   "updateRequiredReload": "Neu laden",
   "updateRequiredCopyLink": "Download-Link kopieren",
   "updateRequiredCopied": "Link kopiert.",
+  "updateAvailableTitle": "setDING {version} ist verfügbar",
+  "@updateAvailableTitle": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateAvailableDetails": "Details",
+  "updateAvailableInstalled": "Installiert: {current}.",
+  "@updateAvailableInstalled": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      }
+    }
+  },
   "settingsServer": "Server",
   "settingsServerHint": "Beim Wechsel wirst du abgemeldet.",
   "settingsServerInvalid": "Die Adresse muss mit http:// oder https:// beginnen.",

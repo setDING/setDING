@@ -419,6 +419,7 @@ class ServerConfig {
     this.registration = RegistrationMode.open,
     this.emailVerification = false,
     this.minClientVersion,
+    this.latestClientVersion,
   });
 
   /// Assumed when the server cannot be asked (offline, older server); the
@@ -433,6 +434,10 @@ class ServerConfig {
   /// The lowest app version the server accepts (ADR-0029); null if the
   /// server does not say (older server, or not reachable).
   final String? minClientVersion;
+
+  /// The newest app release (ADR-0035); null if the server does not say
+  /// (older server, deployed from a working tree, or not reachable).
+  final String? latestClientVersion;
 
   bool get inviteOnly => registration == RegistrationMode.inviteOnly;
 }

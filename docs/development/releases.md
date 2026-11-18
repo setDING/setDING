@@ -41,7 +41,9 @@ only after the previous one succeeded:
    the GitHub Release exists. Then it deploys hooks, migrations and the web client
    from a clean checkout of the tag, stamps the version on the server and checks
    it (`curl -s https://api.setding.app/api/setding/config` shows
-   `"serverVersion":"X.Y.Z"`).
+   `"serverVersion":"X.Y.Z"`). From then on the server also reports
+   `"latestClientVersion":"X.Y.Z"`, and the installed apps show that a new version
+   is available (ADR-0036).
 
 The tag must equal `v` + the version in `pubspec.yaml`, otherwise the workflow fails.
 Tags with a suffix (`v1.2.0-beta.1`) become pre-releases, which Obtainium skips by

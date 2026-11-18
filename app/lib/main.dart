@@ -12,6 +12,7 @@ import 'data/song_repository.dart';
 import 'providers.dart';
 import 'settings/settings.dart';
 import 'sync/auth_providers.dart';
+import 'sync/update_check.dart';
 import 'ui/widgets/logo.dart';
 import 'util/log.dart';
 
@@ -37,7 +38,8 @@ Future<void> main() async {
   db.afterUpgrade = (db) => SongRepository(db, storage).refreshAllMetadata();
   await sessionStore.load();
   // Sent with every request, so the server can ask for an update (ADR-0029).
-  final version = (await PackageInfo.fromPlatform()).version;
+  final info = await PackageInfo.fromPlatform();
+  final version = info.version;
   // Files of attachments deleted while an undo was offered (#267); before
   // the UI, so that no new deletion is waiting for its undo.
   try {
@@ -67,6 +69,10 @@ Future<void> main() async {
         attachmentStorageProvider.overrideWithValue(storage),
         sessionStoreProvider.overrideWithValue(sessionStore),
         clientVersionProvider.overrideWithValue(version),
+        // New releases only for installed release builds (ADR-0035).
+        updateCheckEnabledProvider.overrideWithValue(
+          !kIsWeb && kReleaseMode && !info.packageName.endsWith('.beta'),
+        ),
       ],
       child: const SetdingApp(),
     ),
