@@ -392,6 +392,24 @@ abstract class AppLocalizations {
   /// **'Link hinzufügen'**
   String get addSongLink;
 
+  /// No description provided for @editSongLink.
+  ///
+  /// In de, this message translates to:
+  /// **'Link bearbeiten'**
+  String get editSongLink;
+
+  /// No description provided for @deleteSongLink.
+  ///
+  /// In de, this message translates to:
+  /// **'Quelle entfernen'**
+  String get deleteSongLink;
+
+  /// No description provided for @deleteSongLinkMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Quelle aus dem Song entfernen?'**
+  String get deleteSongLinkMessage;
+
   /// No description provided for @songLinkUrl.
   ///
   /// In de, this message translates to:

@@ -128,3 +128,35 @@ String addSourceLink(String source, String url, {String? label}) {
   final prefix = pos > 0 && source[pos - 1] != '\n' ? '\n' : '';
   return source.replaceRange(pos, pos, '$prefix$directive\n');
 }
+
+/// Replaces the source at [index] of `Song.links` (the `{x_link}`
+/// directives of the first song with a usable URL, in document order) in
+/// [source] with `{x_link: url | label}`; a null [url] removes its line.
+/// Returns [source] unchanged when there is no such link.
+String replaceSourceLink(
+  String source,
+  int index,
+  String? url, {
+  String? label,
+}) {
+  var i = 0;
+  for (final (start, end, line) in _lines(source)) {
+    final m = _directiveLine.firstMatch(line);
+    if (m == null || m.group(2)!.toLowerCase() != 'x_link') continue;
+    if (parseSongLink(m.group(3)!) == null) continue;
+    if (i++ != index) continue;
+    if (url == null) {
+      final lineEnd = end < source.length ? end + 1 : end;
+      // The last line goes with the line break before it.
+      final lineStart = lineEnd == end && start > 0 ? start - 1 : start;
+      return source.replaceRange(lineStart, lineEnd, '');
+    }
+    final indent = RegExp(r'^[ \t]*').firstMatch(line)!.group(0)!;
+    return source.replaceRange(
+      start,
+      end,
+      '$indent${songLinkDirective(url, label: label)}',
+    );
+  }
+  return source;
+}

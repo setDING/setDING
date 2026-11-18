@@ -273,6 +273,17 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                       addSourceLink(song.chordproSource, url, label: label),
                     )
                   : null,
+              onChange: canEdit
+                  ? (index, url, label) => _repo.updateSource(
+                      song.id,
+                      replaceSourceLink(
+                        song.chordproSource,
+                        index,
+                        url,
+                        label: label,
+                      ),
+                    )
+                  : null,
             ),
             _Panel.attachments => SidePanel(
               key: const Key('song-attachments'),
@@ -317,14 +328,6 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                             0),
                 onPressed: () => _open(_Panel.personal),
               ),
-              if (links.isNotEmpty || canEdit)
-                BadgedIconButton(
-                  key: const Key('open-song-links'),
-                  tooltip: l10n.songLinks,
-                  icon: Icons.headphones_outlined,
-                  count: links.length,
-                  onPressed: () => _open(_Panel.links),
-                ),
               if (attachmentsInPanel)
                 BadgedIconButton(
                   key: const Key('open-attachments'),
@@ -332,6 +335,14 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   icon: Icons.attach_file,
                   count: attachments.length,
                   onPressed: () => _open(_Panel.attachments),
+                ),
+              if (links.isNotEmpty || canEdit)
+                BadgedIconButton(
+                  key: const Key('open-song-links'),
+                  tooltip: l10n.songLinks,
+                  icon: Icons.headphones_outlined,
+                  count: links.length,
+                  onPressed: () => _open(_Panel.links),
                 ),
               PopupMenuButton<String>(
                 onSelected: (value) => switch (value) {

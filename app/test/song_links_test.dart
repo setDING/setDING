@@ -108,4 +108,65 @@ void main() {
     );
     await app.dispose(tester);
   });
+
+  testWidgets('a link is edited and removed in the ChordPro text', (
+    tester,
+  ) async {
+    final (app, id) = await open(tester, source);
+    await tester.tap(find.byKey(const Key('open-song-links')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('edit-song-link-1')));
+    await tester.pumpAndSettle();
+    expect(find.text('Edit link'), findsOneWidget);
+    expect(find.text('https://example.com/my%20demo.mp3'), findsOneWidget);
+    await tester.enterText(
+      find.byKey(const Key('song-link-url')),
+      'https://example.com/demo.mp3',
+    );
+    await tester.enterText(find.byKey(const Key('song-link-label')), 'Demo');
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await tester.pumpAndSettle();
+
+    var song = await tester.runAsync(() => app.songs.getSong(id));
+    expect(
+      song!.chordproSource,
+      source.replaceFirst(
+        'https://example.com/my demo.mp3',
+        'https://example.com/demo.mp3 | Demo',
+      ),
+    );
+    expect(find.text('Demo'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('edit-song-link-0')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('delete-song-link')));
+    await tester.pumpAndSettle();
+    expect(find.text('Remove this source from the song?'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+    await tester.pumpAndSettle();
+
+    song = await tester.runAsync(() => app.songs.getSong(id));
+    expect(song!.chordproSource, isNot(contains('youtube')));
+    expect(find.text('Live 2009'), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('open-song-links')),
+        matching: find.text('2'),
+      ),
+      findsOneWidget,
+    );
+    await app.dispose(tester);
+  });
+
+  testWidgets('the attachments button comes before the sources button', (
+    tester,
+  ) async {
+    final (app, _) = await open(tester, source);
+    expect(
+      tester.getCenter(find.byKey(const Key('open-attachments'))).dx,
+      lessThan(tester.getCenter(find.byKey(const Key('open-song-links'))).dx),
+    );
+    await app.dispose(tester);
+  });
 }

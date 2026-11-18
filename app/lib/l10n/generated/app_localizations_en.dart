@@ -187,6 +187,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addSongLink => 'Add link';
 
   @override
+  String get editSongLink => 'Edit link';
+
+  @override
+  String get deleteSongLink => 'Remove source';
+
+  @override
+  String get deleteSongLinkMessage => 'Remove this source from the song?';
+
+  @override
   String get songLinkUrl => 'Link (URL)';
 
   @override
