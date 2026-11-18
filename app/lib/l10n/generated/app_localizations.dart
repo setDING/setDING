@@ -4495,6 +4495,42 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Grau'**
   String get songColorGrey;
+
+  /// No description provided for @songDisplayCustomise.
+  ///
+  /// In de, this message translates to:
+  /// **'Anpassen'**
+  String get songDisplayCustomise;
+
+  /// No description provided for @songDisplayEditorTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Songdarstellung anpassen'**
+  String get songDisplayEditorTitle;
+
+  /// No description provided for @songDisplayDemoSong.
+  ///
+  /// In de, this message translates to:
+  /// **'Demo-Song'**
+  String get songDisplayDemoSong;
+
+  /// No description provided for @songDisplayLibrarySong.
+  ///
+  /// In de, this message translates to:
+  /// **'Song aus der Bibliothek …'**
+  String get songDisplayLibrarySong;
+
+  /// No description provided for @songDisplayPickSong.
+  ///
+  /// In de, this message translates to:
+  /// **'Song für die Vorschau'**
+  String get songDisplayPickSong;
+
+  /// No description provided for @songDisplayResizePreview.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorschau grösser oder kleiner ziehen'**
+  String get songDisplayResizePreview;
 }
 
 class _AppLocalizationsDelegate

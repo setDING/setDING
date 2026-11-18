@@ -2597,4 +2597,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get songColorGrey => 'Grey';
+
+  @override
+  String get songDisplayCustomise => 'Customise';
+
+  @override
+  String get songDisplayEditorTitle => 'Customise song display';
+
+  @override
+  String get songDisplayDemoSong => 'Demo song';
+
+  @override
+  String get songDisplayLibrarySong => 'Song from the library …';
+
+  @override
+  String get songDisplayPickSong => 'Song for the preview';
+
+  @override
+  String get songDisplayResizePreview => 'Drag to resize the preview';
 }

@@ -2613,4 +2613,22 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get songColorGrey => 'Grau';
+
+  @override
+  String get songDisplayCustomise => 'Anpassen';
+
+  @override
+  String get songDisplayEditorTitle => 'Songdarstellung anpassen';
+
+  @override
+  String get songDisplayDemoSong => 'Demo-Song';
+
+  @override
+  String get songDisplayLibrarySong => 'Song aus der Bibliothek …';
+
+  @override
+  String get songDisplayPickSong => 'Song für die Vorschau';
+
+  @override
+  String get songDisplayResizePreview => 'Vorschau grösser oder kleiner ziehen';
 }

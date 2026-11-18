@@ -28,6 +28,7 @@ map=(
   settings_general 18_settings_general
   settings_live 19_settings_live
   settings_song_display 20_settings_song_display
+  song_display_editor 21_song_display_editor
   set_menu 2b_set_menu
   live_controls 4b_live_controls
   annotations 17_annotations

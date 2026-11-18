@@ -671,6 +671,13 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('song-display-preset-colorCoded')));
       await _shot(tester, '${lang}_20_settings_song_display');
+      // The editor: controls next to the preview (#478).
+      await tester.tap(find.byKey(const Key('song-display-customise')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('song-display-type-chorus')));
+      await _shot(tester, '${lang}_21_song_display_editor');
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
       // Not every category fits on a landscape tablet.
       final live = find.byKey(const Key('settings-category-live'));
       await tester.ensureVisible(live);

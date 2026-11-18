@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import shot from '../../../../../../docs/screenshots/settings_song_display.png';
+import editor from '../../../../../../docs/screenshots/song_display_editor.png';
 
 Under **Settings → Song display** you choose how the sections of a song look in
 **live mode** and in the **song view**: for example the chorus bold with a wide bar,
@@ -18,8 +19,8 @@ everybody, and the preview in the editor always shows it without your styles.
 
 ## Presets
 
-At the top you see a **preview** with every section in the look of your stage.
-Below it you pick a **preset**:
+Here you pick a **preset**; the **preview** below shows a song in the look of your
+stage:
 
 - **Classic** – as before: bold chords, a thin bar next to the chorus.
 - **Colour-coded** – every section has its colour for bar, heading and chords.
@@ -31,6 +32,19 @@ Below it you pick a **preset**:
 
 As soon as you change something it becomes **Custom**. If you pick a preset again
 afterwards, setDING asks whether to discard your custom styles.
+
+## Customise
+
+**Customise** opens the editor. On a tablet the settings are on the left and the
+preview stays next to them; on a phone the preview is pinned on top, and you drag
+the handle below it to make it larger or smaller. When you pick a section, the
+preview jumps to it.
+
+At the top right of the preview you choose the song: the **demo song**, which has
+every section once, or a **song from the library**. The choice applies to this
+device only.
+
+<Image src={editor} alt="The song display editor with the settings on the left and the preview on the right" />
 
 ## Sections
 
