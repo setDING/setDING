@@ -1,0 +1,22 @@
+# setDING Nord Stage 3 test set (ADR-0039, docs/examples/README.md).
+# Original lyrics and music, free to use.
+{title: Nord 01 – First Light}
+{subtitle: Keyboard program: Program A:11}
+{artist: The setDING Band}
+{key: C}
+{time: 4/4}
+{tempo: 88}
+{tag: Nord test}
+
+{comment: Expected on the Nord: Program A:11}
+{comment_italic: Sent: CC 0 = 0, CC 32 = 0, PC 0}
+{comment_italic: First song of the set: the Nord switches to A:11 when live mode starts.}
+
+{start_of_verse}
+[C]Morning comes on [G]silent keys,
+[Am]one small light, a [F]first release.
+{end_of_verse}
+
+{start_of_chorus}
+[F]Play it [G]now, [C]play it clear.
+{end_of_chorus}

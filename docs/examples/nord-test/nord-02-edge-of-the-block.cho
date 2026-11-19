@@ -1,0 +1,22 @@
+# setDING Nord Stage 3 test set (ADR-0039, docs/examples/README.md).
+# Original lyrics and music, free to use.
+{title: Nord 02 – Edge of the Block}
+{subtitle: Keyboard program: Program E:55}
+{artist: The setDING Band}
+{key: G}
+{time: 4/4}
+{tempo: 96}
+{tag: Nord test}
+
+{comment: Expected on the Nord: Program E:55}
+{comment_italic: Sent: CC 0 = 0, CC 32 = 0, PC 124}
+{comment_italic: Last program of the first block of 125.}
+
+{start_of_verse}
+[G]Standing at the [D]very end,
+[Em]one more step a[C]round the bend.
+{end_of_verse}
+
+{start_of_chorus}
+[C]Hold the [D]line, [G]hold the sound.
+{end_of_chorus}

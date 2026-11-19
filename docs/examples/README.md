@@ -5,6 +5,8 @@
 | [`feature-showcase.cho`](feature-showcase.cho) | One ChordPro file that uses **every ChordPro feature supported by setDING** (ADR-0012), plus a second song after `{new_song}`. All lyrics and music are original and free to use. |
 | [`stage-plan.svg`](stage-plan.svg) | Image used by `{image: src="stage-plan.svg"}` in the showcase. |
 | [`feature-showcase.zip`](feature-showcase.zip) | Both files in one archive: importing it creates the two songs and attaches the image automatically. Rebuild it with `make examples` after changing the files. |
+| [`nord-test/`](nord-test/) | Nine short songs for testing MIDI program changes on a **Nord Stage 3** in live mode (ADR-0039). Each song shows the program the Nord should switch to and the MIDI values sent. Original lyrics and music, free to use. |
+| [`nord-test.zip`](nord-test.zip) | The nine songs in one archive, rebuilt with `make examples`. |
 
 ## Trying it out
 
@@ -28,3 +30,35 @@ custom `x_` directives (including setDING' `{x_sequence}` and `{x_time_grouping}
 
 The file is also a regression test: `packages/chordpro/test/showcase_test.dart` and
 `app/test/showcase_test.dart` parse, import and render it.
+
+## Nord Stage 3 test set
+
+The songs carry no keyboard program: programs are personal adjustments
+(ADR-0039), so they are set by hand after the import.
+
+1. Settings → *Musician* → instrument **Keyboard**; then *Keyboard (MIDI)*:
+   MIDI program changes on, output = the Nord (USB), profile **Nord Stage 3**,
+   Nord addresses **Programs**, channel = the Nord's global channel. On the
+   Nord: MIDI menu → "Program Change" reception on.
+2. Import `nord-test.zip` and set the keyboard program of each song as shown in
+   its subtitle; for song 08 switch Nord addresses to **Songs** first and back
+   to **Programs** afterwards.
+3. Create a set with the songs in order 01–09, a break between 04 and 05, and
+   start live mode.
+
+| Song | Keyboard program | Sent (CC 0 / CC 32 / PC) | Tests |
+|---|---|---|---|
+| 01 First Light | Program A:11 | 0 / 0 / 0 | sent when live mode starts |
+| 02 Edge of the Block | Program E:55 | 0 / 0 / 124 | last program of the first block |
+| 03 Next Block | Program F:11 | 0 / 1 / 0 | first program of the second block |
+| 04 Once Again | Program F:11 | 0 / 1 / 0 | same program again (change it by hand first) |
+| *break* | – | nothing | breaks send nothing |
+| 05 Quiet Keys | none | nothing | the Nord keeps its sound |
+| 06 Memory Lane | Live memory 3 | 6 / 0 / 2 | live memory |
+| 07 Back to the Programs | Program K:33 | 0 / 2 / 12 | leaving live mode |
+| 08 Song Mode | Song 2, part 3 | 1 / 0 / 7 | Nord songs |
+| 09 Last Place | Program P:55 | 0 / 3 / 24 | the last program |
+
+Also try: swiping quickly from 01 to 09 sends only 09 (300 ms), "Send program
+again" in the live control bar, and unplugging and plugging in the Nord (the
+indicator below the page turns red and back).

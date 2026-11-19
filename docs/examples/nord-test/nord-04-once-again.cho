@@ -1,0 +1,22 @@
+# setDING Nord Stage 3 test set (ADR-0039, docs/examples/README.md).
+# Original lyrics and music, free to use.
+{title: Nord 04 – Once Again}
+{subtitle: Keyboard program: Program F:11}
+{artist: The setDING Band}
+{key: D}
+{time: 4/4}
+{tempo: 104}
+{tag: Nord test}
+
+{comment: Expected on the Nord: Program F:11}
+{comment_italic: Sent: CC 0 = 0, CC 32 = 1, PC 0}
+{comment_italic: Same program as the song before. Before turning to this song, choose another program on the Nord by hand: setDING sends F:11 again.}
+
+{start_of_verse}
+[D]Same old sound, I [A]call it back,
+[Bm]turn the page, it's [G]on its track.
+{end_of_verse}
+
+{start_of_chorus}
+[G]Once a[A]gain, [D]once again.
+{end_of_chorus}

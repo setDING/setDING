@@ -1,0 +1,22 @@
+# setDING Nord Stage 3 test set (ADR-0039, docs/examples/README.md).
+# Original lyrics and music, free to use.
+{title: Nord 05 – Quiet Keys}
+{subtitle: Keyboard program: no program}
+{artist: The setDING Band}
+{key: A}
+{time: 4/4}
+{tempo: 72}
+{tag: Nord test}
+
+{comment: Expected on the Nord: no program}
+{comment_italic: Sent: nothing is sent}
+{comment_italic: This song has no keyboard program: the Nord keeps the sound of the song before (F:11 or what you chose by hand).}
+
+{start_of_verse}
+[A]Nothing changes, [E]nothing's new,
+[F#m]keep the sound that [D]carried you.
+{end_of_verse}
+
+{start_of_chorus}
+[D]Leave it [E]be, [A]let it ring.
+{end_of_chorus}

@@ -1,0 +1,22 @@
+# setDING Nord Stage 3 test set (ADR-0039, docs/examples/README.md).
+# Original lyrics and music, free to use.
+{title: Nord 07 – Back to the Programs}
+{subtitle: Keyboard program: Program K:33}
+{artist: The setDING Band}
+{key: F}
+{time: 4/4}
+{tempo: 112}
+{tag: Nord test}
+
+{comment: Expected on the Nord: Program K:33}
+{comment_italic: Sent: CC 0 = 0, CC 32 = 2, PC 12}
+{comment_italic: A program after a live memory: the Nord leaves live mode again and shows K:33.}
+
+{start_of_verse}
+[F]Out of memory, [C]back in line,
+[Dm]bank K, page three, [Bb]button three.
+{end_of_verse}
+
+{start_of_chorus}
+[Bb]Thirty-[C]three, [F]K is fine.
+{end_of_chorus}
