@@ -2971,11 +2971,64 @@ class AppLocalizationsDe extends AppLocalizations {
       'Nord Stage 3 laut midi.guide: CC 2 Live-Modus, CC 3 Song-Modus, CC 5 Song-Teil. Welche Werte was bewirken, gehört zum Test.';
 
   @override
-  String get midiGuideTitle => 'Geführter Test (Nord Stage 3)';
+  String get midiGuideTitle => 'Geführter Test';
 
   @override
   String get midiGuideHint =>
       'Tippe auf «Senden», schau aufs Display des Nord und tippe an, was passiert ist. Am Nord musst du nichts einstellen. Die Antworten stehen im Protokoll.';
+
+  @override
+  String get midiGuideNordSend => 'Nord Stage 3 – senden';
+
+  @override
+  String get midiGuideNordReceive => 'Nord Stage 3 – empfangen';
+
+  @override
+  String get midiGuideMotifSend => 'Motif XF – senden';
+
+  @override
+  String get midiGuideMotifReceive => 'Motif XF – empfangen';
+
+  @override
+  String get midiGuideNordReceiveHint =>
+      'Stelle am Nord im MIDI-Menü «Program Change» auf «Send» oder «Send & Receive» und den Kanal hier auf den globalen Kanal des Nord. Wähle dann am Nord, was der Schritt sagt (für den Song zuerst den Song-Modus); setDING prüft selbst, was ankommt. Die Ergebnisse stehen im Protokoll.';
+
+  @override
+  String get midiGuideMotifSendHint =>
+      'Stelle am Motif XF unter Utility → MIDI: MIDI IN/OUT auf USB, den Empfang von Bank Select und Program Change ein, den Basic Receive Channel auf den Kanal hier und die Device Number auf «all» oder 1. Tippe auf «Senden», schau aufs Display des Motif und tippe an, was passiert ist. Die Antworten stehen im Protokoll.';
+
+  @override
+  String get midiGuideMotifReceiveHint =>
+      'Stelle am Motif XF unter Utility → MIDI: MIDI IN/OUT auf USB, das Senden von Bank Select und Program Change ein und den Transmit Channel auf den Kanal hier. Wähle dann am Motif, was der Schritt sagt – Voices im Voice-Modus, Performances im Performance-Modus; setDING prüft selbst, was ankommt. Die Ergebnisse stehen im Protokoll.';
+
+  @override
+  String midiGuideChoose(String name) {
+    return 'Am Keyboard wählen: $name';
+  }
+
+  @override
+  String midiGuideReceiveExpected(String values) {
+    return 'setDING empfängt $values.';
+  }
+
+  @override
+  String midiGuideMotifExpected(String name) {
+    return 'Der Motif zeigt $name.';
+  }
+
+  @override
+  String get midiGuideWaiting => 'Wartet auf das Keyboard …';
+
+  @override
+  String get midiGuideReceivedOk => 'wie erwartet empfangen';
+
+  @override
+  String midiGuideReceivedOther(String name, String values) {
+    return 'anderes empfangen: $name ($values)';
+  }
+
+  @override
+  String get midiGuideReceivedNothing => 'Nichts angekommen';
 
   @override
   String midiGuideStep(int current, int total, String title) {

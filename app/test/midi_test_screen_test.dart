@@ -1,6 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:setding/midi/midi_message.dart';
 import 'package:setding/midi/midi_output.dart';
+import 'package:setding/midi/midi_profile.dart';
+import 'package:setding/ui/settings/midi_guide.dart';
 import 'package:setding/ui/settings/midi_test_screen.dart';
 import 'package:setding/ui/settings_screen.dart';
 import 'package:setding/util/log.dart';
@@ -404,6 +407,152 @@ void main() {
       await tapKey(tester, find.byKey(const Key('midi-guide-back')));
       expect(find.textContaining('Step 6 of 10: Song mode on'), findsOneWidget);
       expect(app.midiOutput.sent, isEmpty);
+      await app.dispose(tester);
+    });
+
+    Future<void> chooseGuide(WidgetTester tester, String label) async {
+      await tapKey(tester, find.byKey(const Key('midi-guide-kind')));
+      await tester.tap(find.text(label).last);
+      await tester.pumpAndSettle();
+    }
+
+    String status(WidgetTester tester) =>
+        tester.widget<Text>(find.byKey(const Key('midi-guide-status'))).data!;
+
+    testWidgets('one send and one receive test per keyboard (#613)', (
+      tester,
+    ) async {
+      final app = await open(tester);
+      final kind = tester.widget<DropdownButton<MidiGuide>>(
+        find.byKey(const Key('midi-guide-kind')),
+      );
+      expect(kind.items!.map((i) => i.value), MidiGuide.values);
+      expect(kind.value, MidiGuide.nordSend);
+      await app.dispose(tester);
+    });
+
+    testWidgets('Motif XF send test: with the mode change, across the '
+        'banks (#613)', (tester) async {
+      final app = await open(tester);
+      await connect(tester);
+      await chooseGuide(tester, 'Motif XF – send');
+      expect(
+        find.textContaining('Step 1 of 7: Performance USR1 A01'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Utility → MIDI'), findsOneWidget);
+      for (var i = 0; i < 7; i++) {
+        await tapKey(tester, find.byKey(const Key('midi-guide-send')));
+        await tapKey(tester, answer('asExpected'));
+      }
+      expect(app.midiOutput.sent, [
+        for (final p in [
+          MotifXf.performance(0, 0),
+          MotifXf.voice(0, 0),
+          MotifXf.voice(7, 127),
+          MotifXf.voice(11, 0),
+          MotifXf.voice(12, 0),
+          MotifXf.voice(13, 0),
+          MotifXf.performance(1, 17),
+        ])
+          const MotifXfProfile().bytes(p, 1),
+      ]);
+      // Every step starts with the SysEx mode change.
+      expect(app.midiOutput.sent.every((b) => b.first == 0xF0), isTrue);
+      await app.dispose(tester);
+    });
+
+    testWidgets('receive test: the expected program goes on by itself, '
+        'anything else is logged in the profile\'s terms (#613)', (
+      tester,
+    ) async {
+      Log.clear();
+      final app = await open(tester);
+      await connect(tester);
+      await chooseGuide(tester, 'Motif XF – receive');
+      expect(
+        find.textContaining(
+          'Step 1 of 7: Choose on the keyboard: Voice '
+          'PRE1 A01',
+        ),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('midi-guide-send')), findsNothing);
+      expect(status(tester), 'Waiting for the keyboard …');
+
+      // PRE1 A01 as one packet: next step.
+      app.midiOutput.receive([0xB0, 0, 63, 0xB0, 32, 0, 0xC0, 0]);
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining(
+          'Step 2 of 7: Choose on the keyboard: '
+          'Voice PRE3 C05',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        Log.export(),
+        contains(
+          'Step 1 (Choose on the keyboard: Voice PRE1 A01): received '
+          'as expected',
+        ),
+      );
+
+      // Only a program change, without the bank: not PRE3 C05.
+      app.midiOutput.receive([0xC0, 36]);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Step 2 of 7'), findsOneWidget);
+      expect(status(tester), startsWith('received something else:'));
+      expect(status(tester), endsWith('(PC 36)'));
+
+      // Then the full message: as expected.
+      app.midiOutput
+        ..receive([0xB0, 0, 63])
+        ..receive([0xB0, 32, 2])
+        ..receive([0xC0, 36]);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Step 3 of 7'), findsOneWidget);
+
+      // Same bank: the bank select of the step before does not count.
+      app.midiOutput.receive([0xC0, 37]);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Step 3 of 7'), findsOneWidget);
+
+      // Nothing arrived: logged, next step.
+      await tapKey(tester, find.byKey(const Key('midi-guide-nothing')));
+      expect(find.textContaining('Step 4 of 7'), findsOneWidget);
+      expect(Log.export(), contains('Voice PRE3 C06): Nothing arrived'));
+      await app.dispose(tester);
+    });
+
+    testWidgets('Nord receive test on another channel', (tester) async {
+      final app = await open(tester);
+      await connect(tester);
+      await chooseGuide(tester, 'Nord Stage 3 – receive');
+      expect(find.textContaining('Program Change'), findsWidgets);
+      final channel = find.byKey(const Key('midi-channel'));
+      await tapKey(tester, channel);
+      await tester.tap(find.text('5').last);
+      await tester.pumpAndSettle();
+      // Channel 1 is not listened to.
+      app.midiOutput.receive([0xB0, 0, 0, 0xB0, 32, 0, 0xC0, 0]);
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining(
+          'Step 1 of 6: Choose on the keyboard: '
+          'Program A:11',
+        ),
+        findsOneWidget,
+      );
+      app.midiOutput.receive([0xB4, 0, 0, 0xB4, 32, 0, 0xC4, 0]);
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining(
+          'Step 2 of 6: Choose on the keyboard: '
+          'Program K:33',
+        ),
+        findsOneWidget,
+      );
       await app.dispose(tester);
     });
   });

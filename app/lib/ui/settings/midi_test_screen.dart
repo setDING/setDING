@@ -9,12 +9,15 @@ import '../../midi/midi_message.dart';
 import '../../midi/midi_output.dart';
 import '../../midi/midi_profile.dart';
 import '../../util/log.dart';
+import '../songs/midi_program_field.dart';
 import 'midi_guide.dart';
 
 /// Prototype of ADR-0039 (#512): sends a program change to a keyboard
 /// connected by USB and logs what the keyboard sends back, to check the
 /// MIDI library on every platform and the addressing of a Nord Stage 3.
-/// The guided test needs only taps: send a step, tap what happened.
+/// The guided tests need only taps: send a step, tap what happened; or
+/// choose what a step says on the keyboard and setDING judges what arrives
+/// (#613). There is one send and one receive test per keyboard.
 class MidiTestScreen extends ConsumerStatefulWidget {
   const MidiTestScreen({super.key});
 
@@ -42,9 +45,16 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
   /// Motif XF: performance banks first, then the voice banks.
   var _motifBank = 0;
   var _motifIndex = 0;
-  final _guide = nordStage3Guide();
+  var _guideKind = MidiGuide.nordSend;
+  var _guide = MidiGuide.nordSend.steps();
   var _step = 0;
   var _stepSent = false;
+
+  /// Collects what the keyboard sends during a receive step.
+  MidiProgramReceiver? _receiver;
+
+  /// What arrived in the current receive step and was not expected.
+  MidiProgram? _unexpected;
   final _msb = TextEditingController();
   final _lsb = TextEditingController();
   final _program = TextEditingController(text: '1');
@@ -56,6 +66,7 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
   void initState() {
     super.initState();
     _midi = ref.read(midiOutputProvider);
+    _receiver = MidiProgramReceiver(_channel);
     _subscriptions
       ..add(_midi.received.listen(_onReceived))
       ..add(_midi.changes.listen((_) => _refresh()));
@@ -117,6 +128,34 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
         l10n.midiTestReceivedPc(program + 1, program, channel, midiHex(data)),
       null => l10n.midiTestReceivedOther(midiHex(data)),
     });
+    _judge(data);
+  }
+
+  /// Judges what arrived in a receive step of the guided test (#613): the
+  /// expected program goes on to the next step, anything else is logged in
+  /// the terms of the guide's profile and the step stays.
+  void _judge(List<int> data) {
+    if (_step >= _guide.length) return;
+    final step = _guide[_step];
+    final expected = step.receive;
+    final received = _receiver?.add(data);
+    if (expected == null || received == null) return;
+    final l10n = AppLocalizations.of(context);
+    final title = step.title(l10n);
+    if (received == expected) {
+      _add(l10n.midiGuideResult(_step + 1, title, l10n.midiGuideReceivedOk));
+      _goTo(_step + 1);
+    } else {
+      final label = midiPatchLabel(l10n, _guideKind.profile.toPatch(received));
+      _add(
+        l10n.midiGuideResult(
+          _step + 1,
+          title,
+          l10n.midiGuideReceivedOther(label, midiValues(received)),
+        ),
+      );
+      setState(() => _unexpected = received);
+    }
   }
 
   // Every line also goes to the app log (logcat, "copy log" in the
@@ -196,7 +235,7 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
   }
 
   void _sendStep() {
-    _send(_guide[_step].bytes(_channel));
+    _send(_guide[_step].bytes!(_channel));
     setState(() => _stepSent = true);
   }
 
@@ -215,7 +254,29 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
   void _goTo(int step) => setState(() {
     _step = step.clamp(0, _guide.length);
     _stepSent = false;
+    _unexpected = null;
+    // A new receiver per step: a bank select of an earlier step does not
+    // count.
+    _receiver = MidiProgramReceiver(_channel);
   });
+
+  void _chooseGuide(MidiGuide guide) {
+    _guideKind = guide;
+    _guide = guide.steps();
+    _goTo(0);
+  }
+
+  void _nothingArrived() {
+    final l10n = AppLocalizations.of(context);
+    _add(
+      l10n.midiGuideResult(
+        _step + 1,
+        _guide[_step].title(l10n),
+        l10n.midiGuideReceivedNothing,
+      ),
+    );
+    _goTo(_step + 1);
+  }
 
   List<Widget> _guideSection(AppLocalizations l10n) {
     final theme = Theme.of(context);
@@ -224,7 +285,21 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
     return [
       ListTile(
         title: Text(l10n.midiGuideTitle, style: theme.textTheme.titleSmall),
-        subtitle: Text(l10n.midiGuideHint),
+        trailing: DropdownButton<MidiGuide>(
+          key: const Key('midi-guide-kind'),
+          value: _guideKind,
+          items: [
+            for (final g in MidiGuide.values)
+              DropdownMenuItem(value: g, child: Text(g.label(l10n))),
+          ],
+          onChanged: (g) {
+            if (g != null) _chooseGuide(g);
+          },
+        ),
+      ),
+      ListTile(
+        key: const Key('midi-guide-hint'),
+        subtitle: Text(_guideKind.hint(l10n)),
       ),
       Card(
         key: const Key('midi-guide'),
@@ -256,36 +331,52 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
                 const SizedBox(height: 4),
                 Text(l10n.midiGuideExpected(step.expected(l10n))),
                 const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    FilledButton.icon(
-                      key: const Key('midi-guide-send'),
-                      onPressed: _connected.isEmpty ? null : _sendStep,
-                      icon: const Icon(Icons.send),
-                      label: Text(l10n.midiTestSend),
+                if (step.receives) ...[
+                  Text(switch (_unexpected) {
+                    null => l10n.midiGuideWaiting,
+                    final p => l10n.midiGuideReceivedOther(
+                      midiPatchLabel(l10n, _guideKind.profile.toPatch(p)),
+                      midiValues(p),
                     ),
-                    Text(
-                      midiHex(step.bytes(_channel)),
-                      style: const TextStyle(fontFamily: 'monospace'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final a in step.answers)
-                      OutlinedButton(
-                        key: Key('midi-guide-answer-${a.name}'),
-                        onPressed: _stepSent ? () => _answer(a) : null,
-                        child: Text(a.label(l10n)),
+                  }, key: const Key('midi-guide-status')),
+                  const SizedBox(height: 12),
+                  OutlinedButton(
+                    key: const Key('midi-guide-nothing'),
+                    onPressed: _nothingArrived,
+                    child: Text(l10n.midiGuideReceivedNothing),
+                  ),
+                ] else ...[
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      FilledButton.icon(
+                        key: const Key('midi-guide-send'),
+                        onPressed: _connected.isEmpty ? null : _sendStep,
+                        icon: const Icon(Icons.send),
+                        label: Text(l10n.midiTestSend),
                       ),
-                  ],
-                ),
+                      Text(
+                        midiHex(step.bytes!(_channel)),
+                        style: const TextStyle(fontFamily: 'monospace'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final a in step.answers)
+                        OutlinedButton(
+                          key: Key('midi-guide-answer-${a.name}'),
+                          onPressed: _stepSent ? () => _answer(a) : null,
+                          child: Text(a.label(l10n)),
+                        ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -368,7 +459,11 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
                 for (var c = 1; c <= 16; c++)
                   DropdownMenuItem(value: c, child: Text('$c')),
               ],
-              onChanged: (v) => setState(() => _channel = v ?? _channel),
+              onChanged: (v) {
+                setState(() => _channel = v ?? _channel);
+                // The receive step listens on the new channel.
+                _goTo(_step);
+              },
             ),
           ),
           ..._guideSection(l10n),

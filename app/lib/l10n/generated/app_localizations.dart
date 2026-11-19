@@ -5098,7 +5098,7 @@ abstract class AppLocalizations {
   /// No description provided for @midiGuideTitle.
   ///
   /// In de, this message translates to:
-  /// **'Geführter Test (Nord Stage 3)'**
+  /// **'Geführter Test'**
   String get midiGuideTitle;
 
   /// No description provided for @midiGuideHint.
@@ -5106,6 +5106,90 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Tippe auf «Senden», schau aufs Display des Nord und tippe an, was passiert ist. Am Nord musst du nichts einstellen. Die Antworten stehen im Protokoll.'**
   String get midiGuideHint;
+
+  /// No description provided for @midiGuideNordSend.
+  ///
+  /// In de, this message translates to:
+  /// **'Nord Stage 3 – senden'**
+  String get midiGuideNordSend;
+
+  /// No description provided for @midiGuideNordReceive.
+  ///
+  /// In de, this message translates to:
+  /// **'Nord Stage 3 – empfangen'**
+  String get midiGuideNordReceive;
+
+  /// No description provided for @midiGuideMotifSend.
+  ///
+  /// In de, this message translates to:
+  /// **'Motif XF – senden'**
+  String get midiGuideMotifSend;
+
+  /// No description provided for @midiGuideMotifReceive.
+  ///
+  /// In de, this message translates to:
+  /// **'Motif XF – empfangen'**
+  String get midiGuideMotifReceive;
+
+  /// No description provided for @midiGuideNordReceiveHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Stelle am Nord im MIDI-Menü «Program Change» auf «Send» oder «Send & Receive» und den Kanal hier auf den globalen Kanal des Nord. Wähle dann am Nord, was der Schritt sagt (für den Song zuerst den Song-Modus); setDING prüft selbst, was ankommt. Die Ergebnisse stehen im Protokoll.'**
+  String get midiGuideNordReceiveHint;
+
+  /// No description provided for @midiGuideMotifSendHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Stelle am Motif XF unter Utility → MIDI: MIDI IN/OUT auf USB, den Empfang von Bank Select und Program Change ein, den Basic Receive Channel auf den Kanal hier und die Device Number auf «all» oder 1. Tippe auf «Senden», schau aufs Display des Motif und tippe an, was passiert ist. Die Antworten stehen im Protokoll.'**
+  String get midiGuideMotifSendHint;
+
+  /// No description provided for @midiGuideMotifReceiveHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Stelle am Motif XF unter Utility → MIDI: MIDI IN/OUT auf USB, das Senden von Bank Select und Program Change ein und den Transmit Channel auf den Kanal hier. Wähle dann am Motif, was der Schritt sagt – Voices im Voice-Modus, Performances im Performance-Modus; setDING prüft selbst, was ankommt. Die Ergebnisse stehen im Protokoll.'**
+  String get midiGuideMotifReceiveHint;
+
+  /// No description provided for @midiGuideChoose.
+  ///
+  /// In de, this message translates to:
+  /// **'Am Keyboard wählen: {name}'**
+  String midiGuideChoose(String name);
+
+  /// No description provided for @midiGuideReceiveExpected.
+  ///
+  /// In de, this message translates to:
+  /// **'setDING empfängt {values}.'**
+  String midiGuideReceiveExpected(String values);
+
+  /// No description provided for @midiGuideMotifExpected.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Motif zeigt {name}.'**
+  String midiGuideMotifExpected(String name);
+
+  /// No description provided for @midiGuideWaiting.
+  ///
+  /// In de, this message translates to:
+  /// **'Wartet auf das Keyboard …'**
+  String get midiGuideWaiting;
+
+  /// No description provided for @midiGuideReceivedOk.
+  ///
+  /// In de, this message translates to:
+  /// **'wie erwartet empfangen'**
+  String get midiGuideReceivedOk;
+
+  /// No description provided for @midiGuideReceivedOther.
+  ///
+  /// In de, this message translates to:
+  /// **'anderes empfangen: {name} ({values})'**
+  String midiGuideReceivedOther(String name, String values);
+
+  /// No description provided for @midiGuideReceivedNothing.
+  ///
+  /// In de, this message translates to:
+  /// **'Nichts angekommen'**
+  String get midiGuideReceivedNothing;
 
   /// No description provided for @midiGuideStep.
   ///
