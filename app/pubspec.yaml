@@ -27,6 +27,11 @@ dependencies:
   http: ^1.6.0
   http_parser: ^4.1.2
   intl: ^0.20.3
+  # jni 1.2.0 breaks path_provider_android 2.3.1 on Android: the app hangs on
+  # the splash screen (#516). Pinned until a release works again.
+  jni: 1.1.2
+  # Pinned together with jni (#516).
+  jni_flutter: 1.0.4+1
   material_ui: ^1.11.0
   package_info_plus: ^10.2.2
   path: ^1.9.1
