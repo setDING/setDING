@@ -834,22 +834,57 @@ class SongRepository {
     SongOverlay Function(SongOverlay) change,
   ) async => saveOverlay(change(await getOverlay(songId)));
 
-  /// The keyboard program of a song (ADR-0039), part of the personal
-  /// adjustments; null = none, live mode sends nothing.
-  Future<MidiProgram?> midiProgram(String songId) async =>
-      (await getOverlay(songId)).midi;
+  /// The keyboard programs of [overlay] per device profile (ADR-0042).
+  /// While none were written, a v0.16.0 program in `midi` (ADR-0039)
+  /// counts for [deviceProfile], the profile of this device.
+  static MidiPrograms midiProgramsOf(
+    SongOverlay overlay,
+    String deviceProfile,
+  ) =>
+      overlay.midiPrograms ??
+      switch (overlay.midi) {
+        final legacy? => MidiPrograms({deviceProfile: legacy}),
+        null => const MidiPrograms(),
+      };
 
-  /// [midiProgram] as it changes, e.g. after a sync.
-  Stream<MidiProgram?> watchMidiProgram(String songId) =>
-      watchOverlay(songId).map((o) => o.midi).distinct();
+  /// The keyboard program of a song for [profile], the profile of this
+  /// device (ADR-0039, ADR-0042), part of the personal adjustments; null =
+  /// none, live mode sends nothing.
+  Future<MidiProgram?> midiProgram(String songId, String profile) async =>
+      midiProgramsOf(await getOverlay(songId), profile)[profile];
 
-  /// Stores the keyboard program of a song; null removes it. Synced with
-  /// the other personal adjustments (last writer wins, ADR-0020).
-  Future<void> setMidiProgram(String songId, MidiProgram? program) =>
-      updateOverlay(songId, (o) => o.copyWith(midi: Value(program)));
+  /// The keyboard programs of a song per profile, as they change (e.g.
+  /// after a sync); [deviceProfile] as in [midiProgramsOf].
+  Stream<MidiPrograms> watchMidiPrograms(String songId, String deviceProfile) =>
+      watchOverlay(songId)
+          .map((o) => midiProgramsOf(o, deviceProfile))
+          .distinct();
 
-  /// Removes the keyboard program of a song.
-  Future<void> removeMidiProgram(String songId) => setMidiProgram(songId, null);
+  /// Stores the keyboard program of a song for [profile]; null removes it.
+  /// The first change moves a v0.16.0 program to [deviceProfile] (the
+  /// profile of this device); `midi` itself stays for older clients.
+  /// Synced with the other personal adjustments (last writer wins,
+  /// ADR-0020).
+  Future<void> setMidiProgram(
+    String songId,
+    String profile,
+    MidiProgram? program, {
+    required String deviceProfile,
+  }) => updateOverlay(
+    songId,
+    (o) => o.copyWith(
+      midiPrograms: Value(
+        midiProgramsOf(o, deviceProfile).withProgram(profile, program),
+      ),
+    ),
+  );
+
+  /// Removes the keyboard program of a song for [profile].
+  Future<void> removeMidiProgram(
+    String songId,
+    String profile, {
+    required String deviceProfile,
+  }) => setMidiProgram(songId, profile, null, deviceProfile: deviceProfile);
 
   /// No adjustments: as written in the song.
   static SongOverlay defaultOverlay(

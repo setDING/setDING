@@ -3190,6 +3190,17 @@ class AppLocalizationsDe extends AppLocalizations {
       'Die Nummerierung der Nord-Songs hängt von der OS-Version des Nord ab (geprüft mit OS 2.54). Passt ein Song nicht, verwende in den Einstellungen das Profil «Allgemein».';
 
   @override
+  String get midiProgramOtherKeyboards => 'Andere Keyboards';
+
+  @override
+  String get midiProgramForOtherKeyboard => 'Programm für ein anderes Keyboard';
+
+  @override
+  String midiProgramUnknownKeyboard(String id) {
+    return 'Unbekanntes Keyboard ($id)';
+  }
+
+  @override
   String get midiProgramMsb => 'Bank Select MSB (optional)';
 
   @override

@@ -135,7 +135,6 @@ mixings have their own MSB/LSB.
   program per device profile; first new profile the Yamaha Motif XF (XF8).
 - 2026-11-19: Accepted by the owner (#590, PR #592). The open points below
   are settled when the implementation issues are taken up.
-
 - 2026-11-19: Yamaha Motif XF profile implemented first (owner, #591), the
   storage per profile follows in #594. Open points settled for the Motif:
   **voices and performances** (preset 1–8, user 1–4, GM, preset and user
@@ -147,14 +146,27 @@ mixings have their own MSB/LSB.
   the Motif set to "all" or 1). The owner allowed merging the profile before
   the check on the XF8, which stays an open point. Until #594 lands, a
   profile change shows the one stored program in the new profile's terms.
+- 2026-11-19: Programs per profile implemented (#593, also opened as
+  #594). Server migration
+  `1795900000_overlay_midi_programs.js` adds `overlays.midi_programs`; local
+  schema 20 adds `personal_overlays.midi_programs` (`MidiPrograms`, a map
+  from `MidiProfile.id` = the name of `MidiProfileKind` to `MidiProgram`).
+  The v0.16.0 program in `midi` counts for the device's profile only while
+  `midi_programs` was **never written** (null): the first change writes the
+  map, and removing the last program leaves an **empty map**, so the old
+  value does not come back (more precise than "while that profile has
+  none", which would have sent a Nord program to a newly chosen Motif). The
+  overlay sync pushes and pulls the map; `midi` is pulled and pushed
+  unchanged. *Program for another keyboard* is part of the field (a menu
+  of the profiles without a program), which settles that open point. A
+  profile id this client does not know (written by a newer client) is
+  listed as "Unknown keyboard (id)" with its raw values and can only be
+  removed.
 
 ## Open points
 
 - Motif XF mixings and masters (a master needs SysEx and a key of its own,
   ADR-0039); voices and performances are settled (#591).
-- Is "Program for another keyboard" in the editor wanted, or only the program
-  of the device's profile plus the list of existing ones? Proposal: yes, to
-  prepare a new keyboard.
 - Several keyboards at one tablet at the same time stay out of scope
   (later stage of ADR-0039).
 - The MSB/LSB table and the SysEx mode change of the Motif XF, checked on

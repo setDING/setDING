@@ -1,6 +1,4 @@
-import 'dart:typed_data';
-
-import 'package:flutter/foundation.dart' show immutable;
+import 'package:flutter/foundation.dart';
 
 /// A program change with an optional bank select, as raw MIDI values
 /// (ADR-0039). Stored like this, independent of the device profile.
@@ -69,6 +67,56 @@ class MidiProgram {
 
   @override
   String toString() => 'MidiProgram(msb: $msb, lsb: $lsb, program: $program)';
+}
+
+/// The keyboard programs of a song per device profile (ADR-0042): profile
+/// id (`MidiProfileKind.name`, e.g. `nordStage3`) → raw values. Empty =
+/// none; the device's profile picks the one that is shown and sent.
+@immutable
+class MidiPrograms {
+  const MidiPrograms([this.byProfile = const {}]);
+
+  final Map<String, MidiProgram> byProfile;
+
+  bool get isEmpty => byProfile.isEmpty;
+
+  /// The program of [profile], null when it has none.
+  MidiProgram? operator [](String profile) => byProfile[profile];
+
+  /// With [program] for [profile]; null removes it.
+  MidiPrograms withProgram(String profile, MidiProgram? program) =>
+      MidiPrograms({
+        for (final e in byProfile.entries)
+          if (e.key != profile) e.key: e.value,
+        profile: ?program,
+      });
+
+  /// The stored form: `{"<profile>": {"msb"?, "lsb"?, "program"}, …}`.
+  Map<String, dynamic> toJson() => {
+    for (final e in byProfile.entries) e.key: e.value.toJson(),
+  };
+
+  /// Reads [toJson]'s form; null for anything that is no map. Entries that
+  /// cannot be read are left out, so a broken value sends nothing.
+  static MidiPrograms? fromJson(Object? json) {
+    if (json is! Map) return null;
+    return MidiPrograms({
+      for (final MapEntry(:key, :value) in json.entries)
+        if (key is String && key != '') key: ?MidiProgram.fromJson(value),
+    });
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is MidiPrograms && mapEquals(other.byProfile, byProfile);
+
+  @override
+  int get hashCode => Object.hashAllUnordered(
+    byProfile.entries.map((e) => Object.hash(e.key, e.value)),
+  );
+
+  @override
+  String toString() => 'MidiPrograms($byProfile)';
 }
 
 /// Addressing of the Nord Stage 3 (ADR-0039), checked on a keyboard in the

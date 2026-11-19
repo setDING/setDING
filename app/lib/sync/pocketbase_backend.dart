@@ -690,6 +690,7 @@ class PocketBaseBackend implements SyncBackend {
       songId: r.getStringValue('song'),
       data: data is Map ? data.cast<String, dynamic>() : const {},
       midi: MidiProgram.fromJson(r.get<dynamic>('midi')),
+      midiPrograms: MidiPrograms.fromJson(r.get<dynamic>('midi_programs')),
       revision: r.getIntValue('revision'),
       deleted: r.getBoolValue('deleted'),
     );
@@ -714,6 +715,7 @@ class PocketBaseBackend implements SyncBackend {
     final body = {
       'data': overlay.data,
       'midi': overlay.midi?.toJson(),
+      'midi_programs': overlay.midiPrograms?.toJson(),
       'deleted': overlay.deleted,
     };
     return _overlay(

@@ -5467,6 +5467,24 @@ abstract class AppLocalizations {
   /// **'Die Nummerierung der Nord-Songs hängt von der OS-Version des Nord ab (geprüft mit OS 2.54). Passt ein Song nicht, verwende in den Einstellungen das Profil «Allgemein».'**
   String get midiProgramSongHint;
 
+  /// No description provided for @midiProgramOtherKeyboards.
+  ///
+  /// In de, this message translates to:
+  /// **'Andere Keyboards'**
+  String get midiProgramOtherKeyboards;
+
+  /// No description provided for @midiProgramForOtherKeyboard.
+  ///
+  /// In de, this message translates to:
+  /// **'Programm für ein anderes Keyboard'**
+  String get midiProgramForOtherKeyboard;
+
+  /// No description provided for @midiProgramUnknownKeyboard.
+  ///
+  /// In de, this message translates to:
+  /// **'Unbekanntes Keyboard ({id})'**
+  String midiProgramUnknownKeyboard(String id);
+
   /// No description provided for @midiProgramMsb.
   ///
   /// In de, this message translates to:

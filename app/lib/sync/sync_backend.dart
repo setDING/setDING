@@ -319,7 +319,8 @@ class RemoteSetItem {
 
 /// Personal adjustments of a user for a song as stored on the server
 /// (ADR-0020); [data] holds the fields of layer 3 (ADR-0006), [midi] the
-/// keyboard program in its own field (ADR-0039).
+/// keyboard program in its own field (ADR-0039) and [midiPrograms] the
+/// programs per device profile (ADR-0042).
 @immutable
 class RemoteOverlay {
   const RemoteOverlay({
@@ -328,6 +329,7 @@ class RemoteOverlay {
     required this.songId,
     this.data = const {},
     this.midi,
+    this.midiPrograms,
     this.revision = 0,
     this.deleted = false,
   });
@@ -340,6 +342,10 @@ class RemoteOverlay {
   /// Keyboard program (`overlays.midi`); a separate field, so clients
   /// that only push [data] leave it untouched (ADR-0039).
   final MidiProgram? midi;
+
+  /// Keyboard programs per device profile (`overlays.midi_programs`,
+  /// ADR-0042); null = never written. v0.16.0 clients leave it untouched.
+  final MidiPrograms? midiPrograms;
   final int revision;
   final bool deleted;
 }

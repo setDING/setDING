@@ -6,7 +6,7 @@ import 'package:setding/data/attachment_storage_io.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/data/song_repository.dart';
-import 'package:drift/drift.dart' show driftRuntimeOptions;
+import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqlite3/sqlite3.dart';
@@ -26,7 +26,14 @@ const schema7Indexes = [
 /// Turns a current database back into schema 18: overlays without a
 /// keyboard program (ADR-0039).
 void downgradeToSchema18(Database raw) {
+  downgradeToSchema19(raw);
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN midi');
+}
+
+/// Turns a current database back into schema 19: one keyboard program per
+/// song, no programs per profile (ADR-0042).
+void downgradeToSchema19(Database raw) {
+  raw.execute('ALTER TABLE personal_overlays DROP COLUMN midi_programs');
 }
 
 /// Turns a current database back into schema 16: overlays without
@@ -647,9 +654,54 @@ void main() {
       );
       expect(overlay.midi, isNull);
       const program = MidiProgram(msb: 0, lsb: 2, program: 12);
-      await repo2.setMidiProgram(song, program);
-      expect(await repo2.midiProgram(song), program);
+      await repo2.setMidiProgram(
+        song,
+        'nordStage3',
+        program,
+        deviceProfile: 'nordStage3',
+      );
+      expect(await repo2.midiProgram(song, 'nordStage3'), program);
       await upgraded.close();
     },
   );
+
+  test('upgrades a schema 19 database: the program of v0.16.0 counts for '
+      "the device's profile until the programs change (ADR-0042)", () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final repo = SongRepository(current, FileAttachmentStorage(dir));
+    final song = await repo.createSong(source: '{title: Song}');
+    const legacy = MidiProgram(msb: 0, lsb: 2, program: 12);
+    await repo.saveOverlay(
+      (await repo.getOverlay(song)).copyWith(midi: const Value(legacy)),
+    );
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema19(raw);
+    raw.execute('PRAGMA user_version = 19');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final repo2 = SongRepository(upgraded, FileAttachmentStorage(dir));
+    expect((await repo2.getOverlay(song)).midiPrograms, isNull);
+    expect(await repo2.midiProgram(song, 'nordStage3'), legacy);
+    expect(await repo2.midiProgram(song, 'generic'), legacy);
+
+    // The first change moves it to the device's profile.
+    const motif = MidiProgram(msb: 63, lsb: 8, program: 0);
+    await repo2.setMidiProgram(
+      song,
+      'motifXf',
+      motif,
+      deviceProfile: 'nordStage3',
+    );
+    final overlay = await repo2.getOverlay(song);
+    expect(
+      overlay.midiPrograms,
+      const MidiPrograms({'nordStage3': legacy, 'motifXf': motif}),
+    );
+    expect(overlay.midi, legacy, reason: 'kept for v0.16.0 clients');
+    expect(await repo2.midiProgram(song, 'generic'), isNull);
+    await upgraded.close();
+  });
 }

@@ -849,7 +849,9 @@ void main() {
         final id = await app.songs.createSong(source: demoSongSource);
         await app.songs.setMidiProgram(
           id,
+          'nordStage3',
           const MidiProgram(msb: 0, lsb: 0, program: 57),
+          deviceProfile: 'nordStage3',
         );
         return [LiveItem.song((await app.songs.getSong(id))!)];
       });

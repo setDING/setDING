@@ -258,7 +258,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   /// Sends the keyboard program of the current song (ADR-0039).
   late final LiveMidiSender _midi = LiveMidiSender(
     enabled: () => ref.read(midiConnectionProvider).enabled,
-    program: ref.read(songRepositoryProvider).midiProgram,
+    // The program of this device's profile (ADR-0042).
+    program: (songId) => ref
+        .read(songRepositoryProvider)
+        .midiProgram(songId, ref.read(midiProfileProvider).id),
     send: (program) => ref.read(midiConnectionProvider.notifier).send(program),
   );
 

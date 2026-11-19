@@ -5,7 +5,7 @@ import 'package:drift/drift.dart';
 import '../midi/midi_message.dart';
 import 'band_role.dart';
 
-export '../midi/midi_message.dart' show MidiProgram;
+export '../midi/midi_message.dart' show MidiProgram, MidiPrograms;
 export 'band_role.dart';
 
 part 'database.g.dart';
@@ -214,6 +214,27 @@ class MidiProgramConverter extends TypeConverter<MidiProgram?, String?> {
       value == null ? null : jsonEncode(value.toJson());
 }
 
+/// Stores [MidiPrograms] as their JSON (ADR-0042); null = never written
+/// (a v0.16.0 program in `midi` still counts), a value that cannot be read
+/// is no program.
+class MidiProgramsConverter extends TypeConverter<MidiPrograms?, String?> {
+  const MidiProgramsConverter();
+
+  @override
+  MidiPrograms? fromSql(String? fromDb) {
+    if (fromDb == null) return null;
+    try {
+      return MidiPrograms.fromJson(jsonDecode(fromDb)) ?? const MidiPrograms();
+    } on FormatException {
+      return const MidiPrograms();
+    }
+  }
+
+  @override
+  String? toSql(MidiPrograms? value) =>
+      value == null ? null : jsonEncode(value.toJson());
+}
+
 @TableIndex(name: 'set_items_set', columns: {#setId, #position})
 @TableIndex(name: 'set_items_song', columns: {#songId})
 @DataClassName('SetItemEntry')
@@ -273,6 +294,12 @@ class PersonalOverlays extends Table {
   /// Keyboard program sent in live mode (ADR-0039, schema 19); null =
   /// none, the keyboard keeps its program.
   TextColumn get midi => text().nullable().map(const MidiProgramConverter())();
+
+  /// Keyboard programs per device profile (ADR-0042, schema 20). Null =
+  /// never written: [midi] (v0.16.0) counts for the device's profile; once
+  /// written, even empty, [midi] is ignored.
+  TextColumn get midiPrograms =>
+      text().nullable().map(const MidiProgramsConverter())();
 
   /// Server revision; 0 = not on the server (schema 9, ADR-0020).
   IntColumn get revision => integer().withDefault(const Constant(0))();
@@ -434,7 +461,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 20;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -535,6 +562,7 @@ class AppDatabase extends _$AppDatabase {
               personalOverlays.hideAnnotations,
               personalOverlays.verseChords,
               personalOverlays.midi,
+              personalOverlays.midiPrograms,
             ],
           ),
         );
@@ -607,6 +635,10 @@ class AppDatabase extends _$AppDatabase {
         // Keyboard program (ADR-0039); before schema 8 the rebuilt overlay
         // table has the column already.
         await m.addColumn(personalOverlays, personalOverlays.midi);
+      }
+      if (from < 20 && from >= 8) {
+        // Keyboard programs per profile (ADR-0042).
+        await m.addColumn(personalOverlays, personalOverlays.midiPrograms);
       }
     },
     beforeOpen: (details) async {

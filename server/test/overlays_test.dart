@@ -202,6 +202,64 @@ void main() {
     );
   });
 
+  test('the keyboard programs per profile have their own field that '
+      'v0.16.0 clients keep (ADR-0042)', () async {
+    final f = await BandFixture.create(pb);
+    final song = (await f.createSong(f.admin))['id'] as String;
+    const programs = {
+      'nordStage3': {'msb': 0, 'lsb': 2, 'program': 12},
+      'motifXf': {'msb': 63, 'lsb': 8, 'program': 0},
+    };
+
+    final created = await f.member.post('overlays', {
+      ...overlay(f.member, song),
+      'midi_programs': programs,
+    });
+    created.expectStatus(200);
+    final id = created.json['id'] as String;
+    expect(created.json['midi_programs'], programs);
+    expect(created.json['midi'], isNull);
+
+    // A v0.16.0 client pushes data, deleted and its single program.
+    final older = await f.member.patch('overlays', id, {
+      'data': {'transpose': 2},
+      'midi': {'program': 5},
+      'deleted': false,
+    });
+    older.expectStatus(200);
+    expect(older.json['midi_programs'], programs);
+    expect(older.json['midi'], {'program': 5});
+
+    // A newer client changes or removes them.
+    final changed = await f.member.patch('overlays', id, {
+      'midi_programs': {
+        'generic': {'program': 7},
+      },
+    });
+    changed.expectStatus(200);
+    expect(changed.json['midi_programs'], {
+      'generic': {'program': 7},
+    });
+    // An empty map (all removed) stays empty, not "never written", so a
+    // v0.16.0 program in `midi` does not count again.
+    final emptied = await f.member.patch('overlays', id, {
+      'midi_programs': <String, dynamic>{},
+    });
+    emptied.expectStatus(200);
+    expect(emptied.json['midi_programs'], <String, dynamic>{});
+    final removed = await f.member.patch('overlays', id, {
+      'midi_programs': null,
+    });
+    removed.expectStatus(200);
+    expect(removed.json['midi_programs'], isNull);
+
+    // Private like the rest of the overlay.
+    expect(
+      (await f.admin.patch('overlays', id, {'midi_programs': programs})).status,
+      404,
+    );
+  });
+
   test('an overlay without a keyboard program has none', () async {
     final f = await BandFixture.create(pb);
     final song = (await f.createSong(f.admin))['id'] as String;

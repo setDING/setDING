@@ -366,14 +366,21 @@ void main() {
 
     // The keyboard program travels in its own server field (ADR-0039).
     const program = MidiProgram(msb: 0, lsb: 2, program: 12);
-    await repo.setMidiProgram(song, program);
+    await repo.setMidiProgram(
+      song,
+      'nordStage3',
+      program,
+      deviceProfile: 'nordStage3',
+    );
     expect((await ann.sync()).pushed, 1);
     await annTablet.sync();
-    expect(await annTablet.songs(org).midiProgram(song), program);
-    await annTablet.songs(org).removeMidiProgram(song);
+    expect(await annTablet.songs(org).midiProgram(song, 'nordStage3'), program);
+    await annTablet
+        .songs(org)
+        .removeMidiProgram(song, 'nordStage3', deviceProfile: 'nordStage3');
     await annTablet.sync();
     await ann.sync();
-    expect(await repo.midiProgram(song), isNull);
+    expect(await repo.midiProgram(song, 'nordStage3'), isNull);
     expect((await repo.getOverlay(song)).transpose, 2);
 
     // Private: Bob sees nothing of it.

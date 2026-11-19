@@ -95,6 +95,7 @@ class OverlaySync {
                 hideAnnotations: Value(d['hide_annotations'] == true),
                 verseChords: Value(verseChordsOf(d)),
                 midi: Value(o.midi),
+                midiPrograms: Value(o.midiPrograms),
                 revision: Value(o.revision),
               ),
             );
@@ -140,6 +141,7 @@ class OverlaySync {
       songId: songId,
       data: overlayData(overlay),
       midi: overlay.midi,
+      midiPrograms: overlay.midiPrograms,
     );
     try {
       final create = overlay.revision == 0;

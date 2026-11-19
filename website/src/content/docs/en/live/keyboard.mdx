@@ -90,6 +90,19 @@ Bluetooth MIDI is not supported yet.
 The field appears when MIDI program changes are on for this device or when the song
 already has a program. You can remove the program again.
 
+## Changing keyboards
+
+A song keeps **a program of its own for each device profile**, so you can change
+keyboards without adapting your songs:
+
+- When you choose another **Device profile** in the settings, setDING shows and
+  sends each song's program for that keyboard. The programs of the other keyboards
+  are kept.
+- Under **Other keyboards** the song lists the programs of the other profiles. You
+  can edit or remove them; they are sent only while their profile is chosen.
+- **Program for another keyboard** prepares a song for a keyboard that is not
+  connected right now.
+
 ## In live mode
 
 - As soon as a song is **up**, setDING sends its program: when live mode starts and
