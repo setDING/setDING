@@ -606,15 +606,15 @@ void main() {
     }
     expect(find.textContaining('the bridge'), findsWidgets);
 
-    // A single song is shown whole.
+    // A single song applies its own sequence, too (#552).
     await tester.pumpWidget(
       app.build(
         home: LiveScreen(key: UniqueKey(), items: [LiveItem.song(song!)]),
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.textContaining('the bridge'), findsWidgets);
-    expect(find.byKey(const Key('hidden-parts')), findsNothing);
+    expect(find.textContaining('the bridge'), findsNothing);
+    expect(find.text('Hidden (not in the sequence): B, Coda'), findsOneWidget);
     await app.dispose(tester);
   });
 
@@ -679,14 +679,15 @@ void main() {
       );
       expect(opacity.opacity, dimmedSectionOpacity);
 
-      // A single song is not dimmed.
+      // A single song is dimmed by its own sequence, too (#552).
       await tester.pumpWidget(
         app.build(
           home: LiveScreen(key: UniqueKey(), items: [LiveItem.song(song!)]),
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('dimmed-section')), findsNothing);
+      expect(dimmed('the bridge'), isTrue);
+      expect(dimmed('the chorus'), isFalse);
 
       // Switched off in the settings, they are hidden again.
       final container = ProviderScope.containerOf(

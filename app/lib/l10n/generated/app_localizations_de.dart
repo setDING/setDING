@@ -2444,7 +2444,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsShowOutsideSequenceHint =>
-      'Im Set abgeschwächt statt ausgeblendet';
+      'Im Live-Modus abgeschwächt statt ausgeblendet';
 
   @override
   String get settingsAnnotationFinger => 'Notizen mit dem Finger zeichnen';

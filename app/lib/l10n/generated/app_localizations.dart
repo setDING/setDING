@@ -4151,7 +4151,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsShowOutsideSequenceHint.
   ///
   /// In de, this message translates to:
-  /// **'Im Set abgeschwächt statt ausgeblendet'**
+  /// **'Im Live-Modus abgeschwächt statt ausgeblendet'**
   String get settingsShowOutsideSequenceHint;
 
   /// No description provided for @settingsAnnotationFinger.

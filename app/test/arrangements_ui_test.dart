@@ -148,15 +148,80 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('a single song is played live as written', (tester) async {
+  testWidgets('a single song is played live in its key with the band\'s '
+      'sequence', (tester) async {
     final (app, _) = await start(tester, user: _ann, transpose: 3);
     await tester.tap(find.byIcon(Icons.play_arrow));
     await tester.pumpAndSettle();
     final live = tester.widget<LiveScreen>(find.byType(LiveScreen));
-    expect(live.items.single.arrangement, isNull);
-    expect(live.items.single.bandTranspose, 0);
+    final item = live.items.single;
+    // Only the sequence (#552); key and tempo stay as written.
+    expect(item.arrangement?.sequence, 'V C');
+    expect(item.bandTranspose, 0);
+    expect(item.arrangement?.tempo, isNull);
+    expect(item.setItemId, isNull);
     await app.dispose(tester);
   });
+
+  for (final showOutside in [true, false]) {
+    testWidgets('a single song live applies the band\'s sequence '
+        '(parts outside shown: $showOutside)', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {
+          'language': 'en',
+          'currentBandId': 'b1',
+          'showOutsideSequence': showOutside,
+        },
+        user: _ann,
+      );
+      app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+      final id = (await tester.runAsync(() async {
+        final id = await TestApp.songsIn(app, 'o1').createSong(
+          source:
+              '{title: Seq}\n'
+              '{c: Verse 1}\nfirst verse\n\n{c: Chorus}\nthe chorus\n\n'
+              '{c: Verse 2}\nsecond verse\n\n{c: Bridge}\nthe bridge',
+        );
+        await ArrangementRepository(app.db)
+            .save('b1', id, transpose: 0, sequence: 'V1, C');
+        return id;
+      }))!;
+      await tester.pumpWidget(app.build(home: SongScreen(songId: id)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.play_arrow));
+      await tester.pumpAndSettle();
+
+      final dimmed = find.byKey(const ValueKey('dimmed-section'));
+      if (showOutside) {
+        expect(find.textContaining('the bridge'), findsWidgets);
+        expect(
+          find.ancestor(
+            of: find.textContaining('the bridge'),
+            matching: dimmed,
+          ),
+          findsWidgets,
+        );
+        expect(
+          find.ancestor(
+            of: find.textContaining('the chorus'),
+            matching: dimmed,
+          ),
+          findsNothing,
+        );
+        expect(find.byKey(const Key('hidden-parts')), findsNothing);
+      } else {
+        expect(find.textContaining('the bridge'), findsNothing);
+        expect(find.textContaining('second verse'), findsNothing);
+        expect(dimmed, findsNothing);
+        expect(
+          find.text('Hidden (not in the sequence): V2, B'),
+          findsOneWidget,
+        );
+      }
+      await app.dispose(tester);
+    });
+  }
 
   testWidgets('without an arrangement members see the song as written', (
     tester,

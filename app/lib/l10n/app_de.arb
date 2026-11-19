@@ -1247,7 +1247,7 @@
   "settingsShowAnnotations": "Freihand-Notizen anzeigen",
   "settingsShowAnnotationsHint": "Deine eigenen Zeichnungen auf Songs und Noten",
   "settingsShowOutsideSequence": "Teile ausserhalb des Ablaufs anzeigen",
-  "settingsShowOutsideSequenceHint": "Im Set abgeschwächt statt ausgeblendet",
+  "settingsShowOutsideSequenceHint": "Im Live-Modus abgeschwächt statt ausgeblendet",
   "settingsAnnotationFinger": "Notizen mit dem Finger zeichnen",
   "settingsAnnotationFingerHint": "Für Geräte ohne Stift; sonst blättern die Finger weiter",
   "stampFermata": "Fermate",

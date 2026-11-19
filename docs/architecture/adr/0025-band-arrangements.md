@@ -68,7 +68,8 @@ needed for now (owner); personal notes stay as they are.
 - **Where it applies:**
   - in a set and in live mode started from a set: the arrangement of the set's band;
   - on the songs tab and when a single song is played live: the song is shown
-    **as written**. The song screen shows the arrangement of the band chosen on
+    **as written**, except that a single song played live follows the sequence
+    of the band chosen on the sets tab (#552). The song screen shows the arrangement of the band chosen on
     the sets tab (if it plays from this library) only in its own card, where it
     is also edited. The song list (and the song picker of the sets) shows each
     song as written and adds a small hint, marked with the band icon, for songs
@@ -166,6 +167,7 @@ needed for now (owner); personal notes stay as they are.
   the sets tab only as a small hint below the song (band icon, the band's key and
   tempo, its sequence). This refines #227; the song is still never shown in the
   band's key.
+- 2026-11-19: Owner decision (#552): a single song played live from the song screen follows the **sequence** of the band chosen on the sets tab (when that band plays from the song's library), so the parts outside it are dimmed or hidden as in a set (ADR-0007). Key and tempo stay as written there; this refines #227.
 
 ## Open points
 
