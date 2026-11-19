@@ -177,6 +177,47 @@ void main() {
       expect(overlay.notes, isNull);
       expect(overlay.liveView, isNull);
     });
+
+    test(
+      'a song has a keyboard program that can be removed (ADR-0039)',
+      () async {
+        final id = await songs.createSong(title: 'X');
+        expect(await songs.midiProgram(id), isNull);
+        final seen = <MidiProgram?>[];
+        final sub = songs.watchMidiProgram(id).listen(seen.add);
+        await pumpEventQueue();
+
+        const program = MidiProgram(msb: 0, lsb: 2, program: 12);
+        await songs.updateOverlay(id, (o) => o.copyWith(transpose: 2));
+        await songs.setMidiProgram(id, program);
+        await pumpEventQueue();
+        expect(await songs.midiProgram(id), program);
+        expect((await songs.getOverlay(id)).transpose, 2);
+
+        // Other adjustments keep it.
+        await songs.updateOverlay(id, (o) => o.copyWith(transpose: 3));
+        expect(await songs.midiProgram(id), program);
+
+        await songs.removeMidiProgram(id);
+        await pumpEventQueue();
+        expect(await songs.midiProgram(id), isNull);
+        expect((await songs.getOverlay(id)).transpose, 3);
+        await sub.cancel();
+        // Only changes of the program itself.
+        expect(seen, [null, program, null]);
+      },
+    );
+
+    test('a stored keyboard program that cannot be read is none', () async {
+      final id = await songs.createSong(title: 'X');
+      await songs.updateOverlay(id, (o) => o.copyWith(transpose: 1));
+      for (final stored in ['not json', '{"program": 300}', '[]']) {
+        await db.customStatement('UPDATE personal_overlays SET midi = ?', [
+          stored,
+        ]);
+        expect(await songs.midiProgram(id), isNull, reason: stored);
+      }
+    });
   });
 
   group('Tags, sorting and import', () {

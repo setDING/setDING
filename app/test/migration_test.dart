@@ -23,9 +23,16 @@ const schema7Indexes = [
   'set_items_song',
 ];
 
+/// Turns a current database back into schema 18: overlays without a
+/// keyboard program (ADR-0039).
+void downgradeToSchema18(Database raw) {
+  raw.execute('ALTER TABLE personal_overlays DROP COLUMN midi');
+}
+
 /// Turns a current database back into schema 16: overlays without
 /// "chords in the first verse only".
 void downgradeToSchema16(Database raw) {
+  downgradeToSchema18(raw);
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN verse_chords');
 }
 
@@ -613,4 +620,36 @@ void main() {
       expect(columns, isNot(contains('first_verse_chords_only')));
     });
   }
+
+  test(
+    'upgrades a schema 18 database: overlays get a keyboard program',
+    () async {
+      final current = AppDatabase(NativeDatabase(file));
+      final repo = SongRepository(current, FileAttachmentStorage(dir));
+      final song = await repo.createSong(source: '{title: Song}');
+      await repo.saveOverlay(
+        (await repo.getOverlay(song))
+            .copyWith(transpose: 3, verseChords: VerseChords.stacked),
+      );
+      await current.close();
+
+      final raw = sqlite3.open(file.path);
+      downgradeToSchema18(raw);
+      raw.execute('PRAGMA user_version = 18');
+      raw.close();
+
+      final upgraded = AppDatabase(NativeDatabase(file));
+      final repo2 = SongRepository(upgraded, FileAttachmentStorage(dir));
+      final overlay = await repo2.getOverlay(song);
+      expect(
+        (overlay.transpose, overlay.verseChords),
+        (3, VerseChords.stacked),
+      );
+      expect(overlay.midi, isNull);
+      const program = MidiProgram(msb: 0, lsb: 2, program: 12);
+      await repo2.setMidiProgram(song, program);
+      expect(await repo2.midiProgram(song), program);
+      await upgraded.close();
+    },
+  );
 }

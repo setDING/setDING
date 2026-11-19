@@ -364,6 +364,18 @@ void main() {
     expect(there.transpose, 2);
     expect(there.notes, 'Solo after the bridge');
 
+    // The keyboard program travels in its own server field (ADR-0039).
+    const program = MidiProgram(msb: 0, lsb: 2, program: 12);
+    await repo.setMidiProgram(song, program);
+    expect((await ann.sync()).pushed, 1);
+    await annTablet.sync();
+    expect(await annTablet.songs(org).midiProgram(song), program);
+    await annTablet.songs(org).removeMidiProgram(song);
+    await annTablet.sync();
+    await ann.sync();
+    expect(await repo.midiProgram(song), isNull);
+    expect((await repo.getOverlay(song)).transpose, 2);
+
     // Private: Bob sees nothing of it.
     await bob.sync();
     expect((await bob.songs(org).getOverlay(song)).transpose, 0);

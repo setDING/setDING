@@ -834,6 +834,23 @@ class SongRepository {
     SongOverlay Function(SongOverlay) change,
   ) async => saveOverlay(change(await getOverlay(songId)));
 
+  /// The keyboard program of a song (ADR-0039), part of the personal
+  /// adjustments; null = none, live mode sends nothing.
+  Future<MidiProgram?> midiProgram(String songId) async =>
+      (await getOverlay(songId)).midi;
+
+  /// [midiProgram] as it changes, e.g. after a sync.
+  Stream<MidiProgram?> watchMidiProgram(String songId) =>
+      watchOverlay(songId).map((o) => o.midi).distinct();
+
+  /// Stores the keyboard program of a song; null removes it. Synced with
+  /// the other personal adjustments (last writer wins, ADR-0020).
+  Future<void> setMidiProgram(String songId, MidiProgram? program) =>
+      updateOverlay(songId, (o) => o.copyWith(midi: Value(program)));
+
+  /// Removes the keyboard program of a song.
+  Future<void> removeMidiProgram(String songId) => setMidiProgram(songId, null);
+
   /// No adjustments: as written in the song.
   static SongOverlay defaultOverlay(
     String songId, {

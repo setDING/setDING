@@ -523,6 +523,7 @@ class FakeSyncBackend implements SyncBackend {
       userId: overlay.userId,
       songId: overlay.songId,
       data: overlay.data,
+      midi: overlay.midi,
       revision: ++_serverRevision,
       deleted: overlay.deleted,
     );
