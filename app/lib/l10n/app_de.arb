@@ -253,6 +253,16 @@
     }
   },
   "liveWebNotice": "Im Browser nicht offline-sicher – auf der Bühne die App verwenden",
+  "liveMidiConnected": "Keyboard verbunden: {name}",
+  "@liveMidiConnected": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "liveMidiNotConnected": "Keyboard nicht verbunden",
+  "liveMidiSendAgain": "Programm erneut senden",
   "liveWakeLockNotice": "Bildschirm kann sich ausschalten – Energieeinstellungen des Geräts prüfen",
   "liveEnd": "Ende des Sets",
   "liveSetOverview": "Set-Übersicht",

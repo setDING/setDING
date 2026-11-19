@@ -926,6 +926,24 @@ abstract class AppLocalizations {
   /// **'Im Browser nicht offline-sicher – auf der Bühne die App verwenden'**
   String get liveWebNotice;
 
+  /// No description provided for @liveMidiConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'Keyboard verbunden: {name}'**
+  String liveMidiConnected(String name);
+
+  /// No description provided for @liveMidiNotConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'Keyboard nicht verbunden'**
+  String get liveMidiNotConnected;
+
+  /// No description provided for @liveMidiSendAgain.
+  ///
+  /// In de, this message translates to:
+  /// **'Programm erneut senden'**
+  String get liveMidiSendAgain;
+
   /// No description provided for @liveWakeLockNotice.
   ///
   /// In de, this message translates to:

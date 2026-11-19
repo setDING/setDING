@@ -33,6 +33,8 @@ map=(
   live_controls 4b_live_controls
   annotations 17_annotations
   annotations_live 17b_annotations_live
+  settings_midi 22_settings_midi
+  live_midi 22b_live_midi
 )
 
 for ((i = 0; i < ${#map[@]}; i += 2)); do

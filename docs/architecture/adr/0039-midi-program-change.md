@@ -128,9 +128,12 @@ settings** (layer 4b, ADR-0027), never synced:
 ### Sending in live mode
 
 - When a song becomes the **current** song (live mode starts, or a page turn,
-  tap or set list jump reaches another song), setDING sends, in this order:
-  bank select MSB (if set), bank select LSB (if set), program change, on the
-  device's channel.
+  tap or set list jump reaches another song) and stays current for about
+  **300 ms**, setDING sends, in this order: bank select MSB (if set), bank
+  select LSB (if set), program change, on the device's channel. Songs turned
+  past quickly send nothing. The program is read as stored at that moment,
+  and it is sent **also when it equals the program sent before**. Pages within
+  a song send nothing; only another set item does.
 - Preparing the neighbouring songs ahead (ADR-0007) sends nothing.
 - A song **without a program sends nothing**: the keyboard keeps its program.
   Breaks and text items of a set send nothing either.
@@ -289,6 +292,26 @@ settings** (layer 4b, ADR-0027), never synced:
   prototype's MIDI test screen stays in *Test features* (developer mode) as a
   diagnostic for new keyboards and platforms, which settles the question of
   the prototype screen (#558).
+
+- 2026-11-19: Sending in live mode (#564). Live mode feeds `LiveMidiSender`
+  (`lib/midi/live_midi_sender.dart`) with the current set item. A song sends
+  its program only once it **stayed current for about 300 ms** (debounce), so
+  turning quickly past several songs does not switch the keyboard for each of
+  them. The program is read when it is sent, as stored at that moment. The
+  **same program is sent again** when the next song has it too (no comparison
+  with the program sent before): the keyboard player may have switched sounds
+  by hand in between, and resending costs nothing. A new set item counts as a
+  change, so the same song twice in a row sends again; pages within a song,
+  prepared neighbours, songs without a program, breaks and text items send
+  nothing. "Send program again" is a button in the live control bar, shown
+  while MIDI program changes are on and the current item is a song. The MIDI
+  indicator (keyboard icon, connected / not connected in red) sits in the
+  info line below the page, the one line that is always on stage (the song
+  header belongs to each page); on small landscape screens, where that line
+  only shows for notices, "not connected" shows it. A keyboard connected
+  during live mode gets the current program with "Send program again", not
+  automatically. User documentation page *Connecting a keyboard (MIDI)* in
+  the live mode chapter of the website.
 
 ## Open points
 

@@ -12,6 +12,7 @@ import 'dart:ui' as ui;
 import 'package:setding/data/arrangement_repository.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/data/demo_song.dart';
+import 'package:setding/midi/midi_output.dart';
 import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/ui/bands/band_screen.dart';
 import 'package:setding/ui/bands/organization_screen.dart';
@@ -809,6 +810,57 @@ void main() {
 
       await pick('annotation-done');
       await _shot(tester, '${lang}_17b_annotations_live');
+      await app.dispose(tester);
+    });
+  }
+
+  // Keyboard (MIDI, ADR-0039) for the user documentation: the device
+  // settings with a connected Nord Stage 3, and live mode with the
+  // indicator and "Send program again".
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    _screenshotTest('keyboard midi $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {
+          'language': lang,
+          'themeMode': dark ? 'dark' : 'light',
+          'midiEnabled': true,
+          'midiOutputName': 'Nord Stage 3',
+        },
+      );
+      app.midiOutput.ports = const [
+        MidiPortInfo(id: 'usb-1', name: 'Nord Stage 3', connected: false),
+      ];
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: const SettingsScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final midi = find.byKey(const Key('settings-category-midi'));
+      await tester.ensureVisible(midi);
+      await tester.pumpAndSettle();
+      await tester.tap(midi);
+      await _shot(tester, '${lang}_22_settings_midi');
+
+      final items = await tester.runAsync(() async {
+        final id = await app.songs.createSong(source: demoSongSource);
+        await app.songs.setMidiProgram(
+          id,
+          const MidiProgram(msb: 0, lsb: 0, program: 57),
+        );
+        return [LiveItem.song((await app.songs.getSong(id))!)];
+      });
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: LiveScreen(items: items!)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tapAt(tester.getRect(find.byType(PageView)).center);
+      await _shot(tester, '${lang}_22b_live_midi');
       await app.dispose(tester);
     });
   }
