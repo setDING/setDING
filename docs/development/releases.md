@@ -11,7 +11,8 @@ only after the previous one succeeded:
 
 1. Merge a `chore(release): vX.Y.Z` PR that sets `version: X.Y.Z` in
    `app/pubspec.yaml`, without a build number (CI sets it), and adds the version's
-   section to [`CHANGELOG.md`](../../CHANGELOG.md) (see [Changelog](#changelog)).
+   section to [`CHANGELOG.md`](../../CHANGELOG.md) (see [Changelog](#changelog)) and its
+   notes to `app/assets/whats_new.json` (see [What's new in the app](#whats-new-in-the-app)).
    Choose the number by the rules in [Version numbers](#version-numbers).
 2. Tag `main` and push the tag:
 
@@ -108,6 +109,29 @@ see [Version numbers](#version-numbers)), *Added*, *Changed*, *Deprecated*, *Rem
 `make check` validates the format and requires a section for the version in
 `app/pubspec.yaml`, so a version bump without a changelog section fails the test
 gate; the release workflow checks the same before it builds.
+
+## What's new in the app
+
+After an update the app offers short notes about the new version once, in the app
+language (ADR-0041). They live in [`app/assets/whats_new.json`](../../app/assets/whats_new.json)
+and are written by the release PR together with the changelog section:
+
+```json
+"X.Y.Z": {
+  "de": ["Kurzer Satz für Benutzer."],
+  "en": ["Short sentence for users."]
+}
+```
+
+- Shorten the changelog section to about 3–5 sentences for band members: what they can
+  do now, in plain words, without PR or ADR references and without changes they do
+  not notice.
+- The same number of notes in de-CH (no "ß") and en.
+- An empty list (`"de": [], "en": []`) on purpose says nothing, e.g. for a patch
+  without user-visible changes.
+
+`make check` (`app/test/whats_new_test.dart`) fails when the version in
+`app/pubspec.yaml` has no entry or the entries break these rules.
 
 ## Version numbers
 

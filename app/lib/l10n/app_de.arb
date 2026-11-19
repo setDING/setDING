@@ -1370,5 +1370,25 @@
   },
   "appUpdateInstallBody": "setDING wird geschlossen, die neue Version installiert und wieder gestartet. Deine Daten bleiben auf diesem Gerät.",
   "appUpdateDownloading": "Update wird heruntergeladen …",
-  "appUpdateFailed": "Das Update konnte nicht installiert werden. Bitte versuche es später nochmals."
+  "appUpdateFailed": "Das Update konnte nicht installiert werden. Bitte versuche es später nochmals.",
+  "whatsNewTitle": "Was ist neu",
+  "whatsNewAvailable": "Neu in setDING {version}",
+  "@whatsNewAvailable": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsNewShow": "Anzeigen",
+  "whatsNewVersion": "Version {version}",
+  "@whatsNewVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsNewAllChanges": "Alle Änderungen",
+  "whatsNewHint": "Die Neuerungen der letzten Versionen"
 }

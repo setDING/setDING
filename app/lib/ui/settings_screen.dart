@@ -10,6 +10,7 @@ import '../settings/settings.dart';
 import '../sync/auth_providers.dart';
 import '../sync/update_check.dart';
 import '../update/update_providers.dart';
+import '../update/whats_new.dart';
 import '../util/app_version.dart';
 import '../util/log.dart';
 import 'account/account_section.dart';
@@ -20,6 +21,7 @@ import 'theme.dart';
 import 'widgets/app_update.dart';
 import 'widgets/breakpoint_builder.dart';
 import 'widgets/dialogs.dart';
+import 'widgets/whats_new_dialog.dart';
 
 /// The categories of the settings screen, in order.
 enum SettingsCategory {
@@ -678,6 +680,10 @@ class _AboutTiles extends ConsumerWidget {
     final current = ref.watch(clientVersionProvider);
     // The Windows app installs it itself (ADR-0035).
     final installable = ref.watch(installableUpdateProvider);
+    final whatsNew = switch (ref.watch(whatsNewProvider).value) {
+      final all? => notesUpTo(all, current),
+      null => null,
+    };
     return Column(
       children: [
         // A newer release (ADR-0036).
@@ -727,6 +733,15 @@ class _AboutTiles extends ConsumerWidget {
             }
           },
         ),
+        // The notes of the recent versions (ADR-0041).
+        if (whatsNew != null && whatsNew.isNotEmpty)
+          ListTile(
+            key: const Key('whats-new'),
+            leading: const Icon(Icons.new_releases_outlined),
+            title: Text(l10n.whatsNewTitle),
+            subtitle: Text(l10n.whatsNewHint),
+            onTap: () => showWhatsNew(context, whatsNew),
+          ),
         ListTile(
           key: const Key('app-version'),
           leading: const Icon(Icons.info_outline),

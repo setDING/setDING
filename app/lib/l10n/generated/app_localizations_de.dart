@@ -2742,4 +2742,26 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get appUpdateFailed =>
       'Das Update konnte nicht installiert werden. Bitte versuche es später nochmals.';
+
+  @override
+  String get whatsNewTitle => 'Was ist neu';
+
+  @override
+  String whatsNewAvailable(String version) {
+    return 'Neu in setDING $version';
+  }
+
+  @override
+  String get whatsNewShow => 'Anzeigen';
+
+  @override
+  String whatsNewVersion(String version) {
+    return 'Version $version';
+  }
+
+  @override
+  String get whatsNewAllChanges => 'Alle Änderungen';
+
+  @override
+  String get whatsNewHint => 'Die Neuerungen der letzten Versionen';
 }

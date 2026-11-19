@@ -1155,5 +1155,25 @@
   },
   "appUpdateInstallBody": "setDING closes, installs the new version and starts again. Your data stays on this device.",
   "appUpdateDownloading": "Downloading the update …",
-  "appUpdateFailed": "The update could not be installed. Please try again later."
+  "appUpdateFailed": "The update could not be installed. Please try again later.",
+  "whatsNewTitle": "What's new",
+  "whatsNewAvailable": "New in setDING {version}",
+  "@whatsNewAvailable": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsNewShow": "Show",
+  "whatsNewVersion": "Version {version}",
+  "@whatsNewVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsNewAllChanges": "All changes",
+  "whatsNewHint": "The changes in recent versions"
 }

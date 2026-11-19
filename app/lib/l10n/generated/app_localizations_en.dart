@@ -2726,4 +2726,26 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get appUpdateFailed =>
       'The update could not be installed. Please try again later.';
+
+  @override
+  String get whatsNewTitle => 'What\'s new';
+
+  @override
+  String whatsNewAvailable(String version) {
+    return 'New in setDING $version';
+  }
+
+  @override
+  String get whatsNewShow => 'Show';
+
+  @override
+  String whatsNewVersion(String version) {
+    return 'Version $version';
+  }
+
+  @override
+  String get whatsNewAllChanges => 'All changes';
+
+  @override
+  String get whatsNewHint => 'The changes in recent versions';
 }

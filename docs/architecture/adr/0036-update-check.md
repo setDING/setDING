@@ -73,8 +73,8 @@ a banner in the middle of a set is not acceptable (ADR-0007).
 
 - 2026-11-18: Proposed (#498), implemented in #499.
 - 2026-11-18: Accepted by the owner.
+- 2026-11-19: Release notes in the app moved to ADR-0041 (#544).
 
 ## Open points
 
 - A setting to switch the check off, if anyone asks for it.
-- Release notes in the app (needs the GitHub release body or a changelog route).

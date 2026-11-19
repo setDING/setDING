@@ -13,6 +13,7 @@ import 'providers.dart';
 import 'settings/settings.dart';
 import 'sync/auth_providers.dart';
 import 'sync/update_check.dart';
+import 'update/whats_new.dart';
 import 'ui/widgets/logo.dart';
 import 'util/log.dart';
 
@@ -40,6 +41,9 @@ Future<void> main() async {
   // Sent with every request, so the server can ask for an update (ADR-0029).
   final info = await PackageInfo.fromPlatform();
   final version = info.version;
+  // A new installation has nothing new to tell (ADR-0041); before anything
+  // else is stored on the device.
+  await recordFirstStart(prefs, version);
   // Files of attachments deleted while an undo was offered (#267); before
   // the UI, so that no new deletion is waiting for its undo.
   try {

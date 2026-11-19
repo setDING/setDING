@@ -3,9 +3,12 @@ import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/generated/app_localizations.dart';
+import '../settings/settings.dart' show sharedPreferencesProvider;
+import '../sync/auth_providers.dart' show clientVersionProvider;
 import '../sync/sync_controller.dart';
 import '../sync/update_check.dart';
 import '../update/update_providers.dart';
+import '../update/whats_new.dart';
 import 'sets/sets_screen.dart';
 import 'settings_screen.dart';
 import 'songs/songs_screen.dart';
@@ -13,6 +16,7 @@ import 'widgets/app_update.dart';
 import 'widgets/dialogs.dart';
 import 'widgets/logo.dart';
 import 'widgets/update_required_banner.dart';
+import 'widgets/whats_new_dialog.dart';
 
 /// Main navigation: sets, songs, settings. On wide screens the rail shows
 /// the logo mark at its top.
@@ -31,6 +35,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   /// How long the hint about a newer release stays (ADR-0036).
   static const _updateHintDuration = Duration(seconds: 6);
 
+  /// How long the hint about the notes of a new version stays (ADR-0041).
+  static const _whatsNewHintDuration = Duration(seconds: 8);
+
   @override
   void initState() {
     super.initState();
@@ -40,6 +47,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (version == null) return;
       WidgetsBinding.instance.addPostFrameCallback((_) => _notify(version));
     }, fireImmediately: true);
+    // After an update, the notes of the new versions (ADR-0041), once.
+    ref.listenManual(pendingWhatsNewProvider, (_, pending) {
+      if (pending == null) return;
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _offerWhatsNew(pending),
+      );
+    }, fireImmediately: true);
+  }
+
+  /// Offers the notes of [pending] once, like the update hint: only while
+  /// the main navigation is on top, otherwise at a later start.
+  void _offerWhatsNew(List<VersionNotes> pending) {
+    if (!mounted || !(ModalRoute.of(context)?.isCurrent ?? true)) return;
+    final current = ref.read(clientVersionProvider);
+    final seen = ref.read(sharedPreferencesProvider).getString(whatsNewSeenKey);
+    if (current == null || seen == current) return;
+    markWhatsNewSeen(ref);
+    if (pending.isEmpty) return;
+    final l10n = AppLocalizations.of(context);
+    // Queued behind another hint, e.g. the update hint, not replacing it.
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        key: const Key('whats-new-snackbar'),
+        persist: false,
+        duration: _whatsNewHintDuration,
+        content: Text(l10n.whatsNewAvailable(current)),
+        action: SnackBarAction(
+          key: const Key('whats-new-show'),
+          label: l10n.whatsNewShow,
+          onPressed: () => showWhatsNew(context, pending),
+        ),
+      ),
+    );
   }
 
   /// Shows the hint for [version] once. Only while the main navigation is on
