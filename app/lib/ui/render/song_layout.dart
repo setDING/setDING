@@ -329,9 +329,16 @@ BlockMetrics _measure(
             final cell = row.cells![i];
             w = math.max(
               w,
-              cell.isEmpty
-                  ? width(' ', lyric)
-                  : spanWidth(markupSpan(cell, lyric, forMeasuring: true)),
+              (cell.isEmpty
+                      ? width(' ', lyric)
+                      : spanWidth(
+                          markupSpan(cell, lyric, forMeasuring: true),
+                        )) +
+                  // The hyphen of a split word (#532).
+                  (row.splitsWord(i)
+                      ? width('-', lyric) +
+                            2 * SongSpacing.stackedHyphenPadding * size
+                      : 0),
             );
           }
           lineWidth += w;

@@ -131,4 +131,26 @@ Three b
     expect([for (final r in line.rows) r.verse], [1, 2]);
     expect(song.sections.single.label, isNull);
   });
+
+  test('knows where a chord splits a word of a verse', () {
+    final song = stackVerses(
+      parseChordPro(
+        '{sov}\nA[G]mazing [D]grace\n{eov}\n'
+        '{sov}\n\'Twas [G]grace that [D]taught\n{eov}\n'
+        '{sov}\n<b>Be</b>[G]<b>lieve</b> [D]me\n{eov}',
+      ),
+    );
+    final rows = stackedLines(song.sections.single).single.rows;
+    // Cells: before the first chord, under G, under D.
+    expect(
+      [for (var i = 0; i < 3; i++) rows[0].splitsWord(i)],
+      [true, false, false],
+    );
+    expect(
+      [for (var i = 0; i < 3; i++) rows[1].splitsWord(i)],
+      [false, false, false],
+    );
+    // Markup does not count as text.
+    expect(rows[2].splitsWord(0), isTrue);
+  });
 }
