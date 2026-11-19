@@ -38,7 +38,7 @@ dependencies:
   path: ^1.9.1
   path_provider: ^2.1.6
   pdf: ^3.13.1
-  pdfrx: ^3.0.3
+  pdfrx: ^3.1.0
   # Pinned like the server (PB_VERSION, ADR-0004); update deliberately.
   pocketbase: 0.26.0
   qr_flutter: ^4.1.0
