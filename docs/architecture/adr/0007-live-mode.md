@@ -89,11 +89,14 @@ song, all tablets follow automatically. We evaluated whether this is needed.
   the app is light) or *black* (true black page, very dark bars, e.g. for OLED screens). The live view, its control
   bar, the bottom bar, the set overview and the PDF background follow it. Chords are drawn in a stronger colour than
   elsewhere in the app, with a contrast of at least 7:1 in every variant: deep brand blue on light, amber on dark and black.
-- **Only the parts of the sequence:** in the live mode of a set, a song with a sequence (set item, band arrangement or
-  the song's own `{x_sequence}`, ADR-0006/ADR-0025) shows only the sections whose part appears in it (`V` matches every
-  verse, `V2` only the second). The song stays in document order; order and repetitions of the sequence are not
-  applied. Sections that are no part (unlabelled, tab, grid) stay. The header says which parts are hidden
-  ("Hidden (not in the sequence): V3, B"). If the sequence matches none of the song's parts, the song is shown whole.
+- **Parts outside the sequence:** in the live mode of a set, a song with a sequence (set item, band arrangement or
+  the song's own `{x_sequence}`, ADR-0006/ADR-0025) shows the sections whose part appears in it (`V` matches every
+  verse, `V2` only the second) normally and the other parts **dimmed** (reduced opacity, same layout). The personal
+  setting **Show parts outside the sequence** (`showOutsideSequence`, default on, synced with the person) hides them
+  instead: then only the parts of the sequence are shown and the header says which parts are hidden
+  ("Hidden (not in the sequence): V3, B"). Either way the song stays in document order; order and repetitions of the
+  sequence are not applied. Sections that are no part (unlabelled, tab, grid) are never dimmed or hidden. If the
+  sequence matches none of the song's parts, the song is shown whole.
   A single song played outside a set is always shown whole.
 - **Key and tempo at a glance:** the live header shows the key as played (band arrangement, set item transposition
   and capo, ADR-0025), the tempo and the time signature as large chips beside the title (below it on narrow
@@ -161,6 +164,7 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-17: Wide song map: beat large and the set (tap to turn) in a panel left of the song map (ADR-0026, #357).
 - 2026-11-17: In the wide song map the tap zones are thirds of the whole screen, empty areas of the panel included (ADR-0026, #363).
 - 2026-11-18: MIDI program changes per song in live mode decided in ADR-0039 (accepted, #510): when a song becomes current, its personal keyboard program is sent over USB; page turning by MIDI stays open.
+- 2026-11-19: Owner request (#550): the parts outside the sequence are shown dimmed by default instead of hidden, in document order; the new personal setting **Show parts outside the sequence** (`showOutsideSequence`) switched off restores hiding them. Dimming changes only the painting, not the layout; with the parts shown, the annotation layout fingerprint uses the whole song (no sequence).
 
 ## Open points
 

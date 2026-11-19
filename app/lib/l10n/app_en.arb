@@ -1052,6 +1052,8 @@
   "annotationsCount": "{count, plural, =0{None yet: draw them in live mode} =1{1 annotation} other{{count} annotations}}",
   "settingsShowAnnotations": "Show freehand annotations",
   "settingsShowAnnotationsHint": "Your own drawings on songs and sheet music",
+  "settingsShowOutsideSequence": "Show parts outside the sequence",
+  "settingsShowOutsideSequenceHint": "Dimmed in a set instead of hidden",
   "settingsAnnotationFinger": "Draw annotations with a finger",
   "settingsAnnotationFingerHint": "For devices without a stylus; otherwise fingers keep turning pages",
   "stampFermata": "Fermata",

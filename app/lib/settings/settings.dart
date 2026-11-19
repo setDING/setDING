@@ -133,6 +133,7 @@ class AppSettings {
     this.audioLatencyMs = 0,
     this.songMap,
     this.showAnnotations = true,
+    this.showOutsideSequence = true,
     this.annotationFinger = false,
     this.songDisplay = SongDisplay.classic,
   });
@@ -225,6 +226,10 @@ class AppSettings {
   /// Personal freehand annotations are shown (ADR-0032).
   final bool showAnnotations;
 
+  /// In the live mode of a set, the parts outside the song sequence are
+  /// shown dimmed instead of hidden (ADR-0007).
+  final bool showOutsideSequence;
+
   /// Fingers draw annotations too, not only a stylus or a mouse; for
   /// devices without a stylus (ADR-0032).
   final bool annotationFinger;
@@ -316,6 +321,7 @@ class AppSettings {
     int? audioLatencyMs,
     bool? songMap,
     bool? showAnnotations,
+    bool? showOutsideSequence,
     bool? annotationFinger,
     SongDisplay? songDisplay,
   }) => AppSettings(
@@ -353,6 +359,7 @@ class AppSettings {
     audioLatencyMs: audioLatencyMs ?? this.audioLatencyMs,
     songMap: songMap ?? this.songMap,
     showAnnotations: showAnnotations ?? this.showAnnotations,
+    showOutsideSequence: showOutsideSequence ?? this.showOutsideSequence,
     annotationFinger: annotationFinger ?? this.annotationFinger,
     songDisplay: songDisplay ?? this.songDisplay,
   );
@@ -400,6 +407,8 @@ class AppSettings {
     // person; drawing with a finger depends on the device having a stylus.
     'showAnnotations': SettingSyncScope.personal,
     'annotationFinger': SettingSyncScope.device,
+    // Parts outside the sequence (ADR-0007): a reading habit of the person.
+    'showOutsideSequence': SettingSyncScope.personal,
     // Song display styles (ADR-0033): a reading habit of the person.
     'songDisplay': SettingSyncScope.personal,
   };
@@ -445,6 +454,7 @@ class AppSettings {
     'audioLatencyMs': audioLatencyMs,
     'songMap': ?songMap,
     'showAnnotations': showAnnotations,
+    'showOutsideSequence': showOutsideSequence,
     'annotationFinger': annotationFinger,
     'songDisplay': songDisplay.toJsonString(),
   };
@@ -539,6 +549,7 @@ class AppSettings {
           .clamp(0, maxAudioLatencyMs),
       songMap: maybe('songMap'),
       showAnnotations: flag('showAnnotations', d.showAnnotations),
+      showOutsideSequence: flag('showOutsideSequence', d.showOutsideSequence),
       annotationFinger: flag('annotationFinger', d.annotationFinger),
       songDisplay: switch (json['songDisplay']) {
         final String v => SongDisplay.fromJsonString(v),

@@ -3,6 +3,7 @@
 library;
 
 import 'markup.dart';
+import 'parser.dart' show sourceLineOf;
 import 'song.dart';
 
 /// Kind of a part in a song sequence.
@@ -210,14 +211,35 @@ Map<Section, SequenceItem> _sectionParts(Song song) {
 
 /// [song] reduced to the parts of a [sequence], see [filterBySequence].
 class SequenceSelection {
-  const SequenceSelection(this.song, this.hidden);
+  const SequenceSelection(
+    this.song,
+    this.hidden, {
+    this.outside = const [],
+    Set<int> outsideLines = const {},
+  }) : _outsideLines = outsideLines;
 
-  /// The song with only the sections of the sequence.
+  /// The song with only the sections of the sequence, or the whole song
+  /// when the parts outside the sequence are kept (see [outside]).
   final Song song;
 
   /// Codes of the hidden parts (`V3`, `B`, `Coda`), in document order and
   /// without duplicates; empty when nothing is hidden.
   final List<String> hidden;
+
+  /// Codes of the parts outside the sequence that were kept (`keepOutside`
+  /// of [filterBySequence]), in document order and without duplicates.
+  final List<String> outside;
+
+  /// Source lines of the sections in [outside].
+  final Set<int> _outsideLines;
+
+  /// Whether [section] is a part outside the sequence that was kept. Also
+  /// true for copies made from such a section (e.g. by
+  /// [firstVerseChordsOnly]), as they keep its source line.
+  bool isOutside(Section section) {
+    final line = sourceLineOf(section);
+    return line != null && _outsideLines.contains(line);
+  }
 }
 
 /// Keeps only the sections of [song] whose part appears in [sequence]
@@ -227,9 +249,17 @@ class SequenceSelection {
 /// repetitions of the sequence are not applied: the song stays in
 /// document order.
 ///
+/// With [keepOutside], nothing is left out: the song is returned whole and
+/// the parts outside the sequence are listed in [SequenceSelection.outside]
+/// instead, e.g. to show them dimmed.
+///
 /// When the sequence is empty or matches none of the song's parts (e.g.
 /// unknown codes), the song is returned unchanged.
-SequenceSelection filterBySequence(Song song, List<SequenceItem> sequence) {
+SequenceSelection filterBySequence(
+  Song song,
+  List<SequenceItem> sequence, {
+  bool keepOutside = false,
+}) {
   final parts = _sectionParts(song);
   if (sequence.isEmpty || parts.isEmpty) {
     return SequenceSelection(song, const []);
@@ -247,6 +277,22 @@ SequenceSelection filterBySequence(Song song, List<SequenceItem> sequence) {
   final hasChorus = sequence.any((i) => i.part == SequencePart.chorus);
   final hidden = <String>{};
   final elements = <SongElement>[];
+  if (keepOutside) {
+    final outsideLines = <int>{};
+    for (final MapEntry(key: section, value: part) in parts.entries) {
+      if (inSequence(part)) continue;
+      hidden.add(part.code);
+      final line = sourceLineOf(section);
+      if (line != null) outsideLines.add(line);
+    }
+    if (hidden.isEmpty) return SequenceSelection(song, const []);
+    return SequenceSelection(
+      song,
+      const [],
+      outside: hidden.toList(),
+      outsideLines: outsideLines,
+    );
+  }
   for (final element in song.elements) {
     final part = element is Section ? parts[element] : null;
     if (part != null && !inSequence(part)) {

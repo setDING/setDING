@@ -43,15 +43,19 @@ Song parseChordProCached(
   selectors.user,
 ), () => parseChordPro(source, selectors: selectors));
 
-final _selected = LruCache<(Song, String), SequenceSelection>(32);
+final _selected = LruCache<(Song, String, bool), SequenceSelection>(32);
 
 /// [filterBySequence] with a cache keyed by the [song] instance (see
-/// [parseChordProCached]) and the raw [sequence].
-SequenceSelection filterBySequenceCached(Song song, String sequence) =>
-    _selected.get((
-      song,
-      sequence,
-    ), () => filterBySequence(song, parseSequence(sequence)));
+/// [parseChordProCached]), the raw [sequence] and [keepOutside].
+SequenceSelection filterBySequenceCached(
+  Song song,
+  String sequence, {
+  bool keepOutside = false,
+}) => _selected.get(
+  (song, sequence, keepOutside),
+  () =>
+      filterBySequence(song, parseSequence(sequence), keepOutside: keepOutside),
+);
 
 final _firstVerse = LruCache<Song, Song>(32);
 final _stacked = LruCache<Song, Song>(32);

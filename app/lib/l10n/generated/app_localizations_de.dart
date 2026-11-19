@@ -2439,6 +2439,14 @@ class AppLocalizationsDe extends AppLocalizations {
       'Deine eigenen Zeichnungen auf Songs und Noten';
 
   @override
+  String get settingsShowOutsideSequence =>
+      'Teile ausserhalb des Ablaufs anzeigen';
+
+  @override
+  String get settingsShowOutsideSequenceHint =>
+      'Im Set abgeschwächt statt ausgeblendet';
+
+  @override
   String get settingsAnnotationFinger => 'Notizen mit dem Finger zeichnen';
 
   @override

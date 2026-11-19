@@ -4142,6 +4142,18 @@ abstract class AppLocalizations {
   /// **'Deine eigenen Zeichnungen auf Songs und Noten'**
   String get settingsShowAnnotationsHint;
 
+  /// No description provided for @settingsShowOutsideSequence.
+  ///
+  /// In de, this message translates to:
+  /// **'Teile ausserhalb des Ablaufs anzeigen'**
+  String get settingsShowOutsideSequence;
+
+  /// No description provided for @settingsShowOutsideSequenceHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Im Set abgeschwächt statt ausgeblendet'**
+  String get settingsShowOutsideSequenceHint;
+
   /// No description provided for @settingsAnnotationFinger.
   ///
   /// In de, this message translates to:

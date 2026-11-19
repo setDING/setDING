@@ -75,6 +75,17 @@ void main() {
       expect(odd.nashville, isFalse);
       expect(odd.fontSize, AppSettings.maxFontSize);
     });
+
+    test('parts outside the sequence are shown unless switched off', () {
+      expect(const AppSettings().showOutsideSequence, isTrue);
+      expect(AppSettings.fromJson({}).showOutsideSequence, isTrue);
+      const off = AppSettings(showOutsideSequence: false);
+      expect(AppSettings.fromJson(off.toJson()).showOutsideSequence, isFalse);
+      expect(
+        AppSettings.scopes['showOutsideSequence'],
+        SettingSyncScope.personal,
+      );
+    });
   });
 
   group('store', () {

@@ -2423,6 +2423,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your own drawings on songs and sheet music';
 
   @override
+  String get settingsShowOutsideSequence => 'Show parts outside the sequence';
+
+  @override
+  String get settingsShowOutsideSequenceHint =>
+      'Dimmed in a set instead of hidden';
+
+  @override
   String get settingsAnnotationFinger => 'Draw annotations with a finger';
 
   @override

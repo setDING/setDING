@@ -35,7 +35,12 @@ class SongRenderOptions {
     this.layout,
     this.onElementTap,
     this.display,
+    this.dimSection,
   });
+
+  /// Sections shown dimmed, e.g. the parts outside the sequence of a set
+  /// (ADR-0007); null = none. Dimming does not change the layout.
+  final bool Function(Section section)? dimSection;
 
   /// Section styles (ADR-0033); null = [SongDisplay.classic], e.g. for the
   /// neutral preview of the editor.
@@ -74,6 +79,10 @@ class SongRenderOptions {
       ? const []
       : diagramResolver!.allChords();
 }
+
+/// Opacity of a section shown dimmed ([SongRenderOptions.dimSection]):
+/// slightly faded, still easy to read.
+const dimmedSectionOpacity = 0.6;
 
 /// Lines a [SongBlock] counts for [BodyProgress]: a rough measure of what
 /// building and laying it out costs.
@@ -133,7 +142,7 @@ class SongBody extends StatelessWidget {
           diagrams: options.songDiagrams,
           diagramsOnTop: options.diagramsPosition == DiagramsPosition.top,
         );
-    Widget blockWidget(SongBlock b) => b.delegate != null
+    Widget contentOf(SongBlock b) => b.delegate != null
         ? markLine(
             b.delegate,
             _tappable(
@@ -158,6 +167,20 @@ class SongBody extends StatelessWidget {
         : b.isRecallLabel
         ? _RecallLabel(block: b, style: style)
         : _SectionBlock(block: b, options: options, style: style);
+    final dim = options.dimSection;
+    Widget blockWidget(SongBlock b) {
+      final child = contentOf(b);
+      final section = b.shownSection;
+      // Opacity paints only: the layout and the measurements stay.
+      return dim != null && section != null && dim(section)
+          ? Opacity(
+              key: const ValueKey('dimmed-section'),
+              opacity: dimmedSectionOpacity,
+              child: child,
+            )
+          : child;
+    }
+
     // Lines before each block, for building in steps.
     final progress = this.progress;
     final starts = <int>[];
