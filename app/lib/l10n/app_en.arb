@@ -1406,5 +1406,109 @@
   "nordAddressesSongs": "Songs",
   "settingsMidiChannel": "MIDI channel",
   "settingsMidiChannelHint": "The channel the keyboard receives on.",
-  "settingsMidiNordHint": "On the Nord Stage 3, switch on “Program Change” reception in its MIDI menu, and set the channel here to the Nord's global channel. The numbering of Nord songs depends on the Nord's OS version (checked with OS 2.54); if a song does not match, use the profile “Generic”."
+  "settingsMidiNordHint": "On the Nord Stage 3, switch on “Program Change” reception in its MIDI menu, and set the channel here to the Nord's global channel. The numbering of Nord songs depends on the Nord's OS version (checked with OS 2.54); if a song does not match, use the profile “Generic”.",
+  "midiProgramTitle": "Keyboard program",
+  "midiProgramHint": "Sent to the keyboard in live mode when this song comes up.",
+  "midiProgramNone": "None: the keyboard keeps its sound",
+  "midiProgramChoose": "Choose program",
+  "midiProgramRemove": "Remove program",
+  "midiProgramTest": "Test",
+  "midiProgramTestHint": "Sends the program to the keyboard once",
+  "midiProgramNotConnected": "Keyboard not connected",
+  "midiProgramOff": "MIDI program changes are off on this device (settings: Keyboard (MIDI)).",
+  "midiProgramSent": "Sent to {device}",
+  "@midiProgramSent": {
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "midiProgramSendFailed": "The program could not be sent",
+  "midiProgramKindProgram": "Program",
+  "midiProgramKindLive": "Live memory",
+  "midiProgramKindSong": "Song",
+  "midiProgramKindGeneric": "Other values",
+  "midiProgramBank": "Bank",
+  "midiProgramPageButton": "Page (row) and button",
+  "midiProgramSongNumber": "Song",
+  "midiProgramPreviousSong": "Previous song",
+  "midiProgramNextSong": "Next song",
+  "midiProgramPart": "Part",
+  "midiProgramMsb": "Bank select MSB (optional)",
+  "midiProgramLsb": "Bank select LSB (optional)",
+  "midiProgramNumber": "Program",
+  "midiProgramRange": "{min}–{max}",
+  "@midiProgramRange": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "midiProgramOutOfRange": "Enter a number from {min} to {max}",
+  "@midiProgramOutOfRange": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "midiProgramValueNord": "Program {name}",
+  "@midiProgramValueNord": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "midiProgramValueLive": "Live memory {number}",
+  "@midiProgramValueLive": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "midiProgramValueSong": "Song {song}, part {part}",
+  "@midiProgramValueSong": {
+    "placeholders": {
+      "song": {
+        "type": "int"
+      },
+      "part": {
+        "type": "int"
+      }
+    }
+  },
+  "midiProgramValueGeneric": "Program {program}",
+  "@midiProgramValueGeneric": {
+    "placeholders": {
+      "program": {
+        "type": "int"
+      }
+    }
+  },
+  "midiProgramValueMsb": "MSB {value}",
+  "@midiProgramValueMsb": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "midiProgramValueLsb": "LSB {value}",
+  "@midiProgramValueLsb": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  }
 }

@@ -1642,5 +1642,109 @@
   "nordAddressesSongs": "Songs",
   "settingsMidiChannel": "MIDI-Kanal",
   "settingsMidiChannelHint": "Der Kanal, auf dem das Keyboard empfängt.",
-  "settingsMidiNordHint": "Schalte am Nord Stage 3 im MIDI-Menü den Empfang von «Program Change» ein und stelle hier den globalen Kanal des Nord ein. Die Nummerierung der Nord-Songs hängt von der OS-Version des Nord ab (geprüft mit OS 2.54); passt ein Song nicht, verwende das Profil «Allgemein»."
+  "settingsMidiNordHint": "Schalte am Nord Stage 3 im MIDI-Menü den Empfang von «Program Change» ein und stelle hier den globalen Kanal des Nord ein. Die Nummerierung der Nord-Songs hängt von der OS-Version des Nord ab (geprüft mit OS 2.54); passt ein Song nicht, verwende das Profil «Allgemein».",
+  "midiProgramTitle": "Keyboard-Programm",
+  "midiProgramHint": "Wird im Live-Modus ans Keyboard gesendet, wenn dieser Song an der Reihe ist.",
+  "midiProgramNone": "Keines: das Keyboard behält seinen Klang",
+  "midiProgramChoose": "Programm wählen",
+  "midiProgramRemove": "Programm entfernen",
+  "midiProgramTest": "Testen",
+  "midiProgramTestHint": "Sendet das Programm einmal ans Keyboard",
+  "midiProgramNotConnected": "Keyboard nicht verbunden",
+  "midiProgramOff": "MIDI-Programmwechsel sind auf diesem Gerät ausgeschaltet (Einstellungen: Keyboard (MIDI)).",
+  "midiProgramSent": "An {device} gesendet",
+  "@midiProgramSent": {
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "midiProgramSendFailed": "Das Programm konnte nicht gesendet werden",
+  "midiProgramKindProgram": "Programm",
+  "midiProgramKindLive": "Live-Speicher",
+  "midiProgramKindSong": "Song",
+  "midiProgramKindGeneric": "Andere Werte",
+  "midiProgramBank": "Bank",
+  "midiProgramPageButton": "Seite (Zeile) und Taste",
+  "midiProgramSongNumber": "Song",
+  "midiProgramPreviousSong": "Vorheriger Song",
+  "midiProgramNextSong": "Nächster Song",
+  "midiProgramPart": "Teil",
+  "midiProgramMsb": "Bank Select MSB (optional)",
+  "midiProgramLsb": "Bank Select LSB (optional)",
+  "midiProgramNumber": "Programm",
+  "midiProgramRange": "{min}–{max}",
+  "@midiProgramRange": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "midiProgramOutOfRange": "Eine Zahl von {min} bis {max} eingeben",
+  "@midiProgramOutOfRange": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "midiProgramValueNord": "Programm {name}",
+  "@midiProgramValueNord": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "midiProgramValueLive": "Live-Speicher {number}",
+  "@midiProgramValueLive": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "midiProgramValueSong": "Song {song}, Teil {part}",
+  "@midiProgramValueSong": {
+    "placeholders": {
+      "song": {
+        "type": "int"
+      },
+      "part": {
+        "type": "int"
+      }
+    }
+  },
+  "midiProgramValueGeneric": "Programm {program}",
+  "@midiProgramValueGeneric": {
+    "placeholders": {
+      "program": {
+        "type": "int"
+      }
+    }
+  },
+  "midiProgramValueMsb": "MSB {value}",
+  "@midiProgramValueMsb": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "midiProgramValueLsb": "LSB {value}",
+  "@midiProgramValueLsb": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  }
 }

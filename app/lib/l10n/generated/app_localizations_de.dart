@@ -3119,4 +3119,121 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get settingsMidiNordHint =>
       'Schalte am Nord Stage 3 im MIDI-Menü den Empfang von «Program Change» ein und stelle hier den globalen Kanal des Nord ein. Die Nummerierung der Nord-Songs hängt von der OS-Version des Nord ab (geprüft mit OS 2.54); passt ein Song nicht, verwende das Profil «Allgemein».';
+
+  @override
+  String get midiProgramTitle => 'Keyboard-Programm';
+
+  @override
+  String get midiProgramHint =>
+      'Wird im Live-Modus ans Keyboard gesendet, wenn dieser Song an der Reihe ist.';
+
+  @override
+  String get midiProgramNone => 'Keines: das Keyboard behält seinen Klang';
+
+  @override
+  String get midiProgramChoose => 'Programm wählen';
+
+  @override
+  String get midiProgramRemove => 'Programm entfernen';
+
+  @override
+  String get midiProgramTest => 'Testen';
+
+  @override
+  String get midiProgramTestHint => 'Sendet das Programm einmal ans Keyboard';
+
+  @override
+  String get midiProgramNotConnected => 'Keyboard nicht verbunden';
+
+  @override
+  String get midiProgramOff =>
+      'MIDI-Programmwechsel sind auf diesem Gerät ausgeschaltet (Einstellungen: Keyboard (MIDI)).';
+
+  @override
+  String midiProgramSent(String device) {
+    return 'An $device gesendet';
+  }
+
+  @override
+  String get midiProgramSendFailed =>
+      'Das Programm konnte nicht gesendet werden';
+
+  @override
+  String get midiProgramKindProgram => 'Programm';
+
+  @override
+  String get midiProgramKindLive => 'Live-Speicher';
+
+  @override
+  String get midiProgramKindSong => 'Song';
+
+  @override
+  String get midiProgramKindGeneric => 'Andere Werte';
+
+  @override
+  String get midiProgramBank => 'Bank';
+
+  @override
+  String get midiProgramPageButton => 'Seite (Zeile) und Taste';
+
+  @override
+  String get midiProgramSongNumber => 'Song';
+
+  @override
+  String get midiProgramPreviousSong => 'Vorheriger Song';
+
+  @override
+  String get midiProgramNextSong => 'Nächster Song';
+
+  @override
+  String get midiProgramPart => 'Teil';
+
+  @override
+  String get midiProgramMsb => 'Bank Select MSB (optional)';
+
+  @override
+  String get midiProgramLsb => 'Bank Select LSB (optional)';
+
+  @override
+  String get midiProgramNumber => 'Programm';
+
+  @override
+  String midiProgramRange(int min, int max) {
+    return '$min–$max';
+  }
+
+  @override
+  String midiProgramOutOfRange(int min, int max) {
+    return 'Eine Zahl von $min bis $max eingeben';
+  }
+
+  @override
+  String midiProgramValueNord(String name) {
+    return 'Programm $name';
+  }
+
+  @override
+  String midiProgramValueLive(int number) {
+    return 'Live-Speicher $number';
+  }
+
+  @override
+  String midiProgramValueSong(int song, int part) {
+    return 'Song $song, Teil $part';
+  }
+
+  @override
+  String midiProgramValueGeneric(int program) {
+    return 'Programm $program';
+  }
+
+  @override
+  String midiProgramValueMsb(int value) {
+    return 'MSB $value';
+  }
+
+  @override
+  String midiProgramValueLsb(int value) {
+    return 'LSB $value';
+  }
 }
