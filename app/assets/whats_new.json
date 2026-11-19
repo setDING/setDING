@@ -1,4 +1,16 @@
 {
+  "0.16.0": {
+    "de": [
+      "Wer Keyboard spielt, kann ein Keyboard per MIDI verbinden: Pro Song lässt sich ein Programm speichern, und der Live-Modus schaltet es beim Songwechsel automatisch um.",
+      "Im Zeichenmodus gibt es ein Textwerkzeug für eigene Notizen auf der Seite.",
+      "In den Organisationseinstellungen zeigen Einladungslinks ihre Band und lassen sich erneut anzeigen; abgelaufene und widerrufene Links verschwinden aus der Liste."
+    ],
+    "en": [
+      "If you play keyboard, connect your keyboard over MIDI: store a program per song, and live mode switches to it when the song changes.",
+      "Drawing mode has a text tool for your own notes on the page.",
+      "In the organization settings, invitation links show their band and can be shown again; expired and revoked links leave the list."
+    ]
+  },
   "0.15.0": {
     "de": [
       "Im Live-Modus erscheinen Teile ausserhalb des Ablaufs abgedunkelt an ihrer Stelle im Song; in den Einstellungen lassen sie sich wie bisher ausblenden.",
