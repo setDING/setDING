@@ -56,6 +56,7 @@ musician).
 - 2026-11-14: German variant is Swiss Standard German (`de-CH`, no "ß"). A separate de-DE variant is not planned; it could be added later as an extra ARB file if needed.
 - 2026-11-17: Shared data never stores a localized UI label, because band members may use different languages (#289). A break left with its default name is stored without a note and shows the type label of each member's language; for older data, a note that equals the type label in any supported language counts as no note (`ui/sets/set_item_label.dart`). This applies to the set screen, live mode and the set list exports.
 - 2026-11-17: Resolved open point (ADR-0027, accepted, #328): the language is a **personal setting** synced with the account, no longer stored per device. Signed out, the device's own (`local`) value applies. `USER.locale` as a default for new devices is not needed.
+- 2026-11-19: Song section names (Verse, Chorus, Pre-chorus, Bridge, Interlude, Ending, Grid, …) are musician terminology and stay **English in every UI language** (#533): in the song view, live mode, the sequence chips and their tooltips in arrangements, the song display settings and the editor. The editor writes them into the shared ChordPro text as labels, so localizing them would also break the rule above. The ARB files keep the keys, the German values equal the English ones (`test/section_names_test.dart`).
 
 ## Open points
 
