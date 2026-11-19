@@ -420,6 +420,15 @@ settings and stored programs are kept.
   already). What the Nord sends was checked in the tests of #512 (MSB 0
   programs, MSB 1 songs, MSB 6 live memories); its *Program Change* MIDI
   setting must include *Send*, which the settings and the sheet say.
+- 2026-11-19: Guided tests per keyboard in the MIDI test (#613): a choice of
+  *Nord Stage 3* or *Motif XF*, each *send* (send a step, tap what the
+  keyboard shows; the Motif's with the SysEx mode change across preset, user,
+  GM and drum banks and both modes) and *receive* (choose on the keyboard
+  what the step says; `MidiProgramReceiver` on the test channel judges what
+  arrives, the expected program goes on by itself, anything else is logged in
+  the profile's terms, *Nothing arrived* is a tap; a new receiver per step,
+  so a bank select of an earlier step does not count). The Motif receive
+  test decides whether `MotifXfProfile.takesOver` can be switched on (#608).
 
 ## Open points
 
@@ -427,7 +436,7 @@ settings and stored programs are kept.
   songs on the Nord.
 - Manual test of the Motif XF profile on a Motif XF8 (#591).
 - Taking over from the Motif XF: what it sends when a voice or performance is
-  chosen on it, checked on an XF8 (#608).
+  chosen on it, checked on an XF8 with the guided receive test (#608, #613).
 - Later stages (issues only when taken up): program changes per section, page turning by MIDI, Bluetooth, several
   target devices, further device profiles (Motif XF masters, songs and
   patterns), iOS.
