@@ -447,6 +447,8 @@ void main() {
       await tester.pumpWidget(app.build(home: SongScreen(songId: id)));
       await tester.pumpAndSettle();
       expect(find.byTooltip('Attachments'), findsNothing);
+      expect(find.byKey(const Key('edit-song')), findsNothing);
+      expect(find.byKey(const Key('edit-song-divider')), findsNothing);
       await tester.tap(find.byType(PopupMenuButton<String>).first);
       await tester.pumpAndSettle();
       expect(find.text('Edit ChordPro'), findsNothing);
@@ -515,9 +517,10 @@ void main() {
     expect(find.text('Attach file'), findsOneWidget);
     await tester.tap(find.byTooltip('Close'));
     await tester.pumpAndSettle();
+    expect(find.byKey(const Key('edit-song')), findsOneWidget);
+    expect(find.byKey(const Key('edit-song-divider')), findsOneWidget);
     await tester.tap(find.byType(PopupMenuButton<String>).first);
     await tester.pumpAndSettle();
-    expect(find.text('Edit ChordPro'), findsOneWidget);
     expect(find.text('Copy to band'), findsOneWidget);
     expect(find.text('Delete'), findsNothing);
     await app.dispose(tester);
@@ -545,6 +548,9 @@ void main() {
       isA<LivePlayButton>(),
     );
     expect(find.byTooltip('Attachments'), findsNothing);
+    // Neither the pencil nor its divider (#600).
+    expect(find.byKey(const Key('edit-song')), findsNothing);
+    expect(find.byKey(const Key('edit-song-divider')), findsNothing);
     await tester.tap(find.byType(PopupMenuButton<String>).first);
     await tester.pumpAndSettle();
     expect(find.text('Edit ChordPro'), findsNothing);
