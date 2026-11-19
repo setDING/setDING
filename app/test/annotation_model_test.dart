@@ -114,21 +114,31 @@ void main() {
       expect(barShown.matches(layout), isTrue);
     });
 
-    test('chords in verse 1 only is another layout and round-trips', () {
-      const verse1 = LayoutFingerprint(
+    test('chords in verse 1 only or stacked verses are other layouts and '
+        'round-trip', () {
+      LayoutFingerprint verses(String mode) => LayoutFingerprint(
         mode: 'page',
         pages: 2,
         width: 1000,
         height: 700,
         font: 24,
         columns: 2,
-        firstVerseChordsOnly: true,
+        verseChords: mode,
         content: 42,
         sequence: 'V1 C',
       );
+      final verse1 = verses('first'), stacked = verses('stacked');
       expect(verse1.matches(layout), isFalse);
+      expect(stacked.matches(layout), isFalse);
+      expect(stacked.matches(verse1), isFalse);
       expect(LayoutFingerprint.fromJson(verse1.toJson()), verse1);
-      expect(layout.toJson().containsKey('verse1'), isFalse);
+      expect(LayoutFingerprint.fromJson(stacked.toJson()), stacked);
+      expect(layout.toJson().containsKey('verses'), isFalse);
+      // The boolean of #518 before #521.
+      final old = verse1.toJson()
+        ..remove('verses')
+        ..['verse1'] = true;
+      expect(LayoutFingerprint.fromJson(old), verse1);
     });
 
     test('another orientation, font, text or sequence does not match', () {

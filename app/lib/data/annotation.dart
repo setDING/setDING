@@ -136,7 +136,7 @@ class LayoutFingerprint {
     required this.font,
     this.columns = 1,
     this.lyricsOnly = false,
-    this.firstVerseChordsOnly = false,
+    this.verseChords = 'all',
     required this.content,
     this.sequence = '',
   });
@@ -155,8 +155,9 @@ class LayoutFingerprint {
   final int columns;
   final bool lyricsOnly;
 
-  /// Chords in the first verse only (#518): later verses are shorter.
-  final bool firstVerseChordsOnly;
+  /// How verses show their chords (`VerseChords` name): chords in the
+  /// first verse only (#518) or stacked verses (#521) change the layout.
+  final String verseChords;
 
   /// [textHash] of the ChordPro text.
   final int content;
@@ -177,7 +178,7 @@ class LayoutFingerprint {
         pages == other.pages &&
         columns == other.columns &&
         lyricsOnly == other.lyricsOnly &&
-        firstVerseChordsOnly == other.firstVerseChordsOnly &&
+        verseChords == other.verseChords &&
         content == other.content &&
         sequence == other.sequence &&
         near(width, other.width) &&
@@ -196,7 +197,7 @@ class LayoutFingerprint {
     'font': _round(font),
     'cols': columns,
     if (lyricsOnly) 'lyrics': true,
-    if (firstVerseChordsOnly) 'verse1': true,
+    if (verseChords != 'all') 'verses': verseChords,
     'content': content,
     if (sequence.isNotEmpty) 'seq': sequence,
   };
@@ -215,7 +216,10 @@ class LayoutFingerprint {
       font: font.toDouble(),
       columns: (json['cols'] as num?)?.toInt() ?? 1,
       lyricsOnly: json['lyrics'] == true,
-      firstVerseChordsOnly: json['verse1'] == true,
+      // `verse1` was the boolean of #518 before #521.
+      verseChords:
+          json['verses'] as String? ??
+          (json['verse1'] == true ? 'first' : 'all'),
       content: content.toInt(),
       sequence: json['seq'] as String? ?? '',
     );
@@ -231,7 +235,7 @@ class LayoutFingerprint {
       other.font == font &&
       other.columns == columns &&
       other.lyricsOnly == lyricsOnly &&
-      other.firstVerseChordsOnly == firstVerseChordsOnly &&
+      other.verseChords == verseChords &&
       other.content == content &&
       other.sequence == sequence;
 
@@ -244,7 +248,7 @@ class LayoutFingerprint {
     font,
     columns,
     lyricsOnly,
-    firstVerseChordsOnly,
+    verseChords,
     content,
     sequence,
   );

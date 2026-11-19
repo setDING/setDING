@@ -185,6 +185,11 @@ class Setlists extends Table {
 /// Type of a set item.
 enum SetItemType { song, pause, text }
 
+/// How the verses of a song show their chords (a personal adjustment,
+/// ADR-0006): all of them, in the first verse only (#518), or verses with
+/// the same chords stacked line by line (#521).
+enum VerseChords { all, first, stacked }
+
 @TableIndex(name: 'set_items_set', columns: {#setId, #position})
 @TableIndex(name: 'set_items_song', columns: {#songId})
 @DataClassName('SetItemEntry')
@@ -236,10 +241,10 @@ class PersonalOverlays extends Table {
   BoolColumn get hideAnnotations =>
       boolean().withDefault(const Constant(false))();
 
-  /// Chords in the first verse only, later verses show the lyrics alone
-  /// (#518, schema 17).
-  BoolColumn get firstVerseChordsOnly =>
-      boolean().withDefault(const Constant(false))();
+  /// How verses show their chords: all, in the first verse only (#518) or
+  /// stacked line by line (#521) (schema 18; a boolean in schema 17).
+  TextColumn get verseChords =>
+      textEnum<VerseChords>().withDefault(Constant(VerseChords.all.name))();
 
   /// Server revision; 0 = not on the server (schema 9, ADR-0020).
   IntColumn get revision => integer().withDefault(const Constant(0))();
@@ -401,7 +406,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 18;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -500,7 +505,7 @@ class AppDatabase extends _$AppDatabase {
               personalOverlays.ownerId,
               personalOverlays.revision,
               personalOverlays.hideAnnotations,
-              personalOverlays.firstVerseChordsOnly,
+              personalOverlays.verseChords,
             ],
           ),
         );
@@ -554,13 +559,20 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(annotations);
         await m.createIndex(annotationsOwnerSong);
       }
-      if (from < 17 && from >= 8) {
-        // Chords in the first verse only (#518); before schema 8 the
-        // rebuilt overlay table has the column already.
-        await m.addColumn(
-          personalOverlays,
-          personalOverlays.firstVerseChordsOnly,
-        );
+      if (from < 18 && from >= 8) {
+        // How verses show their chords (#518, #521); before schema 8 the
+        // rebuilt overlay table has the column already. Schema 17 had a
+        // boolean for chords in the first verse only.
+        await m.addColumn(personalOverlays, personalOverlays.verseChords);
+        if (from == 17) {
+          await customStatement(
+            "UPDATE personal_overlays SET verse_chords = 'first' "
+            'WHERE first_verse_chords_only = 1',
+          );
+          await customStatement(
+            'ALTER TABLE personal_overlays DROP COLUMN first_verse_chords_only',
+          );
+        }
       }
     },
     beforeOpen: (details) async {

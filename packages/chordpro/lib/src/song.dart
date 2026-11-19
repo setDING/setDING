@@ -197,6 +197,35 @@ class LyricLine extends Line {
   String get plainText => stripMarkup(text);
 }
 
+/// The matching lines of several verses that share their chords, stacked
+/// (#521, see `stackVerses`): the chords once, then one row per verse
+/// with its words under the same chords. Never parsed from ChordPro; built
+/// for a person's display only.
+class StackedLine extends Line {
+  StackedLine(this.chords, this.rows);
+
+  /// The chord of each column; null for the text before the first chord.
+  final List<ChordToken?> chords;
+
+  /// One row per verse, in verse order.
+  final List<StackedRow> rows;
+}
+
+/// A verse's line in a [StackedLine].
+class StackedRow {
+  const StackedRow(this.verse, this.line, this.cells);
+
+  /// Number of the verse in the song (1 = first verse).
+  final int verse;
+
+  /// The verse's own line (for its source line and text).
+  final LyricLine line;
+
+  /// The text under each chord of [StackedLine.chords] (markup included);
+  /// null for a verse without chords, whose text stays in one piece.
+  final List<String>? cells;
+}
+
 /// A piece of lyrics preceded by an optional chord.
 class Segment {
   const Segment({this.chord, this.text = ''});

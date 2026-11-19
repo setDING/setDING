@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:chordpro/chordpro.dart' hide Key;
-import 'package:chordpro/chordpro.dart' as cp show Key;
+import 'package:chordpro/chordpro.dart' as cp show Key, Song;
 import 'package:drift/drift.dart' show Value;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,6 +26,7 @@ import '../render/song_view.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
 import '../widgets/key_picker.dart';
+import '../widgets/verse_chords_picker.dart';
 import '../widgets/scope_info.dart';
 import '../widgets/side_panel.dart';
 import '../bands/copy_to_band.dart';
@@ -259,11 +260,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   overlay: overlay,
                   deviceNashville: settings.nashville,
                   hasKey: parsed.key != null,
-                  // Only songs with later verses with chords change.
-                  hasVerseChords: !identical(
-                    firstVerseChordsOnlyCached(parsed),
-                    parsed,
-                  ),
+                  song: parsed,
                   onChanged: _updateOverlay,
                 ),
                 const SizedBox(height: 16),
@@ -417,10 +414,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   _FittedSongBody(
                     songId: song.id,
                     source: song.chordproSource,
-                    song: songWithVerseChords(
-                      parsed,
-                      firstVerseOnly: overlay.firstVerseChordsOnly,
-                    ),
+                    song: songWithVerseChords(parsed, overlay.verseChords),
                     overlay: overlay,
                     formatter: formatter,
                     // The visible area without the list's padding.
@@ -653,7 +647,7 @@ class _FittedSongBody extends ConsumerWidget {
           font: font,
           columns: columns,
           lyricsOnly: lyricsOnly,
-          firstVerseChordsOnly: overlay.firstVerseChordsOnly,
+          verseChords: overlay.verseChords.name,
           content: textHash(source),
         ),
         font: font,
@@ -748,7 +742,7 @@ class _AdjustmentsBar extends StatelessWidget {
     required this.overlay,
     required this.deviceNashville,
     required this.hasKey,
-    required this.hasVerseChords,
+    required this.song,
     required this.onChanged,
   });
 
@@ -764,8 +758,8 @@ class _AdjustmentsBar extends StatelessWidget {
   final bool deviceNashville;
   final bool hasKey;
 
-  /// Whether the song has verses after the first one with chords (#518).
-  final bool hasVerseChords;
+  /// The parsed song, for the choices of how verses show their chords.
+  final cp.Song song;
   final Future<void> Function(SongOverlay Function(SongOverlay)) onChanged;
 
   @override
@@ -855,19 +849,11 @@ class _AdjustmentsBar extends StatelessWidget {
                 : null,
           ),
         ),
-        Tooltip(
-          message: hasVerseChords ? '' : l10n.noVersesForFirstVerseChords,
-          child: FilterChip(
-            key: const Key('first-verse-chords-only'),
-            label: Text(l10n.firstVerseChordsOnly),
-            selected: overlay.firstVerseChordsOnly,
-            // Can always be turned off, e.g. after the song was changed.
-            onSelected: hasVerseChords || overlay.firstVerseChordsOnly
-                ? (selected) => onChanged(
-                    (o) => o.copyWith(firstVerseChordsOnly: selected),
-                  )
-                : null,
-          ),
+        // Chords in the first verse only (#518) or stacked verses (#521).
+        VerseChordsPicker(
+          song: song,
+          mode: overlay.verseChords,
+          onChanged: (mode) => onChanged((o) => o.copyWith(verseChords: mode)),
         ),
         ActionChip(
           avatar: const Icon(Icons.sticky_note_2_outlined, size: 18),
@@ -898,7 +884,7 @@ class _AdjustmentsBar extends StatelessWidget {
                 capoFret: const Value(null),
                 fontScale: 1.0,
                 nashville: const Value(null),
-                firstVerseChordsOnly: false,
+                verseChords: VerseChords.all,
               ),
             ),
           ),
@@ -1155,5 +1141,5 @@ extension on SongOverlay {
       capoFret != null ||
       fontScale != 1.0 ||
       nashville != null ||
-      this.firstVerseChordsOnly;
+      verseChords != VerseChords.all;
 }

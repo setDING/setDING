@@ -45,7 +45,7 @@ A user can be a member of several organizations and bands; roles are defined per
 | Data format | **ChordPro as the source of truth**, parsing and rendering in the client; display notation B/H selectable, Nashville numbers | [ADR-0003](adr/0003-chordpro-source-format.md) |
 | Backend & sync | **PocketBase**, self-hosted on an existing server, revision-based sync | [ADR-0004](adr/0004-backend-and-sync.md) |
 | Management | **One app with roles** instead of a separate management application | [ADR-0005](adr/0005-single-app-with-roles.md) |
-| Personal settings | **Overlay model**: personal adjustments never change the shared ChordPro text (e.g. key, capo, Nashville, chords in the first verse only); per user (`local` for the local library), synced with the account | [ADR-0006](adr/0006-personal-overlays.md), [ADR-0020](adr/0020-overlays-per-user.md) |
+| Personal settings | **Overlay model**: personal adjustments never change the shared ChordPro text (e.g. key, capo, Nashville, chords in the first verse only or verses stacked line by line); per user (`local` for the local library), synced with the account | [ADR-0006](adr/0006-personal-overlays.md), [ADR-0020](adr/0020-overlays-per-user.md), [ADR-0040](adr/0040-stacked-verses.md) |
 | Freehand annotations | Personal pen, highlighter and stamp marks, drawn in live mode on ChordPro and PDF pages; stored in **page coordinates** with a layout fingerprint (exact on the stage device, free arrows possible) and a **line anchor** as fallback for other layouts; PDF strokes per page; per song, private, synced as one record per person, song and target, **merged per stroke** on the server; editable with eraser, lasso and undo; band annotations later | [ADR-0032](adr/0032-freehand-annotations.md) |
 | Settings sync | Settings split into **personal** (instrument, voice, notation, chord style, display, theme, language, drummer preferences; synced with the account, last writer wins per key) and **device** (font size, columns, live appearance, server, sync mode, click volume and latency; never synced); fixed per setting and shown in the settings | [ADR-0027](adr/0027-personal-settings-sync.md) |
 | MIDI program change | In live mode the **personal keyboard program** of the current song (raw bank select and program change in the personal overlay, own server field `overlays.midi`) is sent to one keyboard over **USB**; device profiles (Nord Stage 3 with programs or Nord songs, generic), output and channel are device settings; a "Test" button sends a song's program on request; a prototype on all platforms with a real Nord comes first; Android, Windows, Linux and web (Chrome/Edge), iOS with the iOS app | [ADR-0039](adr/0039-midi-program-change.md) |
@@ -159,7 +159,7 @@ erDiagram
     SONG { uuid id string chordpro_source string title string artist string key int tempo int revision timestamp updated_at bool deleted uuid created_by uuid updated_by }
     SETLIST { uuid id string name date gig_date string venue int revision }
     SET_ITEM { uuid id uuid set_id uuid song_id int position int transpose string sequence string note string type "song|break|text" }
-    PERSONAL_OVERLAY { uuid user_id uuid song_id int transpose int capo float font_scale string notes bool nashville string live_view "chordpro|attachment_id" bool hide_annotations bool first_verse_chords_only json midi }
+    PERSONAL_OVERLAY { uuid user_id uuid song_id int transpose int capo float font_scale string notes bool nashville string live_view "chordpro|attachment_id" bool hide_annotations string verse_chords "all|first|stacked" json midi }
     ANNOTATION { uuid id uuid user_id uuid song_id string target json stroke int updated_at int pending }
     BAND_ARRANGEMENT { uuid band_id uuid song_id int transpose string sequence int tempo int revision bool deleted }
     ATTACHMENT { uuid id uuid song_id string name file pdf int pages int size_bytes int revision bool deleted }
@@ -316,6 +316,7 @@ See "Open points" in the individual ADRs. The most important:
 32. Which components are in a release, and are we affected by a vulnerability? → One CycloneDX SBOM per release asset with the application's name, version and the asset's hash (ADR-0037, accepted, implemented in #505). listing only shipped components, evaluated on GitHub (Dependabot, dependency review). Open: server SBOM once the server is released, switching on Dependabot, versions and licences of native libraries of build hooks
 33. Can Linux users update from inside the app too? → AppImage next to the tar.gz, updated like the Windows setup (ADR-0038, accepted, #503, implemented in #504): version from the update check (ADR-0036), download from the GitHub release, check against `SHA256SUMS`, the file is replaced in one step and the app restarts. Open: desktop integration without extra tools, signing
 34. Can setDING switch the keyboard's sound for each song? → ADR-0039 (accepted, #510): the personal keyboard program of the current song is sent over USB when the song becomes current in live mode, nothing for songs without one; device profiles with the Nord Stage 3 first (programs or Nord songs, set by the keyboard player), a "Test" button in the song; Android, Windows, Linux and web (Chrome/Edge); a prototype with a real Nord on all platforms comes first. Open: the prototype's results (library per platform, addressing of Nord songs); later learning, per-section changes, MIDI page turning, Bluetooth, several devices, iOS
+35. How can verses that share their chords be read like in a hymnal? → ADR-0040 (proposed, #521): a personal choice *chords in verses* (all / first verse only / stacked) replaces the boolean of #518; consecutive verses with the same chords are stacked line by line as a display transformation of the parsed song (`stackVerses`, new line type `StackedLine`), in place of the first verse, with a row per verse marked as its source line for freehand annotations. Open: line width on small tablets
 
 ## 10. ADR index
 
@@ -359,5 +360,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0037](adr/0037-sbom-cyclonedx.md) | SBOM in CycloneDX per release artifact | Accepted |
 | [0038](adr/0038-linux-appimage-self-update.md) | Linux AppImage with in-app updates | Accepted |
 | [0039](adr/0039-midi-program-change.md) | MIDI program change per song in live mode | Accepted |
+| [0040](adr/0040-stacked-verses.md) | Stacked verses as a display transformation | Proposed |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.

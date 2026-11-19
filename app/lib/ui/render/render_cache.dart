@@ -1,5 +1,7 @@
 import 'package:chordpro/chordpro.dart';
 
+import '../../data/database.dart' show VerseChords;
+
 /// A small least-recently-used cache for results that are expensive to
 /// compute while rendering (parsing, fitting a song to the screen).
 class LruCache<K, V extends Object> {
@@ -52,13 +54,20 @@ SequenceSelection filterBySequenceCached(Song song, String sequence) =>
     ), () => filterBySequence(song, parseSequence(sequence)));
 
 final _firstVerse = LruCache<Song, Song>(32);
+final _stacked = LruCache<Song, Song>(32);
 
 /// [firstVerseChordsOnly] with a cache keyed by the [song] instance (see
 /// [parseChordProCached]), so the result is the same instance, too.
 Song firstVerseChordsOnlyCached(Song song) =>
     _firstVerse.get(song, () => firstVerseChordsOnly(song));
 
-/// [song] as a person's adjustments show it: with chords in the first verse
-/// only when [firstVerseOnly] is set (#518).
-Song songWithVerseChords(Song song, {required bool firstVerseOnly}) =>
-    firstVerseOnly ? firstVerseChordsOnlyCached(song) : song;
+/// [stackVerses] with a cache keyed by the [song] instance.
+Song stackVersesCached(Song song) =>
+    _stacked.get(song, () => stackVerses(song));
+
+/// [song] as a person's adjustments show its verses' chords (#518, #521).
+Song songWithVerseChords(Song song, VerseChords mode) => switch (mode) {
+  VerseChords.all => song,
+  VerseChords.first => firstVerseChordsOnlyCached(song),
+  VerseChords.stacked => stackVersesCached(song),
+};

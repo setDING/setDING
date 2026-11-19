@@ -26,8 +26,20 @@ const schema7Indexes = [
 /// Turns a current database back into schema 16: overlays without
 /// "chords in the first verse only".
 void downgradeToSchema16(Database raw) {
+  raw.execute('ALTER TABLE personal_overlays DROP COLUMN verse_chords');
+}
+
+/// Turns a current database back into schema 17: chords in the first verse
+/// only as a boolean (#518) instead of the verse chords choice (#521).
+void downgradeToSchema17(Database raw, {required bool firstVerseOnly}) {
+  downgradeToSchema16(raw);
   raw.execute(
-    'ALTER TABLE personal_overlays DROP COLUMN first_verse_chords_only',
+    'ALTER TABLE personal_overlays ADD COLUMN first_verse_chords_only '
+    'INTEGER NOT NULL DEFAULT 0 CHECK (first_verse_chords_only IN (0, 1))',
+  );
+  raw.execute(
+    'UPDATE personal_overlays SET first_verse_chords_only = '
+    '${firstVerseOnly ? 1 : 0}',
   );
 }
 
@@ -561,8 +573,44 @@ void main() {
       final overlay = await upgraded
           .select(upgraded.personalOverlays)
           .getSingle();
-      expect((overlay.transpose, overlay.firstVerseChordsOnly), (3, false));
+      expect((overlay.transpose, overlay.verseChords), (3, VerseChords.all));
       await upgraded.close();
     },
   );
+
+  for (final firstVerseOnly in [true, false]) {
+    test('upgrades a schema 17 database: chords in the first verse only '
+        '$firstVerseOnly', () async {
+      final current = AppDatabase(NativeDatabase(file));
+      final repo = SongRepository(current, FileAttachmentStorage(dir));
+      final song = await repo.createSong(source: '{title: Song}');
+      await repo.saveOverlay(
+        (await repo.getOverlay(song)).copyWith(transpose: 3),
+      );
+      await current.close();
+
+      final raw = sqlite3.open(file.path);
+      downgradeToSchema17(raw, firstVerseOnly: firstVerseOnly);
+      raw.execute('PRAGMA user_version = 17');
+      raw.close();
+
+      final upgraded = AppDatabase(NativeDatabase(file));
+      final overlay = await upgraded
+          .select(upgraded.personalOverlays)
+          .getSingle();
+      expect(overlay.transpose, 3);
+      expect(
+        overlay.verseChords,
+        firstVerseOnly ? VerseChords.first : VerseChords.all,
+      );
+      await upgraded.close();
+      final check = sqlite3.open(file.path);
+      final columns = check
+          .select('PRAGMA table_info(personal_overlays)')
+          .map((r) => r['name'])
+          .toList();
+      check.close();
+      expect(columns, isNot(contains('first_verse_chords_only')));
+    });
+  }
 }

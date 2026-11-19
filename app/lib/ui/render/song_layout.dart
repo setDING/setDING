@@ -290,6 +290,60 @@ BlockMetrics _measure(
             lineUnits(chord) +
             tallestLyric;
         minWidth = math.max(minWidth, lineWidth);
+      case final StackedLine l:
+        // Stacked verses (#521), as song_view.dart draws them: a column of
+        // verse numbers, the chords once with a row per verse with chords
+        // in columns under them, then verses without chords in one piece.
+        final lyric = styles.lyricsFor(format, inChorus: chorus, role: role);
+        final chord = styles.chordFor(format, role: role);
+        final size = (lyric.fontSize ?? f) / f;
+        final label =
+            (SongSpacing.stackedLabel + SongSpacing.stackedLabelGap) * size;
+        void plainRow(StackedRow row) => wrapping.add((
+          width: spanWidth(
+            markupSpan(row.line.text, lyric, forMeasuring: true),
+          ),
+          lineHeight: lineUnits(lyric) * markupSizeFactor(row.line.text),
+          padding: label,
+        ));
+        if (lyricsOnly) {
+          l.rows.forEach(plainRow);
+          continue;
+        }
+        final chorded = [
+          for (final row in l.rows)
+            if (row.cells != null) row,
+        ];
+        var lineWidth = label;
+        for (final i in stackedColumns(l)) {
+          final token = l.chords[i];
+          var w = token == null
+              ? 0.0
+              : chordPartsWidth(
+                      formatter.formatParts(token),
+                      applyMarkupStyle(chord, chordMarkupStyle(token)),
+                      width,
+                    ) +
+                    SongSpacing.chordGap * size;
+          for (final row in chorded) {
+            final cell = row.cells![i];
+            w = math.max(
+              w,
+              cell.isEmpty
+                  ? width(' ', lyric)
+                  : spanWidth(markupSpan(cell, lyric, forMeasuring: true)),
+            );
+          }
+          lineWidth += w;
+        }
+        fixed +=
+            SongSpacing.chordLineTop * size +
+            lineUnits(chord) +
+            chorded.length * lineUnits(lyric);
+        minWidth = math.max(minWidth, lineWidth);
+        for (final row in l.rows) {
+          if (row.cells == null) plainRow(row);
+        }
       case final LyricLine l:
         final lyric = styles.lyricsFor(format, inChorus: chorus, role: role);
         wrapping.add((

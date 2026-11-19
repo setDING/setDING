@@ -17,6 +17,7 @@ import 'package:setding/data/outbox.dart';
 import 'package:setding/sync/band_service.dart';
 import 'package:setding/sync/engine/annotation_sync.dart';
 import 'package:setding/sync/engine/arrangement_sync.dart';
+import 'package:setding/sync/engine/overlay_sync.dart';
 import 'package:setding/sync/engine/sync_store.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:setding/sync/sync_engine.dart';
@@ -877,7 +878,7 @@ void main() {
           (o) => o.copyWith(
             transpose: 2,
             notes: const Value('Solo'),
-            firstVerseChordsOnly: true,
+            verseChords: VerseChords.stacked,
           ),
         );
         final report = await engine.sync();
@@ -887,7 +888,7 @@ void main() {
         expect(remote.userId, 'ann');
         expect(remote.data['transpose'], 2);
         expect(remote.data['notes'], 'Solo');
-        expect(remote.data['first_verse_chords_only'], isTrue);
+        expect(remote.data['verse_chords'], 'stacked');
         expect((await mine.getOverlay('s1')).revision, remote.revision);
         expect(await outbox(), isEmpty);
       },
@@ -903,14 +904,14 @@ void main() {
             'transpose': -3,
             'capo_fret': 2,
             'font_scale': 1.2,
-            'first_verse_chords_only': true,
+            'verse_chords': 'stacked',
           },
         ),
       );
       await engine.sync();
       final o = await mine.getOverlay('s1');
       expect((o.transpose, o.capoFret, o.fontScale), (-3, 2, 1.2));
-      expect(o.firstVerseChordsOnly, isTrue);
+      expect(o.verseChords, VerseChords.stacked);
       expect(
         await outbox(),
         isEmpty,
@@ -924,6 +925,23 @@ void main() {
       );
       await engine.sync();
       expect((await mine.getOverlay('s1')).transpose, 0);
+    });
+
+    test('reads the verse chords of older and newer clients', () {
+      expect(
+        OverlaySync.verseChordsOf({'first_verse_chords_only': true}),
+        VerseChords.first,
+      );
+      expect(OverlaySync.verseChordsOf({}), VerseChords.all);
+      expect(
+        OverlaySync.verseChordsOf({'verse_chords': 'first'}),
+        VerseChords.first,
+      );
+      // A value of a newer client shows all chords.
+      expect(
+        OverlaySync.verseChordsOf({'verse_chords': 'other'}),
+        VerseChords.all,
+      );
     });
 
     test(

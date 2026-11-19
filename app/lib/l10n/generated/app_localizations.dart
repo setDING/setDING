@@ -644,6 +644,24 @@ abstract class AppLocalizations {
   /// **'Der Song hat keine weiteren Strophen mit Akkorden.'**
   String get noVersesForFirstVerseChords;
 
+  /// No description provided for @verseChords.
+  ///
+  /// In de, this message translates to:
+  /// **'Akkorde in Strophen'**
+  String get verseChords;
+
+  /// No description provided for @verseChordsAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Akkorde in allen Strophen'**
+  String get verseChordsAll;
+
+  /// No description provided for @verseChordsStacked.
+  ///
+  /// In de, this message translates to:
+  /// **'Strophen untereinander'**
+  String get verseChordsStacked;
+
   /// No description provided for @editorTitleNew.
   ///
   /// In de, this message translates to:

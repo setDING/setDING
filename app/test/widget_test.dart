@@ -950,7 +950,9 @@ void main() {
 
       await tester.tap(find.byTooltip('Personal adjustments'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('first-verse-chords-only')));
+      await tester.tap(find.byKey(const Key('verse-chords-button')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('verse-chords-first')));
       await tester.pumpAndSettle();
       // Verse 2 keeps its lyrics; verse 1 and the chorus keep their chords.
       expect(find.text('Em'), findsNothing);
@@ -959,7 +961,7 @@ void main() {
       expect(find.text('C'), findsOneWidget);
       expect(badge(tester, 'open-personal-adjustments'), isTrue);
       final overlay = await tester.runAsync(() => app.songs.getOverlay(id));
-      expect(overlay!.firstVerseChordsOnly, isTrue);
+      expect(overlay!.verseChords, VerseChords.first);
 
       await tester.tap(find.text('Reset personal adjustments'));
       await tester.pumpAndSettle();
@@ -980,14 +982,60 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Personal adjustments'));
       await tester.pumpAndSettle();
-      final chip = tester.widget<FilterChip>(
-        find.byKey(const Key('first-verse-chords-only')),
+      final chip = tester.widget<ActionChip>(
+        find.byKey(const Key('verse-chords-button')),
       );
-      expect(chip.onSelected, isNull);
+      expect(chip.onPressed, isNull);
       expect(
         find.byTooltip('The song has no further verses with chords.'),
         findsOneWidget,
       );
+      await app.dispose(tester);
+    });
+
+    testWidgets('stacked verses show the chords once over every verse', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final id = await tester.runAsync(
+        () => app.songs.createSong(
+          source:
+              '{title: X}\n{start_of_verse: Verse 1}\n[G]First [D]alpha\n'
+              '{end_of_verse}\n{start_of_chorus}\n[C]Chorus line\n'
+              '{end_of_chorus}\n{start_of_verse: Verse 2}\n'
+              '[G]Second [D]beta\n{end_of_verse}\n'
+              '{start_of_verse: Verse 3}\nThird three\n{end_of_verse}',
+        ),
+      );
+      await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+      await tester.pumpAndSettle();
+      expect(find.text('G'), findsNWidgets(2));
+
+      await tester.tap(find.byTooltip('Personal adjustments'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('verse-chords-button')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('verse-chords-stacked')));
+      await tester.pumpAndSettle();
+      // The chords once, the verses numbered under them.
+      expect(find.text('G'), findsOneWidget);
+      expect(find.text('D'), findsOneWidget);
+      expect(find.text('C'), findsOneWidget);
+      for (final number in ['1.', '2.', '3.']) {
+        expect(find.text(number), findsOneWidget);
+      }
+      expect(find.text('VERSE 1–3'), findsOneWidget);
+      // The words under the same chord are left-aligned in one column.
+      final second = tester.getTopLeft(find.text('beta'));
+      final first = tester.getTopLeft(find.text('alpha'));
+      expect(second.dx, first.dx);
+      expect(second.dy, greaterThan(first.dy));
+      // Verse 3 has no chords: its line is in one piece.
+      expect(find.textContaining('Third three'), findsOneWidget);
+      expect(badge(tester, 'open-personal-adjustments'), isTrue);
+      final overlay = await tester.runAsync(() => app.songs.getOverlay(id));
+      expect(overlay!.verseChords, VerseChords.stacked);
       await app.dispose(tester);
     });
 

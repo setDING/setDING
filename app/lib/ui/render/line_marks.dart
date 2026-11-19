@@ -80,7 +80,17 @@ List<RenderedLine> collectLines(RenderObject root, RenderBox ancestor) {
 
   for (final e in song.elements) {
     add(e);
-    if (e is Section) e.lines.forEach(add);
+    if (e is Section) {
+      for (final line in e.lines) {
+        add(line);
+        // Stacked verses (#521): each row is its verse's line.
+        if (line is StackedLine) {
+          for (final row in line.rows) {
+            add(row.line);
+          }
+        }
+      }
+    }
   }
   return (lines: lines, hashes: hashes);
 }
