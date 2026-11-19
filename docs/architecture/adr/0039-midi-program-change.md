@@ -354,6 +354,11 @@ settings and stored programs are kept.
   a drop-down instead of segmented buttons, "Generic" first and then the
   keyboards, since more profiles will follow (owner).
 
+- 2026-11-19: ADR-0042 (proposed, #590) would extend the storage: one
+  program per device profile and song in `overlays.midi_programs`, so a
+  keyboard player can change keyboards without adapting the songs;
+  `overlays.midi` stays for v0.16.0 clients.
+
 ## Open points
 
 - Prototype results still open: Windows, Linux and Chrome; the number of
