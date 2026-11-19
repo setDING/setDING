@@ -73,6 +73,8 @@ flutter:
     - assets/fonts/NotoSans-Regular.ttf
     - assets/fonts/NotoSans-Bold.ttf
     - assets/fonts/NotoSans-OFL.txt
+    # "What's new" after an update (ADR-0041), written in the release PR.
+    - assets/whats_new.json
   fonts:
     # Wordmark of the logo (lib/ui/widgets/logo.dart).
     - family: NotoSans

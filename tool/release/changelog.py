@@ -251,6 +251,11 @@ def main(argv: list[str] | None = None) -> int:
             since = args.since or _git("describe", "--tags", "--abbrev=0").strip()
             subjects = _git("log", "--reverse", "--format=%s", f"{since}..HEAD").splitlines()
             print(draft(subjects), end="")
+            print(
+                "Also add the version's user notes in de-CH and en to "
+                "app/assets/whats_new.json (docs/development/releases.md, ADR-0041).",
+                file=sys.stderr,
+            )
             return 0
         changelog = parse(args.file.read_text(encoding="utf-8"))
         if args.command == "check":

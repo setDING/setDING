@@ -1,0 +1,18 @@
+{
+  "0.14.0": {
+    "de": [
+      "Verse mit den gleichen Akkorden lassen sich Zeile für Zeile übereinander anzeigen, oder die Akkorde nur in der ersten Strophe.",
+      "Neue Vorlage Schwarz/Weiss mit fetten, grösseren Überschriften, und eine Monospace-Schrift für die Songanzeige.",
+      "Anhänge eines Songs lassen sich öffnen, ohne den Live-Modus zu starten.",
+      "Im Editor stehen die Akkordvorschläge sortiert bereit, auch nach «Akkord einfügen».",
+      "Unter Linux aktualisiert sich das AppImage selbst."
+    ],
+    "en": [
+      "Verses with the same chords can be stacked line by line, or show their chords in the first verse only.",
+      "New Black/White preset with bold, larger headings, and a monospace font for the song display.",
+      "Open a song's attachments without starting the live mode.",
+      "The editor sorts its chord suggestions and also shows them after \"Insert chord\".",
+      "On Linux, the AppImage updates itself."
+    ]
+  }
+}

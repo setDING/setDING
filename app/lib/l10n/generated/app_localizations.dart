@@ -4717,6 +4717,36 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Das Update konnte nicht installiert werden. Bitte versuche es später nochmals.'**
   String get appUpdateFailed;
+
+  /// No description provided for @whatsNewTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Was ist neu'**
+  String get whatsNewTitle;
+
+  /// No description provided for @whatsNewAvailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Neu in setDING {version}'**
+  String whatsNewAvailable(String version);
+
+  /// No description provided for @whatsNewShow.
+  ///
+  /// In de, this message translates to:
+  /// **'Anzeigen'**
+  String get whatsNewShow;
+
+  /// No description provided for @whatsNewVersion.
+  ///
+  /// In de, this message translates to:
+  /// **'Version {version}'**
+  String whatsNewVersion(String version);
+
+  /// No description provided for @whatsNewAllChanges.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Änderungen'**
+  String get whatsNewAllChanges;
 }
 
 class _AppLocalizationsDelegate
