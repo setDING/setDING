@@ -33,7 +33,7 @@ import '../render/render_cache.dart';
 import '../render/song_image.dart';
 import '../render/song_view.dart';
 import '../sets/set_item_label.dart';
-import '../songs/midi_program_field.dart' show midiPatchLabel;
+import '../songs/midi_program_field.dart' show midiPatchShortLabel;
 import '../widgets/dialogs.dart';
 import '../widgets/key_picker.dart';
 import '../widgets/verse_chords_picker.dart';
@@ -1177,7 +1177,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
 }
 
 /// The keyboard program the song [songId] wants for this device's profile
-/// (ADR-0039, ADR-0042), as the musician reads it, e.g. "Program A:11";
+/// (ADR-0039, ADR-0042), short as in the song's program list, e.g. "A:11"
+/// (#609);
 /// nothing when it has none (#605).
 class _MidiProgramLabel extends ConsumerWidget {
   const _MidiProgramLabel({required this.songId});
@@ -1197,7 +1198,10 @@ class _MidiProgramLabel extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(left: 6),
       child: Text(
-        midiPatchLabel(AppLocalizations.of(context), profile.toPatch(program)),
+        midiPatchShortLabel(
+          AppLocalizations.of(context),
+          profile.toPatch(program),
+        ),
         key: const Key('live-midi-program'),
         maxLines: 1,
         style: Theme.of(context).textTheme.titleSmall,

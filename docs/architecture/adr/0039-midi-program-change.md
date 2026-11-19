@@ -147,7 +147,7 @@ settings and stored programs are kept.
 - If no output is connected, nothing is sent and nothing is shown in the way:
   a small MIDI indicator in the live header shows connected / not connected only
   while MIDI program changes are on. Next to it, the program the current song
-  has for this device's profile (e.g. "Program A:11"), so it can be set by hand
+  has for this device's profile (short as in the song's program list, e.g. "A:11"), so it can be set by hand
   when the keyboard is not connected (#605). Errors are logged, never shown as
   dialogs.
 - When the remembered device is plugged in again, setDING reconnects to it
@@ -383,6 +383,9 @@ settings and stored programs are kept.
 - 2026-11-19: Live mode shows the program of the current song (this device's
   profile, full label as in the program picker) next to the keyboard indicator,
   connected or not; nothing for songs without a program, breaks and texts (#605).
+- 2026-11-19: The program in live mode uses the short label of the song's
+  program list (e.g. "A:11" instead of "Program A:11"), like the keyboard
+  shows it (#609).
 
 ## Open points
 

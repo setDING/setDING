@@ -250,7 +250,7 @@ void main() {
     expect(find.byKey(const Key('live-midi-not-connected')), findsOneWidget);
     final label = find.byKey(const Key('live-midi-program'));
     expect(label, findsOneWidget);
-    expect(tester.widget<Text>(label).data, 'Program A:12');
+    expect(tester.widget<Text>(label).data, 'A:12');
 
     // A song without a program and a break show none.
     await tapRight(tester);
