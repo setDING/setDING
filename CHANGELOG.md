@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 with the setDING-specific bump rules of
 [ADR-0028](docs/architecture/adr/0028-versioning-scheme.md).
 
+## [0.16.0] - 2026-11-19
+
+### Added
+
+- Keyboard program changes over MIDI (ADR-0039): musicians whose instrument is keyboard connect a keyboard in the new *Keyboard (MIDI)* settings (Nord Stage 3 or generic profile), store a personal keyboard program per song with a test button, and live mode sends it when a song becomes current, with "Send program again" and a connection indicator ([#566](https://github.com/tafli/setDING/pull/566), [#567](https://github.com/tafli/setDING/pull/567), [#569](https://github.com/tafli/setDING/pull/569), [#571](https://github.com/tafli/setDING/pull/571), [#580](https://github.com/tafli/setDING/pull/580))
+- Text tool in the annotation editor: type notes onto ChordPro and PDF pages and move, resize, recolour and erase them like stamps ([#577](https://github.com/tafli/setDING/pull/577))
+- Invitation links in the organization settings show their band and can be shown again (link and QR code); revoked and expired links are no longer listed ([#581](https://github.com/tafli/setDING/pull/581))
+- News page on the website with the notes of every version, and the current version in its header ([#572](https://github.com/tafli/setDING/pull/572), [#574](https://github.com/tafli/setDING/pull/574))
+
+### Changed
+
+- The on-screen keyboard no longer shrinks the page in live mode ([#577](https://github.com/tafli/setDING/pull/577))
+- Server operators: `make server-release` adds a random `SETDING_INVITE_KEY` to `pocketbase.env`; links created before this release cannot be shown again, but keep working ([#581](https://github.com/tafli/setDING/pull/581))
+
 ## [0.15.0] - 2026-11-19
 
 ### Added
@@ -296,6 +310,7 @@ with the setDING-specific bump rules of
 
 - First release, built on GitHub Actions for Linux, Android and Windows ([#138](https://github.com/tafli/setDING/pull/138))
 
+[0.16.0]: https://github.com/tafli/setDING/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/tafli/setDING/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/tafli/setDING/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/tafli/setDING/compare/v0.12.0...v0.13.0

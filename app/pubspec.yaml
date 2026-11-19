@@ -1,7 +1,7 @@
 name: setding
 description: "setDING – chords and sets for bands on stage."
 publish_to: 'none'
-version: 0.15.0
+version: 0.16.0
 
 environment:
   sdk: ^3.14.0
