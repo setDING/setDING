@@ -635,31 +635,31 @@ abstract class AppLocalizations {
   /// No description provided for @firstVerseChordsOnly.
   ///
   /// In de, this message translates to:
-  /// **'Akkorde nur in Strophe 1'**
+  /// **'Akkorde nur in Verse 1'**
   String get firstVerseChordsOnly;
 
   /// No description provided for @noVersesForFirstVerseChords.
   ///
   /// In de, this message translates to:
-  /// **'Der Song hat keine weiteren Strophen mit Akkorden.'**
+  /// **'Der Song hat keine weiteren Verses mit Akkorden.'**
   String get noVersesForFirstVerseChords;
 
   /// No description provided for @verseChords.
   ///
   /// In de, this message translates to:
-  /// **'Akkorde in Strophen'**
+  /// **'Akkorde in Verses'**
   String get verseChords;
 
   /// No description provided for @verseChordsAll.
   ///
   /// In de, this message translates to:
-  /// **'Akkorde in allen Strophen'**
+  /// **'Akkorde in allen Verses'**
   String get verseChordsAll;
 
   /// No description provided for @verseChordsStacked.
   ///
   /// In de, this message translates to:
-  /// **'Strophen untereinander'**
+  /// **'Verses untereinander'**
   String get verseChordsStacked;
 
   /// No description provided for @editorTitleNew.
@@ -689,13 +689,13 @@ abstract class AppLocalizations {
   /// No description provided for @insertVerse.
   ///
   /// In de, this message translates to:
-  /// **'Strophe einfügen'**
+  /// **'Verse einfügen'**
   String get insertVerse;
 
   /// No description provided for @insertChorus.
   ///
   /// In de, this message translates to:
-  /// **'Refrain einfügen'**
+  /// **'Chorus einfügen'**
   String get insertChorus;
 
   /// No description provided for @insertBridge.
@@ -731,13 +731,13 @@ abstract class AppLocalizations {
   /// No description provided for @sectionVerse.
   ///
   /// In de, this message translates to:
-  /// **'Strophe'**
+  /// **'Verse'**
   String get sectionVerse;
 
   /// No description provided for @sectionChorus.
   ///
   /// In de, this message translates to:
-  /// **'Refrain'**
+  /// **'Chorus'**
   String get sectionChorus;
 
   /// No description provided for @sectionBridge.
@@ -755,7 +755,7 @@ abstract class AppLocalizations {
   /// No description provided for @sectionGrid.
   ///
   /// In de, this message translates to:
-  /// **'Raster'**
+  /// **'Grid'**
   String get sectionGrid;
 
   /// No description provided for @setsEmpty.
@@ -1025,7 +1025,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsCategoryDisplayHint.
   ///
   /// In de, this message translates to:
-  /// **'Akkord-Notation, Nashville-Zahlen, Inhalt, Refrain, Fortschritt'**
+  /// **'Akkord-Notation, Nashville-Zahlen, Inhalt, Chorus, Fortschritt'**
   String get settingsCategoryDisplayHint;
 
   /// No description provided for @settingsCategoryLiveHint.
@@ -1403,13 +1403,13 @@ abstract class AppLocalizations {
   /// No description provided for @settingsChorusRepeat.
   ///
   /// In de, this message translates to:
-  /// **'Wiederholter Refrain'**
+  /// **'Wiederholter Chorus'**
   String get settingsChorusRepeat;
 
   /// No description provided for @settingsChorusRepeatHint.
   ///
   /// In de, this message translates to:
-  /// **'Automatisch: Ein wiederholter Refrain wird nur dann als kurzer Hinweis angezeigt, wenn der Song sonst nicht gut auf den Bildschirm passt.'**
+  /// **'Automatisch: Ein wiederholter Chorus wird nur dann als kurzer Hinweis angezeigt, wenn der Song sonst nicht gut auf den Bildschirm passt.'**
   String get settingsChorusRepeatHint;
 
   /// No description provided for @chorusRepeatAuto.
@@ -1769,7 +1769,7 @@ abstract class AppLocalizations {
   /// No description provided for @songMapEmpty.
   ///
   /// In de, this message translates to:
-  /// **'Dieser Song hat keine Teile (Strophe, Refrain, …) für eine Song-Landkarte.'**
+  /// **'Dieser Song hat keine Teile (Verse, Chorus, …) für eine Song-Landkarte.'**
   String get songMapEmpty;
 
   /// No description provided for @songMapNoTempo.
@@ -1865,19 +1865,19 @@ abstract class AppLocalizations {
   /// No description provided for @sectionPreChorus.
   ///
   /// In de, this message translates to:
-  /// **'Pre-Chorus'**
+  /// **'Pre-chorus'**
   String get sectionPreChorus;
 
   /// No description provided for @sectionPostChorus.
   ///
   /// In de, this message translates to:
-  /// **'Post-Chorus'**
+  /// **'Post-chorus'**
   String get sectionPostChorus;
 
   /// No description provided for @sectionInterlude.
   ///
   /// In de, this message translates to:
-  /// **'Zwischenspiel'**
+  /// **'Interlude'**
   String get sectionInterlude;
 
   /// No description provided for @sectionInstrumental.
@@ -1907,7 +1907,7 @@ abstract class AppLocalizations {
   /// No description provided for @sectionEnding.
   ///
   /// In de, this message translates to:
-  /// **'Schluss'**
+  /// **'Ending'**
   String get sectionEnding;
 
   /// No description provided for @sectionTurnaround.
@@ -2171,13 +2171,13 @@ abstract class AppLocalizations {
   /// No description provided for @insertGrid.
   ///
   /// In de, this message translates to:
-  /// **'Akkord-Raster'**
+  /// **'Akkord-Grid'**
   String get insertGrid;
 
   /// No description provided for @insertChorusRecall.
   ///
   /// In de, this message translates to:
-  /// **'Refrain wiederholen'**
+  /// **'Chorus wiederholen'**
   String get insertChorusRecall;
 
   /// No description provided for @metaSubtitle.
@@ -2429,7 +2429,7 @@ abstract class AppLocalizations {
   /// No description provided for @sequenceAbbreviations.
   ///
   /// In de, this message translates to:
-  /// **'I Intro · V Strophe · PC Pre-Chorus · C Refrain · B Bridge · Int Zwischenspiel · Solo · T Tag · O Outro · C x2 = zweimal'**
+  /// **'I Intro · V Verse · PC Pre-chorus · C Chorus · B Bridge · Int Interlude · Solo · T Tag · O Outro · C x2 = zweimal'**
   String get sequenceAbbreviations;
 
   /// No description provided for @sequenceEmpty.
@@ -4301,7 +4301,7 @@ abstract class AppLocalizations {
   /// No description provided for @songDisplayPresetChorusFocus.
   ///
   /// In de, this message translates to:
-  /// **'Refrain im Fokus'**
+  /// **'Chorus im Fokus'**
   String get songDisplayPresetChorusFocus;
 
   /// No description provided for @songDisplayPresetSinger.
@@ -4385,19 +4385,19 @@ abstract class AppLocalizations {
   /// No description provided for @songDisplayTypeVerse.
   ///
   /// In de, this message translates to:
-  /// **'Strophe'**
+  /// **'Verse'**
   String get songDisplayTypeVerse;
 
   /// No description provided for @songDisplayTypePreChorus.
   ///
   /// In de, this message translates to:
-  /// **'Pre-Chorus'**
+  /// **'Pre-chorus'**
   String get songDisplayTypePreChorus;
 
   /// No description provided for @songDisplayTypeChorus.
   ///
   /// In de, this message translates to:
-  /// **'Refrain'**
+  /// **'Chorus'**
   String get songDisplayTypeChorus;
 
   /// No description provided for @songDisplayTypeBridge.
@@ -4409,7 +4409,7 @@ abstract class AppLocalizations {
   /// No description provided for @songDisplayTypeInterlude.
   ///
   /// In de, this message translates to:
-  /// **'Zwischenspiel'**
+  /// **'Interlude'**
   String get songDisplayTypeInterlude;
 
   /// No description provided for @songDisplayTypeOutro.

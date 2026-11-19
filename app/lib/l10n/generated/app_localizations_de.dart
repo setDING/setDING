@@ -324,20 +324,20 @@ class AppLocalizationsDe extends AppLocalizations {
       'Für Nashville-Nummern braucht der Song eine Tonart.';
 
   @override
-  String get firstVerseChordsOnly => 'Akkorde nur in Strophe 1';
+  String get firstVerseChordsOnly => 'Akkorde nur in Verse 1';
 
   @override
   String get noVersesForFirstVerseChords =>
-      'Der Song hat keine weiteren Strophen mit Akkorden.';
+      'Der Song hat keine weiteren Verses mit Akkorden.';
 
   @override
-  String get verseChords => 'Akkorde in Strophen';
+  String get verseChords => 'Akkorde in Verses';
 
   @override
-  String get verseChordsAll => 'Akkorde in allen Strophen';
+  String get verseChordsAll => 'Akkorde in allen Verses';
 
   @override
-  String get verseChordsStacked => 'Strophen untereinander';
+  String get verseChordsStacked => 'Verses untereinander';
 
   @override
   String get editorTitleNew => 'Neuer Song';
@@ -352,10 +352,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get previewTab => 'Vorschau';
 
   @override
-  String get insertVerse => 'Strophe einfügen';
+  String get insertVerse => 'Verse einfügen';
 
   @override
-  String get insertChorus => 'Refrain einfügen';
+  String get insertChorus => 'Chorus einfügen';
 
   @override
   String get insertBridge => 'Bridge einfügen';
@@ -374,10 +374,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Deine Änderungen wurden noch nicht gespeichert.';
 
   @override
-  String get sectionVerse => 'Strophe';
+  String get sectionVerse => 'Verse';
 
   @override
-  String get sectionChorus => 'Refrain';
+  String get sectionChorus => 'Chorus';
 
   @override
   String get sectionBridge => 'Bridge';
@@ -386,7 +386,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get sectionTab => 'Tab';
 
   @override
-  String get sectionGrid => 'Raster';
+  String get sectionGrid => 'Grid';
 
   @override
   String get setsEmpty =>
@@ -553,7 +553,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsCategoryDisplayHint =>
-      'Akkord-Notation, Nashville-Zahlen, Inhalt, Refrain, Fortschritt';
+      'Akkord-Notation, Nashville-Zahlen, Inhalt, Chorus, Fortschritt';
 
   @override
   String get settingsCategoryLiveHint =>
@@ -752,11 +752,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get columnsThree => 'Drei';
 
   @override
-  String get settingsChorusRepeat => 'Wiederholter Refrain';
+  String get settingsChorusRepeat => 'Wiederholter Chorus';
 
   @override
   String get settingsChorusRepeatHint =>
-      'Automatisch: Ein wiederholter Refrain wird nur dann als kurzer Hinweis angezeigt, wenn der Song sonst nicht gut auf den Bildschirm passt.';
+      'Automatisch: Ein wiederholter Chorus wird nur dann als kurzer Hinweis angezeigt, wenn der Song sonst nicht gut auf den Bildschirm passt.';
 
   @override
   String get chorusRepeatAuto => 'Automatisch';
@@ -958,7 +958,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get songMapEmpty =>
-      'Dieser Song hat keine Teile (Strophe, Refrain, …) für eine Song-Landkarte.';
+      'Dieser Song hat keine Teile (Verse, Chorus, …) für eine Song-Landkarte.';
 
   @override
   String get songMapNoTempo => 'Kein Tempo für diesen Song';
@@ -1014,13 +1014,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get sectionIntro => 'Intro';
 
   @override
-  String get sectionPreChorus => 'Pre-Chorus';
+  String get sectionPreChorus => 'Pre-chorus';
 
   @override
-  String get sectionPostChorus => 'Post-Chorus';
+  String get sectionPostChorus => 'Post-chorus';
 
   @override
-  String get sectionInterlude => 'Zwischenspiel';
+  String get sectionInterlude => 'Interlude';
 
   @override
   String get sectionInstrumental => 'Instrumental';
@@ -1035,7 +1035,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get sectionOutro => 'Outro';
 
   @override
-  String get sectionEnding => 'Schluss';
+  String get sectionEnding => 'Ending';
 
   @override
   String get sectionTurnaround => 'Turnaround';
@@ -1186,10 +1186,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get insertTab => 'Tabulatur';
 
   @override
-  String get insertGrid => 'Akkord-Raster';
+  String get insertGrid => 'Akkord-Grid';
 
   @override
-  String get insertChorusRecall => 'Refrain wiederholen';
+  String get insertChorusRecall => 'Chorus wiederholen';
 
   @override
   String get metaSubtitle => 'Untertitel';
@@ -1322,7 +1322,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get sequenceAbbreviations =>
-      'I Intro · V Strophe · PC Pre-Chorus · C Refrain · B Bridge · Int Zwischenspiel · Solo · T Tag · O Outro · C x2 = zweimal';
+      'I Intro · V Verse · PC Pre-chorus · C Chorus · B Bridge · Int Interlude · Solo · T Tag · O Outro · C x2 = zweimal';
 
   @override
   String get sequenceEmpty =>
@@ -2523,7 +2523,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get songDisplayPresetColorCoded => 'Farbcodiert';
 
   @override
-  String get songDisplayPresetChorusFocus => 'Refrain im Fokus';
+  String get songDisplayPresetChorusFocus => 'Chorus im Fokus';
 
   @override
   String get songDisplayPresetSinger => 'Gesang';
@@ -2567,19 +2567,19 @@ class AppLocalizationsDe extends AppLocalizations {
   String get songDisplayTypeIntro => 'Intro';
 
   @override
-  String get songDisplayTypeVerse => 'Strophe';
+  String get songDisplayTypeVerse => 'Verse';
 
   @override
-  String get songDisplayTypePreChorus => 'Pre-Chorus';
+  String get songDisplayTypePreChorus => 'Pre-chorus';
 
   @override
-  String get songDisplayTypeChorus => 'Refrain';
+  String get songDisplayTypeChorus => 'Chorus';
 
   @override
   String get songDisplayTypeBridge => 'Bridge';
 
   @override
-  String get songDisplayTypeInterlude => 'Zwischenspiel';
+  String get songDisplayTypeInterlude => 'Interlude';
 
   @override
   String get songDisplayTypeOutro => 'Outro';
