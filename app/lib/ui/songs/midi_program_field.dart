@@ -20,6 +20,10 @@ String midiPatchLabel(AppLocalizations l10n, MidiPatch patch) =>
         song,
         part,
       ),
+      MotifVoice(:final label) => l10n.midiProgramValueMotifVoice(label),
+      MotifPerformance(:final label) => l10n.midiProgramValueMotifPerformance(
+        label,
+      ),
       GenericProgram(:final msb, :final lsb, :final program) => [
         l10n.midiProgramValueGeneric(program),
         if (msb != null) l10n.midiProgramValueMsb(msb),
@@ -158,12 +162,14 @@ class MidiProgramField extends ConsumerWidget {
 }
 
 /// What a program addresses, as chosen in the picker.
-enum MidiPatchKind { program, live, song, generic }
+enum MidiPatchKind { program, live, song, performance, voice, generic }
 
 MidiPatchKind _kindOf(MidiPatch patch) => switch (patch) {
   NordProgram() => MidiPatchKind.program,
   NordLiveMemory() => MidiPatchKind.live,
   NordSong() => MidiPatchKind.song,
+  MotifPerformance() => MidiPatchKind.performance,
+  MotifVoice() => MidiPatchKind.voice,
   GenericProgram() => MidiPatchKind.generic,
 };
 
@@ -177,6 +183,7 @@ List<MidiPatchKind> midiPatchKinds(MidiProfile profile, MidiPatch? current) {
       MidiPatchKind.live,
       MidiPatchKind.song,
     ],
+    MotifXfProfile() => [MidiPatchKind.performance, MidiPatchKind.voice],
     GenericProfile() => [MidiPatchKind.generic],
   };
   if (current != null && !kinds.contains(_kindOf(current))) {
@@ -227,6 +234,9 @@ class _MidiProgramPickerState extends State<MidiProgramPicker> {
   var _live = 1;
   var _song = 1;
   var _part = 1;
+  var _voiceBank = 0;
+  var _performanceBank = 0;
+  var _motifIndex = 0;
   final _msb = TextEditingController();
   final _lsb = TextEditingController();
   final _program = TextEditingController(text: '1');
@@ -253,6 +263,12 @@ class _MidiProgramPickerState extends State<MidiProgramPicker> {
       case NordSong(:final song, :final part):
         _song = song;
         _part = part;
+      case MotifVoice(:final bank, :final index):
+        _voiceBank = bank;
+        _motifIndex = index;
+      case MotifPerformance(:final bank, :final index):
+        _performanceBank = bank;
+        _motifIndex = index;
       case GenericProgram(:final msb, :final lsb, :final program):
         _msb.text = msb?.toString() ?? '';
         _lsb.text = lsb?.toString() ?? '';
@@ -285,6 +301,16 @@ class _MidiProgramPickerState extends State<MidiProgramPicker> {
         return NordLiveMemory(_live);
       case MidiPatchKind.song:
         return NordSong(_song, _part);
+      case MidiPatchKind.performance:
+        return MotifPerformance(
+          _performanceBank,
+          _motifClamped(MotifXf.performanceBanks[_performanceBank]),
+        );
+      case MidiPatchKind.voice:
+        return MotifVoice(
+          _voiceBank,
+          _motifClamped(MotifXf.voiceBanks[_voiceBank]),
+        );
       case MidiPatchKind.generic:
         final msb = _field(_msb, 0, 127);
         final lsb = _field(_lsb, 0, 127);
@@ -301,6 +327,8 @@ class _MidiProgramPickerState extends State<MidiProgramPicker> {
         MidiPatchKind.program => l10n.midiProgramKindProgram,
         MidiPatchKind.live => l10n.midiProgramKindLive,
         MidiPatchKind.song => l10n.midiProgramKindSong,
+        MidiPatchKind.performance => l10n.midiProgramKindPerformance,
+        MidiPatchKind.voice => l10n.midiProgramKindVoice,
         MidiPatchKind.generic => l10n.midiProgramKindGeneric,
       };
 
@@ -360,6 +388,20 @@ class _MidiProgramPickerState extends State<MidiProgramPicker> {
                 MidiPatchKind.program => _nordProgram(l10n, theme),
                 MidiPatchKind.live => _nordLive(l10n, theme),
                 MidiPatchKind.song => _nordSong(l10n, theme),
+                MidiPatchKind.performance => _motif(
+                  l10n,
+                  theme,
+                  MotifXf.performanceBanks,
+                  _performanceBank,
+                  (b) => _performanceBank = b,
+                ),
+                MidiPatchKind.voice => _motif(
+                  l10n,
+                  theme,
+                  MotifXf.voiceBanks,
+                  _voiceBank,
+                  (b) => _voiceBank = b,
+                ),
                 MidiPatchKind.generic => _generic(l10n),
               },
             ],
@@ -546,6 +588,68 @@ class _MidiProgramPickerState extends State<MidiProgramPicker> {
       style: theme.textTheme.bodySmall,
     ),
   ];
+
+  /// The Motif XF program in [bank], kept inside the bank (a drum bank
+  /// has fewer programs than the one chosen before).
+  int _motifClamped(MotifBank bank) => math.min(_motifIndex, bank.size - 1);
+
+  /// Bank, group A–H and number 1–16 of a Motif XF voice or performance,
+  /// as on its display (#591).
+  List<Widget> _motif(
+    AppLocalizations l10n,
+    ThemeData theme,
+    List<MotifBank> banks,
+    int bank,
+    ValueChanged<int> onBank,
+  ) {
+    final b = banks[bank];
+    final index = _motifClamped(b);
+    final group = index ~/ MotifXf.perGroup;
+    final inGroup = math.min(
+      MotifXf.perGroup,
+      b.size - group * MotifXf.perGroup,
+    );
+    return [
+      _label(theme, l10n.midiProgramBank),
+      _choices(
+        keyPrefix: 'midi-motif-bank',
+        count: banks.length,
+        selected: bank,
+        label: (i) => banks[i].name,
+        onSelected: (i) {
+          onBank(i);
+          _motifIndex = _motifClamped(banks[i]);
+        },
+      ),
+      const SizedBox(height: 16),
+      _label(theme, l10n.midiProgramGroup),
+      _choices(
+        keyPrefix: 'midi-motif-group',
+        count: b.groups,
+        selected: group,
+        label: (i) => MotifXf.groupNames[i],
+        onSelected: (i) => _motifIndex = math.min(
+          i * MotifXf.perGroup + index % MotifXf.perGroup,
+          b.size - 1,
+        ),
+      ),
+      const SizedBox(height: 16),
+      _label(theme, l10n.midiProgramMotifNumber),
+      _choices(
+        keyPrefix: 'midi-motif-number',
+        count: inGroup,
+        selected: index % MotifXf.perGroup,
+        label: (i) => (i + 1).toString().padLeft(2, '0'),
+        onSelected: (i) => _motifIndex = group * MotifXf.perGroup + i,
+      ),
+      const SizedBox(height: 12),
+      Text(
+        l10n.midiProgramMotifHint,
+        key: const Key('midi-motif-hint'),
+        style: theme.textTheme.bodySmall,
+      ),
+    ];
+  }
 
   List<Widget> _generic(AppLocalizations l10n) {
     Widget field(

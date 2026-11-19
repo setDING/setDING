@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../midi/midi_message.dart';
 import '../../midi/midi_output.dart';
+import '../../midi/midi_profile.dart';
 import '../../util/log.dart';
 import 'midi_guide.dart';
 
@@ -21,7 +22,7 @@ class MidiTestScreen extends ConsumerStatefulWidget {
   ConsumerState<MidiTestScreen> createState() => _MidiTestScreenState();
 }
 
-enum _Mode { nordProgram, nordSong, nordLive, raw, controlChange }
+enum _Mode { nordProgram, nordSong, nordLive, motif, raw, controlChange }
 
 class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
   late final MidiOutput _midi;
@@ -37,6 +38,10 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
   var _song = 1;
   var _part = 1;
   var _live = 1;
+
+  /// Motif XF: performance banks first, then the voice banks.
+  var _motifBank = 0;
+  var _motifIndex = 0;
   final _guide = nordStage3Guide();
   var _step = 0;
   var _stepSent = false;
@@ -142,6 +147,17 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
         return NordStage3.song(_song, _part).bytes(_channel);
       case _Mode.nordLive:
         return NordStage3.live(_live).bytes(_channel);
+      case _Mode.motif:
+        final b = _motifBanks[_motifBank];
+        final index = _motifIndex.clamp(0, b.size - 1);
+        final program = _motifBank < MotifXf.performanceBanks.length
+            ? MotifXf.performance(_motifBank, index)
+            : MotifXf.voice(
+                _motifBank - MotifXf.performanceBanks.length,
+                index,
+              );
+        // With the mode change of the profile, as in live mode (#591).
+        return const MotifXfProfile().bytes(program, _channel);
       case _Mode.raw:
         final program = read(_program, 1, 128);
         final msb = read(_msb, 0, 127);
@@ -163,6 +179,11 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
         return midiControlChange(_channel, controller, value);
     }
   }
+
+  static final _motifBanks = [
+    ...MotifXf.performanceBanks,
+    ...MotifXf.voiceBanks,
+  ];
 
   void _send(Uint8List bytes) {
     final l10n = AppLocalizations.of(context);
@@ -370,6 +391,10 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
                     label: Text(l10n.midiTestModeNordLive),
                   ),
                   ButtonSegment(
+                    value: _Mode.motif,
+                    label: Text(l10n.midiTestModeMotif),
+                  ),
+                  ButtonSegment(
                     value: _Mode.raw,
                     label: Text(l10n.midiTestModeRaw),
                   ),
@@ -547,6 +572,42 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
           ),
         ),
       ],
+      _Mode.motif => () {
+        final b = _motifBanks[_motifBank];
+        final index = _motifIndex.clamp(0, b.size - 1);
+        final perf = _motifBank < MotifXf.performanceBanks.length;
+        return [
+          dropdown(
+            l10n.midiTestBank,
+            const Key('midi-motif-bank'),
+            _motifBank,
+            [for (var i = 0; i < _motifBanks.length; i++) i],
+            (i) => i < MotifXf.performanceBanks.length
+                ? '${l10n.midiProgramKindPerformance} ${_motifBanks[i].name}'
+                : '${l10n.midiProgramKindVoice} ${_motifBanks[i].name}',
+            (v) => _motifBank = v,
+          ),
+          dropdown(
+            l10n.midiProgramMotifNumber,
+            const Key('midi-motif-index'),
+            index,
+            [for (var i = 0; i < b.size; i++) i],
+            MotifXf.programName,
+            (v) => _motifIndex = v,
+          ),
+          ListTile(
+            subtitle: Text(
+              perf
+                  ? l10n.midiProgramValueMotifPerformance(
+                      '${b.name} ${MotifXf.programName(index)}',
+                    )
+                  : l10n.midiProgramValueMotifVoice(
+                      '${b.name} ${MotifXf.programName(index)}',
+                    ),
+            ),
+          ),
+        ];
+      }(),
       _Mode.raw => [
         field(_msb, l10n.midiTestMsb, const Key('midi-msb')),
         field(_lsb, l10n.midiTestLsb, const Key('midi-lsb')),

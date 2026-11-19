@@ -6,6 +6,7 @@ import 'package:setding/midi/midi_profile.dart';
 void main() {
   const nord = NordStage3Profile();
   const generic = GenericProfile();
+  const motif = MotifXfProfile();
 
   group('Nord Stage 3', () {
     test('programs both ways, across the block borders', () {
@@ -182,9 +183,156 @@ void main() {
     });
   });
 
+  group('Motif XF (#591)', () {
+    test('voices and performances as in the MOTIF XF Data List', () {
+      for (final (patch, expected) in [
+        (
+          const MotifVoice(0, 0),
+          const MidiProgram(msb: 63, lsb: 0, program: 0),
+        ),
+        (
+          const MotifVoice(7, 127),
+          const MidiProgram(msb: 63, lsb: 7, program: 127),
+        ),
+        (
+          const MotifVoice(8, 0),
+          const MidiProgram(msb: 63, lsb: 8, program: 0),
+        ),
+        (
+          const MotifVoice(11, 127),
+          const MidiProgram(msb: 63, lsb: 11, program: 127),
+        ),
+        (
+          const MotifVoice(12, 5),
+          const MidiProgram(msb: 0, lsb: 0, program: 5),
+        ),
+        (
+          const MotifVoice(13, 63),
+          const MidiProgram(msb: 63, lsb: 32, program: 63),
+        ),
+        (
+          const MotifVoice(14, 31),
+          const MidiProgram(msb: 63, lsb: 40, program: 31),
+        ),
+        (
+          const MotifVoice(15, 0),
+          const MidiProgram(msb: 127, lsb: 0, program: 0),
+        ),
+        (
+          const MotifPerformance(0, 0),
+          const MidiProgram(msb: 63, lsb: 64, program: 0),
+        ),
+        (
+          const MotifPerformance(1, 36),
+          const MidiProgram(msb: 63, lsb: 65, program: 36),
+        ),
+        (
+          const MotifPerformance(3, 127),
+          const MidiProgram(msb: 63, lsb: 67, program: 127),
+        ),
+      ]) {
+        expect(motif.toMidi(patch), expected, reason: '$patch');
+        expect(motif.toPatch(expected), patch, reason: '$expected');
+      }
+    });
+
+    test('labels as on the display: bank, group A–H, number 01–16', () {
+      expect(const MotifVoice(8, 0).label, 'USR1 A01');
+      expect(const MotifVoice(0, 127).label, 'PRE1 H16');
+      expect(const MotifVoice(13, 16).label, 'PDR B01');
+      expect(const MotifVoice(15, 0).label, 'GMDR A01');
+      expect(const MotifPerformance(1, 36).label, 'USR2 C05');
+      expect(MotifXf.programName(15), 'A16');
+      expect(MotifXf.programName(16), 'B01');
+      expect(MotifXf.voiceBanks[13].groups, 4);
+      expect(MotifXf.voiceBanks[15].groups, 1);
+    });
+
+    test('values outside the Motif banks are shown as generic', () {
+      for (final p in [
+        const MidiProgram(program: 3),
+        const MidiProgram(msb: 63, lsb: 12, program: 0),
+        const MidiProgram(msb: 63, lsb: 32, program: 64),
+        const MidiProgram(msb: 63, lsb: 40, program: 32),
+        const MidiProgram(msb: 127, lsb: 0, program: 1),
+        const MidiProgram(msb: 0, lsb: 2, program: 12),
+      ]) {
+        expect(motif.toPatch(p), isA<GenericProgram>(), reason: '$p');
+      }
+    });
+
+    test('rejects values outside the banks', () {
+      expect(() => motif.toMidi(const MotifVoice(16, 0)), throwsRangeError);
+      expect(() => motif.toMidi(const MotifVoice(13, 64)), throwsRangeError);
+      expect(() => motif.toMidi(const MotifVoice(15, 1)), throwsRangeError);
+      expect(
+        () => motif.toMidi(const MotifPerformance(4, 0)),
+        throwsRangeError,
+      );
+      expect(
+        () => motif.toMidi(const MotifPerformance(0, 128)),
+        throwsRangeError,
+      );
+    });
+
+    test('sends the mode change before bank select and program change', () {
+      const voiceMode = [0xF0, 0x43, 0x10, 0x7F, 0x12, 0x0A, 0, 1, 0, 0xF7];
+      const performanceMode = [
+        0xF0, 0x43, 0x10, 0x7F, 0x12, 0x0A, 0, 1, 1, 0xF7, //
+      ];
+      expect(motif.bytes(const MidiProgram(msb: 63, lsb: 65, program: 36), 3), [
+        ...performanceMode,
+        0xB2,
+        0,
+        63,
+        0xB2,
+        32,
+        65,
+        0xC2,
+        36,
+      ]);
+      expect(motif.bytes(const MidiProgram(msb: 63, lsb: 8, program: 0), 1), [
+        ...voiceMode,
+        0xB0,
+        0,
+        63,
+        0xB0,
+        32,
+        8,
+        0xC0,
+        0,
+      ]);
+      expect(motif.bytes(const MidiProgram(msb: 0, lsb: 0, program: 0), 1), [
+        ...voiceMode,
+        0xB0,
+        0,
+        0,
+        0xB0,
+        32,
+        0,
+        0xC0,
+        0,
+      ]);
+      // A value that is no Motif voice or performance: no mode change.
+      expect(
+        motif.bytes(const MidiProgram(program: 3), 1),
+        const MidiProgram(program: 3).bytes(1),
+      );
+      expect(MotifXf.modeChange(MotifMode.master).last, 0xF7);
+      expect(MotifXf.modeChange(MotifMode.master)[8], 4);
+    });
+
+    test('the other profiles send only bank select and program change', () {
+      const p = MidiProgram(msb: 63, lsb: 64, program: 0);
+      expect(nord.bytes(p, 2), p.bytes(2));
+      expect(generic.bytes(p, 2), p.bytes(2));
+    });
+  });
+
   test('the profile of the settings', () {
     expect(MidiProfile.of(MidiProfileKind.nordStage3), nord);
     expect(MidiProfile.of(MidiProfileKind.generic), generic);
+    expect(MidiProfile.of(MidiProfileKind.motifXf), motif);
     expect(
       MidiProfile.of(MidiProfileKind.generic).kind,
       MidiProfileKind.generic,

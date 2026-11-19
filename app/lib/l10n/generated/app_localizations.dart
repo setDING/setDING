@@ -5503,6 +5503,66 @@ abstract class AppLocalizations {
   /// **'Programm {name}'**
   String midiProgramValueNord(String name);
 
+  /// No description provided for @midiProfileMotifXf.
+  ///
+  /// In de, this message translates to:
+  /// **'Yamaha Motif XF'**
+  String get midiProfileMotifXf;
+
+  /// No description provided for @settingsMidiMotifHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Stelle am Motif XF unter Utility → MIDI: MIDI IN/OUT auf USB, den Empfang von Bank Select und Program Change ein, den Basic Receive Channel auf den Kanal hier und die Device Number auf «all» oder 1. setDING schaltet den Motif vor jedem Programm selbst in den Voice- oder Performance-Modus.'**
+  String get settingsMidiMotifHint;
+
+  /// No description provided for @midiProgramKindPerformance.
+  ///
+  /// In de, this message translates to:
+  /// **'Performance'**
+  String get midiProgramKindPerformance;
+
+  /// No description provided for @midiProgramKindVoice.
+  ///
+  /// In de, this message translates to:
+  /// **'Voice'**
+  String get midiProgramKindVoice;
+
+  /// No description provided for @midiProgramGroup.
+  ///
+  /// In de, this message translates to:
+  /// **'Gruppe'**
+  String get midiProgramGroup;
+
+  /// No description provided for @midiProgramMotifNumber.
+  ///
+  /// In de, this message translates to:
+  /// **'Nummer'**
+  String get midiProgramMotifNumber;
+
+  /// No description provided for @midiProgramMotifHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie auf dem Display des Motif XF, z.B. USR1 A01. setDING schaltet den Motif vor dem Senden in den Voice- oder Performance-Modus.'**
+  String get midiProgramMotifHint;
+
+  /// No description provided for @midiProgramValueMotifVoice.
+  ///
+  /// In de, this message translates to:
+  /// **'Voice {name}'**
+  String midiProgramValueMotifVoice(String name);
+
+  /// No description provided for @midiProgramValueMotifPerformance.
+  ///
+  /// In de, this message translates to:
+  /// **'Performance {name}'**
+  String midiProgramValueMotifPerformance(String name);
+
+  /// No description provided for @midiTestModeMotif.
+  ///
+  /// In de, this message translates to:
+  /// **'Motif XF'**
+  String get midiTestModeMotif;
+
   /// No description provided for @midiProgramValueLive.
   ///
   /// In de, this message translates to:

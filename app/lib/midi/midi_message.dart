@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show immutable;
+
 /// A program change with an optional bank select, as raw MIDI values
 /// (ADR-0039). Stored like this, independent of the device profile.
 class MidiProgram {
@@ -126,6 +128,116 @@ abstract final class NordStage3 {
     lsb: index ~/ programsPerBlock,
     program: index % programsPerBlock,
   );
+}
+
+/// The modes of a Yamaha Motif XF, numbered as its mode change parameter
+/// (MOTIF XF Data List, MIDI parameter change table "Mode Change").
+enum MotifMode { voice, performance, pattern, song, master }
+
+/// A bank of the Yamaha Motif XF: [name] as on its display, its bank select
+/// and the number of programs in it (MOTIF XF Data List, "Available Bank
+/// Select/Program Change").
+@immutable
+class MotifBank {
+  const MotifBank(this.name, this.msb, this.lsb, this.size);
+
+  final String name;
+  final int msb;
+  final int lsb;
+
+  /// Programs 0 to [size] − 1.
+  final int size;
+
+  /// The groups A–H the bank fills, 16 programs each.
+  int get groups => (size + MotifXf.perGroup - 1) ~/ MotifXf.perGroup;
+
+  @override
+  String toString() => 'MotifBank($name)';
+}
+
+/// Addressing of the Yamaha Motif XF (ADR-0039, #591), from the MOTIF XF
+/// Data List: voices and performances are chosen by bank select (CC 0 = 63
+/// and CC 32 = bank, except the GM banks) and program change 0–127, which
+/// the display shows as group A–H and number 1–16 (`USR1 A01` = program
+/// change 0, `H16` = 127). A program change only works in the mode the
+/// Motif is in; the mode can be changed only by the SysEx parameter change
+/// [modeChange]. `MotifXfProfile` in `midi_profile.dart` translates back.
+abstract final class MotifXf {
+  static const groupNames = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+  static const perGroup = 16;
+
+  /// The voice banks: preset 1–8, user 1–4, GM, preset and user drums,
+  /// GM drum.
+  static const voiceBanks = [
+    MotifBank('PRE1', 63, 0, 128),
+    MotifBank('PRE2', 63, 1, 128),
+    MotifBank('PRE3', 63, 2, 128),
+    MotifBank('PRE4', 63, 3, 128),
+    MotifBank('PRE5', 63, 4, 128),
+    MotifBank('PRE6', 63, 5, 128),
+    MotifBank('PRE7', 63, 6, 128),
+    MotifBank('PRE8', 63, 7, 128),
+    MotifBank('USR1', 63, 8, 128),
+    MotifBank('USR2', 63, 9, 128),
+    MotifBank('USR3', 63, 10, 128),
+    MotifBank('USR4', 63, 11, 128),
+    MotifBank('GM', 0, 0, 128),
+    MotifBank('PDR', 63, 32, 64),
+    MotifBank('UDR', 63, 40, 32),
+    MotifBank('GMDR', 127, 0, 1),
+  ];
+
+  /// The performance banks user 1–4.
+  static const performanceBanks = [
+    MotifBank('USR1', 63, 64, 128),
+    MotifBank('USR2', 63, 65, 128),
+    MotifBank('USR3', 63, 66, 128),
+    MotifBank('USR4', 63, 67, 128),
+  ];
+
+  /// The SysEx device number setDING sends to; the Motif's "Device No."
+  /// (Utility → MIDI) must be "all" or 1 (#591).
+  static const deviceNumber = 1;
+
+  /// Voice [index] (0 to the bank's size − 1) of voice bank [bank].
+  static MidiProgram voice(int bank, int index) =>
+      _program(voiceBanks, bank, index);
+
+  /// Performance [index] (0–127) of performance bank [bank] (0–3).
+  static MidiProgram performance(int bank, int index) =>
+      _program(performanceBanks, bank, index);
+
+  static MidiProgram _program(List<MotifBank> banks, int bank, int index) {
+    RangeError.checkValueInInterval(bank, 0, banks.length - 1, 'bank');
+    final b = banks[bank];
+    RangeError.checkValueInInterval(index, 0, b.size - 1, 'index');
+    return MidiProgram(msb: b.msb, lsb: b.lsb, program: index);
+  }
+
+  /// Group and number as on the display, e.g. `A01` for 0, `H16` for 127.
+  static String programName(int index) =>
+      '${groupNames[index ~/ perGroup]}'
+      '${(index % perGroup + 1).toString().padLeft(2, '0')}';
+
+  /// The bank of [banks] that [program] selects; null for none.
+  static int? bankOf(List<MotifBank> banks, MidiProgram program) {
+    for (var i = 0; i < banks.length; i++) {
+      final b = banks[i];
+      if (b.msb == program.msb &&
+          b.lsb == program.lsb &&
+          program.program < b.size) {
+        return i;
+      }
+    }
+    return null;
+  }
+
+  /// The SysEx parameter change that switches the Motif to [mode]:
+  /// `F0 43 1n 7F 12 0A 00 01 mm F7` (n = device number − 1).
+  static Uint8List modeChange(MotifMode mode) => Uint8List.fromList([
+    0xF0, 0x43, 0x10 | (deviceNumber - 1), 0x7F, 0x12, //
+    0x0A, 0x00, 0x01, mode.index, 0xF7,
+  ]);
 }
 
 /// A control change [controller] = [value] on [channel] (1–16), e.g. the

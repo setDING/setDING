@@ -394,6 +394,81 @@ void main() {
     await app.dispose(tester);
   });
 
+  group('Motif XF (#591)', () {
+    const motifOn = {...midiOn, 'midiProfile': 'motifXf'};
+
+    testWidgets('performance by bank, group and number, with a preview', (
+      tester,
+    ) async {
+      await pumpSong(tester, prefs: motifOn);
+      await openPicker(tester);
+      expect(find.byKey(const Key('midi-kind-performance')), findsOneWidget);
+      expect(find.byKey(const Key('midi-kind-voice')), findsOneWidget);
+      expect(find.byKey(const Key('midi-kind-program')), findsNothing);
+      expect(find.byKey(const Key('midi-motif-hint')), findsOneWidget);
+      expect(preview(tester), 'Performance USR1 A01');
+
+      await tap(tester, find.byKey(const Key('midi-motif-bank-1')));
+      await tap(tester, find.byKey(const Key('midi-motif-group-2')));
+      await tap(tester, find.byKey(const Key('midi-motif-number-4')));
+      expect(preview(tester), 'Performance USR2 C05');
+      await save(tester);
+      expect(
+        await stored(tester),
+        const MidiProgram(msb: 63, lsb: 65, program: 36),
+      );
+      expect(find.text('Performance USR2 C05'), findsOneWidget);
+      expect(app.midiOutput.sent, isEmpty);
+      await app.dispose(tester);
+    });
+
+    testWidgets('voices; a drum bank keeps the choice inside the bank', (
+      tester,
+    ) async {
+      await pumpSong(tester, prefs: motifOn);
+      await openPicker(tester);
+      await tap(tester, find.byKey(const Key('midi-kind-voice')));
+      expect(preview(tester), 'Voice PRE1 A01');
+      await tap(tester, find.byKey(const Key('midi-motif-group-7')));
+      await tap(tester, find.byKey(const Key('midi-motif-number-15')));
+      expect(preview(tester), 'Voice PRE1 H16');
+      // User drums have 32 voices, groups A–B: H16 becomes B16.
+      await tap(tester, find.byKey(const Key('midi-motif-bank-14')));
+      expect(preview(tester), 'Voice UDR B16');
+      expect(find.byKey(const Key('midi-motif-group-2')), findsNothing);
+      await tap(tester, find.byKey(const Key('midi-motif-bank-8')));
+      await tap(tester, find.byKey(const Key('midi-motif-group-0')));
+      await tap(tester, find.byKey(const Key('midi-motif-number-0')));
+      expect(preview(tester), 'Voice USR1 A01');
+      await save(tester);
+      expect(
+        await stored(tester),
+        const MidiProgram(msb: 63, lsb: 8, program: 0),
+      );
+      // Opens again with the stored voice.
+      await openPicker(tester);
+      expect(preview(tester), 'Voice USR1 A01');
+      await app.dispose(tester);
+    });
+
+    testWidgets('Test sends the mode change first', (tester) async {
+      await pumpSong(
+        tester,
+        prefs: motifOn,
+        program: const MidiProgram(msb: 63, lsb: 64, program: 0),
+      );
+      expect(find.text('Performance USR1 A01'), findsOneWidget);
+      await tap(tester, testButton);
+      expect(app.midiOutput.sent, [
+        [
+          0xF0, 0x43, 0x10, 0x7F, 0x12, 0x0A, 0, 1, 1, 0xF7, //
+          0xB0, 0, 63, 0xB0, 32, 64, 0xC0, 0,
+        ],
+      ]);
+      await app.dispose(tester);
+    });
+  });
+
   group('Test', () {
     testWidgets('sends exactly the bank select and program change once, on '
         'the channel of the device', (tester) async {
@@ -457,6 +532,7 @@ void main() {
     for (final (name, prefs) in [
       ('Nord', midiOn),
       ('generic', {...midiOn, 'midiProfile': 'generic'}),
+      ('Motif XF', {...midiOn, 'midiProfile': 'motifXf'}),
     ]) {
       testWidgets('the picker fits ($name)', (tester) async {
         await pumpSong(
@@ -470,6 +546,12 @@ void main() {
         expect(tester.takeException(), isNull);
         if (name == 'Nord') {
           for (final kind in ['live', 'song', 'program']) {
+            await tap(tester, find.byKey(Key('midi-kind-$kind')));
+            expect(tester.takeException(), isNull, reason: kind);
+          }
+        }
+        if (name == 'Motif XF') {
+          for (final kind in ['voice', 'performance']) {
             await tap(tester, find.byKey(Key('midi-kind-$kind')));
             expect(tester.takeException(), isNull, reason: kind);
           }

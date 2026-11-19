@@ -44,6 +44,8 @@ Bluetooth MIDI is not supported yet.
    - **Generic** – bank select and program number, for any keyboard. Its manual
      tells you which values it expects.
    - **Nord Stage 3** – you enter programs as the Nord's display shows them.
+   - **Yamaha Motif XF** – voices and performances as the Motif's display shows
+     them.
 6. Set the **MIDI channel** the keyboard receives on.
 
 <Image src={settings} alt="The Keyboard (MIDI) settings with a connected Nord Stage 3, device profile and MIDI channel" />
@@ -59,6 +61,21 @@ Bluetooth MIDI is not supported yet.
   - **Song** – a Nord song and its part 1–5.
 - The numbering of Nord songs depends on the Nord's OS version (checked with OS
   2.54). If a song does not match, use the profile **Generic**.
+
+### Yamaha Motif XF
+
+- On the Motif, under **Utility** → **MIDI**:
+  - set **MIDI IN/OUT** to **USB**,
+  - switch on receiving **Bank Select** and **Program Change**,
+  - set the **Basic Receive Channel** to the **MIDI channel** in setDING,
+  - set the **Device Number** to **all** or **1**.
+- For each song's program you choose a **Performance** (user banks USR1–USR4) or
+  a **Voice** (preset, user, GM and drum banks), each with group A–H and number
+  1–16 as the display shows e.g. `USR1 A01`.
+- A program change only works in the mode the Motif is in. setDING therefore
+  switches the Motif to **voice** or **performance mode** itself before each
+  program; you need not set the mode by hand.
+- Masters, songs and patterns cannot be chosen yet.
 
 ## Storing a song's program
 

@@ -92,8 +92,19 @@ void main() {
         .map((i) => i.value);
     expect(
       items,
-      orderedEquals([MidiProfileKind.generic, MidiProfileKind.nordStage3]),
+      orderedEquals([
+        MidiProfileKind.generic,
+        MidiProfileKind.nordStage3,
+        MidiProfileKind.motifXf,
+      ]),
     );
+    // The Motif XF hints instead of the Nord's (#591).
+    await tap(tester, profile);
+    await tester.tap(find.text('Yamaha Motif XF').last);
+    await tester.pumpAndSettle();
+    expect(hint, findsNothing);
+    expect(find.byKey(const Key('settings-midi-motif-hint')), findsOneWidget);
+    expect(find.textContaining('Device Number'), findsOneWidget);
     await tap(tester, profile);
     await tester.tap(find.text('Generic').last);
     await tester.pumpAndSettle();

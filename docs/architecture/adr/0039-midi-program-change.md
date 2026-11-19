@@ -353,6 +353,25 @@ settings and stored programs are kept.
   longer read; stored programs are unchanged. The device profile is chosen in
   a drop-down instead of segmented buttons, "Generic" first and then the
   keyboards, since more profiles will follow (owner).
+- 2026-11-19: Device profile **Yamaha Motif XF** (owner, #591, ADR-0042), the
+  band's second keyboard, from the MOTIF XF Data List: voices (preset 1–8 =
+  CC 0 = 63 / CC 32 = 0–7, user 1–4 = 63 / 8–11, GM = 0 / 0, preset drums =
+  63 / 32, user drums = 63 / 40, GM drum = 127 / 0) and performances (user
+  1–4 = 63 / 64–67), program change 0–127 shown as group A–H and number 1–16
+  (`USR1 A01`). A program change only works in the Motif's current mode, and
+  the mode can be changed only by the SysEx parameter change
+  `F0 43 1n 7F 12 0A 00 01 mm F7`. Therefore **a profile may now precede the
+  bank select with bytes of its own** (`MidiProfile.bytes`, used by
+  `MidiConnection.send`): the Motif profile sends the mode change to voice or
+  performance mode, derived from the stored bank select. The stored value
+  stays the raw bank select and program change, so there is no data change;
+  the Nord and generic profiles send as before. SysEx goes to device number 1;
+  the settings say the Motif's Device Number must be "all" or 1 (no extra
+  setting, owner). Masters, songs and patterns are left out for now; a master
+  would need a new key in `overlays.midi` (owner: a key of its own, e.g.
+  `motif_master`, when taken up). The MIDI test has a Motif XF mode that sends
+  with the mode change. Not yet checked on a real Motif XF8 (USB without a
+  Yamaha driver on Windows, mode change and program change in one burst).
 
 - 2026-11-19: ADR-0042 (accepted, #590) extends the storage: one
   program per device profile and song in `overlays.midi_programs`, so a
@@ -363,6 +382,8 @@ settings and stored programs are kept.
 
 - Prototype results still open: Windows, Linux and Chrome; the number of
   songs on the Nord.
+- Manual test of the Motif XF profile on a Motif XF8 (#591).
 - Later stages (issues only when taken up): learning the program from the
   keyboard, program changes per section, page turning by MIDI, Bluetooth, several
-  target devices, further device profiles, iOS.
+  target devices, further device profiles (Motif XF masters, songs and
+  patterns), iOS.

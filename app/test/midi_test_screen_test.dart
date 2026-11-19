@@ -102,6 +102,45 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('Motif XF voices and performances with the mode change '
+      '(#591)', (tester) async {
+    final app = await open(tester);
+    await connect(tester);
+
+    Future<void> pick(String key, String value) async {
+      final dropdown = find.byKey(Key(key));
+      await tester.ensureVisible(dropdown);
+      await tester.pumpAndSettle();
+      await tester.tap(dropdown);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(value).last);
+      await tester.pumpAndSettle();
+    }
+
+    final segment = find.text('Motif XF');
+    await tester.ensureVisible(segment);
+    await tester.tap(segment);
+    await tester.pumpAndSettle();
+    expect(find.text('Performance USR1 A01'), findsOneWidget);
+    expect(
+      find.text('F0 43 10 7F 12 0A 00 01 01 F7 B0 00 3F B0 20 40 C0 00'),
+      findsOneWidget,
+    );
+
+    await pick('midi-motif-bank', 'Voice USR1');
+    await pick('midi-motif-index', 'C05');
+    expect(find.text('Voice USR1 C05'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('midi-send')));
+    await tester.pump();
+    expect(app.midiOutput.sent, [
+      [
+        0xF0, 0x43, 0x10, 0x7F, 0x12, 0x0A, 0, 1, 0, 0xF7, //
+        0xB0, 0, 63, 0xB0, 32, 8, 0xC0, 36,
+      ],
+    ]);
+    await app.dispose(tester);
+  });
+
   testWidgets('Nord songs by song and part, live memories with MSB 6', (
     tester,
   ) async {
