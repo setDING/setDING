@@ -65,6 +65,7 @@ String songDisplayPresetName(AppLocalizations l10n, SongDisplayPreset preset) =>
       SongDisplayPreset.singer => l10n.songDisplayPresetSinger,
       SongDisplayPreset.guitar => l10n.songDisplayPresetGuitar,
       SongDisplayPreset.minimal => l10n.songDisplayPresetMinimal,
+      SongDisplayPreset.blackWhite => l10n.songDisplayPresetBlackWhite,
       SongDisplayPreset.custom => l10n.songDisplayPresetCustom,
     };
 

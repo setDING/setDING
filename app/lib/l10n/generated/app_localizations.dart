@@ -4322,6 +4322,12 @@ abstract class AppLocalizations {
   /// **'Minimal'**
   String get songDisplayPresetMinimal;
 
+  /// No description provided for @songDisplayPresetBlackWhite.
+  ///
+  /// In de, this message translates to:
+  /// **'Schwarz/Weiss'**
+  String get songDisplayPresetBlackWhite;
+
   /// No description provided for @songDisplayPresetCustom.
   ///
   /// In de, this message translates to:

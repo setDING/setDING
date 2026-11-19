@@ -108,6 +108,22 @@ void main() {
         SongColor.amber,
       );
     });
+
+    test('black/white: everything black/white, no tint, only chords bold', () {
+      final styles = const SongDisplay.preset(SongDisplayPreset.blackWhite)
+          .resolve();
+      for (final MapEntry(:key, :value) in styles.entries) {
+        expect(value.chordColor, SongColor.blackWhite, reason: key.name);
+        expect(value.textColor, SongColor.blackWhite, reason: key.name);
+        expect(value.labelColor, SongColor.blackWhite, reason: key.name);
+        expect(value.barColor, SongColor.blackWhite, reason: key.name);
+        expect(value.tint, isFalse, reason: key.name);
+        expect(value.chordBold, isTrue, reason: key.name);
+        expect(value.textBold, isFalse, reason: key.name);
+        expect(value.labelBold, isFalse, reason: key.name);
+        expect(value.bar, key == SectionRole.chorus, reason: key.name);
+      }
+    });
   });
 
   group('JSON', () {
