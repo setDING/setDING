@@ -136,6 +136,7 @@ class LayoutFingerprint {
     required this.font,
     this.columns = 1,
     this.lyricsOnly = false,
+    this.firstVerseChordsOnly = false,
     required this.content,
     this.sequence = '',
   });
@@ -153,6 +154,9 @@ class LayoutFingerprint {
   final double font;
   final int columns;
   final bool lyricsOnly;
+
+  /// Chords in the first verse only (#518): later verses are shorter.
+  final bool firstVerseChordsOnly;
 
   /// [textHash] of the ChordPro text.
   final int content;
@@ -173,6 +177,7 @@ class LayoutFingerprint {
         pages == other.pages &&
         columns == other.columns &&
         lyricsOnly == other.lyricsOnly &&
+        firstVerseChordsOnly == other.firstVerseChordsOnly &&
         content == other.content &&
         sequence == other.sequence &&
         near(width, other.width) &&
@@ -191,6 +196,7 @@ class LayoutFingerprint {
     'font': _round(font),
     'cols': columns,
     if (lyricsOnly) 'lyrics': true,
+    if (firstVerseChordsOnly) 'verse1': true,
     'content': content,
     if (sequence.isNotEmpty) 'seq': sequence,
   };
@@ -209,6 +215,7 @@ class LayoutFingerprint {
       font: font.toDouble(),
       columns: (json['cols'] as num?)?.toInt() ?? 1,
       lyricsOnly: json['lyrics'] == true,
+      firstVerseChordsOnly: json['verse1'] == true,
       content: content.toInt(),
       sequence: json['seq'] as String? ?? '',
     );
@@ -224,6 +231,7 @@ class LayoutFingerprint {
       other.font == font &&
       other.columns == columns &&
       other.lyricsOnly == lyricsOnly &&
+      other.firstVerseChordsOnly == firstVerseChordsOnly &&
       other.content == content &&
       other.sequence == sequence;
 
@@ -236,6 +244,7 @@ class LayoutFingerprint {
     font,
     columns,
     lyricsOnly,
+    firstVerseChordsOnly,
     content,
     sequence,
   );

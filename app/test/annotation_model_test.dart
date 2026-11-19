@@ -114,6 +114,23 @@ void main() {
       expect(barShown.matches(layout), isTrue);
     });
 
+    test('chords in verse 1 only is another layout and round-trips', () {
+      const verse1 = LayoutFingerprint(
+        mode: 'page',
+        pages: 2,
+        width: 1000,
+        height: 700,
+        font: 24,
+        columns: 2,
+        firstVerseChordsOnly: true,
+        content: 42,
+        sequence: 'V1 C',
+      );
+      expect(verse1.matches(layout), isFalse);
+      expect(LayoutFingerprint.fromJson(verse1.toJson()), verse1);
+      expect(layout.toJson().containsKey('verse1'), isFalse);
+    });
+
     test('another orientation, font, text or sequence does not match', () {
       LayoutFingerprint with_({
         double width = 1000,

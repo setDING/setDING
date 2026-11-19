@@ -33,6 +33,7 @@ class OverlaySync {
     'nashville': o.nashville,
     'live_view': o.liveView,
     'hide_annotations': o.hideAnnotations,
+    'first_verse_chords_only': o.firstVerseChordsOnly,
   };
 
   Future<int> pull(String userId) async {
@@ -79,6 +80,9 @@ class OverlaySync {
                 nashville: Value(d['nashville'] as bool?),
                 liveView: Value(d['live_view'] as String?),
                 hideAnnotations: Value(d['hide_annotations'] == true),
+                firstVerseChordsOnly: Value(
+                  d['first_verse_chords_only'] == true,
+                ),
                 revision: Value(o.revision),
               ),
             );

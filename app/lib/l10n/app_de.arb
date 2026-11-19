@@ -176,6 +176,8 @@
     }
   },
   "noKeyForNashville": "Für Nashville-Nummern braucht der Song eine Tonart.",
+  "firstVerseChordsOnly": "Akkorde nur in Strophe 1",
+  "noVersesForFirstVerseChords": "Der Song hat keine weiteren Strophen mit Akkorden.",
   "editorTitleNew": "Neuer Song",
   "editorTitleEdit": "Song bearbeiten",
   "editorTab": "Text",

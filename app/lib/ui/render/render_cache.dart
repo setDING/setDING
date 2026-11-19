@@ -50,3 +50,15 @@ SequenceSelection filterBySequenceCached(Song song, String sequence) =>
       song,
       sequence,
     ), () => filterBySequence(song, parseSequence(sequence)));
+
+final _firstVerse = LruCache<Song, Song>(32);
+
+/// [firstVerseChordsOnly] with a cache keyed by the [song] instance (see
+/// [parseChordProCached]), so the result is the same instance, too.
+Song firstVerseChordsOnlyCached(Song song) =>
+    _firstVerse.get(song, () => firstVerseChordsOnly(song));
+
+/// [song] as a person's adjustments show it: with chords in the first verse
+/// only when [firstVerseOnly] is set (#518).
+Song songWithVerseChords(Song song, {required bool firstVerseOnly}) =>
+    firstVerseOnly ? firstVerseChordsOnlyCached(song) : song;

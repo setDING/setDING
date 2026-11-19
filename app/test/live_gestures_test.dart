@@ -382,6 +382,47 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('the control bar switches chords in verse 1 only', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final items = await createSongs(tester, app, [
+      '{title: X}\n{sov}\n[G]First\n{eov}\n{sov}\n[Em]Second\n{eov}',
+      '{title: Y}\n{sov}\n[G]Only\n{eov}',
+    ]);
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+    expect(find.text('Em'), findsOneWidget);
+
+    await tester.tapAt(tester.getCenter(find.byType(PageView)));
+    await tester.pumpAndSettle();
+    final button = find.byKey(const Key('live-first-verse-chords'));
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    expect(find.text('Em'), findsNothing);
+    expect(find.textContaining('Second'), findsOneWidget);
+    expect(find.text('G'), findsOneWidget);
+    final id = items.first.song!.id;
+    expect(
+      (await tester.runAsync(() => app.songs.getOverlay(id)))!
+          .firstVerseChordsOnly,
+      isTrue,
+    );
+
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    expect(find.text('Em'), findsOneWidget);
+
+    // A song with one verse does not offer it.
+    await tester.tapAt(
+      tester.getTopRight(find.byType(PageView)) + const Offset(-20, 200),
+    );
+    await tester.pumpAndSettle();
+    expect(button, findsNothing);
+    await app.dispose(tester);
+  });
+
   testWidgets('on a phone the Nashville toggle gets a row of its own', (
     tester,
   ) async {

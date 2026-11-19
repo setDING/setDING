@@ -632,6 +632,18 @@ abstract class AppLocalizations {
   /// **'Für Nashville-Nummern braucht der Song eine Tonart.'**
   String get noKeyForNashville;
 
+  /// No description provided for @firstVerseChordsOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Akkorde nur in Strophe 1'**
+  String get firstVerseChordsOnly;
+
+  /// No description provided for @noVersesForFirstVerseChords.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Song hat keine weiteren Strophen mit Akkorden.'**
+  String get noVersesForFirstVerseChords;
+
   /// No description provided for @editorTitleNew.
   ///
   /// In de, this message translates to:
