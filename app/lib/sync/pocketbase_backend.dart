@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:pocketbase/pocketbase.dart';
 
+import '../midi/midi_message.dart';
 import '../platform/http_client.dart';
 import '../platform/network_error.dart';
 import 'session_store.dart';
@@ -675,6 +676,7 @@ class PocketBaseBackend implements SyncBackend {
       userId: r.getStringValue('user'),
       songId: r.getStringValue('song'),
       data: data is Map ? data.cast<String, dynamic>() : const {},
+      midi: MidiProgram.fromJson(r.get<dynamic>('midi')),
       revision: r.getIntValue('revision'),
       deleted: r.getBoolValue('deleted'),
     );
@@ -696,7 +698,11 @@ class PocketBaseBackend implements SyncBackend {
     RemoteOverlay overlay, {
     required bool create,
   }) => _signedIn(() async {
-    final body = {'data': overlay.data, 'deleted': overlay.deleted};
+    final body = {
+      'data': overlay.data,
+      'midi': overlay.midi?.toJson(),
+      'deleted': overlay.deleted,
+    };
     return _overlay(
       create
           ? await _pb

@@ -153,4 +153,60 @@ void main() {
       expect((await f.admin.list('overlays')).single['deleted'], isTrue);
     },
   );
+
+  test('the keyboard program has its own field that older clients keep '
+      '(ADR-0039)', () async {
+    final f = await BandFixture.create(pb);
+    final song = (await f.createSong(f.admin))['id'] as String;
+    const program = {'msb': 0, 'lsb': 2, 'program': 12};
+
+    final created = await f.member.post('overlays', {
+      ...overlay(f.member, song),
+      'midi': program,
+    });
+    created.expectStatus(200);
+    final id = created.json['id'] as String;
+    expect(created.json['midi'], program);
+    expect((created.json['data'] as Map).containsKey('midi'), isFalse);
+
+    // An older client pushes only data and deleted.
+    final older = await f.member.patch('overlays', id, {
+      'data': {'transpose': -1},
+      'deleted': false,
+    });
+    older.expectStatus(200);
+    expect(older.json['midi'], program);
+    expect(older.json['data'], {'transpose': -1});
+    expect(
+      older.json['revision'],
+      greaterThan(created.json['revision'] as int),
+    );
+    expect((await f.member.list('overlays')).single['midi'], program);
+
+    // A newer client changes or removes it.
+    final changed = await f.member.patch('overlays', id, {
+      'data': {'transpose': -1},
+      'midi': {'program': 5},
+      'deleted': false,
+    });
+    changed.expectStatus(200);
+    expect(changed.json['midi'], {'program': 5});
+    final removed = await f.member.patch('overlays', id, {'midi': null});
+    removed.expectStatus(200);
+    expect(removed.json['midi'], isNull);
+
+    // Private like the rest of the overlay.
+    expect(
+      (await f.admin.patch('overlays', id, {'midi': program})).status,
+      404,
+    );
+  });
+
+  test('an overlay without a keyboard program has none', () async {
+    final f = await BandFixture.create(pb);
+    final song = (await f.createSong(f.admin))['id'] as String;
+    final created = await f.member.post('overlays', overlay(f.member, song));
+    created.expectStatus(200);
+    expect(created.json['midi'], isNull);
+  });
 }

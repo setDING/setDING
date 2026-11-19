@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../data/band_role.dart';
 import '../data/database.dart' show SetItemEntry, SetItemType;
+import '../midi/midi_message.dart';
 
 export '../data/band_role.dart';
 
@@ -313,7 +314,8 @@ class RemoteSetItem {
 }
 
 /// Personal adjustments of a user for a song as stored on the server
-/// (ADR-0020); [data] holds the fields of layer 3 (ADR-0006).
+/// (ADR-0020); [data] holds the fields of layer 3 (ADR-0006), [midi] the
+/// keyboard program in its own field (ADR-0039).
 @immutable
 class RemoteOverlay {
   const RemoteOverlay({
@@ -321,6 +323,7 @@ class RemoteOverlay {
     required this.userId,
     required this.songId,
     this.data = const {},
+    this.midi,
     this.revision = 0,
     this.deleted = false,
   });
@@ -329,6 +332,10 @@ class RemoteOverlay {
   final String userId;
   final String songId;
   final Map<String, dynamic> data;
+
+  /// Keyboard program (`overlays.midi`); a separate field, so clients
+  /// that only push [data] leave it untouched (ADR-0039).
+  final MidiProgram? midi;
   final int revision;
   final bool deleted;
 }

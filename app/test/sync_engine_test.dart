@@ -927,6 +927,71 @@ void main() {
       expect((await mine.getOverlay('s1')).transpose, 0);
     });
 
+    test('pushes and pulls the keyboard program (ADR-0039)', () async {
+      const program = MidiProgram(msb: 0, lsb: 2, program: 12);
+      await mine.setMidiProgram('s1', program);
+      await engine.sync();
+      final id = SyncEngine.overlayServerId('ann', 's1');
+      expect(server.overlays[id]!.midi, program);
+      expect(
+        server.overlays[id]!.data.containsKey('midi'),
+        isFalse,
+        reason: 'its own server field, not a key in data',
+      );
+
+      // Changed on another device.
+      const other = MidiProgram(msb: 1, program: 7);
+      server.putOverlay(
+        RemoteOverlay(
+          id: id,
+          userId: 'ann',
+          songId: 's1',
+          data: server.overlays[id]!.data,
+          midi: other,
+        ),
+      );
+      await engine.sync();
+      expect(await mine.midiProgram('s1'), other);
+      expect(await outbox(), isEmpty);
+
+      // Removed here.
+      await mine.removeMidiProgram('s1');
+      await engine.sync();
+      expect(server.overlays[id]!.midi, isNull);
+
+      // Removed on another device.
+      await mine.setMidiProgram('s1', program);
+      await engine.sync();
+      server.putOverlay(
+        RemoteOverlay(
+          id: id,
+          userId: 'ann',
+          songId: 's1',
+          data: server.overlays[id]!.data,
+        ),
+      );
+      await engine.sync();
+      expect(await mine.midiProgram('s1'), isNull);
+    });
+
+    test('the last writer wins for the keyboard program too', () async {
+      await mine.setMidiProgram('s1', const MidiProgram(program: 1));
+      await engine.sync();
+      final id = SyncEngine.overlayServerId('ann', 's1');
+      server.putOverlay(
+        RemoteOverlay(
+          id: id,
+          userId: 'ann',
+          songId: 's1',
+          midi: const MidiProgram(program: 2),
+        ),
+      );
+      await mine.setMidiProgram('s1', const MidiProgram(program: 3));
+      await engine.sync();
+      expect(await mine.midiProgram('s1'), const MidiProgram(program: 3));
+      expect(server.overlays[id]!.midi, const MidiProgram(program: 3));
+    });
+
     test('reads the verse chords of older and newer clients', () {
       expect(
         OverlaySync.verseChordsOf({'first_verse_chords_only': true}),

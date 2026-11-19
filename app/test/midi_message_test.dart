@@ -31,6 +31,58 @@ void main() {
     });
   });
 
+  group('MidiProgram JSON (ADR-0039)', () {
+    test('stores the raw values, without an unset bank select', () {
+      expect(const MidiProgram(msb: 0, lsb: 2, program: 12).toJson(), {
+        'msb': 0,
+        'lsb': 2,
+        'program': 12,
+      });
+      expect(const MidiProgram(program: 5).toJson(), {'program': 5});
+      expect(const MidiProgram(lsb: 3, program: 5).toJson(), {
+        'lsb': 3,
+        'program': 5,
+      });
+    });
+
+    test('reads what it stores', () {
+      for (final p in const [
+        MidiProgram(msb: 1, lsb: 7, program: 49),
+        MidiProgram(program: 0),
+        MidiProgram(msb: 6, program: 127),
+      ]) {
+        expect(MidiProgram.fromJson(p.toJson()), p);
+      }
+      // JSON numbers may arrive as doubles.
+      expect(
+        MidiProgram.fromJson({'msb': 0.0, 'program': 12.0}),
+        const MidiProgram(msb: 0, program: 12),
+      );
+      expect(
+        MidiProgram.fromJson({'msb': null, 'lsb': null, 'program': 3}),
+        const MidiProgram(program: 3),
+      );
+    });
+
+    test('anything else is no program', () {
+      for (final json in <Object?>[
+        null,
+        'x',
+        42,
+        <String, dynamic>{},
+        {'msb': 0},
+        {'program': 128},
+        {'program': -1},
+        {'program': 1.5},
+        {'program': '1'},
+        {'msb': 128, 'program': 1},
+        {'lsb': 'a', 'program': 1},
+      ]) {
+        expect(MidiProgram.fromJson(json), isNull, reason: '$json');
+      }
+    });
+  });
+
   group('NordStage3', () {
     // Observed on a Nord Stage 3 (#512).
     test('programs are counted through in blocks of 125', () {

@@ -94,6 +94,7 @@ class OverlaySync {
                 liveView: Value(d['live_view'] as String?),
                 hideAnnotations: Value(d['hide_annotations'] == true),
                 verseChords: Value(verseChordsOf(d)),
+                midi: Value(o.midi),
                 revision: Value(o.revision),
               ),
             );
@@ -138,6 +139,7 @@ class OverlaySync {
       userId: owner,
       songId: songId,
       data: overlayData(overlay),
+      midi: overlay.midi,
     );
     try {
       final create = overlay.revision == 0;

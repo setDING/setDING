@@ -30,6 +30,31 @@ class MidiProgram {
     ]);
   }
 
+  /// The stored form (ADR-0039): `{"msb"?, "lsb"?, "program"}`, without
+  /// the keys of an unset bank select.
+  Map<String, dynamic> toJson() => {
+    'msb': ?msb,
+    'lsb': ?lsb,
+    'program': program,
+  };
+
+  /// Reads [toJson]'s form; null for anything else (no map, values out of
+  /// range, no program), so a broken or unknown value sends nothing.
+  static MidiProgram? fromJson(Object? json) {
+    if (json is! Map) return null;
+    int? value(Object? v) =>
+        v is num && v == v.toInt() && v >= 0 && v <= 127 ? v.toInt() : null;
+    final program = value(json['program']);
+    final msb = value(json['msb']);
+    final lsb = value(json['lsb']);
+    if (program == null ||
+        (json['msb'] != null && msb == null) ||
+        (json['lsb'] != null && lsb == null)) {
+      return null;
+    }
+    return MidiProgram(msb: msb, lsb: lsb, program: program);
+  }
+
   @override
   bool operator ==(Object other) =>
       other is MidiProgram &&

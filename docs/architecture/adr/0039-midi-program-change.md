@@ -263,6 +263,15 @@ settings** (layer 4b, ADR-0027), never synced:
   this ADR is confirmed on Android. The test keyboard runs Nord OS 2.54.
 - 2026-11-19: The MIDI test moved from *Screen & live mode* into the settings
   category *Test features*, shown only in developer mode (#559, ADR-0027).
+- 2026-11-19: Data layer of the keyboard program (#561): server migration
+  `1795700000_overlay_midi.js` adds the optional JSON field `overlays.midi`
+  (a server test shows that a push of only `data` and `deleted` keeps it);
+  local schema 19 adds the nullable column `personal_overlays.midi` (the
+  JSON of `MidiProgram.toJson`, read with `MidiProgram.fromJson`; a value
+  that cannot be read counts as no program). The overlay sync pushes and
+  pulls it with the rest of the overlay (last writer wins); the song
+  repository offers `midiProgram`, `watchMidiProgram`, `setMidiProgram` and
+  `removeMidiProgram`.
 
 ## Open points
 

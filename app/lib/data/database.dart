@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 
+import '../midi/midi_message.dart';
 import 'band_role.dart';
 
+export '../midi/midi_message.dart' show MidiProgram;
 export 'band_role.dart';
 
 part 'database.g.dart';
@@ -190,6 +194,26 @@ enum SetItemType { song, pause, text }
 /// the same chords stacked line by line (#521).
 enum VerseChords { all, first, stacked }
 
+/// Stores a [MidiProgram] as its JSON (ADR-0039); a value that cannot be
+/// read is no program.
+class MidiProgramConverter extends TypeConverter<MidiProgram?, String?> {
+  const MidiProgramConverter();
+
+  @override
+  MidiProgram? fromSql(String? fromDb) {
+    if (fromDb == null) return null;
+    try {
+      return MidiProgram.fromJson(jsonDecode(fromDb));
+    } on FormatException {
+      return null;
+    }
+  }
+
+  @override
+  String? toSql(MidiProgram? value) =>
+      value == null ? null : jsonEncode(value.toJson());
+}
+
 @TableIndex(name: 'set_items_set', columns: {#setId, #position})
 @TableIndex(name: 'set_items_song', columns: {#songId})
 @DataClassName('SetItemEntry')
@@ -245,6 +269,10 @@ class PersonalOverlays extends Table {
   /// stacked line by line (#521) (schema 18; a boolean in schema 17).
   TextColumn get verseChords =>
       textEnum<VerseChords>().withDefault(Constant(VerseChords.all.name))();
+
+  /// Keyboard program sent in live mode (ADR-0039, schema 19); null =
+  /// none, the keyboard keeps its program.
+  TextColumn get midi => text().nullable().map(const MidiProgramConverter())();
 
   /// Server revision; 0 = not on the server (schema 9, ADR-0020).
   IntColumn get revision => integer().withDefault(const Constant(0))();
@@ -406,7 +434,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 18;
+  int get schemaVersion => 19;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -506,6 +534,7 @@ class AppDatabase extends _$AppDatabase {
               personalOverlays.revision,
               personalOverlays.hideAnnotations,
               personalOverlays.verseChords,
+              personalOverlays.midi,
             ],
           ),
         );
@@ -573,6 +602,11 @@ class AppDatabase extends _$AppDatabase {
             'ALTER TABLE personal_overlays DROP COLUMN first_verse_chords_only',
           );
         }
+      }
+      if (from < 19 && from >= 8) {
+        // Keyboard program (ADR-0039); before schema 8 the rebuilt overlay
+        // table has the column already.
+        await m.addColumn(personalOverlays, personalOverlays.midi);
       }
     },
     beforeOpen: (details) async {
