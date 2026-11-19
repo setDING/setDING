@@ -41,11 +41,13 @@ String midiProfileName(AppLocalizations l10n, MidiProfileKind kind) =>
 
 /// The keyboard programs of a song in its personal adjustments (ADR-0039,
 /// ADR-0042): shown when MIDI program changes are on for this device or
-/// the song already has a program. The program of this device's profile
-/// comes first: chosen in [showMidiProgramPicker], removed, and "Test"
-/// sends it once to the connected keyboard. The programs of other
-/// keyboards (profiles) follow and can be edited or removed, and a program
-/// can be prepared for another keyboard; nothing else here sends anything.
+/// the song already has a program. One list of *profile: program* rows
+/// (#597) under "This device: …": this device's profile always
+/// comes first, highlighted: its program is chosen in
+/// [showMidiProgramPicker], changed, removed, and "Test" sends it once to
+/// the connected keyboard. Other profiles follow only when they have a
+/// program and can be changed or removed, and a program can be prepared
+/// for another keyboard; nothing else here sends anything.
 class MidiProgramField extends ConsumerWidget {
   const MidiProgramField({
     super.key,
@@ -121,10 +123,12 @@ class MidiProgramField extends ConsumerWidget {
       );
     }
 
-    final testButton = OutlinedButton.icon(
+    final testButton = IconButton(
       key: const Key('midi-program-test'),
-      icon: const Icon(Icons.play_arrow, size: 18),
-      label: Text(l10n.midiProgramTest),
+      tooltip: status.connected
+          ? l10n.midiProgramTestHint
+          : l10n.midiProgramNotConnected,
+      icon: const Icon(Icons.play_arrow),
       onPressed: program != null && status.connected ? test : null,
     );
 
@@ -142,7 +146,7 @@ class MidiProgramField extends ConsumerWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                l10n.midiProgramTitle,
+                l10n.midiProgramsTitle,
                 style: theme.textTheme.titleSmall,
               ),
             ),
@@ -150,40 +154,32 @@ class MidiProgramField extends ConsumerWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          program == null ? l10n.midiProgramNone : l10n.midiProgramHint,
+          l10n.midiProgramDevice(midiProfileName(l10n, profile.kind)),
+          key: const Key('midi-program-device'),
           style: theme.textTheme.bodySmall,
         ),
         const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            ActionChip(
-              key: const Key('midi-program-value'),
-              avatar: Icon(program == null ? Icons.add : Icons.edit, size: 18),
-              label: Text(
-                program == null
-                    ? l10n.midiProgramChoose
-                    : midiPatchLabel(l10n, profile.toPatch(program)),
-              ),
-              onPressed: choose,
-            ),
-            if (program != null) ...[
-              Tooltip(
-                message: status.connected
-                    ? l10n.midiProgramTestHint
-                    : l10n.midiProgramNotConnected,
-                child: testButton,
-              ),
-              IconButton(
-                key: const Key('midi-program-remove'),
-                tooltip: l10n.midiProgramRemove,
-                icon: const Icon(Icons.delete_outline),
-                onPressed: () => remove(profile.id),
-              ),
-            ],
-          ],
+        // This device's profile: always listed, highlighted (#597).
+        _ProgramRow(
+          key: const Key('midi-program-active'),
+          name: midiProfileName(l10n, profile.kind),
+          active: true,
+          value: program == null
+              ? null
+              : midiPatchLabel(l10n, profile.toPatch(program)),
+          valueKey: const Key('midi-program-value'),
+          onEdit: choose,
+          test: program == null ? null : testButton,
+          removeKey: const Key('midi-program-remove'),
+          onRemove: program == null ? null : () => remove(profile.id),
+        ),
+        // Other keyboards (ADR-0042): only those with a program.
+        for (final id in others)
+          _otherRow(l10n, id, programs[id]!, chooseFor, remove),
+        const SizedBox(height: 4),
+        Text(
+          program == null ? l10n.midiProgramNone : l10n.midiProgramHint,
+          style: theme.textTheme.bodySmall,
         ),
         if (!status.enabled) ...[
           const SizedBox(height: 4),
@@ -195,25 +191,6 @@ class MidiProgramField extends ConsumerWidget {
             key: const Key('midi-program-not-connected'),
             style: theme.textTheme.bodySmall,
           ),
-        ],
-        // Other keyboards (ADR-0042): kept when the profile changes.
-        if (others.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          Text(
-            l10n.midiProgramOtherKeyboards,
-            style: theme.textTheme.labelLarge,
-          ),
-          for (final id in others)
-            _OtherProgram(
-              key: Key('midi-other-$id'),
-              id: id,
-              program: programs[id]!,
-              onEdit: switch (MidiProfile.byId(id)) {
-                final known? => () => chooseFor(known),
-                null => null,
-              },
-              onRemove: () => remove(id),
-            ),
         ],
         if (addable.isNotEmpty)
           Padding(
@@ -238,64 +215,132 @@ class MidiProgramField extends ConsumerWidget {
       ],
     );
   }
+
+  /// The row of another keyboard (profile [id]): editable with that
+  /// profile's picker (without sending) and removable. A profile this
+  /// client does not know shows the raw values and can only be removed.
+  Widget _otherRow(
+    AppLocalizations l10n,
+    String id,
+    MidiProgram program,
+    Future<void> Function(MidiProfile) chooseFor,
+    Future<void> Function(String) remove,
+  ) {
+    final known = MidiProfile.byId(id);
+    return _ProgramRow(
+      key: Key('midi-other-$id'),
+      name: known == null
+          ? l10n.midiProgramUnknownKeyboard(id)
+          : midiProfileName(l10n, known.kind),
+      active: false,
+      value: midiPatchLabel(
+        l10n,
+        (known ?? const GenericProfile()).toPatch(program),
+      ),
+      valueKey: Key('midi-other-value-$id'),
+      onEdit: known == null ? null : () => chooseFor(known),
+      removeKey: Key('midi-other-remove-$id'),
+      onRemove: () => remove(id),
+    );
+  }
 }
 
-/// The program of another keyboard (profile [id]) in [MidiProgramField]:
-/// its name and value, editable with that profile's picker (without
-/// sending) and removable. A profile this client does not know shows the
-/// raw values and can only be removed.
-class _OtherProgram extends StatelessWidget {
-  const _OtherProgram({
+/// One *profile: program* row of [MidiProgramField] (#597): the profile's
+/// name, its program as an edit chip ("Choose program" without one), an
+/// optional [test] button and a remove button. The [active] row (this
+/// device's profile) is highlighted with a check mark.
+class _ProgramRow extends StatelessWidget {
+  const _ProgramRow({
     super.key,
-    required this.id,
-    required this.program,
+    required this.name,
+    required this.active,
+    required this.value,
+    required this.valueKey,
     required this.onEdit,
+    required this.removeKey,
     required this.onRemove,
+    this.test,
   });
 
-  final String id;
-  final MidiProgram program;
+  final String name;
+  final bool active;
+
+  /// The program as the musician reads it; null = none yet.
+  final String? value;
+  final Key valueKey;
+
+  /// Opens the profile's picker; null = not editable (unknown profile).
   final VoidCallback? onEdit;
-  final VoidCallback onRemove;
+  final Widget? test;
+  final Key removeKey;
+
+  /// Removes the program; null = nothing to remove.
+  final VoidCallback? onRemove;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final profile = MidiProfile.byId(id);
-    final name = profile == null
-        ? l10n.midiProgramUnknownKeyboard(id)
-        : midiProfileName(l10n, profile.kind);
-    final value = midiPatchLabel(
-      l10n,
-      (profile ?? const GenericProfile()).toPatch(program),
-    );
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            name,
-            style: Theme.of(context).textTheme.bodyMedium,
-            overflow: TextOverflow.ellipsis,
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final value = this.value;
+    final Widget chip = switch ((value, onEdit)) {
+      (null, _) => ActionChip(
+        key: valueKey,
+        avatar: const Icon(Icons.add, size: 18),
+        label: Text(l10n.midiProgramChoose),
+        onPressed: onEdit,
+      ),
+      (final v?, null) => Text(v, overflow: TextOverflow.ellipsis),
+      (final v?, final edit?) => ActionChip(
+        key: valueKey,
+        avatar: const Icon(Icons.edit, size: 18),
+        label: Text(v, overflow: TextOverflow.ellipsis),
+        onPressed: edit,
+      ),
+    };
+    return Container(
+      margin: const EdgeInsets.only(top: 4),
+      padding: const EdgeInsets.only(left: 8),
+      decoration: active
+          ? BoxDecoration(
+              color: scheme.secondaryContainer,
+              borderRadius: BorderRadius.circular(8),
+            )
+          : null,
+      constraints: const BoxConstraints(minHeight: 48),
+      child: Row(
+        children: [
+          Icon(
+            active ? Icons.check_circle : Icons.radio_button_unchecked,
+            size: 18,
+            color: active ? scheme.primary : scheme.outline,
           ),
-        ),
-        const SizedBox(width: 8),
-        Flexible(
-          child: onEdit == null
-              ? Text(value)
-              : ActionChip(
-                  key: Key('midi-other-value-$id'),
-                  avatar: const Icon(Icons.edit, size: 18),
-                  label: Text(value, overflow: TextOverflow.ellipsis),
-                  onPressed: onEdit,
-                ),
-        ),
-        IconButton(
-          key: Key('midi-other-remove-$id'),
-          tooltip: l10n.midiProgramRemove,
-          icon: const Icon(Icons.delete_outline),
-          onPressed: onRemove,
-        ),
-      ],
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              name,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: active
+                    ? scheme.onSecondaryContainer
+                    : scheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Flexible(flex: 2, child: chip),
+          ?test,
+          if (onRemove != null)
+            IconButton(
+              key: removeKey,
+              tooltip: l10n.midiProgramRemove,
+              icon: const Icon(Icons.delete_outline),
+              onPressed: onRemove,
+            )
+          else
+            const SizedBox(width: 8),
+        ],
+      ),
     );
   }
 }

@@ -1671,7 +1671,16 @@
   "midiProgramNextSong": "Nächster Song",
   "midiProgramPart": "Teil",
   "midiProgramSongHint": "Die Nummerierung der Nord-Songs hängt von der OS-Version des Nord ab (geprüft mit OS 2.54). Passt ein Song nicht, verwende in den Einstellungen das Profil «Allgemein».",
-  "midiProgramOtherKeyboards": "Andere Keyboards",
+  "midiProgramsTitle": "Keyboard-Programme",
+  "midiProgramDevice": "Dieses Gerät: {profile}",
+  "@midiProgramDevice": {
+    "description": "Above the keyboard programs of a song: the MIDI profile set on this device.",
+    "placeholders": {
+      "profile": {
+        "type": "String"
+      }
+    }
+  },
   "midiProgramForOtherKeyboard": "Programm für ein anderes Keyboard",
   "midiProgramUnknownKeyboard": "Unbekanntes Keyboard ({id})",
   "@midiProgramUnknownKeyboard": {

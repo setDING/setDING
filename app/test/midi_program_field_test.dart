@@ -98,7 +98,12 @@ void main() {
   final testButton = find.byKey(const Key('midi-program-test'));
 
   bool enabled(WidgetTester tester, Finder button) =>
-      tester.widget<ButtonStyleButton>(button).onPressed != null;
+      switch (tester.widget(button)) {
+        final IconButton b => b.onPressed,
+        final ButtonStyleButton b => b.onPressed,
+        final w => throw StateError('not a button: $w'),
+      } !=
+      null;
 
   group('visibility', () {
     testWidgets('hidden while MIDI is off and the song has no program', (
@@ -128,8 +133,21 @@ void main() {
     testWidgets('shown while MIDI is on, without a program', (tester) async {
       await pumpSong(tester);
       expect(field, findsOneWidget);
-      expect(find.text('Keyboard program'), findsOneWidget);
-      expect(find.text('Choose program'), findsOneWidget);
+      expect(find.text('Keyboard programs'), findsOneWidget);
+      expect(find.text('This device: Nord Stage 3'), findsOneWidget);
+      // This device's profile is listed even without a program (#597);
+      // the other profiles without a program are not.
+      final active = find.byKey(const Key('midi-program-active'));
+      expect(
+        find.descendant(of: active, matching: find.text('Nord Stage 3')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: active, matching: find.text('Choose program')),
+        findsOneWidget,
+      );
+      expect(find.text('Motif XF'), findsNothing);
+      expect(find.text('Generic'), findsNothing);
       expect(testButton, findsNothing);
       expect(find.byKey(const Key('midi-program-remove')), findsNothing);
       await app.dispose(tester);
@@ -564,7 +582,13 @@ void main() {
         others: const MidiPrograms({'generic': generic}),
       );
       expect(find.text('Program K:33'), findsOneWidget);
-      expect(find.text('Other keyboards'), findsOneWidget);
+      // Both in one list: this device's profile first (#597).
+      expect(
+        tester.getTopLeft(find.byKey(const Key('midi-program-active'))).dy,
+        lessThan(
+          tester.getTopLeft(find.byKey(const Key('midi-other-generic'))).dy,
+        ),
+      );
       final other = find.byKey(const Key('midi-other-generic'));
       expect(
         find.descendant(of: other, matching: find.text('Generic')),
@@ -593,7 +617,7 @@ void main() {
 
       await tap(tester, find.byKey(const Key('midi-other-remove-generic')));
       expect(await storedAll(tester), const MidiPrograms({'nordStage3': nord}));
-      expect(find.text('Other keyboards'), findsNothing);
+      expect(find.byKey(const Key('midi-other-generic')), findsNothing);
       expect(app.midiOutput.sent, isEmpty);
       await app.dispose(tester);
     });
@@ -630,6 +654,7 @@ void main() {
         program: generic,
         others: const MidiPrograms({'nordStage3': nord}),
       );
+      expect(find.text('This device: Generic'), findsOneWidget);
       expect(
         tester
             .widget<ActionChip>(find.byKey(const Key('midi-program-value')))
@@ -715,9 +740,13 @@ void main() {
       prefs: {...midiOn, 'language': 'de'},
       program: const MidiProgram(msb: 1, lsb: 0, program: 7),
     );
-    expect(find.text('Keyboard-Programm'), findsOneWidget);
+    expect(find.text('Keyboard-Programme'), findsOneWidget);
+    expect(find.text('Dieses Gerät: Nord Stage 3'), findsOneWidget);
     expect(find.text('Song 2, Teil 3'), findsOneWidget);
-    expect(find.text('Test'), findsOneWidget);
+    expect(
+      find.byTooltip('Sendet das Programm einmal ans Keyboard'),
+      findsOneWidget,
+    );
     await openPicker(tester);
     expect(find.text('Live-Speicher'), findsOneWidget);
     await app.dispose(tester);
