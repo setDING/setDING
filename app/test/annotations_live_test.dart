@@ -387,6 +387,74 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('the lasso selects a tapped stroke and drags it (#587)', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final items = await createSongs(tester, app, sources);
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+    await startDrawing(tester);
+    final page = tester.getRect(find.byType(PageView));
+    final upper = page.top + page.height * 0.4;
+    final lower = page.top + page.height * 0.7;
+    await stylusLine(
+      tester,
+      Offset(page.left + 100, upper),
+      const Offset(300, 0),
+    );
+    await stylusLine(
+      tester,
+      Offset(page.left + 100, lower),
+      const Offset(300, 0),
+    );
+    final drawn = await rows(tester, app);
+    expect(drawn, hasLength(2));
+
+    Future<void> stylusTap(Offset at) async {
+      final g = await tester.startGesture(at, kind: PointerDeviceKind.stylus);
+      await g.up();
+      await tester.pumpAndSettle();
+    }
+
+    final delete = find.byKey(const Key('annotation-selection-delete'));
+    await tester.tap(find.byKey(const Key('annotation-tool-lasso')));
+    await tester.pumpAndSettle();
+    expect(delete, findsNothing);
+
+    // A tap on a stroke selects it; a tap beside it clears the selection.
+    await stylusTap(Offset(page.left + 250, upper + 4));
+    expect(delete, findsOneWidget);
+    await stylusTap(Offset(page.left + 250, page.top + page.height * 0.55));
+    expect(delete, findsNothing);
+
+    // Touching a stroke and dragging moves only that stroke.
+    await stylusLine(
+      tester,
+      Offset(page.left + 250, lower),
+      const Offset(0, 60),
+    );
+    expect(delete, findsOneWidget);
+    final moved = await rows(tester, app);
+    expect(moved, hasLength(2));
+    String strokeOf(List<AnnotationRow> rows, String id) =>
+        rows.firstWhere((r) => r.id == id).stroke!;
+    final changed = [
+      for (final r in drawn)
+        if (strokeOf(moved, r.id) != r.stroke) r.id,
+    ];
+    expect(changed, hasLength(1));
+
+    // Delete removes the tapped stroke alone.
+    await tester.tap(delete);
+    await tester.pumpAndSettle();
+    final left = await rows(tester, app);
+    expect(left, hasLength(1));
+    expect(changed, isNot(contains(left.single.id)));
+    await app.dispose(tester);
+  });
+
   testWidgets('a page turned away while typing keeps its text (#570)', (
     tester,
   ) async {

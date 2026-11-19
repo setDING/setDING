@@ -307,6 +307,16 @@ class _AnnotationLayerState extends State<AnnotationLayer> {
           if (selected != null && selected.inflate(12).contains(p)) {
             _moveStart = p;
             _moveOffset = Offset.zero;
+          } else if (_strokeAt(p) case final hit?) {
+            // Touching a stroke selects it, and dragging moves it right away.
+            editor.selection = (
+              songId: widget.songId,
+              target: widget.target,
+              page: widget.page,
+              ids: {hit.stroke.id},
+            );
+            _moveStart = p;
+            _moveOffset = Offset.zero;
           } else {
             editor.selection = null;
             _lasso = [p];
@@ -754,6 +764,28 @@ class _AnnotationLayerState extends State<AnnotationLayer> {
         ),
       ),
     );
+  }
+
+  /// The topmost stroke within a finger's reach of [p], if any.
+  PlacedStroke? _strokeAt(Offset p) {
+    const reach = 12.0;
+    for (final placed in _placed.reversed) {
+      final near = switch (placed.stroke.tool) {
+        AnnotationTool.stamp =>
+          (placed.points.first - p).distance <= reach + placed.width / 2,
+        AnnotationTool.text => placed.bounds.inflate(reach).contains(p),
+        _ => strokeNear(
+          [
+            for (final q in placed.points) ...[q.dx, q.dy],
+          ],
+          p.dx,
+          p.dy,
+          reach + placed.width / 2,
+        ),
+      };
+      if (near) return placed;
+    }
+    return null;
   }
 
   Rect? _selectionBounds() {

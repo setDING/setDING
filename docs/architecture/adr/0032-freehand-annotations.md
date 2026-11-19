@@ -181,7 +181,9 @@ copies the current owner's annotations with the song.
 - **Tools**: pen (pressure-sensitive width with a stylus), highlighter
   (translucent, drawn behind the text), **stroke eraser** (removes the whole
   stroke it touches) and **partial eraser** (splits strokes), **lasso** to
-  select strokes and move, resize, recolour or delete them.
+  select strokes and move, resize, recolour or delete them; with the lasso,
+  a tap on a stroke selects it alone and touching it and dragging moves it
+  at once (#587).
 - **Text** (added in #570, see the decision log): a tap opens a text field;
   the typed text is placed like a stamp.
 - **Stamps** placed with a tap, then movable and resizable like strokes:
@@ -325,6 +327,11 @@ release (ADR-0028); no minimum client version change (ADR-0029).
   change (ADR-0028). Live mode no longer shrinks its page when the
   on-screen keyboard opens (that would lay the song out anew); the text
   field lifts itself above the keyboard instead.
+- 2026-11-19: Owner request (#587): with the lasso tool, a **tap on a
+  stroke**, stamp or text selects the topmost one within 12 px, and
+  touching it and dragging moves it in the same gesture, so a single mark
+  is moved without drawing a lasso around it first. A touch beside all
+  strokes still starts a lasso and clears the selection.
 
 ## Open points
 
