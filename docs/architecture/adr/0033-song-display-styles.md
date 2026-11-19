@@ -92,7 +92,7 @@ The design was worked out with the owner in an interactive mock-up
    all live appearances and in the app theme. *Automatic* is today's colour
    of the element (stage chord colour, text colour, label colour).
 6. **Presets.** *Classic* (today's look), *Colour-coded*, *Chorus focus*,
-   *Singer*, *Guitar*, *Minimal*. Any change turns the selection into
+   *Singer*, *Guitar*, *Minimal*, *Black/White*. Any change turns the selection into
    *Custom*; "Reset" returns to the preset. A selected preset is stored by
    its ID, so improvements to a preset in a later app version apply; only a
    custom style is stored with all its values.
@@ -181,6 +181,10 @@ The design was worked out with the owner in an interactive mock-up
   standard) and kept when another preset is chosen. Older apps keep it as
   an unknown key. A font directive in the song (`{textfont}` etc.) still
   wins, like the other format directives.
+- 2026-11-19: Preset *Black/White* (#536): chords, lyrics, headings and
+  bars in the palette colour *Black/White*, no tint; only the chords are
+  bold. The chorus keeps the thin bar of *Classic*. Older apps read the
+  unknown preset ID as *Classic*.
 
 ## Open points
 

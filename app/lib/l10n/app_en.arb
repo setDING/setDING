@@ -1082,6 +1082,7 @@
   "songDisplayPresetSinger": "Vocals",
   "songDisplayPresetGuitar": "Guitar",
   "songDisplayPresetMinimal": "Minimal",
+  "songDisplayPresetBlackWhite": "Black/White",
   "songDisplayPresetCustom": "Custom",
   "songDisplayDiscardTitle": "Discard custom styles?",
   "songDisplayDiscardMessage": "The preset “{name}” replaces your custom styles.",

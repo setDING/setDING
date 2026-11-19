@@ -2519,6 +2519,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get songDisplayPresetMinimal => 'Minimal';
 
   @override
+  String get songDisplayPresetBlackWhite => 'Black/White';
+
+  @override
   String get songDisplayPresetCustom => 'Custom';
 
   @override

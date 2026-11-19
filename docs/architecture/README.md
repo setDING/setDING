@@ -224,7 +224,7 @@ Notes:
 | **Website** | Landing page and user documentation at `setding.app` (ADR-0030, #388): skeleton with first steps and installation; remaining chapters, privacy policy and legal notice follow |
 | **Towards version 1** | Re-enable CI as a required check on every PR and push to `main` (manual-only during early development, ADR-0010), branch protection; release builds for Linux, Android and Windows exist (ADR-0021), Windows installer with in-app updates (ADR-0035), CycloneDX SBOM per release asset (ADR-0037), iOS open; then release **1.0.0** (ADR-0028) |
 | **Freehand annotations** ✅ | Personal freehand notes on songs and PDF pages, synced and editable (ADR-0032, implemented in #428) |
-| **Song display styles** ✅ | Personal styles per section type for live mode and the song view (ADR-0033, implemented in #473–#476, #471); monospace font option (#526) |
+| **Song display styles** ✅ | Personal styles per section type for live mode and the song view (ADR-0033, implemented in #473–#476, #471); monospace font option (#526); Black/White preset (#536) |
 | **Later** | Configurable page turner key mapping, band annotations shared with the band (follow-up of ADR-0032), MIDI program change per song in live mode (ADR-0039, accepted; prototype first), MIDI page turning |
 
 ### MVP status (2026-11-14)

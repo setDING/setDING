@@ -1276,6 +1276,7 @@
   "songDisplayPresetSinger": "Gesang",
   "songDisplayPresetGuitar": "Gitarre",
   "songDisplayPresetMinimal": "Minimal",
+  "songDisplayPresetBlackWhite": "Schwarz/Weiss",
   "songDisplayPresetCustom": "Eigene",
   "songDisplayDiscardTitle": "Eigene Stile verwerfen?",
   "songDisplayDiscardMessage": "Die Vorlage «{name}» ersetzt deine angepassten Stile.",

@@ -270,6 +270,7 @@ enum SongDisplayPreset {
   singer,
   guitar,
   minimal,
+  blackWhite,
   custom,
 }
 
@@ -449,6 +450,14 @@ Map<SectionRole, TypeStyle> presetTypes(SongDisplayPreset preset) {
     indent: SectionIndent.normal,
   );
   const barred = SectionStyle(bar: true, indent: SectionIndent.normal);
+  // Everything black on light and white on dark, only the chords bold.
+  const blackWhite = SectionStyle(
+    chordColor: SongColor.blackWhite,
+    textColor: SongColor.blackWhite,
+    labelColor: SongColor.blackWhite,
+    barColor: SongColor.blackWhite,
+    labelBold: false,
+  );
   return switch (preset) {
     SongDisplayPreset.classic ||
     SongDisplayPreset.custom => {SectionRole.chorus: own(barred)},
@@ -554,6 +563,12 @@ Map<SectionRole, TypeStyle> presetTypes(SongDisplayPreset preset) {
     SongDisplayPreset.minimal => {
       SectionRole.standard: own(s.copyWith(showLabel: false, chordBold: false)),
       SectionRole.chorus: own(s.copyWith(chordBold: false, textItalic: true)),
+    },
+    SongDisplayPreset.blackWhite => {
+      SectionRole.standard: own(blackWhite),
+      SectionRole.chorus: own(
+        blackWhite.copyWith(bar: true, indent: SectionIndent.normal),
+      ),
     },
   };
 }
