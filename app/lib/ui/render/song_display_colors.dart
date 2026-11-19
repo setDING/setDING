@@ -14,6 +14,7 @@ const songColorTones = <SongColor, ({Color light, Color dark})>{
   SongColor.purple: (light: Color(0xFF6A3FB5), dark: Color(0xFFC3A6FF)),
   SongColor.pink: (light: Color(0xFFA8326E), dark: Color(0xFFFF9CC8)),
   SongColor.grey: (light: Color(0xFF5F6470), dark: Color(0xFFA3A8B4)),
+  SongColor.blackWhite: (light: Color(0xFF000000), dark: Color(0xFFFFFFFF)),
 };
 
 /// The tone of [color] on a background of [brightness]; null for

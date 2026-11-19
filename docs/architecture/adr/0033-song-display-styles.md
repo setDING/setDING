@@ -81,8 +81,8 @@ The design was worked out with the owner in an interactive mock-up
    Bold means weight 700 and not bold 400 for every element. Sizes, bar width
    and indent are relative to the font size, so they scale with the device
    font size.
-5. **Curated palette, no free colours.** Automatic plus eight colours (blue,
-   amber, red, green, teal, purple, pink, grey). Every colour has a light and
+5. **Curated palette, no free colours.** Automatic plus nine colours (blue,
+   amber, red, green, teal, purple, pink, grey, black/white). Every colour has a light and
    a dark tone with a contrast of at least 4.5:1 on its background; the tone
    is chosen from the brightness of the background, so one style works in
    all live appearances and in the app theme. *Automatic* is today's colour
@@ -169,6 +169,8 @@ The design was worked out with the owner in an interactive mock-up
 - 2026-11-18: Implemented in #473–#476 with the user documentation; the
   palette tones are in `song_display_colors.dart`, a test checks a
   contrast of at least 4.5:1 on every app and live background.
+- 2026-11-19: Palette extended by *Black/White* (#522): black on light
+  backgrounds, white on dark ones, for maximum contrast.
 
 ## Open points
 

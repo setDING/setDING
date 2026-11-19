@@ -4604,6 +4604,12 @@ abstract class AppLocalizations {
   /// **'Grau'**
   String get songColorGrey;
 
+  /// No description provided for @songColorBlackWhite.
+  ///
+  /// In de, this message translates to:
+  /// **'Schwarz/Weiss'**
+  String get songColorBlackWhite;
+
   /// No description provided for @songDisplayCustomise.
   ///
   /// In de, this message translates to:
