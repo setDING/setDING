@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../midi/midi_message.dart';
 import '../../midi/midi_output.dart';
+import '../../util/log.dart';
 
 /// Prototype of ADR-0039 (#512): sends a program change to a keyboard
 /// connected by USB and logs what the keyboard sends back, to check the
@@ -106,7 +107,12 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
     });
   }
 
+  // Every line also goes to the app log (logcat, "copy log" in the
+  // settings), so the results can be read after the screen is closed.
+  static const _appLog = Log('midi-test');
+
   void _add(String line) {
+    _appLog.info(line);
     final now = DateTime.now();
     final time =
         '${now.hour.toString().padLeft(2, '0')}:'

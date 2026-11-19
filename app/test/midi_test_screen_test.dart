@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:setding/midi/midi_output.dart';
 import 'package:setding/ui/settings/midi_test_screen.dart';
 import 'package:setding/ui/settings_screen.dart';
+import 'package:setding/util/log.dart';
 
 import 'test_app.dart';
 
@@ -166,6 +167,11 @@ void main() {
     // Real-time bytes (clock, active sensing) are not logged.
     expect(find.textContaining('Received: F8'), findsNothing);
     expect(find.textContaining('Received: FE'), findsNothing);
+    // The lines are kept in the app log for after the test.
+    expect(
+      Log.export(),
+      contains('[midi-test] Received: CC 32 = 3 (channel 1) – B0 20 03'),
+    );
     await app.dispose(tester);
   });
 
