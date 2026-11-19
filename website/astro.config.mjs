@@ -27,6 +27,8 @@ export default defineConfig({
       },
       social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/tafli/setDING' }],
       sidebar: [
+        // Current version and what changed, from app/assets/whats_new.json (ADR-0041).
+        { label: 'Neuigkeiten', translations: { en: "What's new" }, link: '/news/' },
         {
           label: 'Loslegen',
           translations: { en: 'Getting started' },
@@ -57,8 +59,6 @@ export default defineConfig({
           translations: { en: 'Settings' },
           items: [{ autogenerate: { directory: 'settings' } }],
         },
-        // Current version and what changed, from app/assets/whats_new.json (ADR-0041).
-        { label: 'Neuigkeiten', translations: { en: "What's new" }, link: '/news/' },
       ],
       lastUpdated: false,
       plugins: [starlightLinksValidator()],
