@@ -169,6 +169,12 @@ mixings have their own MSB/LSB.
   without a program ("Choose program"); other profiles only with a
   program. Every set program has an edit chip and a remove button; "Test"
   stays on the device's row only.
+- 2026-11-19: Short labels in the list (#599). The rows show each program
+  as the keyboard notes it (`midiPatchShortLabel`): Nord `K:33`, `Live 3`,
+  `S2:3`; Motif voices `PRE1 A01`, performances `P USR2 B02` (USR banks
+  exist for both); generic `125 (0/3)`. The full form stays in the picker
+  and live mode and is the chip's tooltip. The chip keeps its width and
+  the profile name is shortened instead.
 
 ## Open points
 

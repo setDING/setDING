@@ -31,6 +31,29 @@ String midiPatchLabel(AppLocalizations l10n, MidiPatch patch) =>
       ].join(' · '),
     };
 
+/// [patch] as short as the keyboard shows it, e.g. "K:33", "S2:3" or
+/// "P USR2 C05", for the keyboard program list (#599); [midiPatchLabel]
+/// is the full form.
+String midiPatchShortLabel(AppLocalizations l10n, MidiPatch patch) =>
+    switch (patch) {
+      NordProgram(:final label) => label,
+      NordLiveMemory(:final number) => l10n.midiProgramShortLive(number),
+      NordSong(:final song, :final part) => l10n.midiProgramShortSong(
+        song,
+        part,
+      ),
+      MotifVoice(:final label) => label,
+      MotifPerformance(:final label) => l10n.midiProgramShortPerformance(label),
+      GenericProgram(:final msb, :final lsb, :final program) =>
+        msb == null && lsb == null
+            ? '$program'
+            : l10n.midiProgramShortGeneric(
+                program,
+                msb?.toString() ?? '–',
+                lsb?.toString() ?? '–',
+              ),
+    };
+
 /// The name of the device profile [kind] (ADR-0039).
 String midiProfileName(AppLocalizations l10n, MidiProfileKind kind) =>
     switch (kind) {
@@ -128,6 +151,7 @@ class MidiProgramField extends ConsumerWidget {
       tooltip: status.connected
           ? l10n.midiProgramTestHint
           : l10n.midiProgramNotConnected,
+      visualDensity: VisualDensity.compact,
       icon: const Icon(Icons.play_arrow),
       onPressed: program != null && status.connected ? test : null,
     );
@@ -164,9 +188,7 @@ class MidiProgramField extends ConsumerWidget {
           key: const Key('midi-program-active'),
           name: midiProfileName(l10n, profile.kind),
           active: true,
-          value: program == null
-              ? null
-              : midiPatchLabel(l10n, profile.toPatch(program)),
+          patch: program == null ? null : profile.toPatch(program),
           valueKey: const Key('midi-program-value'),
           onEdit: choose,
           test: program == null ? null : testButton,
@@ -233,10 +255,7 @@ class MidiProgramField extends ConsumerWidget {
           ? l10n.midiProgramUnknownKeyboard(id)
           : midiProfileName(l10n, known.kind),
       active: false,
-      value: midiPatchLabel(
-        l10n,
-        (known ?? const GenericProfile()).toPatch(program),
-      ),
+      patch: (known ?? const GenericProfile()).toPatch(program),
       valueKey: Key('midi-other-value-$id'),
       onEdit: known == null ? null : () => chooseFor(known),
       removeKey: Key('midi-other-remove-$id'),
@@ -246,15 +265,15 @@ class MidiProgramField extends ConsumerWidget {
 }
 
 /// One *profile: program* row of [MidiProgramField] (#597): the profile's
-/// name, its program as an edit chip ("Choose program" without one), an
-/// optional [test] button and a remove button. The [active] row (this
+/// name, its program as an edit chip in its short form (#599; "Choose
+/// program" without one), an optional [test] button and a remove button. The [active] row (this
 /// device's profile) is highlighted with a check mark.
 class _ProgramRow extends StatelessWidget {
   const _ProgramRow({
     super.key,
     required this.name,
     required this.active,
-    required this.value,
+    required this.patch,
     required this.valueKey,
     required this.onEdit,
     required this.removeKey,
@@ -265,8 +284,8 @@ class _ProgramRow extends StatelessWidget {
   final String name;
   final bool active;
 
-  /// The program as the musician reads it; null = none yet.
-  final String? value;
+  /// The program; null = none yet.
+  final MidiPatch? patch;
   final Key valueKey;
 
   /// Opens the profile's picker; null = not editable (unknown profile).
@@ -282,19 +301,32 @@ class _ProgramRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final value = this.value;
-    final Widget chip = switch ((value, onEdit)) {
+    final patch = this.patch;
+    // Short in the list, the full form as the tooltip (#599).
+    final Widget chip = switch ((patch, onEdit)) {
       (null, _) => ActionChip(
         key: valueKey,
         avatar: const Icon(Icons.add, size: 18),
         label: Text(l10n.midiProgramChoose),
         onPressed: onEdit,
       ),
-      (final v?, null) => Text(v, overflow: TextOverflow.ellipsis),
-      (final v?, final edit?) => ActionChip(
+      (final p?, null) => Tooltip(
+        message: midiPatchLabel(l10n, p),
+        child: Text(
+          midiPatchShortLabel(l10n, p),
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      (final p?, final edit?) => ActionChip(
         key: valueKey,
         avatar: const Icon(Icons.edit, size: 18),
-        label: Text(v, overflow: TextOverflow.ellipsis),
+        visualDensity: VisualDensity.compact,
+        labelPadding: const EdgeInsets.only(left: 2, right: 4),
+        label: Text(
+          midiPatchShortLabel(l10n, p),
+          overflow: TextOverflow.ellipsis,
+        ),
+        tooltip: midiPatchLabel(l10n, p),
         onPressed: edit,
       ),
     };
@@ -308,41 +340,63 @@ class _ProgramRow extends StatelessWidget {
             )
           : null,
       constraints: const BoxConstraints(minHeight: 48),
-      child: Row(
-        children: [
-          Icon(
-            active ? Icons.check_circle : Icons.radio_button_unchecked,
-            size: 18,
-            color: active ? scheme.primary : scheme.outline,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              name,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: active
-                    ? scheme.onSecondaryContainer
-                    : scheme.onSurfaceVariant,
+      child: LayoutBuilder(
+        builder: (context, constraints) => Row(
+          children: [
+            Icon(
+              active ? Icons.check_circle : Icons.radio_button_unchecked,
+              size: 18,
+              color: active ? scheme.primary : scheme.outline,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                name,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: active
+                      ? scheme.onSecondaryContainer
+                      : scheme.onSurfaceVariant,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Flexible(flex: 2, child: chip),
-          ?test,
-          if (onRemove != null)
-            IconButton(
-              key: removeKey,
-              tooltip: l10n.midiProgramRemove,
-              icon: const Icon(Icons.delete_outline),
-              onPressed: onRemove,
-            )
-          else
             const SizedBox(width: 8),
-        ],
+            // Keeps its width, the profile name is shortened instead (#599);
+            // only on a very narrow row the chip shortens too.
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: math.max(
+                  0,
+                  constraints.maxWidth -
+                      _fixedWidth(hasTest: test != null) -
+                      _minNameWidth,
+                ),
+              ),
+              child: chip,
+            ),
+            ?test,
+            if (onRemove != null)
+              IconButton(
+                key: removeKey,
+                tooltip: l10n.midiProgramRemove,
+                icon: const Icon(Icons.delete_outline),
+                onPressed: onRemove,
+              )
+            else
+              const SizedBox(width: 8),
+          ],
+        ),
       ),
     );
   }
+
+  /// The width the profile name keeps at least before the chip shortens.
+  static const _minNameWidth = 40.0;
+
+  /// The width of the row besides the name and the chip: check mark, gaps
+  /// and the compact buttons.
+  double _fixedWidth({required bool hasTest}) =>
+      18 + 8 + 8 + (hasTest ? 40 : 0) + (onRemove != null ? 40 : 8);
 }
 
 /// What a program addresses, as chosen in the picker.
