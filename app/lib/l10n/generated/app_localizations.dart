@@ -4328,6 +4328,24 @@ abstract class AppLocalizations {
   /// **'Verwerfen'**
   String get songDisplayDiscard;
 
+  /// No description provided for @songDisplayFont.
+  ///
+  /// In de, this message translates to:
+  /// **'Schrift'**
+  String get songDisplayFont;
+
+  /// No description provided for @songDisplayFontStandard.
+  ///
+  /// In de, this message translates to:
+  /// **'Standard'**
+  String get songDisplayFontStandard;
+
+  /// No description provided for @songDisplayFontMonospace.
+  ///
+  /// In de, this message translates to:
+  /// **'Monospace'**
+  String get songDisplayFontMonospace;
+
   /// No description provided for @songDisplaySection.
   ///
   /// In de, this message translates to:

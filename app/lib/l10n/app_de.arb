@@ -1284,6 +1284,9 @@
     }
   },
   "songDisplayDiscard": "Verwerfen",
+  "songDisplayFont": "Schrift",
+  "songDisplayFontStandard": "Standard",
+  "songDisplayFontMonospace": "Monospace",
   "songDisplaySection": "Abschnitt",
   "songDisplayTypeStandard": "Standard",
   "songDisplayTypeIntro": "Intro",

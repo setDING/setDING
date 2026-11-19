@@ -52,12 +52,17 @@ void main() {
   final displays = [
     for (final p in SongDisplayPreset.values)
       if (p != SongDisplayPreset.custom) SongDisplay.preset(p),
+    // The monospace font changes the width of every text.
+    const SongDisplay.preset(
+      SongDisplayPreset.colorCoded,
+      font: SongFont.monospace,
+    ),
   ];
 
   for (final MapEntry(key: name, value: source) in songs.entries) {
     for (final display in displays) {
       testWidgets('measured heights match the rendered blocks: $name, '
-          '${display.preset.name}', (tester) async {
+          '${display.preset.name}, ${display.font.name}', (tester) async {
         tester.view.physicalSize = const Size(1600, 4000);
         tester.view.devicePixelRatio = 1;
         addTearDown(tester.view.reset);

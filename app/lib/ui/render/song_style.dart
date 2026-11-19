@@ -137,9 +137,11 @@ class SongTextStyles {
     SongDisplay? display,
   }) {
     final scheme = colors ?? _fallbackScheme;
-    final text = base.merge(
-      TextStyle(fontSize: fontSize, height: lineHeightFactor),
-    );
+    final font = display?.font ?? SongFont.standard;
+    final text = withFontFamily(
+      base,
+      font == SongFont.monospace ? 'monospace' : '',
+    ).merge(TextStyle(fontSize: fontSize, height: lineHeightFactor));
     return SongTextStyles._(
       fontSize,
       text,

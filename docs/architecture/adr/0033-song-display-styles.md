@@ -78,6 +78,10 @@ The design was worked out with the owner in an interactive mock-up
    - Indent bar: on or off, width (thin / medium / wide), colour; indent
      (none / normal / large); tinted background.
 
+   - Font (since #526): *Standard* (the app font) or *Monospace*, one
+     choice for lyrics, chords and headings of all types; independent of
+     the preset.
+
    Bold means weight 700 and not bold 400 for every element. Sizes, bar width
    and indent are relative to the font size, so they scale with the device
    font size.
@@ -171,6 +175,12 @@ The design was worked out with the owner in an interactive mock-up
   contrast of at least 4.5:1 on every app and live background.
 - 2026-11-19: Palette extended by *Black/White* (#522): black on light
   backgrounds, white on dark ones, for maximum contrast.
+- 2026-11-19: A font choice, *Standard* or *Monospace*, for the whole song
+  text (#526). It is not a per-type property and not part of a preset:
+  stored as `font` next to `preset` in the `songDisplay` key (only when not
+  standard) and kept when another preset is chosen. Older apps keep it as
+  an unknown key. A font directive in the song (`{textfont}` etc.) still
+  wins, like the other format directives.
 
 ## Open points
 

@@ -124,7 +124,41 @@ Future<void> _choosePreset(
       )) {
     return;
   }
-  _setDisplay(ref, SongDisplay.preset(p));
+  _setDisplay(ref, SongDisplay.preset(p, font: current.font));
+}
+
+/// The font of the song text, for all section types.
+class _FontChoice extends ConsumerWidget {
+  const _FontChoice({required this.display});
+
+  final SongDisplay display;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: SegmentedButton<SongFont>(
+          key: const Key('song-display-font'),
+          segments: [
+            ButtonSegment(
+              value: SongFont.standard,
+              label: Text(l10n.songDisplayFontStandard),
+            ),
+            ButtonSegment(
+              value: SongFont.monospace,
+              label: Text(l10n.songDisplayFontMonospace),
+            ),
+          ],
+          selected: {display.font},
+          onSelectionChanged: (s) =>
+              _setDisplay(ref, display.withFont(s.first)),
+        ),
+      ),
+    );
+  }
 }
 
 /// The presets of the song display.
@@ -176,6 +210,8 @@ class SongDisplaySettings extends ConsumerWidget {
       children: [
         _Heading(l10n.songDisplayPreset),
         _PresetChips(display: display),
+        _Heading(l10n.songDisplayFont),
+        _FontChoice(display: display),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
           child: Align(
@@ -249,6 +285,8 @@ class _SongDisplayEditorState extends ConsumerState<SongDisplayEditorScreen> {
       children: [
         _Heading(l10n.songDisplayPreset),
         _PresetChips(display: display),
+        _Heading(l10n.songDisplayFont),
+        _FontChoice(display: display),
         _Heading(l10n.songDisplaySection),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),

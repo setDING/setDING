@@ -1,5 +1,8 @@
+import 'package:chordpro/chordpro.dart' show FormatState;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart' show TextStyle;
 import 'package:setding/settings/settings.dart';
+import 'package:setding/ui/render/song_style.dart';
 
 void main() {
   group('inheritance', () {
@@ -158,6 +161,47 @@ void main() {
         '"bar":"yes","from":"nowhere"}}}',
       );
       expect(odd.styleOf(SectionRole.verse), const SectionStyle());
+    });
+
+    test('the font is stored only when not standard and kept by presets '
+        'and styles', () {
+      expect(SongDisplay.classic.font, SongFont.standard);
+      final mono = SongDisplay.classic.withFont(SongFont.monospace);
+      expect(mono.preset, SongDisplayPreset.classic);
+      expect(mono.toJsonString(), '{"preset":"classic","font":"monospace"}');
+      expect(SongDisplay.fromJsonString(mono.toJsonString()), mono);
+      expect(SongDisplay.fromJsonString(mono.toJsonString()).extra, isEmpty);
+
+      final custom = mono.withType(
+        SectionRole.chorus,
+        const TypeStyle(style: SectionStyle(textBold: true)),
+      );
+      expect(custom.font, SongFont.monospace);
+      expect(SongDisplay.fromJsonString(custom.toJsonString()), custom);
+      expect(
+        SongDisplay.fromJsonString('{"preset":"classic","font":"comic"}').font,
+        SongFont.standard,
+      );
+    });
+
+    test('the monospace font applies to lyrics, chords and headings', () {
+      const base = TextStyle(fontFamily: 'Inter');
+      final standard = SongTextStyles.fromBase(base, 20);
+      expect(standard.lyrics.fontFamily, 'Inter');
+      final mono = SongTextStyles.fromBase(
+        base,
+        20,
+        display: SongDisplay.classic.withFont(SongFont.monospace),
+      );
+      final format = FormatState();
+      for (final style in [
+        mono.lyricsFor(format, role: SectionRole.verse),
+        mono.chordFor(format, role: SectionRole.chorus),
+        mono.labelFor(format),
+      ]) {
+        expect(style.fontFamily, 'monospace');
+        expect(style.fontFamilyFallback, isNotEmpty);
+      }
     });
 
     test('is a personal setting in AppSettings', () {

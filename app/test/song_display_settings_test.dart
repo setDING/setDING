@@ -102,6 +102,30 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('the font can be monospace; a preset keeps it', (tester) async {
+    final app = await pumpSettings(tester);
+    expect(display(tester).font, SongFont.standard);
+    final mono = find.descendant(
+      of: find.byKey(const Key('song-display-font')),
+      matching: find.text('Monospace'),
+    );
+    await tester.ensureVisible(mono);
+    await tester.pumpAndSettle();
+    await tester.tap(mono);
+    await tester.pumpAndSettle();
+    expect(display(tester).font, SongFont.monospace);
+    expect(display(tester).preset, SongDisplayPreset.classic);
+
+    await tap(tester, 'song-display-preset-singer');
+    expect(display(tester).preset, SongDisplayPreset.singer);
+    expect(display(tester).font, SongFont.monospace);
+
+    // The editor offers the font as well.
+    await openEditor(tester);
+    expect(find.byKey(const Key('song-display-font')), findsOneWidget);
+    await app.dispose(tester);
+  });
+
   testWidgets('a type inherits from a chosen type; cycles are disabled', (
     tester,
   ) async {
