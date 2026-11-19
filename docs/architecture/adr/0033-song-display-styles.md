@@ -185,6 +185,7 @@ The design was worked out with the owner in an interactive mock-up
   bars in the palette colour *Black/White*, no tint; only the chords are
   bold. The chorus keeps the thin bar of *Classic*. Older apps read the
   unknown preset ID as *Classic*.
+- 2026-11-19: The *Black/White* preset has bold, large headings (#538).
 
 ## Open points
 

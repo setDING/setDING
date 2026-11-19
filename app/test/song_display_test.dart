@@ -109,7 +109,8 @@ void main() {
       );
     });
 
-    test('black/white: everything black/white, no tint, only chords bold', () {
+    test('black/white: everything black/white, no tint, chords and large '
+        'headings bold', () {
       final styles = const SongDisplay.preset(SongDisplayPreset.blackWhite)
           .resolve();
       for (final MapEntry(:key, :value) in styles.entries) {
@@ -120,7 +121,8 @@ void main() {
         expect(value.tint, isFalse, reason: key.name);
         expect(value.chordBold, isTrue, reason: key.name);
         expect(value.textBold, isFalse, reason: key.name);
-        expect(value.labelBold, isFalse, reason: key.name);
+        expect(value.labelBold, isTrue, reason: key.name);
+        expect(value.labelSize, LabelSize.large, reason: key.name);
         expect(value.bar, key == SectionRole.chorus, reason: key.name);
       }
     });
