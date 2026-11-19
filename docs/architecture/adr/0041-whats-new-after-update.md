@@ -1,6 +1,6 @@
 # ADR-0041: "What's new" notes after an update
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-19
 
 ## Context
@@ -95,7 +95,8 @@ before a gig (ADR-0007, ADR-0036).
 
 ## Decision log
 
-- 2026-11-19: Proposed (#544).
+- 2026-11-19: Proposed (#544), implemented in #546.
+- 2026-11-19: Accepted by the owner.
 
 ## Open points
 

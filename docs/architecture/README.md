@@ -318,7 +318,7 @@ See "Open points" in the individual ADRs. The most important:
 33. Can Linux users update from inside the app too? → AppImage next to the tar.gz, updated like the Windows setup (ADR-0038, accepted, #503, implemented in #504): version from the update check (ADR-0036), download from the GitHub release, check against `SHA256SUMS`, the file is replaced in one step and the app restarts. Open: desktop integration without extra tools, signing
 34. Can setDING switch the keyboard's sound for each song? → ADR-0039 (accepted, #510): the personal keyboard program of the current song is sent over USB when the song becomes current in live mode, nothing for songs without one; device profiles with the Nord Stage 3 first (programs or Nord songs, set by the keyboard player), a "Test" button in the song; Android, Windows, Linux and web (Chrome/Edge); a prototype with a real Nord on all platforms comes first. Open: the prototype's results (library per platform, addressing of Nord songs); later learning, per-section changes, MIDI page turning, Bluetooth, several devices, iOS
 35. How can verses that share their chords be read like in a hymnal? → ADR-0040 (accepted, #521): a personal choice *chords in verses* (all / first verse only / stacked) replaces the boolean of #518; consecutive verses with the same chords are stacked line by line as a display transformation of the parsed song (`stackVerses`, new line type `StackedLine`), in place of the first verse, with a row per verse marked as its source line for freehand annotations. Open: line width on small tablets
-36. How do people learn what a new version changed? → ADR-0041 (proposed, #544): bundled de-CH/en notes per version in `app/assets/whats_new.json`, written in the release PR and enforced by `make check`; after an update one SnackBar opens a dialog with the notes of all versions since the last seen one, nothing on a new installation, never in live mode; always via the *What's new* button next to the version under *Storage & info*. Open: a news page on the website from the same file
+36. How do people learn what a new version changed? → ADR-0041 (accepted, #544, implemented in #546): bundled de-CH/en notes per version in `app/assets/whats_new.json`, written in the release PR and enforced by `make check`; after an update one SnackBar opens a dialog with the notes of all versions since the last seen one, nothing on a new installation, never in live mode; always via the *What's new* button next to the version under *Storage & info*. Open: a news page on the website from the same file
 
 ## 10. ADR index
 
@@ -363,6 +363,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0038](adr/0038-linux-appimage-self-update.md) | Linux AppImage with in-app updates | Accepted |
 | [0039](adr/0039-midi-program-change.md) | MIDI program change per song in live mode | Accepted |
 | [0040](adr/0040-stacked-verses.md) | Stacked verses as a display transformation | Accepted |
-| [0041](adr/0041-whats-new-after-update.md) | "What's new" notes after an update | Proposed |
+| [0041](adr/0041-whats-new-after-update.md) | "What's new" notes after an update | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.
