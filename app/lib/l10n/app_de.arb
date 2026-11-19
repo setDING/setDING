@@ -1704,6 +1704,30 @@
       }
     }
   },
+  "midiProfileMotifXf": "Yamaha Motif XF",
+  "settingsMidiMotifHint": "Stelle am Motif XF unter Utility → MIDI: MIDI IN/OUT auf USB, den Empfang von Bank Select und Program Change ein, den Basic Receive Channel auf den Kanal hier und die Device Number auf «all» oder 1. setDING schaltet den Motif vor jedem Programm selbst in den Voice- oder Performance-Modus.",
+  "midiProgramKindPerformance": "Performance",
+  "midiProgramKindVoice": "Voice",
+  "midiProgramGroup": "Gruppe",
+  "midiProgramMotifNumber": "Nummer",
+  "midiProgramMotifHint": "Wie auf dem Display des Motif XF, z.B. USR1 A01. setDING schaltet den Motif vor dem Senden in den Voice- oder Performance-Modus.",
+  "midiProgramValueMotifVoice": "Voice {name}",
+  "@midiProgramValueMotifVoice": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "midiProgramValueMotifPerformance": "Performance {name}",
+  "@midiProgramValueMotifPerformance": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "midiTestModeMotif": "Motif XF",
   "midiProgramValueLive": "Live-Speicher {number}",
   "@midiProgramValueLive": {
     "placeholders": {

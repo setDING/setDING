@@ -193,5 +193,25 @@ void main() {
     expect(container.read(midiProfileProvider), const NordStage3Profile());
     await change((s) => s.copyWith(midiProfile: MidiProfileKind.generic));
     expect(container.read(midiProfileProvider), const GenericProfile());
+    await change((s) => s.copyWith(midiProfile: MidiProfileKind.motifXf));
+    expect(container.read(midiProfileProvider), const MotifXfProfile());
   });
+
+  test(
+    'sends with what the profile adds: the Motif XF mode change (#591)',
+    () async {
+      await start({
+        'midiEnabled': true,
+        'midiOutputName': 'Nord Stage 3',
+        'midiProfile': 'motifXf',
+        'midiChannel': 2,
+      });
+      midi.plugIn([_nord]);
+      await settle();
+      const program = MidiProgram(msb: 63, lsb: 64, program: 5);
+      expect(connection().send(program), isTrue);
+      expect(midi.sent, [const MotifXfProfile().bytes(program, 2)]);
+      expect(midi.sent.single.first, 0xF0);
+    },
+  );
 }

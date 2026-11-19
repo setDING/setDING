@@ -10,7 +10,7 @@ import '../../settings/settings.dart';
 
 /// The device settings of MIDI program changes to a keyboard (ADR-0039):
 /// on or off, the output, the device profile and the channel,
-///, with hints for the Nord Stage 3.
+/// with hints for the Nord Stage 3 and the Motif XF.
 class MidiSettings extends ConsumerWidget {
   const MidiSettings({super.key});
 
@@ -20,7 +20,17 @@ class MidiSettings extends ConsumerWidget {
     final s = ref.watch(settingsProvider);
     final notifier = ref.read(settingsProvider.notifier);
     final status = ref.watch(midiConnectionProvider);
-    final nord = s.midiProfile == MidiProfileKind.nordStage3;
+    final hint = switch (s.midiProfile) {
+      MidiProfileKind.nordStage3 => (
+        const Key('settings-midi-nord-hint'),
+        l10n.settingsMidiNordHint,
+      ),
+      MidiProfileKind.motifXf => (
+        const Key('settings-midi-motif-hint'),
+        l10n.settingsMidiMotifHint,
+      ),
+      MidiProfileKind.generic => null,
+    };
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -66,6 +76,7 @@ class MidiSettings extends ConsumerWidget {
                     for (final (kind, label) in [
                       (MidiProfileKind.generic, l10n.midiProfileGeneric),
                       (MidiProfileKind.nordStage3, l10n.midiProfileNordStage3),
+                      (MidiProfileKind.motifXf, l10n.midiProfileMotifXf),
                     ])
                       DropdownMenuItem(value: kind, child: Text(label)),
                   ],
@@ -95,11 +106,11 @@ class MidiSettings extends ConsumerWidget {
               },
             ),
           ),
-          if (nord)
+          if (hint case (final key, final text))
             ListTile(
-              key: const Key('settings-midi-nord-hint'),
+              key: key,
               leading: const Icon(Icons.info_outline),
-              subtitle: Text(l10n.settingsMidiNordHint),
+              subtitle: Text(text),
             ),
         ],
       ],

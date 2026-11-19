@@ -149,16 +149,21 @@ class MidiConnection extends Notifier<MidiStatus> {
     if (session.active) state = next;
   }
 
-  /// Sends [program] (bank select, then program change) on the channel of
-  /// the device settings to the connected output. Returns whether it was
+  /// Sends [program] (bank select, then program change, preceded by what
+  /// the device profile adds, e.g. the Motif XF's mode change) on the
+  /// channel of the device settings to the connected output. Returns whether it was
   /// sent: nothing is sent while MIDI is off or not connected.
   bool send(MidiProgram program) {
     final id = state.deviceId;
     if (id == null) return false;
     try {
+      final settings = ref.read(settingsProvider);
       ref
           .read(midiOutputProvider)
-          .send(program.bytes(ref.read(settingsProvider).midiChannel), id: id);
+          .send(
+            settings.midiDeviceProfile.bytes(program, settings.midiChannel),
+            id: id,
+          );
       return true;
     } catch (e) {
       _log.warning('MIDI send failed', e);

@@ -3193,6 +3193,42 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get midiProfileMotifXf => 'Yamaha Motif XF';
+
+  @override
+  String get settingsMidiMotifHint =>
+      'On the Motif XF, under Utility → MIDI: set MIDI IN/OUT to USB, switch on receiving Bank Select and Program Change, set the Basic Receive Channel to the channel here and the Device Number to “all” or 1. setDING switches the Motif to voice or performance mode itself before each program.';
+
+  @override
+  String get midiProgramKindPerformance => 'Performance';
+
+  @override
+  String get midiProgramKindVoice => 'Voice';
+
+  @override
+  String get midiProgramGroup => 'Group';
+
+  @override
+  String get midiProgramMotifNumber => 'Number';
+
+  @override
+  String get midiProgramMotifHint =>
+      'As on the display of the Motif XF, e.g. USR1 A01. setDING switches the Motif to voice or performance mode before sending.';
+
+  @override
+  String midiProgramValueMotifVoice(String name) {
+    return 'Voice $name';
+  }
+
+  @override
+  String midiProgramValueMotifPerformance(String name) {
+    return 'Performance $name';
+  }
+
+  @override
+  String get midiTestModeMotif => 'Motif XF';
+
+  @override
   String midiProgramValueLive(int number) {
     return 'Live memory $number';
   }

@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'midi_message.dart';
 
 /// The device profiles of the MIDI settings (ADR-0039).
-enum MidiProfileKind { nordStage3, generic }
+enum MidiProfileKind { nordStage3, generic, motifXf }
 
 /// A stored [MidiProgram] in the terms of the musician, e.g. "K:33" or
 /// "song 2, part 3" (ADR-0039). A [MidiProfile] translates between the two.
@@ -72,6 +72,50 @@ final class NordSong extends MidiPatch {
   String toString() => 'NordSong($song, $part)';
 }
 
+/// A Yamaha Motif XF voice: [index] (0 to the bank's size − 1) of
+/// [MotifXf.voiceBanks] [bank], shown as on the display, e.g. `USR1 A01`.
+final class MotifVoice extends MidiPatch {
+  const MotifVoice(this.bank, this.index);
+
+  final int bank;
+  final int index;
+
+  String get label =>
+      '${MotifXf.voiceBanks[bank].name} ${MotifXf.programName(index)}';
+
+  @override
+  bool operator ==(Object other) =>
+      other is MotifVoice && other.bank == bank && other.index == index;
+
+  @override
+  int get hashCode => Object.hash(MotifVoice, bank, index);
+
+  @override
+  String toString() => 'MotifVoice($label)';
+}
+
+/// A Yamaha Motif XF performance: [index] (0–127) of
+/// [MotifXf.performanceBanks] [bank] (user 1–4), e.g. `USR2 C05`.
+final class MotifPerformance extends MidiPatch {
+  const MotifPerformance(this.bank, this.index);
+
+  final int bank;
+  final int index;
+
+  String get label =>
+      '${MotifXf.performanceBanks[bank].name} ${MotifXf.programName(index)}';
+
+  @override
+  bool operator ==(Object other) =>
+      other is MotifPerformance && other.bank == bank && other.index == index;
+
+  @override
+  int get hashCode => Object.hash(MotifPerformance, bank, index);
+
+  @override
+  String toString() => 'MotifPerformance($label)';
+}
+
 /// Any keyboard: bank select [msb] and [lsb] (each optional, 0–127) and
 /// [program] 1–128 as most keyboards count them (sent as 0–127).
 final class GenericProgram extends MidiPatch {
@@ -109,6 +153,7 @@ sealed class MidiProfile {
   factory MidiProfile.of(MidiProfileKind kind) => switch (kind) {
     MidiProfileKind.nordStage3 => const NordStage3Profile(),
     MidiProfileKind.generic => const GenericProfile(),
+    MidiProfileKind.motifXf => const MotifXfProfile(),
   };
 
   MidiProfileKind get kind;
@@ -127,6 +172,11 @@ sealed class MidiProfile {
     ),
     NordLiveMemory(:final number) => NordStage3.live(number),
     NordSong(:final song, :final part) => NordStage3.song(song, part),
+    MotifVoice(:final bank, :final index) => MotifXf.voice(bank, index),
+    MotifPerformance(:final bank, :final index) => MotifXf.performance(
+      bank,
+      index,
+    ),
     GenericProgram(:final msb, :final lsb, :final program) => _generic(
       msb,
       lsb,
@@ -136,6 +186,12 @@ sealed class MidiProfile {
 
   /// What a new program starts with in the editor.
   MidiPatch get initialPatch;
+
+  /// The bytes that send [program] on [channel] (1–16): bank select and
+  /// program change ([MidiProgram.bytes]), which a profile may precede with
+  /// what its keyboard needs, e.g. the Motif XF's mode change (#591). The
+  /// stored values stay the raw bank select and program change.
+  Uint8List bytes(MidiProgram program, int channel) => program.bytes(channel);
 
   static MidiProgram _generic(int? msb, int? lsb, int program) {
     if (msb != null) RangeError.checkValueInInterval(msb, 0, 127, 'msb');
@@ -215,4 +271,47 @@ final class GenericProfile extends MidiProfile {
 
   @override
   int get hashCode => (GenericProfile).hashCode;
+}
+
+/// The Yamaha Motif XF (ADR-0039, #591): voices and performances, sent with
+/// the mode change to voice or performance mode first, as a program change
+/// only works in the Motif's current mode.
+final class MotifXfProfile extends MidiProfile {
+  const MotifXfProfile();
+
+  @override
+  MidiProfileKind get kind => MidiProfileKind.motifXf;
+
+  @override
+  MidiPatch get initialPatch => const MotifPerformance(0, 0);
+
+  @override
+  MidiPatch toPatch(MidiProgram program) {
+    // Performances first: their banks do not overlap the voice banks.
+    if (MotifXf.bankOf(MotifXf.performanceBanks, program) case final b?) {
+      return MotifPerformance(b, program.program);
+    }
+    if (MotifXf.bankOf(MotifXf.voiceBanks, program) case final b?) {
+      return MotifVoice(b, program.program);
+    }
+    return const GenericProfile().toPatch(program);
+  }
+
+  @override
+  Uint8List bytes(MidiProgram program, int channel) {
+    final mode = switch (toPatch(program)) {
+      MotifVoice() => MotifMode.voice,
+      MotifPerformance() => MotifMode.performance,
+      _ => null,
+    };
+    final change = program.bytes(channel);
+    if (mode == null) return change;
+    return Uint8List.fromList([...MotifXf.modeChange(mode), ...change]);
+  }
+
+  @override
+  bool operator ==(Object other) => other is MotifXfProfile;
+
+  @override
+  int get hashCode => (MotifXfProfile).hashCode;
 }
