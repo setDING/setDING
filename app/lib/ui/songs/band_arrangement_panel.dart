@@ -94,6 +94,9 @@ class BandArrangementPanel extends ConsumerWidget {
     final a = arrangement;
     final songKey = parsed.key;
     final sequence = a?.sequence;
+    // Users in several bands of the song's library choose the band here; it
+    // is the band of the sets tab, so everything follows it (#556).
+    final bands = ref.watch(arrangementBandsProvider(song.libraryId));
 
     final details = <String>[
       if (a == null)
@@ -115,6 +118,24 @@ class BandArrangementPanel extends ConsumerWidget {
       title: l10n.arrangementOf(band.name),
       scope: SettingScope.band,
       children: [
+        if (bands.length > 1)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: DropdownButton<String>(
+              key: const Key('arrangement-band'),
+              value: band.id,
+              isExpanded: true,
+              hint: Text(l10n.arrangementBand),
+              items: [
+                for (final b in bands)
+                  DropdownMenuItem(value: b.id, child: Text(b.name)),
+              ],
+              onChanged: (id) {
+                if (id == null || id == band.id) return;
+                ref.read(selectedBandIdProvider.notifier).select(id);
+              },
+            ),
+          ),
         if (details.isNotEmpty)
           Text(details.join(' · '), style: theme.textTheme.bodyMedium),
         if (sequence != null)

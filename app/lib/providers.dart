@@ -351,14 +351,27 @@ final arrangementRepositoryProvider = Provider<ArrangementRepository>(
 
 /// The band whose arrangement the song screen shows for songs of
 /// [libraryId]: the band chosen on the sets tab, if it plays from that
-/// library (ADR-0025); null otherwise. The arrangement is only shown in its
-/// own card there; it applies in sets only.
+/// library (ADR-0025); null otherwise. It applies in sets and, for the
+/// sequence only, to a single song played live (#552).
 final arrangementBandProvider = Provider.family<BandView?, String>((
   ref,
   libraryId,
 ) {
   final band = ref.watch(currentBandProvider);
   return !band.isLocal && band.libraryId == libraryId ? band : null;
+});
+
+/// The bands of the user that play from [libraryId], to choose the band of
+/// the arrangement panel from (#556).
+final arrangementBandsProvider = Provider.family<List<BandView>, String>((
+  ref,
+  libraryId,
+) {
+  final bands = ref.watch(bandsProvider).value ?? const <BandView>[];
+  return [
+    for (final b in bands)
+      if (!b.isLocal && b.libraryId == libraryId) b,
+  ];
 });
 
 /// The arrangement of a band for a song, or null.

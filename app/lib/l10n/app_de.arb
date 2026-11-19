@@ -589,6 +589,7 @@
       }
     }
   },
+  "arrangementBand": "Band",
   "arrangementAsWritten": "Wie im Song",
   "arrangementKey": "Tonart {key}",
   "@arrangementKey": {

@@ -214,8 +214,12 @@ class _SongScreenState extends ConsumerState<SongScreen> {
 
         // Sources (`{x_link}`): recordings to listen to.
         final links = parsed.links;
+        // Shown when there is something to see, change or choose (#556).
         final showBand =
-            band != null && (arrangement != null || band.canManageSets);
+            band != null &&
+            (arrangement != null ||
+                band.canManageSets ||
+                ref.watch(arrangementBandsProvider(song.libraryId)).length > 1);
         // Songs without ChordPro content show their attachments in the body.
         final attachmentsInPanel =
             parsed.hasContent && (canEdit || attachments.isNotEmpty);

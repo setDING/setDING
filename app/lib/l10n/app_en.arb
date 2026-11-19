@@ -447,6 +447,7 @@
       }
     }
   },
+  "arrangementBand": "Band",
   "arrangementAsWritten": "As in the song",
   "arrangementKey": "Key {key}",
   "@arrangementKey": {

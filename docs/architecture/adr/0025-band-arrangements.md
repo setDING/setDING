@@ -71,7 +71,8 @@ needed for now (owner); personal notes stay as they are.
     **as written**, except that a single song played live follows the sequence
     of the band chosen on the sets tab (#552). The song screen shows the arrangement of the band chosen on
     the sets tab (if it plays from this library) only in its own card, where it
-    is also edited. The song list (and the song picker of the sets) shows each
+    is also edited; users in several bands of that library choose the band
+    there, which also changes the band of the sets tab (#556). The song list (and the song picker of the sets) shows each
     song as written and adds a small hint, marked with the band icon, for songs
     that band has an arrangement for: the band's key, tempo and sequence.
 - **Printable set list and set export** (ADR-0013): key, sequence and tempo for the
@@ -168,6 +169,7 @@ needed for now (owner); personal notes stay as they are.
   tempo, its sequence). This refines #227; the song is still never shown in the
   band's key.
 - 2026-11-19: Owner decision (#552): a single song played live from the song screen follows the **sequence** of the band chosen on the sets tab (when that band plays from the song's library), so the parts outside it are dimmed or hidden as in a set (ADR-0007). Key and tempo stay as written there; this refines #227.
+- 2026-11-19: Owner decision (#556): the band arrangement panel of the song screen lets users in several bands playing from the song's library choose the band. The choice is the band of the sets tab (no second, local choice), so the song list, the song screen, live mode and the sets tab stay consistent. The band icon is shown whenever there is such a choice. This refines #552.
 
 ## Open points
 

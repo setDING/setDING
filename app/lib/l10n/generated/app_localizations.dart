@@ -2366,6 +2366,12 @@ abstract class AppLocalizations {
   /// **'Arrangement von {band}'**
   String arrangementOf(String band);
 
+  /// No description provided for @arrangementBand.
+  ///
+  /// In de, this message translates to:
+  /// **'Band'**
+  String get arrangementBand;
+
   /// No description provided for @arrangementAsWritten.
   ///
   /// In de, this message translates to:
