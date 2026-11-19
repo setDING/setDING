@@ -70,10 +70,12 @@ not.
    does not change.
 
 4. **Visible in the settings.**
-   - The category list is grouped under two headings: *Personal – on all your
-     devices* and *This device*. Categories are cut so that none mixes both
-     scopes (the live mode category keeps the device settings, the progress
-     bar moves to display).
+   - The category list is grouped under the headings *Personal – on all your
+     devices* and *This device*, followed by *Account & organization* (account
+     and sync, organizations and bands), which is neither. Categories are cut
+     so that none mixes both scopes (the live mode category keeps the device
+     settings, the progress bar moves to display). Within the list, the most
+     used categories come first.
    - Each category of a scope starts with one line explaining it; personal
      settings carry a cloud icon, device settings a device icon.
    - Signed out, the personal heading says that the settings stay on this
@@ -174,6 +176,8 @@ not.
   - The drummer settings of ADR-0026 do not exist yet; they get their scope
     when they are added (see the classification above).
 - 2026-11-17: The drummer settings of ADR-0026 added (#334) as classified above; beat display, edge flash, subdivisions and song map are personal too. Choices that follow the instrument until set (beat display, edge flash, click, start, song map) are left out of the JSON while unset, so an unset choice on one device does not override a choice synced from another.
+
+- 2026-11-19: Settings screen reordered (#548), replacing "the account category stays on top": the account and the organizations and bands are set up once and rarely opened afterwards, so they moved to the bottom under their own heading *Account & organization*. Order: *Personal* (display, song display, musician, general), *This device* (screen & live mode, storage & info), *Account & organization* (account & sync, organization & bands). The wide layout preselects the first category (display) instead of the account.
 
 ## Open points
 

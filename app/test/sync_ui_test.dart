@@ -54,6 +54,7 @@ void main() {
     final app = await setup(tester);
     await tester.pumpWidget(app.build(home: const SettingsScreen()));
     await tester.pumpAndSettle();
+    await openSettingsCategory(tester, SettingsCategory.account);
     final id = await TestApp.songsIn(
       app,
       'o1',
@@ -79,6 +80,7 @@ void main() {
     final app = await setup(tester);
     await tester.pumpWidget(app.build(home: const SettingsScreen()));
     await tester.pumpAndSettle();
+    await openSettingsCategory(tester, SettingsCategory.account);
     app.backend.failWith = BackendErrorKind.network;
     await syncNow(tester);
     expect(find.textContaining('No connection'), findsOneWidget);

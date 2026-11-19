@@ -1012,6 +1012,7 @@
   "setItemRemoved": "“{title}” removed from the set",
   "settingsGroupPersonal": "Personal – on all your devices",
   "settingsGroupDevice": "This device",
+  "settingsGroupAccount": "Account & organization",
   "settingsScopePersonalHint": "These settings belong to your account and apply on all devices you are signed in on.",
   "settingsScopePersonalSignedOutHint": "While signed out, these settings apply on this device only. After signing in, they are synced with your account.",
   "settingsScopeDeviceHint": "These settings apply on this device only and are not synced.",

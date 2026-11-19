@@ -94,6 +94,7 @@ void main() {
     // Still there on the other tabs.
     await tester.tap(find.text('Settings').last);
     await tester.pumpAndSettle();
+    await openSettingsCategory(tester, SettingsCategory.account);
     expect(find.byKey(const Key('update-required-banner')), findsOneWidget);
     expect(
       find.textContaining('This version of setDING is too old'),

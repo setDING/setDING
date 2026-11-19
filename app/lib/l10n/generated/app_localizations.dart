@@ -3902,6 +3902,12 @@ abstract class AppLocalizations {
   /// **'Dieses Gerät'**
   String get settingsGroupDevice;
 
+  /// No description provided for @settingsGroupAccount.
+  ///
+  /// In de, this message translates to:
+  /// **'Konto & Organisation'**
+  String get settingsGroupAccount;
+
   /// No description provided for @settingsScopePersonalHint.
   ///
   /// In de, this message translates to:

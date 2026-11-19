@@ -15,6 +15,7 @@ void main() {
     final app = await TestApp.create(prefs: {'language': 'en'}, user: user);
     await tester.pumpWidget(app.build(home: const SettingsScreen()));
     await tester.pumpAndSettle();
+    await openSettingsCategory(tester, SettingsCategory.account);
     return app;
   }
 

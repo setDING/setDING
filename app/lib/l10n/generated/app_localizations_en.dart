@@ -2277,6 +2277,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsGroupDevice => 'This device';
 
   @override
+  String get settingsGroupAccount => 'Account & organization';
+
+  @override
   String get settingsScopePersonalHint =>
       'These settings belong to your account and apply on all devices you are signed in on.';
 
