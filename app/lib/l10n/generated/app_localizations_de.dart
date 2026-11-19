@@ -532,6 +532,25 @@ class AppLocalizationsDe extends AppLocalizations {
   String get liveMidiRemoved => 'Keyboard-Programm entfernt';
 
   @override
+  String get liveMidiTakeOverWaiting => 'Wähle am Keyboard einen Klang';
+
+  @override
+  String liveMidiTakeOver(String program) {
+    return 'Übernehmen: $program';
+  }
+
+  @override
+  String get liveMidiTakeOverHint =>
+      'setDING übernimmt das Programm, das das Keyboard sendet.';
+
+  @override
+  String get liveMidiTakeOverNordHint =>
+      'Kommt nichts an? Stelle am Nord im MIDI-Menü «Program Change» auf «Send» oder «Send & Receive».';
+
+  @override
+  String get liveMidiTakeOverSame => 'Das ist bereits das Programm des Songs';
+
+  @override
   String get liveWakeLockNotice =>
       'Bildschirm kann sich ausschalten – Energieeinstellungen des Geräts prüfen';
 
@@ -3136,6 +3155,17 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get settingsMidiChannelHint =>
       'Der Kanal, auf dem das Keyboard empfängt.';
+
+  @override
+  String get settingsMidiTakeOver => 'Programme vom Keyboard übernehmen';
+
+  @override
+  String get settingsMidiTakeOverHint =>
+      'Ist im Live-Modus das Keyboard-Programm offen, zeigt setDING den Klang, den du am Keyboard wählst, und übernimmt ihn auf Wunsch in den Song. Das Keyboard muss dafür Bank Select und Program Change senden.';
+
+  @override
+  String get settingsMidiTakeOverNordHint =>
+      'Ist im Live-Modus das Keyboard-Programm offen, zeigt setDING den Klang, den du am Nord wählst, und übernimmt ihn auf Wunsch in den Song. Stelle dafür am Nord im MIDI-Menü «Program Change» auf «Send» oder «Send & Receive».';
 
   @override
   String get settingsMidiNordHint =>

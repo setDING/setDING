@@ -144,6 +144,7 @@ class AppSettings {
     this.midiProfile = MidiProfileKind.nordStage3,
     this.midiChannel = 1,
     this.midiPreview = false,
+    this.midiTakeOver = false,
   });
 
   final LanguageMode language;
@@ -268,6 +269,11 @@ class AppSettings {
   /// once, to hear it before saving (#607); off by default.
   final bool midiPreview;
 
+  /// While the live mode's program sheet is open, it listens to the
+  /// keyboard and offers to take over the program chosen on it (#608),
+  /// for profiles that support it; off by default.
+  final bool midiTakeOver;
+
   /// The profile of [midiProfile].
   MidiProfile get midiDeviceProfile => MidiProfile.of(midiProfile);
 
@@ -373,6 +379,7 @@ class AppSettings {
     MidiProfileKind? midiProfile,
     int? midiChannel,
     bool? midiPreview,
+    bool? midiTakeOver,
   }) => AppSettings(
     language: language ?? this.language,
     notation: notation ?? this.notation,
@@ -417,6 +424,7 @@ class AppSettings {
     midiProfile: midiProfile ?? this.midiProfile,
     midiChannel: midiChannel ?? this.midiChannel,
     midiPreview: midiPreview ?? this.midiPreview,
+    midiTakeOver: midiTakeOver ?? this.midiTakeOver,
   );
 
   /// Which settings follow the person (synced with the account) and which
@@ -475,6 +483,7 @@ class AppSettings {
     'midiProfile': SettingSyncScope.device,
     'midiChannel': SettingSyncScope.device,
     'midiPreview': SettingSyncScope.device,
+    'midiTakeOver': SettingSyncScope.device,
   };
 
   /// The keys of [scope].
@@ -527,6 +536,7 @@ class AppSettings {
     'midiProfile': midiProfile.name,
     'midiChannel': midiChannel,
     'midiPreview': midiPreview,
+    'midiTakeOver': midiTakeOver,
   };
 
   /// Settings from JSON values; a missing key, a value of the wrong type or
@@ -630,6 +640,7 @@ class AppSettings {
         16,
       ),
       midiPreview: flag('midiPreview', d.midiPreview),
+      midiTakeOver: flag('midiTakeOver', d.midiTakeOver),
       songDisplay: switch (json['songDisplay']) {
         final String v => SongDisplay.fromJsonString(v),
         _ => d.songDisplay,

@@ -189,4 +189,44 @@ void main() {
       expect(MidiEvent.parse([0xF8]), isNull);
     });
   });
+
+  group('MidiProgramReceiver (#608)', () {
+    test('collects bank select and program change sent one by one', () {
+      final r = MidiProgramReceiver(1);
+      expect(r.add([0xB0, 0, 0]), isNull);
+      expect(r.add([0xB0, 32, 2]), isNull);
+      expect(r.add([0xC0, 12]), const MidiProgram(msb: 0, lsb: 2, program: 12));
+    });
+
+    test('reads several messages in one packet', () {
+      final r = MidiProgramReceiver(3);
+      expect(
+        r.add([0xB2, 0, 6, 0xB2, 32, 0, 0xC2, 4]),
+        const MidiProgram(msb: 6, lsb: 0, program: 4),
+      );
+    });
+
+    test('keeps the bank for a later program change; none before any', () {
+      final r = MidiProgramReceiver(1);
+      expect(r.add([0xC0, 7]), const MidiProgram(program: 7));
+      r.add([0xB0, 0, 1, 0xB0, 32, 1, 0xC0, 0]);
+      expect(r.add([0xC0, 5]), const MidiProgram(msb: 1, lsb: 1, program: 5));
+    });
+
+    test('skips other channels, other messages, real-time bytes and SysEx', () {
+      final r = MidiProgramReceiver(1);
+      expect(r.add([0xB1, 0, 5, 0xC1, 9]), isNull);
+      expect(r.add([0xF8, 0xFE, 0x90, 60, 100, 0xB0, 7, 100]), isNull);
+      expect(
+        r.add([0xF0, 0x43, 0x10, 0x7F, 0xF7, 0xB0, 0, 0, 0xF8, 0xC0, 3]),
+        const MidiProgram(msb: 0, program: 3),
+      );
+    });
+
+    test('ignores incomplete and broken messages', () {
+      final r = MidiProgramReceiver(1);
+      expect(r.add([0xC0]), isNull);
+      expect(r.add([0xB0, 0, 0xC0, 2]), const MidiProgram(program: 2));
+    });
+  });
 }

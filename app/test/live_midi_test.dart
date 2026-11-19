@@ -549,5 +549,107 @@ void main() {
       expect(app.midiOutput.sent, bytes([_piano]));
       await app.dispose(tester);
     });
+
+    group('taking over from the keyboard (#608)', () {
+      const takeOverOn = {...midiOn, 'midiTakeOver': true};
+      final tile = find.byKey(const Key('live-midi-sheet-take-over'));
+
+      testWidgets('off: the sheet does not listen', (tester) async {
+        final app = await start(
+          tester,
+          sources: ['{title: One}\n[C]La'],
+          programs: [_piano],
+        );
+        await openSheet(tester);
+        expect(tile, findsNothing);
+        await app.dispose(tester);
+      });
+
+      testWidgets('the Motif XF profile offers nothing to take over', (
+        tester,
+      ) async {
+        final app = await start(
+          tester,
+          prefs: {...takeOverOn, 'midiProfile': 'motifXf'},
+          sources: ['{title: One}\n[C]La'],
+        );
+        await openSheet(tester);
+        expect(tile, findsNothing);
+        await app.dispose(tester);
+      });
+
+      testWidgets('shows what the keyboard sends and takes it over without '
+          'sending; Undo restores', (tester) async {
+        final app = await start(
+          tester,
+          prefs: takeOverOn,
+          sources: ['{title: One}\n[C]La'],
+          programs: [_piano],
+        );
+        await stay(tester);
+        await openSheet(tester);
+        expect(
+          find.descendant(
+            of: tile,
+            matching: find.text('Choose a sound on the keyboard'),
+          ),
+          findsOneWidget,
+        );
+        expect(tester.widget<ListTile>(tile).enabled, isFalse);
+
+        // Another channel is not this keyboard.
+        app.midiOutput.receive([0xB1, 0, 0, 0xB1, 32, 2, 0xC1, 12]);
+        await tester.pumpAndSettle();
+        expect(tester.widget<ListTile>(tile).enabled, isFalse);
+
+        // K:33, as the Nord sends it, in separate messages.
+        app.midiOutput
+          ..receive([0xB0, 0, 0])
+          ..receive([0xB0, 32, 2])
+          ..receive([0xC0, 12]);
+        await tester.pumpAndSettle();
+        expect(
+          find.descendant(
+            of: tile,
+            matching: find.text('Take over: Program K:33'),
+          ),
+          findsOneWidget,
+        );
+        await tester.tap(tile);
+        await tester.pumpAndSettle();
+        expect(await stored(tester, app, 0), _organ);
+        // The keyboard plays it already.
+        expect(app.midiOutput.sent, bytes([_piano]));
+        expect(find.text('Keyboard program saved'), findsOneWidget);
+
+        await tester.tap(find.text('Undo'));
+        await tester.pumpAndSettle();
+        expect(await stored(tester, app, 0), _piano);
+        expect(app.midiOutput.sent, bytes([_piano]));
+
+        // Closed: nothing is listened to any more.
+        app.midiOutput.receive([0xC0, 3]);
+        await tester.pumpAndSettle();
+        expect(await stored(tester, app, 0), _piano);
+        await app.dispose(tester);
+      });
+
+      testWidgets("the song's own program cannot be taken over again", (
+        tester,
+      ) async {
+        final app = await start(
+          tester,
+          prefs: takeOverOn,
+          sources: ['{title: One}\n[C]La'],
+          programs: [_organ],
+        );
+        await openSheet(tester);
+        app.midiOutput.receive([0xB0, 0, 0, 0xB0, 32, 2, 0xC0, 12]);
+        await tester.pumpAndSettle();
+        expect(tester.widget<ListTile>(tile).enabled, isFalse);
+        expect(find.text("This is the song's program already"), findsOneWidget);
+        await app.dispose(tester);
+      });
+    });
   });
 }

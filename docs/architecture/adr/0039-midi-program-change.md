@@ -59,7 +59,7 @@ else is sent automatically.
 
 | In the first version | Later (own decision) |
 |---|---|
-| Program per song, personal and synced | Learning the program from the keyboard |
+| Program per song, personal and synced | Learning the program from the keyboard (taken up in #608, see the decision log) |
 | Sending in live mode (start, song change), "Send again" | Program changes per section (custom directive, e.g. `{x_midi: …}`) |
 | Device profiles: Nord Stage 3 and generic | Page turning by MIDI from the keyboard |
 | USB on Android, Windows, Linux; web in Chrome/Edge | Bluetooth MIDI |
@@ -405,13 +405,29 @@ settings and stored programs are kept.
   this device's profile; the picker's preview (*Send while selecting*) is a
   device setting `midiPreview`. Taking over the program from the keyboard
   follows as a later stage (#608).
+- 2026-11-19: Taking over the program from the keyboard (owner, #608), the
+  first of the later stages. A device setting *Take over programs from the
+  keyboard* (`midiTakeOver`, off by default) is offered only for profiles
+  whose sending is known (`MidiProfile.takesOver`: Nord Stage 3 and generic;
+  not the Motif XF until checked on an XF8). While it is on and the live
+  mode's program sheet is open, and only then, the sheet listens to the
+  connected keyboard on the device's channel (`MidiProgramReceiver`: bank
+  select MSB/LSB, then a program change; one by one or in one packet; the
+  last bank select stays for later program changes; other channels,
+  real-time bytes and SysEx are skipped) and offers *Take over: <program>*
+  for the program last chosen on the keyboard. Taking over saves it for this
+  device's profile with "Undo" and sends nothing (the keyboard plays it
+  already). What the Nord sends was checked in the tests of #512 (MSB 0
+  programs, MSB 1 songs, MSB 6 live memories); its *Program Change* MIDI
+  setting must include *Send*, which the settings and the sheet say.
 
 ## Open points
 
 - Prototype results still open: Windows, Linux and Chrome; the number of
   songs on the Nord.
 - Manual test of the Motif XF profile on a Motif XF8 (#591).
-- Later stages (issues only when taken up): learning the program from the
-  keyboard (#608, as an option per device profile), program changes per section, page turning by MIDI, Bluetooth, several
+- Taking over from the Motif XF: what it sends when a voice or performance is
+  chosen on it, checked on an XF8 (#608).
+- Later stages (issues only when taken up): program changes per section, page turning by MIDI, Bluetooth, several
   target devices, further device profiles (Motif XF masters, songs and
   patterns), iOS.

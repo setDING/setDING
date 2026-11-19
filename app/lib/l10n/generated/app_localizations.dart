@@ -986,6 +986,36 @@ abstract class AppLocalizations {
   /// **'Keyboard-Programm entfernt'**
   String get liveMidiRemoved;
 
+  /// No description provided for @liveMidiTakeOverWaiting.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle am Keyboard einen Klang'**
+  String get liveMidiTakeOverWaiting;
+
+  /// No description provided for @liveMidiTakeOver.
+  ///
+  /// In de, this message translates to:
+  /// **'Übernehmen: {program}'**
+  String liveMidiTakeOver(String program);
+
+  /// No description provided for @liveMidiTakeOverHint.
+  ///
+  /// In de, this message translates to:
+  /// **'setDING übernimmt das Programm, das das Keyboard sendet.'**
+  String get liveMidiTakeOverHint;
+
+  /// No description provided for @liveMidiTakeOverNordHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Kommt nichts an? Stelle am Nord im MIDI-Menü «Program Change» auf «Send» oder «Send & Receive».'**
+  String get liveMidiTakeOverNordHint;
+
+  /// No description provided for @liveMidiTakeOverSame.
+  ///
+  /// In de, this message translates to:
+  /// **'Das ist bereits das Programm des Songs'**
+  String get liveMidiTakeOverSame;
+
   /// No description provided for @liveWakeLockNotice.
   ///
   /// In de, this message translates to:
@@ -5370,6 +5400,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Der Kanal, auf dem das Keyboard empfängt.'**
   String get settingsMidiChannelHint;
+
+  /// No description provided for @settingsMidiTakeOver.
+  ///
+  /// In de, this message translates to:
+  /// **'Programme vom Keyboard übernehmen'**
+  String get settingsMidiTakeOver;
+
+  /// No description provided for @settingsMidiTakeOverHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Ist im Live-Modus das Keyboard-Programm offen, zeigt setDING den Klang, den du am Keyboard wählst, und übernimmt ihn auf Wunsch in den Song. Das Keyboard muss dafür Bank Select und Program Change senden.'**
+  String get settingsMidiTakeOverHint;
+
+  /// No description provided for @settingsMidiTakeOverNordHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Ist im Live-Modus das Keyboard-Programm offen, zeigt setDING den Klang, den du am Nord wählst, und übernimmt ihn auf Wunsch in den Song. Stelle dafür am Nord im MIDI-Menü «Program Change» auf «Send» oder «Send & Receive».'**
+  String get settingsMidiTakeOverNordHint;
 
   /// No description provided for @settingsMidiNordHint.
   ///

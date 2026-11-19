@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -5,6 +7,8 @@ import '../../data/song_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../midi/midi_connection.dart';
 import '../../midi/midi_message.dart';
+import '../../midi/midi_output.dart';
+import '../../midi/midi_profile.dart';
 import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../songs/midi_program_field.dart';
@@ -20,6 +24,10 @@ typedef LiveEarlierSong = ({String id, String title});
 /// the nearest earlier song that has one, or remove it. Changes are saved
 /// at once in the personal adjustments (ADR-0006, ADR-0042) with "Undo";
 /// a changed program is sent, a removed one leaves the keyboard as it is.
+/// With *Take over programs from the keyboard* on (device setting, for
+/// profiles that support it), the sheet listens to the keyboard while it is
+/// open and offers the program last chosen on it (#608); taking it over
+/// saves it without sending (the keyboard plays it already).
 ///
 /// [earlier] are the songs before the current one, nearest first;
 /// [sendAgain] sends the stored program (the live sender). [context] is
@@ -52,11 +60,16 @@ Future<void> showLiveMidiSheet(
   );
   if (!context.mounted) return;
 
-  final action = await showModalBottomSheet<_Action>(
+  final settings = ref.read(settingsProvider);
+  final listen = settings.midiTakeOver && profile.takesOver;
+  final result = await showModalBottomSheet<(_Action, MidiProgram?)>(
     context: context,
     showDragHandle: true,
     isScrollControlled: true,
     builder: (context) => _LiveMidiSheet(
+      stored: program,
+      profile: profile,
+      channel: listen ? settings.midiChannel : null,
       program: program == null
           ? null
           : midiPatchLabel(l10n, profile.toPatch(program)),
@@ -69,17 +82,19 @@ Future<void> showLiveMidiSheet(
             ),
     ),
   );
-  if (action == null || !context.mounted) return;
+  if (result == null || !context.mounted) return;
+  final (action, received) = result;
 
-  /// Saves [chosen] (null removes it), sends it and offers "Undo".
-  Future<void> save(MidiProgram? chosen) async {
+  /// Saves [chosen] (null removes it), sends it unless [send] is false and
+  /// offers "Undo".
+  Future<void> save(MidiProgram? chosen, {bool send = true}) async {
     await repo.setMidiProgram(
       songId,
       profile.id,
       chosen,
       deviceProfile: profile.id,
     );
-    if (chosen != null) connection.send(chosen);
+    if (chosen != null && send) connection.send(chosen);
     showUndo(
       messenger,
       chosen == null ? l10n.liveMidiRemoved : l10n.liveMidiSaved,
@@ -87,7 +102,9 @@ Future<void> showLiveMidiSheet(
       onUndo: () async {
         await repo.restoreMidiPrograms(songId, stored);
         // The keyboard plays the changed program; the old one comes back.
-        if (chosen != null && program != null) connection.send(program);
+        if (chosen != null && send && program != null) {
+          connection.send(program);
+        }
       },
     );
   }
@@ -121,6 +138,8 @@ Future<void> showLiveMidiSheet(
       if (previous != null) await save(previous.program);
     case _Action.remove:
       await save(null);
+    case _Action.takeOver:
+      if (received != null) await save(received, send: false);
   }
 }
 
@@ -141,14 +160,25 @@ Future<({MidiProgram program, String title})?> previousMidiProgram(
   return null;
 }
 
-enum _Action { sendAgain, change, previous, remove }
+enum _Action { sendAgain, change, previous, remove, takeOver }
 
-class _LiveMidiSheet extends ConsumerWidget {
+class _LiveMidiSheet extends ConsumerStatefulWidget {
   const _LiveMidiSheet({
+    required this.stored,
+    required this.profile,
+    required this.channel,
     required this.program,
     required this.profileName,
     required this.previous,
   });
+
+  /// The song's program for [profile]; null for none.
+  final MidiProgram? stored;
+  final MidiProfile profile;
+
+  /// The channel to listen on for a program chosen on the keyboard (#608);
+  /// null listens to nothing.
+  final int? channel;
 
   /// The current program as the musician reads it; null for none.
   final String? program;
@@ -159,11 +189,43 @@ class _LiveMidiSheet extends ConsumerWidget {
   final String? previous;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_LiveMidiSheet> createState() => _LiveMidiSheetState();
+}
+
+class _LiveMidiSheetState extends ConsumerState<_LiveMidiSheet> {
+  StreamSubscription<List<int>>? _sub;
+
+  /// The program last chosen on the keyboard while the sheet is open.
+  MidiProgram? _received;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.channel case final channel?) {
+      final receiver = MidiProgramReceiver(channel);
+      _sub = ref.read(midiOutputProvider).received.listen((data) {
+        final program = receiver.add(data);
+        if (program != null && mounted) setState(() => _received = program);
+      }, onError: (Object _) {});
+    }
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final connected = ref.watch(midiConnectionProvider).connected;
-    void pick(_Action action) => Navigator.pop(context, action);
+    final program = widget.program;
+    final previous = widget.previous;
+    final received = _received;
+    void pick(_Action action, [MidiProgram? taken]) =>
+        Navigator.pop(context, (action, taken));
     return SafeArea(
       child: SingleChildScrollView(
         child: Column(
@@ -175,7 +237,7 @@ class _LiveMidiSheet extends ConsumerWidget {
                 l10n.midiProgramTitle,
                 style: theme.textTheme.titleLarge,
               ),
-              subtitle: Text(l10n.midiProgramDevice(profileName)),
+              subtitle: Text(l10n.midiProgramDevice(widget.profileName)),
             ),
             ListTile(
               leading: const Icon(Icons.piano),
@@ -186,6 +248,35 @@ class _LiveMidiSheet extends ConsumerWidget {
               ),
             ),
             const Divider(),
+            // What was chosen on the keyboard, to take over (#608).
+            if (widget.channel != null)
+              ListTile(
+                key: const Key('live-midi-sheet-take-over'),
+                leading: const Icon(Icons.input),
+                title: Text(
+                  received == null
+                      ? l10n.liveMidiTakeOverWaiting
+                      : l10n.liveMidiTakeOver(
+                          midiPatchLabel(
+                            l10n,
+                            widget.profile.toPatch(received),
+                          ),
+                        ),
+                ),
+                subtitle: received == null
+                    ? Text(
+                        widget.profile.kind == MidiProfileKind.nordStage3
+                            ? l10n.liveMidiTakeOverNordHint
+                            : l10n.liveMidiTakeOverHint,
+                      )
+                    : received == widget.stored
+                    ? Text(l10n.liveMidiTakeOverSame)
+                    : null,
+                enabled: received != null && received != widget.stored,
+                onTap: received == null
+                    ? null
+                    : () => pick(_Action.takeOver, received),
+              ),
             ListTile(
               key: const Key('live-midi-sheet-send'),
               leading: const Icon(Icons.send),

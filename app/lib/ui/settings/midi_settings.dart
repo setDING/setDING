@@ -9,8 +9,8 @@ import '../../midi/midi_output.dart';
 import '../../settings/settings.dart';
 
 /// The device settings of MIDI program changes to a keyboard (ADR-0039):
-/// on or off, the output, the device profile and the channel,
-/// with hints for the Nord Stage 3 and the Motif XF.
+/// on or off, the output, the device profile and the channel, taking over
+/// programs from the keyboard (#608), with hints for the Nord Stage 3 and the Motif XF.
 class MidiSettings extends ConsumerWidget {
   const MidiSettings({super.key});
 
@@ -106,6 +106,20 @@ class MidiSettings extends ConsumerWidget {
               },
             ),
           ),
+          // Only for profiles whose sending is known (#608).
+          if (s.midiDeviceProfile.takesOver)
+            SwitchListTile(
+              key: const Key('settings-midi-take-over'),
+              title: Text(l10n.settingsMidiTakeOver),
+              subtitle: Text(
+                s.midiProfile == MidiProfileKind.nordStage3
+                    ? l10n.settingsMidiTakeOverNordHint
+                    : l10n.settingsMidiTakeOverHint,
+              ),
+              value: s.midiTakeOver,
+              onChanged: (v) =>
+                  notifier.update((s) => s.copyWith(midiTakeOver: v)),
+            ),
           if (hint case (final key, final text))
             ListTile(
               key: key,
