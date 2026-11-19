@@ -42,6 +42,10 @@ enum LabelSize {
   final double factor;
 }
 
+/// Font of the song text (lyrics, chords, headings), the same for all
+/// section types.
+enum SongFont { standard, monospace }
+
 /// Width of the indent bar, in units of the font size.
 enum BarWidth {
   thin(0.15),
@@ -283,18 +287,21 @@ SectionRole? defaultParent(SectionRole role) => switch (role) {
 /// styles per section type.
 @immutable
 class SongDisplay {
-  const SongDisplay._(this.preset, this.types, this.extra);
+  const SongDisplay._(this.preset, this.types, this.extra, this.font);
 
   /// A [preset] (not [SongDisplayPreset.custom]).
-  const SongDisplay.preset(SongDisplayPreset preset)
-    : this._(preset, null, const {});
+  const SongDisplay.preset(
+    SongDisplayPreset preset, {
+    SongFont font = SongFont.standard,
+  }) : this._(preset, null, const {}, font);
 
   /// Custom styles; types that are missing inherit from their
   /// [defaultParent].
   SongDisplay.custom(
     Map<SectionRole, TypeStyle> types, {
     Map<String, Object?> extra = const {},
-  }) : this._(SongDisplayPreset.custom, Map.unmodifiable(types), extra);
+    SongFont font = SongFont.standard,
+  }) : this._(SongDisplayPreset.custom, Map.unmodifiable(types), extra, font);
 
   static const classic = SongDisplay.preset(SongDisplayPreset.classic);
 
@@ -305,6 +312,14 @@ class SongDisplay {
 
   /// Unknown keys from a newer app version, written back unchanged.
   final Map<String, Object?> extra;
+
+  /// Font of the song text; independent of the preset, so choosing a
+  /// preset keeps it.
+  final SongFont font;
+
+  /// The same display with [font].
+  SongDisplay withFont(SongFont font) =>
+      SongDisplay._(preset, types, extra, font);
 
   /// The styles of all types, of the preset or the custom ones.
   Map<SectionRole, TypeStyle> get allTypes {
@@ -349,14 +364,19 @@ class SongDisplay {
 
   /// A custom display with [role] changed to [type]; starts from the
   /// styles of the current preset.
-  SongDisplay withType(SectionRole role, TypeStyle type) => SongDisplay.custom({
-    ...allTypes,
-    role: role == SectionRole.standard ? TypeStyle(style: type.style) : type,
-  }, extra: extra);
+  SongDisplay withType(SectionRole role, TypeStyle type) => SongDisplay.custom(
+    {
+      ...allTypes,
+      role: role == SectionRole.standard ? TypeStyle(style: type.style) : type,
+    },
+    extra: extra,
+    font: font,
+  );
 
   String toJsonString() => jsonEncode({
     ...extra,
     'preset': preset.name,
+    if (font != SongFont.standard) 'font': font.name,
     if (types case final types?)
       'types': {
         for (final MapEntry(:key, :value) in types.entries)
@@ -376,15 +396,19 @@ class SongDisplay {
     if (decoded is! Map<String, Object?>) return classic;
     final extra = {
       for (final MapEntry(:key, :value) in decoded.entries)
-        if (key != 'preset' && key != 'types') key: value,
+        if (key != 'preset' && key != 'types' && key != 'font') key: value,
     };
+    final fontName = decoded['font'];
+    final font =
+        SongFont.values.where((f) => f.name == fontName).firstOrNull ??
+        SongFont.standard;
     final name = decoded['preset'];
     final preset = SongDisplayPreset.values
         .where((p) => p.name == name)
         .firstOrNull;
     if (preset == null) return classic;
     if (preset != SongDisplayPreset.custom) {
-      return SongDisplay._(preset, null, extra);
+      return SongDisplay._(preset, null, extra, font);
     }
     final rawTypes = decoded['types'];
     final types = <SectionRole, TypeStyle>{};
@@ -401,7 +425,7 @@ class SongDisplay {
         );
       }
     }
-    return SongDisplay.custom(types, extra: extra);
+    return SongDisplay.custom(types, extra: extra, font: font);
   }
 
   @override

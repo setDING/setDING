@@ -2549,6 +2549,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get songDisplayDiscard => 'Verwerfen';
 
   @override
+  String get songDisplayFont => 'Schrift';
+
+  @override
+  String get songDisplayFontStandard => 'Standard';
+
+  @override
+  String get songDisplayFontMonospace => 'Monospace';
+
+  @override
   String get songDisplaySection => 'Abschnitt';
 
   @override

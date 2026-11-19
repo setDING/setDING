@@ -2533,6 +2533,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get songDisplayDiscard => 'Discard';
 
   @override
+  String get songDisplayFont => 'Font';
+
+  @override
+  String get songDisplayFontStandard => 'Standard';
+
+  @override
+  String get songDisplayFontMonospace => 'Monospace';
+
+  @override
   String get songDisplaySection => 'Section';
 
   @override
