@@ -1,6 +1,6 @@
 # ADR-0042: Keyboard programs per device profile
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-19
 
 ## Context
@@ -133,6 +133,8 @@ mixings have their own MSB/LSB.
 - 2026-11-19: Proposed after the owner's request (#590): a keyboard player
   can change keyboards without adapting the songs, so a song keeps one
   program per device profile; first new profile the Yamaha Motif XF (XF8).
+- 2026-11-19: Accepted by the owner (#590, PR #592). The open points below
+  are settled when the implementation issues are taken up.
 
 ## Open points
 
