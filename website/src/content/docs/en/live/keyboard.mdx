@@ -147,6 +147,22 @@ program for this device's keyboard:
 A change is saved in the song at once and sent to the keyboard. **Undo** in the
 message at the bottom brings the previous program back.
 
+### Taking over the sound from the keyboard
+
+Often it is easiest to look for the sound on the keyboard itself:
+
+1. Under **Settings** → **Keyboard (MIDI)**, switch on **Take over programs from
+   the keyboard**. It is offered for the **Nord Stage 3** and **Generic** profiles,
+   not yet for the Yamaha Motif XF.
+2. On the Nord, set **Program Change** in the **MIDI menu** to **Send** or
+   **Send & Receive**, so it reports what you choose on it.
+3. In live mode, tap the keyboard icon and choose a program, live memory or song on
+   the keyboard. The panel shows it, e.g. **Take over: Program K:33**.
+4. Tap it: the program is saved in the song. setDING sends nothing – the keyboard
+   already plays it. **Undo** brings the previous program back.
+
+setDING only listens while the panel is open.
+
 Errors never interrupt the show: setDING shows no message and turning pages works as
 usual. The **diagnostic log** under **Settings** → **Storage & info** says what went
 wrong.

@@ -158,6 +158,18 @@
   "liveMidiNoPrevious": "No earlier song with a program",
   "liveMidiSaved": "Keyboard program saved",
   "liveMidiRemoved": "Keyboard program removed",
+  "liveMidiTakeOverWaiting": "Choose a sound on the keyboard",
+  "liveMidiTakeOver": "Take over: {program}",
+  "@liveMidiTakeOver": {
+    "placeholders": {
+      "program": {
+        "type": "String"
+      }
+    }
+  },
+  "liveMidiTakeOverHint": "setDING takes over the program the keyboard sends.",
+  "liveMidiTakeOverNordHint": "Nothing arriving? On the Nord, set “Program Change” in the MIDI menu to “Send” or “Send & Receive”.",
+  "liveMidiTakeOverSame": "This is the song's program already",
   "liveWakeLockNotice": "The screen may turn off – check the device's power settings",
   "liveEnd": "End of set",
   "liveSetOverview": "Set overview",
@@ -1422,6 +1434,9 @@
   "midiProfileGeneric": "Generic",
   "settingsMidiChannel": "MIDI channel",
   "settingsMidiChannelHint": "The channel the keyboard receives on.",
+  "settingsMidiTakeOver": "Take over programs from the keyboard",
+  "settingsMidiTakeOverHint": "While the keyboard program is open in live mode, setDING shows the sound you choose on the keyboard and takes it over into the song if you want. The keyboard has to send bank select and program change.",
+  "settingsMidiTakeOverNordHint": "While the keyboard program is open in live mode, setDING shows the sound you choose on the Nord and takes it over into the song if you want. On the Nord, set “Program Change” in the MIDI menu to “Send” or “Send & Receive”.",
   "settingsMidiNordHint": "On the Nord Stage 3, switch on “Program Change” reception in its MIDI menu, and set the channel here to the Nord's global channel. The numbering of Nord songs depends on the Nord's OS version (checked with OS 2.54); if a song does not match, use the profile “Generic”.",
   "midiProgramTitle": "Keyboard program",
   "midiProgramHint": "Sent to the keyboard in live mode when this song comes up.",

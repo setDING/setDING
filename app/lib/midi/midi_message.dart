@@ -339,3 +339,60 @@ class MidiProgramChange extends MidiEvent {
   const MidiProgramChange(super.channel, this.program);
   final int program;
 }
+
+/// Collects the keyboard program from what a keyboard sends when a sound
+/// is chosen on it (#608): bank select MSB (CC 0) and LSB (CC 32), then a
+/// program change, on [channel] (1–16). Messages may arrive one by one or
+/// several in one packet; other channels, other messages, real-time bytes
+/// and SysEx are skipped. The last bank select stays for later program
+/// changes, as on the keyboard; before any, a program has none.
+class MidiProgramReceiver {
+  MidiProgramReceiver(this.channel);
+
+  final int channel;
+
+  int? _msb;
+  int? _lsb;
+
+  /// Reads [data]; returns the program when a program change on [channel]
+  /// completed one (the last one when a packet holds several).
+  MidiProgram? add(List<int> data) {
+    MidiProgram? result;
+    var i = 0;
+    while (i < data.length) {
+      final status = data[i];
+      final length = switch (status & 0xF0) {
+        0xC0 || 0xD0 => 2,
+        0x80 || 0x90 || 0xA0 || 0xB0 || 0xE0 => 3,
+        _ => 0,
+      };
+      // Data bytes without a status, real-time bytes and SysEx: skipped
+      // byte by byte (SysEx data bytes are below 0x80).
+      if (status < 0x80 || length == 0) {
+        i++;
+        continue;
+      }
+      if (i + length > data.length) break;
+      final message = data.sublist(i, i + length);
+      // A status byte where a data byte belongs: a broken message.
+      if (message.skip(1).any((b) => b >= 0x80)) {
+        i++;
+        continue;
+      }
+      final event = MidiEvent.parse(message);
+      i += length;
+      if (event == null || event.channel != channel) continue;
+      switch (event) {
+        case MidiControlChange(controller: 0, :final value):
+          _msb = value;
+        case MidiControlChange(controller: 32, :final value):
+          _lsb = value;
+        case MidiProgramChange(:final program):
+          result = MidiProgram(msb: _msb, lsb: _lsb, program: program);
+        case MidiControlChange():
+          break;
+      }
+    }
+    return result;
+  }
+}

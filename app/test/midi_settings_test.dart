@@ -72,8 +72,26 @@ void main() {
     // is chosen per song, not here (#586).
     final hint = find.byKey(const Key('settings-midi-nord-hint'));
     expect(hint, findsOneWidget);
-    expect(find.textContaining('Program Change'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: hint,
+        matching: find.textContaining('Program Change'),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('Songs'), findsNothing);
+
+    // Taking over programs from the keyboard (#608): off by default,
+    // offered for the Nord (with what to set on it), not for the Motif.
+    final takeOver = find.byKey(const Key('settings-midi-take-over'));
+    expect(takeOver, findsOneWidget);
+    expect(tester.widget<SwitchListTile>(takeOver).value, isFalse);
+    expect(
+      find.descendant(of: takeOver, matching: find.textContaining('Send')),
+      findsOneWidget,
+    );
+    await tap(tester, takeOver);
+    expect(container.read(settingsProvider).midiTakeOver, isTrue);
 
     final channel = find.byKey(const Key('settings-midi-channel'));
     await tap(
@@ -104,6 +122,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(hint, findsNothing);
     expect(find.byKey(const Key('settings-midi-motif-hint')), findsOneWidget);
+    expect(takeOver, findsNothing);
     expect(find.textContaining('Device Number'), findsOneWidget);
     await tap(tester, profile);
     await tester.tap(find.text('Generic').last);
@@ -113,12 +132,14 @@ void main() {
       MidiProfileKind.generic,
     );
     expect(hint, findsNothing);
+    expect(takeOver, findsOneWidget);
 
     // Stored on this device only, never in the personal settings.
     expect(app.prefs.getBool('midiEnabled'), isTrue);
     expect(app.prefs.getString('midiOutputName'), 'Nord Stage 3');
     expect(app.prefs.getString('midiProfile'), 'generic');
     expect(app.prefs.getInt('midiChannel'), 10);
+    expect(app.prefs.getBool('midiTakeOver'), isTrue);
     expect(
       app.personal(localOwnerId).keys.where((k) => k.startsWith('midi')),
       isEmpty,

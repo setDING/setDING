@@ -280,6 +280,18 @@
   "liveMidiNoPrevious": "Kein früherer Song mit Programm",
   "liveMidiSaved": "Keyboard-Programm gespeichert",
   "liveMidiRemoved": "Keyboard-Programm entfernt",
+  "liveMidiTakeOverWaiting": "Wähle am Keyboard einen Klang",
+  "liveMidiTakeOver": "Übernehmen: {program}",
+  "@liveMidiTakeOver": {
+    "placeholders": {
+      "program": {
+        "type": "String"
+      }
+    }
+  },
+  "liveMidiTakeOverHint": "setDING übernimmt das Programm, das das Keyboard sendet.",
+  "liveMidiTakeOverNordHint": "Kommt nichts an? Stelle am Nord im MIDI-Menü «Program Change» auf «Send» oder «Send & Receive».",
+  "liveMidiTakeOverSame": "Das ist bereits das Programm des Songs",
   "liveWakeLockNotice": "Bildschirm kann sich ausschalten – Energieeinstellungen des Geräts prüfen",
   "liveEnd": "Ende des Sets",
   "liveSetOverview": "Set-Übersicht",
@@ -1658,6 +1670,9 @@
   "midiProfileGeneric": "Allgemein",
   "settingsMidiChannel": "MIDI-Kanal",
   "settingsMidiChannelHint": "Der Kanal, auf dem das Keyboard empfängt.",
+  "settingsMidiTakeOver": "Programme vom Keyboard übernehmen",
+  "settingsMidiTakeOverHint": "Ist im Live-Modus das Keyboard-Programm offen, zeigt setDING den Klang, den du am Keyboard wählst, und übernimmt ihn auf Wunsch in den Song. Das Keyboard muss dafür Bank Select und Program Change senden.",
+  "settingsMidiTakeOverNordHint": "Ist im Live-Modus das Keyboard-Programm offen, zeigt setDING den Klang, den du am Nord wählst, und übernimmt ihn auf Wunsch in den Song. Stelle dafür am Nord im MIDI-Menü «Program Change» auf «Send» oder «Send & Receive».",
   "settingsMidiNordHint": "Schalte am Nord Stage 3 im MIDI-Menü den Empfang von «Program Change» ein und stelle hier den globalen Kanal des Nord ein. Die Nummerierung der Nord-Songs hängt von der OS-Version des Nord ab (geprüft mit OS 2.54); passt ein Song nicht, verwende das Profil «Allgemein».",
   "midiProgramTitle": "Keyboard-Programm",
   "midiProgramHint": "Wird im Live-Modus ans Keyboard gesendet, wenn dieser Song an der Reihe ist.",

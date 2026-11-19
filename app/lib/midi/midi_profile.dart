@@ -174,6 +174,11 @@ sealed class MidiProfile {
   /// follows its bank select MSB (program, song or live memory).
   MidiPatch toPatch(MidiProgram program);
 
+  /// Whether a program chosen on the keyboard can be taken over into a song
+  /// (#608): known for keyboards whose sending was checked (the Nord Stage
+  /// 3) and the generic profile, which shows any values.
+  bool get takesOver => true;
+
   /// The raw values of [patch]. Throws a [RangeError] for values outside
   /// the ranges of the patch.
   MidiProgram toMidi(MidiPatch patch) => switch (patch) {
@@ -293,6 +298,11 @@ final class MotifXfProfile extends MidiProfile {
 
   @override
   MidiProfileKind get kind => MidiProfileKind.motifXf;
+
+  /// Not yet: what the Motif XF sends when a voice or performance is chosen
+  /// on it is unchecked (#608).
+  @override
+  bool get takesOver => false;
 
   @override
   MidiPatch get initialPatch => const MotifPerformance(0, 0);
