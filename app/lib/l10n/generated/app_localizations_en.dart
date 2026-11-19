@@ -2758,4 +2758,233 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get whatsNewAllChanges => 'All changes';
+
+  @override
+  String get midiTestTitle => 'MIDI test (prototype)';
+
+  @override
+  String get midiTestTileHint =>
+      'Send a program change to a keyboard connected by USB, e.g. a Nord Stage 3';
+
+  @override
+  String get midiTestHint =>
+      'Sends a program change to a keyboard connected by USB, to test MIDI on this device. What the keyboard sends, e.g. when you select a program or song on it, appears in the log.';
+
+  @override
+  String get midiTestDevices => 'Devices';
+
+  @override
+  String get midiTestRefresh => 'Search again';
+
+  @override
+  String get midiTestNoDevices =>
+      'No MIDI device found. Connect the keyboard by USB and search again.';
+
+  @override
+  String get midiTestConnect => 'Connect';
+
+  @override
+  String get midiTestDisconnect => 'Disconnect';
+
+  @override
+  String get midiTestConnected => 'Connected';
+
+  @override
+  String get midiTestChannel => 'MIDI channel';
+
+  @override
+  String get midiTestModeNordProgram => 'Nord program';
+
+  @override
+  String get midiTestModeNordSong => 'Nord song';
+
+  @override
+  String get midiTestModeNordLive => 'Nord live';
+
+  @override
+  String get midiTestModeRaw => 'Raw values';
+
+  @override
+  String get midiTestBank => 'Bank';
+
+  @override
+  String get midiTestLive => 'Live memory';
+
+  @override
+  String get midiTestMsb => 'Bank select MSB (CC 0, 0–127)';
+
+  @override
+  String get midiTestLsb => 'Bank select LSB (CC 32, 0–127)';
+
+  @override
+  String get midiTestProgram => 'Program (1–128)';
+
+  @override
+  String get midiTestEmptyNotSent => 'An empty bank select is not sent.';
+
+  @override
+  String get midiTestInvalid => 'Check the values';
+
+  @override
+  String get midiTestSend => 'Send';
+
+  @override
+  String get midiTestLog => 'Log';
+
+  @override
+  String get midiTestCopy => 'Copy log';
+
+  @override
+  String get midiTestCopied => 'Log copied';
+
+  @override
+  String get midiTestClear => 'Clear log';
+
+  @override
+  String midiTestSent(String bytes) {
+    return 'Sent: $bytes';
+  }
+
+  @override
+  String midiTestReceivedCc(
+    int controller,
+    int value,
+    int channel,
+    String bytes,
+  ) {
+    return 'Received: CC $controller = $value (channel $channel) – $bytes';
+  }
+
+  @override
+  String midiTestReceivedPc(
+    int number,
+    int program,
+    int channel,
+    String bytes,
+  ) {
+    return 'Received: program change $number (value $program, channel $channel) – $bytes';
+  }
+
+  @override
+  String midiTestReceivedOther(String bytes) {
+    return 'Received: $bytes';
+  }
+
+  @override
+  String midiTestError(String message) {
+    return 'Error: $message';
+  }
+
+  @override
+  String get midiTestModeCc => 'Control change';
+
+  @override
+  String get midiTestController => 'Controller (CC 0–127)';
+
+  @override
+  String get midiTestValue => 'Value (0–127)';
+
+  @override
+  String get midiTestCcHint =>
+      'Nord Stage 3 according to midi.guide: CC 2 live mode, CC 3 song mode, CC 5 song part. Which values do what is part of the test.';
+
+  @override
+  String get midiGuideTitle => 'Guided test (Nord Stage 3)';
+
+  @override
+  String get midiGuideHint =>
+      'Tap “Send”, look at the display of the Nord and tap what happened. Nothing has to be set on the Nord. The answers are kept in the log.';
+
+  @override
+  String midiGuideStep(int current, int total, String title) {
+    return 'Step $current of $total: $title';
+  }
+
+  @override
+  String midiGuideExpected(String expected) {
+    return 'Expected: $expected';
+  }
+
+  @override
+  String get midiGuideDone => 'Test finished. The answers are in the log.';
+
+  @override
+  String get midiGuideRestart => 'Start again';
+
+  @override
+  String get midiGuideBack => 'Back';
+
+  @override
+  String get midiGuideSkip => 'Skip';
+
+  @override
+  String midiGuideResult(int current, String title, String answer) {
+    return 'Step $current ($title): $answer';
+  }
+
+  @override
+  String midiGuideProgram(String name) {
+    return 'Program $name';
+  }
+
+  @override
+  String midiGuideProgramExpected(String name) {
+    return 'The Nord shows $name.';
+  }
+
+  @override
+  String midiGuideLive(int number) {
+    return 'Live memory $number';
+  }
+
+  @override
+  String midiGuideLiveExpected(int number) {
+    return 'The Nord shows Live $number.';
+  }
+
+  @override
+  String get midiGuideSongModeOn => 'Song mode on (CC 3 = 127)';
+
+  @override
+  String get midiGuideSongModeOnExpected => 'The Nord switches to song mode.';
+
+  @override
+  String get midiGuideSongModeOff => 'Song mode off (CC 3 = 0)';
+
+  @override
+  String get midiGuideSongModeOffExpected => 'The Nord leaves song mode.';
+
+  @override
+  String get midiGuideAnswerAsExpected => 'As expected';
+
+  @override
+  String get midiGuideAnswerDifferent => 'Something else';
+
+  @override
+  String get midiGuideAnswerNothing => 'Nothing happened';
+
+  @override
+  String get midiTestFree => 'Send freely';
+
+  @override
+  String get midiTestPage => 'Page';
+
+  @override
+  String get midiTestButton => 'Button';
+
+  @override
+  String midiGuideSong(int song, int part) {
+    return 'Song $song, part $part';
+  }
+
+  @override
+  String midiGuideSongExpected(int song, int part) {
+    return 'The Nord shows song $song, part $part.';
+  }
+
+  @override
+  String get midiTestSong => 'Song';
+
+  @override
+  String get midiTestPart => 'Part';
 }

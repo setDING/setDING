@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:setding/midi/midi_output.dart';
 import 'package:setding/data/attachment_storage.dart';
 import 'package:setding/data/attachment_storage_io.dart';
 import 'package:setding/data/attachment_storage_memory.dart';
@@ -28,6 +29,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_backend.dart';
 import 'fake_click_output.dart';
+import 'fake_midi_output.dart';
 
 /// App with an in-memory database for widget tests.
 class TestApp {
@@ -107,6 +109,9 @@ class TestApp {
   /// Audio output of the click (ADR-0026), without audio.
   final clickOutput = FakeClickOutput();
 
+  /// MIDI to a keyboard (ADR-0039), in memory.
+  final midiOutput = FakeMidiOutput();
+
   /// Provider overrides of the test app (also for a [ProviderContainer]).
   List<Override> get overrides => [
     sharedPreferencesProvider.overrideWithValue(prefs),
@@ -119,6 +124,7 @@ class TestApp {
     incomingLinksProvider.overrideWithValue(links.stream),
     autoSyncProvider.overrideWithValue(false),
     clickOutputProvider.overrideWithValue(clickOutput),
+    midiOutputProvider.overrideWithValue(midiOutput),
     stageWakeLockProvider.overrideWith((ref) {
       final lock = StageWakeLock(wakeLock);
       ref.onDispose(lock.dispose);

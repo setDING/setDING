@@ -11,10 +11,14 @@ program on the keyboard by hand while the band waits. Many stage keyboards,
 among them the **Nord Stage 3** of the owner's band, switch programs by MIDI:
 
 - a **Bank Select** (CC 0 = MSB, CC 32 = LSB) followed by a **Program Change**;
-- on the Nord Stage 3: CC 0 = 0, CC 32 = 0–7 for banks A–H, Program Change 0–49
-  for the programs of the bank and 50–54 for the five live memories, received on
-  the keyboard's global channel when "Program Change" reception is switched on in
-  its MIDI menu. The bank select must come before the program change.
+- on the Nord Stage 3 (checked on a keyboard with OS 2.54, #512): 400 programs in 16 banks
+  A–P of 25 (5 pages of 5 buttons, the display shows e.g. `K:33`), counted
+  through and sent in blocks of 125: CC 0 = 0, CC 32 = block 0–3, Program Change
+  = place in the block 0–124. Songs use CC 0 = 1 and the same blocks with 5
+  parts per song. The five live memories are sent by the Nord as CC 0 = 6,
+  CC 32 = 0, Program Change 0–4. Received on the keyboard's global channel when "Program
+  Change" reception is switched on in its MIDI menu. The bank select must come
+  before the program change.
 
 Since OS 2 the Nord Stage 3 also has **Songs** (a set of programs as song
 parts). According to users in the Nord User Forum, bank select MSB 0 addresses
@@ -92,10 +96,12 @@ settings** (layer 4b, ADR-0027), never synced:
 
 - **Nord Stage 3 profile** with a device setting **"Nord addresses: Programs |
   Songs"**, chosen by the keyboard player (default Programs):
-  - *Programs:* bank A–H and program 1–50 (sent as CC 0 = 0, CC 32 = bank,
-    Program Change = program − 1), or live memory 1–5 (Program Change 50–54).
-  - *Songs:* a Nord song addressed with CC 0 = 1, CC 32 and Program Change, as
-    far as the prototype confirms it (see below).
+  - *Programs:* bank A–P, page 1–5 and button 1–5 as on the display (sent as
+    CC 0 = 0, CC 32 = number ÷ 125, Program Change = number mod 125, where
+    number = bank × 25 + (page − 1) × 5 + button − 1), or live memory 1–5
+    (CC 0 = 6, CC 32 = 0, Program Change 0–4).
+  - *Songs:* song and part 1–5, sent as CC 0 = 1 and the same blocks of 125
+    with number = (song − 1) × 5 + part − 1.
   - The full bank select (MSB and LSB) is always sent before the program change,
     so the result does not depend on the Nord's current panel mode.
   - A stored value is shown by its MSB (program or song), so values entered in the
@@ -211,12 +217,55 @@ settings** (layer 4b, ADR-0027), never synced:
   Stage 3 (`flutter_midi_command` offers `sendData` for raw bytes); the later
   stages stay listed in this ADR, with issues only once one is taken up.
 - 2026-11-18: Accepted by the owner (#510).
+- 2026-11-18: Prototype implemented (#512): `flutter_midi_command` 1.4 behind
+  `MidiOutput` (`app/lib/midi/`), the message bytes and the Nord Stage 3
+  addressing in `midi_message.dart`, and a "MIDI test (prototype)" screen in
+  the *Screen & live mode* settings that lists USB MIDI devices, sends Nord
+  programs, songs, live memories or raw values on a chosen channel and logs
+  what the keyboard sends back (to find the song addressing). The plugin
+  requires the Android MIDI feature in its manifest; the app overrides it to
+  optional. Linux loads `libasound.so.2` at run time; the web plugin asks for
+  MIDI access with SysEx, so Chrome shows the stronger permission prompt.
+  Results on the real keyboard are pending.
+- 2026-11-19: The MIDI test also sends free control changes (#512): midi.guide
+  lists CC 2 "Live mode", CC 3 "Song mode" and CC 5 "Song part" for the Nord
+  Stage 3 without their values, a second candidate for selecting Nord songs
+  besides bank select MSB 1. The midi.guide data (CC BY-SA 4.0) is a reference
+  only and is not copied into the repository.
+- 2026-11-19: First test on the owner's Nord Stage 3 with Android (#512, OS
+  version not read). `flutter_midi_command` sends and receives over USB.
+  Programs: the assumed banks A–H of 50 were wrong; the Nord has 16 banks A–P
+  of 25 and counts them through in blocks of 125 (sent LSB 2 / PC 12 showed
+  K:33, LSB 7 / PC 49 the last program P:55; the Nord itself never sent a
+  program change above 124). Live memories 1–5 = PC 50–54 without bank select
+  work as assumed. CC 3 = 127 switches the song mode on, CC 3 = 0 off. Bank
+  select MSB 1 changes the song, its numbering is unknown. CC 5 (song part) and
+  CC 2 (live mode) showed no effect. When a program, song or live memory is
+  chosen on the Nord, it sends bank select and program change (MSB 0 programs,
+  MSB 1 songs, MSB 6 with PC 0–4, probably the live memories), never CC 2, 3
+  or 5. None of this is on midi.guide. The addressing is corrected, and the
+  MIDI test got a guided test that needs only taps (send a step, tap what
+  happened) and no setting on the Nord, to find the song numbering.
+- 2026-11-19: Second test with the guided test (#512, Android): the program
+  numbering holds across the block borders (E:55, F:11). Songs have 5 parts:
+  bank select MSB 1 with number = (song − 1) × 5 + part − 1 in blocks of 125
+  (PC 1 = next part, PC 5 = next song, LSB 1 / PC 0 = song 26 part 1), so a
+  part is chosen directly and CC 5 is not needed (it still had no effect).
+  CC 3 switches the song mode, CC 2 the live mode on and off. A program change
+  52 without bank select selected program C:13, not live memory 3: the first
+  test only worked because the Nord was in live mode. Live memories now use
+  what the Nord sends for them, CC 0 = 6 with PC 0–4; a third, shorter guided
+  test checks this and songs with parts.
+- 2026-11-19: Third guided test (#512, Android): all 10 steps as expected.
+  Live memories 1, 3 and 5 with CC 0 = 6, CC 32 = 0, PC 0–4 from program mode,
+  a program afterwards leaves them again; song 2 part 3 and song 26 part 5
+  with CC 0 = 1; CC 3 switches the song mode. The Nord Stage 3 addressing of
+  this ADR is confirmed on Android. The test keyboard runs Nord OS 2.54.
 
 ## Open points
 
-- Prototype results: does `flutter_midi_command` deliver bank select and program
-  change on Android (USB host), Windows, Linux and in Chrome, and which addressing
-  selects Nord songs on the current Nord Stage 3 OS?
+- Prototype results still open: Windows, Linux and Chrome; the number of
+  songs on the Nord.
 - Later stages (issues only when taken up): learning the program from the
   keyboard, program changes per section, page turning by MIDI, Bluetooth, several
   target devices, further device profiles, iOS.

@@ -1393,5 +1393,201 @@
       }
     }
   },
-  "whatsNewAllChanges": "Alle Änderungen"
+  "whatsNewAllChanges": "Alle Änderungen",
+  "midiTestTitle": "MIDI-Test (Prototyp)",
+  "midiTestTileHint": "Einen Programmwechsel an ein per USB verbundenes Keyboard senden, z. B. einen Nord Stage 3",
+  "midiTestHint": "Sendet einen Programmwechsel an ein per USB verbundenes Keyboard, um MIDI auf diesem Gerät zu testen. Was das Keyboard sendet, z. B. wenn du darauf ein Programm oder einen Song wählst, erscheint im Protokoll.",
+  "midiTestDevices": "Geräte",
+  "midiTestRefresh": "Erneut suchen",
+  "midiTestNoDevices": "Kein MIDI-Gerät gefunden. Verbinde das Keyboard per USB und suche erneut.",
+  "midiTestConnect": "Verbinden",
+  "midiTestDisconnect": "Trennen",
+  "midiTestConnected": "Verbunden",
+  "midiTestChannel": "MIDI-Kanal",
+  "midiTestModeNordProgram": "Nord-Programm",
+  "midiTestModeNordSong": "Nord-Song",
+  "midiTestModeNordLive": "Nord Live",
+  "midiTestModeRaw": "Rohwerte",
+  "midiTestBank": "Bank",
+  "midiTestLive": "Live-Speicher",
+  "midiTestMsb": "Bank Select MSB (CC 0, 0–127)",
+  "midiTestLsb": "Bank Select LSB (CC 32, 0–127)",
+  "midiTestProgram": "Programm (1–128)",
+  "midiTestEmptyNotSent": "Ein leeres Bank Select wird nicht gesendet.",
+  "midiTestInvalid": "Werte prüfen",
+  "midiTestSend": "Senden",
+  "midiTestLog": "Protokoll",
+  "midiTestCopy": "Protokoll kopieren",
+  "midiTestCopied": "Protokoll kopiert",
+  "midiTestClear": "Protokoll leeren",
+  "midiTestSent": "Gesendet: {bytes}",
+  "@midiTestSent": {
+    "placeholders": {
+      "bytes": {
+        "type": "String"
+      }
+    }
+  },
+  "midiTestReceivedCc": "Empfangen: CC {controller} = {value} (Kanal {channel}) – {bytes}",
+  "@midiTestReceivedCc": {
+    "placeholders": {
+      "controller": {
+        "type": "int"
+      },
+      "value": {
+        "type": "int"
+      },
+      "channel": {
+        "type": "int"
+      },
+      "bytes": {
+        "type": "String"
+      }
+    }
+  },
+  "midiTestReceivedPc": "Empfangen: Programmwechsel {number} (Wert {program}, Kanal {channel}) – {bytes}",
+  "@midiTestReceivedPc": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "program": {
+        "type": "int"
+      },
+      "channel": {
+        "type": "int"
+      },
+      "bytes": {
+        "type": "String"
+      }
+    }
+  },
+  "midiTestReceivedOther": "Empfangen: {bytes}",
+  "@midiTestReceivedOther": {
+    "placeholders": {
+      "bytes": {
+        "type": "String"
+      }
+    }
+  },
+  "midiTestError": "Fehler: {message}",
+  "@midiTestError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "midiTestModeCc": "Controller",
+  "midiTestController": "Controller (CC 0–127)",
+  "midiTestValue": "Wert (0–127)",
+  "midiTestCcHint": "Nord Stage 3 laut midi.guide: CC 2 Live-Modus, CC 3 Song-Modus, CC 5 Song-Teil. Welche Werte was bewirken, gehört zum Test.",
+  "midiGuideTitle": "Geführter Test (Nord Stage 3)",
+  "midiGuideHint": "Tippe auf «Senden», schau aufs Display des Nord und tippe an, was passiert ist. Am Nord musst du nichts einstellen. Die Antworten stehen im Protokoll.",
+  "midiGuideStep": "Schritt {current} von {total}: {title}",
+  "@midiGuideStep": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "midiGuideExpected": "Erwartet: {expected}",
+  "@midiGuideExpected": {
+    "placeholders": {
+      "expected": {
+        "type": "String"
+      }
+    }
+  },
+  "midiGuideDone": "Test fertig. Die Antworten stehen im Protokoll.",
+  "midiGuideRestart": "Neu beginnen",
+  "midiGuideBack": "Zurück",
+  "midiGuideSkip": "Überspringen",
+  "midiGuideResult": "Schritt {current} ({title}): {answer}",
+  "@midiGuideResult": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "title": {
+        "type": "String"
+      },
+      "answer": {
+        "type": "String"
+      }
+    }
+  },
+  "midiGuideProgram": "Programm {name}",
+  "@midiGuideProgram": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "midiGuideProgramExpected": "Das Nord zeigt {name}.",
+  "@midiGuideProgramExpected": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "midiGuideLive": "Live-Speicher {number}",
+  "@midiGuideLive": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "midiGuideLiveExpected": "Das Nord zeigt Live {number}.",
+  "@midiGuideLiveExpected": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "midiGuideSongModeOn": "Song-Modus ein (CC 3 = 127)",
+  "midiGuideSongModeOnExpected": "Das Nord wechselt in den Song-Modus.",
+  "midiGuideSongModeOff": "Song-Modus aus (CC 3 = 0)",
+  "midiGuideSongModeOffExpected": "Das Nord verlässt den Song-Modus.",
+  "midiGuideAnswerAsExpected": "Wie erwartet",
+  "midiGuideAnswerDifferent": "Etwas anderes",
+  "midiGuideAnswerNothing": "Nichts passiert",
+  "midiTestFree": "Frei senden",
+  "midiTestPage": "Seite",
+  "midiTestButton": "Taste",
+  "midiGuideSong": "Song {song}, Teil {part}",
+  "@midiGuideSong": {
+    "placeholders": {
+      "song": {
+        "type": "int"
+      },
+      "part": {
+        "type": "int"
+      }
+    }
+  },
+  "midiGuideSongExpected": "Das Nord zeigt Song {song}, Teil {part}.",
+  "@midiGuideSongExpected": {
+    "placeholders": {
+      "song": {
+        "type": "int"
+      },
+      "part": {
+        "type": "int"
+      }
+    }
+  },
+  "midiTestSong": "Song",
+  "midiTestPart": "Teil"
 }
