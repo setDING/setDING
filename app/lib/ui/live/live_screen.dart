@@ -33,6 +33,7 @@ import '../render/render_cache.dart';
 import '../render/song_image.dart';
 import '../render/song_view.dart';
 import '../sets/set_item_label.dart';
+import '../songs/midi_program_field.dart' show midiPatchLabel;
 import '../widgets/dialogs.dart';
 import '../widgets/key_picker.dart';
 import '../widgets/verse_chords_picker.dart';
@@ -1104,29 +1105,41 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                       },
                     ),
                     // The keyboard (ADR-0039), only while MIDI program
-                    // changes are on.
+                    // changes are on, with the program the current song
+                    // wants on it, if it has one (#605).
                     if (midi.enabled)
                       Padding(
                         padding: const EdgeInsets.only(right: 16),
-                        child: Tooltip(
-                          message: midi.connected
-                              ? l10n.liveMidiConnected(midi.deviceName ?? '')
-                              : l10n.liveMidiNotConnected,
-                          child: Icon(
-                            midi.connected ? Icons.piano : Icons.piano_off,
-                            key: Key(
-                              midi.connected
-                                  ? 'live-midi-connected'
-                                  : 'live-midi-not-connected',
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Tooltip(
+                              message: midi.connected
+                                  ? l10n.liveMidiConnected(
+                                      midi.deviceName ?? '',
+                                    )
+                                  : l10n.liveMidiNotConnected,
+                              child: Icon(
+                                midi.connected ? Icons.piano : Icons.piano_off,
+                                key: Key(
+                                  midi.connected
+                                      ? 'live-midi-connected'
+                                      : 'live-midi-not-connected',
+                                ),
+                                size: 18,
+                                semanticLabel: midi.connected
+                                    ? l10n.liveMidiConnected(
+                                        midi.deviceName ?? '',
+                                      )
+                                    : l10n.liveMidiNotConnected,
+                                color: midi.connected
+                                    ? null
+                                    : theme.colorScheme.error,
+                              ),
                             ),
-                            size: 18,
-                            semanticLabel: midi.connected
-                                ? l10n.liveMidiConnected(midi.deviceName ?? '')
-                                : l10n.liveMidiNotConnected,
-                            color: midi.connected
-                                ? null
-                                : theme.colorScheme.error,
-                          ),
+                            if (items[_index].song case final song?)
+                              _MidiProgramLabel(songId: song.id),
+                          ],
                         ),
                       ),
                     Text(
@@ -1160,6 +1173,36 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
               .transpose(item.bandTranspose + item.setTranspose)
               .format(ref.read(settingsProvider).notation);
     return '$title ($shown)$beat';
+  }
+}
+
+/// The keyboard program the song [songId] wants for this device's profile
+/// (ADR-0039, ADR-0042), as the musician reads it, e.g. "Program A:11";
+/// nothing when it has none (#605).
+class _MidiProgramLabel extends ConsumerWidget {
+  const _MidiProgramLabel({required this.songId});
+
+  final String songId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final overlay = ref.watch(overlayProvider(songId)).value;
+    if (overlay == null) return const SizedBox.shrink();
+    final profile = ref.watch(midiProfileProvider);
+    final program = SongRepository.midiProgramsOf(
+      overlay,
+      profile.id,
+    )[profile.id];
+    if (program == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(left: 6),
+      child: Text(
+        midiPatchLabel(AppLocalizations.of(context), profile.toPatch(program)),
+        key: const Key('live-midi-program'),
+        maxLines: 1,
+        style: Theme.of(context).textTheme.titleSmall,
+      ),
+    );
   }
 }
 
