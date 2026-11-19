@@ -399,14 +399,12 @@ class PocketBaseBackend implements SyncBackend {
       final filter = _pb.filter('organization = {:org}', {
         'org': organizationId,
       });
+      final active =
+          '$filter && revoked = false && expires > @now'
+          '${bandId == null ? '' : ' && ${_pb.filter('band = {:band}', {'band': bandId})}'}';
       final invites = await _pb
           .collection('invites')
-          .getFullList(
-            filter: bandId == null
-                ? filter
-                : '$filter && ${_pb.filter('band = {:band}', {'band': bandId})}',
-            sort: '-created',
-          );
+          .getFullList(filter: active, sort: '-created', expand: 'band');
       final joined = await _pb
           .collection('org_memberships')
           .getFullList(
@@ -420,6 +418,9 @@ class PocketBaseBackend implements SyncBackend {
             created: DateTime.parse(i.getStringValue('created')),
             expires: DateTime.parse(i.getStringValue('expires')),
             revoked: i.getBoolValue('revoked'),
+            bandName: i
+                .get<RecordModel?>('expand.band')
+                ?.getStringValue('name'),
             joined: [
               for (final m in joined)
                 if (m.getStringValue('invite') == i.id)
@@ -429,6 +430,18 @@ class PocketBaseBackend implements SyncBackend {
           ),
       ];
     });
+  }
+
+  @override
+  Future<CreatedInvite> fetchInviteLink(String inviteId) async {
+    final data = await _send(
+      '/api/setding/invites/${Uri.encodeComponent(inviteId)}/link',
+    );
+    return CreatedInvite(
+      id: data['id'] as String,
+      url: data['url'] as String,
+      expires: DateTime.parse(data['expires'] as String),
+    );
   }
 
   @override
@@ -1004,6 +1017,9 @@ class PocketBaseBackend implements SyncBackend {
         'used' => BackendErrorKind.inviteUsed,
         _ => BackendErrorKind.inviteExpired,
       }, e.response);
+    }
+    if (invite && e.statusCode == 409) {
+      return BackendException(BackendErrorKind.inviteNotStored, e.response);
     }
     if (invite && e.statusCode == 404) {
       return BackendException(BackendErrorKind.inviteUnknown, e.response);

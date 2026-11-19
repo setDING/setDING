@@ -166,7 +166,7 @@ erDiagram
     BAND_ARRANGEMENT { uuid band_id uuid song_id int transpose string sequence int tempo int revision bool deleted }
     ATTACHMENT { uuid id uuid song_id string name file pdf int pages int size_bytes int revision bool deleted }
     USER_SETTINGS { uuid user_id json data int revision }
-    INVITATION { uuid id uuid organization_id uuid band_id string founder_name string token_hash uuid created_by timestamp expires_at bool revoked uuid used_by }
+    INVITATION { uuid id uuid organization_id uuid band_id string founder_name string token_hash string token_enc uuid created_by timestamp expires_at bool revoked uuid used_by }
 ```
 
 Notes:

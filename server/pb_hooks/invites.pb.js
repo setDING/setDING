@@ -2,10 +2,14 @@
 
 // Invitation links (ADR-0005, ADR-0017); the logic is in lib/invites.js.
 
-// Creates a link for an organization (organization admins). Returns the
-// token once; only its hash is stored.
+// Creates a link for an organization (organization admins). The token is
+// stored as a hash and encrypted (SETDING_INVITE_KEY).
 routerAdd("POST", "/api/setding/invites", (e) =>
   require(`${__hooks}/lib/invites.js`).create(e), $apis.requireAuth("users"));
+
+// Shows an active link again (organization admins, band leaders).
+routerAdd("GET", "/api/setding/invites/{id}/link", (e) =>
+  require(`${__hooks}/lib/invites.js`).link(e), $apis.requireAuth("users"));
 
 // Organization name and state of a link, for "Join X?"; also without an
 // account, before signing up with the link (ADR-0024).

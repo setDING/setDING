@@ -296,6 +296,99 @@ void main() {
     );
   });
 
+  group('showing a link again (issue #579)', () {
+    Future<Response> link(Client client, String id) =>
+        client.send('GET', '/api/setding/invites/$id/link');
+
+    test('admins get the same link; the token is stored encrypted', () async {
+      final f = await BandFixture.create(pb);
+      final created = await create(f.admin, f.orgId);
+      final id = created.json['id'] as String;
+      final r = await link(f.admin, id);
+      r.expectStatus(200);
+      expect(r.json['url'], created.json['url']);
+      expect(r.json['expires'], created.json['expires']);
+
+      final stored = await pb.superuser.view('invites', id);
+      expect(stored.json['token_enc'], isNotEmpty);
+      expect(stored.json['token_enc'], isNot(contains(created.json['token'])));
+      expect(
+        (await f.admin.list('invites')).single.containsKey('token_enc'),
+        isFalse,
+      );
+      // Not changeable through the records API.
+      await f.admin.patch('invites', id, {'token_enc': 'forged'});
+      expect(
+        (await pb.superuser.view('invites', id)).json['token_enc'],
+        stored.json['token_enc'],
+      );
+    });
+
+    test('only people who see the link get it', () async {
+      final f = await BandFixture.create(pb);
+      final leader = await f.addLeader();
+      final orgLink = (await create(f.admin, f.orgId)).json['id'] as String;
+      final bandLink =
+          (await leader.send(
+                'POST',
+                '/api/setding/invites',
+                body: {'organization': f.orgId, 'band': f.id},
+              )).json['id']
+              as String;
+
+      (await link(leader, bandLink)).expectStatus(200);
+      (await link(f.admin, bandLink)).expectStatus(200);
+      expect((await link(leader, orgLink)).status, 404);
+      expect((await link(f.member, orgLink)).status, 404);
+      expect((await link(f.outsider, bandLink)).status, 404);
+      expect((await link(pb.guest, orgLink)).status, 401);
+      expect((await link(f.admin, 'unknown')).status, 404);
+    });
+
+    test('revoked and expired links are not shown', () async {
+      final f = await BandFixture.create(pb);
+      final revoked = (await create(f.admin, f.orgId)).json['id'] as String;
+      (await f.admin.patch('invites', revoked, {
+        'revoked': true,
+      })).expectStatus(200);
+      final r = await link(f.admin, revoked);
+      expect(r.status, 410);
+      expect(r.field('data.token.code'), 'revoked');
+
+      final expired = (await create(f.admin, f.orgId)).json['id'] as String;
+      (await pb.superuser.patch('invites', expired, {
+        'expires': '2020-01-01 00:00:00.000Z',
+      })).expectStatus(200);
+      expect(
+        (await link(f.admin, expired)).field('data.token.code'),
+        'expired',
+      );
+    });
+
+    test('without a key, tokens are not stored and links not shown', () async {
+      final keyless = await PocketBase.start(
+        environment: {'SETDING_INVITE_KEY': ''},
+      );
+      addTearDown(keyless.stop);
+      final f = await BandFixture.create(keyless);
+      final created = await create(f.admin, f.orgId);
+      created.expectStatus(200);
+      final id = created.json['id'] as String;
+      expect(
+        (await keyless.superuser.view('invites', id)).json['token_enc'],
+        '',
+      );
+      final r = await link(f.admin, id);
+      expect(r.status, 409);
+      expect(r.field('data.token.code'), 'not_stored');
+      // The link itself still works.
+      (await redeem(
+        await keyless.signUp(),
+        created.json['token'] as String,
+      )).expectStatus(200);
+    });
+  });
+
   group('web', () {
     test('the landing page links into the app', () async {
       final f = await BandFixture.create(pb);

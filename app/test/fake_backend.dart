@@ -418,15 +418,39 @@ class FakeSyncBackend implements SyncBackend {
     return [
       for (final i in invites.reversed)
         if (i.organizationId == organizationId &&
-            (bandId == null || i.bandId == bandId))
+            (bandId == null || i.bandId == bandId) &&
+            _inviteStatus(i) == InviteStatus.valid)
           InviteInfo(
             id: i.id,
             created: i.created,
             expires: i.expires,
             revoked: i.revoked,
+            bandName: i.bandId == null ? null : bands[i.bandId]?.name,
             joined: [for (final u in i.joined) u.displayName],
           ),
     ];
+  }
+
+  @override
+  Future<CreatedInvite> fetchInviteLink(String inviteId) async {
+    _requireUser();
+    final i = invites.firstWhere((i) => i.id == inviteId);
+    switch (_inviteStatus(i)) {
+      case InviteStatus.valid:
+        break;
+      case InviteStatus.revoked:
+        throw const BackendException(BackendErrorKind.inviteRevoked);
+      case InviteStatus.expired || InviteStatus.used:
+        throw const BackendException(BackendErrorKind.inviteExpired);
+    }
+    if (!i.stored) {
+      throw const BackendException(BackendErrorKind.inviteNotStored);
+    }
+    return CreatedInvite(
+      id: i.id,
+      url: 'https://api.setding.app/invite/${i.token}',
+      expires: i.expires,
+    );
   }
 
   @override
@@ -895,7 +919,7 @@ class FakeInvite {
   final String organizationId;
   final String token;
   final DateTime created;
-  final DateTime expires;
+  DateTime expires;
   bool revoked = false;
 
   /// Name of the organization a founder invitation creates (ADR-0024).
@@ -903,6 +927,10 @@ class FakeInvite {
 
   /// The band the link also leads into (ADR-0023).
   String? bandId;
+
+  /// Whether the server kept the token, so the link can be shown again
+  /// (issue #579).
+  bool stored = true;
   AuthUser? usedBy;
   final joined = <AuthUser>[];
 }

@@ -69,6 +69,10 @@ enum BackendErrorKind {
   /// The invitation link was revoked by an admin.
   inviteRevoked,
 
+  /// The link cannot be shown again: it was created before the server kept
+  /// tokens, or the server has no key for them (issue #579).
+  inviteNotStored,
+
   /// The founder invitation was used already (ADR-0024).
   inviteUsed,
 
@@ -449,8 +453,8 @@ class ServerConfig {
   bool get inviteOnly => registration == RegistrationMode.inviteOnly;
 }
 
-/// A new invitation link; the URL is only available right after creating it
-/// (the server stores a hash of the token).
+/// An invitation link with its URL: right after creating it, or shown again
+/// while it is valid (the server keeps the token encrypted, issue #579).
 @immutable
 class CreatedInvite {
   const CreatedInvite({
@@ -473,6 +477,7 @@ class InviteInfo {
     required this.expires,
     required this.revoked,
     this.joined = const [],
+    this.bandName,
   });
 
   final String id;
@@ -482,6 +487,10 @@ class InviteInfo {
 
   /// Names of the people who joined with this link.
   final List<String> joined;
+
+  /// The band the link also leads into (ADR-0023); null for links into the
+  /// organization only.
+  final String? bandName;
 
   InviteStatus statusAt(DateTime now) => revoked
       ? InviteStatus.revoked
@@ -617,13 +626,18 @@ abstract class SyncBackend {
   /// may only create such links (ADR-0023).
   Future<CreatedInvite> createInvite(String organizationId, {String? bandId});
 
-  /// The links of an organization, newest first: all of them for
+  /// The valid links of an organization, newest first: all of them for
   /// organization admins, those of the leader's bands otherwise; with
-  /// [bandId] only the links into that band.
+  /// [bandId] only the links into that band. Revoked and expired links are
+  /// left out (issue #579).
   Future<List<InviteInfo>> fetchInvites(
     String organizationId, {
     String? bandId,
   });
+
+  /// The URL of a valid link again, for the people who see it in
+  /// [fetchInvites] (issue #579).
+  Future<CreatedInvite> fetchInviteLink(String inviteId);
 
   /// Revokes a link; people who joined stay members.
   Future<void> revokeInvite(String inviteId);

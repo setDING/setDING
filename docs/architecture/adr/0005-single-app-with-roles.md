@@ -48,9 +48,12 @@ New members join a band via an **invitation link**:
   group chat). The app can also show it as a **QR code** for joining in person at a
   rehearsal.
 - Format: `https://<server-domain>/invite/<token>` with a long random token. The
-  server only stores a **hash** of the token.
+  server finds a token by its **hash** and keeps the token itself only
+  **encrypted** with a key from `pocketbase.env` (`SETDING_INVITE_KEY`), so the
+  people who manage a link can **show it again** while it is valid.
 - A link can be used **several times**, is valid for **7 days** and can be **revoked**
-  by any admin at any time. Admins can see who joined via which link.
+  by any admin at any time. Admins see the valid links with the band they lead into
+  and who joined via which link; revoked and expired links are not listed.
 - A link always grants the **member** role. Admin rights are assigned afterwards by an
   existing admin.
 - Opening the link:
@@ -115,6 +118,7 @@ Alternatives for invitations:
 - 2026-11-17: Application / bundle ID changed from `ch.realchord.realchord` to `app.realchord` to match the domain `realchord.app` (#298, owner request); the Android App Links and iOS Universal Links verification files name the new ID. Not migrated: the app was not live yet.
 - 2026-11-17: **ADR-0023** (accepted): band roles leader (`admin`) > set planner > member; the band setting `members_can_edit_songs` is replaced by the organization role librarian; band leaders invite into their band; still no guest role.
 - 2026-11-17: App renamed to **setDING** (#318): invitation links `https://api.setding.app/invite/<token>`, URL scheme `setding://`, application / bundle ID `app.setding`, verification files on `api.setding.app`. `realchord.app` expires; nothing is migrated (not live yet).
+- 2026-11-19: Invitation list (#579, owner request): it lists only **valid** links, in the organization with the **band** a link leads into (or "organization only"). An active link can be **shown again** (URL and QR code, route `GET /api/setding/invites/{id}/link`, for the people who may list it): besides the SHA-256 hash, the server stores the token encrypted (AES-GCM, `invites.token_enc`, hidden) with a key derived from `SETDING_INVITE_KEY` in `/etc/setding/pocketbase.env`, which `make server-install` generates once if it is missing. The key is not in `pb_data`, so a database or backup alone does not reveal links. Without the key (or for links created before) tokens are not stored and the link cannot be shown again (HTTP 409); the link itself keeps working. Replaces "the server only stores a hash".
 
 ## Open points
 

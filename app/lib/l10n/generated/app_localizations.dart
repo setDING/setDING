@@ -3209,7 +3209,7 @@ abstract class AppLocalizations {
   /// No description provided for @inviteLinkHint.
   ///
   /// In de, this message translates to:
-  /// **'Teile den Link, z. B. im Gruppenchat, oder lass den QR-Code scannen. Gültig bis {date}. Der Link wird nur jetzt angezeigt.'**
+  /// **'Teile den Link, z. B. im Gruppenchat, oder lass den QR-Code scannen. Gültig bis {date}. Du kannst ihn in der Liste der Einladungslinks wieder anzeigen.'**
   String inviteLinkHint(String date);
 
   /// No description provided for @inviteCopy.
@@ -3236,17 +3236,17 @@ abstract class AppLocalizations {
   /// **'Gültig bis {date}'**
   String inviteStatusValid(String date);
 
-  /// No description provided for @inviteStatusExpired.
+  /// No description provided for @inviteOrganizationOnly.
   ///
   /// In de, this message translates to:
-  /// **'Abgelaufen'**
-  String get inviteStatusExpired;
+  /// **'Nur Organisation'**
+  String get inviteOrganizationOnly;
 
-  /// No description provided for @inviteStatusRevoked.
+  /// No description provided for @inviteShow.
   ///
   /// In de, this message translates to:
-  /// **'Widerrufen'**
-  String get inviteStatusRevoked;
+  /// **'Link anzeigen'**
+  String get inviteShow;
 
   /// No description provided for @inviteJoined.
   ///
@@ -3373,6 +3373,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Diese Einladung wurde bereits verwendet. Bitte um einen neuen Link.'**
   String get inviteErrorUsed;
+
+  /// No description provided for @inviteErrorNotStored.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieser Link kann nicht mehr angezeigt werden. Erstelle einen neuen.'**
+  String get inviteErrorNotStored;
 
   /// No description provided for @accountErrorInvitationRequired.
   ///

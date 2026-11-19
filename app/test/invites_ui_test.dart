@@ -52,13 +52,68 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Invitation links'), findsOneWidget);
-    expect(find.text('Nobody joined yet'), findsOneWidget);
+    expect(find.textContaining('Nobody joined yet'), findsOneWidget);
     await tester.tap(find.text('Revoke'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Revoke'));
     await tester.pumpAndSettle();
     expect(invite.revoked, isTrue);
-    expect(find.text('Revoked'), findsOneWidget);
+    // Revoked links are not listed (issue #579).
+    expect(find.byKey(Key('invite-${invite.id}')), findsNothing);
+    expect(find.text('Invitation links'), findsNothing);
+    await app.dispose(tester);
+  });
+
+  testWidgets('lists valid links with their band and shows them again', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'}, user: _ann);
+    final backend = app.backend
+      ..addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+    backend.organizations['o1'] = 'School';
+    final orgLink = await backend.createInvite('o1');
+    final bandLink = await backend.createInvite('o1', bandId: 'b1');
+    final expired = await backend.createInvite('o1');
+    backend.invites.firstWhere((i) => i.id == expired.id).expires = backend.now
+        .subtract(const Duration(days: 1));
+    final old = await backend.createInvite('o1');
+    backend.invites.firstWhere((i) => i.id == old.id).stored = false;
+    await tester.pumpWidget(
+      app.build(home: const OrganizationScreen(organizationId: 'o1')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(Key('invite-${expired.id}')), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byKey(Key('invite-${bandLink.id}')),
+        matching: find.text('Rock'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(Key('invite-${orgLink.id}')),
+        matching: find.text('Organization only'),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(Key('invite-show-${bandLink.id}')));
+    await tester.pumpAndSettle();
+    expect(find.byType(QrImageView), findsOneWidget);
+    expect(find.text(bandLink.url), findsOneWidget);
+    await tester.tap(find.text('Close'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(Key('invite-show-${old.id}')));
+    await tester.pumpAndSettle();
+    expect(find.byType(QrImageView), findsNothing);
+    expect(
+      find.text('This link cannot be shown again. Create a new one.'),
+      findsOneWidget,
+    );
     await app.dispose(tester);
   });
 
