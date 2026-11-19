@@ -1026,6 +1026,8 @@
   "annotationsHide": "Hide annotations",
   "annotationPen": "Pen",
   "annotationHighlighter": "Highlighter",
+  "annotationText": "Text",
+  "annotationTextHint": "Type text",
   "annotationEraser": "Eraser (whole stroke)",
   "annotationPartialEraser": "Eraser (part of a stroke)",
   "annotationLasso": "Select (lasso)",

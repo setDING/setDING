@@ -31,6 +31,9 @@ class PlacedStroke {
   );
 
   Rect get bounds {
+    if (stroke.tool == AnnotationTool.text) {
+      return points.first & annotationTextSize(stroke.text ?? '', width);
+    }
     var rect = Rect.fromPoints(points.first, points.first);
     for (final p in points) {
       rect = rect.expandToInclude(Rect.fromPoints(p, p));
@@ -204,6 +207,7 @@ class PagePlacement {
     required double lineWidth,
     List<double>? pressure,
     AnnotationStamp? stamp,
+    String? text,
   }) => AnnotationStroke(
     id: id,
     tool: tool,
@@ -214,6 +218,7 @@ class PagePlacement {
     ],
     pressure: pressure,
     stamp: stamp,
+    text: text,
     page: page,
     layout: layout,
     anchor: anchorAt(points.first),
@@ -228,6 +233,7 @@ class PagePlacement {
     double? lineWidth,
     int? color,
     List<double>? pressure,
+    String? text,
   }) {
     final s = placed.stroke;
     return toStroke(
@@ -238,6 +244,7 @@ class PagePlacement {
       lineWidth: lineWidth ?? placed.width,
       pressure: points == null ? s.pressure : pressure,
       stamp: s.stamp,
+      text: text ?? s.text,
     );
   }
 }
@@ -266,3 +273,30 @@ List<Offset> scaleAround(List<Offset> points, Offset center, double factor) => [
 
 /// Size of a stamp drawn with [lineWidth]: stamps are larger than lines.
 double stampSize(double lineWidth) => math.max(lineWidth * 8, 16);
+
+/// Style of a text annotation at [fontSize] (#570); its colour comes from
+/// the palette.
+TextStyle annotationTextStyle(double fontSize, {Color? color}) => TextStyle(
+  color: color,
+  fontSize: fontSize,
+  fontWeight: FontWeight.w600,
+  height: 1.2,
+);
+
+/// Size of [text] as a text annotation at [fontSize] (lines are not
+/// wrapped).
+Size annotationTextSize(String text, double fontSize) {
+  final key = (text, fontSize);
+  final cached = _textSizes[key];
+  if (cached != null) return cached;
+  final painter = TextPainter(
+    text: TextSpan(text: text, style: annotationTextStyle(fontSize)),
+    textDirection: TextDirection.ltr,
+  )..layout();
+  final size = painter.size;
+  painter.dispose();
+  if (_textSizes.length > 200) _textSizes.clear();
+  return _textSizes[key] = size;
+}
+
+final _textSizes = <(String, double), Size>{};

@@ -23,7 +23,14 @@ enum AnnotationTool {
 
   /// A symbol from [AnnotationStamp], placed with a tap.
   stamp,
+
+  /// Text typed with the keyboard, placed with a tap (#570). Its one point
+  /// is the top left corner of the text, its width the font size.
+  text,
 }
+
+/// Most characters of a text annotation.
+const annotationTextMaxLength = 500;
 
 /// Symbols that are placed with a tap (ADR-0032).
 enum AnnotationStamp {
@@ -265,6 +272,7 @@ class AnnotationStroke {
     required this.points,
     this.pressure,
     this.stamp,
+    this.text,
     this.page = 0,
     this.layout,
     this.anchor,
@@ -277,11 +285,12 @@ class AnnotationStroke {
   /// Index into the palette (0 … [annotationColorCount] − 1).
   final int color;
 
-  /// Line width (or stamp size) as a share of the page width.
+  /// Line width (stamp size, font size of a text) as a share of the page
+  /// width.
   final double width;
 
   /// x0, y0, x1, y1, … normalized to the page width. A stamp has one point,
-  /// its centre.
+  /// its centre; a text one point, its top left corner.
   final List<double> points;
 
   /// Stylus pressure per point (0 … 1); null without pressure.
@@ -289,6 +298,9 @@ class AnnotationStroke {
 
   /// The symbol of a [AnnotationTool.stamp].
   final AnnotationStamp? stamp;
+
+  /// The text of an [AnnotationTool.text] (lines separated by `\n`).
+  final String? text;
 
   /// Page: for a ChordPro song the page in live mode (0-based), for a PDF
   /// the page number (1-based).
@@ -308,6 +320,7 @@ class AnnotationStroke {
     double? width,
     List<double>? points,
     List<double>? pressure,
+    String? text,
     int? page,
     LayoutFingerprint? layout,
     LineAnchor? anchor,
@@ -320,6 +333,7 @@ class AnnotationStroke {
     points: points ?? this.points,
     pressure: pressure ?? this.pressure,
     stamp: stamp,
+    text: text ?? this.text,
     page: page ?? this.page,
     layout: layout ?? this.layout,
     anchor: clearAnchor ? null : anchor ?? this.anchor,
@@ -346,6 +360,7 @@ class AnnotationStroke {
     'pts': encodePoints(points),
     if (pressure case final p?) 'pr': encodePressure(p),
     if (stamp case final s?) 'stamp': s.name,
+    'text': ?text,
     'page': page,
     if (layout case final l?) 'layout': l.toJson(),
     if (anchor case final a?) 'anchor': a.toJson(),
@@ -364,6 +379,11 @@ class AnnotationStroke {
     if (points == null || points.length < 2) return null;
     final stamp = AnnotationStamp.byName(json['stamp'] as String?);
     if (tool == AnnotationTool.stamp && stamp == null) return null;
+    final text = json['text'];
+    if (tool == AnnotationTool.text &&
+        (text is! String || text.trim().isEmpty)) {
+      return null;
+    }
     final pressure = switch (json['pr']) {
       final String p => decodePressure(p),
       _ => null,
@@ -379,6 +399,7 @@ class AnnotationStroke {
       points: points,
       pressure: pressure?.length == points.length ~/ 2 ? pressure : null,
       stamp: stamp,
+      text: tool == AnnotationTool.text ? text as String : null,
       page: (json['page'] as num?)?.toInt() ?? 0,
       layout: LayoutFingerprint.fromJson(json['layout']),
       anchor: LineAnchor.fromJson(json['anchor']),

@@ -2325,6 +2325,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get annotationHighlighter => 'Highlighter';
 
   @override
+  String get annotationText => 'Text';
+
+  @override
+  String get annotationTextHint => 'Type text';
+
+  @override
   String get annotationEraser => 'Eraser (whole stroke)';
 
   @override

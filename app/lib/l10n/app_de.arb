@@ -1220,6 +1220,8 @@
   "annotationsHide": "Notizen ausblenden",
   "annotationPen": "Stift",
   "annotationHighlighter": "Leuchtstift",
+  "annotationText": "Text",
+  "annotationTextHint": "Text eingeben",
   "annotationEraser": "Radierer (ganzer Strich)",
   "annotationPartialEraser": "Radierer (Teil eines Strichs)",
   "annotationLasso": "Auswählen (Lasso)",

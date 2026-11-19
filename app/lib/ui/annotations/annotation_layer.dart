@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:uuid/uuid.dart';
 
@@ -85,6 +87,27 @@ class _AnnotationLayerState extends State<AnnotationLayer> {
   Offset? _moveStart;
   Offset _moveOffset = Offset.zero;
 
+  /// A text being typed (#570): its top left corner on the page and, when an
+  /// existing text is edited, that one (hidden meanwhile).
+  ({Offset at, PlacedStroke? editing})? _text;
+  final _textController = TextEditingController();
+  late final _textFocus = FocusNode(
+    debugLabel: 'annotation text',
+    onKeyEvent: _onTextKey,
+  );
+  final _textFieldKey = GlobalKey();
+
+  /// How far the text field is lifted so the on-screen keyboard does not
+  /// cover it.
+  double _textLift = 0;
+
+  /// The gesture in progress closed the text field: it does not open
+  /// another one.
+  bool _textClosedByGesture = false;
+
+  /// The pointer whose tap beside the text field closed it.
+  int? _textClosedBy;
+
   /// Strokes erased by the gesture so far.
   final _erased = <String>{};
 
@@ -119,13 +142,22 @@ class _AnnotationLayerState extends State<AnnotationLayer> {
 
   @override
   void dispose() {
+    // A page turned away while typing keeps its text.
+    _commitText(rebuild: false);
     _editor?.removeListener(_onEditor);
     _editor?.selectionActions.removeListener(_onAction);
+    _textController.dispose();
+    _textFocus.dispose();
     super.dispose();
   }
 
   void _onEditor() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    // Leaving drawing mode or the text tool stores the text being typed.
+    if (_text != null && (!_editing || _editor!.tool != DrawingTool.text)) {
+      _commitText();
+    }
+    setState(() {});
   }
 
   bool get _needsLines =>
@@ -256,6 +288,12 @@ class _AnnotationLayerState extends State<AnnotationLayer> {
         : editor.tool;
     _gestureTool = tool;
     _downAt = p;
+    _textClosedByGesture = e.pointer == _textClosedBy;
+    if (_text != null) {
+      // A pointer beside the text field ends typing.
+      _commitText();
+      _textClosedByGesture = true;
+    }
     setState(() {
       switch (tool) {
         case DrawingTool.pen || DrawingTool.highlighter:
@@ -273,7 +311,7 @@ class _AnnotationLayerState extends State<AnnotationLayer> {
             editor.selection = null;
             _lasso = [p];
           }
-        case DrawingTool.stamp:
+        case DrawingTool.stamp || DrawingTool.text:
           break;
       }
     });
@@ -300,7 +338,7 @@ class _AnnotationLayerState extends State<AnnotationLayer> {
           } else {
             _lasso?.add(p);
           }
-        case DrawingTool.stamp || null:
+        case DrawingTool.stamp || DrawingTool.text || null:
           break;
       }
     });
@@ -348,6 +386,13 @@ class _AnnotationLayerState extends State<AnnotationLayer> {
             ],
           );
         }
+      case DrawingTool.text:
+        final at = _downAt;
+        if (!_textClosedByGesture &&
+            at != null &&
+            (e.localPosition - at).distance < 16) {
+          _openText(at);
+        }
       case DrawingTool.eraser || DrawingTool.partialEraser:
         _commitErase(placement);
       case DrawingTool.lasso:
@@ -372,6 +417,10 @@ class _AnnotationLayerState extends State<AnnotationLayer> {
             for (final p in lasso) ...[p.dx, p.dy],
           ];
           bool inside(PlacedStroke s) {
+            if (s.stroke.tool == AnnotationTool.text) {
+              final c = s.bounds.center;
+              return pointInPolygon(c.dx, c.dy, polygon);
+            }
             final n = s.points
                 .where((p) => pointInPolygon(p.dx, p.dy, polygon))
                 .length;
@@ -420,10 +469,16 @@ class _AnnotationLayerState extends State<AnnotationLayer> {
       final flat = [
         for (final q in placed.points) ...[q.dx, q.dy],
       ];
-      if (!partial || placed.stroke.tool == AnnotationTool.stamp) {
-        final near = placed.stroke.tool == AnnotationTool.stamp
-            ? (placed.points.first - p).distance <= radius + placed.width / 2
-            : strokeNear(flat, p.dx, p.dy, radius + placed.width / 2);
+      final tool = placed.stroke.tool;
+      if (!partial ||
+          tool == AnnotationTool.stamp ||
+          tool == AnnotationTool.text) {
+        final near = switch (tool) {
+          AnnotationTool.stamp =>
+            (placed.points.first - p).distance <= radius + placed.width / 2,
+          AnnotationTool.text => placed.bounds.inflate(radius).contains(p),
+          _ => strokeNear(flat, p.dx, p.dy, radius + placed.width / 2),
+        };
         if (near) _erased.add(id);
         continue;
       }
@@ -495,6 +550,212 @@ class _AnnotationLayerState extends State<AnnotationLayer> {
     _editor!.commit(widget.songId, widget.target, before: before, after: after);
   }
 
+  // Text ------------------------------------------------------------------------
+
+  /// Opens the text field for a tap at [p]: on the text there to edit it,
+  /// otherwise for a new text whose first line is centred on [p].
+  void _openText(Offset p) {
+    final editor = _editor!;
+    PlacedStroke? hit;
+    for (final placed in _placed) {
+      if (placed.stroke.tool == AnnotationTool.text &&
+          placed.bounds.inflate(8).contains(p)) {
+        hit = placed; // The last one is on top.
+      }
+    }
+    final size = hit?.width ?? editor.textSize(widget.font);
+    final at =
+        hit?.points.first ??
+        p - Offset(size * 0.1, annotationTextSize('X', size).height / 2);
+    _textController.text = hit?.stroke.text ?? '';
+    _textController.selection = TextSelection.collapsed(
+      offset: _textController.text.length,
+    );
+    editor.selection = null;
+    setState(() {
+      _text = (at: at, editing: hit);
+      _textLift = 0;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _text != null) _textFocus.requestFocus();
+    });
+  }
+
+  /// Stores the text being typed: a new text, the edited one, or, when it
+  /// was emptied, erases it.
+  void _commitText({bool rebuild = true}) {
+    final open = _text;
+    final editor = _editor;
+    if (open == null || editor == null) return;
+    _text = null;
+    final text = _textController.text.trimRight();
+    final placement = _placement(_width);
+    final editing = open.editing;
+    // From dispose the change is stored after the frame: it rebuilds the
+    // other pages, which must not happen while the tree is locked.
+    void commit({
+      List<AnnotationStroke> before = const [],
+      List<AnnotationStroke> after = const [],
+    }) {
+      void store() => editor.commit(
+        widget.songId,
+        widget.target,
+        before: before,
+        after: after,
+      );
+      rebuild ? store() : scheduleMicrotask(store);
+    }
+
+    if (editing == null) {
+      if (text.trim().isNotEmpty) {
+        commit(
+          after: [
+            placement.toStroke(
+              id: _uuid.v4(),
+              tool: AnnotationTool.text,
+              color: editor.color,
+              points: [open.at],
+              lineWidth: editor.textSize(widget.font),
+              text: text,
+            ),
+          ],
+        );
+      }
+    } else if (text.trim().isEmpty) {
+      commit(before: [editing.stroke]);
+    } else if (text != editing.stroke.text) {
+      commit(
+        before: [editing.stroke],
+        after: [placement.restore(editing, text: text)],
+      );
+    }
+    _closeText(rebuild: rebuild);
+  }
+
+  void _closeText({bool rebuild = true}) {
+    _text = null;
+    if (_textFocus.hasFocus) _textFocus.unfocus();
+    if (rebuild && mounted) setState(() {});
+  }
+
+  /// Enter stores the text, Shift+Enter starts a new line (the text field
+  /// does that), Escape drops it.
+  KeyEventResult _onTextKey(FocusNode node, KeyEvent event) {
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.numpadEnter) {
+      if (HardwareKeyboard.instance.isShiftPressed) {
+        return KeyEventResult.ignored;
+      }
+      if (event is KeyDownEvent) _commitText();
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.escape) {
+      if (event is KeyDownEvent) _closeText();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
+
+  /// Lifts the text field above the on-screen keyboard.
+  void _scheduleTextLift() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _text == null) return;
+      final box = _textFieldKey.currentContext?.findRenderObject();
+      if (box is! RenderBox || !box.hasSize) return;
+      final media = MediaQuery.of(context);
+      final visibleBottom = media.size.height - media.viewInsets.bottom - 8;
+      final bottom =
+          box.localToGlobal(Offset(0, box.size.height)).dy + _textLift;
+      final lift = math.max(0.0, bottom - visibleBottom);
+      if ((lift - _textLift).abs() > 0.5) setState(() => _textLift = lift);
+    });
+  }
+
+  Widget _textField(BuildContext context, double width) {
+    final open = _text!;
+    final editor = _editor!;
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final editing = open.editing;
+    final size = editing?.width ?? editor.textSize(widget.font);
+    final color = annotationColor(
+      editing?.stroke.color ?? editor.color,
+      theme.brightness,
+    );
+    const pad = 6.0;
+    final left = (open.at.dx - pad)
+        .clamp(0.0, math.max(0.0, width - 160))
+        .toDouble();
+    _scheduleTextLift();
+    return Positioned(
+      left: left,
+      top: open.at.dy - pad - _textLift,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: math.max(160.0, width - left)),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Flexible(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface.withValues(alpha: 0.85),
+                  border: Border.all(color: color, width: 1.5),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(pad - 1.5),
+                  child: IntrinsicWidth(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minWidth: size * 4),
+                      child: TextField(
+                        key: _textFieldKey,
+                        controller: _textController,
+                        focusNode: _textFocus,
+                        style: annotationTextStyle(size, color: color),
+                        cursorColor: color,
+                        keyboardType: TextInputType.multiline,
+                        textCapitalization: TextCapitalization.sentences,
+                        minLines: 1,
+                        maxLines: null,
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(
+                            annotationTextMaxLength,
+                          ),
+                        ],
+                        decoration: InputDecoration.collapsed(
+                          hintText: l10n.annotationTextHint,
+                          hintStyle: annotationTextStyle(
+                            size,
+                            color: color.withValues(alpha: 0.45),
+                          ),
+                        ),
+                        // A tap beside the field stores the text; on this
+                        // page it does not open a new field.
+                        onTapOutside: (e) {
+                          _textClosedBy = e.pointer;
+                          _commitText();
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            IconButton.filled(
+              key: const Key('annotation-text-done'),
+              tooltip: l10n.annotationDone,
+              icon: const Icon(Icons.check),
+              onPressed: _commitText,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Rect? _selectionBounds() {
     Rect? bounds;
     for (final p in _placed) {
@@ -563,7 +824,13 @@ class _AnnotationLayerState extends State<AnnotationLayer> {
         _placed = show && _width.isFinite && _width > 0
             ? _place(_width)
             : const [];
-        final shown = _shown;
+        final editedId = _text?.editing?.stroke.id;
+        final shown = editedId == null
+            ? _shown
+            : [
+                for (final p in _shown)
+                  if (p.stroke.id != editedId) p,
+              ];
         final selected = _selectedIds;
         final editing = _editing;
         final current = widget.layout;
@@ -636,6 +903,7 @@ class _AnnotationLayerState extends State<AnnotationLayer> {
                   },
                 ),
               ),
+            if (editing && _text != null) _textField(context, _width),
             if (others.isNotEmpty || orphans > 0 || full || nearlyFull)
               Positioned(
                 top: 4,

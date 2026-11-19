@@ -69,6 +69,11 @@ void _paintSelection(Canvas canvas, PlacedStroke p, Brightness brightness) {
     ..strokeWidth = p.width + 8;
   if (p.stroke.tool == AnnotationTool.stamp) {
     canvas.drawCircle(p.points.first, p.width * 0.65, halo);
+  } else if (p.stroke.tool == AnnotationTool.text) {
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(p.bounds.inflate(4), const Radius.circular(4)),
+      Paint()..color = halo.color,
+    );
   } else {
     canvas.drawPath(_path(p.points), halo);
   }
@@ -79,6 +84,10 @@ void paintStroke(Canvas canvas, PlacedStroke p, Color color) {
   final s = p.stroke;
   if (s.tool == AnnotationTool.stamp) {
     paintStamp(canvas, s.stamp!, p.points.first, p.width, color);
+    return;
+  }
+  if (s.tool == AnnotationTool.text) {
+    paintText(canvas, s.text ?? '', p.points.first, p.width, color);
     return;
   }
   final paint = Paint()
@@ -107,6 +116,26 @@ void paintStroke(Canvas canvas, PlacedStroke p, Color color) {
     paint.strokeWidth = p.width * (0.4 + w);
     canvas.drawLine(points[i - 1], points[i], paint);
   }
+}
+
+/// Paints a text annotation: [text] with its top left corner at [at] in
+/// [fontSize].
+void paintText(
+  Canvas canvas,
+  String text,
+  Offset at,
+  double fontSize,
+  Color color,
+) {
+  final painter = TextPainter(
+    text: TextSpan(
+      text: text,
+      style: annotationTextStyle(fontSize, color: color),
+    ),
+    textDirection: TextDirection.ltr,
+  )..layout();
+  painter.paint(canvas, at);
+  painter.dispose();
 }
 
 /// A smooth path through [points] (quadratic curves through the midpoints).

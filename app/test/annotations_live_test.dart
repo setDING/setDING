@@ -259,6 +259,170 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('the text tool types, edits and erases text (#570)', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final items = await createSongs(tester, app, sources);
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+    await startDrawing(tester);
+    final page = tester.getRect(find.byType(PageView));
+    await tester.tap(find.byKey(const Key('annotation-tool-text')));
+    await tester.pumpAndSettle();
+
+    Future<void> stylusTap(Offset at) async {
+      final g = await tester.startGesture(at, kind: PointerDeviceKind.stylus);
+      await g.up();
+      await tester.pumpAndSettle();
+    }
+
+    Future<List<AnnotationStroke>> texts() async => [
+      for (final r in await rows(tester, app))
+        if (r.stroke != null)
+          ?AnnotationStroke.fromJson(r.id, jsonDecode(r.stroke!)),
+    ];
+
+    // A tap opens the field; Shift+Enter starts a new line, Enter stores.
+    final at = Offset(page.left + 300, page.top + 200);
+    await stylusTap(at);
+    final field = find.descendant(
+      of: find.byType(AnnotationLayer),
+      matching: find.byType(TextField),
+    );
+    expect(field, findsOneWidget);
+    await tester.enterText(field, 'leise');
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.pump();
+    expect(await texts(), isEmpty, reason: 'Shift+Enter does not store');
+    await tester.enterText(field, 'leise\n2× Intro');
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    expect(field, findsNothing);
+    var stored = await texts();
+    expect(stored.single.tool, AnnotationTool.text);
+    expect(stored.single.text, 'leise\n2× Intro');
+    expect(stored.single.anchor, isNotNull);
+    expect(find.text('First'), findsWidgets, reason: 'Enter did not turn');
+
+    // A tap on the text edits it; the done button stores the change.
+    await stylusTap(at);
+    expect(field, findsOneWidget);
+    expect(tester.widget<TextField>(field).controller!.text, contains('leise'));
+    await tester.enterText(field, 'laut');
+    await tester.tap(find.byKey(const Key('annotation-text-done')));
+    await tester.pumpAndSettle();
+    stored = await texts();
+    expect(stored.single.text, 'laut');
+
+    // Escape drops what was typed.
+    await stylusTap(at);
+    await tester.enterText(field, 'nope');
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+    expect(field, findsNothing);
+    expect((await texts()).single.text, 'laut');
+    expect(
+      find.byKey(const Key('annotation-toolbar')),
+      findsOneWidget,
+      reason: 'Escape in the field does not leave drawing mode',
+    );
+
+    // A tap beside an open field stores it and opens no new one.
+    await stylusTap(Offset(page.left + 300, page.top + 400));
+    await tester.enterText(field, 'Solo');
+    await stylusTap(Offset(page.left + 600, page.top + 500));
+    expect(field, findsNothing);
+    expect(
+      (await texts()).map((s) => s.text),
+      unorderedEquals(['laut', 'Solo']),
+    );
+
+    // Emptying a text erases it; undo brings it back.
+    await stylusTap(at);
+    await tester.enterText(field, '');
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    expect((await texts()).map((s) => s.text), ['Solo']);
+    await tester.tap(find.byKey(const Key('annotation-undo')));
+    await tester.pumpAndSettle();
+    expect(
+      (await texts()).map((s) => s.text),
+      unorderedEquals(['laut', 'Solo']),
+    );
+
+    // The lasso selects a text by its middle; larger scales its font.
+    final solo = (await texts()).firstWhere((s) => s.text == 'Solo');
+    await tester.tap(find.byKey(const Key('annotation-tool-lasso')));
+    await tester.pumpAndSettle();
+    final c = Offset(page.left + 330, page.top + 400);
+    final lasso = await tester.startGesture(
+      c + const Offset(-80, -60),
+      kind: PointerDeviceKind.stylus,
+    );
+    for (final corner in const [
+      Offset(80, -60),
+      Offset(80, 60),
+      Offset(-80, 60),
+      Offset(-80, -60),
+    ]) {
+      await lasso.moveTo(c + corner);
+      await tester.pump();
+    }
+    await lasso.up();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('annotation-selection-larger')));
+    await tester.pumpAndSettle();
+    final larger = (await texts()).firstWhere((s) => s.text == 'Solo');
+    expect(larger.width, closeTo(solo.width * 1.25, 0.001));
+
+    // The eraser removes a text it touches.
+    await tester.tap(find.byKey(const Key('annotation-tool-eraser')));
+    await tester.pumpAndSettle();
+    await stylusTap(at + const Offset(10, 0));
+    expect((await texts()).map((s) => s.text), ['Solo']);
+    await app.dispose(tester);
+  });
+
+  testWidgets('a page turned away while typing keeps its text (#570)', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final items = await createSongs(tester, app, sources);
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+    await startDrawing(tester);
+    final page = tester.getRect(find.byType(PageView));
+    await tester.tap(find.byKey(const Key('annotation-tool-text')));
+    await tester.pumpAndSettle();
+    final g = await tester.startGesture(
+      Offset(page.left + 300, page.top + 200),
+      kind: PointerDeviceKind.stylus,
+    );
+    await g.up();
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'Capo 2');
+    // A finger swipe turns to the next song.
+    await tester.flingFrom(
+      Offset(page.center.dx, page.top + 400),
+      const Offset(-400, 0),
+      1500,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Second'), findsWidgets);
+    expect(tester.takeException(), isNull);
+    final stored = [
+      for (final r in await rows(tester, app))
+        ?AnnotationStroke.fromJson(r.id, jsonDecode(r.stroke!)),
+    ];
+    expect(stored.single.text, 'Capo 2');
+    await app.dispose(tester);
+  });
+
   testWidgets('fingers draw only when the setting allows it', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(

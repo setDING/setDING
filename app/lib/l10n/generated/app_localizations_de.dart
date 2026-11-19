@@ -2340,6 +2340,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get annotationHighlighter => 'Leuchtstift';
 
   @override
+  String get annotationText => 'Text';
+
+  @override
+  String get annotationTextHint => 'Text eingeben';
+
+  @override
   String get annotationEraser => 'Radierer (ganzer Strich)';
 
   @override
