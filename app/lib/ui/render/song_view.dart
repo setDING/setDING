@@ -394,6 +394,22 @@ class _SectionBlock extends StatelessWidget {
               chordStyle: style.chordFor(format, role: role),
             ),
           );
+        case final StackedLine l:
+          // Stacked verses (#521): each row is marked as its verse's line.
+          children.add(
+            _StackedLines(
+              line: l,
+              formatter: options.formatter,
+              lyricsOnly: options.lyricsOnly,
+              lyricStyle: style.lyricsFor(format, inChorus: chorus, role: role),
+              chordStyle: style.chordFor(format, role: role),
+              labelColor: style.labelFor(format, role: role).color,
+              markRow: (row, child) => markLine(
+                row.line,
+                _tappable(options.onElementTap, row.line, child),
+              ),
+            ),
+          );
         case final LyricLine l:
           children.add(
             const _TextAt(0).wrap(
@@ -696,6 +712,122 @@ class _ChordLyricLine extends StatelessWidget {
               ],
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Lines of stacked verses (#521): the chords once, then a row per verse,
+/// numbered, with its words in columns under the chords. The columns wrap
+/// together, so every verse stays under its chords. Verses without chords
+/// follow with their text in one piece.
+class _StackedLines extends StatelessWidget {
+  const _StackedLines({
+    required this.line,
+    required this.formatter,
+    required this.lyricsOnly,
+    required this.lyricStyle,
+    required this.chordStyle,
+    required this.labelColor,
+    required this.markRow,
+  });
+
+  final StackedLine line;
+  final ChordFormatter formatter;
+  final bool lyricsOnly;
+  final TextStyle lyricStyle;
+  final TextStyle chordStyle;
+  final Color? labelColor;
+
+  /// Marks a row's widget as the line of its verse (annotations, taps).
+  final Widget Function(StackedRow row, Widget child) markRow;
+
+  @override
+  Widget build(BuildContext context) {
+    final size = lyricStyle.fontSize ?? 14;
+    final labelStyle = lyricStyle.copyWith(
+      color: labelColor,
+      fontWeight: FontWeight.bold,
+    );
+    Widget label(StackedRow row) => markRow(
+      row,
+      SizedBox(
+        width: size * SongSpacing.stackedLabel,
+        child: Text('${row.verse}.', style: labelStyle, softWrap: false),
+      ),
+    );
+    Widget text(String raw) => raw.isEmpty
+        ? Text(' ', style: lyricStyle)
+        : Text.rich(markupSpan(raw, lyricStyle));
+    Widget plainRow(StackedRow row) => Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        label(row),
+        SizedBox(width: size * SongSpacing.stackedLabelGap),
+        Expanded(child: text(row.line.text)),
+      ],
+    );
+
+    if (lyricsOnly) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [for (final row in line.rows) plainRow(row)],
+      );
+    }
+    final chorded = [
+      for (final row in line.rows)
+        if (row.cells != null) row,
+    ];
+    return Padding(
+      padding: EdgeInsets.only(top: size * SongSpacing.chordLineTop),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // As high as the chords.
+                  ChordText(const [ChordPart(' ')], style: chordStyle),
+                  for (final row in chorded) label(row),
+                ],
+              ),
+              SizedBox(width: size * SongSpacing.stackedLabelGap),
+              Expanded(
+                child: Wrap(
+                  children: [
+                    for (final i in stackedColumns(line))
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _chord(line.chords[i], size),
+                          for (final row in chorded) text(row.cells![i]),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          for (final row in line.rows)
+            if (row.cells == null) plainRow(row),
+        ],
+      ),
+    );
+  }
+
+  Widget _chord(ChordToken? chord, double size) {
+    if (chord == null) {
+      return ChordText(const [ChordPart(' ')], style: chordStyle);
+    }
+    return Padding(
+      padding: EdgeInsets.only(right: size * SongSpacing.chordGap),
+      child: ChordText(
+        formatter.formatParts(chord),
+        style: applyMarkupStyle(chordStyle, chordMarkupStyle(chord)),
       ),
     );
   }

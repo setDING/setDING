@@ -846,7 +846,7 @@ class SongRepository {
     fontScale: 1.0,
     revision: 0,
     hideAnnotations: false,
-    firstVerseChordsOnly: false,
+    verseChords: VerseChords.all,
   );
 
   /// Saves all fields, including null values (e.g. resetting Nashville to

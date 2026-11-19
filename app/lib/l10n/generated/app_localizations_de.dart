@@ -331,6 +331,15 @@ class AppLocalizationsDe extends AppLocalizations {
       'Der Song hat keine weiteren Strophen mit Akkorden.';
 
   @override
+  String get verseChords => 'Akkorde in Strophen';
+
+  @override
+  String get verseChordsAll => 'Akkorde in allen Strophen';
+
+  @override
+  String get verseChordsStacked => 'Strophen untereinander';
+
+  @override
   String get editorTitleNew => 'Neuer Song';
 
   @override

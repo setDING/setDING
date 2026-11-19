@@ -329,6 +329,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'The song has no further verses with chords.';
 
   @override
+  String get verseChords => 'Chords in verses';
+
+  @override
+  String get verseChordsAll => 'Chords in all verses';
+
+  @override
+  String get verseChordsStacked => 'Verses stacked';
+
+  @override
   String get editorTitleNew => 'New song';
 
   @override

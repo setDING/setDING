@@ -4680,20 +4680,18 @@ class $PersonalOverlaysTable extends PersonalOverlays
     ),
     defaultValue: const Constant(false),
   );
-  static const VerificationMeta _firstVerseChordsOnlyMeta =
-      const VerificationMeta('firstVerseChordsOnly');
   @override
-  late final GeneratedColumn<bool> firstVerseChordsOnly = GeneratedColumn<bool>(
-    'first_verse_chords_only',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("first_verse_chords_only" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
-  );
+  late final GeneratedColumnWithTypeConverter<VerseChords, String> verseChords =
+      GeneratedColumn<String>(
+        'verse_chords',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: Constant(VerseChords.all.name),
+      ).withConverter<VerseChords>(
+        $PersonalOverlaysTable.$converterverseChords,
+      );
   static const VerificationMeta _revisionMeta = const VerificationMeta(
     'revision',
   );
@@ -4718,7 +4716,7 @@ class $PersonalOverlaysTable extends PersonalOverlays
     nashville,
     liveView,
     hideAnnotations,
-    firstVerseChordsOnly,
+    verseChords,
     revision,
   ];
   @override
@@ -4798,15 +4796,6 @@ class $PersonalOverlaysTable extends PersonalOverlays
         ),
       );
     }
-    if (data.containsKey('first_verse_chords_only')) {
-      context.handle(
-        _firstVerseChordsOnlyMeta,
-        firstVerseChordsOnly.isAcceptableOrUnknown(
-          data['first_verse_chords_only']!,
-          _firstVerseChordsOnlyMeta,
-        ),
-      );
-    }
     if (data.containsKey('revision')) {
       context.handle(
         _revisionMeta,
@@ -4862,10 +4851,12 @@ class $PersonalOverlaysTable extends PersonalOverlays
         DriftSqlType.bool,
         data['${effectivePrefix}hide_annotations'],
       )!,
-      firstVerseChordsOnly: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}first_verse_chords_only'],
-      )!,
+      verseChords: $PersonalOverlaysTable.$converterverseChords.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}verse_chords'],
+        )!,
+      ),
       revision: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}revision'],
@@ -4877,6 +4868,9 @@ class $PersonalOverlaysTable extends PersonalOverlays
   $PersonalOverlaysTable createAlias(String alias) {
     return $PersonalOverlaysTable(attachedDatabase, alias);
   }
+
+  static JsonTypeConverter2<VerseChords, String, String> $converterverseChords =
+      const EnumNameConverter<VerseChords>(VerseChords.values);
 }
 
 class SongOverlay extends DataClass implements Insertable<SongOverlay> {
@@ -4903,9 +4897,9 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
   /// Freehand annotations of this song hidden (ADR-0032, schema 16).
   final bool hideAnnotations;
 
-  /// Chords in the first verse only, later verses show the lyrics alone
-  /// (#518, schema 17).
-  final bool firstVerseChordsOnly;
+  /// How verses show their chords: all, in the first verse only (#518) or
+  /// stacked line by line (#521) (schema 18; a boolean in schema 17).
+  final VerseChords verseChords;
 
   /// Server revision; 0 = not on the server (schema 9, ADR-0020).
   final int revision;
@@ -4920,7 +4914,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     this.nashville,
     this.liveView,
     required this.hideAnnotations,
-    required this.firstVerseChordsOnly,
+    required this.verseChords,
     required this.revision,
   });
   @override
@@ -4944,7 +4938,11 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       map['live_view'] = Variable<String>(liveView);
     }
     map['hide_annotations'] = Variable<bool>(hideAnnotations);
-    map['first_verse_chords_only'] = Variable<bool>(firstVerseChordsOnly);
+    {
+      map['verse_chords'] = Variable<String>(
+        $PersonalOverlaysTable.$converterverseChords.toSql(verseChords),
+      );
+    }
     map['revision'] = Variable<int>(revision);
     return map;
   }
@@ -4969,7 +4967,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
           ? const Value.absent()
           : Value(liveView),
       hideAnnotations: Value(hideAnnotations),
-      firstVerseChordsOnly: Value(firstVerseChordsOnly),
+      verseChords: Value(verseChords),
       revision: Value(revision),
     );
   }
@@ -4990,8 +4988,8 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       nashville: serializer.fromJson<bool?>(json['nashville']),
       liveView: serializer.fromJson<String?>(json['liveView']),
       hideAnnotations: serializer.fromJson<bool>(json['hideAnnotations']),
-      firstVerseChordsOnly: serializer.fromJson<bool>(
-        json['firstVerseChordsOnly'],
+      verseChords: $PersonalOverlaysTable.$converterverseChords.fromJson(
+        serializer.fromJson<String>(json['verseChords']),
       ),
       revision: serializer.fromJson<int>(json['revision']),
     );
@@ -5010,7 +5008,9 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       'nashville': serializer.toJson<bool?>(nashville),
       'liveView': serializer.toJson<String?>(liveView),
       'hideAnnotations': serializer.toJson<bool>(hideAnnotations),
-      'firstVerseChordsOnly': serializer.toJson<bool>(firstVerseChordsOnly),
+      'verseChords': serializer.toJson<String>(
+        $PersonalOverlaysTable.$converterverseChords.toJson(verseChords),
+      ),
       'revision': serializer.toJson<int>(revision),
     };
   }
@@ -5026,7 +5026,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     Value<bool?> nashville = const Value.absent(),
     Value<String?> liveView = const Value.absent(),
     bool? hideAnnotations,
-    bool? firstVerseChordsOnly,
+    VerseChords? verseChords,
     int? revision,
   }) => SongOverlay(
     ownerId: ownerId ?? this.ownerId,
@@ -5039,7 +5039,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     nashville: nashville.present ? nashville.value : this.nashville,
     liveView: liveView.present ? liveView.value : this.liveView,
     hideAnnotations: hideAnnotations ?? this.hideAnnotations,
-    firstVerseChordsOnly: firstVerseChordsOnly ?? this.firstVerseChordsOnly,
+    verseChords: verseChords ?? this.verseChords,
     revision: revision ?? this.revision,
   );
   SongOverlay copyWithCompanion(PersonalOverlaysCompanion data) {
@@ -5056,9 +5056,9 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       hideAnnotations: data.hideAnnotations.present
           ? data.hideAnnotations.value
           : this.hideAnnotations,
-      firstVerseChordsOnly: data.firstVerseChordsOnly.present
-          ? data.firstVerseChordsOnly.value
-          : this.firstVerseChordsOnly,
+      verseChords: data.verseChords.present
+          ? data.verseChords.value
+          : this.verseChords,
       revision: data.revision.present ? data.revision.value : this.revision,
     );
   }
@@ -5076,7 +5076,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
           ..write('nashville: $nashville, ')
           ..write('liveView: $liveView, ')
           ..write('hideAnnotations: $hideAnnotations, ')
-          ..write('firstVerseChordsOnly: $firstVerseChordsOnly, ')
+          ..write('verseChords: $verseChords, ')
           ..write('revision: $revision')
           ..write(')'))
         .toString();
@@ -5094,7 +5094,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     nashville,
     liveView,
     hideAnnotations,
-    firstVerseChordsOnly,
+    verseChords,
     revision,
   );
   @override
@@ -5111,7 +5111,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
           other.nashville == this.nashville &&
           other.liveView == this.liveView &&
           other.hideAnnotations == this.hideAnnotations &&
-          other.firstVerseChordsOnly == this.firstVerseChordsOnly &&
+          other.verseChords == this.verseChords &&
           other.revision == this.revision);
 }
 
@@ -5126,7 +5126,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
   final Value<bool?> nashville;
   final Value<String?> liveView;
   final Value<bool> hideAnnotations;
-  final Value<bool> firstVerseChordsOnly;
+  final Value<VerseChords> verseChords;
   final Value<int> revision;
   final Value<int> rowid;
   const PersonalOverlaysCompanion({
@@ -5140,7 +5140,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     this.nashville = const Value.absent(),
     this.liveView = const Value.absent(),
     this.hideAnnotations = const Value.absent(),
-    this.firstVerseChordsOnly = const Value.absent(),
+    this.verseChords = const Value.absent(),
     this.revision = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -5155,7 +5155,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     this.nashville = const Value.absent(),
     this.liveView = const Value.absent(),
     this.hideAnnotations = const Value.absent(),
-    this.firstVerseChordsOnly = const Value.absent(),
+    this.verseChords = const Value.absent(),
     this.revision = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : songId = Value(songId);
@@ -5170,7 +5170,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     Expression<bool>? nashville,
     Expression<String>? liveView,
     Expression<bool>? hideAnnotations,
-    Expression<bool>? firstVerseChordsOnly,
+    Expression<String>? verseChords,
     Expression<int>? revision,
     Expression<int>? rowid,
   }) {
@@ -5185,8 +5185,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
       if (nashville != null) 'nashville': nashville,
       if (liveView != null) 'live_view': liveView,
       if (hideAnnotations != null) 'hide_annotations': hideAnnotations,
-      if (firstVerseChordsOnly != null)
-        'first_verse_chords_only': firstVerseChordsOnly,
+      if (verseChords != null) 'verse_chords': verseChords,
       if (revision != null) 'revision': revision,
       if (rowid != null) 'rowid': rowid,
     });
@@ -5203,7 +5202,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     Value<bool?>? nashville,
     Value<String?>? liveView,
     Value<bool>? hideAnnotations,
-    Value<bool>? firstVerseChordsOnly,
+    Value<VerseChords>? verseChords,
     Value<int>? revision,
     Value<int>? rowid,
   }) {
@@ -5218,7 +5217,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
       nashville: nashville ?? this.nashville,
       liveView: liveView ?? this.liveView,
       hideAnnotations: hideAnnotations ?? this.hideAnnotations,
-      firstVerseChordsOnly: firstVerseChordsOnly ?? this.firstVerseChordsOnly,
+      verseChords: verseChords ?? this.verseChords,
       revision: revision ?? this.revision,
       rowid: rowid ?? this.rowid,
     );
@@ -5257,9 +5256,9 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     if (hideAnnotations.present) {
       map['hide_annotations'] = Variable<bool>(hideAnnotations.value);
     }
-    if (firstVerseChordsOnly.present) {
-      map['first_verse_chords_only'] = Variable<bool>(
-        firstVerseChordsOnly.value,
+    if (verseChords.present) {
+      map['verse_chords'] = Variable<String>(
+        $PersonalOverlaysTable.$converterverseChords.toSql(verseChords.value),
       );
     }
     if (revision.present) {
@@ -5284,7 +5283,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
           ..write('nashville: $nashville, ')
           ..write('liveView: $liveView, ')
           ..write('hideAnnotations: $hideAnnotations, ')
-          ..write('firstVerseChordsOnly: $firstVerseChordsOnly, ')
+          ..write('verseChords: $verseChords, ')
           ..write('revision: $revision, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -11726,7 +11725,7 @@ typedef $$PersonalOverlaysTableCreateCompanionBuilder =
       Value<bool?> nashville,
       Value<String?> liveView,
       Value<bool> hideAnnotations,
-      Value<bool> firstVerseChordsOnly,
+      Value<VerseChords> verseChords,
       Value<int> revision,
       Value<int> rowid,
     });
@@ -11742,7 +11741,7 @@ typedef $$PersonalOverlaysTableUpdateCompanionBuilder =
       Value<bool?> nashville,
       Value<String?> liveView,
       Value<bool> hideAnnotations,
-      Value<bool> firstVerseChordsOnly,
+      Value<VerseChords> verseChords,
       Value<int> revision,
       Value<int> rowid,
     });
@@ -11827,9 +11826,10 @@ class $$PersonalOverlaysTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<bool> get firstVerseChordsOnly => $composableBuilder(
-    column: $table.firstVerseChordsOnly,
-    builder: (column) => ColumnFilters(column),
+  ColumnWithTypeConverterFilters<VerseChords, VerseChords, String>
+  get verseChords => $composableBuilder(
+    column: $table.verseChords,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
   ColumnFilters<int> get revision => $composableBuilder(
@@ -11915,8 +11915,8 @@ class $$PersonalOverlaysTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<bool> get firstVerseChordsOnly => $composableBuilder(
-    column: $table.firstVerseChordsOnly,
+  ColumnOrderings<String> get verseChords => $composableBuilder(
+    column: $table.verseChords,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -11987,10 +11987,11 @@ class $$PersonalOverlaysTableAnnotationComposer
     builder: (column) => column,
   );
 
-  GeneratedColumn<bool> get firstVerseChordsOnly => $composableBuilder(
-    column: $table.firstVerseChordsOnly,
-    builder: (column) => column,
-  );
+  GeneratedColumnWithTypeConverter<VerseChords, String> get verseChords =>
+      $composableBuilder(
+        column: $table.verseChords,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<int> get revision =>
       $composableBuilder(column: $table.revision, builder: (column) => column);
@@ -12059,7 +12060,7 @@ class $$PersonalOverlaysTableTableManager
                 Value<bool?> nashville = const Value.absent(),
                 Value<String?> liveView = const Value.absent(),
                 Value<bool> hideAnnotations = const Value.absent(),
-                Value<bool> firstVerseChordsOnly = const Value.absent(),
+                Value<VerseChords> verseChords = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PersonalOverlaysCompanion(
@@ -12073,7 +12074,7 @@ class $$PersonalOverlaysTableTableManager
                 nashville: nashville,
                 liveView: liveView,
                 hideAnnotations: hideAnnotations,
-                firstVerseChordsOnly: firstVerseChordsOnly,
+                verseChords: verseChords,
                 revision: revision,
                 rowid: rowid,
               ),
@@ -12089,7 +12090,7 @@ class $$PersonalOverlaysTableTableManager
                 Value<bool?> nashville = const Value.absent(),
                 Value<String?> liveView = const Value.absent(),
                 Value<bool> hideAnnotations = const Value.absent(),
-                Value<bool> firstVerseChordsOnly = const Value.absent(),
+                Value<VerseChords> verseChords = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PersonalOverlaysCompanion.insert(
@@ -12103,7 +12104,7 @@ class $$PersonalOverlaysTableTableManager
                 nashville: nashville,
                 liveView: liveView,
                 hideAnnotations: hideAnnotations,
-                firstVerseChordsOnly: firstVerseChordsOnly,
+                verseChords: verseChords,
                 revision: revision,
                 rowid: rowid,
               ),

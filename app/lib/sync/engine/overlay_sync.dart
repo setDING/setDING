@@ -33,8 +33,21 @@ class OverlaySync {
     'nashville': o.nashville,
     'live_view': o.liveView,
     'hide_annotations': o.hideAnnotations,
-    'first_verse_chords_only': o.firstVerseChordsOnly,
+    'verse_chords': o.verseChords.name,
   };
+
+  /// How verses show their chords in the server overlay's [data]:
+  /// `verse_chords` (#521), before it `first_verse_chords_only` (#518);
+  /// values of newer clients count as all chords.
+  static VerseChords verseChordsOf(Map<String, dynamic> data) {
+    final name = data['verse_chords'];
+    if (name is String) {
+      return VerseChords.values.asNameMap()[name] ?? VerseChords.all;
+    }
+    return data['first_verse_chords_only'] == true
+        ? VerseChords.first
+        : VerseChords.all;
+  }
 
   Future<int> pull(String userId) async {
     final since = await store.cursor(userId, SyncCollection.overlays);
@@ -80,9 +93,7 @@ class OverlaySync {
                 nashville: Value(d['nashville'] as bool?),
                 liveView: Value(d['live_view'] as String?),
                 hideAnnotations: Value(d['hide_annotations'] == true),
-                firstVerseChordsOnly: Value(
-                  d['first_verse_chords_only'] == true,
-                ),
+                verseChords: Value(verseChordsOf(d)),
                 revision: Value(o.revision),
               ),
             );

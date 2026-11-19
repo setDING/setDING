@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdfrx/pdfrx.dart';
+import 'package:setding/data/database.dart' show VerseChords;
 import 'package:setding/data/demo_song.dart';
 import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/ui/live/pdf_spread_view.dart';
@@ -382,7 +383,7 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('the control bar switches chords in verse 1 only', (
+  testWidgets('the control bar chooses how verses show their chords', (
     tester,
   ) async {
     useTabletSize(tester);
@@ -397,20 +398,30 @@ void main() {
 
     await tester.tapAt(tester.getCenter(find.byType(PageView)));
     await tester.pumpAndSettle();
-    final button = find.byKey(const Key('live-first-verse-chords'));
+    final button = find.byKey(const Key('verse-chords-button'));
     await tester.tap(button);
+    await tester.pumpAndSettle();
+    // The verses have other chords: they cannot be stacked.
+    expect(
+      tester
+          .widget<MenuItemButton>(find.byKey(const Key('verse-chords-stacked')))
+          .onPressed,
+      isNull,
+    );
+    await tester.tap(find.byKey(const Key('verse-chords-first')));
     await tester.pumpAndSettle();
     expect(find.text('Em'), findsNothing);
     expect(find.textContaining('Second'), findsOneWidget);
     expect(find.text('G'), findsOneWidget);
     final id = items.first.song!.id;
     expect(
-      (await tester.runAsync(() => app.songs.getOverlay(id)))!
-          .firstVerseChordsOnly,
-      isTrue,
+      (await tester.runAsync(() => app.songs.getOverlay(id)))!.verseChords,
+      VerseChords.first,
     );
 
     await tester.tap(button);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('verse-chords-all')));
     await tester.pumpAndSettle();
     expect(find.text('Em'), findsOneWidget);
 

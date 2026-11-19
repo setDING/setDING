@@ -29,7 +29,7 @@ void main() {
   const width = 1400.0;
   const fontSize = 20.0;
 
-  final songs = {
+  final songs = <String, String>{
     'demo': demoSongSource,
     'showcase': File('../docs/examples/feature-showcase.cho')
         .readAsStringSync(),
@@ -48,6 +48,13 @@ void main() {
         '{start_of_grid label="Intro grid"}\n| G . | D . |\n{end_of_grid}\n\n'
         '{c: Outro}\n[C] [G]\n',
   };
+  // Stacked verses (#521): parsed and then stacked, see below.
+  const stacked = {'stacked'};
+  songs['stacked'] =
+      '{title: Stacked}\n{sov: Verse 1}\nUp [G]First [D]line of [Em]one\n'
+      '[C] [D]\n[G]Second\n{eov}\n{soc}\n[C]Chorus\n{eoc}\n'
+      '{sov: Verse 2}\nUp [G]Another [D]line of [Em]two\n[C] [D]\n'
+      '[G]Second\n{eov}\n{sov: Verse 3}\nThird a\nThird b\n{eov}\n';
   // Every preset changes labels, bars, indents, tints and chord sizes.
   final displays = [
     for (final p in SongDisplayPreset.values)
@@ -61,7 +68,9 @@ void main() {
         tester.view.physicalSize = const Size(1600, 4000);
         tester.view.devicePixelRatio = 1;
         addTearDown(tester.view.reset);
-        final song = parseChordPro(source);
+        final parsed = parseChordPro(source);
+        final song = stacked.contains(name) ? stackVerses(parsed) : parsed;
+        if (stacked.contains(name)) expect(song, isNot(same(parsed)));
         final formatter = ChordFormatter.forSong(song);
         final resolver = DiagramResolver(
           song,

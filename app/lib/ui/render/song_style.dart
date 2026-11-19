@@ -19,6 +19,11 @@ abstract final class SongSpacing {
   static const chordLineTop = 0.1;
   static const chordGap = 0.35;
 
+  /// Stacked verses (#521): width of the column of verse numbers in front
+  /// of the rows, and the gap after it (in units of the lyrics size).
+  static const stackedLabel = 1.6;
+  static const stackedLabelGap = 0.3;
+
   /// Size of comments and notes relative to the lyrics.
   static const smallText = 0.85;
 
@@ -592,6 +597,16 @@ class LinePiece {
 
   String get text => runs.map((r) => r.text).join();
 }
+
+/// The columns of [line] to show: all but an empty first one (no chord,
+/// no text before the first chord in any verse).
+List<int> stackedColumns(StackedLine line) => [
+  for (var i = 0; i < line.chords.length; i++)
+    if (i > 0 ||
+        line.chords[i] != null ||
+        line.rows.any((r) => (r.cells?[i] ?? '').isNotEmpty))
+      i,
+];
 
 /// Splits a lyrics line into word pieces (so lines can wrap between
 /// words); the chord of a segment sits on its first word. Markup may span

@@ -33,6 +33,7 @@ import '../render/song_view.dart';
 import '../sets/set_item_label.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/key_picker.dart';
+import '../widgets/verse_chords_picker.dart';
 import 'live_preparation.dart';
 import '../../audio/metronome.dart';
 import 'live_beat.dart';
@@ -1178,23 +1179,21 @@ class _ControlBar extends ConsumerWidget {
     final annotationsShown = ref.watch(
       settingsProvider.select((s) => s.showAnnotations),
     );
-    // Chords in verse 1 only, and freehand annotations (ADR-0032): draw,
-    // and show or hide them.
-    // Chords in the first verse only (#518): offered for songs with later
-    // verses with chords, and always to turn it off again.
-    final verseOnly = overlay?.firstVerseChordsOnly ?? false;
+    // How verses show their chords (#518, #521), and freehand annotations
+    // (ADR-0032): draw, and show or hide them.
+    // The verse chords are offered for songs where a choice changes
+    // something, and always to turn it off again.
+    final verseChords = overlay?.verseChords ?? VerseChords.all;
     final extraButtons = <Widget>[
       if (adjust != null &&
           parsed != null &&
-          (verseOnly || !identical(firstVerseChordsOnlyCached(parsed), parsed)))
-        IconButton(
-          key: const Key('live-first-verse-chords'),
-          tooltip: l10n.firstVerseChordsOnly,
-          isSelected: verseOnly,
-          icon: const Icon(Icons.subject),
-          selectedIcon: const Icon(Icons.short_text),
-          onPressed: () =>
-              adjust((o) => o.copyWith(firstVerseChordsOnly: !verseOnly)),
+          (verseChords != VerseChords.all ||
+              verseChordsChoices(parsed).length > 1))
+        VerseChordsPicker(
+          song: parsed,
+          mode: verseChords,
+          compact: true,
+          onChanged: (mode) => adjust((o) => o.copyWith(verseChords: mode)),
         ),
       if (annotated)
         IconButton(
@@ -1539,11 +1538,9 @@ class _LiveItemPage extends ConsumerWidget {
       shownSequence: sequence ?? '',
       songMap: map,
       song: song,
-      // Chords in the first shown verse only (#518).
-      parsed: songWithVerseChords(
-        selection.song,
-        firstVerseOnly: overlay.firstVerseChordsOnly,
-      ),
+      // Chords in the first shown verse only (#518) or the shown verses
+      // stacked (#521).
+      parsed: songWithVerseChords(selection.song, overlay.verseChords),
       hiddenParts: selection.hidden,
       overlay: overlay,
       setTranspose: item.bandTranspose + item.setTranspose,
@@ -1933,7 +1930,7 @@ class _ChordProPage extends ConsumerWidget {
                           font: font,
                           columns: pages.columns,
                           lyricsOnly: lyricsOnly,
-                          firstVerseChordsOnly: overlay.firstVerseChordsOnly,
+                          verseChords: overlay.verseChords.name,
                           content: content,
                           sequence: shownSequence,
                         ),
@@ -2069,7 +2066,7 @@ class _ChordProPage extends ConsumerWidget {
             font: options.fontSize,
             columns: options.columns,
             lyricsOnly: options.lyricsOnly,
-            firstVerseChordsOnly: overlay.firstVerseChordsOnly,
+            verseChords: overlay.verseChords.name,
             content: textHash(song.chordproSource),
             sequence: shownSequence,
           ),

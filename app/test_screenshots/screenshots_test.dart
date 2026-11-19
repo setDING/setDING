@@ -166,6 +166,46 @@ void main() {
     await app.dispose(tester);
   });
 
+  // Verses with the same chords stacked line by line (#521), in live mode.
+  _screenshotTest('stacked verses', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'de'});
+    final song = await tester.runAsync(() async {
+      final id = await app.songs.createSong(
+        source:
+            '{title: Amazing Grace}\n{key: G}\n'
+            '{start_of_verse: Strophe 1}\n'
+            'A[G]mazing [G7]grace, how [C]sweet the [G]sound\n'
+            'That saved a wretch like [D]me\n'
+            'I [G]once was [G7]lost, but [C]now am [G]found\n'
+            'Was [Em]blind, but [D]now I [G]see\n{end_of_verse}\n'
+            '{start_of_verse: Strophe 2}\n'
+            '\'Twas [G]grace that [G7]taught my [C]heart to [G]fear\n'
+            'And grace my fears re[D]lieved\n'
+            'How [G]precious [G7]did that [C]grace ap[G]pear\n'
+            'The [Em]hour I [D]first be[G]lieved\n{end_of_verse}\n'
+            '{start_of_verse: Strophe 3}\n'
+            'Through many dangers, toils and snares\n'
+            'I have already come\n'
+            '\'Tis grace hath brought me safe thus far\n'
+            'And grace will lead me home\n{end_of_verse}\n',
+      );
+      final overlay = await app.songs.getOverlay(id);
+      await app.songs.saveOverlay(
+        overlay.copyWith(verseChords: VerseChords.stacked),
+      );
+      return (await app.songs.getSong(id))!;
+    });
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: UniqueKey(),
+        child: app.build(home: LiveScreen(items: [LiveItem.song(song!)])),
+      ),
+    );
+    await _shot(tester, 'de_4e_live_stacked_verses');
+    await app.dispose(tester);
+  });
+
   // Light and dark: the conflict icon (error colour) next to the gig icon
   // (primary colour) must stay apart with every palette (#269).
   for (final dark in [false, true]) {
