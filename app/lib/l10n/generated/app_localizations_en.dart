@@ -2955,53 +2955,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get midiGuideSongModeOffExpected => 'The Nord leaves song mode.';
 
   @override
-  String midiGuideSong(int number) {
-    return 'Song number $number';
-  }
-
-  @override
-  String get midiGuideSongFirstExpected =>
-      'A song is selected. Note which song and which part are shown.';
-
-  @override
-  String get midiGuideSongExpected =>
-      'Compare with the step before: what changed?';
-
-  @override
-  String midiGuideSongPart(int value) {
-    return 'Song part (CC 5 = $value)';
-  }
-
-  @override
-  String get midiGuideSongPartExpected =>
-      'Another part of the song is selected.';
-
-  @override
-  String get midiGuideLiveModeOn => 'Live mode on (CC 2 = 127)';
-
-  @override
-  String get midiGuideLiveModeOnExpected => 'The Nord switches live mode on.';
-
-  @override
-  String get midiGuideLiveModeOff => 'Live mode off (CC 2 = 0)';
-
-  @override
-  String get midiGuideLiveModeOffExpected => 'The Nord switches live mode off.';
-
-  @override
   String get midiGuideAnswerAsExpected => 'As expected';
-
-  @override
-  String get midiGuideAnswerChanged => 'Changed';
-
-  @override
-  String get midiGuideAnswerNextSong => 'Next song';
-
-  @override
-  String get midiGuideAnswerNextPart => 'Next part of the same song';
-
-  @override
-  String get midiGuideAnswerSeveralSongs => 'Several songs further';
 
   @override
   String get midiGuideAnswerDifferent => 'Something else';
@@ -3019,6 +2973,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get midiTestButton => 'Button';
 
   @override
-  String get midiTestSongNumber =>
-      'Song number (1–999, numbering not known yet)';
+  String midiGuideSong(int song, int part) {
+    return 'Song $song, part $part';
+  }
+
+  @override
+  String midiGuideSongExpected(int song, int part) {
+    return 'The Nord shows song $song, part $part.';
+  }
+
+  @override
+  String get midiTestSong => 'Song';
+
+  @override
+  String get midiTestPart => 'Part';
 }

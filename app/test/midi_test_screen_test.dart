@@ -98,7 +98,7 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('Nord songs use MSB 1, live memories no bank select', (
+  testWidgets('Nord songs by song and part, live memories with MSB 6', (
     tester,
   ) async {
     final app = await open(tester);
@@ -107,13 +107,20 @@ void main() {
     await tester.tap(find.text('Nord song'));
     await tester.pumpAndSettle();
     expect(find.text('B0 00 01 B0 20 00 C0 00'), findsOneWidget);
-    await tester.enterText(find.byKey(const Key('midi-number')), '126');
-    await tester.pump();
-    expect(find.text('B0 00 01 B0 20 01 C0 00'), findsOneWidget);
+    // Song 2, part 3 = place 7.
+    await tester.tap(find.byKey(const Key('midi-song')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('2').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('midi-part')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('3').last);
+    await tester.pumpAndSettle();
+    expect(find.text('B0 00 01 B0 20 00 C0 07'), findsOneWidget);
 
     await tester.tap(find.text('Nord live'));
     await tester.pumpAndSettle();
-    expect(find.text('C0 32'), findsOneWidget);
+    expect(find.text('B0 00 06 B0 20 00 C0 00'), findsOneWidget);
     await app.dispose(tester);
   });
 
@@ -282,7 +289,7 @@ void main() {
     ) async {
       Log.clear();
       final app = await open(tester);
-      expect(find.textContaining('Step 1 of 17: Program A:11'), findsOneWidget);
+      expect(find.textContaining('Step 1 of 10: Program A:11'), findsOneWidget);
       final send = tester.widget<ButtonStyleButton>(
         find.byKey(const Key('midi-guide-send')),
       );
@@ -299,7 +306,10 @@ void main() {
       ]);
       await tapKey(tester, answer('asExpected'));
 
-      expect(find.textContaining('Step 2 of 17: Program E:55'), findsOneWidget);
+      expect(
+        find.textContaining('Step 2 of 10: Live memory 1'),
+        findsOneWidget,
+      );
       expect(
         Log.export(),
         contains('[midi-test] Step 1 (Program A:11): As expected'),
@@ -308,11 +318,10 @@ void main() {
     });
 
     testWidgets('walks through every step to the end', (tester) async {
-      Log.clear();
       final app = await open(tester);
       await connect(tester);
 
-      for (var i = 0; i < 17; i++) {
+      for (var i = 0; i < 10; i++) {
         await tapKey(tester, find.byKey(const Key('midi-guide-send')));
         await tapKey(tester, answer('nothing'));
       }
@@ -322,50 +331,35 @@ void main() {
       );
       expect(app.midiOutput.sent, [
         [0xB0, 0, 0, 0xB0, 32, 0, 0xC0, 0], // A:11
-        [0xB0, 0, 0, 0xB0, 32, 0, 0xC0, 124], // E:55
-        [0xB0, 0, 0, 0xB0, 32, 1, 0xC0, 0], // F:11
-        [0xB0, 0, 0, 0xB0, 32, 2, 0xC0, 12], // K:33
-        [0xB0, 0, 0, 0xB0, 32, 3, 0xC0, 24], // P:55
-        [0xC0, 52], // live 3
+        [0xB0, 0, 6, 0xB0, 32, 0, 0xC0, 0], // live 1
+        [0xB0, 0, 6, 0xB0, 32, 0, 0xC0, 2], // live 3
+        [0xB0, 0, 6, 0xB0, 32, 0, 0xC0, 4], // live 5
+        [0xB0, 0, 0, 0xB0, 32, 0, 0xC0, 0], // A:11
         [0xB0, 3, 127], // song mode on
-        [0xB0, 0, 1, 0xB0, 32, 0, 0xC0, 0], // song 1
-        [0xB0, 0, 1, 0xB0, 32, 0, 0xC0, 1], // song 2
-        [0xB0, 0, 1, 0xB0, 32, 0, 0xC0, 5], // song 6
-        [0xB0, 0, 1, 0xB0, 32, 1, 0xC0, 0], // song 126
-        [0xB0, 5, 1], // song part
-        [0xB0, 5, 0],
+        [0xB0, 0, 1, 0xB0, 32, 0, 0xC0, 7], // song 2, part 3
+        [0xB0, 0, 1, 0xB0, 32, 1, 0xC0, 4], // song 26, part 5
         [0xB0, 3, 0], // song mode off
-        [0xB0, 2, 127], // live mode
-        [0xB0, 2, 0],
-        [0xB0, 0, 0, 0xB0, 32, 0, 0xC0, 0], // back to A:11
+        [0xB0, 0, 0, 0xB0, 32, 0, 0xC0, 0], // A:11
       ]);
 
       await tapKey(tester, find.byKey(const Key('midi-guide-restart')));
-      expect(find.textContaining('Step 1 of 17'), findsOneWidget);
+      expect(find.textContaining('Step 1 of 10'), findsOneWidget);
       await app.dispose(tester);
     });
 
-    testWidgets('song steps ask what changed; skip and back', (tester) async {
+    testWidgets('skip and back without sending', (tester) async {
       final app = await open(tester);
       await connect(tester);
 
-      for (var i = 0; i < 8; i++) {
+      for (var i = 0; i < 6; i++) {
         await tapKey(tester, find.byKey(const Key('midi-guide-skip')));
       }
       expect(
-        find.textContaining('Step 9 of 17: Song number 2'),
+        find.textContaining('Step 7 of 10: Song 2, part 3'),
         findsOneWidget,
       );
-      expect(answer('nextSong'), findsOneWidget);
-      expect(answer('nextPart'), findsOneWidget);
-      expect(answer('severalSongs'), findsOneWidget);
-
       await tapKey(tester, find.byKey(const Key('midi-guide-back')));
-      expect(
-        find.textContaining('Step 8 of 17: Song number 1'),
-        findsOneWidget,
-      );
-      expect(answer('changed'), findsOneWidget);
+      expect(find.textContaining('Step 6 of 10: Song mode on'), findsOneWidget);
       expect(app.midiOutput.sent, isEmpty);
       await app.dispose(tester);
     });

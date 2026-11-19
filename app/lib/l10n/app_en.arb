@@ -1272,15 +1272,23 @@
   "midiGuideStep": "Step {current} of {total}: {title}",
   "@midiGuideStep": {
     "placeholders": {
-      "current": {"type": "int"},
-      "total": {"type": "int"},
-      "title": {"type": "String"}
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "title": {
+        "type": "String"
+      }
     }
   },
   "midiGuideExpected": "Expected: {expected}",
   "@midiGuideExpected": {
     "placeholders": {
-      "expected": {"type": "String"}
+      "expected": {
+        "type": "String"
+      }
     }
   },
   "midiGuideDone": "Test finished. The answers are in the log.",
@@ -1290,67 +1298,81 @@
   "midiGuideResult": "Step {current} ({title}): {answer}",
   "@midiGuideResult": {
     "placeholders": {
-      "current": {"type": "int"},
-      "title": {"type": "String"},
-      "answer": {"type": "String"}
+      "current": {
+        "type": "int"
+      },
+      "title": {
+        "type": "String"
+      },
+      "answer": {
+        "type": "String"
+      }
     }
   },
   "midiGuideProgram": "Program {name}",
   "@midiGuideProgram": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "midiGuideProgramExpected": "The Nord shows {name}.",
   "@midiGuideProgramExpected": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "midiGuideLive": "Live memory {number}",
   "@midiGuideLive": {
     "placeholders": {
-      "number": {"type": "int"}
+      "number": {
+        "type": "int"
+      }
     }
   },
   "midiGuideLiveExpected": "The Nord shows Live {number}.",
   "@midiGuideLiveExpected": {
     "placeholders": {
-      "number": {"type": "int"}
+      "number": {
+        "type": "int"
+      }
     }
   },
   "midiGuideSongModeOn": "Song mode on (CC 3 = 127)",
   "midiGuideSongModeOnExpected": "The Nord switches to song mode.",
   "midiGuideSongModeOff": "Song mode off (CC 3 = 0)",
   "midiGuideSongModeOffExpected": "The Nord leaves song mode.",
-  "midiGuideSong": "Song number {number}",
-  "@midiGuideSong": {
-    "placeholders": {
-      "number": {"type": "int"}
-    }
-  },
-  "midiGuideSongFirstExpected": "A song is selected. Note which song and which part are shown.",
-  "midiGuideSongExpected": "Compare with the step before: what changed?",
-  "midiGuideSongPart": "Song part (CC 5 = {value})",
-  "@midiGuideSongPart": {
-    "placeholders": {
-      "value": {"type": "int"}
-    }
-  },
-  "midiGuideSongPartExpected": "Another part of the song is selected.",
-  "midiGuideLiveModeOn": "Live mode on (CC 2 = 127)",
-  "midiGuideLiveModeOnExpected": "The Nord switches live mode on.",
-  "midiGuideLiveModeOff": "Live mode off (CC 2 = 0)",
-  "midiGuideLiveModeOffExpected": "The Nord switches live mode off.",
   "midiGuideAnswerAsExpected": "As expected",
-  "midiGuideAnswerChanged": "Changed",
-  "midiGuideAnswerNextSong": "Next song",
-  "midiGuideAnswerNextPart": "Next part of the same song",
-  "midiGuideAnswerSeveralSongs": "Several songs further",
   "midiGuideAnswerDifferent": "Something else",
   "midiGuideAnswerNothing": "Nothing happened",
   "midiTestFree": "Send freely",
   "midiTestPage": "Page",
   "midiTestButton": "Button",
-  "midiTestSongNumber": "Song number (1–999, numbering not known yet)"
+  "midiGuideSong": "Song {song}, part {part}",
+  "@midiGuideSong": {
+    "placeholders": {
+      "song": {
+        "type": "int"
+      },
+      "part": {
+        "type": "int"
+      }
+    }
+  },
+  "midiGuideSongExpected": "The Nord shows song {song}, part {part}.",
+  "@midiGuideSongExpected": {
+    "placeholders": {
+      "song": {
+        "type": "int"
+      },
+      "part": {
+        "type": "int"
+      }
+    }
+  },
+  "midiTestSong": "Song",
+  "midiTestPart": "Part"
 }

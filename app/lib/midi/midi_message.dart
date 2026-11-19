@@ -48,9 +48,11 @@ class MidiProgram {
 /// prototype (#512). 400 programs in 16 banks A–P of 25 (5 pages of 5
 /// buttons; the display shows `K:33` for bank K, page 3, button 3). They are
 /// counted through and sent in blocks of 125: CC 0 = 0, CC 32 = block (0–3),
-/// program change = place in the block (0–124). The live memories 1–5 are
-/// program changes 50–54 without bank select. Songs use CC 0 = 1; their
-/// numbering is not known yet, [song] assumes the same blocks of 125.
+/// program change = place in the block (0–124). Songs use CC 0 = 1 and the
+/// same blocks, with 5 parts per song: song 26 part 1 is CC 32 = 1, program
+/// change 0. A program change 50–54 without bank select is program C:11–C:15,
+/// not a live memory; the Nord itself sends CC 0 = 6 with program change 0–4
+/// for its live memories, which [live] uses (still to be checked, #512).
 abstract final class NordStage3 {
   static const banks = [
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', //
@@ -61,9 +63,11 @@ abstract final class NordStage3 {
   static const programsPerBank = pages * buttons;
   static const programsPerBlock = 125;
   static const liveMemories = 5;
+  static const partsPerSong = 5;
 
-  /// The highest song number [song] accepts.
-  static const maxSong = 999;
+  /// The highest song [song] accepts: 4 blocks like the programs (the real
+  /// limit of the Nord is not known).
+  static const maxSong = 4 * programsPerBlock ~/ partsPerSong;
 
   /// Program on [bank] (0–15 for A–P), [page] (1–5) and [button] (1–5).
   static MidiProgram program(int bank, int page, int button) {
@@ -78,16 +82,17 @@ abstract final class NordStage3 {
   static String programName(int bank, int page, int button) =>
       '${banks[bank]}:$page$button';
 
-  /// Song [number] (1–[maxSong]), assuming blocks of 125 like the programs.
-  static MidiProgram song(int number) {
-    RangeError.checkValueInInterval(number, 1, maxSong, 'number');
-    return _block(1, number - 1);
+  /// Part [part] (1–5) of song [song] (1–[maxSong]).
+  static MidiProgram song(int song, [int part = 1]) {
+    RangeError.checkValueInInterval(song, 1, maxSong, 'song');
+    RangeError.checkValueInInterval(part, 1, partsPerSong, 'part');
+    return _block(1, (song - 1) * partsPerSong + (part - 1));
   }
 
-  /// Live memory [number] (1–5); independent of the bank, so no bank select.
+  /// Live memory [number] (1–5), as the Nord sends it: CC 0 = 6.
   static MidiProgram live(int number) {
     RangeError.checkValueInInterval(number, 1, liveMemories, 'number');
-    return MidiProgram(program: 50 + number - 1);
+    return MidiProgram(msb: 6, lsb: 0, program: number - 1);
   }
 
   static MidiProgram _block(int msb, int index) => MidiProgram(
@@ -99,8 +104,9 @@ abstract final class NordStage3 {
 
 /// A control change [controller] = [value] on [channel] (1–16), e.g. the
 /// mode switches of the Nord Stage 3 (CC 2 live mode, CC 3 song mode, CC 5
-/// song part, listed on midi.guide). CC 3 = 127 / 0 switches the song mode
-/// on and off; CC 2 and CC 5 showed no effect in the first test (#512).
+/// song part, listed on midi.guide). On the Nord, CC 3 = 127 / 0 switches the
+/// song mode and CC 2 = 127 / 0 the live mode on and off; CC 5 showed no
+/// effect (#512).
 Uint8List midiControlChange(int channel, int controller, int value) {
   RangeError.checkValueInInterval(channel, 1, 16, 'channel');
   RangeError.checkValueInInterval(controller, 0, 127, 'controller');

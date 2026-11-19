@@ -2975,55 +2975,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Das Nord verlässt den Song-Modus.';
 
   @override
-  String midiGuideSong(int number) {
-    return 'Song-Nummer $number';
-  }
-
-  @override
-  String get midiGuideSongFirstExpected =>
-      'Ein Song wird gewählt. Merk dir, welcher Song und welcher Teil angezeigt wird.';
-
-  @override
-  String get midiGuideSongExpected =>
-      'Vergleiche mit dem Schritt davor: Was hat sich geändert?';
-
-  @override
-  String midiGuideSongPart(int value) {
-    return 'Song-Teil (CC 5 = $value)';
-  }
-
-  @override
-  String get midiGuideSongPartExpected =>
-      'Ein anderer Teil des Songs wird gewählt.';
-
-  @override
-  String get midiGuideLiveModeOn => 'Live-Modus ein (CC 2 = 127)';
-
-  @override
-  String get midiGuideLiveModeOnExpected =>
-      'Das Nord schaltet den Live-Modus ein.';
-
-  @override
-  String get midiGuideLiveModeOff => 'Live-Modus aus (CC 2 = 0)';
-
-  @override
-  String get midiGuideLiveModeOffExpected =>
-      'Das Nord schaltet den Live-Modus aus.';
-
-  @override
   String get midiGuideAnswerAsExpected => 'Wie erwartet';
-
-  @override
-  String get midiGuideAnswerChanged => 'Hat gewechselt';
-
-  @override
-  String get midiGuideAnswerNextSong => 'Nächster Song';
-
-  @override
-  String get midiGuideAnswerNextPart => 'Nächster Teil im gleichen Song';
-
-  @override
-  String get midiGuideAnswerSeveralSongs => 'Mehrere Songs weiter';
 
   @override
   String get midiGuideAnswerDifferent => 'Etwas anderes';
@@ -3041,6 +2993,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get midiTestButton => 'Taste';
 
   @override
-  String get midiTestSongNumber =>
-      'Song-Nummer (1–999, Zählung noch unbekannt)';
+  String midiGuideSong(int song, int part) {
+    return 'Song $song, Teil $part';
+  }
+
+  @override
+  String midiGuideSongExpected(int song, int part) {
+    return 'Das Nord zeigt Song $song, Teil $part.';
+  }
+
+  @override
+  String get midiTestSong => 'Song';
+
+  @override
+  String get midiTestPart => 'Teil';
 }

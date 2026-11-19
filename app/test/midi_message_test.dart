@@ -65,17 +65,27 @@ void main() {
       expect(NordStage3.programName(15, 5, 5), 'P:55');
     });
 
-    test('songs use MSB 1 and the same blocks', () {
+    test('songs use MSB 1, the same blocks and 5 parts per song', () {
       expect(NordStage3.song(1), const MidiProgram(msb: 1, lsb: 0, program: 0));
       expect(
-        NordStage3.song(126),
+        NordStage3.song(1, 2),
+        const MidiProgram(msb: 1, lsb: 0, program: 1),
+      );
+      expect(NordStage3.song(2), const MidiProgram(msb: 1, lsb: 0, program: 5));
+      // Observed: song 26 part 1.
+      expect(
+        NordStage3.song(26),
         const MidiProgram(msb: 1, lsb: 1, program: 0),
+      );
+      expect(
+        NordStage3.song(NordStage3.maxSong, 5),
+        const MidiProgram(msb: 1, lsb: 3, program: 124),
       );
     });
 
-    test('live memories are program changes 50–54 without bank select', () {
-      expect(NordStage3.live(1), const MidiProgram(program: 50));
-      expect(NordStage3.live(5), const MidiProgram(program: 54));
+    test('live memories as the Nord sends them: MSB 6, program 0–4', () {
+      expect(NordStage3.live(1), const MidiProgram(msb: 6, lsb: 0, program: 0));
+      expect(NordStage3.live(5), const MidiProgram(msb: 6, lsb: 0, program: 4));
     });
 
     test('rejects values outside the ranges', () {
@@ -83,7 +93,8 @@ void main() {
       expect(() => NordStage3.program(0, 0, 1), throwsRangeError);
       expect(() => NordStage3.program(0, 1, 6), throwsRangeError);
       expect(() => NordStage3.song(0), throwsRangeError);
-      expect(() => NordStage3.song(1000), throwsRangeError);
+      expect(() => NordStage3.song(101), throwsRangeError);
+      expect(() => NordStage3.song(1, 6), throwsRangeError);
       expect(() => NordStage3.live(0), throwsRangeError);
       expect(() => NordStage3.live(6), throwsRangeError);
     });

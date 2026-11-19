@@ -34,11 +34,12 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
   var _bank = 0;
   var _page = 1;
   var _button = 1;
+  var _song = 1;
+  var _part = 1;
   var _live = 1;
   final _guide = nordStage3Guide();
   var _step = 0;
   var _stepSent = false;
-  final _number = TextEditingController(text: '1');
   final _msb = TextEditingController();
   final _lsb = TextEditingController();
   final _program = TextEditingController(text: '1');
@@ -64,7 +65,6 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
     for (final id in _connected) {
       unawaited(_midi.disconnect(id).catchError((Object _) {}));
     }
-    _number.dispose();
     _msb.dispose();
     _lsb.dispose();
     _program.dispose();
@@ -139,9 +139,7 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
       case _Mode.nordProgram:
         return NordStage3.program(_bank, _page, _button).bytes(_channel);
       case _Mode.nordSong:
-        final n = read(_number, 1, NordStage3.maxSong);
-        if (n == null) return null;
-        return NordStage3.song(n).bytes(_channel);
+        return NordStage3.song(_song, _part).bytes(_channel);
       case _Mode.nordLive:
         return NordStage3.live(_live).bytes(_channel);
       case _Mode.raw:
@@ -518,7 +516,22 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
         ListTile(subtitle: Text(NordStage3.programName(_bank, _page, _button))),
       ],
       _Mode.nordSong => [
-        field(_number, l10n.midiTestSongNumber, const Key('midi-number')),
+        dropdown(
+          l10n.midiTestSong,
+          const Key('midi-song'),
+          _song,
+          [for (var n = 1; n <= NordStage3.maxSong; n++) n],
+          (n) => '$n',
+          (v) => _song = v,
+        ),
+        dropdown(
+          l10n.midiTestPart,
+          const Key('midi-part'),
+          _part,
+          [for (var n = 1; n <= NordStage3.partsPerSong; n++) n],
+          (n) => '$n',
+          (v) => _part = v,
+        ),
       ],
       _Mode.nordLive => [
         ListTile(

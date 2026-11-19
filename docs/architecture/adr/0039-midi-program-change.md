@@ -14,8 +14,9 @@ among them the **Nord Stage 3** of the owner's band, switch programs by MIDI:
 - on the Nord Stage 3 (checked on the keyboard, #512): 400 programs in 16 banks
   A–P of 25 (5 pages of 5 buttons, the display shows e.g. `K:33`), counted
   through and sent in blocks of 125: CC 0 = 0, CC 32 = block 0–3, Program Change
-  = place in the block 0–124. The five live memories are Program Change 50–54
-  without bank select. Received on the keyboard's global channel when "Program
+  = place in the block 0–124. Songs use CC 0 = 1 and the same blocks with 5
+  parts per song. The five live memories are sent by the Nord as CC 0 = 6,
+  CC 32 = 0, Program Change 0–4. Received on the keyboard's global channel when "Program
   Change" reception is switched on in its MIDI menu. The bank select must come
   before the program change.
 
@@ -98,9 +99,10 @@ settings** (layer 4b, ADR-0027), never synced:
   - *Programs:* bank A–P, page 1–5 and button 1–5 as on the display (sent as
     CC 0 = 0, CC 32 = number ÷ 125, Program Change = number mod 125, where
     number = bank × 25 + (page − 1) × 5 + button − 1), or live memory 1–5
-    (Program Change 50–54).
-  - *Songs:* a Nord song addressed with CC 0 = 1, CC 32 and Program Change, as
-    far as the prototype confirms it (see below).
+    (CC 0 = 6, CC 32 = 0, Program Change 0–4, as far as the prototype confirms
+    it).
+  - *Songs:* song and part 1–5, sent as CC 0 = 1 and the same blocks of 125
+    with number = (song − 1) × 5 + part − 1.
   - The full bank select (MSB and LSB) is always sent before the program change,
     so the result does not depend on the Nord's current panel mode.
   - A stored value is shown by its MSB (program or song), so values entered in the
@@ -245,12 +247,22 @@ settings** (layer 4b, ADR-0027), never synced:
   or 5. None of this is on midi.guide. The addressing is corrected, and the
   MIDI test got a guided test that needs only taps (send a step, tap what
   happened) and no setting on the Nord, to find the song numbering.
+- 2026-11-19: Second test with the guided test (#512, Android): the program
+  numbering holds across the block borders (E:55, F:11). Songs have 5 parts:
+  bank select MSB 1 with number = (song − 1) × 5 + part − 1 in blocks of 125
+  (PC 1 = next part, PC 5 = next song, LSB 1 / PC 0 = song 26 part 1), so a
+  part is chosen directly and CC 5 is not needed (it still had no effect).
+  CC 3 switches the song mode, CC 2 the live mode on and off. A program change
+  52 without bank select selected program C:13, not live memory 3: the first
+  test only worked because the Nord was in live mode. Live memories now use
+  what the Nord sends for them, CC 0 = 6 with PC 0–4; a third, shorter guided
+  test checks this and songs with parts.
 
 ## Open points
 
-- Prototype results still open: Windows, Linux and Chrome; the numbering of
-  Nord songs and song parts with bank select MSB 1 (guided test); whether CC 5
-  selects song parts at all; the Nord OS version of the test keyboard.
+- Prototype results still open: live memories with CC 0 = 6; Windows, Linux
+  and Chrome; the number of songs on the Nord; the Nord OS version of the test
+  keyboard.
 - Later stages (issues only when taken up): learning the program from the
   keyboard, program changes per section, page turning by MIDI, Bluetooth, several
   target devices, further device profiles, iOS.
