@@ -112,28 +112,23 @@ void main() {
     expect(d.midiEnabled, isFalse);
     expect(d.midiOutputName, '');
     expect(d.midiProfile, MidiProfileKind.nordStage3);
-    expect(d.nordAddresses, NordAddresses.programs);
     expect(d.midiChannel, 1);
     const s = AppSettings(
       midiEnabled: true,
       midiOutputName: 'Nord Stage 3 MIDI',
       midiProfile: MidiProfileKind.generic,
-      nordAddresses: NordAddresses.songs,
       midiChannel: 16,
     );
     final back = AppSettings.fromJson(s.toJson());
     expect(back.toJson(), s.toJson());
     expect(back.midiChannel, 16);
     expect(back.midiProfile, MidiProfileKind.generic);
-    expect(back.nordAddresses, NordAddresses.songs);
     final odd = AppSettings.fromJson({
       'midiProfile': 'moog',
-      'nordAddresses': 'drums',
       'midiChannel': 17,
       'midiEnabled': 'yes',
     });
     expect(odd.midiProfile, MidiProfileKind.nordStage3);
-    expect(odd.nordAddresses, NordAddresses.programs);
     expect(odd.midiChannel, 16);
     expect(odd.midiEnabled, isFalse);
     expect(AppSettings.fromJson({'midiChannel': 0}).midiChannel, 1);
@@ -141,7 +136,6 @@ void main() {
       'midiEnabled',
       'midiOutputName',
       'midiProfile',
-      'nordAddresses',
       'midiChannel',
     ]) {
       expect(AppSettings.scopes[key], SettingSyncScope.device, reason: key);

@@ -12,7 +12,7 @@ import 'display_options.dart';
 import 'song_display.dart';
 import 'user_settings_store.dart';
 
-export '../midi/midi_profile.dart' show MidiProfileKind, NordAddresses;
+export '../midi/midi_profile.dart' show MidiProfileKind;
 export 'display_options.dart';
 export 'song_display.dart';
 export 'user_settings_store.dart';
@@ -142,7 +142,6 @@ class AppSettings {
     this.midiEnabled = false,
     this.midiOutputName = '',
     this.midiProfile = MidiProfileKind.nordStage3,
-    this.nordAddresses = NordAddresses.programs,
     this.midiChannel = 1,
   });
 
@@ -261,15 +260,11 @@ class AppSettings {
   /// The device profile that translates programs for the musician.
   final MidiProfileKind midiProfile;
 
-  /// What new programs address on a Nord Stage 3.
-  final NordAddresses nordAddresses;
-
   /// The MIDI channel 1–16, the keyboard's global channel.
   final int midiChannel;
 
-  /// The profile of [midiProfile] and [nordAddresses].
-  MidiProfile get midiDeviceProfile =>
-      MidiProfile.of(midiProfile, nordAddresses: nordAddresses);
+  /// The profile of [midiProfile].
+  MidiProfile get midiDeviceProfile => MidiProfile.of(midiProfile);
 
   static const maxAudioLatencyMs = 500;
 
@@ -371,7 +366,6 @@ class AppSettings {
     bool? midiEnabled,
     String? midiOutputName,
     MidiProfileKind? midiProfile,
-    NordAddresses? nordAddresses,
     int? midiChannel,
   }) => AppSettings(
     language: language ?? this.language,
@@ -415,7 +409,6 @@ class AppSettings {
     midiEnabled: midiEnabled ?? this.midiEnabled,
     midiOutputName: midiOutputName ?? this.midiOutputName,
     midiProfile: midiProfile ?? this.midiProfile,
-    nordAddresses: nordAddresses ?? this.nordAddresses,
     midiChannel: midiChannel ?? this.midiChannel,
   );
 
@@ -473,7 +466,6 @@ class AppSettings {
     'midiEnabled': SettingSyncScope.device,
     'midiOutputName': SettingSyncScope.device,
     'midiProfile': SettingSyncScope.device,
-    'nordAddresses': SettingSyncScope.device,
     'midiChannel': SettingSyncScope.device,
   };
 
@@ -525,7 +517,6 @@ class AppSettings {
     'midiEnabled': midiEnabled,
     'midiOutputName': midiOutputName,
     'midiProfile': midiProfile.name,
-    'nordAddresses': nordAddresses.name,
     'midiChannel': midiChannel,
   };
 
@@ -625,11 +616,6 @@ class AppSettings {
       midiEnabled: flag('midiEnabled', d.midiEnabled),
       midiOutputName: text('midiOutputName', d.midiOutputName),
       midiProfile: pick(MidiProfileKind.values, 'midiProfile', d.midiProfile),
-      nordAddresses: pick(
-        NordAddresses.values,
-        'nordAddresses',
-        d.nordAddresses,
-      ),
       midiChannel: (number('midiChannel')?.toInt() ?? d.midiChannel).clamp(
         1,
         16,

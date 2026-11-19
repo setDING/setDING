@@ -38,11 +38,10 @@ The songs carry no keyboard program: programs are personal adjustments
 
 1. Settings → *Musician* → instrument **Keyboard**; then *Keyboard (MIDI)*:
    MIDI program changes on, output = the Nord (USB), profile **Nord Stage 3**,
-   Nord addresses **Programs**, channel = the Nord's global channel. On the
+   channel = the Nord's global channel. On the
    Nord: MIDI menu → "Program Change" reception on.
 2. Import `nord-test.zip` and set the keyboard program of each song as shown in
-   its subtitle; for song 08 switch Nord addresses to **Songs** first and back
-   to **Programs** afterwards.
+   its subtitle (Program, Live memory or Song at the top of the dialog).
 3. Create a set with the songs in order 01–09, a break between 04 and 05, and
    start live mode.
 

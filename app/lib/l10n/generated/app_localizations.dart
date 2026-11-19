@@ -5317,30 +5317,6 @@ abstract class AppLocalizations {
   /// **'Allgemein'**
   String get midiProfileGeneric;
 
-  /// No description provided for @settingsNordAddresses.
-  ///
-  /// In de, this message translates to:
-  /// **'Nord-Adressen'**
-  String get settingsNordAddresses;
-
-  /// No description provided for @settingsNordAddressesHint.
-  ///
-  /// In de, this message translates to:
-  /// **'Ob neue Keyboard-Programme Nord-Programme und Live-Speicher oder Nord-Songs wählen.'**
-  String get settingsNordAddressesHint;
-
-  /// No description provided for @nordAddressesPrograms.
-  ///
-  /// In de, this message translates to:
-  /// **'Programme'**
-  String get nordAddressesPrograms;
-
-  /// No description provided for @nordAddressesSongs.
-  ///
-  /// In de, this message translates to:
-  /// **'Songs'**
-  String get nordAddressesSongs;
-
   /// No description provided for @settingsMidiChannel.
   ///
   /// In de, this message translates to:
@@ -5484,6 +5460,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Teil'**
   String get midiProgramPart;
+
+  /// No description provided for @midiProgramSongHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Nummerierung der Nord-Songs hängt von der OS-Version des Nord ab (geprüft mit OS 2.54). Passt ein Song nicht, verwende in den Einstellungen das Profil «Allgemein».'**
+  String get midiProgramSongHint;
 
   /// No description provided for @midiProgramMsb.
   ///

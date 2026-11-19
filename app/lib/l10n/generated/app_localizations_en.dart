@@ -3088,19 +3088,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get midiProfileGeneric => 'Generic';
 
   @override
-  String get settingsNordAddresses => 'Nord addresses';
-
-  @override
-  String get settingsNordAddressesHint =>
-      'Whether new keyboard programs select Nord programs and live memories, or Nord songs.';
-
-  @override
-  String get nordAddressesPrograms => 'Programs';
-
-  @override
-  String get nordAddressesSongs => 'Songs';
-
-  @override
   String get settingsMidiChannel => 'MIDI channel';
 
   @override
@@ -3176,6 +3163,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get midiProgramPart => 'Part';
+
+  @override
+  String get midiProgramSongHint =>
+      'The numbering of Nord songs depends on the Nord\'s OS version (checked with OS 2.54). If a song does not match, use the profile “Generic” in the settings.';
 
   @override
   String get midiProgramMsb => 'Bank select MSB (optional)';

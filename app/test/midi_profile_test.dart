@@ -5,7 +5,6 @@ import 'package:setding/midi/midi_profile.dart';
 /// Device profiles of MIDI program changes (ADR-0039).
 void main() {
   const nord = NordStage3Profile();
-  const nordSongs = NordStage3Profile(NordAddresses.songs);
   const generic = GenericProfile();
 
   group('Nord Stage 3', () {
@@ -86,20 +85,17 @@ void main() {
       }
     });
 
-    test('the kind follows the stored MSB, not the Nord addresses', () {
+    test('the kind follows the stored MSB', () {
       const program = MidiProgram(msb: 0, lsb: 2, program: 12);
       const song = MidiProgram(msb: 1, lsb: 0, program: 7);
       const live = MidiProgram(msb: 6, lsb: 0, program: 2);
-      for (final profile in [nord, nordSongs]) {
-        expect(profile.toPatch(program), const NordProgram(10, 3, 3));
-        expect(profile.toPatch(song), const NordSong(2, 3));
-        expect(profile.toPatch(live), const NordLiveMemory(3));
-      }
+      expect(nord.toPatch(program), const NordProgram(10, 3, 3));
+      expect(nord.toPatch(song), const NordSong(2, 3));
+      expect(nord.toPatch(live), const NordLiveMemory(3));
     });
 
-    test('a new program starts as the Nord addresses say', () {
+    test('a new program starts with program A:11', () {
       expect(nord.initialPatch, const NordProgram(0, 1, 1));
-      expect(nordSongs.initialPatch, const NordSong(1));
     });
 
     test('values the Nord does not send are shown as generic', () {
@@ -188,13 +184,6 @@ void main() {
 
   test('the profile of the settings', () {
     expect(MidiProfile.of(MidiProfileKind.nordStage3), nord);
-    expect(
-      MidiProfile.of(
-        MidiProfileKind.nordStage3,
-        nordAddresses: NordAddresses.songs,
-      ),
-      nordSongs,
-    );
     expect(MidiProfile.of(MidiProfileKind.generic), generic);
     expect(
       MidiProfile.of(MidiProfileKind.generic).kind,

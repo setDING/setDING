@@ -41,23 +41,24 @@ Bluetooth-MIDI wird noch nicht unterstützt.
 4. Wähle unter **Ausgang** dein Keyboard. Findet setDING es nicht, tippe auf
    **Erneut suchen**. setDING merkt sich das Keyboard und verbindet sich von selbst
    wieder, wenn du es später einsteckst.
-5. Wähle das **Geräteprofil**:
+5. Wähle in der Liste das **Geräteprofil**:
+   - **Allgemein** – Bank Select und Programmnummer, für jedes Keyboard. Schau
+     in der Anleitung deines Keyboards nach, welche Werte es erwartet.
    - **Nord Stage 3** – du gibst Programme so ein, wie sie das Display des Nord
      zeigt.
-   - **Allgemein** – Bank Select und Programmnummer, für jedes andere Keyboard.
-     Schau in der Anleitung deines Keyboards nach, welche Werte es erwartet.
 6. Stelle den **MIDI-Kanal** ein, auf dem das Keyboard empfängt.
 
-<Image src={settings} alt="Die Einstellungen «Keyboard (MIDI)» mit einem verbundenen Nord Stage 3, Geräteprofil, Nord-Adressen und MIDI-Kanal" />
+<Image src={settings} alt="Die Einstellungen «Keyboard (MIDI)» mit einem verbundenen Nord Stage 3, Geräteprofil und MIDI-Kanal" />
 
 ### Nord Stage 3
 
 - Schalte am Nord im **MIDI-Menü** den Empfang von **«Program Change»** ein.
 - Stelle in setDING als **MIDI-Kanal** den **globalen Kanal** des Nord ein.
-- Unter **Nord-Adressen** wählst du, womit du arbeitest:
-  - **Programme** – Bank A–P, Seite 1–5 und Taste 1–5, so wie das Display z. B.
-    `K:33` zeigt, oder einer der fünf **Live-Speicher**.
-  - **Songs** – ein Nord-Song und sein Teil 1–5.
+- Beim Programm eines Songs wählst du, was der Nord aufrufen soll:
+  - **Programm** – Bank A–P, Seite 1–5 und Taste 1–5, so wie das Display z. B.
+    `K:33` zeigt.
+  - **Live-Speicher** – einer der fünf Live-Speicher.
+  - **Song** – ein Nord-Song und sein Teil 1–5.
 - Die Nummerierung der Nord-Songs hängt von der OS-Version des Nord ab (geprüft mit
   OS 2.54). Passt ein Song nicht, verwende das Profil **Allgemein**.
 
@@ -66,6 +67,8 @@ Bluetooth-MIDI wird noch nicht unterstützt.
 1. Öffne den Song und tippe auf **Persönliche Anpassungen**.
 2. Tippe beim **Keyboard-Programm** auf **Programm wählen** und wähle es ohne
    Eingabe aus, z. B. Bank C und im Raster 13 (Seite 1, Taste 3), dann **Speichern**.
+   Beim Nord wählst du oben zuerst **Programm**, **Live-Speicher** oder **Song**;
+   ein neues Programm beginnt mit der Art, die du zuletzt gespeichert hast.
 3. Mit **Test** schickst du es sofort an das Keyboard und hörst, ob der Sound
    stimmt.
 

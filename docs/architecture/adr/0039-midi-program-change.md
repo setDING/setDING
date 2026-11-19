@@ -94,12 +94,13 @@ settings and stored programs are kept.
 |---|---|---|
 | MIDI program changes | on / off | off |
 | Output | a connected USB MIDI device, remembered by name | none |
-| Profile | Nord Stage 3, Generic | Nord Stage 3 |
-| Nord addresses (Nord profile only) | Programs, Songs | Programs |
+| Profile (drop-down) | Generic, Nord Stage 3 | Nord Stage 3 |
 | Channel | 1–16 | 1 |
 
-- **Nord Stage 3 profile** with a device setting **"Nord addresses: Programs |
-  Songs"**, chosen by the keyboard player (default Programs):
+- **Nord Stage 3 profile**, which addresses programs, live memories and Nord
+  songs; the keyboard player chooses the kind per song when editing the
+  program (#586; until then a device setting "Nord addresses: Programs |
+  Songs" limited the kinds offered):
   - *Programs:* bank A–P, page 1–5 and button 1–5 as on the display (sent as
     CC 0 = 0, CC 32 = number ÷ 125, Program Change = number mod 125, where
     number = bank × 25 + (page − 1) × 5 + button − 1), or live memory 1–5
@@ -108,8 +109,7 @@ settings and stored programs are kept.
     with number = (song − 1) × 5 + part − 1.
   - The full bank select (MSB and LSB) is always sent before the program change,
     so the result does not depend on the Nord's current panel mode.
-  - A stored value is shown by its MSB (program or song), so values entered in the
-    other mode stay readable after the setting changes.
+  - A stored value is shown by its MSB (program, song or live memory).
   - The settings explain that "Program Change" reception must be on in the Nord's
     MIDI menu, that the channel is the Nord's global channel, and that the
     numbering of songs depends on the Nord's OS version.
@@ -122,8 +122,9 @@ settings and stored programs are kept.
 
 - The song screen's personal adjustments get a **"Keyboard program"** field, shown
   when MIDI program changes are on for this device or when the song already has a
-  program. It is edited in the terms of the profile (e.g. "Bank C, program 13")
-  and can be removed.
+  program. It is edited in the terms of the profile (e.g. "Bank C, program 13";
+  with the Nord Stage 3 first the kind: program, live memory or song) and can
+  be removed.
 - A **"Test"** button next to it sends the program once, when an output is
   connected. This is an explicit action; outside live mode nothing is sent
   automatically.
@@ -339,6 +340,19 @@ settings and stored programs are kept.
   program again" are hidden, and the song's keyboard program field is hidden
   even when the song has a program. The device settings and stored programs
   are kept, so choosing keyboard again restores everything.
+
+- 2026-11-19: No "Nord addresses" setting any more (owner, #586): it only
+  limited which kinds the program dialog offered, never what was stored or
+  sent, and a keyboard player who mixes programs, live memories and Nord
+  songs had to switch it in the settings for each song (found with the Nord
+  test set, `docs/examples/nord-test`). With the Nord Stage 3 profile the
+  dialog now always offers Program, Live memory and Song; a stored value
+  opens with its own kind, a new one with the kind saved last while the app
+  runs (otherwise Program A:11). The hint on the OS-dependent song numbering
+  is shown in the Song tab as well. The device setting `nordAddresses` is no
+  longer read; stored programs are unchanged. The device profile is chosen in
+  a drop-down instead of segmented buttons, "Generic" first and then the
+  keyboards, since more profiles will follow (owner).
 
 ## Open points
 
