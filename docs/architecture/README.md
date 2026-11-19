@@ -316,7 +316,7 @@ See "Open points" in the individual ADRs. The most important:
 32. Which components are in a release, and are we affected by a vulnerability? → One CycloneDX SBOM per release asset with the application's name, version and the asset's hash (ADR-0037, accepted, implemented in #505). listing only shipped components, evaluated on GitHub (Dependabot, dependency review). Open: server SBOM once the server is released, switching on Dependabot, versions and licences of native libraries of build hooks
 33. Can Linux users update from inside the app too? → AppImage next to the tar.gz, updated like the Windows setup (ADR-0038, accepted, #503, implemented in #504): version from the update check (ADR-0036), download from the GitHub release, check against `SHA256SUMS`, the file is replaced in one step and the app restarts. Open: desktop integration without extra tools, signing
 34. Can setDING switch the keyboard's sound for each song? → ADR-0039 (accepted, #510): the personal keyboard program of the current song is sent over USB when the song becomes current in live mode, nothing for songs without one; device profiles with the Nord Stage 3 first (programs or Nord songs, set by the keyboard player), a "Test" button in the song; Android, Windows, Linux and web (Chrome/Edge); a prototype with a real Nord on all platforms comes first. Open: the prototype's results (library per platform, addressing of Nord songs); later learning, per-section changes, MIDI page turning, Bluetooth, several devices, iOS
-35. How can verses that share their chords be read like in a hymnal? → ADR-0040 (proposed, #521): a personal choice *chords in verses* (all / first verse only / stacked) replaces the boolean of #518; consecutive verses with the same chords are stacked line by line as a display transformation of the parsed song (`stackVerses`, new line type `StackedLine`), in place of the first verse, with a row per verse marked as its source line for freehand annotations. Open: line width on small tablets
+35. How can verses that share their chords be read like in a hymnal? → ADR-0040 (accepted, #521): a personal choice *chords in verses* (all / first verse only / stacked) replaces the boolean of #518; consecutive verses with the same chords are stacked line by line as a display transformation of the parsed song (`stackVerses`, new line type `StackedLine`), in place of the first verse, with a row per verse marked as its source line for freehand annotations. Open: line width on small tablets
 
 ## 10. ADR index
 
@@ -360,6 +360,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0037](adr/0037-sbom-cyclonedx.md) | SBOM in CycloneDX per release artifact | Accepted |
 | [0038](adr/0038-linux-appimage-self-update.md) | Linux AppImage with in-app updates | Accepted |
 | [0039](adr/0039-midi-program-change.md) | MIDI program change per song in live mode | Accepted |
-| [0040](adr/0040-stacked-verses.md) | Stacked verses as a display transformation | Proposed |
+| [0040](adr/0040-stacked-verses.md) | Stacked verses as a display transformation | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.

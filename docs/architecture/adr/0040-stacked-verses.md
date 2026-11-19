@@ -1,6 +1,6 @@
 # ADR-0040: Stacked verses as a display transformation
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-19
 
 ## Context
@@ -81,6 +81,7 @@ one layout measurement used to fit songs to pages (ADR-0007).
 - 2026-11-19: Proposed with #521 after the owner chose: verses without chords
   join unsplit, the block replaces the first verse, annotations follow their
   line, one choice with three values replacing #518's boolean.
+- 2026-11-19: Accepted by the owner (#521, #531).
 
 ## Open points
 
