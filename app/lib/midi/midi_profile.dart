@@ -5,10 +5,6 @@ import 'midi_message.dart';
 /// The device profiles of the MIDI settings (ADR-0039).
 enum MidiProfileKind { nordStage3, generic }
 
-/// What the Nord Stage 3 profile addresses when a new program is entered:
-/// its programs (and live memories) or its songs (ADR-0039).
-enum NordAddresses { programs, songs }
-
 /// A stored [MidiProgram] in the terms of the musician, e.g. "K:33" or
 /// "song 2, part 3" (ADR-0039). A [MidiProfile] translates between the two.
 @immutable
@@ -110,19 +106,15 @@ sealed class MidiProfile {
   const MidiProfile();
 
   /// The profile of the device settings.
-  factory MidiProfile.of(
-    MidiProfileKind kind, {
-    NordAddresses nordAddresses = NordAddresses.programs,
-  }) => switch (kind) {
-    MidiProfileKind.nordStage3 => NordStage3Profile(nordAddresses),
+  factory MidiProfile.of(MidiProfileKind kind) => switch (kind) {
+    MidiProfileKind.nordStage3 => const NordStage3Profile(),
     MidiProfileKind.generic => const GenericProfile(),
   };
 
   MidiProfileKind get kind;
 
   /// [program] in the terms of this profile. The kind of a Nord value
-  /// follows its bank select MSB, not the "Nord addresses" setting, so a
-  /// value entered in the other mode stays readable.
+  /// follows its bank select MSB (program, song or live memory).
   MidiPatch toPatch(MidiProgram program);
 
   /// The raw values of [patch]. Throws a [RangeError] for values outside
@@ -154,20 +146,15 @@ sealed class MidiProfile {
 }
 
 /// The Nord Stage 3 (ADR-0039): programs A–P / page / button and live
-/// memories 1–5, or songs with parts 1–5, chosen by [addresses].
+/// memories 1–5 and songs with parts 1–5.
 final class NordStage3Profile extends MidiProfile {
-  const NordStage3Profile([this.addresses = NordAddresses.programs]);
-
-  final NordAddresses addresses;
+  const NordStage3Profile();
 
   @override
   MidiProfileKind get kind => MidiProfileKind.nordStage3;
 
   @override
-  MidiPatch get initialPatch => switch (addresses) {
-    NordAddresses.programs => const NordProgram(0, 1, 1),
-    NordAddresses.songs => const NordSong(1),
-  };
+  MidiPatch get initialPatch => const NordProgram(0, 1, 1);
 
   @override
   MidiPatch toPatch(MidiProgram program) =>
@@ -200,11 +187,10 @@ final class NordStage3Profile extends MidiProfile {
   }
 
   @override
-  bool operator ==(Object other) =>
-      other is NordStage3Profile && other.addresses == addresses;
+  bool operator ==(Object other) => other is NordStage3Profile;
 
   @override
-  int get hashCode => Object.hash(NordStage3Profile, addresses);
+  int get hashCode => (NordStage3Profile).hashCode;
 }
 
 /// Any keyboard: bank select MSB and LSB, program 1–128 (ADR-0039).

@@ -10,7 +10,7 @@
 
 {comment: Expected on the Nord: Song 2, part 3}
 {comment_italic: Sent: CC 0 = 1, CC 32 = 0, PC 7}
-{comment_italic: A Nord song: the Nord switches to song 2, part 3. Enter it with Nord addresses = Songs.}
+{comment_italic: A Nord song: the Nord switches to song 2, part 3. In the keyboard program dialog, choose Song.}
 
 {start_of_verse}
 [Bb]Five parts make a [F]song of mine,

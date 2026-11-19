@@ -9,8 +9,8 @@ import '../../midi/midi_output.dart';
 import '../../settings/settings.dart';
 
 /// The device settings of MIDI program changes to a keyboard (ADR-0039):
-/// on or off, the output, the device profile, the Nord addresses and the
-/// channel, with hints for the Nord Stage 3.
+/// on or off, the output, the device profile and the channel,
+///, with hints for the Nord Stage 3.
 class MidiSettings extends ConsumerWidget {
   const MidiSettings({super.key});
 
@@ -47,31 +47,37 @@ class MidiSettings extends ConsumerWidget {
             ),
           ),
           const _OutputPicker(),
-          _segments(
-            context,
-            l10n.settingsMidiProfile,
-            l10n.settingsMidiProfileHint,
-            s.midiProfile,
-            {
-              MidiProfileKind.nordStage3: l10n.midiProfileNordStage3,
-              MidiProfileKind.generic: l10n.midiProfileGeneric,
-            },
-            (v) => notifier.update((s) => s.copyWith(midiProfile: v)),
+          // A drop-down, as more device profiles will follow; "Generic"
+          // first, then the keyboards (#586).
+          ListTile(
             key: const Key('settings-midi-profile'),
-          ),
-          if (nord)
-            _segments(
-              context,
-              l10n.settingsNordAddresses,
-              l10n.settingsNordAddressesHint,
-              s.nordAddresses,
-              {
-                NordAddresses.programs: l10n.nordAddressesPrograms,
-                NordAddresses.songs: l10n.nordAddressesSongs,
-              },
-              (v) => notifier.update((s) => s.copyWith(nordAddresses: v)),
-              key: const Key('settings-nord-addresses'),
+            title: Text(l10n.settingsMidiProfile),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(l10n.settingsMidiProfileHint),
+                ),
+                DropdownButton<MidiProfileKind>(
+                  key: const Key('settings-midi-profile-dropdown'),
+                  value: s.midiProfile,
+                  items: [
+                    for (final (kind, label) in [
+                      (MidiProfileKind.generic, l10n.midiProfileGeneric),
+                      (MidiProfileKind.nordStage3, l10n.midiProfileNordStage3),
+                    ])
+                      DropdownMenuItem(value: kind, child: Text(label)),
+                  ],
+                  onChanged: (v) {
+                    if (v != null) {
+                      notifier.update((s) => s.copyWith(midiProfile: v));
+                    }
+                  },
+                ),
+              ],
             ),
+          ),
           ListTile(
             key: const Key('settings-midi-channel'),
             title: Text(l10n.settingsMidiChannel),
@@ -100,37 +106,6 @@ class MidiSettings extends ConsumerWidget {
     );
   }
 }
-
-Widget _segments<T>(
-  BuildContext context,
-  String title,
-  String hint,
-  T value,
-  Map<T, String> options,
-  void Function(T) onChanged, {
-  Key? key,
-}) => ListTile(
-  key: key,
-  title: Text(title),
-  subtitle: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Padding(padding: const EdgeInsets.only(top: 4), child: Text(hint)),
-      Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: SegmentedButton<T>(
-          showSelectedIcon: false,
-          segments: [
-            for (final e in options.entries)
-              ButtonSegment(value: e.key, label: Text(e.value)),
-          ],
-          selected: {value},
-          onSelectionChanged: (v) => onChanged(v.first),
-        ),
-      ),
-    ],
-  ),
-);
 
 /// The MIDI devices connected now; the chosen one is remembered by name.
 class _OutputPicker extends ConsumerStatefulWidget {

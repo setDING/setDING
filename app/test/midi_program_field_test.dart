@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/midi/midi_message.dart';
 import 'package:setding/midi/midi_output.dart';
+import 'package:setding/ui/songs/midi_program_field.dart';
 import 'package:setding/ui/songs/song_screen.dart';
 
 import 'test_app.dart';
@@ -20,6 +21,8 @@ void main() {
 
   late TestApp app;
   late String songId;
+
+  setUp(MidiProgramPicker.resetLastKind);
 
   /// Opens the personal adjustments of a song with [program] stored.
   Future<void> pumpSong(
@@ -135,10 +138,10 @@ void main() {
     ) async {
       await pumpSong(tester);
       await openPicker(tester);
-      // Programs and live memories in the Nord addresses "Programs".
+      // Programs, live memories and songs, always (#586).
       expect(find.byKey(const Key('midi-kind-program')), findsOneWidget);
       expect(find.byKey(const Key('midi-kind-live')), findsOneWidget);
-      expect(find.byKey(const Key('midi-kind-song')), findsNothing);
+      expect(find.byKey(const Key('midi-kind-song')), findsOneWidget);
       expect(preview(tester), 'Program A:11');
 
       await tap(tester, find.byKey(const Key('midi-bank-10')));
@@ -211,12 +214,13 @@ void main() {
   });
 
   group('Nord songs', () {
-    testWidgets('song stepper and part, only songs offered', (tester) async {
-      await pumpSong(tester, prefs: {...midiOn, 'nordAddresses': 'songs'});
+    testWidgets('song stepper and part, with the OS hint', (tester) async {
+      await pumpSong(tester);
       await openPicker(tester);
-      // Only one kind: no selector.
-      expect(find.byKey(const Key('midi-program-kind')), findsNothing);
+      expect(find.byKey(const Key('midi-song-hint')), findsNothing);
+      await tap(tester, find.byKey(const Key('midi-kind-song')));
       expect(preview(tester), 'Song 1, part 1');
+      expect(find.byKey(const Key('midi-song-hint')), findsOneWidget);
       final down = find.byKey(const Key('midi-song-down'));
       expect(tester.widget<IconButton>(down).onPressed, isNull);
       await tap(tester, find.byKey(const Key('midi-song-up')));
@@ -238,7 +242,6 @@ void main() {
     testWidgets('song 26 is in the second block', (tester) async {
       await pumpSong(
         tester,
-        prefs: {...midiOn, 'nordAddresses': 'songs'},
         program: const MidiProgram(msb: 1, lsb: 0, program: 124),
       );
       expect(find.text('Song 25, part 5'), findsOneWidget);
@@ -254,25 +257,44 @@ void main() {
       await app.dispose(tester);
     });
 
-    testWidgets('a program stored in the other mode stays readable and '
-        'editable as a program', (tester) async {
+    testWidgets('a new program starts with the kind saved last', (
+      tester,
+    ) async {
+      await pumpSong(tester);
+      await openPicker(tester);
+      await tap(tester, find.byKey(const Key('midi-kind-song')));
+      await tap(tester, find.byKey(const Key('midi-part-2')));
+      await save(tester);
+      expect(
+        await stored(tester),
+        const MidiProgram(msb: 1, lsb: 0, program: 2),
+      );
+      await tap(tester, find.byKey(const Key('midi-program-remove')));
+      expect(await stored(tester), isNull);
+      // The next new program starts as a song, not as program A:11.
+      await openPicker(tester);
+      expect(preview(tester), 'Song 1, part 1');
+      await tap(tester, find.text('Cancel'));
+      expect(await stored(tester), isNull);
+      await app.dispose(tester);
+    });
+
+    testWidgets('a stored program opens with its own kind', (tester) async {
       await pumpSong(
         tester,
-        prefs: {...midiOn, 'nordAddresses': 'songs'},
         program: const MidiProgram(msb: 0, lsb: 2, program: 12),
       );
       expect(find.text('Program K:33'), findsOneWidget);
       await openPicker(tester);
-      expect(find.byKey(const Key('midi-kind-program')), findsOneWidget);
-      expect(find.byKey(const Key('midi-kind-song')), findsOneWidget);
-      expect(find.byKey(const Key('midi-kind-live')), findsNothing);
       expect(preview(tester), 'Program K:33');
-      await tap(tester, find.byKey(const Key('midi-cell-34')));
+      await tap(tester, find.byKey(const Key('midi-kind-song')));
+      await tap(tester, find.byKey(const Key('midi-part-1')));
       await save(tester);
       expect(
         await stored(tester),
-        const MidiProgram(msb: 0, lsb: 2, program: 13),
+        const MidiProgram(msb: 1, lsb: 0, program: 1),
       );
+      expect(find.text('Song 1, part 2'), findsOneWidget);
       await app.dispose(tester);
     });
 
@@ -432,12 +454,11 @@ void main() {
   });
 
   group('phone width', () {
-    for (final prefs in [
-      midiOn,
-      {...midiOn, 'nordAddresses': 'songs'},
-      {...midiOn, 'midiProfile': 'generic'},
+    for (final (name, prefs) in [
+      ('Nord', midiOn),
+      ('generic', {...midiOn, 'midiProfile': 'generic'}),
     ]) {
-      testWidgets('the picker fits (${prefs.length})', (tester) async {
+      testWidgets('the picker fits ($name)', (tester) async {
         await pumpSong(
           tester,
           prefs: prefs,
@@ -447,10 +468,11 @@ void main() {
         expect(tester.takeException(), isNull);
         await openPicker(tester);
         expect(tester.takeException(), isNull);
-        if (prefs.length == 3) {
-          await tap(tester, find.byKey(const Key('midi-kind-live')));
-          expect(tester.takeException(), isNull);
-          await tap(tester, find.byKey(const Key('midi-kind-program')));
+        if (name == 'Nord') {
+          for (final kind in ['live', 'song', 'program']) {
+            await tap(tester, find.byKey(Key('midi-kind-$kind')));
+            expect(tester.takeException(), isNull, reason: kind);
+          }
         }
         await save(tester);
         expect(tester.takeException(), isNull);

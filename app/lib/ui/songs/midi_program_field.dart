@@ -167,15 +167,16 @@ MidiPatchKind _kindOf(MidiPatch patch) => switch (patch) {
   GenericProgram() => MidiPatchKind.generic,
 };
 
-/// The kinds [profile] offers for a new program, plus the kind of the
-/// stored [current] value, so it can be kept and changed.
+/// The kinds [profile] offers (the Nord Stage 3: programs, live memories
+/// and songs, #586), plus the kind of the stored [current] value, so it
+/// can be kept and changed.
 List<MidiPatchKind> midiPatchKinds(MidiProfile profile, MidiPatch? current) {
   final kinds = switch (profile) {
-    NordStage3Profile(addresses: NordAddresses.programs) => [
+    NordStage3Profile() => [
       MidiPatchKind.program,
       MidiPatchKind.live,
+      MidiPatchKind.song,
     ],
-    NordStage3Profile(addresses: NordAddresses.songs) => [MidiPatchKind.song],
     GenericProfile() => [MidiPatchKind.generic],
   };
   if (current != null && !kinds.contains(_kindOf(current))) {
@@ -203,11 +204,20 @@ class MidiProgramPicker extends StatefulWidget {
   final MidiProfile profile;
   final MidiProgram? initial;
 
+  /// Forgets the kind last saved (tests).
+  @visibleForTesting
+  static void resetLastKind() => _MidiProgramPickerState._lastKind = null;
+
   @override
   State<MidiProgramPicker> createState() => _MidiProgramPickerState();
 }
 
 class _MidiProgramPickerState extends State<MidiProgramPicker> {
+  /// The kind last saved while the app runs: a new program starts with it,
+  /// so a keyboard player who works with Nord songs need not switch each
+  /// time.
+  static MidiPatchKind? _lastKind;
+
   late final List<MidiPatchKind> _kinds;
   late MidiPatchKind _kind;
 
@@ -231,6 +241,8 @@ class _MidiProgramPickerState extends State<MidiProgramPicker> {
     _kinds = midiPatchKinds(widget.profile, stored);
     final start = stored ?? widget.profile.initialPatch;
     _kind = _kindOf(start);
+    final last = _lastKind;
+    if (stored == null && last != null && _kinds.contains(last)) _kind = last;
     switch (start) {
       case NordProgram(:final bank, :final page, :final button):
         _bank = bank;
@@ -363,7 +375,10 @@ class _MidiProgramPickerState extends State<MidiProgramPicker> {
           key: const Key('midi-program-save'),
           onPressed: patch == null
               ? null
-              : () => Navigator.pop(context, widget.profile.toMidi(patch)),
+              : () {
+                  _lastKind = _kind;
+                  Navigator.pop(context, widget.profile.toMidi(patch));
+                },
           child: Text(l10n.save),
         ),
       ],
@@ -523,6 +538,12 @@ class _MidiProgramPickerState extends State<MidiProgramPicker> {
       selected: _part - 1,
       label: (i) => '${i + 1}',
       onSelected: (i) => _part = i + 1,
+    ),
+    const SizedBox(height: 12),
+    Text(
+      l10n.midiProgramSongHint,
+      key: const Key('midi-song-hint'),
+      style: theme.textTheme.bodySmall,
     ),
   ];
 

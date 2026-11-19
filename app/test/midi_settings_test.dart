@@ -68,13 +68,12 @@ void main() {
     expect(find.text('Connected to Nord Stage 3'), findsOneWidget);
     expect(container.read(midiConnectionProvider).connected, isTrue);
 
-    // The Nord hints and its addresses, only with the Nord profile.
+    // The Nord hints, only with the Nord profile; what a program addresses
+    // is chosen per song, not here (#586).
     final hint = find.byKey(const Key('settings-midi-nord-hint'));
-    final addresses = find.byKey(const Key('settings-nord-addresses'));
     expect(hint, findsOneWidget);
     expect(find.textContaining('Program Change'), findsOneWidget);
-    await tap(tester, find.text('Songs'));
-    expect(container.read(settingsProvider).nordAddresses, NordAddresses.songs);
+    expect(find.text('Songs'), findsNothing);
 
     final channel = find.byKey(const Key('settings-midi-channel'));
     await tap(
@@ -85,19 +84,29 @@ void main() {
     await tester.pumpAndSettle();
     expect(container.read(settingsProvider).midiChannel, 10);
 
-    await tap(tester, find.text('Generic'));
+    // The profile is a drop-down with "Generic" first (#586).
+    final profile = find.byKey(const Key('settings-midi-profile-dropdown'));
+    final items = tester
+        .widget<DropdownButton<MidiProfileKind>>(profile)
+        .items!
+        .map((i) => i.value);
+    expect(
+      items,
+      orderedEquals([MidiProfileKind.generic, MidiProfileKind.nordStage3]),
+    );
+    await tap(tester, profile);
+    await tester.tap(find.text('Generic').last);
+    await tester.pumpAndSettle();
     expect(
       container.read(settingsProvider).midiProfile,
       MidiProfileKind.generic,
     );
     expect(hint, findsNothing);
-    expect(addresses, findsNothing);
 
     // Stored on this device only, never in the personal settings.
     expect(app.prefs.getBool('midiEnabled'), isTrue);
     expect(app.prefs.getString('midiOutputName'), 'Nord Stage 3');
     expect(app.prefs.getString('midiProfile'), 'generic');
-    expect(app.prefs.getString('nordAddresses'), 'songs');
     expect(app.prefs.getInt('midiChannel'), 10);
     expect(
       app.personal(localOwnerId).keys.where((k) => k.startsWith('midi')),

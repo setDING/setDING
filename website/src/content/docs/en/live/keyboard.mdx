@@ -40,22 +40,23 @@ Bluetooth MIDI is not supported yet.
 4. Choose your keyboard under **Output**. If setDING does not find it, tap **Search
    again**. setDING remembers the keyboard and connects to it again by itself when
    you plug it in later.
-5. Choose the **Device profile**:
+5. Choose the **Device profile** from the list:
+   - **Generic** – bank select and program number, for any keyboard. Its manual
+     tells you which values it expects.
    - **Nord Stage 3** – you enter programs as the Nord's display shows them.
-   - **Generic** – bank select and program number, for any other keyboard. Its
-     manual tells you which values it expects.
 6. Set the **MIDI channel** the keyboard receives on.
 
-<Image src={settings} alt="The Keyboard (MIDI) settings with a connected Nord Stage 3, device profile, Nord addresses and MIDI channel" />
+<Image src={settings} alt="The Keyboard (MIDI) settings with a connected Nord Stage 3, device profile and MIDI channel" />
 
 ### Nord Stage 3
 
 - On the Nord, switch on **"Program Change"** reception in its **MIDI menu**.
 - In setDING, set the **MIDI channel** to the Nord's **global channel**.
-- Under **Nord addresses** you choose what you work with:
-  - **Programs** – bank A–P, page 1–5 and button 1–5, as the display shows e.g.
-    `K:33`, or one of the five **live memories**.
-  - **Songs** – a Nord song and its part 1–5.
+- For each song's program you choose what the Nord calls up:
+  - **Program** – bank A–P, page 1–5 and button 1–5, as the display shows e.g.
+    `K:33`.
+  - **Live memory** – one of the five live memories.
+  - **Song** – a Nord song and its part 1–5.
 - The numbering of Nord songs depends on the Nord's OS version (checked with OS
   2.54). If a song does not match, use the profile **Generic**.
 
@@ -63,7 +64,9 @@ Bluetooth MIDI is not supported yet.
 
 1. Open the song and tap **Personal adjustments**.
 2. Under **Keyboard program**, tap **Choose program** and pick it without typing,
-   e.g. bank C and 13 in the grid (page 1, button 3), then **Save**.
+   e.g. bank C and 13 in the grid (page 1, button 3), then **Save**. With the
+   Nord, first choose **Program**, **Live memory** or **Song** at the top; a new
+   program starts with the kind you saved last.
 3. **Test** sends it to the keyboard right away, so you hear whether the sound is
    right.
 

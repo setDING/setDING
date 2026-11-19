@@ -191,11 +191,6 @@ void main() {
   test('the profile follows the settings', () async {
     await start();
     expect(container.read(midiProfileProvider), const NordStage3Profile());
-    await change((s) => s.copyWith(nordAddresses: NordAddresses.songs));
-    expect(
-      container.read(midiProfileProvider),
-      const NordStage3Profile(NordAddresses.songs),
-    );
     await change((s) => s.copyWith(midiProfile: MidiProfileKind.generic));
     expect(container.read(midiProfileProvider), const GenericProfile());
   });
