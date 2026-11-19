@@ -1648,7 +1648,7 @@
   "midiProgramNone": "Keines: das Keyboard behält seinen Klang",
   "midiProgramChoose": "Programm wählen",
   "midiProgramRemove": "Programm entfernen",
-  "midiProgramTest": "Testen",
+  "midiProgramTest": "Test",
   "midiProgramTestHint": "Sendet das Programm einmal ans Keyboard",
   "midiProgramNotConnected": "Keyboard nicht verbunden",
   "midiProgramOff": "MIDI-Programmwechsel sind auf diesem Gerät ausgeschaltet (Einstellungen: Keyboard (MIDI)).",

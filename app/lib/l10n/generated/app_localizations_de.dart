@@ -3137,7 +3137,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get midiProgramRemove => 'Programm entfernen';
 
   @override
-  String get midiProgramTest => 'Testen';
+  String get midiProgramTest => 'Test';
 
   @override
   String get midiProgramTestHint => 'Sendet das Programm einmal ans Keyboard';

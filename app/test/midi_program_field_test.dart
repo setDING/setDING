@@ -451,7 +451,7 @@ void main() {
     );
     expect(find.text('Keyboard-Programm'), findsOneWidget);
     expect(find.text('Song 2, Teil 3'), findsOneWidget);
-    expect(find.text('Testen'), findsOneWidget);
+    expect(find.text('Test'), findsOneWidget);
     await openPicker(tester);
     expect(find.text('Live-Speicher'), findsOneWidget);
     await app.dispose(tester);

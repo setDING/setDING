@@ -5374,7 +5374,7 @@ abstract class AppLocalizations {
   /// No description provided for @midiProgramTest.
   ///
   /// In de, this message translates to:
-  /// **'Testen'**
+  /// **'Test'**
   String get midiProgramTest;
 
   /// No description provided for @midiProgramTestHint.
