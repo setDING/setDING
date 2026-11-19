@@ -371,6 +371,14 @@ class _CategoryContent extends ConsumerWidget {
           hint: l10n.settingsChorusRepeatHint,
         ),
         SwitchListTile(
+          key: const Key('settings-show-outside-sequence'),
+          title: Text(l10n.settingsShowOutsideSequence),
+          subtitle: Text(l10n.settingsShowOutsideSequenceHint),
+          value: s.showOutsideSequence,
+          onChanged: (v) =>
+              notifier.update((s) => s.copyWith(showOutsideSequence: v)),
+        ),
+        SwitchListTile(
           title: Text(l10n.settingsSetProgress),
           subtitle: Text(l10n.settingsSetProgressHint),
           value: s.setProgress,

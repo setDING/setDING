@@ -146,5 +146,61 @@ void main() {
       expect(s.song.title, 'T');
       expect(s.song.keyName, 'G');
     });
+
+    group('keepOutside', () {
+      List<String> outsideTexts(SequenceSelection s) => [
+        for (final e in s.song.elements)
+          if (e is Section && s.isOutside(e))
+            switch (e.lines) {
+              [LyricLine l, ...] => l.text,
+              _ => '?',
+            },
+      ];
+
+      test('keeps the whole song and marks the parts outside', () {
+        final song = parseChordPro(source);
+        final s = filterBySequence(
+          song,
+          parseSequence('V1, C x2, V2, C, Coda'),
+          keepOutside: true,
+        );
+        expect(s.song, same(song));
+        expect(s.hidden, isEmpty);
+        expect(s.outside, ['I', 'V3', 'B']);
+        expect(outsideTexts(s), ['a', 'v3', 'b']);
+      });
+
+      test('marks copies of a section outside, too', () {
+        final song = parseChordPro(
+          '{sov}\n[G]v1\n{eov}\n{sov}\n[G]v2\n{eov}\n{sov}\n[G]v3\n{eov}',
+        );
+        final s = filterBySequence(
+          song,
+          parseSequence('V1, V2'),
+          keepOutside: true,
+        );
+        // Later verses become copies without chords (#518).
+        final copied = firstVerseChordsOnly(s.song);
+        expect(copied.sections.last, isNot(same(song.sections.last)));
+        expect(
+          [for (final e in copied.sections) s.isOutside(e)],
+          [false, false, true],
+        );
+      });
+
+      test('nothing outside without sequence or matching part', () {
+        final song = parseChordPro(source);
+        for (final sequence in ['', 'Foo', 'V1, V2, C, I, V3, B, Coda']) {
+          final s = filterBySequence(
+            song,
+            parseSequence(sequence),
+            keepOutside: true,
+          );
+          expect(s.song, same(song), reason: sequence);
+          expect(s.outside, isEmpty, reason: sequence);
+          expect(song.sections.any(s.isOutside), isFalse, reason: sequence);
+        }
+      });
+    });
   });
 }

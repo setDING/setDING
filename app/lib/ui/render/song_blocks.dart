@@ -15,6 +15,7 @@ class SongBlock {
       breakBefore = false,
       diagrams = null,
       delegate = null,
+      recalled = null,
       startFormat = FormatState();
 
   /// A delegated environment (SVG, textblock, ABC, Lilypond).
@@ -25,6 +26,7 @@ class SongBlock {
       lines = const [],
       isRecallLabel = false,
       breakBefore = false,
+      recalled = null,
       diagrams = null;
 
   /// Diagrams of all chords of the song (`{diagrams}`, ADR-0012).
@@ -36,6 +38,7 @@ class SongBlock {
       lines = const [],
       isRecallLabel = false,
       breakBefore = false,
+      recalled = null,
       startFormat = FormatState();
 
   SongBlock.section(
@@ -47,16 +50,20 @@ class SongBlock {
   }) : text = null,
        diagrams = null,
        delegate = null,
+       recalled = null,
        isRecallLabel = false;
 
-  SongBlock.recall(String this.label, {required this.startFormat})
-    : section = null,
-      text = null,
-      lines = const [],
-      isRecallLabel = true,
-      diagrams = null,
-      delegate = null,
-      breakBefore = false;
+  SongBlock.recall(
+    String this.label, {
+    required this.startFormat,
+    this.recalled,
+  }) : section = null,
+       text = null,
+       lines = const [],
+       isRecallLabel = true,
+       diagrams = null,
+       delegate = null,
+       breakBefore = false;
 
   /// Personal note text (notes block).
   final String? text;
@@ -72,6 +79,12 @@ class SongBlock {
 
   /// A repeated chorus shown only as a label.
   final bool isRecallLabel;
+
+  /// The chorus repeated by a recall label, if it was defined before.
+  final Section? recalled;
+
+  /// The section the block shows or repeats, if any.
+  Section? get shownSection => section ?? recalled;
 
   /// `{column_break}` / `{new_page}` before this block: it starts a new
   /// column.
@@ -176,7 +189,13 @@ List<SongBlock> buildSongBlocks(
         final chorus = r.chorus;
         final label = r.label ?? chorus?.label ?? chorusLabel;
         if (chorus == null || collapseRecalls) {
-          blocks.add(SongBlock.recall(label, startFormat: format.copy()));
+          blocks.add(
+            SongBlock.recall(
+              label,
+              startFormat: format.copy(),
+              recalled: chorus,
+            ),
+          );
         } else {
           addSection(chorus, label, applyFormats: false);
         }

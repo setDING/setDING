@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:chordpro/chordpro.dart' show SequencePart;
 import 'package:setding/data/database.dart';
 import 'package:setding/data/demo_song.dart';
+import 'package:setding/settings/settings.dart';
 import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/ui/render/song_header.dart';
 import 'package:setding/ui/render/song_view.dart';
@@ -14,6 +15,7 @@ import 'package:setding/ui/songs/song_editor_screen.dart';
 import 'package:setding/ui/songs/song_screen.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'test_app.dart';
@@ -555,11 +557,13 @@ void main() {
     );
   }
 
-  testWidgets('live mode of a set shows only the parts of the sequence', (
+  testWidgets('live mode of a set hides the parts outside the sequence', (
     tester,
   ) async {
     useTabletSize(tester);
-    final app = await TestApp.create(prefs: {'language': 'en'});
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'showOutsideSequence': false},
+    );
     const source =
         '{title: Seq}\n{x_sequence: V1, C, V2}\n'
         '{sov}\nfirst verse\n{eov}\n{soc}\nthe chorus\n{eoc}\n'
@@ -613,6 +617,94 @@ void main() {
     expect(find.byKey(const Key('hidden-parts')), findsNothing);
     await app.dispose(tester);
   });
+
+  testWidgets(
+    'live mode of a set shows the parts outside the sequence dimmed',
+    (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      const source =
+          '{title: Seq}\n{x_sequence: V1, C, V2}\n'
+          '{sov}\nfirst verse\n{eov}\n{soc}\nthe chorus\n{eoc}\n'
+          '{sov}\nsecond verse\n{eov}\n{sob}\nthe bridge\n{eob}\n'
+          '{start_of_verse: Coda}\nthe coda\n{end_of_verse}';
+      final song = await tester.runAsync(() async {
+        final id = await app.songs.createSong(source: source);
+        return app.songs.getSong(id);
+      });
+
+      Future<void> showInSet() async {
+        await tester.pumpWidget(
+          app.build(
+            home: LiveScreen(
+              key: UniqueKey(),
+              items: [LiveItem.song(song!, setItemId: 'i1')],
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+
+      bool dimmed(String text) => find
+          .ancestor(
+            of: find.textContaining(text),
+            matching: find.byKey(const ValueKey('dimmed-section')),
+          )
+          .evaluate()
+          .isNotEmpty;
+
+      // By default all parts are shown, in the order of the song; those
+      // outside the sequence dimmed.
+      await showInSet();
+      expect(find.byKey(const Key('hidden-parts')), findsNothing);
+      final tops = [
+        for (final text in [
+          'first verse',
+          'the chorus',
+          'second verse',
+          'the bridge',
+          'the coda',
+        ])
+          tester.getTopLeft(find.textContaining(text).first).dy,
+      ];
+      expect(tops, orderedEquals([...tops]..sort()));
+      for (final text in ['first verse', 'the chorus', 'second verse']) {
+        expect(dimmed(text), isFalse, reason: text);
+      }
+      for (final text in ['the bridge', 'the coda']) {
+        expect(dimmed(text), isTrue, reason: text);
+      }
+      final opacity = tester.widget<Opacity>(
+        find.byKey(const ValueKey('dimmed-section')).first,
+      );
+      expect(opacity.opacity, dimmedSectionOpacity);
+
+      // A single song is not dimmed.
+      await tester.pumpWidget(
+        app.build(
+          home: LiveScreen(key: UniqueKey(), items: [LiveItem.song(song!)]),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('dimmed-section')), findsNothing);
+
+      // Switched off in the settings, they are hidden again.
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(LiveScreen)),
+      );
+      await tester.runAsync(
+        () => container
+            .read(settingsProvider.notifier)
+            .update((s) => s.copyWith(showOutsideSequence: false)),
+      );
+      await tester.pumpAndSettle();
+      await showInSet();
+      expect(find.textContaining('the bridge'), findsNothing);
+      expect(find.byKey(const ValueKey('dimmed-section')), findsNothing);
+      expect(find.byKey(const Key('hidden-parts')), findsOneWidget);
+      await app.dispose(tester);
+    },
+  );
 
   testWidgets('live mode scrolls when fitting is switched off', (tester) async {
     useTabletSize(tester);

@@ -1246,6 +1246,8 @@
   "annotationsCount": "{count, plural, =0{Noch keine: im Live-Modus zeichnen} =1{1 Notiz} other{{count} Notizen}}",
   "settingsShowAnnotations": "Freihand-Notizen anzeigen",
   "settingsShowAnnotationsHint": "Deine eigenen Zeichnungen auf Songs und Noten",
+  "settingsShowOutsideSequence": "Teile ausserhalb des Ablaufs anzeigen",
+  "settingsShowOutsideSequenceHint": "Im Set abgeschwächt statt ausgeblendet",
   "settingsAnnotationFinger": "Notizen mit dem Finger zeichnen",
   "settingsAnnotationFingerHint": "Für Geräte ohne Stift; sonst blättern die Finger weiter",
   "stampFermata": "Fermate",

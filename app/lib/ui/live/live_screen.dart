@@ -1514,16 +1514,20 @@ class _LiveItemPage extends ConsumerWidget {
               ),
       );
     }
-    // In a set only the parts of the sequence are shown; which ones are
-    // hidden is shown in the header.
+    // In a set the parts outside the sequence are shown dimmed or, as a
+    // personal setting, hidden; which ones are hidden is shown in the
+    // header.
     final sequence = item.setItemId == null
         ? null
         : item.setSequence ??
               item.arrangement?.sequence ??
               parsed.metaValue('x_sequence');
+    final keepOutside = ref.watch(
+      settingsProvider.select((s) => s.showOutsideSequence),
+    );
     final selection = sequence == null
         ? SequenceSelection(parsed, const [])
-        : filterBySequenceCached(parsed, sequence);
+        : filterBySequenceCached(parsed, sequence, keepOutside: keepOutside);
     // Drummer mode (ADR-0026): the parts as played instead of the chords.
     final map = ref.watch(settingsProvider.select((s) => s.showSongMap))
         ? songMap(
@@ -1535,13 +1539,15 @@ class _LiveItemPage extends ConsumerWidget {
     return _ChordProPage(
       index: index,
       annotations: annotations,
-      shownSequence: sequence ?? '',
+      // With the parts outside, the layout is that of the whole song.
+      shownSequence: keepOutside ? '' : sequence ?? '',
       songMap: map,
       song: song,
       // Chords in the first shown verse only (#518) or the shown verses
       // stacked (#521).
       parsed: songWithVerseChords(selection.song, overlay.verseChords),
       hiddenParts: selection.hidden,
+      dimSection: selection.outside.isEmpty ? null : selection.isOutside,
       overlay: overlay,
       setTranspose: item.bandTranspose + item.setTranspose,
       setSequence: item.setSequence,
@@ -1569,6 +1575,7 @@ class _ChordProPage extends ConsumerWidget {
     required this.song,
     required this.parsed,
     required this.hiddenParts,
+    required this.dimSection,
     required this.overlay,
     required this.setTranspose,
     required this.setSequence,
@@ -1599,6 +1606,9 @@ class _ChordProPage extends ConsumerWidget {
 
   /// Parts hidden because they are not in the set's sequence.
   final List<String> hiddenParts;
+
+  /// Parts outside the set's sequence, shown dimmed; null for none.
+  final bool Function(Section section)? dimSection;
   final SongOverlay overlay;
 
   /// Band arrangement and set item together (semitones to the song).
@@ -2012,6 +2022,7 @@ class _ChordProPage extends ConsumerWidget {
     imageLookup: imageLookup,
     layout: layout,
     display: display,
+    dimSection: dimSection,
   );
 
   /// Columns and pages of a fitted song at the personal font [scale]; null
