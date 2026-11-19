@@ -930,6 +930,67 @@ void main() {
       await app.dispose(tester);
     });
 
+    testWidgets('chords in verse 1 only hides the chords of later verses', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final id = await tester.runAsync(
+        () => app.songs.createSong(
+          source:
+              '{title: X}\n{start_of_verse: Verse 1}\n[G]First line\n'
+              '{end_of_verse}\n{start_of_chorus}\n[C]Chorus line\n'
+              '{end_of_chorus}\n{start_of_verse: Verse 2}\n'
+              '[Em]Second line\n{end_of_verse}',
+        ),
+      );
+      await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+      await tester.pumpAndSettle();
+      expect(find.text('Em'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Personal adjustments'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('first-verse-chords-only')));
+      await tester.pumpAndSettle();
+      // Verse 2 keeps its lyrics; verse 1 and the chorus keep their chords.
+      expect(find.text('Em'), findsNothing);
+      expect(find.textContaining('Second line'), findsOneWidget);
+      expect(find.text('G'), findsOneWidget);
+      expect(find.text('C'), findsOneWidget);
+      expect(badge(tester, 'open-personal-adjustments'), isTrue);
+      final overlay = await tester.runAsync(() => app.songs.getOverlay(id));
+      expect(overlay!.firstVerseChordsOnly, isTrue);
+
+      await tester.tap(find.text('Reset personal adjustments'));
+      await tester.pumpAndSettle();
+      expect(find.text('Em'), findsOneWidget);
+      expect(badge(tester, 'open-personal-adjustments'), isFalse);
+      await app.dispose(tester);
+    });
+
+    testWidgets('chords in verse 1 only needs later verses with chords', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final id = await tester.runAsync(
+        () => app.songs.createSong(source: '{title: X}\n{sov}\n[G]One\n{eov}'),
+      );
+      await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Personal adjustments'));
+      await tester.pumpAndSettle();
+      final chip = tester.widget<FilterChip>(
+        find.byKey(const Key('first-verse-chords-only')),
+      );
+      expect(chip.onSelected, isNull);
+      expect(
+        find.byTooltip('The song has no further verses with chords.'),
+        findsOneWidget,
+      );
+      await app.dispose(tester);
+    });
+
     testWidgets('attachments are in their own panel with a count', (
       tester,
     ) async {

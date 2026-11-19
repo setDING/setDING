@@ -49,6 +49,13 @@ final _sourceLines = Expando<int>('sourceLine');
 /// Used to jump from the preview to the source in the editor (#372).
 int? sourceLineOf(Object element) => _sourceLines[element];
 
+/// Gives [to], built from [from], the source line of [from] (for songs
+/// derived from a parsed one, see `firstVerseChordsOnly`). Not exported.
+void copySourceLine(Object from, Object to) {
+  final line = _sourceLines[from];
+  if (line != null) _sourceLines[to] = line;
+}
+
 /// Parses ChordPro [source] that may contain several songs separated by
 /// `{new_song}` / `{ns}`.
 ///

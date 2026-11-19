@@ -874,7 +874,11 @@ void main() {
       () async {
         await adjust(
           mine,
-          (o) => o.copyWith(transpose: 2, notes: const Value('Solo')),
+          (o) => o.copyWith(
+            transpose: 2,
+            notes: const Value('Solo'),
+            firstVerseChordsOnly: true,
+          ),
         );
         final report = await engine.sync();
         expect(report.error, isNull);
@@ -883,6 +887,7 @@ void main() {
         expect(remote.userId, 'ann');
         expect(remote.data['transpose'], 2);
         expect(remote.data['notes'], 'Solo');
+        expect(remote.data['first_verse_chords_only'], isTrue);
         expect((await mine.getOverlay('s1')).revision, remote.revision);
         expect(await outbox(), isEmpty);
       },
@@ -894,12 +899,18 @@ void main() {
           id: SyncEngine.overlayServerId('ann', 's1'),
           userId: 'ann',
           songId: 's1',
-          data: const {'transpose': -3, 'capo_fret': 2, 'font_scale': 1.2},
+          data: const {
+            'transpose': -3,
+            'capo_fret': 2,
+            'font_scale': 1.2,
+            'first_verse_chords_only': true,
+          },
         ),
       );
       await engine.sync();
       final o = await mine.getOverlay('s1');
       expect((o.transpose, o.capoFret, o.fontScale), (-3, 2, 1.2));
+      expect(o.firstVerseChordsOnly, isTrue);
       expect(
         await outbox(),
         isEmpty,

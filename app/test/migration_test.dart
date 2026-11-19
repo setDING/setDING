@@ -23,8 +23,17 @@ const schema7Indexes = [
   'set_items_song',
 ];
 
+/// Turns a current database back into schema 16: overlays without
+/// "chords in the first verse only".
+void downgradeToSchema16(Database raw) {
+  raw.execute(
+    'ALTER TABLE personal_overlays DROP COLUMN first_verse_chords_only',
+  );
+}
+
 /// Turns a current database back into schema 15: no freehand annotations.
 void downgradeToSchema15(Database raw) {
+  downgradeToSchema16(raw);
   raw.execute('DROP INDEX annotations_owner_song');
   raw.execute('DROP TABLE annotations');
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN hide_annotations');
@@ -531,4 +540,29 @@ void main() {
     raw2.close();
     await upgraded.close();
   });
+
+  test(
+    'upgrades a schema 16 database: chords in the first verse only',
+    () async {
+      final current = AppDatabase(NativeDatabase(file));
+      final repo = SongRepository(current, FileAttachmentStorage(dir));
+      final song = await repo.createSong(source: '{title: Song}');
+      await repo.saveOverlay(
+        (await repo.getOverlay(song)).copyWith(transpose: 3),
+      );
+      await current.close();
+
+      final raw = sqlite3.open(file.path);
+      downgradeToSchema16(raw);
+      raw.execute('PRAGMA user_version = 16');
+      raw.close();
+
+      final upgraded = AppDatabase(NativeDatabase(file));
+      final overlay = await upgraded
+          .select(upgraded.personalOverlays)
+          .getSingle();
+      expect((overlay.transpose, overlay.firstVerseChordsOnly), (3, false));
+      await upgraded.close();
+    },
+  );
 }

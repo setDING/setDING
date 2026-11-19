@@ -236,6 +236,11 @@ class PersonalOverlays extends Table {
   BoolColumn get hideAnnotations =>
       boolean().withDefault(const Constant(false))();
 
+  /// Chords in the first verse only, later verses show the lyrics alone
+  /// (#518, schema 17).
+  BoolColumn get firstVerseChordsOnly =>
+      boolean().withDefault(const Constant(false))();
+
   /// Server revision; 0 = not on the server (schema 9, ADR-0020).
   IntColumn get revision => integer().withDefault(const Constant(0))();
 
@@ -396,7 +401,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 17;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -495,6 +500,7 @@ class AppDatabase extends _$AppDatabase {
               personalOverlays.ownerId,
               personalOverlays.revision,
               personalOverlays.hideAnnotations,
+              personalOverlays.firstVerseChordsOnly,
             ],
           ),
         );
@@ -547,6 +553,14 @@ class AppDatabase extends _$AppDatabase {
         }
         await m.createTable(annotations);
         await m.createIndex(annotationsOwnerSong);
+      }
+      if (from < 17 && from >= 8) {
+        // Chords in the first verse only (#518); before schema 8 the
+        // rebuilt overlay table has the column already.
+        await m.addColumn(
+          personalOverlays,
+          personalOverlays.firstVerseChordsOnly,
+        );
       }
     },
     beforeOpen: (details) async {

@@ -324,6 +324,13 @@ class AppLocalizationsDe extends AppLocalizations {
       'Für Nashville-Nummern braucht der Song eine Tonart.';
 
   @override
+  String get firstVerseChordsOnly => 'Akkorde nur in Strophe 1';
+
+  @override
+  String get noVersesForFirstVerseChords =>
+      'Der Song hat keine weiteren Strophen mit Akkorden.';
+
+  @override
   String get editorTitleNew => 'Neuer Song';
 
   @override

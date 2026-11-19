@@ -259,6 +259,11 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   overlay: overlay,
                   deviceNashville: settings.nashville,
                   hasKey: parsed.key != null,
+                  // Only songs with later verses with chords change.
+                  hasVerseChords: !identical(
+                    firstVerseChordsOnlyCached(parsed),
+                    parsed,
+                  ),
                   onChanged: _updateOverlay,
                 ),
                 const SizedBox(height: 16),
@@ -412,7 +417,10 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   _FittedSongBody(
                     songId: song.id,
                     source: song.chordproSource,
-                    song: parsed,
+                    song: songWithVerseChords(
+                      parsed,
+                      firstVerseOnly: overlay.firstVerseChordsOnly,
+                    ),
                     overlay: overlay,
                     formatter: formatter,
                     // The visible area without the list's padding.
@@ -645,6 +653,7 @@ class _FittedSongBody extends ConsumerWidget {
           font: font,
           columns: columns,
           lyricsOnly: lyricsOnly,
+          firstVerseChordsOnly: overlay.firstVerseChordsOnly,
           content: textHash(source),
         ),
         font: font,
@@ -739,6 +748,7 @@ class _AdjustmentsBar extends StatelessWidget {
     required this.overlay,
     required this.deviceNashville,
     required this.hasKey,
+    required this.hasVerseChords,
     required this.onChanged,
   });
 
@@ -753,6 +763,9 @@ class _AdjustmentsBar extends StatelessWidget {
   final SongOverlay overlay;
   final bool deviceNashville;
   final bool hasKey;
+
+  /// Whether the song has verses after the first one with chords (#518).
+  final bool hasVerseChords;
   final Future<void> Function(SongOverlay Function(SongOverlay)) onChanged;
 
   @override
@@ -842,6 +855,20 @@ class _AdjustmentsBar extends StatelessWidget {
                 : null,
           ),
         ),
+        Tooltip(
+          message: hasVerseChords ? '' : l10n.noVersesForFirstVerseChords,
+          child: FilterChip(
+            key: const Key('first-verse-chords-only'),
+            label: Text(l10n.firstVerseChordsOnly),
+            selected: overlay.firstVerseChordsOnly,
+            // Can always be turned off, e.g. after the song was changed.
+            onSelected: hasVerseChords || overlay.firstVerseChordsOnly
+                ? (selected) => onChanged(
+                    (o) => o.copyWith(firstVerseChordsOnly: selected),
+                  )
+                : null,
+          ),
+        ),
         ActionChip(
           avatar: const Icon(Icons.sticky_note_2_outlined, size: 18),
           label: Text(l10n.notes),
@@ -871,6 +898,7 @@ class _AdjustmentsBar extends StatelessWidget {
                 capoFret: const Value(null),
                 fontScale: 1.0,
                 nashville: const Value(null),
+                firstVerseChordsOnly: false,
               ),
             ),
           ),
@@ -1126,5 +1154,6 @@ extension on SongOverlay {
       transpose != 0 ||
       capoFret != null ||
       fontScale != 1.0 ||
-      nashville != null;
+      nashville != null ||
+      this.firstVerseChordsOnly;
 }

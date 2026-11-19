@@ -1522,7 +1522,11 @@ class _LiveItemPage extends ConsumerWidget {
       shownSequence: sequence ?? '',
       songMap: map,
       song: song,
-      parsed: selection.song,
+      // Chords in the first shown verse only (#518).
+      parsed: songWithVerseChords(
+        selection.song,
+        firstVerseOnly: overlay.firstVerseChordsOnly,
+      ),
       hiddenParts: selection.hidden,
       overlay: overlay,
       setTranspose: item.bandTranspose + item.setTranspose,
@@ -1912,6 +1916,7 @@ class _ChordProPage extends ConsumerWidget {
                           font: font,
                           columns: pages.columns,
                           lyricsOnly: lyricsOnly,
+                          firstVerseChordsOnly: overlay.firstVerseChordsOnly,
                           content: content,
                           sequence: shownSequence,
                         ),
@@ -2047,6 +2052,7 @@ class _ChordProPage extends ConsumerWidget {
             font: options.fontSize,
             columns: options.columns,
             lyricsOnly: options.lyricsOnly,
+            firstVerseChordsOnly: overlay.firstVerseChordsOnly,
             content: textHash(song.chordproSource),
             sequence: shownSequence,
           ),

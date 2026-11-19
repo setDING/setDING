@@ -322,6 +322,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noKeyForNashville => 'Nashville numbers need a key in the song.';
 
   @override
+  String get firstVerseChordsOnly => 'Chords in verse 1 only';
+
+  @override
+  String get noVersesForFirstVerseChords =>
+      'The song has no further verses with chords.';
+
+  @override
   String get editorTitleNew => 'New song';
 
   @override
