@@ -1,4 +1,18 @@
 {
+  "0.15.0": {
+    "de": [
+      "Im Live-Modus erscheinen Teile ausserhalb des Ablaufs abgedunkelt an ihrer Stelle im Song; in den Einstellungen lassen sie sich wie bisher ausblenden.",
+      "Auch der Live-Modus eines einzelnen Songs folgt dem Ablauf der Band.",
+      "Wer in mehreren Bands spielt, wählt die Band direkt im Arrangement eines Songs.",
+      "Nach einem Update zeigt setDING einmal kurz, was neu ist."
+    ],
+    "en": [
+      "In live mode, parts outside the sequence appear dimmed at their place in the song; a setting hides them as before.",
+      "The live mode of a single song also follows the band's sequence.",
+      "If you play in several bands, choose the band right in a song's arrangement.",
+      "After an update, setDING shows once what is new."
+    ]
+  },
   "0.14.0": {
     "de": [
       "Verse mit den gleichen Akkorden lassen sich Zeile für Zeile übereinander anzeigen, oder die Akkorde nur in der ersten Strophe.",
