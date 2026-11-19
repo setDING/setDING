@@ -49,7 +49,8 @@ one layout measurement used to fit songs to pages (ADR-0007).
    ChordPro.
 6. **Rendering.** A column of verse numbers, the chords once, and the verses
    with chords as rows in columns as wide as their widest cell, so words
-   under a chord line up; the columns wrap together. Verses without chords
+   under a chord line up; a hyphen joins the syllables of a word split by a
+   chord (#532). The columns wrap together. Verses without chords
    follow with their text in one piece. The layout measurement mirrors this.
 7. **Annotations.** Each row is marked as its verse's source line (on its
    verse number), so freehand annotations follow their line into the block;
@@ -71,7 +72,7 @@ one layout measurement used to fit songs to pages (ADR-0007).
 - Stacked songs are shorter, but the musician reads back up to the block for
   later verses; the song map and sequences still name the shown parts.
 - Mid-word chords split the word into two columns, which can leave a gap
-  inside the word in other verses; this is inherent to column alignment.
+  inside the word; a hyphen centred in the gap joins the syllables (#532).
 - Wrapped columns of a long line continue without verse numbers.
 - Every new renderer or exporter of parsed songs must handle `StackedLine`
   (the sealed `Line` type makes this a compile error).
@@ -82,6 +83,11 @@ one layout measurement used to fit songs to pages (ADR-0007).
   join unsplit, the block replaces the first verse, annotations follow their
   line, one choice with three values replacing #518's boolean.
 - 2026-11-19: Accepted by the owner (#521, #531).
+- 2026-11-19: Owner decision (#532): where a chord splits a word of a verse
+  (its cell ends and the next begins without a space), a hyphen joins the
+  syllables, centred in the rest of the column as in hymnals (`A - mazing`),
+  directly after the syllable when the column is just as wide; its width
+  counts towards the column width in the layout measurement.
 
 ## Open points
 

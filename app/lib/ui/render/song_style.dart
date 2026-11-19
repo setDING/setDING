@@ -24,6 +24,10 @@ abstract final class SongSpacing {
   static const stackedLabel = 1.6;
   static const stackedLabelGap = 0.3;
 
+  /// Stacked verses: space on each side of the hyphen between the syllables
+  /// of a word split by a chord (#532).
+  static const stackedHyphenPadding = 0.2;
+
   /// Size of comments and notes relative to the lyrics.
   static const smallText = 0.85;
 

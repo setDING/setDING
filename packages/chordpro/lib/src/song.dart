@@ -224,6 +224,21 @@ class StackedRow {
   /// The text under each chord of [StackedLine.chords] (markup included);
   /// null for a verse without chords, whose text stays in one piece.
   final List<String>? cells;
+
+  /// Whether a chord splits a word of this verse after cell [i]: the cell
+  /// ends and the next one begins without a space, e.g. `A[G]mazing`
+  /// (#532). Shown with a hyphen between the syllables.
+  bool splitsWord(int i) {
+    final c = cells;
+    if (c == null || i + 1 >= c.length) return false;
+    final before = stripMarkup(c[i]), after = stripMarkup(c[i + 1]);
+    return before.isNotEmpty &&
+        after.isNotEmpty &&
+        !_space.hasMatch(before[before.length - 1]) &&
+        !_space.hasMatch(after[0]);
+  }
+
+  static final _space = RegExp(r'\s');
 }
 
 /// A piece of lyrics preceded by an optional chord.

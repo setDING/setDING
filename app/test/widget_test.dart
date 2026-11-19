@@ -1039,6 +1039,39 @@ void main() {
       await app.dispose(tester);
     });
 
+    testWidgets('stacked verses join the syllables of a split word', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final id = await tester.runAsync(() async {
+        final id = await app.songs.createSong(
+          source:
+              '{title: X}\n{sov}\nA[G]mazing [D]grace\n{eov}\n'
+              '{sov}\nThrough many [G]dangers [D]here\n{eov}',
+        );
+        final overlay = await app.songs.getOverlay(id);
+        await app.songs.saveOverlay(
+          overlay.copyWith(verseChords: VerseChords.stacked),
+        );
+        return id;
+      });
+      await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+      await tester.pumpAndSettle();
+      // One hyphen, in the gap between the syllables of verse 1 only.
+      final hyphen = find.text('-');
+      expect(hyphen, findsOneWidget);
+      final a = tester.getRect(find.text('A'));
+      final rest = tester.getRect(find.text('mazing '));
+      final dash = tester.getRect(hyphen);
+      expect(dash.left, greaterThan(a.right));
+      expect(dash.right, lessThan(rest.left));
+      expect(dash.center.dy, closeTo(a.center.dy, 1));
+      // The second syllable stays under its chord.
+      expect(rest.left, tester.getRect(find.text('dangers ')).left);
+      await app.dispose(tester);
+    });
+
     testWidgets('attachments are in their own panel with a count', (
       tester,
     ) async {

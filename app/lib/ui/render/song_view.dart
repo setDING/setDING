@@ -799,14 +799,13 @@ class _StackedLines extends StatelessWidget {
                 child: Wrap(
                   children: [
                     for (final i in stackedColumns(line))
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _chord(line.chords[i], size),
-                          for (final row in chorded) text(row.cells![i]),
-                        ],
-                      ),
+                      _column(size, chorded.any((r) => r.splitsWord(i)), [
+                        _chord(line.chords[i], size),
+                        for (final row in chorded)
+                          row.splitsWord(i)
+                              ? _syllable(text(row.cells![i]), size)
+                              : text(row.cells![i]),
+                      ]),
                   ],
                 ),
               ),
@@ -818,6 +817,37 @@ class _StackedLines extends StatelessWidget {
       ),
     );
   }
+
+  /// A column of cells; with a split word as wide as its widest cell, so
+  /// the hyphen sits in the middle of the gap.
+  Widget _column(double size, bool hyphens, List<Widget> children) {
+    final column = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: hyphens
+          ? CrossAxisAlignment.stretch
+          : CrossAxisAlignment.start,
+      children: children,
+    );
+    return hyphens ? IntrinsicWidth(child: column) : column;
+  }
+
+  /// A syllable followed by a hyphen in the rest of its column (#532):
+  /// `A  -  mazing` when another verse makes the column wider.
+  Widget _syllable(Widget text, double size) => Row(
+    children: [
+      text,
+      Expanded(
+        child: Align(
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: size * SongSpacing.stackedHyphenPadding,
+            ),
+            child: Text('-', style: lyricStyle),
+          ),
+        ),
+      ),
+    ],
+  );
 
   Widget _chord(ChordToken? chord, double size) {
     if (chord == null) {
