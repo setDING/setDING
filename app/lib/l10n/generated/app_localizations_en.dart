@@ -504,6 +504,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get liveMidiSendAgain => 'Send program again';
 
   @override
+  String get liveMidiButton => 'Keyboard program (long press: send again)';
+
+  @override
+  String get liveMidiChange => 'Change program';
+
+  @override
+  String get liveMidiSameAsPrevious => 'Same as previous song';
+
+  @override
+  String liveMidiPreviousProgram(String program, String title) {
+    return '$program – from “$title”';
+  }
+
+  @override
+  String get liveMidiNoPrevious => 'No earlier song with a program';
+
+  @override
+  String get liveMidiSaved => 'Keyboard program saved';
+
+  @override
+  String get liveMidiRemoved => 'Keyboard program removed';
+
+  @override
   String get liveWakeLockNotice =>
       'The screen may turn off – check the device\'s power settings';
 
@@ -3109,6 +3132,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get midiProgramChoose => 'Choose program';
+
+  @override
+  String get midiProgramPreviewSwitch => 'Send while selecting';
+
+  @override
+  String get midiProgramPreviewHint =>
+      'Each choice goes to the keyboard at once; Cancel restores the previous program.';
 
   @override
   String get midiProgramRemove => 'Remove program';

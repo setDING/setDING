@@ -141,6 +141,23 @@
   "liveMidiConnected": "Keyboard connected: {name}",
   "liveMidiNotConnected": "Keyboard not connected",
   "liveMidiSendAgain": "Send program again",
+  "liveMidiButton": "Keyboard program (long press: send again)",
+  "liveMidiChange": "Change program",
+  "liveMidiSameAsPrevious": "Same as previous song",
+  "liveMidiPreviousProgram": "{program} – from “{title}”",
+  "@liveMidiPreviousProgram": {
+    "placeholders": {
+      "program": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "liveMidiNoPrevious": "No earlier song with a program",
+  "liveMidiSaved": "Keyboard program saved",
+  "liveMidiRemoved": "Keyboard program removed",
   "liveWakeLockNotice": "The screen may turn off – check the device's power settings",
   "liveEnd": "End of set",
   "liveSetOverview": "Set overview",
@@ -1410,6 +1427,8 @@
   "midiProgramHint": "Sent to the keyboard in live mode when this song comes up.",
   "midiProgramNone": "None: the keyboard keeps its sound",
   "midiProgramChoose": "Choose program",
+  "midiProgramPreviewSwitch": "Send while selecting",
+  "midiProgramPreviewHint": "Each choice goes to the keyboard at once; Cancel restores the previous program.",
   "midiProgramRemove": "Remove program",
   "midiProgramTest": "Test",
   "midiProgramTestHint": "Sends the program to the keyboard once",

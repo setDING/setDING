@@ -37,6 +37,7 @@ import '../songs/midi_program_field.dart' show midiPatchShortLabel;
 import '../widgets/dialogs.dart';
 import '../widgets/key_picker.dart';
 import '../widgets/verse_chords_picker.dart';
+import 'live_midi_sheet.dart';
 import 'live_preparation.dart';
 import '../../audio/metronome.dart';
 import 'live_beat.dart';
@@ -691,6 +692,24 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     if (target != null) _jumpTo(target);
   }
 
+  /// The keyboard program of the current song (#607); [context] is below
+  /// the stage theme, which the sheet follows.
+  Future<void> _editProgram(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final song = _items[_index].song!;
+    return showLiveMidiSheet(
+      context,
+      ref,
+      songId: song.id,
+      earlier: [
+        for (var i = _index - 1; i >= 0; i--)
+          if (_items[i].song case final s?)
+            (id: s.id, title: _items[i].title(l10n)),
+      ],
+      sendAgain: _midi.sendAgain,
+    );
+  }
+
   /// Turns to item [target] of the set at once (set overview, set list of
   /// the wide song map).
   void _jumpTo(int target) {
@@ -976,6 +995,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                 midi.enabled && items[_index].song != null
                                 ? _midi.sendAgain
                                 : null,
+                            onEditProgram:
+                                midi.enabled && items[_index].song != null
+                                ? () => _editProgram(context)
+                                : null,
                           ),
                         ),
                     ],
@@ -1233,6 +1256,7 @@ class _ControlBar extends ConsumerWidget {
     required this.onSetKey,
     this.onDraw,
     this.onSendProgram,
+    this.onEditProgram,
   });
 
   final LiveItem item;
@@ -1246,8 +1270,13 @@ class _ControlBar extends ConsumerWidget {
   /// Starts drawing mode (ADR-0032); null when the item cannot be drawn on.
   final VoidCallback? onDraw;
 
-  /// Sends the song's keyboard program again (ADR-0039); null hides it.
+  /// Sends the song's keyboard program again (ADR-0039), on a long press
+  /// of the keyboard symbol.
   final Future<bool> Function()? onSendProgram;
+
+  /// Opens the keyboard program of the song (#607), on a tap of the
+  /// keyboard symbol; null hides it.
+  final VoidCallback? onEditProgram;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1295,12 +1324,21 @@ class _ControlBar extends ConsumerWidget {
         icon: const Icon(Icons.format_list_numbered),
         onPressed: onOverview,
       ),
-      if (onSendProgram case final send?)
-        IconButton(
-          key: const Key('live-midi-send-again'),
-          tooltip: l10n.liveMidiSendAgain,
-          icon: const Icon(Icons.piano),
-          onPressed: send,
+      // Tap: the program (#607); long press: send it again at once, the
+      // quick way on stage (ADR-0039).
+      if (onEditProgram case final edit?)
+        // No tooltip: on touch screens it would take the long press.
+        Semantics(
+          label: l10n.liveMidiButton,
+          onLongPressHint: l10n.liveMidiSendAgain,
+          child: GestureDetector(
+            onLongPress: onSendProgram,
+            child: IconButton(
+              key: const Key('live-midi-button'),
+              icon: const Icon(Icons.piano),
+              onPressed: edit,
+            ),
+          ),
         ),
     ];
     final annotated =

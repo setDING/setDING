@@ -879,6 +879,12 @@ class SongRepository {
     ),
   );
 
+  /// Puts back the keyboard programs of a song as [stored] in the overlay
+  /// before a change, null included (never written: a v0.16.0 program
+  /// counts again), to undo a change in live mode (#607).
+  Future<void> restoreMidiPrograms(String songId, MidiPrograms? stored) =>
+      updateOverlay(songId, (o) => o.copyWith(midiPrograms: Value(stored)));
+
   /// Removes the keyboard program of a song for [profile].
   Future<void> removeMidiProgram(
     String songId,

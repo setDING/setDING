@@ -433,21 +433,52 @@ List<MidiPatchKind> midiPatchKinds(MidiProfile profile, MidiPatch? current) {
 /// Lets the musician choose a keyboard program in the terms of [profile]
 /// without typing (except the generic values); starts with [initial].
 /// Returns the raw values, or null when cancelled.
+///
+/// With [onPreview] (live mode, #607) the dialog offers a switch "Send
+/// while selecting", starting as [preview]; while it is on, every program
+/// chosen is passed to [onPreview] at once, and [onPreviewChanged] is told
+/// when the switch changes.
 Future<MidiProgram?> showMidiProgramPicker(
   BuildContext context, {
   required MidiProfile profile,
   MidiProgram? initial,
+  ValueChanged<MidiProgram>? onPreview,
+  bool preview = false,
+  ValueChanged<bool>? onPreviewChanged,
 }) => showDialog<MidiProgram>(
   context: context,
-  builder: (_) => MidiProgramPicker(profile: profile, initial: initial),
+  builder: (_) => MidiProgramPicker(
+    profile: profile,
+    initial: initial,
+    onPreview: onPreview,
+    preview: preview,
+    onPreviewChanged: onPreviewChanged,
+  ),
 );
 
 /// The dialog of [showMidiProgramPicker].
 class MidiProgramPicker extends StatefulWidget {
-  const MidiProgramPicker({super.key, required this.profile, this.initial});
+  const MidiProgramPicker({
+    super.key,
+    required this.profile,
+    this.initial,
+    this.onPreview,
+    this.preview = false,
+    this.onPreviewChanged,
+  });
 
   final MidiProfile profile;
   final MidiProgram? initial;
+
+  /// Receives each program chosen while [preview] is on; null offers no
+  /// preview (song screen).
+  final ValueChanged<MidiProgram>? onPreview;
+
+  /// Whether the preview switch starts on.
+  final bool preview;
+
+  /// Told when the preview switch changes, to remember it.
+  final ValueChanged<bool>? onPreviewChanged;
 
   /// Forgets the kind last saved (tests).
   @visibleForTesting
@@ -478,6 +509,13 @@ class _MidiProgramPickerState extends State<MidiProgramPicker> {
   final _msb = TextEditingController();
   final _lsb = TextEditingController();
   final _program = TextEditingController(text: '1');
+
+  /// Whether choices are sent at once (#607).
+  late bool _preview = widget.preview;
+
+  /// The program last shown or sent: the initial one, then each one sent;
+  /// only another one is sent.
+  MidiProgram? _sent;
 
   @override
   void initState() {
@@ -512,6 +550,20 @@ class _MidiProgramPickerState extends State<MidiProgramPicker> {
         _lsb.text = lsb?.toString() ?? '';
         _program.text = '$program';
     }
+    // What is shown first is not sent: only a choice is (also when the
+    // song has no program yet and the picker starts with a default).
+    _sent = widget.initial ?? widget.profile.toMidi(start);
+  }
+
+  /// Sends [patch] when the preview is on and it is not the program the
+  /// keyboard already plays.
+  void _previewPatch(MidiPatch? patch) {
+    final onPreview = widget.onPreview;
+    if (!_preview || onPreview == null || patch == null) return;
+    final program = widget.profile.toMidi(patch);
+    if (program == _sent) return;
+    _sent = program;
+    onPreview(program);
   }
 
   @override
@@ -576,6 +628,7 @@ class _MidiProgramPickerState extends State<MidiProgramPicker> {
     final theme = Theme.of(context);
     final patch = _patch;
     final width = MediaQuery.sizeOf(context).width;
+    _previewPatch(patch);
 
     return AlertDialog(
       // Phones keep as much width as possible for the grid.
@@ -642,6 +695,18 @@ class _MidiProgramPickerState extends State<MidiProgramPicker> {
                 ),
                 MidiPatchKind.generic => _generic(l10n),
               },
+              if (widget.onPreview != null)
+                SwitchListTile(
+                  key: const Key('midi-program-preview-switch'),
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(l10n.midiProgramPreviewSwitch),
+                  subtitle: Text(l10n.midiProgramPreviewHint),
+                  value: _preview,
+                  onChanged: (on) {
+                    setState(() => _preview = on);
+                    widget.onPreviewChanged?.call(on);
+                  },
+                ),
             ],
           ),
         ),

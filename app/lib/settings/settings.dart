@@ -143,6 +143,7 @@ class AppSettings {
     this.midiOutputName = '',
     this.midiProfile = MidiProfileKind.nordStage3,
     this.midiChannel = 1,
+    this.midiPreview = false,
   });
 
   final LanguageMode language;
@@ -263,6 +264,10 @@ class AppSettings {
   /// The MIDI channel 1–16, the keyboard's global channel.
   final int midiChannel;
 
+  /// The live mode's program picker sends each choice to the keyboard at
+  /// once, to hear it before saving (#607); off by default.
+  final bool midiPreview;
+
   /// The profile of [midiProfile].
   MidiProfile get midiDeviceProfile => MidiProfile.of(midiProfile);
 
@@ -367,6 +372,7 @@ class AppSettings {
     String? midiOutputName,
     MidiProfileKind? midiProfile,
     int? midiChannel,
+    bool? midiPreview,
   }) => AppSettings(
     language: language ?? this.language,
     notation: notation ?? this.notation,
@@ -410,6 +416,7 @@ class AppSettings {
     midiOutputName: midiOutputName ?? this.midiOutputName,
     midiProfile: midiProfile ?? this.midiProfile,
     midiChannel: midiChannel ?? this.midiChannel,
+    midiPreview: midiPreview ?? this.midiPreview,
   );
 
   /// Which settings follow the person (synced with the account) and which
@@ -467,6 +474,7 @@ class AppSettings {
     'midiOutputName': SettingSyncScope.device,
     'midiProfile': SettingSyncScope.device,
     'midiChannel': SettingSyncScope.device,
+    'midiPreview': SettingSyncScope.device,
   };
 
   /// The keys of [scope].
@@ -518,6 +526,7 @@ class AppSettings {
     'midiOutputName': midiOutputName,
     'midiProfile': midiProfile.name,
     'midiChannel': midiChannel,
+    'midiPreview': midiPreview,
   };
 
   /// Settings from JSON values; a missing key, a value of the wrong type or
@@ -620,6 +629,7 @@ class AppSettings {
         1,
         16,
       ),
+      midiPreview: flag('midiPreview', d.midiPreview),
       songDisplay: switch (json['songDisplay']) {
         final String v => SongDisplay.fromJsonString(v),
         _ => d.songDisplay,

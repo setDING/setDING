@@ -944,6 +944,48 @@ abstract class AppLocalizations {
   /// **'Programm erneut senden'**
   String get liveMidiSendAgain;
 
+  /// No description provided for @liveMidiButton.
+  ///
+  /// In de, this message translates to:
+  /// **'Keyboard-Programm (lange drücken: erneut senden)'**
+  String get liveMidiButton;
+
+  /// No description provided for @liveMidiChange.
+  ///
+  /// In de, this message translates to:
+  /// **'Programm ändern'**
+  String get liveMidiChange;
+
+  /// No description provided for @liveMidiSameAsPrevious.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie vorheriger Song'**
+  String get liveMidiSameAsPrevious;
+
+  /// No description provided for @liveMidiPreviousProgram.
+  ///
+  /// In de, this message translates to:
+  /// **'{program} – aus «{title}»'**
+  String liveMidiPreviousProgram(String program, String title);
+
+  /// No description provided for @liveMidiNoPrevious.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein früherer Song mit Programm'**
+  String get liveMidiNoPrevious;
+
+  /// No description provided for @liveMidiSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Keyboard-Programm gespeichert'**
+  String get liveMidiSaved;
+
+  /// No description provided for @liveMidiRemoved.
+  ///
+  /// In de, this message translates to:
+  /// **'Keyboard-Programm entfernt'**
+  String get liveMidiRemoved;
+
   /// No description provided for @liveWakeLockNotice.
   ///
   /// In de, this message translates to:
@@ -5358,6 +5400,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Programm wählen'**
   String get midiProgramChoose;
+
+  /// No description provided for @midiProgramPreviewSwitch.
+  ///
+  /// In de, this message translates to:
+  /// **'Beim Auswählen senden'**
+  String get midiProgramPreviewSwitch;
+
+  /// No description provided for @midiProgramPreviewHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Jede Auswahl geht sofort ans Keyboard; «Abbrechen» stellt das bisherige Programm wieder her.'**
+  String get midiProgramPreviewHint;
 
   /// No description provided for @midiProgramRemove.
   ///

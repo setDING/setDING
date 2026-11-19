@@ -128,6 +128,8 @@ settings and stored programs are kept.
 - A **"Test"** button next to it sends the program once, when an output is
   connected. This is an explicit action; outside live mode nothing is sent
   automatically.
+- In **live mode** the program of the current song can be changed for this
+  device's profile without leaving it (#607), see *Sending in live mode*.
 - The web client offers the field as on any device (ADR-0018).
 
 ### Sending in live mode
@@ -142,8 +144,18 @@ settings and stored programs are kept.
 - Preparing the neighbouring songs ahead (ADR-0007) sends nothing.
 - A song **without a program sends nothing**: the keyboard keeps its program.
   Breaks and text items of a set send nothing either.
-- The live menu has **"Send program again"** (e.g. after the keyboard was
-  restarted).
+- The **keyboard symbol** of the live control bar (#607): a **long press**
+  sends the program again at once (e.g. after the keyboard was restarted); a
+  **tap** opens a sheet with the program of this device's profile and
+  *Send program again*, *Change program* (*Choose program* without one),
+  *Same as previous song* (the program of the nearest earlier song in the
+  live sequence that has one) and *Remove program*. A change is saved at
+  once in the personal overlay and sent, with "Undo" in a snackbar (which
+  sends the previous program again); removing sends nothing. In the picker a
+  switch *Send while selecting* (device setting, off by default) sends each
+  choice at once to hear it; *Cancel* then sends the song's program again.
+  This is an explicit action of the keyboard player, so it does not
+  contradict the rule that nothing is sent automatically outside live mode.
 - If no output is connected, nothing is sent and nothing is shown in the way:
   a small MIDI indicator in the live header shows connected / not connected only
   while MIDI program changes are on. Next to it, the program the current song
@@ -386,6 +398,13 @@ settings and stored programs are kept.
 - 2026-11-19: The program in live mode uses the short label of the song's
   program list (e.g. "A:11" instead of "Program A:11"), like the keyboard
   shows it (#609).
+- 2026-11-19: The program is edited in live mode (owner, #607), to set a new
+  sound while practising: a tap on the keyboard symbol opens a sheet (send
+  again, change, same as previous song, remove) instead of sending again, a
+  long press sends again. Changes are saved at once with "Undo" and only for
+  this device's profile; the picker's preview (*Send while selecting*) is a
+  device setting `midiPreview`. Taking over the program from the keyboard
+  follows as a later stage (#608).
 
 ## Open points
 
@@ -393,6 +412,6 @@ settings and stored programs are kept.
   songs on the Nord.
 - Manual test of the Motif XF profile on a Motif XF8 (#591).
 - Later stages (issues only when taken up): learning the program from the
-  keyboard, program changes per section, page turning by MIDI, Bluetooth, several
+  keyboard (#608, as an option per device profile), program changes per section, page turning by MIDI, Bluetooth, several
   target devices, further device profiles (Motif XF masters, songs and
   patterns), iOS.
