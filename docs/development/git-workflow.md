@@ -107,9 +107,12 @@ Co-Authored-By: Claude <model> <noreply@anthropic.com>
 An agent runs all of the following and only continues when everything passes:
 
 1. Rebase on the latest main: `git fetch origin && git rebase origin/main`
-2. Format, static analysis, tests – via the project check script (`tool/check.sh`,
-   created with the Flutter project setup). Until then: the checks available for the
-   changed files.
+2. Format, static analysis, tests – via the project check script (`make check`,
+   `tool/check.sh`). After the dependency check it runs its independent jobs in
+   parallel (Dart packages, server, app analysis, app and screenshot tests, web
+   build, website), prints one line per job and the full log of every failed job.
+   `CHECK_PARALLEL=0 make check` runs the jobs one after another with their output
+   streamed.
 3. **Docs up to date:** ADRs and the architecture README updated in the same branch if
    the change touches an architectural decision ([AGENTS.md](../../AGENTS.md)).
 4. **Localization complete:** every new UI text exists in `app_de.arb` and `app_en.arb`.
@@ -178,7 +181,8 @@ CI runs as **GitHub Actions** (when enabled, on every PR and on every push to `m
 `ubuntu-latest` runner without a container: the runner already has git, curl,
 python3 and clang, and `subosito/flutter-action` installs Flutter in the version of
 `FLUTTER_VERSION` in the `Makefile`, cached between runs. `tool/check.sh`
-runs one test process per core unless `TEST_CONCURRENCY` is set. The first step
+runs its jobs in parallel (section 5) unless `CHECK_PARALLEL=0` is set, and each
+test run uses its runner's default concurrency unless `TEST_CONCURRENCY` is set. The first step
 prints the runner's CPUs and memory.
 
 | Check | Content | Status |
