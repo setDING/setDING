@@ -66,7 +66,8 @@ class LiveItem {
   final SongEntry? song;
 
   /// The band's arrangement of the song (ADR-0025): key, sequence and tempo
-  /// between the song and the set item.
+  /// between the song and the set item. For a single song only its
+  /// sequence (#552).
   final BandArrangement? arrangement;
 
   /// The band's key as semitones relative to the song.
@@ -182,14 +183,29 @@ class LiveScreen extends ConsumerStatefulWidget {
     final container = ProviderScope.containerOf(context, listen: false);
     final song = await container.read(songRepositoryProvider).getSong(songId);
     if (song == null) return;
-    // Outside a set the song is played as written; band arrangements
-    // apply in sets only (ADR-0025).
+    // Outside a set the song keeps its own key and tempo; only the sequence
+    // of the band chosen on the sets tab applies (ADR-0025, #552).
+    final band = container.read(arrangementBandProvider(song.libraryId));
+    final arrangement = band == null
+        ? null
+        : await container
+              .read(arrangementRepositoryProvider)
+              .get(band.id, song.id);
+    final sequenceOnly = arrangement?.sequence == null
+        ? null
+        : arrangement!.copyWith(transpose: 0, tempo: const Value(null));
     if (!context.mounted) return;
     await Navigator.push(
       context,
       MaterialPageRoute<void>(
         builder: (_) => LiveScreen(
-          items: [LiveItem.song(song, attachmentId: attachmentId)],
+          items: [
+            LiveItem.song(
+              song,
+              arrangement: sequenceOnly,
+              attachmentId: attachmentId,
+            ),
+          ],
         ),
       ),
     );
@@ -1514,14 +1530,12 @@ class _LiveItemPage extends ConsumerWidget {
               ),
       );
     }
-    // In a set the parts outside the sequence are shown dimmed or, as a
-    // personal setting, hidden; which ones are hidden is shown in the
-    // header.
-    final sequence = item.setItemId == null
-        ? null
-        : item.setSequence ??
-              item.arrangement?.sequence ??
-              parsed.metaValue('x_sequence');
+    // The parts outside the sequence are shown dimmed or, as a personal
+    // setting, hidden; which ones are hidden is shown in the header.
+    final sequence =
+        item.setSequence ??
+        item.arrangement?.sequence ??
+        parsed.metaValue('x_sequence');
     final keepOutside = ref.watch(
       settingsProvider.select((s) => s.showOutsideSequence),
     );

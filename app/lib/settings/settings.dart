@@ -226,7 +226,7 @@ class AppSettings {
   /// Personal freehand annotations are shown (ADR-0032).
   final bool showAnnotations;
 
-  /// In the live mode of a set, the parts outside the song sequence are
+  /// In live mode, the parts outside the song sequence are
   /// shown dimmed instead of hidden (ADR-0007).
   final bool showOutsideSequence;
 

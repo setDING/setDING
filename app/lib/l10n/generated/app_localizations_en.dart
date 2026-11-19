@@ -2427,7 +2427,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsShowOutsideSequenceHint =>
-      'Dimmed in a set instead of hidden';
+      'Dimmed in live mode instead of hidden';
 
   @override
   String get settingsAnnotationFinger => 'Draw annotations with a finger';
