@@ -78,7 +78,7 @@ class _EditorAutocompleteState extends State<EditorAutocomplete> {
             tokens: controller.tokens,
           )
         : null;
-    if (result == null || !widget.focusNode.hasFocus) {
+    if (result == null) {
       _hide();
       return;
     }
@@ -87,9 +87,15 @@ class _EditorAutocompleteState extends State<EditorAutocomplete> {
       _highlighted = 0;
     });
     if (_list.hasClients) _list.jumpTo(0);
-    // The caret position is known after the next layout.
+    // The caret position is known after the next layout. The focus is
+    // checked then too: a toolbar button (e.g. Insert chord) changes the
+    // text first and gives the focus back to the editor afterwards.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _result == null) return;
+      if (!widget.focusNode.hasFocus) {
+        _hide();
+        return;
+      }
       setState(() => _anchor = _caretAnchor());
       _portal.show();
     });

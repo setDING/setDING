@@ -113,8 +113,8 @@ bool _isNameChar(int c) =>
 
 /// Suggestions at [cursor] in [source]: directive names after `{`
 /// (including short forms, sections and `x_` directives) and chords after
-/// `[` (chords already used in the song first, then common chords in the
-/// song's key). Null if there is nothing to suggest. [tokens] are the
+/// `[` (chords already used in the song and common chords in the song's
+/// key, sorted alphabetically). Null if there is nothing to suggest. [tokens] are the
 /// highlighting tokens of [source], if already known.
 CompletionResult? completeChordPro(
   String source,
@@ -215,15 +215,15 @@ List<Completion> _directives(
   ];
 }
 
-/// Chords for a partial name: the song's chords by frequency, then common
-/// chords in the song's key.
+/// Chords for a partial name, sorted alphabetically: the song's chords and
+/// common chords in the song's key.
 List<String> _chords(
   String source,
   List<SourceToken> tokens,
   int start,
   String partial,
 ) {
-  final counts = <String, int>{};
+  final used = <String>{};
   for (final t in tokens) {
     if (t.kind != SourceTokenKind.chord) continue;
     // Neighbouring chords are merged into one token: `[C][G]`.
@@ -233,11 +233,9 @@ List<String> _chords(
       if (t.start + m.start + 1 == start) continue;
       final name = m.group(1)!.trim();
       if (Chord.tryParse(name) == null) continue;
-      counts[name] = (counts[name] ?? 0) + 1;
+      used.add(name);
     }
   }
-  final used = counts.keys.toList()
-    ..sort((a, b) => counts[b]!.compareTo(counts[a]!));
   final keyText = RegExp(
     r'^\s*\{\s*key\s*:\s*([^}]*)\}',
     multiLine: true,
@@ -248,7 +246,14 @@ List<String> _chords(
   return [
     for (final name in names)
       if (name.toLowerCase().startsWith(lower)) name,
-  ];
+  ]..sort(_compareChordNames);
+}
+
+/// Alphabetical order of chord names, ignoring case; names that differ only
+/// in case keep a fixed order.
+int _compareChordNames(String a, String b) {
+  final c = a.toLowerCase().compareTo(b.toLowerCase());
+  return c != 0 ? c : a.compareTo(b);
 }
 
 /// Common chords of [key] (diatonic triads and the dominant seventh), or
