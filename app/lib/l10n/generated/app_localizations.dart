@@ -4747,12 +4747,6 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Alle Änderungen'**
   String get whatsNewAllChanges;
-
-  /// No description provided for @whatsNewHint.
-  ///
-  /// In de, this message translates to:
-  /// **'Die Neuerungen der letzten Versionen'**
-  String get whatsNewHint;
 }
 
 class _AppLocalizationsDelegate

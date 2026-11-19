@@ -230,5 +230,29 @@ void main() {
       expect(find.text('New.'), findsNothing);
       await app.dispose(tester);
     });
+
+    testWidgets('the button next to the version fits on a phone', (
+      tester,
+    ) async {
+      final app = await TestApp.create(
+        prefs: {'language': 'de', whatsNewSeenKey: '0.15.0'},
+      );
+      tester.view.physicalSize = const Size(360, 740);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(build(app));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Einstellungen').last);
+      await tester.pumpAndSettle();
+      await tapSettingsCategory(tester, 'about');
+      final button = find.byKey(const Key('whats-new'));
+      await tester.ensureVisible(button);
+      await tester.pumpAndSettle();
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      expect(dialog, findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await app.dispose(tester);
+    });
   });
 }

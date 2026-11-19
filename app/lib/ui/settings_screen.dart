@@ -733,20 +733,20 @@ class _AboutTiles extends ConsumerWidget {
             }
           },
         ),
-        // The notes of the recent versions (ADR-0041).
-        if (whatsNew != null && whatsNew.isNotEmpty)
-          ListTile(
-            key: const Key('whats-new'),
-            leading: const Icon(Icons.new_releases_outlined),
-            title: Text(l10n.whatsNewTitle),
-            subtitle: Text(l10n.whatsNewHint),
-            onTap: () => showWhatsNew(context, whatsNew),
-          ),
         ListTile(
           key: const Key('app-version'),
           leading: const Icon(Icons.info_outline),
           title: version == null ? null : Text(l10n.settingsVersion(version)),
           subtitle: Text(l10n.settingsAbout),
+          // The notes of the recent versions, again (ADR-0041).
+          trailing: whatsNew != null && whatsNew.isNotEmpty
+              ? OutlinedButton.icon(
+                  key: const Key('whats-new'),
+                  icon: const Icon(Icons.new_releases_outlined),
+                  label: Text(l10n.whatsNewTitle),
+                  onPressed: () => showWhatsNew(context, whatsNew),
+                )
+              : null,
         ),
       ],
     );

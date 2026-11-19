@@ -63,7 +63,8 @@ Live-Modus erscheint der Hinweis nie.
 
 Nach einem Update zeigt setDING einmal kurz **Neu in setDING …**; **Anzeigen**
 listet auf, was sich seit der zuvor genutzten Version geändert hat. Du kannst es
-jederzeit unter **Einstellungen → Speicher & Info → Was ist neu** nachlesen.
+jederzeit mit **Was ist neu** neben der Version unter **Einstellungen → Speicher & Info**
+nachlesen.
 
 ## iOS
 

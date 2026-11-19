@@ -2745,7 +2745,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get whatsNewAllChanges => 'All changes';
-
-  @override
-  String get whatsNewHint => 'The changes in recent versions';
 }

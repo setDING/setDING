@@ -68,7 +68,8 @@ before a gig (ADR-0007, ADR-0036).
   (`persist: false`), like the update hint.
 - Only while the main navigation is on top, so never in live mode or while
   editing; otherwise at a later start.
-- **Any time** under *Settings → Storage & info → What's new*, with the notes of
+- **Any time** with the *What's new* button next to the version under
+  *Settings → Storage & info*, with the notes of
   all versions up to the running one.
 - The notes are shown in the app language; a language without notes falls back
   to English.
