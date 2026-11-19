@@ -321,16 +321,36 @@ class _SongScreenState extends ConsumerState<SongScreen> {
           appBar: AppBar(
             title: Text(song.title.isEmpty ? l10n.untitled : song.title),
             actions: [
-              if (canEdit && song.chordproProblems > 0)
+              if (canEdit) ...[
+                // Editing is a key function: its own button rather than an
+                // overflow menu entry (#600). ChordPro problems show as its
+                // badge and open the editor at the first one (#314).
                 IconButton(
-                  key: const Key('song-problems'),
-                  tooltip: l10n.chordProProblemsShow(song.chordproProblems),
-                  icon: Icon(
-                    Icons.warning_amber_rounded,
-                    color: chordProProblemColor(context),
+                  key: const Key('edit-song'),
+                  tooltip: song.chordproProblems > 0
+                      ? l10n.chordProProblemsShow(song.chordproProblems)
+                      : l10n.editSource,
+                  icon: Badge(
+                    key: song.chordproProblems > 0
+                        ? const Key('song-problems')
+                        : null,
+                    isLabelVisible: song.chordproProblems > 0,
+                    backgroundColor: chordProProblemColor(context),
+                    textColor: Theme.of(context).colorScheme.surface,
+                    label: Text('${song.chordproProblems}'),
+                    child: const Icon(Icons.edit_outlined),
                   ),
-                  onPressed: () => _editSource(song, showProblem: true),
+                  onPressed: () =>
+                      _editSource(song, showProblem: song.chordproProblems > 0),
                 ),
+                // Sets the song's own edit button apart from the panels.
+                const VerticalDivider(
+                  key: Key('edit-song-divider'),
+                  width: 16,
+                  indent: 16,
+                  endIndent: 16,
+                ),
+              ],
               if (showBand)
                 BadgedIconButton(
                   key: const Key('open-band-arrangement'),
@@ -371,7 +391,6 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                 ),
               PopupMenuButton<String>(
                 onSelected: (value) => switch (value) {
-                  'source' => _editSource(song),
                   'title' => _editTitle(song),
                   'export' => _export(song),
                   'copyToBand' => copySongsToBand(context, ref, [
@@ -381,11 +400,6 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   _ => null,
                 },
                 itemBuilder: (_) => [
-                  if (canEdit)
-                    PopupMenuItem(
-                      value: 'source',
-                      child: Text(l10n.editSource),
-                    ),
                   if (!hasSourceTitle && canEdit)
                     PopupMenuItem(value: 'title', child: Text(l10n.editTitle)),
                   if (song.chordproSource.trim().isNotEmpty &&

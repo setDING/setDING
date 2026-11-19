@@ -52,7 +52,16 @@ void main() {
     // selected.
     await tester.tap(find.text('Washed'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('song-problems')));
+    // The warning is the badge of the edit button (#600).
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('edit-song')),
+        matching: find.byKey(const Key('song-problems')),
+      ),
+      findsOneWidget,
+    );
+    expect(find.byTooltip('Show the ChordPro problem'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('edit-song')));
     await tester.pumpAndSettle();
     expect(find.byType(SongEditorScreen), findsOneWidget);
     final controller = tester

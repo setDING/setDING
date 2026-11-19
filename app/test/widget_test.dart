@@ -1271,7 +1271,7 @@ void main() {
       await app.dispose(tester);
     });
 
-    testWidgets('the ChordPro editor opens from the overflow menu', (
+    testWidgets('the ChordPro editor opens from its app bar button', (
       tester,
     ) async {
       useTabletSize(tester);
@@ -1281,10 +1281,18 @@ void main() {
       );
       await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
       await tester.pumpAndSettle();
-      expect(find.byTooltip('Edit ChordPro'), findsNothing);
+      // The pencil comes first, a divider sets it apart from the panel
+      // buttons (#600).
+      final actions = tester.widget<AppBar>(find.byType(AppBar)).actions!;
+      expect(actions[0].key, const Key('edit-song'));
+      expect(actions[1].key, const Key('edit-song-divider'));
+      expect(find.byKey(const Key('song-problems')), findsNothing);
       await tester.tap(find.byType(PopupMenuButton<String>).first);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Edit ChordPro'));
+      expect(find.text('Edit ChordPro'), findsNothing);
+      await tester.tapAt(Offset.zero);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Edit ChordPro'));
       await tester.pumpAndSettle();
       expect(find.byType(SongEditorScreen), findsOneWidget);
       await app.dispose(tester);
