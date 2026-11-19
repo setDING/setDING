@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 
 import '../util/log.dart';
+import 'engine_clock.dart';
 
 /// Audio output for the click (ADR-0026). The time is the engine's own
 /// clock: a bar scheduled for a time starts exactly then, sample-accurate.
@@ -44,10 +45,7 @@ class SoLoudClickOutput implements ClickOutput {
 
   final SoLoud _soloud;
   Future<void>? _engine;
-  final _wall = Stopwatch()..start();
-  Duration _lastEngine = Duration.zero;
-  Duration _lastEngineWall = Duration.zero;
-  Duration _lastReturned = Duration.zero;
+  late final _clock = EngineClock(engine: _soloud.getPlayheadTime);
   var _loads = 0;
 
   @override
@@ -58,6 +56,9 @@ class SoLoudClickOutput implements ClickOutput {
       // a voice off the UI thread, where a failure only leaves silence and a
       // standing engine clock. Starting it here reports the failure.
       await _soloud.startAudioDevice();
+      // The engine may have stood since the last click: the time starts
+      // again from the engine's time now (#545).
+      _clock.reset();
       return true;
     } catch (e) {
       _log.warning('No audio output for the click', e);
@@ -75,19 +76,7 @@ class SoLoudClickOutput implements ClickOutput {
   }
 
   @override
-  Duration now() {
-    final engine = _soloud.getPlayheadTime();
-    final wall = _wall.elapsed;
-    if (engine != _lastEngine) {
-      _lastEngine = engine;
-      _lastEngineWall = wall;
-    }
-    // The engine clock moves in steps of an audio buffer; in between, the
-    // wall clock fills the gap. It never runs backwards.
-    var t = engine + (wall - _lastEngineWall);
-    if (t < _lastReturned) t = _lastReturned;
-    return _lastReturned = t;
-  }
+  Duration now() => _clock.now();
 
   @override
   Future<Object> load(Uint8List wav) =>
