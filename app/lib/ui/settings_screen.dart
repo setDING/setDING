@@ -36,12 +36,14 @@ enum SettingsCategory {
   about,
   account,
   bands,
+  development,
 }
 
 /// The groups of the category list, in order: the personal settings (synced
 /// with the account), the settings of this device (ADR-0027) and the account
-/// with the organizations and bands.
-enum _CategoryGroup { personal, device, account }
+/// with the organizations and bands, and in developer mode the test
+/// features (#559).
+enum _CategoryGroup { personal, device, account, development }
 
 /// Settings (layer 4, ADR-0006), grouped into categories: the personal
 /// settings (synced with the account) and the settings of this device
@@ -69,7 +71,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final l10n = AppLocalizations.of(context);
     // After signing out the organizations and bands are no longer listed.
     final signedIn = ref.watch(authProvider.select((u) => u != null));
-    final selected = _selected.visible(signedIn: signedIn)
+    final developer = ref.watch(
+      settingsProvider.select((s) => s.developerMode),
+    );
+    final selected = _selected.visible(signedIn: signedIn, developer: developer)
         ? _selected
         : SettingsCategory.values.first;
     return Scaffold(
@@ -123,7 +128,9 @@ extension on SettingsCategory {
   /// Personal or device settings; null for the account and the
   /// organizations and bands, which belong to the account.
   SettingSyncScope? get scope => switch (this) {
-    SettingsCategory.account || SettingsCategory.bands => null,
+    SettingsCategory.account ||
+    SettingsCategory.bands ||
+    SettingsCategory.development => null,
     SettingsCategory.general ||
     SettingsCategory.musician ||
     SettingsCategory.display ||
@@ -132,6 +139,7 @@ extension on SettingsCategory {
   };
 
   _CategoryGroup get group => switch (scope) {
+    _ when this == SettingsCategory.development => _CategoryGroup.development,
     SettingSyncScope.personal => _CategoryGroup.personal,
     SettingSyncScope.device => _CategoryGroup.device,
     null => _CategoryGroup.account,
@@ -146,6 +154,7 @@ extension on SettingsCategory {
     SettingsCategory.songDisplay => Icons.palette_outlined,
     SettingsCategory.live => Icons.play_circle_outline,
     SettingsCategory.about => Icons.info_outline,
+    SettingsCategory.development => Icons.science_outlined,
   };
 
   String title(AppLocalizations l10n) => switch (this) {
@@ -157,12 +166,18 @@ extension on SettingsCategory {
     SettingsCategory.songDisplay => l10n.settingsSectionSongDisplay,
     SettingsCategory.live => l10n.settingsSectionLive,
     SettingsCategory.about => l10n.settingsSectionStorage,
+    SettingsCategory.development => l10n.settingsSectionDevelopment,
   };
 
   /// Whether the category is listed: the organizations and bands only for
-  /// signed-in users; what they may do there depends on their roles.
-  bool visible({required bool signedIn}) =>
-      this != SettingsCategory.bands || signedIn;
+  /// signed-in users (what they may do there depends on their roles), the
+  /// test features only in developer mode (#559).
+  bool visible({required bool signedIn, required bool developer}) =>
+      switch (this) {
+        SettingsCategory.bands => signedIn,
+        SettingsCategory.development => developer,
+        _ => true,
+      };
 
   String hint(AppLocalizations l10n) => switch (this) {
     SettingsCategory.account => l10n.settingsCategoryAccountHint,
@@ -173,6 +188,7 @@ extension on SettingsCategory {
     SettingsCategory.songDisplay => l10n.settingsCategorySongDisplayHint,
     SettingsCategory.live => l10n.settingsCategoryLiveHint,
     SettingsCategory.about => l10n.settingsCategoryAboutHint,
+    SettingsCategory.development => l10n.settingsCategoryDevelopmentHint,
   };
 }
 
@@ -188,11 +204,14 @@ class _CategoryList extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final narrow = selected == null;
     final signedIn = ref.watch(authProvider.select((u) => u != null));
+    final developer = ref.watch(
+      settingsProvider.select((s) => s.developerMode),
+    );
     final update = ref.watch(updateCheckProvider) != null;
     final items = <Widget>[];
     _CategoryGroup? group;
     for (final c in SettingsCategory.values) {
-      if (!c.visible(signedIn: signedIn)) continue;
+      if (!c.visible(signedIn: signedIn, developer: developer)) continue;
       if (c.group != group) {
         group = c.group;
         items.add(_GroupHeader(c.group));
@@ -287,6 +306,14 @@ class _CategoryContent extends ConsumerWidget {
         _AccentTile(
           value: s.accent,
           onChanged: (v) => notifier.update((s) => s.copyWith(accent: v)),
+        ),
+        SwitchListTile(
+          key: const Key('settings-developer-mode'),
+          title: Text(l10n.settingsDeveloperMode),
+          subtitle: Text(l10n.settingsDeveloperModeHint),
+          value: s.developerMode,
+          onChanged: (v) =>
+              notifier.update((s) => s.copyWith(developerMode: v)),
         ),
       ],
       SettingsCategory.songDisplay => [const SongDisplaySettings()],
@@ -456,6 +483,10 @@ class _CategoryContent extends ConsumerWidget {
           onChanged: (v) =>
               notifier.update((s) => s.copyWith(annotationFinger: v)),
         ),
+      ],
+      SettingsCategory.about => [const _AboutTiles()],
+      SettingsCategory.development => [
+        const _ExperimentalNote(),
         // Prototype of MIDI program changes (ADR-0039, #512).
         ListTile(
           key: const Key('settings-midi-test'),
@@ -468,7 +499,6 @@ class _CategoryContent extends ConsumerWidget {
           ),
         ),
       ],
-      SettingsCategory.about => [const _AboutTiles()],
     };
 
     return ListView(
@@ -496,6 +526,37 @@ IconData scopeIcon(SettingSyncScope scope) => switch (scope) {
 };
 
 /// Heading of a group of categories in the category list.
+/// States at the top of the *Development* category that its features are
+/// experimental (#559).
+class _ExperimentalNote extends StatelessWidget {
+  const _ExperimentalNote();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    return Card(
+      key: const Key('settings-experimental-note'),
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      color: scheme.tertiaryContainer,
+      child: ListTile(
+        leading: Icon(
+          Icons.science_outlined,
+          color: scheme.onTertiaryContainer,
+        ),
+        title: Text(
+          l10n.settingsDevelopmentNoteTitle,
+          style: TextStyle(color: scheme.onTertiaryContainer),
+        ),
+        subtitle: Text(
+          l10n.settingsDevelopmentNote,
+          style: TextStyle(color: scheme.onTertiaryContainer),
+        ),
+      ),
+    );
+  }
+}
+
 class _GroupHeader extends StatelessWidget {
   const _GroupHeader(this.group);
 
@@ -516,6 +577,7 @@ class _GroupHeader extends StatelessWidget {
               _CategoryGroup.personal => scopeIcon(SettingSyncScope.personal),
               _CategoryGroup.device => scopeIcon(SettingSyncScope.device),
               _CategoryGroup.account => Icons.account_circle_outlined,
+              _CategoryGroup.development => Icons.science_outlined,
             },
             size: 18,
             color: color,
@@ -526,6 +588,7 @@ class _GroupHeader extends StatelessWidget {
               _CategoryGroup.personal => l10n.settingsGroupPersonal,
               _CategoryGroup.device => l10n.settingsGroupDevice,
               _CategoryGroup.account => l10n.settingsGroupAccount,
+              _CategoryGroup.development => l10n.settingsGroupDevelopment,
             }, style: theme.textTheme.titleSmall?.copyWith(color: color)),
           ),
         ],

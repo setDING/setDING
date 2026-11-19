@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/settings/settings.dart';
@@ -40,8 +41,11 @@ void main() {
     final app = await pumpSettings(tester);
 
     for (final c in SettingsCategory.values) {
-      // Organizations and bands only when signed in (see below).
-      if (c == SettingsCategory.bands) continue;
+      // Organizations and bands only when signed in (see below), the test
+      // features only in developer mode (#559).
+      if (c == SettingsCategory.bands || c == SettingsCategory.development) {
+        continue;
+      }
       final category = find.byKey(Key('settings-category-${c.name}'));
       await reveal(tester, category);
       expect(category, findsOneWidget);
@@ -328,6 +332,59 @@ void main() {
     expect(find.byKey(const Key('org-o1')), findsOneWidget);
     expect(find.byKey(const Key('settings-bands-join')), findsOneWidget);
     expect(find.byKey(const Key('settings-bands-new')), findsNothing);
+    await app.dispose(tester);
+  });
+
+  testWidgets('developer mode shows the test features, the MIDI test only '
+      'there (#559)', (tester) async {
+    useTabletSize(tester);
+    // Tall enough to list all categories without scrolling.
+    tester.view.physicalSize = const Size(1280, 2000);
+    final app = await pumpSettings(tester);
+    final development = find.byKey(const Key('settings-category-development'));
+    final midi = find.byKey(const Key('settings-midi-test'));
+    expect(development, findsNothing);
+    expect(find.byKey(const Key('settings-group-development')), findsNothing);
+
+    // Not in the live mode settings any more.
+    await tester.tap(find.byKey(const Key('settings-category-live')));
+    await tester.pumpAndSettle();
+    expect(midi, findsNothing);
+
+    // Switched on in General: the category appears last, with the note.
+    await tester.tap(find.byKey(const Key('settings-category-general')));
+    await tester.pumpAndSettle();
+    final toggle = find.byKey(const Key('settings-developer-mode'));
+    await tester.ensureVisible(toggle);
+    await tester.pumpAndSettle();
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(SettingsScreen)),
+    );
+    expect(container.read(settingsProvider).developerMode, isTrue);
+    expect(development, findsOneWidget);
+    expect(
+      tester.getTopLeft(find.byKey(const Key('settings-category-account'))).dy,
+      lessThan(tester.getTopLeft(development).dy),
+    );
+
+    await tester.tap(development);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('settings-experimental-note')), findsOneWidget);
+    expect(find.text('Experimental features'), findsOneWidget);
+    expect(midi, findsOneWidget);
+
+    // Switched off while the category is shown: back to the first one.
+    await tester.runAsync(
+      () => container
+          .read(settingsProvider.notifier)
+          .update((s) => s.copyWith(developerMode: false)),
+    );
+    await tester.pumpAndSettle();
+    expect(development, findsNothing);
+    expect(midi, findsNothing);
+    expect(find.text('Language'), findsOneWidget);
     await app.dispose(tester);
   });
 }

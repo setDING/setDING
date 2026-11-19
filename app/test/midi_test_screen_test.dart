@@ -27,12 +27,16 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('reached from the live mode settings', (tester) async {
+  testWidgets('reached from the test features in developer mode', (
+    tester,
+  ) async {
     useTabletSize(tester);
-    final app = await TestApp.create(prefs: {'language': 'en'});
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'developerMode': true},
+    );
     await tester.pumpWidget(app.build(home: const SettingsScreen()));
     await tester.pumpAndSettle();
-    await tapSettingsCategory(tester, 'live');
+    await tapSettingsCategory(tester, 'development');
     final tile = find.byKey(const Key('settings-midi-test'));
     await tester.scrollUntilVisible(
       tile,

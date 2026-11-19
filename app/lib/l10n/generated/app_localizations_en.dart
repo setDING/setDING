@@ -2987,4 +2987,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get midiTestPart => 'Part';
+
+  @override
+  String get settingsDeveloperMode => 'Developer mode';
+
+  @override
+  String get settingsDeveloperModeHint =>
+      'Shows the “Development” category with experimental features for testing. Not needed for normal use.';
+
+  @override
+  String get settingsGroupDevelopment => 'Development';
+
+  @override
+  String get settingsSectionDevelopment => 'Test features';
+
+  @override
+  String get settingsCategoryDevelopmentHint =>
+      'Experimental, for testing only';
+
+  @override
+  String get settingsDevelopmentNoteTitle => 'Experimental features';
+
+  @override
+  String get settingsDevelopmentNote =>
+      'These features are for testing. They may change, have bugs or disappear again. Not meant for performances. Hide them with “Developer mode” under General.';
 }

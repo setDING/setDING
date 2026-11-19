@@ -5148,6 +5148,48 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Teil'**
   String get midiTestPart;
+
+  /// No description provided for @settingsDeveloperMode.
+  ///
+  /// In de, this message translates to:
+  /// **'Entwickler-Modus'**
+  String get settingsDeveloperMode;
+
+  /// No description provided for @settingsDeveloperModeHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeigt die Kategorie «Entwicklung» mit experimentellen Funktionen zum Testen. Für den normalen Gebrauch nicht nötig.'**
+  String get settingsDeveloperModeHint;
+
+  /// No description provided for @settingsGroupDevelopment.
+  ///
+  /// In de, this message translates to:
+  /// **'Entwicklung'**
+  String get settingsGroupDevelopment;
+
+  /// No description provided for @settingsSectionDevelopment.
+  ///
+  /// In de, this message translates to:
+  /// **'Test-Funktionen'**
+  String get settingsSectionDevelopment;
+
+  /// No description provided for @settingsCategoryDevelopmentHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Experimentell, nur zum Testen'**
+  String get settingsCategoryDevelopmentHint;
+
+  /// No description provided for @settingsDevelopmentNoteTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Experimentelle Funktionen'**
+  String get settingsDevelopmentNoteTitle;
+
+  /// No description provided for @settingsDevelopmentNote.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Funktionen sind zum Testen da. Sie können sich ändern, fehlerhaft sein oder wieder verschwinden. Nicht für Auftritte gedacht. Ausblenden mit «Entwickler-Modus» unter Allgemein.'**
+  String get settingsDevelopmentNote;
 }
 
 class _AppLocalizationsDelegate

@@ -88,6 +88,14 @@ void main() {
     });
   });
 
+  test('developer mode is off unless switched on, and personal (#559)', () {
+    expect(const AppSettings().developerMode, isFalse);
+    expect(AppSettings.fromJson({}).developerMode, isFalse);
+    const on = AppSettings(developerMode: true);
+    expect(AppSettings.fromJson(on.toJson()).developerMode, isTrue);
+    expect(AppSettings.scopes['developerMode'], SettingSyncScope.personal);
+  });
+
   group('store', () {
     late AppDatabase db;
     setUp(() {

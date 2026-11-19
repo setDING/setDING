@@ -261,6 +261,8 @@ settings** (layer 4b, ADR-0027), never synced:
   a program afterwards leaves them again; song 2 part 3 and song 26 part 5
   with CC 0 = 1; CC 3 switches the song mode. The Nord Stage 3 addressing of
   this ADR is confirmed on Android. The test keyboard runs Nord OS 2.54.
+- 2026-11-19: The MIDI test moved from *Screen & live mode* into the settings
+  category *Test features*, shown only in developer mode (#559, ADR-0027).
 
 ## Open points
 
