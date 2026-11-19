@@ -49,6 +49,14 @@ job_server() { dart_package server; }
 # SBOM generator of the release assets (ADR-0037).
 job_sbom() { dart_package tool/sbom; }
 
+# CHANGELOG.md: the source of the GitHub Release notes. Its format, and a
+# section for the version in app/pubspec.yaml (added by the release PR).
+job_changelog() {
+  cd "$ROOT/tool/release"
+  python3 -m unittest -q test_changelog
+  ./changelog.py check --version pubspec
+}
+
 job_app_static() {
   cd "$ROOT/app"
   python3 - <<'PY'
@@ -122,7 +130,7 @@ export POCKETBASE_BIN
 # the same time.
 (cd "$ROOT/app" && flutter pub get >/dev/null)
 
-jobs=(chordpro server sbom website app-static app-tests app-web)
+jobs=(chordpro server sbom changelog website app-static app-tests app-web)
 
 [ "$parallel" = 0 ] || step "running in parallel: ${jobs[*]}"
 start=$SECONDS

@@ -245,9 +245,10 @@ Agents may create **proposals** for all of these (an ADR, a draft PR), just not 
   next build number (`setding-X.Y.Z-buildN-…`) as workflow artifacts, without a release.
 - **A release** is done by an agent in these steps, **each only after the previous one
   succeeded**:
-  1. `chore(release): vX.Y.Z` PR that sets `version: X.Y.Z` in `app/pubspec.yaml` (and
-     `CHANGELOG.md`, generated from the Conventional Commits); test gate and squash
-     merge as usual.
+  1. `chore(release): vX.Y.Z` PR that sets `version: X.Y.Z` in `app/pubspec.yaml` and
+     adds the section `## [X.Y.Z] - YYYY-MM-DD` to `CHANGELOG.md` (drafted with
+     `make changelog`, rewritten for users; [releases.md](releases.md#changelog)); test
+     gate and squash merge as usual. The section becomes the release notes.
   2. Signed tag on the merged `main` and push it:
      `git tag -s vX.Y.Z -m "setDING X.Y.Z" && git push origin vX.Y.Z`.
   3. **The release build must pass:** the tag triggers `.github/workflows/release.yml`

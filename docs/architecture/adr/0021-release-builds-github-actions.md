@@ -33,8 +33,8 @@ app, so the APK must be signed with a stable release key, not a per-machine debu
 - **Version:** the tag must match the version in `app/pubspec.yaml` (`v` + version),
   otherwise the release fails. The **build number is the workflow's run number**
   (ADR-0010), so the Android `versionCode` grows with every release.
-- **GitHub Release:** a `publish` job creates the release for the tag with generated
-  notes, all three packages and a `SHA256SUMS` file. Only tags with a suffix
+- **GitHub Release:** a `publish` job creates the release for the tag with the
+  version's section of `CHANGELOG.md` as notes, all three packages and a `SHA256SUMS` file. Only tags with a suffix
   (`v1.2.0-beta.1`) become pre-releases, because Obtainium ignores pre-releases by
   default.
 - **Android signing:** one release key (PKCS12, RSA 4096, alias `setding`), created
@@ -92,6 +92,7 @@ app, so the APK must be signed with a stable release key, not a per-machine debu
 - 2026-11-17: Build numbers (#345): `pubspec.yaml` no longer carries a build number (it was bumped by hand with every release and said nothing). The run number stays the build number, shared by releases and manual test builds, whose files are named `setding-<version>-build<N>-…`. After the release build passed, `make server-release` updates the server from the tag.
 - 2026-11-17: Faster Android build (#407): the release APK is built for arm64 only instead of a universal APK (arm, arm64, x64), and Gradle is cached with `gradle/actions/setup-gradle`. Agreed with the owner: practically all current Android tablets are arm64. Split APKs were rejected because they still compile every ABI.
 - 2026-11-18: Windows installer and code signing moved out of the open points: ADR-0035 (proposed, #494) adds an Inno Setup installer next to the zip, from which the installed app updates itself.
+- 2026-11-19: Release notes from `CHANGELOG.md` (#542): the repository keeps a changelog in the Keep a Changelog 1.1.0 format, backfilled from v0.1.0 to v0.14.0 with the changes relevant to users. The release PR writes the version's section (drafted with `make changelog`); `make check` requires a section for the version in `pubspec.yaml`, and the `publish` job uses that section as the release notes instead of GitHub's generated notes, so changelog and GitHub Releases always match. The earlier releases were edited to their changelog sections.
 
 ## Open points
 

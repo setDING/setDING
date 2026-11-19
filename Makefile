@@ -14,6 +14,7 @@
 #   make android-keystore  create the Android release key (owner, once)
 #   make release    build the Linux release package (runs on any x86-64 Linux)
 #   make sbom       build the Linux release with its CycloneDX SBOM and validate it
+#   make changelog  draft the CHANGELOG.md section of the next release from the commits
 #   make site       build the website and user documentation (website/, ADR-0030)
 #   make server-*   install and operate the PocketBase server (SERVER=root@host)
 
@@ -84,7 +85,7 @@ BACKEND_REGISTRATION ?= open
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := SETDING_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build web web-serve site site-dev deps upgrade apk android-install android-keystore release release-linux release-check sbom reset data-dir backend check test codegen l10n perf screenshots branding examples doctor clean ci-image \
+.PHONY: help setup dev start build web web-serve site site-dev deps upgrade apk android-install android-keystore release release-linux release-check sbom changelog reset data-dir backend check test codegen l10n perf screenshots branding examples doctor clean ci-image \
 	server-target server-install server-release server-site server-status server-logs server-backup server-fetch-backup server-founder-invite server-ssh
 
 help: ## Show this help
@@ -150,6 +151,9 @@ release-linux: release-check ## Build the Linux release and its SBOMs in a conta
 sbom: release-linux ## Build the Linux release with its CycloneDX SBOMs and validate them (ADR-0037)
 	$(ROOT)/tool/sbom/validate.sh $(APP)/build/$(RELEASE_NAME)-linux-x64.tar.gz.cdx.json \
 		$(APP)/build/$(RELEASE_NAME)-linux-x64.AppImage.cdx.json
+
+changelog: ## Draft the CHANGELOG.md section of the next release from the commits since the last tag
+	@$(ROOT)/tool/release/changelog.py draft
 
 reset: ## Delete all data of the test instance
 	rm -rf "$(DATA_DIR)"
