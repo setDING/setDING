@@ -1,0 +1,22 @@
+# setDING Nord Stage 3 test set (ADR-0039, docs/examples/README.md).
+# Original lyrics and music, free to use.
+{title: Nord 06 – Memory Lane}
+{subtitle: Keyboard program: Live memory 3}
+{artist: The setDING Band}
+{key: E}
+{time: 4/4}
+{tempo: 80}
+{tag: Nord test}
+
+{comment: Expected on the Nord: Live memory 3}
+{comment_italic: Sent: CC 0 = 6, CC 32 = 0, PC 2}
+{comment_italic: The Nord switches to live memory 3 (it shows Live mode).}
+
+{start_of_verse}
+[E]Something I re[B]member well,
+[C#m]third of five, a [A]stored spell.
+{end_of_verse}
+
+{start_of_chorus}
+[A]Bring it [B]back, [E]bring it home.
+{end_of_chorus}

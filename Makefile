@@ -221,10 +221,13 @@ screenshots: ## Render screenshots with real fonts to app/build/screenshots/ and
 branding: ## Regenerate the splash screens, favicon and web icons from app/branding/*.svg
 	$(ROOT)/tool/branding.sh
 
-examples: ## Rebuild docs/examples/feature-showcase.zip from the example files
+examples: ## Rebuild the example ZIPs in docs/examples from the example files
 	cd $(ROOT)/docs/examples && rm -f feature-showcase.zip && \
 		python3 -c "import zipfile; z = zipfile.ZipFile('feature-showcase.zip', 'w', zipfile.ZIP_DEFLATED); [z.write(f) for f in ('feature-showcase.cho', 'stage-plan.svg')]; z.close()"
 	@echo "Updated docs/examples/feature-showcase.zip"
+	cd $(ROOT)/docs/examples/nord-test && rm -f ../nord-test.zip && \
+		python3 -c "import glob, zipfile; z = zipfile.ZipFile('../nord-test.zip', 'w', zipfile.ZIP_DEFLATED); [z.write(f) for f in sorted(glob.glob('*.cho'))]; z.close()"
+	@echo "Updated docs/examples/nord-test.zip"
 
 doctor: ## Show the state of the Flutter toolchain
 	$(FLUTTER) doctor

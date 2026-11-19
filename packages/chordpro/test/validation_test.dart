@@ -109,4 +109,18 @@ void main() {
     ).readAsStringSync();
     expect(validateChordPro(source), isEmpty);
   });
+
+  test('the Nord test set has no problems', () {
+    final files = Directory('../../docs/examples/nord-test')
+        .listSync()
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.cho'))
+        .toList();
+    expect(files, hasLength(9));
+    for (final file in files) {
+      final source = file.readAsStringSync();
+      expect(validateChordPro(source), isEmpty, reason: file.path);
+      expect(parseChordPro(source).title, startsWith('Nord '));
+    }
+  });
 }

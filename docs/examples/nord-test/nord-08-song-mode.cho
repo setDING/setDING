@@ -1,0 +1,22 @@
+# setDING Nord Stage 3 test set (ADR-0039, docs/examples/README.md).
+# Original lyrics and music, free to use.
+{title: Nord 08 – Song Mode}
+{subtitle: Keyboard program: Song 2, part 3}
+{artist: The setDING Band}
+{key: Bb}
+{time: 4/4}
+{tempo: 92}
+{tag: Nord test}
+
+{comment: Expected on the Nord: Song 2, part 3}
+{comment_italic: Sent: CC 0 = 1, CC 32 = 0, PC 7}
+{comment_italic: A Nord song: the Nord switches to song 2, part 3. Enter it with Nord addresses = Songs.}
+
+{start_of_verse}
+[Bb]Five parts make a [F]song of mine,
+[Gm]part three of song [Eb]two this time.
+{end_of_verse}
+
+{start_of_chorus}
+[Eb]Sing it [F]through, [Bb]part by part.
+{end_of_chorus}

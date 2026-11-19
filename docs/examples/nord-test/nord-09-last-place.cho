@@ -1,0 +1,22 @@
+# setDING Nord Stage 3 test set (ADR-0039, docs/examples/README.md).
+# Original lyrics and music, free to use.
+{title: Nord 09 – Last Place}
+{subtitle: Keyboard program: Program P:55}
+{artist: The setDING Band}
+{key: C}
+{time: 4/4}
+{tempo: 120}
+{tag: Nord test}
+
+{comment: Expected on the Nord: Program P:55}
+{comment_italic: Sent: CC 0 = 0, CC 32 = 3, PC 24}
+{comment_italic: The very last program of the Nord: bank P, page 5, button 5.}
+
+{start_of_verse}
+[C]At the end of [G]all the banks,
+[Am]P five five, and [F]many thanks.
+{end_of_verse}
+
+{start_of_chorus}
+[F]Last of [G]all, [C]good night.
+{end_of_chorus}

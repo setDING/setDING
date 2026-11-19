@@ -1,0 +1,22 @@
+# setDING Nord Stage 3 test set (ADR-0039, docs/examples/README.md).
+# Original lyrics and music, free to use.
+{title: Nord 03 – Next Block}
+{subtitle: Keyboard program: Program F:11}
+{artist: The setDING Band}
+{key: D}
+{time: 4/4}
+{tempo: 104}
+{tag: Nord test}
+
+{comment: Expected on the Nord: Program F:11}
+{comment_italic: Sent: CC 0 = 0, CC 32 = 1, PC 0}
+{comment_italic: First program of the second block: the block border is crossed.}
+
+{start_of_verse}
+[D]Over the border, [A]into the new,
+[Bm]numbers start a[G]gain for you.
+{end_of_verse}
+
+{start_of_chorus}
+[G]One, two, [A]three, [D]count it through.
+{end_of_chorus}
