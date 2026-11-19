@@ -28,6 +28,8 @@ void main() {
     bool plugged = true,
     required List<String?> sources,
     List<MidiProgram?> programs = const [],
+    String storedFor = 'nordStage3',
+    MidiPrograms alsoStored = const MidiPrograms(),
   }) async {
     useTabletSize(tester);
     final app = await TestApp.create(
@@ -43,7 +45,20 @@ void main() {
         }
         final id = await app.songs.createSong(source: source);
         if (i < programs.length && programs[i] != null) {
-          await app.songs.setMidiProgram(id, programs[i]);
+          await app.songs.setMidiProgram(
+            id,
+            storedFor,
+            programs[i],
+            deviceProfile: storedFor,
+          );
+        }
+        for (final MapEntry(:key, :value) in alsoStored.byProfile.entries) {
+          await app.songs.setMidiProgram(
+            id,
+            key,
+            value,
+            deviceProfile: storedFor,
+          );
         }
         items.add(LiveItem.song((await app.songs.getSong(id))!));
       }
@@ -100,6 +115,34 @@ void main() {
     await tapRight(tester);
     await stay(tester);
     expect(midi.sent, bytes([_piano, _organ, _piano]));
+    await app.dispose(tester);
+  });
+
+  testWidgets("only the program of the device's profile is sent "
+      '(ADR-0042)', (tester) async {
+    // Programs for the Nord only: a device with the generic profile sends
+    // nothing.
+    var app = await start(
+      tester,
+      prefs: {...midiOn, 'midiProfile': 'generic'},
+      sources: ['{title: One}\n[C]La'],
+      programs: [_organ],
+    );
+    await stay(tester);
+    expect(app.midiOutput.sent, isEmpty);
+    await app.dispose(tester);
+
+    // Programs for both: the generic one is sent.
+    app = await start(
+      tester,
+      prefs: {...midiOn, 'midiProfile': 'generic'},
+      sources: ['{title: One}\n[C]La'],
+      programs: [_piano],
+      storedFor: 'generic',
+      alsoStored: const MidiPrograms({'nordStage3': _organ}),
+    );
+    await stay(tester);
+    expect(app.midiOutput.sent, bytes([_piano]));
     await app.dispose(tester);
   });
 

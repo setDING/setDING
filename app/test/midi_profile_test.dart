@@ -329,6 +329,16 @@ void main() {
     });
   });
 
+  test('stable profile ids for the programs per profile (ADR-0042)', () {
+    expect(const GenericProfile().id, 'generic');
+    expect(const NordStage3Profile().id, 'nordStage3');
+    expect(MidiProfile.of(MidiProfileKind.motifXf).id, 'motifXf');
+    for (final kind in MidiProfileKind.values) {
+      expect(MidiProfile.byId(kind.name)?.kind, kind);
+    }
+    expect(MidiProfile.byId('futureKeys'), isNull);
+  });
+
   test('the profile of the settings', () {
     expect(MidiProfile.of(MidiProfileKind.nordStage3), nord);
     expect(MidiProfile.of(MidiProfileKind.generic), generic);

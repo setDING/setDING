@@ -268,14 +268,19 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   song: parsed,
                   onChanged: _updateOverlay,
                 ),
-                // The keyboard program (ADR-0039).
-                if (MidiProgramField.visible(
-                  keyboard: settings.isKeyboard,
-                  midiEnabled: settings.midiEnabled,
-                  program: overlay.midi,
-                )) ...[
+                // The keyboard programs per profile (ADR-0039, ADR-0042).
+                if (SongRepository.midiProgramsOf(
+                      overlay,
+                      settings.midiDeviceProfile.id,
+                    )
+                    case final programs
+                    when MidiProgramField.visible(
+                      keyboard: settings.isKeyboard,
+                      midiEnabled: settings.midiEnabled,
+                      programs: programs,
+                    )) ...[
                   const SizedBox(height: 16),
-                  MidiProgramField(songId: song.id, program: overlay.midi),
+                  MidiProgramField(songId: song.id, programs: programs),
                 ],
                 const SizedBox(height: 16),
                 _AnnotationsSection(

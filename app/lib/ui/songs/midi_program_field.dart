@@ -31,26 +31,41 @@ String midiPatchLabel(AppLocalizations l10n, MidiPatch patch) =>
       ].join(' · '),
     };
 
-/// The keyboard program of a song in its personal adjustments (ADR-0039):
-/// shown when MIDI program changes are on for this device or the song
-/// already has a program. The program is chosen in [showMidiProgramPicker],
-/// can be removed, and "Test" sends it once to the connected keyboard;
-/// nothing else here sends anything.
+/// The name of the device profile [kind] (ADR-0039).
+String midiProfileName(AppLocalizations l10n, MidiProfileKind kind) =>
+    switch (kind) {
+      MidiProfileKind.generic => l10n.midiProfileGeneric,
+      MidiProfileKind.nordStage3 => l10n.midiProfileNordStage3,
+      MidiProfileKind.motifXf => l10n.midiProfileMotifXf,
+    };
+
+/// The keyboard programs of a song in its personal adjustments (ADR-0039,
+/// ADR-0042): shown when MIDI program changes are on for this device or
+/// the song already has a program. The program of this device's profile
+/// comes first: chosen in [showMidiProgramPicker], removed, and "Test"
+/// sends it once to the connected keyboard. The programs of other
+/// keyboards (profiles) follow and can be edited or removed, and a program
+/// can be prepared for another keyboard; nothing else here sends anything.
 class MidiProgramField extends ConsumerWidget {
-  const MidiProgramField({super.key, required this.songId, this.program});
+  const MidiProgramField({
+    super.key,
+    required this.songId,
+    this.programs = const MidiPrograms(),
+  });
 
   final String songId;
 
-  /// The stored program; null = none.
-  final MidiProgram? program;
+  /// The stored programs per profile, as [SongRepository.midiProgramsOf]
+  /// reads them.
+  final MidiPrograms programs;
 
   /// Whether the field is shown on this device: only for keyboard players
   /// (ADR-0039), when MIDI is on or the song already has a program.
   static bool visible({
     required bool keyboard,
     required bool midiEnabled,
-    MidiProgram? program,
-  }) => keyboard && (midiEnabled || program != null);
+    MidiPrograms programs = const MidiPrograms(),
+  }) => keyboard && (midiEnabled || !programs.isEmpty);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -59,16 +74,41 @@ class MidiProgramField extends ConsumerWidget {
     final profile = ref.watch(midiProfileProvider);
     final status = ref.watch(midiConnectionProvider);
     final repo = ref.read(songRepositoryProvider);
-    final program = this.program;
+    final program = programs[profile.id];
 
-    Future<void> choose() async {
+    Future<void> chooseFor(MidiProfile target) async {
       final chosen = await showMidiProgramPicker(
         context,
-        profile: profile,
-        initial: program,
+        profile: target,
+        initial: programs[target.id],
       );
-      if (chosen != null) await repo.setMidiProgram(songId, chosen);
+      if (chosen != null) {
+        await repo.setMidiProgram(
+          songId,
+          target.id,
+          chosen,
+          deviceProfile: profile.id,
+        );
+      }
     }
+
+    Future<void> choose() => chooseFor(profile);
+
+    Future<void> remove(String id) =>
+        repo.removeMidiProgram(songId, id, deviceProfile: profile.id);
+
+    // Programs of other keyboards, in the order of the profiles; ids this
+    // client does not know last (written by a newer client).
+    final others = [
+      for (final kind in MidiProfileKind.values)
+        if (kind.name != profile.id && programs[kind.name] != null) kind.name,
+      for (final id in programs.byProfile.keys)
+        if (MidiProfile.byId(id) == null) id,
+    ];
+    final addable = [
+      for (final kind in MidiProfileKind.values)
+        if (kind.name != profile.id && programs[kind.name] == null) kind,
+    ];
 
     void test() {
       if (program == null) return;
@@ -140,7 +180,7 @@ class MidiProgramField extends ConsumerWidget {
                 key: const Key('midi-program-remove'),
                 tooltip: l10n.midiProgramRemove,
                 icon: const Icon(Icons.delete_outline),
-                onPressed: () => repo.removeMidiProgram(songId),
+                onPressed: () => remove(profile.id),
               ),
             ],
           ],
@@ -156,6 +196,105 @@ class MidiProgramField extends ConsumerWidget {
             style: theme.textTheme.bodySmall,
           ),
         ],
+        // Other keyboards (ADR-0042): kept when the profile changes.
+        if (others.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Text(
+            l10n.midiProgramOtherKeyboards,
+            style: theme.textTheme.labelLarge,
+          ),
+          for (final id in others)
+            _OtherProgram(
+              key: Key('midi-other-$id'),
+              id: id,
+              program: programs[id]!,
+              onEdit: switch (MidiProfile.byId(id)) {
+                final known? => () => chooseFor(known),
+                null => null,
+              },
+              onRemove: () => remove(id),
+            ),
+        ],
+        if (addable.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: MenuAnchor(
+              menuChildren: [
+                for (final kind in addable)
+                  MenuItemButton(
+                    key: Key('midi-add-${kind.name}'),
+                    onPressed: () => chooseFor(MidiProfile.of(kind)),
+                    child: Text(midiProfileName(l10n, kind)),
+                  ),
+              ],
+              builder: (context, menu, _) => TextButton.icon(
+                key: const Key('midi-program-add-other'),
+                icon: const Icon(Icons.add, size: 18),
+                label: Text(l10n.midiProgramForOtherKeyboard),
+                onPressed: () => menu.isOpen ? menu.close() : menu.open(),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// The program of another keyboard (profile [id]) in [MidiProgramField]:
+/// its name and value, editable with that profile's picker (without
+/// sending) and removable. A profile this client does not know shows the
+/// raw values and can only be removed.
+class _OtherProgram extends StatelessWidget {
+  const _OtherProgram({
+    super.key,
+    required this.id,
+    required this.program,
+    required this.onEdit,
+    required this.onRemove,
+  });
+
+  final String id;
+  final MidiProgram program;
+  final VoidCallback? onEdit;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final profile = MidiProfile.byId(id);
+    final name = profile == null
+        ? l10n.midiProgramUnknownKeyboard(id)
+        : midiProfileName(l10n, profile.kind);
+    final value = midiPatchLabel(
+      l10n,
+      (profile ?? const GenericProfile()).toPatch(program),
+    );
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            name,
+            style: Theme.of(context).textTheme.bodyMedium,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Flexible(
+          child: onEdit == null
+              ? Text(value)
+              : ActionChip(
+                  key: Key('midi-other-value-$id'),
+                  avatar: const Icon(Icons.edit, size: 18),
+                  label: Text(value, overflow: TextOverflow.ellipsis),
+                  onPressed: onEdit,
+                ),
+        ),
+        IconButton(
+          key: Key('midi-other-remove-$id'),
+          tooltip: l10n.midiProgramRemove,
+          icon: const Icon(Icons.delete_outline),
+          onPressed: onRemove,
+        ),
       ],
     );
   }

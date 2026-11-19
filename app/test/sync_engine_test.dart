@@ -927,55 +927,108 @@ void main() {
       expect((await mine.getOverlay('s1')).transpose, 0);
     });
 
-    test('pushes and pulls the keyboard program (ADR-0039)', () async {
-      const program = MidiProgram(msb: 0, lsb: 2, program: 12);
-      await mine.setMidiProgram('s1', program);
-      await engine.sync();
+    test(
+      'pushes and pulls the keyboard programs per profile (ADR-0042)',
+      () async {
+        const program = MidiProgram(msb: 0, lsb: 2, program: 12);
+        await mine.setMidiProgram(
+          's1',
+          'nordStage3',
+          program,
+          deviceProfile: 'nordStage3',
+        );
+        await engine.sync();
+        final id = SyncEngine.overlayServerId('ann', 's1');
+        expect(
+          server.overlays[id]!.midiPrograms,
+          const MidiPrograms({'nordStage3': program}),
+        );
+        expect(server.overlays[id]!.midi, isNull, reason: 'never written');
+        expect(
+          server.overlays[id]!.data.containsKey('midi'),
+          isFalse,
+          reason: 'its own server field, not a key in data',
+        );
+
+        // Changed on another device.
+        const other = MidiProgram(msb: 1, program: 7);
+        server.putOverlay(
+          RemoteOverlay(
+            id: id,
+            userId: 'ann',
+            songId: 's1',
+            data: server.overlays[id]!.data,
+            midiPrograms: const MidiPrograms({'nordStage3': other}),
+          ),
+        );
+        await engine.sync();
+        expect(await mine.midiProgram('s1', 'nordStage3'), other);
+        expect(await outbox(), isEmpty);
+
+        // Removed here.
+        await mine.removeMidiProgram(
+          's1',
+          'nordStage3',
+          deviceProfile: 'nordStage3',
+        );
+        await engine.sync();
+        expect(server.overlays[id]!.midiPrograms, const MidiPrograms());
+
+        // Removed on another device.
+        await mine.setMidiProgram(
+          's1',
+          'nordStage3',
+          program,
+          deviceProfile: 'nordStage3',
+        );
+        await engine.sync();
+        server.putOverlay(
+          RemoteOverlay(
+            id: id,
+            userId: 'ann',
+            songId: 's1',
+            data: server.overlays[id]!.data,
+            midiPrograms: const MidiPrograms(),
+          ),
+        );
+        await engine.sync();
+        expect(await mine.midiProgram('s1', 'nordStage3'), isNull);
+      },
+    );
+
+    test('a v0.16.0 program pulled from the server counts until the '
+        'programs change (ADR-0042)', () async {
       final id = SyncEngine.overlayServerId('ann', 's1');
-      expect(server.overlays[id]!.midi, program);
+      const legacy = MidiProgram(msb: 0, lsb: 2, program: 12);
+      server.putOverlay(
+        RemoteOverlay(id: id, userId: 'ann', songId: 's1', midi: legacy),
+      );
+      await engine.sync();
+      expect(await mine.midiProgram('s1', 'nordStage3'), legacy);
+      await mine.setMidiProgram(
+        's1',
+        'generic',
+        const MidiProgram(program: 1),
+        deviceProfile: 'nordStage3',
+      );
+      await engine.sync();
+      expect(server.overlays[id]!.midi, legacy, reason: 'kept for v0.16.0');
       expect(
-        server.overlays[id]!.data.containsKey('midi'),
-        isFalse,
-        reason: 'its own server field, not a key in data',
+        server.overlays[id]!.midiPrograms,
+        const MidiPrograms({
+          'nordStage3': legacy,
+          'generic': MidiProgram(program: 1),
+        }),
       );
-
-      // Changed on another device.
-      const other = MidiProgram(msb: 1, program: 7);
-      server.putOverlay(
-        RemoteOverlay(
-          id: id,
-          userId: 'ann',
-          songId: 's1',
-          data: server.overlays[id]!.data,
-          midi: other,
-        ),
-      );
-      await engine.sync();
-      expect(await mine.midiProgram('s1'), other);
-      expect(await outbox(), isEmpty);
-
-      // Removed here.
-      await mine.removeMidiProgram('s1');
-      await engine.sync();
-      expect(server.overlays[id]!.midi, isNull);
-
-      // Removed on another device.
-      await mine.setMidiProgram('s1', program);
-      await engine.sync();
-      server.putOverlay(
-        RemoteOverlay(
-          id: id,
-          userId: 'ann',
-          songId: 's1',
-          data: server.overlays[id]!.data,
-        ),
-      );
-      await engine.sync();
-      expect(await mine.midiProgram('s1'), isNull);
     });
 
     test('the last writer wins for the keyboard program too', () async {
-      await mine.setMidiProgram('s1', const MidiProgram(program: 1));
+      await mine.setMidiProgram(
+        's1',
+        'nordStage3',
+        const MidiProgram(program: 1),
+        deviceProfile: 'nordStage3',
+      );
       await engine.sync();
       final id = SyncEngine.overlayServerId('ann', 's1');
       server.putOverlay(
@@ -983,13 +1036,26 @@ void main() {
           id: id,
           userId: 'ann',
           songId: 's1',
-          midi: const MidiProgram(program: 2),
+          midiPrograms: const MidiPrograms({
+            'nordStage3': MidiProgram(program: 2),
+          }),
         ),
       );
-      await mine.setMidiProgram('s1', const MidiProgram(program: 3));
+      await mine.setMidiProgram(
+        's1',
+        'nordStage3',
+        const MidiProgram(program: 3),
+        deviceProfile: 'nordStage3',
+      );
       await engine.sync();
-      expect(await mine.midiProgram('s1'), const MidiProgram(program: 3));
-      expect(server.overlays[id]!.midi, const MidiProgram(program: 3));
+      expect(
+        await mine.midiProgram('s1', 'nordStage3'),
+        const MidiProgram(program: 3),
+      );
+      expect(
+        server.overlays[id]!.midiPrograms,
+        const MidiPrograms({'nordStage3': MidiProgram(program: 3)}),
+      );
     });
 
     test('reads the verse chords of older and newer clients', () {

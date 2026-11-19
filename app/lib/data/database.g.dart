@@ -4701,6 +4701,15 @@ class $PersonalOverlaysTable extends PersonalOverlays
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       ).withConverter<MidiProgram?>($PersonalOverlaysTable.$convertermidi);
+  @override
+  late final GeneratedColumnWithTypeConverter<MidiPrograms?, String>
+  midiPrograms = GeneratedColumn<String>(
+    'midi_programs',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  ).withConverter<MidiPrograms?>($PersonalOverlaysTable.$convertermidiPrograms);
   static const VerificationMeta _revisionMeta = const VerificationMeta(
     'revision',
   );
@@ -4727,6 +4736,7 @@ class $PersonalOverlaysTable extends PersonalOverlays
     hideAnnotations,
     verseChords,
     midi,
+    midiPrograms,
     revision,
   ];
   @override
@@ -4873,6 +4883,12 @@ class $PersonalOverlaysTable extends PersonalOverlays
           data['${effectivePrefix}midi'],
         ),
       ),
+      midiPrograms: $PersonalOverlaysTable.$convertermidiPrograms.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}midi_programs'],
+        ),
+      ),
       revision: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}revision'],
@@ -4889,6 +4905,8 @@ class $PersonalOverlaysTable extends PersonalOverlays
       const EnumNameConverter<VerseChords>(VerseChords.values);
   static TypeConverter<MidiProgram?, String?> $convertermidi =
       const MidiProgramConverter();
+  static TypeConverter<MidiPrograms?, String?> $convertermidiPrograms =
+      const MidiProgramsConverter();
 }
 
 class SongOverlay extends DataClass implements Insertable<SongOverlay> {
@@ -4923,6 +4941,11 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
   /// none, the keyboard keeps its program.
   final MidiProgram? midi;
 
+  /// Keyboard programs per device profile (ADR-0042, schema 20). Null =
+  /// never written: [midi] (v0.16.0) counts for the device's profile; once
+  /// written, even empty, [midi] is ignored.
+  final MidiPrograms? midiPrograms;
+
   /// Server revision; 0 = not on the server (schema 9, ADR-0020).
   final int revision;
   const SongOverlay({
@@ -4938,6 +4961,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     required this.hideAnnotations,
     required this.verseChords,
     this.midi,
+    this.midiPrograms,
     required this.revision,
   });
   @override
@@ -4971,6 +4995,11 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
         $PersonalOverlaysTable.$convertermidi.toSql(midi),
       );
     }
+    if (!nullToAbsent || midiPrograms != null) {
+      map['midi_programs'] = Variable<String>(
+        $PersonalOverlaysTable.$convertermidiPrograms.toSql(midiPrograms),
+      );
+    }
     map['revision'] = Variable<int>(revision);
     return map;
   }
@@ -4997,6 +5026,9 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       hideAnnotations: Value(hideAnnotations),
       verseChords: Value(verseChords),
       midi: midi == null && nullToAbsent ? const Value.absent() : Value(midi),
+      midiPrograms: midiPrograms == null && nullToAbsent
+          ? const Value.absent()
+          : Value(midiPrograms),
       revision: Value(revision),
     );
   }
@@ -5021,6 +5053,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
         serializer.fromJson<String>(json['verseChords']),
       ),
       midi: serializer.fromJson<MidiProgram?>(json['midi']),
+      midiPrograms: serializer.fromJson<MidiPrograms?>(json['midiPrograms']),
       revision: serializer.fromJson<int>(json['revision']),
     );
   }
@@ -5042,6 +5075,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
         $PersonalOverlaysTable.$converterverseChords.toJson(verseChords),
       ),
       'midi': serializer.toJson<MidiProgram?>(midi),
+      'midiPrograms': serializer.toJson<MidiPrograms?>(midiPrograms),
       'revision': serializer.toJson<int>(revision),
     };
   }
@@ -5059,6 +5093,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     bool? hideAnnotations,
     VerseChords? verseChords,
     Value<MidiProgram?> midi = const Value.absent(),
+    Value<MidiPrograms?> midiPrograms = const Value.absent(),
     int? revision,
   }) => SongOverlay(
     ownerId: ownerId ?? this.ownerId,
@@ -5073,6 +5108,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     hideAnnotations: hideAnnotations ?? this.hideAnnotations,
     verseChords: verseChords ?? this.verseChords,
     midi: midi.present ? midi.value : this.midi,
+    midiPrograms: midiPrograms.present ? midiPrograms.value : this.midiPrograms,
     revision: revision ?? this.revision,
   );
   SongOverlay copyWithCompanion(PersonalOverlaysCompanion data) {
@@ -5093,6 +5129,9 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
           ? data.verseChords.value
           : this.verseChords,
       midi: data.midi.present ? data.midi.value : this.midi,
+      midiPrograms: data.midiPrograms.present
+          ? data.midiPrograms.value
+          : this.midiPrograms,
       revision: data.revision.present ? data.revision.value : this.revision,
     );
   }
@@ -5112,6 +5151,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
           ..write('hideAnnotations: $hideAnnotations, ')
           ..write('verseChords: $verseChords, ')
           ..write('midi: $midi, ')
+          ..write('midiPrograms: $midiPrograms, ')
           ..write('revision: $revision')
           ..write(')'))
         .toString();
@@ -5131,6 +5171,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     hideAnnotations,
     verseChords,
     midi,
+    midiPrograms,
     revision,
   );
   @override
@@ -5149,6 +5190,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
           other.hideAnnotations == this.hideAnnotations &&
           other.verseChords == this.verseChords &&
           other.midi == this.midi &&
+          other.midiPrograms == this.midiPrograms &&
           other.revision == this.revision);
 }
 
@@ -5165,6 +5207,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
   final Value<bool> hideAnnotations;
   final Value<VerseChords> verseChords;
   final Value<MidiProgram?> midi;
+  final Value<MidiPrograms?> midiPrograms;
   final Value<int> revision;
   final Value<int> rowid;
   const PersonalOverlaysCompanion({
@@ -5180,6 +5223,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     this.hideAnnotations = const Value.absent(),
     this.verseChords = const Value.absent(),
     this.midi = const Value.absent(),
+    this.midiPrograms = const Value.absent(),
     this.revision = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -5196,6 +5240,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     this.hideAnnotations = const Value.absent(),
     this.verseChords = const Value.absent(),
     this.midi = const Value.absent(),
+    this.midiPrograms = const Value.absent(),
     this.revision = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : songId = Value(songId);
@@ -5212,6 +5257,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     Expression<bool>? hideAnnotations,
     Expression<String>? verseChords,
     Expression<String>? midi,
+    Expression<String>? midiPrograms,
     Expression<int>? revision,
     Expression<int>? rowid,
   }) {
@@ -5228,6 +5274,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
       if (hideAnnotations != null) 'hide_annotations': hideAnnotations,
       if (verseChords != null) 'verse_chords': verseChords,
       if (midi != null) 'midi': midi,
+      if (midiPrograms != null) 'midi_programs': midiPrograms,
       if (revision != null) 'revision': revision,
       if (rowid != null) 'rowid': rowid,
     });
@@ -5246,6 +5293,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     Value<bool>? hideAnnotations,
     Value<VerseChords>? verseChords,
     Value<MidiProgram?>? midi,
+    Value<MidiPrograms?>? midiPrograms,
     Value<int>? revision,
     Value<int>? rowid,
   }) {
@@ -5262,6 +5310,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
       hideAnnotations: hideAnnotations ?? this.hideAnnotations,
       verseChords: verseChords ?? this.verseChords,
       midi: midi ?? this.midi,
+      midiPrograms: midiPrograms ?? this.midiPrograms,
       revision: revision ?? this.revision,
       rowid: rowid ?? this.rowid,
     );
@@ -5310,6 +5359,11 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
         $PersonalOverlaysTable.$convertermidi.toSql(midi.value),
       );
     }
+    if (midiPrograms.present) {
+      map['midi_programs'] = Variable<String>(
+        $PersonalOverlaysTable.$convertermidiPrograms.toSql(midiPrograms.value),
+      );
+    }
     if (revision.present) {
       map['revision'] = Variable<int>(revision.value);
     }
@@ -5334,6 +5388,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
           ..write('hideAnnotations: $hideAnnotations, ')
           ..write('verseChords: $verseChords, ')
           ..write('midi: $midi, ')
+          ..write('midiPrograms: $midiPrograms, ')
           ..write('revision: $revision, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -11777,6 +11832,7 @@ typedef $$PersonalOverlaysTableCreateCompanionBuilder =
       Value<bool> hideAnnotations,
       Value<VerseChords> verseChords,
       Value<MidiProgram?> midi,
+      Value<MidiPrograms?> midiPrograms,
       Value<int> revision,
       Value<int> rowid,
     });
@@ -11794,6 +11850,7 @@ typedef $$PersonalOverlaysTableUpdateCompanionBuilder =
       Value<bool> hideAnnotations,
       Value<VerseChords> verseChords,
       Value<MidiProgram?> midi,
+      Value<MidiPrograms?> midiPrograms,
       Value<int> revision,
       Value<int> rowid,
     });
@@ -11890,6 +11947,12 @@ class $$PersonalOverlaysTableFilterComposer
         builder: (column) => ColumnWithTypeConverterFilters(column),
       );
 
+  ColumnWithTypeConverterFilters<MidiPrograms?, MidiPrograms, String>
+  get midiPrograms => $composableBuilder(
+    column: $table.midiPrograms,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
   ColumnFilters<int> get revision => $composableBuilder(
     column: $table.revision,
     builder: (column) => ColumnFilters(column),
@@ -11983,6 +12046,11 @@ class $$PersonalOverlaysTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get midiPrograms => $composableBuilder(
+    column: $table.midiPrograms,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get revision => $composableBuilder(
     column: $table.revision,
     builder: (column) => ColumnOrderings(column),
@@ -12059,6 +12127,12 @@ class $$PersonalOverlaysTableAnnotationComposer
   GeneratedColumnWithTypeConverter<MidiProgram?, String> get midi =>
       $composableBuilder(column: $table.midi, builder: (column) => column);
 
+  GeneratedColumnWithTypeConverter<MidiPrograms?, String> get midiPrograms =>
+      $composableBuilder(
+        column: $table.midiPrograms,
+        builder: (column) => column,
+      );
+
   GeneratedColumn<int> get revision =>
       $composableBuilder(column: $table.revision, builder: (column) => column);
 
@@ -12128,6 +12202,7 @@ class $$PersonalOverlaysTableTableManager
                 Value<bool> hideAnnotations = const Value.absent(),
                 Value<VerseChords> verseChords = const Value.absent(),
                 Value<MidiProgram?> midi = const Value.absent(),
+                Value<MidiPrograms?> midiPrograms = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PersonalOverlaysCompanion(
@@ -12143,6 +12218,7 @@ class $$PersonalOverlaysTableTableManager
                 hideAnnotations: hideAnnotations,
                 verseChords: verseChords,
                 midi: midi,
+                midiPrograms: midiPrograms,
                 revision: revision,
                 rowid: rowid,
               ),
@@ -12160,6 +12236,7 @@ class $$PersonalOverlaysTableTableManager
                 Value<bool> hideAnnotations = const Value.absent(),
                 Value<VerseChords> verseChords = const Value.absent(),
                 Value<MidiProgram?> midi = const Value.absent(),
+                Value<MidiPrograms?> midiPrograms = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PersonalOverlaysCompanion.insert(
@@ -12175,6 +12252,7 @@ class $$PersonalOverlaysTableTableManager
                 hideAnnotations: hideAnnotations,
                 verseChords: verseChords,
                 midi: midi,
+                midiPrograms: midiPrograms,
                 revision: revision,
                 rowid: rowid,
               ),

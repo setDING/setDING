@@ -182,31 +182,100 @@ void main() {
       'a song has a keyboard program that can be removed (ADR-0039)',
       () async {
         final id = await songs.createSong(title: 'X');
-        expect(await songs.midiProgram(id), isNull);
+        expect(await songs.midiProgram(id, 'nordStage3'), isNull);
         final seen = <MidiProgram?>[];
-        final sub = songs.watchMidiProgram(id).listen(seen.add);
+        final sub = songs
+            .watchMidiPrograms(id, 'nordStage3')
+            .map((p) => p['nordStage3'])
+            .listen(seen.add);
         await pumpEventQueue();
 
         const program = MidiProgram(msb: 0, lsb: 2, program: 12);
         await songs.updateOverlay(id, (o) => o.copyWith(transpose: 2));
-        await songs.setMidiProgram(id, program);
+        await songs.setMidiProgram(
+          id,
+          'nordStage3',
+          program,
+          deviceProfile: 'nordStage3',
+        );
         await pumpEventQueue();
-        expect(await songs.midiProgram(id), program);
+        expect(await songs.midiProgram(id, 'nordStage3'), program);
         expect((await songs.getOverlay(id)).transpose, 2);
 
         // Other adjustments keep it.
         await songs.updateOverlay(id, (o) => o.copyWith(transpose: 3));
-        expect(await songs.midiProgram(id), program);
+        expect(await songs.midiProgram(id, 'nordStage3'), program);
 
-        await songs.removeMidiProgram(id);
+        await songs.removeMidiProgram(
+          id,
+          'nordStage3',
+          deviceProfile: 'nordStage3',
+        );
         await pumpEventQueue();
-        expect(await songs.midiProgram(id), isNull);
+        expect(await songs.midiProgram(id, 'nordStage3'), isNull);
         expect((await songs.getOverlay(id)).transpose, 3);
         await sub.cancel();
         // Only changes of the program itself.
         expect(seen, [null, program, null]);
       },
     );
+
+    test('a song keeps one keyboard program per profile (ADR-0042)', () async {
+      final id = await songs.createSong(title: 'X');
+      const nord = MidiProgram(msb: 0, lsb: 2, program: 12);
+      const generic = MidiProgram(program: 4);
+      await songs.setMidiProgram(
+        id,
+        'nordStage3',
+        nord,
+        deviceProfile: 'nordStage3',
+      );
+      await songs.setMidiProgram(
+        id,
+        'generic',
+        generic,
+        deviceProfile: 'nordStage3',
+      );
+      expect(await songs.midiProgram(id, 'nordStage3'), nord);
+      expect(await songs.midiProgram(id, 'generic'), generic);
+      expect(await songs.midiProgram(id, 'motifXf'), isNull);
+      await songs.removeMidiProgram(id, 'generic', deviceProfile: 'generic');
+      expect(await songs.midiProgram(id, 'generic'), isNull);
+      expect(await songs.midiProgram(id, 'nordStage3'), nord);
+
+      // Removing the last one keeps a v0.16.0 program from counting again.
+      await songs.saveOverlay(
+        (await songs.getOverlay(id)).copyWith(midi: const Value(generic)),
+      );
+      await songs.removeMidiProgram(
+        id,
+        'nordStage3',
+        deviceProfile: 'nordStage3',
+      );
+      final overlay = await songs.getOverlay(id);
+      expect(overlay.midiPrograms, const MidiPrograms());
+      expect(await songs.midiProgram(id, 'nordStage3'), isNull);
+    });
+
+    test('stored programs per profile that cannot be read are none', () async {
+      final id = await songs.createSong(title: 'X');
+      await songs.updateOverlay(id, (o) => o.copyWith(transpose: 1));
+      for (final stored in [
+        'not json',
+        '[]',
+        '{"nordStage3": {"program": 300}}',
+      ]) {
+        await db.customStatement(
+          'UPDATE personal_overlays SET midi_programs = ?',
+          [stored],
+        );
+        expect(
+          await songs.midiProgram(id, 'nordStage3'),
+          isNull,
+          reason: stored,
+        );
+      }
+    });
 
     test('a stored keyboard program that cannot be read is none', () async {
       final id = await songs.createSong(title: 'X');
@@ -215,7 +284,11 @@ void main() {
         await db.customStatement('UPDATE personal_overlays SET midi = ?', [
           stored,
         ]);
-        expect(await songs.midiProgram(id), isNull, reason: stored);
+        expect(
+          await songs.midiProgram(id, 'nordStage3'),
+          isNull,
+          reason: stored,
+        );
       }
     });
   });

@@ -158,6 +158,18 @@ sealed class MidiProfile {
 
   MidiProfileKind get kind;
 
+  /// The stable id under which a song keeps this profile's program
+  /// (ADR-0042), e.g. `nordStage3`: the name of [kind], never its position.
+  String get id => kind.name;
+
+  /// The profile of the stored id [id], null for one this client does not
+  /// know (e.g. written by a newer client).
+  static MidiProfile? byId(String id) =>
+      switch (MidiProfileKind.values.asNameMap()[id]) {
+        final kind? => MidiProfile.of(kind),
+        null => null,
+      };
+
   /// [program] in the terms of this profile. The kind of a Nord value
   /// follows its bank select MSB (program, song or live memory).
   MidiPatch toPatch(MidiProgram program);

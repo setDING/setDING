@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:setding/data/song_repository.dart';
 import 'package:setding/midi/midi_message.dart';
 import 'package:setding/midi/midi_output.dart';
 import 'package:setding/ui/songs/midi_program_field.dart';
@@ -22,6 +23,9 @@ void main() {
   late TestApp app;
   late String songId;
 
+  /// The device profile of the current test (ADR-0042).
+  late String profileId;
+
   setUp(MidiProgramPicker.resetLastKind);
 
   /// Opens the personal adjustments of a song with [program] stored.
@@ -29,16 +33,28 @@ void main() {
     WidgetTester tester, {
     Map<String, Object> prefs = midiOn,
     MidiProgram? program,
+    MidiPrograms others = const MidiPrograms(),
     List<MidiPortInfo> ports = const [_nord],
     Size? size,
   }) async {
+    profileId = prefs['midiProfile'] as String? ?? 'nordStage3';
     useTabletSize(tester);
     if (size != null) tester.view.physicalSize = size;
     app = await TestApp.create(prefs: prefs);
     app.midiOutput.ports = ports;
     songId = (await tester.runAsync(() async {
       final id = await app.songs.createSong(source: '{title: X}\n[G]One');
-      if (program != null) await app.songs.setMidiProgram(id, program);
+      for (final MapEntry(:key, :value) in {
+        ...others.byProfile,
+        profileId: ?program,
+      }.entries) {
+        await app.songs.setMidiProgram(
+          id,
+          key,
+          value,
+          deviceProfile: profileId,
+        );
+      }
       return id;
     }))!;
     await tester.pumpWidget(app.build(home: SongScreen(songId: songId)));
@@ -47,8 +63,16 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<MidiProgram?> stored(WidgetTester tester) =>
-      tester.runAsync<MidiProgram?>(() => app.songs.midiProgram(songId));
+  Future<MidiProgram?> stored(WidgetTester tester) => tester
+      .runAsync<MidiProgram?>(() => app.songs.midiProgram(songId, profileId));
+
+  Future<MidiPrograms> storedAll(WidgetTester tester) async =>
+      (await tester.runAsync<MidiPrograms>(
+        () async => SongRepository.midiProgramsOf(
+          await app.songs.getOverlay(songId),
+          profileId,
+        ),
+      ))!;
 
   Future<void> tap(WidgetTester tester, Finder finder) async {
     await tester.ensureVisible(finder);
@@ -524,6 +548,128 @@ void main() {
       expect(app.midiOutput.sent, [
         [0xB0, 0, 6, 0xB0, 32, 0, 0xC0, 1],
       ]);
+      await app.dispose(tester);
+    });
+  });
+
+  group('other keyboards (ADR-0042)', () {
+    const nord = MidiProgram(msb: 0, lsb: 2, program: 12);
+    const generic = MidiProgram(msb: 1, program: 4);
+
+    testWidgets('the programs of other profiles are listed, editable and '
+        'removable; nothing is sent', (tester) async {
+      await pumpSong(
+        tester,
+        program: nord,
+        others: const MidiPrograms({'generic': generic}),
+      );
+      expect(find.text('Program K:33'), findsOneWidget);
+      expect(find.text('Other keyboards'), findsOneWidget);
+      final other = find.byKey(const Key('midi-other-generic'));
+      expect(
+        find.descendant(of: other, matching: find.text('Generic')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: other, matching: find.text('Program 5 · MSB 1')),
+        findsOneWidget,
+      );
+
+      // Edited with the generic picker.
+      await tap(tester, find.byKey(const Key('midi-other-value-generic')));
+      expect(find.byKey(const Key('midi-generic-program')), findsOneWidget);
+      await tester.enterText(
+        find.byKey(const Key('midi-generic-program')),
+        '9',
+      );
+      await save(tester);
+      expect(
+        await storedAll(tester),
+        const MidiPrograms({
+          'nordStage3': nord,
+          'generic': MidiProgram(msb: 1, program: 8),
+        }),
+      );
+
+      await tap(tester, find.byKey(const Key('midi-other-remove-generic')));
+      expect(await storedAll(tester), const MidiPrograms({'nordStage3': nord}));
+      expect(find.text('Other keyboards'), findsNothing);
+      expect(app.midiOutput.sent, isEmpty);
+      await app.dispose(tester);
+    });
+
+    testWidgets('a program for another keyboard is prepared', (tester) async {
+      await pumpSong(tester, program: nord);
+      await tap(tester, find.byKey(const Key('midi-program-add-other')));
+      await tap(tester, find.byKey(const Key('midi-add-generic')));
+      await tester.enterText(
+        find.byKey(const Key('midi-generic-program')),
+        '3',
+      );
+      await save(tester);
+      expect(
+        await storedAll(tester),
+        const MidiPrograms({
+          'nordStage3': nord,
+          'generic': MidiProgram(program: 2),
+        }),
+      );
+      // Generic has a program now: only the Motif is left to add.
+      await tap(tester, find.byKey(const Key('midi-program-add-other')));
+      expect(find.byKey(const Key('midi-add-generic')), findsNothing);
+      expect(find.byKey(const Key('midi-add-motifXf')), findsOneWidget);
+      await app.dispose(tester);
+    });
+
+    testWidgets('changing the profile shows the other program first', (
+      tester,
+    ) async {
+      await pumpSong(
+        tester,
+        prefs: {...midiOn, 'midiProfile': 'generic'},
+        program: generic,
+        others: const MidiPrograms({'nordStage3': nord}),
+      );
+      expect(
+        tester
+            .widget<ActionChip>(find.byKey(const Key('midi-program-value')))
+            .label,
+        isA<Text>().having((t) => t.data, 'text', 'Program 5 · MSB 1'),
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('midi-other-nordStage3')),
+          matching: find.text('Program K:33'),
+        ),
+        findsOneWidget,
+      );
+      await app.dispose(tester);
+    });
+
+    testWidgets('a profile this client does not know can only be removed', (
+      tester,
+    ) async {
+      await pumpSong(
+        tester,
+        program: nord,
+        others: const MidiPrograms({
+          'futureKeys': MidiProgram(msb: 63, lsb: 8, program: 0),
+        }),
+      );
+      final other = find.byKey(const Key('midi-other-futureKeys'));
+      expect(
+        find.descendant(
+          of: other,
+          matching: find.text('Unknown keyboard (futureKeys)'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('midi-other-value-futureKeys')),
+        findsNothing,
+      );
+      await tap(tester, find.byKey(const Key('midi-other-remove-futureKeys')));
+      expect(await storedAll(tester), const MidiPrograms({'nordStage3': nord}));
       await app.dispose(tester);
     });
   });
