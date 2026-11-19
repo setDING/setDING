@@ -2292,6 +2292,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsGroupDevice => 'Dieses Gerät';
 
   @override
+  String get settingsGroupAccount => 'Konto & Organisation';
+
+  @override
   String get settingsScopePersonalHint =>
       'Diese Einstellungen gehören zu deinem Konto und gelten auf allen Geräten, auf denen du angemeldet bist.';
 

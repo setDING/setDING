@@ -24,20 +24,28 @@ import 'widgets/dialogs.dart';
 import 'widgets/whats_new_dialog.dart';
 
 /// The categories of the settings screen, in order.
+/// The most used ones come first; the account and the organizations and
+/// bands, set up once and rarely opened afterwards, come last.
 enum SettingsCategory {
-  account,
-  bands,
-  general,
-  musician,
   display,
   songDisplay,
+  musician,
+  general,
   live,
   about,
+  account,
+  bands,
 }
 
-/// Settings (layer 4, ADR-0006), grouped into categories: the account and,
-/// when signed in, the organizations and bands on top, then the personal settings (synced with the account) and the
-/// settings of this device (ADR-0027), so it is clear which are synced.
+/// The groups of the category list, in order: the personal settings (synced
+/// with the account), the settings of this device (ADR-0027) and the account
+/// with the organizations and bands.
+enum _CategoryGroup { personal, device, account }
+
+/// Settings (layer 4, ADR-0006), grouped into categories: the personal
+/// settings (synced with the account) and the settings of this device
+/// (ADR-0027), so it is clear which are synced, and at the bottom the account
+/// and, when signed in, the organizations and bands.
 ///
 /// On wide screens the categories are listed on the left and the selected one
 /// is shown next to them; on narrow screens the overview lists the categories
@@ -53,7 +61,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  SettingsCategory _selected = SettingsCategory.account;
+  SettingsCategory _selected = SettingsCategory.values.first;
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +70,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final signedIn = ref.watch(authProvider.select((u) => u != null));
     final selected = _selected.visible(signedIn: signedIn)
         ? _selected
-        : SettingsCategory.account;
+        : SettingsCategory.values.first;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.navSettings)),
       body: BreakpointBuilder(
@@ -122,6 +130,12 @@ extension on SettingsCategory {
     SettingsCategory.live || SettingsCategory.about => SettingSyncScope.device,
   };
 
+  _CategoryGroup get group => switch (scope) {
+    SettingSyncScope.personal => _CategoryGroup.personal,
+    SettingSyncScope.device => _CategoryGroup.device,
+    null => _CategoryGroup.account,
+  };
+
   IconData get icon => switch (this) {
     SettingsCategory.account => Icons.account_circle_outlined,
     SettingsCategory.bands => Icons.groups_outlined,
@@ -175,12 +189,12 @@ class _CategoryList extends ConsumerWidget {
     final signedIn = ref.watch(authProvider.select((u) => u != null));
     final update = ref.watch(updateCheckProvider) != null;
     final items = <Widget>[];
-    SettingSyncScope? group;
+    _CategoryGroup? group;
     for (final c in SettingsCategory.values) {
       if (!c.visible(signedIn: signedIn)) continue;
-      if (c.scope case final scope? when scope != group) {
-        group = scope;
-        items.add(_GroupHeader(scope));
+      if (c.group != group) {
+        group = c.group;
+        items.add(_GroupHeader(c.group));
       }
       items.add(
         ListTile(
@@ -463,9 +477,9 @@ IconData scopeIcon(SettingSyncScope scope) => switch (scope) {
 
 /// Heading of a group of categories in the category list.
 class _GroupHeader extends StatelessWidget {
-  const _GroupHeader(this.scope);
+  const _GroupHeader(this.group);
 
-  final SettingSyncScope scope;
+  final _CategoryGroup group;
 
   @override
   Widget build(BuildContext context) {
@@ -473,16 +487,25 @@ class _GroupHeader extends StatelessWidget {
     final theme = Theme.of(context);
     final color = theme.colorScheme.primary;
     return Padding(
-      key: Key('settings-group-${scope.name}'),
+      key: Key('settings-group-${group.name}'),
       padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 4),
       child: Row(
         children: [
-          Icon(scopeIcon(scope), size: 18, color: color),
+          Icon(
+            switch (group) {
+              _CategoryGroup.personal => scopeIcon(SettingSyncScope.personal),
+              _CategoryGroup.device => scopeIcon(SettingSyncScope.device),
+              _CategoryGroup.account => Icons.account_circle_outlined,
+            },
+            size: 18,
+            color: color,
+          ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(switch (scope) {
-              SettingSyncScope.personal => l10n.settingsGroupPersonal,
-              SettingSyncScope.device => l10n.settingsGroupDevice,
+            child: Text(switch (group) {
+              _CategoryGroup.personal => l10n.settingsGroupPersonal,
+              _CategoryGroup.device => l10n.settingsGroupDevice,
+              _CategoryGroup.account => l10n.settingsGroupAccount,
             }, style: theme.textTheme.titleSmall?.copyWith(color: color)),
           ),
         ],

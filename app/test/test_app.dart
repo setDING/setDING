@@ -16,6 +16,7 @@ import 'package:setding/sync/session_store.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:setding/sync/sync_controller.dart';
 import 'package:setding/ui/deep_links.dart';
+import 'package:setding/ui/settings_screen.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:material_ui/material_ui.dart';
@@ -159,6 +160,31 @@ class FakeWakeLockPlatform implements WakeLockPlatform {
 
   @override
   Future<bool> get enabled async => on;
+}
+
+/// Opens [category] in the settings on a wide screen: the first category is
+/// shown when the settings open, the account comes last (#548).
+Future<void> openSettingsCategory(
+  WidgetTester tester,
+  SettingsCategory category,
+) async {
+  final tile = find.byKey(Key('settings-category-${category.name}'));
+  if (tile.evaluate().isEmpty) {
+    await tester.scrollUntilVisible(
+      tile,
+      200,
+      scrollable: find
+          .descendant(
+            of: find.byType(SettingsScreen),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+  }
+  await tester.ensureVisible(tile);
+  await tester.pumpAndSettle();
+  await tester.tap(tile);
+  await tester.pumpAndSettle();
 }
 
 /// Sets a tablet-sized test surface.

@@ -149,6 +149,7 @@ void main() {
     tester,
   ) async {
     final app = await pump(tester, null, const SettingsScreen());
+    await openSettingsCategory(tester, SettingsCategory.account);
     final link = (await _invite(app)).url;
     await tester.tap(find.byKey(const Key('account-open-join')));
     await tester.pumpAndSettle();
@@ -204,6 +205,7 @@ void main() {
       tester,
     ) async {
       final app = await pump(tester, null, const SettingsScreen());
+      await openSettingsCategory(tester, SettingsCategory.account);
       app.backend.config = const ServerConfig(
         registration: RegistrationMode.inviteOnly,
       );
@@ -278,6 +280,7 @@ void main() {
       tester,
     ) async {
       final app = await pump(tester, null, const SettingsScreen());
+      await openSettingsCategory(tester, SettingsCategory.account);
       app.backend.config = const ServerConfig(emailVerification: true);
       await tester.tap(find.byKey(const Key('account-open-sign-in')));
       await tester.pumpAndSettle();

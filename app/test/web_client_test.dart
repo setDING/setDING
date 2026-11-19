@@ -22,6 +22,7 @@ import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/ui/live/pdf_spread_view.dart';
 import 'package:setding/ui/sets/set_screen.dart';
 import 'package:setding/ui/sets/sets_screen.dart';
+import 'package:setding/ui/settings_screen.dart';
 
 import 'test_app.dart';
 
@@ -191,6 +192,7 @@ void main() {
 
     await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
+    await openSettingsCategory(tester, SettingsCategory.account);
     await tester.tap(find.byKey(const Key('account-sign-out')));
     await tester.pumpAndSettle();
     expect(

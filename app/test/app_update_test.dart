@@ -310,6 +310,9 @@ void main() {
             )
             .first,
       );
+      // Not the last category: it may be scrolled in only partly.
+      await tester.ensureVisible(about);
+      await tester.pumpAndSettle();
       await tester.tap(about);
       await tester.pumpAndSettle();
     }

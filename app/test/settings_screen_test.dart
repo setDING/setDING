@@ -48,12 +48,12 @@ void main() {
     }
     await reveal(
       tester,
-      find.byKey(const Key('settings-category-account')),
+      find.byKey(const Key('settings-category-display')),
       delta: -100,
     );
-    // The account category is shown first.
-    expect(find.text('Not signed in'), findsOneWidget);
-    expect(find.text('Language'), findsNothing);
+    // The first category, the display, is shown first.
+    expect(find.text('Chord notation'), findsOneWidget);
+    expect(find.text('Not signed in'), findsNothing);
 
     await tester.tap(find.byKey(const Key('settings-category-general')));
     await tester.pumpAndSettle();
@@ -66,6 +66,46 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Fit song to screen'), findsOneWidget);
     expect(find.text('Language'), findsNothing);
+
+    await reveal(tester, find.byKey(const Key('settings-category-account')));
+    await tester.tap(find.byKey(const Key('settings-category-account')));
+    await tester.pumpAndSettle();
+    expect(find.text('Not signed in'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('the most used categories come first, the account last '
+      '(#548)', (tester) async {
+    useTabletSize(tester);
+    // Tall enough to list all categories without scrolling.
+    tester.view.physicalSize = const Size(1280, 2000);
+    const ann = AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann');
+    final app = await TestApp.create(prefs: {'language': 'en'}, user: ann);
+    app.backend.addBand('b1', 'Rock', admin: ann, organizationId: 'o1');
+    await tester.pumpWidget(app.build(home: const SettingsScreen()));
+    await tester.pumpAndSettle();
+    expect(find.text('Account & organization'), findsOneWidget);
+    double top(Finder f) => tester.getTopLeft(f).dy;
+    Finder group(String name) => find.byKey(Key('settings-group-$name'));
+    Finder category(String name) => find.byKey(Key('settings-category-$name'));
+    final order = [
+      group('personal'),
+      category('display'),
+      category('songDisplay'),
+      category('musician'),
+      category('general'),
+      group('device'),
+      category('live'),
+      category('about'),
+      group('account'),
+      category('account'),
+      category('bands'),
+    ];
+    for (var i = 1; i < order.length; i++) {
+      expect(top(order[i - 1]), lessThan(top(order[i])));
+    }
+    // The first category is selected.
+    expect(find.text('Chord notation'), findsOneWidget);
     await app.dispose(tester);
   });
 
@@ -81,10 +121,8 @@ void main() {
     final general = find.byKey(const Key('settings-category-general'));
     final display = find.byKey(const Key('settings-category-display'));
     final live = find.byKey(const Key('settings-category-live'));
-    final account = find.byKey(const Key('settings-category-account'));
-    expect(top(account), lessThan(top(personal)));
-    expect(top(personal), lessThan(top(general)));
-    expect(top(display), lessThan(top(device)));
+    expect(top(personal), lessThan(top(display)));
+    expect(top(general), lessThan(top(device)));
     expect(top(device), lessThan(top(live)));
 
     // Signed out: personal settings are synced after signing in.
@@ -106,6 +144,7 @@ void main() {
     await tester.runAsync(
       () => app.backend.signIn(email: 'ann@example.test', password: 'secret'),
     );
+    await reveal(tester, display, delta: -100);
     await tester.tap(display);
     await tester.pumpAndSettle();
     expect(find.textContaining('belong to your account'), findsOneWidget);
@@ -120,11 +159,11 @@ void main() {
     // opens for the song search.
     useTabletSize(tester);
     final app = await pumpSettings(tester);
-    final account = find.byKey(const Key('settings-category-account'));
-    final before = tester.widget(account);
+    final display = find.byKey(const Key('settings-category-display'));
+    final before = tester.widget(display);
     tester.view.viewInsets = const FakeViewPadding(bottom: 400);
     await tester.pumpAndSettle();
-    expect(identical(tester.widget(account), before), isTrue);
+    expect(identical(tester.widget(display), before), isTrue);
     await app.dispose(tester);
   });
 
@@ -242,15 +281,16 @@ void main() {
     // Account & sync no longer lists the bands.
     expect(find.text('Manage bands'), findsNothing);
     final bands = find.byKey(const Key('settings-category-bands'));
+    await reveal(tester, bands);
     expect(bands, findsOneWidget);
     double top(Finder f) => tester.getTopLeft(f).dy;
     expect(
-      top(find.byKey(const Key('settings-category-account'))),
-      lessThan(top(bands)),
+      top(find.byKey(const Key('settings-group-account'))),
+      lessThan(top(find.byKey(const Key('settings-category-account')))),
     );
     expect(
-      top(bands),
-      lessThan(top(find.byKey(const Key('settings-group-personal')))),
+      top(find.byKey(const Key('settings-category-account'))),
+      lessThan(top(bands)),
     );
 
     await tester.tap(bands);
@@ -261,11 +301,11 @@ void main() {
     // An organization admin may create bands.
     expect(find.byKey(const Key('settings-bands-new')), findsOneWidget);
 
-    // Signed out, the category disappears and the account is shown.
+    // Signed out, the category disappears and the first one is shown.
     await tester.runAsync(app.backend.signOut);
     await tester.pumpAndSettle();
     expect(bands, findsNothing);
-    expect(find.text('Not signed in'), findsOneWidget);
+    expect(find.text('Chord notation'), findsOneWidget);
     await app.dispose(tester);
   });
 
@@ -282,6 +322,7 @@ void main() {
     app.backend.addOrgMember('o1', bob, OrgRole.member);
     await tester.pumpWidget(app.build(home: const SettingsScreen()));
     await tester.pumpAndSettle();
+    await reveal(tester, find.byKey(const Key('settings-category-bands')));
     await tester.tap(find.byKey(const Key('settings-category-bands')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('org-o1')), findsOneWidget);
