@@ -16,6 +16,7 @@ import '../util/log.dart';
 import 'account/account_section.dart';
 import 'bands/bands_settings.dart';
 import 'settings/latency_calibration.dart';
+import 'settings/midi_settings.dart';
 import 'settings/midi_test_screen.dart';
 import 'settings/song_display_settings.dart';
 import 'theme.dart';
@@ -33,6 +34,7 @@ enum SettingsCategory {
   songDisplay,
   musician,
   live,
+  midi,
   about,
   account,
   bands,
@@ -135,7 +137,9 @@ extension on SettingsCategory {
     SettingsCategory.musician ||
     SettingsCategory.display ||
     SettingsCategory.songDisplay => SettingSyncScope.personal,
-    SettingsCategory.live || SettingsCategory.about => SettingSyncScope.device,
+    SettingsCategory.live ||
+    SettingsCategory.midi ||
+    SettingsCategory.about => SettingSyncScope.device,
   };
 
   _CategoryGroup get group => switch (scope) {
@@ -153,6 +157,7 @@ extension on SettingsCategory {
     SettingsCategory.display => Icons.text_fields,
     SettingsCategory.songDisplay => Icons.palette_outlined,
     SettingsCategory.live => Icons.play_circle_outline,
+    SettingsCategory.midi => Icons.piano_outlined,
     SettingsCategory.about => Icons.info_outline,
     SettingsCategory.development => Icons.science_outlined,
   };
@@ -165,6 +170,7 @@ extension on SettingsCategory {
     SettingsCategory.display => l10n.settingsSectionDisplay,
     SettingsCategory.songDisplay => l10n.settingsSectionSongDisplay,
     SettingsCategory.live => l10n.settingsSectionLive,
+    SettingsCategory.midi => l10n.settingsSectionMidi,
     SettingsCategory.about => l10n.settingsSectionStorage,
     SettingsCategory.development => l10n.settingsSectionDevelopment,
   };
@@ -187,6 +193,7 @@ extension on SettingsCategory {
     SettingsCategory.display => l10n.settingsCategoryDisplayHint,
     SettingsCategory.songDisplay => l10n.settingsCategorySongDisplayHint,
     SettingsCategory.live => l10n.settingsCategoryLiveHint,
+    SettingsCategory.midi => l10n.settingsCategoryMidiHint,
     SettingsCategory.about => l10n.settingsCategoryAboutHint,
     SettingsCategory.development => l10n.settingsCategoryDevelopmentHint,
   };
@@ -484,6 +491,8 @@ class _CategoryContent extends ConsumerWidget {
               notifier.update((s) => s.copyWith(annotationFinger: v)),
         ),
       ],
+      // MIDI program changes to a keyboard (ADR-0039).
+      SettingsCategory.midi => [const MidiSettings()],
       SettingsCategory.about => [const _AboutTiles()],
       SettingsCategory.development => [
         const _ExperimentalNote(),

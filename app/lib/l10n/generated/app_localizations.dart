@@ -5190,6 +5190,138 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Diese Funktionen sind zum Testen da. Sie können sich ändern, fehlerhaft sein oder wieder verschwinden. Nicht für Auftritte gedacht. Ausblenden mit «Entwickler-Modus» unter Allgemein.'**
   String get settingsDevelopmentNote;
+
+  /// No description provided for @settingsSectionMidi.
+  ///
+  /// In de, this message translates to:
+  /// **'Keyboard (MIDI)'**
+  String get settingsSectionMidi;
+
+  /// No description provided for @settingsCategoryMidiHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Programmwechsel an ein per USB verbundenes Keyboard'**
+  String get settingsCategoryMidiHint;
+
+  /// No description provided for @settingsMidiEnabled.
+  ///
+  /// In de, this message translates to:
+  /// **'MIDI-Programmwechsel'**
+  String get settingsMidiEnabled;
+
+  /// No description provided for @settingsMidiEnabledHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Im Live-Modus wechselt das Keyboard zum Programm, das beim Song hinterlegt ist.'**
+  String get settingsMidiEnabledHint;
+
+  /// No description provided for @settingsMidiConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbunden mit {name}'**
+  String settingsMidiConnected(String name);
+
+  /// No description provided for @settingsMidiNotConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht verbunden'**
+  String get settingsMidiNotConnected;
+
+  /// No description provided for @settingsMidiOutput.
+  ///
+  /// In de, this message translates to:
+  /// **'Ausgang'**
+  String get settingsMidiOutput;
+
+  /// No description provided for @settingsMidiOutputHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Das per USB verbundene Keyboard. setDING verbindet sich von selbst wieder, wenn es eingesteckt wird.'**
+  String get settingsMidiOutputHint;
+
+  /// No description provided for @settingsMidiNoDevices.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein MIDI-Gerät gefunden. Verbinde das Keyboard per USB und suche erneut.'**
+  String get settingsMidiNoDevices;
+
+  /// No description provided for @settingsMidiSearch.
+  ///
+  /// In de, this message translates to:
+  /// **'Erneut suchen'**
+  String get settingsMidiSearch;
+
+  /// No description provided for @settingsMidiOutputMissing.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} (nicht eingesteckt)'**
+  String settingsMidiOutputMissing(String name);
+
+  /// No description provided for @settingsMidiProfile.
+  ///
+  /// In de, this message translates to:
+  /// **'Geräteprofil'**
+  String get settingsMidiProfile;
+
+  /// No description provided for @settingsMidiProfileHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie Keyboard-Programme eingegeben und angezeigt werden. «Allgemein» verwendet Bank Select und Programmnummer und funktioniert mit jedem Keyboard.'**
+  String get settingsMidiProfileHint;
+
+  /// No description provided for @midiProfileNordStage3.
+  ///
+  /// In de, this message translates to:
+  /// **'Nord Stage 3'**
+  String get midiProfileNordStage3;
+
+  /// No description provided for @midiProfileGeneric.
+  ///
+  /// In de, this message translates to:
+  /// **'Allgemein'**
+  String get midiProfileGeneric;
+
+  /// No description provided for @settingsNordAddresses.
+  ///
+  /// In de, this message translates to:
+  /// **'Nord-Adressen'**
+  String get settingsNordAddresses;
+
+  /// No description provided for @settingsNordAddressesHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Ob neue Keyboard-Programme Nord-Programme und Live-Speicher oder Nord-Songs wählen.'**
+  String get settingsNordAddressesHint;
+
+  /// No description provided for @nordAddressesPrograms.
+  ///
+  /// In de, this message translates to:
+  /// **'Programme'**
+  String get nordAddressesPrograms;
+
+  /// No description provided for @nordAddressesSongs.
+  ///
+  /// In de, this message translates to:
+  /// **'Songs'**
+  String get nordAddressesSongs;
+
+  /// No description provided for @settingsMidiChannel.
+  ///
+  /// In de, this message translates to:
+  /// **'MIDI-Kanal'**
+  String get settingsMidiChannel;
+
+  /// No description provided for @settingsMidiChannelHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Kanal, auf dem das Keyboard empfängt.'**
+  String get settingsMidiChannelHint;
+
+  /// No description provided for @settingsMidiNordHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Schalte am Nord Stage 3 im MIDI-Menü den Empfang von «Program Change» ein und stelle hier den globalen Kanal des Nord ein. Die Nummerierung der Nord-Songs hängt von der OS-Version des Nord ab (geprüft mit OS 2.54); passt ein Song nicht, verwende das Profil «Allgemein».'**
+  String get settingsMidiNordHint;
 }
 
 class _AppLocalizationsDelegate

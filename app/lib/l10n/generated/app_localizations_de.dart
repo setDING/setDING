@@ -3030,4 +3030,82 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get settingsDevelopmentNote =>
       'Diese Funktionen sind zum Testen da. Sie können sich ändern, fehlerhaft sein oder wieder verschwinden. Nicht für Auftritte gedacht. Ausblenden mit «Entwickler-Modus» unter Allgemein.';
+
+  @override
+  String get settingsSectionMidi => 'Keyboard (MIDI)';
+
+  @override
+  String get settingsCategoryMidiHint =>
+      'Programmwechsel an ein per USB verbundenes Keyboard';
+
+  @override
+  String get settingsMidiEnabled => 'MIDI-Programmwechsel';
+
+  @override
+  String get settingsMidiEnabledHint =>
+      'Im Live-Modus wechselt das Keyboard zum Programm, das beim Song hinterlegt ist.';
+
+  @override
+  String settingsMidiConnected(String name) {
+    return 'Verbunden mit $name';
+  }
+
+  @override
+  String get settingsMidiNotConnected => 'Nicht verbunden';
+
+  @override
+  String get settingsMidiOutput => 'Ausgang';
+
+  @override
+  String get settingsMidiOutputHint =>
+      'Das per USB verbundene Keyboard. setDING verbindet sich von selbst wieder, wenn es eingesteckt wird.';
+
+  @override
+  String get settingsMidiNoDevices =>
+      'Kein MIDI-Gerät gefunden. Verbinde das Keyboard per USB und suche erneut.';
+
+  @override
+  String get settingsMidiSearch => 'Erneut suchen';
+
+  @override
+  String settingsMidiOutputMissing(String name) {
+    return '$name (nicht eingesteckt)';
+  }
+
+  @override
+  String get settingsMidiProfile => 'Geräteprofil';
+
+  @override
+  String get settingsMidiProfileHint =>
+      'Wie Keyboard-Programme eingegeben und angezeigt werden. «Allgemein» verwendet Bank Select und Programmnummer und funktioniert mit jedem Keyboard.';
+
+  @override
+  String get midiProfileNordStage3 => 'Nord Stage 3';
+
+  @override
+  String get midiProfileGeneric => 'Allgemein';
+
+  @override
+  String get settingsNordAddresses => 'Nord-Adressen';
+
+  @override
+  String get settingsNordAddressesHint =>
+      'Ob neue Keyboard-Programme Nord-Programme und Live-Speicher oder Nord-Songs wählen.';
+
+  @override
+  String get nordAddressesPrograms => 'Programme';
+
+  @override
+  String get nordAddressesSongs => 'Songs';
+
+  @override
+  String get settingsMidiChannel => 'MIDI-Kanal';
+
+  @override
+  String get settingsMidiChannelHint =>
+      'Der Kanal, auf dem das Keyboard empfängt.';
+
+  @override
+  String get settingsMidiNordHint =>
+      'Schalte am Nord Stage 3 im MIDI-Menü den Empfang von «Program Change» ein und stelle hier den globalen Kanal des Nord ein. Die Nummerierung der Nord-Songs hängt von der OS-Version des Nord ab (geprüft mit OS 2.54); passt ein Song nicht, verwende das Profil «Allgemein».';
 }

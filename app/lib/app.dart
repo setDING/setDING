@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart'
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'l10n/generated/app_localizations.dart';
+import 'midi/midi_connection.dart';
 import 'settings/settings.dart';
 import 'sync/sync_controller.dart';
 import 'ui/deep_links.dart';
@@ -40,6 +41,9 @@ class _SetdingAppState extends ConsumerState<SetdingApp> {
     final locale = ref.watch(settingsProvider.select((s) => s.locale));
     // Keeps the sync running while the app is open (ADR-0004).
     ref.watch(syncControllerProvider);
+    // Keeps the keyboard connected from app start (ADR-0039), without
+    // rebuilding the app when its state changes.
+    ref.listen(midiConnectionProvider, (_, _) {});
     return MaterialApp(
       navigatorKey: _navigatorKey,
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,

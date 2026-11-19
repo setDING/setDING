@@ -3011,4 +3011,81 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsDevelopmentNote =>
       'These features are for testing. They may change, have bugs or disappear again. Not meant for performances. Hide them with “Developer mode” under General.';
+
+  @override
+  String get settingsSectionMidi => 'Keyboard (MIDI)';
+
+  @override
+  String get settingsCategoryMidiHint =>
+      'Program changes to a keyboard connected by USB';
+
+  @override
+  String get settingsMidiEnabled => 'MIDI program changes';
+
+  @override
+  String get settingsMidiEnabledHint =>
+      'In live mode, the keyboard switches to the program stored for each song.';
+
+  @override
+  String settingsMidiConnected(String name) {
+    return 'Connected to $name';
+  }
+
+  @override
+  String get settingsMidiNotConnected => 'Not connected';
+
+  @override
+  String get settingsMidiOutput => 'Output';
+
+  @override
+  String get settingsMidiOutputHint =>
+      'The keyboard connected by USB. setDING connects to it again by itself when it is plugged in.';
+
+  @override
+  String get settingsMidiNoDevices =>
+      'No MIDI device found. Connect the keyboard by USB and search again.';
+
+  @override
+  String get settingsMidiSearch => 'Search again';
+
+  @override
+  String settingsMidiOutputMissing(String name) {
+    return '$name (not plugged in)';
+  }
+
+  @override
+  String get settingsMidiProfile => 'Device profile';
+
+  @override
+  String get settingsMidiProfileHint =>
+      'How keyboard programs are entered and shown. “Generic” uses bank select and program number and works with any keyboard.';
+
+  @override
+  String get midiProfileNordStage3 => 'Nord Stage 3';
+
+  @override
+  String get midiProfileGeneric => 'Generic';
+
+  @override
+  String get settingsNordAddresses => 'Nord addresses';
+
+  @override
+  String get settingsNordAddressesHint =>
+      'Whether new keyboard programs select Nord programs and live memories, or Nord songs.';
+
+  @override
+  String get nordAddressesPrograms => 'Programs';
+
+  @override
+  String get nordAddressesSongs => 'Songs';
+
+  @override
+  String get settingsMidiChannel => 'MIDI channel';
+
+  @override
+  String get settingsMidiChannelHint => 'The channel the keyboard receives on.';
+
+  @override
+  String get settingsMidiNordHint =>
+      'On the Nord Stage 3, switch on “Program Change” reception in its MIDI menu, and set the channel here to the Nord\'s global channel. The numbering of Nord songs depends on the Nord\'s OS version (checked with OS 2.54); if a song does not match, use the profile “Generic”.';
 }
