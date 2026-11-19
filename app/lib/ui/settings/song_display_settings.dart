@@ -78,6 +78,7 @@ String _colorName(AppLocalizations l10n, SongColor color) => switch (color) {
   SongColor.purple => l10n.songColorPurple,
   SongColor.pink => l10n.songColorPink,
   SongColor.grey => l10n.songColorGrey,
+  SongColor.blackWhite => l10n.songColorBlackWhite,
 };
 
 /// The song of the preview on this device (UI state, not synced): a song

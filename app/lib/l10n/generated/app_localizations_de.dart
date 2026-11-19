@@ -2683,6 +2683,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get songColorGrey => 'Grau';
 
   @override
+  String get songColorBlackWhite => 'Schwarz/Weiss';
+
+  @override
   String get songDisplayCustomise => 'Anpassen';
 
   @override

@@ -69,6 +69,17 @@ void main() {
         songColorTones[SongColor.teal]!.dark,
       );
     });
+
+    test('black/white is black on light and white on dark backgrounds', () {
+      expect(
+        songColorValue(SongColor.blackWhite, Brightness.light),
+        const Color(0xFF000000),
+      );
+      expect(
+        songColorValue(SongColor.blackWhite, Brightness.dark),
+        const Color(0xFFFFFFFF),
+      );
+    });
   });
 
   group('precedence over the song (ADR-0033)', () {

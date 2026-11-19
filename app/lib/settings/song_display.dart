@@ -8,7 +8,18 @@ export 'package:chordpro/chordpro.dart' show SectionRole;
 /// Colours of the song display palette (ADR-0033). Each colour has a light
 /// and a dark tone (`ui/render/song_display_colors.dart`); [auto] keeps the
 /// colour the element has without a style.
-enum SongColor { auto, blue, amber, red, green, teal, purple, pink, grey }
+enum SongColor {
+  auto,
+  blue,
+  amber,
+  red,
+  green,
+  teal,
+  purple,
+  pink,
+  grey,
+  blackWhite,
+}
 
 /// Size of chords relative to their normal size.
 enum ChordSize {
