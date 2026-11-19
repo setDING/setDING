@@ -1589,5 +1589,12 @@
     }
   },
   "midiTestSong": "Song",
-  "midiTestPart": "Teil"
+  "midiTestPart": "Teil",
+  "settingsDeveloperMode": "Entwickler-Modus",
+  "settingsDeveloperModeHint": "Zeigt die Kategorie «Entwicklung» mit experimentellen Funktionen zum Testen. Für den normalen Gebrauch nicht nötig.",
+  "settingsGroupDevelopment": "Entwicklung",
+  "settingsSectionDevelopment": "Test-Funktionen",
+  "settingsCategoryDevelopmentHint": "Experimentell, nur zum Testen",
+  "settingsDevelopmentNoteTitle": "Experimentelle Funktionen",
+  "settingsDevelopmentNote": "Diese Funktionen sind zum Testen da. Sie können sich ändern, fehlerhaft sein oder wieder verschwinden. Nicht für Auftritte gedacht. Ausblenden mit «Entwickler-Modus» unter Allgemein."
 }

@@ -1374,5 +1374,12 @@
     }
   },
   "midiTestSong": "Song",
-  "midiTestPart": "Part"
+  "midiTestPart": "Part",
+  "settingsDeveloperMode": "Developer mode",
+  "settingsDeveloperModeHint": "Shows the “Development” category with experimental features for testing. Not needed for normal use.",
+  "settingsGroupDevelopment": "Development",
+  "settingsSectionDevelopment": "Test features",
+  "settingsCategoryDevelopmentHint": "Experimental, for testing only",
+  "settingsDevelopmentNoteTitle": "Experimental features",
+  "settingsDevelopmentNote": "These features are for testing. They may change, have bugs or disappear again. Not meant for performances. Hide them with “Developer mode” under General."
 }

@@ -136,6 +136,7 @@ class AppSettings {
     this.showOutsideSequence = true,
     this.annotationFinger = false,
     this.songDisplay = SongDisplay.classic,
+    this.developerMode = false,
   });
 
   final LanguageMode language;
@@ -234,6 +235,10 @@ class AppSettings {
   /// devices without a stylus (ADR-0032).
   final bool annotationFinger;
 
+  /// Shows the *Development* settings category with experimental and test
+  /// features, e.g. the MIDI test; off for normal users (#559).
+  final bool developerMode;
+
   /// Styles of the song display per section type (ADR-0033).
   final SongDisplay songDisplay;
 
@@ -324,6 +329,7 @@ class AppSettings {
     bool? showOutsideSequence,
     bool? annotationFinger,
     SongDisplay? songDisplay,
+    bool? developerMode,
   }) => AppSettings(
     language: language ?? this.language,
     notation: notation ?? this.notation,
@@ -362,6 +368,7 @@ class AppSettings {
     showOutsideSequence: showOutsideSequence ?? this.showOutsideSequence,
     annotationFinger: annotationFinger ?? this.annotationFinger,
     songDisplay: songDisplay ?? this.songDisplay,
+    developerMode: developerMode ?? this.developerMode,
   );
 
   /// Which settings follow the person (synced with the account) and which
@@ -411,6 +418,8 @@ class AppSettings {
     'showOutsideSequence': SettingSyncScope.personal,
     // Song display styles (ADR-0033): a reading habit of the person.
     'songDisplay': SettingSyncScope.personal,
+    // Developer mode (#559): a choice of the person, on every device.
+    'developerMode': SettingSyncScope.personal,
   };
 
   /// The keys of [scope].
@@ -457,6 +466,7 @@ class AppSettings {
     'showOutsideSequence': showOutsideSequence,
     'annotationFinger': annotationFinger,
     'songDisplay': songDisplay.toJsonString(),
+    'developerMode': developerMode,
   };
 
   /// Settings from JSON values; a missing key, a value of the wrong type or
@@ -551,6 +561,7 @@ class AppSettings {
       showAnnotations: flag('showAnnotations', d.showAnnotations),
       showOutsideSequence: flag('showOutsideSequence', d.showOutsideSequence),
       annotationFinger: flag('annotationFinger', d.annotationFinger),
+      developerMode: flag('developerMode', d.developerMode),
       songDisplay: switch (json['songDisplay']) {
         final String v => SongDisplay.fromJsonString(v),
         _ => d.songDisplay,
