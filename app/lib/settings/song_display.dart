@@ -450,13 +450,14 @@ Map<SectionRole, TypeStyle> presetTypes(SongDisplayPreset preset) {
     indent: SectionIndent.normal,
   );
   const barred = SectionStyle(bar: true, indent: SectionIndent.normal);
-  // Everything black on light and white on dark, only the chords bold.
+  // Everything black on light and white on dark; chords and the large
+  // headings bold.
   const blackWhite = SectionStyle(
     chordColor: SongColor.blackWhite,
     textColor: SongColor.blackWhite,
     labelColor: SongColor.blackWhite,
+    labelSize: LabelSize.large,
     barColor: SongColor.blackWhite,
-    labelBold: false,
   );
   return switch (preset) {
     SongDisplayPreset.classic ||
