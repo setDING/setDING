@@ -765,6 +765,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         screen.width > screen.height;
 
     return Scaffold(
+      // The on-screen keyboard of a text annotation (#570) covers the page
+      // instead of shrinking it: a smaller page would lay the song out
+      // anew. The text field lifts itself above the keyboard.
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Column(
           children: [

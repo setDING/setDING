@@ -11,7 +11,7 @@ const annotationToolbarButtonSize = 56.0;
 const _iconSize = 32.0;
 
 /// The tools of drawing mode in live mode (ADR-0032): pen, highlighter,
-/// erasers, lasso and stamps, colour and size, the selection's actions,
+/// text, erasers, lasso and stamps, colour and size, the selection's actions,
 /// undo/redo and "done".
 class AnnotationToolbar extends StatelessWidget {
   const AnnotationToolbar({
@@ -68,6 +68,11 @@ class AnnotationToolbar extends StatelessWidget {
                     DrawingTool.highlighter,
                     const Icon(Icons.border_color),
                     l10n.annotationHighlighter,
+                  ),
+                  tool(
+                    DrawingTool.text,
+                    const Icon(Icons.text_fields),
+                    l10n.annotationText,
                   ),
                   tool(
                     DrawingTool.eraser,

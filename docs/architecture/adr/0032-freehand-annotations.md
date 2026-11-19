@@ -182,6 +182,8 @@ copies the current owner's annotations with the song.
   (translucent, drawn behind the text), **stroke eraser** (removes the whole
   stroke it touches) and **partial eraser** (splits strokes), **lasso** to
   select strokes and move, resize, recolour or delete them.
+- **Text** (added in #570, see the decision log): a tap opens a text field;
+  the typed text is placed like a stamp.
 - **Stamps** placed with a tap, then movable and resizable like strokes:
   - *music marks*: fermata, breath mark, crescendo, decrescendo,
     ritardando, accent;
@@ -307,6 +309,22 @@ release (ADR-0028); no minimum client version change (ADR-0029).
   shows "nearly full" from 80 % and "full" beyond 1 MB, and a change that
   would grow the strokes beyond the limit is not stored (undo history
   unchanged); erasing always works.
+- 2026-11-19: Owner decision (#570): a **text tool** in drawing mode. A tap
+  opens a text field at that spot; text typed with the on-screen or a
+  hardware keyboard is stored as a stroke of the new tool `text` (one
+  point, the text's top left corner; `width` is the font size; the field
+  `text` holds the lines, at most 500 characters). It is placed, anchored,
+  moved, resized, recoloured and erased like a stamp; a tap on a text with
+  the text tool edits it, and emptying it erases it. Multi-line: **Enter
+  stores** the text, **Shift+Enter** starts a new line, a check button
+  stores it with the on-screen keyboard, Escape drops the input, a tap
+  beside the field stores it. The text is part of the freehand layer and
+  separate from the personal song note ("My notes", ADR-0006); text notes
+  in the flow of the song stay a possible follow-up. Older clients ignore
+  the unknown tool (they already skip unknown tools), so this is a minor
+  change (ADR-0028). Live mode no longer shrinks its page when the
+  on-screen keyboard opens (that would lay the song out anew); the text
+  field lifts itself above the keyboard instead.
 
 ## Open points
 

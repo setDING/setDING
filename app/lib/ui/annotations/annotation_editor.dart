@@ -3,13 +3,14 @@ import 'package:material_ui/material_ui.dart';
 import '../../data/annotation_repository.dart';
 
 /// What a pointer does in drawing mode (ADR-0032).
-enum DrawingTool { pen, highlighter, eraser, partialEraser, lasso, stamp }
+enum DrawingTool { pen, highlighter, text, eraser, partialEraser, lasso, stamp }
 
 /// Line widths per [DrawingTool] at the three sizes, in units of the font
 /// size (so they look alike on every layout).
 const _penWidths = [0.07, 0.12, 0.2];
 const _highlighterWidths = [0.6, 0.9, 1.3];
 const _stampSizes = [1.4, 2.0, 2.8];
+const _textSizes = [0.75, 1.0, 1.35];
 
 /// One undoable change: the strokes of [songId] and [target] before and
 /// after it.
@@ -105,6 +106,9 @@ class AnnotationEditor extends ChangeNotifier {
 
   /// Size of a new stamp at [font] in logical pixels.
   double stampSize(double font) => font * _stampSizes[_size];
+
+  /// Font size of a new text at [font] in logical pixels.
+  double textSize(double font) => font * _textSizes[_size];
 
   /// Radius of the erasers at [font].
   double eraserRadius(double font) => font * (0.35 + 0.25 * _size);

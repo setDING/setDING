@@ -62,6 +62,35 @@ void main() {
       expect(back.layout, isNull);
     });
 
+    test('a text keeps its lines; an empty one is dropped (#570)', () {
+      const s = AnnotationStroke(
+        id: 't',
+        tool: AnnotationTool.text,
+        color: 1,
+        width: 0.02,
+        points: [0.2, 0.3],
+        text: 'leise!\n2× Intro',
+      );
+      final json = s.toJson();
+      expect(json['text'], 'leise!\n2× Intro');
+      final back = AnnotationStroke.fromJson('t', json)!;
+      expect(back.tool, AnnotationTool.text);
+      expect(back.text, 'leise!\n2× Intro');
+      expect(back.points, [0.2, 0.3]);
+      expect(back, s);
+      expect(AnnotationStroke.fromJson('t', {...json, 'text': '  \n'}), isNull);
+      expect(AnnotationStroke.fromJson('t', {...json}..remove('text')), isNull);
+      expect(
+        pen().toJson().containsKey('text'),
+        isFalse,
+        reason: 'only a text stores one',
+      );
+      expect(
+        AnnotationStroke.fromJson('a', {...pen().toJson(), 'text': 'x'})!.text,
+        isNull,
+      );
+    });
+
     test('points are quantized to 1/10000 of the page width', () {
       final s = pen(points: const [0.123456, 2.5, -0.00004, 0.99999]);
       expect(AnnotationStroke.fromJson('a', s.toJson())!.points, [

@@ -3986,6 +3986,18 @@ abstract class AppLocalizations {
   /// **'Leuchtstift'**
   String get annotationHighlighter;
 
+  /// No description provided for @annotationText.
+  ///
+  /// In de, this message translates to:
+  /// **'Text'**
+  String get annotationText;
+
+  /// No description provided for @annotationTextHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Text eingeben'**
+  String get annotationTextHint;
+
   /// No description provided for @annotationEraser.
   ///
   /// In de, this message translates to:
