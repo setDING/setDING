@@ -111,6 +111,13 @@ return 404 and links still work through the landing page, the `setding://` schem
 pasting and the QR code. Cloudflare must not challenge `/invite/*` and `/.well-known/*`
 (only `/_/*` is behind Access, see step 3).
 
+**Invitation key:** `make server-install` adds a random `SETDING_INVITE_KEY` to
+`/etc/setding/pocketbase.env` once if it is missing. The server encrypts the stored
+invitation tokens with it, so admins can show an active link again (ADR-0005). Keep
+the line when editing the file; the backups (`pb_data`) do not contain it. A new or
+lost key only means that links created before cannot be shown again; they keep
+working.
+
 ## 6. Web client (owner, once)
 
 The web client (ADR-0018) is a Flutter web build that `make server-install` builds
@@ -160,7 +167,7 @@ link to it.
 ## 7. Registration and email verification (owner)
 
 Who may create accounts is set in `/etc/setding/pocketbase.env` (ADR-0024);
-`make server-install` never changes this file:
+`make server-install` only adds a missing `SETDING_INVITE_KEY` (section 5) and leaves the rest of this file alone:
 
 ```bash
 # invite_only (default): accounts only with an invitation link, new

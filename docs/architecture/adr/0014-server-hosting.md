@@ -81,6 +81,7 @@ server details (OS, Docker, domain/HTTPS) and the backup concept. They are now k
 - 2026-11-17: **ADR-0024** (accepted): `pocketbase.env` gains `REALCHORD_REGISTRATION` (`invite_only` default / `open`) and `REALCHORD_EMAIL_VERIFICATION` (`off` default / `required`, needs SMTP); a `make` target creates founder invitations; rate limits for sign-up and invitation routes.
 - 2026-11-17: App renamed to **setDING** (#318): public hostnames `api.setding.app` and `app.setding.app`, settings in `/etc/setding/pocketbase.env` with `SETDING_*` variables, backup units `setding-backup.*`. The RealChord installation on CT 600 is replaced by a fresh one (#320).
 - 2026-11-17: Production is updated with `make server-release` after a release (#345): it waits for the tag's green release build and the GitHub Release, deploys from a clean checkout of the tag and stamps the version (`pb_hooks/setding-version.txt`, reported as `serverVersion` by `/api/setding/config`). `make server-install` deploys the working tree, stamped `X.Y.Z-dev+<commit>`, for the first install, test instances and emergencies.
+- 2026-11-19: `make server-install` generates `SETDING_INVITE_KEY` in `pocketbase.env` once if it is missing (#579, ADR-0005); it encrypts the stored invitation tokens and is not part of the `pb_data` backups. The rest of the file stays the owner's.
 
 ## Open points
 

@@ -20,7 +20,8 @@ final invitesProvider = FutureProvider.autoDispose
 
 /// "Invite people" and the list of links of an organization (ADR-0005,
 /// ADR-0017): links are valid for 7 days, can be used several times and be
-/// revoked; admins see who joined with which link.
+/// revoked; admins see the valid ones with their band and who joined, and
+/// can show a link again (issue #579).
 class InvitesSection extends ConsumerWidget {
   const InvitesSection({super.key, required this.organizationId, this.bandId});
 
@@ -47,11 +48,31 @@ class InvitesSection extends ConsumerWidget {
     );
   }
 
+  /// Shows a valid link again, with its QR code (issue #579).
+  Future<void> _show(BuildContext context, WidgetRef ref, String id) async {
+    CreatedInvite? invite;
+    final ok = await runBandAction(
+      context,
+      () async =>
+          invite = await ref.read(syncBackendProvider).fetchInviteLink(id),
+    );
+    if (!ok) {
+      // Revoked or expired meanwhile: drop it from the list.
+      ref.invalidate(invitesProvider(_key));
+      return;
+    }
+    if (!context.mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (_) => InviteLinkDialog(invite: invite!),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    // The server lists only valid links (issue #579).
     final invites = ref.watch(invitesProvider(_key)).value ?? const [];
-    final now = DateTime.now();
     final date = MaterialLocalizations.of(context).formatMediumDate;
 
     return Column(
@@ -77,50 +98,58 @@ class InvitesSection extends ConsumerWidget {
         for (final i in invites)
           ListTile(
             key: Key('invite-${i.id}'),
-            leading: Icon(switch (i.statusAt(now)) {
-              InviteStatus.valid => Icons.link,
-              InviteStatus.expired => Icons.timer_off_outlined,
-              // Only founder invitations are used up; admins do not list them.
-              InviteStatus.revoked || InviteStatus.used => Icons.link_off,
-            }),
-            title: Text(switch (i.statusAt(now)) {
-              InviteStatus.valid => l10n.inviteStatusValid(
-                date(i.expires.toLocal()),
-              ),
-              InviteStatus.expired => l10n.inviteStatusExpired,
-              InviteStatus.revoked ||
-              InviteStatus.used => l10n.inviteStatusRevoked,
-            }),
-            subtitle: Text(
-              l10n.inviteJoined(i.joined.length, i.joined.join(', ')),
+            leading: const Icon(Icons.link),
+            // In the organization, say where the link leads; in a band,
+            // that is the band itself.
+            title: Text(
+              bandId != null
+                  ? l10n.inviteStatusValid(date(i.expires.toLocal()))
+                  : (i.bandName ?? l10n.inviteOrganizationOnly),
             ),
-            trailing: i.statusAt(now) != InviteStatus.valid
-                ? null
-                : TextButton(
-                    onPressed: () async {
-                      final ok = await confirm(
-                        context,
-                        title: l10n.inviteRevokeTitle,
-                        message: l10n.inviteRevokeMessage,
-                        action: l10n.inviteRevoke,
-                      );
-                      if (!ok || !context.mounted) return;
-                      await runBandAction(
-                        context,
-                        () => ref.read(syncBackendProvider).revokeInvite(i.id),
-                      );
-                      ref.invalidate(invitesProvider(_key));
-                    },
-                    child: Text(l10n.inviteRevoke),
-                  ),
+            subtitle: Text(
+              bandId != null
+                  ? l10n.inviteJoined(i.joined.length, i.joined.join(', '))
+                  : '${l10n.inviteStatusValid(date(i.expires.toLocal()))}'
+                        ' · '
+                        '${l10n.inviteJoined(i.joined.length, i.joined.join(', '))}',
+            ),
+            onTap: () => _show(context, ref, i.id),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  key: Key('invite-show-${i.id}'),
+                  tooltip: l10n.inviteShow,
+                  icon: const Icon(Icons.qr_code),
+                  onPressed: () => _show(context, ref, i.id),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    final ok = await confirm(
+                      context,
+                      title: l10n.inviteRevokeTitle,
+                      message: l10n.inviteRevokeMessage,
+                      action: l10n.inviteRevoke,
+                    );
+                    if (!ok || !context.mounted) return;
+                    await runBandAction(
+                      context,
+                      () => ref.read(syncBackendProvider).revokeInvite(i.id),
+                    );
+                    ref.invalidate(invitesProvider(_key));
+                  },
+                  child: Text(l10n.inviteRevoke),
+                ),
+              ],
+            ),
           ),
       ],
     );
   }
 }
 
-/// Shows a new link once: as text to copy and as a QR code for joining in
-/// person at a rehearsal.
+/// Shows a link as text to copy and as a QR code for joining in person at a
+/// rehearsal.
 class InviteLinkDialog extends StatelessWidget {
   const InviteLinkDialog({super.key, required this.invite});
 

@@ -1772,7 +1772,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String inviteLinkHint(String date) {
-    return 'Share the link, e.g. in a group chat, or let people scan the QR code. Valid until $date. The link is only shown now.';
+    return 'Share the link, e.g. in a group chat, or let people scan the QR code. Valid until $date. You can show it again from the list of links.';
   }
 
   @override
@@ -1790,10 +1790,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get inviteStatusExpired => 'Expired';
+  String get inviteOrganizationOnly => 'Organization only';
 
   @override
-  String get inviteStatusRevoked => 'Revoked';
+  String get inviteShow => 'Show link';
 
   @override
   String inviteJoined(int count, String names) {
@@ -1879,6 +1879,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get inviteErrorUsed =>
       'This invitation was used already. Please ask for a new link.';
+
+  @override
+  String get inviteErrorNotStored =>
+      'This link cannot be shown again. Create a new one.';
 
   @override
   String get accountErrorInvitationRequired =>

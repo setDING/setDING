@@ -31,7 +31,7 @@ The schema is defined as versioned migrations in
 | `songs` | `band`, `chordpro`, `title` (redundant copy for the admin UI and conflict dialogs) | ✓ |
 | `attachments` | `band`, `song`, `name`, `file` (PDF, max. 20 MB, protected), `pages`, `size_bytes` | ✓ |
 | `setlists` | `band`, `name`, `gig_date`, `venue`, `items` (JSON array) | ✓ |
-| `invites` | `band`, `token_hash` (hidden), `expires`, `revoked`, `created_by` | – |
+| `invites` | `band`, `token_hash` (hidden), `token_enc` (hidden, encrypted token, ADR-0005), `expires`, `revoked`, `created_by` | – |
 
 Other song metadata (artist, key, tempo, tags, sort fields) is derived from the
 ChordPro text in the client (ADR-0003) and not stored on the server.

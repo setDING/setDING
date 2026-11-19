@@ -168,6 +168,7 @@ backend: ## Start a local PocketBase with the schema and hooks from server/ (PB_
 		echo "PocketBase $(PB_VERSION): http://127.0.0.1:$(BACKEND_PORT)/_/  (data: $(DATA_DIR)/pb_data)" && \
 		echo "Create a superuser: $$pb superuser upsert EMAIL PASS --dir $(DATA_DIR)/pb_data" && \
 		SETDING_PUBLIC_DIR=$(APP)/build/web SETDING_REGISTRATION=$(BACKEND_REGISTRATION) \
+		SETDING_INVITE_KEY=local-development-key \
 		$$pb serve --dir $(DATA_DIR)/pb_data --hooksDir $(ROOT)/server/pb_hooks \
 			--migrationsDir $(ROOT)/server/pb_migrations --http 127.0.0.1:$(BACKEND_PORT) \
 			--publicDir $(APP)/build/web

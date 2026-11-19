@@ -37,7 +37,8 @@ class PocketBase {
 
   /// [environment] is added to the server's environment (e.g. deep-link
   /// settings read by the hooks). Unless it says otherwise, sign-up is open
-  /// (`SETDING_REGISTRATION=open`, ADR-0024), so tests can create users.
+  /// (`SETDING_REGISTRATION=open`, ADR-0024), so tests can create users, and
+  /// invitation tokens are stored encrypted (`SETDING_INVITE_KEY`).
   /// [publicDir] holds static files (e.g. the web client, ADR-0018).
   /// The rate limits are turned off after the start unless [rateLimits].
   ///
@@ -50,7 +51,11 @@ class PocketBase {
     bool rateLimits = false,
     String? migrationsBefore,
   }) async {
-    environment = {'SETDING_REGISTRATION': 'open', ...?environment};
+    environment = {
+      'SETDING_REGISTRATION': 'open',
+      'SETDING_INVITE_KEY': 'test-invite-key',
+      ...?environment,
+    };
     final root = _repositoryRoot();
     final binary = await _binary(root);
     final dir = await Directory.systemTemp.createTemp('setding-pb-');

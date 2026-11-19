@@ -34,6 +34,7 @@ String backendErrorText(
   BackendErrorKind.inviteExpired => l10n.inviteErrorExpired,
   BackendErrorKind.inviteRevoked => l10n.inviteErrorRevoked,
   BackendErrorKind.inviteUsed => l10n.inviteErrorUsed,
+  BackendErrorKind.inviteNotStored => l10n.inviteErrorNotStored,
   BackendErrorKind.invitationRequired => l10n.accountErrorInvitationRequired,
   BackendErrorKind.emailNotVerified => l10n.accountErrorEmailNotVerified,
   BackendErrorKind.founderInvitationRequired =>

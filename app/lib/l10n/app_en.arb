@@ -708,7 +708,7 @@
   "inviteCreate": "Invite people",
   "inviteCreateHint": "Creates a link that is valid for 7 days. Whoever opens it becomes a member of the organization.",
   "inviteLinkTitle": "Invitation link",
-  "inviteLinkHint": "Share the link, e.g. in a group chat, or let people scan the QR code. Valid until {date}. The link is only shown now.",
+  "inviteLinkHint": "Share the link, e.g. in a group chat, or let people scan the QR code. Valid until {date}. You can show it again from the list of links.",
   "@inviteLinkHint": {
     "placeholders": {
       "date": {
@@ -727,8 +727,8 @@
       }
     }
   },
-  "inviteStatusExpired": "Expired",
-  "inviteStatusRevoked": "Revoked",
+  "inviteOrganizationOnly": "Organization only",
+  "inviteShow": "Show link",
   "inviteJoined": "{count, plural, =0{Nobody joined yet} =1{Joined: {names}} other{{count} joined: {names}}}",
   "@inviteJoined": {
     "placeholders": {
@@ -781,6 +781,7 @@
   "joinSignInFirst": "Sign in or create an account to join.",
   "joinHaveAccount": "I already have an account",
   "inviteErrorUsed": "This invitation was used already. Please ask for a new link.",
+  "inviteErrorNotStored": "This link cannot be shown again. Create a new one.",
   "accountErrorInvitationRequired": "This server only accepts new accounts with an invitation link.",
   "accountErrorEmailNotVerified": "Please confirm your email address first. We sent you a new mail.",
   "bandErrorFounderInvitationRequired": "New organizations need a founder invitation from the server operator.",

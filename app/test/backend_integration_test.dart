@@ -265,8 +265,16 @@ void main() {
       final links = await ann.fetchInvites(orgId);
       expect(links.single.joined, ['Bob']);
       expect(links.single.statusAt(DateTime.now()), InviteStatus.valid);
+      expect(links.single.bandName, isNull);
+      expect((await ann.fetchInviteLink(links.single.id)).url, invite.url);
 
       await ann.revokeInvite(links.single.id);
+      // Revoked links are neither listed nor shown again (issue #579).
+      expect(await ann.fetchInvites(orgId), isEmpty);
+      expect(
+        await kindOf(() => ann.fetchInviteLink(links.single.id)),
+        BackendErrorKind.inviteRevoked,
+      );
       final (carol, _) = await signedIn('Carol');
       expect(
         await kindOf(() => carol.redeemInvite(token)),
@@ -340,6 +348,14 @@ void main() {
       expect((await bob.fetchInvites(orgId, bandId: bandId)).map((i) => i.id), [
         link.id,
       ]);
+      // Admins see the band of a link and leaders show theirs again.
+      final listed = await ann.fetchInvites(orgId);
+      expect(listed.firstWhere((i) => i.id == link.id).bandName, 'Rock');
+      expect((await bob.fetchInviteLink(link.id)).url, link.url);
+      expect(
+        await kindOf(() => bob.fetchInviteLink(orgLink.id)),
+        BackendErrorKind.inviteUnknown,
+      );
 
       // Own songs: recorded creator, editable until someone else edits.
       final song = await bob.pushSong(

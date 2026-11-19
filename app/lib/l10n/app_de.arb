@@ -857,7 +857,7 @@
   "inviteCreate": "Personen einladen",
   "inviteCreateHint": "Erstellt einen Link, der 7 Tage gilt. Wer ihn öffnet, wird Mitglied der Organisation.",
   "inviteLinkTitle": "Einladungslink",
-  "inviteLinkHint": "Teile den Link, z. B. im Gruppenchat, oder lass den QR-Code scannen. Gültig bis {date}. Der Link wird nur jetzt angezeigt.",
+  "inviteLinkHint": "Teile den Link, z. B. im Gruppenchat, oder lass den QR-Code scannen. Gültig bis {date}. Du kannst ihn in der Liste der Einladungslinks wieder anzeigen.",
   "@inviteLinkHint": {
     "placeholders": {
       "date": {
@@ -876,8 +876,8 @@
       }
     }
   },
-  "inviteStatusExpired": "Abgelaufen",
-  "inviteStatusRevoked": "Widerrufen",
+  "inviteOrganizationOnly": "Nur Organisation",
+  "inviteShow": "Link anzeigen",
   "inviteJoined": "{count, plural, =0{Noch niemand beigetreten} =1{Beigetreten: {names}} other{{count} beigetreten: {names}}}",
   "@inviteJoined": {
     "placeholders": {
@@ -930,6 +930,7 @@
   "joinSignInFirst": "Melde dich an oder erstelle ein Konto, um beizutreten.",
   "joinHaveAccount": "Ich habe schon ein Konto",
   "inviteErrorUsed": "Diese Einladung wurde bereits verwendet. Bitte um einen neuen Link.",
+  "inviteErrorNotStored": "Dieser Link kann nicht mehr angezeigt werden. Erstelle einen neuen.",
   "accountErrorInvitationRequired": "Dieser Server nimmt neue Konten nur mit einem Einladungslink an.",
   "accountErrorEmailNotVerified": "Bitte bestätige zuerst deine E-Mail-Adresse. Wir haben dir eine neue Mail geschickt.",
   "bandErrorFounderInvitationRequired": "Neue Organisationen brauchen eine Gründungs-Einladung vom Server-Betreiber.",
