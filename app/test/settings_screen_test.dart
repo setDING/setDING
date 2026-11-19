@@ -48,18 +48,18 @@ void main() {
     }
     await reveal(
       tester,
-      find.byKey(const Key('settings-category-display')),
+      find.byKey(const Key('settings-category-general')),
       delta: -100,
     );
-    // The first category, the display, is shown first.
-    expect(find.text('Chord notation'), findsOneWidget);
-    expect(find.text('Not signed in'), findsNothing);
-
-    await tester.tap(find.byKey(const Key('settings-category-general')));
-    await tester.pumpAndSettle();
+    // The first category, general, is shown first.
     expect(find.text('Language'), findsOneWidget);
     expect(find.text('Theme'), findsOneWidget);
     expect(find.text('Not signed in'), findsNothing);
+
+    await tester.tap(find.byKey(const Key('settings-category-display')));
+    await tester.pumpAndSettle();
+    expect(find.text('Chord notation'), findsOneWidget);
+    expect(find.text('Language'), findsNothing);
 
     await reveal(tester, find.byKey(const Key('settings-category-live')));
     await tester.tap(find.byKey(const Key('settings-category-live')));
@@ -90,10 +90,10 @@ void main() {
     Finder category(String name) => find.byKey(Key('settings-category-$name'));
     final order = [
       group('personal'),
+      category('general'),
       category('display'),
       category('songDisplay'),
       category('musician'),
-      category('general'),
       group('device'),
       category('live'),
       category('about'),
@@ -105,7 +105,7 @@ void main() {
       expect(top(order[i - 1]), lessThan(top(order[i])));
     }
     // The first category is selected.
-    expect(find.text('Chord notation'), findsOneWidget);
+    expect(find.text('Language'), findsOneWidget);
     await app.dispose(tester);
   });
 
@@ -305,7 +305,7 @@ void main() {
     await tester.runAsync(app.backend.signOut);
     await tester.pumpAndSettle();
     expect(bands, findsNothing);
-    expect(find.text('Chord notation'), findsOneWidget);
+    expect(find.text('Language'), findsOneWidget);
     await app.dispose(tester);
   });
 
