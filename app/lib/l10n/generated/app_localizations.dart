@@ -5340,6 +5340,198 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Schalte am Nord Stage 3 im MIDI-Menü den Empfang von «Program Change» ein und stelle hier den globalen Kanal des Nord ein. Die Nummerierung der Nord-Songs hängt von der OS-Version des Nord ab (geprüft mit OS 2.54); passt ein Song nicht, verwende das Profil «Allgemein».'**
   String get settingsMidiNordHint;
+
+  /// No description provided for @midiProgramTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Keyboard-Programm'**
+  String get midiProgramTitle;
+
+  /// No description provided for @midiProgramHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Wird im Live-Modus ans Keyboard gesendet, wenn dieser Song an der Reihe ist.'**
+  String get midiProgramHint;
+
+  /// No description provided for @midiProgramNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Keines: das Keyboard behält seinen Klang'**
+  String get midiProgramNone;
+
+  /// No description provided for @midiProgramChoose.
+  ///
+  /// In de, this message translates to:
+  /// **'Programm wählen'**
+  String get midiProgramChoose;
+
+  /// No description provided for @midiProgramRemove.
+  ///
+  /// In de, this message translates to:
+  /// **'Programm entfernen'**
+  String get midiProgramRemove;
+
+  /// No description provided for @midiProgramTest.
+  ///
+  /// In de, this message translates to:
+  /// **'Test'**
+  String get midiProgramTest;
+
+  /// No description provided for @midiProgramTestHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Sendet das Programm einmal ans Keyboard'**
+  String get midiProgramTestHint;
+
+  /// No description provided for @midiProgramNotConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'Keyboard nicht verbunden'**
+  String get midiProgramNotConnected;
+
+  /// No description provided for @midiProgramOff.
+  ///
+  /// In de, this message translates to:
+  /// **'MIDI-Programmwechsel sind auf diesem Gerät ausgeschaltet (Einstellungen: Keyboard (MIDI)).'**
+  String get midiProgramOff;
+
+  /// No description provided for @midiProgramSent.
+  ///
+  /// In de, this message translates to:
+  /// **'An {device} gesendet'**
+  String midiProgramSent(String device);
+
+  /// No description provided for @midiProgramSendFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Programm konnte nicht gesendet werden'**
+  String get midiProgramSendFailed;
+
+  /// No description provided for @midiProgramKindProgram.
+  ///
+  /// In de, this message translates to:
+  /// **'Programm'**
+  String get midiProgramKindProgram;
+
+  /// No description provided for @midiProgramKindLive.
+  ///
+  /// In de, this message translates to:
+  /// **'Live-Speicher'**
+  String get midiProgramKindLive;
+
+  /// No description provided for @midiProgramKindSong.
+  ///
+  /// In de, this message translates to:
+  /// **'Song'**
+  String get midiProgramKindSong;
+
+  /// No description provided for @midiProgramKindGeneric.
+  ///
+  /// In de, this message translates to:
+  /// **'Andere Werte'**
+  String get midiProgramKindGeneric;
+
+  /// No description provided for @midiProgramBank.
+  ///
+  /// In de, this message translates to:
+  /// **'Bank'**
+  String get midiProgramBank;
+
+  /// No description provided for @midiProgramPageButton.
+  ///
+  /// In de, this message translates to:
+  /// **'Seite (Zeile) und Taste'**
+  String get midiProgramPageButton;
+
+  /// No description provided for @midiProgramSongNumber.
+  ///
+  /// In de, this message translates to:
+  /// **'Song'**
+  String get midiProgramSongNumber;
+
+  /// No description provided for @midiProgramPreviousSong.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorheriger Song'**
+  String get midiProgramPreviousSong;
+
+  /// No description provided for @midiProgramNextSong.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächster Song'**
+  String get midiProgramNextSong;
+
+  /// No description provided for @midiProgramPart.
+  ///
+  /// In de, this message translates to:
+  /// **'Teil'**
+  String get midiProgramPart;
+
+  /// No description provided for @midiProgramMsb.
+  ///
+  /// In de, this message translates to:
+  /// **'Bank Select MSB (optional)'**
+  String get midiProgramMsb;
+
+  /// No description provided for @midiProgramLsb.
+  ///
+  /// In de, this message translates to:
+  /// **'Bank Select LSB (optional)'**
+  String get midiProgramLsb;
+
+  /// No description provided for @midiProgramNumber.
+  ///
+  /// In de, this message translates to:
+  /// **'Programm'**
+  String get midiProgramNumber;
+
+  /// No description provided for @midiProgramRange.
+  ///
+  /// In de, this message translates to:
+  /// **'{min}–{max}'**
+  String midiProgramRange(int min, int max);
+
+  /// No description provided for @midiProgramOutOfRange.
+  ///
+  /// In de, this message translates to:
+  /// **'Eine Zahl von {min} bis {max} eingeben'**
+  String midiProgramOutOfRange(int min, int max);
+
+  /// No description provided for @midiProgramValueNord.
+  ///
+  /// In de, this message translates to:
+  /// **'Programm {name}'**
+  String midiProgramValueNord(String name);
+
+  /// No description provided for @midiProgramValueLive.
+  ///
+  /// In de, this message translates to:
+  /// **'Live-Speicher {number}'**
+  String midiProgramValueLive(int number);
+
+  /// No description provided for @midiProgramValueSong.
+  ///
+  /// In de, this message translates to:
+  /// **'Song {song}, Teil {part}'**
+  String midiProgramValueSong(int song, int part);
+
+  /// No description provided for @midiProgramValueGeneric.
+  ///
+  /// In de, this message translates to:
+  /// **'Programm {program}'**
+  String midiProgramValueGeneric(int program);
+
+  /// No description provided for @midiProgramValueMsb.
+  ///
+  /// In de, this message translates to:
+  /// **'MSB {value}'**
+  String midiProgramValueMsb(int value);
+
+  /// No description provided for @midiProgramValueLsb.
+  ///
+  /// In de, this message translates to:
+  /// **'LSB {value}'**
+  String midiProgramValueLsb(int value);
 }
 
 class _AppLocalizationsDelegate

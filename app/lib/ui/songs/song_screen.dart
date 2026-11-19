@@ -34,6 +34,7 @@ import '../../sync/sync_controller.dart';
 import 'chordpro_problems_badge.dart';
 import 'conflict_banner.dart';
 import 'image_attachment_view.dart';
+import 'midi_program_field.dart';
 import 'band_arrangement_panel.dart';
 import 'song_editor_screen.dart';
 import 'song_links_panel.dart';
@@ -267,6 +268,14 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   song: parsed,
                   onChanged: _updateOverlay,
                 ),
+                // The keyboard program (ADR-0039).
+                if (MidiProgramField.visible(
+                  midiEnabled: settings.midiEnabled,
+                  program: overlay.midi,
+                )) ...[
+                  const SizedBox(height: 16),
+                  MidiProgramField(songId: song.id, program: overlay.midi),
+                ],
                 const SizedBox(height: 16),
                 _AnnotationsSection(
                   songId: song.id,
@@ -686,7 +695,13 @@ class _AnnotationsSection extends ConsumerWidget {
           children: [
             const Icon(Icons.draw_outlined, size: 20),
             const SizedBox(width: 8),
-            Text(l10n.annotationsPanelTitle, style: theme.textTheme.titleSmall),
+            // Wraps in narrow panels (phones).
+            Flexible(
+              child: Text(
+                l10n.annotationsPanelTitle,
+                style: theme.textTheme.titleSmall,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 4),

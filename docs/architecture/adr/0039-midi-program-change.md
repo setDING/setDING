@@ -292,6 +292,21 @@ settings** (layer 4b, ADR-0027), never synced:
   prototype's MIDI test screen stays in *Test features* (developer mode) as a
   diagnostic for new keyboards and platforms, which settles the question of
   the prototype screen (#558).
+- 2026-11-19: Keyboard program field (#563): the song screen's personal
+  adjustments panel shows *Keyboard program* while MIDI program changes are
+  on for this device or the song has a program
+  (`lib/ui/songs/midi_program_field.dart`). The value is shown in the
+  profile's terms (e.g. "Program K:33", "Song 2, part 3", "Live memory 3";
+  values the Nord does not send with their raw numbers) and can be removed.
+  It is chosen in a dialog without typing for the Nord: the kind (Program
+  and Live memory with the Nord addresses *Programs*, Song with *Songs*,
+  plus the kind of the stored value, so a value of the other mode stays
+  editable), bank chips A–P with a 5 × 5 grid of page × button and a
+  preview, live memory 1–5, or a song stepper with a slider and part 1–5;
+  the generic profile has MSB and LSB (optional, 0–127) and program
+  1–128 fields with validation. "Test" sends the program once through
+  `MidiConnection.send` and is enabled only while the output is connected;
+  opening, choosing or saving sends nothing.
 
 - 2026-11-19: Sending in live mode (#564). Live mode feeds `LiveMidiSender`
   (`lib/midi/live_midi_sender.dart`) with the current set item. A song sends
