@@ -7,10 +7,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../sync/auth_providers.dart' show authProvider;
 import '../sync/sync_backend.dart' show defaultServerUrl;
 import '../data/database.dart' show localOwnerId;
+import '../midi/midi_profile.dart';
 import 'display_options.dart';
 import 'song_display.dart';
 import 'user_settings_store.dart';
 
+export '../midi/midi_profile.dart' show MidiProfileKind, NordAddresses;
 export 'display_options.dart';
 export 'song_display.dart';
 export 'user_settings_store.dart';
@@ -137,6 +139,11 @@ class AppSettings {
     this.annotationFinger = false,
     this.songDisplay = SongDisplay.classic,
     this.developerMode = false,
+    this.midiEnabled = false,
+    this.midiOutputName = '',
+    this.midiProfile = MidiProfileKind.nordStage3,
+    this.nordAddresses = NordAddresses.programs,
+    this.midiChannel = 1,
   });
 
   final LanguageMode language;
@@ -242,6 +249,28 @@ class AppSettings {
   /// Styles of the song display per section type (ADR-0033).
   final SongDisplay songDisplay;
 
+  // MIDI program changes to a keyboard (ADR-0039), on this device.
+
+  /// Program changes are sent to the keyboard; off by default.
+  final bool midiEnabled;
+
+  /// The MIDI output, remembered by its name (device ids change when it is
+  /// plugged in again); empty for none.
+  final String midiOutputName;
+
+  /// The device profile that translates programs for the musician.
+  final MidiProfileKind midiProfile;
+
+  /// What new programs address on a Nord Stage 3.
+  final NordAddresses nordAddresses;
+
+  /// The MIDI channel 1–16, the keyboard's global channel.
+  final int midiChannel;
+
+  /// The profile of [midiProfile] and [nordAddresses].
+  MidiProfile get midiDeviceProfile =>
+      MidiProfile.of(midiProfile, nordAddresses: nordAddresses);
+
   static const maxAudioLatencyMs = 500;
 
   /// Whether the instrument is drums (ADR-0026).
@@ -330,6 +359,11 @@ class AppSettings {
     bool? annotationFinger,
     SongDisplay? songDisplay,
     bool? developerMode,
+    bool? midiEnabled,
+    String? midiOutputName,
+    MidiProfileKind? midiProfile,
+    NordAddresses? nordAddresses,
+    int? midiChannel,
   }) => AppSettings(
     language: language ?? this.language,
     notation: notation ?? this.notation,
@@ -369,6 +403,11 @@ class AppSettings {
     annotationFinger: annotationFinger ?? this.annotationFinger,
     songDisplay: songDisplay ?? this.songDisplay,
     developerMode: developerMode ?? this.developerMode,
+    midiEnabled: midiEnabled ?? this.midiEnabled,
+    midiOutputName: midiOutputName ?? this.midiOutputName,
+    midiProfile: midiProfile ?? this.midiProfile,
+    nordAddresses: nordAddresses ?? this.nordAddresses,
+    midiChannel: midiChannel ?? this.midiChannel,
   );
 
   /// Which settings follow the person (synced with the account) and which
@@ -420,6 +459,13 @@ class AppSettings {
     'songDisplay': SettingSyncScope.personal,
     // Developer mode (#559): a choice of the person, on every device.
     'developerMode': SettingSyncScope.personal,
+    // MIDI (ADR-0039): the keyboard on the stage is connected to this
+    // device.
+    'midiEnabled': SettingSyncScope.device,
+    'midiOutputName': SettingSyncScope.device,
+    'midiProfile': SettingSyncScope.device,
+    'nordAddresses': SettingSyncScope.device,
+    'midiChannel': SettingSyncScope.device,
   };
 
   /// The keys of [scope].
@@ -467,6 +513,11 @@ class AppSettings {
     'annotationFinger': annotationFinger,
     'songDisplay': songDisplay.toJsonString(),
     'developerMode': developerMode,
+    'midiEnabled': midiEnabled,
+    'midiOutputName': midiOutputName,
+    'midiProfile': midiProfile.name,
+    'nordAddresses': nordAddresses.name,
+    'midiChannel': midiChannel,
   };
 
   /// Settings from JSON values; a missing key, a value of the wrong type or
@@ -562,6 +613,18 @@ class AppSettings {
       showOutsideSequence: flag('showOutsideSequence', d.showOutsideSequence),
       annotationFinger: flag('annotationFinger', d.annotationFinger),
       developerMode: flag('developerMode', d.developerMode),
+      midiEnabled: flag('midiEnabled', d.midiEnabled),
+      midiOutputName: text('midiOutputName', d.midiOutputName),
+      midiProfile: pick(MidiProfileKind.values, 'midiProfile', d.midiProfile),
+      nordAddresses: pick(
+        NordAddresses.values,
+        'nordAddresses',
+        d.nordAddresses,
+      ),
+      midiChannel: (number('midiChannel')?.toInt() ?? d.midiChannel).clamp(
+        1,
+        16,
+      ),
       songDisplay: switch (json['songDisplay']) {
         final String v => SongDisplay.fromJsonString(v),
         _ => d.songDisplay,

@@ -77,7 +77,8 @@ class MidiProgram {
 /// same blocks, with 5 parts per song: song 26 part 1 is CC 32 = 1, program
 /// change 0. A program change 50–54 without bank select is program C:11–C:15,
 /// not a live memory; the Nord itself sends CC 0 = 6 with program change 0–4
-/// for its live memories, which [live] uses (still to be checked, #512).
+/// for its live memories, which [live] uses (confirmed on Nord OS 2.54,
+/// #512). `NordStage3Profile` in `midi_profile.dart` translates back.
 abstract final class NordStage3 {
   static const banks = [
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', //

@@ -1596,5 +1596,41 @@
   "settingsSectionDevelopment": "Test-Funktionen",
   "settingsCategoryDevelopmentHint": "Experimentell, nur zum Testen",
   "settingsDevelopmentNoteTitle": "Experimentelle Funktionen",
-  "settingsDevelopmentNote": "Diese Funktionen sind zum Testen da. Sie können sich ändern, fehlerhaft sein oder wieder verschwinden. Nicht für Auftritte gedacht. Ausblenden mit «Entwickler-Modus» unter Allgemein."
+  "settingsDevelopmentNote": "Diese Funktionen sind zum Testen da. Sie können sich ändern, fehlerhaft sein oder wieder verschwinden. Nicht für Auftritte gedacht. Ausblenden mit «Entwickler-Modus» unter Allgemein.",
+  "settingsSectionMidi": "Keyboard (MIDI)",
+  "settingsCategoryMidiHint": "Programmwechsel an ein per USB verbundenes Keyboard",
+  "settingsMidiEnabled": "MIDI-Programmwechsel",
+  "settingsMidiEnabledHint": "Im Live-Modus wechselt das Keyboard zum Programm, das beim Song hinterlegt ist.",
+  "settingsMidiConnected": "Verbunden mit {name}",
+  "@settingsMidiConnected": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsMidiNotConnected": "Nicht verbunden",
+  "settingsMidiOutput": "Ausgang",
+  "settingsMidiOutputHint": "Das per USB verbundene Keyboard. setDING verbindet sich von selbst wieder, wenn es eingesteckt wird.",
+  "settingsMidiNoDevices": "Kein MIDI-Gerät gefunden. Verbinde das Keyboard per USB und suche erneut.",
+  "settingsMidiSearch": "Erneut suchen",
+  "settingsMidiOutputMissing": "{name} (nicht eingesteckt)",
+  "@settingsMidiOutputMissing": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsMidiProfile": "Geräteprofil",
+  "settingsMidiProfileHint": "Wie Keyboard-Programme eingegeben und angezeigt werden. «Allgemein» verwendet Bank Select und Programmnummer und funktioniert mit jedem Keyboard.",
+  "midiProfileNordStage3": "Nord Stage 3",
+  "midiProfileGeneric": "Allgemein",
+  "settingsNordAddresses": "Nord-Adressen",
+  "settingsNordAddressesHint": "Ob neue Keyboard-Programme Nord-Programme und Live-Speicher oder Nord-Songs wählen.",
+  "nordAddressesPrograms": "Programme",
+  "nordAddressesSongs": "Songs",
+  "settingsMidiChannel": "MIDI-Kanal",
+  "settingsMidiChannelHint": "Der Kanal, auf dem das Keyboard empfängt.",
+  "settingsMidiNordHint": "Schalte am Nord Stage 3 im MIDI-Menü den Empfang von «Program Change» ein und stelle hier den globalen Kanal des Nord ein. Die Nummerierung der Nord-Songs hängt von der OS-Version des Nord ab (geprüft mit OS 2.54); passt ein Song nicht, verwende das Profil «Allgemein»."
 }

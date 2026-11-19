@@ -9,6 +9,10 @@ class FakeMidiOutput implements MidiOutput {
   List<MidiPortInfo> ports = const [];
   final connected = <String>{};
   final sent = <List<int>>[];
+
+  /// The device each message of [sent] went to.
+  final sentTo = <String?>[];
+  final connects = <String>[];
   final disconnected = <String>[];
 
   /// Connecting fails, e.g. the device is busy.
@@ -18,8 +22,11 @@ class FakeMidiOutput implements MidiOutput {
 
   void receive(List<int> data) => _received.add(Uint8List.fromList(data));
 
+  /// Replaces the devices, as when one is plugged in or removed; a removed
+  /// device is no longer connected.
   void plugIn(List<MidiPortInfo> ports) {
     this.ports = ports;
+    connected.removeWhere((id) => !ports.any((p) => p.id == id));
     _changes.add(null);
   }
 
@@ -31,6 +38,7 @@ class FakeMidiOutput implements MidiOutput {
 
   @override
   Future<void> connect(String id) async {
+    connects.add(id);
     if (failConnect) throw StateError('device busy');
     connected.add(id);
   }
@@ -44,7 +52,10 @@ class FakeMidiOutput implements MidiOutput {
   @override
   void send(Uint8List bytes, {String? id}) {
     // Like the plugin: without a connected device nothing is sent.
-    if (connected.isNotEmpty) sent.add(bytes.toList());
+    if (connected.isNotEmpty) {
+      sent.add(bytes.toList());
+      sentTo.add(id);
+    }
   }
 
   @override

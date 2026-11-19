@@ -189,7 +189,7 @@ settings** (layer 4b, ADR-0027), never synced:
   and do not erase it, so this is a **minor** version (ADR-0028); no new minimum
   client version (ADR-0029).
 - Local schema: `personal_overlays.midi`; the overlay sync pushes and pulls it.
-- New device settings category (or group in *Screen & live mode*) with UI texts in
+- New device settings category *Keyboard (MIDI)* with UI texts in
   `app_de.arb` and `app_en.arb`.
 - Tests: profile translation (Nord Stage 3 programs and songs, generic, both
   directions), the
@@ -272,6 +272,23 @@ settings** (layer 4b, ADR-0027), never synced:
   pulls it with the rest of the overlay (last writer wins); the song
   repository offers `midiProgram`, `watchMidiProgram`, `setMidiProgram` and
   `removeMidiProgram`.
+- 2026-11-19: Device profiles, MIDI settings and connection (#562). The MIDI
+  settings got their **own device settings category "Keyboard (MIDI)"**, not a
+  group in *Screen & live mode*: MIDI program changes on/off, the output
+  (current USB MIDI devices, remembered by name), the profile, the Nord
+  addresses (Nord profile only) and the channel, with the hints on "Program
+  Change" reception, the Nord's global channel and the OS-dependent song
+  numbering. `MidiProfile` (`lib/midi/midi_profile.dart`) translates between
+  `MidiProgram` and the musician's terms (`NordProgram`, `NordLiveMemory`,
+  `NordSong`, `GenericProgram`); with the Nord profile, the kind of a stored
+  value follows its MSB (0 program, 1 song, 6 live memory), and values the Nord
+  does not send are shown as generic. The live memories belong to the Nord
+  addresses *Programs*. `MidiConnection` (`midiConnectionProvider`) connects
+  from app start while MIDI is on, reconnects when the device is plugged in
+  again, and sends on the configured channel; errors are only logged. The
+  prototype's MIDI test screen stays in *Test features* (developer mode) as a
+  diagnostic for new keyboards and platforms, which settles the question of
+  the prototype screen (#558).
 
 ## Open points
 
