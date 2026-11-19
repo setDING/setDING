@@ -18,40 +18,25 @@ enum MidiGuideAnswer {
   };
 }
 
-/// One step of a guided test: what is sent and what should happen, or
-/// (a receive step, #613) what to choose on the keyboard and which program
-/// it should send then.
+/// One step of a guided send test: what is sent and what should happen.
 class MidiGuideStep {
   const MidiGuideStep({
     required this.title,
     required this.expected,
-    required Uint8List Function(int channel) this.bytes,
-  }) : receive = null;
-
-  /// The tester chooses [title] on the keyboard; it should send [receive].
-  const MidiGuideStep.receive({
-    required this.title,
-    required this.expected,
-    required MidiProgram this.receive,
-  }) : bytes = null;
+    required this.bytes,
+  });
 
   final String Function(AppLocalizations l10n) title;
   final String Function(AppLocalizations l10n) expected;
-
-  /// What a send step sends; null for a receive step.
-  final Uint8List Function(int channel)? bytes;
-
-  /// The program a receive step expects from the keyboard; null for a send
-  /// step.
-  final MidiProgram? receive;
-
-  bool get receives => receive != null;
+  final Uint8List Function(int channel) bytes;
 
   List<MidiGuideAnswer> get answers => MidiGuideAnswer.values;
 }
 
 /// The guided tests of the MIDI test screen (#613): per keyboard, sending
-/// to it and receiving what is chosen on it (#608).
+/// to it in steps, and a free receive (#615): whatever is chosen on the
+/// keyboard is shown in the profile's terms, to compare with its display
+/// (#608).
 enum MidiGuide {
   nordSend,
   nordReceive,
@@ -83,9 +68,9 @@ enum MidiGuide {
 
   List<MidiGuideStep> steps() => switch (this) {
     nordSend => nordStage3Guide(),
-    nordReceive => nordStage3ReceiveGuide(),
     motifSend => motifXfGuide(),
-    motifReceive => motifXfReceiveGuide(),
+    // A free receive has no steps.
+    nordReceive || motifReceive => const [],
   };
 }
 
@@ -96,33 +81,6 @@ String midiValues(MidiProgram program) => [
   if (program.lsb case final lsb?) 'CC 32 = $lsb',
   'PC ${program.program}',
 ].join(', ');
-
-/// A receive step for [program], named in the terms of [profile].
-MidiGuideStep _receive(MidiProfile profile, MidiProgram program) =>
-    MidiGuideStep.receive(
-      title: (l10n) =>
-          l10n.midiGuideChoose(midiPatchLabel(l10n, profile.toPatch(program))),
-      expected: (l10n) => l10n.midiGuideReceiveExpected(midiValues(program)),
-      receive: program,
-    );
-
-/// What the Nord Stage 3 sends when a program, live memory or song is
-/// chosen on it (#608): programs across the blocks of 125, a live memory
-/// and a song part.
-List<MidiGuideStep> nordStage3ReceiveGuide() {
-  const nord = NordStage3Profile();
-  return [
-    for (final program in [
-      NordStage3.program(0, 1, 1),
-      NordStage3.program(10, 3, 3),
-      NordStage3.program(15, 5, 5),
-      NordStage3.live(2),
-      NordStage3.song(2, 3),
-      NordStage3.program(0, 1, 1),
-    ])
-      _receive(nord, program),
-  ];
-}
 
 /// The guided test of a Motif XF (#591, #613): voices and performances
 /// with the profile's mode change, across the kinds of banks.
@@ -152,26 +110,6 @@ List<MidiGuideStep> motifXfGuide() {
       MotifXf.performance(1, 17),
     ])
       step(program),
-  ];
-}
-
-/// What the Motif XF sends when a voice or performance is chosen on it
-/// (#608, #613): preset, user and GM voices, twice in one bank (is the bank
-/// select sent again?), and performances.
-List<MidiGuideStep> motifXfReceiveGuide() {
-  const motif = MotifXfProfile();
-  return [
-    for (final program in [
-      MotifXf.voice(0, 0),
-      MotifXf.voice(2, 36),
-      // Same bank, next number.
-      MotifXf.voice(2, 37),
-      MotifXf.voice(8, 0),
-      MotifXf.voice(12, 0),
-      MotifXf.performance(0, 0),
-      MotifXf.performance(1, 17),
-    ])
-      _receive(motif, program),
   ];
 }
 

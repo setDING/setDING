@@ -429,6 +429,12 @@ settings and stored programs are kept.
   the profile's terms, *Nothing arrived* is a tap; a new receiver per step,
   so a bank select of an earlier step does not count). The Motif receive
   test decides whether `MotifXfProfile.takesOver` can be switched on (#608).
+- 2026-11-19: The receive tests became a **free receive** (owner, #615):
+  choosing a given program on the keyboard was cumbersome, turning the dial
+  and the mode buttons is easy. Whatever is chosen on the keyboard is shown
+  in the profile's terms with its raw values, and the tester taps *Matches
+  the display* or *Does not match*; each answer is logged. A program that
+  arrives before an answer replaces the one shown.
 
 ## Open points
 

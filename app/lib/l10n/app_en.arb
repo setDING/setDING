@@ -1308,25 +1308,9 @@
   "midiGuideNordReceive": "Nord Stage 3 – receive",
   "midiGuideMotifSend": "Motif XF – send",
   "midiGuideMotifReceive": "Motif XF – receive",
-  "midiGuideNordReceiveHint": "On the Nord, set “Program Change” in the MIDI menu to “Send” or “Send & Receive”, and set the channel here to the Nord's global channel. Then choose on the Nord what the step says (for the song, switch to song mode first); setDING checks by itself what arrives. The results are kept in the log.",
+  "midiGuideNordReceiveHint": "On the Nord, set “Program Change” in the MIDI menu to “Send” or “Send & Receive”, and set the channel here to the Nord's global channel. Then choose any program, live memory or song part on the Nord, e.g. with the dial or the mode buttons. setDING shows what arrived; tap whether it matches the display. The results are kept in the log.",
   "midiGuideMotifSendHint": "On the Motif XF, under Utility → MIDI: set MIDI IN/OUT to USB, switch on receiving bank select and program change, set the Basic Receive Channel to the channel here and the Device Number to “all” or 1. Tap “Send”, look at the Motif's display and tap what happened. The answers are kept in the log.",
-  "midiGuideMotifReceiveHint": "On the Motif XF, under Utility → MIDI: set MIDI IN/OUT to USB, switch on sending bank select and program change and set the Transmit Channel to the channel here. Then choose on the Motif what the step says – voices in voice mode, performances in performance mode; setDING checks by itself what arrives. The results are kept in the log.",
-  "midiGuideChoose": "Choose on the keyboard: {name}",
-  "@midiGuideChoose": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "midiGuideReceiveExpected": "setDING receives {values}.",
-  "@midiGuideReceiveExpected": {
-    "placeholders": {
-      "values": {
-        "type": "String"
-      }
-    }
-  },
+  "midiGuideMotifReceiveHint": "On the Motif XF, under Utility → MIDI: set MIDI IN/OUT to USB, switch on sending bank select and program change and set the Transmit Channel to the channel here. Then choose any voice or performance on the Motif, also in different banks and twice in the same bank. setDING shows what arrived; tap whether it matches the display. The results are kept in the log.",
   "midiGuideMotifExpected": "The Motif shows {name}.",
   "@midiGuideMotifExpected": {
     "placeholders": {
@@ -1335,20 +1319,39 @@
       }
     }
   },
-  "midiGuideWaiting": "Waiting for the keyboard …",
-  "midiGuideReceivedOk": "received as expected",
-  "midiGuideReceivedOther": "received something else: {name} ({values})",
-  "@midiGuideReceivedOther": {
+  "midiGuideWaiting": "Choose a sound on the keyboard …",
+  "midiGuideFreeReceived": "Received: {name}",
+  "@midiGuideFreeReceived": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "midiGuideMatches": "Matches the display",
+  "midiGuideNoMatch": "Does not match",
+  "midiGuideFreeResult": "Received {name} ({values}): {answer}",
+  "@midiGuideFreeResult": {
     "placeholders": {
       "name": {
         "type": "String"
       },
       "values": {
         "type": "String"
+      },
+      "answer": {
+        "type": "String"
       }
     }
   },
-  "midiGuideReceivedNothing": "Nothing arrived",
+  "midiGuideChecked": "{count, plural, =0{Nothing checked yet} =1{1 sound checked} other{{count} sounds checked}}",
+  "@midiGuideChecked": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "midiGuideStep": "Step {current} of {total}: {title}",
   "@midiGuideStep": {
     "placeholders": {

@@ -2972,7 +2972,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get midiGuideNordReceiveHint =>
-      'On the Nord, set “Program Change” in the MIDI menu to “Send” or “Send & Receive”, and set the channel here to the Nord\'s global channel. Then choose on the Nord what the step says (for the song, switch to song mode first); setDING checks by itself what arrives. The results are kept in the log.';
+      'On the Nord, set “Program Change” in the MIDI menu to “Send” or “Send & Receive”, and set the channel here to the Nord\'s global channel. Then choose any program, live memory or song part on the Nord, e.g. with the dial or the mode buttons. setDING shows what arrived; tap whether it matches the display. The results are kept in the log.';
 
   @override
   String get midiGuideMotifSendHint =>
@@ -2980,17 +2980,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get midiGuideMotifReceiveHint =>
-      'On the Motif XF, under Utility → MIDI: set MIDI IN/OUT to USB, switch on sending bank select and program change and set the Transmit Channel to the channel here. Then choose on the Motif what the step says – voices in voice mode, performances in performance mode; setDING checks by itself what arrives. The results are kept in the log.';
-
-  @override
-  String midiGuideChoose(String name) {
-    return 'Choose on the keyboard: $name';
-  }
-
-  @override
-  String midiGuideReceiveExpected(String values) {
-    return 'setDING receives $values.';
-  }
+      'On the Motif XF, under Utility → MIDI: set MIDI IN/OUT to USB, switch on sending bank select and program change and set the Transmit Channel to the channel here. Then choose any voice or performance on the Motif, also in different banks and twice in the same bank. setDING shows what arrived; tap whether it matches the display. The results are kept in the log.';
 
   @override
   String midiGuideMotifExpected(String name) {
@@ -2998,18 +2988,35 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get midiGuideWaiting => 'Waiting for the keyboard …';
+  String get midiGuideWaiting => 'Choose a sound on the keyboard …';
 
   @override
-  String get midiGuideReceivedOk => 'received as expected';
-
-  @override
-  String midiGuideReceivedOther(String name, String values) {
-    return 'received something else: $name ($values)';
+  String midiGuideFreeReceived(String name) {
+    return 'Received: $name';
   }
 
   @override
-  String get midiGuideReceivedNothing => 'Nothing arrived';
+  String get midiGuideMatches => 'Matches the display';
+
+  @override
+  String get midiGuideNoMatch => 'Does not match';
+
+  @override
+  String midiGuideFreeResult(String name, String values, String answer) {
+    return 'Received $name ($values): $answer';
+  }
+
+  @override
+  String midiGuideChecked(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sounds checked',
+      one: '1 sound checked',
+      zero: 'Nothing checked yet',
+    );
+    return '$_temp0';
+  }
 
   @override
   String midiGuideStep(int current, int total, String title) {
