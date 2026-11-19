@@ -12,7 +12,6 @@ import 'dart:ui' as ui;
 import 'package:setding/data/arrangement_repository.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/data/demo_song.dart';
-import 'package:setding/midi/midi_message.dart';
 import 'package:setding/midi/midi_output.dart';
 import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/ui/bands/band_screen.dart';
