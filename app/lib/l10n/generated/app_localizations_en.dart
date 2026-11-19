@@ -3169,7 +3169,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'The numbering of Nord songs depends on the Nord\'s OS version (checked with OS 2.54). If a song does not match, use the profile “Generic” in the settings.';
 
   @override
-  String get midiProgramOtherKeyboards => 'Other keyboards';
+  String get midiProgramsTitle => 'Keyboard programs';
+
+  @override
+  String midiProgramDevice(String profile) {
+    return 'This device: $profile';
+  }
 
   @override
   String get midiProgramForOtherKeyboard => 'Program for another keyboard';

@@ -162,6 +162,13 @@ mixings have their own MSB/LSB.
   profile id this client does not know (written by a newer client) is
   listed as "Unknown keyboard (id)" with its raw values and can only be
   removed.
+- 2026-11-19: One list (#597). The field (*Keyboard programs*) shows
+  "This device: <profile>" and one *profile: program* row per keyboard
+  instead of the own program plus an *Other keyboards* section: the
+  device's profile first, highlighted with a check mark and listed even
+  without a program ("Choose program"); other profiles only with a
+  program. Every set program has an edit chip and a remove button; "Test"
+  stays on the device's row only.
 
 ## Open points
 
