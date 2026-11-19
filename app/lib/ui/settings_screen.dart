@@ -73,10 +73,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final l10n = AppLocalizations.of(context);
     // After signing out the organizations and bands are no longer listed.
     final signedIn = ref.watch(authProvider.select((u) => u != null));
-    final developer = ref.watch(
-      settingsProvider.select((s) => s.developerMode),
+    final (developer, keyboard) = ref.watch(
+      settingsProvider.select((s) => (s.developerMode, s.isKeyboard)),
     );
-    final selected = _selected.visible(signedIn: signedIn, developer: developer)
+    final selected =
+        _selected.visible(
+          signedIn: signedIn,
+          developer: developer,
+          keyboard: keyboard,
+        )
         ? _selected
         : SettingsCategory.values.first;
     return Scaffold(
@@ -178,12 +183,17 @@ extension on SettingsCategory {
   /// Whether the category is listed: the organizations and bands only for
   /// signed-in users (what they may do there depends on their roles), the
   /// test features only in developer mode (#559).
-  bool visible({required bool signedIn, required bool developer}) =>
-      switch (this) {
-        SettingsCategory.bands => signedIn,
-        SettingsCategory.development => developer,
-        _ => true,
-      };
+  bool visible({
+    required bool signedIn,
+    required bool developer,
+    required bool keyboard,
+  }) => switch (this) {
+    SettingsCategory.bands => signedIn,
+    SettingsCategory.development => developer,
+    // The keyboard MIDI settings only for keyboard players (ADR-0039).
+    SettingsCategory.midi => keyboard,
+    _ => true,
+  };
 
   String hint(AppLocalizations l10n) => switch (this) {
     SettingsCategory.account => l10n.settingsCategoryAccountHint,
@@ -211,14 +221,20 @@ class _CategoryList extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final narrow = selected == null;
     final signedIn = ref.watch(authProvider.select((u) => u != null));
-    final developer = ref.watch(
-      settingsProvider.select((s) => s.developerMode),
+    final (developer, keyboard) = ref.watch(
+      settingsProvider.select((s) => (s.developerMode, s.isKeyboard)),
     );
     final update = ref.watch(updateCheckProvider) != null;
     final items = <Widget>[];
     _CategoryGroup? group;
     for (final c in SettingsCategory.values) {
-      if (!c.visible(signedIn: signedIn, developer: developer)) continue;
+      if (!c.visible(
+        signedIn: signedIn,
+        developer: developer,
+        keyboard: keyboard,
+      )) {
+        continue;
+      }
       if (c.group != group) {
         group = c.group;
         items.add(_GroupHeader(c.group));

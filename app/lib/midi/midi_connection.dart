@@ -66,7 +66,7 @@ class MidiConnection extends Notifier<MidiStatus> {
   @override
   MidiStatus build() {
     final (enabled, name) = ref.watch(
-      settingsProvider.select((s) => (s.midiEnabled, s.midiOutputName)),
+      settingsProvider.select((s) => (s.midiActive, s.midiOutputName)),
     );
     _session = null;
     if (!enabled) return MidiStatus.off;

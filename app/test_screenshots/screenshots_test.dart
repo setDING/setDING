@@ -824,6 +824,7 @@ void main() {
         prefs: {
           'language': lang,
           'themeMode': dark ? 'dark' : 'light',
+          'instrument': 'keyboard',
           'midiEnabled': true,
           'midiOutputName': 'Nord Stage 3',
         },

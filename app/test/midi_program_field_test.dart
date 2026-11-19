@@ -13,6 +13,7 @@ const _nord = MidiPortInfo(id: 'usb-1', name: 'Nord Stage 3', connected: false);
 void main() {
   const midiOn = {
     'language': 'en',
+    'instrument': 'keyboard',
     'midiEnabled': true,
     'midiOutputName': 'Nord Stage 3',
   };
@@ -76,7 +77,22 @@ void main() {
     testWidgets('hidden while MIDI is off and the song has no program', (
       tester,
     ) async {
-      await pumpSong(tester, prefs: {'language': 'en'});
+      await pumpSong(
+        tester,
+        prefs: {'language': 'en', 'instrument': 'keyboard'},
+      );
+      expect(find.byKey(const Key('personal-adjustments')), findsOneWidget);
+      expect(field, findsNothing);
+      await app.dispose(tester);
+    });
+
+    testWidgets('hidden for another instrument, even with MIDI on and a '
+        'stored program (#578)', (tester) async {
+      await pumpSong(
+        tester,
+        prefs: {...midiOn, 'instrument': 'guitar'},
+        program: const MidiProgram(msb: 0, lsb: 2, program: 12),
+      );
       expect(find.byKey(const Key('personal-adjustments')), findsOneWidget);
       expect(field, findsNothing);
       await app.dispose(tester);
@@ -96,7 +112,7 @@ void main() {
         'removable, Test disabled', (tester) async {
       await pumpSong(
         tester,
-        prefs: {'language': 'en'},
+        prefs: {'language': 'en', 'instrument': 'keyboard'},
         program: const MidiProgram(msb: 0, lsb: 2, program: 12),
       );
       expect(field, findsOneWidget);

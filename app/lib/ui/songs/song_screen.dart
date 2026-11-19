@@ -270,6 +270,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                 ),
                 // The keyboard program (ADR-0039).
                 if (MidiProgramField.visible(
+                  keyboard: settings.isKeyboard,
                   midiEnabled: settings.midiEnabled,
                   program: overlay.midi,
                 )) ...[

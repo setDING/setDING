@@ -273,6 +273,15 @@ class AppSettings {
 
   static const maxAudioLatencyMs = 500;
 
+  /// Whether the instrument is keyboard: only then the keyboard MIDI
+  /// settings are offered and used (ADR-0039).
+  bool get isKeyboard => instrument.trim().toLowerCase() == 'keyboard';
+
+  /// Whether MIDI program changes are in use on this device: switched on
+  /// and the instrument is keyboard (ADR-0039). The device settings and the
+  /// stored programs are kept for another instrument.
+  bool get midiActive => midiEnabled && isKeyboard;
+
   /// Whether the instrument is drums (ADR-0026).
   bool get isDrums => instrument.trim().toLowerCase() == 'drums';
 
