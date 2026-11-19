@@ -52,7 +52,6 @@ void main() {
   testWidgets('a chord suggestion is accepted with a tap', (tester) async {
     final (app, controller) = await pumpEditor(tester);
     await type(tester, '{key: G}\n[Em]la [E');
-    // The song's chord comes first.
     final suggestion = find.descendant(
       of: find.byType(ListView),
       matching: find.text('Em'),
@@ -61,6 +60,29 @@ void main() {
     await tester.pumpAndSettle();
     expect(controller.text, '{key: G}\n[Em]la [Em]');
     expect(controller.selection.baseOffset, controller.text.length);
+    await app.dispose(tester);
+  });
+
+  testWidgets('the chord button shows the chord suggestions', (tester) async {
+    final (app, controller) = await pumpEditor(tester);
+    await type(tester, '{key: G}\n[Em]la ');
+    controller.selection = TextSelection.collapsed(
+      offset: controller.text.length,
+    );
+    await tester.pump();
+    await tester.tap(find.widgetWithText(ActionChip, '[ ]'));
+    await tester.pumpAndSettle();
+    expect(controller.text, '{key: G}\n[Em]la []');
+    final list = find.byType(ListView);
+    expect(list, findsOneWidget);
+    expect(
+      find.descendant(of: list, matching: find.text('Am')),
+      findsOneWidget,
+    );
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    expect(controller.text, '{key: G}\n[Em]la [Am]');
     await app.dispose(tester);
   });
 

@@ -93,11 +93,19 @@ void main() {
   });
 
   group('chords', () {
-    test('chords of the song first, then common chords in the key', () {
-      const song = '{key: G}\n[Em]la [Em]li [D]lo [Bb7]x\n[|';
-      final l = labels(song);
-      expect(l.take(3), ['Em', 'D', 'Bb7']);
-      expect(l.skip(3), ['G', 'Am', 'Bm', 'C', 'D7']);
+    test('chords of the song and common chords in the key, sorted', () {
+      const song = '{key: G}\n[Em]la [Em]li [D]lo [Bb7]x [F#m]y\n[|';
+      expect(labels(song), [
+        'Am',
+        'Bb7',
+        'Bm',
+        'C',
+        'D',
+        'D7',
+        'Em',
+        'F#m',
+        'G',
+      ]);
     });
 
     test('filters by the typed prefix, ignoring case', () {
