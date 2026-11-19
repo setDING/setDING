@@ -223,6 +223,68 @@ void main() {
     });
   }
 
+  testWidgets('the band of the arrangement is chosen in the panel', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'currentBandId': 'b1'},
+      user: _bob,
+    );
+    app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+    app.backend.addBand('b2', 'Blues', admin: _ann, organizationId: 'o1');
+    app.backend.addMember('b1', _bob, BandRole.member);
+    app.backend.addMember('b2', _bob, BandRole.member);
+    final id = (await tester.runAsync(() async {
+      final id = await TestApp.songsIn(app, 'o1').createSong(
+        source:
+            '{title: Two Bands}\n{tempo: 100}\n'
+            '{c: Verse}\nthe verse\n\n{c: Bridge}\nthe bridge',
+      );
+      await ArrangementRepository(app.db)
+          .save('b2', id, transpose: 0, sequence: 'V', tempo: 90);
+      return id;
+    }))!;
+    await tester.pumpWidget(app.build(home: SongScreen(songId: id)));
+    await tester.pumpAndSettle();
+
+    // Rock has no arrangement, but Bob can choose another band.
+    await tester.tap(find.byTooltip('Band arrangement'));
+    await tester.pumpAndSettle();
+    expect(find.text('Arrangement of Rock'), findsOneWidget);
+    expect(find.text('As in the song'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('arrangement-band')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Blues').last);
+    await tester.pumpAndSettle();
+    final card = find.byKey(const Key('band-arrangement'));
+    expect(find.text('Arrangement of Blues'), findsOneWidget);
+    expect(
+      find.descendant(of: card, matching: find.textContaining('90 BPM')),
+      findsOneWidget,
+    );
+    // It is the band of the sets tab.
+    expect(app.prefs.getString('currentBandId'), 'b2');
+
+    // A single song played live follows the chosen band's sequence.
+    await tester.tap(find.byTooltip('Close'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.play_arrow));
+    await tester.pumpAndSettle();
+    final live = tester.widget<LiveScreen>(find.byType(LiveScreen));
+    expect(live.items.single.arrangement?.sequence, 'V');
+    await app.dispose(tester);
+  });
+
+  testWidgets('with one band the panel has no band choice', (tester) async {
+    final (app, _) = await start(tester, user: _ann);
+    await tester.tap(find.byTooltip('Band arrangement'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('arrangement-band')), findsNothing);
+    await app.dispose(tester);
+  });
+
   testWidgets('without an arrangement members see the song as written', (
     tester,
   ) async {

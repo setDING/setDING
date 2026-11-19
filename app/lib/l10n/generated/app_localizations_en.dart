@@ -1281,6 +1281,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get arrangementBand => 'Band';
+
+  @override
   String get arrangementAsWritten => 'As in the song';
 
   @override
