@@ -99,8 +99,7 @@ settings** (layer 4b, ADR-0027), never synced:
   - *Programs:* bank A–P, page 1–5 and button 1–5 as on the display (sent as
     CC 0 = 0, CC 32 = number ÷ 125, Program Change = number mod 125, where
     number = bank × 25 + (page − 1) × 5 + button − 1), or live memory 1–5
-    (CC 0 = 6, CC 32 = 0, Program Change 0–4, as far as the prototype confirms
-    it).
+    (CC 0 = 6, CC 32 = 0, Program Change 0–4).
   - *Songs:* song and part 1–5, sent as CC 0 = 1 and the same blocks of 125
     with number = (song − 1) × 5 + part − 1.
   - The full bank select (MSB and LSB) is always sent before the program change,
@@ -257,12 +256,16 @@ settings** (layer 4b, ADR-0027), never synced:
   test only worked because the Nord was in live mode. Live memories now use
   what the Nord sends for them, CC 0 = 6 with PC 0–4; a third, shorter guided
   test checks this and songs with parts.
+- 2026-11-19: Third guided test (#512, Android): all 10 steps as expected.
+  Live memories 1, 3 and 5 with CC 0 = 6, CC 32 = 0, PC 0–4 from program mode,
+  a program afterwards leaves them again; song 2 part 3 and song 26 part 5
+  with CC 0 = 1; CC 3 switches the song mode. The Nord Stage 3 addressing of
+  this ADR is confirmed on Android.
 
 ## Open points
 
-- Prototype results still open: live memories with CC 0 = 6; Windows, Linux
-  and Chrome; the number of songs on the Nord; the Nord OS version of the test
-  keyboard.
+- Prototype results still open: Windows, Linux and Chrome; the number of
+  songs on the Nord; the Nord OS version of the test keyboard.
 - Later stages (issues only when taken up): learning the program from the
   keyboard, program changes per section, page turning by MIDI, Bluetooth, several
   target devices, further device profiles, iOS.
