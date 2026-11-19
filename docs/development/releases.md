@@ -10,8 +10,9 @@ The full sequence and its rules are in the git workflow (section 10); each step
 only after the previous one succeeded:
 
 1. Merge a `chore(release): vX.Y.Z` PR that sets `version: X.Y.Z` in
-   `app/pubspec.yaml`, without a build number (CI sets it). Choose the number by
-   the rules in [Version numbers](#version-numbers).
+   `app/pubspec.yaml`, without a build number (CI sets it), and adds the version's
+   section to [`CHANGELOG.md`](../../CHANGELOG.md) (see [Changelog](#changelog)).
+   Choose the number by the rules in [Version numbers](#version-numbers).
 2. Tag `main` and push the tag:
 
    ```bash
@@ -71,6 +72,43 @@ job are therefore written by a test build on `main`
 or the Android build setup, and when no release has run for a week (GitHub evicts
 unused caches after seven days).
 
+## Changelog
+
+[`CHANGELOG.md`](../../CHANGELOG.md) follows
+[Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/), newest version first.
+**The section of a version is the text of its GitHub Release:** the `publish` job of
+`release.yml` publishes it with `tool/release/changelog.py notes X.Y.Z` (plus the
+compare link) instead of GitHub's generated notes, so the two never differ. A fix to
+the text of a published release is made in `CHANGELOG.md` and copied to the release:
+
+```bash
+tool/release/changelog.py notes X.Y.Z | gh release edit vX.Y.Z --notes-file -
+```
+
+The release PR writes the section; feature PRs do not touch the changelog (parallel
+PRs would conflict in it):
+
+1. `make changelog` drafts it from the commits since the last tag, grouped by
+   category (`feat` → *Added*, `fix` → *Fixed*, `perf`/`refactor`/dependency
+   upgrades/breaking commits → *Changed*) with PR links; commits that are probably
+   not relevant to users are listed in a comment.
+2. Rewrite it for users: one entry per user-visible change in plain words, related
+   PRs merged into one entry, ADR and PR references kept. Leave out what users and
+   server operators do not notice (proposed ADRs, docs of the development process,
+   tests, CI and build changes, `chore(release)`). Website changes count when they
+   are new user documentation.
+3. Add it below `## [Unreleased]` (if any) as `## [X.Y.Z] - YYYY-MM-DD` (release
+   date), with the link `[X.Y.Z]: https://github.com/tafli/setDING/compare/vPREV...vX.Y.Z`
+   at the end of the file.
+
+Categories, in this order, only those with entries: *Update required* (setDING-specific,
+see [Version numbers](#version-numbers)), *Added*, *Changed*, *Deprecated*, *Removed*,
+*Fixed*, *Security*. Incompatible changes start with `**Breaking:**`.
+
+`make check` validates the format and requires a section for the version in
+`app/pubspec.yaml`, so a version bump without a changelog section fails the test
+gate; the release workflow checks the same before it builds.
+
 ## Version numbers
 
 setDING uses Semantic Versioning for the whole product (ADR-0028). The rules are
@@ -85,8 +123,8 @@ about whether devices still work with the server:
 Before 1.0.0, a minor bump also covers incompatible changes. Take the highest bump
 implied by the commits since the last tag (`git log --oneline vLAST..`): `feat` →
 minor, `fix`/`perf` → patch, a breaking commit (`!`) → major (minor before 1.0.0).
-When devices must be updated, start the release notes with an **"Update required"**
-section. The server is deployed from `main`, so a server change must not break
+When devices must be updated, start the changelog section with an
+**`### Update required`** category. The server is deployed from `main`, so a server change must not break
 released clients of the current major version.
 
 ### Releases that require an update
