@@ -208,6 +208,7 @@ void main() {
     await stay(tester);
     expect(find.byKey(const Key('live-midi-connected')), findsOneWidget);
     expect(find.byTooltip('Keyboard connected: Nord Stage 3'), findsOneWidget);
+    expect(find.byKey(const Key('live-midi-program')), findsOneWidget);
     expect(midi.sent, bytes([_piano]));
 
     await tester.tapAt(tester.getCenter(find.byType(PageView)));
@@ -233,6 +234,42 @@ void main() {
     expect(app.midiOutput.sent, isEmpty);
     // No dialog.
     expect(find.byType(AlertDialog), findsNothing);
+    await app.dispose(tester);
+  });
+
+  testWidgets("the indicator shows the current song's program (#605)", (
+    tester,
+  ) async {
+    final app = await start(
+      tester,
+      plugged: false,
+      sources: ['{title: One}\n[C]La', '{title: Two}\n[D]La', null],
+      programs: [_piano, null],
+    );
+    await stay(tester);
+    expect(find.byKey(const Key('live-midi-not-connected')), findsOneWidget);
+    final label = find.byKey(const Key('live-midi-program'));
+    expect(label, findsOneWidget);
+    expect(tester.widget<Text>(label).data, 'Program A:12');
+
+    // A song without a program and a break show none.
+    await tapRight(tester);
+    expect(label, findsNothing);
+    await tapRight(tester);
+    expect(label, findsNothing);
+    await app.dispose(tester);
+  });
+
+  testWidgets('the program shown is the one of the device\'s profile '
+      '(ADR-0042, #605)', (tester) async {
+    final app = await start(
+      tester,
+      prefs: {...midiOn, 'midiProfile': 'generic'},
+      sources: ['{title: One}\n[C]La'],
+      programs: [_organ],
+    );
+    // Only a Nord program: the generic profile shows none.
+    expect(find.byKey(const Key('live-midi-program')), findsNothing);
     await app.dispose(tester);
   });
 
