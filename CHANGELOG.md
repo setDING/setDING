@@ -8,6 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 with the setDING-specific bump rules of
 [ADR-0028](docs/architecture/adr/0028-versioning-scheme.md).
 
+## [0.15.0] - 2026-11-19
+
+### Added
+
+- In live mode, parts outside the sequence are shown dimmed at their place in the song; a personal setting hides them as before ([#551](https://github.com/tafli/setDING/pull/551))
+- The live mode of a single song applies the sequence of the current band, otherwise the song's own `{x_sequence}` ([#553](https://github.com/tafli/setDING/pull/553)); members of several bands choose the band in the song's arrangement panel ([#557](https://github.com/tafli/setDING/pull/557))
+- "What's new" notes are shown once after an app update (ADR-0041) ([#546](https://github.com/tafli/setDING/pull/546))
+- Developer mode in the general settings with a category for test features, starting with a MIDI test screen as prototype of program changes (ADR-0039) ([#513](https://github.com/tafli/setDING/pull/513), [#560](https://github.com/tafli/setDING/pull/560))
+
+### Changed
+
+- Settings order: General first among the personal categories, account and organization categories at the bottom ([#549](https://github.com/tafli/setDING/pull/549), [#555](https://github.com/tafli/setDING/pull/555))
+
+### Fixed
+
+- The click no longer runs ahead when the audio engine stands still ([#547](https://github.com/tafli/setDING/pull/547))
+
 ## [0.14.0] - 2026-11-19
 
 ### Added
@@ -279,6 +296,7 @@ with the setDING-specific bump rules of
 
 - First release, built on GitHub Actions for Linux, Android and Windows ([#138](https://github.com/tafli/setDING/pull/138))
 
+[0.15.0]: https://github.com/tafli/setDING/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/tafli/setDING/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/tafli/setDING/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/tafli/setDING/compare/v0.11.0...v0.12.0
