@@ -81,6 +81,8 @@ Constraints:
 - 2026-11-17: The landing page has no sidebar; a custom header
   (`website/src/components/Header.astro`) links to the documentation and the
   downloads on every page, with a short language switch on phones (#400).
+- 2026-11-19: The header also shows the current version, linking to the news page
+  with the "What's new" notes of every version (ADR-0041, #568).
 
 ## Open points
 
