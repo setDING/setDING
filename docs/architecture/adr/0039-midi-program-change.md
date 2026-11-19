@@ -11,7 +11,7 @@ program on the keyboard by hand while the band waits. Many stage keyboards,
 among them the **Nord Stage 3** of the owner's band, switch programs by MIDI:
 
 - a **Bank Select** (CC 0 = MSB, CC 32 = LSB) followed by a **Program Change**;
-- on the Nord Stage 3 (checked on the keyboard, #512): 400 programs in 16 banks
+- on the Nord Stage 3 (checked on a keyboard with OS 2.54, #512): 400 programs in 16 banks
   A–P of 25 (5 pages of 5 buttons, the display shows e.g. `K:33`), counted
   through and sent in blocks of 125: CC 0 = 0, CC 32 = block 0–3, Program Change
   = place in the block 0–124. Songs use CC 0 = 1 and the same blocks with 5
@@ -260,12 +260,12 @@ settings** (layer 4b, ADR-0027), never synced:
   Live memories 1, 3 and 5 with CC 0 = 6, CC 32 = 0, PC 0–4 from program mode,
   a program afterwards leaves them again; song 2 part 3 and song 26 part 5
   with CC 0 = 1; CC 3 switches the song mode. The Nord Stage 3 addressing of
-  this ADR is confirmed on Android.
+  this ADR is confirmed on Android. The test keyboard runs Nord OS 2.54.
 
 ## Open points
 
 - Prototype results still open: Windows, Linux and Chrome; the number of
-  songs on the Nord; the Nord OS version of the test keyboard.
+  songs on the Nord.
 - Later stages (issues only when taken up): learning the program from the
   keyboard, program changes per section, page turning by MIDI, Bluetooth, several
   target devices, further device profiles, iOS.
