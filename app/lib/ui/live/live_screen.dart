@@ -18,6 +18,8 @@ import '../../data/attachment_storage.dart';
 import '../../data/database.dart';
 import '../../data/song_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
+import '../../midi/live_midi_sender.dart';
+import '../../midi/midi_connection.dart';
 import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../annotations/annotated_page.dart';
@@ -253,6 +255,13 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     settings: () => ref.read(settingsProvider),
   );
 
+  /// Sends the keyboard program of the current song (ADR-0039).
+  late final LiveMidiSender _midi = LiveMidiSender(
+    enabled: () => ref.read(midiConnectionProvider).enabled,
+    program: ref.read(songRepositoryProvider).midiProgram,
+    send: (program) => ref.read(midiConnectionProvider.notifier).send(program),
+  );
+
   /// The screen stays on while live mode is open (ADR-0007).
   late final StageWakeLock _wakeLock = ref.read(stageWakeLockProvider);
 
@@ -311,6 +320,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     _sync.pause();
     FocusManager.instance.addEarlyKeyEventHandler(_onKey);
     _preparation.focus(_index);
+    _midi.show(_index, _items[_index].song?.id);
     // With the automatic start the first song counts in.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _beat.onItemShown(_index);
@@ -353,6 +363,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       c.dispose();
     }
     _preparation.dispose();
+    _midi.dispose();
     _beat.dispose();
     _annotations
       ..removeListener(_onAnnotations)
@@ -744,6 +755,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       settingsProvider.select((s) => s.showSongMap),
     );
     final web = ref.watch(webClientProvider);
+    final midi = ref.watch(midiConnectionProvider);
     // Small screens in landscape (ADR-0026): the set list shows what comes
     // next; the line below only shows for its notices, so the set has room.
     final screen = MediaQuery.sizeOf(context);
@@ -825,6 +837,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                 if (i > _index) _songPageFor(i).first();
                                 _index = i;
                                 _preparation.focus(i);
+                                // Only another set item sends its
+                                // keyboard program, never a page within a
+                                // song or a prepared neighbour (ADR-0039).
+                                _midi.show(i, items[i].song?.id);
                                 // Another item stops the beat (ADR-0026).
                                 _beat.onItemShown(i);
                               }),
@@ -946,6 +962,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                             onDraw: items[_index].song == null || showSongMap
                                 ? null
                                 : () => _annotations.active = true,
+                            // Only while MIDI program changes are on
+                            // (ADR-0039).
+                            onSendProgram:
+                                midi.enabled && items[_index].song != null
+                                ? _midi.sendAgain
+                                : null,
                           ),
                         ),
                     ],
@@ -968,6 +990,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
               builder: (context, clickUnavailable, bar) =>
                   compactLandscape &&
                       !web &&
+                      !(midi.enabled && !midi.connected) &&
                       !clickUnavailable &&
                       !_wakeLock.failed
                   ? const SizedBox.shrink(key: Key('live-info-hidden'))
@@ -1073,6 +1096,32 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                         );
                       },
                     ),
+                    // The keyboard (ADR-0039), only while MIDI program
+                    // changes are on.
+                    if (midi.enabled)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 16),
+                        child: Tooltip(
+                          message: midi.connected
+                              ? l10n.liveMidiConnected(midi.deviceName ?? '')
+                              : l10n.liveMidiNotConnected,
+                          child: Icon(
+                            midi.connected ? Icons.piano : Icons.piano_off,
+                            key: Key(
+                              midi.connected
+                                  ? 'live-midi-connected'
+                                  : 'live-midi-not-connected',
+                            ),
+                            size: 18,
+                            semanticLabel: midi.connected
+                                ? l10n.liveMidiConnected(midi.deviceName ?? '')
+                                : l10n.liveMidiNotConnected,
+                            color: midi.connected
+                                ? null
+                                : theme.colorScheme.error,
+                          ),
+                        ),
+                      ),
                     Text(
                       l10n.livePosition(_index + 1, items.length),
                       style: theme.textTheme.titleSmall,
@@ -1129,6 +1178,7 @@ class _ControlBar extends ConsumerWidget {
     required this.onFit,
     required this.onSetKey,
     this.onDraw,
+    this.onSendProgram,
   });
 
   final LiveItem item;
@@ -1141,6 +1191,9 @@ class _ControlBar extends ConsumerWidget {
 
   /// Starts drawing mode (ADR-0032); null when the item cannot be drawn on.
   final VoidCallback? onDraw;
+
+  /// Sends the song's keyboard program again (ADR-0039); null hides it.
+  final Future<bool> Function()? onSendProgram;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1188,6 +1241,13 @@ class _ControlBar extends ConsumerWidget {
         icon: const Icon(Icons.format_list_numbered),
         onPressed: onOverview,
       ),
+      if (onSendProgram case final send?)
+        IconButton(
+          key: const Key('live-midi-send-again'),
+          tooltip: l10n.liveMidiSendAgain,
+          icon: const Icon(Icons.piano),
+          onPressed: send,
+        ),
     ];
     final annotated =
         song != null &&

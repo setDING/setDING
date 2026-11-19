@@ -493,6 +493,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Not offline-safe in the browser – use the app on stage';
 
   @override
+  String liveMidiConnected(String name) {
+    return 'Keyboard connected: $name';
+  }
+
+  @override
+  String get liveMidiNotConnected => 'Keyboard not connected';
+
+  @override
+  String get liveMidiSendAgain => 'Send program again';
+
+  @override
   String get liveWakeLockNotice =>
       'The screen may turn off – check the device\'s power settings';
 

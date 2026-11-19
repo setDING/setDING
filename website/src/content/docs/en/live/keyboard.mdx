@@ -1,0 +1,91 @@
+---
+title: Connecting a keyboard (MIDI)
+description: In live mode the keyboard switches to the right program for every song – over USB, e.g. a Nord Stage 3.
+sidebar:
+  order: 4
+---
+
+import { Image } from 'astro:assets';
+import settings from '../../../../../../docs/screenshots/settings_midi.png';
+import live from '../../../../../../docs/screenshots/live_midi.png';
+
+If you play keys, setDING can switch your keyboard to the right sound for every song
+in live mode: piano for one song, organ for the next. You store your **keyboard
+program** with each song; setDING sends it to the keyboard by MIDI as soon as the
+song is up on stage.
+
+The program is **yours only**: it is a [personal adjustment](/en/songs/personal/),
+the same in all your bands and on all your devices. Nobody else in the band sees or
+notices it.
+
+## Where it works
+
+- **Android, Windows and Linux** with a USB cable to the keyboard.
+- **In the browser** in **Chrome** and **Edge**; the first time, the browser asks
+  whether setDING may use MIDI devices.
+- **Not yet on iPhone and iPad**, and not in Safari. Use an Android or Windows device
+  for MIDI.
+
+Bluetooth MIDI is not supported yet.
+
+## Setting up the keyboard
+
+1. Connect the keyboard to the tablet or computer by **USB** (on a tablet often with
+   a USB OTG adapter).
+2. Open **Settings** → **Keyboard (MIDI)** and switch on **MIDI program changes**.
+   These settings apply to this device only.
+3. Choose your keyboard under **Output**. If setDING does not find it, tap **Search
+   again**. setDING remembers the keyboard and connects to it again by itself when
+   you plug it in later.
+4. Choose the **Device profile**:
+   - **Nord Stage 3** – you enter programs as the Nord's display shows them.
+   - **Generic** – bank select and program number, for any other keyboard. Its
+     manual tells you which values it expects.
+5. Set the **MIDI channel** the keyboard receives on.
+
+<Image src={settings} alt="The Keyboard (MIDI) settings with a connected Nord Stage 3, device profile, Nord addresses and MIDI channel" />
+
+### Nord Stage 3
+
+- On the Nord, switch on **"Program Change"** reception in its **MIDI menu**.
+- In setDING, set the **MIDI channel** to the Nord's **global channel**.
+- Under **Nord addresses** you choose what you work with:
+  - **Programs** – bank A–P, page 1–5 and button 1–5, as the display shows e.g.
+    `K:33`, or one of the five **live memories**.
+  - **Songs** – a Nord song and its part 1–5.
+- The numbering of Nord songs depends on the Nord's OS version (checked with OS
+  2.54). If a song does not match, use the profile **Generic**.
+
+## Storing a song's program
+
+1. Open the song and tap **Personal adjustments**.
+2. Enter the program under **Keyboard program**, e.g. bank C, page 1, button 3.
+3. **Test** sends it to the keyboard right away, so you hear whether the sound is
+   right.
+
+The field appears when MIDI program changes are on for this device or when the song
+already has a program. You can remove the program again.
+
+## In live mode
+
+- As soon as a song is **up**, setDING sends its program: when live mode starts and
+  whenever another song becomes current – whether you turn, tap or jump in the set
+  overview.
+- The song has to stay on screen for about **a third of a second**. If you turn
+  quickly past several songs, the keyboard does not switch for each of them.
+- Turning pages **within a song** sends nothing.
+- A song **without a program**, a **break** or a **text** in the set sends nothing;
+  the keyboard keeps its sound.
+- If the next song has the same program, it is sent again anyway. If you switched
+  the sound by hand on the keyboard in the meantime, it is right again.
+- A small **keyboard icon** at the bottom right shows whether the keyboard is
+  connected; crossed out and red means **not connected**. The icon appears only
+  while MIDI program changes are on.
+- Tap the middle of the page, then the keyboard icon **Send program again**, e.g.
+  after the keyboard was restarted.
+
+Errors never interrupt the show: setDING shows no message and turning pages works as
+usual. The **diagnostic log** under **Settings** → **Storage & info** says what went
+wrong.
+
+<Image src={live} alt="Live mode with the control bar: the Send program again icon and, at the bottom right, the icon of the connected keyboard" />

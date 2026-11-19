@@ -1,0 +1,92 @@
+---
+title: Keyboard verbinden (MIDI)
+description: Im Live-Modus wechselt das Keyboard bei jedem Song zum passenden Programm – per USB, z. B. ein Nord Stage 3.
+sidebar:
+  order: 4
+---
+
+import { Image } from 'astro:assets';
+import settings from '../../../../../docs/screenshots/settings_midi_de.png';
+import live from '../../../../../docs/screenshots/live_midi_de.png';
+
+Spielst du Keyboard, kann setDING im Live-Modus dein Keyboard bei jedem Song zum
+passenden Sound wechseln: Klavier für den einen Song, Orgel für den nächsten. Dazu
+hinterlegst du bei jedem Song dein **Keyboard-Programm**; setDING schickt es per
+MIDI an das Keyboard, sobald der Song auf der Bühne an der Reihe ist.
+
+Das Programm gehört **nur dir**: Es ist eine [persönliche Anpassung](/songs/personal/),
+gilt in allen deinen Bands und auf allen deinen Geräten. Die anderen in der Band
+sehen und merken nichts davon.
+
+## Wo es funktioniert
+
+- **Android, Windows und Linux** mit einem USB-Kabel zum Keyboard.
+- **Im Browser** in **Chrome** und **Edge**; der Browser fragt beim ersten Mal, ob
+  setDING MIDI-Geräte verwenden darf.
+- **Noch nicht auf iPhone und iPad** und nicht in Safari. Nimm für MIDI ein Android-
+  oder Windows-Gerät.
+
+Bluetooth-MIDI wird noch nicht unterstützt.
+
+## Keyboard einrichten
+
+1. Verbinde das Keyboard per **USB** mit dem Tablet oder Computer (beim Tablet
+   oft mit einem USB-OTG-Adapter).
+2. Öffne **Einstellungen** → **Keyboard (MIDI)** und schalte
+   **MIDI-Programmwechsel** ein. Diese Einstellungen gelten nur für dieses Gerät.
+3. Wähle unter **Ausgang** dein Keyboard. Findet setDING es nicht, tippe auf
+   **Erneut suchen**. setDING merkt sich das Keyboard und verbindet sich von selbst
+   wieder, wenn du es später einsteckst.
+4. Wähle das **Geräteprofil**:
+   - **Nord Stage 3** – du gibst Programme so ein, wie sie das Display des Nord
+     zeigt.
+   - **Allgemein** – Bank Select und Programmnummer, für jedes andere Keyboard.
+     Schau in der Anleitung deines Keyboards nach, welche Werte es erwartet.
+5. Stelle den **MIDI-Kanal** ein, auf dem das Keyboard empfängt.
+
+<Image src={settings} alt="Die Einstellungen «Keyboard (MIDI)» mit einem verbundenen Nord Stage 3, Geräteprofil, Nord-Adressen und MIDI-Kanal" />
+
+### Nord Stage 3
+
+- Schalte am Nord im **MIDI-Menü** den Empfang von **«Program Change»** ein.
+- Stelle in setDING als **MIDI-Kanal** den **globalen Kanal** des Nord ein.
+- Unter **Nord-Adressen** wählst du, womit du arbeitest:
+  - **Programme** – Bank A–P, Seite 1–5 und Taste 1–5, so wie das Display z. B.
+    `K:33` zeigt, oder einer der fünf **Live-Speicher**.
+  - **Songs** – ein Nord-Song und sein Teil 1–5.
+- Die Nummerierung der Nord-Songs hängt von der OS-Version des Nord ab (geprüft mit
+  OS 2.54). Passt ein Song nicht, verwende das Profil **Allgemein**.
+
+## Programm bei einem Song hinterlegen
+
+1. Öffne den Song und tippe auf **Persönliche Anpassungen**.
+2. Gib beim **Keyboard-Programm** das Programm ein, z. B. Bank C, Seite 1, Taste 3.
+3. Mit **Test** schickst du es sofort an das Keyboard und hörst, ob der Sound
+   stimmt.
+
+Das Feld erscheint, wenn MIDI-Programmwechsel auf diesem Gerät eingeschaltet sind
+oder der Song schon ein Programm hat. Du kannst das Programm auch wieder entfernen.
+
+## Im Live-Modus
+
+- Sobald ein Song **an der Reihe** ist, schickt setDING sein Programm: beim Start
+  des Live-Modus und bei jedem Wechsel zu einem anderen Song – ob du blätterst,
+  tippst oder in der Set-Übersicht springst.
+- Der Song muss dafür etwa **eine Drittelsekunde** angezeigt bleiben. Blätterst du
+  schnell über mehrere Songs hinweg, schaltet das Keyboard nicht bei jedem um.
+- Blättern **innerhalb eines Songs** schickt nichts.
+- Ein Song **ohne Programm**, eine **Pause** oder ein **Text** im Set schickt nichts;
+  das Keyboard behält seinen Sound.
+- Hat der nächste Song dasselbe Programm, wird es trotzdem noch einmal geschickt.
+  Hast du am Keyboard inzwischen von Hand umgeschaltet, stimmt der Sound so wieder.
+- Unten rechts zeigt ein kleines **Keyboard-Symbol**, ob das Keyboard verbunden ist;
+  durchgestrichen und rot heisst es **nicht verbunden**. Das Symbol erscheint nur,
+  wenn MIDI-Programmwechsel eingeschaltet sind.
+- Tippe in die Mitte der Seite und dann auf das Keyboard-Symbol
+  **Programm erneut senden**, z. B. nachdem das Keyboard neu gestartet wurde.
+
+Fehler unterbrechen den Auftritt nie: setDING zeigt keine Meldung, das Blättern
+geht normal weiter. Im **Diagnoseprotokoll** unter **Einstellungen** →
+**Speicher & Info** steht, was nicht geklappt hat.
+
+<Image src={live} alt="Der Live-Modus mit der Steuerleiste: das Symbol «Programm erneut senden» und unten rechts das Symbol des verbundenen Keyboards" />
