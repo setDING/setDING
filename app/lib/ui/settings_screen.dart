@@ -27,10 +27,10 @@ import 'widgets/whats_new_dialog.dart';
 /// The most used ones come first; the account and the organizations and
 /// bands, set up once and rarely opened afterwards, come last.
 enum SettingsCategory {
+  general,
   display,
   songDisplay,
   musician,
-  general,
   live,
   about,
   account,
