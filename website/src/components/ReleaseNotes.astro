@@ -1,0 +1,77 @@
+---
+// The news page (ADR-0041): every version's "What's new" notes from
+// app/assets/whats_new.json, newest first, with the release date from CHANGELOG.md.
+import { Badge } from '@astrojs/starlight/components';
+import { changelogUrl, releasesFor, releaseUrl } from '../release-data.ts';
+import { formatDate, type Lang } from '../releases.ts';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const de = lang === 'de';
+const list = releasesFor(lang);
+const base = de ? '' : '/en';
+const t = de
+  ? {
+      current: 'Aktuelle Version',
+      none: 'Keine Änderungen, die du in der App bemerkst.',
+      download: 'Herunterladen',
+      install: 'Installation',
+      all: 'Alle Änderungen, auch die der älteren Versionen, findest du im',
+      changelog: 'Changelog auf GitHub',
+    }
+  : {
+      current: 'Current version',
+      none: 'No changes you notice in the app.',
+      download: 'Download',
+      install: 'Installation',
+      all: 'All changes, including those of older versions, are in the',
+      changelog: 'changelog on GitHub',
+    };
+---
+
+{
+  list.map((release, i) => (
+    <section class="release">
+      <h2 id={`v${release.version.replaceAll('.', '-')}`}>
+        {release.version} {i === 0 && <Badge text={t.current} variant="success" />}
+      </h2>
+      <p class="date">
+        <time datetime={release.date}>{formatDate(release.date, lang)}</time>
+      </p>
+      {release.notes.length > 0 ? (
+        <ul>
+          {release.notes.map((note) => (
+            <li>{note}</li>
+          ))}
+        </ul>
+      ) : (
+        <p>{t.none}</p>
+      )}
+      {i === 0 && (
+        <p>
+          <a href={releaseUrl(release.version)}>{t.download}</a> · <a href={`${base}/start/install/`}>{t.install}</a>
+        </p>
+      )}
+    </section>
+  ))
+}
+
+<p>
+  {t.all} <a href={changelogUrl}>{t.changelog}</a>.
+</p>
+
+<style>
+  .release h2 {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+  .date {
+    margin-top: 0.25rem;
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-sm);
+  }
+</style>

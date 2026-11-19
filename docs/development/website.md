@@ -12,7 +12,8 @@ make site         # build into website/dist (also part of `make check`)
 ```
 
 `make site` (`tool/build-site.sh`) installs the locked packages (`npm ci`) and builds
-the site. The build fails on pages that do not compile and on broken internal links.
+the site. The build fails on failing unit tests of the website code, on pages that
+do not compile and on broken internal links.
 
 ## Writing pages
 
@@ -41,6 +42,16 @@ the site. The build fails on pages that do not compile and on broken internal li
   `tool/copy-screenshots.sh` and the image on its page; see
   [`docs/screenshots/README.md`](../screenshots/README.md). Pages that only explain
   concepts or installation (`start/`, `bands/roles`) need none.
+
+## News page and version
+
+The page *Neuigkeiten* / *What's new* (`news.mdx`, `en/news.mdx`) and the version in
+the header are generated from the checkout the site is built from (ADR-0041): the
+notes of every version from `app/assets/whats_new.json`, the release dates from
+`CHANGELOG.md` (`website/src/releases.ts`, `website/src/release-data.ts`). They need
+no editing; the release PR writes both files, and `make server-release` builds the
+site from the tag. The build runs the unit tests (`node --test src/*.test.ts`) and
+fails on a version without a released `CHANGELOG.md` section.
 
 ## Dependencies
 

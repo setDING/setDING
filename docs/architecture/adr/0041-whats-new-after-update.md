@@ -90,15 +90,20 @@ before a gig (ADR-0007, ADR-0036).
 - People learn what changed, in their language, without being interrupted.
 - Every release PR writes a few user-facing sentences in two languages; the
   test gate enforces it.
-- The website (ADR-0030) can show the same file as a news page later, without a
-  second source.
+- The website (ADR-0030) shows the same file as a news page, without a second
+  source; its header shows the current version.
 
 ## Decision log
 
 - 2026-11-19: Proposed (#544), implemented in #546.
 - 2026-11-19: Accepted by the owner.
+- 2026-11-19: The website (ADR-0030) shows the same notes on a news page
+  (`/news/`, `/en/news/`), newest first, with the release date from the
+  version's `CHANGELOG.md` section and a link to the full changelog for older
+  versions; its header shows the current version (the newest entry) and links
+  to that page (#568). The website build fails on a version without a released
+  changelog section. Resolves the open point "a news page on the website".
 
 ## Open points
 
-- A news page on the website from the same file.
 - Notes with links into the app (e.g. "open the new setting").

@@ -1,7 +1,8 @@
 ---
 // Starlight's header with links to the documentation and the downloads
-// (ADR-0030), so the landing page needs no sidebar. On narrow screens only
-// the documentation link and a short language switch are shown (the language
+// (ADR-0030), so the landing page needs no sidebar, and the current version,
+// which links to the news page (ADR-0041). On narrow screens only
+// a short documentation link, the version and a short language switch are shown (the language
 // select sits in the mobile menu, which pages without a sidebar do not have). Based on @astrojs/starlight's Header.astro.
 import config from 'virtual:starlight/user-config';
 import LanguageSelect from 'virtual:starlight/components/LanguageSelect';
@@ -9,6 +10,7 @@ import Search from 'virtual:starlight/components/Search';
 import SiteTitle from 'virtual:starlight/components/SiteTitle';
 import SocialIcons from 'virtual:starlight/components/SocialIcons';
 import ThemeSelect from 'virtual:starlight/components/ThemeSelect';
+import { currentVersion } from '../release-data.ts';
 
 const shouldRenderSearch =
   config.pagefind || config.components.Search !== '@astrojs/starlight/components/Search.astro';
@@ -23,9 +25,11 @@ const otherLanguage = en
   ? { label: 'DE', lang: 'de-CH', title: 'Deutsch', href: path.replace(/^\/en(\/|$)/, '/') }
   : { label: 'EN', lang: 'en', title: 'English', href: `/en${path}` };
 const links = [
-  { label: en ? 'Documentation' : 'Dokumentation', href: `${base}/start/overview/`, docs: true },
+  { label: en ? 'Documentation' : 'Dokumentation', short: en ? 'Docs' : 'Doku', href: `${base}/start/overview/`, docs: true },
   { label: 'Download', href: `${base}/start/install/`, docs: false },
 ];
+const newsHref = `${base}/news/`;
+const isNews = path === newsHref || path === newsHref.slice(0, -1);
 ---
 
 <div class="header">
@@ -38,12 +42,27 @@ const links = [
           <a
             href={link.href}
             class:list={{ 'md-only': !link.docs }}
-            aria-current={link.docs && !isLanding ? 'page' : undefined}
+            aria-current={link.docs && !isLanding && !isNews ? 'page' : undefined}
           >
-            {link.label}
+            {link.short ? (
+              <>
+                <span class="md-only">{link.label}</span>
+                <span class="sm-only">{link.short}</span>
+              </>
+            ) : (
+              link.label
+            )}
           </a>
         ))
       }
+      <a
+        href={newsHref}
+        class="version"
+        aria-current={isNews ? 'page' : undefined}
+        title={en ? `What's new in setDING ${currentVersion}` : `Neuigkeiten in setDING ${currentVersion}`}
+      >
+        <span class="md-only">v</span>{currentVersion}
+      </a>
       <a href={otherLanguage.href} class="sm-only" hreflang={otherLanguage.lang} lang={otherLanguage.lang} title={otherLanguage.title}>
         {otherLanguage.label}
       </a>
@@ -101,6 +120,10 @@ const links = [
   .site-nav a[aria-current='page'] {
     color: var(--sl-color-text-accent);
   }
+  .site-nav a.version {
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+  }
   .md-only {
     display: none;
   }
@@ -110,6 +133,11 @@ const links = [
     }
     .sm-only {
       display: none;
+    }
+    .site-nav a.version {
+      padding: 0.125rem 0.5rem;
+      border: 1px solid var(--sl-color-gray-5);
+      border-radius: 999px;
     }
     .site-nav::after {
       display: block;

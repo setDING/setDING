@@ -133,6 +133,10 @@ and are written by the release PR together with the changelog section:
 `make check` (`app/test/whats_new_test.dart`) fails when the version in
 `app/pubspec.yaml` has no entry or the entries break these rules.
 
+The website shows the same notes on its news page (https://setding.app/news/) and
+the newest version in its header ([website](website.md#news-page-and-version)); it
+is updated by `make server-release`.
+
 ## Version numbers
 
 setDING uses Semantic Versioning for the whole product (ADR-0028). The rules are

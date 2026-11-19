@@ -57,6 +57,8 @@ export default defineConfig({
           translations: { en: 'Settings' },
           items: [{ autogenerate: { directory: 'settings' } }],
         },
+        // Current version and what changed, from app/assets/whats_new.json (ADR-0041).
+        { label: 'Neuigkeiten', translations: { en: "What's new" }, link: '/news/' },
       ],
       lastUpdated: false,
       plugins: [starlightLinksValidator()],
