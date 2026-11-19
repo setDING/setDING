@@ -8,10 +8,12 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../midi/midi_message.dart';
 import '../../midi/midi_output.dart';
 import '../../util/log.dart';
+import 'midi_guide.dart';
 
 /// Prototype of ADR-0039 (#512): sends a program change to a keyboard
 /// connected by USB and logs what the keyboard sends back, to check the
 /// MIDI library on every platform and the addressing of a Nord Stage 3.
+/// The guided test needs only taps: send a step, tap what happened.
 class MidiTestScreen extends ConsumerStatefulWidget {
   const MidiTestScreen({super.key});
 
@@ -30,7 +32,12 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
   var _channel = 1;
   var _mode = _Mode.nordProgram;
   var _bank = 0;
+  var _page = 1;
+  var _button = 1;
   var _live = 1;
+  final _guide = nordStage3Guide();
+  var _step = 0;
+  var _stepSent = false;
   final _number = TextEditingController(text: '1');
   final _msb = TextEditingController();
   final _lsb = TextEditingController();
@@ -130,13 +137,11 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
 
     switch (_mode) {
       case _Mode.nordProgram:
+        return NordStage3.program(_bank, _page, _button).bytes(_channel);
       case _Mode.nordSong:
-        final n = read(_number, 1, NordStage3.programsPerBank);
+        final n = read(_number, 1, NordStage3.maxSong);
         if (n == null) return null;
-        return (_mode == _Mode.nordProgram
-                ? NordStage3.program(_bank, n)
-                : NordStage3.song(_bank, n))
-            .bytes(_channel);
+        return NordStage3.song(n).bytes(_channel);
       case _Mode.nordLive:
         return NordStage3.live(_live).bytes(_channel);
       case _Mode.raw:
@@ -169,6 +174,124 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
     } catch (e) {
       _add(l10n.midiTestError('$e'));
     }
+  }
+
+  void _sendStep() {
+    _send(_guide[_step].bytes(_channel));
+    setState(() => _stepSent = true);
+  }
+
+  void _answer(MidiGuideAnswer answer) {
+    final l10n = AppLocalizations.of(context);
+    _add(
+      l10n.midiGuideResult(
+        _step + 1,
+        _guide[_step].title(l10n),
+        answer.label(l10n),
+      ),
+    );
+    _goTo(_step + 1);
+  }
+
+  void _goTo(int step) => setState(() {
+    _step = step.clamp(0, _guide.length);
+    _stepSent = false;
+  });
+
+  List<Widget> _guideSection(AppLocalizations l10n) {
+    final theme = Theme.of(context);
+    final done = _step >= _guide.length;
+    final step = done ? null : _guide[_step];
+    return [
+      ListTile(
+        title: Text(l10n.midiGuideTitle, style: theme.textTheme.titleSmall),
+        subtitle: Text(l10n.midiGuideHint),
+      ),
+      Card(
+        key: const Key('midi-guide'),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (step == null) ...[
+                Text(l10n.midiGuideDone, style: theme.textTheme.titleMedium),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  key: const Key('midi-guide-restart'),
+                  onPressed: () => _goTo(0),
+                  icon: const Icon(Icons.restart_alt),
+                  label: Text(l10n.midiGuideRestart),
+                ),
+              ] else ...[
+                Text(
+                  l10n.midiGuideStep(
+                    _step + 1,
+                    _guide.length,
+                    step.title(l10n),
+                  ),
+                  key: const Key('midi-guide-step'),
+                  style: theme.textTheme.titleMedium,
+                ),
+                const SizedBox(height: 4),
+                Text(l10n.midiGuideExpected(step.expected(l10n))),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    FilledButton.icon(
+                      key: const Key('midi-guide-send'),
+                      onPressed: _connected.isEmpty ? null : _sendStep,
+                      icon: const Icon(Icons.send),
+                      label: Text(l10n.midiTestSend),
+                    ),
+                    Text(
+                      midiHex(step.bytes(_channel)),
+                      style: const TextStyle(fontFamily: 'monospace'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final a in step.answers)
+                      OutlinedButton(
+                        key: Key('midi-guide-answer-${a.name}'),
+                        onPressed: _stepSent ? () => _answer(a) : null,
+                        child: Text(a.label(l10n)),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    TextButton(
+                      key: const Key('midi-guide-back'),
+                      onPressed: _step == 0 ? null : () => _goTo(_step - 1),
+                      child: Text(l10n.midiGuideBack),
+                    ),
+                    TextButton(
+                      key: const Key('midi-guide-skip'),
+                      onPressed: () => _goTo(_step + 1),
+                      child: Text(l10n.midiGuideSkip),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      const Divider(),
+      ListTile(
+        title: Text(l10n.midiTestFree, style: theme.textTheme.titleSmall),
+      ),
+    ];
   }
 
   @override
@@ -229,6 +352,7 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
               onChanged: (v) => setState(() => _channel = v ?? _channel),
             ),
           ),
+          ..._guideSection(l10n),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: SingleChildScrollView(
@@ -343,21 +467,58 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
       ),
     );
 
+    Widget dropdown(
+      String title,
+      Key key,
+      int value,
+      List<int> values,
+      String Function(int) label,
+      void Function(int) onChanged,
+    ) => ListTile(
+      title: Text(title),
+      trailing: DropdownButton<int>(
+        key: key,
+        value: value,
+        items: [
+          for (final v in values)
+            DropdownMenuItem(value: v, child: Text(label(v))),
+        ],
+        onChanged: (v) => setState(() {
+          if (v != null) onChanged(v);
+        }),
+      ),
+    );
+
     return switch (_mode) {
-      _Mode.nordProgram || _Mode.nordSong => [
-        ListTile(
-          title: Text(l10n.midiTestBank),
-          trailing: DropdownButton<int>(
-            key: const Key('midi-bank'),
-            value: _bank,
-            items: [
-              for (var b = 0; b < NordStage3.banks.length; b++)
-                DropdownMenuItem(value: b, child: Text(NordStage3.banks[b])),
-            ],
-            onChanged: (v) => setState(() => _bank = v ?? _bank),
-          ),
+      _Mode.nordProgram => [
+        dropdown(
+          l10n.midiTestBank,
+          const Key('midi-bank'),
+          _bank,
+          [for (var b = 0; b < NordStage3.banks.length; b++) b],
+          (b) => NordStage3.banks[b],
+          (v) => _bank = v,
         ),
-        field(_number, l10n.midiTestNumber, const Key('midi-number')),
+        dropdown(
+          l10n.midiTestPage,
+          const Key('midi-page'),
+          _page,
+          [for (var p = 1; p <= NordStage3.pages; p++) p],
+          (p) => '$p',
+          (v) => _page = v,
+        ),
+        dropdown(
+          l10n.midiTestButton,
+          const Key('midi-button'),
+          _button,
+          [for (var b = 1; b <= NordStage3.buttons; b++) b],
+          (b) => '$b',
+          (v) => _button = v,
+        ),
+        ListTile(subtitle: Text(NordStage3.programName(_bank, _page, _button))),
+      ],
+      _Mode.nordSong => [
+        field(_number, l10n.midiTestSongNumber, const Key('midi-number')),
       ],
       _Mode.nordLive => [
         ListTile(

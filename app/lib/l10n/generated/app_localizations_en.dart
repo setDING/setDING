@@ -2808,9 +2808,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get midiTestBank => 'Bank';
 
   @override
-  String get midiTestNumber => 'Number (1–50)';
-
-  @override
   String get midiTestLive => 'Live memory';
 
   @override
@@ -2890,4 +2887,138 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get midiTestCcHint =>
       'Nord Stage 3 according to midi.guide: CC 2 live mode, CC 3 song mode, CC 5 song part. Which values do what is part of the test.';
+
+  @override
+  String get midiGuideTitle => 'Guided test (Nord Stage 3)';
+
+  @override
+  String get midiGuideHint =>
+      'Tap “Send”, look at the display of the Nord and tap what happened. Nothing has to be set on the Nord. The answers are kept in the log.';
+
+  @override
+  String midiGuideStep(int current, int total, String title) {
+    return 'Step $current of $total: $title';
+  }
+
+  @override
+  String midiGuideExpected(String expected) {
+    return 'Expected: $expected';
+  }
+
+  @override
+  String get midiGuideDone => 'Test finished. The answers are in the log.';
+
+  @override
+  String get midiGuideRestart => 'Start again';
+
+  @override
+  String get midiGuideBack => 'Back';
+
+  @override
+  String get midiGuideSkip => 'Skip';
+
+  @override
+  String midiGuideResult(int current, String title, String answer) {
+    return 'Step $current ($title): $answer';
+  }
+
+  @override
+  String midiGuideProgram(String name) {
+    return 'Program $name';
+  }
+
+  @override
+  String midiGuideProgramExpected(String name) {
+    return 'The Nord shows $name.';
+  }
+
+  @override
+  String midiGuideLive(int number) {
+    return 'Live memory $number';
+  }
+
+  @override
+  String midiGuideLiveExpected(int number) {
+    return 'The Nord shows Live $number.';
+  }
+
+  @override
+  String get midiGuideSongModeOn => 'Song mode on (CC 3 = 127)';
+
+  @override
+  String get midiGuideSongModeOnExpected => 'The Nord switches to song mode.';
+
+  @override
+  String get midiGuideSongModeOff => 'Song mode off (CC 3 = 0)';
+
+  @override
+  String get midiGuideSongModeOffExpected => 'The Nord leaves song mode.';
+
+  @override
+  String midiGuideSong(int number) {
+    return 'Song number $number';
+  }
+
+  @override
+  String get midiGuideSongFirstExpected =>
+      'A song is selected. Note which song and which part are shown.';
+
+  @override
+  String get midiGuideSongExpected =>
+      'Compare with the step before: what changed?';
+
+  @override
+  String midiGuideSongPart(int value) {
+    return 'Song part (CC 5 = $value)';
+  }
+
+  @override
+  String get midiGuideSongPartExpected =>
+      'Another part of the song is selected.';
+
+  @override
+  String get midiGuideLiveModeOn => 'Live mode on (CC 2 = 127)';
+
+  @override
+  String get midiGuideLiveModeOnExpected => 'The Nord switches live mode on.';
+
+  @override
+  String get midiGuideLiveModeOff => 'Live mode off (CC 2 = 0)';
+
+  @override
+  String get midiGuideLiveModeOffExpected => 'The Nord switches live mode off.';
+
+  @override
+  String get midiGuideAnswerAsExpected => 'As expected';
+
+  @override
+  String get midiGuideAnswerChanged => 'Changed';
+
+  @override
+  String get midiGuideAnswerNextSong => 'Next song';
+
+  @override
+  String get midiGuideAnswerNextPart => 'Next part of the same song';
+
+  @override
+  String get midiGuideAnswerSeveralSongs => 'Several songs further';
+
+  @override
+  String get midiGuideAnswerDifferent => 'Something else';
+
+  @override
+  String get midiGuideAnswerNothing => 'Nothing happened';
+
+  @override
+  String get midiTestFree => 'Send freely';
+
+  @override
+  String get midiTestPage => 'Page';
+
+  @override
+  String get midiTestButton => 'Button';
+
+  @override
+  String get midiTestSongNumber =>
+      'Song number (1–999, numbering not known yet)';
 }

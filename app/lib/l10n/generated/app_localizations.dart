@@ -4862,12 +4862,6 @@ abstract class AppLocalizations {
   /// **'Bank'**
   String get midiTestBank;
 
-  /// No description provided for @midiTestNumber.
-  ///
-  /// In de, this message translates to:
-  /// **'Nummer (1–50)'**
-  String get midiTestNumber;
-
   /// No description provided for @midiTestLive.
   ///
   /// In de, this message translates to:
@@ -4992,6 +4986,228 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Nord Stage 3 laut midi.guide: CC 2 Live-Modus, CC 3 Song-Modus, CC 5 Song-Teil. Welche Werte was bewirken, gehört zum Test.'**
   String get midiTestCcHint;
+
+  /// No description provided for @midiGuideTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Geführter Test (Nord Stage 3)'**
+  String get midiGuideTitle;
+
+  /// No description provided for @midiGuideHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe auf «Senden», schau aufs Display des Nord und tippe an, was passiert ist. Am Nord musst du nichts einstellen. Die Antworten stehen im Protokoll.'**
+  String get midiGuideHint;
+
+  /// No description provided for @midiGuideStep.
+  ///
+  /// In de, this message translates to:
+  /// **'Schritt {current} von {total}: {title}'**
+  String midiGuideStep(int current, int total, String title);
+
+  /// No description provided for @midiGuideExpected.
+  ///
+  /// In de, this message translates to:
+  /// **'Erwartet: {expected}'**
+  String midiGuideExpected(String expected);
+
+  /// No description provided for @midiGuideDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Test fertig. Die Antworten stehen im Protokoll.'**
+  String get midiGuideDone;
+
+  /// No description provided for @midiGuideRestart.
+  ///
+  /// In de, this message translates to:
+  /// **'Neu beginnen'**
+  String get midiGuideRestart;
+
+  /// No description provided for @midiGuideBack.
+  ///
+  /// In de, this message translates to:
+  /// **'Zurück'**
+  String get midiGuideBack;
+
+  /// No description provided for @midiGuideSkip.
+  ///
+  /// In de, this message translates to:
+  /// **'Überspringen'**
+  String get midiGuideSkip;
+
+  /// No description provided for @midiGuideResult.
+  ///
+  /// In de, this message translates to:
+  /// **'Schritt {current} ({title}): {answer}'**
+  String midiGuideResult(int current, String title, String answer);
+
+  /// No description provided for @midiGuideProgram.
+  ///
+  /// In de, this message translates to:
+  /// **'Programm {name}'**
+  String midiGuideProgram(String name);
+
+  /// No description provided for @midiGuideProgramExpected.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Nord zeigt {name}.'**
+  String midiGuideProgramExpected(String name);
+
+  /// No description provided for @midiGuideLive.
+  ///
+  /// In de, this message translates to:
+  /// **'Live-Speicher {number}'**
+  String midiGuideLive(int number);
+
+  /// No description provided for @midiGuideLiveExpected.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Nord zeigt Live {number}.'**
+  String midiGuideLiveExpected(int number);
+
+  /// No description provided for @midiGuideSongModeOn.
+  ///
+  /// In de, this message translates to:
+  /// **'Song-Modus ein (CC 3 = 127)'**
+  String get midiGuideSongModeOn;
+
+  /// No description provided for @midiGuideSongModeOnExpected.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Nord wechselt in den Song-Modus.'**
+  String get midiGuideSongModeOnExpected;
+
+  /// No description provided for @midiGuideSongModeOff.
+  ///
+  /// In de, this message translates to:
+  /// **'Song-Modus aus (CC 3 = 0)'**
+  String get midiGuideSongModeOff;
+
+  /// No description provided for @midiGuideSongModeOffExpected.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Nord verlässt den Song-Modus.'**
+  String get midiGuideSongModeOffExpected;
+
+  /// No description provided for @midiGuideSong.
+  ///
+  /// In de, this message translates to:
+  /// **'Song-Nummer {number}'**
+  String midiGuideSong(int number);
+
+  /// No description provided for @midiGuideSongFirstExpected.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein Song wird gewählt. Merk dir, welcher Song und welcher Teil angezeigt wird.'**
+  String get midiGuideSongFirstExpected;
+
+  /// No description provided for @midiGuideSongExpected.
+  ///
+  /// In de, this message translates to:
+  /// **'Vergleiche mit dem Schritt davor: Was hat sich geändert?'**
+  String get midiGuideSongExpected;
+
+  /// No description provided for @midiGuideSongPart.
+  ///
+  /// In de, this message translates to:
+  /// **'Song-Teil (CC 5 = {value})'**
+  String midiGuideSongPart(int value);
+
+  /// No description provided for @midiGuideSongPartExpected.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein anderer Teil des Songs wird gewählt.'**
+  String get midiGuideSongPartExpected;
+
+  /// No description provided for @midiGuideLiveModeOn.
+  ///
+  /// In de, this message translates to:
+  /// **'Live-Modus ein (CC 2 = 127)'**
+  String get midiGuideLiveModeOn;
+
+  /// No description provided for @midiGuideLiveModeOnExpected.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Nord schaltet den Live-Modus ein.'**
+  String get midiGuideLiveModeOnExpected;
+
+  /// No description provided for @midiGuideLiveModeOff.
+  ///
+  /// In de, this message translates to:
+  /// **'Live-Modus aus (CC 2 = 0)'**
+  String get midiGuideLiveModeOff;
+
+  /// No description provided for @midiGuideLiveModeOffExpected.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Nord schaltet den Live-Modus aus.'**
+  String get midiGuideLiveModeOffExpected;
+
+  /// No description provided for @midiGuideAnswerAsExpected.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie erwartet'**
+  String get midiGuideAnswerAsExpected;
+
+  /// No description provided for @midiGuideAnswerChanged.
+  ///
+  /// In de, this message translates to:
+  /// **'Hat gewechselt'**
+  String get midiGuideAnswerChanged;
+
+  /// No description provided for @midiGuideAnswerNextSong.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächster Song'**
+  String get midiGuideAnswerNextSong;
+
+  /// No description provided for @midiGuideAnswerNextPart.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächster Teil im gleichen Song'**
+  String get midiGuideAnswerNextPart;
+
+  /// No description provided for @midiGuideAnswerSeveralSongs.
+  ///
+  /// In de, this message translates to:
+  /// **'Mehrere Songs weiter'**
+  String get midiGuideAnswerSeveralSongs;
+
+  /// No description provided for @midiGuideAnswerDifferent.
+  ///
+  /// In de, this message translates to:
+  /// **'Etwas anderes'**
+  String get midiGuideAnswerDifferent;
+
+  /// No description provided for @midiGuideAnswerNothing.
+  ///
+  /// In de, this message translates to:
+  /// **'Nichts passiert'**
+  String get midiGuideAnswerNothing;
+
+  /// No description provided for @midiTestFree.
+  ///
+  /// In de, this message translates to:
+  /// **'Frei senden'**
+  String get midiTestFree;
+
+  /// No description provided for @midiTestPage.
+  ///
+  /// In de, this message translates to:
+  /// **'Seite'**
+  String get midiTestPage;
+
+  /// No description provided for @midiTestButton.
+  ///
+  /// In de, this message translates to:
+  /// **'Taste'**
+  String get midiTestButton;
+
+  /// No description provided for @midiTestSongNumber.
+  ///
+  /// In de, this message translates to:
+  /// **'Song-Nummer (1–999, Zählung noch unbekannt)'**
+  String get midiTestSongNumber;
 }
 
 class _AppLocalizationsDelegate

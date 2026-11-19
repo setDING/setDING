@@ -1409,7 +1409,6 @@
   "midiTestModeNordLive": "Nord Live",
   "midiTestModeRaw": "Rohwerte",
   "midiTestBank": "Bank",
-  "midiTestNumber": "Nummer (1–50)",
   "midiTestLive": "Live-Speicher",
   "midiTestMsb": "Bank Select MSB (CC 0, 0–127)",
   "midiTestLsb": "Bank Select LSB (CC 32, 0–127)",
@@ -1482,5 +1481,91 @@
   "midiTestModeCc": "Controller",
   "midiTestController": "Controller (CC 0–127)",
   "midiTestValue": "Wert (0–127)",
-  "midiTestCcHint": "Nord Stage 3 laut midi.guide: CC 2 Live-Modus, CC 3 Song-Modus, CC 5 Song-Teil. Welche Werte was bewirken, gehört zum Test."
+  "midiTestCcHint": "Nord Stage 3 laut midi.guide: CC 2 Live-Modus, CC 3 Song-Modus, CC 5 Song-Teil. Welche Werte was bewirken, gehört zum Test.",
+  "midiGuideTitle": "Geführter Test (Nord Stage 3)",
+  "midiGuideHint": "Tippe auf «Senden», schau aufs Display des Nord und tippe an, was passiert ist. Am Nord musst du nichts einstellen. Die Antworten stehen im Protokoll.",
+  "midiGuideStep": "Schritt {current} von {total}: {title}",
+  "@midiGuideStep": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"},
+      "title": {"type": "String"}
+    }
+  },
+  "midiGuideExpected": "Erwartet: {expected}",
+  "@midiGuideExpected": {
+    "placeholders": {
+      "expected": {"type": "String"}
+    }
+  },
+  "midiGuideDone": "Test fertig. Die Antworten stehen im Protokoll.",
+  "midiGuideRestart": "Neu beginnen",
+  "midiGuideBack": "Zurück",
+  "midiGuideSkip": "Überspringen",
+  "midiGuideResult": "Schritt {current} ({title}): {answer}",
+  "@midiGuideResult": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "title": {"type": "String"},
+      "answer": {"type": "String"}
+    }
+  },
+  "midiGuideProgram": "Programm {name}",
+  "@midiGuideProgram": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "midiGuideProgramExpected": "Das Nord zeigt {name}.",
+  "@midiGuideProgramExpected": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "midiGuideLive": "Live-Speicher {number}",
+  "@midiGuideLive": {
+    "placeholders": {
+      "number": {"type": "int"}
+    }
+  },
+  "midiGuideLiveExpected": "Das Nord zeigt Live {number}.",
+  "@midiGuideLiveExpected": {
+    "placeholders": {
+      "number": {"type": "int"}
+    }
+  },
+  "midiGuideSongModeOn": "Song-Modus ein (CC 3 = 127)",
+  "midiGuideSongModeOnExpected": "Das Nord wechselt in den Song-Modus.",
+  "midiGuideSongModeOff": "Song-Modus aus (CC 3 = 0)",
+  "midiGuideSongModeOffExpected": "Das Nord verlässt den Song-Modus.",
+  "midiGuideSong": "Song-Nummer {number}",
+  "@midiGuideSong": {
+    "placeholders": {
+      "number": {"type": "int"}
+    }
+  },
+  "midiGuideSongFirstExpected": "Ein Song wird gewählt. Merk dir, welcher Song und welcher Teil angezeigt wird.",
+  "midiGuideSongExpected": "Vergleiche mit dem Schritt davor: Was hat sich geändert?",
+  "midiGuideSongPart": "Song-Teil (CC 5 = {value})",
+  "@midiGuideSongPart": {
+    "placeholders": {
+      "value": {"type": "int"}
+    }
+  },
+  "midiGuideSongPartExpected": "Ein anderer Teil des Songs wird gewählt.",
+  "midiGuideLiveModeOn": "Live-Modus ein (CC 2 = 127)",
+  "midiGuideLiveModeOnExpected": "Das Nord schaltet den Live-Modus ein.",
+  "midiGuideLiveModeOff": "Live-Modus aus (CC 2 = 0)",
+  "midiGuideLiveModeOffExpected": "Das Nord schaltet den Live-Modus aus.",
+  "midiGuideAnswerAsExpected": "Wie erwartet",
+  "midiGuideAnswerChanged": "Hat gewechselt",
+  "midiGuideAnswerNextSong": "Nächster Song",
+  "midiGuideAnswerNextPart": "Nächster Teil im gleichen Song",
+  "midiGuideAnswerSeveralSongs": "Mehrere Songs weiter",
+  "midiGuideAnswerDifferent": "Etwas anderes",
+  "midiGuideAnswerNothing": "Nichts passiert",
+  "midiTestFree": "Frei senden",
+  "midiTestPage": "Seite",
+  "midiTestButton": "Taste",
+  "midiTestSongNumber": "Song-Nummer (1–999, Zählung noch unbekannt)"
 }

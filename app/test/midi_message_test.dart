@@ -32,28 +32,44 @@ void main() {
   });
 
   group('NordStage3', () {
-    test('program C:13 is CC 0 = 0, CC 32 = 2, program change 12', () {
+    // Observed on a Nord Stage 3 (#512).
+    test('programs are counted through in blocks of 125', () {
       expect(
-        NordStage3.program(2, 13),
-        const MidiProgram(msb: 0, lsb: 2, program: 12),
-      );
-    });
-
-    test('first and last program of the banks', () {
-      expect(
-        NordStage3.program(0, 1),
+        NordStage3.program(0, 1, 1),
         const MidiProgram(msb: 0, lsb: 0, program: 0),
       );
+      // K:33 = 10 * 25 + 12 = 262 = block 2, place 12.
       expect(
-        NordStage3.program(7, 50),
-        const MidiProgram(msb: 0, lsb: 7, program: 49),
+        NordStage3.program(10, 3, 3),
+        const MidiProgram(msb: 0, lsb: 2, program: 12),
+      );
+      expect(
+        NordStage3.program(15, 5, 5),
+        const MidiProgram(msb: 0, lsb: 3, program: 24),
       );
     });
 
-    test('songs use MSB 1', () {
+    test('the second block starts with F:11', () {
       expect(
-        NordStage3.song(4, 3),
-        const MidiProgram(msb: 1, lsb: 4, program: 2),
+        NordStage3.program(4, 5, 5),
+        const MidiProgram(msb: 0, lsb: 0, program: 124),
+      );
+      expect(
+        NordStage3.program(5, 1, 1),
+        const MidiProgram(msb: 0, lsb: 1, program: 0),
+      );
+    });
+
+    test('names as on the display', () {
+      expect(NordStage3.programName(10, 3, 3), 'K:33');
+      expect(NordStage3.programName(15, 5, 5), 'P:55');
+    });
+
+    test('songs use MSB 1 and the same blocks', () {
+      expect(NordStage3.song(1), const MidiProgram(msb: 1, lsb: 0, program: 0));
+      expect(
+        NordStage3.song(126),
+        const MidiProgram(msb: 1, lsb: 1, program: 0),
       );
     });
 
@@ -63,10 +79,11 @@ void main() {
     });
 
     test('rejects values outside the ranges', () {
-      expect(() => NordStage3.program(8, 1), throwsRangeError);
-      expect(() => NordStage3.program(0, 0), throwsRangeError);
-      expect(() => NordStage3.program(0, 51), throwsRangeError);
-      expect(() => NordStage3.song(-1, 1), throwsRangeError);
+      expect(() => NordStage3.program(16, 1, 1), throwsRangeError);
+      expect(() => NordStage3.program(0, 0, 1), throwsRangeError);
+      expect(() => NordStage3.program(0, 1, 6), throwsRangeError);
+      expect(() => NordStage3.song(0), throwsRangeError);
+      expect(() => NordStage3.song(1000), throwsRangeError);
       expect(() => NordStage3.live(0), throwsRangeError);
       expect(() => NordStage3.live(6), throwsRangeError);
     });

@@ -13,6 +13,8 @@ void main() {
 
   Future<TestApp> open(WidgetTester tester) async {
     useTabletSize(tester);
+    // Tall enough that the guided test and the free fields are both built.
+    tester.view.physicalSize = const Size(1280, 3000);
     final app = await TestApp.create(prefs: {'language': 'en'});
     app.midiOutput.ports = [nord];
     await tester.pumpWidget(app.build(home: const MidiTestScreen()));
@@ -65,12 +67,21 @@ void main() {
     final app = await open(tester);
     await connect(tester);
 
-    await tester.tap(find.byKey(const Key('midi-bank')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('C').last);
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byKey(const Key('midi-number')), '13');
-    await tester.pump();
+    Future<void> pick(String key, String value) async {
+      final dropdown = find.byKey(Key(key));
+      await tester.ensureVisible(dropdown);
+      await tester.pumpAndSettle();
+      await tester.tap(dropdown);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(value).last);
+      await tester.pumpAndSettle();
+    }
+
+    // K:33 as on the display: block 2, place 12 (#512).
+    await pick('midi-bank', 'K');
+    await pick('midi-page', '3');
+    await pick('midi-button', '3');
+    expect(find.text('K:33'), findsOneWidget);
     expect(find.text('B0 00 00 B0 20 02 C0 0C'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('midi-send')));
@@ -78,7 +89,7 @@ void main() {
     expect(app.midiOutput.sent, [
       [0xB0, 0, 0, 0xB0, 32, 2, 0xC0, 12],
     ]);
-    await tester.drag(find.byType(ListView), const Offset(0, -2000));
+    await tester.drag(find.byType(ListView), const Offset(0, -4000));
     await tester.pumpAndSettle();
     expect(
       find.textContaining('Sent: B0 00 00 B0 20 02 C0 0C'),
@@ -96,6 +107,9 @@ void main() {
     await tester.tap(find.text('Nord song'));
     await tester.pumpAndSettle();
     expect(find.text('B0 00 01 B0 20 00 C0 00'), findsOneWidget);
+    await tester.enterText(find.byKey(const Key('midi-number')), '126');
+    await tester.pump();
+    expect(find.text('B0 00 01 B0 20 01 C0 00'), findsOneWidget);
 
     await tester.tap(find.text('Nord live'));
     await tester.pumpAndSettle();
@@ -146,7 +160,7 @@ void main() {
       ..receive([0x90, 60, 100]);
     await tester.pump();
     // The log is at the end of the list.
-    await tester.drag(find.byType(ListView), const Offset(0, -2000));
+    await tester.drag(find.byType(ListView), const Offset(0, -4000));
     await tester.pumpAndSettle();
 
     expect(
@@ -207,7 +221,7 @@ void main() {
     app.midiOutput.failConnect = true;
     await connect(tester);
     expect(find.text('Connected'), findsNothing);
-    await tester.drag(find.byType(ListView), const Offset(0, -2000));
+    await tester.drag(find.byType(ListView), const Offset(0, -4000));
     await tester.pumpAndSettle();
     expect(
       find.textContaining('Error: Bad state: device busy'),
@@ -251,5 +265,109 @@ void main() {
     await tester.pump();
     expect(find.text('Check the values'), findsOneWidget);
     await app.dispose(tester);
+  });
+
+  group('guided test', () {
+    Finder answer(String name) => find.byKey(Key('midi-guide-answer-$name'));
+
+    Future<void> tapKey(WidgetTester tester, Finder f) async {
+      await tester.ensureVisible(f);
+      await tester.pumpAndSettle();
+      await tester.tap(f);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('answers only after sending; the answer is logged', (
+      tester,
+    ) async {
+      Log.clear();
+      final app = await open(tester);
+      expect(find.textContaining('Step 1 of 17: Program A:11'), findsOneWidget);
+      final send = tester.widget<ButtonStyleButton>(
+        find.byKey(const Key('midi-guide-send')),
+      );
+      expect(send.onPressed, isNull);
+
+      await connect(tester);
+      expect(
+        tester.widget<ButtonStyleButton>(answer('asExpected')).onPressed,
+        isNull,
+      );
+      await tapKey(tester, find.byKey(const Key('midi-guide-send')));
+      expect(app.midiOutput.sent, [
+        [0xB0, 0, 0, 0xB0, 32, 0, 0xC0, 0],
+      ]);
+      await tapKey(tester, answer('asExpected'));
+
+      expect(find.textContaining('Step 2 of 17: Program E:55'), findsOneWidget);
+      expect(
+        Log.export(),
+        contains('[midi-test] Step 1 (Program A:11): As expected'),
+      );
+      await app.dispose(tester);
+    });
+
+    testWidgets('walks through every step to the end', (tester) async {
+      Log.clear();
+      final app = await open(tester);
+      await connect(tester);
+
+      for (var i = 0; i < 17; i++) {
+        await tapKey(tester, find.byKey(const Key('midi-guide-send')));
+        await tapKey(tester, answer('nothing'));
+      }
+      expect(
+        find.text('Test finished. The answers are in the log.'),
+        findsOneWidget,
+      );
+      expect(app.midiOutput.sent, [
+        [0xB0, 0, 0, 0xB0, 32, 0, 0xC0, 0], // A:11
+        [0xB0, 0, 0, 0xB0, 32, 0, 0xC0, 124], // E:55
+        [0xB0, 0, 0, 0xB0, 32, 1, 0xC0, 0], // F:11
+        [0xB0, 0, 0, 0xB0, 32, 2, 0xC0, 12], // K:33
+        [0xB0, 0, 0, 0xB0, 32, 3, 0xC0, 24], // P:55
+        [0xC0, 52], // live 3
+        [0xB0, 3, 127], // song mode on
+        [0xB0, 0, 1, 0xB0, 32, 0, 0xC0, 0], // song 1
+        [0xB0, 0, 1, 0xB0, 32, 0, 0xC0, 1], // song 2
+        [0xB0, 0, 1, 0xB0, 32, 0, 0xC0, 5], // song 6
+        [0xB0, 0, 1, 0xB0, 32, 1, 0xC0, 0], // song 126
+        [0xB0, 5, 1], // song part
+        [0xB0, 5, 0],
+        [0xB0, 3, 0], // song mode off
+        [0xB0, 2, 127], // live mode
+        [0xB0, 2, 0],
+        [0xB0, 0, 0, 0xB0, 32, 0, 0xC0, 0], // back to A:11
+      ]);
+
+      await tapKey(tester, find.byKey(const Key('midi-guide-restart')));
+      expect(find.textContaining('Step 1 of 17'), findsOneWidget);
+      await app.dispose(tester);
+    });
+
+    testWidgets('song steps ask what changed; skip and back', (tester) async {
+      final app = await open(tester);
+      await connect(tester);
+
+      for (var i = 0; i < 8; i++) {
+        await tapKey(tester, find.byKey(const Key('midi-guide-skip')));
+      }
+      expect(
+        find.textContaining('Step 9 of 17: Song number 2'),
+        findsOneWidget,
+      );
+      expect(answer('nextSong'), findsOneWidget);
+      expect(answer('nextPart'), findsOneWidget);
+      expect(answer('severalSongs'), findsOneWidget);
+
+      await tapKey(tester, find.byKey(const Key('midi-guide-back')));
+      expect(
+        find.textContaining('Step 8 of 17: Song number 1'),
+        findsOneWidget,
+      );
+      expect(answer('changed'), findsOneWidget);
+      expect(app.midiOutput.sent, isEmpty);
+      await app.dispose(tester);
+    });
   });
 }
