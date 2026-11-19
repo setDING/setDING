@@ -3266,6 +3266,26 @@ class AppLocalizationsDe extends AppLocalizations {
   String get midiTestModeMotif => 'Motif XF';
 
   @override
+  String midiProgramShortLive(int number) {
+    return 'Live $number';
+  }
+
+  @override
+  String midiProgramShortSong(int song, int part) {
+    return 'S$song:$part';
+  }
+
+  @override
+  String midiProgramShortPerformance(String name) {
+    return 'P $name';
+  }
+
+  @override
+  String midiProgramShortGeneric(int program, String msb, String lsb) {
+    return '$program ($msb/$lsb)';
+  }
+
+  @override
   String midiProgramValueLive(int number) {
     return 'Live-Speicher $number';
   }

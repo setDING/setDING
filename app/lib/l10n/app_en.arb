@@ -1511,6 +1511,48 @@
     }
   },
   "midiTestModeMotif": "Motif XF",
+  "midiProgramShortLive": "Live {number}",
+  "@midiProgramShortLive": {
+    "description": "Short form of a program in the keyboard program list (#599): a Nord live memory.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "midiProgramShortSong": "S{song}:{part}",
+  "@midiProgramShortSong": {
+    "placeholders": {
+      "song": {
+        "type": "int"
+      },
+      "part": {
+        "type": "int"
+      }
+    }
+  },
+  "midiProgramShortPerformance": "P {name}",
+  "@midiProgramShortPerformance": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "midiProgramShortGeneric": "{program} ({msb}/{lsb})",
+  "@midiProgramShortGeneric": {
+    "placeholders": {
+      "program": {
+        "type": "int"
+      },
+      "msb": {
+        "type": "String"
+      },
+      "lsb": {
+        "type": "String"
+      }
+    }
+  },
   "midiProgramValueLive": "Live memory {number}",
   "@midiProgramValueLive": {
     "placeholders": {

@@ -5587,6 +5587,30 @@ abstract class AppLocalizations {
   /// **'Motif XF'**
   String get midiTestModeMotif;
 
+  /// Short form of a program in the keyboard program list (#599): a Nord live memory.
+  ///
+  /// In de, this message translates to:
+  /// **'Live {number}'**
+  String midiProgramShortLive(int number);
+
+  /// No description provided for @midiProgramShortSong.
+  ///
+  /// In de, this message translates to:
+  /// **'S{song}:{part}'**
+  String midiProgramShortSong(int song, int part);
+
+  /// No description provided for @midiProgramShortPerformance.
+  ///
+  /// In de, this message translates to:
+  /// **'P {name}'**
+  String midiProgramShortPerformance(String name);
+
+  /// No description provided for @midiProgramShortGeneric.
+  ///
+  /// In de, this message translates to:
+  /// **'{program} ({msb}/{lsb})'**
+  String midiProgramShortGeneric(int program, String msb, String lsb);
+
   /// No description provided for @midiProgramValueLive.
   ///
   /// In de, this message translates to:

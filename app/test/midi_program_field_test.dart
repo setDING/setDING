@@ -1,7 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/data/song_repository.dart';
+import 'package:flutter/rendering.dart';
+import 'package:setding/l10n/generated/app_localizations.dart';
 import 'package:setding/midi/midi_message.dart';
+import 'package:setding/midi/midi_profile.dart';
 import 'package:setding/midi/midi_output.dart';
 import 'package:setding/ui/songs/midi_program_field.dart';
 import 'package:setding/ui/songs/song_screen.dart';
@@ -161,7 +164,7 @@ void main() {
         program: const MidiProgram(msb: 0, lsb: 2, program: 12),
       );
       expect(field, findsOneWidget);
-      expect(find.text('Program K:33'), findsOneWidget);
+      expect(find.text('K:33'), findsOneWidget);
       expect(find.textContaining('MIDI program changes are off'), findsOne);
       expect(enabled(tester, testButton), isFalse);
       await tap(tester, find.byKey(const Key('midi-program-remove')));
@@ -194,7 +197,7 @@ void main() {
         await stored(tester),
         const MidiProgram(msb: 0, lsb: 2, program: 12),
       );
-      expect(find.text('Program K:33'), findsOneWidget);
+      expect(find.text('K:33'), findsOneWidget);
       // Choosing sends nothing.
       expect(app.midiOutput.sent, isEmpty);
       await app.dispose(tester);
@@ -213,7 +216,7 @@ void main() {
         expect(preview(tester), 'Program $label');
         await save(tester);
         expect(await stored(tester), expected, reason: label);
-        expect(find.text('Program $label'), findsOneWidget);
+        expect(find.text(label), findsOneWidget);
       }
       // The picker starts with the stored program.
       await openPicker(tester);
@@ -233,7 +236,7 @@ void main() {
         await stored(tester),
         const MidiProgram(msb: 6, lsb: 0, program: 2),
       );
-      expect(find.text('Live memory 3'), findsOneWidget);
+      expect(find.text('Live 3'), findsOneWidget);
       await app.dispose(tester);
     });
 
@@ -277,7 +280,7 @@ void main() {
         await stored(tester),
         const MidiProgram(msb: 1, lsb: 0, program: 13),
       );
-      expect(find.text('Song 3, part 4'), findsOneWidget);
+      expect(find.text('S3:4'), findsOneWidget);
       await app.dispose(tester);
     });
 
@@ -286,7 +289,7 @@ void main() {
         tester,
         program: const MidiProgram(msb: 1, lsb: 0, program: 124),
       );
-      expect(find.text('Song 25, part 5'), findsOneWidget);
+      expect(find.text('S25:5'), findsOneWidget);
       await openPicker(tester);
       await tap(tester, find.byKey(const Key('midi-song-up')));
       await tap(tester, find.byKey(const Key('midi-part-0')));
@@ -326,7 +329,7 @@ void main() {
         tester,
         program: const MidiProgram(msb: 0, lsb: 2, program: 12),
       );
-      expect(find.text('Program K:33'), findsOneWidget);
+      expect(find.text('K:33'), findsOneWidget);
       await openPicker(tester);
       expect(preview(tester), 'Program K:33');
       await tap(tester, find.byKey(const Key('midi-kind-song')));
@@ -336,7 +339,7 @@ void main() {
         await stored(tester),
         const MidiProgram(msb: 1, lsb: 0, program: 1),
       );
-      expect(find.text('Song 1, part 2'), findsOneWidget);
+      expect(find.text('S1:2'), findsOneWidget);
       await app.dispose(tester);
     });
 
@@ -347,7 +350,7 @@ void main() {
         tester,
         program: const MidiProgram(msb: 0, lsb: 3, program: 124),
       );
-      expect(find.text('Program 125 · MSB 0 · LSB 3'), findsOneWidget);
+      expect(find.text('125 (0/3)'), findsOneWidget);
       await openPicker(tester);
       expect(find.byKey(const Key('midi-kind-generic')), findsOneWidget);
       expect(preview(tester), 'Program 125 · MSB 0 · LSB 3');
@@ -395,7 +398,7 @@ void main() {
         await stored(tester),
         const MidiProgram(msb: 0, lsb: 2, program: 12),
       );
-      expect(find.text('Program 13 · MSB 0 · LSB 2'), findsOneWidget);
+      expect(find.text('13 (0/2)'), findsOneWidget);
       await app.dispose(tester);
     });
 
@@ -415,7 +418,7 @@ void main() {
       await tester.pumpAndSettle();
       await save(tester);
       expect(await stored(tester), const MidiProgram(program: 127));
-      expect(find.text('Program 128'), findsOneWidget);
+      expect(find.text('128'), findsOneWidget);
       await app.dispose(tester);
     });
   });
@@ -426,7 +429,7 @@ void main() {
       tester,
       program: const MidiProgram(msb: 0, lsb: 0, program: 0),
     );
-    expect(find.text('Program A:11'), findsOneWidget);
+    expect(find.text('A:11'), findsOneWidget);
     await tap(tester, find.byKey(const Key('midi-program-remove')));
     await tester.runAsync(() => Future<void>.delayed(Duration.zero));
     await tester.pumpAndSettle();
@@ -459,7 +462,7 @@ void main() {
         await stored(tester),
         const MidiProgram(msb: 63, lsb: 65, program: 36),
       );
-      expect(find.text('Performance USR2 C05'), findsOneWidget);
+      expect(find.text('P USR2 C05'), findsOneWidget);
       expect(app.midiOutput.sent, isEmpty);
       await app.dispose(tester);
     });
@@ -499,7 +502,7 @@ void main() {
         prefs: motifOn,
         program: const MidiProgram(msb: 63, lsb: 64, program: 0),
       );
-      expect(find.text('Performance USR1 A01'), findsOneWidget);
+      expect(find.text('P USR1 A01'), findsOneWidget);
       await tap(tester, testButton);
       expect(app.midiOutput.sent, [
         [
@@ -581,7 +584,7 @@ void main() {
         program: nord,
         others: const MidiPrograms({'generic': generic}),
       );
-      expect(find.text('Program K:33'), findsOneWidget);
+      expect(find.text('K:33'), findsOneWidget);
       // Both in one list: this device's profile first (#597).
       expect(
         tester.getTopLeft(find.byKey(const Key('midi-program-active'))).dy,
@@ -595,7 +598,7 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.descendant(of: other, matching: find.text('Program 5 · MSB 1')),
+        find.descendant(of: other, matching: find.text('5 (1/–)')),
         findsOneWidget,
       );
 
@@ -659,12 +662,12 @@ void main() {
         tester
             .widget<ActionChip>(find.byKey(const Key('midi-program-value')))
             .label,
-        isA<Text>().having((t) => t.data, 'text', 'Program 5 · MSB 1'),
+        isA<Text>().having((t) => t.data, 'text', '5 (1/–)'),
       );
       expect(
         find.descendant(
           of: find.byKey(const Key('midi-other-nordStage3')),
-          matching: find.text('Program K:33'),
+          matching: find.text('K:33'),
         ),
         findsOneWidget,
       );
@@ -699,7 +702,74 @@ void main() {
     });
   });
 
+  group('short labels (#599)', () {
+    testWidgets('every kind in its short form, the full form as tooltip', (
+      tester,
+    ) async {
+      await pumpSong(tester);
+      final l10n = lookupAppLocalizations(const Locale('en'));
+      final cases = <MidiPatch, (String, String)>{
+        const NordProgram(10, 3, 3): ('K:33', 'Program K:33'),
+        const NordLiveMemory(2): ('Live 2', 'Live memory 2'),
+        const NordSong(1, 2): ('S1:2', 'Song 1, part 2'),
+        const MotifVoice(0, 0): ('PRE1 A01', 'Voice PRE1 A01'),
+        const MotifPerformance(1, 17): ('P USR2 B02', 'Performance USR2 B02'),
+        const GenericProgram(msb: 0, lsb: 3, program: 125): (
+          '125 (0/3)',
+          'Program 125 · MSB 0 · LSB 3',
+        ),
+        const GenericProgram(msb: 1, program: 5): (
+          '5 (1/–)',
+          'Program 5 · MSB 1',
+        ),
+        const GenericProgram(program: 128): ('128', 'Program 128'),
+      };
+      for (final MapEntry(key: patch, value: (short, full)) in cases.entries) {
+        expect(midiPatchShortLabel(l10n, patch), short, reason: full);
+        expect(midiPatchLabel(l10n, patch), full);
+      }
+      await app.dispose(tester);
+    });
+
+    testWidgets('the chip keeps the whole program on a tablet', (tester) async {
+      // The test font draws every character as wide as it is high, so
+      // the labels here are short ones.
+      await pumpSong(
+        tester,
+        size: const Size(800, 1280),
+        program: const MidiProgram(msb: 6, lsb: 0, program: 2),
+        others: const MidiPrograms({
+          'generic': MidiProgram(msb: 1, program: 4),
+        }),
+      );
+      expect(tester.takeException(), isNull);
+      expect(find.byTooltip('Live memory 3'), findsOneWidget);
+      expect(find.byTooltip('Program 5 · MSB 1'), findsOneWidget);
+      for (final text in ['Live 3', '5 (1/–)']) {
+        final label = tester.renderObject<RenderParagraph>(find.text(text));
+        expect(label.didExceedMaxLines, isFalse, reason: text);
+      }
+      await app.dispose(tester);
+    });
+  });
+
   group('phone width', () {
+    testWidgets('the program rows fit (#599)', (tester) async {
+      await pumpSong(
+        tester,
+        prefs: {...midiOn, 'midiProfile': 'motifXf'},
+        size: const Size(360, 740),
+        program: const MidiProgram(msb: 63, lsb: 65, program: 20),
+        others: const MidiPrograms({
+          'generic': MidiProgram(msb: 127, lsb: 127, program: 127),
+          'nordStage3': MidiProgram(msb: 1, lsb: 3, program: 124),
+        }),
+      );
+      expect(tester.takeException(), isNull);
+      expect(find.byTooltip('Performance USR2 B05'), findsOneWidget);
+      await app.dispose(tester);
+    });
+
     for (final (name, prefs) in [
       ('Nord', midiOn),
       ('generic', {...midiOn, 'midiProfile': 'generic'}),
@@ -742,7 +812,8 @@ void main() {
     );
     expect(find.text('Keyboard-Programme'), findsOneWidget);
     expect(find.text('Dieses Gerät: Nord Stage 3'), findsOneWidget);
-    expect(find.text('Song 2, Teil 3'), findsOneWidget);
+    expect(find.text('S2:3'), findsOneWidget);
+    expect(find.byTooltip('Song 2, Teil 3'), findsOneWidget);
     expect(
       find.byTooltip('Sendet das Programm einmal ans Keyboard'),
       findsOneWidget,
