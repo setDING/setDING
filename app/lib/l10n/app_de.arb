@@ -263,6 +263,23 @@
   },
   "liveMidiNotConnected": "Keyboard nicht verbunden",
   "liveMidiSendAgain": "Programm erneut senden",
+  "liveMidiButton": "Keyboard-Programm (lange drücken: erneut senden)",
+  "liveMidiChange": "Programm ändern",
+  "liveMidiSameAsPrevious": "Wie vorheriger Song",
+  "liveMidiPreviousProgram": "{program} – aus «{title}»",
+  "@liveMidiPreviousProgram": {
+    "placeholders": {
+      "program": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "liveMidiNoPrevious": "Kein früherer Song mit Programm",
+  "liveMidiSaved": "Keyboard-Programm gespeichert",
+  "liveMidiRemoved": "Keyboard-Programm entfernt",
   "liveWakeLockNotice": "Bildschirm kann sich ausschalten – Energieeinstellungen des Geräts prüfen",
   "liveEnd": "Ende des Sets",
   "liveSetOverview": "Set-Übersicht",
@@ -1646,6 +1663,8 @@
   "midiProgramHint": "Wird im Live-Modus ans Keyboard gesendet, wenn dieser Song an der Reihe ist.",
   "midiProgramNone": "Keines: das Keyboard behält seinen Klang",
   "midiProgramChoose": "Programm wählen",
+  "midiProgramPreviewSwitch": "Beim Auswählen senden",
+  "midiProgramPreviewHint": "Jede Auswahl geht sofort ans Keyboard; «Abbrechen» stellt das bisherige Programm wieder her.",
   "midiProgramRemove": "Programm entfernen",
   "midiProgramTest": "Test",
   "midiProgramTestHint": "Sendet das Programm einmal ans Keyboard",

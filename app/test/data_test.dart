@@ -257,6 +257,30 @@ void main() {
       expect(await songs.midiProgram(id, 'nordStage3'), isNull);
     });
 
+    test('restoring the programs undoes a change, also to "never written" '
+        '(#607)', () async {
+      final id = await songs.createSong(title: 'X');
+      const legacy = MidiProgram(msb: 0, lsb: 2, program: 12);
+      const organ = MidiProgram(program: 4);
+      // Only a v0.16.0 program: the map was never written.
+      await songs.saveOverlay(
+        (await songs.getOverlay(id)).copyWith(midi: const Value(legacy)),
+      );
+      final before = (await songs.getOverlay(id)).midiPrograms;
+      expect(before, isNull);
+      await songs.setMidiProgram(
+        id,
+        'nordStage3',
+        organ,
+        deviceProfile: 'nordStage3',
+      );
+      expect(await songs.midiProgram(id, 'nordStage3'), organ);
+
+      await songs.restoreMidiPrograms(id, before);
+      expect((await songs.getOverlay(id)).midiPrograms, isNull);
+      expect(await songs.midiProgram(id, 'nordStage3'), legacy);
+    });
+
     test('stored programs per profile that cannot be read are none', () async {
       final id = await songs.createSong(title: 'X');
       await songs.updateOverlay(id, (o) => o.copyWith(transpose: 1));

@@ -508,6 +508,30 @@ class AppLocalizationsDe extends AppLocalizations {
   String get liveMidiSendAgain => 'Programm erneut senden';
 
   @override
+  String get liveMidiButton =>
+      'Keyboard-Programm (lange drücken: erneut senden)';
+
+  @override
+  String get liveMidiChange => 'Programm ändern';
+
+  @override
+  String get liveMidiSameAsPrevious => 'Wie vorheriger Song';
+
+  @override
+  String liveMidiPreviousProgram(String program, String title) {
+    return '$program – aus «$title»';
+  }
+
+  @override
+  String get liveMidiNoPrevious => 'Kein früherer Song mit Programm';
+
+  @override
+  String get liveMidiSaved => 'Keyboard-Programm gespeichert';
+
+  @override
+  String get liveMidiRemoved => 'Keyboard-Programm entfernt';
+
+  @override
   String get liveWakeLockNotice =>
       'Bildschirm kann sich ausschalten – Energieeinstellungen des Geräts prüfen';
 
@@ -3129,6 +3153,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get midiProgramChoose => 'Programm wählen';
+
+  @override
+  String get midiProgramPreviewSwitch => 'Beim Auswählen senden';
+
+  @override
+  String get midiProgramPreviewHint =>
+      'Jede Auswahl geht sofort ans Keyboard; «Abbrechen» stellt das bisherige Programm wieder her.';
 
   @override
   String get midiProgramRemove => 'Programm entfernen';

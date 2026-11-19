@@ -20,6 +20,9 @@ void main() {
   String versesSong(int verses) =>
       '{title: Long}\n${List.generate(verses, (_) => '{start_of_verse}\n${List.filled(4, '[C]La la [G]la').join('\n')}\n{end_of_verse}').join('\n')}';
 
+  /// The ids of the songs [start] created, in order.
+  var ids = <String>[];
+
   /// Live mode with songs of [sources] and their [programs]; a null source
   /// is a break.
   Future<TestApp> start(
@@ -36,6 +39,7 @@ void main() {
       prefs: {'language': 'en', 'instrument': 'keyboard', ...prefs},
     );
     if (plugged) app.midiOutput.ports = [_nord];
+    ids = [];
     final items = (await tester.runAsync(() async {
       final items = <LiveItem>[];
       for (final (i, source) in sources.indexed) {
@@ -44,6 +48,7 @@ void main() {
           continue;
         }
         final id = await app.songs.createSong(source: source);
+        ids.add(id);
         if (i < programs.length && programs[i] != null) {
           await app.songs.setMidiProgram(
             id,
@@ -213,9 +218,11 @@ void main() {
 
     await tester.tapAt(tester.getCenter(find.byType(PageView)));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Send program again'));
+    // A long press on the keyboard symbol sends at once (#607).
+    await tester.longPress(find.byKey(const Key('live-midi-button')));
     await tester.pumpAndSettle();
     expect(midi.sent, bytes([_piano, _piano]));
+    expect(find.byKey(const Key('live-midi-sheet')), findsNothing);
     await app.dispose(tester);
   });
 
@@ -287,7 +294,7 @@ void main() {
     await tester.tapAt(tester.getCenter(find.byType(PageView)));
     await tester.pumpAndSettle();
     expect(find.byTooltip('Set overview'), findsOneWidget);
-    expect(find.byTooltip('Send program again'), findsNothing);
+    expect(find.byKey(const Key('live-midi-button')), findsNothing);
     expect(app.midiOutput.sent, isEmpty);
     await app.dispose(tester);
   });
@@ -306,7 +313,7 @@ void main() {
     await tester.tapAt(tester.getCenter(find.byType(PageView)));
     await tester.pumpAndSettle();
     expect(find.byTooltip('Set overview'), findsOneWidget);
-    expect(find.byTooltip('Send program again'), findsNothing);
+    expect(find.byKey(const Key('live-midi-button')), findsNothing);
     expect(app.midiOutput.sent, isEmpty);
     await app.dispose(tester);
   });
@@ -316,8 +323,231 @@ void main() {
     await tester.tapAt(tester.getCenter(find.byType(PageView)));
     await tester.pumpAndSettle();
     expect(find.byTooltip('Set overview'), findsOneWidget);
-    expect(find.byTooltip('Send program again'), findsNothing);
+    expect(find.byKey(const Key('live-midi-button')), findsNothing);
     expect(find.byKey(const Key('live-midi-connected')), findsOneWidget);
     await app.dispose(tester);
+  });
+
+  group('the keyboard program sheet (#607)', () {
+    Future<void> openSheet(WidgetTester tester) async {
+      // The controls may still be shown from before.
+      if (find.byKey(const Key('live-midi-button')).evaluate().isEmpty) {
+        await tester.tapAt(tester.getCenter(find.byType(PageView)));
+        await tester.pumpAndSettle();
+      }
+      await tester.tap(find.byKey(const Key('live-midi-button')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('live-midi-sheet')), findsOneWidget);
+    }
+
+    Future<MidiProgram?> stored(WidgetTester tester, TestApp app, int i) =>
+        tester
+            .runAsync(() => app.songs.midiProgram(ids[i], 'nordStage3'))
+            .then((p) => p);
+
+    String current(WidgetTester tester) => tester
+        .widget<Text>(find.byKey(const Key('live-midi-sheet-current')))
+        .data!;
+
+    // Bank B with the page and button of _piano (A:12).
+    const bankB = MidiProgram(msb: 0, lsb: 0, program: 26);
+
+    testWidgets('shows the program and sends it again', (tester) async {
+      final app = await start(
+        tester,
+        sources: ['{title: One}\n[C]La'],
+        programs: [_piano],
+      );
+      await stay(tester);
+      await openSheet(tester);
+      expect(current(tester), 'Program A:12');
+      await tester.tap(find.byKey(const Key('live-midi-sheet-send')));
+      await tester.pumpAndSettle();
+      expect(app.midiOutput.sent, bytes([_piano, _piano]));
+      expect(find.byKey(const Key('live-midi-sheet')), findsNothing);
+      await app.dispose(tester);
+    });
+
+    testWidgets('changing saves and sends at once; Undo restores and sends '
+        'the old program', (tester) async {
+      final app = await start(
+        tester,
+        sources: ['{title: One}\n[C]La'],
+        programs: [_piano],
+      );
+      await stay(tester);
+      await openSheet(tester);
+      await tester.tap(find.byKey(const Key('live-midi-sheet-change')));
+      await tester.pumpAndSettle();
+      // Without the preview nothing is sent while choosing.
+      await tester.tap(find.byKey(const Key('midi-bank-1')));
+      await tester.pumpAndSettle();
+      expect(app.midiOutput.sent, bytes([_piano]));
+      await tester.tap(find.byKey(const Key('midi-program-save')));
+      await tester.pumpAndSettle();
+      expect(await stored(tester, app, 0), bankB);
+      expect(app.midiOutput.sent, bytes([_piano, bankB]));
+      expect(find.text('Keyboard program saved'), findsOneWidget);
+      expect(
+        tester.widget<Text>(find.byKey(const Key('live-midi-program'))).data,
+        'B:12',
+      );
+
+      await tester.tap(find.text('Undo'));
+      await tester.pumpAndSettle();
+      expect(await stored(tester, app, 0), _piano);
+      expect(app.midiOutput.sent, bytes([_piano, bankB, _piano]));
+      await app.dispose(tester);
+    });
+
+    testWidgets('the preview sends each choice, Cancel sends the song\'s '
+        'program again, and the switch is remembered', (tester) async {
+      final app = await start(
+        tester,
+        sources: ['{title: One}\n[C]La'],
+        programs: [_piano],
+      );
+      await stay(tester);
+      await openSheet(tester);
+      await tester.tap(find.byKey(const Key('live-midi-sheet-change')));
+      await tester.pumpAndSettle();
+      final toggle = find.byKey(const Key('midi-program-preview-switch'));
+      await tester.ensureVisible(toggle);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      // Switching it on sends nothing: the keyboard plays the program.
+      expect(app.midiOutput.sent, bytes([_piano]));
+      expect(app.prefs.getBool('midiPreview'), isTrue);
+      await tester.ensureVisible(find.byKey(const Key('midi-bank-1')));
+      await tester.tap(find.byKey(const Key('midi-bank-1')));
+      await tester.pumpAndSettle();
+      expect(app.midiOutput.sent, bytes([_piano, bankB]));
+
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(app.midiOutput.sent, bytes([_piano, bankB, _piano]));
+      expect(await stored(tester, app, 0), _piano);
+
+      // Next time the preview is on from the start.
+      await openSheet(tester);
+      await tester.tap(find.byKey(const Key('live-midi-sheet-change')));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(toggle);
+      expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
+      await app.dispose(tester);
+    });
+
+    testWidgets('with the preview on, opening the picker for a song '
+        'without a program sends nothing until a choice', (tester) async {
+      final app = await start(
+        tester,
+        prefs: {...midiOn, 'midiPreview': true},
+        sources: ['{title: One}\n[C]La'],
+      );
+      await stay(tester);
+      await openSheet(tester);
+      await tester.tap(find.byKey(const Key('live-midi-sheet-change')));
+      await tester.pumpAndSettle();
+      expect(app.midiOutput.sent, isEmpty);
+      await tester.tap(find.byKey(const Key('midi-bank-1')));
+      await tester.pumpAndSettle();
+      expect(
+        app.midiOutput.sent,
+        bytes([const MidiProgram(msb: 0, lsb: 0, program: 25)]),
+      );
+      // Cancelled: the song has no program, the keyboard keeps the sound.
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(app.midiOutput.sent.length, 1);
+      expect(await stored(tester, app, 0), isNull);
+      await app.dispose(tester);
+    });
+
+    testWidgets('a song without a program offers to set one; nothing to '
+        'send or remove', (tester) async {
+      final app = await start(tester, sources: ['{title: One}\n[C]La']);
+      await stay(tester);
+      await openSheet(tester);
+      expect(current(tester), 'None: the keyboard keeps its sound');
+      expect(find.text('Choose program'), findsOneWidget);
+      expect(
+        tester
+            .widget<ListTile>(find.byKey(const Key('live-midi-sheet-send')))
+            .enabled,
+        isFalse,
+      );
+      expect(find.byKey(const Key('live-midi-sheet-remove')), findsNothing);
+      await app.dispose(tester);
+    });
+
+    testWidgets('"Same as previous song" takes the nearest earlier song '
+        'with a program, skipping breaks and songs without one', (
+      tester,
+    ) async {
+      final app = await start(
+        tester,
+        sources: [
+          '{title: One}\n[C]La',
+          '{title: Two}\n[D]La',
+          null,
+          '{title: Four}\n[E]La',
+          '{title: Five}\n[F]La',
+        ],
+        programs: [_piano, _organ, null, null, null],
+      );
+      for (var i = 0; i < 4; i++) {
+        await tapRight(tester);
+      }
+      await stay(tester);
+      expect(find.text('5 / 5'), findsOneWidget);
+      final sentBefore = app.midiOutput.sent.length;
+      await openSheet(tester);
+      final previous = find.byKey(const Key('live-midi-sheet-previous'));
+      expect(
+        find.descendant(of: previous, matching: find.text('K:33 – from “Two”')),
+        findsOneWidget,
+      );
+      await tester.tap(previous);
+      await tester.pumpAndSettle();
+      expect(await stored(tester, app, 3), _organ);
+      expect(app.midiOutput.sent.length, sentBefore + 1);
+      expect(app.midiOutput.sent.last, _organ.bytes(1));
+      await app.dispose(tester);
+    });
+
+    testWidgets('"Same as previous song" is off for the first song', (
+      tester,
+    ) async {
+      final app = await start(
+        tester,
+        sources: ['{title: One}\n[C]La'],
+        programs: [_piano],
+      );
+      await openSheet(tester);
+      final previous = find.byKey(const Key('live-midi-sheet-previous'));
+      expect(tester.widget<ListTile>(previous).enabled, isFalse);
+      expect(find.text('No earlier song with a program'), findsOneWidget);
+      await app.dispose(tester);
+    });
+
+    testWidgets('removing sends nothing; Undo brings it back', (tester) async {
+      final app = await start(
+        tester,
+        sources: ['{title: One}\n[C]La'],
+        programs: [_piano],
+      );
+      await stay(tester);
+      await openSheet(tester);
+      await tester.tap(find.byKey(const Key('live-midi-sheet-remove')));
+      await tester.pumpAndSettle();
+      expect(await stored(tester, app, 0), isNull);
+      expect(app.midiOutput.sent, bytes([_piano]));
+      expect(find.text('Keyboard program removed'), findsOneWidget);
+      await tester.tap(find.text('Undo'));
+      await tester.pumpAndSettle();
+      expect(await stored(tester, app, 0), _piano);
+      expect(app.midiOutput.sent, bytes([_piano]));
+      await app.dispose(tester);
+    });
   });
 }

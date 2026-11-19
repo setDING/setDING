@@ -188,6 +188,11 @@ void main() {
       expect(find.byKey(const Key('midi-kind-live')), findsOneWidget);
       expect(find.byKey(const Key('midi-kind-song')), findsOneWidget);
       expect(preview(tester), 'Program A:11');
+      // Sending while selecting is offered in live mode only (#607).
+      expect(
+        find.byKey(const Key('midi-program-preview-switch')),
+        findsNothing,
+      );
 
       await tap(tester, find.byKey(const Key('midi-bank-10')));
       await tap(tester, find.byKey(const Key('midi-cell-33')));
