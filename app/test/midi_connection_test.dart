@@ -22,7 +22,7 @@ void main() {
     Map<String, Object> prefs = const {},
     List<MidiPortInfo> ports = const [],
   ]) async {
-    app = await TestApp.create(prefs: prefs);
+    app = await TestApp.create(prefs: {'instrument': 'keyboard', ...prefs});
     midi = app.midiOutput..ports = ports;
     container = ProviderContainer(overrides: app.overrides);
     // As the app does from its start.
@@ -49,6 +49,27 @@ void main() {
     await container.read(settingsProvider.notifier).update(f);
     await settle();
   }
+
+  test('off for another instrument: does not touch MIDI, sends nothing and '
+      'connects once the instrument is keyboard (#578)', () async {
+    await start(
+      {
+        'instrument': 'guitar',
+        'midiEnabled': true,
+        'midiOutputName': 'Nord Stage 3',
+      },
+      [_nord],
+    );
+    await settle();
+    expect(status(), MidiStatus.off);
+    expect(midi.connects, isEmpty);
+    expect(connection().send(const MidiProgram(program: 1)), isFalse);
+    expect(midi.sent, isEmpty);
+
+    await change((s) => s.copyWith(instrument: 'keyboard'));
+    expect(status().enabled, isTrue);
+    expect(status().connected, isTrue);
+  });
 
   test('off by default: does not touch MIDI and sends nothing', () async {
     await start();

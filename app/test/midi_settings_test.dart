@@ -17,7 +17,9 @@ void main() {
   Future<TestApp> pumpMidiSettings(WidgetTester tester) async {
     useTabletSize(tester);
     tester.view.physicalSize = const Size(1280, 2400);
-    final app = await TestApp.create(prefs: {'language': 'en'});
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'instrument': 'keyboard'},
+    );
     app.midiOutput.ports = [_nord, _other];
     await tester.pumpWidget(app.build(home: const SettingsScreen()));
     await tester.pumpAndSettle();
@@ -133,7 +135,7 @@ void main() {
     useTabletSize(tester);
     tester.view.physicalSize = const Size(1280, 2400);
     final app = await TestApp.create(
-      prefs: {'language': 'de', 'midiEnabled': true},
+      prefs: {'language': 'de', 'instrument': 'keyboard', 'midiEnabled': true},
     );
     await tester.pumpWidget(app.build(home: const SettingsScreen()));
     await tester.pumpAndSettle();

@@ -96,6 +96,17 @@ void main() {
     expect(AppSettings.scopes['developerMode'], SettingSyncScope.personal);
   });
 
+  test('MIDI is in use only for keyboard players (#578)', () {
+    const on = AppSettings(midiEnabled: true, instrument: 'keyboard');
+    expect(on.isKeyboard, isTrue);
+    expect(on.midiActive, isTrue);
+    expect(on.copyWith(instrument: ' Keyboard ').midiActive, isTrue);
+    expect(on.copyWith(instrument: 'guitar').midiActive, isFalse);
+    expect(on.copyWith(midiEnabled: false).midiActive, isFalse);
+    // The device setting itself is kept for another instrument.
+    expect(on.copyWith(instrument: 'guitar').midiEnabled, isTrue);
+  });
+
   test('MIDI settings: defaults, round trip, device only (ADR-0039)', () {
     const d = AppSettings();
     expect(d.midiEnabled, isFalse);

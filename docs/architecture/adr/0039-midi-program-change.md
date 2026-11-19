@@ -84,7 +84,11 @@ else is sent automatically.
 ### Device settings: profile, output, channel
 
 The MIDI settings belong to the hardware on the stage, so they are **device
-settings** (layer 4b, ADR-0027), never synced:
+settings** (layer 4b, ADR-0027), never synced. They are offered and used only
+while the musician's instrument (a personal setting) is **keyboard**: with
+another instrument the *Keyboard (MIDI)* category is not listed, nothing is
+connected or sent, and the song's keyboard program field is hidden; the
+settings and stored programs are kept.
 
 | Setting | Values | Default |
 |---|---|---|
@@ -327,6 +331,14 @@ settings** (layer 4b, ADR-0027), never synced:
   during live mode gets the current program with "Send program again", not
   automatically. User documentation page *Connecting a keyboard (MIDI)* in
   the live mode chapter of the website.
+- 2026-11-19: MIDI only for keyboard players (owner, #578): the *Keyboard
+  (MIDI)* settings category is listed only while the instrument in the
+  *Musician* settings is keyboard, and MIDI as a whole follows it
+  (`AppSettings.midiActive` = switched on and keyboard): with another
+  instrument nothing is connected or sent, the live indicator and "Send
+  program again" are hidden, and the song's keyboard program field is hidden
+  even when the song has a program. The device settings and stored programs
+  are kept, so choosing keyboard again restores everything.
 
 ## Open points
 

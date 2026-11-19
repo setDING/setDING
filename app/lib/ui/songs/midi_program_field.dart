@@ -40,9 +40,13 @@ class MidiProgramField extends ConsumerWidget {
   /// The stored program; null = none.
   final MidiProgram? program;
 
-  /// Whether the field is shown on this device.
-  static bool visible({required bool midiEnabled, MidiProgram? program}) =>
-      midiEnabled || program != null;
+  /// Whether the field is shown on this device: only for keyboard players
+  /// (ADR-0039), when MIDI is on or the song already has a program.
+  static bool visible({
+    required bool keyboard,
+    required bool midiEnabled,
+    MidiProgram? program,
+  }) => keyboard && (midiEnabled || program != null);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

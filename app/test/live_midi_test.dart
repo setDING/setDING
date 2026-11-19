@@ -30,7 +30,9 @@ void main() {
     List<MidiProgram?> programs = const [],
   }) async {
     useTabletSize(tester);
-    final app = await TestApp.create(prefs: {'language': 'en', ...prefs});
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'instrument': 'keyboard', ...prefs},
+    );
     if (plugged) app.midiOutput.ports = [_nord];
     final items = (await tester.runAsync(() async {
       final items = <LiveItem>[];
@@ -196,6 +198,25 @@ void main() {
     final app = await start(
       tester,
       prefs: const {},
+      sources: ['{title: One}\n[C]La'],
+      programs: [_piano],
+    );
+    await stay(tester);
+    expect(find.byKey(const Key('live-midi-connected')), findsNothing);
+    expect(find.byKey(const Key('live-midi-not-connected')), findsNothing);
+    await tester.tapAt(tester.getCenter(find.byType(PageView)));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Set overview'), findsOneWidget);
+    expect(find.byTooltip('Send program again'), findsNothing);
+    expect(app.midiOutput.sent, isEmpty);
+    await app.dispose(tester);
+  });
+
+  testWidgets('another instrument: no indicator, no "Send program again", '
+      'nothing sent although MIDI is on (#578)', (tester) async {
+    final app = await start(
+      tester,
+      prefs: const {...midiOn, 'instrument': 'guitar'},
       sources: ['{title: One}\n[C]La'],
       programs: [_piano],
     );

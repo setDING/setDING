@@ -42,8 +42,11 @@ void main() {
 
     for (final c in SettingsCategory.values) {
       // Organizations and bands only when signed in (see below), the test
-      // features only in developer mode (#559).
-      if (c == SettingsCategory.bands || c == SettingsCategory.development) {
+      // features only in developer mode (#559), the keyboard MIDI settings
+      // only for keyboard players (#578).
+      if (c == SettingsCategory.bands ||
+          c == SettingsCategory.development ||
+          c == SettingsCategory.midi) {
         continue;
       }
       final category = find.byKey(Key('settings-category-${c.name}'));
@@ -384,6 +387,44 @@ void main() {
     await tester.pumpAndSettle();
     expect(development, findsNothing);
     expect(midi, findsNothing);
+    expect(find.text('Language'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('the keyboard MIDI settings only for keyboard players (#578)', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    // Tall enough to list all categories without scrolling.
+    tester.view.physicalSize = const Size(1280, 2000);
+    final app = await pumpSettings(tester);
+    final midi = find.byKey(const Key('settings-category-midi'));
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(SettingsScreen)),
+    );
+    Future<void> instrument(String value) async {
+      await tester.runAsync(
+        () => container
+            .read(settingsProvider.notifier)
+            .update((s) => s.copyWith(instrument: value)),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    // Guitar by default: not listed.
+    expect(container.read(settingsProvider).instrument, 'guitar');
+    expect(midi, findsNothing);
+
+    await instrument('keyboard');
+    expect(midi, findsOneWidget);
+    await tester.tap(midi);
+    await tester.pumpAndSettle();
+    expect(find.text('MIDI program changes'), findsOneWidget);
+
+    // Another instrument while the category is shown: back to the first one.
+    await instrument('bass');
+    expect(midi, findsNothing);
+    expect(find.text('MIDI program changes'), findsNothing);
     expect(find.text('Language'), findsOneWidget);
     await app.dispose(tester);
   });
