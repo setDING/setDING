@@ -72,6 +72,19 @@ void main() {
     });
   });
 
+  group('midiControlChange', () {
+    test('status byte with channel, controller, value', () {
+      expect(midiControlChange(1, 3, 127), [0xB0, 3, 127]);
+      expect(midiControlChange(16, 5, 0), [0xBF, 5, 0]);
+    });
+
+    test('rejects values outside 0–127 and channels outside 1–16', () {
+      expect(() => midiControlChange(0, 3, 1), throwsRangeError);
+      expect(() => midiControlChange(1, 128, 1), throwsRangeError);
+      expect(() => midiControlChange(1, 3, -1), throwsRangeError);
+    });
+  });
+
   test('midiHex writes upper-case pairs', () {
     expect(midiHex([0xB0, 0, 32, 0xC0, 12]), 'B0 00 20 C0 0C');
   });

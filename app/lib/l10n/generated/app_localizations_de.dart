@@ -2895,4 +2895,17 @@ class AppLocalizationsDe extends AppLocalizations {
   String midiTestError(String message) {
     return 'Fehler: $message';
   }
+
+  @override
+  String get midiTestModeCc => 'Controller';
+
+  @override
+  String get midiTestController => 'Controller (CC 0–127)';
+
+  @override
+  String get midiTestValue => 'Wert (0–127)';
+
+  @override
+  String get midiTestCcHint =>
+      'Nord Stage 3 laut midi.guide: CC 2 Live-Modus, CC 3 Song-Modus, CC 5 Song-Teil. Welche Werte was bewirken, gehört zum Test.';
 }

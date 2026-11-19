@@ -78,6 +78,16 @@ abstract final class NordStage3 {
   }
 }
 
+/// A control change [controller] = [value] on [channel] (1–16), e.g. the
+/// mode switches of the Nord Stage 3 (CC 2 live mode, CC 3 song mode, CC 5
+/// song part, listed on midi.guide; their values are checked by #512).
+Uint8List midiControlChange(int channel, int controller, int value) {
+  RangeError.checkValueInInterval(channel, 1, 16, 'channel');
+  RangeError.checkValueInInterval(controller, 0, 127, 'controller');
+  RangeError.checkValueInInterval(value, 0, 127, 'value');
+  return Uint8List.fromList([0xB0 | (channel - 1), controller, value]);
+}
+
 /// The bytes as hex pairs, e.g. `B0 00 00 C0 0C`.
 String midiHex(List<int> bytes) => bytes
     .map((b) => b.toRadixString(16).padLeft(2, '0').toUpperCase())

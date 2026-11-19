@@ -18,7 +18,7 @@ class MidiTestScreen extends ConsumerStatefulWidget {
   ConsumerState<MidiTestScreen> createState() => _MidiTestScreenState();
 }
 
-enum _Mode { nordProgram, nordSong, nordLive, raw }
+enum _Mode { nordProgram, nordSong, nordLive, raw, controlChange }
 
 class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
   late final MidiOutput _midi;
@@ -34,6 +34,8 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
   final _msb = TextEditingController();
   final _lsb = TextEditingController();
   final _program = TextEditingController(text: '1');
+  final _controller = TextEditingController(text: '3');
+  final _value = TextEditingController(text: '127');
   final _log = <String>[];
 
   @override
@@ -58,6 +60,8 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
     _msb.dispose();
     _lsb.dispose();
     _program.dispose();
+    _controller.dispose();
+    _value.dispose();
     super.dispose();
   }
 
@@ -111,8 +115,8 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
     setState(() => _log.insert(0, '$time  $line'));
   }
 
-  /// The program to send, or null if a value is invalid.
-  MidiProgram? get _selected {
+  /// The bytes to send, or null if a value is invalid.
+  Uint8List? get _selected {
     int? read(TextEditingController c, int min, int max) {
       final v = int.tryParse(c.text.trim());
       return v != null && v >= min && v <= max ? v : null;
@@ -123,11 +127,12 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
       case _Mode.nordSong:
         final n = read(_number, 1, NordStage3.programsPerBank);
         if (n == null) return null;
-        return _mode == _Mode.nordProgram
-            ? NordStage3.program(_bank, n)
-            : NordStage3.song(_bank, n);
+        return (_mode == _Mode.nordProgram
+                ? NordStage3.program(_bank, n)
+                : NordStage3.song(_bank, n))
+            .bytes(_channel);
       case _Mode.nordLive:
-        return NordStage3.live(_live);
+        return NordStage3.live(_live).bytes(_channel);
       case _Mode.raw:
         final program = read(_program, 1, 128);
         final msb = read(_msb, 0, 127);
@@ -137,13 +142,21 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
             (_lsb.text.trim().isNotEmpty && lsb == null)) {
           return null;
         }
-        return MidiProgram(msb: msb, lsb: lsb, program: program - 1);
+        return MidiProgram(
+          msb: msb,
+          lsb: lsb,
+          program: program - 1,
+        ).bytes(_channel);
+      case _Mode.controlChange:
+        final controller = read(_controller, 0, 127);
+        final value = read(_value, 0, 127);
+        if (controller == null || value == null) return null;
+        return midiControlChange(_channel, controller, value);
     }
   }
 
-  void _send(MidiProgram program) {
+  void _send(Uint8List bytes) {
     final l10n = AppLocalizations.of(context);
-    final bytes = program.bytes(_channel);
     try {
       _midi.send(bytes);
       _add(l10n.midiTestSent(midiHex(bytes)));
@@ -212,27 +225,34 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: SegmentedButton<_Mode>(
-              segments: [
-                ButtonSegment(
-                  value: _Mode.nordProgram,
-                  label: Text(l10n.midiTestModeNordProgram),
-                ),
-                ButtonSegment(
-                  value: _Mode.nordSong,
-                  label: Text(l10n.midiTestModeNordSong),
-                ),
-                ButtonSegment(
-                  value: _Mode.nordLive,
-                  label: Text(l10n.midiTestModeNordLive),
-                ),
-                ButtonSegment(
-                  value: _Mode.raw,
-                  label: Text(l10n.midiTestModeRaw),
-                ),
-              ],
-              selected: {_mode},
-              onSelectionChanged: (m) => setState(() => _mode = m.single),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SegmentedButton<_Mode>(
+                segments: [
+                  ButtonSegment(
+                    value: _Mode.nordProgram,
+                    label: Text(l10n.midiTestModeNordProgram),
+                  ),
+                  ButtonSegment(
+                    value: _Mode.nordSong,
+                    label: Text(l10n.midiTestModeNordSong),
+                  ),
+                  ButtonSegment(
+                    value: _Mode.nordLive,
+                    label: Text(l10n.midiTestModeNordLive),
+                  ),
+                  ButtonSegment(
+                    value: _Mode.raw,
+                    label: Text(l10n.midiTestModeRaw),
+                  ),
+                  ButtonSegment(
+                    value: _Mode.controlChange,
+                    label: Text(l10n.midiTestModeCc),
+                  ),
+                ],
+                selected: {_mode},
+                onSelectionChanged: (m) => setState(() => _mode = m.single),
+              ),
             ),
           ),
           ..._valueFields(l10n),
@@ -242,9 +262,7 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    selected == null
-                        ? l10n.midiTestInvalid
-                        : midiHex(selected.bytes(_channel)),
+                    selected == null ? l10n.midiTestInvalid : midiHex(selected),
                     key: const Key('midi-preview'),
                     style: const TextStyle(fontFamily: 'monospace'),
                   ),
@@ -354,6 +372,11 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
         field(_lsb, l10n.midiTestLsb, const Key('midi-lsb')),
         field(_program, l10n.midiTestProgram, const Key('midi-program')),
         ListTile(subtitle: Text(l10n.midiTestEmptyNotSent)),
+      ],
+      _Mode.controlChange => [
+        field(_controller, l10n.midiTestController, const Key('midi-cc')),
+        field(_value, l10n.midiTestValue, const Key('midi-cc-value')),
+        ListTile(subtitle: Text(l10n.midiTestCcHint)),
       ],
     };
   }

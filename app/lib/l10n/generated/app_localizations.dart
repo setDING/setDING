@@ -4968,6 +4968,30 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Fehler: {message}'**
   String midiTestError(String message);
+
+  /// No description provided for @midiTestModeCc.
+  ///
+  /// In de, this message translates to:
+  /// **'Controller'**
+  String get midiTestModeCc;
+
+  /// No description provided for @midiTestController.
+  ///
+  /// In de, this message translates to:
+  /// **'Controller (CC 0–127)'**
+  String get midiTestController;
+
+  /// No description provided for @midiTestValue.
+  ///
+  /// In de, this message translates to:
+  /// **'Wert (0–127)'**
+  String get midiTestValue;
+
+  /// No description provided for @midiTestCcHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Nord Stage 3 laut midi.guide: CC 2 Live-Modus, CC 3 Song-Modus, CC 5 Song-Teil. Welche Werte was bewirken, gehört zum Test.'**
+  String get midiTestCcHint;
 }
 
 class _AppLocalizationsDelegate

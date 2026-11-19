@@ -221,12 +221,18 @@ settings** (layer 4b, ADR-0027), never synced:
   optional. Linux loads `libasound.so.2` at run time; the web plugin asks for
   MIDI access with SysEx, so Chrome shows the stronger permission prompt.
   Results on the real keyboard are pending.
+- 2026-11-19: The MIDI test also sends free control changes (#512): midi.guide
+  lists CC 2 "Live mode", CC 3 "Song mode" and CC 5 "Song part" for the Nord
+  Stage 3 without their values, a second candidate for selecting Nord songs
+  besides bank select MSB 1. The midi.guide data (CC BY-SA 4.0) is a reference
+  only and is not copied into the repository.
 
 ## Open points
 
 - Prototype results: does `flutter_midi_command` deliver bank select and program
   change on Android (USB host), Windows, Linux and in Chrome, and which addressing
-  selects Nord songs on the current Nord Stage 3 OS?
+  selects Nord songs on the current Nord Stage 3 OS (bank select MSB 1, or
+  the mode controllers CC 3 and CC 5 listed on midi.guide)?
 - Later stages (issues only when taken up): learning the program from the
   keyboard, program changes per section, page turning by MIDI, Bluetooth, several
   target devices, further device profiles, iOS.

@@ -219,4 +219,31 @@ void main() {
     expect(app.midiOutput.connected, isEmpty);
     await app.dispose(tester);
   });
+
+  testWidgets('sends a control change, e.g. the Nord song mode', (
+    tester,
+  ) async {
+    final app = await open(tester);
+    await connect(tester);
+
+    await tester.tap(find.text('Control change'));
+    await tester.pumpAndSettle();
+    // Defaults: CC 3 (song mode on the Nord Stage 3) = 127.
+    expect(find.text('B0 03 7F'), findsOneWidget);
+
+    await tester.enterText(find.byKey(const Key('midi-cc')), '5');
+    await tester.enterText(find.byKey(const Key('midi-cc-value')), '2');
+    await tester.pump();
+    expect(find.text('B0 05 02'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('midi-send')));
+    await tester.pump();
+    expect(app.midiOutput.sent, [
+      [0xB0, 5, 2],
+    ]);
+
+    await tester.enterText(find.byKey(const Key('midi-cc-value')), '128');
+    await tester.pump();
+    expect(find.text('Check the values'), findsOneWidget);
+    await app.dispose(tester);
+  });
 }

@@ -1263,5 +1263,9 @@
         "type": "String"
       }
     }
-  }
+  },
+  "midiTestModeCc": "Control change",
+  "midiTestController": "Controller (CC 0–127)",
+  "midiTestValue": "Value (0–127)",
+  "midiTestCcHint": "Nord Stage 3 according to midi.guide: CC 2 live mode, CC 3 song mode, CC 5 song part. Which values do what is part of the test."
 }
