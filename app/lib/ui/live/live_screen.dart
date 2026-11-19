@@ -1143,16 +1143,17 @@ class _ControlBar extends ConsumerWidget {
     final deviceNashville = ref.watch(
       settingsProvider.select((s) => s.nashville),
     );
-    final toggle = adjust == null || song == null
+    final parsed = song == null
+        ? null
+        : parseChordProCached(
+            song.chordproSource,
+            selectors: ref.watch(selectorsProvider),
+          );
+    final toggle = adjust == null || parsed == null
         ? null
         : _NashvilleToggle(
             selected: overlay?.nashville ?? deviceNashville,
-            hasKey:
-                parseChordProCached(
-                  song.chordproSource,
-                  selectors: ref.watch(selectorsProvider),
-                ).key !=
-                null,
+            hasKey: parsed.key != null,
             onChanged: (selected) => adjust(
               (o) => o.copyWith(
                 nashville: Value(selected == deviceNashville ? null : selected),
@@ -1177,8 +1178,24 @@ class _ControlBar extends ConsumerWidget {
     final annotationsShown = ref.watch(
       settingsProvider.select((s) => s.showAnnotations),
     );
-    // Freehand annotations (ADR-0032): draw, and show or hide them.
-    final annotationButtons = <Widget>[
+    // Chords in verse 1 only, and freehand annotations (ADR-0032): draw,
+    // and show or hide them.
+    // Chords in the first verse only (#518): offered for songs with later
+    // verses with chords, and always to turn it off again.
+    final verseOnly = overlay?.firstVerseChordsOnly ?? false;
+    final extraButtons = <Widget>[
+      if (adjust != null &&
+          parsed != null &&
+          (verseOnly || !identical(firstVerseChordsOnlyCached(parsed), parsed)))
+        IconButton(
+          key: const Key('live-first-verse-chords'),
+          tooltip: l10n.firstVerseChordsOnly,
+          isSelected: verseOnly,
+          icon: const Icon(Icons.subject),
+          selectedIcon: const Icon(Icons.short_text),
+          onPressed: () =>
+              adjust((o) => o.copyWith(firstVerseChordsOnly: !verseOnly)),
+        ),
       if (annotated)
         IconButton(
           key: const Key('live-annotations-visible'),
@@ -1257,12 +1274,12 @@ class _ControlBar extends ConsumerWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final wide = constraints.maxWidth >= _wideControlBar;
-            // On narrow screens the annotation buttons go with the toggle
+            // On narrow screens these extra buttons go with the toggle
             // into the row above.
             final row = Row(
               children: [
                 ...leading,
-                if (wide) ...annotationButtons,
+                if (wide) ...extraButtons,
                 const Spacer(),
                 if (toggle != null && wide) ...[toggle, const Spacer()],
                 ...trailing,
@@ -1277,7 +1294,7 @@ class _ControlBar extends ConsumerWidget {
                     child: StageTempoControls(index: index),
                   )
                 : null;
-            final narrowExtras = wide ? null : [?toggle, ...annotationButtons];
+            final narrowExtras = wide ? null : [?toggle, ...extraButtons];
             if ((narrowExtras == null || narrowExtras.isEmpty) &&
                 tempo == null) {
               return row;
