@@ -16,8 +16,9 @@ import 'midi_guide.dart';
 /// connected by USB and logs what the keyboard sends back, to check the
 /// MIDI library on every platform and the addressing of a Nord Stage 3.
 /// The guided tests need only taps: send a step, tap what happened; or
-/// choose what a step says on the keyboard and setDING judges what arrives
-/// (#613). There is one send and one receive test per keyboard.
+/// choose anything on the keyboard and tap whether what setDING received
+/// matches its display (#613, #615). There is one send and one receive
+/// test per keyboard.
 class MidiTestScreen extends ConsumerStatefulWidget {
   const MidiTestScreen({super.key});
 
@@ -50,11 +51,14 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
   var _step = 0;
   var _stepSent = false;
 
-  /// Collects what the keyboard sends during a receive step.
+  /// Collects what the keyboard sends during a free receive (#615).
   MidiProgramReceiver? _receiver;
 
-  /// What arrived in the current receive step and was not expected.
-  MidiProgram? _unexpected;
+  /// The program last received and not yet judged.
+  MidiProgram? _received;
+
+  /// How many received programs were judged.
+  var _checked = 0;
   final _msb = TextEditingController();
   final _lsb = TextEditingController();
   final _program = TextEditingController(text: '1');
@@ -131,31 +135,31 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
     _judge(data);
   }
 
-  /// Judges what arrived in a receive step of the guided test (#613): the
-  /// expected program goes on to the next step, anything else is logged in
-  /// the terms of the guide's profile and the step stays.
+  /// Shows what arrived during a free receive (#615); a program that
+  /// arrives before an answer replaces the one shown.
   void _judge(List<int> data) {
-    if (_step >= _guide.length) return;
-    final step = _guide[_step];
-    final expected = step.receive;
+    if (!_guideKind.receives) return;
     final received = _receiver?.add(data);
-    if (expected == null || received == null) return;
+    if (received != null) setState(() => _received = received);
+  }
+
+  /// Logs whether the program shown matches the keyboard's display, then
+  /// waits for the next one.
+  void _confirm(bool matches) {
+    final received = _received;
+    if (received == null) return;
     final l10n = AppLocalizations.of(context);
-    final title = step.title(l10n);
-    if (received == expected) {
-      _add(l10n.midiGuideResult(_step + 1, title, l10n.midiGuideReceivedOk));
-      _goTo(_step + 1);
-    } else {
-      final label = midiPatchLabel(l10n, _guideKind.profile.toPatch(received));
-      _add(
-        l10n.midiGuideResult(
-          _step + 1,
-          title,
-          l10n.midiGuideReceivedOther(label, midiValues(received)),
-        ),
-      );
-      setState(() => _unexpected = received);
-    }
+    _add(
+      l10n.midiGuideFreeResult(
+        midiPatchLabel(l10n, _guideKind.profile.toPatch(received)),
+        midiValues(received),
+        matches ? l10n.midiGuideMatches : l10n.midiGuideNoMatch,
+      ),
+    );
+    setState(() {
+      _received = null;
+      _checked++;
+    });
   }
 
   // Every line also goes to the app log (logcat, "copy log" in the
@@ -235,7 +239,7 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
   }
 
   void _sendStep() {
-    _send(_guide[_step].bytes!(_channel));
+    _send(_guide[_step].bytes(_channel));
     setState(() => _stepSent = true);
   }
 
@@ -254,28 +258,65 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
   void _goTo(int step) => setState(() {
     _step = step.clamp(0, _guide.length);
     _stepSent = false;
-    _unexpected = null;
-    // A new receiver per step: a bank select of an earlier step does not
-    // count.
-    _receiver = MidiProgramReceiver(_channel);
   });
 
   void _chooseGuide(MidiGuide guide) {
     _guideKind = guide;
     _guide = guide.steps();
+    _listen();
     _goTo(0);
   }
 
-  void _nothingArrived() {
-    final l10n = AppLocalizations.of(context);
-    _add(
-      l10n.midiGuideResult(
-        _step + 1,
-        _guide[_step].title(l10n),
-        l10n.midiGuideReceivedNothing,
+  /// Starts a free receive afresh, e.g. on another channel.
+  void _listen() => setState(() {
+    _receiver = MidiProgramReceiver(_channel);
+    _received = null;
+    _checked = 0;
+  });
+
+  List<Widget> _freeReceive(AppLocalizations l10n, ThemeData theme) {
+    final received = _received;
+    return [
+      Text(
+        received == null
+            ? l10n.midiGuideWaiting
+            : l10n.midiGuideFreeReceived(
+                midiPatchLabel(l10n, _guideKind.profile.toPatch(received)),
+              ),
+        key: const Key('midi-guide-received'),
+        style: theme.textTheme.titleMedium,
       ),
-    );
-    _goTo(_step + 1);
+      if (received != null) ...[
+        const SizedBox(height: 4),
+        Text(
+          midiValues(received),
+          style: const TextStyle(fontFamily: 'monospace'),
+        ),
+      ],
+      const SizedBox(height: 12),
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          FilledButton(
+            key: const Key('midi-guide-matches'),
+            onPressed: received == null ? null : () => _confirm(true),
+            child: Text(l10n.midiGuideMatches),
+          ),
+          OutlinedButton(
+            key: const Key('midi-guide-no-match'),
+            onPressed: received == null ? null : () => _confirm(false),
+            child: Text(l10n.midiGuideNoMatch),
+          ),
+        ],
+      ),
+      const SizedBox(height: 8),
+      Text(
+        l10n.midiGuideChecked(_checked),
+        key: const Key('midi-guide-checked'),
+        style: theme.textTheme.bodySmall,
+      ),
+    ];
   }
 
   List<Widget> _guideSection(AppLocalizations l10n) {
@@ -309,7 +350,9 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (step == null) ...[
+              if (_guideKind.receives)
+                ..._freeReceive(l10n, theme)
+              else if (step == null) ...[
                 Text(l10n.midiGuideDone, style: theme.textTheme.titleMedium),
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
@@ -331,52 +374,36 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
                 const SizedBox(height: 4),
                 Text(l10n.midiGuideExpected(step.expected(l10n))),
                 const SizedBox(height: 12),
-                if (step.receives) ...[
-                  Text(switch (_unexpected) {
-                    null => l10n.midiGuideWaiting,
-                    final p => l10n.midiGuideReceivedOther(
-                      midiPatchLabel(l10n, _guideKind.profile.toPatch(p)),
-                      midiValues(p),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    FilledButton.icon(
+                      key: const Key('midi-guide-send'),
+                      onPressed: _connected.isEmpty ? null : _sendStep,
+                      icon: const Icon(Icons.send),
+                      label: Text(l10n.midiTestSend),
                     ),
-                  }, key: const Key('midi-guide-status')),
-                  const SizedBox(height: 12),
-                  OutlinedButton(
-                    key: const Key('midi-guide-nothing'),
-                    onPressed: _nothingArrived,
-                    child: Text(l10n.midiGuideReceivedNothing),
-                  ),
-                ] else ...[
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      FilledButton.icon(
-                        key: const Key('midi-guide-send'),
-                        onPressed: _connected.isEmpty ? null : _sendStep,
-                        icon: const Icon(Icons.send),
-                        label: Text(l10n.midiTestSend),
+                    Text(
+                      midiHex(step.bytes(_channel)),
+                      style: const TextStyle(fontFamily: 'monospace'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final a in step.answers)
+                      OutlinedButton(
+                        key: Key('midi-guide-answer-${a.name}'),
+                        onPressed: _stepSent ? () => _answer(a) : null,
+                        child: Text(a.label(l10n)),
                       ),
-                      Text(
-                        midiHex(step.bytes!(_channel)),
-                        style: const TextStyle(fontFamily: 'monospace'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final a in step.answers)
-                        OutlinedButton(
-                          key: Key('midi-guide-answer-${a.name}'),
-                          onPressed: _stepSent ? () => _answer(a) : null,
-                          child: Text(a.label(l10n)),
-                        ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -461,8 +488,8 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
               ],
               onChanged: (v) {
                 setState(() => _channel = v ?? _channel);
-                // The receive step listens on the new channel.
-                _goTo(_step);
+                // The free receive listens on the new channel.
+                _listen();
               },
             ),
           ),

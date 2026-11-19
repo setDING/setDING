@@ -2991,7 +2991,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get midiGuideNordReceiveHint =>
-      'Stelle am Nord im MIDI-Menü «Program Change» auf «Send» oder «Send & Receive» und den Kanal hier auf den globalen Kanal des Nord. Wähle dann am Nord, was der Schritt sagt (für den Song zuerst den Song-Modus); setDING prüft selbst, was ankommt. Die Ergebnisse stehen im Protokoll.';
+      'Stelle am Nord im MIDI-Menü «Program Change» auf «Send» oder «Send & Receive» und den Kanal hier auf den globalen Kanal des Nord. Wähle dann am Nord irgendein Programm, einen Live-Speicher oder einen Song-Teil, z. B. mit dem Drehregler oder den Modus-Tasten. setDING zeigt, was angekommen ist; tippe an, ob es mit dem Display übereinstimmt. Die Ergebnisse stehen im Protokoll.';
 
   @override
   String get midiGuideMotifSendHint =>
@@ -2999,17 +2999,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get midiGuideMotifReceiveHint =>
-      'Stelle am Motif XF unter Utility → MIDI: MIDI IN/OUT auf USB, das Senden von Bank Select und Program Change ein und den Transmit Channel auf den Kanal hier. Wähle dann am Motif, was der Schritt sagt – Voices im Voice-Modus, Performances im Performance-Modus; setDING prüft selbst, was ankommt. Die Ergebnisse stehen im Protokoll.';
-
-  @override
-  String midiGuideChoose(String name) {
-    return 'Am Keyboard wählen: $name';
-  }
-
-  @override
-  String midiGuideReceiveExpected(String values) {
-    return 'setDING empfängt $values.';
-  }
+      'Stelle am Motif XF unter Utility → MIDI: MIDI IN/OUT auf USB, das Senden von Bank Select und Program Change ein und den Transmit Channel auf den Kanal hier. Wähle dann am Motif irgendeine Voice oder Performance, auch in verschiedenen Bänken und zweimal in derselben Bank. setDING zeigt, was angekommen ist; tippe an, ob es mit dem Display übereinstimmt. Die Ergebnisse stehen im Protokoll.';
 
   @override
   String midiGuideMotifExpected(String name) {
@@ -3017,18 +3007,35 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get midiGuideWaiting => 'Wartet auf das Keyboard …';
+  String get midiGuideWaiting => 'Wähle am Keyboard einen Klang …';
 
   @override
-  String get midiGuideReceivedOk => 'wie erwartet empfangen';
-
-  @override
-  String midiGuideReceivedOther(String name, String values) {
-    return 'anderes empfangen: $name ($values)';
+  String midiGuideFreeReceived(String name) {
+    return 'Empfangen: $name';
   }
 
   @override
-  String get midiGuideReceivedNothing => 'Nichts angekommen';
+  String get midiGuideMatches => 'Stimmt mit dem Display';
+
+  @override
+  String get midiGuideNoMatch => 'Stimmt nicht';
+
+  @override
+  String midiGuideFreeResult(String name, String values, String answer) {
+    return 'Empfangen $name ($values): $answer';
+  }
+
+  @override
+  String midiGuideChecked(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Klänge geprüft',
+      one: '1 Klang geprüft',
+      zero: 'Noch nichts geprüft',
+    );
+    return '$_temp0';
+  }
 
   @override
   String midiGuideStep(int current, int total, String title) {

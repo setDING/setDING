@@ -1530,25 +1530,9 @@
   "midiGuideNordReceive": "Nord Stage 3 – empfangen",
   "midiGuideMotifSend": "Motif XF – senden",
   "midiGuideMotifReceive": "Motif XF – empfangen",
-  "midiGuideNordReceiveHint": "Stelle am Nord im MIDI-Menü «Program Change» auf «Send» oder «Send & Receive» und den Kanal hier auf den globalen Kanal des Nord. Wähle dann am Nord, was der Schritt sagt (für den Song zuerst den Song-Modus); setDING prüft selbst, was ankommt. Die Ergebnisse stehen im Protokoll.",
+  "midiGuideNordReceiveHint": "Stelle am Nord im MIDI-Menü «Program Change» auf «Send» oder «Send & Receive» und den Kanal hier auf den globalen Kanal des Nord. Wähle dann am Nord irgendein Programm, einen Live-Speicher oder einen Song-Teil, z. B. mit dem Drehregler oder den Modus-Tasten. setDING zeigt, was angekommen ist; tippe an, ob es mit dem Display übereinstimmt. Die Ergebnisse stehen im Protokoll.",
   "midiGuideMotifSendHint": "Stelle am Motif XF unter Utility → MIDI: MIDI IN/OUT auf USB, den Empfang von Bank Select und Program Change ein, den Basic Receive Channel auf den Kanal hier und die Device Number auf «all» oder 1. Tippe auf «Senden», schau aufs Display des Motif und tippe an, was passiert ist. Die Antworten stehen im Protokoll.",
-  "midiGuideMotifReceiveHint": "Stelle am Motif XF unter Utility → MIDI: MIDI IN/OUT auf USB, das Senden von Bank Select und Program Change ein und den Transmit Channel auf den Kanal hier. Wähle dann am Motif, was der Schritt sagt – Voices im Voice-Modus, Performances im Performance-Modus; setDING prüft selbst, was ankommt. Die Ergebnisse stehen im Protokoll.",
-  "midiGuideChoose": "Am Keyboard wählen: {name}",
-  "@midiGuideChoose": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "midiGuideReceiveExpected": "setDING empfängt {values}.",
-  "@midiGuideReceiveExpected": {
-    "placeholders": {
-      "values": {
-        "type": "String"
-      }
-    }
-  },
+  "midiGuideMotifReceiveHint": "Stelle am Motif XF unter Utility → MIDI: MIDI IN/OUT auf USB, das Senden von Bank Select und Program Change ein und den Transmit Channel auf den Kanal hier. Wähle dann am Motif irgendeine Voice oder Performance, auch in verschiedenen Bänken und zweimal in derselben Bank. setDING zeigt, was angekommen ist; tippe an, ob es mit dem Display übereinstimmt. Die Ergebnisse stehen im Protokoll.",
   "midiGuideMotifExpected": "Der Motif zeigt {name}.",
   "@midiGuideMotifExpected": {
     "placeholders": {
@@ -1557,20 +1541,39 @@
       }
     }
   },
-  "midiGuideWaiting": "Wartet auf das Keyboard …",
-  "midiGuideReceivedOk": "wie erwartet empfangen",
-  "midiGuideReceivedOther": "anderes empfangen: {name} ({values})",
-  "@midiGuideReceivedOther": {
+  "midiGuideWaiting": "Wähle am Keyboard einen Klang …",
+  "midiGuideFreeReceived": "Empfangen: {name}",
+  "@midiGuideFreeReceived": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "midiGuideMatches": "Stimmt mit dem Display",
+  "midiGuideNoMatch": "Stimmt nicht",
+  "midiGuideFreeResult": "Empfangen {name} ({values}): {answer}",
+  "@midiGuideFreeResult": {
     "placeholders": {
       "name": {
         "type": "String"
       },
       "values": {
         "type": "String"
+      },
+      "answer": {
+        "type": "String"
       }
     }
   },
-  "midiGuideReceivedNothing": "Nichts angekommen",
+  "midiGuideChecked": "{count, plural, =0{Noch nichts geprüft} =1{1 Klang geprüft} other{{count} Klänge geprüft}}",
+  "@midiGuideChecked": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "midiGuideStep": "Schritt {current} von {total}: {title}",
   "@midiGuideStep": {
     "placeholders": {

@@ -416,8 +416,8 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    String status(WidgetTester tester) =>
-        tester.widget<Text>(find.byKey(const Key('midi-guide-status'))).data!;
+    String received(WidgetTester tester) =>
+        tester.widget<Text>(find.byKey(const Key('midi-guide-received'))).data!;
 
     testWidgets('one send and one receive test per keyboard (#613)', (
       tester,
@@ -462,97 +462,75 @@ void main() {
       await app.dispose(tester);
     });
 
-    testWidgets('receive test: the expected program goes on by itself, '
-        'anything else is logged in the profile\'s terms (#613)', (
-      tester,
-    ) async {
+    testWidgets('free receive: whatever arrives is shown in the profile\'s '
+        'terms and judged against the display (#615)', (tester) async {
       Log.clear();
       final app = await open(tester);
       await connect(tester);
-      await chooseGuide(tester, 'Motif XF – receive');
-      expect(
-        find.textContaining(
-          'Step 1 of 7: Choose on the keyboard: Voice '
-          'PRE1 A01',
-        ),
-        findsOneWidget,
-      );
+      await chooseGuide(tester, 'Nord Stage 3 – receive');
       expect(find.byKey(const Key('midi-guide-send')), findsNothing);
-      expect(status(tester), 'Waiting for the keyboard …');
+      expect(find.byKey(const Key('midi-guide-step')), findsNothing);
+      expect(received(tester), 'Choose a sound on the keyboard …');
+      final matches = find.byKey(const Key('midi-guide-matches'));
+      final noMatch = find.byKey(const Key('midi-guide-no-match'));
+      expect(tester.widget<ButtonStyleButton>(matches).onPressed, isNull);
+      expect(find.text('Nothing checked yet'), findsOneWidget);
 
-      // PRE1 A01 as one packet: next step.
-      app.midiOutput.receive([0xB0, 0, 63, 0xB0, 32, 0, 0xC0, 0]);
+      // K:33 in separate messages.
+      app.midiOutput
+        ..receive([0xB0, 0, 0])
+        ..receive([0xB0, 32, 2])
+        ..receive([0xC0, 12]);
       await tester.pumpAndSettle();
-      expect(
-        find.textContaining(
-          'Step 2 of 7: Choose on the keyboard: '
-          'Voice PRE3 C05',
-        ),
-        findsOneWidget,
-      );
+      expect(received(tester), 'Received: Program K:33');
+      expect(find.text('CC 0 = 0, CC 32 = 2, PC 12'), findsOneWidget);
+      await tapKey(tester, matches);
       expect(
         Log.export(),
         contains(
-          'Step 1 (Choose on the keyboard: Voice PRE1 A01): received '
-          'as expected',
+          'Received Program K:33 (CC 0 = 0, CC 32 = 2, PC 12): Matches the '
+          'display',
         ),
       );
+      expect(received(tester), 'Choose a sound on the keyboard …');
+      expect(find.text('1 sound checked'), findsOneWidget);
 
-      // Only a program change, without the bank: not PRE3 C05.
-      app.midiOutput.receive([0xC0, 36]);
+      // A newer program replaces one not yet judged.
+      app.midiOutput.receive([0xB0, 0, 6, 0xB0, 32, 0, 0xC0, 1]);
       await tester.pumpAndSettle();
-      expect(find.textContaining('Step 2 of 7'), findsOneWidget);
-      expect(status(tester), startsWith('received something else:'));
-      expect(status(tester), endsWith('(PC 36)'));
-
-      // Then the full message: as expected.
-      app.midiOutput
-        ..receive([0xB0, 0, 63])
-        ..receive([0xB0, 32, 2])
-        ..receive([0xC0, 36]);
+      app.midiOutput.receive([0xB0, 0, 1, 0xB0, 32, 0, 0xC0, 7]);
       await tester.pumpAndSettle();
-      expect(find.textContaining('Step 3 of 7'), findsOneWidget);
-
-      // Same bank: the bank select of the step before does not count.
-      app.midiOutput.receive([0xC0, 37]);
-      await tester.pumpAndSettle();
-      expect(find.textContaining('Step 3 of 7'), findsOneWidget);
-
-      // Nothing arrived: logged, next step.
-      await tapKey(tester, find.byKey(const Key('midi-guide-nothing')));
-      expect(find.textContaining('Step 4 of 7'), findsOneWidget);
-      expect(Log.export(), contains('Voice PRE3 C06): Nothing arrived'));
+      expect(received(tester), 'Received: Song 2, part 3');
+      await tapKey(tester, noMatch);
+      expect(
+        Log.export(),
+        contains(
+          'Song 2, part 3 (CC 0 = 1, CC 32 = 0, '
+          'PC 7): Does not match',
+        ),
+      );
+      expect(find.text('2 sounds checked'), findsOneWidget);
       await app.dispose(tester);
     });
 
-    testWidgets('Nord receive test on another channel', (tester) async {
+    testWidgets('free receive with the Motif XF, on the chosen channel', (
+      tester,
+    ) async {
       final app = await open(tester);
       await connect(tester);
-      await chooseGuide(tester, 'Nord Stage 3 – receive');
-      expect(find.textContaining('Program Change'), findsWidgets);
+      await chooseGuide(tester, 'Motif XF – receive');
+      expect(find.textContaining('Transmit Channel'), findsOneWidget);
       final channel = find.byKey(const Key('midi-channel'));
       await tapKey(tester, channel);
       await tester.tap(find.text('5').last);
       await tester.pumpAndSettle();
       // Channel 1 is not listened to.
-      app.midiOutput.receive([0xB0, 0, 0, 0xB0, 32, 0, 0xC0, 0]);
+      app.midiOutput.receive([0xB0, 0, 63, 0xB0, 32, 2, 0xC0, 36]);
       await tester.pumpAndSettle();
-      expect(
-        find.textContaining(
-          'Step 1 of 6: Choose on the keyboard: '
-          'Program A:11',
-        ),
-        findsOneWidget,
-      );
-      app.midiOutput.receive([0xB4, 0, 0, 0xB4, 32, 0, 0xC4, 0]);
+      expect(received(tester), 'Choose a sound on the keyboard …');
+      app.midiOutput.receive([0xB4, 0, 63, 0xB4, 32, 2, 0xC4, 36]);
       await tester.pumpAndSettle();
-      expect(
-        find.textContaining(
-          'Step 2 of 6: Choose on the keyboard: '
-          'Program K:33',
-        ),
-        findsOneWidget,
-      );
+      expect(received(tester), 'Received: Voice PRE3 C05');
       await app.dispose(tester);
     });
   });
