@@ -44,7 +44,8 @@ Both actions use the records API of PocketBase, so the REST interface stays the 
 - **Delete:**
   - `DELETE /api/collections/bands/records/{id}` and `DELETE /api/collections/organizations/records/{id}` answer **204**.
   - `deleteRule` is "active organization admin" of the band's organization or of the organization.
-  - A hook (`onRecordDeleteRequest`) turns the call into a **soft delete plus the cascade** of section 3, in one transaction, instead of a hard delete. The same hook also applies to a superuser deleting the record in the admin UI.
+  - A hook (`onRecordDeleteRequest`) turns the call into a **soft delete plus the cascade** of section 3, in one transaction, instead of a hard delete.
+  - **Superusers follow the same path:** deleting a band or an organization in the admin UI runs the same hook, puts it in the trash, and can be undone for 30 days. To remove it at once, for example after abuse or a deletion request, the operator then runs the purge of ADR-0043 for that record with an "immediately" option (`POST /api/setding/trash/purge`).
   - Every other synced collection keeps refusing hard deletes (`sync.pb.js`).
 - **Restore:**
   - `PATCH` of the same record with `{"deleted": false}` and nothing else, allowed only for active organization admins.
@@ -76,7 +77,16 @@ Its **invitations** are revoked.
 
 **Organization memberships stay active** during the 30 days, so the admins keep seeing the closed organization in their trash and can restore it. Members' devices hide it at once (section 5).
 
-**Writes into a deleted band or a closed organization are refused.** The create and update rules of sets, arrangements, band memberships, songs, attachments, personal adjustments, annotations and invitations also require that the band, or the band's or song's organization, is not deleted. Reads stay as they are; devices hide the data themselves.
+**Writes into a deleted band or a closed organization are refused.** The create and update rules of sets, arrangements, band memberships, songs, attachments, personal adjustments, annotations and invitations also require that the band, or the band's or song's organization, is not deleted.
+
+**Only organization admins can read a closed organization's content.** During the 30 days, the list and view rules of bands, sets, arrangements, band memberships, songs, attachments and invitations of a closed organization allow only its active organization admins, who see the trash and restore it. The API gives members no more than the app shows them (AGENTS.md, #632).
+
+Members can still read two records, so their devices learn about the closing through delta sync:
+
+- the organization record itself, with `deleted` and `deleted_at`;
+- their own organization membership.
+
+**One transaction, measured.** The whole cascade runs in one transaction, so there are no half-deleted states. SQLite handles a large organization (thousands of records, each with a new revision) in about a second, and blocks other writes meanwhile. A server test with a large test organization measures closing and restoring, and fails above a limit (5 seconds on the development machine). The cascade is split into batches or moved to the background only when that limit is reached.
 
 ### 4. Trash and purge
 
@@ -124,6 +134,8 @@ As required by AGENTS.md "Permissions on the server" (#632), server tests call t
 - **Cascade:** what goes with a band or an organization, and what a restore brings back.
 - **Writes into deleted parents:** refused.
 - **Purge:** the purge, the tombstones and the removed files.
+- **Reading a closed organization:** refused for members, allowed for its admins.
+- **Duration:** closing and restoring a large organization (section 3).
 
 ## Alternatives considered
 
@@ -144,6 +156,7 @@ As required by AGENTS.md "Permissions on the server" (#632), server tests call t
 - **Easier:** organizations can end, and the last admin is no longer stuck. Bands that are over no longer clutter the organization. Both actions can be undone for 30 days and leave no data behind afterwards.
 - **Harder:**
   - Every write rule that refers to a band or an organization must also check `deleted`.
+  - The read rules of an organization's content must let only its admins read a closed organization.
   - The `DELETE` hooks run large cascades in one transaction; closing a big organization touches many records.
   - Devices need the deferral in live mode and must clean up their local data, including files.
 - **Changes to other ADRs on acceptance:**
@@ -160,9 +173,11 @@ As required by AGENTS.md "Permissions on the server" (#632), server tests call t
 ## Decision log
 
 - 2026-11-20: Proposed (#634). The owner decided the open questions of #628 and #629 one by one: org admins only; the REST standard path `DELETE /api/collections/{bands|organizations}/records/{id}` with restore by `PATCH {"deleted": false}`; the cascade; 30 days in the trash; live-mode deferral and refused offline writes; confirmation by typing the name; the last band may be deleted; closing is deletion with a grace period by any org admin alone; an in-app message; an optional backup before closing; a hard purge after 30 days with a tombstone without a name; no new founding right on invite-only servers.
+- 2026-11-20: The open points of the proposal were decided by the owner:
+  - **Reading during the grace period:** only organization admins read a closed organization's content; members keep only the organization record and their own membership, for sync.
+  - **Size:** one transaction, with a server test that measures a large organization and fails above a limit; batching only when needed.
+  - **Admin UI:** superusers go through the trash like everyone else, and remove a record at once with the purge's "immediately" option.
 
 ## Open points
 
-- **Members during the grace period:** members of a closed organization can still read its data through the API, although their devices hide it. Restrict the read rules to organization admins while it is closed?
-- **Size limits:** closing very large organizations in one transaction. Measure it, and split the cascade if needed.
-- **Admin UI:** whether a superuser deleting a band or an organization should skip the trash (an operator purge) or follow it like everyone else.
+- None.
