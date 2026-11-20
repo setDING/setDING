@@ -72,16 +72,26 @@ the item JSON of `setlists.items` (ADR-0015) and in local columns:
      that differs from today's band key is highlighted.
    - Set editor: the key picker shows "Last D on 12.10.2026 · mostly D (12 of
      14)"; the song picker shows when each song was last played ("never").
-2. **v2 – band repertoire** (#661), local only: most played songs, songs not
-   played for a while and never played songs of the organization's library, for
-   12 months or all; the song list gets the sort *Last played* and the filters
-   *Never played* and *Not played for a while*.
+2. **v2 – band repertoire** (#661), computed locally: a *Repertoire* button at
+   the top of the **Sets tab** opens the view for the current band: most played
+   songs, songs not played for a while and never played songs of the
+   organization's library, for 12 months or all; the song list gets the sort
+   *Last played* and the filters *Never played* and *Not played for a while*.
+   - "Not played for a while" means no play for longer than a **threshold per
+     band**: new field `bands.stale_after_months` (default 6, 1–36), synced with
+     the band. Band leaders and set planners change it; since set planners may not
+     edit the band otherwise, a server hook lets them change this field only, and
+     the API tests cover both (ADR-0023 matrix).
 3. **v3 – organization** (#662): a custom server route returns, per song, the
    bands of the organization that played it with last date, key and count;
-   never set names or set contents. The song card shows *Other bands*; organization
-   admins and librarians get *Library usage* (songs no band plays, linked to the
-   trash of ADR-0043). Permissions are enforced and tested on the server and added
-   to the matrix of ADR-0023.
+   never set names or set contents. **All members of the organization** may read
+   it (the library is shared with the whole organization, and substitutes often
+   play in several bands); the route answers only for organizations the caller is
+   a member of, enforced and tested on the server and added to the matrix of
+   ADR-0023. The client fetches the aggregate **with every sync and stores it
+   locally**, so it is shown offline with the date of the last sync. The song card
+   shows *Other bands*; organization admins and librarians get *Library usage*
+   (songs no band plays, linked to the trash of ADR-0043).
 
 ## Alternatives considered
 
@@ -102,21 +112,22 @@ the item JSON of `setlists.items` (ADR-0015) and in local columns:
 - `setlists.items` grows by a few bytes per song item; the local schema gets new
   columns and a migration.
 - The minimum client version is raised once.
+- v2 adds the band field `stale_after_months` with a field-level exception for
+  set planners, enforced by a server hook.
 - v3 adds the first aggregated read across bands; it needs its own permission
-  tests and possibly a change of ADR-0023's matrix.
+  tests and a new row in ADR-0023's matrix.
 - Backups (ADR-0043) carry `played` with the set items.
 
 ## Decision log
 
 - 2026-11-20: Proposed (#659); a song in a past set counts as played, no gig
   counts or venues (owner).
+- 2026-11-20: Open points decided (owner): the repertoire view lives in the Sets
+  tab; the threshold for "not played for a while" is configurable per band
+  (default 6 months) by band leaders and set planners; all organization members
+  see other bands' plays; v3 is fetched with every sync and stored for offline
+  use.
 
 ## Open points
 
-- v2: where the repertoire view lives (the band under *Organization & bands* or
-  the *Sets* tab).
-- v2: threshold for "not played for a while": fixed 6 months or configurable per
-  band.
-- v3: who may see other bands' plays: all organization members, or band leaders
-  and organization admins only.
-- v3: offline behaviour: cache the aggregate at sync or show it online only.
+- None.
