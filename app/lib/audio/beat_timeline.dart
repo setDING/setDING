@@ -53,13 +53,22 @@ class _Segment {
 /// never drifts: every position is computed from the start, not summed up.
 class BeatTimeline {
   BeatTimeline({
-    required this.meter,
+    required Meter meter,
     required int bpm,
     required Duration start,
     this.countInBars = 0,
-  }) : _segments = [_Segment(start, bpm, 0)];
+  }) : _meter = meter, // ignore: prefer_initializing_formals
+       _segments = [_Segment(start, bpm, 0)];
 
-  final Meter meter;
+  /// The meter; a personal grouping can replace it while the beat runs
+  /// (#698), always with the same beats per bar, so bars keep their length.
+  Meter get meter => _meter;
+  Meter _meter;
+  set meter(Meter value) {
+    assert(value.beatsPerBar == _meter.beatsPerBar);
+    _meter = value;
+  }
+
   final int countInBars;
   final List<_Segment> _segments;
 

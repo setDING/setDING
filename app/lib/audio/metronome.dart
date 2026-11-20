@@ -20,7 +20,7 @@ class ClickConfig {
     this.volume = 0.8,
     this.sound = ClickSound.click,
     this.accent = true,
-    this.subdivision = false,
+    this.subdivision = Subdivision.off,
     this.latency = Duration.zero,
   });
 
@@ -37,7 +37,17 @@ class ClickConfig {
   final double volume;
   final ClickSound sound;
   final bool accent;
-  final bool subdivision;
+  final Subdivision subdivision;
+
+  /// The same with [subdivision] instead (a song's personal choice, #698).
+  ClickConfig withSubdivision(Subdivision subdivision) => ClickConfig(
+    enabled: enabled,
+    volume: volume,
+    sound: sound,
+    accent: accent,
+    subdivision: subdivision,
+    latency: latency,
+  );
 
   /// Delay of the audio output; the display is shifted by it.
   final Duration latency;
@@ -202,6 +212,24 @@ class Metronome {
     } catch (e) {
       _log.warning('Cannot change the tempo of the click', e);
     }
+  }
+
+  /// Changes the grouping ([meter], with the same beats per bar) or the
+  /// subdivisions of a running beat (a personal choice of the song, #698):
+  /// the display at once, the click from the next bar line on, like a
+  /// tempo change.
+  Future<void> changeBar({
+    required Meter meter,
+    required Subdivision subdivision,
+  }) async {
+    final timeline = _timeline;
+    if (timeline == null || meter.beatsPerBar != timeline.meter.beatsPerBar) {
+      return;
+    }
+    if (meter == timeline.meter && subdivision == _config.subdivision) return;
+    timeline.meter = meter;
+    _config = _config.withSubdivision(subdivision);
+    await setTempo(timeline.bpm);
   }
 
   /// Bars replaced by a tempo change, freed once their end has passed

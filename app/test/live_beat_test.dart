@@ -1,3 +1,4 @@
+import 'package:chordpro/chordpro.dart' show Subdivision;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -41,6 +42,13 @@ void main() {
     await tester.pump();
     await tester.pump();
     return (app, items);
+  }
+
+  /// Opens or closes a menu and lets the database answer.
+  Future<void> settle(WidgetTester tester) async {
+    for (var i = 0; i < 4; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
   }
 
   /// Moves the audio clock to [ms] after the first beat of the latest bar
@@ -182,6 +190,77 @@ void main() {
     await tester.pump();
     expect(find.text('120 BPM *'), findsNothing);
     expect(metronome.tempo.value, 120);
+    await tester.tap(find.byKey(const Key('beat-toggle')));
+    await tester.pump(const Duration(milliseconds: 300));
+    await app.dispose(tester);
+  });
+
+  testWidgets('grouping and subdivisions of the click per song, stored in '
+      'the personal adjustments (#698)', (tester) async {
+    final (app, items) = await open(
+      tester,
+      prefs: {'instrument': 'drums', 'clickStart': 'manual'},
+      metas: ['{tempo: 120}\n{time: 7/8}\n{x_time_grouping: 2+2+3}\n'],
+    );
+    final out = app.clickOutput;
+    final center = tester.getCenter(find.byType(LiveScreen));
+    await tester.tapAt(center);
+    await tester.pump();
+    expect(find.text('2+2+3'), findsWidgets);
+
+    await tester.tap(find.byKey(const Key('click-grouping-button')));
+    await settle(tester);
+    expect(find.text('As in the song (2+2+3)'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('click-grouping-3+2+2')));
+    await settle(tester);
+    final songId = items.single.song!.id;
+    final overlay = await tester.runAsync(() => app.songs.getOverlay(songId));
+    expect(overlay!.clickGrouping, '3+2+2');
+
+    // Started with the personal grouping.
+    await tester.tap(find.byKey(const Key('beat-toggle')));
+    await tester.pump();
+    await tester.pump();
+    final metronome = ProviderScope.containerOf(
+      tester.element(find.byType(LiveScreen)),
+    ).read(metronomeProvider);
+    expect(metronome.timeline!.meter.groups, [3, 2, 2]);
+    expect(out.plays, hasLength(1));
+
+    // Sixteenths while it runs: a new bar from the next bar line on.
+    out.time = out.plays.first.at + const Duration(milliseconds: 500);
+    await tester.tap(find.byKey(const Key('click-subdivision-button')));
+    await settle(tester);
+    expect(
+      tester
+          .widget<MenuItemButton>(
+            find.byKey(const Key('click-subdivision-eighths')),
+          )
+          .onPressed,
+      isNull,
+      reason: 'eighths are the beats of 7/8',
+    );
+    await tester.tap(find.byKey(const Key('click-subdivision-sixteenths')));
+    await settle(tester);
+    expect(
+      (await tester.runAsync(() => app.songs.getOverlay(songId)))!
+          .clickSubdivision,
+      Subdivision.sixteenths,
+    );
+    await tester.pump();
+    expect(out.plays, hasLength(2));
+    expect(
+      out.plays.last.at,
+      out.plays.first.at + metronome.timeline!.barLength(120),
+    );
+
+    // Back to the song's grouping.
+    await tester.tap(find.byKey(const Key('click-grouping-button')));
+    await settle(tester);
+    await tester.tap(find.byKey(const Key('click-grouping-song')));
+    await settle(tester);
+    await tester.pump();
+    expect(metronome.timeline!.meter.groups, [2, 2, 3]);
     await tester.tap(find.byKey(const Key('beat-toggle')));
     await tester.pump(const Duration(milliseconds: 300));
     await app.dispose(tester);

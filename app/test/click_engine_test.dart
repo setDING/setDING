@@ -78,9 +78,25 @@ void main() {
         clickHits(fourFour, 120, accent: false).first.level,
         ClickLevel.beat,
       );
-      final sub = clickHits(sixEight, 60, subdivision: true);
+      final sub = clickHits(sixEight, 60, subdivision: Subdivision.eighths);
       expect(sub, hasLength(6));
       expect(sub.where((h) => h.level == ClickLevel.subdivision), hasLength(4));
+      // #698: sixteenths and triplets.
+      final sixteenths = clickHits(
+        fourFour,
+        120,
+        subdivision: Subdivision.sixteenths,
+      );
+      expect(sixteenths, hasLength(16));
+      expect(sixteenths[4].level, ClickLevel.beat);
+      expect(sixteenths[4].offset, 22050);
+      final triplets = clickHits(
+        fourFour,
+        120,
+        subdivision: Subdivision.triplets,
+      );
+      expect(triplets, hasLength(12));
+      expect(triplets.map((h) => h.offset).take(4), [0, 7350, 14700, 22050]);
       final odd = clickHits(sevenEight, 210);
       expect(odd.map((h) => h.level), [
         ClickLevel.bar,
@@ -196,6 +212,31 @@ void main() {
       expect(out.stops.single, (handle: 'handle-0', at: barLine));
       await m.setTempo(1000);
       expect(m.tempo.value, Metronome.maxBpm);
+      await m.stop();
+    });
+
+    test('a grouping or subdivision change switches the bar at the bar '
+        'line, without changing its length (#698)', () async {
+      final out = FakeClickOutput();
+      final m = Metronome(output: out);
+      await m.start(
+        meter: sevenEight,
+        bpm: 210,
+        config: const ClickConfig(enabled: true),
+      );
+      final start = out.plays.single.at;
+      out.time = start + const Duration(milliseconds: 500);
+      await m.changeBar(meter: sevenEight, subdivision: Subdivision.off);
+      expect(out.plays, hasLength(1), reason: 'nothing changed');
+      final grouped = sevenEight.withGrouping('3+2+2');
+      await m.changeBar(meter: grouped, subdivision: Subdivision.sixteenths);
+      expect(out.plays, hasLength(2));
+      expect(out.plays.last.at, start + m.timeline!.barLength(210));
+      expect(m.timeline!.meter.groups, [3, 2, 2]);
+      expect(m.tempo.value, 210);
+      // Another number of beats would change the bar length: ignored.
+      await m.changeBar(meter: fourFour, subdivision: Subdivision.off);
+      expect(out.plays, hasLength(2));
       await m.stop();
     });
 

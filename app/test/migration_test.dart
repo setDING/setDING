@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:chordpro/chordpro.dart' show Subdivision;
 import 'package:setding/data/arrangement_repository.dart';
 import 'package:setding/data/attachment_storage_io.dart';
 import 'package:setding/data/change_log.dart';
@@ -38,9 +39,17 @@ void downgradeToSchema19(Database raw) {
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN midi_programs');
 }
 
+/// Turns a current database back into schema 26: overlays without the
+/// grouping and subdivisions of the click (#698).
+void downgradeToSchema26(Database raw) {
+  raw.execute('ALTER TABLE personal_overlays DROP COLUMN click_grouping');
+  raw.execute('ALTER TABLE personal_overlays DROP COLUMN click_subdivision');
+}
+
 /// Turns a current database back into schema 25: no plays across the bands
 /// of an organization (ADR-0046).
 void downgradeToSchema25(Database raw) {
+  downgradeToSchema26(raw);
   raw.execute('DROP TABLE org_plays');
 }
 
@@ -925,6 +934,54 @@ void main() {
           ),
         );
     expect((await upgraded.select(upgraded.orgPlays).getSingle()).playCount, 2);
+    await upgraded.close();
+  });
+
+  test('upgrades a schema 26 database: overlays keep their values and get '
+      'no grouping or subdivisions of the click (#698)', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    await current
+        .into(current.songs)
+        .insert(
+          SongsCompanion.insert(
+            id: 's1',
+            libraryId: localBandId,
+            updatedAt: DateTime(2026, 11, 20),
+            title: 'Take Five',
+            chordproSource: const Value('{title: Take Five}'),
+          ),
+        );
+    await current
+        .into(current.personalOverlays)
+        .insert(
+          PersonalOverlaysCompanion.insert(
+            songId: 's1',
+            transpose: const Value(2),
+          ),
+        );
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema26(raw);
+    raw.execute('PRAGMA user_version = 26');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final overlay = await upgraded
+        .select(upgraded.personalOverlays)
+        .getSingle();
+    expect(overlay.transpose, 2);
+    expect(overlay.clickGrouping, isNull);
+    expect(overlay.clickSubdivision, isNull);
+    await upgraded.customStatement(
+      "UPDATE personal_overlays SET click_grouping = '3+2+2', "
+      "click_subdivision = 'triplets'",
+    );
+    final changed = await upgraded
+        .select(upgraded.personalOverlays)
+        .getSingle();
+    expect(changed.clickGrouping, '3+2+2');
+    expect(changed.clickSubdivision, Subdivision.triplets);
     await upgraded.close();
   });
 }

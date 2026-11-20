@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:archive/archive.dart';
+import 'package:chordpro/chordpro.dart' show Subdivision;
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart' show compute, immutable;
 import 'package:path/path.dart' as p;
@@ -588,6 +589,8 @@ class BackupService {
     'verseChords': o.verseChords.name,
     'midi': ?o.midi?.toJson(),
     'midiPrograms': ?o.midiPrograms?.toJson(),
+    'clickGrouping': ?o.clickGrouping,
+    'clickSubdivision': ?o.clickSubdivision?.name,
   };
 
   /// A file name for the archive of [libraryName] on [date].
@@ -751,6 +754,10 @@ class BackupService {
         VerseChords.values.asNameMap()[o['verseChords']] ?? VerseChords.all,
     midi: Value(MidiProgram.fromJson(o['midi'])),
     midiPrograms: Value(MidiPrograms.fromJson(o['midiPrograms'])),
+    clickGrouping: Value(o['clickGrouping'] as String?),
+    clickSubdivision: Value(
+      Subdivision.values.asNameMap()[o['clickSubdivision']],
+    ),
   );
 
   /// Existing songs of [libraryId] by ID and by title and artist.

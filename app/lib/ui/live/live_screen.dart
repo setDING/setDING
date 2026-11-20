@@ -262,6 +262,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     metronome: ref.read(metronomeProvider),
     items: _items,
     settings: () => ref.read(settingsProvider),
+    loadOverlay: (songId) =>
+        ref.read(songRepositoryProvider).getOverlay(songId),
   );
 
   /// Sends the keyboard program of the current song (ADR-0039).
@@ -757,6 +759,14 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // The current song's grouping and subdivisions of the click (#698).
+    final currentSong = _items[_index].song;
+    if (currentSong != null) {
+      ref.listen(overlayProvider(currentSong.id), (_, next) {
+        final overlay = next.value;
+        if (overlay != null) _beat.overlayChanged(overlay);
+      });
+    }
     final (appearance, accent) = ref.watch(
       settingsProvider.select((s) => (s.liveAppearance, s.accent)),
     );
@@ -989,6 +999,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                             // Key, font and Nashville change the song,
                             // which small screens do not show (ADR-0026).
                             onAdjust: items[_index].song == null || compact
+                                ? null
+                                : _adjust,
+                            // The click also on small screens (#698).
+                            onAdjustClick: items[_index].song == null
                                 ? null
                                 : _adjust,
                             onFit: _fitToPage,
@@ -1259,6 +1273,7 @@ class _ControlBar extends ConsumerWidget {
     required this.onExit,
     required this.onOverview,
     required this.onAdjust,
+    this.onAdjustClick,
     required this.onFit,
     required this.onSetKey,
     this.onDraw,
@@ -1271,6 +1286,10 @@ class _ControlBar extends ConsumerWidget {
   final VoidCallback onExit;
   final VoidCallback onOverview;
   final Future<void> Function(SongOverlay Function(SongOverlay))? onAdjust;
+
+  /// Changes the grouping and subdivisions of the click (#698); also where
+  /// [onAdjust] is null because the song is not shown.
+  final Future<void> Function(SongOverlay Function(SongOverlay))? onAdjustClick;
   final VoidCallback onFit;
   final ValueChanged<int> onSetKey;
 
@@ -1465,7 +1484,10 @@ class _ControlBar extends ConsumerWidget {
             final tempo = beat != null && beat.canBeat(index)
                 ? FittedBox(
                     fit: BoxFit.scaleDown,
-                    child: StageTempoControls(index: index),
+                    child: StageTempoControls(
+                      index: index,
+                      onAdjust: onAdjustClick,
+                    ),
                   )
                 : null;
             final narrowExtras = wide ? null : [?toggle, ...extraButtons];

@@ -10,6 +10,8 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:chordpro/chordpro.dart' show Subdivision;
+
 import 'package:setding/data/arrangement_repository.dart';
 import 'package:setding/data/import_export.dart';
 import 'package:setding/data/database.dart';
@@ -731,6 +733,47 @@ void main() {
     });
   }
 
+  // The grouping and subdivisions of the click per song (#698): in the tempo
+  // row of the control bar, with the grouping menu open.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    _screenshotTest('click per song $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {
+          'language': lang,
+          'themeMode': dark ? 'dark' : 'light',
+          'instrument': 'drums',
+          'clickStart': 'manual',
+        },
+      );
+      final items = await tester.runAsync(() async {
+        final id = await app.songs.createSong(source: _oddMeter);
+        await app.songs.updateOverlay(
+          id,
+          (o) =>
+              o.copyWith(clickSubdivision: const Value(Subdivision.sixteenths)),
+        );
+        final next = await app.songs.createSong(source: _drumsNext);
+        return [
+          LiveItem.song((await app.songs.getSong(id))!),
+          LiveItem.song((await app.songs.getSong(next))!),
+        ];
+      });
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: LiveScreen(items: items!)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tapAt(tester.getCenter(find.byType(LiveScreen)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('click-grouping-button')));
+      await _shot(tester, '${lang}_25_live_click');
+      await app.dispose(tester);
+    });
+  }
+
   // Organization, band and invitation screens for the user documentation
   // (website, ADR-0030), signed in as the organization admin.
   for (final (lang, dark) in [('de', false), ('en', true)]) {
@@ -1015,6 +1058,24 @@ final _drumsDe = {
   'Half time, snare on 3': 'Halftime, Snare auf 3',
   'Big ending on the cue': 'Grosser Schluss auf Zeichen',
 }.entries.fold(_drums, (s, e) => s.replaceAll(e.key, e.value));
+
+/// A song in an odd meter for the screenshot of the click per song.
+const _oddMeter = '''{title: Seven Steps}
+{tempo: 168}
+{time: 7/8}
+{x_time_grouping: 2+2+3}
+
+{start_of_verse: Intro}
+[Am]Da da [G]da
+{end_of_verse}
+{start_of_verse}
+[Am]Seven steps [G]up the [F]hill
+{comment-drums: Kick on every group}
+{end_of_verse}
+{start_of_chorus}
+[C]Count them [G]all again
+{end_of_chorus}
+''';
 
 /// The song after [_drums]; the footer shows its tempo and time signature.
 const _drumsNext =

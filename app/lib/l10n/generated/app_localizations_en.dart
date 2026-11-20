@@ -923,7 +923,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsClickSubdivisionHint =>
-      'Quieter clicks between the beats: eighths, triplets in 6/8.';
+      'Quieter clicks between the beats. Each song can have its own in its personal adjustments.';
+
+  @override
+  String get subdivisionOff => 'Off';
+
+  @override
+  String get subdivisionEighths => 'Eighths';
+
+  @override
+  String get subdivisionSixteenths => 'Sixteenths';
+
+  @override
+  String get subdivisionTriplets => 'Triplets';
+
+  @override
+  String clickSubdivisionAsInSettings(String value) {
+    return 'As in the settings ($value)';
+  }
+
+  @override
+  String get clickGrouping => 'Grouping';
+
+  @override
+  String get clickGroupingNone => 'No groups';
+
+  @override
+  String clickGroupingAsInSong(String grouping) {
+    return 'As in the song ($grouping)';
+  }
+
+  @override
+  String get clickGroupingHint =>
+      'Accented beats of an odd meter, only for you.';
 
   @override
   String get settingsAudioLatency => 'Audio delay';

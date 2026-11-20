@@ -1,3 +1,5 @@
+import 'package:chordpro/chordpro.dart' show Subdivision;
+
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -972,6 +974,8 @@ void main() {
             transpose: 2,
             notes: const Value('Solo'),
             verseChords: VerseChords.stacked,
+            clickGrouping: const Value('3+2+2'),
+            clickSubdivision: const Value(Subdivision.triplets),
           ),
         );
         final report = await engine.sync();
@@ -982,6 +986,8 @@ void main() {
         expect(remote.data['transpose'], 2);
         expect(remote.data['notes'], 'Solo');
         expect(remote.data['verse_chords'], 'stacked');
+        expect(remote.data['click_grouping'], '3+2+2');
+        expect(remote.data['click_subdivision'], 'triplets');
         expect((await mine.getOverlay('s1')).revision, remote.revision);
         expect(await outbox(), isEmpty);
       },
@@ -998,6 +1004,8 @@ void main() {
             'capo_fret': 2,
             'font_scale': 1.2,
             'verse_chords': 'stacked',
+            'click_grouping': '7',
+            'click_subdivision': 'sixteenths',
           },
         ),
       );
@@ -1005,6 +1013,8 @@ void main() {
       final o = await mine.getOverlay('s1');
       expect((o.transpose, o.capoFret, o.fontScale), (-3, 2, 1.2));
       expect(o.verseChords, VerseChords.stacked);
+      expect(o.clickGrouping, '7');
+      expect(o.clickSubdivision, Subdivision.sixteenths);
       expect(
         await outbox(),
         isEmpty,

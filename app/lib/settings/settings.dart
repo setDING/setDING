@@ -131,7 +131,7 @@ class AppSettings {
     this.clickVolume = 0.8,
     this.clickAccent = true,
     this.clickSound = ClickSound.click,
-    this.clickSubdivision = false,
+    this.clickSubdivision = Subdivision.off,
     this.audioLatencyMs = 0,
     this.songMap,
     this.showAnnotations = true,
@@ -222,8 +222,9 @@ class AppSettings {
   final bool clickAccent;
   final ClickSound clickSound;
 
-  /// Quieter clicks between the beats.
-  final bool clickSubdivision;
+  /// Quieter clicks between the beats; a song's personal overlay can
+  /// choose another (#698).
+  final Subdivision clickSubdivision;
 
   /// Delay of the audio output (e.g. Bluetooth headphones); the display is
   /// shifted by it so that it matches what is heard.
@@ -366,7 +367,7 @@ class AppSettings {
     double? clickVolume,
     bool? clickAccent,
     ClickSound? clickSound,
-    bool? clickSubdivision,
+    Subdivision? clickSubdivision,
     int? audioLatencyMs,
     bool? songMap,
     bool? showAnnotations,
@@ -523,7 +524,7 @@ class AppSettings {
     'clickVolume': clickVolume,
     'clickAccent': clickAccent,
     'clickSound': clickSound.name,
-    'clickSubdivision': clickSubdivision,
+    'clickSubdivision': clickSubdivision.name,
     'audioLatencyMs': audioLatencyMs,
     'songMap': ?songMap,
     'showAnnotations': showAnnotations,
@@ -624,7 +625,12 @@ class AppSettings {
       ),
       clickAccent: flag('clickAccent', d.clickAccent),
       clickSound: pick(ClickSound.values, 'clickSound', d.clickSound),
-      clickSubdivision: flag('clickSubdivision', d.clickSubdivision),
+      // A boolean before #698: on meant eighths.
+      clickSubdivision: switch (json['clickSubdivision']) {
+        true => Subdivision.eighths,
+        false => Subdivision.off,
+        _ => pick(Subdivision.values, 'clickSubdivision', d.clickSubdivision),
+      },
       audioLatencyMs: (number('audioLatencyMs')?.toInt() ?? d.audioLatencyMs)
           .clamp(0, maxAudioLatencyMs),
       songMap: maybe('songMap'),

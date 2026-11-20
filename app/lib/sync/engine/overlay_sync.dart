@@ -1,3 +1,4 @@
+import 'package:chordpro/chordpro.dart' show Subdivision;
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
@@ -34,6 +35,8 @@ class OverlaySync {
     'live_view': o.liveView,
     'hide_annotations': o.hideAnnotations,
     'verse_chords': o.verseChords.name,
+    'click_grouping': o.clickGrouping,
+    'click_subdivision': o.clickSubdivision?.name,
   };
 
   /// How verses show their chords in the server overlay's [data]:
@@ -96,6 +99,11 @@ class OverlaySync {
                 verseChords: Value(verseChordsOf(d)),
                 midi: Value(o.midi),
                 midiPrograms: Value(o.midiPrograms),
+                clickGrouping: Value(d['click_grouping'] as String?),
+                // Values of newer clients count as the personal setting.
+                clickSubdivision: Value(
+                  Subdivision.values.asNameMap()[d['click_subdivision']],
+                ),
                 revision: Value(o.revision),
               ),
             );

@@ -930,7 +930,39 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsClickSubdivisionHint =>
-      'Leisere Klicks zwischen den Schlägen: Achtel, im 6/8 Triolen.';
+      'Leisere Klicks zwischen den Schlägen. Jeder Song kann in den persönlichen Anpassungen eine eigene Unterteilung haben.';
+
+  @override
+  String get subdivisionOff => 'Aus';
+
+  @override
+  String get subdivisionEighths => 'Achtel';
+
+  @override
+  String get subdivisionSixteenths => 'Sechzehntel';
+
+  @override
+  String get subdivisionTriplets => 'Triolen';
+
+  @override
+  String clickSubdivisionAsInSettings(String value) {
+    return 'Wie in den Einstellungen ($value)';
+  }
+
+  @override
+  String get clickGrouping => 'Gruppierung';
+
+  @override
+  String get clickGroupingNone => 'Ohne Gruppen';
+
+  @override
+  String clickGroupingAsInSong(String grouping) {
+    return 'Wie im Song ($grouping)';
+  }
+
+  @override
+  String get clickGroupingHint =>
+      'Betonte Schläge im ungeraden Takt, nur für dich.';
 
   @override
   String get settingsAudioLatency => 'Audio-Verzögerung';

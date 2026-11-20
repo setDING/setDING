@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
+import 'package:chordpro/chordpro.dart' show Subdivision;
 import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -57,6 +58,8 @@ void main() {
         transpose: 2,
         notes: const Value('Slow intro'),
         liveView: Value(attachment),
+        clickGrouping: const Value('3+2+2'),
+        clickSubdivision: const Value(Subdivision.sixteenths),
       ),
     );
     await db
@@ -156,6 +159,8 @@ void main() {
     expect(overlay.transpose, 2);
     expect(overlay.notes, 'Slow intro');
     expect(overlay.liveView, score.id, reason: 'mapped to the copy');
+    expect(overlay.clickGrouping, '3+2+2');
+    expect(overlay.clickSubdivision, Subdivision.sixteenths);
     final strokes = await other.select(other.annotations).get();
     expect(strokes.single.songId, hello.id);
     expect(strokes.single.target, score.id);

@@ -1721,8 +1721,62 @@ abstract class AppLocalizations {
   /// No description provided for @settingsClickSubdivisionHint.
   ///
   /// In de, this message translates to:
-  /// **'Leisere Klicks zwischen den Schlägen: Achtel, im 6/8 Triolen.'**
+  /// **'Leisere Klicks zwischen den Schlägen. Jeder Song kann in den persönlichen Anpassungen eine eigene Unterteilung haben.'**
   String get settingsClickSubdivisionHint;
+
+  /// No description provided for @subdivisionOff.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus'**
+  String get subdivisionOff;
+
+  /// No description provided for @subdivisionEighths.
+  ///
+  /// In de, this message translates to:
+  /// **'Achtel'**
+  String get subdivisionEighths;
+
+  /// No description provided for @subdivisionSixteenths.
+  ///
+  /// In de, this message translates to:
+  /// **'Sechzehntel'**
+  String get subdivisionSixteenths;
+
+  /// No description provided for @subdivisionTriplets.
+  ///
+  /// In de, this message translates to:
+  /// **'Triolen'**
+  String get subdivisionTriplets;
+
+  /// No description provided for @clickSubdivisionAsInSettings.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie in den Einstellungen ({value})'**
+  String clickSubdivisionAsInSettings(String value);
+
+  /// No description provided for @clickGrouping.
+  ///
+  /// In de, this message translates to:
+  /// **'Gruppierung'**
+  String get clickGrouping;
+
+  /// No description provided for @clickGroupingNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Gruppen'**
+  String get clickGroupingNone;
+
+  /// No description provided for @clickGroupingAsInSong.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie im Song ({grouping})'**
+  String clickGroupingAsInSong(String grouping);
+
+  /// No description provided for @clickGroupingHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Betonte Schläge im ungeraden Takt, nur für dich.'**
+  String get clickGroupingHint;
 
   /// No description provided for @settingsAudioLatency.
   ///
