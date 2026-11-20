@@ -511,6 +511,9 @@ enum ChangeKind {
   /// Songs added to or removed from a set, or a changed song sequence of
   /// a set item or of the band's arrangement of a song in the set.
   setChanged,
+
+  /// A set new in the band (#674); stored by name, so added last.
+  setAdded,
 }
 
 /// Changes by other people that the sync applied on this device, for the

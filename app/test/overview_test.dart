@@ -5,6 +5,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:setding/data/change_log.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/data/set_repository.dart';
+import 'package:setding/l10n/generated/app_localizations.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:setding/ui/home_tab.dart';
 import 'package:setding/ui/live/live_screen.dart';
@@ -494,6 +495,31 @@ void main() {
       await tester.pumpAndSettle();
       expect(recent, findsNothing);
       await app.dispose(tester);
+    });
+
+    test('a new set reads New set (#674)', () {
+      RecentChange change(ChangeKind kind) => RecentChange(
+        kind: kind,
+        recordId: 'set',
+        title: 'Gig',
+        at: DateTime(2026, 11, 20),
+        details: const ChangeDetails(removed: 1),
+      );
+      expect(
+        describeChange(
+          lookupAppLocalizations(const Locale('en')),
+          change(ChangeKind.setAdded),
+        ),
+        'New set',
+      );
+      expect(
+        describeChange(
+          lookupAppLocalizations(const Locale('de')),
+          change(ChangeKind.setAdded),
+        ),
+        'Neues Set',
+      );
+      expect(change(ChangeKind.setAdded).kind.isSet, isTrue);
     });
   });
 }

@@ -4092,6 +4092,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get changeSongAdded => 'Neuer Song';
 
   @override
+  String get changeNewSet => 'Neues Set';
+
+  @override
   String get changeSongText => 'Text geändert';
 
   @override

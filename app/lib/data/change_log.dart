@@ -98,6 +98,12 @@ class ChangeDetails {
   String toString() => 'ChangeDetails(${toJson()})';
 }
 
+/// Whether a change is about a set.
+extension ChangeKindSet on ChangeKind {
+  bool get isSet =>
+      this == ChangeKind.setChanged || this == ChangeKind.setAdded;
+}
+
 /// One entry of the recent changes (ADR-0045): all changes of one song or
 /// set together, with the person and the time of the newest one.
 @immutable
@@ -126,7 +132,7 @@ List<RecentChange> groupChanges(List<ChangeLogRow> rows) {
   for (final row in rows) {
     final details = ChangeDetails.fromJson(row.details);
     final key =
-        '${row.kind == ChangeKind.setChanged ? 'set' : 'song'}:'
+        '${row.kind.isSet ? 'set' : 'song'}:'
         '${row.recordId}';
     final newer = byRecord[key];
     if (newer == null) {
@@ -141,7 +147,10 @@ List<RecentChange> groupChanges(List<ChangeLogRow> rows) {
       continue;
     }
     byRecord[key] = RecentChange(
-      kind: row.kind == ChangeKind.songAdded ? row.kind : newer.kind,
+      // A song or set that is new and was changed afterwards stays new.
+      kind: row.kind == ChangeKind.songAdded || row.kind == ChangeKind.setAdded
+          ? row.kind
+          : newer.kind,
       recordId: newer.recordId,
       title: newer.title,
       at: newer.at,
