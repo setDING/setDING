@@ -5,6 +5,7 @@ import '../../data/database.dart';
 import '../../data/outbox.dart';
 import '../../util/log.dart';
 import '../sync_backend.dart';
+import 'change_recorder.dart';
 import 'sync_store.dart';
 
 const _log = Log('sync');
@@ -12,7 +13,13 @@ const _log = Log('sync');
 /// Sync of PDF attachments (ADR-0009): metadata by delta pull and push,
 /// files uploaded with their record and downloaded to every device.
 class AttachmentSync {
-  AttachmentSync(this.db, this.backend, this.store, this.storage);
+  AttachmentSync(
+    this.db,
+    this.backend,
+    this.store,
+    this.storage, {
+    this.changes,
+  });
 
   final AppDatabase db;
   final SyncBackend backend;
@@ -22,7 +29,13 @@ class AttachmentSync {
   /// uploaded nor downloaded.
   final AttachmentStorage? storage;
 
-  Future<int> pull(String orgId) async {
+  /// Records changes of other people (ADR-0045).
+  final ChangeRecorder? changes;
+
+  /// Changes by others than [logChangesFor] (the signed-in user) are
+  /// recorded in the change log (ADR-0045); null records nothing, e.g. on
+  /// the first sync of the library or band.
+  Future<int> pull(String orgId, {String? logChangesFor}) async {
     final since = await store.cursor(orgId, SyncCollection.attachments);
     final remote = await backend.pullAttachments(orgId, since);
     if (remote.isEmpty) return 0;
@@ -45,6 +58,7 @@ class AttachmentSync {
           local: locals[a.id],
           dirty: dirty.contains(a.id),
           songExists: songs.contains(a.songId),
+          log: ChangeRecorder.records(a.updatedBy, logChangesFor),
         );
         if (file != null) removedFiles.add(file);
       }
@@ -68,11 +82,13 @@ class AttachmentSync {
     required AttachmentEntry? local,
     required bool dirty,
     required bool songExists,
+    bool log = false,
   }) async {
     if (local != null && remote.revision <= local.revision) return null;
     // A pending local change (rename, delete) wins and is pushed.
     if (local != null && dirty) return null;
     if (!songExists) return null; // the song is gone
+    if (log) await changes?.attachment(local, remote);
     final fileName = local?.fileName ?? '${remote.id}.pdf';
     await db
         .into(db.attachments)

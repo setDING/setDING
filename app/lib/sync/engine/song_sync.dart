@@ -6,6 +6,7 @@ import '../../data/outbox.dart';
 import '../../data/song_repository.dart' show SongMeta, songMetas;
 import '../../util/log.dart';
 import '../sync_backend.dart';
+import 'change_recorder.dart';
 import 'sync_store.dart';
 
 const _log = Log('sync');
@@ -13,7 +14,7 @@ const _log = Log('sync');
 /// Sync of songs (ADR-0004): delta pull per organization, push with the
 /// base revision, and conflicts the user resolves.
 class SongSync {
-  SongSync(this.db, this.backend, this.store, {this.copies});
+  SongSync(this.db, this.backend, this.store, {this.copies, this.changes});
 
   final AppDatabase db;
   final SyncBackend backend;
@@ -22,8 +23,14 @@ class SongSync {
   /// Used to keep both versions of a conflicting song.
   final BandCopyService? copies;
 
+  /// Records changes of other people (ADR-0045).
+  final ChangeRecorder? changes;
+
+  /// Changes by others than [logChangesFor] (the signed-in user) are
+  /// recorded in the change log (ADR-0045); null records nothing, e.g. on
+  /// the first sync of the library or band.
   /// Returns (pulled, new conflicts).
-  Future<(int, int)> pull(String orgId) async {
+  Future<(int, int)> pull(String orgId, {String? logChangesFor}) async {
     final since = await store.cursor(orgId, SyncCollection.songs);
     final remote = await backend.pullSongs(orgId, since);
     if (remote.isEmpty) return (0, 0);
@@ -51,6 +58,7 @@ class SongSync {
           local: locals[song.id],
           dirty: dirty.contains(song.id),
           knownConflict: known.contains(song.id),
+          log: ChangeRecorder.records(song.updatedBy, logChangesFor),
         )) {
           conflicts++;
         }
@@ -74,6 +82,7 @@ class SongSync {
     required SongEntry? local,
     required bool dirty,
     required bool knownConflict,
+    bool log = false,
   }) async {
     if (local != null && remote.revision <= local.revision) return false;
     if (local != null && dirty) {
@@ -92,6 +101,7 @@ class SongSync {
           );
       return !knownConflict;
     }
+    if (log) await changes?.song(local, remote, meta.title ?? remote.title);
     await writeSong(remote, meta: meta);
     return false;
   }

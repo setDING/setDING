@@ -500,6 +500,49 @@ class SongConflicts extends Table {
   Set<Column> get primaryKey => {songId};
 }
 
+/// What an entry of the [ChangeLog] is about (ADR-0045).
+enum ChangeKind {
+  /// A song new in the library.
+  songAdded,
+
+  /// A song's ChordPro text, or one of its PDF attachments.
+  songChanged,
+
+  /// Songs added to or removed from a set, or a changed song sequence of
+  /// a set item or of the band's arrangement of a song in the set.
+  setChanged,
+}
+
+/// Changes by other people that the sync applied on this device, for the
+/// recent changes of the overview (ADR-0045, schema 24). Device-only,
+/// never synced; entries older than 30 days are removed.
+@TableIndex(name: 'change_log_scope', columns: {#scopeId, #at})
+@DataClassName('ChangeLogRow')
+class ChangeLog extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// When the sync applied the change on this device (compared with the
+  /// overview's "last shown", also a time on this device).
+  DateTimeColumn get at => dateTime()();
+  TextColumn get kind => textEnum<ChangeKind>()();
+
+  /// The organization of a song, the band of a set.
+  TextColumn get scopeId => text()();
+
+  /// The song or set.
+  TextColumn get recordId => text()();
+
+  /// Title of the song or name of the set at the time of the change.
+  TextColumn get title => text()();
+
+  /// Who made the change (`created_by` of a new song, otherwise
+  /// `updated_by`).
+  TextColumn get userId => text().nullable()();
+
+  /// What changed, as the JSON of `ChangeDetails`.
+  TextColumn get details => text().withDefault(const Constant('{}'))();
+}
+
 @DriftDatabase(
   include: {'search.drift'},
   tables: [
@@ -518,13 +561,14 @@ class SongConflicts extends Table {
     SyncOutbox,
     SyncCursors,
     SongConflicts,
+    ChangeLog,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 23;
+  int get schemaVersion => 24;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -609,7 +653,9 @@ class AppDatabase extends _$AppDatabase {
         // created some of them.
         for (final index in localIndexes) {
           // Tables of later schemas do not exist yet.
-          if (index == annotationsOwnerSong) continue;
+          if (index == annotationsOwnerSong || index == changeLogScope) {
+            continue;
+          }
           await customStatement('DROP INDEX IF EXISTS ${index.entityName}');
           await m.createIndex(index);
         }
@@ -737,6 +783,12 @@ class AppDatabase extends _$AppDatabase {
         // and unknown item fields kept for newer clients.
         await m.addColumn(setItems, setItems.played);
         await m.addColumn(setItems, setItems.extra);
+      }
+      if (from < 24) {
+        // Change log for the recent changes of the overview (ADR-0045);
+        // starts empty.
+        await m.createTable(changeLog);
+        await m.createIndex(changeLogScope);
       }
     },
     beforeOpen: (details) async {

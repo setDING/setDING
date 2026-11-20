@@ -4077,4 +4077,68 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get songNeverPlayed => 'Noch nie gespielt';
+
+  @override
+  String get overviewRecentChanges => 'Letzte Änderungen';
+
+  @override
+  String get overviewShowAll => 'Alle anzeigen';
+
+  @override
+  String get recentChangesEmpty =>
+      'Keine Änderungen von anderen in den letzten 30 Tagen.';
+
+  @override
+  String get changeSongAdded => 'Neuer Song';
+
+  @override
+  String get changeSongText => 'Text geändert';
+
+  @override
+  String get changeSongPdf => 'PDF geändert';
+
+  @override
+  String get changeSongTextAndPdf => 'Text und PDF geändert';
+
+  @override
+  String changeSetAdded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs hinzugefügt',
+      one: '1 Song hinzugefügt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String changeSetRemoved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs entfernt',
+      one: '1 Song entfernt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String changeSetAlsoRemoved(int count) {
+    return '$count entfernt';
+  }
+
+  @override
+  String changeSetSequence(String songs) {
+    return 'Ablauf von $songs geändert';
+  }
+
+  @override
+  String changeQuoted(String title) {
+    return '«$title»';
+  }
+
+  @override
+  String changeBy(String name) {
+    return 'von $name';
+  }
 }

@@ -2,12 +2,14 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:setding/data/change_log.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:setding/ui/home_tab.dart';
 import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/ui/overview/overview_screen.dart';
+import 'package:setding/ui/overview/recent_changes.dart';
 import 'package:setding/ui/sets/set_screen.dart';
 
 import 'test_app.dart';
@@ -310,5 +312,188 @@ void main() {
     // No newer release known.
     expect(find.byKey(const Key('overview-update-install')), findsNothing);
     await app.dispose(tester);
+  });
+
+  group('recent changes', () {
+    final recent = find.byKey(const Key('overview-recent-changes'));
+    final lastShown = now.subtract(const Duration(hours: 2));
+
+    Future<TestApp> bandApp() async {
+      final app = await TestApp.create(
+        prefs: {
+          'language': 'en',
+          'currentBandId': 'b1',
+          OverviewLastShownNotifier.key: lastShown.millisecondsSinceEpoch,
+        },
+        user: _ann,
+      );
+      app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+      app.backend.addMember('b1', _bob, BandRole.member);
+      return app;
+    }
+
+    Future<void> logChange(
+      TestApp app,
+      ChangeKind kind,
+      String record, {
+      String scope = 'o1',
+      Duration ago = const Duration(hours: 1),
+      ChangeDetails details = const ChangeDetails(),
+      String? user = 'bob',
+    }) => ChangeLogRepository(app.db).add(
+      kind: kind,
+      scopeId: scope,
+      recordId: record,
+      title: 'Title $record',
+      userId: user,
+      details: details,
+      at: now.subtract(ago),
+    );
+
+    String subtitleOf(WidgetTester tester, String record) =>
+        (tester
+                    .widget<ListTile>(
+                      find.byKey(ValueKey('recent-change-$record')),
+                    )
+                    .subtitle!
+                as Text)
+            .data!;
+
+    testWidgets('shows the changes of the band and its organization since '
+        'the overview was last shown, until it is left', (tester) async {
+      usePhoneSize(tester);
+      final app = await bandApp();
+      await tester.runAsync(() async {
+        await logChange(app, ChangeKind.songAdded, 'new');
+        await logChange(
+          app,
+          ChangeKind.songChanged,
+          'pdf',
+          ago: const Duration(minutes: 50),
+          details: const ChangeDetails(pdf: true),
+          user: 'stranger',
+        );
+        await logChange(
+          app,
+          ChangeKind.setChanged,
+          'set',
+          scope: 'b1',
+          ago: const Duration(minutes: 40),
+          details: const ChangeDetails(added: 2, removed: 1, sequences: ['A']),
+        );
+        await logChange(app, ChangeKind.songAdded, 'other', scope: 'o2');
+        await logChange(
+          app,
+          ChangeKind.songAdded,
+          'seen',
+          ago: const Duration(hours: 3),
+        );
+      });
+      await tester.pumpWidget(app.build());
+      await tester.pumpAndSettle();
+
+      expect(recent, findsOneWidget);
+      expect(
+        tester
+            .widgetList<RecentChangeTile>(
+              find.descendant(
+                of: recent,
+                matching: find.byType(RecentChangeTile),
+              ),
+            )
+            .map((t) => t.change.recordId),
+        ['set', 'pdf', 'new'],
+      );
+      expect(
+        subtitleOf(tester, 'set'),
+        '2 songs added, 1 removed, sequence of "A" changed · by Bob',
+      );
+      // A person not known on this device is not named.
+      expect(subtitleOf(tester, 'pdf'), 'PDF changed');
+      expect(subtitleOf(tester, 'new'), 'New song · by Bob');
+
+      // Show all: also the changes seen before, with their date.
+      await tester.tap(find.byKey(const Key('overview-recent-changes-all')));
+      await tester.pumpAndSettle();
+      expect(find.byType(RecentChangesScreen), findsOneWidget);
+      expect(find.byType(RecentChangeTile), findsNWidgets(4));
+      expect(find.text('Title seen'), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      // Still shown after coming back.
+      expect(recent, findsOneWidget);
+
+      // Leaving the overview marks it as shown.
+      await openTab(tester, HomeTab.sets);
+      expect(
+        app.prefs.getInt(OverviewLastShownNotifier.key),
+        greaterThan(lastShown.millisecondsSinceEpoch),
+      );
+      await openTab(tester, HomeTab.overview);
+      expect(recent, findsNothing);
+
+      // A new change shows up live.
+      await tester.runAsync(() async {
+        // After the overview was left (`now` is when the tests began).
+        await logChange(
+          app,
+          ChangeKind.songAdded,
+          'later',
+          ago: const Duration(hours: -1),
+        );
+        // The query of the stream runs outside the fake clock.
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      });
+      await tester.pumpAndSettle();
+      expect(recent, findsOneWidget);
+      await app.dispose(tester);
+    });
+
+    testWidgets('at most ten entries; hiding the app marks the overview as '
+        'shown', (tester) async {
+      usePhoneSize(tester);
+      final app = await bandApp();
+      await tester.runAsync(() async {
+        for (var i = 0; i < 12; i++) {
+          await logChange(
+            app,
+            ChangeKind.songChanged,
+            'song$i',
+            ago: Duration(minutes: 60 - i),
+            details: const ChangeDetails(text: true),
+          );
+        }
+      });
+      await tester.pumpWidget(app.build());
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(of: recent, matching: find.byType(RecentChangeTile)),
+        findsNWidgets(recentChangesOnCard),
+      );
+      expect(find.text('Title song11'), findsOneWidget);
+      expect(find.text('Title song0'), findsNothing);
+      expect(subtitleOf(tester, 'song11'), 'Text changed · by Bob');
+
+      for (final state in [
+        AppLifecycleState.inactive,
+        AppLifecycleState.hidden,
+        AppLifecycleState.inactive,
+        AppLifecycleState.resumed,
+      ]) {
+        tester.binding.handleAppLifecycleStateChanged(state);
+      }
+      await tester.pumpAndSettle();
+      expect(recent, findsNothing);
+      await app.dispose(tester);
+    });
+
+    testWidgets('a new installation starts empty', (tester) async {
+      usePhoneSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      await tester.pumpWidget(app.build());
+      await tester.pumpAndSettle();
+      expect(recent, findsNothing);
+      await app.dispose(tester);
+    });
   });
 }

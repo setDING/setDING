@@ -733,6 +733,7 @@ class PocketBaseBackend implements SyncBackend {
       deleted: r.getBoolValue('deleted'),
       deletedAt: _date(r.getStringValue('deleted_at')),
       purged: r.getBoolValue('purged'),
+      updatedBy: _nonEmpty(r.getStringValue('updated_by')),
     );
   }
 

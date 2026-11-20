@@ -13,6 +13,7 @@ import '../data/play_history.dart';
 import '../data/song_repository.dart' show SongMeta;
 import 'band_service.dart';
 import 'engine/arrangement_sync.dart';
+import 'engine/change_recorder.dart';
 import 'engine/attachment_sync.dart';
 import 'engine/annotation_sync.dart';
 import 'engine/overlay_sync.dart';
@@ -81,13 +82,20 @@ class SyncEngine {
     this.preloadAttachments = true,
     this.settings,
   }) : storage = storage ?? copies?.storage {
-    final store = SyncStore(db);
-    _songs = SongSync(db, backend, store, copies: copies);
-    _sets = SetSync(db, backend, store);
-    _attachments = AttachmentSync(db, backend, store, this.storage);
+    final store = _store = SyncStore(db);
+    _changes = ChangeRecorder(db);
+    _songs = SongSync(db, backend, store, copies: copies, changes: _changes);
+    _sets = SetSync(db, backend, store, changes: _changes);
+    _attachments = AttachmentSync(
+      db,
+      backend,
+      store,
+      this.storage,
+      changes: _changes,
+    );
     _overlays = OverlaySync(db, backend, store);
     _annotations = AnnotationSync(db, backend, store);
-    _arrangements = ArrangementSync(db, backend, store);
+    _arrangements = ArrangementSync(db, backend, store, changes: _changes);
     if (settings case final settings?) {
       _settings = SettingsSync(db, backend, store, settings);
     }
@@ -113,6 +121,8 @@ class SyncEngine {
   /// Used to keep both versions of a conflicting song.
   final BandCopyService? copies;
 
+  late final SyncStore _store;
+  late final ChangeRecorder _changes;
   late final SongSync _songs;
   late final SetSync _sets;
   late final AttachmentSync _attachments;
@@ -141,6 +151,8 @@ class SyncEngine {
     var settingsTakenOver = false;
     var gone = const BandChanges();
     try {
+      // Recent changes of the overview are kept for 30 days (ADR-0045).
+      await _changes.log.prune();
       if (refreshBands) gone = await bands.refresh();
       final visible = [
         for (final b in await bands.watchBands(user.id).first)
@@ -150,16 +162,28 @@ class SyncEngine {
       final orgs = await bands.watchOrganizations(user.id).first;
       orgIds.addAll(orgs.map((o) => o.id));
 
+      // Changes by others for the overview (ADR-0045), not on the first
+      // sync of a library or band.
+      Future<String?> logFor(String scope, List<String> collections) async =>
+          await _store.pulledBefore(scope, collections) ? user.id : null;
       for (final org in orgIds) {
-        final r = await _songs.pull(org);
+        final log = await logFor(org, const [
+          SyncCollection.songs,
+          SyncCollection.attachments,
+        ]);
+        final r = await _songs.pull(org, logChangesFor: log);
         pulled += r.$1;
         conflicts += r.$2;
-        pulled += await _attachments.pull(org);
+        pulled += await _attachments.pull(org, logChangesFor: log);
       }
       for (final band in visible) {
-        pulled += await _sets.pull(band);
+        final log = await logFor(band.id, const [
+          SyncCollection.setlists,
+          SyncCollection.arrangements,
+        ]);
+        pulled += await _sets.pull(band, logChangesFor: log);
         // After the songs: an arrangement needs its song on this device.
-        pulled += await _arrangements.pull(band);
+        pulled += await _arrangements.pull(band, logChangesFor: log);
         // With the band's sets and arrangements on this device: freeze how
         // the songs of the sets whose gig day has come were played
         // (ADR-0046). Pushed below with the other changes.

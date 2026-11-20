@@ -128,6 +128,29 @@ Further rules:
   *To do* lines set a filter of the song list (`SongAttention`), shown as a
   removable chip, and switch to the songs tab; they count the songs of the
   library the song list shows. *Recent changes* follows in #667.
+- 2026-11-20: Implemented *Recent changes* (#667): the device-only table
+  `change_log` (schema 24) and `ChangeRecorder` in the sync engine. Notable
+  details:
+  - **"Last shown"** is the device setting `overviewLastShown`, set when
+    the overview is **left** (another tab, or the app hidden while it is on
+    the overview), not when it is built: the entries stay while the person
+    reads them and opens one of them. An entry counts by the time it
+    arrived on this device, so a change synced late still shows up.
+  - **First sync**: nothing is logged for a library before any song or
+    attachment of it was pulled, nor for a band before any set or
+    arrangement of it was pulled. Changes without a known `updated_by`
+    (e.g. records from before the server kept it) are not logged.
+  - **Set changes** are counted per song (the multiset of song IDs of the
+    old and new items), so a reordering is no change; the sequence of a
+    set item is compared item by item (by item ID, otherwise the next item
+    of the same song); songs not on the device do not count. A new set of
+    someone else shows up as its songs added. A sequence change of the
+    band's arrangement is logged for every set of the band with the song.
+    Deleted songs and sets and a new name of a PDF are not logged.
+  - The log keeps one row per applied change; the overview merges the rows
+    of one song or set into one entry (a new song stays new) and names the
+    person from the members stored on the device. *Show all* lists the
+    entries of the last 30 days.
 
 ## Open points
 
