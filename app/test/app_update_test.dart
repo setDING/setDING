@@ -324,8 +324,16 @@ void main() {
       await tester.pumpWidget(build(app));
       await afterStartDelay(tester);
       expect(snackbar, findsOneWidget);
-      expect(find.text('setDING 0.9.0 is available'), findsOneWidget);
+      // In the hint; the overview's footer shows it too (ADR-0045).
+      expect(
+        find.descendant(
+          of: snackbar,
+          matching: find.text('setDING 0.9.0 is available'),
+        ),
+        findsOneWidget,
+      );
       expect(install, findsOneWidget);
+      expect(find.byKey(const Key('overview-update-install')), findsOneWidget);
       expect(find.text('Details'), findsNothing);
 
       // Installing asks first; cancelling changes nothing.

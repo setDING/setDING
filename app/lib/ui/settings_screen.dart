@@ -2,15 +2,12 @@ import 'package:chordpro/chordpro.dart' hide Key;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/generated/app_localizations.dart';
 import '../providers.dart';
 import '../settings/settings.dart';
 import '../sync/auth_providers.dart';
 import '../sync/update_check.dart';
-import '../update/update_providers.dart';
-import '../update/whats_new.dart';
 import '../util/app_version.dart';
 import '../util/log.dart';
 import 'account/account_section.dart';
@@ -21,10 +18,9 @@ import 'settings/midi_settings.dart';
 import 'settings/midi_test_screen.dart';
 import 'settings/song_display_settings.dart';
 import 'theme.dart';
-import 'widgets/app_update.dart';
+import 'widgets/app_info.dart';
 import 'widgets/breakpoint_builder.dart';
 import 'widgets/dialogs.dart';
-import 'widgets/whats_new_dialog.dart';
 
 /// The categories of the settings screen, in order.
 /// The most used ones come first; the account and the organizations and
@@ -808,40 +804,12 @@ class _AboutTiles extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final usage = ref.watch(storageUsageProvider).value;
     final version = ref.watch(appVersionProvider).value;
-    final update = ref.watch(updateCheckProvider);
-    final current = ref.watch(clientVersionProvider);
-    // The Windows app installs it itself (ADR-0035).
-    final installable = ref.watch(installableUpdateProvider);
-    final whatsNew = switch (ref.watch(whatsNewProvider).value) {
-      final all? => notesUpTo(all, current),
-      null => null,
-    };
+    final whatsNew = ref.watch(recentNotesProvider);
     return Column(
       children: [
         // A newer release (ADR-0036).
-        if (update != null)
-          ListTile(
-            key: const Key('update-available'),
-            leading: const Icon(Icons.system_update),
-            title: Text(l10n.updateAvailableTitle(update)),
-            subtitle: Text(
-              [
-                if (current != null) l10n.updateAvailableInstalled(current),
-                if (installable == null) l10n.updateRequiredHowTo,
-              ].join(' '),
-            ),
-            trailing: installable != null
-                ? FilledButton(
-                    key: const Key('update-available-install'),
-                    onPressed: () => installAppUpdate(context, installable),
-                    child: Text(l10n.appUpdateInstall),
-                  )
-                : const Icon(Icons.open_in_new),
-            onTap: () => launchUrl(
-              releasePageUrl(update),
-              mode: LaunchMode.externalApplication,
-            ),
-          ),
+        if (ref.watch(updateCheckProvider) != null)
+          const UpdateAvailableTile(key: Key('update-available')),
         ListTile(
           leading: const Icon(Icons.sd_storage_outlined),
           title: Text(l10n.settingsStorageUsed(formatBytes(usage ?? 0))),
@@ -874,12 +842,7 @@ class _AboutTiles extends ConsumerWidget {
           subtitle: Text(l10n.settingsAbout),
           // The notes of the recent versions, again (ADR-0041).
           trailing: whatsNew != null && whatsNew.isNotEmpty
-              ? OutlinedButton.icon(
-                  key: const Key('whats-new'),
-                  icon: const Icon(Icons.new_releases_outlined),
-                  label: Text(l10n.whatsNewTitle),
-                  onPressed: () => showWhatsNew(context, whatsNew),
-                )
+              ? const WhatsNewButton(key: Key('whats-new'))
               : null,
         ),
       ],

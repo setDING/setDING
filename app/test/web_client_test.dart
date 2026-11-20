@@ -24,6 +24,8 @@ import 'package:setding/ui/sets/set_screen.dart';
 import 'package:setding/ui/sets/sets_screen.dart';
 import 'package:setding/ui/settings_screen.dart';
 
+import 'package:setding/ui/home_tab.dart';
+
 import 'test_app.dart';
 
 // The fake backend gives a signed-in account the id `u-<email>`.
@@ -294,6 +296,7 @@ void main() {
       bandId: 'b1',
     ).createSet(name: 'Gig');
     await tester.pumpAndSettle();
+    await openTab(tester, HomeTab.sets);
     // Listed and, on the wide test screen, shown next to the list (#266):
     // neither has the status.
     expect(find.text('Gig'), findsNWidgets(2));

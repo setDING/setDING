@@ -17,6 +17,7 @@ import 'package:setding/sync/session_store.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:setding/sync/sync_controller.dart';
 import 'package:setding/ui/deep_links.dart';
+import 'package:setding/ui/home_tab.dart';
 import 'package:setding/ui/settings_screen.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
@@ -219,5 +220,12 @@ Future<void> tapSettingsCategory(WidgetTester tester, String name) async {
   await tester.ensureVisible(category);
   await tester.pumpAndSettle();
   await tester.tap(category);
+  await tester.pumpAndSettle();
+}
+
+/// Switches the main navigation to [tab]; the app starts on the overview
+/// (ADR-0045).
+Future<void> openTab(WidgetTester tester, HomeTab tab) async {
+  await tester.tap(find.byKey(Key('nav-${tab.name}')));
   await tester.pumpAndSettle();
 }

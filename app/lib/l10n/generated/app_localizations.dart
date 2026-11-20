@@ -6354,6 +6354,96 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{org} wurde geschlossen. Ihre Admins können sie {days} Tage lang wiederherstellen.'**
   String orgClosedNoticeAnonymous(String org, int days);
+
+  /// No description provided for @navOverview.
+  ///
+  /// In de, this message translates to:
+  /// **'Übersicht'**
+  String get navOverview;
+
+  /// No description provided for @overviewNextSet.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächstes Set'**
+  String get overviewNextSet;
+
+  /// No description provided for @overviewLastEditedSet.
+  ///
+  /// In de, this message translates to:
+  /// **'Zuletzt bearbeitetes Set'**
+  String get overviewLastEditedSet;
+
+  /// No description provided for @overviewSongCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{Keine Songs} =1{1 Song} other{{count} Songs}}'**
+  String overviewSongCount(int count);
+
+  /// No description provided for @overviewStartLive.
+  ///
+  /// In de, this message translates to:
+  /// **'Live starten'**
+  String get overviewStartLive;
+
+  /// No description provided for @overviewOpenSet.
+  ///
+  /// In de, this message translates to:
+  /// **'Set öffnen'**
+  String get overviewOpenSet;
+
+  /// No description provided for @overviewTodo.
+  ///
+  /// In de, this message translates to:
+  /// **'Zu erledigen'**
+  String get overviewTodo;
+
+  /// No description provided for @overviewTodoProblems.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song mit ChordPro-Problemen} other{{count} Songs mit ChordPro-Problemen}}'**
+  String overviewTodoProblems(int count);
+
+  /// No description provided for @overviewTodoConflicts.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song mit Sync-Konflikt} other{{count} Songs mit Sync-Konflikt}}'**
+  String overviewTodoConflicts(int count);
+
+  /// No description provided for @overviewTodoSheetMusicOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song nur mit Noten (PDF)} other{{count} Songs nur mit Noten (PDF)}}'**
+  String overviewTodoSheetMusicOnly(int count);
+
+  /// No description provided for @attentionProblems.
+  ///
+  /// In de, this message translates to:
+  /// **'ChordPro-Probleme'**
+  String get attentionProblems;
+
+  /// No description provided for @attentionConflicts.
+  ///
+  /// In de, this message translates to:
+  /// **'Sync-Konflikte'**
+  String get attentionConflicts;
+
+  /// No description provided for @attentionSheetMusicOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur Noten (PDF)'**
+  String get attentionSheetMusicOnly;
+
+  /// No description provided for @songsFilterClear.
+  ///
+  /// In de, this message translates to:
+  /// **'Filter entfernen'**
+  String get songsFilterClear;
+
+  /// No description provided for @songsFilterEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Songs mehr in diesem Filter.'**
+  String get songsFilterEmpty;
 }
 
 class _AppLocalizationsDelegate

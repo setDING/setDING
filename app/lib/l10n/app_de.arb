@@ -2338,5 +2338,48 @@
         "type": "int"
       }
     }
-  }
+  },
+  "navOverview": "Übersicht",
+  "overviewNextSet": "Nächstes Set",
+  "overviewLastEditedSet": "Zuletzt bearbeitetes Set",
+  "overviewSongCount": "{count, plural, =0{Keine Songs} =1{1 Song} other{{count} Songs}}",
+  "@overviewSongCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "overviewStartLive": "Live starten",
+  "overviewOpenSet": "Set öffnen",
+  "overviewTodo": "Zu erledigen",
+  "overviewTodoProblems": "{count, plural, =1{1 Song mit ChordPro-Problemen} other{{count} Songs mit ChordPro-Problemen}}",
+  "@overviewTodoProblems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "overviewTodoConflicts": "{count, plural, =1{1 Song mit Sync-Konflikt} other{{count} Songs mit Sync-Konflikt}}",
+  "@overviewTodoConflicts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "overviewTodoSheetMusicOnly": "{count, plural, =1{1 Song nur mit Noten (PDF)} other{{count} Songs nur mit Noten (PDF)}}",
+  "@overviewTodoSheetMusicOnly": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "attentionProblems": "ChordPro-Probleme",
+  "attentionConflicts": "Sync-Konflikte",
+  "attentionSheetMusicOnly": "Nur Noten (PDF)",
+  "songsFilterClear": "Filter entfernen",
+  "songsFilterEmpty": "Keine Songs mehr in diesem Filter."
 }

@@ -2102,5 +2102,20 @@
         "type": "int"
       }
     }
-  }
+  },
+  "navOverview": "Overview",
+  "overviewNextSet": "Next set",
+  "overviewLastEditedSet": "Last edited set",
+  "overviewSongCount": "{count, plural, =0{No songs} =1{1 song} other{{count} songs}}",
+  "overviewStartLive": "Start live",
+  "overviewOpenSet": "Open set",
+  "overviewTodo": "To do",
+  "overviewTodoProblems": "{count, plural, =1{1 song with ChordPro problems} other{{count} songs with ChordPro problems}}",
+  "overviewTodoConflicts": "{count, plural, =1{1 song with a sync conflict} other{{count} songs with sync conflicts}}",
+  "overviewTodoSheetMusicOnly": "{count, plural, =1{1 song with sheet music (PDF) only} other{{count} songs with sheet music (PDF) only}}",
+  "attentionProblems": "ChordPro problems",
+  "attentionConflicts": "Sync conflicts",
+  "attentionSheetMusicOnly": "Sheet music only",
+  "songsFilterClear": "Remove filter",
+  "songsFilterEmpty": "No songs left in this filter."
 }

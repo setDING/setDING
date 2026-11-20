@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:setding/ui/home_tab.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/ui/sets/sets_screen.dart';
 
@@ -30,6 +31,7 @@ void main() {
     });
     await tester.pumpWidget(app.build());
     await tester.pumpAndSettle();
+    await openTab(tester, HomeTab.sets);
     return app;
   }
 

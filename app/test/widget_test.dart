@@ -18,6 +18,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:setding/ui/home_tab.dart';
+
 import 'test_app.dart';
 
 void main() {
@@ -30,6 +32,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Einstellungen'), findsWidgets);
+    expect(find.text('Übersicht'), findsWidgets);
+    await openTab(tester, HomeTab.sets);
     expect(find.text('Neues Set'), findsOneWidget);
 
     await tester.tap(find.text('Einstellungen').first);
@@ -947,6 +951,7 @@ void main() {
     await tester.runAsync(() => app.songs.createSong(source: demoSongSource));
     await tester.pumpWidget(app.build());
     await tester.pumpAndSettle();
+    await openTab(tester, HomeTab.sets);
 
     await tester.tap(find.text('New set'));
     await tester.pumpAndSettle();
@@ -1384,6 +1389,7 @@ void main() {
         });
         await tester.pumpWidget(app.build());
         await tester.pumpAndSettle();
+        await openTab(tester, HomeTab.sets);
         // Wide screens show the set next to the list already.
         if (!wide) {
           await tester.tap(find.text('Summer Gig'));
