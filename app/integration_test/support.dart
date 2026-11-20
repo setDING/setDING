@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Pumps frames until [finder] finds something, for work that runs on the
@@ -19,6 +20,18 @@ Future<void> pumpUntil(
     }
     await tester.pump(const Duration(milliseconds: 100));
   }
+}
+
+/// Types [text] into the text field [field]. `enterText` needs the test
+/// text input, which the web binding does not use (the browser's own input
+/// is active): the field's controller is set instead.
+Future<void> fillIn(WidgetTester tester, Finder field, String text) async {
+  final editable = find.descendant(
+    of: field,
+    matching: find.byType(EditableText),
+  );
+  tester.widget<EditableText>(editable).controller.text = text;
+  await tester.pump();
 }
 
 /// Pumps frames for [duration] (animations, platform callbacks).

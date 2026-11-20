@@ -9,6 +9,9 @@
 #   packages, so it always matches sqlite3.wasm (generated, not checked in).
 #
 # Usage: tool/build-web.sh [extra flutter build web arguments]
+#
+# WEB_OUT (absolute) builds into another directory than app/build/web, e.g.
+# the web integration tests (tool/web-test.sh).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -24,6 +27,8 @@ SQLITE3_WASM_SHA256="e7451780e78c56ff864fe9317a0fbcd6aeb2e8de3beba7f5efd963202f7
 
 fail() { echo "web: $*" >&2; exit 1; }
 
+OUT="${WEB_OUT:-$APP/build/web}"
+
 cd "$APP"
 locked="$(awk '$0 == "  sqlite3:" {p=1; next} p && /version:/ {gsub(/"/, "", $2); print $2; exit}' pubspec.lock)"
 [ "$locked" = "$SQLITE3_VERSION" ] ||
@@ -35,14 +40,14 @@ dart compile js -O4 --no-source-maps -o web/drift_worker.js web/drift_worker.dar
 rm -f web/drift_worker.js.deps
 # Everything from this server: no CanvasKit or fonts from Google's CDN
 # (privacy, and cross-origin isolation, ADR-0018).
-flutter build web --no-pub --no-wasm-dry-run --no-web-resources-cdn "$@" >/dev/null
+flutter build web --no-pub --no-wasm-dry-run --no-web-resources-cdn --output "$OUT" "$@" >/dev/null
 # flutter.js and flutter_bootstrap.js point to flutter.js.map, which the
 # release build does not ship; the server would answer with index.html and
 # browser devtools report a source map error. Drop references to missing maps.
-for f in build/web/*.js; do
+for f in "$OUT"/*.js; do
   map="$(sed -n 's|^//# sourceMappingURL=\([^ ]*\)$|\1|p' "$f" | tail -n 1)"
-  if [ -n "$map" ] && [ ! -e "build/web/$map" ]; then
+  if [ -n "$map" ] && [ ! -e "$OUT/$map" ]; then
     sed -i '\|^//# sourceMappingURL=|d' "$f"
   fi
 done
-echo "web: built app/build/web (sqlite3 $locked)"
+echo "web: built ${OUT#"$ROOT"/} (sqlite3 $locked)"

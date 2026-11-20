@@ -30,7 +30,7 @@ make android-test EMULATOR_WINDOW=1                  # watch the emulator
    - **Real device:** `DEVICE=<id>`, USB debugging on.
 2. starts a local PocketBase with the repository's schema and hooks
    ([`server/bin/itest_backend.dart`](../../server/bin/itest_backend.dart))
-   with a user, a band and a song, and forwards its port to the device with
+   with a user, a band and two songs (one with a PDF), and forwards its port to the device with
    `adb reverse`, so the device reaches it as `http://127.0.0.1:<port>`;
 3. runs every `integration_test/*_test.dart` except the performance scenarios
    (`make perf`) with `flutter test -d <device>`, passing the server and the
@@ -65,7 +65,7 @@ PocketBase. Release builds use the main manifest without this configuration;
 |---|---|
 | `app_test.dart` | Start-up through `main()` with the real database, files and secure storage; the demo song in the library and on the song screen; a set in live mode with a PDF rendered by the platform's engine, page turns with page-turner keys, no wake-lock warning |
 | `platform_test.dart` | Songs and attachment files survive closing and reopening the SQLite file and the storage; the session is kept in the secure storage |
-| `sync_test.dart` | Sign-in through the real UI against the local PocketBase over the network, the sync brings the organization's song onto the device, the session is stored in the secure storage. Skipped without the server of `make android-test` |
+| `sync_test.dart` | Sign-in through the real UI against the local PocketBase over the network, the sync brings the organization's songs onto the device, the session is stored in the secure storage. Skipped without the server of `make android-test` |
 
 Each file runs as its own app start. Tests that call `main()` should stay one
 `testWidgets` per file, since the app's services are opened once per process.
