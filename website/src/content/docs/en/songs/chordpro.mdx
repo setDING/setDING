@@ -30,7 +30,7 @@ whole specification.
 {tempo: 72}
 {time: 3/4}
 
-{start_of_verse: Verse 1}
+{start_of_verse: label="Verse 1"}
 A[G]mazing [G7]grace, how [C]sweet the [G]sound
 That [G]saved a wretch like [D]me
 {end_of_verse}
@@ -58,12 +58,14 @@ That [G]saved a wretch like [D]me
 
 ## Sections
 
-A section starts with `{start_of_…}` and ends with `{end_of_…}`. The text after the
-colon is its label.
+A section starts with `{start_of_…}` and ends with `{end_of_…}`. Its label is the
+`label` attribute, e.g. `{start_of_verse: label="Verse 1"}`. setDING also reads the
+short form `{start_of_verse: label="Verse 1"}`; the editor offers to convert it to the form
+with `label` that the ChordPro specification recommends.
 
 | Section | Directives |
 |---|---|
-| Verse | `{start_of_verse: Verse 1}` … `{end_of_verse}` (short `sov` / `eov`) |
+| Verse | `{start_of_verse: label="Verse 1"}` … `{end_of_verse}` (short `sov` / `eov`) |
 | Chorus | `{start_of_chorus}` … `{end_of_chorus}` (short `soc` / `eoc`) |
 | Bridge | `{start_of_bridge}` … `{end_of_bridge}` |
 | Other parts | e.g. `{start_of_intro}` … `{end_of_intro}`, also `outro`, `solo` |
@@ -89,7 +91,7 @@ Add a hyphen and a name to a directive, and only those who entered that instrume
 {comment-drums: half-open hi-hat}
 {comment-guitar!: for everyone but guitar}
 
-{start_of_verse-alto: Alto}
+{start_of_verse-alto: label="Alto"}
 Only the alto voice sees this verse.
 {end_of_verse}
 ```
@@ -192,7 +194,7 @@ From these, setDING builds the beat display, the count-in, the click and the
 [E] [A] [E] [B]
 {end_of_intro}
 
-{start_of_verse: Verse 1}
+{start_of_verse: label="Verse 1"}
 {comment-drums: closed hi-hat, snare on 2 and 4}
 [E]First line of the [A]verse
 {end_of_verse}

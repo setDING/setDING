@@ -63,6 +63,18 @@ class ChordProEditingController extends TextEditingController {
     return _ccliGrids;
   }
 
+  String? _labelsChecked;
+  List<LegacySectionLabel> _legacyLabels = const [];
+
+  /// Section labels in the short form `{start_of_verse: Verse 1}` (#672).
+  List<LegacySectionLabel> get legacyLabels {
+    if (_labelsChecked != text) {
+      _labelsChecked = text;
+      _legacyLabels = findLegacySectionLabels(text);
+    }
+    return _legacyLabels;
+  }
+
   /// The bracket next to the cursor and its partner (#37), if any.
   BracketMatch? get bracketMatch {
     final sel = selection;

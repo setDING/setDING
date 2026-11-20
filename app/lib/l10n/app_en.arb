@@ -406,6 +406,31 @@
       }
     }
   },
+  "legacyLabelsHint": "{count, plural, =1{A section label is} other{{count} section labels are}} in the short form. The ChordPro specification recommends label=\"…\".",
+  "@legacyLabelsHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importLegacyLabelsMessage": "{count, plural, =1{1 imported song writes} other{{count} imported songs write}} section labels in the short form. Converting writes them as label=\"…\", as the ChordPro specification recommends; the songs look the same.",
+  "@importLegacyLabelsMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "convertLabels": "Convert labels",
+  "songsLabelsConverted": "{count, plural, =0{No labels converted} =1{Labels converted in 1 song} other{Labels converted in {count} songs}}",
+  "@songsLabelsConverted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "hideHint": "Hide hint",
   "searchInSong": "Search",
   "searchNoMatches": "No matches",

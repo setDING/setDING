@@ -20,7 +20,7 @@ const songDisplayPreviewSource = '''{title: Late Train Home}
 {c: Intro}
 [G] [D] [Em] [C]
 
-{start_of_verse: Verse 1}
+{start_of_verse: label="Verse 1"}
 [G]Streetlights fading [D/F#]one by one,
 [Em]the station clock says [C]we are done.
 {end_of_verse}
@@ -28,7 +28,7 @@ const songDisplayPreviewSource = '''{title: Late Train Home}
 {c: Pre-Chorus}
 [Am]Hold the [C]note a little [D]longer
 
-{start_of_chorus: Chorus}
+{start_of_chorus: label="Chorus"}
 [C]Take the [D]late train [G]home,
 [Em]sing it [C]soft, we're not a[D]lone.
 {end_of_chorus}
@@ -36,7 +36,7 @@ const songDisplayPreviewSource = '''{title: Late Train Home}
 {c: Solo}
 [Em] [C] [G] [D]
 
-{start_of_bridge: Bridge}
+{start_of_bridge: label="Bridge"}
 [Am]Lights go [Em]down, [C]one more [D]round
 {end_of_bridge}
 

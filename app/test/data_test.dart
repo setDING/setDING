@@ -376,6 +376,30 @@ void main() {
       expect(open!.chordproProblems, 1);
     });
 
+    test('the import reports short-form section labels (#672)', () async {
+      final service = ImportExportService(songs, sets);
+      ImportFile file(String name, String text) =>
+          ImportFile(name, Uint8List.fromList(utf8.encode(text)));
+      final result = await service.importFiles([
+        file('short.cho', '{title: Short}\n{sov: Verse 1}\n[C]a\n{eov}\n'),
+        file('new.cho', '{title: New}\n{sov: label="V"}\n[C]a\n{eov}\n'),
+      ]);
+      expect(result.problems, isEmpty);
+      expect(result.legacyLabels, hasLength(1));
+      expect(result.needsReview, isTrue);
+      // A short-form label is no problem: no warning in the song list.
+      final short = await songs.getSong(result.legacyLabels.single);
+      expect(short!.chordproProblems, 0);
+
+      expect(await service.convertLegacyLabels(result.legacyLabels), 1);
+      expect(
+        (await songs.getSong(short.id))!.chordproSource,
+        '{title: Short}\n{sov: label="Verse 1"}\n[C]a\n{eov}\n',
+      );
+      // Converting again changes nothing.
+      expect(await service.convertLegacyLabels(result.legacyLabels), 0);
+    });
+
     test('a file with several songs is imported as several songs', () async {
       final service = ImportExportService(songs, sets);
       final result = await service.importFiles([

@@ -46,12 +46,12 @@ void main() {
     await choose(tester, 'Sections', 'Pre-chorus');
     expect(
       field.controller!.text,
-      '{title: T}\nla la\n{start_of_verse: Pre-chorus}\n\n{end_of_verse}\n',
+      '{title: T}\nla la\n{start_of_verse: label="Pre-chorus"}\n\n{end_of_verse}\n',
     );
     // The cursor is inside the new section.
     expect(
       field.controller!.selection.baseOffset,
-      '{title: T}\nla la\n{start_of_verse: Pre-chorus}\n'.length,
+      '{title: T}\nla la\n{start_of_verse: label="Pre-chorus"}\n'.length,
     );
     await app.dispose(tester);
   });
@@ -63,13 +63,13 @@ void main() {
     await choose(tester, 'Sections', 'Refrain');
     expect(
       field.controller!.text,
-      '{start_of_chorus: Refrain}\n\n{end_of_chorus}\n',
+      '{start_of_chorus: label="Refrain"}\n\n{end_of_chorus}\n',
     );
     field.controller!.text = '';
     await choose(tester, 'Sections', 'Breakdown');
     expect(
       field.controller!.text,
-      '{start_of_verse: Breakdown}\n\n{end_of_verse}\n',
+      '{start_of_verse: label="Breakdown"}\n\n{end_of_verse}\n',
     );
     final menu = EditorSnippets(lookupAppLocalizations(const Locale('en')));
     final sections = menu.groups[1].items.nonNulls.map((s) => s.label);

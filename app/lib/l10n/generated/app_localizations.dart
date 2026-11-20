@@ -2120,6 +2120,30 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Ein Block mit Taktzeilen kann} other{{count} Blöcke mit Taktzeilen können}} als Chord-Grid dargestellt werden.'**
   String ccliGridsHint(int count);
 
+  /// No description provided for @legacyLabelsHint.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Eine Abschnitts-Beschriftung steht} other{{count} Abschnitts-Beschriftungen stehen}} in der Kurzform. Die ChordPro-Spezifikation empfiehlt label=\"…\".'**
+  String legacyLabelsHint(int count);
+
+  /// No description provided for @importLegacyLabelsMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 importierter Song schreibt} other{{count} importierte Songs schreiben}} Abschnitts-Beschriftungen in der Kurzform. Umwandeln schreibt sie als label=\"…\", wie es die ChordPro-Spezifikation empfiehlt; die Songs sehen gleich aus.'**
+  String importLegacyLabelsMessage(int count);
+
+  /// No description provided for @convertLabels.
+  ///
+  /// In de, this message translates to:
+  /// **'Beschriftungen umwandeln'**
+  String get convertLabels;
+
+  /// No description provided for @songsLabelsConverted.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{Keine Beschriftungen umgewandelt} =1{Beschriftungen in 1 Song umgewandelt} other{Beschriftungen in {count} Songs umgewandelt}}'**
+  String songsLabelsConverted(int count);
+
   /// No description provided for @hideHint.
   ///
   /// In de, this message translates to:

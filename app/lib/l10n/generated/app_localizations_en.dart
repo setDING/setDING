@@ -1162,6 +1162,43 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String legacyLabelsHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count section labels are',
+      one: 'A section label is',
+    );
+    return '$_temp0 in the short form. The ChordPro specification recommends label=\"…\".';
+  }
+
+  @override
+  String importLegacyLabelsMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count imported songs write',
+      one: '1 imported song writes',
+    );
+    return '$_temp0 section labels in the short form. Converting writes them as label=\"…\", as the ChordPro specification recommends; the songs look the same.';
+  }
+
+  @override
+  String get convertLabels => 'Convert labels';
+
+  @override
+  String songsLabelsConverted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Labels converted in $count songs',
+      one: 'Labels converted in 1 song',
+      zero: 'No labels converted',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get hideHint => 'Hide hint';
 
   @override
