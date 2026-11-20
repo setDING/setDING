@@ -90,6 +90,7 @@ Future<void> removeOrganizationData(
     await run('DELETE FROM annotations WHERE song_id IN ($songsOf)');
     await run('DELETE FROM attachments WHERE song_id IN ($songsOf)');
     await run('DELETE FROM song_conflicts WHERE song_id IN ($songsOf)');
+    await run('DELETE FROM org_plays WHERE organization_id = ?');
     await run('DELETE FROM songs WHERE library_id = ?');
     await run('DELETE FROM memberships WHERE band_id IN ($bandsOf)');
     for (final scope in [orgId, ...bands]) {

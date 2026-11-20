@@ -408,6 +408,27 @@ class PocketBaseBackend implements SyncBackend {
   );
 
   @override
+  Future<List<RemoteOrgPlay>> fetchOrgPlays(String organizationId) =>
+      _signedIn(() async {
+        final result = await _pb.send<dynamic>(
+          '/api/setding/plays/${Uri.encodeComponent(organizationId)}',
+        );
+        final plays = (result as Map)['plays'] as List? ?? const [];
+        return [
+          for (final p in plays.cast<Map<String, dynamic>>())
+            if (DateTime.tryParse(p['last'] as String? ?? '') case final last?)
+              RemoteOrgPlay(
+                songId: p['song'] as String,
+                bandId: p['band'] as String,
+                bandName: p['bandName'] as String? ?? '',
+                count: (p['count'] as num?)?.toInt() ?? 0,
+                last: last,
+                key: p['key'] as String?,
+              ),
+        ];
+      });
+
+  @override
   Future<List<DeletedBand>> fetchDeletedBands(String organizationId) async {
     try {
       final records = await _retrying(

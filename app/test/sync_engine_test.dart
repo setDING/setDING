@@ -14,6 +14,7 @@ import 'package:setding/data/database.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/data/song_repository.dart';
 import 'package:setding/data/outbox.dart';
+import 'package:setding/data/play_history.dart';
 import 'package:setding/sync/band_service.dart';
 import 'package:setding/sync/engine/annotation_sync.dart';
 import 'package:setding/sync/engine/arrangement_sync.dart';
@@ -1602,5 +1603,61 @@ void main() {
       ).toJson()['type'],
       'pause',
     );
+  });
+
+  group('plays across the bands of the organization (ADR-0046)', () {
+    final today = DateTime.now();
+    DateTime daysAgo(int days) =>
+        DateTime(today.year, today.month, today.day - days);
+    const bob = AuthUser(id: 'bob', email: 'bob@example.test', name: 'Bob');
+
+    test('are fetched with every sync and kept when the server does not '
+        'answer', () async {
+      server.addBand('b2', 'Jazz', admin: bob, organizationId: 'o1');
+      server.putSong(remoteSong('s1', '{title: A}\n{key: D}'));
+      server.putSet(
+        RemoteSet(
+          id: 'jazz-night',
+          bandId: 'b2',
+          name: 'Jazz night',
+          gigDate: daysAgo(30),
+          items: const [
+            RemoteSetItem(
+              id: 'j1',
+              type: SetItemType.song,
+              songId: 's1',
+              played: PlayedValues(key: 'Bb'),
+            ),
+          ],
+        ),
+      );
+      await engine.sync();
+      final history = PlayHistoryRepository(db);
+      var plays = await history.watchOtherBands('s1', exceptBandId: 'b1').first;
+      expect(
+        [for (final p in plays) (p.bandName, p.playCount, p.playedKey)],
+        [('Jazz', 1, 'Bb')],
+      );
+      expect(await history.watchOrgPlaysFetched('o1').first, isNotNull);
+      expect((await history.watchLibraryUsage('o1').first).unplayed, isEmpty);
+
+      server.orgPlaysFail = true;
+      await engine.sync();
+      plays = await history.watchOtherBands('s1', exceptBandId: 'b1').first;
+      expect(plays, hasLength(1), reason: 'the last summary stays');
+
+      server.orgPlaysFail = false;
+      server.sets.remove('jazz-night');
+      await engine.sync();
+      expect(await history.watchOtherBands('s1').first, isEmpty);
+      expect(
+        [
+          for (final s
+              in (await history.watchLibraryUsage('o1').first).unplayed)
+            s.id,
+        ],
+        ['s1'],
+      );
+    });
   });
 }

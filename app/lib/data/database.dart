@@ -487,6 +487,27 @@ class SyncCursors extends Table {
   Set<Column> get primaryKey => {scope, collection};
 }
 
+/// How often a band of an organization played a song of its library, as the
+/// server summed it up at the last sync (ADR-0046, schema 26). Never the
+/// sets themselves; replaced per organization with every sync.
+@DataClassName('OrgPlay')
+class OrgPlays extends Table {
+  TextColumn get organizationId => text()();
+  TextColumn get songId => text()();
+  TextColumn get bandId => text()();
+  TextColumn get bandName => text()();
+
+  /// Past sets of the band with the song.
+  IntColumn get playCount => integer()();
+  DateTimeColumn get lastPlayed => dateTime()();
+
+  /// The key of the most recent play with frozen values, if any.
+  TextColumn get playedKey => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {songId, bandId};
+}
+
 /// A song changed on the server and on this device (ADR-0004): the server
 /// version waits here until the user decides (schema 5).
 @DataClassName('SongConflict')
@@ -569,13 +590,14 @@ class ChangeLog extends Table {
     SyncCursors,
     SongConflicts,
     ChangeLog,
+    OrgPlays,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 25;
+  int get schemaVersion => 26;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -804,6 +826,11 @@ class AppDatabase extends _$AppDatabase {
         // Band repertoire (ADR-0046); before schema 11 the rebuilt band
         // table has the column already.
         await m.addColumn(bands, bands.staleAfterMonths);
+      }
+      if (from < 26) {
+        // Plays across the bands of an organization (ADR-0046); filled by
+        // the next sync.
+        await m.createTable(orgPlays);
       }
     },
     beforeOpen: (details) async {

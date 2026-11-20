@@ -22,6 +22,11 @@ abstract final class SyncCollection {
   /// Freehand annotations (ADR-0032); the outbox record ID is
   /// [annotationRecordId].
   static const annotations = 'annotations';
+
+  /// Plays across the bands of an organization (ADR-0046): no outbox, only
+  /// a cursor per organization holding when they were fetched (seconds
+  /// since the epoch).
+  static const orgPlays = 'org_plays';
 }
 
 /// Outbox record ID of the annotations of [ownerId] on [songId]: its

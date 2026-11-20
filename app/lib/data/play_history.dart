@@ -319,6 +319,65 @@ class PlayHistoryRepository {
     });
   }
 
+  /// How the bands of the organization other than [exceptBandId] played
+  /// [songId], as the server summed it up at the last sync (ADR-0046); the
+  /// most recent first.
+  Stream<List<OrgPlay>> watchOtherBands(String songId, {String? exceptBandId}) {
+    final q = db.select(db.orgPlays)
+      ..where(
+        (p) =>
+            p.songId.equals(songId) &
+            (exceptBandId == null
+                ? const Constant(true)
+                : p.bandId.equals(exceptBandId).not()),
+      )
+      ..orderBy([(p) => OrderingTerm.desc(p.lastPlayed)]);
+    return q.watch();
+  }
+
+  /// When the plays across the bands of [organizationId] were fetched last;
+  /// null before the first sync that fetched them.
+  Stream<DateTime?> watchOrgPlaysFetched(String organizationId) =>
+      (db.select(db.syncCursors)..where(
+            (c) =>
+                c.scope.equals(organizationId) &
+                c.collection.equals(SyncCollection.orgPlays),
+          ))
+          .watchSingleOrNull()
+          .map(
+            (c) => c == null
+                ? null
+                : DateTime.fromMillisecondsSinceEpoch(c.revision * 1000),
+          );
+
+  /// The songs of [libraryId] no band of the organization played, by title,
+  /// and the number of songs in the library (ADR-0046).
+  Stream<({List<SongEntry> unplayed, int total})> watchLibraryUsage(
+    String libraryId,
+  ) {
+    final s = db.songs, p = db.orgPlays;
+    final q =
+        db.select(s).join([
+            leftOuterJoin(p, p.songId.equalsExp(s.id), useColumns: false),
+          ])
+          ..addColumns([p.bandId])
+          ..where(s.libraryId.equals(libraryId) & s.deleted.equals(false));
+    return q.watch().map((rows) {
+      final songs = <String, SongEntry>{};
+      final played = <String>{};
+      for (final row in rows) {
+        final song = row.readTable(s);
+        songs[song.id] = song;
+        if (row.read(p.bandId) != null) played.add(song.id);
+      }
+      final unplayed = [
+        for (final song in songs.values)
+          if (!played.contains(song.id)) song,
+      ]..sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+      return (unplayed: unplayed, total: songs.length);
+    });
+  }
+
   /// Freezes the values of the songs in the sets of [bandId] whose gig day
   /// has come, within [freezeWindow] (ADR-0046). Runs on the devices of
   /// people who may edit the band's sets, after the sync pulled the band's
