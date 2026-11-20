@@ -8,6 +8,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 with the setDING-specific bump rules of
 [ADR-0028](docs/architecture/adr/0028-versioning-scheme.md).
 
+## [0.17.0] - 2026-11-20
+
+### Added
+
+- Overview tab as the new start screen: the next set with *Start live*, songs that need attention (ChordPro problems, sync conflicts, sheet music only), the version, update hint and *What's new* ([#670](https://github.com/tafli/setDING/pull/670)); *Recent changes* lists new and changed songs and sets of other members ([#673](https://github.com/tafli/setDING/pull/673), [#675](https://github.com/tafli/setDING/pull/675), [#668](https://github.com/tafli/setDING/pull/668))
+- Song play history (ADR-0046): a song in a past set counts as played, with key, tempo and sequence of that day. The *Played* panel in the song view shows the plays of the band and of the organization's other bands, the set's key picker hints at the last and most played key, and the song picker shows the last play ([#671](https://github.com/tafli/setDING/pull/671), [#682](https://github.com/tafli/setDING/pull/682))
+- Band repertoire behind the Sets tab: most played songs, songs not played for a while (threshold per band) and never played songs; the song list sorts by *Last played* and filters by *Never played* / *Not played for a while*; organization admins and librarians see which songs of the library no band played ([#678](https://github.com/tafli/setDING/pull/678), [#682](https://github.com/tafli/setDING/pull/682))
+- Trash: deleted songs and sets can be restored for 30 days ([#631](https://github.com/tafli/setDING/pull/631)); organization admins can delete a band and close an organization, both restorable from the trash (ADR-0044) ([#642](https://github.com/tafli/setDING/pull/642), [#646](https://github.com/tafli/setDING/pull/646))
+- Backups (ADR-0043): back up a library as a ZIP archive from the song list and import it again ([#636](https://github.com/tafli/setDING/pull/636)); *Back up everything* in the settings saves every library you may back up, your personal adjustments and settings, with a reminder when the local library was not backed up for 30 days ([#641](https://github.com/tafli/setDING/pull/641))
+- Keyboard programs per device profile (ADR-0042): a song keeps one program per keyboard, so a keyboard player can switch keyboards without adapting the songs; new profile *Yamaha Motif XF*, all Nord program kinds in the program dialog ([#589](https://github.com/tafli/setDING/pull/589), [#595](https://github.com/tafli/setDING/pull/595), [#596](https://github.com/tafli/setDING/pull/596), [#598](https://github.com/tafli/setDING/pull/598), [#604](https://github.com/tafli/setDING/pull/604))
+- Live mode shows the song's keyboard program, lets you edit it and take it over from the keyboard ([#606](https://github.com/tafli/setDING/pull/606), [#610](https://github.com/tafli/setDING/pull/610), [#611](https://github.com/tafli/setDING/pull/611), [#612](https://github.com/tafli/setDING/pull/612)); guided send and receive tests per keyboard in the MIDI test ([#614](https://github.com/tafli/setDING/pull/614), [#616](https://github.com/tafli/setDING/pull/616))
+- The editor offers to convert section labels to the form the ChordPro specification recommends (`{start_of_verse: label="Verse 1"}`), which setDING now writes; the import report offers the same ([#676](https://github.com/tafli/setDING/pull/676))
+- Tap a stroke to select it with the lasso tool in the annotation editor ([#588](https://github.com/tafli/setDING/pull/588))
+- Invitation links show when they were created ([#638](https://github.com/tafli/setDING/pull/638))
+
+### Changed
+
+- *Edit ChordPro* is a pencil button in the song screen's app bar, with the number of ChordPro problems as a badge ([#603](https://github.com/tafli/setDING/pull/603))
+- Beta builds show `beta` and the commit instead of the build number in their version ([#654](https://github.com/tafli/setDING/pull/654), [#658](https://github.com/tafli/setDING/pull/658))
+
+### Fixed
+
+- The first press of a page turner in live mode turns the page ([#669](https://github.com/tafli/setDING/pull/669))
+- Switching the page turner on or off no longer restarts the app on Android ([#685](https://github.com/tafli/setDING/pull/685))
+
+### Security
+
+- Every permission is enforced and tested on the server; bands and organizations can no longer be deleted directly through the API, and client filters cannot reveal other organizations' data ([#624](https://github.com/tafli/setDING/pull/624), [#630](https://github.com/tafli/setDING/pull/630), [#633](https://github.com/tafli/setDING/pull/633))
+- Invitation links are built from the configured app URL, never from the request's Host header ([#621](https://github.com/tafli/setDING/pull/621))
+
 ## [0.16.0] - 2026-11-19
 
 ### Added
@@ -310,6 +340,7 @@ with the setDING-specific bump rules of
 
 - First release, built on GitHub Actions for Linux, Android and Windows ([#138](https://github.com/tafli/setDING/pull/138))
 
+[0.17.0]: https://github.com/tafli/setDING/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/tafli/setDING/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/tafli/setDING/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/tafli/setDING/compare/v0.13.0...v0.14.0
