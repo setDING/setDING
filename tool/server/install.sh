@@ -24,6 +24,7 @@ BACKUP_DIR=/var/lib/pocketbase/backups
 step() { printf '\n==> %s\n' "$*"; }
 
 [ "$(id -u)" -eq 0 ] || { echo "install.sh must run as root" >&2; exit 1; }
+# shellcheck source=/dev/null # the server's, not in the repository
 . /etc/os-release
 [ "${ID:-}" = debian ] || echo "warning: tested on Debian only (found: ${PRETTY_NAME:-unknown})" >&2
 

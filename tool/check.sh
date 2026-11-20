@@ -53,6 +53,11 @@ job_chordpro() { dart_package packages/chordpro; }
 # same time.
 job_server() { dart_package server; }
 
+# Operations files (issue #644): ShellCheck on all shell scripts, the
+# Caddyfile and the systemd units. Their behaviour (backup restore, website
+# server) is tested in the server job.
+job_ops() { "$ROOT/tool/check-ops.sh"; }
+
 # SBOM generator of the release assets (ADR-0037).
 job_sbom() { dart_package tool/sbom; }
 
@@ -133,11 +138,15 @@ step "preparing"
 pb_version="$(sed -n 's/^PB_VERSION *?= *//p' "$ROOT/Makefile")"
 POCKETBASE_BIN="$("$ROOT/tool/server/fetch-pocketbase.sh" "$pb_version")"
 export POCKETBASE_BIN
+# Check tools (tool/fetch-tool.sh), fetched once before the jobs that use them.
+CADDY_BIN="$("$ROOT/tool/fetch-tool.sh" caddy)"
+export CADDY_BIN
+"$ROOT/tool/fetch-tool.sh" shellcheck >/dev/null
 # Before the app jobs, which all need the packages and must not fetch them at
 # the same time.
 (cd "$ROOT/app" && flutter pub get >/dev/null)
 
-jobs=(chordpro server sbom changelog tools website app-static app-tests app-web)
+jobs=(chordpro server ops sbom changelog tools website app-static app-tests app-web)
 
 [ "$parallel" = 0 ] || step "running in parallel: ${jobs[*]}"
 start=$SECONDS

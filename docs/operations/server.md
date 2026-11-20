@@ -293,7 +293,10 @@ systemctl start pocketbase
 ```
 
 Tested on a Debian 13 container: the restored database starts and answers
-`/api/health`.
+`/api/health`. `make check` runs the backup script and exactly these restore
+steps against a test PocketBase and checks records, users and attachment
+files (`server/test/backup_test.dart`,
+[operations tests](../development/operations-tests.md)).
 
 ## Trash
 

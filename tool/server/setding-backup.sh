@@ -5,10 +5,13 @@
 # Uses SQLite's online backup API (safe while PocketBase is running, also in WAL
 # mode) for the database and archives the stored files (PDF attachments).
 # The auxiliary database (request logs) is not backed up.
+#
+# PB_DATA and BACKUP_DIR default to the server's paths; the backup test
+# (server/test/backup_test.dart) points them at a test instance.
 set -euo pipefail
 
-PB_DATA=/var/lib/pocketbase/pb_data
-BACKUP_DIR=/var/lib/pocketbase/backups
+PB_DATA="${PB_DATA:-/var/lib/pocketbase/pb_data}"
+BACKUP_DIR="${BACKUP_DIR:-/var/lib/pocketbase/backups}"
 KEEP_DAYS="${KEEP_DAYS:-14}"
 
 if [ ! -f "$PB_DATA/data.db" ]; then

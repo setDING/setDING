@@ -10,6 +10,8 @@
 #   latest release; `make upgrade` runs `npm update`.
 # - the CycloneDX Gradle plugin of the SBOM (tool/sbom/gradle, ADR-0037) must be
 #   the latest release on the Gradle plugin portal (raised by hand).
+# - the check tools pinned in tool/fetch-tool.sh (ShellCheck, Caddy) must be
+#   the latest GitHub release (raised by hand, with the ShellCheck sums).
 # Needs the pub.dev and npm registries; without network the check is skipped
 # with a warning.
 set -euo pipefail
@@ -91,5 +93,22 @@ elif [ "$current" != "$latest" ]; then
 else
   echo "deps: tool/sbom/gradle: OK"
 fi
+
+# Check tools of the test gate (tool/fetch-tool.sh, issue #644).
+fetch="$ROOT/tool/fetch-tool.sh"
+for entry in SHELLCHECK_VERSION:koalaman/shellcheck CADDY_VERSION:caddyserver/caddy; do
+  var="${entry%%:*}" repo="${entry#*:}"
+  current="$(sed -n "s/^$var=//p" "$fetch")"
+  if ! latest="$(curl -fsS "https://api.github.com/repos/$repo/releases/latest" 2>/dev/null |
+    sed -n 's/^ *"tag_name": *"v\{0,1\}\([^"]*\)".*/\1/p')" || [ -z "$latest" ]; then
+    echo "deps: tool/fetch-tool.sh: could not query GitHub for $repo (offline or rate limit?), skipped" >&2
+  elif [ "$current" != "$latest" ]; then
+    echo "deps: tool/fetch-tool.sh: outdated:"
+    echo "  $repo $current -> $latest (raise $var in $fetch)"
+    status=1
+  else
+    echo "deps: tool/fetch-tool.sh: ${repo#*/} $current OK"
+  fi
+done
 
 exit $status
