@@ -30,7 +30,8 @@ Requirements: Flutter, Python 3 and
   release into the cache (MPL-2.0, a check tool like ShellCheck: verified by
   its SHA-256 sum, never copied into the repository or shipped).
 
-`BROWSER_BINARY` selects the browser's binary.
+`BROWSER_BINARY` selects the browser's binary. `make release-gate` runs the
+tests in both browsers before a release ([releases.md](releases.md)).
 
 **Safari** cannot be tested: safaridriver only runs on macOS, and the
 development machine and CI run Linux.

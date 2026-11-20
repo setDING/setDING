@@ -208,9 +208,10 @@ check: ## The test gate: the checks (dependencies, format, analysis, l10n, tests
 check-full: ## Run every check regardless of the changed files (larger changes; dependency check fatal)
 	CHECK_FULL=1 $(ROOT)/tool/check.sh
 
-release-gate: ## Before a release: every check, then the web and Android integration tests (docs/development/releases.md)
+release-gate: ## Before a release: every check, then the web (Chrome and Firefox) and Android integration tests (docs/development/releases.md)
 	CHECK_FULL=1 $(ROOT)/tool/check.sh
 	$(ROOT)/tool/web-test.sh
+	BROWSER=firefox $(ROOT)/tool/web-test.sh
 	$(ROOT)/tool/android-test.sh
 
 test: ## Run all tests
