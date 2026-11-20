@@ -38,12 +38,29 @@ shows cards, in this order, and leaves out a card that has nothing to show:
    rights of ADR-0023, the same check as the song list's warning icon): the
    number of songs with ChordPro problems, open sync conflicts and songs with
    sheet music only; each line opens the song list filtered to these songs.
-3. **Recent changes**: songs and sets of the current band and its
-   organization changed by other people since this device last showed the
-   overview, newest first, at most about ten, with *Show all* opening the song
-   list sorted by last edit. For songs the name of the person who changed it
-   (`songs.updated_by`, ADR-0023) where known. The marker "last shown" is a
-   **device setting**, not synced; on a new installation the card starts empty.
+3. **Recent changes**: what other people changed in the current band and its
+   organization since this device last showed the overview, newest first, at
+   most about ten entries, with *Show all* for the full list. One entry per
+   song or set:
+   - **New song**, with the name of the person who created it
+     (`songs.created_by`, ADR-0023) where known.
+   - **Changed song**: its ChordPro text, or a PDF attachment added, replaced
+     or removed (an attachment counts as a change of its song), with the name
+     of the person who changed it last (`songs.updated_by`) where known.
+   - **Changed set**: songs added to or removed from the set, and changed song
+     sequences (`{x_sequence}`), both of a set item (ADR-0006) and of the
+     band's arrangement of a song in the set (ADR-0025), listed as short
+     details ("2 songs added, 1 removed, sequence of *Song* changed"). A
+     reordering or a new gig date alone is no entry.
+
+   The entries come from a **local change log** (a new table on the device,
+   not synced) that the sync engine fills while it applies records from the
+   server, comparing them with the local state it replaces: only incoming
+   changes, so a person's own changes, also from their other devices, show up
+   only where they did not make them. The very first sync of a library logs
+   nothing. Entries older than 30 days are removed. The marker "last shown" is
+   a **device setting**, not synced; on a new installation the card starts
+   empty.
 4. **Footer**: the version (with beta and commit for beta builds, #654), the
    update hint of ADR-0036 and the *What's new* button of ADR-0041. Both stay
    under *Storage & info* as well.
@@ -79,6 +96,13 @@ Further rules:
   adapted.
 - Recent changes of sets cannot name the person: sets have no `updated_by`.
   Adding it is a server data model change (ADR-0015) and is left open.
+- The set items are one JSON array in the set record (ADR-0015), so the
+  details of a changed set come from comparing the incoming array with the
+  local one; the sync engine (sets and arrangements parts) gets this
+  comparison and a new local table with a schema migration.
+- A change made by the same person on another device appears on this one too;
+  it cannot be told apart from a change by someone else without a synced
+  author on sets and arrangements. Acceptable.
 - A "last shown" marker per device means a person sees the same change again on
   each of their devices; acceptable, simpler than a synced marker.
 - Implementation in separate issues once the ADR is accepted: the tab with the
@@ -87,11 +111,15 @@ Further rules:
 ## Decision log
 
 - 2026-11-20: Proposed (#656).
+- 2026-11-20: Owner feedback: the start tab is **not** a setting, the
+  overview is always the start screen. *Recent changes* shows **new songs**;
+  a new, replaced or removed **PDF counts as a change of its song**; a
+  **changed set** means songs added or removed and changed song sequences.
+  Hence the local change log filled by the sync engine.
 
 ## Open points
 
-- `updated_by` on sets, so recent changes of sets can name the person.
-- Should the start tab be a device setting (*Overview* or *Sets*)?
-- Are attachments (new PDFs) and new set items part of *Recent changes*?
+- `updated_by` on sets (and arrangements), so recent changes of sets can name
+  the person and a person's own changes from other devices can be left out.
 - Further cards later, e.g. pending invitations or the reminder for a full
   backup (ADR-0043).
