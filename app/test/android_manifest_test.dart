@@ -40,4 +40,35 @@ void main() {
     expect(domains, {'127.0.0.1', 'localhost', '10.0.2.2'});
     expect(config, isNot(contains('includeSubdomains="true"')));
   });
+  // A Bluetooth page turner registers as a keyboard with arrow keys:
+  // connecting or disconnecting it changes `keyboard`, `keyboardHidden` and
+  // `navigation`. An unhandled one recreates the activity, which restarts the
+  // app in live mode (issue #681).
+  test('connecting a page turner does not recreate the activity', () {
+    final manifest = File('android/app/src/main/AndroidManifest.xml')
+        .readAsStringSync();
+    final changes = RegExp(r'android:configChanges="([^"]+)"')
+        .firstMatch(manifest)!
+        .group(1)!
+        .split('|');
+    expect(changes, containsAll(['keyboard', 'keyboardHidden', 'navigation']));
+  });
+
+  test('every theme disables the system focus frame', () {
+    final styles = Directory('android/app/src/main/res')
+        .listSync()
+        .whereType<Directory>()
+        .map((d) => File('${d.path}/styles.xml'))
+        .where((f) => f.existsSync())
+        .toList();
+    expect(styles, isNotEmpty);
+    for (final file in styles) {
+      final xml = file.readAsStringSync();
+      final themes = RegExp(r'<style\b').allMatches(xml).length;
+      final disabled = RegExp(
+        r'<item name="android:defaultFocusHighlightEnabled">false</item>',
+      ).allMatches(xml).length;
+      expect(disabled, themes, reason: file.path);
+    }
+  });
 }

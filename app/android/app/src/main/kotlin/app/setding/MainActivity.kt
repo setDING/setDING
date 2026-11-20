@@ -23,7 +23,8 @@ class MainActivity : FlutterActivity() {
         view.isFocusable = true
         view.isFocusableInTouchMode = true
         // Flutter draws its own focus indicators; the system frame around the
-        // whole screen means nothing to the user.
+        // whole screen means nothing to the user. The themes in styles.xml
+        // disable it from the start; this also covers views created later.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             view.defaultFocusHighlightEnabled = false
         }
