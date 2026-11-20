@@ -90,16 +90,18 @@ Future<void> startApp() async {
 }
 
 /// Signs in on the sign-in gate through the real UI and waits for the home
-/// screen (the band arrives with the first sync).
-Future<void> signIn(WidgetTester tester, {bool keepSignedIn = false}) async {
+/// screen (the band arrives with the first sync). The account is the one of
+/// web-test unless [email] and [password] are given (make e2e).
+Future<void> signIn(
+  WidgetTester tester, {
+  bool keepSignedIn = false,
+  String email = itestEmail,
+  String password = itestPassword,
+}) async {
   await pumpUntil(tester, find.byKey(const Key('web-sign-in')));
-  expect(itestEmail, isNotEmpty, reason: 'the account comes from web-test');
-  await fillIn(tester, find.byKey(const Key('account-email')), itestEmail);
-  await fillIn(
-    tester,
-    find.byKey(const Key('account-password')),
-    itestPassword,
-  );
+  expect(email, isNotEmpty, reason: 'the account comes from the runner');
+  await fillIn(tester, find.byKey(const Key('account-email')), email);
+  await fillIn(tester, find.byKey(const Key('account-password')), password);
   if (keepSignedIn) {
     await tester.tap(find.byKey(const Key('account-keep-signed-in')));
     await tester.pump();

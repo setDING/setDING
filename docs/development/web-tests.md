@@ -113,4 +113,5 @@ All of them run in Chrome and in Firefox.
 
 ## Not covered
 
-Safari (macOS only, see above).
+Two clients changing each other's data: that is what the end-to-end tests
+do ([e2e-tests.md](e2e-tests.md)). Safari (macOS only, see above).

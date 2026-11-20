@@ -10,7 +10,8 @@ The full sequence and its rules are in the git workflow (section 10); each step
 only after the previous one succeeded. Before it, run `make release-gate` on
 `main`: every check with the dependency check fatal (`make check-full`), then
 the integration tests `make web-test` in Chrome or Chromium and in Firefox
-([web-tests.md](web-tests.md)) and `make android-test` ([android-tests.md](android-tests.md)). The emulator the
+([web-tests.md](web-tests.md)), the end-to-end tests `make e2e`
+([e2e-tests.md](e2e-tests.md)) and `make android-test` ([android-tests.md](android-tests.md)). The emulator the
 Android tests start is stopped at the end.
 
 1. Merge a `chore(release): vX.Y.Z` PR that sets `version: X.Y.Z` in
