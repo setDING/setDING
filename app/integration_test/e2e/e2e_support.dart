@@ -13,6 +13,8 @@ import 'package:http/http.dart' as http;
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/providers.dart';
+import 'package:setding/ui/home_screen.dart';
+import 'package:setding/ui/settings_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../support.dart';
@@ -23,6 +25,7 @@ const _server = String.fromEnvironment('SETDING_E2E_SERVER');
 
 const annaEmail = String.fromEnvironment('SETDING_E2E_ANNA_EMAIL');
 const benEmail = String.fromEnvironment('SETDING_E2E_BEN_EMAIL');
+const carlaEmail = String.fromEnvironment('SETDING_E2E_CARLA_EMAIL');
 const e2ePassword = String.fromEnvironment('SETDING_E2E_PASSWORD');
 const fixtureSong = String.fromEnvironment('SETDING_E2E_SONG');
 const fixtureSheet = String.fromEnvironment('SETDING_E2E_SHEET');
@@ -78,6 +81,18 @@ Future<void> signal(WidgetTester tester, String step) async {
   expect(response!.statusCode, 200, reason: 'signal $step');
   // ignore: avoid_print
   print('e2e[$e2eClient]: reached $step');
+}
+
+/// Puts this client offline (like a lost network: its requests fail, its
+/// realtime connection ends) or online again. The coordination endpoints
+/// keep working.
+Future<void> setOnline(WidgetTester tester, {required bool online}) async {
+  final response = await tester.runAsync(
+    () => http.post(_control('${online ? 'online' : 'offline'}/$e2eClient')),
+  );
+  expect(response!.statusCode, 200, reason: 'online: $online');
+  // ignore: avoid_print
+  print('e2e[$e2eClient]: ${online ? 'online' : 'offline'}');
 }
 
 /// Waits until the other client reached [step]; keeps the app running
@@ -137,6 +152,17 @@ Future<SongEntry?> songTitled(AppDatabase db, String title) =>
           ..where((s) => s.title.equals(title) & s.deleted.equals(false)))
         .getSingleOrNull();
 
+/// The song with [id] in the local database, deleted or not.
+Future<SongEntry?> songById(AppDatabase db, String id) =>
+    (db.select(db.songs)..where((s) => s.id.equals(id))).getSingleOrNull();
+
+/// Whether the local changes of [recordId] are pushed (not in the outbox).
+Future<bool> pushed(AppDatabase db, String recordId) async =>
+    await (db.select(
+      db.syncOutbox,
+    )..where((o) => o.recordId.equals(recordId))).getSingleOrNull() ==
+    null;
+
 /// The fixture's band in the local database, if synced.
 Future<BandEntry?> fixtureBand(AppDatabase db) => (db.select(
   db.bands,
@@ -175,3 +201,55 @@ Future<void> waitForFixture(WidgetTester tester) async {
 /// Text in an app bar, e.g. a song's title on its screen.
 Finder appBarText(String text) =>
     find.descendant(of: find.byType(AppBar), matching: find.text(text));
+
+/// Signs [email] in through Settings → Account on a native client and goes
+/// back to the home screen (the web client: `signIn` of web_support.dart).
+Future<void> signInOnDesktop(WidgetTester tester, String email) async {
+  final context = tester.element(find.byType(HomeScreen));
+  Navigator.of(context)
+      .push(MaterialPageRoute<void>(builder: (_) => const SettingsScreen()));
+  await pumpUntil(tester, find.byType(SettingsScreen));
+  final account = find.byKey(
+    Key('settings-category-${SettingsCategory.account.name}'),
+  );
+  await tester.scrollUntilVisible(
+    account,
+    200,
+    scrollable: find
+        .descendant(
+          of: find.byType(SettingsScreen),
+          matching: find.byType(Scrollable),
+        )
+        .first,
+  );
+  await tester.tap(account);
+  await pumpUntil(tester, find.byKey(const Key('account-open-sign-in')));
+  await tester.tap(find.byKey(const Key('account-open-sign-in')));
+  await pumpUntil(tester, find.byKey(const Key('account-email')));
+  await tester.enterText(find.byKey(const Key('account-email')), email);
+  await tester.enterText(
+    find.byKey(const Key('account-password')),
+    e2ePassword,
+  );
+  await tester.tap(find.byKey(const Key('account-submit')));
+  await pumpUntil(tester, find.byKey(const Key('account-sign-out')));
+  expect(find.byKey(const Key('account-error')), findsNothing);
+  Navigator.of(tester.element(find.byType(SettingsScreen)))
+      .popUntil((route) => route.isFirst);
+  await pumpUntil(tester, find.byType(HomeScreen));
+}
+
+/// Makes the fixture's band the current one; returns it.
+Future<BandEntry> selectFixtureBand(WidgetTester tester) async {
+  final container = containerOf(tester);
+  final band = (await tester.runAsync(() => fixtureBand(databaseOf(tester))))!;
+  await tester.runAsync(
+    () => container.read(selectedBandIdProvider.notifier).select(band.id),
+  );
+  await eventually(
+    tester,
+    () async => container.read(currentBandProvider).id == band.id,
+    reason: 'the band was not selected',
+  );
+  return band;
+}

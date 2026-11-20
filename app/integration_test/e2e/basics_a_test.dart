@@ -8,11 +8,9 @@
 // reaches Anna.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:setding/main.dart' as app;
 import 'package:setding/providers.dart';
 import 'package:setding/ui/home_screen.dart';
-import 'package:setding/ui/settings_screen.dart';
 
 import '../support.dart';
 import 'e2e_support.dart';
@@ -28,20 +26,12 @@ void main() {
     await e2eSettings(server: e2eServer);
     await app.main();
     await pumpUntil(tester, find.byType(HomeScreen));
-    await _signIn(tester);
+    await signInOnDesktop(tester, annaEmail);
     await waitForFixture(tester);
 
     final container = containerOf(tester);
     final db = databaseOf(tester);
-    final band = (await tester.runAsync(() => fixtureBand(db)))!;
-    await tester.runAsync(
-      () => container.read(selectedBandIdProvider.notifier).select(band.id),
-    );
-    await eventually(
-      tester,
-      () async => container.read(currentBandProvider).id == band.id,
-      reason: 'the band was not selected',
-    );
+    final band = await selectFixtureBand(tester);
     final songs = container.read(
       librarySongRepositoryProvider(band.organizationId!),
     );
@@ -93,41 +83,4 @@ void main() {
     );
     await signal(tester, 'a-sees-order');
   });
-}
-
-/// Signs Anna in through Settings → Account and goes back to the home
-/// screen.
-Future<void> _signIn(WidgetTester tester) async {
-  final context = tester.element(find.byType(HomeScreen));
-  Navigator.of(context)
-      .push(MaterialPageRoute<void>(builder: (_) => const SettingsScreen()));
-  await pumpUntil(tester, find.byType(SettingsScreen));
-  final account = find.byKey(
-    Key('settings-category-${SettingsCategory.account.name}'),
-  );
-  await tester.scrollUntilVisible(
-    account,
-    200,
-    scrollable: find
-        .descendant(
-          of: find.byType(SettingsScreen),
-          matching: find.byType(Scrollable),
-        )
-        .first,
-  );
-  await tester.tap(account);
-  await pumpUntil(tester, find.byKey(const Key('account-open-sign-in')));
-  await tester.tap(find.byKey(const Key('account-open-sign-in')));
-  await pumpUntil(tester, find.byKey(const Key('account-email')));
-  await tester.enterText(find.byKey(const Key('account-email')), annaEmail);
-  await tester.enterText(
-    find.byKey(const Key('account-password')),
-    e2ePassword,
-  );
-  await tester.tap(find.byKey(const Key('account-submit')));
-  await pumpUntil(tester, find.byKey(const Key('account-sign-out')));
-  expect(find.byKey(const Key('account-error')), findsNothing);
-  Navigator.of(tester.element(find.byType(SettingsScreen)))
-      .popUntil((route) => route.isFirst);
-  await pumpUntil(tester, find.byType(HomeScreen));
 }

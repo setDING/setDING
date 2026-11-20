@@ -110,6 +110,7 @@ run_story() {
   local defines=(
     "--dart-define=SETDING_E2E_ANNA_EMAIL=$(json "$dir/backend.json" accounts anna email)"
     "--dart-define=SETDING_E2E_BEN_EMAIL=$(json "$dir/backend.json" accounts ben email)"
+    "--dart-define=SETDING_E2E_CARLA_EMAIL=$(json "$dir/backend.json" accounts carla email)"
     "--dart-define=SETDING_E2E_PASSWORD=$(json "$dir/backend.json" accounts anna password)"
     "--dart-define=SETDING_E2E_SONG=$(json "$dir/backend.json" song)"
     "--dart-define=SETDING_E2E_SHEET=$(json "$dir/backend.json" sheet)"
