@@ -11,8 +11,9 @@ const buildCommit = String.fromEnvironment('SETDING_BUILD_COMMIT');
 
 /// The displayed version of the running app, e.g. `0.1.1 (3)`: the version
 /// from `pubspec.yaml` and the build number (Android `versionCode`), which the
-/// release workflow sets (ADR-0021). A beta build adds `beta` and its commit,
-/// e.g. `0.1.1 (1, beta, 39f2c1b)`.
+/// release workflow sets (ADR-0021). A beta build shows `beta` and its commit
+/// instead, e.g. `0.1.1 (beta, 39f2c1b)`: it is built locally without a build
+/// number, so Android's fallback versionCode 1 would look like an old build.
 ///
 /// Only for display and the diagnostic log: the version sent to the server
 /// and used for "What's new" stays the plain `PackageInfo.version`
@@ -27,8 +28,8 @@ final appVersionProvider = FutureProvider<String>((ref) async {
   );
 });
 
-/// [version] with the [build] number, `beta` and the [commit] in parentheses,
-/// as far as there are any.
+/// [version] with the [build] number (not for a [beta]), `beta` and the
+/// [commit] in parentheses, as far as there are any.
 String formatAppVersion(
   String version,
   String build, {
@@ -36,7 +37,7 @@ String formatAppVersion(
   String commit = '',
 }) {
   final details = [
-    if (build.isNotEmpty && build != version) build,
+    if (!beta && build.isNotEmpty && build != version) build,
     if (beta) 'beta',
     if (commit.isNotEmpty) commit,
   ];

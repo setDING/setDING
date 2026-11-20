@@ -215,8 +215,10 @@ the beta in place. `DEVICE=<id>` picks a device when several are connected (`adb
 devices`), `BETA_MODE=debug|profile` builds another mode (default `release`).
 
 Settings → About shows the beta's version with `beta` and the commit it was built
-from, e.g. `0.16.0 (1, beta, 39f2c1b)`, with `-dirty` after the commit when the
-working tree had uncommitted changes. The diagnostic log starts with the same line.
+from instead of the build number, e.g. `0.16.0 (beta, 39f2c1b)`, with `-dirty`
+after the commit when the working tree had uncommitted changes. A local build has
+no build number (Android falls back to 1); a release shows the number of its
+release workflow run, e.g. `0.16.0 (30)`. The diagnostic log starts with the same line.
 The make target passes the commit as `--dart-define=SETDING_BUILD_COMMIT=…`; the
 version sent to the server and used for "What's new" stays the plain version from
 `pubspec.yaml`, so update checks work as in a release.
