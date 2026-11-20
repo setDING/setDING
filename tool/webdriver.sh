@@ -5,7 +5,7 @@
 # die, free_port, wait_for and the cleanup_steps array, and ROOT.
 
 major() { "$1" --version | grep -oE '[0-9]+\.[0-9.]+' | head -1 | cut -d. -f1; }
-case "$BROWSER" in
+case "${BROWSER:?set by the caller}" in
   chrome)
     if [ -z "${BROWSER_BINARY:-}" ]; then
       for browser in chromium google-chrome-stable google-chrome chrome; do
