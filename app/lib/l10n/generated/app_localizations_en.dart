@@ -3729,4 +3729,103 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get backupAll => 'Back up everything';
+
+  @override
+  String get backupAllName => 'all';
+
+  @override
+  String get backupAllHint =>
+      'Your libraries with songs, sets and attachments, your personal adjustments and notes, and your settings, in one file.';
+
+  @override
+  String get backupNever => 'Not backed up on this device yet.';
+
+  @override
+  String backupLast(String date) {
+    return 'Last backup: $date';
+  }
+
+  @override
+  String get backupRestore => 'Restore backup';
+
+  @override
+  String get backupRestoreHint =>
+      'Imports a backup file as a copy. Nothing existing is changed.';
+
+  @override
+  String get backupRestoreTitle => 'Restore backup';
+
+  @override
+  String backupLibraryTo(String library, int songs, int sets) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: '$songs songs',
+      one: '1 song',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      sets,
+      locale: localeName,
+      other: '$sets sets',
+      one: '1 set',
+    );
+    return '\"$library\" ($_temp0, $_temp1) into';
+  }
+
+  @override
+  String get backupImportDifferingAll =>
+      'Songs that exist here with a different text:';
+
+  @override
+  String get backupRestorePersonal =>
+      'Restore my personal adjustments and notes';
+
+  @override
+  String backupPersonalOf(String library, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs',
+      one: '1 song',
+    );
+    return '$library: $_temp0';
+  }
+
+  @override
+  String get backupRestoreSettings => 'Restore my settings';
+
+  @override
+  String get backupRestoreSettingsHint =>
+      'Replaces your current settings with those of the backup.';
+
+  @override
+  String get backupRestoreStart => 'Restore';
+
+  @override
+  String get backupRestoreDone => 'Backup restored';
+
+  @override
+  String backupResultPersonal(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs',
+      one: '1 song',
+    );
+    return 'Personal adjustments and notes of $_temp0 restored';
+  }
+
+  @override
+  String get backupResultSettings => 'Settings restored';
+
+  @override
+  String backupReminder(int days) {
+    return 'Your library on this device has not been backed up for $days days.';
+  }
+
+  @override
+  String get backupReminderAction => 'Back up';
 }

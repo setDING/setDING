@@ -6144,6 +6144,126 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count, plural, =1{{names} ist für dich nicht mehr verfügbar: Die Band wurde gelöscht oder du bist kein Mitglied mehr.} other{{names} sind für dich nicht mehr verfügbar: Die Bands wurden gelöscht oder du bist kein Mitglied mehr.}}'**
   String bandsGone(int count, String names);
+
+  /// No description provided for @backupAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Alles sichern'**
+  String get backupAll;
+
+  /// No description provided for @backupAllName.
+  ///
+  /// In de, this message translates to:
+  /// **'alles'**
+  String get backupAllName;
+
+  /// No description provided for @backupAllHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Bibliotheken mit Songs, Sets und Anhängen, deine persönlichen Anpassungen und Notizen und deine Einstellungen in einer Datei.'**
+  String get backupAllHint;
+
+  /// No description provided for @backupNever.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf diesem Gerät noch nie gesichert.'**
+  String get backupNever;
+
+  /// No description provided for @backupLast.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzte Sicherung: {date}'**
+  String backupLast(String date);
+
+  /// No description provided for @backupRestore.
+  ///
+  /// In de, this message translates to:
+  /// **'Sicherung wiederherstellen'**
+  String get backupRestore;
+
+  /// No description provided for @backupRestoreHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Importiert eine Sicherungsdatei als Kopie. Bestehendes wird nicht verändert.'**
+  String get backupRestoreHint;
+
+  /// No description provided for @backupRestoreTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Sicherung wiederherstellen'**
+  String get backupRestoreTitle;
+
+  /// No description provided for @backupLibraryTo.
+  ///
+  /// In de, this message translates to:
+  /// **'«{library}» ({songs, plural, =1{1 Song} other{{songs} Songs}}, {sets, plural, =1{1 Set} other{{sets} Sets}}) nach'**
+  String backupLibraryTo(String library, int songs, int sets);
+
+  /// No description provided for @backupImportDifferingAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Songs, die es hier mit anderem Text gibt:'**
+  String get backupImportDifferingAll;
+
+  /// No description provided for @backupRestorePersonal.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine persönlichen Anpassungen und Notizen wiederherstellen'**
+  String get backupRestorePersonal;
+
+  /// No description provided for @backupPersonalOf.
+  ///
+  /// In de, this message translates to:
+  /// **'{library}: {count, plural, =1{1 Song} other{{count} Songs}}'**
+  String backupPersonalOf(String library, int count);
+
+  /// No description provided for @backupRestoreSettings.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Einstellungen übernehmen'**
+  String get backupRestoreSettings;
+
+  /// No description provided for @backupRestoreSettingsHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Ersetzt deine aktuellen Einstellungen durch die der Sicherung.'**
+  String get backupRestoreSettingsHint;
+
+  /// No description provided for @backupRestoreStart.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederherstellen'**
+  String get backupRestoreStart;
+
+  /// No description provided for @backupRestoreDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Sicherung wiederhergestellt'**
+  String get backupRestoreDone;
+
+  /// No description provided for @backupResultPersonal.
+  ///
+  /// In de, this message translates to:
+  /// **'Persönliche Anpassungen und Notizen von {count, plural, =1{1 Song} other{{count} Songs}} wiederhergestellt'**
+  String backupResultPersonal(int count);
+
+  /// No description provided for @backupResultSettings.
+  ///
+  /// In de, this message translates to:
+  /// **'Einstellungen übernommen'**
+  String get backupResultSettings;
+
+  /// No description provided for @backupReminder.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Bibliothek auf diesem Gerät ist seit {days} Tagen nicht gesichert.'**
+  String backupReminder(int days);
+
+  /// No description provided for @backupReminderAction.
+  ///
+  /// In de, this message translates to:
+  /// **'Sichern'**
+  String get backupReminderAction;
 }
 
 class _AppLocalizationsDelegate

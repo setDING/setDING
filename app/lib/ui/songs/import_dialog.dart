@@ -5,7 +5,7 @@ import '../../data/backup.dart';
 import '../../data/import_export.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
-import '../backup/backup_actions.dart';
+import '../backup/full_backup.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
 
@@ -58,7 +58,7 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
         if (!mounted) return;
         Navigator.pop(context);
         final parent = widget.parent;
-        if (parent.mounted) await importBackup(parent, files.single.bytes);
+        if (parent.mounted) await openBackup(parent, files.single.bytes);
         return;
       }
       final result = await ref

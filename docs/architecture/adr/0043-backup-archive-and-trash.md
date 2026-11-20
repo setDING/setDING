@@ -85,6 +85,29 @@ addition (new optional field) does not change the version.
   compared and deleted.
 - Sets are always added.
 
+### 1a. Full backup in the settings (#639)
+
+*Settings → Storage & info* offers **Back up everything** and **Restore
+backup**:
+
+- A full backup is one archive with `formatVersion: 2`: the archive of each
+  library the person may back up (the local library, organizations as
+  librarian or admin) in its own folder `libraries/<n>/` (each a version 1
+  archive with its own `manifest.json`), the person's **own personal
+  adjustments and annotations of the other organizations** (no library rights
+  needed; `personal` in the manifest, by song ID), and their **personal and
+  device settings** (without the server address).
+- Signed in, the same mandatory sync runs first.
+- Restoring imports each library as a copy into a chosen library (or skips
+  it), restores the personal adjustments on the songs with the same ID that
+  are on this device (they replace the current ones; annotations are added
+  by stroke ID) and, only if the person ticks it, the settings.
+- Archives of one library (version 1) stay importable everywhere.
+- The settings show the last backup of the local library on this device. If
+  the local library changed and was not backed up for 30 days, a hint offers
+  a backup at start, at most every 7 days and never in live mode.
+- No automatic backups.
+
 ### 2. Trash
 
 Deleted songs and sets can be **restored for 30 days**.
@@ -147,8 +170,13 @@ Deleted songs and sets can be **restored for 30 days**.
 - 2026-11-20: **ADR-0044** (accepted): the trash will also hold deleted bands and closed organizations for 30 days; the purge removes a closed organization for good and gets an "immediately" option for single records (implemented with #628 and #629).
 - 2026-11-20: Implemented for bands (#628, ADR-0044): the daily purge also purges bands deleted more than 30 days ago (memberships and arrangements hard-deleted, sets purged); `POST /api/setding/trash/purge` with `{"collection": "bands", "id": …}` purges one deleted band at once (superusers).
 
+- 2026-11-20: Owner decisions for #639: a full backup in the settings
+  (format version 2) with the person's own adjustments of organizations
+  without library rights and their settings; restoring the settings is
+  optional; a reminder for the local library after 30 days; no automatic
+  backups.
+
 ## Open points
 
 - Size limit for archives zipped in memory (large PDF libraries, web).
-- Scheduled or automatic backups (e.g. a reminder, a folder on desktop).
 - Exporting songs and sets (ZIP, text, PDF set list) on the web client too.

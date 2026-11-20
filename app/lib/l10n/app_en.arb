@@ -1930,5 +1930,69 @@
         "type": "String"
       }
     }
-  }
+  },
+  "backupAll": "Back up everything",
+  "backupAllName": "all",
+  "backupAllHint": "Your libraries with songs, sets and attachments, your personal adjustments and notes, and your settings, in one file.",
+  "backupNever": "Not backed up on this device yet.",
+  "backupLast": "Last backup: {date}",
+  "@backupLast": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "backupRestore": "Restore backup",
+  "backupRestoreHint": "Imports a backup file as a copy. Nothing existing is changed.",
+  "backupRestoreTitle": "Restore backup",
+  "backupLibraryTo": "\"{library}\" ({songs, plural, =1{1 song} other{{songs} songs}}, {sets, plural, =1{1 set} other{{sets} sets}}) into",
+  "@backupLibraryTo": {
+    "placeholders": {
+      "library": {
+        "type": "String"
+      },
+      "songs": {
+        "type": "int"
+      },
+      "sets": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportDifferingAll": "Songs that exist here with a different text:",
+  "backupRestorePersonal": "Restore my personal adjustments and notes",
+  "backupPersonalOf": "{library}: {count, plural, =1{1 song} other{{count} songs}}",
+  "@backupPersonalOf": {
+    "placeholders": {
+      "library": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupRestoreSettings": "Restore my settings",
+  "backupRestoreSettingsHint": "Replaces your current settings with those of the backup.",
+  "backupRestoreStart": "Restore",
+  "backupRestoreDone": "Backup restored",
+  "backupResultPersonal": "Personal adjustments and notes of {count, plural, =1{1 song} other{{count} songs}} restored",
+  "@backupResultPersonal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupResultSettings": "Settings restored",
+  "backupReminder": "Your library on this device has not been backed up for {days} days.",
+  "@backupReminder": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "backupReminderAction": "Back up"
 }

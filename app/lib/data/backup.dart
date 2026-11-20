@@ -19,10 +19,17 @@ const _uuid = Uuid();
 /// `format` of a backup archive's manifest (ADR-0043).
 const backupFormat = 'setding-backup';
 
-/// Newest `formatVersion` this app reads and the one it writes. A minor
-/// addition (an optional field) keeps the version; anything an older app
-/// would misread needs a new one.
-const backupFormatVersion = 1;
+/// Newest `formatVersion` this app reads. A minor addition (an optional
+/// field) keeps the version; anything an older app would misread needs a
+/// new one.
+const backupFormatVersion = 2;
+
+/// `formatVersion` of the archive of one library (ADR-0043).
+const backupLibraryFormatVersion = 1;
+
+/// `formatVersion` of a full backup (#639): several libraries in folders,
+/// the person's own adjustments of other libraries and their settings.
+const backupFullFormatVersion = 2;
 
 /// Name of the manifest inside the archive.
 const backupManifestName = 'manifest.json';
@@ -108,6 +115,72 @@ class BackupContents {
     final bytes = file == null ? null : files[file];
     return bytes == null ? '' : utf8.decode(bytes, allowMalformed: true);
   }
+}
+
+/// The person's own adjustments and annotations of an organization without
+/// library rights, from a full backup (#639).
+@immutable
+class PersonalBackup {
+  const PersonalBackup(
+    this.libraryId,
+    this.name,
+    this.overlays,
+    this.annotations,
+  );
+
+  final String libraryId;
+  final String name;
+  final List<Map<String, dynamic>> overlays;
+  final List<Map<String, dynamic>> annotations;
+
+  int get songs => {
+    for (final o in [...overlays, ...annotations]) o['songId'],
+  }.length;
+}
+
+/// A backup archive: one library (version 1) or a full backup (version 2,
+/// #639) with several libraries, personal data and settings.
+@immutable
+class FullBackup {
+  const FullBackup(this.manifest, this.libraries);
+
+  final Map<String, dynamic> manifest;
+  final List<BackupContents> libraries;
+
+  /// A full backup (version 2), not the archive of one library.
+  bool get isFull => manifest['formatVersion'] != backupLibraryFormatVersion;
+
+  List<PersonalBackup> get personal => [
+    for (final e in (manifest['personal'] as List?) ?? const [])
+      if (e is Map)
+        PersonalBackup(
+          e['id'] as String? ?? '',
+          e['name'] as String? ?? '',
+          [
+            for (final o in (e['overlays'] as List?) ?? const [])
+              (o as Map).cast<String, dynamic>(),
+          ],
+          [
+            for (final x in (e['annotations'] as List?) ?? const [])
+              (x as Map).cast<String, dynamic>(),
+          ],
+        ),
+  ];
+
+  Map<String, Object?> _settings(String scope) =>
+      switch ((manifest['settings'] as Map?)?[scope]) {
+        final Map<dynamic, dynamic> m => m.cast<String, Object?>(),
+        _ => const {},
+      };
+
+  /// Personal settings (ADR-0027) at the time of the backup.
+  Map<String, Object?> get personalSettings => _settings('personal');
+
+  /// Settings of the device the backup was made on.
+  Map<String, Object?> get deviceSettings => _settings('device');
+
+  bool get hasSettings =>
+      personalSettings.isNotEmpty || deviceSettings.isNotEmpty;
 }
 
 /// What importing an archive into a library would find (ADR-0043).
@@ -232,6 +305,22 @@ class BackupService {
     required String libraryName,
     Future<Uint8List?> Function(AttachmentEntry attachment)? readFile,
     DateTime? now,
+  }) async => compute(
+    _zip,
+    await _collect(
+      libraryId,
+      libraryName: libraryName,
+      readFile: readFile,
+      now: now,
+    ),
+  );
+
+  /// The files of the archive of one library (see [export]).
+  Future<Map<String, Uint8List>> _collect(
+    String libraryId, {
+    required String libraryName,
+    Future<Uint8List?> Function(AttachmentEntry attachment)? readFile,
+    DateTime? now,
   }) async {
     final files = <String, Uint8List>{};
     final used = <String>{};
@@ -348,22 +437,11 @@ class BackupService {
                   a.deleted.equals(false),
             ))
             .get();
-    final owner = overlayOwnerFor(libraryId, userId);
-    final overlays = await (db.select(
-      db.personalOverlays,
-    )..where((o) => o.ownerId.equals(owner) & o.songId.isIn(songIds))).get();
-    final strokes =
-        await (db.select(db.annotations)..where(
-              (x) =>
-                  x.ownerId.equals(owner) &
-                  x.songId.isIn(songIds) &
-                  x.stroke.isNotNull(),
-            ))
-            .get();
+    final (overlays, strokes) = await _personal(libraryId, songIds);
 
     final manifest = {
       'format': backupFormat,
-      'formatVersion': backupFormatVersion,
+      'formatVersion': backupLibraryFormatVersion,
       'app': appVersion,
       'createdAt': (now ?? DateTime.now()).toUtc().toIso8601String(),
       'source': {
@@ -387,22 +465,109 @@ class BackupService {
           },
       ],
       'overlays': [for (final o in overlays) _overlayJson(o)],
-      'annotations': [
-        for (final x in strokes)
-          {
-            'id': x.id,
-            'songId': x.songId,
-            'target': x.target,
-            'stroke': x.stroke,
-            'updatedAt': x.updatedAt,
-          },
-      ],
+      'annotations': [for (final x in strokes) _strokeJson(x)],
     };
-    files[backupManifestName] = Uint8List.fromList(
-      utf8.encode(const JsonEncoder.withIndent('  ').convert(manifest)),
-    );
+    files[backupManifestName] = _json(manifest);
+    return files;
+  }
+
+  static Uint8List _json(Object value) => Uint8List.fromList(
+    utf8.encode(const JsonEncoder.withIndent('  ').convert(value)),
+  );
+
+  /// A full backup (#639): the archives of [libraries] (which the person may
+  /// export) in folders, the person's own adjustments and annotations of
+  /// [personalOnly] (organizations without library rights), and the
+  /// [personalSettings] and [deviceSettings].
+  Future<Uint8List> exportAll({
+    required List<({String id, String name})> libraries,
+    List<({String id, String name})> personalOnly = const [],
+    Map<String, Object?> personalSettings = const {},
+    Map<String, Object?> deviceSettings = const {},
+    Future<Uint8List?> Function(AttachmentEntry attachment)? readFile,
+    DateTime? now,
+  }) async {
+    final files = <String, Uint8List>{};
+    final entries = <Map<String, dynamic>>[];
+    for (final (index, library) in libraries.indexed) {
+      final folder = 'libraries/${index + 1}/';
+      final library_ = await _collect(
+        library.id,
+        libraryName: library.name,
+        readFile: readFile,
+        now: now,
+      );
+      for (final MapEntry(:key, :value) in library_.entries) {
+        files['$folder$key'] = value;
+      }
+      entries.add({
+        'kind': library.id == localBandId ? 'local' : 'organization',
+        'id': library.id,
+        'name': library.name,
+        'path': folder,
+      });
+    }
+    final personal = <Map<String, dynamic>>[];
+    for (final library in personalOnly) {
+      final (overlays, strokes) = await _personal(library.id, null);
+      personal.add({
+        'id': library.id,
+        'name': library.name,
+        'overlays': [for (final o in overlays) _overlayJson(o)],
+        'annotations': [for (final x in strokes) _strokeJson(x)],
+      });
+    }
+    files[backupManifestName] = _json({
+      'format': backupFormat,
+      'formatVersion': backupFullFormatVersion,
+      'app': appVersion,
+      'createdAt': (now ?? DateTime.now()).toUtc().toIso8601String(),
+      'libraries': entries,
+      'personal': personal,
+      'settings': {'personal': personalSettings, 'device': deviceSettings},
+    });
     return compute(_zip, files);
   }
+
+  /// The person's adjustments and annotations of the songs of [libraryId]
+  /// ([songIds] if given, else all songs that are not deleted).
+  Future<(List<SongOverlay>, List<AnnotationRow>)> _personal(
+    String libraryId,
+    Set<String>? songIds,
+  ) async {
+    final ids =
+        songIds ??
+        {
+          for (final s
+              in await (db.select(db.songs)..where(
+                    (s) =>
+                        s.libraryId.equals(libraryId) & s.deleted.equals(false),
+                  ))
+                  .get())
+            s.id,
+        };
+    final owner = overlayOwnerFor(libraryId, userId);
+    final overlays = await (db.select(
+      db.personalOverlays,
+    )..where((o) => o.ownerId.equals(owner) & o.songId.isIn(ids))).get();
+    final strokes =
+        await (db.select(db.annotations)..where(
+              (x) =>
+                  x.ownerId.equals(owner) &
+                  x.songId.isIn(ids) &
+                  x.stroke.isNotNull(),
+            ))
+            .get();
+    return (overlays, strokes);
+  }
+
+  static Map<String, dynamic> _strokeJson(AnnotationRow x) => {
+    'id': x.id,
+    'songId': x.songId,
+    'target': x.target,
+    'stroke': x.stroke,
+    'updatedAt': x.updatedAt,
+  };
 
   Future<Uint8List?> _readStored(AttachmentEntry a) async {
     final file = storage.file(a.fileName);
@@ -435,7 +600,7 @@ class BackupService {
   /// Whether [zip] is a backup archive (a ZIP with a backup manifest).
   static Future<bool> isBackup(Uint8List zip) async {
     try {
-      await read(zip);
+      await readFull(zip);
       return true;
     } on BackupFormatException catch (e) {
       // A newer backup is still a backup: the import reports it.
@@ -445,11 +610,40 @@ class BackupService {
     }
   }
 
-  /// Reads a backup archive; throws [BackupFormatException] if it is none
-  /// or a newer one.
+  /// Reads the archive of one library; throws [BackupFormatException] if it
+  /// is none, a newer one or a full backup ([readFull]).
   static Future<BackupContents> read(Uint8List zip) async {
+    final full = await readFull(zip);
+    if (full.isFull) throw const BackupFormatException();
+    return full.libraries.single;
+  }
+
+  /// Reads a backup archive, of one library (version 1) or a full backup
+  /// (version 2); throws [BackupFormatException] if it is none or a newer
+  /// one.
+  static Future<FullBackup> readFull(Uint8List zip) async {
     final files = await compute(_unzipPaths, zip);
-    final raw = files[backupManifestName];
+    final manifest = _manifest(files[backupManifestName]);
+    final version = manifest['formatVersion'] as int;
+    if (version == backupLibraryFormatVersion) {
+      return FullBackup(manifest, [BackupContents(manifest, files)]);
+    }
+    final libraries = <BackupContents>[];
+    for (final entry in (manifest['libraries'] as List?) ?? const []) {
+      final folder = ((entry as Map)['path'] as String?) ?? '';
+      if (folder.isEmpty) continue;
+      final inner = {
+        for (final MapEntry(:key, :value) in files.entries)
+          if (key.startsWith(folder)) key.substring(folder.length): value,
+      };
+      libraries.add(
+        BackupContents(_manifest(inner[backupManifestName]), inner),
+      );
+    }
+    return FullBackup(manifest, libraries);
+  }
+
+  static Map<String, dynamic> _manifest(Uint8List? raw) {
     if (raw == null) throw const BackupFormatException();
     final Object? manifest;
     try {
@@ -465,8 +659,97 @@ class BackupService {
     if (version > backupFormatVersion) {
       throw BackupFormatException(newerVersion: version);
     }
-    return BackupContents(manifest.cast<String, dynamic>(), files);
+    return manifest.cast<String, dynamic>();
   }
+
+  /// Restores the person's adjustments and annotations of [personal] on
+  /// the songs that are on this device with the same ID (the organization's
+  /// songs). Adjustments replace the current ones; annotations are added by
+  /// stroke ID. Returns the number of songs.
+  Future<int> restorePersonal(PersonalBackup personal) async {
+    final songs = SongRepository(
+      db,
+      storage,
+      libraryId: personal.libraryId,
+      userId: userId,
+    );
+    final owner = overlayOwnerFor(personal.libraryId, userId);
+    final present = {
+      for (final s
+          in await (db.select(db.songs)..where(
+                (s) =>
+                    s.libraryId.equals(personal.libraryId) &
+                    s.deleted.equals(false),
+              ))
+              .get())
+        s.id,
+    };
+    final attachments = {
+      for (final a in await (db.select(
+        db.attachments,
+      )..where((a) => a.deleted.equals(false))).get())
+        a.id,
+    };
+    final restored = <String>{};
+    for (final o in personal.overlays) {
+      final songId = o['songId'] as String?;
+      if (songId == null || !present.contains(songId)) continue;
+      final liveView = o['liveView'] as String?;
+      await songs.saveOverlay(
+        _overlayFrom(
+          await songs.getOverlay(songId),
+          o,
+          liveView != null && attachments.contains(liveView) ? liveView : null,
+        ),
+      );
+      restored.add(songId);
+    }
+    await db.transaction(() async {
+      for (final x in personal.annotations) {
+        final songId = x['songId'] as String?;
+        final target = x['target'] as String? ?? '';
+        if (songId == null || !present.contains(songId)) continue;
+        if (target.isNotEmpty && !attachments.contains(target)) continue;
+        await db
+            .into(db.annotations)
+            .insert(
+              AnnotationsCompanion.insert(
+                id: x['id'] as String? ?? _uuid.v4(),
+                ownerId: owner,
+                songId: songId,
+                target: Value(target),
+                stroke: Value(x['stroke'] as String?),
+                updatedAt:
+                    (x['updatedAt'] as int?) ??
+                    DateTime.now().millisecondsSinceEpoch,
+                pending: const Value(1),
+              ),
+              mode: InsertMode.insertOrIgnore,
+            );
+        restored.add(songId);
+      }
+    });
+    return restored.length;
+  }
+
+  /// [current] with the adjustments of an archive entry [o].
+  static SongOverlay _overlayFrom(
+    SongOverlay current,
+    Map<String, dynamic> o,
+    String? liveView,
+  ) => current.copyWith(
+    transpose: (o['transpose'] as int?) ?? 0,
+    capoFret: Value(o['capoFret'] as int?),
+    fontScale: (o['fontScale'] as num?)?.toDouble() ?? 1.0,
+    notes: Value(o['notes'] as String?),
+    nashville: Value(o['nashville'] as bool?),
+    liveView: Value(liveView),
+    hideAnnotations: (o['hideAnnotations'] as bool?) ?? false,
+    verseChords:
+        VerseChords.values.asNameMap()[o['verseChords']] ?? VerseChords.all,
+    midi: Value(MidiProgram.fromJson(o['midi'])),
+    midiPrograms: Value(MidiPrograms.fromJson(o['midiPrograms'])),
+  );
 
   /// Existing songs of [libraryId] by ID and by title and artist.
   Future<_Existing> _existing(String libraryId) async {
@@ -577,19 +860,10 @@ class BackupService {
       final current = await songs.getOverlay(songId);
       final liveView = o['liveView'] as String?;
       await songs.saveOverlay(
-        current.copyWith(
-          transpose: (o['transpose'] as int?) ?? 0,
-          capoFret: Value(o['capoFret'] as int?),
-          fontScale: (o['fontScale'] as num?)?.toDouble() ?? 1.0,
-          notes: Value(o['notes'] as String?),
-          nashville: Value(o['nashville'] as bool?),
-          liveView: Value(liveView == null ? null : attachmentMap[liveView]),
-          hideAnnotations: (o['hideAnnotations'] as bool?) ?? false,
-          verseChords:
-              VerseChords.values.asNameMap()[o['verseChords']] ??
-              VerseChords.all,
-          midi: Value(MidiProgram.fromJson(o['midi'])),
-          midiPrograms: Value(MidiPrograms.fromJson(o['midiPrograms'])),
+        _overlayFrom(
+          current,
+          o,
+          liveView == null ? null : attachmentMap[liveView],
         ),
       );
     }

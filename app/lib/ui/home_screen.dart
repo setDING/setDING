@@ -9,6 +9,7 @@ import '../sync/sync_controller.dart';
 import '../sync/update_check.dart';
 import '../update/update_providers.dart';
 import '../update/whats_new.dart';
+import 'backup/full_backup.dart';
 import 'sets/sets_screen.dart';
 import 'settings_screen.dart';
 import 'songs/songs_screen.dart';
@@ -47,6 +48,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (version == null) return;
       WidgetsBinding.instance.addPostFrameCallback((_) => _notify(version));
     }, fireImmediately: true);
+    // The local library is not on a server: a reminder when it changed and
+    // was not backed up for 30 days (#639), at most every 7 days.
+    ref.listenManual(backupReminderProvider, (_, days) {
+      if (days.value case final days?) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => _remind(days));
+      }
+    }, fireImmediately: true);
     // After an update, the notes of the new versions (ADR-0041), once.
     ref.listenManual(pendingWhatsNewProvider, (_, pending) {
       if (pending == null) return;
@@ -77,6 +85,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           key: const Key('whats-new-show'),
           label: l10n.whatsNewShow,
           onPressed: () => showWhatsNew(context, pending),
+        ),
+      ),
+    );
+  }
+
+  /// Reminds of a backup of the local library, like the other hints only
+  /// while the main navigation is on top (never in live mode).
+  void _remind(int days) {
+    if (!mounted || !(ModalRoute.of(context)?.isCurrent ?? true)) return;
+    if (!takeBackupReminder(ref)) return;
+    final l10n = AppLocalizations.of(context);
+    // Queued behind another hint, not replacing it.
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        key: const Key('backup-reminder'),
+        persist: false,
+        duration: _whatsNewHintDuration,
+        content: Text(l10n.backupReminder(days)),
+        action: SnackBarAction(
+          key: const Key('backup-reminder-action'),
+          label: l10n.backupReminderAction,
+          onPressed: () async {
+            await exportFullBackup(context, ref);
+            ref.invalidate(backupReminderProvider);
+          },
         ),
       ),
     );
