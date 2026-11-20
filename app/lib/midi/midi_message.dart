@@ -244,7 +244,7 @@ abstract final class MotifXf {
   ];
 
   /// The SysEx device number setDING sends to; the Motif's "Device No."
-  /// (Utility → MIDI) must be "all" or 1 (#591).
+  /// (Utility → Control → MIDI) must be "all" or 1 (#591).
   static const deviceNumber = 1;
 
   /// Voice [index] (0 to the bank's size − 1) of voice bank [bank].

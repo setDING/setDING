@@ -1559,8 +1559,8 @@
   "midiGuideMotifSend": "Motif XF – senden",
   "midiGuideMotifReceive": "Motif XF – empfangen",
   "midiGuideNordReceiveHint": "Stelle am Nord im MIDI-Menü «Program Change» auf «Send» oder «Send & Receive» und den Kanal hier auf den globalen Kanal des Nord. Wähle dann am Nord irgendein Programm, einen Live-Speicher oder einen Song-Teil, z. B. mit dem Drehregler oder den Modus-Tasten. setDING zeigt, was angekommen ist; tippe an, ob es mit dem Display übereinstimmt. Die Ergebnisse stehen im Protokoll.",
-  "midiGuideMotifSendHint": "Stelle am Motif XF unter Utility → MIDI: MIDI IN/OUT auf USB, den Empfang von Bank Select und Program Change ein, den Basic Receive Channel auf den Kanal hier und die Device Number auf «all» oder 1. Tippe auf «Senden», schau aufs Display des Motif und tippe an, was passiert ist. Die Antworten stehen im Protokoll.",
-  "midiGuideMotifReceiveHint": "Stelle am Motif XF unter Utility → MIDI: MIDI IN/OUT auf USB, das Senden von Bank Select und Program Change ein und den Transmit Channel auf den Kanal hier. Wähle dann am Motif irgendeine Voice oder Performance, auch in verschiedenen Bänken und zweimal in derselben Bank. setDING zeigt, was angekommen ist; tippe an, ob es mit dem Display übereinstimmt. Die Ergebnisse stehen im Protokoll.",
+  "midiGuideMotifSendHint": "Stelle am Motif XF unter Utility → Control (F5) → MIDI (SF2): MIDI IN/OUT auf USB, den Empfang von Bank Select und Program Change ein, den Basic Receive Channel auf den Kanal hier und die Device Number auf «all» oder 1, dann mit Store speichern. Tippe auf «Senden», schau aufs Display des Motif und tippe an, was passiert ist. Die Antworten stehen im Protokoll.",
+  "midiGuideMotifReceiveHint": "Stelle am Motif XF unter Utility → Control (F5) → MIDI (SF2): MIDI IN/OUT auf USB, das Senden von Bank Select und Program Change ein und den Transmit Channel auf den Kanal hier, dann mit Store speichern. Wähle dann am Motif irgendeine Voice oder Performance, auch in verschiedenen Bänken und zweimal in derselben Bank. setDING zeigt, was angekommen ist; tippe an, ob es mit dem Display übereinstimmt. Die Ergebnisse stehen im Protokoll.",
   "midiGuideMotifExpected": "Der Motif zeigt {name}.",
   "@midiGuideMotifExpected": {
     "placeholders": {
@@ -1834,7 +1834,7 @@
     }
   },
   "midiProfileMotifXf": "Yamaha Motif XF",
-  "settingsMidiMotifHint": "Stelle am Motif XF unter Utility → MIDI: MIDI IN/OUT auf USB, den Empfang von Bank Select und Program Change ein, den Basic Receive Channel auf den Kanal hier und die Device Number auf «all» oder 1. setDING schaltet den Motif vor jedem Programm selbst in den Voice- oder Performance-Modus.",
+  "settingsMidiMotifHint": "Stelle am Motif XF unter Utility → Control (F5) → MIDI (SF2): MIDI IN/OUT auf USB, den Empfang von Bank Select und Program Change ein, den Basic Receive Channel auf den Kanal hier und die Device Number auf «all» oder 1, dann mit Store speichern. setDING schaltet den Motif vor jedem Programm selbst in den Voice- oder Performance-Modus.",
   "midiProgramKindPerformance": "Performance",
   "midiProgramKindVoice": "Voice",
   "midiProgramGroup": "Gruppe",
