@@ -9,6 +9,7 @@
 #   make reset      delete the test instance's data (fresh start with demo song)
 #   make backend    start a local PocketBase with the repository's schema and hooks
 #   make perf       measure performance on a USB-connected Android device
+#   make android-test  run the Android integration tests (emulator, or DEVICE=<id>)
 #   make coverage   measure the test coverage (report only, no threshold)
 #   make apk        build an Android APK for manual installation (sideloading)
 #   make android-install  install the local build as "setDING Beta" next to a release
@@ -86,7 +87,7 @@ BACKEND_REGISTRATION ?= open
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := SETDING_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build web web-serve site site-dev deps upgrade apk android-install android-keystore release release-linux release-check sbom changelog reset data-dir backend check test codegen l10n perf screenshots branding examples doctor clean ci-image \
+.PHONY: help setup dev start build web web-serve site site-dev deps upgrade apk android-install android-keystore release release-linux release-check sbom changelog reset data-dir backend check test codegen l10n coverage android-test perf screenshots branding examples doctor clean ci-image \
 	server-target server-install server-release server-site server-status server-logs server-backup server-fetch-backup server-founder-invite server-ssh
 
 help: ## Show this help
@@ -213,6 +214,9 @@ codegen: ## Regenerate the drift database code
 
 l10n: ## Regenerate the translations from the ARB files
 	cd $(APP) && $(FLUTTER) gen-l10n
+
+android-test: ## Run the Android integration tests on an own emulator, or on a USB device with DEVICE=<id> (docs/development/android-tests.md)
+	$(ROOT)/tool/android-test.sh
 
 perf: ## Measure performance on a USB-connected Android device (DEVICE=<id>; docs/development/performance.md)
 	$(ROOT)/tool/perf.sh
