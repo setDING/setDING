@@ -32,17 +32,20 @@ only on the server, so a mistake in them would otherwise show up there first.
 
 ## Check tools
 
-ShellCheck (GPL-3.0) and Caddy (Apache-2.0) are pinned in
+ShellCheck (GPL-3.0), Caddy (Apache-2.0) and geckodriver (MPL-2.0, for
+`make web-test BROWSER=firefox`, [web-tests.md](web-tests.md)) are pinned in
 [`tool/fetch-tool.sh`](../../tool/fetch-tool.sh), downloaded into the cache
-(`~/.cache/setding`) and verified (ShellCheck against SHA-256 sums pinned in the
-script, Caddy against the release's `checksums.txt`). They only run on the
+(`~/.cache/setding`) and verified (ShellCheck and geckodriver against SHA-256
+sums pinned in the script, Caddy against the release's `checksums.txt`). They only run on the
 development machine and in CI; nothing of them is copied into the repository or
 shipped (owner decision 2026-11-20). `CADDY_BIN` overrides the Caddy binary, as
 `POCKETBASE_BIN` does for PocketBase.
 
 `tool/check-deps.sh` checks that the pinned versions are the latest GitHub
 releases. To raise ShellCheck, update `SHELLCHECK_VERSION` and the four
-SHA-256 sums (`sha256sum` of the release's `.tar.xz` archives).
+SHA-256 sums (`sha256sum` of the release's `.tar.xz` archives). To raise
+geckodriver, update `GECKODRIVER_VERSION` and its four sums (the digests
+GitHub shows for the release's `.tar.gz` archives).
 
 ## Not tested
 

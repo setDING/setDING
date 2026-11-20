@@ -10,7 +10,7 @@
 #   make backend    start a local PocketBase with the repository's schema and hooks
 #   make perf       measure performance on a USB-connected Android device
 #   make android-test  run the Android integration tests (emulator, or DEVICE=<id>)
-#   make web-test      run the web integration tests in headless Chrome
+#   make web-test      run the web integration tests in headless Chrome (BROWSER=firefox)
 #   make coverage   measure the test coverage (report only, no threshold)
 #   make apk        build an Android APK for manual installation (sideloading)
 #   make android-install  install the local build as "setDING Beta" next to a release
@@ -230,7 +230,7 @@ l10n: ## Regenerate the translations from the ARB files
 android-test: ## Run the Android integration tests on an own emulator, or on a USB device with DEVICE=<id> (docs/development/android-tests.md)
 	$(ROOT)/tool/android-test.sh
 
-web-test: ## Run the web integration tests in headless Chrome against a local PocketBase (docs/development/web-tests.md)
+web-test: ## Run the web integration tests in headless Chrome (or BROWSER=firefox) against a local PocketBase (docs/development/web-tests.md)
 	$(ROOT)/tool/web-test.sh
 
 perf: ## Measure performance on a USB-connected Android device (DEVICE=<id>; docs/development/performance.md)

@@ -41,9 +41,11 @@ version into `app/web/` and update `SQLITE3_VERSION` and
 
 drift picks the storage the browser supports. With the headers
 `Cross-Origin-Opener-Policy: same-origin` and
-`Cross-Origin-Embedder-Policy: require-corp` it uses OPFS (`opfsLocks`);
+`Cross-Origin-Embedder-Policy: require-corp` Chrome uses OPFS (`opfsLocks`);
 without them it falls back to IndexedDB in a shared worker
-(`sharedIndexedDb`). Both work; `sqlite3` older than the version drift was
+(`sharedIndexedDb`). Firefox uses OPFS through a shared worker (`opfsShared`)
+with or without the headers. All of them work (`make web-test` checks both
+cases in both browsers, [web-tests.md](web-tests.md)); `sqlite3` older than the version drift was
 built with made the IndexedDB fallback hang without an error (fixed by
 upgrading to 3.9.1).
 

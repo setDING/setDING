@@ -111,4 +111,4 @@ document before using a target of its area:
 - [`operations-tests.md`](docs/development/operations-tests.md): shell, Caddyfile, systemd and backup restore checks in `make check`
 - [`web.md`](docs/development/web.md) `make web` (ADR-0018) · [`website.md`](docs/development/website.md) `make site` (ADR-0030) · [`branding.md`](docs/development/branding.md) `make branding`
 - [`coverage.md`](docs/development/coverage.md) `make coverage` · [`performance.md`](docs/development/performance.md) `make perf`
-- [`android-tests.md`](docs/development/android-tests.md): `make android-test` (integration tests on an own emulator or `DEVICE=<id>`, as the separate app `app.setding.itest`) · [`web-tests.md`](docs/development/web-tests.md): `make web-test` (web client in headless Chrome, served by a local PocketBase)
+- [`android-tests.md`](docs/development/android-tests.md): `make android-test` (integration tests on an own emulator or `DEVICE=<id>`, as the separate app `app.setding.itest`) · [`web-tests.md`](docs/development/web-tests.md): `make web-test` (web client in headless Chrome or `BROWSER=firefox`, served by a local PocketBase)

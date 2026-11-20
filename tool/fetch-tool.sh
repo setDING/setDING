@@ -4,20 +4,23 @@
 #
 #   fetch-tool.sh shellcheck   ShellCheck (GPL-3.0): lints the shell scripts
 #   fetch-tool.sh caddy        Caddy (Apache-2.0): validates and serves tool/server/Caddyfile
+#   fetch-tool.sh geckodriver  geckodriver (MPL-2.0): runs the web integration tests in Firefox (make web-test BROWSER=firefox)
 #
 # The tools only run on the development machine and in CI; nothing of them is
 # copied into the repository or shipped. The cache is
 # ${SETDING_CACHE:-${XDG_CACHE_HOME:-~/.cache}/setding}. Downloads are verified:
-# ShellCheck against the SHA-256 sums pinned below (its releases publish none),
+# ShellCheck and geckodriver against the SHA-256 sums pinned below,
 # Caddy against the release's checksums.txt. tool/check-deps.sh checks that the
-# pinned versions are the newest; raising a version needs the ShellCheck sums
-# updated (sha256sum of the four .tar.xz archives of the release).
+# pinned versions are the newest; raising a version needs the ShellCheck and
+# geckodriver sums updated (sha256sum of the release's archives, or the
+# digests GitHub shows for them).
 set -euo pipefail
 
 SHELLCHECK_VERSION=0.11.0
 CADDY_VERSION=2.11.9
+GECKODRIVER_VERSION=0.37.1
 
-tool="${1:?usage: fetch-tool.sh shellcheck|caddy}"
+tool="${1:?usage: fetch-tool.sh shellcheck|caddy|geckodriver}"
 
 case "$(uname -s)" in
   Linux) os=linux ;;
@@ -33,7 +36,8 @@ esac
 case "$tool" in
   shellcheck) version="$SHELLCHECK_VERSION" ;;
   caddy) version="$CADDY_VERSION" ;;
-  *) echo "unknown tool: $tool (shellcheck or caddy)" >&2; exit 1 ;;
+  geckodriver) version="$GECKODRIVER_VERSION" ;;
+  *) echo "unknown tool: $tool (shellcheck, caddy or geckodriver)" >&2; exit 1 ;;
 esac
 
 cache="${SETDING_CACHE:-${XDG_CACHE_HOME:-$HOME/.cache}/setding}/$tool/$version"
@@ -70,6 +74,20 @@ case "$tool" in
     (cd "$tmp" && grep " $archive\$" checksums.txt | sha512sum -c - >/dev/null)
     tar -xzf "$tmp/$archive" -C "$tmp" caddy
     src="$tmp/caddy"
+    ;;
+  geckodriver)
+    case "$os/$arch" in
+      linux/amd64) platform=linux64 sum=e815130ea95983e162ae91843b48d3a3ce991735635fce83a647afde21e09f7e ;;
+      linux/arm64) platform=linux-aarch64 sum=8fd90b951422fbad5b56539fb344dff66eb3f986d615d8d6fde9f1f62dad610c ;;
+      darwin/amd64) platform=macos sum=d02b3f7003f999caf90974a2ef5da0286c05d01cee19112c86846d759fdba4f5 ;;
+      darwin/arm64) platform=macos-aarch64 sum=d02b3f7003f999caf90974a2ef5da0286c05d01cee19112c86846d759fdba4f5 ;;
+    esac
+    archive="geckodriver-v$version-$platform.tar.gz"
+    curl -fsSL -o "$tmp/$archive" \
+      "https://github.com/mozilla/geckodriver/releases/download/v$version/$archive"
+    echo "$sum  $tmp/$archive" | sha256sum -c - >/dev/null
+    tar -xzf "$tmp/$archive" -C "$tmp" geckodriver
+    src="$tmp/geckodriver"
     ;;
 esac
 

@@ -1,20 +1,24 @@
 #!/usr/bin/env bash
-# Runs the web integration tests (make web-test, issue #650,
-# docs/development/web-tests.md): app/integration_test/web/*_test.dart in
-# headless Chrome.
+# Runs the web integration tests (make web-test, issues #650 and #652,
+# docs/development/web-tests.md): app/integration_test/web/*_test.dart in a
+# headless browser.
 #
-#   make web-test
+#   make web-test                         headless Chrome or Chromium
+#   make web-test BROWSER=firefox         headless Firefox (geckodriver)
 #   make web-test TESTS=integration_test/web/web_test.dart
-#   make web-test WEB_TEST_WINDOW=1      show the browser window
+#   make web-test WEB_TEST_WINDOW=1       show the browser window
 #
-# Each test is built as the web client (tool/build-web.sh, profile mode) into
-# app/build/web-itest and served by a local PocketBase with the repository's
-# schema and hooks (server/bin/itest_backend.dart), like in production: same
-# origin as the API, with the isolation headers (ADR-0018). chromedriver opens
-# it in Chrome and test_driver/web_driver.dart waits for the result.
+# Each test is built as the web client (tool/build-web.sh, profile mode) and
+# served by a local PocketBase with the repository's schema and hooks
+# (server/bin/itest_backend.dart), like in production: same origin as the
+# API, with the isolation headers (ADR-0018). A test whose first line is
+# `// web-test: no-isolation` is served by a plain static server on another
+# port instead (no isolation headers, the API cross-origin). The browser's
+# WebDriver opens it and test_driver/web_driver.dart waits for the result.
 #
-# Needs Chrome or Chromium and a chromedriver of the same major version
-# (CHROME_BINARY, CHROMEDRIVER override them).
+# Chrome needs a chromedriver of the same major version (CHROMEDRIVER);
+# Firefox uses geckodriver (GECKODRIVER, else the one on the PATH, else the
+# pinned one of tool/fetch-tool.sh). BROWSER_BINARY selects the browser.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -22,6 +26,9 @@ if ! command -v flutter >/dev/null 2>&1 && [ -x "$HOME/development/flutter/bin/f
   export PATH="$HOME/development/flutter/bin:$PATH"
 fi
 OUT="$ROOT/app/build/web-itest"
+PLAIN_OUT="$ROOT/app/build/web-itest-plain"
+BROWSER="${BROWSER:-chrome}"
+export BROWSER
 
 log() { printf 'web-test: %s\n' "$*"; }
 die() { printf 'web-test: %s\n' "$*" >&2; exit 1; }
@@ -33,28 +40,64 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# --- Browser ----------------------------------------------------------------
+free_port() { python3 -c 'import socket; s = socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1])'; }
 
-CHROMEDRIVER="${CHROMEDRIVER:-$(command -v chromedriver || true)}"
-[ -n "$CHROMEDRIVER" ] || die "chromedriver not found (install it or set CHROMEDRIVER)"
-if [ -z "${CHROME_BINARY:-}" ]; then
-  for browser in chromium google-chrome-stable google-chrome chrome; do
-    CHROME_BINARY="$(command -v "$browser" || true)"
-    [ -n "$CHROME_BINARY" ] && break
+# Waits until a server answers on the URL.
+wait_for() {
+  local _
+  for _ in $(seq 150); do
+    curl -s -o /dev/null "$1" && return 0
+    sleep 0.1
   done
-fi
-[ -n "${CHROME_BINARY:-}" ] || die "Chrome or Chromium not found (set CHROME_BINARY)"
-export CHROME_BINARY
+  die "$2 did not start"
+}
+
+# --- Browser and WebDriver --------------------------------------------------
+
 major() { "$1" --version | grep -oE '[0-9]+\.[0-9.]+' | head -1 | cut -d. -f1; }
-[ "$(major "$CHROME_BINARY")" = "$(major "$CHROMEDRIVER")" ] ||
-  die "$CHROME_BINARY $(major "$CHROME_BINARY") and $CHROMEDRIVER $(major "$CHROMEDRIVER") differ (set CHROME_BINARY or CHROMEDRIVER)"
+case "$BROWSER" in
+  chrome)
+    if [ -z "${BROWSER_BINARY:-}" ]; then
+      for browser in chromium google-chrome-stable google-chrome chrome; do
+        BROWSER_BINARY="$(command -v "$browser" || true)"
+        [ -n "$BROWSER_BINARY" ] && break
+      done
+    fi
+    [ -n "${BROWSER_BINARY:-}" ] || die "Chrome or Chromium not found (set BROWSER_BINARY)"
+    webdriver="${CHROMEDRIVER:-$(command -v chromedriver || true)}"
+    [ -n "$webdriver" ] || die "chromedriver not found (install it or set CHROMEDRIVER)"
+    [ "$(major "$BROWSER_BINARY")" = "$(major "$webdriver")" ] ||
+      die "$BROWSER_BINARY $(major "$BROWSER_BINARY") and $webdriver $(major "$webdriver") differ (set BROWSER_BINARY or CHROMEDRIVER)"
+    ;;
+  firefox)
+    BROWSER_BINARY="${BROWSER_BINARY:-$(command -v firefox || true)}"
+    [ -n "$BROWSER_BINARY" ] || die "Firefox not found (set BROWSER_BINARY)"
+    webdriver="${GECKODRIVER:-$(command -v geckodriver || "$ROOT/tool/fetch-tool.sh" geckodriver)}"
+    ;;
+  *) die "unknown BROWSER $BROWSER (chrome or firefox)" ;;
+esac
+export BROWSER_BINARY
+driver_port="$(free_port)"
+if [ "$BROWSER" = firefox ]; then
+  # The page's console comes on geckodriver's output; web_driver.dart prints
+  # the test's lines from this file.
+  WEBDRIVER_LOG="$(mktemp)"
+  export WEBDRIVER_LOG
+  cleanup_steps+=("rm -f '$WEBDRIVER_LOG'")
+  "$webdriver" --port "$driver_port" --log fatal >"$WEBDRIVER_LOG" 2>&1 &
+else
+  "$webdriver" --port="$driver_port" --log-level=SEVERE >/dev/null 2>&1 &
+fi
+driver_pid=$!
+cleanup_steps+=("kill $driver_pid 2>/dev/null; wait $driver_pid 2>/dev/null")
+wait_for "http://127.0.0.1:$driver_port/status" "$(basename "$webdriver")"
 
-# --- Backend ----------------------------------------------------------------
+# --- Servers ----------------------------------------------------------------
 
-# PocketBase serves the directory as it is when a file is requested: the
-# test builds go into it after the start.
-rm -rf "$OUT"
-mkdir -p "$OUT"
+# Both serve their directory as it is when a file is requested: the test
+# builds go into it after the start.
+rm -rf "$OUT" "$PLAIN_OUT"
+mkdir -p "$OUT" "$PLAIN_OUT"
 cd "$ROOT/server"
 dart pub get >/dev/null
 backend_out="$(mktemp)"
@@ -81,17 +124,12 @@ for key in ("email", "password", "song", "sheet"):
 ' "$backend_info"
 )
 
-# --- chromedriver -----------------------------------------------------------
-
-driver_port="$(python3 -c 'import socket; s = socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1])')"
-"$CHROMEDRIVER" --port="$driver_port" --log-level=SEVERE >/dev/null 2>&1 &
-driver_pid=$!
-cleanup_steps+=("kill $driver_pid 2>/dev/null; wait $driver_pid 2>/dev/null")
-for _ in $(seq 100); do
-  curl -sf "http://127.0.0.1:$driver_port/status" >/dev/null && break
-  sleep 0.1
-done
-curl -sf "http://127.0.0.1:$driver_port/status" >/dev/null || die "chromedriver did not start"
+# Plain static server without the isolation headers.
+plain_port="$(free_port)"
+python3 -m http.server "$plain_port" --bind 127.0.0.1 --directory "$PLAIN_OUT" >/dev/null 2>&1 &
+plain_pid=$!
+cleanup_steps+=("kill $plain_pid 2>/dev/null; wait $plain_pid 2>/dev/null")
+wait_for "http://127.0.0.1:$plain_port/" "the static server"
 
 # --- Tests ------------------------------------------------------------------
 
@@ -101,15 +139,22 @@ if [ -n "${TESTS:-}" ]; then
 else
   tests=(integration_test/web/*_test.dart)
 fi
+browser_version="$("$BROWSER_BINARY" --version 2>/dev/null | head -1)"
 failed=()
 for test in "${tests[@]}"; do
+  if head -1 "$test" | grep -qx '// web-test: no-isolation'; then
+    out="$PLAIN_OUT" url="http://127.0.0.1:$plain_port/"
+    extra=("--dart-define=SETDING_SERVER_URL=http://127.0.0.1:$port")
+  else
+    out="$OUT" url="http://127.0.0.1:$port/" extra=()
+  fi
   log "building $test"
-  WEB_OUT="$OUT" "$ROOT/tool/build-web.sh" --profile --target "$test" "${defines[@]}"
-  log "running $test in $("$CHROME_BINARY" --version)"
-  dart test_driver/web_driver.dart "http://127.0.0.1:$driver_port/" "http://127.0.0.1:$port/" ||
+  WEB_OUT="$out" "$ROOT/tool/build-web.sh" --profile --target "$test" "${defines[@]}" "${extra[@]}"
+  log "running $test in $browser_version"
+  dart test_driver/web_driver.dart "http://127.0.0.1:$driver_port/" "$url" ||
     failed+=("$test")
 done
 if [ "${#failed[@]}" -gt 0 ]; then
   die "failed: ${failed[*]}"
 fi
-log "all web integration tests passed"
+log "all web integration tests passed in $browser_version"
