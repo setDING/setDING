@@ -120,6 +120,19 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.widget<SetScreen>(find.byType(SetScreen)).setId, isNotEmpty);
     expect(find.text('Tomorrow gig'), findsWidgets);
+    Navigator.of(tester.element(find.byType(SetScreen))).pop();
+    await tester.pumpAndSettle();
+
+    // A tap on the card next to the buttons opens the set too (#693).
+    await tester.tap(
+      find.descendant(
+        of: nextSet,
+        matching: find.textContaining('Tomorrow · Club · 2 songs'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(SetScreen), findsOneWidget);
+    expect(find.byType(LiveScreen), findsNothing);
     await app.dispose(tester);
   });
 
@@ -157,6 +170,14 @@ void main() {
       find.descendant(of: nextSet, matching: find.text('Recent')),
       findsOneWidget,
     );
+
+    // A tap on the card itself opens the set, not only *Open set* (#693).
+    await tester.tap(
+      find.descendant(of: nextSet, matching: find.text('Recent')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(SetScreen), findsOneWidget);
+    expect(find.byType(OverviewScreen), findsNothing);
     await app.dispose(tester);
   });
 
