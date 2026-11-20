@@ -163,6 +163,18 @@ Future<bool> pushed(AppDatabase db, String recordId) async =>
     )..where((o) => o.recordId.equals(recordId))).getSingleOrNull() ==
     null;
 
+/// Waits until this client's changes of [ids] reached the server.
+Future<void> waitUntilPushed(
+  WidgetTester tester,
+  AppDatabase db,
+  List<String> ids,
+) => eventually(tester, () async {
+  for (final id in ids) {
+    if (!await pushed(db, id)) return false;
+  }
+  return true;
+}, reason: 'the changes were not pushed');
+
 /// The fixture's band in the local database, if synced.
 Future<BandEntry?> fixtureBand(AppDatabase db) => (db.select(
   db.bands,
