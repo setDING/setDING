@@ -214,6 +214,13 @@ and settings, so the release installation stays untouched. Running it again upda
 the beta in place. `DEVICE=<id>` picks a device when several are connected (`adb
 devices`), `BETA_MODE=debug|profile` builds another mode (default `release`).
 
+Settings → About shows the beta's version with `beta` and the commit it was built
+from, e.g. `0.16.0 (1, beta, 39f2c1b)`, with `-dirty` after the commit when the
+working tree had uncommitted changes. The diagnostic log starts with the same line.
+The make target passes the commit as `--dart-define=SETDING_BUILD_COMMIT=…`; the
+version sent to the server and used for "What's new" stays the plain version from
+`pubspec.yaml`, so update checks work as in a release.
+
 The beta is switched on by the environment variable `SETDING_ANDROID_BETA=1`
 (`app/android/app/build.gradle.kts`); `make apk` and the CI release builds don't
 set it. Invitation links over `https://api.setding.app/invite/…` open only the

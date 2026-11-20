@@ -34,6 +34,19 @@ void main() {
   test('formats the app version with its build number', () {
     expect(formatAppVersion('0.1.1', '3'), '0.1.1 (3)');
     expect(formatAppVersion('0.1.1', ''), '0.1.1');
+    expect(formatAppVersion('0.1.1', '0.1.1'), '0.1.1');
+  });
+
+  test('formats the version of a beta build with its commit', () {
+    expect(
+      formatAppVersion('0.1.1', '1', beta: true, commit: '39f2c1b'),
+      '0.1.1 (1, beta, 39f2c1b)',
+    );
+    expect(formatAppVersion('0.1.1', '', beta: true), '0.1.1 (beta)');
+    expect(
+      formatAppVersion('0.1.1', '', commit: '39f2c1b-dirty'),
+      '0.1.1 (39f2c1b-dirty)',
+    );
   });
 
   testWidgets('the settings show the version and copy the diagnostic log', (
@@ -85,6 +98,30 @@ void main() {
     expect(copied, startsWith('setDING 0.1.1 (3)\n'));
     expect(copied, contains('[sync] Sync stopped: network'));
     expect(find.text('Diagnostic log copied'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('the settings show the beta build as beta', (tester) async {
+    useTabletSize(tester, landscape: false);
+    PackageInfo.setMockInitialValues(
+      appName: 'setDING Beta',
+      packageName: betaPackageName,
+      version: '0.1.1',
+      buildNumber: '1',
+      buildSignature: '',
+    );
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    await tester.pumpWidget(app.build(home: const SettingsScreen()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('settings-category-about')));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('app-version')),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    // No commit: the tests are not built by make android-install.
+    expect(find.text('Version 0.1.1 (1, beta)'), findsOneWidget);
     await app.dispose(tester);
   });
 }
