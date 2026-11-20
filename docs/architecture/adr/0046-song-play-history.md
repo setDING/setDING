@@ -1,6 +1,6 @@
 # ADR-0046: Song play history per band
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-20
 
 ## Context
@@ -127,6 +127,7 @@ the item JSON of `setlists.items` (ADR-0015) and in local columns:
   (default 6 months) by band leaders and set planners; all organization members
   see other bands' plays; v3 is fetched with every sync and stored for offline
   use.
+- 2026-11-20: Accepted (owner).
 
 ## Open points
 
