@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds only: plain HTTP to a PocketBase on the development machine,
+     reached through `adb reverse` (127.0.0.1, localhost) or the emulator's
+     host alias (10.0.2.2). Integration tests sign in and sync against it
+     (docs/development/android-tests.md). Release builds use the main manifest
+     and allow no plain HTTP. -->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>
