@@ -150,6 +150,10 @@ enum SongSort {
 
   /// Last edited first.
   recent,
+
+  /// Last played by the current band first, never played last (ADR-0046);
+  /// the song list sorts by the band's plays, the database by title.
+  lastPlayed,
 }
 
 /// A song as lists show it (see [SongRepository.watchSongList]).

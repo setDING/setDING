@@ -84,6 +84,82 @@ class SongPlays {
   }
 }
 
+/// How often a band played one song of its library (ADR-0046).
+class SongPlayStats {
+  const SongPlayStats({
+    required this.songId,
+    required this.title,
+    this.artist,
+    required this.total,
+    required this.lastYear,
+    this.last,
+  });
+
+  final String songId;
+  final String title;
+  final String? artist;
+
+  /// Plays in total and in the last 12 months.
+  final int total;
+  final int lastYear;
+
+  /// The last play; null when the band never played the song.
+  final DateTime? last;
+}
+
+/// The day [months] months before [today]: a song last played before it
+/// counts as not played for a while (ADR-0046).
+DateTime staleBefore(DateTime today, int months) =>
+    DateTime(today.year, today.month - months, today.day);
+
+/// A band's repertoire (ADR-0046): the songs of its library with how often
+/// and when it played them.
+class Repertoire {
+  Repertoire(this.songs, {required this.today});
+
+  final List<SongPlayStats> songs;
+  final DateTime today;
+
+  /// The songs played most often, in the last 12 months or in total; on a
+  /// tie the one played more recently first, then by title.
+  List<SongPlayStats> mostPlayed({required bool lastYear, int limit = 10}) {
+    int count(SongPlayStats s) => lastYear ? s.lastYear : s.total;
+    final played = [
+      for (final s in songs)
+        if (count(s) > 0) s,
+    ];
+    played.sort((a, b) {
+      var c = count(b).compareTo(count(a));
+      if (c == 0) c = b.last!.compareTo(a.last!);
+      if (c == 0) c = _byTitle(a, b);
+      return c;
+    });
+    return played.take(limit).toList();
+  }
+
+  /// The songs the band played, but not for more than [months] months;
+  /// the longest ago first.
+  List<SongPlayStats> notPlayedFor(int months) {
+    final before = staleBefore(today, months);
+    return [
+      for (final s in songs)
+        if (s.last case final last? when last.isBefore(before)) s,
+    ]..sort((a, b) {
+      final c = a.last!.compareTo(b.last!);
+      return c != 0 ? c : _byTitle(a, b);
+    });
+  }
+
+  /// The songs of the library the band never played, by title.
+  List<SongPlayStats> get neverPlayed => [
+    for (final s in songs)
+      if (s.last == null) s,
+  ]..sort(_byTitle);
+
+  static int _byTitle(SongPlayStats a, SongPlayStats b) =>
+      a.title.toLowerCase().compareTo(b.title.toLowerCase());
+}
+
 /// The song play history of a band (ADR-0046): a song counts as played when
 /// it is in a non-deleted set of the band whose gig date is before today.
 /// Computed from the local database, so it works offline.
@@ -182,6 +258,65 @@ class PlayHistoryRepository {
     return q.watch().map(
       (rows) => {for (final r in rows) r.read(i.songId)!: ?r.read(last)},
     );
+  }
+
+  /// The repertoire of [bandId]: every song of [libraryId] with how often
+  /// and when the band played it; a set counts once per song.
+  Stream<Repertoire> watchRepertoire(
+    String bandId,
+    String libraryId, {
+    DateTime? today,
+  }) {
+    final now = today ?? DateTime.now();
+    final start = _startOf(now);
+    final yearAgo = DateTime(now.year - 1, now.month, now.day);
+    final s = db.songs, i = db.setItems, l = db.setlists;
+    final q =
+        db.select(s).join([
+            leftOuterJoin(
+              i,
+              i.songId.equalsExp(s.id) & i.type.equalsValue(SetItemType.song),
+              useColumns: false,
+            ),
+            leftOuterJoin(
+              l,
+              l.id.equalsExp(i.setId) &
+                  l.bandId.equals(bandId) &
+                  l.deleted.equals(false) &
+                  l.gigDate.isSmallerThanValue(start),
+              useColumns: false,
+            ),
+          ])
+          ..addColumns([l.id, l.gigDate])
+          ..where(s.libraryId.equals(libraryId) & s.deleted.equals(false));
+    return q.watch().map((rows) {
+      final songs = <String, SongEntry>{};
+      final plays = <String, Map<String, DateTime>>{};
+      for (final row in rows) {
+        final song = row.readTable(s);
+        songs[song.id] = song;
+        final setId = row.read(l.id);
+        final date = row.read(l.gigDate);
+        final sets = plays.putIfAbsent(song.id, () => {});
+        if (setId != null && date != null) sets[setId] = date;
+      }
+      return Repertoire([
+        for (final song in songs.values)
+          SongPlayStats(
+            songId: song.id,
+            title: song.title,
+            artist: song.artist,
+            total: plays[song.id]!.length,
+            lastYear: plays[song.id]!.values
+                .where((d) => !d.isBefore(yearAgo))
+                .length,
+            last: plays[song.id]!.values.fold<DateTime?>(
+              null,
+              (a, b) => a == null || b.isAfter(a) ? b : a,
+            ),
+          ),
+      ], today: now);
+    });
   }
 
   /// Freezes the values of the songs in the sets of [bandId] whose gig day

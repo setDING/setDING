@@ -2235,5 +2235,56 @@
   "changeSetAlsoRemoved": "{count} removed",
   "changeSetSequence": "sequence of {songs} changed",
   "changeQuoted": "\"{title}\"",
-  "changeBy": "by {name}"
+  "changeBy": "by {name}",
+  "repertoire": "Repertoire",
+  "repertoireOf": "Repertoire of {band}",
+  "@repertoireOf": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "repertoireLastYear": "12 months",
+  "repertoireAllTime": "All time",
+  "repertoireMostPlayed": "Most played",
+  "repertoireStale": "Not played for a while",
+  "repertoireStaleHint": "{months, plural, =1{Last played more than a month ago} other{Last played more than {months} months ago}}",
+  "@repertoireStaleHint": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "repertoireNeverPlayed": "Never played",
+  "repertoireNeverPlayedHint": "Songs of the library that were in no past set of the band",
+  "repertoireNone": "None",
+  "repertoireEmpty": "The band has not played any songs in past sets yet.",
+  "repertoirePlays": "{count, plural, =1{once} other{{count} times}}",
+  "@repertoirePlays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "repertoireThreshold": "When does a song count as not played for a while?",
+  "repertoireMonths": "{months, plural, =1{After 1 month} other{After {months} months}}",
+  "@repertoireMonths": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "repertoireDefault": "Default: after {months} months",
+  "@repertoireDefault": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "sortByLastPlayed": "Last played"
 }

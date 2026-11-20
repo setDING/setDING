@@ -177,6 +177,7 @@ class BandService {
             role: own[b.id],
             orgRole: orgs[b.organizationId]!.role,
             orgLibrary: library(b.organizationId!),
+            staleAfterSetting: b.staleAfterMonths,
           ),
     ];
     int byName(String a, String b) =>
@@ -338,6 +339,7 @@ class BandService {
             organizationId: o.id,
             revision: b.revision,
             deleted: false,
+            staleAfterMonths: b.staleAfterMonths,
           ),
         );
         await _replace(
@@ -441,6 +443,11 @@ class BandService {
 
   Future<void> renameBand(String bandId, String name) =>
       _then(backend.updateBand(bandId, name: name));
+
+  /// Sets when songs count as not played for a while in the band
+  /// (ADR-0046): 1–36 months, 0 = the default. Online, like renaming.
+  Future<void> setStaleAfterMonths(String bandId, int months) =>
+      _then(backend.updateBand(bandId, staleAfterMonths: months.clamp(0, 36)));
 
   /// Deletes a band; it stays 30 days in the trash (organization admins,
   /// ADR-0044).

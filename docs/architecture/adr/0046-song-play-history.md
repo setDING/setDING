@@ -138,6 +138,12 @@ the item JSON of `setlists.items` (ADR-0015) and in local columns:
   hand in a set whose gig day has come are frozen right away; unknown item
   fields kept locally. Instead of raising the minimum client version, a server
   hook keeps `played` when an older client saves a set without it (owner).
+- 2026-11-20: v2 implemented (#661). Details: a *Repertoire* icon in the app bar
+  of the Sets tab; most played shows the top 10; the threshold is chosen from 1,
+  2, 3, 4, 6, 9, 12, 18, 24 or 36 months or the default (`0` on the server), and
+  set planners are limited to it by a hook that refuses any other field in the
+  request; the local library keeps the default of 6 months; the song list's
+  order *Last played* and its filters use the band of the library shown.
 
 ## Open points
 

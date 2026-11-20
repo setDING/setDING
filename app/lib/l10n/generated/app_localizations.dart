@@ -6636,6 +6636,102 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'von {name}'**
   String changeBy(String name);
+
+  /// No description provided for @repertoire.
+  ///
+  /// In de, this message translates to:
+  /// **'Repertoire'**
+  String get repertoire;
+
+  /// No description provided for @repertoireOf.
+  ///
+  /// In de, this message translates to:
+  /// **'Repertoire von {band}'**
+  String repertoireOf(String band);
+
+  /// No description provided for @repertoireLastYear.
+  ///
+  /// In de, this message translates to:
+  /// **'12 Monate'**
+  String get repertoireLastYear;
+
+  /// No description provided for @repertoireAllTime.
+  ///
+  /// In de, this message translates to:
+  /// **'Gesamt'**
+  String get repertoireAllTime;
+
+  /// No description provided for @repertoireMostPlayed.
+  ///
+  /// In de, this message translates to:
+  /// **'Meistgespielt'**
+  String get repertoireMostPlayed;
+
+  /// No description provided for @repertoireStale.
+  ///
+  /// In de, this message translates to:
+  /// **'Länger nicht gespielt'**
+  String get repertoireStale;
+
+  /// No description provided for @repertoireStaleHint.
+  ///
+  /// In de, this message translates to:
+  /// **'{months, plural, =1{Zuletzt vor mehr als einem Monat gespielt} other{Zuletzt vor mehr als {months} Monaten gespielt}}'**
+  String repertoireStaleHint(int months);
+
+  /// No description provided for @repertoireNeverPlayed.
+  ///
+  /// In de, this message translates to:
+  /// **'Nie gespielt'**
+  String get repertoireNeverPlayed;
+
+  /// No description provided for @repertoireNeverPlayedHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Songs der Bibliothek, die in keinem vergangenen Set der Band waren'**
+  String get repertoireNeverPlayedHint;
+
+  /// No description provided for @repertoireNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine'**
+  String get repertoireNone;
+
+  /// No description provided for @repertoireEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Band hat noch keine Songs in vergangenen Sets gespielt.'**
+  String get repertoireEmpty;
+
+  /// No description provided for @repertoirePlays.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1-mal} other{{count}-mal}}'**
+  String repertoirePlays(int count);
+
+  /// No description provided for @repertoireThreshold.
+  ///
+  /// In de, this message translates to:
+  /// **'Wann gilt ein Song als länger nicht gespielt?'**
+  String get repertoireThreshold;
+
+  /// No description provided for @repertoireMonths.
+  ///
+  /// In de, this message translates to:
+  /// **'{months, plural, =1{Nach 1 Monat} other{Nach {months} Monaten}}'**
+  String repertoireMonths(int months);
+
+  /// No description provided for @repertoireDefault.
+  ///
+  /// In de, this message translates to:
+  /// **'Standard: nach {months} Monaten'**
+  String repertoireDefault(int months);
+
+  /// No description provided for @sortByLastPlayed.
+  ///
+  /// In de, this message translates to:
+  /// **'Zuletzt gespielt'**
+  String get sortByLastPlayed;
 }
 
 class _AppLocalizationsDelegate

@@ -72,6 +72,10 @@ class Bands extends Table {
   /// The band is no longer available to this device (schema 4).
   BoolColumn get deleted => boolean().withDefault(const Constant(false))();
 
+  /// Months after which a song counts as not played for a while
+  /// (ADR-0046); 0 = the default (schema 25).
+  IntColumn get staleAfterMonths => integer().withDefault(const Constant(0))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -571,7 +575,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 24;
+  int get schemaVersion => 25;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -698,7 +702,10 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(songs, songs.createdBy);
           await m.addColumn(songs, songs.updatedBy);
         }
-        await m.alterTable(TableMigration(bands));
+        // The threshold of schema 25 is not in the old table yet.
+        await m.alterTable(
+          TableMigration(bands, newColumns: [bands.staleAfterMonths]),
+        );
       }
       if (from < 12) {
         // Band arrangements (ADR-0025).
@@ -792,6 +799,11 @@ class AppDatabase extends _$AppDatabase {
         // starts empty.
         await m.createTable(changeLog);
         await m.createIndex(changeLogScope);
+      }
+      if (from < 25 && from >= 11) {
+        // Band repertoire (ADR-0046); before schema 11 the rebuilt band
+        // table has the column already.
+        await m.addColumn(bands, bands.staleAfterMonths);
       }
     },
     beforeOpen: (details) async {

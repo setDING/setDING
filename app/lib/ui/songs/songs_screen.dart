@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database.dart';
+import '../../data/play_history.dart' show staleBefore;
 import '../../data/song_repository.dart';
 import '../../data/set_repository.dart';
 import '../../data/text.dart';
@@ -60,6 +61,10 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
 
   /// Selected tag filter, or null for all songs.
   String? _tag;
+
+  /// Only songs the band never played, or has not played for a while
+  /// (ADR-0046); null for all songs.
+  PlayedFilter? _played;
 
   /// Songs selected for copying, or null outside selection mode.
   Set<String>? _selected;
@@ -145,6 +150,51 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
               ))
                 s,
           ];
+    // The plays of the band that plays from this library (ADR-0046): the
+    // band of the arrangements, or the local library's own sets.
+    final current = ref.watch(currentBandProvider);
+    final historyBand =
+        band ??
+        (current.isLocal && current.libraryId == library.id ? current : null);
+    final lastPlayed = historyBand == null
+        ? null
+        : ref.watch(lastPlayedProvider(historyBand.id)).value ??
+              const <String, DateTime>{};
+    final byLastPlayed = sort == SongSort.lastPlayed && lastPlayed != null;
+    final played = lastPlayed == null ? null : _played;
+    List<SongListEntry> shownSongs(List<SongListEntry> songs) {
+      var list = visible(songs);
+      if (played != null) {
+        final before = staleBefore(
+          DateTime.now(),
+          historyBand!.staleAfterMonths,
+        );
+        list = [
+          for (final s in list)
+            if (switch (played) {
+              PlayedFilter.never => !lastPlayed!.containsKey(s.id),
+              PlayedFilter.stale =>
+                lastPlayed![s.id]?.isBefore(before) ?? false,
+            })
+              s,
+        ];
+      }
+      if (byLastPlayed) {
+        // Stable: songs played on the same day, and those never played,
+        // keep the order by title.
+        final order = {for (final (i, s) in list.indexed) s.id: i};
+        list = [...list]
+          ..sort((a, b) {
+            final x = lastPlayed[a.id], y = lastPlayed[b.id];
+            final c = x == null
+                ? (y == null ? 0 : 1)
+                : (y == null ? -1 : y.compareTo(x));
+            return c != 0 ? c : order[a.id]!.compareTo(order[b.id]!);
+          });
+      }
+      return list;
+    }
+
     final gigs = ref.watch(upcomingGigsProvider(library.id)).value ?? const {};
     final selected = _selected;
     // Leave selection mode when switching libraries.
@@ -196,7 +246,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                   icon: const Icon(Icons.select_all),
                   onPressed: () => setState(
                     () => _selected = {
-                      for (final s in visible(
+                      for (final s in shownSongs(
                         _shown?.songs ?? const <SongListEntry>[],
                       ))
                         s.id,
@@ -289,25 +339,34 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
             tag: _tag,
             onTag: (tag) => setState(() => _tag = tag),
             attention: attention,
+            showPlayed: lastPlayed != null,
+            played: played,
+            onPlayed: (filter) => setState(() => _played = filter),
           ),
           Expanded(
             child: AsyncBody(
               value: results,
               data: (results) {
                 final (songs: all, :hits, :sort) = results;
-                final list = visible(all);
+                final list = shownSongs(all);
                 if (list.isEmpty) {
                   return SyncRefresh(
                     scrollable: false,
                     child: EmptyState(
                       icon: Icons.library_music_outlined,
-                      message: attention == null || all.isEmpty
+                      message:
+                          (attention == null && played == null) || all.isEmpty
                           ? l10n.songsEmpty
                           : l10n.songsFilterEmpty,
                     ),
                   );
                 }
-                final sections = _sectionsOf(list, sort, notation, l10n);
+                final sections = _sectionsOf(
+                  list,
+                  byLastPlayed ? SongSort.lastPlayed : sort,
+                  notation,
+                  l10n,
+                );
                 Widget tile(int i) => SongTile(
                   song: list[i],
                   hasAttachments: (counts[list[i].id] ?? 0) > 0,
@@ -320,6 +379,14 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                   nextGig: gigs[list[i].id],
                   hit: hits[list[i].id],
                   bandName: band?.name ?? '',
+                  playedNote: !byLastPlayed
+                      ? null
+                      : switch (lastPlayed[list[i].id]) {
+                          final date? => l10n.songLastPlayed(
+                            formatGigDate(context, date),
+                          ),
+                          null => l10n.songNeverPlayed,
+                        },
                   leading: selected == null
                       ? null
                       : Checkbox(
@@ -420,6 +487,9 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
   );
 }
 
+/// Songs the band never played, or has not played for a while (ADR-0046).
+enum PlayedFilter { never, stale }
+
 /// Chips above the list: the order (a menu, see [SongSort]) and the tags
 /// used in the library (`{tag}`).
 class _Filters extends ConsumerWidget {
@@ -427,10 +497,18 @@ class _Filters extends ConsumerWidget {
     required this.tag,
     required this.onTag,
     required this.attention,
+    required this.showPlayed,
+    required this.played,
+    required this.onPlayed,
   });
 
   final String? tag;
   final ValueChanged<String?> onTag;
+
+  /// Offer the order and filters by the band's plays (ADR-0046).
+  final bool showPlayed;
+  final PlayedFilter? played;
+  final ValueChanged<PlayedFilter?> onPlayed;
 
   /// The filter chosen on the overview (ADR-0045), shown first and
   /// removable.
@@ -449,8 +527,11 @@ class _Filters extends ConsumerWidget {
       (SongSort.artist, l10n.sortByArtist),
       (SongSort.key, l10n.sortByKey),
       (SongSort.recent, l10n.sortByRecent),
+      if (showPlayed) (SongSort.lastPlayed, l10n.sortByLastPlayed),
     ];
-    final current = orders.firstWhere((o) => o.$1 == sort).$2;
+    // By title while no band's plays are at hand.
+    final current =
+        (orders.where((o) => o.$1 == sort).firstOrNull ?? orders.first).$2;
     return SizedBox(
       height: 48,
       child: ListView(
@@ -502,6 +583,23 @@ class _Filters extends ConsumerWidget {
               ),
             ),
           ),
+          if (showPlayed)
+            for (final (filter, label) in [
+              (PlayedFilter.never, l10n.repertoireNeverPlayed),
+              (PlayedFilter.stale, l10n.repertoireStale),
+            ])
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  key: ValueKey('songs-played-${filter.name}'),
+                  avatar: played == filter
+                      ? null
+                      : const Icon(Icons.history, size: 16),
+                  label: Text(label),
+                  selected: played == filter,
+                  onSelected: (on) => onPlayed(on ? filter : null),
+                ),
+              ),
           if (tags.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(right: 8),
@@ -593,7 +691,7 @@ String? songSection(
     song.songKey == null
         ? l10n.noKey
         : cp.Key.tryParse(song.songKey!)?.format(notation) ?? l10n.noKey,
-  SongSort.recent => null,
+  SongSort.recent || SongSort.lastPlayed => null,
 };
 
 String _initial(String title) {

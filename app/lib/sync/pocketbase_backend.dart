@@ -250,6 +250,7 @@ class PocketBaseBackend implements SyncBackend {
                       organizationId: o.id,
                       name: b.getStringValue('name'),
                       revision: b.getIntValue('revision'),
+                      staleAfterMonths: b.getIntValue('stale_after_months'),
                       members: [
                         for (final m in bandMembers)
                           if (m.getStringValue('band') == b.id)
@@ -326,8 +327,20 @@ class PocketBaseBackend implements SyncBackend {
   );
 
   @override
-  Future<void> updateBand(String bandId, {String? name}) => _call(
-    () => _pb.collection('bands').update(bandId, body: {'name': ?name?.trim()}),
+  Future<void> updateBand(
+    String bandId, {
+    String? name,
+    int? staleAfterMonths,
+  }) => _call(
+    () => _pb
+        .collection('bands')
+        .update(
+          bandId,
+          body: {
+            'name': ?name?.trim(),
+            'stale_after_months': ?staleAfterMonths,
+          },
+        ),
   );
 
   @override

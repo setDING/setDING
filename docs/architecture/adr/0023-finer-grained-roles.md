@@ -108,6 +108,7 @@ for creating an account, like every invitation.
 | Edit existing songs and attachments | ✓ | ✓ | own songs² | – | – |
 | Delete songs and attachments | ✓ | ✓ | – | – | – |
 | Band settings, band members, band roles | ✓ all bands | – | ✓ | – | – |
+| When songs count as not played for a while (ADR-0046) | ✓ all bands | – | ✓ | ✓ | – |
 | Invite into the organization | ✓ | – | ✓ (into own band) | – | – |
 | Create bands, organization roles | ✓ | – | – | – | – |
 | Delete a band, restore it from the trash (ADR-0044) | ✓ | – | – | – | – |
@@ -201,6 +202,9 @@ sets of that band like any member; librarian rights concern the library only.
   The band arrangement follows with its own ADR (#216).
 - 2026-11-20: **ADR-0043** (accepted, #622): exporting an organization's backup archive: organization admins and librarians; restoring from the trash: whoever may delete the record (songs and attachments: organization admins and librarians; sets: band leaders and set planners, organization admins in all bands).
 - 2026-11-20: **ADR-0044** (accepted): organization admins delete bands and close the organization (two new rows in the permission matrix); nobody else may, also not through the API (#627, #632).
+- 2026-11-20: Matrix row for the band's threshold for songs not played for a
+  while (ADR-0046, #661): set planners may change this field of the band and
+  nothing else (update rule plus a hook on the request body).
 
 ## Open points
 

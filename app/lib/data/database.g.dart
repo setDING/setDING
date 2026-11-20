@@ -2250,6 +2250,18 @@ class $BandsTable extends Bands with TableInfo<$BandsTable, BandEntry> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _staleAfterMonthsMeta = const VerificationMeta(
+    'staleAfterMonths',
+  );
+  @override
+  late final GeneratedColumn<int> staleAfterMonths = GeneratedColumn<int>(
+    'stale_after_months',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2257,6 +2269,7 @@ class $BandsTable extends Bands with TableInfo<$BandsTable, BandEntry> {
     organizationId,
     revision,
     deleted,
+    staleAfterMonths,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2304,6 +2317,15 @@ class $BandsTable extends Bands with TableInfo<$BandsTable, BandEntry> {
         deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
       );
     }
+    if (data.containsKey('stale_after_months')) {
+      context.handle(
+        _staleAfterMonthsMeta,
+        staleAfterMonths.isAcceptableOrUnknown(
+          data['stale_after_months']!,
+          _staleAfterMonthsMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -2333,6 +2355,10 @@ class $BandsTable extends Bands with TableInfo<$BandsTable, BandEntry> {
         DriftSqlType.bool,
         data['${effectivePrefix}deleted'],
       )!,
+      staleAfterMonths: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}stale_after_months'],
+      )!,
     );
   }
 
@@ -2354,12 +2380,17 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
 
   /// The band is no longer available to this device (schema 4).
   final bool deleted;
+
+  /// Months after which a song counts as not played for a while
+  /// (ADR-0046); 0 = the default (schema 25).
+  final int staleAfterMonths;
   const BandEntry({
     required this.id,
     required this.name,
     this.organizationId,
     required this.revision,
     required this.deleted,
+    required this.staleAfterMonths,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2371,6 +2402,7 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
     }
     map['revision'] = Variable<int>(revision);
     map['deleted'] = Variable<bool>(deleted);
+    map['stale_after_months'] = Variable<int>(staleAfterMonths);
     return map;
   }
 
@@ -2383,6 +2415,7 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
           : Value(organizationId),
       revision: Value(revision),
       deleted: Value(deleted),
+      staleAfterMonths: Value(staleAfterMonths),
     );
   }
 
@@ -2397,6 +2430,7 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
       organizationId: serializer.fromJson<String?>(json['organizationId']),
       revision: serializer.fromJson<int>(json['revision']),
       deleted: serializer.fromJson<bool>(json['deleted']),
+      staleAfterMonths: serializer.fromJson<int>(json['staleAfterMonths']),
     );
   }
   @override
@@ -2408,6 +2442,7 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
       'organizationId': serializer.toJson<String?>(organizationId),
       'revision': serializer.toJson<int>(revision),
       'deleted': serializer.toJson<bool>(deleted),
+      'staleAfterMonths': serializer.toJson<int>(staleAfterMonths),
     };
   }
 
@@ -2417,6 +2452,7 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
     Value<String?> organizationId = const Value.absent(),
     int? revision,
     bool? deleted,
+    int? staleAfterMonths,
   }) => BandEntry(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -2425,6 +2461,7 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
         : this.organizationId,
     revision: revision ?? this.revision,
     deleted: deleted ?? this.deleted,
+    staleAfterMonths: staleAfterMonths ?? this.staleAfterMonths,
   );
   BandEntry copyWithCompanion(BandsCompanion data) {
     return BandEntry(
@@ -2435,6 +2472,9 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
           : this.organizationId,
       revision: data.revision.present ? data.revision.value : this.revision,
       deleted: data.deleted.present ? data.deleted.value : this.deleted,
+      staleAfterMonths: data.staleAfterMonths.present
+          ? data.staleAfterMonths.value
+          : this.staleAfterMonths,
     );
   }
 
@@ -2445,13 +2485,21 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
           ..write('name: $name, ')
           ..write('organizationId: $organizationId, ')
           ..write('revision: $revision, ')
-          ..write('deleted: $deleted')
+          ..write('deleted: $deleted, ')
+          ..write('staleAfterMonths: $staleAfterMonths')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, organizationId, revision, deleted);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    organizationId,
+    revision,
+    deleted,
+    staleAfterMonths,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2460,7 +2508,8 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
           other.name == this.name &&
           other.organizationId == this.organizationId &&
           other.revision == this.revision &&
-          other.deleted == this.deleted);
+          other.deleted == this.deleted &&
+          other.staleAfterMonths == this.staleAfterMonths);
 }
 
 class BandsCompanion extends UpdateCompanion<BandEntry> {
@@ -2469,6 +2518,7 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
   final Value<String?> organizationId;
   final Value<int> revision;
   final Value<bool> deleted;
+  final Value<int> staleAfterMonths;
   final Value<int> rowid;
   const BandsCompanion({
     this.id = const Value.absent(),
@@ -2476,6 +2526,7 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
     this.organizationId = const Value.absent(),
     this.revision = const Value.absent(),
     this.deleted = const Value.absent(),
+    this.staleAfterMonths = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   BandsCompanion.insert({
@@ -2484,6 +2535,7 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
     this.organizationId = const Value.absent(),
     this.revision = const Value.absent(),
     this.deleted = const Value.absent(),
+    this.staleAfterMonths = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name);
@@ -2493,6 +2545,7 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
     Expression<String>? organizationId,
     Expression<int>? revision,
     Expression<bool>? deleted,
+    Expression<int>? staleAfterMonths,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2501,6 +2554,7 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
       if (organizationId != null) 'organization_id': organizationId,
       if (revision != null) 'revision': revision,
       if (deleted != null) 'deleted': deleted,
+      if (staleAfterMonths != null) 'stale_after_months': staleAfterMonths,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2511,6 +2565,7 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
     Value<String?>? organizationId,
     Value<int>? revision,
     Value<bool>? deleted,
+    Value<int>? staleAfterMonths,
     Value<int>? rowid,
   }) {
     return BandsCompanion(
@@ -2519,6 +2574,7 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
       organizationId: organizationId ?? this.organizationId,
       revision: revision ?? this.revision,
       deleted: deleted ?? this.deleted,
+      staleAfterMonths: staleAfterMonths ?? this.staleAfterMonths,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2541,6 +2597,9 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
     if (deleted.present) {
       map['deleted'] = Variable<bool>(deleted.value);
     }
+    if (staleAfterMonths.present) {
+      map['stale_after_months'] = Variable<int>(staleAfterMonths.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2555,6 +2614,7 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
           ..write('organizationId: $organizationId, ')
           ..write('revision: $revision, ')
           ..write('deleted: $deleted, ')
+          ..write('staleAfterMonths: $staleAfterMonths, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -10707,6 +10767,7 @@ typedef $$BandsTableCreateCompanionBuilder = BandsCompanion Function({
   Value<String?> organizationId,
   Value<int> revision,
   Value<bool> deleted,
+  Value<int> staleAfterMonths,
   Value<int> rowid,
 });
 typedef $$BandsTableUpdateCompanionBuilder = BandsCompanion Function({
@@ -10715,6 +10776,7 @@ typedef $$BandsTableUpdateCompanionBuilder = BandsCompanion Function({
   Value<String?> organizationId,
   Value<int> revision,
   Value<bool> deleted,
+  Value<int> staleAfterMonths,
   Value<int> rowid,
 });
 
@@ -10801,6 +10863,11 @@ class $$BandsTableFilterComposer extends Composer<_$AppDatabase, $BandsTable> {
 
   ColumnFilters<bool> get deleted => $composableBuilder(
     column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get staleAfterMonths => $composableBuilder(
+    column: $table.staleAfterMonths,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -10907,6 +10974,11 @@ class $$BandsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get staleAfterMonths => $composableBuilder(
+    column: $table.staleAfterMonths,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$OrganizationsTableOrderingComposer get organizationId {
     final $$OrganizationsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -10951,6 +11023,11 @@ class $$BandsTableAnnotationComposer
 
   GeneratedColumn<bool> get deleted =>
       $composableBuilder(column: $table.deleted, builder: (column) => column);
+
+  GeneratedColumn<int> get staleAfterMonths => $composableBuilder(
+    column: $table.staleAfterMonths,
+    builder: (column) => column,
+  );
 
   $$OrganizationsTableAnnotationComposer get organizationId {
     final $$OrganizationsTableAnnotationComposer composer = $composerBuilder(
@@ -11063,6 +11140,7 @@ class $$BandsTableTableManager
                 Value<String?> organizationId = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
+                Value<int> staleAfterMonths = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => BandsCompanion(
                 id: id,
@@ -11070,6 +11148,7 @@ class $$BandsTableTableManager
                 organizationId: organizationId,
                 revision: revision,
                 deleted: deleted,
+                staleAfterMonths: staleAfterMonths,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -11079,6 +11158,7 @@ class $$BandsTableTableManager
                 Value<String?> organizationId = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
+                Value<int> staleAfterMonths = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => BandsCompanion.insert(
                 id: id,
@@ -11086,6 +11166,7 @@ class $$BandsTableTableManager
                 organizationId: organizationId,
                 revision: revision,
                 deleted: deleted,
+                staleAfterMonths: staleAfterMonths,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

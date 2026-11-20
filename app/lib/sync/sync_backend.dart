@@ -147,6 +147,7 @@ class RemoteBand {
     required this.name,
     required this.revision,
     required this.members,
+    this.staleAfterMonths = 0,
   });
 
   final String id;
@@ -154,6 +155,10 @@ class RemoteBand {
   final String name;
   final int revision;
   final List<RemoteMember<BandRole>> members;
+
+  /// Months after which a song counts as not played for a while; 0 = the
+  /// default (ADR-0046).
+  final int staleAfterMonths;
 }
 
 /// A closed organization of the signed-in user in the trash (ADR-0044).
@@ -751,7 +756,7 @@ abstract class SyncBackend {
   });
 
   /// Changes band settings (band and organization admins).
-  Future<void> updateBand(String bandId, {String? name});
+  Future<void> updateBand(String bandId, {String? name, int? staleAfterMonths});
 
   /// Deletes a band with its sets, arrangements and memberships
   /// (organization admins, ADR-0044); it stays 30 days in the trash.
