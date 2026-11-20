@@ -29,6 +29,13 @@ parallel="${CHECK_PARALLEL:-1}"
 # Each job runs in its own subshell with `set -e`; the first failing command
 # fails the job.
 
+# Python tools: the coverage summary of make coverage (it does not run here:
+# measuring coverage slows the tests down).
+job_tools() {
+  cd "$ROOT/tool/coverage"
+  python3 -m unittest -q test_summary
+}
+
 # A pure Dart package: format, analysis, tests.
 dart_package() {
   cd "$ROOT/$1"
@@ -130,7 +137,7 @@ export POCKETBASE_BIN
 # the same time.
 (cd "$ROOT/app" && flutter pub get >/dev/null)
 
-jobs=(chordpro server sbom changelog website app-static app-tests app-web)
+jobs=(chordpro server sbom changelog tools website app-static app-tests app-web)
 
 [ "$parallel" = 0 ] || step "running in parallel: ${jobs[*]}"
 start=$SECONDS
