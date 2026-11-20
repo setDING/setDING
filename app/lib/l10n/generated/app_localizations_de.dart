@@ -1169,6 +1169,43 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String legacyLabelsHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Abschnitts-Beschriftungen stehen',
+      one: 'Eine Abschnitts-Beschriftung steht',
+    );
+    return '$_temp0 in der Kurzform. Die ChordPro-Spezifikation empfiehlt label=\"…\".';
+  }
+
+  @override
+  String importLegacyLabelsMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count importierte Songs schreiben',
+      one: '1 importierter Song schreibt',
+    );
+    return '$_temp0 Abschnitts-Beschriftungen in der Kurzform. Umwandeln schreibt sie als label=\"…\", wie es die ChordPro-Spezifikation empfiehlt; die Songs sehen gleich aus.';
+  }
+
+  @override
+  String get convertLabels => 'Beschriftungen umwandeln';
+
+  @override
+  String songsLabelsConverted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Beschriftungen in $count Songs umgewandelt',
+      one: 'Beschriftungen in 1 Song umgewandelt',
+      zero: 'Keine Beschriftungen umgewandelt',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get hideHint => 'Hinweis ausblenden';
 
   @override

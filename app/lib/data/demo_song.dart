@@ -5,7 +5,7 @@ const demoSongSource = '''{title: Late Train Home}
 {tempo: 92}
 {time: 4/4}
 
-{start_of_verse: Verse 1}
+{start_of_verse: label="Verse 1"}
 [G]Streetlights fading [D/F#]one by one,
 [Em]the station clock says [C]we are done.
 [G]Pack the cables, [D]close the case,
@@ -19,7 +19,7 @@ const demoSongSource = '''{title: Late Train Home}
 [C]brings us [D]back where we be[G]long.
 {end_of_chorus}
 
-{start_of_verse: Verse 2}
+{start_of_verse: label="Verse 2"}
 [G]Coffee cups and [D/F#]setlists torn,
 [Em]humming tunes till [C]it gets warm.
 [G]Ears still ringing, [D]hearts still loud,

@@ -69,7 +69,7 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
         if (result.skipped.isNotEmpty)
           l10n.importSkipped(result.skipped.join(', ')),
       ].join('\n');
-      if (result.problems.isNotEmpty) {
+      if (result.needsReview) {
         if (mounted) {
           setState(() {
             _busy = false;
@@ -87,18 +87,47 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
     }
   }
 
-  /// Fixes what can be fixed automatically and closes the dialog.
-  Future<void> _fix(ImportResult result) async {
+  /// Fixes what can be fixed automatically; closes the dialog unless
+  /// short-form labels are still to be converted.
+  Future<void> _fix(ImportResult result) => _apply(
+    (service) => service.fixProblems([
+      for (final p in result.problems)
+        if (p.fixable) p.songId,
+    ]),
+    AppLocalizations.of(context).songsFixed,
+    result.copyWith(problems: const []),
+  );
+
+  /// Converts short-form section labels (#672); closes the dialog unless
+  /// problems are still to be fixed.
+  Future<void> _convertLabels(ImportResult result) => _apply(
+    (service) => service.convertLegacyLabels(result.legacyLabels),
+    AppLocalizations.of(context).songsLabelsConverted,
+    result.copyWith(legacyLabels: const []),
+  );
+
+  Future<void> _apply(
+    Future<int> Function(ImportExportService service) action,
+    String Function(int count) done,
+    ImportResult rest,
+  ) async {
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
     setState(() => _busy = true);
     try {
-      final fixed = await ref.read(importExportProvider).fixProblems([
-        for (final p in result.problems)
-          if (p.fixable) p.songId,
-      ]);
-      if (mounted) Navigator.pop(context);
-      messenger.showSnackBar(SnackBar(content: Text(l10n.songsFixed(fixed))));
+      final count = await action(ref.read(importExportProvider));
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(done(count))));
+      if (!mounted) return;
+      if (rest.problems.any((p) => p.fixable) || rest.legacyLabels.isNotEmpty) {
+        setState(() {
+          _busy = false;
+          _result = rest;
+        });
+      } else {
+        Navigator.pop(context);
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() => _busy = false);
@@ -106,14 +135,19 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
     }
   }
 
-  /// The import result with the songs whose ChordPro has problems.
+  /// The import result with the songs whose ChordPro has problems or
+  /// short-form section labels.
   Widget _problemsReport(BuildContext context, ImportResult result) {
     final l10n = AppLocalizations.of(context);
     const shown = 8;
     final problems = result.problems;
+    final labels = result.legacyLabels;
+    final fixable = problems.any((p) => p.fixable);
     return AlertDialog(
       key: const Key('import-problems'),
-      icon: const Icon(Icons.warning_amber_rounded),
+      icon: Icon(
+        problems.isEmpty ? Icons.label_outline : Icons.warning_amber_rounded,
+      ),
       title: Text(l10n.importProblemsTitle),
       content: SizedBox(
         width: 440,
@@ -128,18 +162,27 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
                   l10n.importSkipped(result.skipped.join(', ')),
               ].join('\n'),
             ),
-            const SizedBox(height: 12),
-            Text(l10n.importProblemsMessage(problems.length)),
-            const SizedBox(height: 8),
-            for (final p in problems.take(shown))
-              Text('• ${l10n.importProblemItem(p.title, p.count)}'),
-            if (problems.length > shown)
-              Text(l10n.moreProblems(problems.length - shown)),
-            const SizedBox(height: 12),
-            Text(
-              l10n.importProblemsHint,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
+            if (problems.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(l10n.importProblemsMessage(problems.length)),
+              const SizedBox(height: 8),
+              for (final p in problems.take(shown))
+                Text('• ${l10n.importProblemItem(p.title, p.count)}'),
+              if (problems.length > shown)
+                Text(l10n.moreProblems(problems.length - shown)),
+              const SizedBox(height: 12),
+              Text(
+                l10n.importProblemsHint,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+            if (labels.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                l10n.importLegacyLabelsMessage(labels.length),
+                key: const Key('import-legacy-labels'),
+              ),
+            ],
           ],
         ),
       ),
@@ -148,7 +191,17 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
           onPressed: _busy ? null : () => Navigator.pop(context),
           child: Text(l10n.close),
         ),
-        if (problems.any((p) => p.fixable))
+        if (labels.isNotEmpty)
+          fixable
+              ? TextButton(
+                  onPressed: _busy ? null : () => _convertLabels(result),
+                  child: Text(l10n.convertLabels),
+                )
+              : FilledButton(
+                  onPressed: _busy ? null : () => _convertLabels(result),
+                  child: Text(l10n.convertLabels),
+                ),
+        if (fixable)
           FilledButton(
             onPressed: _busy ? null : () => _fix(result),
             child: Text(l10n.fixProblems),

@@ -481,6 +481,27 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
     _focus.requestFocus();
   }
 
+  /// Hint on short-form section labels hidden by the author (#672).
+  bool _labelHintHidden = false;
+
+  /// Converts all section labels to the attribute form (#672); the cursor
+  /// stays on its line.
+  void _convertLegacyLabels() {
+    final text = _controller.text;
+    final converted = convertLegacySectionLabels(text);
+    if (converted == text) return;
+    final sel = _controller.selection;
+    final offset = sel.isValid ? sel.baseOffset : 0;
+    final lineStart = offset <= 0 ? 0 : text.lastIndexOf('\n', offset - 1) + 1;
+    _controller.value = TextEditingValue(
+      text: converted,
+      selection: TextSelection.collapsed(
+        offset: lineStart.clamp(0, converted.length),
+      ),
+    );
+    _focus.requestFocus();
+  }
+
   /// Edits title, key, tempo and more in a form instead of the text (#189).
   Future<void> _editDetails() async {
     final before = _controller.text;
@@ -588,6 +609,19 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
                 count: count,
                 onConvert: () => _convertCcliGrids(),
                 onHide: () => setState(() => _ccliHintHidden = true),
+              );
+            },
+          ),
+        if (!_labelHintHidden)
+          ListenableBuilder(
+            listenable: _controller,
+            builder: (context, _) {
+              final count = _controller.legacyLabels.length;
+              if (count == 0) return const SizedBox.shrink();
+              return LegacyLabelHint(
+                count: count,
+                onConvert: _convertLegacyLabels,
+                onHide: () => setState(() => _labelHintHidden = true),
               );
             },
           ),
@@ -770,6 +804,53 @@ class CcliGridHint extends StatelessWidget {
   final VoidCallback onHide;
 
   @override
+  Widget build(BuildContext context) => _ConvertHint(
+    icon: Icons.grid_on,
+    message: AppLocalizations.of(context).ccliGridsHint(count),
+    onConvert: onConvert,
+    onHide: onHide,
+  );
+}
+
+/// Hint above the editor that section labels are in the short form
+/// `{start_of_verse: Verse 1}` and can be converted to the attribute form
+/// the ChordPro specification recommends (#672).
+class LegacyLabelHint extends StatelessWidget {
+  const LegacyLabelHint({
+    super.key,
+    required this.count,
+    required this.onConvert,
+    required this.onHide,
+  });
+
+  final int count;
+  final VoidCallback onConvert;
+  final VoidCallback onHide;
+
+  @override
+  Widget build(BuildContext context) => _ConvertHint(
+    icon: Icons.label_outline,
+    message: AppLocalizations.of(context).legacyLabelsHint(count),
+    onConvert: onConvert,
+    onHide: onHide,
+  );
+}
+
+/// A hint above the editor with a conversion and a button to hide it.
+class _ConvertHint extends StatelessWidget {
+  const _ConvertHint({
+    required this.icon,
+    required this.message,
+    required this.onConvert,
+    required this.onHide,
+  });
+
+  final IconData icon;
+  final String message;
+  final VoidCallback onConvert;
+  final VoidCallback onHide;
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
@@ -779,11 +860,11 @@ class CcliGridHint extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 4, 4, 4),
         child: Row(
           children: [
-            Icon(Icons.grid_on, size: 20, color: scheme.onTertiaryContainer),
+            Icon(icon, size: 20, color: scheme.onTertiaryContainer),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                l10n.ccliGridsHint(count),
+                message,
                 style: TextStyle(color: scheme.onTertiaryContainer),
               ),
             ),

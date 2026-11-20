@@ -30,7 +30,7 @@ Wichtigste; setDING unterstützt die ganze Spezifikation.
 {tempo: 72}
 {time: 3/4}
 
-{start_of_verse: Strophe 1}
+{start_of_verse: label="Strophe 1"}
 A[G]mazing [G7]grace, how [C]sweet the [G]sound
 That [G]saved a wretch like [D]me
 {end_of_verse}
@@ -58,12 +58,14 @@ That [G]saved a wretch like [D]me
 
 ## Abschnitte
 
-Ein Abschnitt beginnt mit `{start_of_…}` und endet mit `{end_of_…}`. Der Text nach
-dem Doppelpunkt ist die Beschriftung.
+Ein Abschnitt beginnt mit `{start_of_…}` und endet mit `{end_of_…}`. Die Beschriftung
+steht im Attribut `label`, z. B. `{start_of_verse: label="Strophe 1"}`. Die Kurzform
+`{start_of_verse: label="Strophe 1"}` liest setDING auch; der Editor bietet an, sie in die
+Form mit `label` umzuwandeln, die die ChordPro-Spezifikation empfiehlt.
 
 | Abschnitt | Direktiven |
 |---|---|
-| Verse | `{start_of_verse: Verse 1}` … `{end_of_verse}` (kurz `sov` / `eov`) |
+| Verse | `{start_of_verse: label="Verse 1"}` … `{end_of_verse}` (kurz `sov` / `eov`) |
 | Chorus | `{start_of_chorus}` … `{end_of_chorus}` (kurz `soc` / `eoc`) |
 | Bridge | `{start_of_bridge}` … `{end_of_bridge}` |
 | Eigene Teile | z. B. `{start_of_intro}` … `{end_of_intro}`, ebenso `outro`, `solo` |
@@ -90,7 +92,7 @@ diesen Namen (**Mein Name oder meine Stimme**) eingetragen hat:
 {comment-drums: Hi-Hat halb offen}
 {comment-guitar!: für alle ausser Gitarre}
 
-{start_of_verse-alto: Alt}
+{start_of_verse-alto: label="Alt"}
 Nur die Altstimme sieht diese Strophe.
 {end_of_verse}
 ```
@@ -196,7 +198,7 @@ Ablauf. Daraus macht setDING im Live-Modus Taktanzeige, Einzählen, Klick und di
 [E] [A] [E] [B]
 {end_of_intro}
 
-{start_of_verse: Strophe 1}
+{start_of_verse: label="Strophe 1"}
 {comment-drums: Hi-Hat geschlossen, Snare auf 2 und 4}
 [E]Erste Zeile der [A]Strophe
 {end_of_verse}

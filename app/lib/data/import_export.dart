@@ -36,13 +36,35 @@ typedef ImportProblem = ({
 
 /// Result of an import.
 class ImportResult {
-  const ImportResult(this.imported, this.skipped, [this.problems = const []]);
+  const ImportResult(
+    this.imported,
+    this.skipped, [
+    this.problems = const [],
+    this.legacyLabels = const [],
+  ]);
 
   final int imported;
   final List<String> skipped;
 
   /// Imported songs with ChordPro problems, in import order.
   final List<ImportProblem> problems;
+
+  /// Ids of imported songs with section labels in the short form
+  /// `{start_of_verse: Verse 1}` (#672), in import order.
+  final List<String> legacyLabels;
+
+  /// Whether the import has something to report beyond the counts.
+  bool get needsReview => problems.isNotEmpty || legacyLabels.isNotEmpty;
+
+  ImportResult copyWith({
+    List<ImportProblem>? problems,
+    List<String>? legacyLabels,
+  }) => ImportResult(
+    imported,
+    skipped,
+    problems ?? this.problems,
+    legacyLabels ?? this.legacyLabels,
+  );
 }
 
 /// Decodes text files leniently (UTF-8 with BOM, fallback Latin-1).
@@ -83,6 +105,7 @@ class ImportExportService {
     var imported = 0;
     final skipped = <String>[];
     final problems = <ImportProblem>[];
+    final legacyLabels = <String>[];
 
     Future<void> importOne(
       String name,
@@ -111,6 +134,9 @@ class ImportExportService {
             fixable: found.any(cp.canFixChordProProblem),
           ));
         }
+        if (cp.findLegacySectionLabels(parts[i]).isNotEmpty) {
+          legacyLabels.add(id);
+        }
         // Attach images from the same archive that {image} refers to.
         if (images.isNotEmpty) await _attachImages(id, parts[i], images);
       }
@@ -132,7 +158,7 @@ class ImportExportService {
         await importOne(file.name, file.bytes);
       }
     }
-    return ImportResult(imported, skipped, problems);
+    return ImportResult(imported, skipped, problems, legacyLabels);
   }
 
   /// Fixes the ChordPro problems of [songIds] that can be fixed
@@ -149,6 +175,22 @@ class ImportExportService {
       fixed++;
     }
     return fixed;
+  }
+
+  /// Converts the section labels of [songIds] to the attribute form
+  /// `{start_of_verse: label="Verse 1"}` (#672); returns how many songs
+  /// changed.
+  Future<int> convertLegacyLabels(Iterable<String> songIds) async {
+    var converted = 0;
+    for (final id in songIds) {
+      final song = await songs.getSong(id);
+      if (song == null) continue;
+      final source = cp.convertLegacySectionLabels(song.chordproSource);
+      if (source == song.chordproSource) continue;
+      await songs.updateSource(id, source);
+      converted++;
+    }
+    return converted;
   }
 
   Future<void> _attachImages(

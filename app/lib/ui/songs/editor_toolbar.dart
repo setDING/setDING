@@ -190,7 +190,7 @@ class EditorSnippets {
       SingleActivator? shortcut,
     }) => EditorSnippet(
       label: label,
-      before: '{start_of_$type${title == null ? '' : ': $title'}}\n',
+      before: '{start_of_$type${title == null ? '' : ': label="$title"'}}\n',
       after: '\n{end_of_$type}\n',
       block: true,
       shortcut: shortcut,

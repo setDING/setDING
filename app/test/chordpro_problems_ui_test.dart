@@ -148,6 +148,7 @@ void main() {
       file('washed.cho', broken),
       file('fine.cho', '{title: Fine}\n[C]x'),
       file('open.cho', '{title: Open}\n[C x'),
+      file('short.cho', '{title: Short}\n{sov: Verse 1}\n[C]a\n{eov}'),
     ];
     await tester.pumpWidget(
       app.build(
@@ -184,22 +185,84 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(report, findsOneWidget);
-    expect(find.text('3 songs imported'), findsOneWidget);
+    expect(find.text('4 songs imported'), findsOneWidget);
     expect(find.textContaining('2 imported songs contain'), findsOneWidget);
     expect(find.text('• Washed (1 place)'), findsOneWidget);
     expect(find.text('• Open (1 place)'), findsOneWidget);
 
+    expect(
+      find.textContaining('1 imported song writes section labels'),
+      findsOneWidget,
+    );
+
+    // Fixing keeps the report open for the labels.
     await tester.tap(find.text('Fix automatically'));
-    await waitFor(() => report.evaluate().isEmpty);
+    final labels = find.byKey(const Key('import-legacy-labels'));
+    await waitFor(() => find.text('Fix automatically').evaluate().isEmpty);
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('1 song fixed'), findsOneWidget);
+    expect(labels, findsOneWidget);
+    expect(find.text('• Washed (1 place)'), findsNothing);
+
+    await tester.tap(find.text('Convert labels'));
+    await waitFor(() => report.evaluate().isEmpty);
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('Labels converted in 1 song'), findsOneWidget);
     final songs = (await tester.runAsync(
       () => app.db.select(app.db.songs).get(),
     ))!;
     expect(
       {for (final s in songs) s.title: s.chordproProblems},
-      {'Fine': 0, 'Open': 1, 'Washed': 0},
+      {'Fine': 0, 'Open': 1, 'Short': 0, 'Washed': 0},
     );
+    expect(
+      songs.firstWhere((s) => s.title == 'Short').chordproSource,
+      startsWith('{title: Short}\n{sov: label="Verse 1"}\n[C]a\n{eov}'),
+    );
+    await app.dispose(tester);
+  });
+
+  testWidgets('the editor offers to convert short-form labels (#672)', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    const source =
+        '{title: T}\n{start_of_verse: Verse 1}\n[C]a\n{end_of_verse}\n'
+        '{soc: Chorus}\n[G]b\n{eoc}';
+    await tester.pumpWidget(
+      app.build(home: const SongEditorScreen(initialSource: source)),
+    );
+    await tester.pumpAndSettle();
+    final controller = tester
+        .widget<TextField>(find.byType(TextField))
+        .controller!;
+    expect(find.byType(LegacyLabelHint), findsOneWidget);
+    expect(
+      find.textContaining('2 section labels are in the short form'),
+      findsOneWidget,
+    );
+    await tester.tap(
+      find.descendant(
+        of: find.byType(LegacyLabelHint),
+        matching: find.widgetWithText(TextButton, 'Convert'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      controller.text,
+      '{title: T}\n{start_of_verse: label="Verse 1"}\n[C]a\n{end_of_verse}\n'
+      '{soc: label="Chorus"}\n[G]b\n{eoc}',
+    );
+    expect(find.byType(LegacyLabelHint), findsNothing);
+    // Saving shows no problem dialog for the short form.
+    controller.text = source;
+    await tester.pumpAndSettle();
+    expect(find.byType(LegacyLabelHint), findsOneWidget);
+    await tester.tap(find.byTooltip('Hide hint'));
+    await tester.pumpAndSettle();
+    expect(find.byType(LegacyLabelHint), findsNothing);
+    expect(controller.text, source);
     await app.dispose(tester);
   });
 }

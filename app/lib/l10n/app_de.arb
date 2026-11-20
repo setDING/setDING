@@ -555,6 +555,31 @@
       }
     }
   },
+  "legacyLabelsHint": "{count, plural, =1{Eine Abschnitts-Beschriftung steht} other{{count} Abschnitts-Beschriftungen stehen}} in der Kurzform. Die ChordPro-Spezifikation empfiehlt label=\"…\".",
+  "@legacyLabelsHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importLegacyLabelsMessage": "{count, plural, =1{1 importierter Song schreibt} other{{count} importierte Songs schreiben}} Abschnitts-Beschriftungen in der Kurzform. Umwandeln schreibt sie als label=\"…\", wie es die ChordPro-Spezifikation empfiehlt; die Songs sehen gleich aus.",
+  "@importLegacyLabelsMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "convertLabels": "Beschriftungen umwandeln",
+  "songsLabelsConverted": "{count, plural, =0{Keine Beschriftungen umgewandelt} =1{Beschriftungen in 1 Song umgewandelt} other{Beschriftungen in {count} Songs umgewandelt}}",
+  "@songsLabelsConverted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "hideHint": "Hinweis ausblenden",
   "searchInSong": "Suchen",
   "searchNoMatches": "Keine Treffer",
