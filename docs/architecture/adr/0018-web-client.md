@@ -198,6 +198,7 @@ Tracked in issue #27, each step a separate PR:
   offered on web as well, so songs can be uploaded as files in the browser;
   the imported songs are synced like new songs. Export stays native-only.
 - 2026-11-17: App renamed to **setDING** (#318): the web client is published at `https://app.setding.app` (`SETDING_WEB_URL`), the apps use `https://api.setding.app`.
+- 2026-11-20: **ADR-0043** (proposed, #622): the web client may export: the backup archive of an organization is offered on web too (attachment files are loaded for the export). The other exports (songs, sets, set list) may follow.
 
 ## Open points
 
