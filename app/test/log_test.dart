@@ -40,7 +40,7 @@ void main() {
   test('formats the version of a beta build with its commit', () {
     expect(
       formatAppVersion('0.1.1', '1', beta: true, commit: '39f2c1b'),
-      '0.1.1 (1, beta, 39f2c1b)',
+      '0.1.1 (beta, 39f2c1b)',
     );
     expect(formatAppVersion('0.1.1', '', beta: true), '0.1.1 (beta)');
     expect(
@@ -121,7 +121,7 @@ void main() {
       scrollable: find.byType(Scrollable).last,
     );
     // No commit: the tests are not built by make android-install.
-    expect(find.text('Version 0.1.1 (1, beta)'), findsOneWidget);
+    expect(find.text('Version 0.1.1 (beta)'), findsOneWidget);
     await app.dispose(tester);
   });
 }
