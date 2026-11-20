@@ -1,6 +1,6 @@
 # ADR-0043: Backup archive and trash
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-20
 
 ## Context
@@ -141,6 +141,9 @@ Deleted songs and sets can be **restored for 30 days**.
   organization export by organization admins and librarians; trash 30 days;
   export allowed on the web client; a sync is mandatory before an
   organization export. Implementation: trash #623, backup archive #625.
+- 2026-11-20: Accepted by the owner. Implemented: trash in #631, backup
+  archive in #636 (export from the song list menu, local and organization
+  alike, also on web).
 
 ## Open points
 

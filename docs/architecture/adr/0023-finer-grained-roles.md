@@ -197,7 +197,7 @@ sets of that band like any member; librarian rights concern the library only.
   `LibraryView` (`canManageSets`, `canCreateSongs`, `canEditSong`, `canDeleteSongs`),
   role menus on the band and organization screens, invitations on the band screen.
   The band arrangement follows with its own ADR (#216).
-- 2026-11-20: **ADR-0043** (proposed, #622): exporting an organization's backup archive: organization admins and librarians; restoring from the trash: whoever may delete the record (songs and attachments: organization admins and librarians; sets: band leaders and set planners, organization admins in all bands).
+- 2026-11-20: **ADR-0043** (accepted, #622): exporting an organization's backup archive: organization admins and librarians; restoring from the trash: whoever may delete the record (songs and attachments: organization admins and librarians; sets: band leaders and set planners, organization admins in all bands).
 
 ## Open points
 
