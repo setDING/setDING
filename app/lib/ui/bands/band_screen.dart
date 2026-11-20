@@ -9,6 +9,7 @@ import '../../sync/auth_providers.dart';
 import '../widgets/dialogs.dart';
 import 'band_labels.dart';
 import 'bands_screen.dart';
+import 'delete_band.dart';
 import 'invites_section.dart';
 
 /// Settings and members of one band. Band leaders and organization admins
@@ -173,6 +174,21 @@ class BandScreen extends ConsumerWidget {
                     );
                     if (left && context.mounted) Navigator.pop(context);
                   },
+                ),
+              ),
+            // Organization admins delete the band (ADR-0044).
+            if (band.canDeleteBand)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: OutlinedButton.icon(
+                  key: const Key('band-delete'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.error,
+                  ),
+                  icon: const Icon(Icons.delete_outline),
+                  label: Text(l10n.bandDelete),
+                  onPressed: () =>
+                      deleteBand(context, ref, band, members: members.length),
                 ),
               ),
           ],

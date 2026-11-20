@@ -6,6 +6,10 @@ function keepLastAdmin(e, collection, scopeField) {
   // A person removed from the organization leaves its bands even as their
   // last admin; organization admins still manage those bands (ADR-0017).
   if (scopeField === "band" && !isOrgMember(e.app, e.record)) return;
+  // A deleted band takes all its memberships with it (ADR-0044).
+  if (scopeField === "band" && e.app.findRecordById("bands", e.record.getString("band")).getBool("deleted")) {
+    return;
+  }
   const before = e.record.original();
   const wasAdmin = before.getString("role") === "admin" && !before.getBool("deleted");
   const isAdmin = e.record.getString("role") === "admin" && !e.record.getBool("deleted");
@@ -64,4 +68,4 @@ function addAdmin(app, collection, scopeField, scopeId, userId) {
   app.save(membership);
 }
 
-module.exports = { keepLastAdmin, addAdmin, requireOrgMember };
+module.exports = { keepLastAdmin, addAdmin, requireOrgMember, isOrgMember };

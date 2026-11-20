@@ -126,6 +126,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (report?.settingsTakenOver ?? false) {
         showMessage(context, l10n.settingsTakenOver);
       }
+      // Bands that were deleted or the person was removed from (ADR-0044).
+      final gone = report?.goneBands ?? const <String>[];
+      if (gone.isNotEmpty) {
+        showMessage(context, l10n.bandsGone(gone.length, gone.join(', ')));
+      }
     });
     // A dot on the settings, where the update is described (ADR-0036).
     final update = ref.watch(updateCheckProvider) != null;

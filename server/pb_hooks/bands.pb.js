@@ -31,3 +31,43 @@ onRecordCreateExecute((e) => {
     e.app, "memberships", "band", e.record.id, userId,
   );
 }, "bands");
+
+// Deleting a band (ADR-0044): DELETE on the records API (organization
+// admins, `deleteRule`; superusers in the admin UI too) is a soft delete
+// that keeps the band 30 days in the trash; it answers 204 like a delete.
+onRecordDeleteRequest((e) => {
+  if (!e.record.getBool("deleted")) {
+    e.record.set("deleted", true);
+    e.record.set("deleted_at", new DateTime());
+    e.record.set("updated_by", require(`${__hooks}/lib/sync.js`).requestUserId(e));
+    e.app.runInTransaction((txApp) => txApp.save(e.record));
+  }
+  return e.noContent(204);
+}, "bands");
+
+// The cascade of deleting and restoring a band (ADR-0044), in the
+// transaction that saves it: deleting takes its sets, arrangements and
+// memberships with it and revokes its invitations; restoring (`deleted`
+// back to false, organization admins) brings back what went with it. A
+// purged band cannot be restored.
+onRecordUpdateExecute((e) => {
+  const original = e.record.original();
+  const wasDeleted = original.getBool("deleted");
+  const deleting = e.record.getBool("deleted") && !wasDeleted;
+  const restoring = !e.record.getBool("deleted") && wasDeleted;
+  if (restoring && original.getBool("purged")) {
+    throw new BadRequestError("The band was purged from the trash.", {
+      deleted: new ValidationError("purged", "The band was purged from the trash and cannot be restored."),
+    });
+  }
+  if (deleting && e.record.getString("deleted_at") === "") {
+    e.record.set("deleted_at", new DateTime());
+  }
+  if (restoring) e.record.set("deleted_at", "");
+  e.next();
+  const bands = require(`${__hooks}/lib/bands.js`);
+  if (deleting) bands.cascadeDelete(e.app, e.record);
+  if (restoring) {
+    bands.cascadeRestore(e.app, e.record, original.getInt("revision"), original.getString("deleted_at"));
+  }
+}, "bands");

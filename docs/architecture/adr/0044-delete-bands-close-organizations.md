@@ -175,6 +175,14 @@ As required by AGENTS.md "Permissions on the server" (#632), server tests call t
   - **Size:** one transaction, with a server test that measures a large organization and fails above a limit; batching only when needed.
   - **Admin UI:** superusers go through the trash like everyone else, and remove a record at once with the purge's "immediately" option.
 - 2026-11-20: Accepted by the owner. ADR-0023's permission matrix gets the two rows of section 1; implementation in #628 (bands), then #629 (organizations).
+- 2026-11-20: Bands implemented (#628).
+  - **Server:** migration `1796200000_delete_bands.js`, `pb_hooks/bands.pb.js`, `lib/bands.js`, purge in `lib/trash.js` with the "immediately" option for bands.
+  - **App:**
+    - *Delete band* on the band screen for organization admins, with a summary, the typed name, the last-band hint and *Undo*.
+    - *Deleted bands* on the organization screen, loaded online, with *Restore*.
+    - After a sync, a one-time message for bands that are gone.
+  - **Message wording:** the API cannot tell a member whether their band was deleted or they were removed from it, because both soft-delete their membership. The message therefore says "no longer available to you: the band was deleted or you are no longer a member".
+  - **Queued offline changes:** the server refuses them and the app drops them, as before for removed members.
 
 ## Open points
 

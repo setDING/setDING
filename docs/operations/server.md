@@ -304,3 +304,9 @@ records stay as tombstones (`purged`) so that devices still learn about the
 deletion. The log shows `Trash purged` with the number of records. A superuser
 can run the purge at once with `POST /api/setding/trash/purge`. A file purged
 from the trash is still in the backups of the last 14 days.
+
+Deleted bands (ADR-0044) are in the same trash: after 30 days the purge marks the
+band `purged`, purges its sets and removes its memberships and arrangements. A
+superuser deleting a band in the admin UI also only moves it to the trash. To
+remove one deleted band at once (abuse, a deletion request), a superuser sends
+`POST /api/setding/trash/purge` with `{"collection": "bands", "id": "<band id>"}`.

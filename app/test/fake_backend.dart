@@ -214,6 +214,7 @@ class FakeSyncBackend implements SyncBackend {
             bands: [
               for (final b in bands.entries)
                 if (b.value.organizationId == o.key &&
+                    b.value.deletedAt == null &&
                     (_isOrgAdmin(o.key) ||
                         members.any(
                           (m) => m.scopeId == b.key && m.user.id == user!.id,
@@ -308,6 +309,46 @@ class FakeSyncBackend implements SyncBackend {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
     if (name != null) band.name = name.trim();
+  }
+
+  @override
+  Future<void> deleteBand(String bandId) async {
+    _requireUser();
+    final band = bands[bandId];
+    if (band == null ||
+        band.deletedAt != null ||
+        !_isOrgAdmin(band.organizationId)) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    band.deletedAt = DateTime.now().toUtc();
+  }
+
+  @override
+  Future<void> restoreBand(String bandId) async {
+    _requireUser();
+    final band = bands[bandId];
+    if (band == null ||
+        band.deletedAt == null ||
+        !_isOrgAdmin(band.organizationId)) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    band.deletedAt = null;
+  }
+
+  @override
+  Future<List<DeletedBand>> fetchDeletedBands(String organizationId) async {
+    _requireUser();
+    if (!_isOrgAdmin(organizationId)) return const [];
+    return [
+      for (final b in bands.entries)
+        if (b.value.organizationId == organizationId &&
+            b.value.deletedAt != null)
+          DeletedBand(
+            id: b.key,
+            name: b.value.name,
+            deletedAt: b.value.deletedAt!,
+          ),
+    ]..sort((a, b) => b.deletedAt.compareTo(a.deletedAt));
   }
 
   @override
@@ -948,6 +989,9 @@ class FakeBand {
 
   final String organizationId;
   String name;
+
+  /// When the band was deleted (ADR-0044), or null.
+  DateTime? deletedAt;
 }
 
 /// A membership in an organization or a band ([scopeId]).

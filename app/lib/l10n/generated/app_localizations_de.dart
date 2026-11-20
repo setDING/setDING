@@ -3663,4 +3663,93 @@ class AppLocalizationsDe extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get bandDelete => 'Band löschen';
+
+  @override
+  String bandDeleteTitle(String band) {
+    return '$band löschen?';
+  }
+
+  @override
+  String bandDeleteMessage(int days) {
+    return 'Ihre Sets, Band-Arrangements und Mitgliedschaften werden mitgelöscht und ihre offenen Einladungen widerrufen. Die Songs bleiben in der Bibliothek der Organisation. Admins der Organisation können die Band $days Tage lang aus dem Papierkorb wiederherstellen. Für eine Kopie ausserhalb von setDING sichere vorher die Bibliothek.';
+  }
+
+  @override
+  String bandDeleteSets(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Sets',
+      one: '1 Set',
+      zero: 'keine Sets',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bandDeleteMembers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Mitglieder',
+      one: '1 Mitglied',
+      zero: 'keine Mitglieder',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bandDeleteInvites(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count offene Einladungen',
+      one: '1 offene Einladung',
+      zero: 'keine offenen Einladungen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bandDeleteLastBand =>
+      'Das ist die letzte Band der Organisation. Die Organisation und ihre Song-Bibliothek bleiben bestehen.';
+
+  @override
+  String bandDeleteConfirmName(String band) {
+    return 'Zum Bestätigen «$band» eintippen';
+  }
+
+  @override
+  String bandDeleted(String band) {
+    return '$band gelöscht';
+  }
+
+  @override
+  String get trashBandsTitle => 'Gelöschte Bands';
+
+  @override
+  String trashBandsEmpty(int days) {
+    return 'Keine gelöschten Bands. Gelöschte Bands lassen sich hier $days Tage lang wiederherstellen.';
+  }
+
+  @override
+  String trashBandsHint(int days) {
+    return 'Gelöschte Bands lassen sich mit ihren Sets, Arrangements und Mitgliedern $days Tage lang wiederherstellen. Danach werden sie endgültig entfernt.';
+  }
+
+  @override
+  String bandsGone(int count, String names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$names sind für dich nicht mehr verfügbar: Die Bands wurden gelöscht oder du bist kein Mitglied mehr.',
+      one:
+          '$names ist für dich nicht mehr verfügbar: Die Band wurde gelöscht oder du bist kein Mitglied mehr.',
+    );
+    return '$_temp0';
+  }
 }

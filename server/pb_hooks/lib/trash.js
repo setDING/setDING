@@ -41,6 +41,20 @@ function handleTrashRequest(e) {
 function purgeTrash(app) {
   const cutoff = new DateTime().addDate(0, 0, -RETENTION_DAYS);
   let purged = 0;
+  // Bands first (ADR-0044): their sets carry the band's `deleted_at` and
+  // are purged below.
+  const bands = app.findRecordsByFilter(
+    "bands",
+    "deleted = true && purged = false && deleted_at != '' && deleted_at < {:cutoff}",
+    "",
+    0,
+    0,
+    { cutoff: cutoff.string() },
+  );
+  for (const band of bands) {
+    require(`${__hooks}/lib/bands.js`).purge(app, band);
+    purged++;
+  }
   for (const name of ["attachments", "setlists", "songs"]) {
     const records = app.findRecordsByFilter(
       name,
@@ -87,4 +101,39 @@ function purgeAttachmentsOf(app, song) {
   return records.length;
 }
 
-module.exports = { RETENTION_DAYS, handleTrashRequest, purgeTrash };
+/// Purges one deleted record at once (operators, ADR-0044); only bands so
+/// far. Returns the number of purged records (0 when it was purged before).
+function purgeNow(app, collection, id) {
+  if (collection !== "bands") {
+    throw new BadRequestError("Only bands can be purged at once.");
+  }
+  let band = null;
+  try {
+    band = app.findRecordById("bands", String(id || ""));
+  } catch (_) {
+    throw new NotFoundError("Unknown band.");
+  }
+  if (!band.getBool("deleted")) {
+    throw new BadRequestError("Only deleted bands can be purged.");
+  }
+  if (band.getBool("purged")) return 0;
+  require(`${__hooks}/lib/bands.js`).purge(app, band);
+  let sets = 0;
+  const records = app.findRecordsByFilter(
+    "setlists",
+    "band = {:band} && deleted = true && purged = false && deleted_at = {:at}",
+    "",
+    0,
+    0,
+    { band: band.id, at: band.getString("deleted_at") },
+  );
+  for (const record of records) {
+    record.set("purged", true);
+    record.set("items", []);
+    app.runInTransaction((txApp) => txApp.save(record));
+    sets++;
+  }
+  return 1 + sets;
+}
+
+module.exports = { RETENTION_DAYS, handleTrashRequest, purgeTrash, purgeNow };
