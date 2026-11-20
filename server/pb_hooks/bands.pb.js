@@ -103,9 +103,8 @@ onRecordUpdateRequest((e) => {
       const sent = Object.keys(e.requestInfo().body || {});
       const other = sent.filter((key) => allowed.indexOf(key) < 0);
       if (other.length > 0) {
-        throw new ForbiddenError(
-          "Set planners may only change when songs count as not played for a while.",
-        );
+        // Like a refused update rule: 404, the record is not writable.
+        throw new NotFoundError("The requested resource wasn't found.");
       }
     }
   }
