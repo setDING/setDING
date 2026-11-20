@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import songs from '../../../../../../docs/screenshots/songs.png';
+import importLabels from '../../../../../../docs/screenshots/import_labels.png';
 
 All songs belong to the organization; all its bands share the same song library.
 **Songs** shows them.
@@ -63,6 +64,8 @@ editor. These songs are marked with a warning icon in the list.
 Songs that write section labels in the short form `{start_of_verse: Verse 1}` are
 listed there too: **Convert labels** writes them as `label="…"`, as the ChordPro
 specification recommends. They look the same either way and are not marked.
+
+<Image src={importLabels} alt="Check the import: one song with a place to fix, two songs with short-form section labels, and the buttons Convert labels and Fix automatically" />
 
 ## Export, copy, delete
 

@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import editor from '../../../../../docs/screenshots/editor_de.png';
+import editorLabels from '../../../../../docs/screenshots/editor_labels_de.png';
 
 Songs sind in [ChordPro](https://www.chordpro.org/) geschrieben, dem offenen Format
 für Akkordblätter: Akkorde stehen in eckigen Klammern direkt im Text, Angaben wie
@@ -94,6 +95,8 @@ zu schreiben: `{start_of_verse: label="Strophe 1"}`. Songs aus anderen Quellen n
 oft die Kurzform `{start_of_verse: Strophe 1}`. setDING zeigt beide gleich an, der
 Editor zeigt aber einen Hinweis über dem Text: **Umwandeln** schreibt alle
 Beschriftungen in der empfohlenen Form. Mit ✕ lässt sich der Hinweis ausblenden.
+
+<Image src={editorLabels} alt="Der Editor mit dem Hinweis auf Abschnitts-Beschriftungen in der Kurzform und dem Knopf Umwandeln; die zweite Strophe nutzt bereits das Attribut label" />
 
 ## Speichern
 
