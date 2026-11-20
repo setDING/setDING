@@ -157,6 +157,9 @@ Further rules:
 - 2026-11-20: Owner: a set created by someone else shows up as **New set**,
   not as its songs added (#674). New kind `setAdded`; like a new song, a
   new set that was changed afterwards stays one *New set* entry.
+- 2026-11-20: Owner: a tap anywhere on the set card (next set or most
+  recently edited set) opens the set, like *Open set* (#693); *Start live*
+  and *Open set* keep their own action.
 
 ## Open points
 

@@ -145,10 +145,14 @@ class _OverviewCard extends StatelessWidget {
     required this.title,
     required this.children,
     this.highlight = false,
+    this.onTap,
   });
 
   final String title;
   final List<Widget> children;
+
+  /// Makes the whole card tappable; buttons on it keep their own action.
+  final VoidCallback? onTap;
 
   /// In the colours of the next gig on the sets tab.
   final bool highlight;
@@ -157,36 +161,39 @@ class _OverviewCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    return Card(
-      color: highlight ? colors.primaryContainer : null,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Semantics(
-                header: true,
-                child: Text(
-                  title,
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: colors.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
+    final content = Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Semantics(
+              header: true,
+              child: Text(
+                title,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: colors.primary,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
-            ...children,
-          ],
-        ),
+          ),
+          ...children,
+        ],
       ),
+    );
+    return Card(
+      color: highlight ? colors.primaryContainer : null,
+      clipBehavior: onTap == null ? null : Clip.antiAlias,
+      child: onTap == null ? content : InkWell(onTap: onTap, child: content),
     );
   }
 }
 
 /// The next set, or the most recently edited one, with *Start live* on its
-/// first song and *Open set*.
+/// first song and *Open set*; a tap anywhere else on the card opens the set
+/// too (#693).
 class _SetCard extends ConsumerWidget {
   const _SetCard({
     super.key,
@@ -215,10 +222,12 @@ class _SetCard extends ConsumerWidget {
       ?set.venue,
       if (songs != null) l10n.overviewSongCount(songs),
     ].join(' · ');
+    void open() => openSet(context, ref, set.id, wide: false);
     return _OverviewCard(
       key: const Key('overview-next-set'),
       title: upcoming ? l10n.overviewNextSet : l10n.overviewLastEditedSet,
       highlight: upcoming,
+      onTap: open,
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -258,7 +267,7 @@ class _SetCard extends ConsumerWidget {
                 key: const Key('overview-open-set'),
                 icon: const Icon(Icons.queue_music),
                 label: Text(l10n.overviewOpenSet),
-                onPressed: () => openSet(context, ref, set.id, wide: false),
+                onPressed: open,
               ),
             ],
           ),
