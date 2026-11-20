@@ -5,6 +5,7 @@ import 'attachment_storage.dart';
 import 'database.dart';
 import 'deletions.dart';
 import 'outbox.dart';
+import 'play_history.dart';
 import 'text.dart';
 
 const _uuid = Uuid();
@@ -261,12 +262,15 @@ class SetRepository {
   Future<void> addSongs(String setId, List<String> songIds) =>
       db.transaction(() async {
         var position = await _nextPosition(setId);
+        final ids = <String>[];
         for (final songId in songIds) {
+          final id = _uuid.v4();
+          ids.add(id);
           await db
               .into(db.setItems)
               .insert(
                 SetItemsCompanion.insert(
-                  id: _uuid.v4(),
+                  id: id,
                   setId: setId,
                   songId: Value(songId),
                   position: position++,
@@ -274,6 +278,9 @@ class SetRepository {
                 ),
               );
         }
+        // A song added to a set whose gig day has come was played as it
+        // is now (ADR-0046).
+        await PlayHistoryRepository(db).refreshItems(ids);
         await _touch(setId);
       });
 
@@ -341,6 +348,7 @@ class SetRepository {
         await (db.update(db.setItems)..where((i) => i.id.equals(itemId))).write(
           SetItemsCompanion(transpose: Value(transpose)),
         );
+        await PlayHistoryRepository(db).refreshItems([itemId]);
         await _touchItem(itemId);
       });
 
@@ -353,6 +361,7 @@ class SetRepository {
             sequence: Value(value == null || value.isEmpty ? null : value),
           ),
         );
+        await PlayHistoryRepository(db).refreshItems([itemId]);
         await _touchItem(itemId);
       });
 

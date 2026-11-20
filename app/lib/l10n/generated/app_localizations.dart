@@ -6444,6 +6444,90 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Keine Songs mehr in diesem Filter.'**
   String get songsFilterEmpty;
+
+  /// No description provided for @playHistory.
+  ///
+  /// In de, this message translates to:
+  /// **'Gespielt'**
+  String get playHistory;
+
+  /// No description provided for @playHistoryOf.
+  ///
+  /// In de, this message translates to:
+  /// **'Gespielt von {band}'**
+  String playHistoryOf(String band);
+
+  /// No description provided for @playHistoryNone.
+  ///
+  /// In de, this message translates to:
+  /// **'{band} hat diesen Song noch in keinem vergangenen Set gespielt.'**
+  String playHistoryNone(String band);
+
+  /// No description provided for @playHistoryTotal.
+  ///
+  /// In de, this message translates to:
+  /// **'gesamt'**
+  String get playHistoryTotal;
+
+  /// No description provided for @playHistoryLastYear.
+  ///
+  /// In de, this message translates to:
+  /// **'letzte 12 Monate'**
+  String get playHistoryLastYear;
+
+  /// No description provided for @playHistoryLast.
+  ///
+  /// In de, this message translates to:
+  /// **'zuletzt'**
+  String get playHistoryLast;
+
+  /// No description provided for @playHistoryFirst.
+  ///
+  /// In de, this message translates to:
+  /// **'Erstmals am {date}'**
+  String playHistoryFirst(String date);
+
+  /// No description provided for @playHistoryShowAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle {count} anzeigen'**
+  String playHistoryShowAll(int count);
+
+  /// No description provided for @playHistoryDiffers.
+  ///
+  /// In de, this message translates to:
+  /// **'Hervorgehoben: eine andere Tonart als heute ({key})'**
+  String playHistoryDiffers(String key);
+
+  /// No description provided for @playHistoryApproximate.
+  ///
+  /// In de, this message translates to:
+  /// **'≈ abgeleitet aus dem heutigen Arrangement: das Set hat keine gespeicherten Werte'**
+  String get playHistoryApproximate;
+
+  /// No description provided for @keyHistoryLast.
+  ///
+  /// In de, this message translates to:
+  /// **'Zuletzt {key} am {date}'**
+  String keyHistoryLast(String key, String date);
+
+  /// No description provided for @keyHistoryMostly.
+  ///
+  /// In de, this message translates to:
+  /// **'meist {key} ({count} von {total})'**
+  String keyHistoryMostly(String key, int count, int total);
+
+  /// No description provided for @songLastPlayed.
+  ///
+  /// In de, this message translates to:
+  /// **'Zuletzt gespielt am {date}'**
+  String songLastPlayed(String date);
+
+  /// No description provided for @songNeverPlayed.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch nie gespielt'**
+  String get songNeverPlayed;
 }
 
 class _AppLocalizationsDelegate

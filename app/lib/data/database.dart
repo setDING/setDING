@@ -4,9 +4,11 @@ import 'package:drift/drift.dart';
 
 import '../midi/midi_message.dart';
 import 'band_role.dart';
+import 'played_values.dart';
 
 export '../midi/midi_message.dart' show MidiProgram, MidiPrograms;
 export 'band_role.dart';
+export 'played_values.dart';
 
 part 'database.g.dart';
 
@@ -240,6 +242,27 @@ class MidiProgramConverter extends TypeConverter<MidiProgram?, String?> {
       value == null ? null : jsonEncode(value.toJson());
 }
 
+/// Stores [PlayedValues] as their JSON (ADR-0046); a value that cannot be
+/// read counts as not frozen.
+class PlayedValuesConverter extends TypeConverter<PlayedValues?, String?> {
+  const PlayedValuesConverter();
+
+  @override
+  PlayedValues? fromSql(String? fromDb) {
+    if (fromDb == null) return null;
+    try {
+      final json = jsonDecode(fromDb);
+      return json is Map<String, dynamic> ? PlayedValues.fromJson(json) : null;
+    } on FormatException {
+      return null;
+    }
+  }
+
+  @override
+  String? toSql(PlayedValues? value) =>
+      value == null ? null : jsonEncode(value.toJson());
+}
+
 /// Stores [MidiPrograms] as their JSON (ADR-0042); null = never written
 /// (a v0.16.0 program in `midi` still counts), a value that cannot be read
 /// is no program.
@@ -280,6 +303,15 @@ class SetItems extends Table {
   /// Label of a pause or text item.
   TextColumn get note => text().nullable()();
   TextColumn get type => textEnum<SetItemType>()();
+
+  /// How the song was played, frozen once the gig date is reached
+  /// (ADR-0046); null before, and for sets of older clients.
+  TextColumn get played =>
+      text().nullable().map(const PlayedValuesConverter())();
+
+  /// Fields of the server's item JSON this version does not know, as a JSON
+  /// object, so that saving the set keeps them for newer clients (ADR-0046).
+  TextColumn get extra => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -492,7 +524,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 22;
+  int get schemaVersion => 23;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -699,6 +731,12 @@ class AppDatabase extends _$AppDatabase {
         if (from >= 12) {
           await m.addColumn(bandArrangements, bandArrangements.updatedBy);
         }
+      }
+      if (from < 23) {
+        // Song play history (ADR-0046): the values a song was played with,
+        // and unknown item fields kept for newer clients.
+        await m.addColumn(setItems, setItems.played);
+        await m.addColumn(setItems, setItems.extra);
       }
     },
     beforeOpen: (details) async {

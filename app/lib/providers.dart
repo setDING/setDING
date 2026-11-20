@@ -9,6 +9,7 @@ import 'data/band_copy.dart';
 import 'data/band_view.dart';
 import 'data/database.dart';
 import 'data/import_export.dart';
+import 'data/play_history.dart';
 import 'data/set_repository.dart';
 import 'data/song_repository.dart';
 import 'data/trash.dart';
@@ -405,6 +406,26 @@ final bandArrangementsProvider = StreamProvider.autoDispose
     .family<Map<String, BandArrangement>, String>(
       (ref, bandId) =>
           ref.watch(arrangementRepositoryProvider).watchBand(bandId),
+    );
+
+/// The song play history of the bands (ADR-0046).
+final playHistoryRepositoryProvider = Provider<PlayHistoryRepository>(
+  (ref) => PlayHistoryRepository(ref.watch(databaseProvider)),
+);
+
+/// The plays of a song by a band, newest first (ADR-0046).
+final songPlaysProvider = StreamProvider.autoDispose
+    .family<SongPlays, ({String band, String song})>(
+      (ref, key) => ref
+          .watch(playHistoryRepositoryProvider)
+          .watchSongPlays(key.band, key.song),
+    );
+
+/// When a band last played each song (ADR-0046).
+final lastPlayedProvider = StreamProvider.autoDispose
+    .family<Map<String, DateTime>, String>(
+      (ref, bandId) =>
+          ref.watch(playHistoryRepositoryProvider).watchLastPlayed(bandId),
     );
 
 /// The next gig of each song in the current band's sets, for the song list

@@ -425,6 +425,8 @@ class BackupService {
               if (i.transpose != 0) 'transpose': i.transpose,
               'sequence': ?i.sequence,
               'note': ?i.note,
+              if (i.played case final played? when !played.isEmpty)
+                'played': played.toJson(),
             },
         ],
       });
@@ -944,6 +946,12 @@ class BackupService {
                   sequence: Value(i['sequence'] as String?),
                   note: Value(i['note'] as String?),
                   type: type,
+                  played: Value(switch (i['played']) {
+                    final Map<String, dynamic> played => PlayedValues.fromJson(
+                      played,
+                    ),
+                    _ => null,
+                  }),
                 ),
               );
         }

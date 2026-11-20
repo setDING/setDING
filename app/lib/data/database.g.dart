@@ -4491,6 +4491,24 @@ class $SetItemsTable extends SetItems
         requiredDuringInsert: true,
       ).withConverter<SetItemType>($SetItemsTable.$convertertype);
   @override
+  late final GeneratedColumnWithTypeConverter<PlayedValues?, String> played =
+      GeneratedColumn<String>(
+        'played',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      ).withConverter<PlayedValues?>($SetItemsTable.$converterplayed);
+  static const VerificationMeta _extraMeta = const VerificationMeta('extra');
+  @override
+  late final GeneratedColumn<String> extra = GeneratedColumn<String>(
+    'extra',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
   List<GeneratedColumn> get $columns => [
     id,
     setId,
@@ -4500,6 +4518,8 @@ class $SetItemsTable extends SetItems
     sequence,
     note,
     type,
+    played,
+    extra,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4558,6 +4578,12 @@ class $SetItemsTable extends SetItems
         note.isAcceptableOrUnknown(data['note']!, _noteMeta),
       );
     }
+    if (data.containsKey('extra')) {
+      context.handle(
+        _extraMeta,
+        extra.isAcceptableOrUnknown(data['extra']!, _extraMeta),
+      );
+    }
     return context;
   }
 
@@ -4601,6 +4627,16 @@ class $SetItemsTable extends SetItems
           data['${effectivePrefix}type'],
         )!,
       ),
+      played: $SetItemsTable.$converterplayed.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}played'],
+        ),
+      ),
+      extra: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}extra'],
+      ),
     );
   }
 
@@ -4611,6 +4647,8 @@ class $SetItemsTable extends SetItems
 
   static JsonTypeConverter2<SetItemType, String, String> $convertertype =
       const EnumNameConverter<SetItemType>(SetItemType.values);
+  static TypeConverter<PlayedValues?, String?> $converterplayed =
+      const PlayedValuesConverter();
 }
 
 class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
@@ -4629,6 +4667,14 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
   /// Label of a pause or text item.
   final String? note;
   final SetItemType type;
+
+  /// How the song was played, frozen once the gig date is reached
+  /// (ADR-0046); null before, and for sets of older clients.
+  final PlayedValues? played;
+
+  /// Fields of the server's item JSON this version does not know, as a JSON
+  /// object, so that saving the set keeps them for newer clients (ADR-0046).
+  final String? extra;
   const SetItemEntry({
     required this.id,
     required this.setId,
@@ -4638,6 +4684,8 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
     this.sequence,
     this.note,
     required this.type,
+    this.played,
+    this.extra,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4658,6 +4706,14 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
     {
       map['type'] = Variable<String>($SetItemsTable.$convertertype.toSql(type));
     }
+    if (!nullToAbsent || played != null) {
+      map['played'] = Variable<String>(
+        $SetItemsTable.$converterplayed.toSql(played),
+      );
+    }
+    if (!nullToAbsent || extra != null) {
+      map['extra'] = Variable<String>(extra);
+    }
     return map;
   }
 
@@ -4675,6 +4731,12 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
           : Value(sequence),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
       type: Value(type),
+      played: played == null && nullToAbsent
+          ? const Value.absent()
+          : Value(played),
+      extra: extra == null && nullToAbsent
+          ? const Value.absent()
+          : Value(extra),
     );
   }
 
@@ -4694,6 +4756,8 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
       type: $SetItemsTable.$convertertype.fromJson(
         serializer.fromJson<String>(json['type']),
       ),
+      played: serializer.fromJson<PlayedValues?>(json['played']),
+      extra: serializer.fromJson<String?>(json['extra']),
     );
   }
   @override
@@ -4710,6 +4774,8 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
       'type': serializer.toJson<String>(
         $SetItemsTable.$convertertype.toJson(type),
       ),
+      'played': serializer.toJson<PlayedValues?>(played),
+      'extra': serializer.toJson<String?>(extra),
     };
   }
 
@@ -4722,6 +4788,8 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
     Value<String?> sequence = const Value.absent(),
     Value<String?> note = const Value.absent(),
     SetItemType? type,
+    Value<PlayedValues?> played = const Value.absent(),
+    Value<String?> extra = const Value.absent(),
   }) => SetItemEntry(
     id: id ?? this.id,
     setId: setId ?? this.setId,
@@ -4731,6 +4799,8 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
     sequence: sequence.present ? sequence.value : this.sequence,
     note: note.present ? note.value : this.note,
     type: type ?? this.type,
+    played: played.present ? played.value : this.played,
+    extra: extra.present ? extra.value : this.extra,
   );
   SetItemEntry copyWithCompanion(SetItemsCompanion data) {
     return SetItemEntry(
@@ -4742,6 +4812,8 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
       sequence: data.sequence.present ? data.sequence.value : this.sequence,
       note: data.note.present ? data.note.value : this.note,
       type: data.type.present ? data.type.value : this.type,
+      played: data.played.present ? data.played.value : this.played,
+      extra: data.extra.present ? data.extra.value : this.extra,
     );
   }
 
@@ -4755,14 +4827,26 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
           ..write('transpose: $transpose, ')
           ..write('sequence: $sequence, ')
           ..write('note: $note, ')
-          ..write('type: $type')
+          ..write('type: $type, ')
+          ..write('played: $played, ')
+          ..write('extra: $extra')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, setId, songId, position, transpose, sequence, note, type);
+  int get hashCode => Object.hash(
+    id,
+    setId,
+    songId,
+    position,
+    transpose,
+    sequence,
+    note,
+    type,
+    played,
+    extra,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -4774,7 +4858,9 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
           other.transpose == this.transpose &&
           other.sequence == this.sequence &&
           other.note == this.note &&
-          other.type == this.type);
+          other.type == this.type &&
+          other.played == this.played &&
+          other.extra == this.extra);
 }
 
 class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
@@ -4786,6 +4872,8 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
   final Value<String?> sequence;
   final Value<String?> note;
   final Value<SetItemType> type;
+  final Value<PlayedValues?> played;
+  final Value<String?> extra;
   final Value<int> rowid;
   const SetItemsCompanion({
     this.id = const Value.absent(),
@@ -4796,6 +4884,8 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
     this.sequence = const Value.absent(),
     this.note = const Value.absent(),
     this.type = const Value.absent(),
+    this.played = const Value.absent(),
+    this.extra = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SetItemsCompanion.insert({
@@ -4807,6 +4897,8 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
     this.sequence = const Value.absent(),
     this.note = const Value.absent(),
     required SetItemType type,
+    this.played = const Value.absent(),
+    this.extra = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        setId = Value(setId),
@@ -4821,6 +4913,8 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
     Expression<String>? sequence,
     Expression<String>? note,
     Expression<String>? type,
+    Expression<String>? played,
+    Expression<String>? extra,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -4832,6 +4926,8 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
       if (sequence != null) 'sequence': sequence,
       if (note != null) 'note': note,
       if (type != null) 'type': type,
+      if (played != null) 'played': played,
+      if (extra != null) 'extra': extra,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -4845,6 +4941,8 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
     Value<String?>? sequence,
     Value<String?>? note,
     Value<SetItemType>? type,
+    Value<PlayedValues?>? played,
+    Value<String?>? extra,
     Value<int>? rowid,
   }) {
     return SetItemsCompanion(
@@ -4856,6 +4954,8 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
       sequence: sequence ?? this.sequence,
       note: note ?? this.note,
       type: type ?? this.type,
+      played: played ?? this.played,
+      extra: extra ?? this.extra,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4889,6 +4989,14 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
         $SetItemsTable.$convertertype.toSql(type.value),
       );
     }
+    if (played.present) {
+      map['played'] = Variable<String>(
+        $SetItemsTable.$converterplayed.toSql(played.value),
+      );
+    }
+    if (extra.present) {
+      map['extra'] = Variable<String>(extra.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -4906,6 +5014,8 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
           ..write('sequence: $sequence, ')
           ..write('note: $note, ')
           ..write('type: $type, ')
+          ..write('played: $played, ')
+          ..write('extra: $extra, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -11912,6 +12022,8 @@ typedef $$SetItemsTableCreateCompanionBuilder = SetItemsCompanion Function({
   Value<String?> sequence,
   Value<String?> note,
   required SetItemType type,
+  Value<PlayedValues?> played,
+  Value<String?> extra,
   Value<int> rowid,
 });
 typedef $$SetItemsTableUpdateCompanionBuilder = SetItemsCompanion Function({
@@ -11923,6 +12035,8 @@ typedef $$SetItemsTableUpdateCompanionBuilder = SetItemsCompanion Function({
   Value<String?> sequence,
   Value<String?> note,
   Value<SetItemType> type,
+  Value<PlayedValues?> played,
+  Value<String?> extra,
   Value<int> rowid,
 });
 
@@ -12004,6 +12118,17 @@ class $$SetItemsTableFilterComposer
         column: $table.type,
         builder: (column) => ColumnWithTypeConverterFilters(column),
       );
+
+  ColumnWithTypeConverterFilters<PlayedValues?, PlayedValues, String>
+  get played => $composableBuilder(
+    column: $table.played,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<String> get extra => $composableBuilder(
+    column: $table.extra,
+    builder: (column) => ColumnFilters(column),
+  );
 
   $$SetlistsTableFilterComposer get setId {
     final $$SetlistsTableFilterComposer composer = $composerBuilder(
@@ -12091,6 +12216,16 @@ class $$SetItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get played => $composableBuilder(
+    column: $table.played,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get extra => $composableBuilder(
+    column: $table.extra,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$SetlistsTableOrderingComposer get setId {
     final $$SetlistsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -12164,6 +12299,12 @@ class $$SetItemsTableAnnotationComposer
 
   GeneratedColumnWithTypeConverter<SetItemType, String> get type =>
       $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<PlayedValues?, String> get played =>
+      $composableBuilder(column: $table.played, builder: (column) => column);
+
+  GeneratedColumn<String> get extra =>
+      $composableBuilder(column: $table.extra, builder: (column) => column);
 
   $$SetlistsTableAnnotationComposer get setId {
     final $$SetlistsTableAnnotationComposer composer = $composerBuilder(
@@ -12248,6 +12389,8 @@ class $$SetItemsTableTableManager
                 Value<String?> sequence = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<SetItemType> type = const Value.absent(),
+                Value<PlayedValues?> played = const Value.absent(),
+                Value<String?> extra = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SetItemsCompanion(
                 id: id,
@@ -12258,6 +12401,8 @@ class $$SetItemsTableTableManager
                 sequence: sequence,
                 note: note,
                 type: type,
+                played: played,
+                extra: extra,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -12270,6 +12415,8 @@ class $$SetItemsTableTableManager
                 Value<String?> sequence = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 required SetItemType type,
+                Value<PlayedValues?> played = const Value.absent(),
+                Value<String?> extra = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SetItemsCompanion.insert(
                 id: id,
@@ -12280,6 +12427,8 @@ class $$SetItemsTableTableManager
                 sequence: sequence,
                 note: note,
                 type: type,
+                played: played,
+                extra: extra,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

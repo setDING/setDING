@@ -9,6 +9,7 @@ import '../data/band_copy.dart';
 import '../data/band_view.dart';
 import '../data/database.dart';
 import '../data/outbox.dart';
+import '../data/play_history.dart';
 import '../data/song_repository.dart' show SongMeta;
 import 'band_service.dart';
 import 'engine/arrangement_sync.dart';
@@ -159,6 +160,12 @@ class SyncEngine {
         pulled += await _sets.pull(band);
         // After the songs: an arrangement needs its song on this device.
         pulled += await _arrangements.pull(band);
+        // With the band's sets and arrangements on this device: freeze how
+        // the songs of the sets whose gig day has come were played
+        // (ADR-0046). Pushed below with the other changes.
+        if (band.canManageSets) {
+          await PlayHistoryRepository(db).freeze(band.id);
+        }
       }
       // After the songs: an overlay needs its song on this device.
       pulled += await _overlays.pull(user.id);

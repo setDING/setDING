@@ -52,6 +52,7 @@ class KeyPicker extends StatelessWidget {
     required this.onChanged,
     required this.tooltip,
     this.dense = false,
+    this.hint,
   });
 
   final cp.Key? baseKey;
@@ -65,6 +66,10 @@ class KeyPicker extends StatelessWidget {
 
   /// Compact variant for list rows.
   final bool dense;
+
+  /// Shown above the keys, e.g. how the band played the song before
+  /// (ADR-0046).
+  final String? hint;
 
   @override
   Widget build(BuildContext context) {
@@ -96,6 +101,24 @@ class KeyPicker extends StatelessWidget {
       // Tall enough for all twelve keys without scrolling on tablets.
       constraints: const BoxConstraints(minWidth: 160, maxHeight: 640),
       itemBuilder: (context) => [
+        if (hint case final hint?) ...[
+          PopupMenuItem<int>(
+            key: const Key('key-picker-hint'),
+            enabled: false,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.history,
+                  size: 18,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 8),
+                Flexible(child: Text(hint, style: secondary)),
+              ],
+            ),
+          ),
+          const PopupMenuDivider(),
+        ],
         for (final o in options)
           CheckedPopupMenuItem<int>(
             value: o.semitones,

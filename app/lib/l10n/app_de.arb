@@ -2381,5 +2381,84 @@
   "attentionConflicts": "Sync-Konflikte",
   "attentionSheetMusicOnly": "Nur Noten (PDF)",
   "songsFilterClear": "Filter entfernen",
-  "songsFilterEmpty": "Keine Songs mehr in diesem Filter."
+  "songsFilterEmpty": "Keine Songs mehr in diesem Filter.",
+  "playHistory": "Gespielt",
+  "playHistoryOf": "Gespielt von {band}",
+  "@playHistoryOf": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "playHistoryNone": "{band} hat diesen Song noch in keinem vergangenen Set gespielt.",
+  "@playHistoryNone": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "playHistoryTotal": "gesamt",
+  "playHistoryLastYear": "letzte 12 Monate",
+  "playHistoryLast": "zuletzt",
+  "playHistoryFirst": "Erstmals am {date}",
+  "@playHistoryFirst": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "playHistoryShowAll": "Alle {count} anzeigen",
+  "@playHistoryShowAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playHistoryDiffers": "Hervorgehoben: eine andere Tonart als heute ({key})",
+  "@playHistoryDiffers": {
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "playHistoryApproximate": "≈ abgeleitet aus dem heutigen Arrangement: das Set hat keine gespeicherten Werte",
+  "keyHistoryLast": "Zuletzt {key} am {date}",
+  "@keyHistoryLast": {
+    "placeholders": {
+      "key": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "keyHistoryMostly": "meist {key} ({count} von {total})",
+  "@keyHistoryMostly": {
+    "placeholders": {
+      "key": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "songLastPlayed": "Zuletzt gespielt am {date}",
+  "@songLastPlayed": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "songNeverPlayed": "Noch nie gespielt"
 }
