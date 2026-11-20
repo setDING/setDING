@@ -22,6 +22,15 @@ function isOrgAdmin(app, userId, orgId) {
   ) > 0;
 }
 
+/// Whether the organization was closed (ADR-0044).
+function isClosed(app, orgId) {
+  try {
+    return app.findRecordById("organizations", orgId).getBool("deleted");
+  } catch (_) {
+    return false;
+  }
+}
+
 function isBandLeader(app, userId, bandId) {
   return app.countRecords(
     "memberships",
@@ -140,6 +149,11 @@ function create(e) {
   const body = e.requestInfo().body || {};
   const orgId = body.organization || "";
   const bandId = body.band || "";
+  if (orgId && isClosed(e.app, orgId)) {
+    throw new BadRequestError("The organization is closed.", {
+      organization: new ValidationError("closed", "The organization is closed."),
+    });
+  }
   let allowed = !!orgId && isOrgAdmin(e.app, userId, orgId);
   if (bandId) {
     let band = null;

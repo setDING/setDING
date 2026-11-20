@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../data/trash.dart' show trashRetention;
+import '../sync/sync_backend.dart' show ClosedOrganization;
 import '../l10n/generated/app_localizations.dart';
 import '../settings/settings.dart' show sharedPreferencesProvider;
 import '../sync/auth_providers.dart' show clientVersionProvider;
@@ -163,6 +165,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       final gone = report?.goneBands ?? const <String>[];
       if (gone.isNotEmpty) {
         showMessage(context, l10n.bandsGone(gone.length, gone.join(', ')));
+      }
+      // Organizations closed by one of their admins (ADR-0044).
+      for (final ClosedOrganization org
+          in report?.closedOrganizations ?? const <ClosedOrganization>[]) {
+        final days = trashRetention.inDays;
+        showMessage(
+          context,
+          org.closedBy == null
+              ? l10n.orgClosedNoticeAnonymous(org.name, days)
+              : l10n.orgClosedNotice(org.name, org.closedBy!, days),
+        );
       }
     });
     // A dot on the settings, where the update is described (ADR-0036).

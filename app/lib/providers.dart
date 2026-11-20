@@ -32,8 +32,11 @@ final webClientProvider = Provider<bool>((ref) => kIsWeb);
 // Bands (ADR-0005) -------------------------------------------------------------
 
 final bandServiceProvider = Provider<BandService>(
-  (ref) =>
-      BandService(ref.watch(databaseProvider), ref.watch(syncBackendProvider)),
+  (ref) => BandService(
+    ref.watch(databaseProvider),
+    ref.watch(syncBackendProvider),
+    storage: ref.watch(attachmentStorageProvider),
+  ),
 );
 
 /// The local library followed by the bands of the signed-in user. The web

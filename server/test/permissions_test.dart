@@ -26,6 +26,10 @@ void main() {
   late Map<String, dynamic> leaderSong;
   late String secondBand; // another band of `f`, without the leader
   late String deletedBand; // a band of `f` the organization admin deleted
+  // A closed organization (ADR-0044) with its leader and a song.
+  late BandFixture closed;
+  late User closedLeader;
+  late String closedSong;
   late String setId;
   late String inviteId;
   late String memberMembership;
@@ -58,6 +62,13 @@ void main() {
     deletedBand = third.json['id'] as String;
     await BandFixture.addMember(pb, deletedBand, leader, role: 'admin');
     (await orgAdmin.delete('bands', deletedBand)).expectStatus(204);
+    closed = await BandFixture.create(pb);
+    closedLeader = await closed.addLeader();
+    closedSong = (await closed.createSong(closed.admin))['id'] as String;
+    (await closed.admin.delete(
+      'organizations',
+      closed.orgId,
+    )).expectStatus(204);
     final set = await leader.post('setlists', {
       'id': uuid(),
       'band': f.id,
@@ -174,6 +185,61 @@ void main() {
       'organization admin renames a deleted band',
       () => orgAdmin.patch('bands', deletedBand, {'name': 'x'}),
       unchanged: ('bands', () => deletedBand, 'name'),
+    );
+    // Closing an organization is DELETE by its admins (ADR-0044).
+    for (final (who, user) in [
+      ('leader', () => leader),
+      ('set planner', () => planner),
+      ('member', () => member),
+      ('librarian', () => librarian),
+      ('admin of another organization', () => g.admin),
+    ]) {
+      refused(
+        '$who closes the organization (ADR-0044)',
+        () => user().delete('organizations', f.orgId),
+        unchanged: ('organizations', () => f.orgId, 'deleted'),
+      );
+    }
+    for (final (who, user) in [
+      ('leader', () => closedLeader),
+      ('member', () => closed.member),
+      ('admin of another organization', () => orgAdmin),
+    ]) {
+      refused(
+        '$who restores a closed organization (ADR-0044)',
+        () => user().patch('organizations', closed.orgId, {'deleted': false}),
+        unchanged: ('organizations', () => closed.orgId, 'deleted'),
+      );
+    }
+    refused(
+      'organization admin closes the organization by PATCH (#627)',
+      () => orgAdmin.patch('organizations', f.orgId, {'deleted': true}),
+      unchanged: ('organizations', () => f.orgId, 'deleted'),
+    );
+    refused(
+      'member of a closed organization reads its songs (ADR-0044)',
+      () => closed.member.view('songs', closedSong),
+    );
+    refused(
+      'leader of a closed organization reads its band (ADR-0044)',
+      () => closedLeader.view('bands', closed.id),
+    );
+    refused(
+      'admin of a closed organization creates a song in it (ADR-0044)',
+      () => closed.admin.post('songs', newSong(closed.orgId)),
+    );
+    refused(
+      'admin of a closed organization renames it (ADR-0044)',
+      () => closed.admin.patch('organizations', closed.orgId, {'name': 'x'}),
+      unchanged: ('organizations', () => closed.orgId, 'name'),
+    );
+    refused(
+      'admin of a closed organization invites people (ADR-0044)',
+      () => closed.admin.send(
+        'POST',
+        '/api/setding/invites',
+        body: {'organization': closed.orgId},
+      ),
     );
     refused(
       'organization admin sets the trash fields of a band',

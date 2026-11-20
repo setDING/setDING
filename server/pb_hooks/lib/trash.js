@@ -41,7 +41,21 @@ function handleTrashRequest(e) {
 function purgeTrash(app) {
   const cutoff = new DateTime().addDate(0, 0, -RETENTION_DAYS);
   let purged = 0;
-  // Bands first (ADR-0044): their sets carry the band's `deleted_at` and
+  // Closed organizations first (ADR-0044): purged for good, with all their
+  // records.
+  const orgs = app.findRecordsByFilter(
+    "organizations",
+    "deleted = true && purged = false && deleted_at != '' && deleted_at < {:cutoff}",
+    "",
+    0,
+    0,
+    { cutoff: cutoff.string() },
+  );
+  for (const org of orgs) {
+    require(`${__hooks}/lib/organizations.js`).purge(app, org);
+    purged++;
+  }
+  // Bands next (ADR-0044): their sets carry the band's `deleted_at` and
   // are purged below.
   const bands = app.findRecordsByFilter(
     "bands",
@@ -101,11 +115,13 @@ function purgeAttachmentsOf(app, song) {
   return records.length;
 }
 
-/// Purges one deleted record at once (operators, ADR-0044); only bands so
-/// far. Returns the number of purged records (0 when it was purged before).
+/// Purges one deleted band or closed organization at once (operators,
+/// ADR-0044). Returns the number of purged records (0 when it was purged
+/// before).
 function purgeNow(app, collection, id) {
+  if (collection === "organizations") return purgeOrganizationNow(app, id);
   if (collection !== "bands") {
-    throw new BadRequestError("Only bands can be purged at once.");
+    throw new BadRequestError("Only bands and organizations can be purged at once.");
   }
   let band = null;
   try {
@@ -134,6 +150,21 @@ function purgeNow(app, collection, id) {
     sets++;
   }
   return 1 + sets;
+}
+
+function purgeOrganizationNow(app, id) {
+  let org = null;
+  try {
+    org = app.findRecordById("organizations", String(id || ""));
+  } catch (_) {
+    throw new NotFoundError("Unknown organization.");
+  }
+  if (!org.getBool("deleted")) {
+    throw new BadRequestError("Only closed organizations can be purged.");
+  }
+  if (org.getBool("purged")) return 0;
+  require(`${__hooks}/lib/organizations.js`).purge(app, org);
+  return 1;
 }
 
 module.exports = { RETENTION_DAYS, handleTrashRequest, purgeTrash, purgeNow };

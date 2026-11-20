@@ -118,6 +118,9 @@ class FakeSyncBackend implements SyncBackend {
   /// Organizations on the "server": id → name.
   final organizations = <String, String>{};
 
+  /// Closed organizations (ADR-0044): id → when and by whom.
+  final closedOrganizations = <String, ({DateTime at, AuthUser by})>{};
+
   /// People of organizations on the "server".
   final orgMembers = <FakeMember<OrgRole>>[];
 
@@ -201,7 +204,8 @@ class FakeSyncBackend implements SyncBackend {
     _requireUser();
     return [
       for (final o in organizations.entries)
-        if (orgMembers.any((m) => m.scopeId == o.key && m.user.id == user!.id))
+        if (!closedOrganizations.containsKey(o.key) &&
+            orgMembers.any((m) => m.scopeId == o.key && m.user.id == user!.id))
           RemoteOrganization(
             id: o.key,
             name: o.value,
@@ -309,6 +313,46 @@ class FakeSyncBackend implements SyncBackend {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
     if (name != null) band.name = name.trim();
+  }
+
+  @override
+  Future<void> closeOrganization(String organizationId) async {
+    _requireUser();
+    if (!organizations.containsKey(organizationId) ||
+        closedOrganizations.containsKey(organizationId) ||
+        !_isOrgAdmin(organizationId)) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    closedOrganizations[organizationId] = (
+      at: DateTime.now().toUtc(),
+      by: user!,
+    );
+  }
+
+  @override
+  Future<void> restoreOrganization(String organizationId) async {
+    _requireUser();
+    if (!closedOrganizations.containsKey(organizationId) ||
+        !_isOrgAdmin(organizationId)) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    closedOrganizations.remove(organizationId);
+  }
+
+  @override
+  Future<List<ClosedOrganization>> fetchClosedOrganizations() async {
+    _requireUser();
+    return [
+      for (final c in closedOrganizations.entries)
+        if (orgMembers.any((m) => m.scopeId == c.key && m.user.id == user!.id))
+          ClosedOrganization(
+            id: c.key,
+            name: organizations[c.key]!,
+            closedAt: c.value.at,
+            isAdmin: _isOrgAdmin(c.key),
+            closedBy: c.value.by.displayName,
+          ),
+    ]..sort((a, b) => b.closedAt.compareTo(a.closedAt));
   }
 
   @override

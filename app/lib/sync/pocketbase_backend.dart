@@ -331,6 +331,61 @@ class PocketBaseBackend implements SyncBackend {
   );
 
   @override
+  Future<void> closeOrganization(String organizationId) =>
+      _call(() => _pb.collection('organizations').delete(organizationId));
+
+  @override
+  Future<void> restoreOrganization(String organizationId) => _call(
+    () => _pb
+        .collection('organizations')
+        .update(organizationId, body: {'deleted': false}),
+  );
+
+  @override
+  Future<List<ClosedOrganization>> fetchClosedOrganizations() async {
+    final me = currentUser;
+    if (me == null) {
+      throw const BackendException(BackendErrorKind.signedOut);
+    }
+    try {
+      final memberships = await _retrying(
+        () => _pb
+            .collection('org_memberships')
+            .getFullList(
+              filter: _pb.filter(
+                'user = {:me} && deleted = false && organization.deleted = true'
+                ' && organization.purged = false',
+                {'me': me.id},
+              ),
+              expand: 'organization,organization.updated_by',
+            ),
+      );
+      final closed = [
+        for (final m in memberships)
+          if (m.get<RecordModel?>('expand.organization') case final org?)
+            ClosedOrganization(
+              id: org.id,
+              name: org.getStringValue('name'),
+              closedAt:
+                  DateTime.tryParse(org.getStringValue('deleted_at'))
+                      ?.toUtc() ??
+                  DateTime.now().toUtc(),
+              isAdmin: m.getStringValue('role') == OrgRole.admin.name,
+              closedBy: switch (org
+                  .get<RecordModel?>('expand.updated_by')
+                  ?.getStringValue('name')) {
+                final name? when name.isNotEmpty => name,
+                _ => null,
+              },
+            ),
+      ]..sort((a, b) => b.closedAt.compareTo(a.closedAt));
+      return closed;
+    } on ClientException catch (e) {
+      throw _map(e);
+    }
+  }
+
+  @override
   Future<void> deleteBand(String bandId) =>
       _call(() => _pb.collection('bands').delete(bandId));
 

@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
+import '../data/attachment_storage.dart';
 import '../data/band_view.dart';
 import '../data/database.dart';
+import '../data/organization_cleanup.dart';
 import 'sync_backend.dart';
 
 const _uuid = Uuid();
@@ -14,10 +16,14 @@ const _uuid = Uuid();
 /// people are available offline (ADR-0001), and changed through the
 /// backend. Songs and sets are synced later (issue #17).
 class BandService {
-  BandService(this.db, this.backend);
+  BandService(this.db, this.backend, {this.storage});
 
   final AppDatabase db;
   final SyncBackend backend;
+
+  /// Where attachment files are stored, to delete those of a closed
+  /// organization (ADR-0044).
+  final AttachmentStorage? storage;
 
   Stream<T> _watch<T>(Future<T> Function() load) {
     final tables = TableUpdateQuery.onAllTables([
@@ -202,26 +208,52 @@ class BandService {
             ]))
           .watch();
 
-  Future<List<String>>? _refreshing;
+  Future<BandChanges>? _refreshing;
 
   /// Loads the organizations and bands of the signed-in user from the
   /// server and stores them. What the user can no longer see is hidden
-  /// (songs and sets stay in the database until sync cleans them up).
-  /// Returns the names of the bands that are gone (deleted, or the user was
-  /// removed, ADR-0044). Concurrent calls share one request.
-  Future<List<String>> refresh() =>
+  /// (songs and sets stay in the database until sync cleans them up); the
+  /// data of a closed organization is removed from this device (ADR-0044).
+  /// Returns what is gone. Concurrent calls share one request.
+  Future<BandChanges> refresh() =>
       _refreshing ??= _refresh().whenComplete(() => _refreshing = null);
 
-  Future<List<String>> _refresh() async {
+  Future<BandChanges> _refresh() async {
     final user = backend.currentUser;
-    if (user == null) return const [];
-    return store(user.id, await backend.fetchOrganizations());
+    if (user == null) return const BandChanges();
+    final (:goneBands, :goneOrgs) = await store(
+      user.id,
+      await backend.fetchOrganizations(),
+    );
+    var closed = const <ClosedOrganization>[];
+    if (goneOrgs.isNotEmpty) {
+      try {
+        closed = [
+          for (final c in await backend.fetchClosedOrganizations())
+            if (goneOrgs.contains(c.id)) c,
+        ];
+      } on BackendException {
+        // Unknown why they are gone: hidden as before, kept on the device.
+      }
+    }
+    for (final c in closed) {
+      await removeOrganizationData(db, c.id, storage: storage);
+    }
+    final closedIds = {for (final c in closed) c.id};
+    return BandChanges(
+      goneBands: [
+        for (final b in goneBands)
+          if (!closedIds.contains(b.organizationId)) b.name,
+      ],
+      closedOrganizations: closed,
+    );
   }
 
-  /// Stores [remote] as the complete view of [userId] and returns the names
-  /// of the bands the user could see before but no longer can. Only rows
-  /// that changed are written, so an unchanged refresh notifies no watcher.
-  Future<List<String>> store(
+  /// Stores [remote] as the complete view of [userId] and returns the bands
+  /// and organizations the user could see before but no longer can. Only
+  /// rows that changed are written, so an unchanged refresh notifies no
+  /// watcher.
+  Future<({List<BandEntry> goneBands, Set<String> goneOrgs})> store(
     String userId,
     List<RemoteOrganization> remote,
   ) => db.transaction(() async {
@@ -335,12 +367,13 @@ class BandService {
 
     // Deletes and updates of no rows notify no watcher.
     final goneBands = previousBands.difference(bandIds);
-    final goneNames = [
-      for (final b in await (db.select(
-        db.bands,
-      )..where((b) => b.id.isIn(goneBands) & b.deleted.equals(false))).get())
-        b.name,
-    ]..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    final goneEntries =
+        await (db.select(db.bands)
+              ..where((b) => b.id.isIn(goneBands) & b.deleted.equals(false))
+              ..orderBy([
+                (b) => OrderingTerm.asc(b.name.collate(Collate.noCase)),
+              ]))
+            .get();
     await (db.delete(
       db.memberships,
     )..where((m) => m.bandId.isIn(goneBands))).go();
@@ -348,13 +381,19 @@ class BandService {
           ..where((b) => b.id.isIn(goneBands) & b.deleted.equals(false)))
         .write(const BandsCompanion(deleted: Value(true)));
     final goneOrgs = previousOrgs.difference(orgIds);
+    final goneOrgsVisible = {
+      for (final o in await (db.select(
+        db.organizations,
+      )..where((o) => o.id.isIn(goneOrgs) & o.deleted.equals(false))).get())
+        o.id,
+    };
     await (db.delete(
       db.orgMemberships,
     )..where((m) => m.organizationId.isIn(goneOrgs))).go();
     await (db.update(db.organizations)
           ..where((o) => o.id.isIn(goneOrgs) & o.deleted.equals(false)))
         .write(const OrganizationsCompanion(deleted: Value(true)));
-    return goneNames;
+    return (goneBands: goneEntries, goneOrgs: goneOrgsVisible);
   });
 
   /// Writes [row] unless [existing] is equal.
@@ -415,6 +454,20 @@ class BandService {
   Future<List<DeletedBand>> deletedBands(String organizationId) =>
       backend.fetchDeletedBands(organizationId);
 
+  /// Closes an organization; it stays 30 days in the trash (its admins,
+  /// ADR-0044). Its data leaves this device with the refresh.
+  Future<void> closeOrganization(String organizationId) =>
+      _then(backend.closeOrganization(organizationId));
+
+  /// Restores a closed organization (its admins, ADR-0044); its songs and
+  /// sets come back with the next sync.
+  Future<void> restoreOrganization(String organizationId) =>
+      _then(backend.restoreOrganization(organizationId));
+
+  /// The closed organizations of the signed-in user (online, ADR-0044).
+  Future<List<ClosedOrganization>> closedOrganizations() =>
+      backend.fetchClosedOrganizations();
+
   Future<void> addBandMember(String bandId, String userId, BandRole role) =>
       _then(backend.addBandMember(bandId, userId, role));
 
@@ -434,4 +487,21 @@ class BandService {
   /// Removes a person from the organization (and its bands), or leaves it.
   Future<void> removeOrgMember(String orgMembershipId) =>
       _then(backend.removeOrgMember(orgMembershipId));
+}
+
+/// What a refresh found gone (ADR-0044).
+class BandChanges {
+  const BandChanges({
+    this.goneBands = const [],
+    this.closedOrganizations = const [],
+  });
+
+  /// Names of bands the user could see before but no longer can (deleted,
+  /// or the user was removed or left), without those of closed
+  /// organizations.
+  final List<String> goneBands;
+
+  /// Organizations of the user that were closed; their data was removed
+  /// from this device.
+  final List<ClosedOrganization> closedOrganizations;
 }

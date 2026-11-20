@@ -1994,5 +1994,113 @@
       }
     }
   },
-  "backupReminderAction": "Back up"
+  "backupReminderAction": "Back up",
+  "orgClose": "Close organization",
+  "orgCloseTitle": "Close {org}?",
+  "@orgCloseTitle": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "orgCloseMessage": "Its bands, sets, songs and attachments and everyone's personal adjustments for its songs are removed, and its invitations are revoked. Members are told the next time they sync. Its admins can restore it from the trash for {days} days; after that everything is deleted for good.",
+  "@orgCloseMessage": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "orgCloseBands": "{count, plural, =0{no bands} =1{1 band} other{{count} bands}}",
+  "@orgCloseBands": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "orgCloseSongs": "{count, plural, =0{no songs} =1{1 song} other{{count} songs}}",
+  "@orgCloseSongs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "orgClosePeople": "{count, plural, =1{1 person} other{{count} people}}",
+  "@orgClosePeople": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "orgCloseBackup": "Back up first",
+  "orgClosed": "{org} closed",
+  "@orgClosed": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "orgsClosedTitle": "Closed organizations",
+  "orgsClosedEmpty": "No closed organizations. Their admins can restore closed organizations here for {days} days.",
+  "@orgsClosedEmpty": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "orgsClosedHint": "Closed organizations can be restored with everything in them for {days} days. After that they are deleted for good.",
+  "@orgsClosedHint": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "orgClosedOn": "closed on {date}",
+  "@orgClosedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "orgClosedBy": "by {name}",
+  "@orgClosedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "orgClosedNotice": "{org} was closed by {name}. Its admins can restore it for {days} days.",
+  "@orgClosedNotice": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "orgClosedNoticeAnonymous": "{org} was closed. Its admins can restore it for {days} days.",
+  "@orgClosedNoticeAnonymous": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  }
 }

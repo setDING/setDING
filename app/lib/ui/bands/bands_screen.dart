@@ -13,6 +13,7 @@ import '../account/sign_in_screen.dart' show backendErrorText;
 import '../widgets/dialogs.dart';
 import 'band_labels.dart';
 import 'band_screen.dart';
+import 'close_organization.dart';
 import 'join_screen.dart';
 import 'organization_screen.dart';
 
@@ -201,6 +202,19 @@ class BandsScreen extends ConsumerWidget {
               MaterialPageRoute<bool>(builder: (_) => const JoinScreen()),
             ),
           ),
+          // Closed organizations, restorable for 30 days (ADR-0044).
+          if (user != null)
+            IconButton(
+              key: const Key('orgs-closed'),
+              tooltip: l10n.orgsClosedTitle,
+              icon: const Icon(Icons.restore_from_trash),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (_) => const ClosedOrganizationsScreen(),
+                ),
+              ),
+            ),
           if (user != null)
             IconButton(
               tooltip: l10n.bandRefresh,

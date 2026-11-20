@@ -313,3 +313,13 @@ band `purged`, purges its sets and removes its memberships and arrangements. A
 superuser deleting a band in the admin UI also only moves it to the trash. To
 remove one deleted band at once (abuse, a deletion request), a superuser sends
 `POST /api/setding/trash/purge` with `{"collection": "bands", "id": "<band id>"}`.
+
+Closed organizations (ADR-0044) are in the trash too. After 30 days the purge
+**deletes everything of them for good**: bands, sets, arrangements, songs with their
+attachment files, everybody's personal adjustments and annotations for its songs,
+invitations and the memberships with names and roles. Only a tombstone of the
+organization without its name stays (`purged`); user accounts stay. A superuser
+closing an organization in the admin UI also only moves it to the trash; to purge one
+at once, send `{"collection": "organizations", "id": "<organization id>"}`. Because the
+backups are kept for 14 days (`KEEP_DAYS`), the data of a closed organization is
+gone from the server and its backups at the latest 30 + 14 days after the closing.

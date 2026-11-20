@@ -175,6 +175,7 @@ Deleted songs and sets can be **restored for 30 days**.
   without library rights and their settings; restoring the settings is
   optional; a reminder for the local library after 30 days; no automatic
   backups.
+- 2026-11-20: Implemented for organizations (#629, ADR-0044): the daily purge first deletes organizations closed more than 30 days ago for good (all their records and attachment files, a tombstone without a name stays); `POST /api/setding/trash/purge` also takes `{"collection": "organizations", "id": …}`.
 
 ## Open points
 

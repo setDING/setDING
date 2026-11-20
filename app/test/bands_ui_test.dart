@@ -320,6 +320,116 @@ void main() {
     await app.dispose(tester);
   });
 
+  group('closing organizations (ADR-0044)', () {
+    Future<TestApp> openOrg(WidgetTester tester, AuthUser user) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'}, user: user);
+      app.backend.addOrganization('o1', 'School', admin: _ann);
+      app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+      app.backend.addMember('b1', _bob, BandRole.member);
+      await tester.pumpWidget(app.build(home: const BandsScreen()));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('School'));
+      await tester.pumpAndSettle();
+      return app;
+    }
+
+    testWidgets('admins close it after typing its name, and undo', (
+      tester,
+    ) async {
+      final app = await openOrg(tester, _ann);
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('org-close')),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('org-close')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('1 band · no songs · 2 people'), findsOneWidget);
+      expect(find.byKey(const Key('org-close-backup')), findsOneWidget);
+      FilledButton button() => tester.widget<FilledButton>(
+        find.byKey(const Key('org-close-confirm')),
+      );
+      expect(button().onPressed, isNull);
+      await tester.enterText(find.byKey(const Key('org-close-name')), 'School');
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('org-close-confirm')));
+      await tester.pumpAndSettle();
+
+      expect(app.backend.closedOrganizations.keys, ['o1']);
+      expect(find.text('School closed'), findsOneWidget);
+      expect(find.byKey(const Key('org-o1')), findsNothing);
+      await tester.tap(find.text('Undo'));
+      await tester.pumpAndSettle();
+      expect(app.backend.closedOrganizations, isEmpty);
+      expect(find.byKey(const Key('org-o1')), findsOneWidget);
+      await app.dispose(tester);
+    });
+
+    testWidgets('admins restore closed organizations', (tester) async {
+      final app = await openOrg(tester, _ann);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      await app.backend.closeOrganization('o1');
+      await tester.tap(find.byKey(const Key('orgs-closed')));
+      await tester.pumpAndSettle();
+      expect(find.text('School'), findsOneWidget);
+      expect(find.textContaining('by Ann'), findsOneWidget);
+      expect(find.textContaining('30 days left'), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('closed-org-restore-o1')));
+      await tester.pumpAndSettle();
+      expect(app.backend.closedOrganizations, isEmpty);
+      expect(find.text('"School" restored'), findsOneWidget);
+      await app.dispose(tester);
+    });
+
+    testWidgets('members neither close nor restore it', (tester) async {
+      final app = await openOrg(tester, _bob);
+      expect(find.byKey(const Key('org-close')), findsNothing);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      app.backend.user = _ann;
+      await app.backend.closeOrganization('o1');
+      app.backend.user = _bob;
+      await tester.tap(find.byKey(const Key('orgs-closed')));
+      await tester.pumpAndSettle();
+      expect(find.text('School'), findsOneWidget);
+      expect(find.byKey(const ValueKey('closed-org-restore-o1')), findsNothing);
+      await app.dispose(tester);
+    });
+
+    testWidgets('members learn that their organization was closed', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'}, user: _bob);
+      app.backend.addOrganization('o1', 'School', admin: _ann);
+      app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+      app.backend.addMember('b1', _bob, BandRole.member);
+      await tester.pumpWidget(app.build());
+      await tester.pumpAndSettle();
+      await syncNow(tester);
+      await tester.pumpAndSettle();
+
+      app.backend.user = _ann;
+      await app.backend.closeOrganization('o1');
+      app.backend.user = _bob;
+      await syncNow(tester);
+      await tester.pumpAndSettle();
+      expect(
+        find.text(
+          'School was closed by Ann. Its admins can restore it for 30 days.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('no longer available'), findsNothing);
+      await app.dispose(tester);
+    });
+  });
+
   group('deleting bands (ADR-0044)', () {
     Future<TestApp> openBand(WidgetTester tester, AuthUser user) async {
       useTabletSize(tester);

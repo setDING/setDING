@@ -9,6 +9,7 @@ import '../../sync/auth_providers.dart';
 import '../widgets/dialogs.dart';
 import 'band_labels.dart';
 import 'band_screen.dart';
+import 'close_organization.dart';
 import 'delete_band.dart';
 import 'bands_screen.dart';
 import 'invites_section.dart';
@@ -174,6 +175,26 @@ class OrganizationScreen extends ConsumerWidget {
                     );
                     if (left && context.mounted) Navigator.pop(context);
                   },
+                ),
+              ),
+            // Its admins close the organization (ADR-0044).
+            if (org.canClose)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: OutlinedButton.icon(
+                  key: const Key('org-close'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: theme.colorScheme.error,
+                  ),
+                  icon: const Icon(Icons.domain_disabled),
+                  label: Text(l10n.orgClose),
+                  onPressed: () => closeOrganization(
+                    context,
+                    ref,
+                    org,
+                    people: people.length,
+                    bands: bands.length,
+                  ),
                 ),
               ),
           ],
