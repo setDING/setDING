@@ -51,6 +51,9 @@ APK         := $(APP)/build/setding-$(APK_VERSION)-$(APK_COMMIT).apk
 # device when several are connected; BETA_MODE=debug|profile|release.
 BETA_MODE   ?= release
 BETA_APK    := $(APP)/build/app/outputs/flutter-apk/app-$(BETA_MODE).apk
+# Commit shown in the beta's version (Settings -> About), "-dirty" when the working
+# tree has uncommitted changes, since the beta is built from the working tree.
+BETA_COMMIT  = $(APK_COMMIT)$(shell git -C $(ROOT) diff --quiet HEAD 2>/dev/null || echo -dirty)
 
 # Flutter version used for development; CI reads it from here
 # (.github/workflows/ci.yml). CI_IMAGE (tool/ci/Dockerfile) is a local base image
@@ -127,7 +130,7 @@ apk: ## Build an Android release APK for manual installation (app/build/setding-
 android-install: ## Install the local build as "setDING Beta" (app.setding.beta) next to a release on a USB device (DEVICE=<id>)
 	@test -d "$(ANDROID_HOME)" || { echo "Android SDK not found. Install it or set ANDROID_HOME=/path/to/sdk"; exit 1; }
 	@$(ADB) $(if $(DEVICE),-s $(DEVICE)) get-state >/dev/null 2>&1 || { echo "No Android device connected (USB debugging on; DEVICE=<id> for several)"; exit 1; }
-	cd $(APP) && SETDING_ANDROID_BETA=1 $(FLUTTER) build apk --$(BETA_MODE)
+	cd $(APP) && SETDING_ANDROID_BETA=1 $(FLUTTER) build apk --$(BETA_MODE) --dart-define=SETDING_BUILD_COMMIT=$(BETA_COMMIT)
 	$(ADB) $(if $(DEVICE),-s $(DEVICE)) install -r $(BETA_APK)
 	$(ADB) $(if $(DEVICE),-s $(DEVICE)) shell monkey -p app.setding.beta -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
 
