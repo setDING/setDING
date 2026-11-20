@@ -606,7 +606,8 @@ void main() {
   }
 
   // Section labels in the short form (#672): the editor hint and the import
-  // report that offer to convert them to label="…".
+  // report that offer to convert them to label="…"; the CCLI bar line hint
+  // (#481).
   for (final (lang, dark) in [('de', false), ('en', true)]) {
     _screenshotTest('section label conversion $lang', (tester) async {
       useTabletSize(tester);
@@ -623,6 +624,22 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(LegacyLabelHint), findsOneWidget);
       await _shot(tester, '${lang}_23_editor_labels');
+
+      // CCLI bar lines (#481): the hint that converts them to chord grids.
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            home: SongEditorScreen(
+              initialSource: lang == 'de' ? _ccliBarsDe : _ccliBars,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(CcliGridHint), findsOneWidget);
+      expect(find.byType(LegacyLabelHint), findsNothing);
+      await _shot(tester, '${lang}_24_editor_ccli');
 
       ImportFile file(String name, String text) =>
           ImportFile(name, Uint8List.fromList(utf8.encode(text)));
@@ -1031,6 +1048,38 @@ A   || D . | G . | % . | A7 . |
 {start_of_bridge: Bridge (+2)}
 [D]Modulates up [G]two [A]semitones
 {end_of_bridge}
+''';
+
+const _ccliBars = '''{title: Amazing Grace}
+{artist: John Newton}
+{key: G}
+
+{comment: Intro}
+[|][G] [.] [G/B] [.][|][C2] [.] [G] [.][|]
+
+{start_of_verse: label="Verse 1"}
+A[G]mazing grace, how [C]sweet the [G]sound
+That saved a wretch like [D]me
+{end_of_verse}
+
+{comment: Turnaround}
+[|][Em] [D] [C] [.][|][G] [.] [.] [.][|]
+''';
+
+const _ccliBarsDe = '''{title: Amazing Grace}
+{artist: John Newton}
+{key: G}
+
+{comment: Intro}
+[|][G] [.] [G/B] [.][|][C2] [.] [G] [.][|]
+
+{start_of_verse: label="Strophe 1"}
+A[G]mazing grace, how [C]sweet the [G]sound
+That saved a wretch like [D]me
+{end_of_verse}
+
+{comment: Zwischenspiel}
+[|][Em] [D] [C] [.][|][G] [.] [.] [.][|]
 ''';
 
 const _shortLabels = '''{title: Amazing Grace}

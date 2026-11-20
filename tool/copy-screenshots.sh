@@ -37,6 +37,7 @@ map=(
   live_midi 22b_live_midi
   editor_labels 23_editor_labels
   import_labels 23b_import_labels
+  editor_ccli 24_editor_ccli
 )
 
 for ((i = 0; i < ${#map[@]}; i += 2)); do
