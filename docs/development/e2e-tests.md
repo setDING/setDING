@@ -41,6 +41,8 @@ never touched.
    fixture:
    - **Anna** administers the organization and leads the band "E2E Band";
    - **Ben** is an organization member and the band's set planner (ADR-0023);
+   - **Carla** is a librarian of the organization (she edits and deletes
+     songs) and also the band's set planner;
    - the library has *Fixture Song* and *Fixture Sheet*, a song with a
      two-page PDF only.
 
@@ -88,16 +90,18 @@ the app running (it pumps frames) while it waits. The endpoints sit under
 **Offline** works like a lost network. New requests of that client fail at
 the connection, and its open responses (the realtime connection) end. The
 coordination endpoints keep working. This makes conflicts and the offline
-queue reproducible (stories of #692 still to come).
+queue reproducible: a client calls `setOnline(tester, online: false)`.
 
 ## The stories
 
-| Story | Client a (Linux): Anna | Client b (web): Ben |
+| Story | Client a (Linux): Anna | Client b (web): Ben or Carla |
 |---|---|---|
 | `basics` | Creates a song, edits it while Ben has it open, plans a gig today with the song and the PDF-only song, then gets Ben's new order of the set | Sees the new song arrive without syncing by hand (realtime), sees the edit on the open song screen, starts the gig from the overview and plays it live including the PDF, then reorders the set as set planner |
 
-Planned (#692): conflicts and offline, live mode while the other client
-changes or deletes songs and sets, roles, undo and the trash.
+| `conflicts` | Changes three songs and deletes two while Carla is offline with her own changes of them, and renames a set; then gets the result of each of Carla's resolutions | Offline: changes the same five songs, creates a song and renames the set, all held in the outbox. Online: each song is a conflict (ADR-0004), resolved on its screen: keep mine, use the server version, keep both; for a deleted song keep mine (restores it) and use the server version (accepts the deletion). Her queued song arrives, and her later push of the set wins (last writer wins) |
+
+Planned (#692): live mode while the other client changes or deletes songs
+and sets, roles, undo and the trash.
 
 ## Adding a story
 
@@ -108,7 +112,8 @@ changes or deletes songs and sets, roles, undo and the trash.
   ends.
 - Use the helpers of
   [`e2e_support.dart`](../../app/integration_test/e2e/e2e_support.dart)
-  (`signal`, `barrier`, `eventually`, database lookups) and, in the web client,
+  (`signal`, `barrier`, `eventually`, `setOnline`, `signInOnDesktop`,
+  `selectFixtureBand`, database lookups) and, in the web client,
   `signIn` / `pressKey` from `web/web_support.dart`. Text goes in with
   `enterText` on Linux and with `fillIn` on the web.
 - Check what the person sees through the UI. Changes may go through the

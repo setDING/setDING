@@ -6,13 +6,15 @@
 //   dart run bin/e2e_backend.dart [--public-dir <dir>] [--clients a,b]
 //
 // The fixture: Anna administers the organization and leads its band "E2E
-// Band"; Ben is a member of the organization and plans the band's sets
+// Band"; Ben is a member of the organization and plans the band's sets;
+// Carla is a librarian of the organization and also plans the band's sets
 // (ADR-0023). The library has a song and a song with a two-page PDF only.
 //
 // --public-dir serves a web build from PocketBase like in production
 // (ADR-0018). Prints one JSON line
 //   {"port": <PocketBase>, "clients": {"a": <proxy port>, ...},
-//    "accounts": {"anna": {"email", "password"}, "ben": {...}},
+//    "accounts": {"anna": {"email", "password"}, "ben": {...},
+//                 "carla": {...}},
 //    "song": ..., "sheet": ...}
 // and runs until it gets SIGTERM or SIGINT; then it stops the proxies and
 // PocketBase and removes its data.
@@ -44,6 +46,7 @@ Future<void> main(List<String> args) async {
     final stamp = DateTime.now().millisecondsSinceEpoch;
     final anna = await _person(pb, 'anna-$stamp@setding.test', 'Anna');
     final ben = await _person(pb, 'ben-$stamp@setding.test', 'Ben');
+    final carla = await _person(pb, 'carla-$stamp@setding.test', 'Carla');
 
     // Open registration: the band gets a new organization with Anna as its
     // admin and band leader (ADR-0017, ADR-0024).
@@ -51,16 +54,18 @@ Future<void> main(List<String> args) async {
     band.expectStatus(200);
     final bandId = band.json['id'] as String;
     final organization = band.json['organization'] as String;
-    (await pb.superuser.post('org_memberships', {
-      'user': ben.user.id,
-      'organization': organization,
-      'role': 'member',
-    })).expectStatus(200);
-    (await pb.superuser.post('memberships', {
-      'user': ben.user.id,
-      'band': bandId,
-      'role': 'planner',
-    })).expectStatus(200);
+    for (final (person, orgRole) in [(ben, 'member'), (carla, 'librarian')]) {
+      (await pb.superuser.post('org_memberships', {
+        'user': person.user.id,
+        'organization': organization,
+        'role': orgRole,
+      })).expectStatus(200);
+      (await pb.superuser.post('memberships', {
+        'user': person.user.id,
+        'band': bandId,
+        'role': 'planner',
+      })).expectStatus(200);
+    }
 
     (await anna.user.post('songs', {
       'id': _uuid(),
@@ -102,7 +107,7 @@ Future<void> main(List<String> args) async {
         'port': pb.baseUrl.port,
         'clients': ports,
         'accounts': {
-          for (final p in [anna, ben])
+          for (final p in [anna, ben, carla])
             p.key: {'email': p.email, 'password': _password},
         },
         'song': _song,
