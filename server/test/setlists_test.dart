@@ -1,6 +1,7 @@
 import 'package:test/test.dart';
 
 import 'support/fixtures.dart';
+
 import 'package:setding_server/pocketbase_harness.dart';
 
 void main() {
@@ -117,5 +118,81 @@ void main() {
       'band': other.id,
     });
     expect(r.status, isNot(200));
+  });
+
+  group('song play history (ADR-0046)', () {
+    test('an older app saving a set keeps how its songs were played', () async {
+      final f = await BandFixture.create(pb);
+      final song = await f.createSong(f.admin);
+      final played = {'key': 'D', 'tempo': 96};
+      final frozen = {
+        'id': uuid(),
+        'type': 'song',
+        'song': song['id'],
+        'played': played,
+      };
+      final changed = {
+        'id': uuid(),
+        'type': 'song',
+        'song': song['id'],
+        'played': {'key': 'E'},
+      };
+      final set = await f.admin.post('setlists', {
+        'band': f.id,
+        'name': 'Last week',
+        'gig_date': '2026-11-13 00:00:00.000Z',
+        'items': [frozen, changed],
+      });
+      set.expectStatus(200);
+
+      // An app before 0.17.0 sends the items without `played`; a newer one
+      // sends a corrected value, and a new item has none.
+      final added = {'id': uuid(), 'type': 'song', 'song': song['id']};
+      final saved = await f.admin.patch('setlists', set.json['id'], {
+        'name': 'Renamed',
+        'items': [
+          {'id': frozen['id'], 'type': 'song', 'song': song['id']},
+          {
+            ...changed,
+            'played': {'key': 'F'},
+          },
+          added,
+        ],
+      });
+      saved.expectStatus(200);
+      final items =
+          (await f.member.view('setlists', set.json['id'])).json['items']
+              as List;
+      expect((items[0] as Map)['played'], played);
+      expect((items[1] as Map)['played'], {'key': 'F'});
+      expect((items[2] as Map).containsKey('played'), isFalse);
+    });
+
+    test('members and outsiders still cannot change a set', () async {
+      final f = await BandFixture.create(pb);
+      final song = await f.createSong(f.admin);
+      final item = {
+        'id': uuid(),
+        'type': 'song',
+        'song': song['id'],
+        'played': {'key': 'D'},
+      };
+      final set = await f.admin.post('setlists', {
+        'band': f.id,
+        'name': 'Gig',
+        'items': [item],
+      });
+      for (final user in [f.member, f.outsider]) {
+        final r = await user.patch('setlists', set.json['id'], {
+          'items': [
+            {'id': item['id'], 'type': 'song', 'song': song['id']},
+            {'id': uuid(), 'type': 'pause'},
+          ],
+        });
+        expect(r.status, anyOf(400, 403, 404));
+      }
+      final stored = await f.admin.view('setlists', set.json['id']);
+      expect(stored.json['items'], [item]);
+    });
   });
 }

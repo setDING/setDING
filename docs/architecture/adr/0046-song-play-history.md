@@ -48,26 +48,31 @@ the item JSON of `setlists.items` (ADR-0015) and in local columns:
 - **When:** the values are written once, when the set's gig date is reached
   (`gig_date <= today`), by the first client of a person who may edit the band's
   sets (band leader or set planner, ADR-0023) that runs a sync on or after that
-  day. Before that day nothing is stored and the history derives nothing from the
-  set, because it is not a play yet.
+  day, up to **14 days** after it; later the set stays approximate (see
+  *Fallback*), because the arrangement may have changed since. The local library
+  is frozen when the app starts. Before the gig day nothing is stored and the
+  history derives nothing from the set, because it is not a play yet.
 - **Frozen:** once written, clients never rewrite `played` of a set whose gig
   date has passed, also when the arrangement or the song changes later. Editing
-  such a set by hand (e.g. fixing the key afterwards) updates `played` of the
-  edited item only.
+  such a set by hand (e.g. fixing the key afterwards, or adding a song) updates
+  `played` of the edited item only.
 - **Fallback:** a past set without `played` (older sets, or nobody with set
   rights synced in time) is derived from today's song and arrangement and shown
   as approximate ("≈ D").
-- **Older clients** drop unknown item fields when they save a set. The release
-  that introduces `played` raises `MIN_CLIENT_VERSION` (ADR-0029); from then on
-  `RemoteSetItem` keeps unknown fields so later additions do not need this again.
-- The server checks nothing new: `played` is part of the set and covered by the
-  existing set write rules.
+- **Older clients** (before 0.17.0) drop unknown item fields when they save a
+  set. A server hook (`server/pb_hooks/setlists.pb.js`) keeps the stored
+  `played` of an item that is sent again with the same ID but without the field,
+  so no update is forced. From 0.17.0 on, clients keep unknown item fields (a
+  local column `extra`) and send them back, so later additions need neither.
+- No new permission: `played` is part of the set and covered by the existing set
+  write rules; the hook runs only for requests that pass them.
 
 ### Steps
 
 1. **v1 – song and set editor** (#660), local only:
-   - Card *Played* in the song view with the band choice of the arrangement
-     panel: plays in total and in the last 12 months, last and first play, the
+   - Side panel *Played* in the song view, behind a history icon with the
+     number of plays (also for the local library), with the band choice of the
+     arrangement panel: plays in total and in the last 12 months, last and first play, the
      latest plays with date, set name, key, tempo and sequence, *Show all*; a key
      that differs from today's band key is highlighted.
    - Set editor: the key picker shows "Last D on 12.10.2026 · mostly D (12 of
@@ -111,7 +116,7 @@ the item JSON of `setlists.items` (ADR-0015) and in local columns:
   and in the set editor, with the values of the evening.
 - `setlists.items` grows by a few bytes per song item; the local schema gets new
   columns and a migration.
-- The minimum client version is raised once.
+- No forced update: the server keeps what older clients would drop.
 - v2 adds the band field `stale_after_months` with a field-level exception for
   set planners, enforced by a server hook.
 - v3 adds the first aggregated read across bands; it needs its own permission
@@ -128,6 +133,11 @@ the item JSON of `setlists.items` (ADR-0015) and in local columns:
   see other bands' plays; v3 is fetched with every sync and stored for offline
   use.
 - 2026-11-20: Accepted (owner).
+- 2026-11-20: v1 implemented (#660). Details: frozen at most 14 days after the
+  gig day; the local library is frozen at app start; songs added or changed by
+  hand in a set whose gig day has come are frozen right away; unknown item
+  fields kept locally. Instead of raising the minimum client version, a server
+  hook keeps `played` when an older client saves a set without it (owner).
 
 ## Open points
 
