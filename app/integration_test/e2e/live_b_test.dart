@@ -6,12 +6,13 @@
 // song and deletes the song he is playing: his stage stays as it was and
 // his device does not sync (ADR-0007). Once he leaves live mode, the
 // changes arrive with one hint that sums them up (#691); the deleted song
-// is gone from the set.
+// is gone from the set and from the recent changes (#701).
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/ui/home_screen.dart';
 import 'package:setding/ui/live/live_screen.dart';
+import 'package:setding/ui/overview/recent_changes.dart';
 
 import '../support.dart';
 import '../web/web_support.dart' show pressKey, signIn, startApp;
@@ -58,8 +59,7 @@ void main() {
     if (overview.evaluate().isNotEmpty) await tester.tap(overview);
     await pumpUntil(tester, find.text(liveGig));
     final startLive = find.byKey(const Key('overview-start-live'));
-    await pumpUntil(tester, startLive);
-    await tester.tap(startLive);
+    await tapWhenSettled(tester, startLive);
     await pumpUntil(tester, find.byType(LiveScreen));
     await pumpUntil(tester, find.text('1 / 3'));
     await pressKey(tester, 'PageDown');
@@ -126,9 +126,26 @@ void main() {
       reason: "Anna's changes did not arrive after live mode",
     );
 
+    // 3b. The hint's Show opens Recent changes: Anna's songs are there,
+    // but no longer the one she deleted (#701), though it was logged as a
+    // new song before.
+    await tester.tap(find.byType(SnackBarAction));
+    await pumpUntil(tester, find.byType(RecentChangesScreen));
+    // (The overview's card behind it lists them too.)
+    Finder entry(String title) => find.descendant(
+      of: find.byType(RecentChangesScreen),
+      matching: find.byKey(ValueKey('recent-change-${ids[title]}')),
+    );
+    await pumpUntil(tester, entry(liveOne));
+    expect(entry(liveThree), findsOneWidget);
+    expect(entry(liveTwo), findsNothing);
+    // Neither on the overview's card.
+    expect(find.byKey(ValueKey('recent-change-${ids[liveTwo]}')), findsNothing);
+    Navigator.of(tester.element(find.byType(RecentChangesScreen))).pop();
+    await pumpUntil(tester, find.byType(HomeScreen));
+
     // 4. The next time he plays it, it is Anna's version.
-    await pumpUntil(tester, startLive);
-    await tester.tap(startLive);
+    await tapWhenSettled(tester, startLive);
     await pumpUntil(tester, find.byType(LiveScreen));
     await pumpUntil(tester, find.text('1 / 2'));
     expect(onStage(liveThree), findsWidgets);
@@ -146,3 +163,13 @@ void main() {
 /// [text] on the live screen (the overview behind it lists songs, too).
 Finder onStage(String text) =>
     find.descendant(of: find.byType(LiveScreen), matching: find.text(text));
+
+/// Taps [finder] once the screen has stopped changing: the cards of the
+/// overview still grow while the sync applies Anna's records, and a tap
+/// on a moving button lands on the set card (which opens the set).
+Future<void> tapWhenSettled(WidgetTester tester, Finder finder) async {
+  await pumpUntil(tester, finder);
+  await pumpFor(tester, const Duration(seconds: 2));
+  await pumpUntil(tester, finder);
+  await tester.tap(finder);
+}
