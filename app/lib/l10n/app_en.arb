@@ -2286,5 +2286,29 @@
       }
     }
   },
-  "sortByLastPlayed": "Last played"
+  "sortByLastPlayed": "Last played",
+  "playHistoryOtherBands": "Other bands",
+  "playHistoryFetched": "As of {date}",
+  "@playHistoryFetched": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryUsage": "Library usage",
+  "libraryUsageSummary": "No band plays {count} of {total} songs",
+  "@libraryUsageSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryUsageHint": "Songs that were in no past set of any band of the organization. Move what no band needs any more to the trash.",
+  "libraryUsageNotLoaded": "Not loaded yet: sync once while connected to the server.",
+  "libraryUsageAllPlayed": "Every song of the library was played by a band."
 }
