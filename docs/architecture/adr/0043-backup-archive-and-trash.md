@@ -89,16 +89,19 @@ addition (new optional field) does not change the version.
 
 Deleted songs and sets can be **restored for 30 days**.
 
-- The server stores when a song, set or attachment was deleted (`deleted_at`).
-  Restoring a song also restores the attachments deleted with it (those
-  deleted since the song's deletion, like the personal adjustments and
-  arrangements today, ADR-0015).
+- Songs, sets and attachments store when they were deleted (`deleted_at`),
+  sent by the client (a deletion may happen offline; the server takes now if
+  it is missing or in the future). Restoring a song also restores the
+  attachments deleted together with it (same deletion time); the server
+  restores the personal adjustments, arrangements and annotations the song's
+  deletion removed, as for the undo (ADR-0015).
 - **Deleting a set keeps its items**, so a restored set is complete. Deleting
   a song still removes its set items; restoring it from the trash does not put
   them back (the undo of #267 still does).
 - A daily job on the server **purges** records deleted more than 30 days ago:
-  the song text and attachment files are removed and the record is marked
-  `purged`. The record itself stays as a **tombstone**, so devices that were
+  the song text, set items and attachment files are removed (with a song also
+  its attachments) and the record is marked `purged`. Superusers can start the
+  purge at once (`POST /api/setding/trash/purge`). The record itself stays as a **tombstone**, so devices that were
   offline for a long time still learn about the deletion. Purged records
   cannot be restored.
 - The client shows a **trash** per library (songs, for people who may delete
