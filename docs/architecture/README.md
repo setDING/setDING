@@ -156,7 +156,7 @@ erDiagram
     ORGANIZATION ||--o{ INVITATION : has
     USER ||--o| USER_SETTINGS : has
 
-    ORGANIZATION { uuid id string name }
+    ORGANIZATION { uuid id string name bool deleted timestamp deleted_at bool purged }
     ORG_MEMBERSHIP { uuid organization_id uuid user_id enum role "admin|librarian|member" }
     BAND { uuid id uuid organization_id string name bool deleted timestamp deleted_at bool purged }
     USER { uuid id string name string email string locale }
@@ -232,7 +232,7 @@ Notes:
 | **Freehand annotations** ✅ | Personal freehand notes on songs and PDF pages, synced and editable (ADR-0032, implemented in #428) |
 | **Song display styles** ✅ | Personal styles per section type for live mode and the song view (ADR-0033, implemented in #473–#476, #471); monospace font option (#526); Black/White preset (#536) |
 | **Backup & trash** | Backup archive of a library (export on native and web, import as a copy) and a 30-day trash for songs and sets (ADR-0043, accepted: trash #631, backup archive #636, full backup in the settings #639) |
-| **Deleting bands, closing organizations** | Org admins delete bands and close organizations with a 30-day trash, then a purge (ADR-0044, accepted: ADR #634; deleting bands implemented in #628; closing organizations #629 open). Since #627 the server refuses `deleted` on bands and organizations |
+| **Deleting bands, closing organizations** | Org admins delete bands and close organizations with a 30-day trash, then a purge (ADR-0044, accepted: ADR #634; deleting bands implemented in #628, closing organizations in #629). Since #627 the server refuses `deleted` on bands and organizations |
 | **Later** | Configurable page turner key mapping, band annotations shared with the band (follow-up of ADR-0032), MIDI program change per song in live mode (ADR-0039, accepted: prototype #512, data #561, settings and connection #562, sending in live mode #564; the song's program field #563 and the manual test with a Nord on Windows, Linux and Chrome open), keyboard programs per device profile with a Yamaha Motif XF profile (ADR-0042, accepted: Motif XF profile #591, storage per profile #593; the manual test on a Motif XF8 open), MIDI page turning |
 
 ### MVP status (2026-11-14)

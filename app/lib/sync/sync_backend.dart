@@ -155,6 +155,28 @@ class RemoteBand {
   final List<RemoteMember<BandRole>> members;
 }
 
+/// A closed organization of the signed-in user in the trash (ADR-0044).
+@immutable
+class ClosedOrganization {
+  const ClosedOrganization({
+    required this.id,
+    required this.name,
+    required this.closedAt,
+    required this.isAdmin,
+    this.closedBy,
+  });
+
+  final String id;
+  final String name;
+  final DateTime closedAt;
+
+  /// The user's role there is admin: they may restore it.
+  final bool isAdmin;
+
+  /// Name of the person who closed it, if known.
+  final String? closedBy;
+}
+
 /// A band in the trash of its organization (ADR-0044).
 @immutable
 class DeletedBand {
@@ -671,6 +693,17 @@ abstract class SyncBackend {
   /// Deleted bands of [organizationId] that can still be restored, most
   /// recently deleted first (organization admins, ADR-0044).
   Future<List<DeletedBand>> fetchDeletedBands(String organizationId);
+
+  /// Closes an organization with everything in it (organization admins,
+  /// ADR-0044); it stays 30 days in the trash.
+  Future<void> closeOrganization(String organizationId);
+
+  /// Restores a closed organization (its admins, ADR-0044).
+  Future<void> restoreOrganization(String organizationId);
+
+  /// The closed organizations of the signed-in user that can still be
+  /// restored, most recently closed first (ADR-0044).
+  Future<List<ClosedOrganization>> fetchClosedOrganizations();
 
   /// Adds a person of the band's organization to the band.
   Future<void> addBandMember(String bandId, String userId, BandRole role);

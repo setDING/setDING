@@ -183,6 +183,14 @@ As required by AGENTS.md "Permissions on the server" (#632), server tests call t
     - After a sync, a one-time message for bands that are gone.
   - **Message wording:** the API cannot tell a member whether their band was deleted or they were removed from it, because both soft-delete their membership. The message therefore says "no longer available to you: the band was deleted or you are no longer a member".
   - **Queued offline changes:** the server refuses them and the app drops them, as before for removed members.
+- 2026-11-20: Closing organizations implemented (#629).
+  - **Server:** migration `1796300000_close_organizations.js`, `pb_hooks/organizations.pb.js`, `lib/organizations.js`; the purge in `lib/trash.js` handles organizations first and has the "immediately" option for them. Creating invitations into a closed organization is refused.
+  - **App:**
+    - *Close organization* on the organization screen for its admins: a summary, *Back up first* (the backup export of ADR-0043), the typed name and *Undo*.
+    - *Closed organizations* (trash icon in *Manage bands*), loaded online: for all its members, with *Restore* for its admins.
+    - After a sync, members get the one-time message "X was closed by Y". `removeOrganizationData` deletes the organization's rows, pending changes, sync cursors and attachment files from the device; restoring brings them back with the next sync.
+    - A refresh fetches the closed organizations only when an organization disappeared; an organization the person left keeps its data hidden, as before.
+  - **Known limit:** people of a closed organization still appear to each other in the `users` collection while their memberships exist (the 30 days). The `users` list rule does not look at the organization's state; their names were visible before the closing anyway.
 
 ## Open points
 

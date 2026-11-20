@@ -110,6 +110,7 @@ by band.
 - 2026-11-17: **ADR-0024** (accepted): on `invite_only` servers organizations are founded only by redeeming an operator founder invitation; creating a band without an organization is then rejected. On `open` servers the behaviour above stays.
 - 2026-11-17: **ADR-0023** (accepted): organization roles admin > librarian > member instead of an organization-wide editing switch; existing songs are edited by organization admins and librarians, band leaders create songs and edit only their own; organization admins keep all rights.
 - 2026-11-20: **ADR-0044** (accepted): an organization can be closed by any of its admins, with 30 days to restore it before everything is purged; bands can be deleted by organization admins.
+- 2026-11-20: Closing an organization implemented (#629, ADR-0044): *Close organization* for its admins, *Closed organizations* to restore it within 30 days; the last admin who wants to end an organization closes it instead of leaving.
 
 ## Open points
 

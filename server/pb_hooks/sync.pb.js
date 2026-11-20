@@ -27,9 +27,9 @@ onRecordUpdateExecute((e) => {
 
 // Records of synced collections are never hard-deleted through the API
 // (deleteRule = null); a superuser deleting one in the admin UI would leave
-// other devices with a stale copy, so it is refused here as well. Bands are
-// deleted with DELETE, which `bands.pb.js` turns into a soft delete
-// (ADR-0044).
+// other devices with a stale copy, so it is refused here as well. Bands and
+// organizations are deleted with DELETE, which `bands.pb.js` and
+// `organizations.pb.js` turn into a soft delete (ADR-0044).
 onRecordDeleteRequest((e) => {
   throw new BadRequestError("Set 'deleted' instead of deleting synced records.");
-}, "organizations", "org_memberships", "memberships", "songs", "attachments", "setlists", "overlays", "arrangements", "user_settings", "annotations");
+}, "org_memberships", "memberships", "songs", "attachments", "setlists", "overlays", "arrangements", "user_settings", "annotations");

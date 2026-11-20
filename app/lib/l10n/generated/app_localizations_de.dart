@@ -3851,4 +3851,93 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get backupReminderAction => 'Sichern';
+
+  @override
+  String get orgClose => 'Organisation schliessen';
+
+  @override
+  String orgCloseTitle(String org) {
+    return '$org schliessen?';
+  }
+
+  @override
+  String orgCloseMessage(int days) {
+    return 'Ihre Bands, Sets, Songs und Anhänge sowie die persönlichen Anpassungen aller zu ihren Songs werden entfernt und ihre Einladungen widerrufen. Die Mitglieder erfahren es beim nächsten Sync. Ihre Admins können sie $days Tage lang aus dem Papierkorb wiederherstellen; danach wird alles endgültig gelöscht.';
+  }
+
+  @override
+  String orgCloseBands(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Bands',
+      one: '1 Band',
+      zero: 'keine Bands',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String orgCloseSongs(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs',
+      one: '1 Song',
+      zero: 'keine Songs',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String orgClosePeople(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Personen',
+      one: '1 Person',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get orgCloseBackup => 'Vorher sichern';
+
+  @override
+  String orgClosed(String org) {
+    return '$org geschlossen';
+  }
+
+  @override
+  String get orgsClosedTitle => 'Geschlossene Organisationen';
+
+  @override
+  String orgsClosedEmpty(int days) {
+    return 'Keine geschlossenen Organisationen. Ihre Admins können geschlossene Organisationen hier $days Tage lang wiederherstellen.';
+  }
+
+  @override
+  String orgsClosedHint(int days) {
+    return 'Geschlossene Organisationen lassen sich mit allem, was darin war, $days Tage lang wiederherstellen. Danach werden sie endgültig gelöscht.';
+  }
+
+  @override
+  String orgClosedOn(String date) {
+    return 'geschlossen am $date';
+  }
+
+  @override
+  String orgClosedBy(String name) {
+    return 'von $name';
+  }
+
+  @override
+  String orgClosedNotice(String org, String name, int days) {
+    return '$org wurde von $name geschlossen. Ihre Admins können sie $days Tage lang wiederherstellen.';
+  }
+
+  @override
+  String orgClosedNoticeAnonymous(String org, int days) {
+    return '$org wurde geschlossen. Ihre Admins können sie $days Tage lang wiederherstellen.';
+  }
 }

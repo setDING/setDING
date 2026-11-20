@@ -189,6 +189,9 @@ class OrganizationView {
 
   bool get isAdmin => role == OrgRole.admin;
 
+  /// Close the organization (30 days in the trash): its admins (ADR-0044).
+  bool get canClose => isAdmin;
+
   @override
   bool operator ==(Object other) =>
       other is OrganizationView &&

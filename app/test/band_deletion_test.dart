@@ -59,11 +59,11 @@ void main() {
   });
 
   test('refresh reports bands that are gone, once', () async {
-    expect(await service.refresh(), isEmpty);
+    expect((await service.refresh()).goneBands, isEmpty);
     backend.bands['b2']!.deletedAt = DateTime.now().toUtc();
     backend.bands['b1']!.deletedAt = DateTime.now().toUtc();
-    expect(await service.refresh(), ['Jazz', 'Rock']);
-    expect(await service.refresh(), isEmpty);
+    expect((await service.refresh()).goneBands, ['Jazz', 'Rock']);
+    expect((await service.refresh()).goneBands, isEmpty);
   });
 
   test('a sync tells which bands are gone', () async {

@@ -2230,5 +2230,113 @@
       }
     }
   },
-  "backupReminderAction": "Sichern"
+  "backupReminderAction": "Sichern",
+  "orgClose": "Organisation schliessen",
+  "orgCloseTitle": "{org} schliessen?",
+  "@orgCloseTitle": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "orgCloseMessage": "Ihre Bands, Sets, Songs und Anhänge sowie die persönlichen Anpassungen aller zu ihren Songs werden entfernt und ihre Einladungen widerrufen. Die Mitglieder erfahren es beim nächsten Sync. Ihre Admins können sie {days} Tage lang aus dem Papierkorb wiederherstellen; danach wird alles endgültig gelöscht.",
+  "@orgCloseMessage": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "orgCloseBands": "{count, plural, =0{keine Bands} =1{1 Band} other{{count} Bands}}",
+  "@orgCloseBands": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "orgCloseSongs": "{count, plural, =0{keine Songs} =1{1 Song} other{{count} Songs}}",
+  "@orgCloseSongs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "orgClosePeople": "{count, plural, =1{1 Person} other{{count} Personen}}",
+  "@orgClosePeople": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "orgCloseBackup": "Vorher sichern",
+  "orgClosed": "{org} geschlossen",
+  "@orgClosed": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "orgsClosedTitle": "Geschlossene Organisationen",
+  "orgsClosedEmpty": "Keine geschlossenen Organisationen. Ihre Admins können geschlossene Organisationen hier {days} Tage lang wiederherstellen.",
+  "@orgsClosedEmpty": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "orgsClosedHint": "Geschlossene Organisationen lassen sich mit allem, was darin war, {days} Tage lang wiederherstellen. Danach werden sie endgültig gelöscht.",
+  "@orgsClosedHint": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "orgClosedOn": "geschlossen am {date}",
+  "@orgClosedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "orgClosedBy": "von {name}",
+  "@orgClosedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "orgClosedNotice": "{org} wurde von {name} geschlossen. Ihre Admins können sie {days} Tage lang wiederherstellen.",
+  "@orgClosedNotice": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "orgClosedNoticeAnonymous": "{org} wurde geschlossen. Ihre Admins können sie {days} Tage lang wiederherstellen.",
+  "@orgClosedNoticeAnonymous": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  }
 }

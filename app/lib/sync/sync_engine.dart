@@ -35,6 +35,7 @@ class SyncReport {
     this.downloaded = 0,
     this.settingsTakenOver = false,
     this.goneBands = const [],
+    this.closedOrganizations = const [],
     this.error,
   });
 
@@ -54,6 +55,9 @@ class SyncReport {
   /// Names of bands this person could see before this run but no longer
   /// can: deleted (ADR-0044), or the person was removed or left.
   final List<String> goneBands;
+
+  /// Organizations of the person that were closed (ADR-0044).
+  final List<ClosedOrganization> closedOrganizations;
 
   /// Why the run stopped early (e.g. offline), or null.
   final BackendErrorKind? error;
@@ -134,9 +138,9 @@ class SyncEngine {
     var conflicts = 0;
     var downloaded = 0;
     var settingsTakenOver = false;
-    var goneBands = const <String>[];
+    var gone = const BandChanges();
     try {
-      if (refreshBands) goneBands = await bands.refresh();
+      if (refreshBands) gone = await bands.refresh();
       final visible = [
         for (final b in await bands.watchBands(user.id).first)
           if (!b.isLocal) b,
@@ -181,7 +185,8 @@ class SyncEngine {
         conflicts: conflicts,
         downloaded: downloaded,
         settingsTakenOver: settingsTakenOver,
-        goneBands: goneBands,
+        goneBands: gone.goneBands,
+        closedOrganizations: gone.closedOrganizations,
       );
     } on BackendException catch (e) {
       _log.warning('Sync stopped', e);
@@ -191,7 +196,8 @@ class SyncEngine {
         conflicts: conflicts,
         downloaded: downloaded,
         settingsTakenOver: settingsTakenOver,
-        goneBands: goneBands,
+        goneBands: gone.goneBands,
+        closedOrganizations: gone.closedOrganizations,
         error: e.kind,
       );
     }

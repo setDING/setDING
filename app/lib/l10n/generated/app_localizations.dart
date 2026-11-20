@@ -6264,6 +6264,96 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Sichern'**
   String get backupReminderAction;
+
+  /// No description provided for @orgClose.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisation schliessen'**
+  String get orgClose;
+
+  /// No description provided for @orgCloseTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'{org} schliessen?'**
+  String orgCloseTitle(String org);
+
+  /// No description provided for @orgCloseMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Ihre Bands, Sets, Songs und Anhänge sowie die persönlichen Anpassungen aller zu ihren Songs werden entfernt und ihre Einladungen widerrufen. Die Mitglieder erfahren es beim nächsten Sync. Ihre Admins können sie {days} Tage lang aus dem Papierkorb wiederherstellen; danach wird alles endgültig gelöscht.'**
+  String orgCloseMessage(int days);
+
+  /// No description provided for @orgCloseBands.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{keine Bands} =1{1 Band} other{{count} Bands}}'**
+  String orgCloseBands(int count);
+
+  /// No description provided for @orgCloseSongs.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{keine Songs} =1{1 Song} other{{count} Songs}}'**
+  String orgCloseSongs(int count);
+
+  /// No description provided for @orgClosePeople.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Person} other{{count} Personen}}'**
+  String orgClosePeople(int count);
+
+  /// No description provided for @orgCloseBackup.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorher sichern'**
+  String get orgCloseBackup;
+
+  /// No description provided for @orgClosed.
+  ///
+  /// In de, this message translates to:
+  /// **'{org} geschlossen'**
+  String orgClosed(String org);
+
+  /// No description provided for @orgsClosedTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Geschlossene Organisationen'**
+  String get orgsClosedTitle;
+
+  /// No description provided for @orgsClosedEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine geschlossenen Organisationen. Ihre Admins können geschlossene Organisationen hier {days} Tage lang wiederherstellen.'**
+  String orgsClosedEmpty(int days);
+
+  /// No description provided for @orgsClosedHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Geschlossene Organisationen lassen sich mit allem, was darin war, {days} Tage lang wiederherstellen. Danach werden sie endgültig gelöscht.'**
+  String orgsClosedHint(int days);
+
+  /// No description provided for @orgClosedOn.
+  ///
+  /// In de, this message translates to:
+  /// **'geschlossen am {date}'**
+  String orgClosedOn(String date);
+
+  /// No description provided for @orgClosedBy.
+  ///
+  /// In de, this message translates to:
+  /// **'von {name}'**
+  String orgClosedBy(String name);
+
+  /// No description provided for @orgClosedNotice.
+  ///
+  /// In de, this message translates to:
+  /// **'{org} wurde von {name} geschlossen. Ihre Admins können sie {days} Tage lang wiederherstellen.'**
+  String orgClosedNotice(String org, String name, int days);
+
+  /// No description provided for @orgClosedNoticeAnonymous.
+  ///
+  /// In de, this message translates to:
+  /// **'{org} wurde geschlossen. Ihre Admins können sie {days} Tage lang wiederherstellen.'**
+  String orgClosedNoticeAnonymous(String org, int days);
 }
 
 class _AppLocalizationsDelegate

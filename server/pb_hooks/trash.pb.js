@@ -19,8 +19,9 @@ cronAdd("setding_trash_purge", "17 3 * * *", () => {
   if (purged > 0) $app.logger().info("Trash purged", "records", purged);
 });
 
-// With `{"collection": "bands", "id": "…"}` the operator purges one deleted
-// band at once instead of waiting for the 30 days (ADR-0044).
+// With `{"collection": "bands" | "organizations", "id": "…"}` the operator
+// purges one deleted band or closed organization at once instead of
+// waiting for the 30 days (ADR-0044).
 routerAdd(
   "POST",
   "/api/setding/trash/purge",

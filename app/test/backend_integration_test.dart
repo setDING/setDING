@@ -230,6 +230,51 @@ void main() {
       ann.dispose();
     });
 
+    test('organization admins close and restore it (ADR-0044)', () async {
+      final (ann, _) = await signedIn('Ann');
+      final (bob, bobUser) = await signedIn('Bob');
+      final bandId = const Uuid().v4();
+      await ann.createBand(id: bandId, name: 'Rock');
+      final orgId = (await ann.fetchOrganizations()).single.id;
+      (await pb.superuser.post('org_memberships', {
+        'user': bobUser.id,
+        'organization': orgId,
+        'role': 'member',
+      })).expectStatus(200);
+
+      expect(
+        await kindOf(() => bob.closeOrganization(orgId)),
+        BackendErrorKind.notAllowed,
+      );
+      expect(await ann.fetchClosedOrganizations(), isEmpty);
+      await ann.closeOrganization(orgId);
+      expect(await ann.fetchOrganizations(), isEmpty);
+      expect(await bob.fetchOrganizations(), isEmpty);
+
+      final seenByBob = (await bob.fetchClosedOrganizations()).single;
+      expect(seenByBob.id, orgId);
+      expect(seenByBob.name, 'Rock');
+      expect(seenByBob.isAdmin, isFalse);
+      expect(seenByBob.closedBy, 'Ann');
+      expect(
+        DateTime.now().toUtc().difference(seenByBob.closedAt).inMinutes,
+        lessThan(5),
+      );
+      expect((await ann.fetchClosedOrganizations()).single.isAdmin, isTrue);
+      expect(
+        await kindOf(() => bob.restoreOrganization(orgId)),
+        BackendErrorKind.notAllowed,
+      );
+
+      await ann.restoreOrganization(orgId);
+      expect(await bob.fetchClosedOrganizations(), isEmpty);
+      final back = (await bob.fetchOrganizations()).single;
+      expect(back.id, orgId);
+      expect((await ann.fetchOrganizations()).single.bands.single.id, bandId);
+      ann.dispose();
+      bob.dispose();
+    });
+
     test('organization admins delete and restore bands (ADR-0044)', () async {
       final (ann, _) = await signedIn('Ann');
       final (bob, bobUser) = await signedIn('Bob');
