@@ -14,6 +14,7 @@ import '../update/whats_new.dart';
 import '../util/app_version.dart';
 import '../util/log.dart';
 import 'account/account_section.dart';
+import 'backup/full_backup.dart';
 import 'bands/bands_settings.dart';
 import 'settings/latency_calibration.dart';
 import 'settings/midi_settings.dart';
@@ -845,6 +846,8 @@ class _AboutTiles extends ConsumerWidget {
           leading: const Icon(Icons.sd_storage_outlined),
           title: Text(l10n.settingsStorageUsed(formatBytes(usage ?? 0))),
         ),
+        // Full backup and restore (#639, ADR-0043).
+        const BackupTiles(),
         ListTile(
           key: const Key('copy-log'),
           leading: const Icon(Icons.bug_report_outlined),

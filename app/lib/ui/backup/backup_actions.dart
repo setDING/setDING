@@ -8,10 +8,12 @@ import '../../data/backup.dart';
 import '../../data/band_view.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
+import '../../settings/settings.dart' show sharedPreferencesProvider;
 import '../../sync/sync_controller.dart';
 import '../songs/song_screen.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
+import 'full_backup.dart' show lastBackupKey;
 
 /// Saves a file; tests replace it.
 typedef SaveFile = Future<bool> Function(
@@ -31,8 +33,44 @@ Future<void> exportBackup(
   LibraryView library,
 ) async {
   final l10n = AppLocalizations.of(context);
+  final service = ref.read(backupServiceProvider);
+  final web = ref.read(webClientProvider);
+  final fetcher = ref.read(attachmentFetcherProvider);
+  final name = library.isLocal ? l10n.bandLocal : library.name;
+  await runBackupExport(
+    context,
+    ref,
+    sync: !library.isLocal,
+    check: () => service.blocker(library.id, checkFiles: !web),
+    build: () => service.export(
+      library.id,
+      libraryName: name,
+      // The web client loads the files for the export (ADR-0018).
+      readFile: web
+          ? (a) async => (await fetcher.fetch(a.id))?.readAsBytes()
+          : null,
+    ),
+    fileName: BackupService.fileName(name, DateTime.now()),
+    recordLocal: library.isLocal,
+  );
+}
+
+/// Runs a backup export with a progress dialog: with [sync], a sync first
+/// (mandatory, ADR-0043) and [check] after it; then [build] and saving as
+/// [fileName]. [recordLocal]: the archive holds the local library, so its
+/// backup time is recorded (#639). Problems are shown in a dialog.
+Future<void> runBackupExport(
+  BuildContext context,
+  WidgetRef ref, {
+  required bool sync,
+  required Future<BackupBlocker?> Function() check,
+  required Future<Uint8List> Function() build,
+  required String fileName,
+  bool recordLocal = false,
+}) async {
+  final l10n = AppLocalizations.of(context);
   final step = ValueNotifier<String>(
-    library.isLocal ? l10n.backupCollecting : l10n.backupSyncing,
+    sync ? l10n.backupSyncing : l10n.backupCollecting,
   );
   final navigator = Navigator.of(context);
   var open = true;
@@ -85,10 +123,8 @@ Future<void> exportBackup(
     );
   }
 
-  final service = ref.read(backupServiceProvider);
-  final web = ref.read(webClientProvider);
   try {
-    if (!library.isLocal) {
+    if (sync) {
       // Mandatory: the archive must hold what the server has (ADR-0043).
       final report = await ref.read(syncControllerProvider.notifier).syncNow();
       if (report == null) {
@@ -99,7 +135,7 @@ Future<void> exportBackup(
         await fail(l10n.backupSyncFailed);
         return;
       }
-      switch (await service.blocker(library.id, checkFiles: !web)) {
+      switch (await check()) {
         case BackupBlocker.pendingChanges:
           await fail(l10n.backupPendingChanges);
           return;
@@ -113,29 +149,26 @@ Future<void> exportBackup(
       }
       step.value = l10n.backupCollecting;
     }
-    final name = library.isLocal ? l10n.bandLocal : library.name;
-    final fetcher = ref.read(attachmentFetcherProvider);
     final Uint8List bytes;
     try {
-      bytes = await service.export(
-        library.id,
-        libraryName: name,
-        // The web client loads the files for the export (ADR-0018).
-        readFile: web
-            ? (a) async => (await fetcher.fetch(a.id))?.readAsBytes()
-            : null,
-      );
+      bytes = await build();
     } on BackupFileMissingException catch (e) {
       await fail(l10n.backupFileMissing(e.name, e.songTitle));
       return;
     }
     close();
     final saved = await ref.read(saveFileProvider)(
-      BackupService.fileName(name, DateTime.now()),
+      fileName,
       bytes,
       mimeType: 'application/zip',
     );
-    if (saved && context.mounted) showMessage(context, l10n.backupSaved);
+    if (!saved) return;
+    if (recordLocal) {
+      await ref
+          .read(sharedPreferencesProvider)
+          .setString(lastBackupKey, DateTime.now().toIso8601String());
+    }
+    if (context.mounted) showMessage(context, l10n.backupSaved);
   } catch (e) {
     await fail(l10n.errorGeneric('$e'));
   } finally {

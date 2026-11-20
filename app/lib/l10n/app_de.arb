@@ -2166,5 +2166,69 @@
         "type": "String"
       }
     }
-  }
+  },
+  "backupAll": "Alles sichern",
+  "backupAllName": "alles",
+  "backupAllHint": "Deine Bibliotheken mit Songs, Sets und Anhängen, deine persönlichen Anpassungen und Notizen und deine Einstellungen in einer Datei.",
+  "backupNever": "Auf diesem Gerät noch nie gesichert.",
+  "backupLast": "Letzte Sicherung: {date}",
+  "@backupLast": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "backupRestore": "Sicherung wiederherstellen",
+  "backupRestoreHint": "Importiert eine Sicherungsdatei als Kopie. Bestehendes wird nicht verändert.",
+  "backupRestoreTitle": "Sicherung wiederherstellen",
+  "backupLibraryTo": "«{library}» ({songs, plural, =1{1 Song} other{{songs} Songs}}, {sets, plural, =1{1 Set} other{{sets} Sets}}) nach",
+  "@backupLibraryTo": {
+    "placeholders": {
+      "library": {
+        "type": "String"
+      },
+      "songs": {
+        "type": "int"
+      },
+      "sets": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportDifferingAll": "Songs, die es hier mit anderem Text gibt:",
+  "backupRestorePersonal": "Meine persönlichen Anpassungen und Notizen wiederherstellen",
+  "backupPersonalOf": "{library}: {count, plural, =1{1 Song} other{{count} Songs}}",
+  "@backupPersonalOf": {
+    "placeholders": {
+      "library": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupRestoreSettings": "Meine Einstellungen übernehmen",
+  "backupRestoreSettingsHint": "Ersetzt deine aktuellen Einstellungen durch die der Sicherung.",
+  "backupRestoreStart": "Wiederherstellen",
+  "backupRestoreDone": "Sicherung wiederhergestellt",
+  "backupResultPersonal": "Persönliche Anpassungen und Notizen von {count, plural, =1{1 Song} other{{count} Songs}} wiederhergestellt",
+  "@backupResultPersonal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupResultSettings": "Einstellungen übernommen",
+  "backupReminder": "Deine Bibliothek auf diesem Gerät ist seit {days} Tagen nicht gesichert.",
+  "@backupReminder": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "backupReminderAction": "Sichern"
 }

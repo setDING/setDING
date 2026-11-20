@@ -355,4 +355,103 @@ void main() {
       expect(await service().blocker('o1', checkFiles: false), isNull);
     });
   });
+
+  group('full backup (#639)', () {
+    late SongRepository org;
+
+    setUp(() {
+      org = SongRepository(db, storage, libraryId: 'o1', userId: 'ann');
+    });
+
+    test(
+      'libraries, personal data of other organizations and settings',
+      () async {
+        await fill();
+        final orgSong = await org.createSong(source: '{title: Org song}');
+        await org.updateOverlay(
+          orgSong,
+          (o) => o.copyWith(transpose: 3, notes: const Value('Mine')),
+        );
+        final zip = await BackupService(db, storage, userId: 'ann').exportAll(
+          libraries: [(id: localBandId, name: 'On this device')],
+          personalOnly: [(id: 'o1', name: 'School')],
+          personalSettings: {'notation': 'german'},
+          deviceSettings: {'fontSize': 22},
+        );
+
+        final backup = await BackupService.readFull(zip);
+        expect(backup.isFull, isTrue);
+        expect(backup.libraries.single.sourceName, 'On this device');
+        expect(backup.libraries.single.songs, hasLength(2));
+        final personal = backup.personal.single;
+        expect(
+          (personal.libraryId, personal.name, personal.songs),
+          ('o1', 'School', 1),
+        );
+        expect(personal.overlays.single['notes'], 'Mine');
+        expect(backup.personalSettings, {'notation': 'german'});
+        expect(backup.deviceSettings, {'fontSize': 22});
+        expect(await BackupService.isBackup(zip), isTrue);
+        await expectLater(
+          BackupService.read(zip),
+          throwsA(isA<BackupFormatException>()),
+          reason: 'not the archive of one library',
+        );
+      },
+    );
+
+    test('personal adjustments are restored on the same songs', () async {
+      final orgSong = await org.createSong(source: '{title: Org song}');
+      await db
+          .into(db.annotations)
+          .insert(
+            AnnotationsCompanion.insert(
+              id: 'stroke-1',
+              ownerId: 'ann',
+              songId: orgSong,
+              stroke: const Value('{"kind":"pen"}'),
+              updatedAt: 1,
+            ),
+          );
+      await org.updateOverlay(orgSong, (o) => o.copyWith(transpose: 3));
+      final service = BackupService(db, storage, userId: 'ann');
+      final backup = await BackupService.readFull(
+        await service.exportAll(
+          libraries: const [],
+          personalOnly: [(id: 'o1', name: 'School')],
+        ),
+      );
+      // Lost on this device since.
+      await org.updateOverlay(orgSong, (o) => o.copyWith(transpose: 0));
+      await db.delete(db.annotations).go();
+      await db.delete(db.syncOutbox).go();
+
+      expect(await service.restorePersonal(backup.personal.single), 1);
+      expect((await org.getOverlay(orgSong)).transpose, 3);
+      final strokes = await db.select(db.annotations).get();
+      expect(strokes.single.id, 'stroke-1');
+      expect(strokes.single.pending, 1, reason: 'synced');
+      final outbox = await db.select(db.syncOutbox).get();
+      expect(
+        outbox.where((e) => e.collection == SyncCollection.overlays),
+        hasLength(1),
+      );
+      // Songs that are not on this device are skipped.
+      await org.deleteSong(orgSong);
+      expect(await service.restorePersonal(backup.personal.single), 0);
+    });
+
+    test(
+      'a library archive (version 1) is read as a backup of one library',
+      () async {
+        await fill();
+        final zip = await service().export(localBandId, libraryName: 'Mine');
+        final backup = await BackupService.readFull(zip);
+        expect(backup.isFull, isFalse);
+        expect(backup.libraries.single.songs, hasLength(2));
+        expect(backup.personal, isEmpty);
+        expect(backup.hasSettings, isFalse);
+      },
+    );
+  });
 }
