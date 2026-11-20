@@ -4018,4 +4018,63 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get songsFilterEmpty => 'Keine Songs mehr in diesem Filter.';
+
+  @override
+  String get playHistory => 'Gespielt';
+
+  @override
+  String playHistoryOf(String band) {
+    return 'Gespielt von $band';
+  }
+
+  @override
+  String playHistoryNone(String band) {
+    return '$band hat diesen Song noch in keinem vergangenen Set gespielt.';
+  }
+
+  @override
+  String get playHistoryTotal => 'gesamt';
+
+  @override
+  String get playHistoryLastYear => 'letzte 12 Monate';
+
+  @override
+  String get playHistoryLast => 'zuletzt';
+
+  @override
+  String playHistoryFirst(String date) {
+    return 'Erstmals am $date';
+  }
+
+  @override
+  String playHistoryShowAll(int count) {
+    return 'Alle $count anzeigen';
+  }
+
+  @override
+  String playHistoryDiffers(String key) {
+    return 'Hervorgehoben: eine andere Tonart als heute ($key)';
+  }
+
+  @override
+  String get playHistoryApproximate =>
+      '≈ abgeleitet aus dem heutigen Arrangement: das Set hat keine gespeicherten Werte';
+
+  @override
+  String keyHistoryLast(String key, String date) {
+    return 'Zuletzt $key am $date';
+  }
+
+  @override
+  String keyHistoryMostly(String key, int count, int total) {
+    return 'meist $key ($count von $total)';
+  }
+
+  @override
+  String songLastPlayed(String date) {
+    return 'Zuletzt gespielt am $date';
+  }
+
+  @override
+  String get songNeverPlayed => 'Noch nie gespielt';
 }

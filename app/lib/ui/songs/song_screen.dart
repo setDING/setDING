@@ -36,6 +36,7 @@ import 'conflict_banner.dart';
 import 'image_attachment_view.dart';
 import 'midi_program_field.dart';
 import 'band_arrangement_panel.dart';
+import 'play_history_panel.dart';
 import 'song_editor_screen.dart';
 import 'song_links_panel.dart';
 
@@ -57,7 +58,7 @@ class SongScreen extends ConsumerStatefulWidget {
 }
 
 /// The side panels of the song screen.
-enum _Panel { band, personal, attachments, links }
+enum _Panel { band, played, personal, attachments, links }
 
 class _SongScreenState extends ConsumerState<SongScreen> {
   final _scaffold = GlobalKey<ScaffoldState>();
@@ -221,6 +222,26 @@ class _SongScreenState extends ConsumerState<SongScreen> {
             (arrangement != null ||
                 band.canManageSets ||
                 ref.watch(arrangementBandsProvider(song.libraryId)).length > 1);
+        // The play history (ADR-0046) of the band's arrangement, or of the
+        // local library's sets for a song of the local library.
+        final current = ref.watch(currentBandProvider);
+        final historyBand =
+            band ??
+            (current.isLocal && current.libraryId == song.libraryId
+                ? current
+                : null);
+        final plays = historyBand == null
+            ? 0
+            : ref
+                      .watch(
+                        songPlaysProvider((
+                          band: historyBand.id,
+                          song: song.id,
+                        )),
+                      )
+                      .value
+                      ?.total ??
+                  0;
         // Songs without ChordPro content show their attachments in the body.
         final attachmentsInPanel =
             parsed.hasContent && (canEdit || attachments.isNotEmpty);
@@ -250,6 +271,11 @@ class _SongScreenState extends ConsumerState<SongScreen> {
               song: song,
               parsed: parsed,
               arrangement: arrangement,
+            ),
+            _Panel.played when historyBand != null => PlayHistoryPanel(
+              band: historyBand,
+              song: song,
+              parsed: parsed,
             ),
             _Panel.personal => SidePanel(
               key: const Key('personal-adjustments'),
@@ -358,6 +384,15 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   icon: Icons.groups_outlined,
                   active: arrangement != null,
                   onPressed: () => _open(_Panel.band),
+                ),
+              // How the band played the song before (ADR-0046).
+              if (historyBand != null && plays > 0)
+                BadgedIconButton(
+                  key: const Key('open-play-history'),
+                  tooltip: l10n.playHistory,
+                  icon: Icons.history,
+                  count: plays,
+                  onPressed: () => _open(_Panel.played),
                 ),
               BadgedIconButton(
                 key: const Key('open-personal-adjustments'),

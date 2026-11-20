@@ -94,9 +94,6 @@ class BandArrangementPanel extends ConsumerWidget {
     final a = arrangement;
     final songKey = parsed.key;
     final sequence = a?.sequence;
-    // Users in several bands of the song's library choose the band here; it
-    // is the band of the sets tab, so everything follows it (#556).
-    final bands = ref.watch(arrangementBandsProvider(song.libraryId));
 
     final details = <String>[
       if (a == null)
@@ -118,24 +115,7 @@ class BandArrangementPanel extends ConsumerWidget {
       title: l10n.arrangementOf(band.name),
       scope: SettingScope.band,
       children: [
-        if (bands.length > 1)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: DropdownButton<String>(
-              key: const Key('arrangement-band'),
-              value: band.id,
-              isExpanded: true,
-              hint: Text(l10n.arrangementBand),
-              items: [
-                for (final b in bands)
-                  DropdownMenuItem(value: b.id, child: Text(b.name)),
-              ],
-              onChanged: (id) {
-                if (id == null || id == band.id) return;
-                ref.read(selectedBandIdProvider.notifier).select(id);
-              },
-            ),
-          ),
+        ArrangementBandChoice(band: band, song: song),
         if (details.isNotEmpty)
           Text(details.join(' · '), style: theme.textTheme.bodyMedium),
         if (sequence != null)
@@ -184,6 +164,43 @@ class BandArrangementPanel extends ConsumerWidget {
             ),
         ],
       ],
+    );
+  }
+}
+
+/// The band whose arrangement or play history a panel shows, for users in
+/// several bands of the song's library; it is the band of the sets tab, so
+/// everything follows it (#556). Nothing for a single band.
+class ArrangementBandChoice extends ConsumerWidget {
+  const ArrangementBandChoice({
+    super.key,
+    required this.band,
+    required this.song,
+  });
+
+  final BandView band;
+  final SongEntry song;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final bands = ref.watch(arrangementBandsProvider(song.libraryId));
+    if (bands.length <= 1) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: DropdownButton<String>(
+        key: const Key('arrangement-band'),
+        value: band.id,
+        isExpanded: true,
+        hint: Text(AppLocalizations.of(context).arrangementBand),
+        items: [
+          for (final b in bands)
+            DropdownMenuItem(value: b.id, child: Text(b.name)),
+        ],
+        onChanged: (id) {
+          if (id == null || id == band.id) return;
+          ref.read(selectedBandIdProvider.notifier).select(id);
+        },
+      ),
     );
   }
 }

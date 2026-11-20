@@ -709,6 +709,7 @@ class SongTile extends ConsumerWidget {
     this.showProblems = false,
     this.nextGig,
     this.hit,
+    this.playedNote,
   });
 
   final SongListEntry song;
@@ -726,6 +727,10 @@ class SongTile extends ConsumerWidget {
 
   /// Where the current search matched the song, shown highlighted.
   final SearchHit? hit;
+
+  /// When the band last played the song, e.g. in the song picker of a set
+  /// (ADR-0046).
+  final String? playedNote;
 
   /// Arrangement of the band chosen on the sets tab (ADR-0025), shown as a
   /// hint below the song, which itself stays as written.
@@ -779,7 +784,11 @@ class SongTile extends ConsumerWidget {
               ),
             ),
       subtitle:
-          details.isEmpty && sequence.isEmpty && band == null && lyrics == null
+          details.isEmpty &&
+              sequence.isEmpty &&
+              band == null &&
+              lyrics == null &&
+              playedNote == null
           ? null
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -826,6 +835,22 @@ class SongTile extends ConsumerWidget {
                       songKey: parsedKey,
                       notation: notation,
                       bandName: bandName,
+                    ),
+                  ),
+                if (playedNote case final note?)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Row(
+                      key: const ValueKey('song-played-note'),
+                      children: [
+                        Icon(
+                          Icons.history,
+                          size: 16,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(child: Text(note)),
+                      ],
                     ),
                   ),
               ],

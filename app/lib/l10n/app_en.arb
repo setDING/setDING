@@ -2117,5 +2117,84 @@
   "attentionConflicts": "Sync conflicts",
   "attentionSheetMusicOnly": "Sheet music only",
   "songsFilterClear": "Remove filter",
-  "songsFilterEmpty": "No songs left in this filter."
+  "songsFilterEmpty": "No songs left in this filter.",
+  "playHistory": "Played",
+  "playHistoryOf": "Played by {band}",
+  "@playHistoryOf": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "playHistoryNone": "{band} has not played this song in a past set yet.",
+  "@playHistoryNone": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "playHistoryTotal": "in total",
+  "playHistoryLastYear": "last 12 months",
+  "playHistoryLast": "last",
+  "playHistoryFirst": "First on {date}",
+  "@playHistoryFirst": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "playHistoryShowAll": "Show all {count}",
+  "@playHistoryShowAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playHistoryDiffers": "Highlighted: a key other than today's ({key})",
+  "@playHistoryDiffers": {
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "playHistoryApproximate": "≈ derived from today's arrangement: the set has no stored values",
+  "keyHistoryLast": "Last {key} on {date}",
+  "@keyHistoryLast": {
+    "placeholders": {
+      "key": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "keyHistoryMostly": "mostly {key} ({count} of {total})",
+  "@keyHistoryMostly": {
+    "placeholders": {
+      "key": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "songLastPlayed": "Last played on {date}",
+  "@songLastPlayed": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "songNeverPlayed": "Never played"
 }

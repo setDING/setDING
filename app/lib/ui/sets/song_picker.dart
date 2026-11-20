@@ -5,15 +5,17 @@ import '../../data/database.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../songs/songs_screen.dart';
+import 'sets_screen.dart' show formatGigDate;
 import '../widgets/dialogs.dart';
 
 /// Lets the user select several songs. Returns their IDs in selection order.
-Future<List<String>> pickSongs(BuildContext context) async =>
+/// With [bandId], each song says when that band last played it (ADR-0046).
+Future<List<String>> pickSongs(BuildContext context, {String? bandId}) async =>
     await Navigator.push<List<String>>(
       context,
       MaterialPageRoute(
         fullscreenDialog: true,
-        builder: (_) => const _SongPicker(),
+        builder: (_) => _SongPicker(bandId: bandId),
       ),
     ) ??
     const [];
@@ -32,11 +34,14 @@ Future<String?> pickSong(BuildContext context, {required String title}) async {
 }
 
 class _SongPicker extends ConsumerStatefulWidget {
-  const _SongPicker({this.single = false, this.title});
+  const _SongPicker({this.single = false, this.title, this.bandId});
 
   /// One song: a tap chooses it and closes the picker.
   final bool single;
   final String? title;
+
+  /// The band of the set the songs are for, whose plays are shown.
+  final String? bandId;
 
   @override
   ConsumerState<_SongPicker> createState() => _SongPickerState();
@@ -55,6 +60,9 @@ class _SongPickerState extends ConsumerState<_SongPicker> {
     final arrangements = band == null
         ? const <String, BandArrangement>{}
         : ref.watch(bandArrangementsProvider(band.id)).value ?? const {};
+    final lastPlayed = widget.bandId == null
+        ? null
+        : ref.watch(lastPlayedProvider(widget.bandId!)).value;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title ?? l10n.selectSongs),
@@ -102,6 +110,14 @@ class _SongPickerState extends ConsumerState<_SongPicker> {
                     song: song,
                     arrangement: arrangements[song.id],
                     bandName: band?.name ?? '',
+                    playedNote: lastPlayed == null
+                        ? null
+                        : switch (lastPlayed[song.id]) {
+                            final date? => l10n.songLastPlayed(
+                              formatGigDate(context, date),
+                            ),
+                            null => l10n.songNeverPlayed,
+                          },
                     leading: widget.single
                         ? null
                         : Checkbox(

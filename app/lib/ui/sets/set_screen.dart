@@ -19,6 +19,7 @@ import '../live/live_screen.dart';
 import '../render/render_cache.dart';
 import '../render/song_header.dart';
 import '../songs/chordpro_problems_badge.dart';
+import '../songs/play_history_panel.dart' show keyHistoryHint;
 import '../songs/song_screen.dart';
 import '../bands/copy_to_band.dart';
 import '../widgets/dialogs.dart';
@@ -53,7 +54,9 @@ class _SetScreenState extends ConsumerState<SetScreen> {
   SetRepository get _repo => ref.read(setRepositoryProvider);
 
   Future<void> _addSongs() async {
-    final ids = await pickSongs(context);
+    final set = await _repo.getSet(widget.setId);
+    if (!mounted) return;
+    final ids = await pickSongs(context, bandId: set?.bandId);
     if (ids.isNotEmpty) await _repo.addSongs(widget.setId, ids);
   }
 
@@ -548,6 +551,16 @@ class _SetItemTile extends ConsumerWidget {
                       transpose: item.transpose,
                       notation: notation,
                       tooltip: l10n.keyPickerSet,
+                      hint: keyHistoryHint(
+                        l10n,
+                        ref
+                            .watch(
+                              songPlaysProvider((band: bandId, song: song.id)),
+                            )
+                            .value,
+                        notation: notation,
+                        formatDate: (d) => formatGigDate(context, d),
+                      ),
                       onChanged: (value) =>
                           repo.setItemTranspose(item.id, value),
                     )
