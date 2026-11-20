@@ -9,6 +9,7 @@ import 'app.dart';
 import 'bootstrap/platform_services.dart';
 import 'data/demo_song.dart';
 import 'data/song_repository.dart';
+import 'data/trash.dart';
 import 'providers.dart';
 import 'settings/settings.dart';
 import 'sync/auth_providers.dart';
@@ -47,6 +48,8 @@ Future<void> main() async {
   // Files of attachments deleted while an undo was offered (#267); before
   // the UI, so that no new deletion is waiting for its undo.
   try {
+    // The local library's trash after 30 days (ADR-0043).
+    await TrashRepository(db, storage).purgeLocal();
     await SongRepository(db, storage).purgeDeletedFiles();
   } catch (e) {
     _log.warning('Deleted attachment files not purged', e);

@@ -185,16 +185,18 @@ class SetRepository {
     await _touch(id);
   });
 
-  /// Soft-deletes a set and removes its items; [restoreSet] undoes it.
+  /// Soft-deletes a set; [restoreSet] undoes it. The set keeps its items,
+  /// so it is complete when it is restored from the trash (ADR-0043).
   Future<DeletedSet> deleteSet(String id) => db.transaction(() async {
     final items = await itemsToRemove(db, [id], (_) => true);
+    final now = DateTime.now();
     await (db.update(db.setlists)..where((s) => s.id.equals(id))).write(
       SetlistsCompanion(
         deleted: const Value(true),
-        updatedAt: Value(DateTime.now()),
+        deletedAt: Value(now),
+        updatedAt: Value(now),
       ),
     );
-    await (db.delete(db.setItems)..where((i) => i.setId.equals(id))).go();
     await _touch(id);
     return DeletedSet(id, items: items);
   });
@@ -202,8 +204,11 @@ class SetRepository {
   /// Undoes [deleteSet] with its items, as a new change that is synced like
   /// an edit (#267).
   Future<void> restoreSet(DeletedSet deleted) => db.transaction(() async {
-    await (db.update(db.setlists)..where((s) => s.id.equals(deleted.setId)))
-        .write(const SetlistsCompanion(deleted: Value(false)));
+    await (db.update(
+      db.setlists,
+    )..where((s) => s.id.equals(deleted.setId))).write(
+      const SetlistsCompanion(deleted: Value(false), deletedAt: Value(null)),
+    );
     await restoreSetItems(db, deleted.items);
     await _touch(deleted.setId);
   });
@@ -357,8 +362,8 @@ class SetRepository {
         'FROM set_items i '
         'JOIN setlists l ON l.id = i.set_id '
         'JOIN songs s ON s.id = i.song_id '
-        "WHERE i.type = 'song' AND l.band_id = ? AND s.deleted = 0 "
-        'AND s.chordpro_problems > 0 GROUP BY i.set_id',
+        "WHERE i.type = 'song' AND l.band_id = ? AND l.deleted = 0 "
+        'AND s.deleted = 0 AND s.chordpro_problems > 0 GROUP BY i.set_id',
         variables: [Variable.withString(bandId)],
         readsFrom: {db.setItems, db.setlists, db.songs},
       )
@@ -378,7 +383,7 @@ class SetRepository {
     'LEFT JOIN songs s ON s.id = i.song_id '
     'LEFT JOIN attachments a ON a.song_id = s.id AND a.deleted = 0 '
     "WHERE i.type = 'song' AND "
-    '${setId == null ? 'l.band_id' : 'l.id'} = ?',
+    '${setId == null ? 'l.deleted = 0 AND l.band_id' : 'l.id'} = ?',
     variables: [Variable.withString(setId ?? bandId)],
     readsFrom: {db.setItems, db.setlists, db.songs, db.attachments},
   );

@@ -184,6 +184,8 @@ class RemoteSong {
     required this.chordpro,
     this.revision = 0,
     this.deleted = false,
+    this.deletedAt,
+    this.purged = false,
     this.createdBy,
     this.updatedBy,
   });
@@ -194,6 +196,14 @@ class RemoteSong {
   final String chordpro;
   final int revision;
   final bool deleted;
+
+  /// When it was deleted, for the trash (ADR-0043): sent with a deletion
+  /// (it may have happened offline), set by the server otherwise.
+  final DateTime? deletedAt;
+
+  /// Content purged by the server 30 days after the deletion (ADR-0043);
+  /// never sent.
+  final bool purged;
 
   /// Creator and last editor (ADR-0023); set by the server, never sent.
   final String? createdBy;
@@ -237,6 +247,8 @@ class RemoteSet {
     this.items = const [],
     this.revision = 0,
     this.deleted = false,
+    this.deletedAt,
+    this.purged = false,
   });
 
   final String id;
@@ -247,6 +259,14 @@ class RemoteSet {
   final List<RemoteSetItem> items;
   final int revision;
   final bool deleted;
+
+  /// When it was deleted, for the trash (ADR-0043): sent with a deletion
+  /// (it may have happened offline), set by the server otherwise.
+  final DateTime? deletedAt;
+
+  /// Content purged by the server 30 days after the deletion (ADR-0043);
+  /// never sent.
+  final bool purged;
 }
 
 /// An item of a set as stored on the server: one entry of the JSON array
@@ -407,6 +427,8 @@ class RemoteAttachment {
     this.sizeBytes = 0,
     this.revision = 0,
     this.deleted = false,
+    this.deletedAt,
+    this.purged = false,
   });
 
   final String id;
@@ -420,6 +442,14 @@ class RemoteAttachment {
   final int sizeBytes;
   final int revision;
   final bool deleted;
+
+  /// When it was deleted, for the trash (ADR-0043): sent with a deletion
+  /// (it may have happened offline), set by the server otherwise.
+  final DateTime? deletedAt;
+
+  /// Content purged by the server 30 days after the deletion (ADR-0043);
+  /// never sent.
+  final bool purged;
 }
 
 /// State of an invitation link.

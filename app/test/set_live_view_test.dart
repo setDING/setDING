@@ -231,6 +231,7 @@ void main() {
       revision: 0,
       updatedAt: DateTime(2026),
       deleted: false,
+      purged: false,
     );
     final attachments = [
       entry('img', 'img.png'),

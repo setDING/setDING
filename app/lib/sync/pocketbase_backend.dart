@@ -488,11 +488,21 @@ class PocketBaseBackend implements SyncBackend {
     chordpro: r.getStringValue('chordpro'),
     revision: r.getIntValue('revision'),
     deleted: r.getBoolValue('deleted'),
+    deletedAt: _date(r.getStringValue('deleted_at')),
+    purged: r.getBoolValue('purged'),
     createdBy: _nonEmpty(r.getStringValue('created_by')),
     updatedBy: _nonEmpty(r.getStringValue('updated_by')),
   );
 
   static String? _nonEmpty(String value) => value.isEmpty ? null : value;
+
+  /// A PocketBase date, or null if empty.
+  static DateTime? _date(String value) =>
+      value.isEmpty ? null : DateTime.tryParse(value);
+
+  /// A date as PocketBase stores it, or '' for none.
+  static String _dateValue(DateTime? value) =>
+      value?.toUtc().toIso8601String().replaceFirst('T', ' ') ?? '';
 
   static RemoteSet _set(RecordModel r) {
     final date = r.getStringValue('gig_date');
@@ -512,6 +522,8 @@ class PocketBaseBackend implements SyncBackend {
           : const [],
       revision: r.getIntValue('revision'),
       deleted: r.getBoolValue('deleted'),
+      deletedAt: _date(r.getStringValue('deleted_at')),
+      purged: r.getBoolValue('purged'),
     );
   }
 
@@ -567,6 +579,7 @@ class PocketBaseBackend implements SyncBackend {
       'title': song.title,
       'chordpro': song.chordpro,
       'deleted': song.deleted,
+      'deleted_at': _dateValue(song.deletedAt),
     };
     return _signedIn(
       () async => _song(
@@ -600,6 +613,7 @@ class PocketBaseBackend implements SyncBackend {
         'venue': set.venue ?? '',
         'items': [for (final i in set.items) i.toJson()],
         'deleted': set.deleted,
+        'deleted_at': _dateValue(set.deletedAt),
       };
       final r = create
           ? await _pb
@@ -623,6 +637,8 @@ class PocketBaseBackend implements SyncBackend {
       sizeBytes: r.getIntValue('size_bytes'),
       revision: r.getIntValue('revision'),
       deleted: r.getBoolValue('deleted'),
+      deletedAt: _date(r.getStringValue('deleted_at')),
+      purged: r.getBoolValue('purged'),
     );
   }
 
@@ -660,6 +676,7 @@ class PocketBaseBackend implements SyncBackend {
                 'pages': ?attachment.pages,
                 'size_bytes': attachment.sizeBytes,
                 'deleted': attachment.deleted,
+                'deleted_at': _dateValue(attachment.deletedAt),
               },
               files: [
                 http.MultipartFile.fromBytes(
@@ -675,7 +692,11 @@ class PocketBaseBackend implements SyncBackend {
             .collection('attachments')
             .update(
               attachment.id,
-              body: {'name': attachment.name, 'deleted': attachment.deleted},
+              body: {
+                'name': attachment.name,
+                'deleted': attachment.deleted,
+                'deleted_at': _dateValue(attachment.deletedAt),
+              },
             );
       }
       return _attachment(r);

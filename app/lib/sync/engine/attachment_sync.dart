@@ -88,6 +88,8 @@ class AttachmentSync {
             revision: Value(remote.revision),
             updatedAt: DateTime.now(),
             deleted: Value(remote.deleted),
+            deletedAt: Value(remote.deletedAt),
+            purged: Value(remote.purged),
           ),
         );
     if (!remote.deleted) return null;
@@ -203,6 +205,7 @@ class AttachmentSync {
       sizeBytes: a.sizeBytes,
       revision: a.revision,
       deleted: a.deleted,
+      deletedAt: a.deletedAt,
     );
     try {
       final stored = await backend.pushAttachment(

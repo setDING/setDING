@@ -1677,5 +1677,49 @@
         "type": "int"
       }
     }
+  },
+  "trash": "Trash",
+  "trashSongsTitle": "Deleted songs",
+  "trashSetsTitle": "Deleted sets",
+  "trashEmpty": "The trash is empty. Deleted songs and sets can be restored here for {days} days.",
+  "@trashEmpty": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "trashHint": "Deleted songs and sets can be restored for {days} days. After that they are removed for good.",
+  "@trashHint": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "trashDeletedOn": "deleted on {date}",
+  "@trashDeletedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "trashDaysLeft": "{days, plural, =0{last day} =1{1 day left} other{{days} days left}}",
+  "@trashDaysLeft": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "trashRestore": "Restore",
+  "trashRestored": "\"{title}\" restored",
+  "@trashRestored": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   }
 }

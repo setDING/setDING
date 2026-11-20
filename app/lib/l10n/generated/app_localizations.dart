@@ -5826,6 +5826,60 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'LSB {value}'**
   String midiProgramValueLsb(int value);
+
+  /// No description provided for @trash.
+  ///
+  /// In de, this message translates to:
+  /// **'Papierkorb'**
+  String get trash;
+
+  /// No description provided for @trashSongsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Gelöschte Songs'**
+  String get trashSongsTitle;
+
+  /// No description provided for @trashSetsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Gelöschte Sets'**
+  String get trashSetsTitle;
+
+  /// No description provided for @trashEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Papierkorb ist leer. Gelöschte Songs und Sets lassen sich hier {days} Tage lang wiederherstellen.'**
+  String trashEmpty(int days);
+
+  /// No description provided for @trashHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Gelöschte Songs und Sets lassen sich {days} Tage lang wiederherstellen. Danach werden sie endgültig entfernt.'**
+  String trashHint(int days);
+
+  /// No description provided for @trashDeletedOn.
+  ///
+  /// In de, this message translates to:
+  /// **'gelöscht am {date}'**
+  String trashDeletedOn(String date);
+
+  /// No description provided for @trashDaysLeft.
+  ///
+  /// In de, this message translates to:
+  /// **'{days, plural, =0{letzter Tag} =1{noch 1 Tag} other{noch {days} Tage}}'**
+  String trashDaysLeft(int days);
+
+  /// No description provided for @trashRestore.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederherstellen'**
+  String get trashRestore;
+
+  /// No description provided for @trashRestored.
+  ///
+  /// In de, this message translates to:
+  /// **'«{title}» wiederhergestellt'**
+  String trashRestored(String title);
 }
 
 class _AppLocalizationsDelegate

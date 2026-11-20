@@ -3430,4 +3430,48 @@ class AppLocalizationsDe extends AppLocalizations {
   String midiProgramValueLsb(int value) {
     return 'LSB $value';
   }
+
+  @override
+  String get trash => 'Papierkorb';
+
+  @override
+  String get trashSongsTitle => 'Gelöschte Songs';
+
+  @override
+  String get trashSetsTitle => 'Gelöschte Sets';
+
+  @override
+  String trashEmpty(int days) {
+    return 'Der Papierkorb ist leer. Gelöschte Songs und Sets lassen sich hier $days Tage lang wiederherstellen.';
+  }
+
+  @override
+  String trashHint(int days) {
+    return 'Gelöschte Songs und Sets lassen sich $days Tage lang wiederherstellen. Danach werden sie endgültig entfernt.';
+  }
+
+  @override
+  String trashDeletedOn(String date) {
+    return 'gelöscht am $date';
+  }
+
+  @override
+  String trashDaysLeft(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'noch $days Tage',
+      one: 'noch 1 Tag',
+      zero: 'letzter Tag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get trashRestore => 'Wiederherstellen';
+
+  @override
+  String trashRestored(String title) {
+    return '«$title» wiederhergestellt';
+  }
 }

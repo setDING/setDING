@@ -33,7 +33,16 @@ void downgradeToSchema18(Database raw) {
 /// Turns a current database back into schema 19: one keyboard program per
 /// song, no programs per profile (ADR-0042).
 void downgradeToSchema19(Database raw) {
+  downgradeToSchema20(raw);
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN midi_programs');
+}
+
+/// Turns a current database back into schema 20: no trash (ADR-0043).
+void downgradeToSchema20(Database raw) {
+  for (final table in ['songs', 'attachments', 'setlists']) {
+    raw.execute('ALTER TABLE $table DROP COLUMN deleted_at');
+    raw.execute('ALTER TABLE $table DROP COLUMN purged');
+  }
 }
 
 /// Turns a current database back into schema 16: overlays without
@@ -702,6 +711,34 @@ void main() {
     );
     expect(overlay.midi, legacy, reason: 'kept for v0.16.0 clients');
     expect(await repo2.midiProgram(song, 'generic'), isNull);
+    await upgraded.close();
+  });
+
+  test('upgrades a schema 20 database: deleted records go to the trash '
+      '(ADR-0043)', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final repo = SongRepository(current, FileAttachmentStorage(dir));
+    final sets = SetRepository(current, FileAttachmentStorage(dir));
+    final gone = await repo.createSong(source: '{title: Gone}');
+    final kept = await repo.createSong(source: '{title: Kept}');
+    final setId = await sets.createSet(name: 'Gig');
+    await repo.deleteSong(gone);
+    await sets.deleteSet(setId);
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema20(raw);
+    raw.execute('PRAGMA user_version = 20');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final songs = await upgraded.select(upgraded.songs).get();
+    final byId = {for (final s in songs) s.id: s};
+    expect(byId[gone]!.deletedAt, isNotNull, reason: 'from updated_at');
+    expect(byId[gone]!.purged, isFalse);
+    expect(byId[kept]!.deletedAt, isNull);
+    final set = await upgraded.select(upgraded.setlists).getSingle();
+    expect(set.deletedAt, isNotNull);
     await upgraded.close();
   });
 }

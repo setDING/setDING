@@ -77,12 +77,14 @@ class SetSync {
             revision: Value(remote.revision),
             updatedAt: DateTime.now(),
             deleted: Value(remote.deleted),
+            deletedAt: Value(remote.deletedAt),
+            purged: Value(remote.purged),
           ),
         );
     await (db.delete(
       db.setItems,
     )..where((i) => i.setId.equals(remote.id))).go();
-    if (remote.deleted) return;
+    // A deleted set keeps its items for the trash (ADR-0043).
     for (final (position, item) in remote.items.indexed) {
       var songId = item.songId;
       if (songId != null && !songExists(songId)) {
@@ -133,6 +135,7 @@ class SetSync {
       items: [for (final i in items) RemoteSetItem.fromEntry(i)],
       revision: set.revision,
       deleted: set.deleted,
+      deletedAt: set.deletedAt,
     );
     try {
       RemoteSet stored;

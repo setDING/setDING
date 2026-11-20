@@ -294,3 +294,13 @@ systemctl start pocketbase
 
 Tested on a Debian 13 container: the restored database starts and answers
 `/api/health`.
+
+## Trash
+
+Deleted songs, sets and attachments stay restorable for 30 days (ADR-0043). A
+PocketBase cron job (`setding_trash_purge`, daily at 03:17, before the backup)
+then purges them: the song text, set items and attachment files are removed, the
+records stay as tombstones (`purged`) so that devices still learn about the
+deletion. The log shows `Trash purged` with the number of records. A superuser
+can run the purge at once with `POST /api/setding/trash/purge`. A file purged
+from the trash is still in the backups of the last 14 days.
