@@ -9,6 +9,7 @@
 #   make reset      delete the test instance's data (fresh start with demo song)
 #   make backend    start a local PocketBase with the repository's schema and hooks
 #   make perf       measure performance on a USB-connected Android device
+#   make coverage   measure the test coverage (report only, no threshold)
 #   make apk        build an Android APK for manual installation (sideloading)
 #   make android-install  install the local build as "setDING Beta" next to a release
 #   make android-keystore  create the Android release key (owner, once)
@@ -203,6 +204,9 @@ test: ## Run all tests
 	cd $(PACKAGE) && $(DART) test
 	cd $(ROOT)/server && $(DART) test
 	cd $(APP) && $(FLUTTER) test
+
+coverage: ## Measure the test coverage of the app and the ChordPro package, report only (docs/development/coverage.md)
+	$(ROOT)/tool/coverage/coverage.sh
 
 codegen: ## Regenerate the drift database code
 	cd $(APP) && $(DART) run build_runner build
