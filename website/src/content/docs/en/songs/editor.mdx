@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import editor from '../../../../../../docs/screenshots/editor.png';
+import editorLabels from '../../../../../../docs/screenshots/editor_labels.png';
 
 Songs are written in [ChordPro](https://www.chordpro.org/), the open format for
 chord sheets: chords go in square brackets right inside the lyrics, details such as
@@ -88,6 +89,8 @@ The ChordPro specification recommends writing a section's label as an attribute:
 form `{start_of_verse: Verse 1}`. setDING shows both the same, but the editor shows
 a hint above the text: **Convert** writes all labels in the recommended form. The
 hint can be hidden with ✕.
+
+<Image src={editorLabels} alt="The editor with the hint about section labels in the short form and the Convert button; the second verse already uses the label attribute" />
 
 ## Save
 
