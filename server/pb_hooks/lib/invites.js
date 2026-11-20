@@ -36,12 +36,15 @@ function isBandMember(app, userId, bandId) {
   ) > 0;
 }
 
+/// Fallback when no application URL is set: the local default address.
+const LOCAL_URL = "http://127.0.0.1:8090";
+
 /// Public base URL of the server: the application URL from the settings
-/// (https://api.setding.app in production), or the request's host.
-function baseUrl(e) {
-  const url = $app.settings().meta.appURL || "";
-  if (url && url.indexOf("localhost") < 0) return url.replace(/\/+$/, "");
-  return "http://" + e.request.host;
+/// (https://api.setding.app in production), or the local default address.
+/// Never the request's Host header, which the client controls.
+function baseUrl(app) {
+  const url = (app.settings().meta.appURL || "").trim();
+  return (url || LOCAL_URL).replace(/\/+$/, "");
 }
 
 function findByToken(app, token) {
@@ -167,7 +170,7 @@ function create(e) {
   return e.json(200, {
     id: invite.id,
     token: token,
-    url: baseUrl(e) + "/invite/" + token,
+    url: baseUrl(e.app) + "/invite/" + token,
     expires: invite.getDateTime("expires").string(),
   });
 }
@@ -200,7 +203,7 @@ function link(e) {
   }
   return e.json(200, {
     id: invite.id,
-    url: baseUrl(e) + "/invite/" + token,
+    url: baseUrl(e.app) + "/invite/" + token,
     expires: invite.getDateTime("expires").string(),
   });
 }

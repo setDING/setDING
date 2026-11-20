@@ -81,8 +81,7 @@ $app.rootCmd.addCommand(new Command({
     const name = (args || []).join(" ").trim();
     if (!name) throw new Error("Usage: founder-invite <organization name>");
     const invites = require(`${__hooks}/lib/invites.js`);
-    const base = $app.settings().meta.appURL || "http://127.0.0.1:8090";
-    const r = invites.createFounder($app, name, base);
+    const r = invites.createFounder($app, name, invites.baseUrl($app));
     console.log(JSON.stringify(r));
   },
 }));

@@ -84,6 +84,8 @@ Tokens and account settings stay with the owner (ADR-0014).
    `ssh -L 8090:127.0.0.1:8090 root@<ip>`).
 2. Log in at `https://api.setding.app/_/` and enable MFA for superusers.
 3. **Settings → Application:** set the application URL to `https://api.setding.app`.
+   Invitation links are built from it, never from the request's `Host` header;
+   without it they point to `http://127.0.0.1:8090` and cannot be used by others.
 4. **Settings → Trusted proxy:** header `CF-Connecting-IP`.
 5. **Settings → Mail settings (SMTP):** needed for password reset emails from the
    app (ADR-0016) and for email verification (section 7). Until it is configured,
