@@ -81,12 +81,21 @@ class PocketBase {
     );
   }
 
+  /// The server's data directory (`pb_data`: `data.db` and `storage/`).
+  String get dataDir => '${_dir.path}/pb_data';
+
   /// Restarts the server on the same data with all migrations (see
   /// `migrationsBefore` of [start]); this instance must not be used
   /// afterwards.
-  Future<PocketBase> upgrade() async {
+  Future<PocketBase> upgrade() => restart();
+
+  /// Stops the server, runs [whileStopped] (e.g. a restore into [dataDir])
+  /// and starts it again on the same directory with all migrations; this
+  /// instance must not be used afterwards.
+  Future<PocketBase> restart({FutureOr<void> Function()? whileStopped}) async {
     _process.kill();
     await _process.exitCode;
+    await whileStopped?.call();
     return _launch(
       binary: _binaryPath,
       root: _root,

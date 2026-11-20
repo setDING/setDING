@@ -8,6 +8,9 @@ their newest version.**
 - The CycloneDX Gradle plugin of the SBOM (`tool/sbom/gradle/cyclonedx.init.gradle`,
   ADR-0037) must be the latest release on the Gradle plugin portal; raise its
   version in the init script by hand.
+- The check tools pinned in `tool/fetch-tool.sh` (ShellCheck, Caddy; issue
+  #644) must be the latest GitHub release; raise them by hand
+  ([operations tests](operations-tests.md)).
 - Transitive dependencies must be the newest version the other packages
   allow.
 - Exceptions are deliberate pins only, marked in `pubspec.yaml` with a

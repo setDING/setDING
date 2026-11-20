@@ -68,6 +68,7 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 - 2026-11-17: Every change is made in its own git worktree, a sibling folder `../RealChord-worktrees/<branch>` outside the repository; the main checkout (project folder) always stays on `main` and is only fast-forwarded. Parallel sessions no longer switch branches under each other's feet. Owner request (#225).
 - 2026-11-17: App renamed to **setDING** (#318): repository `github.com/tafli/setDING`, worktrees in `../setDING-worktrees/<branch>`, CI image `ghcr.io/tafli/setding-ci`.
 - 2026-11-17: Releases (section 10, #345): the build number is the Release workflow's run number for releases and manual test builds alike and is no longer kept in `pubspec.yaml`; a release is done only after its release build passed and `make server-release` deployed the server from the tag (it refuses otherwise). A failed release build is fixed in a PR and released as the next patch version; pushed tags are never moved. Owner request.
+- 2026-11-20: The test gate also tests the operations files (#644): ShellCheck on all shell scripts, `caddy validate`/`fmt` of the Caddyfile, `systemd-analyze verify` of the units, a backup restore against a real PocketBase and the website server with the real Caddyfile ([operations tests](../../development/operations-tests.md)). ShellCheck (GPL-3.0) is allowed as a check tool only: pinned, downloaded into the cache and verified, never copied into the repository or shipped. Owner decision.
 
 ## Open points
 
