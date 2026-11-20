@@ -161,10 +161,10 @@ merge, by agents and humans alike:
   changes, section 5) immediately before the merge and reports the result in the
   PR and the merge commit body. Agents do not wait for CI (section 7).
 - **Before a release** `make release-gate` runs every check (dependency check
-  fatal) and the web (Chrome and Firefox) and Android integration tests on `main`
-  ([releases.md](releases.md)); the integration tests run per change only when it
-  touches platform code ([android-tests.md](android-tests.md),
-  [web-tests.md](web-tests.md)).
+  fatal) and the web (Chrome and Firefox), end-to-end and Android integration
+  tests on `main` ([releases.md](releases.md)); the integration tests run per
+  change only when it touches platform code or sync ([android-tests.md](android-tests.md),
+  [web-tests.md](web-tests.md), [e2e-tests.md](e2e-tests.md)).
 - Once CI is a required check again (towards version 1): the required `test` check
   (and all other required checks) is green.
 - **New or changed behaviour comes with tests.** A PR that changes code without

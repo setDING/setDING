@@ -11,6 +11,7 @@
 #   make perf       measure performance on a USB-connected Android device
 #   make android-test  run the Android integration tests (emulator, or DEVICE=<id>)
 #   make web-test      run the web integration tests in headless Chrome (BROWSER=firefox)
+#   make e2e           run the end-to-end tests: Linux desktop + web client against one backend
 #   make coverage   measure the test coverage (report only, no threshold)
 #   make apk        build an Android APK for manual installation (sideloading)
 #   make android-install  install the local build as "setDING Beta" next to a release
@@ -91,7 +92,7 @@ BACKEND_REGISTRATION ?= open
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := SETDING_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build web web-serve site site-dev deps upgrade apk android-install android-keystore release release-linux release-check sbom changelog reset data-dir backend check check-full release-gate test codegen l10n coverage android-test web-test perf screenshots branding examples doctor clean ci-image \
+.PHONY: help setup dev start build web web-serve site site-dev deps upgrade apk android-install android-keystore release release-linux release-check sbom changelog reset data-dir backend check check-full release-gate test codegen l10n coverage android-test web-test e2e perf screenshots branding examples doctor clean ci-image \
 	server-target server-install server-release server-site server-status server-logs server-backup server-fetch-backup server-founder-invite server-ssh
 
 help: ## Show this help
@@ -208,10 +209,11 @@ check: ## The test gate: the checks (dependencies, format, analysis, l10n, tests
 check-full: ## Run every check regardless of the changed files (larger changes; dependency check fatal)
 	CHECK_FULL=1 $(ROOT)/tool/check.sh
 
-release-gate: ## Before a release: every check, then the web (Chrome and Firefox) and Android integration tests (docs/development/releases.md)
+release-gate: ## Before a release: every check, then the web (Chrome and Firefox), end-to-end and Android integration tests (docs/development/releases.md)
 	CHECK_FULL=1 $(ROOT)/tool/check.sh
 	$(ROOT)/tool/web-test.sh
 	BROWSER=firefox $(ROOT)/tool/web-test.sh
+	$(ROOT)/tool/e2e-test.sh
 	$(ROOT)/tool/android-test.sh
 
 test: ## Run all tests
@@ -233,6 +235,9 @@ android-test: ## Run the Android integration tests on an own emulator, or on a U
 
 web-test: ## Run the web integration tests in headless Chrome (or BROWSER=firefox) against a local PocketBase (docs/development/web-tests.md)
 	$(ROOT)/tool/web-test.sh
+
+e2e: ## Run the end-to-end tests: Linux desktop and web client at the same time against one local PocketBase (STORIES=…, BROWSER=firefox; docs/development/e2e-tests.md)
+	$(ROOT)/tool/e2e-test.sh
 
 perf: ## Measure performance on a USB-connected Android device (DEVICE=<id>; docs/development/performance.md)
 	$(ROOT)/tool/perf.sh
