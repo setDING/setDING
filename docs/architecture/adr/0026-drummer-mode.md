@@ -95,6 +95,35 @@ with the idle-time preparation of the next song (#296).
   click **and does not turn**; a shorter press turns as before. The rule "one press
   turns once" (ADR-0007) stays. Enter is added to the fixed mapping as start/stop.
 
+### Per-song click preferences (proposed, #698)
+
+> Proposed on 2026-11-20; not accepted yet. Until the owner accepts it, the
+> sections above apply unchanged.
+
+- The drummer sets the click of a song **themself**, without rights on the library
+  (ADR-0023): the **grouping** of an odd meter and the **subdivisions** they want to
+  hear. Both are **personal overlay** fields (layer 3, ADR-0006, ADR-0020), private
+  per user and synced with the account; the server already enforces that only the
+  owner reads and writes them, so no permission changes.
+- **Grouping:** overrides `{x_time_grouping}` for this person and song (e.g. 3+2+2
+  instead of 2+2+3). Offered only for meters that are counted in groups (odd
+  meters). Accents and the grouped dots of the beat display follow it.
+- **Subdivision:** a choice *off* / *eighths* / *sixteenths* / *triplets* instead of
+  the boolean `clickSubdivision`. The global personal setting becomes the same choice
+  and is the default (the old `true` reads as *eighths*, in 6/8 as before the
+  triplets of the felt pulse); the overlay overrides it per song. A 4/4 with eighths,
+  or with triplets for a shuffle, is a preference, not another meter.
+- The **meter** (`{time}`) stays in the song: it defines what the BPM refers to, and a
+  wrong meter is fixed by the library.
+- **Precedence:** personal overlay, then the song (`{x_time_grouping}`), then the
+  global setting (subdivision only).
+- **Where:** in live mode in the tempo row of the control bar, and in the personal
+  panel of the song screen. Unlike the tempo on stage (only for the evening) these
+  choices are **stored**; changing them while the click runs renders the new bar and
+  switches at the next bar line, like a tempo change.
+- **Storage:** in the overlay's `data` JSON on the server (no server migration),
+  local columns in `personal_overlays`; they count as an adjustment (dot, reset).
+
 ### Tempo on stage
 
 - The drummer can change the tempo by **±1 BPM** and by **tap tempo** in the live control
@@ -138,6 +167,10 @@ with the idle-time preparation of the next song (#296).
 | Live tempo stored as a personal adjustment | Kept for the next gig | A tempo adjusted on stage is a one-off; the band tempo belongs in the arrangement (owner) |
 | Separate pedal key only | No change to the turning rules | Most page turners have two keys only |
 | Song map for every instrument | Also useful for vocals | Owner: drums only |
+| **Per-song click preferences as personal overlay** (proposed, #698) | The drummer sets them without library rights; no permission change | Two drummers of one band set the grouping separately |
+| Grouping in the band arrangement (ADR-0025) | One grouping for the whole band | Only leaders and set planners edit arrangements; a drummer is usually a member. Possible later on top of the overlay |
+| Members may edit the click part of arrangements | Shared for the band | Breaks the fixed, ordered roles of ADR-0023 |
+| Meter per person (e.g. 8/8 to hear eighths) | One setting | Changes what the BPM refers to; subdivisions cover the wish |
 
 ## Consequences
 
@@ -173,9 +206,12 @@ with the idle-time preparation of the next song (#296).
 - 2026-11-18: Click on devices whose audio does not answer (#422): on an Android phone the start showed Stop, but neither the beat nor the click ran, without a message. The start waited without a limit for the audio engine. It now waits at most 3 s (`Metronome.readyTimeout`); without an answer the beat runs on the monotonic clock and the bottom bar says that there is no audio for the click; a later start uses the click once the engine is ready. `SoLoudClickOutput.ensureReady()` also starts the audio device (`startAudioDevice`) on every start, because SoLoud stops an idle device and restarts it for a voice off the UI thread, where a failure only leaves silence.
 - 2026-11-18: Owner request (#424): the click kept playing when the app was minimised or another app was opened. New personal setting **In the background** (`clickInBackground`): **Stop** (default) or **Keep playing**. Live mode stops the beat and the click when the app is hidden (`AppLifecycleListener.onHide`: minimised, another app, screen locked; not a split screen, where the app stays visible); it is not started again on return, also not with the automatic start. This resolves the open point on the behaviour in the background.
 - 2026-11-19: Click silent after an instrument change until a restart (#545): the wall clock that smooths the playhead between audio buffers ran on while the engine stood (not started yet, or its device stopped after idling), so a click started minutes after live mode was first opened was scheduled minutes in the future (measured on a Galaxy Tab S4: 76 s). The smoothing (`EngineClock`) now runs at most 100 ms (about two buffers) ahead of the last engine time, and every start of the click takes the engine time as the new reference.
+- 2026-11-20: Proposed (#698, owner request): per-song click preferences of the drummer, grouping and subdivisions (off, eighths, sixteenths, triplets), as personal overlay fields, editable in live mode and on the song screen without library rights; the meter stays in the song; a grouping per band arrangement left for later. Awaits the owner's decision.
 
 ## Open points
 
 - Exact long press duration (proposed 0.6 s) and whether Enter collides with page
   turners that send Enter for turning.
 - Bar counts per part for the song map (`{x_bars}`), possibly later.
+- Per-song click preferences (#698): accept or reject; whether a grouping per band
+  arrangement is needed as well.
