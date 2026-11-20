@@ -1,4 +1,20 @@
 {
+  "0.17.0": {
+    "de": [
+      "Die App startet neu auf der Übersicht: nächstes Set mit Live-Start, offene Aufgaben und die letzten Änderungen der anderen Mitglieder.",
+      "setDING merkt sich, wann ihr einen Song gespielt habt, mit Tonart und Ablauf. Im Song zeigt «Gespielt» den Verlauf, und das Repertoire der Band zeigt, was ihr oft, lange nicht oder nie gespielt habt.",
+      "Gelöschte Songs und Sets lassen sich 30 Tage lang aus dem Papierkorb wiederherstellen.",
+      "In den Einstellungen sichert «Alles sichern» deine Bibliotheken, persönlichen Anpassungen und Einstellungen in einer Datei.",
+      "Keyboarder speichern pro Song ein Programm für jedes Keyboard; neu wird auch das Yamaha Motif XF unterstützt."
+    ],
+    "en": [
+      "The app now starts on the overview: the next set with a live start, open tasks and the recent changes of other members.",
+      "setDING remembers when you played a song, with its key and sequence. In the song, \"Played\" shows the history, and the band's repertoire shows what you play often, haven't played for a while or never played.",
+      "Deleted songs and sets can be restored from the trash for 30 days.",
+      "In the settings, \"Back up everything\" saves your libraries, personal adjustments and settings in one file.",
+      "Keyboard players store one program per song for each keyboard; the Yamaha Motif XF is now supported too."
+    ]
+  },
   "0.16.0": {
     "de": [
       "Wer Keyboard spielt, kann ein Keyboard per MIDI verbinden: Pro Song lässt sich ein Programm speichern, und der Live-Modus schaltet es beim Songwechsel automatisch um.",
