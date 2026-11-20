@@ -3917,4 +3917,82 @@ class AppLocalizationsEn extends AppLocalizations {
   String orgClosedNoticeAnonymous(String org, int days) {
     return '$org was closed. Its admins can restore it for $days days.';
   }
+
+  @override
+  String get navOverview => 'Overview';
+
+  @override
+  String get overviewNextSet => 'Next set';
+
+  @override
+  String get overviewLastEditedSet => 'Last edited set';
+
+  @override
+  String overviewSongCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs',
+      one: '1 song',
+      zero: 'No songs',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get overviewStartLive => 'Start live';
+
+  @override
+  String get overviewOpenSet => 'Open set';
+
+  @override
+  String get overviewTodo => 'To do';
+
+  @override
+  String overviewTodoProblems(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs with ChordPro problems',
+      one: '1 song with ChordPro problems',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String overviewTodoConflicts(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs with sync conflicts',
+      one: '1 song with a sync conflict',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String overviewTodoSheetMusicOnly(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs with sheet music (PDF) only',
+      one: '1 song with sheet music (PDF) only',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get attentionProblems => 'ChordPro problems';
+
+  @override
+  String get attentionConflicts => 'Sync conflicts';
+
+  @override
+  String get attentionSheetMusicOnly => 'Sheet music only';
+
+  @override
+  String get songsFilterClear => 'Remove filter';
+
+  @override
+  String get songsFilterEmpty => 'No songs left in this filter.';
 }

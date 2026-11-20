@@ -12,6 +12,8 @@ import '../sync/update_check.dart';
 import '../update/update_providers.dart';
 import '../update/whats_new.dart';
 import 'backup/full_backup.dart';
+import 'home_tab.dart';
+import 'overview/overview_screen.dart';
 import 'sets/sets_screen.dart';
 import 'settings_screen.dart';
 import 'songs/songs_screen.dart';
@@ -21,8 +23,9 @@ import 'widgets/logo.dart';
 import 'widgets/update_required_banner.dart';
 import 'widgets/whats_new_dialog.dart';
 
-/// Main navigation: sets, songs, settings. On wide screens the rail shows
-/// the logo mark at its top.
+/// Main navigation: overview (the start screen, ADR-0045), sets, songs,
+/// settings ([HomeTab]). On wide screens the rail shows the logo mark at its
+/// top.
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -31,9 +34,15 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  int _tab = 0;
+  static const _pages = {
+    HomeTab.overview: OverviewScreen(),
+    HomeTab.sets: SetsScreen(),
+    HomeTab.songs: SongsScreen(),
+    HomeTab.settings: SettingsScreen(),
+  };
 
-  static const _pages = [SetsScreen(), SongsScreen(), SettingsScreen()];
+  /// Key of the navigation entry of the tab [i], e.g. `nav-sets`.
+  static Key _navKey(int i) => Key('nav-${HomeTab.values[i].name}');
 
   /// How long the hint about a newer release stays (ADR-0036).
   static const _updateHintDuration = Duration(seconds: 6);
@@ -181,6 +190,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // A dot on the settings, where the update is described (ADR-0036).
     final update = ref.watch(updateCheckProvider) != null;
     final destinations = [
+      (Icons.dashboard_outlined, Icons.dashboard, l10n.navOverview, false),
       (Icons.queue_music_outlined, Icons.queue_music, l10n.navSets, false),
       (Icons.library_music_outlined, Icons.library_music, l10n.navSongs, false),
       (Icons.settings_outlined, Icons.settings, l10n.navSettings, update),
@@ -190,7 +200,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       isLabelVisible: dot,
       child: Icon(data),
     );
-    final pages = IndexedStack(index: _tab, children: _pages);
+    final tab = ref.watch(homeTabProvider).index;
+    void select(int i) =>
+        ref.read(homeTabProvider.notifier).select(HomeTab.values[i]);
+    final pages = IndexedStack(
+      index: tab,
+      children: [for (final t in HomeTab.values) _pages[t]!],
+    );
     // Above all tabs when the server refused this version (ADR-0029); the
     // banner takes the top inset, so the app bars below do not add it again.
     final body = ref.watch(updateRequiredProvider)
@@ -208,13 +224,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           )
         : pages;
 
-    if (MediaQuery.sizeOf(context).width >= 720) {
+    if (MediaQuery.sizeOf(context).width >= navigationRailWidth) {
       return Scaffold(
         body: Row(
           children: [
             NavigationRail(
-              selectedIndex: _tab,
-              onDestinationSelected: (i) => setState(() => _tab = i),
+              selectedIndex: tab,
+              onDestinationSelected: select,
               labelType: NavigationRailLabelType.all,
               leading: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
@@ -225,11 +241,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
               destinations: [
-                for (final (outlined, selected, label, dot) in destinations)
+                for (final (i, (outlined, selected, label, dot))
+                    in destinations.indexed)
                   NavigationRailDestination(
                     icon: icon(outlined, dot),
                     selectedIcon: icon(selected, dot),
-                    label: Text(label),
+                    label: Text(label, key: _navKey(i)),
                   ),
               ],
             ),
@@ -242,11 +259,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       body: body,
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _tab,
-        onDestinationSelected: (i) => setState(() => _tab = i),
+        selectedIndex: tab,
+        onDestinationSelected: select,
         destinations: [
-          for (final (outlined, selected, label, dot) in destinations)
+          for (final (i, (outlined, selected, label, dot))
+              in destinations.indexed)
             NavigationDestination(
+              key: _navKey(i),
               icon: icon(outlined, dot),
               selectedIcon: icon(selected, dot),
               label: label,

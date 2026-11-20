@@ -84,7 +84,13 @@ void main() {
 
     await afterStartDelay(tester);
     expect(snackbar, findsOneWidget);
-    expect(find.text('setDING 0.7.0 is available'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: snackbar,
+        matching: find.text('setDING 0.7.0 is available'),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('Details'), findsOneWidget);
     expect(dot, findsWidgets);
     expect(app.prefs.getString('updateCheck.latest'), '0.7.0');
@@ -150,7 +156,13 @@ void main() {
     expect(snackbar, findsNothing);
 
     await afterStartDelay(tester);
-    expect(find.text('setDING 0.8.0 is available'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: snackbar,
+        matching: find.text('setDING 0.8.0 is available'),
+      ),
+      findsOneWidget,
+    );
     await app.dispose(tester);
   });
 

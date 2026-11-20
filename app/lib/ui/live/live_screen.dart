@@ -140,10 +140,14 @@ class LiveScreen extends ConsumerStatefulWidget {
   final List<LiveItem> items;
   final int initialIndex;
 
+  /// Opens the set [setId] at its item [index], or with [firstSong] at its
+  /// first song, skipping pauses and texts before it (the overview's *Start
+  /// live*, ADR-0045).
   static Future<void> openSet(
     BuildContext context,
     String setId, {
     int index = 0,
+    bool firstSong = false,
   }) async {
     final container = ProviderScope.containerOf(context, listen: false);
     final sets = container.read(setRepositoryProvider);
@@ -169,10 +173,13 @@ class LiveScreen extends ConsumerStatefulWidget {
           ),
     ];
     if (items.isEmpty || !context.mounted) return;
+    final start = firstSong
+        ? items.indexWhere((i) => i.song != null).clamp(0, items.length - 1)
+        : index;
     await Navigator.push(
       context,
       MaterialPageRoute<void>(
-        builder: (_) => LiveScreen(items: items, initialIndex: index),
+        builder: (_) => LiveScreen(items: items, initialIndex: start),
       ),
     );
   }

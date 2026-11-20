@@ -12,7 +12,6 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../trash/trash_screen.dart';
 import '../../settings/settings.dart';
-import '../../sync/sync_controller.dart';
 import '../account/sync_refresh.dart';
 import '../backup/backup_actions.dart';
 import '../bands/copy_to_band.dart';
@@ -23,6 +22,7 @@ import '../widgets/breakpoint_builder.dart';
 import '../widgets/dialogs.dart';
 import 'chordpro_problems_badge.dart';
 import 'import_dialog.dart';
+import 'song_attention.dart';
 import 'song_editor_screen.dart';
 import 'song_screen.dart';
 
@@ -130,11 +130,21 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
     final arrangements = band == null
         ? const <String, BandArrangement>{}
         : ref.watch(bandArrangementsProvider(band.id)).value ?? const {};
-    final conflicts = {
-      for (final c
-          in ref.watch(conflictsProvider).value ?? const <SongConflict>[])
-        c.songId,
-    };
+    final conflicts = ref.watch(conflictSongIdsProvider);
+    // Only the songs of a line of the overview's To do card (ADR-0045).
+    final attention = ref.watch(songAttentionFilterProvider);
+    List<SongListEntry> visible(List<SongListEntry> songs) => attention == null
+        ? songs
+        : [
+            for (final s in songs)
+              if (needsAttention(
+                attention,
+                s,
+                library: library,
+                conflicts: conflicts,
+              ))
+                s,
+          ];
     final gigs = ref.watch(upcomingGigsProvider(library.id)).value ?? const {};
     final selected = _selected;
     // Leave selection mode when switching libraries.
@@ -186,7 +196,9 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                   icon: const Icon(Icons.select_all),
                   onPressed: () => setState(
                     () => _selected = {
-                      for (final s in _shown?.songs ?? const <SongListEntry>[])
+                      for (final s in visible(
+                        _shown?.songs ?? const <SongListEntry>[],
+                      ))
                         s.id,
                     },
                   ),
@@ -273,18 +285,25 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
             ),
       body: Column(
         children: [
-          _Filters(tag: _tag, onTag: (tag) => setState(() => _tag = tag)),
+          _Filters(
+            tag: _tag,
+            onTag: (tag) => setState(() => _tag = tag),
+            attention: attention,
+          ),
           Expanded(
             child: AsyncBody(
               value: results,
               data: (results) {
-                final (songs: list, :hits, :sort) = results;
+                final (songs: all, :hits, :sort) = results;
+                final list = visible(all);
                 if (list.isEmpty) {
                   return SyncRefresh(
                     scrollable: false,
                     child: EmptyState(
                       icon: Icons.library_music_outlined,
-                      message: l10n.songsEmpty,
+                      message: attention == null || all.isEmpty
+                          ? l10n.songsEmpty
+                          : l10n.songsFilterEmpty,
                     ),
                   );
                 }
@@ -404,10 +423,18 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
 /// Chips above the list: the order (a menu, see [SongSort]) and the tags
 /// used in the library (`{tag}`).
 class _Filters extends ConsumerWidget {
-  const _Filters({required this.tag, required this.onTag});
+  const _Filters({
+    required this.tag,
+    required this.onTag,
+    required this.attention,
+  });
 
   final String? tag;
   final ValueChanged<String?> onTag;
+
+  /// The filter chosen on the overview (ADR-0045), shown first and
+  /// removable.
+  final SongAttention? attention;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -430,6 +457,20 @@ class _Filters extends ConsumerWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         children: [
+          if (attention case final kind?)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: InputChip(
+                key: const Key('songs-attention-filter'),
+                avatar: const Icon(Icons.filter_alt_outlined, size: 18),
+                label: Text(songAttentionLabel(l10n, kind)),
+                selected: true,
+                showCheckmark: false,
+                deleteButtonTooltipMessage: l10n.songsFilterClear,
+                onDeleted: () =>
+                    ref.read(songAttentionFilterProvider.notifier).select(null),
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: MenuAnchor(

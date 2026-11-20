@@ -3940,4 +3940,82 @@ class AppLocalizationsDe extends AppLocalizations {
   String orgClosedNoticeAnonymous(String org, int days) {
     return '$org wurde geschlossen. Ihre Admins können sie $days Tage lang wiederherstellen.';
   }
+
+  @override
+  String get navOverview => 'Übersicht';
+
+  @override
+  String get overviewNextSet => 'Nächstes Set';
+
+  @override
+  String get overviewLastEditedSet => 'Zuletzt bearbeitetes Set';
+
+  @override
+  String overviewSongCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs',
+      one: '1 Song',
+      zero: 'Keine Songs',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get overviewStartLive => 'Live starten';
+
+  @override
+  String get overviewOpenSet => 'Set öffnen';
+
+  @override
+  String get overviewTodo => 'Zu erledigen';
+
+  @override
+  String overviewTodoProblems(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs mit ChordPro-Problemen',
+      one: '1 Song mit ChordPro-Problemen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String overviewTodoConflicts(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs mit Sync-Konflikt',
+      one: '1 Song mit Sync-Konflikt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String overviewTodoSheetMusicOnly(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs nur mit Noten (PDF)',
+      one: '1 Song nur mit Noten (PDF)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get attentionProblems => 'ChordPro-Probleme';
+
+  @override
+  String get attentionConflicts => 'Sync-Konflikte';
+
+  @override
+  String get attentionSheetMusicOnly => 'Nur Noten (PDF)';
+
+  @override
+  String get songsFilterClear => 'Filter entfernen';
+
+  @override
+  String get songsFilterEmpty => 'Keine Songs mehr in diesem Filter.';
 }

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:setding/ui/home_tab.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/providers.dart';
 import 'package:setding/ui/live/live_play_button.dart';
@@ -35,6 +36,7 @@ void main() {
     });
     await tester.pumpWidget(app.build());
     await tester.pumpAndSettle();
+    await openTab(tester, HomeTab.sets);
     return app;
   }
 
@@ -199,6 +201,7 @@ void main() {
       });
       await tester.pumpWidget(app.build());
       await tester.pumpAndSettle();
+      await openTab(tester, HomeTab.sets);
       return (app, old!);
     }
 
@@ -263,6 +266,7 @@ void main() {
       });
       await tester.pumpWidget(app.build());
       await tester.pumpAndSettle();
+      await openTab(tester, HomeTab.sets);
 
       expect(find.text('Past (2)'), findsOneWidget);
       expect(find.text('Older gig'), findsNothing);
@@ -289,6 +293,7 @@ void main() {
     });
     await tester.pumpWidget(app.build());
     await tester.pumpAndSettle();
+    await openTab(tester, HomeTab.sets);
     await tester.tap(find.text('Gig'));
     await tester.pumpAndSettle();
 

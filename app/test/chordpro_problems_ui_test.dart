@@ -9,6 +9,8 @@ import 'package:setding/ui/songs/import_dialog.dart';
 import 'package:setding/ui/songs/song_editor_screen.dart';
 import 'package:setding/ui/songs/song_screen.dart';
 
+import 'package:setding/ui/home_tab.dart';
+
 import 'test_app.dart';
 
 const _ann = AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann');
@@ -126,6 +128,7 @@ void main() {
     });
     await tester.pumpWidget(app.build());
     await tester.pumpAndSettle();
+    await openTab(tester, HomeTab.sets);
 
     expect(find.byKey(const ValueKey('set-problems')), findsOneWidget);
     expect(find.byTooltip('2 songs with ChordPro problems'), findsOneWidget);

@@ -123,6 +123,11 @@ Further rules:
   records `updated_by` on sets and arrangements; the client keeps it now, and
   a person's own changes from other devices are left out. **Accepted** by the
   owner (#656).
+- 2026-11-20: Implemented the tab with *Next set*, *To do* and the footer
+  (#666). *Start live* skips pauses and texts before the first song. The
+  *To do* lines set a filter of the song list (`SongAttention`), shown as a
+  removable chip, and switch to the songs tab; they count the songs of the
+  library the song list shows. *Recent changes* follows in #667.
 
 ## Open points
 
