@@ -144,6 +144,15 @@ the item JSON of `setlists.items` (ADR-0015) and in local columns:
   set planners are limited to it by a hook that refuses any other field in the
   request; the local library keeps the default of 6 months; the song list's
   order *Last played* and its filters use the band of the library shown.
+- 2026-11-20: v3 implemented (#662). Details: `GET /api/setding/plays/{organization}`
+  (`pb_hooks/lib/plays.js`) for active members of the organization, 404 for
+  everyone else; the key is that of the most recent play with frozen values, so
+  older sets without them give no key; "today" is UTC on the server. The client
+  fetches it after the push of every sync and replaces its local copy
+  (`org_plays`, schema 26; the fetch time as a sync cursor); offline the last copy
+  stays. The Played panel shows *Other bands* below the band's own plays, also
+  when the band never played the song; *Library usage* is in the menu of the
+  songs tab and offers moving a song to the trash.
 
 ## Open points
 

@@ -203,6 +203,10 @@ class SyncEngine {
       final p = await _push(user.id);
       pushed += p.$1;
       conflicts += p.$2;
+      // After the push, so this device's frozen plays are included.
+      for (final org in orgIds) {
+        await _pullOrgPlays(org);
+      }
       if (preloadAttachments) {
         downloaded += await _attachments.downloadMissing();
       }
@@ -385,6 +389,45 @@ class SyncEngine {
   /// Stores the server state of a song locally (no outbox entry).
   Future<void> writeSong(RemoteSong remote, {SongMeta? meta}) =>
       _songs.writeSong(remote, meta: meta);
+
+  /// Stores how often each band of [orgId] played each song (ADR-0046),
+  /// replacing what the last sync stored. Without the summary (offline, an
+  /// older server) the stored one stays.
+  Future<void> _pullOrgPlays(String orgId) async {
+    final List<RemoteOrgPlay> plays;
+    try {
+      plays = await backend.fetchOrgPlays(orgId);
+    } on BackendException catch (e) {
+      _log.info('Plays of organization $orgId not fetched: ${e.kind.name}');
+      return;
+    }
+    await db.transaction(() async {
+      await (db.delete(
+        db.orgPlays,
+      )..where((p) => p.organizationId.equals(orgId))).go();
+      for (final p in plays) {
+        await db
+            .into(db.orgPlays)
+            .insert(
+              OrgPlaysCompanion.insert(
+                organizationId: orgId,
+                songId: p.songId,
+                bandId: p.bandId,
+                bandName: p.bandName,
+                playCount: p.count,
+                lastPlayed: p.last,
+                playedKey: Value(p.key),
+              ),
+              mode: InsertMode.insertOrReplace,
+            );
+      }
+      await _store.setCursor(
+        orgId,
+        SyncCollection.orgPlays,
+        DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      );
+    });
+  }
 
   /// Keeps the local version: it is pushed on top of the server version.
   Future<void> keepLocal(String songId) => _songs.keepLocal(songId);

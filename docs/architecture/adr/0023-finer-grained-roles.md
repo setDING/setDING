@@ -109,6 +109,8 @@ for creating an account, like every invitation.
 | Delete songs and attachments | ✓ | ✓ | – | – | – |
 | Band settings, band members, band roles | ✓ all bands | – | ✓ | – | – |
 | When songs count as not played for a while (ADR-0046) | ✓ all bands | – | ✓ | ✓ | – |
+| See how the other bands of the organization played a song (ADR-0046) | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Library usage: songs no band played (ADR-0046) | ✓ | ✓ | – | – | – |
 | Invite into the organization | ✓ | – | ✓ (into own band) | – | – |
 | Create bands, organization roles | ✓ | – | – | – | – |
 | Delete a band, restore it from the trash (ADR-0044) | ✓ | – | – | – | – |
@@ -205,6 +207,10 @@ sets of that band like any member; librarian rights concern the library only.
 - 2026-11-20: Matrix row for the band's threshold for songs not played for a
   while (ADR-0046, #661): set planners may change this field of the band and
   nothing else (update rule plus a hook on the request body).
+- 2026-11-20: Matrix rows for the plays across the bands (ADR-0046, #662): every
+  member of the organization sees, per song, which bands played it, when last,
+  in which key and how often (never their sets); the library usage is for those
+  who maintain the library.
 
 ## Open points
 

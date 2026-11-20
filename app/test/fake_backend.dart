@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:setding/data/database.dart' show SetItemType;
 import 'package:setding/sync/sync_backend.dart';
 
 /// In-memory [SyncBackend] for widget tests.
@@ -391,6 +392,57 @@ class FakeSyncBackend implements SyncBackend {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
     band.deletedAt = null;
+  }
+
+  /// Number of [fetchOrgPlays] calls; set [orgPlaysFail] to answer them
+  /// like a server without the route.
+  int fetchOrgPlaysCalls = 0;
+  bool orgPlaysFail = false;
+
+  @override
+  Future<List<RemoteOrgPlay>> fetchOrgPlays(String organizationId) async {
+    _requireUser();
+    fetchOrgPlaysCalls++;
+    if (orgPlaysFail ||
+        !orgMembers.any(
+          (m) => m.scopeId == organizationId && m.user.id == user!.id,
+        )) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final past = [
+      for (final s in sets.values)
+        if (!s.deleted &&
+            bands[s.bandId]?.organizationId == organizationId &&
+            bands[s.bandId]?.deletedAt == null &&
+            s.gigDate != null &&
+            s.gigDate!.isBefore(today))
+          s,
+    ]..sort((a, b) => b.gigDate!.compareTo(a.gigDate!));
+    final plays = <(String, String), RemoteOrgPlay>{};
+    for (final set in past) {
+      for (final songId in {
+        for (final i in set.items)
+          if (i.type == SetItemType.song) ?i.songId,
+      }) {
+        final key = (songId, set.bandId);
+        final before = plays[key];
+        final played = set.items
+            .firstWhere((i) => i.songId == songId)
+            .played
+            ?.key;
+        plays[key] = RemoteOrgPlay(
+          songId: songId,
+          bandId: set.bandId,
+          bandName: bands[set.bandId]!.name,
+          count: (before?.count ?? 0) + 1,
+          last: before?.last ?? set.gigDate!,
+          key: before?.key ?? played,
+        );
+      }
+    }
+    return plays.values.toList();
   }
 
   @override

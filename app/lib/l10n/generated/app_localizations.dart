@@ -6732,6 +6732,48 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Zuletzt gespielt'**
   String get sortByLastPlayed;
+
+  /// No description provided for @playHistoryOtherBands.
+  ///
+  /// In de, this message translates to:
+  /// **'Andere Bands'**
+  String get playHistoryOtherBands;
+
+  /// No description provided for @playHistoryFetched.
+  ///
+  /// In de, this message translates to:
+  /// **'Stand: {date}'**
+  String playHistoryFetched(String date);
+
+  /// No description provided for @libraryUsage.
+  ///
+  /// In de, this message translates to:
+  /// **'Bibliothek · Nutzung'**
+  String get libraryUsage;
+
+  /// No description provided for @libraryUsageSummary.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} von {total} Songs spielt keine Band'**
+  String libraryUsageSummary(int count, int total);
+
+  /// No description provided for @libraryUsageHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Songs, die in keinem vergangenen Set einer Band der Organisation waren. Was keine Band mehr braucht, kannst du in den Papierkorb legen.'**
+  String get libraryUsageHint;
+
+  /// No description provided for @libraryUsageNotLoaded.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch nicht geladen: Synchronisiere einmal mit Verbindung zum Server.'**
+  String get libraryUsageNotLoaded;
+
+  /// No description provided for @libraryUsageAllPlayed.
+  ///
+  /// In de, this message translates to:
+  /// **'Jeder Song der Bibliothek wurde schon von einer Band gespielt.'**
+  String get libraryUsageAllPlayed;
 }
 
 class _AppLocalizationsDelegate

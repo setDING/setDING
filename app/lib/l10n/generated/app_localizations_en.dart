@@ -4236,4 +4236,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sortByLastPlayed => 'Last played';
+
+  @override
+  String get playHistoryOtherBands => 'Other bands';
+
+  @override
+  String playHistoryFetched(String date) {
+    return 'As of $date';
+  }
+
+  @override
+  String get libraryUsage => 'Library usage';
+
+  @override
+  String libraryUsageSummary(int count, int total) {
+    return 'No band plays $count of $total songs';
+  }
+
+  @override
+  String get libraryUsageHint =>
+      'Songs that were in no past set of any band of the organization. Move what no band needs any more to the trash.';
+
+  @override
+  String get libraryUsageNotLoaded =>
+      'Not loaded yet: sync once while connected to the server.';
+
+  @override
+  String get libraryUsageAllPlayed =>
+      'Every song of the library was played by a band.';
 }

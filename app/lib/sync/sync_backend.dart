@@ -161,6 +161,30 @@ class RemoteBand {
   final int staleAfterMonths;
 }
 
+/// How often a band of an organization played a song, as the server sums it
+/// up (ADR-0046): never the sets themselves.
+@immutable
+class RemoteOrgPlay {
+  const RemoteOrgPlay({
+    required this.songId,
+    required this.bandId,
+    required this.bandName,
+    required this.count,
+    required this.last,
+    this.key,
+  });
+
+  final String songId;
+  final String bandId;
+  final String bandName;
+  final int count;
+  final DateTime last;
+
+  /// The key of the most recent play with frozen values (international
+  /// notation), if any.
+  final String? key;
+}
+
 /// A closed organization of the signed-in user in the trash (ADR-0044).
 @immutable
 class ClosedOrganization {
@@ -769,6 +793,10 @@ abstract class SyncBackend {
   /// Deleted bands of [organizationId] that can still be restored, most
   /// recently deleted first (organization admins, ADR-0044).
   Future<List<DeletedBand>> fetchDeletedBands(String organizationId);
+
+  /// How often each band of [organizationId] played each song of its
+  /// library (ADR-0046); members of the organization only.
+  Future<List<RemoteOrgPlay>> fetchOrgPlays(String organizationId);
 
   /// Closes an organization with everything in it (organization admins,
   /// ADR-0044); it stays 30 days in the trash.

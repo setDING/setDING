@@ -8741,6 +8741,482 @@ class ChangeLogCompanion extends UpdateCompanion<ChangeLogRow> {
   }
 }
 
+class $OrgPlaysTable extends OrgPlays with TableInfo<$OrgPlaysTable, OrgPlay> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $OrgPlaysTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _organizationIdMeta = const VerificationMeta(
+    'organizationId',
+  );
+  @override
+  late final GeneratedColumn<String> organizationId = GeneratedColumn<String>(
+    'organization_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _songIdMeta = const VerificationMeta('songId');
+  @override
+  late final GeneratedColumn<String> songId = GeneratedColumn<String>(
+    'song_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bandIdMeta = const VerificationMeta('bandId');
+  @override
+  late final GeneratedColumn<String> bandId = GeneratedColumn<String>(
+    'band_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bandNameMeta = const VerificationMeta(
+    'bandName',
+  );
+  @override
+  late final GeneratedColumn<String> bandName = GeneratedColumn<String>(
+    'band_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _playCountMeta = const VerificationMeta(
+    'playCount',
+  );
+  @override
+  late final GeneratedColumn<int> playCount = GeneratedColumn<int>(
+    'play_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lastPlayedMeta = const VerificationMeta(
+    'lastPlayed',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastPlayed = GeneratedColumn<DateTime>(
+    'last_played',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _playedKeyMeta = const VerificationMeta(
+    'playedKey',
+  );
+  @override
+  late final GeneratedColumn<String> playedKey = GeneratedColumn<String>(
+    'played_key',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    organizationId,
+    songId,
+    bandId,
+    bandName,
+    playCount,
+    lastPlayed,
+    playedKey,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'org_plays';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<OrgPlay> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('organization_id')) {
+      context.handle(
+        _organizationIdMeta,
+        organizationId.isAcceptableOrUnknown(
+          data['organization_id']!,
+          _organizationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_organizationIdMeta);
+    }
+    if (data.containsKey('song_id')) {
+      context.handle(
+        _songIdMeta,
+        songId.isAcceptableOrUnknown(data['song_id']!, _songIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_songIdMeta);
+    }
+    if (data.containsKey('band_id')) {
+      context.handle(
+        _bandIdMeta,
+        bandId.isAcceptableOrUnknown(data['band_id']!, _bandIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bandIdMeta);
+    }
+    if (data.containsKey('band_name')) {
+      context.handle(
+        _bandNameMeta,
+        bandName.isAcceptableOrUnknown(data['band_name']!, _bandNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bandNameMeta);
+    }
+    if (data.containsKey('play_count')) {
+      context.handle(
+        _playCountMeta,
+        playCount.isAcceptableOrUnknown(data['play_count']!, _playCountMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_playCountMeta);
+    }
+    if (data.containsKey('last_played')) {
+      context.handle(
+        _lastPlayedMeta,
+        lastPlayed.isAcceptableOrUnknown(data['last_played']!, _lastPlayedMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_lastPlayedMeta);
+    }
+    if (data.containsKey('played_key')) {
+      context.handle(
+        _playedKeyMeta,
+        playedKey.isAcceptableOrUnknown(data['played_key']!, _playedKeyMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {songId, bandId};
+  @override
+  OrgPlay map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return OrgPlay(
+      organizationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organization_id'],
+      )!,
+      songId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}song_id'],
+      )!,
+      bandId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}band_id'],
+      )!,
+      bandName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}band_name'],
+      )!,
+      playCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}play_count'],
+      )!,
+      lastPlayed: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_played'],
+      )!,
+      playedKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}played_key'],
+      ),
+    );
+  }
+
+  @override
+  $OrgPlaysTable createAlias(String alias) {
+    return $OrgPlaysTable(attachedDatabase, alias);
+  }
+}
+
+class OrgPlay extends DataClass implements Insertable<OrgPlay> {
+  final String organizationId;
+  final String songId;
+  final String bandId;
+  final String bandName;
+
+  /// Past sets of the band with the song.
+  final int playCount;
+  final DateTime lastPlayed;
+
+  /// The key of the most recent play with frozen values, if any.
+  final String? playedKey;
+  const OrgPlay({
+    required this.organizationId,
+    required this.songId,
+    required this.bandId,
+    required this.bandName,
+    required this.playCount,
+    required this.lastPlayed,
+    this.playedKey,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['organization_id'] = Variable<String>(organizationId);
+    map['song_id'] = Variable<String>(songId);
+    map['band_id'] = Variable<String>(bandId);
+    map['band_name'] = Variable<String>(bandName);
+    map['play_count'] = Variable<int>(playCount);
+    map['last_played'] = Variable<DateTime>(lastPlayed);
+    if (!nullToAbsent || playedKey != null) {
+      map['played_key'] = Variable<String>(playedKey);
+    }
+    return map;
+  }
+
+  OrgPlaysCompanion toCompanion(bool nullToAbsent) {
+    return OrgPlaysCompanion(
+      organizationId: Value(organizationId),
+      songId: Value(songId),
+      bandId: Value(bandId),
+      bandName: Value(bandName),
+      playCount: Value(playCount),
+      lastPlayed: Value(lastPlayed),
+      playedKey: playedKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(playedKey),
+    );
+  }
+
+  factory OrgPlay.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return OrgPlay(
+      organizationId: serializer.fromJson<String>(json['organizationId']),
+      songId: serializer.fromJson<String>(json['songId']),
+      bandId: serializer.fromJson<String>(json['bandId']),
+      bandName: serializer.fromJson<String>(json['bandName']),
+      playCount: serializer.fromJson<int>(json['playCount']),
+      lastPlayed: serializer.fromJson<DateTime>(json['lastPlayed']),
+      playedKey: serializer.fromJson<String?>(json['playedKey']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'organizationId': serializer.toJson<String>(organizationId),
+      'songId': serializer.toJson<String>(songId),
+      'bandId': serializer.toJson<String>(bandId),
+      'bandName': serializer.toJson<String>(bandName),
+      'playCount': serializer.toJson<int>(playCount),
+      'lastPlayed': serializer.toJson<DateTime>(lastPlayed),
+      'playedKey': serializer.toJson<String?>(playedKey),
+    };
+  }
+
+  OrgPlay copyWith({
+    String? organizationId,
+    String? songId,
+    String? bandId,
+    String? bandName,
+    int? playCount,
+    DateTime? lastPlayed,
+    Value<String?> playedKey = const Value.absent(),
+  }) => OrgPlay(
+    organizationId: organizationId ?? this.organizationId,
+    songId: songId ?? this.songId,
+    bandId: bandId ?? this.bandId,
+    bandName: bandName ?? this.bandName,
+    playCount: playCount ?? this.playCount,
+    lastPlayed: lastPlayed ?? this.lastPlayed,
+    playedKey: playedKey.present ? playedKey.value : this.playedKey,
+  );
+  OrgPlay copyWithCompanion(OrgPlaysCompanion data) {
+    return OrgPlay(
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
+      songId: data.songId.present ? data.songId.value : this.songId,
+      bandId: data.bandId.present ? data.bandId.value : this.bandId,
+      bandName: data.bandName.present ? data.bandName.value : this.bandName,
+      playCount: data.playCount.present ? data.playCount.value : this.playCount,
+      lastPlayed: data.lastPlayed.present
+          ? data.lastPlayed.value
+          : this.lastPlayed,
+      playedKey: data.playedKey.present ? data.playedKey.value : this.playedKey,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OrgPlay(')
+          ..write('organizationId: $organizationId, ')
+          ..write('songId: $songId, ')
+          ..write('bandId: $bandId, ')
+          ..write('bandName: $bandName, ')
+          ..write('playCount: $playCount, ')
+          ..write('lastPlayed: $lastPlayed, ')
+          ..write('playedKey: $playedKey')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    organizationId,
+    songId,
+    bandId,
+    bandName,
+    playCount,
+    lastPlayed,
+    playedKey,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is OrgPlay &&
+          other.organizationId == this.organizationId &&
+          other.songId == this.songId &&
+          other.bandId == this.bandId &&
+          other.bandName == this.bandName &&
+          other.playCount == this.playCount &&
+          other.lastPlayed == this.lastPlayed &&
+          other.playedKey == this.playedKey);
+}
+
+class OrgPlaysCompanion extends UpdateCompanion<OrgPlay> {
+  final Value<String> organizationId;
+  final Value<String> songId;
+  final Value<String> bandId;
+  final Value<String> bandName;
+  final Value<int> playCount;
+  final Value<DateTime> lastPlayed;
+  final Value<String?> playedKey;
+  final Value<int> rowid;
+  const OrgPlaysCompanion({
+    this.organizationId = const Value.absent(),
+    this.songId = const Value.absent(),
+    this.bandId = const Value.absent(),
+    this.bandName = const Value.absent(),
+    this.playCount = const Value.absent(),
+    this.lastPlayed = const Value.absent(),
+    this.playedKey = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  OrgPlaysCompanion.insert({
+    required String organizationId,
+    required String songId,
+    required String bandId,
+    required String bandName,
+    required int playCount,
+    required DateTime lastPlayed,
+    this.playedKey = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : organizationId = Value(organizationId),
+       songId = Value(songId),
+       bandId = Value(bandId),
+       bandName = Value(bandName),
+       playCount = Value(playCount),
+       lastPlayed = Value(lastPlayed);
+  static Insertable<OrgPlay> custom({
+    Expression<String>? organizationId,
+    Expression<String>? songId,
+    Expression<String>? bandId,
+    Expression<String>? bandName,
+    Expression<int>? playCount,
+    Expression<DateTime>? lastPlayed,
+    Expression<String>? playedKey,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (organizationId != null) 'organization_id': organizationId,
+      if (songId != null) 'song_id': songId,
+      if (bandId != null) 'band_id': bandId,
+      if (bandName != null) 'band_name': bandName,
+      if (playCount != null) 'play_count': playCount,
+      if (lastPlayed != null) 'last_played': lastPlayed,
+      if (playedKey != null) 'played_key': playedKey,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  OrgPlaysCompanion copyWith({
+    Value<String>? organizationId,
+    Value<String>? songId,
+    Value<String>? bandId,
+    Value<String>? bandName,
+    Value<int>? playCount,
+    Value<DateTime>? lastPlayed,
+    Value<String?>? playedKey,
+    Value<int>? rowid,
+  }) {
+    return OrgPlaysCompanion(
+      organizationId: organizationId ?? this.organizationId,
+      songId: songId ?? this.songId,
+      bandId: bandId ?? this.bandId,
+      bandName: bandName ?? this.bandName,
+      playCount: playCount ?? this.playCount,
+      lastPlayed: lastPlayed ?? this.lastPlayed,
+      playedKey: playedKey ?? this.playedKey,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
+    }
+    if (songId.present) {
+      map['song_id'] = Variable<String>(songId.value);
+    }
+    if (bandId.present) {
+      map['band_id'] = Variable<String>(bandId.value);
+    }
+    if (bandName.present) {
+      map['band_name'] = Variable<String>(bandName.value);
+    }
+    if (playCount.present) {
+      map['play_count'] = Variable<int>(playCount.value);
+    }
+    if (lastPlayed.present) {
+      map['last_played'] = Variable<DateTime>(lastPlayed.value);
+    }
+    if (playedKey.present) {
+      map['played_key'] = Variable<String>(playedKey.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OrgPlaysCompanion(')
+          ..write('organizationId: $organizationId, ')
+          ..write('songId: $songId, ')
+          ..write('bandId: $bandId, ')
+          ..write('bandName: $bandName, ')
+          ..write('playCount: $playCount, ')
+          ..write('lastPlayed: $lastPlayed, ')
+          ..write('playedKey: $playedKey, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -8777,6 +9253,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SyncCursorsTable syncCursors = $SyncCursorsTable(this);
   late final $SongConflictsTable songConflicts = $SongConflictsTable(this);
   late final $ChangeLogTable changeLog = $ChangeLogTable(this);
+  late final $OrgPlaysTable orgPlays = $OrgPlaysTable(this);
   late final Index orgMembershipsUser = Index(
     'org_memberships_user',
     'CREATE INDEX org_memberships_user ON org_memberships (user_id)',
@@ -8842,6 +9319,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     syncCursors,
     songConflicts,
     changeLog,
+    orgPlays,
     orgMembershipsUser,
     membershipsBand,
     membershipsUser,
@@ -15379,6 +15857,249 @@ typedef $$ChangeLogTableProcessedTableManager =
       ChangeLogRow,
       PrefetchHooks Function()
     >;
+typedef $$OrgPlaysTableCreateCompanionBuilder = OrgPlaysCompanion Function({
+  required String organizationId,
+  required String songId,
+  required String bandId,
+  required String bandName,
+  required int playCount,
+  required DateTime lastPlayed,
+  Value<String?> playedKey,
+  Value<int> rowid,
+});
+typedef $$OrgPlaysTableUpdateCompanionBuilder = OrgPlaysCompanion Function({
+  Value<String> organizationId,
+  Value<String> songId,
+  Value<String> bandId,
+  Value<String> bandName,
+  Value<int> playCount,
+  Value<DateTime> lastPlayed,
+  Value<String?> playedKey,
+  Value<int> rowid,
+});
+
+class $$OrgPlaysTableFilterComposer
+    extends Composer<_$AppDatabase, $OrgPlaysTable> {
+  $$OrgPlaysTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get songId => $composableBuilder(
+    column: $table.songId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bandId => $composableBuilder(
+    column: $table.bandId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bandName => $composableBuilder(
+    column: $table.bandName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get playCount => $composableBuilder(
+    column: $table.playCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastPlayed => $composableBuilder(
+    column: $table.lastPlayed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get playedKey => $composableBuilder(
+    column: $table.playedKey,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$OrgPlaysTableOrderingComposer
+    extends Composer<_$AppDatabase, $OrgPlaysTable> {
+  $$OrgPlaysTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get songId => $composableBuilder(
+    column: $table.songId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bandId => $composableBuilder(
+    column: $table.bandId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bandName => $composableBuilder(
+    column: $table.bandName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get playCount => $composableBuilder(
+    column: $table.playCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastPlayed => $composableBuilder(
+    column: $table.lastPlayed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get playedKey => $composableBuilder(
+    column: $table.playedKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$OrgPlaysTableAnnotationComposer
+    extends Composer<_$AppDatabase, $OrgPlaysTable> {
+  $$OrgPlaysTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get songId =>
+      $composableBuilder(column: $table.songId, builder: (column) => column);
+
+  GeneratedColumn<String> get bandId =>
+      $composableBuilder(column: $table.bandId, builder: (column) => column);
+
+  GeneratedColumn<String> get bandName =>
+      $composableBuilder(column: $table.bandName, builder: (column) => column);
+
+  GeneratedColumn<int> get playCount =>
+      $composableBuilder(column: $table.playCount, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastPlayed => $composableBuilder(
+    column: $table.lastPlayed,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get playedKey =>
+      $composableBuilder(column: $table.playedKey, builder: (column) => column);
+}
+
+class $$OrgPlaysTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $OrgPlaysTable,
+          OrgPlay,
+          $$OrgPlaysTableFilterComposer,
+          $$OrgPlaysTableOrderingComposer,
+          $$OrgPlaysTableAnnotationComposer,
+          $$OrgPlaysTableCreateCompanionBuilder,
+          $$OrgPlaysTableUpdateCompanionBuilder,
+          (OrgPlay, BaseReferences<_$AppDatabase, $OrgPlaysTable, OrgPlay>),
+          OrgPlay,
+          PrefetchHooks Function()
+        > {
+  $$OrgPlaysTableTableManager(_$AppDatabase db, $OrgPlaysTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$OrgPlaysTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$OrgPlaysTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$OrgPlaysTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> organizationId = const Value.absent(),
+                Value<String> songId = const Value.absent(),
+                Value<String> bandId = const Value.absent(),
+                Value<String> bandName = const Value.absent(),
+                Value<int> playCount = const Value.absent(),
+                Value<DateTime> lastPlayed = const Value.absent(),
+                Value<String?> playedKey = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => OrgPlaysCompanion(
+                organizationId: organizationId,
+                songId: songId,
+                bandId: bandId,
+                bandName: bandName,
+                playCount: playCount,
+                lastPlayed: lastPlayed,
+                playedKey: playedKey,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String organizationId,
+                required String songId,
+                required String bandId,
+                required String bandName,
+                required int playCount,
+                required DateTime lastPlayed,
+                Value<String?> playedKey = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => OrgPlaysCompanion.insert(
+                organizationId: organizationId,
+                songId: songId,
+                bandId: bandId,
+                bandName: bandName,
+                playCount: playCount,
+                lastPlayed: lastPlayed,
+                playedKey: playedKey,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$OrgPlaysTable, OrgPlay>(table),
+                  BaseReferences<_$AppDatabase, $OrgPlaysTable, OrgPlay>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$OrgPlaysTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $OrgPlaysTable,
+      OrgPlay,
+      $$OrgPlaysTableFilterComposer,
+      $$OrgPlaysTableOrderingComposer,
+      $$OrgPlaysTableAnnotationComposer,
+      $$OrgPlaysTableCreateCompanionBuilder,
+      $$OrgPlaysTableUpdateCompanionBuilder,
+      (OrgPlay, BaseReferences<_$AppDatabase, $OrgPlaysTable, OrgPlay>),
+      OrgPlay,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -15417,4 +16138,6 @@ class $AppDatabaseManager {
       $$SongConflictsTableTableManager(_db, _db.songConflicts);
   $$ChangeLogTableTableManager get changeLog =>
       $$ChangeLogTableTableManager(_db, _db.changeLog);
+  $$OrgPlaysTableTableManager get orgPlays =>
+      $$OrgPlaysTableTableManager(_db, _db.orgPlays);
 }

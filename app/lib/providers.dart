@@ -430,6 +430,28 @@ final repertoireProvider = StreamProvider.autoDispose
           .watchRepertoire(key.band, key.library),
     );
 
+/// How the other bands of the organization played a song (ADR-0046).
+final otherBandPlaysProvider = StreamProvider.autoDispose
+    .family<List<OrgPlay>, ({String song, String? exceptBand})>(
+      (ref, key) => ref
+          .watch(playHistoryRepositoryProvider)
+          .watchOtherBands(key.song, exceptBandId: key.exceptBand),
+    );
+
+/// When the plays across an organization's bands were fetched last.
+final orgPlaysFetchedProvider = StreamProvider.autoDispose
+    .family<DateTime?, String>(
+      (ref, orgId) =>
+          ref.watch(playHistoryRepositoryProvider).watchOrgPlaysFetched(orgId),
+    );
+
+/// The songs of a library no band played (ADR-0046).
+final libraryUsageProvider = StreamProvider.autoDispose
+    .family<({List<SongEntry> unplayed, int total}), String>(
+      (ref, libraryId) =>
+          ref.watch(playHistoryRepositoryProvider).watchLibraryUsage(libraryId),
+    );
+
 /// When a band last played each song (ADR-0046).
 final lastPlayedProvider = StreamProvider.autoDispose
     .family<Map<String, DateTime>, String>(

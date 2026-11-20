@@ -4260,4 +4260,32 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get sortByLastPlayed => 'Zuletzt gespielt';
+
+  @override
+  String get playHistoryOtherBands => 'Andere Bands';
+
+  @override
+  String playHistoryFetched(String date) {
+    return 'Stand: $date';
+  }
+
+  @override
+  String get libraryUsage => 'Bibliothek · Nutzung';
+
+  @override
+  String libraryUsageSummary(int count, int total) {
+    return '$count von $total Songs spielt keine Band';
+  }
+
+  @override
+  String get libraryUsageHint =>
+      'Songs, die in keinem vergangenen Set einer Band der Organisation waren. Was keine Band mehr braucht, kannst du in den Papierkorb legen.';
+
+  @override
+  String get libraryUsageNotLoaded =>
+      'Noch nicht geladen: Synchronisiere einmal mit Verbindung zum Server.';
+
+  @override
+  String get libraryUsageAllPlayed =>
+      'Jeder Song der Bibliothek wurde schon von einer Band gespielt.';
 }

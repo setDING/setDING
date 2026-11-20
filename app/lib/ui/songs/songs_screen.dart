@@ -23,6 +23,7 @@ import '../widgets/breakpoint_builder.dart';
 import '../widgets/dialogs.dart';
 import 'chordpro_problems_badge.dart';
 import 'import_dialog.dart';
+import 'library_usage_screen.dart';
 import 'song_attention.dart';
 import 'song_editor_screen.dart';
 import 'song_screen.dart';
@@ -295,6 +296,12 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                       ),
                     ),
                     'backup' => exportBackup(context, ref, library),
+                    'usage' => Navigator.push(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (_) => LibraryUsageScreen(library: library),
+                      ),
+                    ),
                     _ => setState(() => _selected = {}),
                   },
                   itemBuilder: (_) => [
@@ -308,6 +315,14 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                         key: const Key('songs-trash'),
                         value: 'trash',
                         child: Text(l10n.trash),
+                      ),
+                    // ADR-0046: songs no band of the organization played,
+                    // for those who maintain the library.
+                    if (!library.isLocal && library.isLibrarian)
+                      PopupMenuItem(
+                        key: const Key('songs-usage'),
+                        value: 'usage',
+                        child: Text(l10n.libraryUsage),
                       ),
                     // ADR-0043: the whole library as a backup archive.
                     if (library.canExportLibrary)

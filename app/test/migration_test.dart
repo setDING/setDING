@@ -38,9 +38,16 @@ void downgradeToSchema19(Database raw) {
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN midi_programs');
 }
 
+/// Turns a current database back into schema 25: no plays across the bands
+/// of an organization (ADR-0046).
+void downgradeToSchema25(Database raw) {
+  raw.execute('DROP TABLE org_plays');
+}
+
 /// Turns a current database back into schema 24: bands without their
 /// threshold for songs not played for a while (ADR-0046).
 void downgradeToSchema24(Database raw) {
+  downgradeToSchema25(raw);
   raw.execute('ALTER TABLE bands DROP COLUMN stale_after_months');
 }
 
@@ -888,6 +895,36 @@ void main() {
       upgraded.bands,
     )..where((b) => b.id.equals('b1'))).getSingle();
     expect((band.name, band.staleAfterMonths), ('Rock', 0));
+    await upgraded.close();
+  });
+
+  test('upgrades a schema 25 database: an empty table of plays across the '
+      'bands (ADR-0046)', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    // Opens the database, so that it is created in the current schema.
+    await current.select(current.orgPlays).get();
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema25(raw);
+    raw.execute('PRAGMA user_version = 25');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    expect(await upgraded.select(upgraded.orgPlays).get(), isEmpty);
+    await upgraded
+        .into(upgraded.orgPlays)
+        .insert(
+          OrgPlaysCompanion.insert(
+            organizationId: 'o1',
+            songId: 's1',
+            bandId: 'b1',
+            bandName: 'Rock',
+            playCount: 2,
+            lastPlayed: DateTime(2026, 10, 12),
+          ),
+        );
+    expect((await upgraded.select(upgraded.orgPlays).getSingle()).playCount, 2);
     await upgraded.close();
   });
 }

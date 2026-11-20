@@ -120,7 +120,92 @@ class _PlayHistoryPanelState extends ConsumerState<PlayHistoryPanel> {
               child: Text(l10n.playHistoryApproximate, style: secondary),
             ),
         ],
+        // The other bands of the organization (ADR-0046), as the server
+        // summed them up at the last sync.
+        if (!widget.band.isLocal)
+          _OtherBands(band: widget.band, song: widget.song),
       ],
+    );
+  }
+}
+
+/// How the other bands of the organization played the song: band, last
+/// date, key and how often; never their sets.
+class _OtherBands extends ConsumerWidget {
+  const _OtherBands({required this.band, required this.song});
+
+  final BandView band;
+  final SongEntry song;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final notation = ref.watch(settingsProvider.select((s) => s.notation));
+    final others =
+        ref
+            .watch(otherBandPlaysProvider((song: song.id, exceptBand: band.id)))
+            .value ??
+        const <OrgPlay>[];
+    if (others.isEmpty) return const SizedBox.shrink();
+    final fetched = ref.watch(orgPlaysFetchedProvider(song.libraryId)).value;
+    final secondary = theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+    return Padding(
+      key: const Key('play-history-other-bands'),
+      padding: const EdgeInsets.only(top: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l10n.playHistoryOtherBands, style: theme.textTheme.titleSmall),
+          const SizedBox(height: 4),
+          for (final p in others)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(p.bandName, overflow: TextOverflow.ellipsis),
+                  ),
+                  Text(
+                    formatGigDate(context, p.lastPlayed),
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  if (p.playedKey case final key?)
+                    Container(
+                      margin: const EdgeInsetsDirectional.only(start: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        cp.Key.tryParse(key)?.format(notation) ?? key,
+                        style: theme.textTheme.labelLarge,
+                      ),
+                    ),
+                  SizedBox(
+                    width: 56,
+                    child: Text(
+                      l10n.repertoirePlays(p.playCount),
+                      textAlign: TextAlign.end,
+                      style: secondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (fetched != null)
+            Text(
+              l10n.playHistoryFetched(formatGigDate(context, fetched)),
+              style: secondary,
+            ),
+        ],
+      ),
     );
   }
 }

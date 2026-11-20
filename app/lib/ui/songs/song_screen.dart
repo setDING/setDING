@@ -242,6 +242,19 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                       .value
                       ?.total ??
                   0;
+        // Plays of the other bands of the organization (ADR-0046).
+        final otherPlays = historyBand == null || historyBand.isLocal
+            ? 0
+            : ref
+                      .watch(
+                        otherBandPlaysProvider((
+                          song: song.id,
+                          exceptBand: historyBand.id,
+                        )),
+                      )
+                      .value
+                      ?.length ??
+                  0;
         // Songs without ChordPro content show their attachments in the body.
         final attachmentsInPanel =
             parsed.hasContent && (canEdit || attachments.isNotEmpty);
@@ -386,7 +399,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   onPressed: () => _open(_Panel.band),
                 ),
               // How the band played the song before (ADR-0046).
-              if (historyBand != null && plays > 0)
+              if (historyBand != null && (plays > 0 || otherPlays > 0))
                 BadgedIconButton(
                   key: const Key('open-play-history'),
                   tooltip: l10n.playHistory,

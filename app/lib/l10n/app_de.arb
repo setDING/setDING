@@ -2592,5 +2592,29 @@
       }
     }
   },
-  "sortByLastPlayed": "Zuletzt gespielt"
+  "sortByLastPlayed": "Zuletzt gespielt",
+  "playHistoryOtherBands": "Andere Bands",
+  "playHistoryFetched": "Stand: {date}",
+  "@playHistoryFetched": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryUsage": "Bibliothek · Nutzung",
+  "libraryUsageSummary": "{count} von {total} Songs spielt keine Band",
+  "@libraryUsageSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryUsageHint": "Songs, die in keinem vergangenen Set einer Band der Organisation waren. Was keine Band mehr braucht, kannst du in den Papierkorb legen.",
+  "libraryUsageNotLoaded": "Noch nicht geladen: Synchronisiere einmal mit Verbindung zum Server.",
+  "libraryUsageAllPlayed": "Jeder Song der Bibliothek wurde schon von einer Band gespielt."
 }
