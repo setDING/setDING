@@ -144,6 +144,7 @@ Deleted songs and sets can be **restored for 30 days**.
 - 2026-11-20: Accepted by the owner. Implemented: trash in #631, backup
   archive in #636 (export from the song list menu, local and organization
   alike, also on web).
+- 2026-11-20: **ADR-0044** (accepted): the trash will also hold deleted bands and closed organizations for 30 days; the purge removes a closed organization for good and gets an "immediately" option for single records (implemented with #628 and #629).
 
 ## Open points
 
