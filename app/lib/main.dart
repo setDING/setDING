@@ -7,7 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'bootstrap/platform_services.dart';
+import 'data/database.dart' show localBandId;
 import 'data/demo_song.dart';
+import 'data/play_history.dart';
 import 'data/song_repository.dart';
 import 'data/trash.dart';
 import 'providers.dart';
@@ -53,6 +55,13 @@ Future<void> main() async {
     await SongRepository(db, storage).purgeDeletedFiles();
   } catch (e) {
     _log.warning('Deleted attachment files not purged', e);
+  }
+  try {
+    // How the local library's songs were played at its gigs (ADR-0046); the
+    // sync does this for the bands.
+    await PlayHistoryRepository(db).freeze(localBandId);
+  } catch (e) {
+    _log.warning('Play history of the local library not frozen', e);
   }
 
   // Add an example song on the very first start. Not on web: the local

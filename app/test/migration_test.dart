@@ -37,9 +37,17 @@ void downgradeToSchema19(Database raw) {
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN midi_programs');
 }
 
+/// Turns a current database back into schema 22: set items without the
+/// song play history (ADR-0046).
+void downgradeToSchema22(Database raw) {
+  raw.execute('ALTER TABLE set_items DROP COLUMN played');
+  raw.execute('ALTER TABLE set_items DROP COLUMN extra');
+}
+
 /// Turns a current database back into schema 21: sets and band
 /// arrangements without their last editor (ADR-0045).
 void downgradeToSchema21(Database raw) {
+  downgradeToSchema22(raw);
   raw.execute('ALTER TABLE setlists DROP COLUMN updated_by');
   raw.execute('ALTER TABLE band_arrangements DROP COLUMN updated_by');
 }
@@ -782,6 +790,31 @@ void main() {
       (await upgraded.select(upgraded.bandArrangements).getSingle()).updatedBy,
       'ann',
     );
+    await upgraded.close();
+  });
+
+  test('upgrades a schema 22 database: set items keep their values and get '
+      'no play history (ADR-0046)', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final repo = SongRepository(current, FileAttachmentStorage(dir));
+    final sets = SetRepository(current, FileAttachmentStorage(dir));
+    final song = await repo.createSong(source: '{title: Song}');
+    final setId = await sets.createSet(name: 'Gig');
+    await sets.addSongs(setId, [song]);
+    final item = (await sets.getItems(setId)).single.item;
+    await sets.setItemTranspose(item.id, -2);
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema22(raw);
+    raw.execute('PRAGMA user_version = 22');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final upgradedItem = await upgraded.select(upgraded.setItems).getSingle();
+    expect(upgradedItem.transpose, -2);
+    expect(upgradedItem.played, isNull);
+    expect(upgradedItem.extra, isNull);
     await upgraded.close();
   });
 }

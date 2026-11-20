@@ -1484,4 +1484,123 @@ void main() {
     await store.setCursor('o1', 'nothing', 42);
     expect(await store.cursor('o1', 'nothing'), 42);
   });
+
+  group('song play history (ADR-0046)', () {
+    final today = DateTime.now();
+    DateTime daysAgo(int days) =>
+        DateTime(today.year, today.month, today.day - days);
+
+    RemoteSet gig(String id, DateTime date, {String bandId = 'b1'}) =>
+        RemoteSet(
+          id: id,
+          bandId: bandId,
+          name: id,
+          gigDate: date,
+          items: [
+            RemoteSetItem(id: '$id-item', type: SetItemType.song, songId: 's1'),
+          ],
+        );
+
+    test('freezes how the songs of a gig that took place were played and '
+        'pushes it', () async {
+      server.putSong(remoteSong('s1', '{title: A}\n{key: D}\n{tempo: 90}'));
+      server.putSet(gig('yesterday', daysAgo(1)));
+      server.putSet(gig('long-ago', daysAgo(60)));
+      server.putSet(gig('tomorrow', daysAgo(-1)));
+      await engine.sync();
+      await ArrangementRepository(db).save('b1', 's1', transpose: 2);
+      await engine.sync();
+
+      // Frozen with the arrangement of the first sync, the later change of
+      // the band's key does not rewrite it.
+      final played = server.sets['yesterday']!.items.single.played;
+      expect(played, const PlayedValues(key: 'D', tempo: 90));
+      expect(server.sets['long-ago']!.items.single.played, isNull);
+      expect(server.sets['tomorrow']!.items.single.played, isNull);
+    });
+
+    test(
+      'unknown item fields and the played values survive a local change',
+      () async {
+        server.putSong(remoteSong('s1', '{title: A}'));
+        server.putSet(
+          RemoteSet(
+            id: 'set1',
+            bandId: 'b1',
+            name: 'Old',
+            gigDate: daysAgo(90),
+            items: const [
+              RemoteSetItem(
+                id: 'item',
+                type: SetItemType.song,
+                songId: 's1',
+                played: PlayedValues(key: 'Bb', tempo: 120),
+                extra: {'x_future': 1},
+              ),
+            ],
+          ),
+        );
+        await engine.sync();
+        await sets.updateSet('set1', name: 'Renamed');
+        await engine.sync();
+        final item = server.sets['set1']!.items.single;
+        expect(server.sets['set1']!.name, 'Renamed');
+        expect(item.played, const PlayedValues(key: 'Bb', tempo: 120));
+        expect(item.toJson()['x_future'], 1);
+      },
+    );
+
+    test('members without set rights freeze nothing', () async {
+      const bob = AuthUser(id: 'bob', email: 'bob@example.test', name: 'Bob');
+      // In an organization of its own: Ann is an admin of o1.
+      server.addBand('b2', 'Jazz', admin: bob, organizationId: 'o2');
+      server.addMember('b2', _ann, BandRole.member);
+      server.putSong(
+        const RemoteSong(
+          id: 's1',
+          organizationId: 'o2',
+          title: 'A',
+          chordpro: '{title: A}\n{key: D}',
+        ),
+      );
+      server.putSet(gig('jazz', daysAgo(1), bandId: 'b2'));
+      await engine.sync();
+      final item = await (db.select(
+        db.setItems,
+      )..where((i) => i.setId.equals('jazz'))).getSingle();
+      expect(item.played, isNull);
+      expect(server.sets['jazz']!.items.single.played, isNull);
+      expect(await outbox(), isEmpty);
+    });
+  });
+
+  test('set items keep the played values and unknown fields in their JSON', () {
+    const json = {
+      'x_future': {'a': 1},
+      'id': 'i1',
+      'type': 'song',
+      'song': 's1',
+      'played': {'key': 'D', 'tempo': 96, 'sequence': 'V C'},
+    };
+    final item = RemoteSetItem.fromJson(json);
+    expect(
+      item.played,
+      const PlayedValues(key: 'D', tempo: 96, sequence: 'V C'),
+    );
+    expect(item.extra, {
+      'x_future': {'a': 1},
+    });
+    expect(item.toJson(), json);
+    expect(RemoteSetItem.decodeExtra(item.extraJson), item.extra);
+    expect(RemoteSetItem.decodeExtra('not json'), isEmpty);
+    // Known fields win over unknown ones of the same name.
+    expect(
+      const RemoteSetItem(
+        id: 'i2',
+        type: SetItemType.pause,
+        extra: {'type': 'medley'},
+      ).toJson()['type'],
+      'pause',
+    );
+  });
 }

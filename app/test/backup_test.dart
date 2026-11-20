@@ -80,6 +80,10 @@ void main() {
       venue: 'Bern',
     );
     await sets.addSongs(setId, [song]);
+    // How it was played (ADR-0046), as if the gig had taken place.
+    await db
+        .update(db.setItems)
+        .write(const SetItemsCompanion(played: Value(PlayedValues(key: 'D'))));
     await sets.addMarker(setId, SetItemType.pause, 'Break');
     return (song: song, pdfOnly: pdfOnly, attachment: attachment);
   }
@@ -168,6 +172,7 @@ void main() {
       [for (final i in items) i.song?.title ?? i.item.note],
       ['Hello', 'Break'],
     );
+    expect(items.first.item.played, const PlayedValues(key: 'D'));
   });
 
   test('identical songs are not imported again', () async {

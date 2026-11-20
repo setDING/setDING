@@ -1,9 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 
 import '../data/band_role.dart';
-import '../data/database.dart' show SetItemEntry, SetItemType;
+import '../data/database.dart' show PlayedValues, SetItemEntry, SetItemType;
 import '../midi/midi_message.dart';
 
 export '../data/band_role.dart';
@@ -324,9 +325,12 @@ class RemoteSetItem {
     this.transpose = 0,
     this.sequence,
     this.note,
+    this.played,
+    this.extra = const {},
   });
 
-  /// Reads an entry; an unknown type is shown as a text item.
+  /// Reads an entry; an unknown type is shown as a text item. Fields this
+  /// version does not know are kept in [extra] (ADR-0046).
   factory RemoteSetItem.fromJson(Map<String, dynamic> json) => RemoteSetItem(
     id: json['id'] as String? ?? '',
     type: SetItemType.values.firstWhere(
@@ -337,6 +341,14 @@ class RemoteSetItem {
     transpose: (json['transpose'] as num?)?.toInt() ?? 0,
     sequence: json['sequence'] as String?,
     note: json['note'] as String?,
+    played: switch (json['played']) {
+      final Map<String, dynamic> played => PlayedValues.fromJson(played),
+      _ => null,
+    },
+    extra: {
+      for (final e in json.entries)
+        if (!_knownFields.contains(e.key)) e.key: e.value,
+    },
   );
 
   /// An item of the local database.
@@ -347,7 +359,19 @@ class RemoteSetItem {
     transpose: i.transpose,
     sequence: i.sequence,
     note: i.note,
+    played: i.played,
+    extra: decodeExtra(i.extra),
   );
+
+  static const _knownFields = {
+    'id',
+    'type',
+    'song',
+    'transpose',
+    'sequence',
+    'note',
+    'played',
+  };
 
   /// Empty when the server sent none (older clients); a new ID is used.
   final String id;
@@ -357,14 +381,38 @@ class RemoteSetItem {
   final String? sequence;
   final String? note;
 
-  /// The JSON form, without default values.
+  /// How the song was played, frozen on the gig day (ADR-0046).
+  final PlayedValues? played;
+
+  /// Fields of newer clients, sent back unchanged.
+  final Map<String, dynamic> extra;
+
+  /// The local form of [extra]: null when there are none.
+  String? get extraJson => extra.isEmpty ? null : jsonEncode(extra);
+
+  /// Reads the local form of [extra]; a value that cannot be read is empty.
+  static Map<String, dynamic> decodeExtra(String? json) {
+    if (json == null) return const {};
+    try {
+      final value = jsonDecode(json);
+      return value is Map<String, dynamic> ? value : const {};
+    } on FormatException {
+      return const {};
+    }
+  }
+
+  /// The JSON form, without default values; the known fields win over
+  /// [extra].
   Map<String, dynamic> toJson() => {
+    ...extra,
     'id': id,
     'type': type.name,
     'song': ?songId,
     if (transpose != 0) 'transpose': transpose,
     'sequence': ?sequence,
     'note': ?note,
+    if (played case final played? when !played.isEmpty)
+      'played': played.toJson(),
   };
 
   @override
@@ -375,10 +423,21 @@ class RemoteSetItem {
       other.songId == songId &&
       other.transpose == transpose &&
       other.sequence == sequence &&
-      other.note == note;
+      other.note == note &&
+      other.played == played &&
+      mapEquals(other.extra, extra);
 
   @override
-  int get hashCode => Object.hash(id, type, songId, transpose, sequence, note);
+  int get hashCode => Object.hash(
+    id,
+    type,
+    songId,
+    transpose,
+    sequence,
+    note,
+    played,
+    extra.length,
+  );
 }
 
 /// Personal adjustments of a user for a song as stored on the server
