@@ -37,6 +37,9 @@ song, all tablets follow automatically. We evaluated whether this is needed.
     taken before the focused widget (an early key handler of the focus manager), so they work whichever widget of live
     mode has the focus, and Space never presses a focused button; while a dialog, sheet or menu opened from live mode
     is on top, and in text fields, the keys stay theirs. Escape leaves live mode.
+    On Android the Flutter view keeps the focus in touch mode (`MainActivity`): otherwise Android consumes the
+    first navigation key after a touch to assign the focus and draws its focus frame around the whole screen, so
+    the first press of a page turner would not turn (issue #663).
   - **Beat (ADR-0026):** while the current song can have a beat, a forward key held for at least 0.6 s starts or
     stops it and does not turn; a shorter press turns when the key is released (otherwise forward keys turn on
     key down as before). Enter (also on the number pad) starts and stops the beat.
@@ -165,6 +168,7 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-18: MIDI program changes per song in live mode decided in ADR-0039 (accepted, #510): when a song becomes current, its personal keyboard program is sent over USB; page turning by MIDI stays open.
 - 2026-11-19: Owner request (#550): the parts outside the sequence are shown dimmed by default instead of hidden, in document order; the new personal setting **Show parts outside the sequence** (`showOutsideSequence`) switched off restores hiding them. Dimming changes only the painting, not the layout; with the parts shown, the annotation layout fingerprint uses the whole song (no sequence).
 - 2026-11-19: Owner request (#552): a single song played live (from the song screen) applies its sequence too: the arrangement of the band chosen on the sets tab, otherwise the song's own `{x_sequence}`; parts outside are dimmed or hidden and the header names hidden parts and the source of the sequence, as in a set.
+- 2026-11-20: Android: the Flutter view keeps the focus in touch mode and the system focus highlight is off, so the first page turner press after a touch turns instead of only showing a green frame around the screen (issue #663).
 
 ## Open points
 
