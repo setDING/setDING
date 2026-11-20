@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:setding/data/arrangement_repository.dart';
 import 'package:setding/data/attachment_storage_io.dart';
+import 'package:setding/data/change_log.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/data/song_repository.dart';
@@ -37,9 +38,17 @@ void downgradeToSchema19(Database raw) {
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN midi_programs');
 }
 
+/// Turns a current database back into schema 23: no change log
+/// (ADR-0045).
+void downgradeToSchema23(Database raw) {
+  raw.execute('DROP INDEX change_log_scope');
+  raw.execute('DROP TABLE change_log');
+}
+
 /// Turns a current database back into schema 22: set items without the
 /// song play history (ADR-0046).
 void downgradeToSchema22(Database raw) {
+  downgradeToSchema23(raw);
   raw.execute('ALTER TABLE set_items DROP COLUMN played');
   raw.execute('ALTER TABLE set_items DROP COLUMN extra');
 }
@@ -816,5 +825,41 @@ void main() {
     expect(upgradedItem.played, isNull);
     expect(upgradedItem.extra, isNull);
     await upgraded.close();
+  });
+
+  test('upgrades a schema 23 database: an empty change log '
+      '(ADR-0045)', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final storage = FileAttachmentStorage(dir);
+    final song = await SongRepository(
+      current,
+      storage,
+    ).createSong(source: '{title: Kept}');
+    await current.close();
+
+    var raw = sqlite3.open(file.path);
+    downgradeToSchema23(raw);
+    raw.execute('PRAGMA user_version = 23');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    expect(await upgraded.select(upgraded.changeLog).get(), isEmpty);
+    expect((await upgraded.select(upgraded.songs).getSingle()).id, song);
+    await ChangeLogRepository(upgraded).add(
+      kind: ChangeKind.songAdded,
+      scopeId: 'o1',
+      recordId: song,
+      title: 'Kept',
+      userId: 'bob',
+    );
+    expect(
+      (await upgraded.select(upgraded.changeLog).getSingle()).userId,
+      'bob',
+    );
+    await upgraded.close();
+
+    raw = sqlite3.open(file.path);
+    expect(indexNames(raw), contains('change_log_scope'));
+    raw.close();
   });
 }

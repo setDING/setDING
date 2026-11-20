@@ -6,6 +6,7 @@ import '../../data/database.dart';
 import '../../data/outbox.dart';
 import '../../util/log.dart';
 import '../sync_backend.dart';
+import 'change_recorder.dart';
 import 'sync_store.dart';
 
 const _log = Log('sync');
@@ -14,18 +15,24 @@ const _uuid = Uuid();
 /// Sync of band arrangements (ADR-0025): delta pull per band, one server
 /// record per band and song, last writer wins (like sets).
 class ArrangementSync {
-  ArrangementSync(this.db, this.backend, this.store);
+  ArrangementSync(this.db, this.backend, this.store, {this.changes});
 
   final AppDatabase db;
   final SyncBackend backend;
   final SyncStore store;
+
+  /// Records changes of other people (ADR-0045).
+  final ChangeRecorder? changes;
 
   /// Server record ID of the arrangement of [bandId] for [songId]: the same
   /// on every device, so two devices never create two records.
   static String serverId(String bandId, String songId) =>
       _uuid.v5(Namespace.url.value, 'setding:arrangement:$bandId:$songId');
 
-  Future<int> pull(BandView band) async {
+  /// Changes by others than [logChangesFor] (the signed-in user) are
+  /// recorded in the change log (ADR-0045); null records nothing, e.g. on
+  /// the first sync of the library or band.
+  Future<int> pull(BandView band, {String? logChangesFor}) async {
     final since = await store.cursor(band.id, SyncCollection.arrangements);
     final remote = await backend.pullArrangements(band.id, since);
     if (remote.isEmpty) return 0;
@@ -48,6 +55,9 @@ class ArrangementSync {
         // Last writer wins: a pending local change is pushed afterwards.
         if (dirty.contains(arrangementRecordId(band.id, a.songId))) continue;
         if (!songs.contains(a.songId)) continue; // the song is not here
+        if (ChangeRecorder.records(a.updatedBy, logChangesFor)) {
+          await changes?.arrangement(local, a);
+        }
         await db
             .into(db.bandArrangements)
             .insertOnConflictUpdate(

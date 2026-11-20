@@ -2460,5 +2460,60 @@
       }
     }
   },
-  "songNeverPlayed": "Noch nie gespielt"
+  "songNeverPlayed": "Noch nie gespielt",
+  "overviewRecentChanges": "Letzte Änderungen",
+  "overviewShowAll": "Alle anzeigen",
+  "recentChangesEmpty": "Keine Änderungen von anderen in den letzten 30 Tagen.",
+  "changeSongAdded": "Neuer Song",
+  "changeSongText": "Text geändert",
+  "changeSongPdf": "PDF geändert",
+  "changeSongTextAndPdf": "Text und PDF geändert",
+  "changeSetAdded": "{count, plural, =1{1 Song hinzugefügt} other{{count} Songs hinzugefügt}}",
+  "@changeSetAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "changeSetRemoved": "{count, plural, =1{1 Song entfernt} other{{count} Songs entfernt}}",
+  "@changeSetRemoved": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "changeSetAlsoRemoved": "{count} entfernt",
+  "@changeSetAlsoRemoved": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "changeSetSequence": "Ablauf von {songs} geändert",
+  "@changeSetSequence": {
+    "placeholders": {
+      "songs": {
+        "type": "String"
+      }
+    }
+  },
+  "changeQuoted": "«{title}»",
+  "@changeQuoted": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "changeBy": "von {name}",
+  "@changeBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

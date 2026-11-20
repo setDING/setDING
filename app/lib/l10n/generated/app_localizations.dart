@@ -6528,6 +6528,84 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Noch nie gespielt'**
   String get songNeverPlayed;
+
+  /// No description provided for @overviewRecentChanges.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzte Änderungen'**
+  String get overviewRecentChanges;
+
+  /// No description provided for @overviewShowAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle anzeigen'**
+  String get overviewShowAll;
+
+  /// No description provided for @recentChangesEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Änderungen von anderen in den letzten 30 Tagen.'**
+  String get recentChangesEmpty;
+
+  /// No description provided for @changeSongAdded.
+  ///
+  /// In de, this message translates to:
+  /// **'Neuer Song'**
+  String get changeSongAdded;
+
+  /// No description provided for @changeSongText.
+  ///
+  /// In de, this message translates to:
+  /// **'Text geändert'**
+  String get changeSongText;
+
+  /// No description provided for @changeSongPdf.
+  ///
+  /// In de, this message translates to:
+  /// **'PDF geändert'**
+  String get changeSongPdf;
+
+  /// No description provided for @changeSongTextAndPdf.
+  ///
+  /// In de, this message translates to:
+  /// **'Text und PDF geändert'**
+  String get changeSongTextAndPdf;
+
+  /// No description provided for @changeSetAdded.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song hinzugefügt} other{{count} Songs hinzugefügt}}'**
+  String changeSetAdded(int count);
+
+  /// No description provided for @changeSetRemoved.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song entfernt} other{{count} Songs entfernt}}'**
+  String changeSetRemoved(int count);
+
+  /// No description provided for @changeSetAlsoRemoved.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} entfernt'**
+  String changeSetAlsoRemoved(int count);
+
+  /// No description provided for @changeSetSequence.
+  ///
+  /// In de, this message translates to:
+  /// **'Ablauf von {songs} geändert'**
+  String changeSetSequence(String songs);
+
+  /// No description provided for @changeQuoted.
+  ///
+  /// In de, this message translates to:
+  /// **'«{title}»'**
+  String changeQuoted(String title);
+
+  /// No description provided for @changeBy.
+  ///
+  /// In de, this message translates to:
+  /// **'von {name}'**
+  String changeBy(String name);
 }
 
 class _AppLocalizationsDelegate

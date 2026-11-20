@@ -25,6 +25,15 @@ class SyncStore {
     return row?.revision ?? 0;
   }
 
+  /// Whether records of [scope] were pulled before in any of
+  /// [collections], i.e. this is not the first sync of the library or band.
+  Future<bool> pulledBefore(String scope, List<String> collections) async {
+    for (final c in collections) {
+      if (await cursor(scope, c) > 0) return true;
+    }
+    return false;
+  }
+
   Future<void> setCursor(String scope, String collection, int revision) => db
       .into(db.syncCursors)
       .insertOnConflictUpdate(

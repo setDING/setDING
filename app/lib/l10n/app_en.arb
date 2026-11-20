@@ -2196,5 +2196,18 @@
       }
     }
   },
-  "songNeverPlayed": "Never played"
+  "songNeverPlayed": "Never played",
+  "overviewRecentChanges": "Recent changes",
+  "overviewShowAll": "Show all",
+  "recentChangesEmpty": "No changes by others in the last 30 days.",
+  "changeSongAdded": "New song",
+  "changeSongText": "Text changed",
+  "changeSongPdf": "PDF changed",
+  "changeSongTextAndPdf": "Text and PDF changed",
+  "changeSetAdded": "{count, plural, =1{1 song added} other{{count} songs added}}",
+  "changeSetRemoved": "{count, plural, =1{1 song removed} other{{count} songs removed}}",
+  "changeSetAlsoRemoved": "{count} removed",
+  "changeSetSequence": "sequence of {songs} changed",
+  "changeQuoted": "\"{title}\"",
+  "changeBy": "by {name}"
 }

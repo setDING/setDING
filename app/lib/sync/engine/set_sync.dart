@@ -6,6 +6,7 @@ import '../../data/database.dart';
 import '../../data/outbox.dart';
 import '../../util/log.dart';
 import '../sync_backend.dart';
+import 'change_recorder.dart';
 import 'sync_store.dart';
 
 const _log = Log('sync');
@@ -14,13 +15,19 @@ const _uuid = Uuid();
 /// Sync of sets (ADR-0004, ADR-0015): delta pull per band, a set with its
 /// items as one record, last writer wins.
 class SetSync {
-  SetSync(this.db, this.backend, this.store);
+  SetSync(this.db, this.backend, this.store, {this.changes});
 
   final AppDatabase db;
   final SyncBackend backend;
   final SyncStore store;
 
-  Future<int> pull(BandView band) async {
+  /// Records changes of other people (ADR-0045).
+  final ChangeRecorder? changes;
+
+  /// Changes by others than [logChangesFor] (the signed-in user) are
+  /// recorded in the change log (ADR-0045); null records nothing, e.g. on
+  /// the first sync of the library or band.
+  Future<int> pull(BandView band, {String? logChangesFor}) async {
     final since = await store.cursor(band.id, SyncCollection.setlists);
     final remote = await backend.pullSets(band.id, since);
     if (remote.isEmpty) return 0;
@@ -43,6 +50,7 @@ class SetSync {
           local: locals[set.id],
           dirty: dirty.contains(set.id),
           songExists: songs.contains,
+          log: ChangeRecorder.records(set.updatedBy, logChangesFor),
         );
       }
       if (remote.isNotEmpty) {
@@ -61,10 +69,19 @@ class SetSync {
     required SetlistEntry? local,
     required bool dirty,
     required bool Function(String songId) songExists,
+    bool log = false,
   }) async {
     if (local != null && remote.revision <= local.revision) return;
     // Last writer wins: a pending local change is pushed afterwards.
     if (local != null && dirty) return;
+    if (log && changes != null) {
+      final before = local == null
+          ? const <SetItemEntry>[]
+          : await (db.select(
+              db.setItems,
+            )..where((i) => i.setId.equals(remote.id))).get();
+      await changes!.set(local, before, remote, songExists: songExists);
+    }
     await db
         .into(db.setlists)
         .insertOnConflictUpdate(

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../data/change_log.dart' show RecentChange;
 import '../../data/database.dart';
 import '../../data/set_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
@@ -14,6 +15,7 @@ import '../sets/sets_screen.dart' show daysBetween, formatGigDate, openSet;
 import '../songs/chordpro_problems_badge.dart';
 import '../songs/song_attention.dart';
 import '../widgets/app_info.dart';
+import 'recent_changes.dart';
 
 /// The set the overview shows (ADR-0045): the next set of the current band
 /// with a gig date from [today] on, the one the song list's status icon
@@ -34,20 +36,58 @@ import '../widgets/app_info.dart';
 }
 
 /// The start screen (ADR-0045): cards with the next set, what needs to be
-/// done and the version. A card with nothing to show is left out. One
-/// column on phones, two from [navigationRailWidth]. Everything comes from
-/// the local database and updates live during a sync.
-class OverviewScreen extends ConsumerWidget {
+/// done, the recent changes by other people and the version. A card with
+/// nothing to show is left out. One column on phones, two from
+/// [navigationRailWidth]. Everything comes from the local database and
+/// updates live during a sync.
+///
+/// The overview counts as shown when it is left: when another tab is
+/// selected or the app is hidden while it is on the overview. Until then
+/// the recent changes stay, also when the person opens one of them and
+/// comes back.
+class OverviewScreen extends ConsumerStatefulWidget {
   const OverviewScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<OverviewScreen> createState() => _OverviewScreenState();
+}
+
+class _OverviewScreenState extends ConsumerState<OverviewScreen> {
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    ref.listenManual(homeTabProvider, (previous, next) {
+      if (previous == HomeTab.overview && next != HomeTab.overview) {
+        ref.read(overviewLastShownProvider.notifier).markShown();
+      }
+    });
+    _lifecycle = AppLifecycleListener(
+      onHide: () {
+        if (ref.read(homeTabProvider) == HomeTab.overview) {
+          ref.read(overviewLastShownProvider.notifier).markShown();
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final sets = ref.watch(setsProvider).value ?? const <SetSummary>[];
     final shown = overviewSet(sets, today);
     final counts = ref.watch(songAttentionCountsProvider);
+    final changes =
+        ref.watch(recentChangesProvider(false)).value ?? const <RecentChange>[];
     final cards = <Widget>[
       if (shown != null)
         _SetCard(
@@ -58,7 +98,7 @@ class OverviewScreen extends ConsumerWidget {
         ),
       if (counts != null && counts.values.any((c) => c > 0))
         _TodoCard(counts: counts),
-      // Recent changes (#667) follows here.
+      if (changes.isNotEmpty) _RecentChangesCard(changes: changes),
     ];
     final twoColumns = MediaQuery.sizeOf(context).width >= navigationRailWidth;
     return Scaffold(
@@ -275,6 +315,43 @@ class _TodoCard extends ConsumerWidget {
                 l10n.overviewTodoSheetMusicOnly(count),
               ),
             },
+      ],
+    );
+  }
+}
+
+/// What other people changed since the overview was last shown
+/// (ADR-0045): the newest [recentChangesOnCard], with *Show all*.
+class _RecentChangesCard extends StatelessWidget {
+  const _RecentChangesCard({required this.changes});
+
+  final List<RecentChange> changes;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return _OverviewCard(
+      key: const Key('overview-recent-changes'),
+      title: l10n.overviewRecentChanges,
+      children: [
+        for (final change in changes.take(recentChangesOnCard))
+          RecentChangeTile(change),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: TextButton(
+              key: const Key('overview-recent-changes-all'),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (_) => const RecentChangesScreen(),
+                ),
+              ),
+              child: Text(l10n.overviewShowAll),
+            ),
+          ),
+        ),
       ],
     );
   }

@@ -609,7 +609,11 @@ class FakeSyncBackend implements SyncBackend {
   int pushCount = 0;
 
   /// Simulates a change by someone else.
-  RemoteSong putSong(RemoteSong song) {
+  ///
+  /// [by] (or [RemoteSong.updatedBy]) is recorded as the last editor, and as
+  /// the creator of a new song, as the server does.
+  RemoteSong putSong(RemoteSong song, {String? by}) {
+    final editor = by ?? song.updatedBy;
     final stored = RemoteSong(
       id: song.id,
       organizationId: song.organizationId,
@@ -619,6 +623,8 @@ class FakeSyncBackend implements SyncBackend {
       deleted: song.deleted,
       deletedAt: song.deleted ? song.deletedAt ?? DateTime.now() : null,
       purged: song.purged,
+      createdBy: songs[song.id]?.createdBy ?? song.createdBy ?? editor,
+      updatedBy: editor,
     );
     songs[song.id] = stored;
     return stored;
@@ -916,7 +922,13 @@ class FakeSyncBackend implements SyncBackend {
   final attachments = <String, RemoteAttachment>{};
   final files = <String, List<int>>{};
 
-  RemoteAttachment putAttachment(RemoteAttachment a, {List<int>? bytes}) {
+  /// Simulates a change of an attachment; [by] (or
+  /// [RemoteAttachment.updatedBy]) is recorded as the last editor.
+  RemoteAttachment putAttachment(
+    RemoteAttachment a, {
+    List<int>? bytes,
+    String? by,
+  }) {
     final stored = RemoteAttachment(
       id: a.id,
       organizationId: a.organizationId,
@@ -929,6 +941,7 @@ class FakeSyncBackend implements SyncBackend {
       deleted: a.deleted,
       deletedAt: a.deleted ? a.deletedAt ?? DateTime.now() : null,
       purged: a.purged,
+      updatedBy: by ?? a.updatedBy,
     );
     attachments[a.id] = stored;
     if (bytes != null) files[stored.file!] = bytes;

@@ -8178,6 +8178,509 @@ class SongConflictsCompanion extends UpdateCompanion<SongConflict> {
   }
 }
 
+class $ChangeLogTable extends ChangeLog
+    with TableInfo<$ChangeLogTable, ChangeLogRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ChangeLogTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _atMeta = const VerificationMeta('at');
+  @override
+  late final GeneratedColumn<DateTime> at = GeneratedColumn<DateTime>(
+    'at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<ChangeKind, String> kind =
+      GeneratedColumn<String>(
+        'kind',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<ChangeKind>($ChangeLogTable.$converterkind);
+  static const VerificationMeta _scopeIdMeta = const VerificationMeta(
+    'scopeId',
+  );
+  @override
+  late final GeneratedColumn<String> scopeId = GeneratedColumn<String>(
+    'scope_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _recordIdMeta = const VerificationMeta(
+    'recordId',
+  );
+  @override
+  late final GeneratedColumn<String> recordId = GeneratedColumn<String>(
+    'record_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _detailsMeta = const VerificationMeta(
+    'details',
+  );
+  @override
+  late final GeneratedColumn<String> details = GeneratedColumn<String>(
+    'details',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    at,
+    kind,
+    scopeId,
+    recordId,
+    title,
+    userId,
+    details,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'change_log';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ChangeLogRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('at')) {
+      context.handle(_atMeta, at.isAcceptableOrUnknown(data['at']!, _atMeta));
+    } else if (isInserting) {
+      context.missing(_atMeta);
+    }
+    if (data.containsKey('scope_id')) {
+      context.handle(
+        _scopeIdMeta,
+        scopeId.isAcceptableOrUnknown(data['scope_id']!, _scopeIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_scopeIdMeta);
+    }
+    if (data.containsKey('record_id')) {
+      context.handle(
+        _recordIdMeta,
+        recordId.isAcceptableOrUnknown(data['record_id']!, _recordIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_recordIdMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    }
+    if (data.containsKey('details')) {
+      context.handle(
+        _detailsMeta,
+        details.isAcceptableOrUnknown(data['details']!, _detailsMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ChangeLogRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ChangeLogRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      at: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}at'],
+      )!,
+      kind: $ChangeLogTable.$converterkind.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}kind'],
+        )!,
+      ),
+      scopeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}scope_id'],
+      )!,
+      recordId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}record_id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      ),
+      details: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}details'],
+      )!,
+    );
+  }
+
+  @override
+  $ChangeLogTable createAlias(String alias) {
+    return $ChangeLogTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<ChangeKind, String, String> $converterkind =
+      const EnumNameConverter<ChangeKind>(ChangeKind.values);
+}
+
+class ChangeLogRow extends DataClass implements Insertable<ChangeLogRow> {
+  final int id;
+
+  /// When the sync applied the change on this device (compared with the
+  /// overview's "last shown", also a time on this device).
+  final DateTime at;
+  final ChangeKind kind;
+
+  /// The organization of a song, the band of a set.
+  final String scopeId;
+
+  /// The song or set.
+  final String recordId;
+
+  /// Title of the song or name of the set at the time of the change.
+  final String title;
+
+  /// Who made the change (`created_by` of a new song, otherwise
+  /// `updated_by`).
+  final String? userId;
+
+  /// What changed, as the JSON of `ChangeDetails`.
+  final String details;
+  const ChangeLogRow({
+    required this.id,
+    required this.at,
+    required this.kind,
+    required this.scopeId,
+    required this.recordId,
+    required this.title,
+    this.userId,
+    required this.details,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['at'] = Variable<DateTime>(at);
+    {
+      map['kind'] = Variable<String>(
+        $ChangeLogTable.$converterkind.toSql(kind),
+      );
+    }
+    map['scope_id'] = Variable<String>(scopeId);
+    map['record_id'] = Variable<String>(recordId);
+    map['title'] = Variable<String>(title);
+    if (!nullToAbsent || userId != null) {
+      map['user_id'] = Variable<String>(userId);
+    }
+    map['details'] = Variable<String>(details);
+    return map;
+  }
+
+  ChangeLogCompanion toCompanion(bool nullToAbsent) {
+    return ChangeLogCompanion(
+      id: Value(id),
+      at: Value(at),
+      kind: Value(kind),
+      scopeId: Value(scopeId),
+      recordId: Value(recordId),
+      title: Value(title),
+      userId: userId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(userId),
+      details: Value(details),
+    );
+  }
+
+  factory ChangeLogRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ChangeLogRow(
+      id: serializer.fromJson<int>(json['id']),
+      at: serializer.fromJson<DateTime>(json['at']),
+      kind: $ChangeLogTable.$converterkind.fromJson(
+        serializer.fromJson<String>(json['kind']),
+      ),
+      scopeId: serializer.fromJson<String>(json['scopeId']),
+      recordId: serializer.fromJson<String>(json['recordId']),
+      title: serializer.fromJson<String>(json['title']),
+      userId: serializer.fromJson<String?>(json['userId']),
+      details: serializer.fromJson<String>(json['details']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'at': serializer.toJson<DateTime>(at),
+      'kind': serializer.toJson<String>(
+        $ChangeLogTable.$converterkind.toJson(kind),
+      ),
+      'scopeId': serializer.toJson<String>(scopeId),
+      'recordId': serializer.toJson<String>(recordId),
+      'title': serializer.toJson<String>(title),
+      'userId': serializer.toJson<String?>(userId),
+      'details': serializer.toJson<String>(details),
+    };
+  }
+
+  ChangeLogRow copyWith({
+    int? id,
+    DateTime? at,
+    ChangeKind? kind,
+    String? scopeId,
+    String? recordId,
+    String? title,
+    Value<String?> userId = const Value.absent(),
+    String? details,
+  }) => ChangeLogRow(
+    id: id ?? this.id,
+    at: at ?? this.at,
+    kind: kind ?? this.kind,
+    scopeId: scopeId ?? this.scopeId,
+    recordId: recordId ?? this.recordId,
+    title: title ?? this.title,
+    userId: userId.present ? userId.value : this.userId,
+    details: details ?? this.details,
+  );
+  ChangeLogRow copyWithCompanion(ChangeLogCompanion data) {
+    return ChangeLogRow(
+      id: data.id.present ? data.id.value : this.id,
+      at: data.at.present ? data.at.value : this.at,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      scopeId: data.scopeId.present ? data.scopeId.value : this.scopeId,
+      recordId: data.recordId.present ? data.recordId.value : this.recordId,
+      title: data.title.present ? data.title.value : this.title,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      details: data.details.present ? data.details.value : this.details,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ChangeLogRow(')
+          ..write('id: $id, ')
+          ..write('at: $at, ')
+          ..write('kind: $kind, ')
+          ..write('scopeId: $scopeId, ')
+          ..write('recordId: $recordId, ')
+          ..write('title: $title, ')
+          ..write('userId: $userId, ')
+          ..write('details: $details')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, at, kind, scopeId, recordId, title, userId, details);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ChangeLogRow &&
+          other.id == this.id &&
+          other.at == this.at &&
+          other.kind == this.kind &&
+          other.scopeId == this.scopeId &&
+          other.recordId == this.recordId &&
+          other.title == this.title &&
+          other.userId == this.userId &&
+          other.details == this.details);
+}
+
+class ChangeLogCompanion extends UpdateCompanion<ChangeLogRow> {
+  final Value<int> id;
+  final Value<DateTime> at;
+  final Value<ChangeKind> kind;
+  final Value<String> scopeId;
+  final Value<String> recordId;
+  final Value<String> title;
+  final Value<String?> userId;
+  final Value<String> details;
+  const ChangeLogCompanion({
+    this.id = const Value.absent(),
+    this.at = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.scopeId = const Value.absent(),
+    this.recordId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.details = const Value.absent(),
+  });
+  ChangeLogCompanion.insert({
+    this.id = const Value.absent(),
+    required DateTime at,
+    required ChangeKind kind,
+    required String scopeId,
+    required String recordId,
+    required String title,
+    this.userId = const Value.absent(),
+    this.details = const Value.absent(),
+  }) : at = Value(at),
+       kind = Value(kind),
+       scopeId = Value(scopeId),
+       recordId = Value(recordId),
+       title = Value(title);
+  static Insertable<ChangeLogRow> custom({
+    Expression<int>? id,
+    Expression<DateTime>? at,
+    Expression<String>? kind,
+    Expression<String>? scopeId,
+    Expression<String>? recordId,
+    Expression<String>? title,
+    Expression<String>? userId,
+    Expression<String>? details,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (at != null) 'at': at,
+      if (kind != null) 'kind': kind,
+      if (scopeId != null) 'scope_id': scopeId,
+      if (recordId != null) 'record_id': recordId,
+      if (title != null) 'title': title,
+      if (userId != null) 'user_id': userId,
+      if (details != null) 'details': details,
+    });
+  }
+
+  ChangeLogCompanion copyWith({
+    Value<int>? id,
+    Value<DateTime>? at,
+    Value<ChangeKind>? kind,
+    Value<String>? scopeId,
+    Value<String>? recordId,
+    Value<String>? title,
+    Value<String?>? userId,
+    Value<String>? details,
+  }) {
+    return ChangeLogCompanion(
+      id: id ?? this.id,
+      at: at ?? this.at,
+      kind: kind ?? this.kind,
+      scopeId: scopeId ?? this.scopeId,
+      recordId: recordId ?? this.recordId,
+      title: title ?? this.title,
+      userId: userId ?? this.userId,
+      details: details ?? this.details,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (at.present) {
+      map['at'] = Variable<DateTime>(at.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(
+        $ChangeLogTable.$converterkind.toSql(kind.value),
+      );
+    }
+    if (scopeId.present) {
+      map['scope_id'] = Variable<String>(scopeId.value);
+    }
+    if (recordId.present) {
+      map['record_id'] = Variable<String>(recordId.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (details.present) {
+      map['details'] = Variable<String>(details.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ChangeLogCompanion(')
+          ..write('id: $id, ')
+          ..write('at: $at, ')
+          ..write('kind: $kind, ')
+          ..write('scopeId: $scopeId, ')
+          ..write('recordId: $recordId, ')
+          ..write('title: $title, ')
+          ..write('userId: $userId, ')
+          ..write('details: $details')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -8213,6 +8716,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SyncOutboxTable syncOutbox = $SyncOutboxTable(this);
   late final $SyncCursorsTable syncCursors = $SyncCursorsTable(this);
   late final $SongConflictsTable songConflicts = $SongConflictsTable(this);
+  late final $ChangeLogTable changeLog = $ChangeLogTable(this);
   late final Index orgMembershipsUser = Index(
     'org_memberships_user',
     'CREATE INDEX org_memberships_user ON org_memberships (user_id)',
@@ -8249,6 +8753,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'annotations_owner_song',
     'CREATE INDEX annotations_owner_song ON annotations (owner_id, song_id)',
   );
+  late final Index changeLogScope = Index(
+    'change_log_scope',
+    'CREATE INDEX change_log_scope ON change_log (scope_id, at)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -8273,6 +8781,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     syncOutbox,
     syncCursors,
     songConflicts,
+    changeLog,
     orgMembershipsUser,
     membershipsBand,
     membershipsUser,
@@ -8282,6 +8791,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     setItemsSet,
     setItemsSong,
     annotationsOwnerSong,
+    changeLogScope,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -14529,6 +15039,265 @@ typedef $$SongConflictsTableProcessedTableManager =
       SongConflict,
       PrefetchHooks Function()
     >;
+typedef $$ChangeLogTableCreateCompanionBuilder = ChangeLogCompanion Function({
+  Value<int> id,
+  required DateTime at,
+  required ChangeKind kind,
+  required String scopeId,
+  required String recordId,
+  required String title,
+  Value<String?> userId,
+  Value<String> details,
+});
+typedef $$ChangeLogTableUpdateCompanionBuilder = ChangeLogCompanion Function({
+  Value<int> id,
+  Value<DateTime> at,
+  Value<ChangeKind> kind,
+  Value<String> scopeId,
+  Value<String> recordId,
+  Value<String> title,
+  Value<String?> userId,
+  Value<String> details,
+});
+
+class $$ChangeLogTableFilterComposer
+    extends Composer<_$AppDatabase, $ChangeLogTable> {
+  $$ChangeLogTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get at => $composableBuilder(
+    column: $table.at,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<ChangeKind, ChangeKind, String> get kind =>
+      $composableBuilder(
+        column: $table.kind,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<String> get scopeId => $composableBuilder(
+    column: $table.scopeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recordId => $composableBuilder(
+    column: $table.recordId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get details => $composableBuilder(
+    column: $table.details,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ChangeLogTableOrderingComposer
+    extends Composer<_$AppDatabase, $ChangeLogTable> {
+  $$ChangeLogTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get at => $composableBuilder(
+    column: $table.at,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get scopeId => $composableBuilder(
+    column: $table.scopeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recordId => $composableBuilder(
+    column: $table.recordId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get details => $composableBuilder(
+    column: $table.details,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ChangeLogTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ChangeLogTable> {
+  $$ChangeLogTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get at =>
+      $composableBuilder(column: $table.at, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<ChangeKind, String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get scopeId =>
+      $composableBuilder(column: $table.scopeId, builder: (column) => column);
+
+  GeneratedColumn<String> get recordId =>
+      $composableBuilder(column: $table.recordId, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get details =>
+      $composableBuilder(column: $table.details, builder: (column) => column);
+}
+
+class $$ChangeLogTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ChangeLogTable,
+          ChangeLogRow,
+          $$ChangeLogTableFilterComposer,
+          $$ChangeLogTableOrderingComposer,
+          $$ChangeLogTableAnnotationComposer,
+          $$ChangeLogTableCreateCompanionBuilder,
+          $$ChangeLogTableUpdateCompanionBuilder,
+          (
+            ChangeLogRow,
+            BaseReferences<_$AppDatabase, $ChangeLogTable, ChangeLogRow>,
+          ),
+          ChangeLogRow,
+          PrefetchHooks Function()
+        > {
+  $$ChangeLogTableTableManager(_$AppDatabase db, $ChangeLogTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ChangeLogTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ChangeLogTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ChangeLogTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<DateTime> at = const Value.absent(),
+                Value<ChangeKind> kind = const Value.absent(),
+                Value<String> scopeId = const Value.absent(),
+                Value<String> recordId = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String?> userId = const Value.absent(),
+                Value<String> details = const Value.absent(),
+              }) => ChangeLogCompanion(
+                id: id,
+                at: at,
+                kind: kind,
+                scopeId: scopeId,
+                recordId: recordId,
+                title: title,
+                userId: userId,
+                details: details,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required DateTime at,
+                required ChangeKind kind,
+                required String scopeId,
+                required String recordId,
+                required String title,
+                Value<String?> userId = const Value.absent(),
+                Value<String> details = const Value.absent(),
+              }) => ChangeLogCompanion.insert(
+                id: id,
+                at: at,
+                kind: kind,
+                scopeId: scopeId,
+                recordId: recordId,
+                title: title,
+                userId: userId,
+                details: details,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ChangeLogTable, ChangeLogRow>(table),
+                  BaseReferences<_$AppDatabase, $ChangeLogTable, ChangeLogRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ChangeLogTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ChangeLogTable,
+      ChangeLogRow,
+      $$ChangeLogTableFilterComposer,
+      $$ChangeLogTableOrderingComposer,
+      $$ChangeLogTableAnnotationComposer,
+      $$ChangeLogTableCreateCompanionBuilder,
+      $$ChangeLogTableUpdateCompanionBuilder,
+      (
+        ChangeLogRow,
+        BaseReferences<_$AppDatabase, $ChangeLogTable, ChangeLogRow>,
+      ),
+      ChangeLogRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -14565,4 +15334,6 @@ class $AppDatabaseManager {
       $$SyncCursorsTableTableManager(_db, _db.syncCursors);
   $$SongConflictsTableTableManager get songConflicts =>
       $$SongConflictsTableTableManager(_db, _db.songConflicts);
+  $$ChangeLogTableTableManager get changeLog =>
+      $$ChangeLogTableTableManager(_db, _db.changeLog);
 }
