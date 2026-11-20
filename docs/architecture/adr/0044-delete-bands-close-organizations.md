@@ -1,6 +1,6 @@
 # ADR-0044: Deleting bands and closing organizations
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-20
 
 ## Context
@@ -45,7 +45,7 @@ Both actions use the records API of PocketBase, so the REST interface stays the 
   - `DELETE /api/collections/bands/records/{id}` and `DELETE /api/collections/organizations/records/{id}` answer **204**.
   - `deleteRule` is "active organization admin" of the band's organization or of the organization.
   - A hook (`onRecordDeleteRequest`) turns the call into a **soft delete plus the cascade** of section 3, in one transaction, instead of a hard delete.
-  - **Superusers follow the same path:** deleting a band or an organization in the admin UI runs the same hook, puts it in the trash, and can be undone for 30 days. To remove it at once, for example after abuse or a deletion request, the operator then runs the purge of ADR-0043 for that record with an "immediately" option (`POST /api/setding/trash/purge`).
+  - **Superusers follow the same path:** deleting a band or an organization in the admin UI runs the same hook, puts it in the trash, and can be undone for 30 days. To remove it at once, for example after abuse or a deletion request, the operator then runs the purge of ADR-0043 for that record with a new "immediately" option of `POST /api/setding/trash/purge`.
   - Every other synced collection keeps refusing hard deletes (`sync.pb.js`).
 - **Restore:**
   - `PATCH` of the same record with `{"deleted": false}` and nothing else, allowed only for active organization admins.
@@ -159,15 +159,12 @@ As required by AGENTS.md "Permissions on the server" (#632), server tests call t
   - The read rules of an organization's content must let only its admins read a closed organization.
   - The `DELETE` hooks run large cascades in one transaction; closing a big organization touches many records.
   - Devices need the deferral in live mode and must clean up their local data, including files.
-- **Changes to other ADRs on acceptance:**
-  - ADR-0023: two rows in the permission matrix.
-  - ADR-0015: rules, hooks, `deleted_at` and `purged` on bands and organizations, and the write rules.
-  - ADR-0043: the trash and purge cover bands and organizations, and the hard purge for organizations.
-  - ADR-0017: an organization can end.
-  - ADR-0014: operator documentation on data retention.
+- **Changes to other ADRs:**
+  - On acceptance: ADR-0023 gets two rows in the permission matrix; ADR-0017 and ADR-0043 get decision log entries.
+  - With the implementation: ADR-0015 (rules, hooks, `deleted_at` and `purged` on bands and organizations, the write and read rules), ADR-0043 (trash and purge for bands and organizations, the hard purge and the "immediately" option), ADR-0014 (operator documentation on data retention).
 - **Dependencies:**
-  - The trash of ADR-0043 (#623) comes first.
-  - Then band deletion (#628), then closing organizations (#629).
+  - The trash of ADR-0043 is implemented (#631).
+  - Band deletion (#628) comes first, then closing organizations (#629).
   - Server migrations and client schema changes are minor versions (ADR-0028): old clients ignore the new fields, but they show deleted bands until they update. The server refuses their writes into deleted bands.
 
 ## Decision log
@@ -177,6 +174,7 @@ As required by AGENTS.md "Permissions on the server" (#632), server tests call t
   - **Reading during the grace period:** only organization admins read a closed organization's content; members keep only the organization record and their own membership, for sync.
   - **Size:** one transaction, with a server test that measures a large organization and fails above a limit; batching only when needed.
   - **Admin UI:** superusers go through the trash like everyone else, and remove a record at once with the purge's "immediately" option.
+- 2026-11-20: Accepted by the owner. ADR-0023's permission matrix gets the two rows of section 1; implementation in #628 (bands), then #629 (organizations).
 
 ## Open points
 

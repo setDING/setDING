@@ -135,3 +135,4 @@ See the ADR index in the architecture README for the current status. In short:
 - Minimum client version: apps send `X-Setding-Version`, the server answers outdated ones with HTTP 426, the app asks for an update; release before deploying the server (ADR-0029)
 - One CycloneDX SBOM per release asset (`<asset>.cdx.json`) from the own Dart tool `tool/sbom`: only shipped components, `setDING` with the release version and the asset's SHA-256; vulnerabilities and licences evaluated on GitHub (ADR-0037)
 - Website and user documentation at https://setding.app: Astro Starlight in `website/`, de-CH and en, served by Caddy on the server, deployed with the `make server-*` targets (ADR-0030)
+- Deleting bands and closing organizations: organization admins only, `DELETE` on the records API turned into a soft delete with a cascade, 30 days in the trash, then a purge (closed organizations for good) (ADR-0044)

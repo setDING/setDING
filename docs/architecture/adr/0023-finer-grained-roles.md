@@ -110,6 +110,8 @@ for creating an account, like every invitation.
 | Band settings, band members, band roles | ✓ all bands | – | ✓ | – | – |
 | Invite into the organization | ✓ | – | ✓ (into own band) | – | – |
 | Create bands, organization roles | ✓ | – | – | – | – |
+| Delete a band, restore it from the trash (ADR-0044) | ✓ | – | – | – | – |
+| Close the organization, restore it from the trash (ADR-0044) | ✓ | – | – | – | – |
 | Leave a band or organization | the person themselves | | | | |
 
 ² Songs the leader created or imported and nobody else has changed since.
@@ -198,6 +200,7 @@ sets of that band like any member; librarian rights concern the library only.
   role menus on the band and organization screens, invitations on the band screen.
   The band arrangement follows with its own ADR (#216).
 - 2026-11-20: **ADR-0043** (accepted, #622): exporting an organization's backup archive: organization admins and librarians; restoring from the trash: whoever may delete the record (songs and attachments: organization admins and librarians; sets: band leaders and set planners, organization admins in all bands).
+- 2026-11-20: **ADR-0044** (accepted): organization admins delete bands and close the organization (two new rows in the permission matrix); nobody else may, also not through the API (#627, #632).
 
 ## Open points
 
