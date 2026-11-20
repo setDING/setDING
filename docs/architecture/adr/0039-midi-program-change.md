@@ -435,6 +435,9 @@ settings and stored programs are kept.
   in the profile's terms with its raw values, and the tester taps *Matches
   the display* or *Does not match*; each answer is logged. A program that
   arrives before an answer replaces the one shown.
+- 2026-11-20: Manual test of the first version passed on the owner's Nord
+  Stage 3 with Android (#558): live mode switches the Nord to the program of
+  the current song while turning pages.
 
 ## Open points
 
