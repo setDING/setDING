@@ -192,6 +192,11 @@ class Setlists extends Table {
   TextColumn get name => text()();
   DateTimeColumn get gigDate => dateTime().nullable()();
   TextColumn get venue => text().nullable()();
+
+  /// User who changed the set last, as the server reports it (ADR-0045,
+  /// schema 22): for the recent changes of the overview. Null for the
+  /// local band and for sets synced before.
+  TextColumn get updatedBy => text().nullable()();
   IntColumn get revision => integer().withDefault(const Constant(0))();
   DateTimeColumn get updatedAt => dateTime()();
   BoolColumn get deleted => boolean().withDefault(const Constant(false))();
@@ -347,6 +352,11 @@ class BandArrangements extends Table {
   /// Tempo in BPM; null = as in the song (`{tempo}`).
   IntColumn get tempo => integer().nullable()();
 
+  /// User who changed the arrangement last, as the server reports it
+  /// (ADR-0045, schema 22). Null for the local band and for arrangements
+  /// synced before.
+  TextColumn get updatedBy => text().nullable()();
+
   /// Server revision; 0 = not on the server.
   IntColumn get revision => integer().withDefault(const Constant(0))();
 
@@ -482,7 +492,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 21;
+  int get schemaVersion => 22;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -679,6 +689,15 @@ class AppDatabase extends _$AppDatabase {
           await customStatement(
             'UPDATE $table SET deleted_at = updated_at WHERE deleted = 1',
           );
+        }
+      }
+      if (from < 22) {
+        // Last editor of sets and band arrangements (ADR-0045); before
+        // schema 12 the new arrangement table has the column already.
+        // Filled by the next change from the server.
+        await m.addColumn(setlists, setlists.updatedBy);
+        if (from >= 12) {
+          await m.addColumn(bandArrangements, bandArrangements.updatedBy);
         }
       }
     },

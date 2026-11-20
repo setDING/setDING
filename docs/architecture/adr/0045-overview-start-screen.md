@@ -73,7 +73,8 @@ Further rules:
 - **Who changed it**: the server already records `updated_by` on every
   synced record and sets it itself from the request (`handleWriteRequest`,
   clients cannot set it, ADR-0015). The client now also keeps it for **sets
-  and band arrangements** (new local columns, as for songs since schema 11),
+  and band arrangements** (new local columns `setlists.updated_by` and
+  `band_arrangements.updated_by`, schema 22, as for songs since schema 11),
   so every entry can name the person.
 - **Nothing new on the server**: no new fields, rules or permissions. The
   overview only shows what the person can already read; the *To do* card is

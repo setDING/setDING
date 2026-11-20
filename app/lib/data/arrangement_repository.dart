@@ -7,9 +7,17 @@ import 'outbox.dart';
 /// transposition relative to the song), sequence and tempo, between the
 /// shared song and the set item. Never changes the song.
 class ArrangementRepository {
-  ArrangementRepository(this.db);
+  ArrangementRepository(this.db, {this.userId});
 
   final AppDatabase db;
+
+  /// The signed-in user, or null.
+  final String? userId;
+
+  /// Last editor of a change of an arrangement of [bandId] (ADR-0045): the
+  /// signed-in user, as the server will record it; nobody for the local
+  /// band.
+  String? _editorIn(String bandId) => bandId == localBandId ? null : userId;
 
   SimpleSelectStatement<$BandArrangementsTable, BandArrangement> _active(
     String bandId,
@@ -61,6 +69,7 @@ class ArrangementRepository {
               transpose: Value(transpose),
               sequence: Value(cleanSequence),
               tempo: Value(cleanTempo),
+              updatedBy: Value(_editorIn(bandId)),
             ),
             onConflict: DoUpdate(
               (_) => BandArrangementsCompanion(
@@ -68,6 +77,7 @@ class ArrangementRepository {
                 sequence: Value(cleanSequence),
                 tempo: Value(cleanTempo),
                 deleted: const Value(false),
+                updatedBy: Value(_editorIn(bandId)),
               ),
             ),
           );
@@ -81,7 +91,12 @@ class ArrangementRepository {
     final updated =
         await (db.update(db.bandArrangements)
               ..where((a) => a.bandId.equals(bandId) & a.songId.equals(songId)))
-            .write(const BandArrangementsCompanion(deleted: Value(true)));
+            .write(
+              BandArrangementsCompanion(
+                deleted: const Value(true),
+                updatedBy: Value(_editorIn(bandId)),
+              ),
+            );
     if (updated > 0) await _dirty(bandId, songId);
   });
 

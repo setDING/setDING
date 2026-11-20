@@ -59,6 +59,7 @@ class ArrangementSync {
                 tempo: Value(a.tempo),
                 revision: Value(a.revision),
                 deleted: Value(a.deleted),
+                updatedBy: Value(a.updatedBy),
               ),
             );
       }
@@ -118,7 +119,12 @@ class ArrangementSync {
       await db.transaction(() async {
         await (db.update(db.bandArrangements)
               ..where((a) => a.bandId.equals(bandId) & a.songId.equals(songId)))
-            .write(BandArrangementsCompanion(revision: Value(stored.revision)));
+            .write(
+              BandArrangementsCompanion(
+                revision: Value(stored.revision),
+                updatedBy: Value(stored.updatedBy),
+              ),
+            );
         await store.done(entry);
       });
       return PushResult.done;

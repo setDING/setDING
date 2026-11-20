@@ -345,6 +345,52 @@ void main() {
       expect(await outbox(), isEmpty);
     });
 
+    test('keeps the last editor of sets (ADR-0045)', () async {
+      server.putSet(
+        const RemoteSet(id: 'set1', bandId: 'b1', name: 'Gig'),
+        by: 'bob',
+      );
+      await engine.sync();
+      expect((await sets.getSet('set1'))!.updatedBy, 'bob');
+
+      // A local change names the signed-in user until the server answers.
+      final mine = SetRepository(
+        db,
+        FileAttachmentStorage(dir),
+        bandId: 'b1',
+        userId: 'ann',
+      );
+      await mine.updateSet('set1', name: 'Mine');
+      expect((await sets.getSet('set1'))!.updatedBy, 'ann');
+      final id = await mine.createSet(name: 'New');
+      expect((await sets.getSet(id))!.updatedBy, 'ann');
+      await engine.sync();
+      expect(server.sets['set1']!.updatedBy, 'ann');
+      expect(server.sets[id]!.updatedBy, 'ann');
+
+      // The server's answer is kept, also when the change named nobody.
+      await sets.updateSet(id, name: 'Renamed');
+      expect((await sets.getSet(id))!.updatedBy, isNull);
+      await engine.sync();
+      expect((await sets.getSet(id))!.updatedBy, 'ann');
+
+      server.putSet(
+        const RemoteSet(id: 'set1', bandId: 'b1', name: 'Theirs'),
+        by: 'carol',
+      );
+      await engine.sync();
+      expect((await sets.getSet('set1'))!.updatedBy, 'carol');
+
+      // The local band has no editor.
+      final local = SetRepository(
+        db,
+        FileAttachmentStorage(dir),
+        userId: 'ann',
+      );
+      final localId = await local.createSet(name: 'Private');
+      expect((await local.getSet(localId))!.updatedBy, isNull);
+    });
+
     test(
       'last writer wins: a pending local change is kept and pushed',
       () async {
@@ -832,6 +878,52 @@ void main() {
       await engine.sync();
       expect((await arrangements.get('b1', id))!.transpose, 5);
       expect(server.arrangements.values.single.transpose, 5);
+    });
+
+    test('keeps the last editor of arrangements (ADR-0045)', () async {
+      final id = await songs.createSong(source: '{title: A}');
+      await engine.sync();
+      server.putArrangement(
+        RemoteArrangement(
+          id: ArrangementSync.serverId('b1', id),
+          bandId: 'b1',
+          songId: id,
+          transpose: 2,
+        ),
+        by: 'bob',
+      );
+      await engine.sync();
+      expect((await arrangements.get('b1', id))!.updatedBy, 'bob');
+
+      // A local change names the signed-in user; the server's answer is
+      // kept.
+      final mine = ArrangementRepository(db, userId: 'ann');
+      await mine.save('b1', id, transpose: 3);
+      expect((await arrangements.get('b1', id))!.updatedBy, 'ann');
+      await engine.sync();
+      expect(server.arrangements.values.single.updatedBy, 'ann');
+      expect((await arrangements.get('b1', id))!.updatedBy, 'ann');
+
+      server.putArrangement(
+        RemoteArrangement(
+          id: ArrangementSync.serverId('b1', id),
+          bandId: 'b1',
+          songId: id,
+          transpose: 4,
+        ),
+        by: 'carol',
+      );
+      await engine.sync();
+      expect((await arrangements.get('b1', id))!.updatedBy, 'carol');
+
+      // Removing it names the user too; the local band has no editor.
+      await mine.reset('b1', id);
+      final removed = await (db.select(
+        db.bandArrangements,
+      )..where((a) => a.songId.equals(id))).getSingle();
+      expect(removed.updatedBy, 'ann');
+      await mine.save(localBandId, id, transpose: 1);
+      expect((await mine.get(localBandId, id))!.updatedBy, isNull);
     });
 
     test('members cannot push arrangements; the change stays local', () async {

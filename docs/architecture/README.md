@@ -164,11 +164,11 @@ erDiagram
     USER { uuid id string name string email string locale }
     MEMBERSHIP { uuid band_id uuid user_id enum role "admin (leader)|planner|member" }
     SONG { uuid id string chordpro_source string title string artist string key int tempo int revision timestamp updated_at bool deleted timestamp deleted_at bool purged uuid created_by uuid updated_by }
-    SETLIST { uuid id string name date gig_date string venue int revision bool deleted timestamp deleted_at bool purged }
+    SETLIST { uuid id string name date gig_date string venue int revision bool deleted timestamp deleted_at bool purged uuid updated_by }
     SET_ITEM { uuid id uuid set_id uuid song_id int position int transpose string sequence string note string type "song|break|text" json played }
     PERSONAL_OVERLAY { uuid user_id uuid song_id int transpose int capo float font_scale string notes bool nashville string live_view "chordpro|attachment_id" bool hide_annotations string verse_chords "all|first|stacked" json midi }
     ANNOTATION { uuid id uuid user_id uuid song_id string target json stroke int updated_at int pending }
-    BAND_ARRANGEMENT { uuid band_id uuid song_id int transpose string sequence int tempo int revision bool deleted }
+    BAND_ARRANGEMENT { uuid band_id uuid song_id int transpose string sequence int tempo int revision bool deleted uuid updated_by }
     ATTACHMENT { uuid id uuid song_id string name file pdf int pages int size_bytes int revision bool deleted timestamp deleted_at bool purged }
     USER_SETTINGS { uuid user_id json data int revision }
     INVITATION { uuid id uuid organization_id uuid band_id string founder_name string token_hash string token_enc uuid created_by timestamp expires_at bool revoked uuid used_by }
@@ -186,6 +186,7 @@ Notes:
 - **On the server** (ADR-0015) set items are stored as a JSON array in the set (`setlists.items`), so a set is always synced as a whole; attachments carry a redundant `band`; songs store only the ChordPro text and the title (other metadata is derived in the client); revisions come from one server-wide counter. Collections: `users`, `organizations`, `org_memberships`, `bands`, `memberships`, `songs`, `attachments`, `setlists`, `overlays` (personal adjustments, private per user, ADR-0020; the keyboard programs per profile in their own field `midi_programs`, ADR-0042, the single program of v0.16.0 in `midi`, ADR-0039), `annotations` (freehand annotations, private per user, merged per stroke, ADR-0032), `user_settings` (personal settings, private per user, merged per key, ADR-0027), `invites`.
 - **`ANNOTATION`** (ADR-0032) is one personal freehand stroke, stamp or typed text, per song: on a ChordPro song in page coordinates of live mode with the page's layout fingerprint, plus a line anchor (source line, text fingerprint, repeat index) used when the layout differs; on a PDF attachment in normalized page coordinates. On the server the strokes of a person for a song and target are one `annotations` record, merged per stroke ID like `user_settings`.
 - **`USER_SETTINGS`** (ADR-0027) holds the personal settings of a user as JSON, private to the user and merged per key; device settings stay on the device.
+- **`updated_by`** is set by the server on every synced record (ADR-0015); the client keeps it for songs (with `created_by`, schema 11, for the edit rights of ADR-0023) and for sets and band arrangements (schema 22, to name who changed them on the overview, ADR-0045). A local change names the signed-in user until the server's answer arrives.
 - **`CHANGE_LOG`** (ADR-0045) is a device-only table, never synced: the sync engine records the songs and sets other people changed (new or changed song incl. its PDFs, set with songs added or removed or changed sequences) for *Recent changes* on the overview; entries are kept 30 days.
 - **`USER.locale`** is optional and no longer used: the language is a personal setting synced with the account (ADR-0008, ADR-0027).
 

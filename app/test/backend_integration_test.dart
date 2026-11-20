@@ -491,6 +491,41 @@ void main() {
         ),
         BackendErrorKind.notAllowed,
       );
+
+      // Sets and arrangements name their last editor (ADR-0045).
+      final set = await bob.pushSet(
+        RemoteSet(id: const Uuid().v4(), bandId: bandId, name: 'Gig'),
+        create: true,
+      );
+      expect(set.updatedBy, bobUser.id);
+      final renamed = await ann.pushSet(
+        RemoteSet(
+          id: set.id,
+          bandId: bandId,
+          name: 'Renamed',
+          revision: set.revision,
+        ),
+        create: false,
+      );
+      expect(renamed.updatedBy, isNot(bobUser.id));
+      expect(
+        (await bob.pullSets(bandId, 0)).single.updatedBy,
+        renamed.updatedBy,
+      );
+      final arrangement = await bob.pushArrangement(
+        RemoteArrangement(
+          id: const Uuid().v4(),
+          bandId: bandId,
+          songId: song.id,
+          transpose: 2,
+        ),
+        create: true,
+      );
+      expect(arrangement.updatedBy, bobUser.id);
+      expect(
+        (await ann.pullArrangements(bandId, 0)).single.updatedBy,
+        bobUser.id,
+      );
       ann.dispose();
       bob.dispose();
       carol.dispose();

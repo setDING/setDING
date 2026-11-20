@@ -617,6 +617,7 @@ class PocketBaseBackend implements SyncBackend {
       deleted: r.getBoolValue('deleted'),
       deletedAt: _date(r.getStringValue('deleted_at')),
       purged: r.getBoolValue('purged'),
+      updatedBy: _nonEmpty(r.getStringValue('updated_by')),
     );
   }
 
@@ -952,6 +953,7 @@ class PocketBaseBackend implements SyncBackend {
       tempo: tempo > 0 ? tempo : null,
       revision: r.getIntValue('revision'),
       deleted: r.getBoolValue('deleted'),
+      updatedBy: _nonEmpty(r.getStringValue('updated_by')),
     );
   }
 

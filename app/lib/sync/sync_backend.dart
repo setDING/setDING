@@ -258,6 +258,7 @@ class RemoteArrangement {
     this.tempo,
     this.revision = 0,
     this.deleted = false,
+    this.updatedBy,
   });
 
   final String id;
@@ -268,6 +269,9 @@ class RemoteArrangement {
   final int? tempo;
   final int revision;
   final bool deleted;
+
+  /// Last editor (ADR-0045); set by the server, never sent.
+  final String? updatedBy;
 }
 
 /// A set as stored on the server: its items as one JSON array
@@ -285,6 +289,7 @@ class RemoteSet {
     this.deleted = false,
     this.deletedAt,
     this.purged = false,
+    this.updatedBy,
   });
 
   final String id;
@@ -303,6 +308,9 @@ class RemoteSet {
   /// Content purged by the server 30 days after the deletion (ADR-0043);
   /// never sent.
   final bool purged;
+
+  /// Last editor (ADR-0045); set by the server, never sent.
+  final String? updatedBy;
 }
 
 /// An item of a set as stored on the server: one entry of the JSON array
