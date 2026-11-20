@@ -1,6 +1,6 @@
 # ADR-0045: Overview as the start screen
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-20
 
 ## Context
@@ -50,14 +50,15 @@ shows cards, in this order, and leaves out a card that has nothing to show:
    - **Changed set**: songs added to or removed from the set, and changed song
      sequences (`{x_sequence}`), both of a set item (ADR-0006) and of the
      band's arrangement of a song in the set (ADR-0025), listed as short
-     details ("2 songs added, 1 removed, sequence of *Song* changed"). A
+     details ("2 songs added, 1 removed, sequence of *Song* changed"), with
+     the name of the person who changed the set or the arrangement last. A
      reordering or a new gig date alone is no entry.
 
    The entries come from a **local change log** (a new table on the device,
    not synced) that the sync engine fills while it applies records from the
    server, comparing them with the local state it replaces: only incoming
-   changes, so a person's own changes, also from their other devices, show up
-   only where they did not make them. The very first sync of a library logs
+   changes whose `updated_by` is someone else, so a person's own changes,
+   also from their other devices, never show up. The very first sync of a library logs
    nothing. Entries older than 30 days are removed. The marker "last shown" is
    a **device setting**, not synced; on a new installation the card starts
    empty.
@@ -69,6 +70,11 @@ Further rules:
 
 - **Everything comes from the local database** (ADR-0001); the overview works
   offline and never waits for the network. A running sync updates it live.
+- **Who changed it**: the server already records `updated_by` on every
+  synced record and sets it itself from the request (`handleWriteRequest`,
+  clients cannot set it, ADR-0015). The client now also keeps it for **sets
+  and band arrangements** (new local columns, as for songs since schema 11),
+  so every entry can name the person.
 - **Nothing new on the server**: no new fields, rules or permissions. The
   overview only shows what the person can already read; the *To do* card is
   hidden by the same client check as the warning icons, which is presentation
@@ -94,15 +100,10 @@ Further rules:
 - The navigation has four destinations; the bottom bar on phones still fits.
 - Deep links (`deep_links.dart`) and tests that assume *Sets* as tab 0 must be
   adapted.
-- Recent changes of sets cannot name the person: sets have no `updated_by`.
-  Adding it is a server data model change (ADR-0015) and is left open.
 - The set items are one JSON array in the set record (ADR-0015), so the
   details of a changed set come from comparing the incoming array with the
   local one; the sync engine (sets and arrangements parts) gets this
   comparison and a new local table with a schema migration.
-- A change made by the same person on another device appears on this one too;
-  it cannot be told apart from a change by someone else without a synced
-  author on sets and arrangements. Acceptable.
 - A "last shown" marker per device means a person sees the same change again on
   each of their devices; acceptable, simpler than a synced marker.
 - Implementation in separate issues once the ADR is accepted: the tab with the
@@ -117,9 +118,12 @@ Further rules:
   **changed set** means songs added or removed and changed song sequences.
   Hence the local change log filled by the sync engine.
 
+- 2026-11-20: Owner: also show **who changed a set**. The server already
+  records `updated_by` on sets and arrangements; the client keeps it now, and
+  a person's own changes from other devices are left out. **Accepted** by the
+  owner (#656).
+
 ## Open points
 
-- `updated_by` on sets (and arrangements), so recent changes of sets can name
-  the person and a person's own changes from other devices can be left out.
 - Further cards later, e.g. pending invitations or the reminder for a full
   backup (ADR-0043).
