@@ -21,6 +21,7 @@ Closes #
 - [ ] Branch is rebased on the latest `main`
 - [ ] PR title follows Conventional Commits
 - [ ] New UI texts exist in `app_de.arb` and `app_en.arb`
+- [ ] Permissions are enforced on the server and tested with direct API calls (`server/test/permissions_test.dart`)
 - [ ] No secrets committed
 - [ ] Self-review done, findings fixed
 - [ ] No rule from "When a human must decide" (docs/development/git-workflow.md, section 9) applies – otherwise labelled `needs-human`
