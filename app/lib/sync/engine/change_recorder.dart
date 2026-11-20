@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../data/change_log.dart';
 import '../../data/database.dart';
@@ -66,6 +67,48 @@ import '../sync_backend.dart';
   return (added: added, removed: removed, sequenceSongIds: sequenceSongIds);
 }
 
+/// What a sync run changed of someone else's on this device (#691): the
+/// open song or set screen tells the person.
+enum SyncChangeKind {
+  songChanged,
+  songDeleted,
+  setChanged,
+  setDeleted;
+
+  bool get isSet => this == setChanged || this == setDeleted;
+  bool get isDeletion => this == songDeleted || this == setDeleted;
+}
+
+/// One change of a song or set by someone else, applied by a sync run
+/// (#691).
+@immutable
+class SyncChange {
+  const SyncChange(this.kind, this.recordId, this.title, this.userId);
+
+  final SyncChangeKind kind;
+  final String recordId;
+
+  /// The song's or set's title on this device.
+  final String title;
+
+  /// Who changed it (`updated_by`).
+  final String? userId;
+
+  @override
+  bool operator ==(Object other) =>
+      other is SyncChange &&
+      other.kind == kind &&
+      other.recordId == recordId &&
+      other.title == title &&
+      other.userId == userId;
+
+  @override
+  int get hashCode => Object.hash(kind, recordId, title, userId);
+
+  @override
+  String toString() => 'SyncChange(${kind.name}, $title)';
+}
+
 /// Records the changes of other people that the sync applies in the
 /// change log (ADR-0045), by comparing each record from the server with the
 /// local state it replaces. Nothing is recorded on the first sync of a
@@ -77,6 +120,16 @@ class ChangeRecorder {
   final AppDatabase db;
   final ChangeLogRepository log;
 
+  final _run = <SyncChange>[];
+
+  /// The changes for the open screens (#691) since the last call: unlike
+  /// the change log, deletions and reorderings count, too.
+  List<SyncChange> takeRun() {
+    final run = List.of(_run);
+    _run.clear();
+    return run;
+  }
+
   /// Whether a change by [updatedBy] is recorded for the signed-in user
   /// [logChangesFor] (null: nothing is recorded). A change without a known
   /// editor is not recorded either.
@@ -85,7 +138,10 @@ class ChangeRecorder {
 
   /// A song from the server replaces [local] (null: new on this device).
   Future<void> song(SongEntry? local, RemoteSong remote, String title) async {
-    if (remote.deleted) return;
+    if (remote.deleted) {
+      if (local != null && !local.deleted) await _songDeleted(local, remote);
+      return;
+    }
     if (local?.deleted ?? false) return; // restored from the trash
     if (local == null) {
       await log.add(
@@ -98,6 +154,14 @@ class ChangeRecorder {
       return;
     }
     if (local.chordproSource == remote.chordpro) return;
+    _run.add(
+      SyncChange(
+        SyncChangeKind.songChanged,
+        remote.id,
+        title,
+        remote.updatedBy,
+      ),
+    );
     await log.add(
       kind: ChangeKind.songChanged,
       scopeId: remote.organizationId,
@@ -126,6 +190,14 @@ class ChangeRecorder {
       db.songs,
     )..where((s) => s.id.equals(remote.songId))).getSingleOrNull();
     if (song == null || song.deleted) return;
+    _run.add(
+      SyncChange(
+        SyncChangeKind.songChanged,
+        song.id,
+        song.title,
+        remote.updatedBy,
+      ),
+    );
     await log.add(
       kind: ChangeKind.songChanged,
       scopeId: remote.organizationId,
@@ -143,7 +215,20 @@ class ChangeRecorder {
     RemoteSet remote, {
     required bool Function(String songId) songExists,
   }) async {
-    if (remote.deleted || (local?.deleted ?? false)) return;
+    if (local?.deleted ?? false) return; // restored from the trash
+    if (remote.deleted) {
+      if (local != null) {
+        _run.add(
+          SyncChange(
+            SyncChangeKind.setDeleted,
+            remote.id,
+            local.name,
+            remote.updatedBy,
+          ),
+        );
+      }
+      return;
+    }
     if (local == null) {
       // A new set is one entry, not its songs added (#674); sets have no
       // `created_by`, the first save's editor is the one who created it.
@@ -155,6 +240,16 @@ class ChangeRecorder {
         userId: remote.updatedBy,
       );
       return;
+    }
+    if (_setDiffers(local, before, remote, songExists)) {
+      _run.add(
+        SyncChange(
+          SyncChangeKind.setChanged,
+          remote.id,
+          remote.name,
+          remote.updatedBy,
+        ),
+      );
     }
     final diff = diffSetItems(
       [for (final i in before) RemoteSetItem.fromEntry(i)],
@@ -205,6 +300,14 @@ class ChangeRecorder {
               ))
             .get();
     for (final row in sets) {
+      _run.add(
+        SyncChange(
+          SyncChangeKind.setChanged,
+          row.read(db.setlists.id)!,
+          row.read(db.setlists.name)!,
+          remote.updatedBy,
+        ),
+      );
       await log.add(
         kind: ChangeKind.setChanged,
         scopeId: remote.bandId,
@@ -214,6 +317,83 @@ class ChangeRecorder {
         details: ChangeDetails(sequences: [title]),
       );
     }
+  }
+
+  /// [local] was deleted by someone else: not logged (ADR-0045), but the
+  /// open song and the open sets that lose it are told (#691). Runs before
+  /// the sync removes the song's set items.
+  Future<void> _songDeleted(SongEntry local, RemoteSong remote) async {
+    _run.add(
+      SyncChange(
+        SyncChangeKind.songDeleted,
+        local.id,
+        local.title,
+        remote.updatedBy,
+      ),
+    );
+    final sets =
+        await (db.selectOnly(db.setlists, distinct: true)
+              ..addColumns([db.setlists.id, db.setlists.name])
+              ..join([
+                innerJoin(
+                  db.setItems,
+                  db.setItems.setId.equalsExp(db.setlists.id),
+                  useColumns: false,
+                ),
+              ])
+              ..where(
+                db.setlists.deleted.equals(false) &
+                    db.setItems.songId.equals(local.id),
+              ))
+            .get();
+    for (final row in sets) {
+      _run.add(
+        SyncChange(
+          SyncChangeKind.setChanged,
+          row.read(db.setlists.id)!,
+          row.read(db.setlists.name)!,
+          remote.updatedBy,
+        ),
+      );
+    }
+  }
+
+  /// Whether [remote] looks different from [local] with the items
+  /// [before]: name, date, venue, or the items and their order (the played
+  /// marks of a gig do not count).
+  static bool _setDiffers(
+    SetlistEntry local,
+    List<SetItemEntry> before,
+    RemoteSet remote,
+    bool Function(String songId) songExists,
+  ) {
+    if (local.name != remote.name ||
+        local.gigDate != remote.gigDate ||
+        (local.venue ?? '') != (remote.venue ?? '')) {
+      return true;
+    }
+    Object key(
+      SetItemType type,
+      String? song,
+      String? note,
+      String? sequence,
+      int transpose,
+    ) => (type, song, note ?? '', sequence ?? '', transpose);
+    final old = [
+      for (final i in before)
+        key(i.type, i.songId, i.note, i.sequence, i.transpose),
+    ];
+    final current = [
+      for (final i in remote.items)
+        key(
+          i.type,
+          i.songId != null && songExists(i.songId!) ? i.songId : null,
+          i.note,
+          i.sequence,
+          i.transpose,
+        ),
+    ];
+    return !listEquals(old, current);
   }
 
   /// Titles of the songs [ids] on this device, in this order.

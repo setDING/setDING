@@ -3,7 +3,7 @@
 // basics_a_test.dart: Anna on the Linux desktop.
 //
 // Ben sees Anna's new song arrive without syncing by hand, sees her edit on
-// the song screen he has open, plays her gig live from the overview and then
+// the song screen he has open (with a hint who changed it), plays her gig live from the overview and then
 // changes the set's order.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -54,6 +54,8 @@ void main() {
         matching: find.text(_edited),
       ),
     );
+    // ... and tells him who changed it (#691).
+    await pumpUntil(tester, find.text('"$_edited" was changed by Anna.'));
     expect(tester.takeException(), isNull);
     await signal(tester, 'b-sees-edit');
     await tester.pageBack();

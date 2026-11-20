@@ -160,6 +160,26 @@ Further rules:
 - 2026-11-20: Owner: a tap anywhere on the set card (next set or most
   recently edited set) opens the set, like *Open set* (#693); *Start live*
   and *Open set* keep their own action.
+- 2026-11-20: Owner request (#691): **hints after a sync.** The changes the
+  sync engine detects for the change log also tell the open screens what
+  someone else did:
+  - **What counts:** each run reports the songs and sets others changed or
+    deleted (`SyncReport.changes`, filled by `ChangeRecorder`, with the same
+    rules: not on the first sync of a library or band, not the signed-in
+    user's own changes from any device, not without a known `updated_by`).
+    Unlike the change log, deletions count. A reordering or a new name, date
+    or venue of a set counts too, but played marks do not. A song deleted by
+    someone else also counts as a change of the sets that lose it.
+  - **Open song or set:** a SnackBar such as "“Title” was changed by Anna."
+    names the person from the members stored on the device. A deleted song
+    or set closes its page and says who deleted it. A set shown next to the
+    list on wide screens stays, as after deleting it there.
+  - **Live mode:** nothing is shown while live mode is open; the sync is
+    paused (ADR-0007). The run that catches up afterwards shows one summary
+    instead of the screens' own hints ("While you were playing live: 1 song
+    deleted, 2 songs changed"), with *Show* opening *Recent changes*.
+  - **Unchanged:** the change log still does not log deletions; nothing new
+    is stored on the device or the server.
 
 ## Open points
 

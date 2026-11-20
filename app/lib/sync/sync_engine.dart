@@ -25,6 +25,8 @@ import 'sync_backend.dart';
 import '../settings/user_settings_store.dart';
 import '../util/log.dart';
 
+export 'engine/change_recorder.dart' show SyncChange, SyncChangeKind;
+
 const _log = Log('sync');
 
 /// Result of one sync run.
@@ -38,6 +40,7 @@ class SyncReport {
     this.settingsTakenOver = false,
     this.goneBands = const [],
     this.closedOrganizations = const [],
+    this.changes = const [],
     this.error,
   });
 
@@ -60,6 +63,10 @@ class SyncReport {
 
   /// Organizations of the person that were closed (ADR-0044).
   final List<ClosedOrganization> closedOrganizations;
+
+  /// Songs and sets someone else changed or deleted, applied in this run
+  /// (#691).
+  final List<SyncChange> changes;
 
   /// Why the run stopped early (e.g. offline), or null.
   final BackendErrorKind? error;
@@ -151,6 +158,7 @@ class SyncEngine {
     var settingsTakenOver = false;
     var gone = const BandChanges();
     try {
+      _changes.takeRun(); // left over from a run that stopped early
       // Recent changes of the overview are kept for 30 days (ADR-0045).
       await _changes.log.prune();
       if (refreshBands) gone = await bands.refresh();
@@ -222,6 +230,7 @@ class SyncEngine {
         settingsTakenOver: settingsTakenOver,
         goneBands: gone.goneBands,
         closedOrganizations: gone.closedOrganizations,
+        changes: _changes.takeRun(),
       );
     } on BackendException catch (e) {
       _log.warning('Sync stopped', e);
@@ -233,6 +242,7 @@ class SyncEngine {
         settingsTakenOver: settingsTakenOver,
         goneBands: gone.goneBands,
         closedOrganizations: gone.closedOrganizations,
+        changes: _changes.takeRun(),
         error: e.kind,
       );
     }

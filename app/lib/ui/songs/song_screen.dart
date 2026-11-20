@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 
+import '../sync_hints.dart';
 import '../../data/annotation.dart' show LayoutFingerprint, textHash;
 import '../../data/attachment_lookup.dart';
 import '../../data/attachment_storage.dart';
@@ -175,6 +176,14 @@ class _SongScreenState extends ConsumerState<SongScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    // Someone else changed or deleted the song (#691).
+    listenForSyncHints(
+      context,
+      ref,
+      recordId: widget.songId,
+      isSet: false,
+      onDeleted: () => closeRoute(context),
+    );
     final songValue = ref.watch(songProvider(widget.songId));
     final overlay =
         ref.watch(overlayProvider(widget.songId)).value ??

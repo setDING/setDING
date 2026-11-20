@@ -17,6 +17,7 @@ import 'package:setding/data/import_export.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/data/demo_song.dart';
 import 'package:setding/midi/midi_output.dart';
+import 'package:setding/ui/home_screen.dart';
 import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/ui/bands/band_screen.dart';
 import 'package:setding/ui/bands/organization_screen.dart';
@@ -35,6 +36,7 @@ import 'package:flutter/services.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 
+import '../test/sync_ui_test.dart' show syncNow;
 import '../test/test_app.dart';
 
 const _write = bool.fromEnvironment('WRITE_SCREENSHOTS');
@@ -693,6 +695,59 @@ void main() {
       }
       expect(report, findsOneWidget);
       await _shot(tester, '${lang}_23b_import_labels');
+      await app.dispose(tester);
+    });
+  }
+
+  // The hint when someone else changed the open song (#691).
+  for (final lang in ['de', 'en']) {
+    _screenshotTest('sync hint $lang', (tester) async {
+      useTabletSize(tester);
+      const ben = AuthUser(id: 'ben', email: 'ben@example.test', name: 'Ben');
+      const anna = AuthUser(
+        id: 'anna',
+        email: 'anna@example.test',
+        name: 'Anna',
+      );
+      final app = await TestApp.create(
+        prefs: {
+          'language': lang,
+          'themeMode': lang == 'de' ? 'light' : 'dark',
+          'currentBandId': 'b1',
+        },
+        user: ben,
+      );
+      RemoteSong song(String line) => RemoteSong(
+        id: 's1',
+        organizationId: 'o1',
+        title: 'Morning Light',
+        chordpro:
+            '{title: Morning Light}\n{artist: Ann Trainor}\n{key: D}\n'
+            '{start_of_verse}\n[D]Morning light on the [G]hill\n'
+            '[A]$line\n{end_of_verse}\n',
+      );
+      app.backend
+        ..addBand('b1', 'Rock', admin: anna, organizationId: 'o1')
+        ..addMember('b1', ben, BandRole.member)
+        ..putSong(song('The last train leaves at dawn'), by: 'anna');
+      await tester.pumpWidget(
+        RepaintBoundary(key: UniqueKey(), child: app.build()),
+      );
+      await tester.pumpAndSettle();
+      await syncNow(tester);
+      final home = tester.element(find.byType(HomeScreen));
+      ScaffoldMessenger.of(home).removeCurrentSnackBar();
+      Navigator.of(home).push(
+        MaterialPageRoute<void>(builder: (_) => const SongScreen(songId: 's1')),
+      );
+      await tester.pumpAndSettle();
+      app.backend.putSong(
+        song('The [D]first bus leaves at [A]dawn'),
+        by: 'anna',
+      );
+      await syncNow(tester);
+      expect(find.byKey(const Key('sync-hint-songChanged')), findsOneWidget);
+      await _shot(tester, '${lang}_26_sync_hint');
       await app.dispose(tester);
     });
   }

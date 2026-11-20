@@ -4296,4 +4296,96 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get libraryUsageAllPlayed =>
       'Every song of the library was played by a band.';
+
+  @override
+  String syncHintSongChanged(String title, String name) {
+    return '\"$title\" was changed by $name.';
+  }
+
+  @override
+  String syncHintSongDeleted(String title, String name) {
+    return '\"$title\" was deleted by $name.';
+  }
+
+  @override
+  String syncHintSetChanged(String title, String name) {
+    return 'The set \"$title\" was changed by $name.';
+  }
+
+  @override
+  String syncHintSetDeleted(String title, String name) {
+    return 'The set \"$title\" was deleted by $name.';
+  }
+
+  @override
+  String syncHintSongChangedAnonymous(String title) {
+    return '\"$title\" was changed by someone else.';
+  }
+
+  @override
+  String syncHintSongDeletedAnonymous(String title) {
+    return '\"$title\" was deleted by someone else.';
+  }
+
+  @override
+  String syncHintSetChangedAnonymous(String title) {
+    return 'The set \"$title\" was changed by someone else.';
+  }
+
+  @override
+  String syncHintSetDeletedAnonymous(String title) {
+    return 'The set \"$title\" was deleted by someone else.';
+  }
+
+  @override
+  String syncHintAfterLive(String changes) {
+    return 'While you were playing live: $changes.';
+  }
+
+  @override
+  String syncHintSongsChanged(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs changed',
+      one: '1 song changed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncHintSongsDeleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs deleted',
+      one: '1 song deleted',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncHintSetsChanged(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets changed',
+      one: '1 set changed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncHintSetsDeleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets deleted',
+      one: '1 set deleted',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncHintShowChanges => 'Show';
 }

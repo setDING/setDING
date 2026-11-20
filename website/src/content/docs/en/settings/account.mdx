@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import settings from '../../../../../../docs/screenshots/settings.png';
+import syncHint from '../../../../../../docs/screenshots/sync_hint.png';
 
 setDING works without an account too, but only on your device. With an account you
 share songs and sets with your band, and your personal adjustments and settings are
@@ -46,6 +47,18 @@ Without a connection you keep working as usual. setDING says **No connection –
 changes will be sent later.** and catches up as soon as you are back online.
 
 <Image src={settings} alt="The “Account & sync” settings with account, sync and server" />
+
+## Changes by others
+
+When someone else changes or deletes the song or set you have open, setDING tells
+you after the sync, for example **"Morning Light" was changed by Anna.** A deleted
+song or set closes. Your own changes, also from your other devices, tell nothing.
+
+<Image src={syncHint} alt="A song with the hint: “Morning Light” was changed by Anna." />
+
+In live mode nothing changes on stage: setDING syncs afterwards. One hint then sums up
+what others changed in the meantime, for example **While you were playing live: 1
+song deleted, 2 songs changed.** **Show** opens the recent changes of the overview.
 
 ## Update setDING
 

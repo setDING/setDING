@@ -5,8 +5,8 @@
 // Ben plays Anna's gig live. While he is on stage, she reorders it, edits a
 // song and deletes the song he is playing: his stage stays as it was and
 // his device does not sync (ADR-0007). Once he leaves live mode, the
-// changes arrive; the deleted song is gone from the set without a word
-// (a hint is #691).
+// changes arrive with one hint that sums them up (#691); the deleted song
+// is gone from the set.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -104,10 +104,18 @@ void main() {
     );
     expect(tester.takeException(), isNull);
 
-    // 3. Ben leaves live mode: the sync he missed runs, and the set has
-    // Anna's order without the deleted song.
+    // 3. Ben leaves live mode: the sync he missed runs, one hint sums up
+    // what changed (#691), and the set has Anna's order without the
+    // deleted song.
     Navigator.of(tester.element(find.byType(LiveScreen))).pop();
     await pumpUntil(tester, find.byType(HomeScreen));
+    await pumpUntil(
+      tester,
+      find.text(
+        'While you were playing live: 1 song deleted, 1 song changed, '
+        '1 set changed.',
+      ),
+    );
     await eventually(
       tester,
       () async =>
