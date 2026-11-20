@@ -95,55 +95,66 @@ class InvitesSection extends ConsumerWidget {
               style: Theme.of(context).textTheme.titleSmall,
             ),
           ),
-        for (final i in invites)
-          ListTile(
-            key: Key('invite-${i.id}'),
-            leading: const Icon(Icons.link),
-            // In the organization, say where the link leads; in a band,
-            // that is the band itself.
-            title: Text(
-              bandId != null
-                  ? l10n.inviteStatusValid(date(i.expires.toLocal()))
-                  : (i.bandName ?? l10n.inviteOrganizationOnly),
-            ),
-            subtitle: Text(
-              bandId != null
-                  ? l10n.inviteJoined(i.joined.length, i.joined.join(', '))
-                  : '${l10n.inviteStatusValid(date(i.expires.toLocal()))}'
-                        ' · '
-                        '${l10n.inviteJoined(i.joined.length, i.joined.join(', '))}',
-            ),
-            onTap: () => _show(context, ref, i.id),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  key: Key('invite-show-${i.id}'),
-                  tooltip: l10n.inviteShow,
-                  icon: const Icon(Icons.qr_code),
-                  onPressed: () => _show(context, ref, i.id),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    final ok = await confirm(
-                      context,
-                      title: l10n.inviteRevokeTitle,
-                      message: l10n.inviteRevokeMessage,
-                      action: l10n.inviteRevoke,
-                    );
-                    if (!ok || !context.mounted) return;
-                    await runBandAction(
-                      context,
-                      () => ref.read(syncBackendProvider).revokeInvite(i.id),
-                    );
-                    ref.invalidate(invitesProvider(_key));
-                  },
-                  child: Text(l10n.inviteRevoke),
-                ),
-              ],
-            ),
-          ),
+        for (final i in invites) _inviteTile(context, ref, i, l10n, date),
       ],
+    );
+  }
+
+  Widget _inviteTile(
+    BuildContext context,
+    WidgetRef ref,
+    InviteInfo i,
+    AppLocalizations l10n,
+    String Function(DateTime) date,
+  ) {
+    // When the link was created and until when it is valid (issue #637).
+    final dates = l10n.inviteDates(
+      date(i.created.toLocal()),
+      date(i.expires.toLocal()),
+    );
+    return ListTile(
+      key: Key('invite-${i.id}'),
+      leading: const Icon(Icons.link),
+      // In the organization, say where the link leads; in a band,
+      // that is the band itself.
+      title: Text(
+        bandId != null ? dates : (i.bandName ?? l10n.inviteOrganizationOnly),
+      ),
+      subtitle: Text(
+        bandId != null
+            ? l10n.inviteJoined(i.joined.length, i.joined.join(', '))
+            : '$dates · '
+                  '${l10n.inviteJoined(i.joined.length, i.joined.join(', '))}',
+      ),
+      onTap: () => _show(context, ref, i.id),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            key: Key('invite-show-${i.id}'),
+            tooltip: l10n.inviteShow,
+            icon: const Icon(Icons.qr_code),
+            onPressed: () => _show(context, ref, i.id),
+          ),
+          TextButton(
+            onPressed: () async {
+              final ok = await confirm(
+                context,
+                title: l10n.inviteRevokeTitle,
+                message: l10n.inviteRevokeMessage,
+                action: l10n.inviteRevoke,
+              );
+              if (!ok || !context.mounted) return;
+              await runBandAction(
+                context,
+                () => ref.read(syncBackendProvider).revokeInvite(i.id),
+              );
+              ref.invalidate(invitesProvider(_key));
+            },
+            child: Text(l10n.inviteRevoke),
+          ),
+        ],
+      ),
     );
   }
 }

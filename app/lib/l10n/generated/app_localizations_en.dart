@@ -1827,8 +1827,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invitesTitle => 'Invitation links';
 
   @override
-  String inviteStatusValid(String date) {
-    return 'Valid until $date';
+  String inviteDates(String created, String expires) {
+    return 'Created $created, valid until $expires';
   }
 
   @override

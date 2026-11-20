@@ -3302,11 +3302,11 @@ abstract class AppLocalizations {
   /// **'Einladungslinks'**
   String get invitesTitle;
 
-  /// No description provided for @inviteStatusValid.
+  /// No description provided for @inviteDates.
   ///
   /// In de, this message translates to:
-  /// **'Gültig bis {date}'**
-  String inviteStatusValid(String date);
+  /// **'Erstellt am {created}, gültig bis {expires}'**
+  String inviteDates(String created, String expires);
 
   /// No description provided for @inviteOrganizationOnly.
   ///

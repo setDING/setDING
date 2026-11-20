@@ -1839,8 +1839,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get invitesTitle => 'Einladungslinks';
 
   @override
-  String inviteStatusValid(String date) {
-    return 'Gültig bis $date';
+  String inviteDates(String created, String expires) {
+    return 'Erstellt am $created, gültig bis $expires';
   }
 
   @override

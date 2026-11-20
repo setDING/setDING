@@ -409,6 +409,11 @@ void main() {
       expect(app.backend.invites.single.bandId, 'b1');
       await tester.tap(find.text('Close'));
       await tester.pumpAndSettle();
+      // The band's list says when the link was created (issue #637).
+      expect(
+        find.text('Created Sun, Nov 15, valid until Sun, Nov 22'),
+        findsOneWidget,
+      );
       await app.dispose(tester);
     });
 

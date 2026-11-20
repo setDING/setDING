@@ -897,10 +897,13 @@
   "inviteCopy": "Link kopieren",
   "inviteCopied": "Link kopiert",
   "invitesTitle": "Einladungslinks",
-  "inviteStatusValid": "Gültig bis {date}",
-  "@inviteStatusValid": {
+  "inviteDates": "Erstellt am {created}, gültig bis {expires}",
+  "@inviteDates": {
     "placeholders": {
-      "date": {
+      "created": {
+        "type": "String"
+      },
+      "expires": {
         "type": "String"
       }
     }
