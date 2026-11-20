@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'data/annotation_repository.dart';
 import 'data/arrangement_repository.dart';
 import 'data/attachment_storage.dart';
+import 'data/backup.dart';
 import 'data/band_copy.dart';
 import 'data/band_view.dart';
 import 'data/database.dart';
@@ -232,6 +233,16 @@ final bandCopyProvider = Provider<BandCopyService>(
     ref.watch(databaseProvider),
     ref.watch(attachmentStorageProvider),
     userId: ref.watch(authProvider.select((u) => u?.id)),
+  ),
+);
+
+/// Backup archive of a library (ADR-0043).
+final backupServiceProvider = Provider<BackupService>(
+  (ref) => BackupService(
+    ref.watch(databaseProvider),
+    ref.watch(attachmentStorageProvider),
+    userId: ref.watch(authProvider.select((u) => u?.id)),
+    appVersion: ref.watch(clientVersionProvider) ?? '',
   ),
 );
 

@@ -77,7 +77,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get importDescription =>
-      'Unterstützt werden .cho, .chordpro, .chopro, .crd, .pro, .txt und ZIP-Archive mit solchen Dateien.';
+      'Unterstützt werden .cho, .chordpro, .chopro, .crd, .pro, .txt, ZIP-Archive mit solchen Dateien und setDING-Sicherungen.';
 
   @override
   String get importGermanNotation =>
@@ -3473,5 +3473,194 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String trashRestored(String title) {
     return '«$title» wiederhergestellt';
+  }
+
+  @override
+  String get backupExport => 'Bibliothek sichern';
+
+  @override
+  String get backupSyncing => 'Mit dem Server synchronisieren …';
+
+  @override
+  String get backupCollecting => 'Sicherung wird erstellt …';
+
+  @override
+  String get backupSaved => 'Sicherung gespeichert.';
+
+  @override
+  String get backupFailedTitle => 'Sichern nicht möglich';
+
+  @override
+  String get backupSyncDeferred =>
+      'Der Live-Modus ist offen. Schliesse ihn und versuche es noch einmal.';
+
+  @override
+  String get backupSyncFailed =>
+      'Der Abgleich mit dem Server ist fehlgeschlagen. Eine Sicherung einer Organisation braucht eine Verbindung, damit sie alles enthält. Versuche es wieder, wenn du online bist.';
+
+  @override
+  String get backupPendingChanges =>
+      'Änderungen auf diesem Gerät sind noch nicht auf dem Server. Warte den Abgleich ab und versuche es noch einmal.';
+
+  @override
+  String get backupConflicts =>
+      'Einige Songs haben einen Konflikt. Löse zuerst die Konflikte.';
+
+  @override
+  String get backupMissingFiles =>
+      'Noch nicht alle Anhänge sind heruntergeladen. Warte den Download ab und versuche es noch einmal.';
+
+  @override
+  String backupFileMissing(String name, String song) {
+    return 'Der Anhang «$name» von «$song» konnte nicht geladen werden.';
+  }
+
+  @override
+  String get backupInvalid => 'Diese Datei ist keine setDING-Sicherung.';
+
+  @override
+  String get backupNewer =>
+      'Diese Sicherung stammt von einer neueren setDING-Version. Aktualisiere die App, um sie zu importieren.';
+
+  @override
+  String get backupImportTitle => 'Sicherung importieren';
+
+  @override
+  String backupImportSummary(String library, int songs, int sets) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: '$songs Songs',
+      one: '1 Song',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      sets,
+      locale: localeName,
+      other: '$sets Sets',
+      one: '1 Set',
+    );
+    return 'Sicherung von «$library»: $_temp0, $_temp1.';
+  }
+
+  @override
+  String get backupImportCopyHint =>
+      'Alles wird als Kopie in die aktuelle Bibliothek importiert. Bestehendes wird nicht verändert.';
+
+  @override
+  String backupImportIdentical(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs sind',
+      one: '1 Song ist',
+    );
+    return '$_temp0 schon mit gleichem Text hier und werden so verwendet.';
+  }
+
+  @override
+  String backupImportDiffering(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs gibt',
+      one: '1 Song gibt',
+    );
+    return '$_temp0 es hier mit anderem Text:';
+  }
+
+  @override
+  String get backupKeepExisting => 'Bestehende Songs behalten';
+
+  @override
+  String get backupAddAll => 'Als zusätzliche Songs importieren';
+
+  @override
+  String get backupImportSetsTo => 'Sets kommen nach:';
+
+  @override
+  String backupBandSets(String band, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Sets',
+      one: '1 Set',
+    );
+    return '$band ($_temp0)';
+  }
+
+  @override
+  String get backupSkipSets => 'Nicht importieren';
+
+  @override
+  String get backupImportStart => 'Importieren';
+
+  @override
+  String get backupImportDone => 'Sicherung importiert';
+
+  @override
+  String backupResultSongs(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs importiert',
+      one: '1 Song importiert',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupResultIdentical(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs waren schon hier',
+      one: '1 Song war schon hier',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupResultKept(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bestehende Songs behalten',
+      one: '1 bestehender Song behalten',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupResultSets(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Sets',
+      one: '1 Set',
+      zero: 'Keine Sets',
+    );
+    return '$_temp0 importiert';
+  }
+
+  @override
+  String backupResultFiles(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Anhänge',
+      one: '1 Anhang',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupResultAdditional(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Diese Songs gibt es jetzt zweimal. Vergleiche sie mit den bestehenden und lösche die, die du nicht brauchst:',
+      one: 'Diesen Song gibt es jetzt zweimal. Vergleiche ihn mit dem bestehenden und lösche den, den du nicht brauchst:',
+    );
+    return '$_temp0';
   }
 }

@@ -28,7 +28,7 @@
   "newPdfSong": "Neuer PDF-Song",
   "importFiles": "Dateien importieren",
   "importTitle": "ChordPro-Dateien importieren",
-  "importDescription": "Unterstützt werden .cho, .chordpro, .chopro, .crd, .pro, .txt und ZIP-Archive mit solchen Dateien.",
+  "importDescription": "Unterstützt werden .cho, .chordpro, .chopro, .crd, .pro, .txt, ZIP-Archive mit solchen Dateien und setDING-Sicherungen.",
   "importGermanNotation": "Dateien verwenden deutsche Notation (H/B)",
   "importGermanNotationHint": "Akkorde werden beim Import in internationale Notation umgewandelt.",
   "chooseFiles": "Dateien auswählen",
@@ -1955,6 +1955,126 @@
     "placeholders": {
       "title": {
         "type": "String"
+      }
+    }
+  },
+  "backupExport": "Bibliothek sichern",
+  "backupSyncing": "Mit dem Server synchronisieren …",
+  "backupCollecting": "Sicherung wird erstellt …",
+  "backupSaved": "Sicherung gespeichert.",
+  "backupFailedTitle": "Sichern nicht möglich",
+  "backupSyncDeferred": "Der Live-Modus ist offen. Schliesse ihn und versuche es noch einmal.",
+  "backupSyncFailed": "Der Abgleich mit dem Server ist fehlgeschlagen. Eine Sicherung einer Organisation braucht eine Verbindung, damit sie alles enthält. Versuche es wieder, wenn du online bist.",
+  "backupPendingChanges": "Änderungen auf diesem Gerät sind noch nicht auf dem Server. Warte den Abgleich ab und versuche es noch einmal.",
+  "backupConflicts": "Einige Songs haben einen Konflikt. Löse zuerst die Konflikte.",
+  "backupMissingFiles": "Noch nicht alle Anhänge sind heruntergeladen. Warte den Download ab und versuche es noch einmal.",
+  "backupFileMissing": "Der Anhang «{name}» von «{song}» konnte nicht geladen werden.",
+  "@backupFileMissing": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "song": {
+        "type": "String"
+      }
+    }
+  },
+  "backupInvalid": "Diese Datei ist keine setDING-Sicherung.",
+  "backupNewer": "Diese Sicherung stammt von einer neueren setDING-Version. Aktualisiere die App, um sie zu importieren.",
+  "backupImportTitle": "Sicherung importieren",
+  "backupImportSummary": "Sicherung von «{library}»: {songs, plural, =1{1 Song} other{{songs} Songs}}, {sets, plural, =1{1 Set} other{{sets} Sets}}.",
+  "@backupImportSummary": {
+    "placeholders": {
+      "library": {
+        "type": "String"
+      },
+      "songs": {
+        "type": "int"
+      },
+      "sets": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportCopyHint": "Alles wird als Kopie in die aktuelle Bibliothek importiert. Bestehendes wird nicht verändert.",
+  "backupImportIdentical": "{count, plural, =1{1 Song ist} other{{count} Songs sind}} schon mit gleichem Text hier und werden so verwendet.",
+  "@backupImportIdentical": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportDiffering": "{count, plural, =1{1 Song gibt} other{{count} Songs gibt}} es hier mit anderem Text:",
+  "@backupImportDiffering": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupKeepExisting": "Bestehende Songs behalten",
+  "backupAddAll": "Als zusätzliche Songs importieren",
+  "backupImportSetsTo": "Sets kommen nach:",
+  "backupBandSets": "{band} ({count, plural, =1{1 Set} other{{count} Sets}})",
+  "@backupBandSets": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupSkipSets": "Nicht importieren",
+  "backupImportStart": "Importieren",
+  "backupImportDone": "Sicherung importiert",
+  "backupResultSongs": "{count, plural, =1{1 Song importiert} other{{count} Songs importiert}}",
+  "@backupResultSongs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupResultIdentical": "{count, plural, =1{1 Song war schon hier} other{{count} Songs waren schon hier}}",
+  "@backupResultIdentical": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupResultKept": "{count, plural, =1{1 bestehender Song behalten} other{{count} bestehende Songs behalten}}",
+  "@backupResultKept": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupResultSets": "{count, plural, =0{Keine Sets} =1{1 Set} other{{count} Sets}} importiert",
+  "@backupResultSets": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupResultFiles": "{count, plural, =1{1 Anhang} other{{count} Anhänge}}",
+  "@backupResultFiles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupResultAdditional": "{count, plural, =1{Diesen Song gibt es jetzt zweimal. Vergleiche ihn mit dem bestehenden und lösche den, den du nicht brauchst:} other{Diese Songs gibt es jetzt zweimal. Vergleiche sie mit den bestehenden und lösche die, die du nicht brauchst:}}",
+  "@backupResultAdditional": {
+    "placeholders": {
+      "count": {
+        "type": "int"
       }
     }
   }
