@@ -144,6 +144,18 @@ class ChangeRecorder {
     required bool Function(String songId) songExists,
   }) async {
     if (remote.deleted || (local?.deleted ?? false)) return;
+    if (local == null) {
+      // A new set is one entry, not its songs added (#674); sets have no
+      // `created_by`, the first save's editor is the one who created it.
+      await log.add(
+        kind: ChangeKind.setAdded,
+        scopeId: remote.bandId,
+        recordId: remote.id,
+        title: remote.name,
+        userId: remote.updatedBy,
+      );
+      return;
+    }
     final diff = diffSetItems(
       [for (final i in before) RemoteSetItem.fromEntry(i)],
       remote.items,

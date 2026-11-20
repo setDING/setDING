@@ -90,6 +90,7 @@ String describeChange(AppLocalizations l10n, RecentChange change) {
           : d.pdf
           ? l10n.changeSongPdf
           : l10n.changeSongText,
+    ChangeKind.setAdded => l10n.changeNewSet,
     ChangeKind.setChanged => [
       if (d.added > 0) l10n.changeSetAdded(d.added),
       if (d.removed > 0)
@@ -128,13 +129,14 @@ class RecentChangeTile extends ConsumerWidget {
       if (showDate)
         MaterialLocalizations.of(context).formatShortDate(change.at),
     ].join(' · ');
-    final isSet = change.kind == ChangeKind.setChanged;
+    final isSet = change.kind.isSet;
     return ListTile(
       key: ValueKey('recent-change-${change.recordId}'),
       leading: Icon(switch (change.kind) {
         ChangeKind.songAdded => Icons.library_add_outlined,
         ChangeKind.songChanged => Icons.edit_note,
         ChangeKind.setChanged => Icons.queue_music,
+        ChangeKind.setAdded => Icons.playlist_add,
       }),
       title: Text(change.title, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text(subtitle),

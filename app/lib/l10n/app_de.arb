@@ -2465,6 +2465,7 @@
   "overviewShowAll": "Alle anzeigen",
   "recentChangesEmpty": "Keine Änderungen von anderen in den letzten 30 Tagen.",
   "changeSongAdded": "Neuer Song",
+  "changeNewSet": "Neues Set",
   "changeSongText": "Text geändert",
   "changeSongPdf": "PDF geändert",
   "changeSongTextAndPdf": "Text und PDF geändert",

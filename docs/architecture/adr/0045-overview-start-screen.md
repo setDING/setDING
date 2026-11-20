@@ -47,6 +47,8 @@ shows cards, in this order, and leaves out a card that has nothing to show:
    - **Changed song**: its ChordPro text, or a PDF attachment added, replaced
      or removed (an attachment counts as a change of its song), with the name
      of the person who changed it last (`songs.updated_by`) where known.
+   - **New set**, with the name of the person who created it (the editor
+     of its first save, as sets have no `created_by`).
    - **Changed set**: songs added to or removed from the set, and changed song
      sequences (`{x_sequence}`), both of a set item (ADR-0006) and of the
      band's arrangement of a song in the set (ADR-0025), listed as short
@@ -144,13 +146,17 @@ Further rules:
     old and new items), so a reordering is no change; the sequence of a
     set item is compared item by item (by item ID, otherwise the next item
     of the same song); songs not on the device do not count. A new set of
-    someone else shows up as its songs added. A sequence change of the
+    someone else showed up as its songs added (replaced by *New set*,
+    see the next entry). A sequence change of the
     band's arrangement is logged for every set of the band with the song.
     Deleted songs and sets and a new name of a PDF are not logged.
   - The log keeps one row per applied change; the overview merges the rows
     of one song or set into one entry (a new song stays new) and names the
     person from the members stored on the device. *Show all* lists the
     entries of the last 30 days.
+- 2026-11-20: Owner: a set created by someone else shows up as **New set**,
+  not as its songs added (#674). New kind `setAdded`; like a new song, a
+  new set that was changed afterwards stays one *New set* entry.
 
 ## Open points
 

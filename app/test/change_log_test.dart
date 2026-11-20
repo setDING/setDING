@@ -308,6 +308,49 @@ void main() {
       });
     });
 
+    test('a new set by someone else is one entry, not its songs added '
+        '(#674)', () async {
+      // The band was synced before (setUp), so its sets are logged.
+      server.putSet(
+        RemoteSet(
+          id: 'set2',
+          bandId: 'b1',
+          name: 'Rehearsal',
+          items: [_song('i1', 's1'), _song('i2', 's2')],
+        ),
+        by: 'carol',
+      );
+      await engine.sync();
+      final row = (await log()).single;
+      expect(
+        (row.kind, row.scopeId, row.recordId, row.title, row.userId),
+        (ChangeKind.setAdded, 'b1', 'set2', 'Rehearsal', 'carol'),
+      );
+      expect(ChangeDetails.fromJson(row.details), const ChangeDetails());
+
+      // Changed afterwards: still one entry, and it stays a new set.
+      server.putSet(
+        RemoteSet(
+          id: 'set2',
+          bandId: 'b1',
+          name: 'Rehearsal',
+          items: [_song('i1', 's1')],
+        ),
+        by: 'bob',
+      );
+      await engine.sync();
+      final rows = await log();
+      expect(rows.map((r) => r.kind), [
+        ChangeKind.setAdded,
+        ChangeKind.setChanged,
+      ]);
+      final grouped = groupChanges(rows.reversed.toList());
+      expect(
+        (grouped.single.kind, grouped.single.details),
+        (ChangeKind.setAdded, const ChangeDetails(removed: 1)),
+      );
+    });
+
     test('logs songs added to and removed from a set and changed '
         'sequences, not a reordering or a new gig date', () async {
       server.putSet(

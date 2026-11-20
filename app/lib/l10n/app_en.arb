@@ -2201,6 +2201,7 @@
   "overviewShowAll": "Show all",
   "recentChangesEmpty": "No changes by others in the last 30 days.",
   "changeSongAdded": "New song",
+  "changeNewSet": "New set",
   "changeSongText": "Text changed",
   "changeSongPdf": "PDF changed",
   "changeSongTextAndPdf": "Text and PDF changed",

@@ -6553,6 +6553,12 @@ abstract class AppLocalizations {
   /// **'Neuer Song'**
   String get changeSongAdded;
 
+  /// No description provided for @changeNewSet.
+  ///
+  /// In de, this message translates to:
+  /// **'Neues Set'**
+  String get changeNewSet;
+
   /// No description provided for @changeSongText.
   ///
   /// In de, this message translates to:

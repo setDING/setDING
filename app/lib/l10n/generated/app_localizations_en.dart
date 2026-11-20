@@ -4068,6 +4068,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get changeSongAdded => 'New song';
 
   @override
+  String get changeNewSet => 'New set';
+
+  @override
   String get changeSongText => 'Text changed';
 
   @override
