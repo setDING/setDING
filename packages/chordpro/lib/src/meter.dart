@@ -2,6 +2,8 @@
 /// (ADR-0026): `{time}` plus setDING's `{x_time_grouping}`.
 library;
 
+import 'dart:math' as math;
+
 /// How a song's `{tempo}` is counted: the note value of one beat.
 enum BeatUnit {
   whole,
@@ -26,6 +28,25 @@ enum MeterKind {
   /// 5/8, 7/8, 11/8, …: counted in eighths (the note value), accents from
   /// `{x_time_grouping}`.
   odd,
+}
+
+/// Clicks between the beats (ADR-0026, #698): a personal choice of the
+/// drummer, globally and per song; not part of the meter.
+enum Subdivision {
+  /// The beats only.
+  off,
+
+  /// Eighth notes: two per quarter beat, three per dotted quarter (6/8),
+  /// none between the eighths of an odd meter.
+  eighths,
+
+  /// Sixteenth notes: four per quarter beat, six per dotted quarter, two
+  /// per eighth.
+  sixteenths,
+
+  /// Triplets: three per quarter (e.g. a shuffle in 4/4), three per beat of
+  /// shorter beats; in compound meters the same as the eighths.
+  triplets,
 }
 
 /// Accent of a beat within a bar.
@@ -109,7 +130,7 @@ class Meter {
   static List<int>? _parseGrouping(String? value, int total) {
     if (value == null) return null;
     final parts = value.split('+').map((p) => int.tryParse(p.trim())).toList();
-    if (parts.length < 2 || parts.any((p) => p == null || p < 1)) return null;
+    if (parts.any((p) => p == null || p < 1)) return null;
     final groups = parts.cast<int>();
     return groups.fold<int>(0, (a, b) => a + b) == total ? groups : null;
   }
@@ -126,6 +147,69 @@ class Meter {
     MeterKind.odd => 1,
     MeterKind.simple => denominator <= 4 ? 8 ~/ denominator : 1,
   };
+
+  /// Clicks per beat for [subdivision] (1 = the beat only).
+  int stepsPerBeat(Subdivision subdivision) => switch (subdivision) {
+    Subdivision.off => 1,
+    Subdivision.eighths => subdivisions,
+    Subdivision.sixteenths => math.max(subdivisions, _sixteenthsPerBeat),
+    Subdivision.triplets => switch (kind) {
+      MeterKind.compound => subdivisions,
+      _ => denominator <= 4 ? 3 * (4 ~/ denominator) : 3,
+    },
+  };
+
+  /// Sixteenths in one beat (at least one).
+  int get _sixteenthsPerBeat {
+    final perNote = denominator <= 16 ? 16 ~/ denominator : 1;
+    return kind == MeterKind.compound ? 3 * perNote : perNote;
+  }
+
+  /// The subdivisions that sound different for this meter: [Subdivision.off]
+  /// and every other choice whose clicks per beat no earlier choice has
+  /// (e.g. no eighths in 7/8, no triplets in 6/8).
+  Set<Subdivision> get subdivisionChoices {
+    final seen = <int>{};
+    return {
+      for (final s in Subdivision.values)
+        if (seen.add(stepsPerBeat(s))) s,
+    };
+  }
+
+  /// This meter with [grouping] (`2+2+3`, or the numerator alone for no
+  /// groups) instead of its own; itself when [grouping] is null, the meter
+  /// is not odd or the grouping does not add up.
+  Meter withGrouping(String? grouping) {
+    if (grouping == null || kind != MeterKind.odd) return this;
+    final groups = _parseGrouping(grouping, numerator);
+    if (groups == null) return this;
+    return Meter._(
+      numerator: numerator,
+      denominator: denominator,
+      kind: kind,
+      groups: groups,
+    );
+  }
+
+  /// The groupings of an odd meter into twos and threes, in the order
+  /// `2+2+3`, `2+3+2`, `3+2+2` (at most [limit]); empty for other meters.
+  List<String> groupingChoices({int limit = 24}) {
+    if (kind != MeterKind.odd) return const [];
+    final result = <String>[];
+    void walk(int left, List<int> parts) {
+      if (result.length >= limit) return;
+      if (left == 0) {
+        if (parts.length > 1) result.add(parts.join('+'));
+        return;
+      }
+      for (final part in const [2, 3]) {
+        if (part <= left) walk(left - part, [...parts, part]);
+      }
+    }
+
+    walk(numerator, []);
+    return result;
+  }
 
   /// The note value one beat (and one BPM of `{tempo}`) refers to.
   BeatUnit get beatUnit => switch (kind) {

@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import drums from '../../../../../../docs/screenshots/drums.png';
+import click from '../../../../../../docs/screenshots/live_click.png';
 
 If a song has a tempo, setDING shows the beat in live mode, counts in and, if you
 like, plays a click – into the in-ear mix, for example. The tempo comes from the band
@@ -35,7 +36,8 @@ turning the pages of a song does not.
   visible from the corner of your eye.
 - **Click** – plays the click on the device's audio output. With **Sound**
   (**Click**, **Woodblock**, **Beep**), **Accent on the 1** and **Subdivisions**
-  (quieter eighths between the beats, triplets in 6/8).
+  (quieter clicks between the beats: **Off**, **Eighths**, **Sixteenths** or
+  **Triplets**). Each song can have its own subdivisions, see below.
 - **Count-in** – **Off**, **1 bar** or **2 bars**.
 - **Duration** – **Whole song** or **Count-in only**.
 - **In the background** – **Stop** (default) or **Keep playing**: what the beat
@@ -55,6 +57,24 @@ In the control bar (tap the middle of the screen) you change the tempo for the
 moment: **Slower** and **Faster** by 1 BPM each, or **Tap tempo** at the tempo you
 want. **Back to the tempo of the song** undoes the change. It applies only until you
 leave live mode; the song and the band arrangement stay unchanged.
+
+## Grouping and subdivisions per song
+
+Each song can have its own click, only for you: in the control bar of live mode, next
+to the tempo, or on the song's screen under **Personal adjustments**. You need no
+rights on the song library for this, and the song stays unchanged for everybody else.
+
+- **Grouping** (odd time signatures such as 5/8 or 7/8) – which beats are accented,
+  e.g. **3+2+2** instead of the song's 2+2+3, or **No groups** for an accent on the 1
+  only. **As in the song** follows `{x_time_grouping}` again.
+- **Subdivisions** – **Off**, **Eighths**, **Sixteenths** or **Triplets** for this
+  song, e.g. triplets for a shuffle in 4/4. **As in the settings** follows the setting
+  again. Choices that would sound the same in this time signature are greyed out.
+
+A change while the click runs is heard from the next bar on. **Reset personal
+adjustments** on the song's screen also resets both.
+
+<Image src={click} alt="The control bar of live mode for drums: next to the tempo the grouping 2+2+3 with its menu open (as in the song, 2+2+3, 2+3+2, 3+2+2, no groups) and the subdivisions in sixteenths" />
 
 ## Song map for drummers
 

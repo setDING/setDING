@@ -5236,6 +5236,29 @@ class $PersonalOverlaysTable extends PersonalOverlays
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   ).withConverter<MidiPrograms?>($PersonalOverlaysTable.$convertermidiPrograms);
+  static const VerificationMeta _clickGroupingMeta = const VerificationMeta(
+    'clickGrouping',
+  );
+  @override
+  late final GeneratedColumn<String> clickGrouping = GeneratedColumn<String>(
+    'click_grouping',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<Subdivision?, String>
+  clickSubdivision =
+      GeneratedColumn<String>(
+        'click_subdivision',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      ).withConverter<Subdivision?>(
+        $PersonalOverlaysTable.$converterclickSubdivisionn,
+      );
   static const VerificationMeta _revisionMeta = const VerificationMeta(
     'revision',
   );
@@ -5263,6 +5286,8 @@ class $PersonalOverlaysTable extends PersonalOverlays
     verseChords,
     midi,
     midiPrograms,
+    clickGrouping,
+    clickSubdivision,
     revision,
   ];
   @override
@@ -5342,6 +5367,15 @@ class $PersonalOverlaysTable extends PersonalOverlays
         ),
       );
     }
+    if (data.containsKey('click_grouping')) {
+      context.handle(
+        _clickGroupingMeta,
+        clickGrouping.isAcceptableOrUnknown(
+          data['click_grouping']!,
+          _clickGroupingMeta,
+        ),
+      );
+    }
     if (data.containsKey('revision')) {
       context.handle(
         _revisionMeta,
@@ -5415,6 +5449,17 @@ class $PersonalOverlaysTable extends PersonalOverlays
           data['${effectivePrefix}midi_programs'],
         ),
       ),
+      clickGrouping: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}click_grouping'],
+      ),
+      clickSubdivision: $PersonalOverlaysTable.$converterclickSubdivisionn
+          .fromSql(
+            attachedDatabase.typeMapping.read(
+              DriftSqlType.string,
+              data['${effectivePrefix}click_subdivision'],
+            ),
+          ),
       revision: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}revision'],
@@ -5433,6 +5478,14 @@ class $PersonalOverlaysTable extends PersonalOverlays
       const MidiProgramConverter();
   static TypeConverter<MidiPrograms?, String?> $convertermidiPrograms =
       const MidiProgramsConverter();
+  static JsonTypeConverter2<Subdivision, String, String>
+  $converterclickSubdivision = const EnumNameConverter<Subdivision>(
+    Subdivision.values,
+  );
+  static JsonTypeConverter2<Subdivision?, String?, String?>
+  $converterclickSubdivisionn = JsonTypeConverter2.asNullable(
+    $converterclickSubdivision,
+  );
 }
 
 class SongOverlay extends DataClass implements Insertable<SongOverlay> {
@@ -5472,6 +5525,15 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
   /// written, even empty, [midi] is ignored.
   final MidiPrograms? midiPrograms;
 
+  /// Grouping of an odd meter for the click and the beat display (#698,
+  /// schema 27): `3+2+2`, or the numerator alone for no groups; null = as
+  /// in the song (`{x_time_grouping}`).
+  final String? clickGrouping;
+
+  /// Subdivisions of the click for this song (#698, schema 27); null = the
+  /// personal setting.
+  final Subdivision? clickSubdivision;
+
   /// Server revision; 0 = not on the server (schema 9, ADR-0020).
   final int revision;
   const SongOverlay({
@@ -5488,6 +5550,8 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     required this.verseChords,
     this.midi,
     this.midiPrograms,
+    this.clickGrouping,
+    this.clickSubdivision,
     required this.revision,
   });
   @override
@@ -5526,6 +5590,16 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
         $PersonalOverlaysTable.$convertermidiPrograms.toSql(midiPrograms),
       );
     }
+    if (!nullToAbsent || clickGrouping != null) {
+      map['click_grouping'] = Variable<String>(clickGrouping);
+    }
+    if (!nullToAbsent || clickSubdivision != null) {
+      map['click_subdivision'] = Variable<String>(
+        $PersonalOverlaysTable.$converterclickSubdivisionn.toSql(
+          clickSubdivision,
+        ),
+      );
+    }
     map['revision'] = Variable<int>(revision);
     return map;
   }
@@ -5555,6 +5629,12 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       midiPrograms: midiPrograms == null && nullToAbsent
           ? const Value.absent()
           : Value(midiPrograms),
+      clickGrouping: clickGrouping == null && nullToAbsent
+          ? const Value.absent()
+          : Value(clickGrouping),
+      clickSubdivision: clickSubdivision == null && nullToAbsent
+          ? const Value.absent()
+          : Value(clickSubdivision),
       revision: Value(revision),
     );
   }
@@ -5580,6 +5660,9 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       ),
       midi: serializer.fromJson<MidiProgram?>(json['midi']),
       midiPrograms: serializer.fromJson<MidiPrograms?>(json['midiPrograms']),
+      clickGrouping: serializer.fromJson<String?>(json['clickGrouping']),
+      clickSubdivision: $PersonalOverlaysTable.$converterclickSubdivisionn
+          .fromJson(serializer.fromJson<String?>(json['clickSubdivision'])),
       revision: serializer.fromJson<int>(json['revision']),
     );
   }
@@ -5602,6 +5685,12 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       ),
       'midi': serializer.toJson<MidiProgram?>(midi),
       'midiPrograms': serializer.toJson<MidiPrograms?>(midiPrograms),
+      'clickGrouping': serializer.toJson<String?>(clickGrouping),
+      'clickSubdivision': serializer.toJson<String?>(
+        $PersonalOverlaysTable.$converterclickSubdivisionn.toJson(
+          clickSubdivision,
+        ),
+      ),
       'revision': serializer.toJson<int>(revision),
     };
   }
@@ -5620,6 +5709,8 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     VerseChords? verseChords,
     Value<MidiProgram?> midi = const Value.absent(),
     Value<MidiPrograms?> midiPrograms = const Value.absent(),
+    Value<String?> clickGrouping = const Value.absent(),
+    Value<Subdivision?> clickSubdivision = const Value.absent(),
     int? revision,
   }) => SongOverlay(
     ownerId: ownerId ?? this.ownerId,
@@ -5635,6 +5726,12 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     verseChords: verseChords ?? this.verseChords,
     midi: midi.present ? midi.value : this.midi,
     midiPrograms: midiPrograms.present ? midiPrograms.value : this.midiPrograms,
+    clickGrouping: clickGrouping.present
+        ? clickGrouping.value
+        : this.clickGrouping,
+    clickSubdivision: clickSubdivision.present
+        ? clickSubdivision.value
+        : this.clickSubdivision,
     revision: revision ?? this.revision,
   );
   SongOverlay copyWithCompanion(PersonalOverlaysCompanion data) {
@@ -5658,6 +5755,12 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       midiPrograms: data.midiPrograms.present
           ? data.midiPrograms.value
           : this.midiPrograms,
+      clickGrouping: data.clickGrouping.present
+          ? data.clickGrouping.value
+          : this.clickGrouping,
+      clickSubdivision: data.clickSubdivision.present
+          ? data.clickSubdivision.value
+          : this.clickSubdivision,
       revision: data.revision.present ? data.revision.value : this.revision,
     );
   }
@@ -5678,6 +5781,8 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
           ..write('verseChords: $verseChords, ')
           ..write('midi: $midi, ')
           ..write('midiPrograms: $midiPrograms, ')
+          ..write('clickGrouping: $clickGrouping, ')
+          ..write('clickSubdivision: $clickSubdivision, ')
           ..write('revision: $revision')
           ..write(')'))
         .toString();
@@ -5698,6 +5803,8 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     verseChords,
     midi,
     midiPrograms,
+    clickGrouping,
+    clickSubdivision,
     revision,
   );
   @override
@@ -5717,6 +5824,8 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
           other.verseChords == this.verseChords &&
           other.midi == this.midi &&
           other.midiPrograms == this.midiPrograms &&
+          other.clickGrouping == this.clickGrouping &&
+          other.clickSubdivision == this.clickSubdivision &&
           other.revision == this.revision);
 }
 
@@ -5734,6 +5843,8 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
   final Value<VerseChords> verseChords;
   final Value<MidiProgram?> midi;
   final Value<MidiPrograms?> midiPrograms;
+  final Value<String?> clickGrouping;
+  final Value<Subdivision?> clickSubdivision;
   final Value<int> revision;
   final Value<int> rowid;
   const PersonalOverlaysCompanion({
@@ -5750,6 +5861,8 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     this.verseChords = const Value.absent(),
     this.midi = const Value.absent(),
     this.midiPrograms = const Value.absent(),
+    this.clickGrouping = const Value.absent(),
+    this.clickSubdivision = const Value.absent(),
     this.revision = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -5767,6 +5880,8 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     this.verseChords = const Value.absent(),
     this.midi = const Value.absent(),
     this.midiPrograms = const Value.absent(),
+    this.clickGrouping = const Value.absent(),
+    this.clickSubdivision = const Value.absent(),
     this.revision = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : songId = Value(songId);
@@ -5784,6 +5899,8 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     Expression<String>? verseChords,
     Expression<String>? midi,
     Expression<String>? midiPrograms,
+    Expression<String>? clickGrouping,
+    Expression<String>? clickSubdivision,
     Expression<int>? revision,
     Expression<int>? rowid,
   }) {
@@ -5801,6 +5918,8 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
       if (verseChords != null) 'verse_chords': verseChords,
       if (midi != null) 'midi': midi,
       if (midiPrograms != null) 'midi_programs': midiPrograms,
+      if (clickGrouping != null) 'click_grouping': clickGrouping,
+      if (clickSubdivision != null) 'click_subdivision': clickSubdivision,
       if (revision != null) 'revision': revision,
       if (rowid != null) 'rowid': rowid,
     });
@@ -5820,6 +5939,8 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     Value<VerseChords>? verseChords,
     Value<MidiProgram?>? midi,
     Value<MidiPrograms?>? midiPrograms,
+    Value<String?>? clickGrouping,
+    Value<Subdivision?>? clickSubdivision,
     Value<int>? revision,
     Value<int>? rowid,
   }) {
@@ -5837,6 +5958,8 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
       verseChords: verseChords ?? this.verseChords,
       midi: midi ?? this.midi,
       midiPrograms: midiPrograms ?? this.midiPrograms,
+      clickGrouping: clickGrouping ?? this.clickGrouping,
+      clickSubdivision: clickSubdivision ?? this.clickSubdivision,
       revision: revision ?? this.revision,
       rowid: rowid ?? this.rowid,
     );
@@ -5890,6 +6013,16 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
         $PersonalOverlaysTable.$convertermidiPrograms.toSql(midiPrograms.value),
       );
     }
+    if (clickGrouping.present) {
+      map['click_grouping'] = Variable<String>(clickGrouping.value);
+    }
+    if (clickSubdivision.present) {
+      map['click_subdivision'] = Variable<String>(
+        $PersonalOverlaysTable.$converterclickSubdivisionn.toSql(
+          clickSubdivision.value,
+        ),
+      );
+    }
     if (revision.present) {
       map['revision'] = Variable<int>(revision.value);
     }
@@ -5915,6 +6048,8 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
           ..write('verseChords: $verseChords, ')
           ..write('midi: $midi, ')
           ..write('midiPrograms: $midiPrograms, ')
+          ..write('clickGrouping: $clickGrouping, ')
+          ..write('clickSubdivision: $clickSubdivision, ')
           ..write('revision: $revision, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -13593,6 +13728,8 @@ typedef $$PersonalOverlaysTableCreateCompanionBuilder =
       Value<VerseChords> verseChords,
       Value<MidiProgram?> midi,
       Value<MidiPrograms?> midiPrograms,
+      Value<String?> clickGrouping,
+      Value<Subdivision?> clickSubdivision,
       Value<int> revision,
       Value<int> rowid,
     });
@@ -13611,6 +13748,8 @@ typedef $$PersonalOverlaysTableUpdateCompanionBuilder =
       Value<VerseChords> verseChords,
       Value<MidiProgram?> midi,
       Value<MidiPrograms?> midiPrograms,
+      Value<String?> clickGrouping,
+      Value<Subdivision?> clickSubdivision,
       Value<int> revision,
       Value<int> rowid,
     });
@@ -13713,6 +13852,17 @@ class $$PersonalOverlaysTableFilterComposer
     builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
+  ColumnFilters<String> get clickGrouping => $composableBuilder(
+    column: $table.clickGrouping,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<Subdivision?, Subdivision, String>
+  get clickSubdivision => $composableBuilder(
+    column: $table.clickSubdivision,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
   ColumnFilters<int> get revision => $composableBuilder(
     column: $table.revision,
     builder: (column) => ColumnFilters(column),
@@ -13811,6 +13961,16 @@ class $$PersonalOverlaysTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get clickGrouping => $composableBuilder(
+    column: $table.clickGrouping,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get clickSubdivision => $composableBuilder(
+    column: $table.clickSubdivision,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get revision => $composableBuilder(
     column: $table.revision,
     builder: (column) => ColumnOrderings(column),
@@ -13893,6 +14053,17 @@ class $$PersonalOverlaysTableAnnotationComposer
         builder: (column) => column,
       );
 
+  GeneratedColumn<String> get clickGrouping => $composableBuilder(
+    column: $table.clickGrouping,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<Subdivision?, String> get clickSubdivision =>
+      $composableBuilder(
+        column: $table.clickSubdivision,
+        builder: (column) => column,
+      );
+
   GeneratedColumn<int> get revision =>
       $composableBuilder(column: $table.revision, builder: (column) => column);
 
@@ -13963,6 +14134,8 @@ class $$PersonalOverlaysTableTableManager
                 Value<VerseChords> verseChords = const Value.absent(),
                 Value<MidiProgram?> midi = const Value.absent(),
                 Value<MidiPrograms?> midiPrograms = const Value.absent(),
+                Value<String?> clickGrouping = const Value.absent(),
+                Value<Subdivision?> clickSubdivision = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PersonalOverlaysCompanion(
@@ -13979,6 +14152,8 @@ class $$PersonalOverlaysTableTableManager
                 verseChords: verseChords,
                 midi: midi,
                 midiPrograms: midiPrograms,
+                clickGrouping: clickGrouping,
+                clickSubdivision: clickSubdivision,
                 revision: revision,
                 rowid: rowid,
               ),
@@ -13997,6 +14172,8 @@ class $$PersonalOverlaysTableTableManager
                 Value<VerseChords> verseChords = const Value.absent(),
                 Value<MidiProgram?> midi = const Value.absent(),
                 Value<MidiPrograms?> midiPrograms = const Value.absent(),
+                Value<String?> clickGrouping = const Value.absent(),
+                Value<Subdivision?> clickSubdivision = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PersonalOverlaysCompanion.insert(
@@ -14013,6 +14190,8 @@ class $$PersonalOverlaysTableTableManager
                 verseChords: verseChords,
                 midi: midi,
                 midiPrograms: midiPrograms,
+                clickGrouping: clickGrouping,
+                clickSubdivision: clickSubdivision,
                 revision: revision,
                 rowid: rowid,
               ),

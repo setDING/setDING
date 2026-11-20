@@ -429,7 +429,30 @@
   "clickSoundWoodblock": "Woodblock",
   "clickSoundBeep": "Piep",
   "settingsClickSubdivision": "Unterteilung",
-  "settingsClickSubdivisionHint": "Leisere Klicks zwischen den Schlägen: Achtel, im 6/8 Triolen.",
+  "settingsClickSubdivisionHint": "Leisere Klicks zwischen den Schlägen. Jeder Song kann in den persönlichen Anpassungen eine eigene Unterteilung haben.",
+  "subdivisionOff": "Aus",
+  "subdivisionEighths": "Achtel",
+  "subdivisionSixteenths": "Sechzehntel",
+  "subdivisionTriplets": "Triolen",
+  "clickSubdivisionAsInSettings": "Wie in den Einstellungen ({value})",
+  "@clickSubdivisionAsInSettings": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "clickGrouping": "Gruppierung",
+  "clickGroupingNone": "Ohne Gruppen",
+  "clickGroupingAsInSong": "Wie im Song ({grouping})",
+  "@clickGroupingAsInSong": {
+    "placeholders": {
+      "grouping": {
+        "type": "String"
+      }
+    }
+  },
+  "clickGroupingHint": "Betonte Schläge im ungeraden Takt, nur für dich.",
   "settingsAudioLatency": "Audio-Verzögerung",
   "settingsAudioLatencyHint": "Verschiebt die Anzeige, damit sie zum Gehörten passt. Kabel-Kopfhörer brauchen wenig, Bluetooth-Kopfhörer 100–300 ms.",
   "audioLatencyValue": "{ms} ms",

@@ -20,6 +20,7 @@ import 'settings/song_display_settings.dart';
 import 'theme.dart';
 import 'widgets/app_info.dart';
 import 'widgets/breakpoint_builder.dart';
+import 'widgets/click_pickers.dart' show subdivisionLabel;
 import 'widgets/dialogs.dart';
 
 /// The categories of the settings screen, in order.
@@ -721,11 +722,12 @@ List<Widget> _beatTiles(
       value: s.clickAccent,
       onChanged: (v) => notifier.update((s) => s.copyWith(clickAccent: v)),
     ),
-    SwitchListTile(
-      title: Text(l10n.settingsClickSubdivision),
-      subtitle: Text(l10n.settingsClickSubdivisionHint),
-      value: s.clickSubdivision,
-      onChanged: (v) => notifier.update((s) => s.copyWith(clickSubdivision: v)),
+    _Choice(
+      l10n.settingsClickSubdivision,
+      s.clickSubdivision,
+      {for (final v in Subdivision.values) v: subdivisionLabel(l10n, v)},
+      (v) => notifier.update((s) => s.copyWith(clickSubdivision: v)),
+      hint: l10n.settingsClickSubdivisionHint,
     ),
   ],
   if (s.isDrums)

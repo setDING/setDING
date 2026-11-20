@@ -1,3 +1,4 @@
+import 'package:chordpro/chordpro.dart' show Subdivision;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/settings/settings.dart';
@@ -67,7 +68,7 @@ void main() {
           clickVolume: 0.5,
           clickAccent: false,
           clickSound: ClickSound.woodblock,
-          clickSubdivision: true,
+          clickSubdivision: Subdivision.sixteenths,
           audioLatencyMs: 180,
           songMap: false,
         )
@@ -81,11 +82,28 @@ void main() {
     expect(loaded.clickVolume, 0.5);
     expect(loaded.clickAccent, isFalse);
     expect(loaded.clickSound, ClickSound.woodblock);
-    expect(loaded.clickSubdivision, isTrue);
+    expect(loaded.clickSubdivision, Subdivision.sixteenths);
+    expect(json['clickSubdivision'], 'sixteenths');
     expect(loaded.audioLatencyMs, 180);
     expect(loaded.showSongMap, isFalse);
     expect(loaded.beatDisplay, isNull);
     expect(loaded.showBeat, isTrue);
+  });
+
+  test('the subdivision of older versions was a boolean (#698)', () {
+    expect(
+      AppSettings.fromJson({'clickSubdivision': true}).clickSubdivision,
+      Subdivision.eighths,
+    );
+    expect(
+      AppSettings.fromJson({'clickSubdivision': false}).clickSubdivision,
+      Subdivision.off,
+    );
+    expect(
+      AppSettings.fromJson({'clickSubdivision': 'quintuplets'})
+          .clickSubdivision,
+      Subdivision.off,
+    );
   });
 
   test('personal, except volume and audio delay (ADR-0027)', () {

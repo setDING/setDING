@@ -26,6 +26,7 @@ import '../render/song_view.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
 import '../widgets/key_picker.dart';
+import '../widgets/click_pickers.dart';
 import '../widgets/verse_chords_picker.dart';
 import '../widgets/scope_info.dart';
 import '../widgets/side_panel.dart';
@@ -305,6 +306,9 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   deviceNashville: settings.nashville,
                   hasKey: parsed.key != null,
                   song: parsed,
+                  beatEnabled: settings.beatEnabled,
+                  playClick: settings.playClick,
+                  subdivisionSetting: settings.clickSubdivision,
                   onChanged: _updateOverlay,
                 ),
                 // The keyboard programs per profile (ADR-0039, ADR-0042).
@@ -830,6 +834,9 @@ class _AdjustmentsBar extends StatelessWidget {
     required this.deviceNashville,
     required this.hasKey,
     required this.song,
+    this.beatEnabled = false,
+    this.playClick = false,
+    this.subdivisionSetting = Subdivision.off,
     required this.onChanged,
   });
 
@@ -847,6 +854,12 @@ class _AdjustmentsBar extends StatelessWidget {
 
   /// The parsed song, for the choices of how verses show their chords.
   final cp.Song song;
+
+  /// Whether the person uses the beat or the click (ADR-0026): the grouping
+  /// and subdivisions of the click are offered then (#698).
+  final bool beatEnabled;
+  final bool playClick;
+  final Subdivision subdivisionSetting;
   final Future<void> Function(SongOverlay Function(SongOverlay)) onChanged;
 
   @override
@@ -942,6 +955,25 @@ class _AdjustmentsBar extends StatelessWidget {
           mode: overlay.verseChords,
           onChanged: (mode) => onChanged((o) => o.copyWith(verseChords: mode)),
         ),
+        // Grouping and subdivisions of the click (#698): for people who use
+        // the beat or the click, and always to reset a choice.
+        if ((beatEnabled || overlay.clickGrouping != null) &&
+            song.meter.groupingChoices().isNotEmpty)
+          ClickGroupingPicker(
+            songMeter: song.meter,
+            grouping: overlay.clickGrouping,
+            onChanged: (grouping) =>
+                onChanged((o) => o.copyWith(clickGrouping: Value(grouping))),
+          ),
+        if (playClick || overlay.clickSubdivision != null)
+          ClickSubdivisionPicker(
+            meter: song.meter.withGrouping(overlay.clickGrouping),
+            subdivision: overlay.clickSubdivision,
+            setting: subdivisionSetting,
+            onChanged: (subdivision) => onChanged(
+              (o) => o.copyWith(clickSubdivision: Value(subdivision)),
+            ),
+          ),
         ActionChip(
           avatar: const Icon(Icons.sticky_note_2_outlined, size: 18),
           label: Text(l10n.notes),
@@ -972,6 +1004,8 @@ class _AdjustmentsBar extends StatelessWidget {
                 fontScale: 1.0,
                 nashville: const Value(null),
                 verseChords: VerseChords.all,
+                clickGrouping: const Value(null),
+                clickSubdivision: const Value(null),
               ),
             ),
           ),
@@ -1228,5 +1262,7 @@ extension on SongOverlay {
       capoFret != null ||
       fontScale != 1.0 ||
       nashville != null ||
-      verseChords != VerseChords.all;
+      verseChords != VerseChords.all ||
+      clickGrouping != null ||
+      clickSubdivision != null;
 }

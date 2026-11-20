@@ -20,6 +20,7 @@ map=(
   sequence 10_set_sequence
   editor 9_editor
   drums 11_live_drums
+  live_click 25_live_click
   organization 12_organization
   invite 13_invite
   band 14_band

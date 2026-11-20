@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import drums from '../../../../../docs/screenshots/drums_de.png';
+import click from '../../../../../docs/screenshots/live_click_de.png';
 
 Hat ein Song ein Tempo, zeigt setDING im Live-Modus den Takt an, zählt ein und
 spielt auf Wunsch einen Klick – zum Beispiel in den In-Ear-Mix. Das Tempo kommt aus
@@ -35,7 +36,8 @@ immer; das Blättern innerhalb eines Songs nicht.
   Schlag, sichtbar aus dem Augenwinkel.
 - **Klick** – spielt den Klick über den Audio-Ausgang des Geräts. Dazu **Klang**
   (**Klick**, **Woodblock**, **Piep**), **Betonung auf der 1** und **Unterteilung**
-  (leisere Achtel zwischen den Schlägen, im 6/8 Triolen).
+  (leisere Klicks zwischen den Schlägen: **Aus**, **Achtel**, **Sechzehntel** oder
+  **Triolen**). Jeder Song kann eine eigene Unterteilung haben, siehe unten.
 - **Einzählen** – **Aus**, **1 Takt** oder **2 Takte**.
 - **Dauer** – **Ganzer Song** oder **Nur Einzählen**.
 - **Im Hintergrund** – **Stoppen** (Standard) oder **Weiterspielen**: was Takt
@@ -57,6 +59,25 @@ Moment: **Langsamer** und **Schneller** um je 1 BPM, oder **Tempo tippen** im
 gewünschten Tempo. **Zurück zum Tempo des Songs** nimmt die Änderung zurück. Die
 Änderung gilt nur, bis du den Live-Modus verlässt; der Song und das Band-Arrangement
 bleiben unverändert.
+
+## Gruppierung und Unterteilung pro Song
+
+Jeder Song kann seinen eigenen Klick haben, nur für dich: in der Steuerleiste des
+Live-Modus neben dem Tempo oder auf der Seite des Songs unter **Persönliche
+Anpassungen**. Dafür brauchst du keine Rechte an der Song-Bibliothek, und der Song
+bleibt für alle anderen unverändert.
+
+- **Gruppierung** (ungerade Taktarten wie 5/8 oder 7/8) – welche Schläge betont
+  sind, z. B. **3+2+2** statt 2+2+3 wie im Song, oder **Ohne Gruppen** für eine
+  Betonung nur auf der 1. **Wie im Song** folgt wieder `{x_time_grouping}`.
+- **Unterteilung** – **Aus**, **Achtel**, **Sechzehntel** oder **Triolen** für diesen
+  Song, z. B. Triolen für einen Shuffle im 4/4. **Wie in den Einstellungen** folgt
+  wieder der Einstellung. Was in dieser Taktart gleich klingen würde, ist ausgegraut.
+
+Eine Änderung bei laufendem Klick hörst du ab dem nächsten Takt. **Persönliche
+Anpassungen zurücksetzen** auf der Seite des Songs setzt beides ebenfalls zurück.
+
+<Image src={click} alt="Die Steuerleiste des Live-Modus für Schlagzeug: neben dem Tempo die Gruppierung 2+2+3 mit geöffnetem Menü (wie im Song, 2+2+3, 2+3+2, 3+2+2, ohne Gruppen) und die Unterteilung in Sechzehnteln" />
 
 ## Song-Landkarte für Schlagzeug
 

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:chordpro/chordpro.dart' show SequencePart;
+import 'package:chordpro/chordpro.dart' show SequencePart, Subdivision;
 import 'package:setding/data/database.dart';
 import 'package:setding/data/demo_song.dart';
 import 'package:setding/settings/settings.dart';
@@ -1065,6 +1065,68 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Em'), findsOneWidget);
       expect(badge(tester, 'open-personal-adjustments'), isFalse);
+      await app.dispose(tester);
+    });
+
+    testWidgets('grouping and subdivisions of the click for drummers (#698)', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': 'en', 'instrument': 'drums'},
+      );
+      final id = await tester.runAsync(
+        () => app.songs.createSong(
+          source: '{title: X}\n{tempo: 120}\n{time: 7/8}\n[G]One',
+        ),
+      );
+      await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Personal adjustments'));
+      await tester.pumpAndSettle();
+      expect(find.text('Grouping: No groups'), findsOneWidget);
+      expect(find.text('Subdivisions: Off'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('click-grouping-button')));
+      await tester.pumpAndSettle();
+      expect(find.text('As in the song (No groups)'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('click-grouping-2+3+2')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('click-subdivision-button')));
+      await tester.pumpAndSettle();
+      expect(find.text('As in the settings (Off)'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('click-subdivision-triplets')));
+      await tester.pumpAndSettle();
+      expect(find.text('Grouping: 2+3+2'), findsOneWidget);
+      expect(find.text('Subdivisions: Triplets'), findsOneWidget);
+      expect(badge(tester, 'open-personal-adjustments'), isTrue);
+      final overlay = await tester.runAsync(() => app.songs.getOverlay(id));
+      expect(overlay!.clickGrouping, '2+3+2');
+      expect(overlay.clickSubdivision, Subdivision.triplets);
+
+      await tester.tap(find.text('Reset personal adjustments'));
+      await tester.pumpAndSettle();
+      expect(find.text('Grouping: No groups'), findsOneWidget);
+      expect(badge(tester, 'open-personal-adjustments'), isFalse);
+      await app.dispose(tester);
+    });
+
+    testWidgets('no click choices for a guitarist without the beat', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final id = await tester.runAsync(
+        () => app.songs.createSong(
+          source: '{title: X}\n{tempo: 120}\n{time: 7/8}\n[G]One',
+        ),
+      );
+      await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Personal adjustments'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('click-grouping-button')), findsNothing);
+      expect(find.byKey(const Key('click-subdivision-button')), findsNothing);
       await app.dispose(tester);
     });
 

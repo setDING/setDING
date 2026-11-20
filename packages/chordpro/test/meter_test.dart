@@ -73,6 +73,63 @@ void main() {
       expect(Meter.tryParse('waltz'), isNull);
     });
 
+    test('subdivisions per beat (#698)', () {
+      final common = Meter.common;
+      expect(common.stepsPerBeat(Subdivision.off), 1);
+      expect(common.stepsPerBeat(Subdivision.eighths), 2);
+      expect(common.stepsPerBeat(Subdivision.sixteenths), 4);
+      expect(common.stepsPerBeat(Subdivision.triplets), 3);
+      final cut = Meter.tryParse('2/2')!;
+      expect(cut.stepsPerBeat(Subdivision.eighths), 4);
+      expect(cut.stepsPerBeat(Subdivision.sixteenths), 8);
+      expect(cut.stepsPerBeat(Subdivision.triplets), 6);
+      final sixEight = Meter.tryParse('6/8')!;
+      expect(sixEight.stepsPerBeat(Subdivision.eighths), 3);
+      expect(sixEight.stepsPerBeat(Subdivision.sixteenths), 6);
+      expect(sixEight.stepsPerBeat(Subdivision.triplets), 3);
+      final sevenEight = Meter.tryParse('7/8')!;
+      expect(sevenEight.stepsPerBeat(Subdivision.eighths), 1);
+      expect(sevenEight.stepsPerBeat(Subdivision.sixteenths), 2);
+      expect(sevenEight.stepsPerBeat(Subdivision.triplets), 3);
+    });
+
+    test('only subdivisions that sound different are choices', () {
+      expect(Meter.common.subdivisionChoices, Subdivision.values.toSet());
+      expect(Meter.tryParse('6/8')!.subdivisionChoices, {
+        Subdivision.off,
+        Subdivision.eighths,
+        Subdivision.sixteenths,
+      });
+      expect(Meter.tryParse('7/8')!.subdivisionChoices, {
+        Subdivision.off,
+        Subdivision.sixteenths,
+        Subdivision.triplets,
+      });
+    });
+
+    test('a personal grouping replaces the song\'s (#698)', () {
+      final song = Meter.tryParse('7/8', grouping: '2+2+3')!;
+      expect(song.withGrouping('3+2+2').groups, [3, 2, 2]);
+      expect(song.withGrouping('7').groups, [7]);
+      expect(song.withGrouping('7').groupingLabel, isNull);
+      expect(song.withGrouping(null), song);
+      expect(song.withGrouping('2+2'), song);
+      expect(Meter.common.withGrouping('2+2'), Meter.common);
+    });
+
+    test('groupings of odd meters into twos and threes', () {
+      expect(Meter.tryParse('5/8')!.groupingChoices(), ['2+3', '3+2']);
+      expect(Meter.tryParse('7/8')!.groupingChoices(), [
+        '2+2+3',
+        '2+3+2',
+        '3+2+2',
+      ]);
+      expect(Meter.tryParse('11/8')!.groupingChoices(), hasLength(9));
+      expect(Meter.tryParse('31/8')!.groupingChoices(), hasLength(24));
+      expect(Meter.common.groupingChoices(), isEmpty);
+      expect(Meter.tryParse('6/8')!.groupingChoices(), isEmpty);
+    });
+
     test('durations', () {
       expect(Meter.common.beatDuration(120), const Duration(milliseconds: 500));
       expect(Meter.common.barDuration(120), const Duration(seconds: 2));

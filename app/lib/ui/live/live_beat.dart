@@ -1,8 +1,11 @@
 import 'package:chordpro/chordpro.dart' hide Key;
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/scheduler.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../audio/metronome.dart';
+import '../../data/database.dart' show SongOverlay;
+import '../widgets/click_pickers.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../settings/settings.dart';
 import '../render/render_cache.dart';
@@ -19,9 +22,11 @@ class LiveBeat extends ChangeNotifier {
     required this.metronome,
     required List<LiveItem> items,
     required AppSettings Function() settings,
+    Future<SongOverlay?> Function(String songId)? loadOverlay,
     Duration Function()? clock,
   }) : _items = items, // ignore: prefer_initializing_formals
        _settings = settings, // ignore: prefer_initializing_formals
+       _loadOverlay = loadOverlay ?? _noOverlay,
        _clock = clock ?? _stopwatch() {
     metronome.running.addListener(_onRunning);
   }
@@ -34,7 +39,28 @@ class LiveBeat extends ChangeNotifier {
   final Metronome metronome;
   final List<LiveItem> _items;
   final AppSettings Function() _settings;
+
+  /// Loads the personal adjustments of a song, for its grouping and
+  /// subdivisions (#698); kept in [_overlays] and updated by
+  /// [overlayChanged].
+  final Future<SongOverlay?> Function(String songId) _loadOverlay;
+  final _overlays = <String, SongOverlay?>{};
   final Duration Function() _clock;
+
+  static Future<SongOverlay?> _noOverlay(String _) async => null;
+
+  /// Loads the personal adjustments of [index]: once before a start, again
+  /// each time the item is shown ([reload]; a sync may have changed them).
+  Future<void> _ensureOverlay(int index, {bool reload = false}) async {
+    final id = _items[index].song?.id;
+    if (id == null || (!reload && _overlays.containsKey(id))) return;
+    final before = _overlays[id];
+    final overlay = await _loadOverlay(id);
+    // A change reported meanwhile is newer.
+    if (!identical(_overlays[id], before)) return;
+    _overlays[id] = overlay;
+    notifyListeners();
+  }
 
   /// Tempo changed on stage per item; forgotten when live mode is left.
   final _stageTempo = <int, int>{};
@@ -81,7 +107,40 @@ class LiveBeat extends ChangeNotifier {
 
   bool tempoChanged(int index) => _stageTempo.containsKey(index);
 
-  Meter meterOf(int index) => _song(index)?.meter ?? Meter.common;
+  SongOverlay? _overlayOf(int index) => _overlays[_items[index].song?.id];
+
+  /// The meter as written in the song.
+  Meter songMeterOf(int index) => _song(index)?.meter ?? Meter.common;
+
+  /// The personal grouping of the song; null = as in the song (#698).
+  String? groupingChoiceOf(int index) => _overlayOf(index)?.clickGrouping;
+
+  /// The personal subdivisions of the song; null = the setting (#698).
+  Subdivision? subdivisionChoiceOf(int index) =>
+      _overlayOf(index)?.clickSubdivision;
+
+  /// The song's meter with the personal grouping (#698).
+  Meter meterOf(int index) =>
+      _song(index)?.meter.withGrouping(_overlayOf(index)?.clickGrouping) ??
+      Meter.common;
+
+  /// The subdivisions of the click: the song's personal choice, else the
+  /// setting (#698).
+  Subdivision subdivisionOf(int index) =>
+      _overlayOf(index)?.clickSubdivision ?? settings.clickSubdivision;
+
+  /// The personal adjustments of a song changed: a running beat of it takes
+  /// the new grouping and subdivisions at the next bar line (#698).
+  Future<void> overlayChanged(SongOverlay overlay) async {
+    _overlays[overlay.songId] = overlay;
+    notifyListeners();
+    final index = _active;
+    if (index == null || _items[index].song?.id != overlay.songId) return;
+    await metronome.changeBar(
+      meter: meterOf(index),
+      subdivision: subdivisionOf(index),
+    );
+  }
 
   /// Whether the item can have a beat: a song with a tempo, and a beat
   /// display or click switched on.
@@ -96,6 +155,7 @@ class LiveBeat extends ChangeNotifier {
   /// Starts the beat of [index] with the count-in of the settings.
   Future<void> start(int index) async {
     if (!canBeat(index)) return;
+    await _ensureOverlay(index);
     final s = settings;
     _active = index;
     notifyListeners();
@@ -104,7 +164,7 @@ class LiveBeat extends ChangeNotifier {
       bpm: tempoOf(index)!,
       countInBars: s.countInBars,
       countInOnly: s.clickDuration == ClickDuration.countIn,
-      config: ClickConfig.of(s),
+      config: ClickConfig.of(s).withSubdivision(subdivisionOf(index)),
     );
   }
 
@@ -122,6 +182,9 @@ class LiveBeat extends ChangeNotifier {
   /// Another item of the set is shown: its beat stops; with the automatic
   /// start the new one counts in.
   Future<void> onItemShown(int index) async {
+    if (index >= 0 && index < _items.length) {
+      await _ensureOverlay(index, reload: true);
+    }
     if (_active != null && _active != index) await stop();
     if (settings.beatStart == ClickStart.automatic &&
         _active != index &&
@@ -491,11 +554,14 @@ class _EdgeFlashState extends _BeatState<EdgeFlash> {
 }
 
 /// Tempo on stage in the control bar: slower, faster, tap tempo, back to
-/// the song's tempo, start and stop.
+/// the song's tempo, start and stop; with [onAdjust] also the song's
+/// personal grouping and subdivisions of the click (#698), which are
+/// stored, unlike the tempo on stage.
 class StageTempoControls extends StatelessWidget {
-  const StageTempoControls({super.key, required this.index});
+  const StageTempoControls({super.key, required this.index, this.onAdjust});
 
   final int index;
+  final Future<void> Function(SongOverlay Function(SongOverlay))? onAdjust;
 
   @override
   Widget build(BuildContext context) {
@@ -504,6 +570,8 @@ class StageTempoControls extends StatelessWidget {
     if (beat == null || !beat.canBeat(index)) return const SizedBox.shrink();
     final tempo = beat.tempoOf(index)!;
     final running = beat.isRunning(index);
+    final adjust = onAdjust;
+    final songMeter = beat.songMeterOf(index);
     return Row(
       key: const Key('stage-tempo-controls'),
       mainAxisSize: MainAxisSize.min,
@@ -549,6 +617,25 @@ class StageTempoControls extends StatelessWidget {
           ),
           onPressed: () => beat.toggle(index),
         ),
+        if (adjust != null && songMeter.groupingChoices().isNotEmpty)
+          ClickGroupingPicker(
+            songMeter: songMeter,
+            grouping: beat.groupingChoiceOf(index),
+            compact: true,
+            onChanged: (grouping) =>
+                adjust((o) => o.copyWith(clickGrouping: Value(grouping))),
+          ),
+        if (adjust != null &&
+            (beat.settings.playClick ||
+                beat.subdivisionChoiceOf(index) != null))
+          ClickSubdivisionPicker(
+            meter: beat.meterOf(index),
+            subdivision: beat.subdivisionChoiceOf(index),
+            setting: beat.settings.clickSubdivision,
+            compact: true,
+            onChanged: (subdivision) =>
+                adjust((o) => o.copyWith(clickSubdivision: Value(subdivision))),
+          ),
       ],
     );
   }

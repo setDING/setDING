@@ -20,17 +20,17 @@ int barSamples(Meter meter, int bpm, {int sampleRate = clickSampleRate}) =>
 
 /// The clicks of one bar (ADR-0026): every beat, accented on the 1 (and on
 /// the groups of an odd meter) when [accent] is on, and quieter
-/// subdivisions in between when [subdivision] is on.
+/// [subdivision] clicks in between.
 List<ClickHit> clickHits(
   Meter meter,
   int bpm, {
   bool accent = true,
-  bool subdivision = false,
+  Subdivision subdivision = Subdivision.off,
   int sampleRate = clickSampleRate,
 }) {
   final total = barSamples(meter, bpm, sampleRate: sampleRate);
   final beats = meter.beatsPerBar;
-  final steps = subdivision ? meter.subdivisions : 1;
+  final steps = meter.stepsPerBeat(subdivision);
   final accents = meter.accents;
   return [
     for (var beat = 0; beat < beats; beat++)
@@ -57,7 +57,7 @@ Uint8List renderClickBar(
   int bpm, {
   ClickSound sound = ClickSound.click,
   bool accent = true,
-  bool subdivision = false,
+  Subdivision subdivision = Subdivision.off,
   int sampleRate = clickSampleRate,
 }) {
   final total = barSamples(meter, bpm, sampleRate: sampleRate);

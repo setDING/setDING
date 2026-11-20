@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:chordpro/chordpro.dart' show Subdivision;
 import 'package:drift/drift.dart';
 
 import '../midi/midi_message.dart';
@@ -363,6 +364,15 @@ class PersonalOverlays extends Table {
   TextColumn get midiPrograms =>
       text().nullable().map(const MidiProgramsConverter())();
 
+  /// Grouping of an odd meter for the click and the beat display (#698,
+  /// schema 27): `3+2+2`, or the numerator alone for no groups; null = as
+  /// in the song (`{x_time_grouping}`).
+  TextColumn get clickGrouping => text().nullable()();
+
+  /// Subdivisions of the click for this song (#698, schema 27); null = the
+  /// personal setting.
+  TextColumn get clickSubdivision => textEnum<Subdivision>().nullable()();
+
   /// Server revision; 0 = not on the server (schema 9, ADR-0020).
   IntColumn get revision => integer().withDefault(const Constant(0))();
 
@@ -597,7 +607,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 26;
+  int get schemaVersion => 27;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -703,6 +713,8 @@ class AppDatabase extends _$AppDatabase {
               personalOverlays.verseChords,
               personalOverlays.midi,
               personalOverlays.midiPrograms,
+              personalOverlays.clickGrouping,
+              personalOverlays.clickSubdivision,
             ],
           ),
         );
@@ -831,6 +843,12 @@ class AppDatabase extends _$AppDatabase {
         // Plays across the bands of an organization (ADR-0046); filled by
         // the next sync.
         await m.createTable(orgPlays);
+      }
+      if (from < 27 && from >= 8) {
+        // Grouping and subdivisions of the click per song (#698); before
+        // schema 8 the rebuilt overlay table has the columns already.
+        await m.addColumn(personalOverlays, personalOverlays.clickGrouping);
+        await m.addColumn(personalOverlays, personalOverlays.clickSubdivision);
       }
     },
     beforeOpen: (details) async {
