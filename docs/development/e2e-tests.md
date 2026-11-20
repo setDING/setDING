@@ -99,9 +99,9 @@ queue reproducible: a client calls `setOnline(tester, online: false)`.
 | `basics` | Creates a song, edits it while Ben has it open, plans a gig today with the song and the PDF-only song, then gets Ben's new order of the set | Sees the new song arrive without syncing by hand (realtime), sees the edit on the open song screen, starts the gig from the overview and plays it live including the PDF, then reorders the set as set planner |
 
 | `conflicts` | Changes three songs and deletes two while Carla is offline with her own changes of them, and renames a set; then gets the result of each of Carla's resolutions | Offline: changes the same five songs, creates a song and renames the set, all held in the outbox. Online: each song is a conflict (ADR-0004), resolved on its screen: keep mine, use the server version, keep both; for a deleted song keep mine (restores it) and use the server version (accepts the deletion). Her queued song arrives, and her later push of the set wins (last writer wins) |
+| `live` | Plans a gig today with three songs. While Ben plays it, she moves the last song to the front, edits the first and deletes the one Ben is on | Plays the gig live from the overview. Nothing of Anna's changes reaches his stage or his device while he plays (ADR-0007): the deleted song still plays, the old title stays. After he leaves live mode, the sync he missed runs: the set has Anna's order without the deleted song (no hint yet, #691) |
 
-Planned (#692): live mode while the other client changes or deletes songs
-and sets, roles, undo and the trash.
+Planned (#692): roles, undo and the trash.
 
 ## Adding a story
 
@@ -119,7 +119,8 @@ and sets, roles, undo and the trash.
 - Check what the person sees through the UI. Changes may go through the
   app's repositories, the same code the UI calls.
 - Give every client step a deadline (`pumpUntil`, `eventually`, `barrier`),
-  never a fixed `sleep`.
+  never a fixed `sleep`. Only a check that something does *not* happen
+  (live mode does not sync) watches for a fixed while (`pumpFor`).
 
 ## Not covered
 

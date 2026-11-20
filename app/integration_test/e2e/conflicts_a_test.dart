@@ -10,7 +10,6 @@
 import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:setding/data/database.dart';
 import 'package:setding/main.dart' as app;
 import 'package:setding/providers.dart';
 import 'package:setding/ui/home_screen.dart';
@@ -52,7 +51,7 @@ void main() {
       await sets.addSongs(id, [ids[keepMine]!]);
       return id;
     }))!;
-    await _waitUntilPushed(tester, db, [...ids.values, setId]);
+    await waitUntilPushed(tester, db, [...ids.values, setId]);
     await signal(tester, 'songs-created');
 
     // 2. Carla is offline with her changes; Anna changes the songs on the
@@ -67,7 +66,7 @@ void main() {
       }
       await sets.updateSet(setId, name: annasSet);
     });
-    await _waitUntilPushed(tester, db, [...ids.values, setId]);
+    await waitUntilPushed(tester, db, [...ids.values, setId]);
     await signal(tester, 'a-changed');
 
     // 3. Carla resolved the conflicts; their results reach Anna.
@@ -120,15 +119,3 @@ void main() {
     await signal(tester, 'a-verified');
   });
 }
-
-/// Waits until the changes of [ids] reached the server.
-Future<void> _waitUntilPushed(
-  WidgetTester tester,
-  AppDatabase db,
-  List<String> ids,
-) => eventually(tester, () async {
-  for (final id in ids) {
-    if (!await pushed(db, id)) return false;
-  }
-  return true;
-}, reason: "Anna's changes were not pushed");
