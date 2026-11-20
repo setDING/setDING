@@ -88,6 +88,58 @@ void main() {
     });
   });
 
+  group('link base URL (issue #617)', () {
+    Future<void> setAppUrl(String url) async {
+      final r = await pb.superuser.send(
+        'PATCH',
+        '/api/settings',
+        body: {
+          'meta': {'appURL': url},
+        },
+      );
+      r.expectStatus(200);
+    }
+
+    tearDown(() => setAppUrl('http://localhost:8090'));
+
+    test('links use the application URL, never the Host header', () async {
+      await setAppUrl('https://api.example.test/');
+      final f = await BandFixture.create(pb);
+      const forged = {'host': 'evil.example.com'};
+      final r = await f.admin.send(
+        'POST',
+        '/api/setding/invites',
+        body: {'organization': f.orgId},
+        headers: forged,
+      );
+      r.expectStatus(200);
+      final t = r.json['token'] as String;
+      expect(r.json['url'], 'https://api.example.test/invite/$t');
+
+      final shown = await f.admin.send(
+        'GET',
+        '/api/setding/invites/${r.json['id']}/link',
+        headers: forged,
+      );
+      shown.expectStatus(200);
+      expect(shown.json['url'], 'https://api.example.test/invite/$t');
+    });
+
+    test('a localhost application URL is used as it is', () async {
+      await setAppUrl('http://localhost:8090');
+      final f = await BandFixture.create(pb);
+      final r = await f.admin.send(
+        'POST',
+        '/api/setding/invites',
+        body: {'organization': f.orgId},
+        headers: {'host': 'evil.example.com'},
+      );
+      r.expectStatus(200);
+      expect(r.json['url'], startsWith('http://localhost:8090/invite/'));
+      expect(r.json['url'], isNot(contains('evil')));
+    });
+  });
+
   group('joining', () {
     test('shows the organization and joins as member', () async {
       final f = await BandFixture.create(pb);
