@@ -8,6 +8,7 @@ above the platform layer is shared with the native apps.
 ```bash
 make web          # build into app/build/web (also part of `make check`)
 make web-serve    # build, then serve it with the local backend (make backend)
+make web-test     # integration tests in headless Chrome (web-tests.md)
 ```
 
 `make web-serve` serves the web client from the local PocketBase on
