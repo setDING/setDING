@@ -1337,8 +1337,8 @@
   "midiGuideMotifSend": "Motif XF – send",
   "midiGuideMotifReceive": "Motif XF – receive",
   "midiGuideNordReceiveHint": "On the Nord, set “Program Change” in the MIDI menu to “Send” or “Send & Receive”, and set the channel here to the Nord's global channel. Then choose any program, live memory or song part on the Nord, e.g. with the dial or the mode buttons. setDING shows what arrived; tap whether it matches the display. The results are kept in the log.",
-  "midiGuideMotifSendHint": "On the Motif XF, under Utility → MIDI: set MIDI IN/OUT to USB, switch on receiving bank select and program change, set the Basic Receive Channel to the channel here and the Device Number to “all” or 1. Tap “Send”, look at the Motif's display and tap what happened. The answers are kept in the log.",
-  "midiGuideMotifReceiveHint": "On the Motif XF, under Utility → MIDI: set MIDI IN/OUT to USB, switch on sending bank select and program change and set the Transmit Channel to the channel here. Then choose any voice or performance on the Motif, also in different banks and twice in the same bank. setDING shows what arrived; tap whether it matches the display. The results are kept in the log.",
+  "midiGuideMotifSendHint": "On the Motif XF, under Utility → Control (F5) → MIDI (SF2): set MIDI IN/OUT to USB, switch on receiving bank select and program change, set the Basic Receive Channel to the channel here and the Device Number to “all” or 1, then save with Store. Tap “Send”, look at the Motif's display and tap what happened. The answers are kept in the log.",
+  "midiGuideMotifReceiveHint": "On the Motif XF, under Utility → Control (F5) → MIDI (SF2): set MIDI IN/OUT to USB, switch on sending bank select and program change and set the Transmit Channel to the channel here, then save with Store. Then choose any voice or performance on the Motif, also in different banks and twice in the same bank. setDING shows what arrived; tap whether it matches the display. The results are kept in the log.",
   "midiGuideMotifExpected": "The Motif shows {name}.",
   "@midiGuideMotifExpected": {
     "placeholders": {
@@ -1598,7 +1598,7 @@
     }
   },
   "midiProfileMotifXf": "Yamaha Motif XF",
-  "settingsMidiMotifHint": "On the Motif XF, under Utility → MIDI: set MIDI IN/OUT to USB, switch on receiving Bank Select and Program Change, set the Basic Receive Channel to the channel here and the Device Number to “all” or 1. setDING switches the Motif to voice or performance mode itself before each program.",
+  "settingsMidiMotifHint": "On the Motif XF, under Utility → Control (F5) → MIDI (SF2): set MIDI IN/OUT to USB, switch on receiving Bank Select and Program Change, set the Basic Receive Channel to the channel here and the Device Number to “all” or 1, then save with Store. setDING switches the Motif to voice or performance mode itself before each program.",
   "midiProgramKindPerformance": "Performance",
   "midiProgramKindVoice": "Voice",
   "midiProgramGroup": "Group",

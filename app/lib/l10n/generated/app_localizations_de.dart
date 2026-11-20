@@ -3032,11 +3032,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get midiGuideMotifSendHint =>
-      'Stelle am Motif XF unter Utility → MIDI: MIDI IN/OUT auf USB, den Empfang von Bank Select und Program Change ein, den Basic Receive Channel auf den Kanal hier und die Device Number auf «all» oder 1. Tippe auf «Senden», schau aufs Display des Motif und tippe an, was passiert ist. Die Antworten stehen im Protokoll.';
+      'Stelle am Motif XF unter Utility → Control (F5) → MIDI (SF2): MIDI IN/OUT auf USB, den Empfang von Bank Select und Program Change ein, den Basic Receive Channel auf den Kanal hier und die Device Number auf «all» oder 1, dann mit Store speichern. Tippe auf «Senden», schau aufs Display des Motif und tippe an, was passiert ist. Die Antworten stehen im Protokoll.';
 
   @override
   String get midiGuideMotifReceiveHint =>
-      'Stelle am Motif XF unter Utility → MIDI: MIDI IN/OUT auf USB, das Senden von Bank Select und Program Change ein und den Transmit Channel auf den Kanal hier. Wähle dann am Motif irgendeine Voice oder Performance, auch in verschiedenen Bänken und zweimal in derselben Bank. setDING zeigt, was angekommen ist; tippe an, ob es mit dem Display übereinstimmt. Die Ergebnisse stehen im Protokoll.';
+      'Stelle am Motif XF unter Utility → Control (F5) → MIDI (SF2): MIDI IN/OUT auf USB, das Senden von Bank Select und Program Change ein und den Transmit Channel auf den Kanal hier, dann mit Store speichern. Wähle dann am Motif irgendeine Voice oder Performance, auch in verschiedenen Bänken und zweimal in derselben Bank. setDING zeigt, was angekommen ist; tippe an, ob es mit dem Display übereinstimmt. Die Ergebnisse stehen im Protokoll.';
 
   @override
   String midiGuideMotifExpected(String name) {
@@ -3392,7 +3392,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsMidiMotifHint =>
-      'Stelle am Motif XF unter Utility → MIDI: MIDI IN/OUT auf USB, den Empfang von Bank Select und Program Change ein, den Basic Receive Channel auf den Kanal hier und die Device Number auf «all» oder 1. setDING schaltet den Motif vor jedem Programm selbst in den Voice- oder Performance-Modus.';
+      'Stelle am Motif XF unter Utility → Control (F5) → MIDI (SF2): MIDI IN/OUT auf USB, den Empfang von Bank Select und Program Change ein, den Basic Receive Channel auf den Kanal hier und die Device Number auf «all» oder 1, dann mit Store speichern. setDING schaltet den Motif vor jedem Programm selbst in den Voice- oder Performance-Modus.';
 
   @override
   String get midiProgramKindPerformance => 'Performance';

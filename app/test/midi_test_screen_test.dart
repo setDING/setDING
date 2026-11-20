@@ -440,7 +440,10 @@ void main() {
         find.textContaining('Step 1 of 7: Performance USR1 A01'),
         findsOneWidget,
       );
-      expect(find.textContaining('Utility → MIDI'), findsOneWidget);
+      expect(
+        find.textContaining('Utility → Control (F5) → MIDI (SF2)'),
+        findsOneWidget,
+      );
       for (var i = 0; i < 7; i++) {
         await tapKey(tester, find.byKey(const Key('midi-guide-send')));
         await tapKey(tester, answer('asExpected'));
