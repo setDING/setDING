@@ -10,6 +10,7 @@ import '../../data/set_repository.dart';
 import '../../data/text.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
+import '../trash/trash_screen.dart';
 import '../../settings/settings.dart';
 import '../../sync/sync_controller.dart';
 import '../account/sync_refresh.dart';
@@ -222,12 +223,28 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                 ],
                 PopupMenuButton<String>(
                   key: const Key('songs-menu'),
-                  onSelected: (_) => setState(() => _selected = {}),
+                  onSelected: (value) => switch (value) {
+                    'trash' => Navigator.push(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (_) =>
+                            TrashScreen.songs(libraryId: library.id),
+                      ),
+                    ),
+                    _ => setState(() => _selected = {}),
+                  },
                   itemBuilder: (_) => [
                     PopupMenuItem(
                       value: 'select',
                       child: Text(l10n.selectMode),
                     ),
+                    // ADR-0043: whoever may delete songs may restore them.
+                    if (library.canDeleteSongs)
+                      PopupMenuItem(
+                        key: const Key('songs-trash'),
+                        value: 'trash',
+                        child: Text(l10n.trash),
+                      ),
                   ],
                 ),
               ],

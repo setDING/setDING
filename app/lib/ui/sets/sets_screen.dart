@@ -10,6 +10,7 @@ import '../account/sync_refresh.dart';
 import '../bands/band_switcher.dart';
 import '../songs/chordpro_problems_badge.dart';
 import '../songs/songs_screen.dart' show songListTwoColumnWidth;
+import '../trash/trash_screen.dart';
 import '../widgets/breakpoint_builder.dart';
 import '../widgets/dialogs.dart';
 import 'set_screen.dart';
@@ -106,7 +107,27 @@ class _SetsPane extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.navSets),
-        actions: const [BandSwitcher()],
+        actions: [
+          const BandSwitcher(),
+          // ADR-0043: whoever may delete sets may restore them.
+          if (band.canManageSets)
+            PopupMenuButton<String>(
+              key: const Key('sets-menu'),
+              onSelected: (_) => Navigator.push(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (_) => TrashScreen.sets(bandId: band.id),
+                ),
+              ),
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  key: const Key('sets-trash'),
+                  value: 'trash',
+                  child: Text(l10n.trash),
+                ),
+              ],
+            ),
+        ],
       ),
       floatingActionButton: !band.canManageSets
           ? null

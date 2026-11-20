@@ -47,6 +47,7 @@ AttachmentEntry attachment(String name, String fileName) => AttachmentEntry(
   revision: 0,
   updatedAt: DateTime(2026),
   deleted: false,
+  purged: false,
 );
 
 const _svg =

@@ -574,14 +574,20 @@ class SongRepository {
     final sets = await (db.select(
       db.setlists,
     )..where((s) => s.id.isIn(setIds))).get();
+    // One time for the song and its attachments: restoring the song from
+    // the trash brings back the attachments deleted with it (ADR-0043).
+    final now = DateTime.now();
     await (db.update(db.songs)..where((s) => s.id.equals(id))).write(
       SongsCompanion(
         deleted: const Value(true),
-        updatedAt: Value(DateTime.now()),
+        deletedAt: Value(now),
+        updatedAt: Value(now),
       ),
     );
-    await (db.update(db.attachments)..where((a) => a.songId.equals(id))).write(
-      const AttachmentsCompanion(deleted: Value(true)),
+    await (db.update(
+      db.attachments,
+    )..where((a) => a.songId.equals(id) & a.deleted.equals(false))).write(
+      AttachmentsCompanion(deleted: const Value(true), deletedAt: Value(now)),
     );
     await (db.delete(db.setItems)..where((i) => i.songId.equals(id))).go();
     if (song != null) {
@@ -603,13 +609,19 @@ class SongRepository {
     await (db.update(db.songs)..where((s) => s.id.equals(song.id))).write(
       SongsCompanion(
         deleted: const Value(false),
+        deletedAt: const Value(null),
         updatedAt: Value(DateTime.now()),
       ),
     );
     await (db.update(
           db.attachments,
         )..where((a) => a.id.isIn([for (final a in deleted.attachments) a.id])))
-        .write(const AttachmentsCompanion(deleted: Value(false)));
+        .write(
+          const AttachmentsCompanion(
+            deleted: Value(false),
+            deletedAt: Value(null),
+          ),
+        );
     await markDirty(db, SyncCollection.songs, song.id, scope: song.libraryId);
     for (final set in await restoreSetItems(db, deleted.setItems)) {
       await markDirty(db, SyncCollection.setlists, set.id, scope: set.bandId);
@@ -623,8 +635,12 @@ class SongRepository {
     if (ids.isEmpty) return;
     final live = await _liveFileNames();
     final rows = await _attachmentsWithSong(db.attachments.id.isIn(ids));
-    for (final (a, songDeleted) in rows) {
-      if ((a.deleted || songDeleted) && !live.contains(a.fileName)) {
+    for (final (a, song) in rows) {
+      // Deleted songs of the local library keep their files for the trash
+      // (ADR-0043, TrashRepository.purgeLocal); synced files are downloaded
+      // again after a restore.
+      if (song.deleted && song.libraryId == localBandId) continue;
+      if ((a.deleted || song.deleted) && !live.contains(a.fileName)) {
         await storage.delete(a.fileName);
       }
     }
@@ -636,7 +652,10 @@ class SongRepository {
   Future<void> purgeDeletedFiles() async {
     final live = await _liveFileNames();
     final rows = await _attachmentsWithSong(
-      db.attachments.deleted.equals(true) | db.songs.deleted.equals(true),
+      (db.attachments.deleted.equals(true) | db.songs.deleted.equals(true)) &
+          (db.songs.deleted.equals(true) &
+                  db.songs.libraryId.equals(localBandId))
+              .not(),
     );
     for (final (a, _) in rows) {
       if (!live.contains(a.fileName) && await storage.exists(a.fileName)) {
@@ -645,16 +664,14 @@ class SongRepository {
     }
   }
 
-  /// Attachments matching [filter] and whether their song is deleted.
-  Future<List<(AttachmentEntry, bool)>> _attachmentsWithSong(
+  /// Attachments matching [filter] with their song.
+  Future<List<(AttachmentEntry, SongEntry)>> _attachmentsWithSong(
     Expression<bool> filter,
   ) async =>
       (await (db.select(db.attachments).join([
             innerJoin(db.songs, db.songs.id.equalsExp(db.attachments.songId)),
           ])..where(filter)).get())
-          .map(
-            (r) => (r.readTable(db.attachments), r.readTable(db.songs).deleted),
-          )
+          .map((r) => (r.readTable(db.attachments), r.readTable(db.songs)))
           .toList();
 
   /// File names of attachments in use (not deleted, song not deleted).
@@ -768,9 +785,14 @@ class SongRepository {
                   ..where(db.personalOverlays.liveView.equals(attachment.id)))
                 .map((r) => r.read(db.personalOverlays.ownerId)!)
                 .get();
-        await (db.update(db.attachments)
-              ..where((a) => a.id.equals(attachment.id)))
-            .write(const AttachmentsCompanion(deleted: Value(true)));
+        await (db.update(
+          db.attachments,
+        )..where((a) => a.id.equals(attachment.id))).write(
+          AttachmentsCompanion(
+            deleted: const Value(true),
+            deletedAt: Value(DateTime.now()),
+          ),
+        );
         await _markAttachment(
           attachment.id,
           attachment.songId,
@@ -789,6 +811,7 @@ class SongRepository {
     await (db.update(db.attachments)..where((x) => x.id.equals(a.id))).write(
       AttachmentsCompanion(
         deleted: const Value(false),
+        deletedAt: const Value(null),
         updatedAt: Value(DateTime.now()),
       ),
     );

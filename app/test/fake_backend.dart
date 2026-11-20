@@ -532,6 +532,8 @@ class FakeSyncBackend implements SyncBackend {
       chordpro: song.chordpro,
       revision: ++_serverRevision,
       deleted: song.deleted,
+      deletedAt: song.deleted ? song.deletedAt ?? DateTime.now() : null,
+      purged: song.purged,
     );
     songs[song.id] = stored;
     return stored;
@@ -753,6 +755,8 @@ class FakeSyncBackend implements SyncBackend {
       items: set.items,
       revision: ++_serverRevision,
       deleted: set.deleted,
+      deletedAt: set.deleted ? set.deletedAt ?? DateTime.now() : null,
+      purged: set.purged,
     );
     sets[set.id] = stored;
     return stored;
@@ -832,6 +836,8 @@ class FakeSyncBackend implements SyncBackend {
       sizeBytes: a.sizeBytes,
       revision: ++_serverRevision,
       deleted: a.deleted,
+      deletedAt: a.deleted ? a.deletedAt ?? DateTime.now() : null,
+      purged: a.purged,
     );
     attachments[a.id] = stored;
     if (bytes != null) files[stored.file!] = bytes;
@@ -881,6 +887,7 @@ class FakeSyncBackend implements SyncBackend {
         pages: existing.pages,
         sizeBytes: existing.sizeBytes,
         deleted: attachment.deleted,
+        deletedAt: attachment.deletedAt,
       ),
     );
   }

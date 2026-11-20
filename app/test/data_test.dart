@@ -651,34 +651,54 @@ void main() {
     });
 
     test('the files of a deleted song go once the undo is gone', () async {
-      final a = await songs.createSong(title: 'A');
-      await songs.addAttachment(a, name: 'Score', bytes: Uint8List(1));
-      final deleted = await songs.deleteSong(a);
+      // An organization's song: its files are downloaded again if it is
+      // restored from the trash; the local library keeps them (ADR-0043,
+      // trash_test.dart).
+      final org = SongRepository(
+        db,
+        FileAttachmentStorage(dir),
+        libraryId: 'o1',
+      );
+      final a = await org.createSong(title: 'A');
+      await org.addAttachment(a, name: 'Score', bytes: Uint8List(1));
+      final deleted = await org.deleteSong(a);
       final file = deleted.attachments.single.fileName;
       expect(exists(file), isTrue);
-      await songs.purgeFiles(deleted.attachments);
+      await org.purgeFiles(deleted.attachments);
       expect(exists(file), isFalse);
     });
 
     test('files left behind are purged at start', () async {
+      final org = SongRepository(
+        db,
+        FileAttachmentStorage(dir),
+        libraryId: 'o1',
+      );
       final a = await songs.createSong(title: 'A');
-      final b = await songs.createSong(title: 'B');
+      final b = await org.createSong(title: 'B');
+      final c = await songs.createSong(title: 'C');
       await songs.addAttachment(a, name: 'Deleted', bytes: Uint8List(1));
-      await songs.addAttachment(b, name: 'Song deleted', bytes: Uint8List(1));
+      await org.addAttachment(b, name: 'Song deleted', bytes: Uint8List(1));
       await songs.addAttachment(a, name: 'Kept', bytes: Uint8List(1));
+      await songs.addAttachment(c, name: 'In the trash', bytes: Uint8List(1));
       final all = [
         ...await songs.getAttachments(a),
-        ...await songs.getAttachments(b),
+        ...await org.getAttachments(b),
+        ...await songs.getAttachments(c),
       ];
       String file(String name) =>
           all.firstWhere((x) => x.name == name).fileName;
       await songs.deleteAttachment(all.firstWhere((x) => x.name == 'Deleted'));
-      await songs.deleteSong(b);
+      await org.deleteSong(b);
+      await songs.deleteSong(c);
 
       await songs.purgeDeletedFiles();
       expect(exists(file('Deleted')), isFalse);
       expect(exists(file('Song deleted')), isFalse);
       expect(exists(file('Kept')), isTrue);
+      // A deleted song of the local library keeps its files for the trash
+      // (ADR-0043).
+      expect(exists(file('In the trash')), isTrue);
     });
 
     test('an attachment comes back with its live view', () async {

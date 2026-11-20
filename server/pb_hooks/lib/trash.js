@@ -1,0 +1,90 @@
+// Trash of ADR-0043. PocketBase runs every hook handler in its own context,
+// so handlers load this module with require().
+
+/// Days a deleted song, set or attachment can be restored.
+const RETENTION_DAYS = 30;
+
+/// Keeps `deleted_at` and `purged` consistent for a write request of a user:
+/// `deleted_at` is taken from the client when the record is deleted (it may
+/// have been deleted offline; not in the future, now if missing), cleared on
+/// restore and otherwise kept; `purged` is never set by clients, and a purged
+/// record cannot be restored. Superusers (operators, tests) are not changed.
+function handleTrashRequest(e) {
+  if (!(e.auth && e.auth.collection().name === "users")) return;
+  const original = e.record.original();
+  const isNew = e.record.isNew();
+  const wasDeleted = !isNew && original.getBool("deleted");
+  const deleted = e.record.getBool("deleted");
+  if (!isNew && original.getBool("purged")) {
+    if (!deleted) {
+      throw new BadRequestError("The record was purged from the trash.", {
+        deleted: new ValidationError("purged", "The record was purged from the trash and cannot be restored."),
+      });
+    }
+  }
+  e.record.set("purged", isNew ? false : original.getBool("purged"));
+  if (!deleted) {
+    e.record.set("deleted_at", "");
+  } else if (wasDeleted) {
+    e.record.set("deleted_at", original.getString("deleted_at"));
+  } else {
+    const now = new DateTime();
+    const sent = e.record.getDateTime("deleted_at");
+    if (sent.isZero() || sent.after(now)) e.record.set("deleted_at", now);
+  }
+}
+
+/// Purges records deleted more than [RETENTION_DAYS] ago: song text, set
+/// items and attachment files are removed, the record stays as a tombstone
+/// (`purged`) with a new revision, so devices still learn about it. Returns
+/// the number of purged records.
+function purgeTrash(app) {
+  const cutoff = new DateTime().addDate(0, 0, -RETENTION_DAYS);
+  let purged = 0;
+  for (const name of ["attachments", "setlists", "songs"]) {
+    const records = app.findRecordsByFilter(
+      name,
+      "deleted = true && purged = false && deleted_at != '' && deleted_at < {:cutoff}",
+      "",
+      0,
+      0,
+      { cutoff: cutoff.string() },
+    );
+    for (const record of records) {
+      record.set("purged", true);
+      if (name === "songs") record.set("chordpro", "");
+      if (name === "setlists") record.set("items", []);
+      if (name === "attachments") record.set("file", "");
+      app.runInTransaction((txApp) => txApp.save(record));
+      purged++;
+      if (name === "songs") purged += purgeAttachmentsOf(app, record);
+    }
+  }
+  return purged;
+}
+
+/// Attachments of a purged song: a song's deletion does not delete them on
+/// the server (the client keeps them with the song), so they are purged with
+/// it.
+function purgeAttachmentsOf(app, song) {
+  const records = app.findRecordsByFilter(
+    "attachments",
+    "song = {:song} && purged = false",
+    "",
+    0,
+    0,
+    { song: song.id },
+  );
+  for (const record of records) {
+    record.set("deleted", true);
+    if (record.getString("deleted_at") === "") {
+      record.set("deleted_at", song.getString("deleted_at"));
+    }
+    record.set("purged", true);
+    record.set("file", "");
+    app.runInTransaction((txApp) => txApp.save(record));
+  }
+  return records.length;
+}
+
+module.exports = { RETENTION_DAYS, handleTrashRequest, purgeTrash };

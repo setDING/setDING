@@ -71,6 +71,7 @@ void main() {
     revision: 1,
     updatedAt: DateTime(2026),
     deleted: false,
+    purged: false,
     createdBy: createdBy,
     updatedBy: updatedBy,
     chordproProblems: 0,

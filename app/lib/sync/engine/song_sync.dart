@@ -120,6 +120,8 @@ class SongSync {
             revision: Value(remote.revision),
             updatedAt: DateTime.now(),
             deleted: Value(remote.deleted),
+            deletedAt: Value(remote.deletedAt),
+            purged: Value(remote.purged),
             createdBy: Value(remote.createdBy),
             updatedBy: Value(remote.updatedBy),
           ),
@@ -157,6 +159,7 @@ class SongSync {
       chordpro: song.chordproSource,
       revision: song.revision,
       deleted: song.deleted,
+      deletedAt: song.deletedAt,
     );
     try {
       final stored = await _pushSongOrRecover(remote, create: create);
@@ -219,6 +222,7 @@ class SongSync {
           chordpro: song.chordpro,
           revision: existing.revision,
           deleted: song.deleted,
+          deletedAt: song.deletedAt,
         ),
         create: false,
       );

@@ -1913,5 +1913,49 @@
         "type": "int"
       }
     }
+  },
+  "trash": "Papierkorb",
+  "trashSongsTitle": "Gelöschte Songs",
+  "trashSetsTitle": "Gelöschte Sets",
+  "trashEmpty": "Der Papierkorb ist leer. Gelöschte Songs und Sets lassen sich hier {days} Tage lang wiederherstellen.",
+  "@trashEmpty": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "trashHint": "Gelöschte Songs und Sets lassen sich {days} Tage lang wiederherstellen. Danach werden sie endgültig entfernt.",
+  "@trashHint": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "trashDeletedOn": "gelöscht am {date}",
+  "@trashDeletedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "trashDaysLeft": "{days, plural, =0{letzter Tag} =1{noch 1 Tag} other{noch {days} Tage}}",
+  "@trashDaysLeft": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "trashRestore": "Wiederherstellen",
+  "trashRestored": "«{title}» wiederhergestellt",
+  "@trashRestored": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   }
 }

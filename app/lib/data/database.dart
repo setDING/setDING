@@ -143,6 +143,13 @@ class Songs extends Table {
   DateTimeColumn get updatedAt => dateTime()();
   BoolColumn get deleted => boolean().withDefault(const Constant(false))();
 
+  /// When the record was deleted, for the trash (ADR-0043, schema 21).
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  /// The server purged the deleted record's content after 30 days
+  /// (ADR-0043, schema 21): it is no longer in the trash.
+  BoolColumn get purged => boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -166,6 +173,13 @@ class Attachments extends Table {
   DateTimeColumn get updatedAt => dateTime()();
   BoolColumn get deleted => boolean().withDefault(const Constant(false))();
 
+  /// When the record was deleted, for the trash (ADR-0043, schema 21).
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  /// The server purged the deleted record's content after 30 days
+  /// (ADR-0043, schema 21): it is no longer in the trash.
+  BoolColumn get purged => boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -181,6 +195,13 @@ class Setlists extends Table {
   IntColumn get revision => integer().withDefault(const Constant(0))();
   DateTimeColumn get updatedAt => dateTime()();
   BoolColumn get deleted => boolean().withDefault(const Constant(false))();
+
+  /// When the record was deleted, for the trash (ADR-0043, schema 21).
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  /// The server purged the deleted record's content after 30 days
+  /// (ADR-0043, schema 21): it is no longer in the trash.
+  BoolColumn get purged => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -461,7 +482,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 20;
+  int get schemaVersion => 21;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -526,6 +547,8 @@ class AppDatabase extends _$AppDatabase {
               songs.updatedBy,
               songs.sequence,
               songs.chordproProblems,
+              songs.deletedAt,
+              songs.purged,
             ],
           ),
         );
@@ -639,6 +662,24 @@ class AppDatabase extends _$AppDatabase {
       if (from < 20 && from >= 8) {
         // Keyboard programs per profile (ADR-0042).
         await m.addColumn(personalOverlays, personalOverlays.midiPrograms);
+      }
+      if (from < 21) {
+        // Trash (ADR-0043); before schema 4 the rebuilt song table has the
+        // columns already. Records deleted before count as deleted when
+        // they were last changed.
+        if (from >= 4) {
+          await m.addColumn(songs, songs.deletedAt);
+          await m.addColumn(songs, songs.purged);
+        }
+        await m.addColumn(attachments, attachments.deletedAt);
+        await m.addColumn(attachments, attachments.purged);
+        await m.addColumn(setlists, setlists.deletedAt);
+        await m.addColumn(setlists, setlists.purged);
+        for (final table in ['songs', 'attachments', 'setlists']) {
+          await customStatement(
+            'UPDATE $table SET deleted_at = updated_at WHERE deleted = 1',
+          );
+        }
       }
     },
     beforeOpen: (details) async {

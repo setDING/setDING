@@ -10,6 +10,7 @@ import 'data/database.dart';
 import 'data/import_export.dart';
 import 'data/set_repository.dart';
 import 'data/song_repository.dart';
+import 'data/trash.dart';
 import 'settings/settings.dart';
 import 'sync/auth_providers.dart';
 import 'sync/band_service.dart';
@@ -438,6 +439,26 @@ final setsProvider = StreamProvider<List<SetSummary>>(
 final setProvider = StreamProvider.autoDispose.family<SetlistEntry?, String>(
   (ref, id) => ref.watch(setRepositoryProvider).watchSet(id),
 );
+
+final trashRepositoryProvider = Provider<TrashRepository>(
+  (ref) => TrashRepository(
+    ref.watch(databaseProvider),
+    ref.watch(attachmentStorageProvider),
+  ),
+);
+
+/// Deleted songs of a library that can still be restored (ADR-0043).
+final trashedSongsProvider = StreamProvider.autoDispose
+    .family<List<SongEntry>, String>(
+      (ref, libraryId) =>
+          ref.watch(trashRepositoryProvider).watchSongs(libraryId),
+    );
+
+/// Deleted sets of a band that can still be restored (ADR-0043).
+final trashedSetsProvider = StreamProvider.autoDispose
+    .family<List<SetlistEntry>, String>(
+      (ref, bandId) => ref.watch(trashRepositoryProvider).watchSets(bandId),
+    );
 
 final setItemsProvider = StreamProvider.autoDispose
     .family<List<SetItemView>, String>(

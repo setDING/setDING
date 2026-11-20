@@ -473,6 +473,30 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _purgedMeta = const VerificationMeta('purged');
+  @override
+  late final GeneratedColumn<bool> purged = GeneratedColumn<bool>(
+    'purged',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("purged" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -493,6 +517,8 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
     revision,
     updatedAt,
     deleted,
+    deletedAt,
+    purged,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -625,6 +651,18 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
         deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
       );
     }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    if (data.containsKey('purged')) {
+      context.handle(
+        _purgedMeta,
+        purged.isAcceptableOrUnknown(data['purged']!, _purgedMeta),
+      );
+    }
     return context;
   }
 
@@ -706,6 +744,14 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
         DriftSqlType.bool,
         data['${effectivePrefix}deleted'],
       )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      purged: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}purged'],
+      )!,
     );
   }
 
@@ -760,6 +806,13 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
   final int revision;
   final DateTime updatedAt;
   final bool deleted;
+
+  /// When the record was deleted, for the trash (ADR-0043, schema 21).
+  final DateTime? deletedAt;
+
+  /// The server purged the deleted record's content after 30 days
+  /// (ADR-0043, schema 21): it is no longer in the trash.
+  final bool purged;
   const SongEntry({
     required this.id,
     required this.libraryId,
@@ -779,6 +832,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     required this.revision,
     required this.updatedAt,
     required this.deleted,
+    this.deletedAt,
+    required this.purged,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -821,6 +876,10 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     map['revision'] = Variable<int>(revision);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     map['deleted'] = Variable<bool>(deleted);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    map['purged'] = Variable<bool>(purged);
     return map;
   }
 
@@ -862,6 +921,10 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       revision: Value(revision),
       updatedAt: Value(updatedAt),
       deleted: Value(deleted),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      purged: Value(purged),
     );
   }
 
@@ -889,6 +952,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       revision: serializer.fromJson<int>(json['revision']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deleted: serializer.fromJson<bool>(json['deleted']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      purged: serializer.fromJson<bool>(json['purged']),
     );
   }
   @override
@@ -913,6 +978,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       'revision': serializer.toJson<int>(revision),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deleted': serializer.toJson<bool>(deleted),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'purged': serializer.toJson<bool>(purged),
     };
   }
 
@@ -935,6 +1002,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     int? revision,
     DateTime? updatedAt,
     bool? deleted,
+    Value<DateTime?> deletedAt = const Value.absent(),
+    bool? purged,
   }) => SongEntry(
     id: id ?? this.id,
     libraryId: libraryId ?? this.libraryId,
@@ -954,6 +1023,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     revision: revision ?? this.revision,
     updatedAt: updatedAt ?? this.updatedAt,
     deleted: deleted ?? this.deleted,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    purged: purged ?? this.purged,
   );
   SongEntry copyWithCompanion(SongsCompanion data) {
     return SongEntry(
@@ -983,6 +1054,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       revision: data.revision.present ? data.revision.value : this.revision,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deleted: data.deleted.present ? data.deleted.value : this.deleted,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      purged: data.purged.present ? data.purged.value : this.purged,
     );
   }
 
@@ -1006,7 +1079,9 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
           ..write('updatedBy: $updatedBy, ')
           ..write('revision: $revision, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('deleted: $deleted')
+          ..write('deleted: $deleted, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('purged: $purged')
           ..write(')'))
         .toString();
   }
@@ -1031,6 +1106,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     revision,
     updatedAt,
     deleted,
+    deletedAt,
+    purged,
   );
   @override
   bool operator ==(Object other) =>
@@ -1053,7 +1130,9 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
           other.updatedBy == this.updatedBy &&
           other.revision == this.revision &&
           other.updatedAt == this.updatedAt &&
-          other.deleted == this.deleted);
+          other.deleted == this.deleted &&
+          other.deletedAt == this.deletedAt &&
+          other.purged == this.purged);
 }
 
 class SongsCompanion extends UpdateCompanion<SongEntry> {
@@ -1075,6 +1154,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
   final Value<int> revision;
   final Value<DateTime> updatedAt;
   final Value<bool> deleted;
+  final Value<DateTime?> deletedAt;
+  final Value<bool> purged;
   final Value<int> rowid;
   const SongsCompanion({
     this.id = const Value.absent(),
@@ -1095,6 +1176,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     this.revision = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deleted = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.purged = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SongsCompanion.insert({
@@ -1116,6 +1199,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     this.revision = const Value.absent(),
     required DateTime updatedAt,
     this.deleted = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.purged = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        libraryId = Value(libraryId),
@@ -1140,6 +1225,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     Expression<int>? revision,
     Expression<DateTime>? updatedAt,
     Expression<bool>? deleted,
+    Expression<DateTime>? deletedAt,
+    Expression<bool>? purged,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1161,6 +1248,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
       if (revision != null) 'revision': revision,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deleted != null) 'deleted': deleted,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (purged != null) 'purged': purged,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1184,6 +1273,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     Value<int>? revision,
     Value<DateTime>? updatedAt,
     Value<bool>? deleted,
+    Value<DateTime?>? deletedAt,
+    Value<bool>? purged,
     Value<int>? rowid,
   }) {
     return SongsCompanion(
@@ -1205,6 +1296,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
       revision: revision ?? this.revision,
       updatedAt: updatedAt ?? this.updatedAt,
       deleted: deleted ?? this.deleted,
+      deletedAt: deletedAt ?? this.deletedAt,
+      purged: purged ?? this.purged,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1266,6 +1359,12 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     if (deleted.present) {
       map['deleted'] = Variable<bool>(deleted.value);
     }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (purged.present) {
+      map['purged'] = Variable<bool>(purged.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1293,6 +1392,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
           ..write('revision: $revision, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deleted: $deleted, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('purged: $purged, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3036,6 +3137,30 @@ class $AttachmentsTable extends Attachments
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _purgedMeta = const VerificationMeta('purged');
+  @override
+  late final GeneratedColumn<bool> purged = GeneratedColumn<bool>(
+    'purged',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("purged" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -3048,6 +3173,8 @@ class $AttachmentsTable extends Attachments
     revision,
     updatedAt,
     deleted,
+    deletedAt,
+    purged,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3130,6 +3257,18 @@ class $AttachmentsTable extends Attachments
         deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
       );
     }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    if (data.containsKey('purged')) {
+      context.handle(
+        _purgedMeta,
+        purged.isAcceptableOrUnknown(data['purged']!, _purgedMeta),
+      );
+    }
     return context;
   }
 
@@ -3179,6 +3318,14 @@ class $AttachmentsTable extends Attachments
         DriftSqlType.bool,
         data['${effectivePrefix}deleted'],
       )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      purged: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}purged'],
+      )!,
     );
   }
 
@@ -3204,6 +3351,13 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
   final int revision;
   final DateTime updatedAt;
   final bool deleted;
+
+  /// When the record was deleted, for the trash (ADR-0043, schema 21).
+  final DateTime? deletedAt;
+
+  /// The server purged the deleted record's content after 30 days
+  /// (ADR-0043, schema 21): it is no longer in the trash.
+  final bool purged;
   const AttachmentEntry({
     required this.id,
     required this.songId,
@@ -3215,6 +3369,8 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
     required this.revision,
     required this.updatedAt,
     required this.deleted,
+    this.deletedAt,
+    required this.purged,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3233,6 +3389,10 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
     map['revision'] = Variable<int>(revision);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     map['deleted'] = Variable<bool>(deleted);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    map['purged'] = Variable<bool>(purged);
     return map;
   }
 
@@ -3252,6 +3412,10 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
       revision: Value(revision),
       updatedAt: Value(updatedAt),
       deleted: Value(deleted),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      purged: Value(purged),
     );
   }
 
@@ -3271,6 +3435,8 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
       revision: serializer.fromJson<int>(json['revision']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deleted: serializer.fromJson<bool>(json['deleted']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      purged: serializer.fromJson<bool>(json['purged']),
     );
   }
   @override
@@ -3287,6 +3453,8 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
       'revision': serializer.toJson<int>(revision),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deleted': serializer.toJson<bool>(deleted),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'purged': serializer.toJson<bool>(purged),
     };
   }
 
@@ -3301,6 +3469,8 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
     int? revision,
     DateTime? updatedAt,
     bool? deleted,
+    Value<DateTime?> deletedAt = const Value.absent(),
+    bool? purged,
   }) => AttachmentEntry(
     id: id ?? this.id,
     songId: songId ?? this.songId,
@@ -3312,6 +3482,8 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
     revision: revision ?? this.revision,
     updatedAt: updatedAt ?? this.updatedAt,
     deleted: deleted ?? this.deleted,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    purged: purged ?? this.purged,
   );
   AttachmentEntry copyWithCompanion(AttachmentsCompanion data) {
     return AttachmentEntry(
@@ -3327,6 +3499,8 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
       revision: data.revision.present ? data.revision.value : this.revision,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deleted: data.deleted.present ? data.deleted.value : this.deleted,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      purged: data.purged.present ? data.purged.value : this.purged,
     );
   }
 
@@ -3342,7 +3516,9 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
           ..write('sizeBytes: $sizeBytes, ')
           ..write('revision: $revision, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('deleted: $deleted')
+          ..write('deleted: $deleted, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('purged: $purged')
           ..write(')'))
         .toString();
   }
@@ -3359,6 +3535,8 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
     revision,
     updatedAt,
     deleted,
+    deletedAt,
+    purged,
   );
   @override
   bool operator ==(Object other) =>
@@ -3373,7 +3551,9 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
           other.sizeBytes == this.sizeBytes &&
           other.revision == this.revision &&
           other.updatedAt == this.updatedAt &&
-          other.deleted == this.deleted);
+          other.deleted == this.deleted &&
+          other.deletedAt == this.deletedAt &&
+          other.purged == this.purged);
 }
 
 class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
@@ -3387,6 +3567,8 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
   final Value<int> revision;
   final Value<DateTime> updatedAt;
   final Value<bool> deleted;
+  final Value<DateTime?> deletedAt;
+  final Value<bool> purged;
   final Value<int> rowid;
   const AttachmentsCompanion({
     this.id = const Value.absent(),
@@ -3399,6 +3581,8 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
     this.revision = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deleted = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.purged = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   AttachmentsCompanion.insert({
@@ -3412,6 +3596,8 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
     this.revision = const Value.absent(),
     required DateTime updatedAt,
     this.deleted = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.purged = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        songId = Value(songId),
@@ -3430,6 +3616,8 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
     Expression<int>? revision,
     Expression<DateTime>? updatedAt,
     Expression<bool>? deleted,
+    Expression<DateTime>? deletedAt,
+    Expression<bool>? purged,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3443,6 +3631,8 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
       if (revision != null) 'revision': revision,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deleted != null) 'deleted': deleted,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (purged != null) 'purged': purged,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3458,6 +3648,8 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
     Value<int>? revision,
     Value<DateTime>? updatedAt,
     Value<bool>? deleted,
+    Value<DateTime?>? deletedAt,
+    Value<bool>? purged,
     Value<int>? rowid,
   }) {
     return AttachmentsCompanion(
@@ -3471,6 +3663,8 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
       revision: revision ?? this.revision,
       updatedAt: updatedAt ?? this.updatedAt,
       deleted: deleted ?? this.deleted,
+      deletedAt: deletedAt ?? this.deletedAt,
+      purged: purged ?? this.purged,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3508,6 +3702,12 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
     if (deleted.present) {
       map['deleted'] = Variable<bool>(deleted.value);
     }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (purged.present) {
+      map['purged'] = Variable<bool>(purged.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3527,6 +3727,8 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
           ..write('revision: $revision, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deleted: $deleted, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('purged: $purged, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3627,6 +3829,30 @@ class $SetlistsTable extends Setlists
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _purgedMeta = const VerificationMeta('purged');
+  @override
+  late final GeneratedColumn<bool> purged = GeneratedColumn<bool>(
+    'purged',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("purged" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -3637,6 +3863,8 @@ class $SetlistsTable extends Setlists
     revision,
     updatedAt,
     deleted,
+    deletedAt,
+    purged,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3703,6 +3931,18 @@ class $SetlistsTable extends Setlists
         deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
       );
     }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    if (data.containsKey('purged')) {
+      context.handle(
+        _purgedMeta,
+        purged.isAcceptableOrUnknown(data['purged']!, _purgedMeta),
+      );
+    }
     return context;
   }
 
@@ -3744,6 +3984,14 @@ class $SetlistsTable extends Setlists
         DriftSqlType.bool,
         data['${effectivePrefix}deleted'],
       )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      purged: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}purged'],
+      )!,
     );
   }
 
@@ -3762,6 +4010,13 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
   final int revision;
   final DateTime updatedAt;
   final bool deleted;
+
+  /// When the record was deleted, for the trash (ADR-0043, schema 21).
+  final DateTime? deletedAt;
+
+  /// The server purged the deleted record's content after 30 days
+  /// (ADR-0043, schema 21): it is no longer in the trash.
+  final bool purged;
   const SetlistEntry({
     required this.id,
     required this.bandId,
@@ -3771,6 +4026,8 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     required this.revision,
     required this.updatedAt,
     required this.deleted,
+    this.deletedAt,
+    required this.purged,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3787,6 +4044,10 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     map['revision'] = Variable<int>(revision);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     map['deleted'] = Variable<bool>(deleted);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    map['purged'] = Variable<bool>(purged);
     return map;
   }
 
@@ -3804,6 +4065,10 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
       revision: Value(revision),
       updatedAt: Value(updatedAt),
       deleted: Value(deleted),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      purged: Value(purged),
     );
   }
 
@@ -3821,6 +4086,8 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
       revision: serializer.fromJson<int>(json['revision']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deleted: serializer.fromJson<bool>(json['deleted']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      purged: serializer.fromJson<bool>(json['purged']),
     );
   }
   @override
@@ -3835,6 +4102,8 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
       'revision': serializer.toJson<int>(revision),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deleted': serializer.toJson<bool>(deleted),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'purged': serializer.toJson<bool>(purged),
     };
   }
 
@@ -3847,6 +4116,8 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     int? revision,
     DateTime? updatedAt,
     bool? deleted,
+    Value<DateTime?> deletedAt = const Value.absent(),
+    bool? purged,
   }) => SetlistEntry(
     id: id ?? this.id,
     bandId: bandId ?? this.bandId,
@@ -3856,6 +4127,8 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     revision: revision ?? this.revision,
     updatedAt: updatedAt ?? this.updatedAt,
     deleted: deleted ?? this.deleted,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    purged: purged ?? this.purged,
   );
   SetlistEntry copyWithCompanion(SetlistsCompanion data) {
     return SetlistEntry(
@@ -3867,6 +4140,8 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
       revision: data.revision.present ? data.revision.value : this.revision,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deleted: data.deleted.present ? data.deleted.value : this.deleted,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      purged: data.purged.present ? data.purged.value : this.purged,
     );
   }
 
@@ -3880,7 +4155,9 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
           ..write('venue: $venue, ')
           ..write('revision: $revision, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('deleted: $deleted')
+          ..write('deleted: $deleted, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('purged: $purged')
           ..write(')'))
         .toString();
   }
@@ -3895,6 +4172,8 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     revision,
     updatedAt,
     deleted,
+    deletedAt,
+    purged,
   );
   @override
   bool operator ==(Object other) =>
@@ -3907,7 +4186,9 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
           other.venue == this.venue &&
           other.revision == this.revision &&
           other.updatedAt == this.updatedAt &&
-          other.deleted == this.deleted);
+          other.deleted == this.deleted &&
+          other.deletedAt == this.deletedAt &&
+          other.purged == this.purged);
 }
 
 class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
@@ -3919,6 +4200,8 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
   final Value<int> revision;
   final Value<DateTime> updatedAt;
   final Value<bool> deleted;
+  final Value<DateTime?> deletedAt;
+  final Value<bool> purged;
   final Value<int> rowid;
   const SetlistsCompanion({
     this.id = const Value.absent(),
@@ -3929,6 +4212,8 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     this.revision = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deleted = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.purged = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SetlistsCompanion.insert({
@@ -3940,6 +4225,8 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     this.revision = const Value.absent(),
     required DateTime updatedAt,
     this.deleted = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.purged = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        bandId = Value(bandId),
@@ -3954,6 +4241,8 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     Expression<int>? revision,
     Expression<DateTime>? updatedAt,
     Expression<bool>? deleted,
+    Expression<DateTime>? deletedAt,
+    Expression<bool>? purged,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3965,6 +4254,8 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
       if (revision != null) 'revision': revision,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deleted != null) 'deleted': deleted,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (purged != null) 'purged': purged,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3978,6 +4269,8 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     Value<int>? revision,
     Value<DateTime>? updatedAt,
     Value<bool>? deleted,
+    Value<DateTime?>? deletedAt,
+    Value<bool>? purged,
     Value<int>? rowid,
   }) {
     return SetlistsCompanion(
@@ -3989,6 +4282,8 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
       revision: revision ?? this.revision,
       updatedAt: updatedAt ?? this.updatedAt,
       deleted: deleted ?? this.deleted,
+      deletedAt: deletedAt ?? this.deletedAt,
+      purged: purged ?? this.purged,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4020,6 +4315,12 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     if (deleted.present) {
       map['deleted'] = Variable<bool>(deleted.value);
     }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (purged.present) {
+      map['purged'] = Variable<bool>(purged.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -4037,6 +4338,8 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
           ..write('revision: $revision, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deleted: $deleted, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('purged: $purged, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -7971,6 +8274,8 @@ typedef $$SongsTableCreateCompanionBuilder = SongsCompanion Function({
   Value<int> revision,
   required DateTime updatedAt,
   Value<bool> deleted,
+  Value<DateTime?> deletedAt,
+  Value<bool> purged,
   Value<int> rowid,
 });
 typedef $$SongsTableUpdateCompanionBuilder = SongsCompanion Function({
@@ -7992,6 +8297,8 @@ typedef $$SongsTableUpdateCompanionBuilder = SongsCompanion Function({
   Value<int> revision,
   Value<DateTime> updatedAt,
   Value<bool> deleted,
+  Value<DateTime?> deletedAt,
+  Value<bool> purged,
   Value<int> rowid,
 });
 
@@ -8189,6 +8496,16 @@ class $$SongsTableFilterComposer extends Composer<_$AppDatabase, $SongsTable> {
 
   ColumnFilters<bool> get deleted => $composableBuilder(
     column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get purged => $composableBuilder(
+    column: $table.purged,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -8416,6 +8733,16 @@ class $$SongsTableOrderingComposer
     column: $table.deleted,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get purged => $composableBuilder(
+    column: $table.purged,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SongsTableAnnotationComposer
@@ -8488,6 +8815,12 @@ class $$SongsTableAnnotationComposer
 
   GeneratedColumn<bool> get deleted =>
       $composableBuilder(column: $table.deleted, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get purged =>
+      $composableBuilder(column: $table.purged, builder: (column) => column);
 
   Expression<T> attachmentsRefs<T extends Object>(
     Expression<T> Function($$AttachmentsTableAnnotationComposer a) f,
@@ -8667,6 +9000,8 @@ class $$SongsTableTableManager
                 Value<int> revision = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<bool> purged = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SongsCompanion(
                 id: id,
@@ -8687,6 +9022,8 @@ class $$SongsTableTableManager
                 revision: revision,
                 updatedAt: updatedAt,
                 deleted: deleted,
+                deletedAt: deletedAt,
+                purged: purged,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -8709,6 +9046,8 @@ class $$SongsTableTableManager
                 Value<int> revision = const Value.absent(),
                 required DateTime updatedAt,
                 Value<bool> deleted = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<bool> purged = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SongsCompanion.insert(
                 id: id,
@@ -8729,6 +9068,8 @@ class $$SongsTableTableManager
                 revision: revision,
                 updatedAt: updatedAt,
                 deleted: deleted,
+                deletedAt: deletedAt,
+                purged: purged,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -10505,6 +10846,8 @@ typedef $$AttachmentsTableCreateCompanionBuilder =
       Value<int> revision,
       required DateTime updatedAt,
       Value<bool> deleted,
+      Value<DateTime?> deletedAt,
+      Value<bool> purged,
       Value<int> rowid,
     });
 typedef $$AttachmentsTableUpdateCompanionBuilder =
@@ -10519,6 +10862,8 @@ typedef $$AttachmentsTableUpdateCompanionBuilder =
       Value<int> revision,
       Value<DateTime> updatedAt,
       Value<bool> deleted,
+      Value<DateTime?> deletedAt,
+      Value<bool> purged,
       Value<int> rowid,
     });
 
@@ -10595,6 +10940,16 @@ class $$AttachmentsTableFilterComposer
 
   ColumnFilters<bool> get deleted => $composableBuilder(
     column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get purged => $composableBuilder(
+    column: $table.purged,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -10676,6 +11031,16 @@ class $$AttachmentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get purged => $composableBuilder(
+    column: $table.purged,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$SongsTableOrderingComposer get songId {
     final $$SongsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -10737,6 +11102,12 @@ class $$AttachmentsTableAnnotationComposer
 
   GeneratedColumn<bool> get deleted =>
       $composableBuilder(column: $table.deleted, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get purged =>
+      $composableBuilder(column: $table.purged, builder: (column) => column);
 
   $$SongsTableAnnotationComposer get songId {
     final $$SongsTableAnnotationComposer composer = $composerBuilder(
@@ -10800,6 +11171,8 @@ class $$AttachmentsTableTableManager
                 Value<int> revision = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<bool> purged = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => AttachmentsCompanion(
                 id: id,
@@ -10812,6 +11185,8 @@ class $$AttachmentsTableTableManager
                 revision: revision,
                 updatedAt: updatedAt,
                 deleted: deleted,
+                deletedAt: deletedAt,
+                purged: purged,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -10826,6 +11201,8 @@ class $$AttachmentsTableTableManager
                 Value<int> revision = const Value.absent(),
                 required DateTime updatedAt,
                 Value<bool> deleted = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<bool> purged = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => AttachmentsCompanion.insert(
                 id: id,
@@ -10838,6 +11215,8 @@ class $$AttachmentsTableTableManager
                 revision: revision,
                 updatedAt: updatedAt,
                 deleted: deleted,
+                deletedAt: deletedAt,
+                purged: purged,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -10914,6 +11293,8 @@ typedef $$SetlistsTableCreateCompanionBuilder = SetlistsCompanion Function({
   Value<int> revision,
   required DateTime updatedAt,
   Value<bool> deleted,
+  Value<DateTime?> deletedAt,
+  Value<bool> purged,
   Value<int> rowid,
 });
 typedef $$SetlistsTableUpdateCompanionBuilder = SetlistsCompanion Function({
@@ -10925,6 +11306,8 @@ typedef $$SetlistsTableUpdateCompanionBuilder = SetlistsCompanion Function({
   Value<int> revision,
   Value<DateTime> updatedAt,
   Value<bool> deleted,
+  Value<DateTime?> deletedAt,
+  Value<bool> purged,
   Value<int> rowid,
 });
 
@@ -11009,6 +11392,16 @@ class $$SetlistsTableFilterComposer
 
   ColumnFilters<bool> get deleted => $composableBuilder(
     column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get purged => $composableBuilder(
+    column: $table.purged,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -11105,6 +11498,16 @@ class $$SetlistsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get purged => $composableBuilder(
+    column: $table.purged,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$BandsTableOrderingComposer get bandId {
     final $$BandsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -11158,6 +11561,12 @@ class $$SetlistsTableAnnotationComposer
 
   GeneratedColumn<bool> get deleted =>
       $composableBuilder(column: $table.deleted, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get purged =>
+      $composableBuilder(column: $table.purged, builder: (column) => column);
 
   $$BandsTableAnnotationComposer get bandId {
     final $$BandsTableAnnotationComposer composer = $composerBuilder(
@@ -11244,6 +11653,8 @@ class $$SetlistsTableTableManager
                 Value<int> revision = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<bool> purged = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SetlistsCompanion(
                 id: id,
@@ -11254,6 +11665,8 @@ class $$SetlistsTableTableManager
                 revision: revision,
                 updatedAt: updatedAt,
                 deleted: deleted,
+                deletedAt: deletedAt,
+                purged: purged,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -11266,6 +11679,8 @@ class $$SetlistsTableTableManager
                 Value<int> revision = const Value.absent(),
                 required DateTime updatedAt,
                 Value<bool> deleted = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<bool> purged = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SetlistsCompanion.insert(
                 id: id,
@@ -11276,6 +11691,8 @@ class $$SetlistsTableTableManager
                 revision: revision,
                 updatedAt: updatedAt,
                 deleted: deleted,
+                deletedAt: deletedAt,
+                purged: purged,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
