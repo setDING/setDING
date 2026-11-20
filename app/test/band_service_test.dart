@@ -459,4 +459,25 @@ void main() {
       expect(items.single.song!.id, a);
     });
   });
+
+  test('set planners set when songs count as not played for a while '
+      '(ADR-0046)', () async {
+    backend.addBand('b1', 'Rock', admin: _bob, organizationId: 'o1');
+    backend.addMember('b1', _ann, BandRole.planner);
+    await service.refresh();
+    var rock = band(await bands(), 'b1');
+    expect((rock.staleAfterSetting, rock.staleAfterMonths), (0, 6));
+    expect(rock.canSetStaleAfter, isTrue);
+
+    await service.setStaleAfterMonths('b1', 3);
+    rock = band(await bands(), 'b1');
+    expect((rock.staleAfterSetting, rock.staleAfterMonths), (3, 3));
+    expect(backend.bands['b1']!.staleAfterMonths, 3);
+    // Renaming stays with the band's leaders.
+    await expectLater(
+      service.renameBand('b1', 'Mine'),
+      throwsA(isA<BackendException>()),
+    );
+    expect(BandView.local.canSetStaleAfter, isFalse);
+  });
 }

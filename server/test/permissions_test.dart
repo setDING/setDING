@@ -147,6 +147,30 @@ void main() {
         unchanged: ('bands', () => f.id, 'name'),
       );
     }
+    // The threshold for songs not played for a while (ADR-0046): band
+    // leaders, set planners and organization admins only.
+    for (final (who, user) in [
+      ('member', () => member),
+      ('librarian', () => librarian),
+      ('admin of another organization', () => g.admin),
+    ]) {
+      refused(
+        '$who changes when songs count as not played for a while',
+        () => user().patch('bands', f.id, {'stale_after_months': 3}),
+        unchanged: ('bands', () => f.id, 'stale_after_months'),
+      );
+    }
+    refused(
+      'set planner renames the band along with the threshold (ADR-0046)',
+      () =>
+          planner.patch('bands', f.id, {'name': 'x', 'stale_after_months': 3}),
+      unchanged: ('bands', () => f.id, 'name'),
+    );
+    refused(
+      'set planner changes the threshold of a deleted band',
+      () => planner.patch('bands', deletedBand, {'stale_after_months': 3}),
+      unchanged: ('bands', () => deletedBand, 'stale_after_months'),
+    );
     refused(
       'leader moves the band to another organization',
       () => leader.patch('bands', f.id, {'organization': g.orgId}),

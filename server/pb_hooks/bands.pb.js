@@ -71,3 +71,43 @@ onRecordUpdateExecute((e) => {
     bands.cascadeRestore(e.app, e.record, original.getInt("revision"), original.getString("deleted_at"));
   }
 }, "bands");
+
+// Set planners may change the band's threshold for songs not played for a
+// while (ADR-0046, `stale_after_months`) and nothing else of the band; the
+// update rule lets them in for this. Band leaders and organization admins are
+// not limited here.
+onRecordUpdateRequest((e) => {
+  const userId = require(`${__hooks}/lib/sync.js`).requestUserId(e);
+  if (userId) {
+    const role = (collection, filter, params) => {
+      try {
+        return e.app
+          .findFirstRecordByFilter(collection, filter, params)
+          .getString("role");
+      } catch (_) {
+        return "";
+      }
+    };
+    const bandRole = role(
+      "memberships",
+      "band = {:band} && user = {:user} && deleted = false",
+      { band: e.record.id, user: userId },
+    );
+    const orgRole = role(
+      "org_memberships",
+      "organization = {:org} && user = {:user} && deleted = false",
+      { org: e.record.original().getString("organization"), user: userId },
+    );
+    if (bandRole === "planner" && orgRole !== "admin") {
+      const allowed = ["stale_after_months"];
+      const sent = Object.keys(e.requestInfo().body || {});
+      const other = sent.filter((key) => allowed.indexOf(key) < 0);
+      if (other.length > 0) {
+        throw new ForbiddenError(
+          "Set planners may only change when songs count as not played for a while.",
+        );
+      }
+    }
+  }
+  e.next();
+}, "bands");

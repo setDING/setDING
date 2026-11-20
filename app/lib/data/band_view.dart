@@ -16,7 +16,12 @@ class BandView {
     this.role,
     this.orgRole,
     this.orgLibrary,
+    this.staleAfterSetting = 0,
   });
+
+  /// Months after which a song counts as not played for a while when the
+  /// band sets none (ADR-0046).
+  static const defaultStaleAfterMonths = 6;
 
   /// The local library ("On this device"); everything is allowed.
   static const local = BandView(
@@ -44,6 +49,14 @@ class BandView {
   /// permissions; null for the local library (see [library]).
   final LibraryView? orgLibrary;
 
+  /// The band's own threshold for songs not played for a while, in months;
+  /// 0 = [defaultStaleAfterMonths] (ADR-0046).
+  final int staleAfterSetting;
+
+  /// Months after which a song counts as not played for a while.
+  int get staleAfterMonths =>
+      staleAfterSetting > 0 ? staleAfterSetting : defaultStaleAfterMonths;
+
   bool get isLocal => id == localBandId;
 
   /// Organization admins may do everything in its bands (ADR-0023).
@@ -66,6 +79,11 @@ class BandView {
   bool get canManageSets =>
       isLocal || isBandAdmin || role == BandRole.planner || isOrgAdmin;
 
+  /// Change when songs count as not played for a while: leaders, set
+  /// planners and organization admins of a band from the server (ADR-0046);
+  /// the local library keeps the default.
+  bool get canSetStaleAfter => !isLocal && canManageSets;
+
   /// Band settings, members and their roles, invitations into the band
   /// (never for the local library).
   bool get canManageBand => !isLocal && (isBandAdmin || isOrgAdmin);
@@ -83,7 +101,8 @@ class BandView {
       other.organizationName == organizationName &&
       other.role == role &&
       other.orgRole == orgRole &&
-      other.orgLibrary == orgLibrary;
+      other.orgLibrary == orgLibrary &&
+      other.staleAfterSetting == staleAfterSetting;
 
   @override
   int get hashCode => Object.hash(
@@ -94,6 +113,7 @@ class BandView {
     role,
     orgRole,
     orgLibrary,
+    staleAfterSetting,
   );
 }
 

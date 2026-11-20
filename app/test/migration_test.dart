@@ -38,9 +38,16 @@ void downgradeToSchema19(Database raw) {
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN midi_programs');
 }
 
+/// Turns a current database back into schema 24: bands without their
+/// threshold for songs not played for a while (ADR-0046).
+void downgradeToSchema24(Database raw) {
+  raw.execute('ALTER TABLE bands DROP COLUMN stale_after_months');
+}
+
 /// Turns a current database back into schema 23: no change log
 /// (ADR-0045).
 void downgradeToSchema23(Database raw) {
+  downgradeToSchema24(raw);
   raw.execute('DROP INDEX change_log_scope');
   raw.execute('DROP TABLE change_log');
 }
@@ -861,5 +868,26 @@ void main() {
     raw = sqlite3.open(file.path);
     expect(indexNames(raw), contains('change_log_scope'));
     raw.close();
+  });
+
+  test('upgrades a schema 24 database: bands get the default threshold '
+      '(ADR-0046)', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    await current
+        .into(current.bands)
+        .insert(BandsCompanion.insert(id: 'b1', name: 'Rock'));
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema24(raw);
+    raw.execute('PRAGMA user_version = 24');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final band = await (upgraded.select(
+      upgraded.bands,
+    )..where((b) => b.id.equals('b1'))).getSingle();
+    expect((band.name, band.staleAfterMonths), ('Rock', 0));
+    await upgraded.close();
   });
 }

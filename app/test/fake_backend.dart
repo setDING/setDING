@@ -228,6 +228,7 @@ class FakeSyncBackend implements SyncBackend {
                     organizationId: o.key,
                     name: b.value.name,
                     revision: 1,
+                    staleAfterMonths: b.value.staleAfterMonths,
                     members: [
                       for (final m in members)
                         if (m.scopeId == b.key) _remote(m),
@@ -306,13 +307,26 @@ class FakeSyncBackend implements SyncBackend {
   }
 
   @override
-  Future<void> updateBand(String bandId, {String? name}) async {
+  Future<void> updateBand(
+    String bandId, {
+    String? name,
+    int? staleAfterMonths,
+  }) async {
     _requireUser();
     final band = bands[bandId];
-    if (band == null || !_canManageBand(bandId)) {
+    // Set planners may change the threshold only (ADR-0046).
+    final planner = members.any(
+      (m) =>
+          m.scopeId == bandId &&
+          m.user.id == user?.id &&
+          m.role == BandRole.planner,
+    );
+    if (band == null ||
+        !(_canManageBand(bandId) || (planner && name == null))) {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
     if (name != null) band.name = name.trim();
+    if (staleAfterMonths != null) band.staleAfterMonths = staleAfterMonths;
   }
 
   @override
@@ -1052,6 +1066,9 @@ class FakeBand {
 
   final String organizationId;
   String name;
+
+  /// Months after which a song counts as not played for a while (ADR-0046).
+  int staleAfterMonths = 0;
 
   /// When the band was deleted (ADR-0044), or null.
   DateTime? deletedAt;

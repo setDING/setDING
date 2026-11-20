@@ -249,4 +249,61 @@ void main() {
       expect((await f.admin.view('users', f.member.id)).status, 200);
     });
   });
+
+  group('threshold for songs not played for a while (ADR-0046)', () {
+    test(
+      'band leaders, set planners and organization admins change it',
+      () async {
+        final f = await BandFixture.create(pb);
+        final leader = await f.addLeader();
+        final planner = await f.addPlanner();
+        final band = await f.admin.view('bands', f.id);
+        expect(band.json['stale_after_months'], 0, reason: 'default');
+        for (final (user, months) in [
+          (leader, 3),
+          (planner, 9),
+          (f.admin, 12),
+        ]) {
+          final r = await user.patch('bands', f.id, {
+            'stale_after_months': months,
+          });
+          r.expectStatus(200);
+          expect(r.json['stale_after_months'], months);
+        }
+        final seen = await f.member.view('bands', f.id);
+        expect(seen.json['stale_after_months'], 12);
+      },
+    );
+
+    test('only 1 to 36 months, or 0 for the default', () async {
+      final f = await BandFixture.create(pb);
+      for (final months in [37, -1]) {
+        final r = await f.admin.patch('bands', f.id, {
+          'stale_after_months': months,
+        });
+        expect(r.status, 400);
+      }
+      (await f.admin.patch('bands', f.id, {
+        'stale_after_months': 0,
+      })).expectStatus(200);
+    });
+
+    test('set planners change nothing else of the band', () async {
+      final f = await BandFixture.create(pb);
+      final planner = await f.addPlanner();
+      final name = (await f.admin.view('bands', f.id)).json['name'];
+      for (final body in [
+        {'name': 'Mine'},
+        {'name': 'Mine', 'stale_after_months': 3},
+        {'stale_after_months': 3, 'deleted': true},
+      ]) {
+        final r = await planner.patch('bands', f.id, body);
+        expect(r.status, greaterThanOrEqualTo(400), reason: '$body');
+      }
+      final band = await f.admin.view('bands', f.id);
+      expect(band.json['name'], name);
+      expect(band.json['stale_after_months'], 0);
+      expect(band.json['deleted'], false);
+    });
+  });
 }
