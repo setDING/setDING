@@ -9,6 +9,7 @@ import '../../sync/auth_providers.dart';
 import '../widgets/dialogs.dart';
 import 'band_labels.dart';
 import 'band_screen.dart';
+import 'delete_band.dart';
 import 'bands_screen.dart';
 import 'invites_section.dart';
 
@@ -122,6 +123,21 @@ class OrganizationScreen extends ConsumerWidget {
                     ),
                   );
                 },
+              ),
+            // Deleted bands, restorable for 30 days (ADR-0044).
+            if (org.isAdmin)
+              ListTile(
+                key: const Key('org-deleted-bands'),
+                leading: const Icon(Icons.delete_outline),
+                title: Text(l10n.trashBandsTitle),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) =>
+                        DeletedBandsScreen(organizationId: organizationId),
+                  ),
+                ),
               ),
             header(l10n.orgPeople),
             for (final p in people)

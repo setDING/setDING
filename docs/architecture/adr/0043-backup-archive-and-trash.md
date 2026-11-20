@@ -145,6 +145,7 @@ Deleted songs and sets can be **restored for 30 days**.
   archive in #636 (export from the song list menu, local and organization
   alike, also on web).
 - 2026-11-20: **ADR-0044** (accepted): the trash will also hold deleted bands and closed organizations for 30 days; the purge removes a closed organization for good and gets an "immediately" option for single records (implemented with #628 and #629).
+- 2026-11-20: Implemented for bands (#628, ADR-0044): the daily purge also purges bands deleted more than 30 days ago (memberships and arrangements hard-deleted, sets purged); `POST /api/setding/trash/purge` with `{"collection": "bands", "id": …}` purges one deleted band at once (superusers).
 
 ## Open points
 

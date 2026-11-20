@@ -25,6 +25,7 @@ void main() {
   late Map<String, dynamic> song; // created by the organization admin
   late Map<String, dynamic> leaderSong;
   late String secondBand; // another band of `f`, without the leader
+  late String deletedBand; // a band of `f` the organization admin deleted
   late String setId;
   late String inviteId;
   late String memberMembership;
@@ -49,6 +50,14 @@ void main() {
     });
     band.expectStatus(200);
     secondBand = band.json['id'] as String;
+    final third = await orgAdmin.post('bands', {
+      'name': 'Deleted',
+      'organization': f.orgId,
+    });
+    third.expectStatus(200);
+    deletedBand = third.json['id'] as String;
+    await BandFixture.addMember(pb, deletedBand, leader, role: 'admin');
+    (await orgAdmin.delete('bands', deletedBand)).expectStatus(204);
     final set = await leader.post('setlists', {
       'id': uuid(),
       'band': f.id,
@@ -142,6 +151,38 @@ void main() {
       () => orgAdmin.patch('bands', f.id, {'deleted': true}),
       unchanged: ('bands', () => f.id, 'deleted'),
     );
+    // Deleting bands is DELETE by organization admins (ADR-0044).
+    for (final (who, user) in [
+      ('leader', () => leader),
+      ('set planner', () => planner),
+      ('member', () => member),
+      ('librarian', () => librarian),
+      ('admin of another organization', () => g.admin),
+    ]) {
+      refused(
+        '$who deletes the band with DELETE (ADR-0044)',
+        () => user().delete('bands', f.id),
+        unchanged: ('bands', () => f.id, 'deleted'),
+      );
+      refused(
+        '$who restores a deleted band (ADR-0044)',
+        () => user().patch('bands', deletedBand, {'deleted': false}),
+        unchanged: ('bands', () => deletedBand, 'deleted'),
+      );
+    }
+    refused(
+      'organization admin renames a deleted band',
+      () => orgAdmin.patch('bands', deletedBand, {'name': 'x'}),
+      unchanged: ('bands', () => deletedBand, 'name'),
+    );
+    refused(
+      'organization admin sets the trash fields of a band',
+      () => orgAdmin.patch('bands', deletedBand, {
+        'deleted': false,
+        'purged': true,
+      }),
+      unchanged: ('bands', () => deletedBand, 'deleted'),
+    );
     refused(
       'leader renames the organization',
       () => leader.patch('organizations', f.orgId, {'name': 'x'}),
@@ -163,6 +204,19 @@ void main() {
   });
 
   group('sets and arrangements', () {
+    refused(
+      'organization admin creates a set in a deleted band (ADR-0044)',
+      () => orgAdmin.post('setlists', newSet(deletedBand)),
+    );
+    refused(
+      'leader of a deleted band creates an arrangement in it (ADR-0044)',
+      () => leader.post('arrangements', {
+        'id': uuid(),
+        'band': deletedBand,
+        'song': song['id'],
+        'transpose': 1,
+      }),
+    );
     refused(
       'member creates a set',
       () => member.post('setlists', newSet(f.id)),

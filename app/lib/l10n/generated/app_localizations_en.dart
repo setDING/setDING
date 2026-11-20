@@ -3640,4 +3640,93 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get bandDelete => 'Delete band';
+
+  @override
+  String bandDeleteTitle(String band) {
+    return 'Delete $band?';
+  }
+
+  @override
+  String bandDeleteMessage(int days) {
+    return 'Its sets, band arrangements and memberships are deleted with it, and its open invitations are revoked. The songs stay in the organization\'s library. Organization admins can restore the band from the trash for $days days. To keep a copy outside setDING, back up the library first.';
+  }
+
+  @override
+  String bandDeleteSets(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets',
+      one: '1 set',
+      zero: 'no sets',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bandDeleteMembers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count members',
+      one: '1 member',
+      zero: 'no members',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bandDeleteInvites(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count open invitations',
+      one: '1 open invitation',
+      zero: 'no open invitations',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bandDeleteLastBand =>
+      'This is the last band of the organization. The organization and its song library stay.';
+
+  @override
+  String bandDeleteConfirmName(String band) {
+    return 'Type \"$band\" to confirm';
+  }
+
+  @override
+  String bandDeleted(String band) {
+    return '$band deleted';
+  }
+
+  @override
+  String get trashBandsTitle => 'Deleted bands';
+
+  @override
+  String trashBandsEmpty(int days) {
+    return 'No deleted bands. Deleted bands can be restored here for $days days.';
+  }
+
+  @override
+  String trashBandsHint(int days) {
+    return 'Deleted bands can be restored with their sets, arrangements and members for $days days. After that they are removed for good.';
+  }
+
+  @override
+  String bandsGone(int count, String names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$names are no longer available to you: the bands were deleted or you are no longer a member.',
+      one:
+          '$names is no longer available to you: the band was deleted or you are no longer a member.',
+    );
+    return '$_temp0';
+  }
 }

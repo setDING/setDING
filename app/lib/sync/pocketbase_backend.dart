@@ -331,6 +331,44 @@ class PocketBaseBackend implements SyncBackend {
   );
 
   @override
+  Future<void> deleteBand(String bandId) =>
+      _call(() => _pb.collection('bands').delete(bandId));
+
+  @override
+  Future<void> restoreBand(String bandId) => _call(
+    () => _pb.collection('bands').update(bandId, body: {'deleted': false}),
+  );
+
+  @override
+  Future<List<DeletedBand>> fetchDeletedBands(String organizationId) async {
+    try {
+      final records = await _retrying(
+        () => _pb
+            .collection('bands')
+            .getFullList(
+              filter: _pb.filter(
+                'organization = {:org} && deleted = true && purged = false',
+                {'org': organizationId},
+              ),
+              sort: '-deleted_at',
+            ),
+      );
+      return [
+        for (final r in records)
+          DeletedBand(
+            id: r.id,
+            name: r.getStringValue('name'),
+            deletedAt:
+                DateTime.tryParse(r.getStringValue('deleted_at'))?.toUtc() ??
+                DateTime.now().toUtc(),
+          ),
+      ];
+    } on ClientException catch (e) {
+      throw _map(e);
+    }
+  }
+
+  @override
   Future<void> addBandMember(String bandId, String userId, BandRole role) =>
       _call(() async {
         // A removed member keeps a soft-deleted membership (unique per user

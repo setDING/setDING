@@ -229,6 +229,47 @@ void main() {
       expect(org.bands.single.members.single.role, BandRole.admin);
       ann.dispose();
     });
+
+    test('organization admins delete and restore bands (ADR-0044)', () async {
+      final (ann, _) = await signedIn('Ann');
+      final (bob, bobUser) = await signedIn('Bob');
+      final bandId = const Uuid().v4();
+      await ann.createBand(id: bandId, name: 'Rock');
+      final orgId = (await ann.fetchOrganizations()).single.id;
+      (await pb.superuser.post('org_memberships', {
+        'user': bobUser.id,
+        'organization': orgId,
+        'role': 'member',
+      })).expectStatus(200);
+      await ann.addBandMember(bandId, bobUser.id, BandRole.admin);
+
+      // Band leaders who are no organization admins cannot delete it.
+      expect(
+        await kindOf(() => bob.deleteBand(bandId)),
+        BackendErrorKind.notAllowed,
+      );
+      await ann.deleteBand(bandId);
+      expect((await ann.fetchOrganizations()).single.bands, isEmpty);
+      expect((await bob.fetchOrganizations()).single.bands, isEmpty);
+      final trash = await ann.fetchDeletedBands(orgId);
+      expect(trash.single.id, bandId);
+      expect(trash.single.name, 'Rock');
+      expect(
+        DateTime.now().toUtc().difference(trash.single.deletedAt).inMinutes,
+        lessThan(5),
+      );
+      expect(await bob.fetchDeletedBands(orgId), isEmpty);
+      expect(
+        await kindOf(() => bob.restoreBand(bandId)),
+        BackendErrorKind.notAllowed,
+      );
+
+      await ann.restoreBand(bandId);
+      expect(await ann.fetchDeletedBands(orgId), isEmpty);
+      expect((await bob.fetchOrganizations()).single.bands.single.id, bandId);
+      ann.dispose();
+      bob.dispose();
+    });
   });
 
   group('invitations (ADR-0005, ADR-0017)', () {

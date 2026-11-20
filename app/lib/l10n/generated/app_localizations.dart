@@ -6066,6 +6066,84 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count, plural, =1{Diesen Song gibt es jetzt zweimal. Vergleiche ihn mit dem bestehenden und lösche den, den du nicht brauchst:} other{Diese Songs gibt es jetzt zweimal. Vergleiche sie mit den bestehenden und lösche die, die du nicht brauchst:}}'**
   String backupResultAdditional(int count);
+
+  /// No description provided for @bandDelete.
+  ///
+  /// In de, this message translates to:
+  /// **'Band löschen'**
+  String get bandDelete;
+
+  /// No description provided for @bandDeleteTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'{band} löschen?'**
+  String bandDeleteTitle(String band);
+
+  /// No description provided for @bandDeleteMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Ihre Sets, Band-Arrangements und Mitgliedschaften werden mitgelöscht und ihre offenen Einladungen widerrufen. Die Songs bleiben in der Bibliothek der Organisation. Admins der Organisation können die Band {days} Tage lang aus dem Papierkorb wiederherstellen. Für eine Kopie ausserhalb von setDING sichere vorher die Bibliothek.'**
+  String bandDeleteMessage(int days);
+
+  /// No description provided for @bandDeleteSets.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{keine Sets} =1{1 Set} other{{count} Sets}}'**
+  String bandDeleteSets(int count);
+
+  /// No description provided for @bandDeleteMembers.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{keine Mitglieder} =1{1 Mitglied} other{{count} Mitglieder}}'**
+  String bandDeleteMembers(int count);
+
+  /// No description provided for @bandDeleteInvites.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{keine offenen Einladungen} =1{1 offene Einladung} other{{count} offene Einladungen}}'**
+  String bandDeleteInvites(int count);
+
+  /// No description provided for @bandDeleteLastBand.
+  ///
+  /// In de, this message translates to:
+  /// **'Das ist die letzte Band der Organisation. Die Organisation und ihre Song-Bibliothek bleiben bestehen.'**
+  String get bandDeleteLastBand;
+
+  /// No description provided for @bandDeleteConfirmName.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Bestätigen «{band}» eintippen'**
+  String bandDeleteConfirmName(String band);
+
+  /// No description provided for @bandDeleted.
+  ///
+  /// In de, this message translates to:
+  /// **'{band} gelöscht'**
+  String bandDeleted(String band);
+
+  /// No description provided for @trashBandsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Gelöschte Bands'**
+  String get trashBandsTitle;
+
+  /// No description provided for @trashBandsEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine gelöschten Bands. Gelöschte Bands lassen sich hier {days} Tage lang wiederherstellen.'**
+  String trashBandsEmpty(int days);
+
+  /// No description provided for @trashBandsHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Gelöschte Bands lassen sich mit ihren Sets, Arrangements und Mitgliedern {days} Tage lang wiederherstellen. Danach werden sie endgültig entfernt.'**
+  String trashBandsHint(int days);
+
+  /// No description provided for @bandsGone.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{{names} ist für dich nicht mehr verfügbar: Die Band wurde gelöscht oder du bist kein Mitglied mehr.} other{{names} sind für dich nicht mehr verfügbar: Die Bands wurden gelöscht oder du bist kein Mitglied mehr.}}'**
+  String bandsGone(int count, String names);
 }
 
 class _AppLocalizationsDelegate

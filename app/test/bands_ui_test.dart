@@ -9,6 +9,7 @@ import 'package:setding/ui/live/live_play_button.dart';
 import 'package:setding/ui/songs/song_screen.dart';
 import 'package:setding/ui/songs/songs_screen.dart';
 
+import 'sync_ui_test.dart' show syncNow;
 import 'test_app.dart';
 
 const _ann = AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann');
@@ -317,6 +318,134 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Jazz'), findsOneWidget);
     await app.dispose(tester);
+  });
+
+  group('deleting bands (ADR-0044)', () {
+    Future<TestApp> openBand(WidgetTester tester, AuthUser user) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'}, user: user);
+      app.backend.addOrganization('o1', 'School', admin: _ann);
+      app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+      app.backend.addBand('b2', 'Jazz', admin: _ann, organizationId: 'o1');
+      app.backend.addMember('b1', _bob, BandRole.admin);
+      await tester.pumpWidget(app.build(home: const BandsScreen()));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('School'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Rock').last);
+      await tester.pumpAndSettle();
+      return app;
+    }
+
+    testWidgets('organization admins delete a band after typing its name', (
+      tester,
+    ) async {
+      final app = await openBand(tester, _ann);
+      await tester.ensureVisible(find.byKey(const Key('band-delete')));
+      await tester.tap(find.byKey(const Key('band-delete')));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('no sets · 2 members · no open invitations'),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('band-delete-last')), findsNothing);
+      FilledButton button() => tester.widget<FilledButton>(
+        find.byKey(const Key('band-delete-confirm')),
+      );
+      expect(button().onPressed, isNull);
+      await tester.enterText(find.byKey(const Key('band-delete-name')), 'Roc');
+      await tester.pump();
+      expect(button().onPressed, isNull);
+      await tester.enterText(find.byKey(const Key('band-delete-name')), 'Rock');
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('band-delete-confirm')));
+      await tester.pumpAndSettle();
+
+      expect(app.backend.bands['b1']!.deletedAt, isNotNull);
+      // Back on the organization, without the band; "Undo" restores it.
+      expect(find.text('Rock deleted'), findsOneWidget);
+      expect(find.widgetWithText(ListTile, 'Rock'), findsNothing);
+      await tester.tap(find.text('Undo'));
+      await tester.pumpAndSettle();
+      expect(app.backend.bands['b1']!.deletedAt, isNull);
+      expect(find.widgetWithText(ListTile, 'Rock'), findsOneWidget);
+      await app.dispose(tester);
+    });
+
+    testWidgets('organization admins restore bands from the trash', (
+      tester,
+    ) async {
+      final app = await openBand(tester, _ann);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      app.backend.bands['b1']!.deletedAt = DateTime.now().toUtc();
+      await tester.tap(find.byKey(const Key('org-deleted-bands')));
+      await tester.pumpAndSettle();
+      expect(find.text('Rock'), findsOneWidget);
+      expect(find.textContaining('30 days left'), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('trash-band-restore-b1')));
+      await tester.pumpAndSettle();
+      expect(app.backend.bands['b1']!.deletedAt, isNull);
+      expect(find.text('"Rock" restored'), findsOneWidget);
+      expect(find.byKey(const ValueKey('trash-band-b1')), findsNothing);
+      await app.dispose(tester);
+    });
+
+    testWidgets('the last band of an organization says so', (tester) async {
+      final app = await openBand(tester, _ann);
+      app.backend.bands['b2']!.deletedAt = DateTime.now().toUtc();
+      await app.backend.fetchOrganizations();
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      // Reopening refreshes the bands from the "server".
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('School'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Rock').last);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const Key('band-delete')));
+      await tester.tap(find.byKey(const Key('band-delete')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('band-delete-last')), findsOneWidget);
+      await app.dispose(tester);
+    });
+
+    testWidgets('members learn that their band is gone', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'}, user: _bob);
+      app.backend.addOrganization('o1', 'School', admin: _ann);
+      app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+      app.backend.addMember('b1', _bob, BandRole.member);
+      await tester.pumpWidget(app.build());
+      await tester.pumpAndSettle();
+      await syncNow(tester);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('no longer available'), findsNothing);
+
+      app.backend.bands['b1']!.deletedAt = DateTime.now().toUtc();
+      await syncNow(tester);
+      await tester.pumpAndSettle();
+      expect(
+        find.text(
+          'Rock is no longer available to you: the band was deleted '
+          'or you are no longer a member.',
+        ),
+        findsOneWidget,
+      );
+      await app.dispose(tester);
+    });
+
+    testWidgets('band leaders see no delete button', (tester) async {
+      final app = await openBand(tester, _bob);
+      expect(find.byKey(const Key('band-delete')), findsNothing);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('org-deleted-bands')), findsNothing);
+      await app.dispose(tester);
+    });
   });
 
   testWidgets('organization members cannot create bands there', (tester) async {

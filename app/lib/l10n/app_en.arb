@@ -1844,5 +1844,91 @@
         "type": "int"
       }
     }
+  },
+  "bandDelete": "Delete band",
+  "bandDeleteTitle": "Delete {band}?",
+  "@bandDeleteTitle": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "bandDeleteMessage": "Its sets, band arrangements and memberships are deleted with it, and its open invitations are revoked. The songs stay in the organization's library. Organization admins can restore the band from the trash for {days} days. To keep a copy outside setDING, back up the library first.",
+  "@bandDeleteMessage": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "bandDeleteSets": "{count, plural, =0{no sets} =1{1 set} other{{count} sets}}",
+  "@bandDeleteSets": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bandDeleteMembers": "{count, plural, =0{no members} =1{1 member} other{{count} members}}",
+  "@bandDeleteMembers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bandDeleteInvites": "{count, plural, =0{no open invitations} =1{1 open invitation} other{{count} open invitations}}",
+  "@bandDeleteInvites": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bandDeleteLastBand": "This is the last band of the organization. The organization and its song library stay.",
+  "bandDeleteConfirmName": "Type \"{band}\" to confirm",
+  "@bandDeleteConfirmName": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "bandDeleted": "{band} deleted",
+  "@bandDeleted": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "trashBandsTitle": "Deleted bands",
+  "trashBandsEmpty": "No deleted bands. Deleted bands can be restored here for {days} days.",
+  "@trashBandsEmpty": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "trashBandsHint": "Deleted bands can be restored with their sets, arrangements and members for {days} days. After that they are removed for good.",
+  "@trashBandsHint": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "bandsGone": "{count, plural, =1{{names} is no longer available to you: the band was deleted or you are no longer a member.} other{{names} are no longer available to you: the bands were deleted or you are no longer a member.}}",
+  "@bandsGone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
   }
 }

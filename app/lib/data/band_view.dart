@@ -70,6 +70,10 @@ class BandView {
   /// (never for the local library).
   bool get canManageBand => !isLocal && (isBandAdmin || isOrgAdmin);
 
+  /// Delete the band (to the trash for 30 days): organization admins only,
+  /// like creating bands (ADR-0044).
+  bool get canDeleteBand => !isLocal && isOrgAdmin;
+
   @override
   bool operator ==(Object other) =>
       other is BandView &&

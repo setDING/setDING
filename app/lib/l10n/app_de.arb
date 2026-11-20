@@ -2080,5 +2080,91 @@
         "type": "int"
       }
     }
+  },
+  "bandDelete": "Band löschen",
+  "bandDeleteTitle": "{band} löschen?",
+  "@bandDeleteTitle": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "bandDeleteMessage": "Ihre Sets, Band-Arrangements und Mitgliedschaften werden mitgelöscht und ihre offenen Einladungen widerrufen. Die Songs bleiben in der Bibliothek der Organisation. Admins der Organisation können die Band {days} Tage lang aus dem Papierkorb wiederherstellen. Für eine Kopie ausserhalb von setDING sichere vorher die Bibliothek.",
+  "@bandDeleteMessage": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "bandDeleteSets": "{count, plural, =0{keine Sets} =1{1 Set} other{{count} Sets}}",
+  "@bandDeleteSets": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bandDeleteMembers": "{count, plural, =0{keine Mitglieder} =1{1 Mitglied} other{{count} Mitglieder}}",
+  "@bandDeleteMembers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bandDeleteInvites": "{count, plural, =0{keine offenen Einladungen} =1{1 offene Einladung} other{{count} offene Einladungen}}",
+  "@bandDeleteInvites": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bandDeleteLastBand": "Das ist die letzte Band der Organisation. Die Organisation und ihre Song-Bibliothek bleiben bestehen.",
+  "bandDeleteConfirmName": "Zum Bestätigen «{band}» eintippen",
+  "@bandDeleteConfirmName": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "bandDeleted": "{band} gelöscht",
+  "@bandDeleted": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "trashBandsTitle": "Gelöschte Bands",
+  "trashBandsEmpty": "Keine gelöschten Bands. Gelöschte Bands lassen sich hier {days} Tage lang wiederherstellen.",
+  "@trashBandsEmpty": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "trashBandsHint": "Gelöschte Bands lassen sich mit ihren Sets, Arrangements und Mitgliedern {days} Tage lang wiederherstellen. Danach werden sie endgültig entfernt.",
+  "@trashBandsHint": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "bandsGone": "{count, plural, =1{{names} ist für dich nicht mehr verfügbar: Die Band wurde gelöscht oder du bist kein Mitglied mehr.} other{{names} sind für dich nicht mehr verfügbar: Die Bands wurden gelöscht oder du bist kein Mitglied mehr.}}",
+  "@bandsGone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
   }
 }

@@ -202,24 +202,26 @@ class BandService {
             ]))
           .watch();
 
-  Future<void>? _refreshing;
+  Future<List<String>>? _refreshing;
 
   /// Loads the organizations and bands of the signed-in user from the
   /// server and stores them. What the user can no longer see is hidden
   /// (songs and sets stay in the database until sync cleans them up).
-  /// Concurrent calls share one request.
-  Future<void> refresh() =>
+  /// Returns the names of the bands that are gone (deleted, or the user was
+  /// removed, ADR-0044). Concurrent calls share one request.
+  Future<List<String>> refresh() =>
       _refreshing ??= _refresh().whenComplete(() => _refreshing = null);
 
-  Future<void> _refresh() async {
+  Future<List<String>> _refresh() async {
     final user = backend.currentUser;
-    if (user == null) return;
-    await store(user.id, await backend.fetchOrganizations());
+    if (user == null) return const [];
+    return store(user.id, await backend.fetchOrganizations());
   }
 
-  /// Stores [remote] as the complete view of [userId]. Only rows that
-  /// changed are written, so an unchanged refresh notifies no watcher.
-  Future<void> store(
+  /// Stores [remote] as the complete view of [userId] and returns the names
+  /// of the bands the user could see before but no longer can. Only rows
+  /// that changed are written, so an unchanged refresh notifies no watcher.
+  Future<List<String>> store(
     String userId,
     List<RemoteOrganization> remote,
   ) => db.transaction(() async {
@@ -333,6 +335,12 @@ class BandService {
 
     // Deletes and updates of no rows notify no watcher.
     final goneBands = previousBands.difference(bandIds);
+    final goneNames = [
+      for (final b in await (db.select(
+        db.bands,
+      )..where((b) => b.id.isIn(goneBands) & b.deleted.equals(false))).get())
+        b.name,
+    ]..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
     await (db.delete(
       db.memberships,
     )..where((m) => m.bandId.isIn(goneBands))).go();
@@ -346,6 +354,7 @@ class BandService {
     await (db.update(db.organizations)
           ..where((o) => o.id.isIn(goneOrgs) & o.deleted.equals(false)))
         .write(const OrganizationsCompanion(deleted: Value(true)));
+    return goneNames;
   });
 
   /// Writes [row] unless [existing] is equal.
@@ -393,6 +402,18 @@ class BandService {
 
   Future<void> renameBand(String bandId, String name) =>
       _then(backend.updateBand(bandId, name: name));
+
+  /// Deletes a band; it stays 30 days in the trash (organization admins,
+  /// ADR-0044).
+  Future<void> deleteBand(String bandId) => _then(backend.deleteBand(bandId));
+
+  /// Restores a deleted band (organization admins, ADR-0044).
+  Future<void> restoreBand(String bandId) => _then(backend.restoreBand(bandId));
+
+  /// The bands of [organizationId] in its trash (organization admins,
+  /// online, ADR-0044).
+  Future<List<DeletedBand>> deletedBands(String organizationId) =>
+      backend.fetchDeletedBands(organizationId);
 
   Future<void> addBandMember(String bandId, String userId, BandRole role) =>
       _then(backend.addBandMember(bandId, userId, role));

@@ -155,6 +155,20 @@ class RemoteBand {
   final List<RemoteMember<BandRole>> members;
 }
 
+/// A band in the trash of its organization (ADR-0044).
+@immutable
+class DeletedBand {
+  const DeletedBand({
+    required this.id,
+    required this.name,
+    required this.deletedAt,
+  });
+
+  final String id;
+  final String name;
+  final DateTime deletedAt;
+}
+
 /// An organization of the signed-in user (ADR-0017) with its people and the
 /// bands the user can see.
 @immutable
@@ -645,6 +659,18 @@ abstract class SyncBackend {
 
   /// Changes band settings (band and organization admins).
   Future<void> updateBand(String bandId, {String? name});
+
+  /// Deletes a band with its sets, arrangements and memberships
+  /// (organization admins, ADR-0044); it stays 30 days in the trash.
+  Future<void> deleteBand(String bandId);
+
+  /// Restores a deleted band with what was deleted with it (organization
+  /// admins, ADR-0044).
+  Future<void> restoreBand(String bandId);
+
+  /// Deleted bands of [organizationId] that can still be restored, most
+  /// recently deleted first (organization admins, ADR-0044).
+  Future<List<DeletedBand>> fetchDeletedBands(String organizationId);
 
   /// Adds a person of the band's organization to the band.
   Future<void> addBandMember(String bandId, String userId, BandRole role);

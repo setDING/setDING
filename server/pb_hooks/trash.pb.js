@@ -19,9 +19,17 @@ cronAdd("setding_trash_purge", "17 3 * * *", () => {
   if (purged > 0) $app.logger().info("Trash purged", "records", purged);
 });
 
+// With `{"collection": "bands", "id": "…"}` the operator purges one deleted
+// band at once instead of waiting for the 30 days (ADR-0044).
 routerAdd(
   "POST",
   "/api/setding/trash/purge",
-  (e) => e.json(200, { purged: require(`${__hooks}/lib/trash.js`).purgeTrash(e.app) }),
+  (e) => {
+    const body = e.requestInfo().body || {};
+    if (body.collection || body.id) {
+      return e.json(200, { purged: require(`${__hooks}/lib/trash.js`).purgeNow(e.app, body.collection, body.id) });
+    }
+    return e.json(200, { purged: require(`${__hooks}/lib/trash.js`).purgeTrash(e.app) });
+  },
   $apis.requireSuperuserAuth(),
 );
