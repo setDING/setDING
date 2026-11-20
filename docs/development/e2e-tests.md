@@ -100,8 +100,7 @@ queue reproducible: a client calls `setOnline(tester, online: false)`.
 
 | `conflicts` | Changes three songs and deletes two while Carla is offline with her own changes of them, and renames a set; then gets the result of each of Carla's resolutions | Offline: changes the same five songs, creates a song and renames the set, all held in the outbox. Online: each song is a conflict (ADR-0004), resolved on its screen: keep mine, use the server version, keep both; for a deleted song keep mine (restores it) and use the server version (accepts the deletion). Her queued song arrives, and her later push of the set wins (last writer wins) |
 | `live` | Plans a gig today with three songs. While Ben plays it, she moves the last song to the front, edits the first and deletes the one Ben is on | Plays the gig live from the overview. Nothing of Anna's changes reaches his stage or his device while he plays (ADR-0007): the deleted song still plays, the old title stays. After he leaves live mode, the sync he missed runs: the set has Anna's order without the deleted song (no hint yet, #691) |
-
-Planned (#692): roles, undo and the trash.
+| `roles` | Deletes a song of a set and undoes it, deletes it again and restores it from the trash. Makes Ben a plain member while he is offline, then removes him from the band | Transposes the song for himself; Anna does not see it (ADR-0006). The undo brings back the song, its place in the set and his transposition; the trash brings back the song and his transposition, not its place (ADR-0043). Reorders the set offline as planner: back online he can no longer plan sets, the server refuses his change and it stays on his device (ADR-0004). Removed from the band: a notice, and the band is gone from his device (ADR-0044) |
 
 ## Adding a story
 
