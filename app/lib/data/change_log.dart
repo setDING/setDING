@@ -200,14 +200,40 @@ class ChangeLogRepository {
 
   /// The changes in [scopeIds] (a band and its organization) after
   /// [since] (all if null), one per song or set, newest first.
+  ///
+  /// Only changes of songs and sets that are on this device and not
+  /// deleted (#701): a song or set deleted after its change was logged
+  /// drops out, and comes back when it is restored from the trash.
   Stream<List<RecentChange>> watch(List<String> scopeIds, {DateTime? since}) {
+    final setKinds = [
+      for (final kind in ChangeKind.values)
+        if (kind.isSet) kind.name,
+    ];
     final query = db.select(db.changeLog)
       ..where(
         (c) =>
             c.scopeId.isIn(scopeIds) &
             (since == null
                 ? const Constant(true)
-                : c.at.isBiggerThanValue(since)),
+                : c.at.isBiggerThanValue(since)) &
+            ((c.kind.isIn(setKinds) &
+                    existsQuery(
+                      db.selectOnly(db.setlists)
+                        ..addColumns([db.setlists.id])
+                        ..where(
+                          db.setlists.id.equalsExp(c.recordId) &
+                              db.setlists.deleted.equals(false),
+                        ),
+                    )) |
+                (c.kind.isNotIn(setKinds) &
+                    existsQuery(
+                      db.selectOnly(db.songs)
+                        ..addColumns([db.songs.id])
+                        ..where(
+                          db.songs.id.equalsExp(c.recordId) &
+                              db.songs.deleted.equals(false),
+                        ),
+                    ))),
       )
       ..orderBy([
         (c) => OrderingTerm.desc(c.at),

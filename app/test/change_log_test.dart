@@ -471,26 +471,91 @@ void main() {
         'a time, newest first', () async {
       final repo = ChangeLogRepository(db);
       final t = DateTime(2026, 11, 20, 12);
-      for (final (i, scope) in ['o1', 'b1', 'other'].indexed) {
+      for (final (i, (scope, record)) in [
+        ('o1', 's1'),
+        ('b1', 'set1'),
+        ('other', 's2'),
+      ].indexed) {
         await repo.add(
           kind: scope == 'b1' ? ChangeKind.setChanged : ChangeKind.songAdded,
           scopeId: scope,
-          recordId: 'r$i',
+          recordId: record,
           title: scope,
           at: t.add(Duration(hours: i)),
         );
       }
       expect((await repo.watch(['b1', 'o1']).first).map((c) => c.recordId), [
-        'r1',
-        'r0',
+        'set1',
+        's1',
       ]);
       expect(
         (await repo.watch(
           ['b1', 'o1'],
           since: t.add(const Duration(minutes: 30)),
         ).first).map((c) => c.recordId),
-        ['r1'],
+        ['set1'],
       );
+    });
+
+    test('a song or set deleted after its change was logged is not listed '
+        'and comes back when restored (#701)', () async {
+      final repo = ChangeLogRepository(db);
+      server.putSong(song('s3', '{title: Three}'), by: 'bob');
+      server.putSet(
+        RemoteSet(
+          id: 'set2',
+          bandId: 'b1',
+          name: 'Party',
+          items: [_song('i2', 's3')],
+        ),
+        by: 'bob',
+      );
+      await engine.sync();
+      final changes = repo.watch(['b1', 'o1']);
+      final emitted = <List<String>>[];
+      final subscription = changes.listen(
+        (list) => emitted.add([for (final c in list) c.recordId]),
+      );
+      Future<List<String>> listed() async {
+        await pumpEventQueue();
+        return emitted.last;
+      }
+
+      expect(await listed(), ['set2', 's3']);
+
+      // Deleted on the server: the entries drop out, the watch updates.
+      server.putSong(
+        RemoteSong(
+          id: 's3',
+          organizationId: 'o1',
+          title: 's3',
+          chordpro: '{title: Three}',
+          deleted: true,
+          deletedAt: DateTime.now(),
+        ),
+        by: 'bob',
+      );
+      server.putSet(
+        RemoteSet(
+          id: 'set2',
+          bandId: 'b1',
+          name: 'Party',
+          items: const [],
+          deleted: true,
+          deletedAt: DateTime.now(),
+        ),
+        by: 'bob',
+      );
+      await engine.sync();
+      expect(await listed(), isEmpty);
+      // Still stored, only not listed.
+      expect((await log()).map((r) => r.recordId), containsAll(['s3', 'set2']));
+
+      // Restored from the trash: the earlier entries are back.
+      server.putSong(song('s3', '{title: Three}'), by: 'bob');
+      await engine.sync();
+      expect(await listed(), contains('s3'));
+      await subscription.cancel();
     });
   });
 }

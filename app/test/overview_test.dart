@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart' show InsertMode, Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -6,6 +6,7 @@ import 'package:setding/data/change_log.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/l10n/generated/app_localizations.dart';
+import 'package:setding/sync/band_service.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:setding/ui/home_tab.dart';
 import 'package:setding/ui/live/live_screen.dart';
@@ -354,6 +355,44 @@ void main() {
       return app;
     }
 
+    /// The song or set of a change: only those on the device are listed
+    /// (#701).
+    Future<void> onDevice(
+      TestApp app,
+      ChangeKind kind,
+      String record, {
+      String scope = 'o1',
+    }) async {
+      final db = app.db;
+      if (kind.isSet) {
+        // The band as the app stores it from the server.
+        await BandService(db, app.backend).refresh();
+        await db
+            .into(db.setlists)
+            .insert(
+              SetlistsCompanion.insert(
+                id: record,
+                bandId: scope,
+                name: 'Title $record',
+                updatedAt: now,
+              ),
+              mode: InsertMode.insertOrIgnore,
+            );
+      } else {
+        await db
+            .into(db.songs)
+            .insert(
+              SongsCompanion.insert(
+                id: record,
+                libraryId: scope,
+                title: 'Title $record',
+                updatedAt: now,
+              ),
+              mode: InsertMode.insertOrIgnore,
+            );
+      }
+    }
+
     Future<void> logChange(
       TestApp app,
       ChangeKind kind,
@@ -362,15 +401,20 @@ void main() {
       Duration ago = const Duration(hours: 1),
       ChangeDetails details = const ChangeDetails(),
       String? user = 'bob',
-    }) => ChangeLogRepository(app.db).add(
-      kind: kind,
-      scopeId: scope,
-      recordId: record,
-      title: 'Title $record',
-      userId: user,
-      details: details,
-      at: now.subtract(ago),
-    );
+      bool create = true,
+    }) async {
+      final db = app.db;
+      if (create) await onDevice(app, kind, record, scope: scope);
+      await ChangeLogRepository(db).add(
+        kind: kind,
+        scopeId: scope,
+        recordId: record,
+        title: 'Title $record',
+        userId: user,
+        details: details,
+        at: now.subtract(ago),
+      );
+    }
 
     String subtitleOf(WidgetTester tester, String record) =>
         (tester
@@ -410,6 +454,9 @@ void main() {
           'seen',
           ago: const Duration(hours: 3),
         );
+        // Changed later, while the overview is open (writing the song then
+        // would wait for the queries of the fake clock).
+        await onDevice(app, ChangeKind.songAdded, 'later');
       });
       await tester.pumpWidget(app.build());
       await tester.pumpAndSettle();
@@ -462,6 +509,7 @@ void main() {
           ChangeKind.songAdded,
           'later',
           ago: const Duration(hours: -1),
+          create: false,
         );
         // The query of the stream runs outside the fake clock.
         await Future<void>.delayed(const Duration(milliseconds: 50));
@@ -506,6 +554,49 @@ void main() {
       }
       await tester.pumpAndSettle();
       expect(recent, findsNothing);
+      await app.dispose(tester);
+    });
+
+    testWidgets('a song or set deleted after its change was logged leaves '
+        'the card and Show all (#701)', (tester) async {
+      usePhoneSize(tester);
+      final app = await bandApp();
+      await tester.runAsync(() async {
+        await logChange(app, ChangeKind.songAdded, 'gone');
+        await logChange(app, ChangeKind.songAdded, 'kept');
+        await logChange(
+          app,
+          ChangeKind.setAdded,
+          'old-set',
+          scope: 'b1',
+          ago: const Duration(minutes: 30),
+        );
+      });
+      await tester.pumpWidget(app.build());
+      await tester.pumpAndSettle();
+      List<String> listed() => tester
+          .widgetList<RecentChangeTile>(find.byType(RecentChangeTile))
+          .map((t) => t.change.recordId)
+          .toList();
+      expect(listed(), ['old-set', 'kept', 'gone']);
+
+      // Deleted on another device, applied by the sync.
+      final db = app.db;
+      await (db.update(db.songs)..where((s) => s.id.equals('gone'))).write(
+        SongsCompanion(deleted: const Value(true), deletedAt: Value(now)),
+      );
+      await (db.update(
+        db.setlists,
+      )..where((s) => s.id.equals('old-set'))).write(
+        SetlistsCompanion(deleted: const Value(true), deletedAt: Value(now)),
+      );
+      await tester.pumpAndSettle();
+      expect(listed(), ['kept']);
+
+      await tester.tap(find.byKey(const Key('overview-recent-changes-all')));
+      await tester.pumpAndSettle();
+      expect(find.byType(RecentChangesScreen), findsOneWidget);
+      expect(listed(), ['kept']);
       await app.dispose(tester);
     });
 

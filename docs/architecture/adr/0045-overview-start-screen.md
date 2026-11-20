@@ -180,6 +180,13 @@ Further rules:
     deleted, 2 songs changed"), with *Show* opening *Recent changes*.
   - **Unchanged:** the change log still does not log deletions; nothing new
     is stored on the device or the server.
+- 2026-11-20: Owner (#701): **entries of deleted songs and sets are
+  hidden.** *Recent changes* and *Show all* list only songs and sets that
+  are on the device and not deleted; a song or set deleted (or purged)
+  after its change was logged drops out, so no entry opens a deleted
+  record. The rows stay in the change log: a song or set restored from
+  the trash (ADR-0043) shows its earlier entries again while they are
+  within the 30 days. Deletions themselves are still not logged.
 
 ## Open points
 
