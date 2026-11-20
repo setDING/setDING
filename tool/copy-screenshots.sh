@@ -39,6 +39,7 @@ map=(
   editor_labels 23_editor_labels
   import_labels 23b_import_labels
   editor_ccli 24_editor_ccli
+  sync_hint 26_sync_hint
 )
 
 for ((i = 0; i < ${#map[@]}; i += 2)); do

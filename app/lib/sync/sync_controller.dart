@@ -50,13 +50,22 @@ final attachmentFileProvider = FutureProvider.autoDispose
 /// State of the sync for the UI.
 @immutable
 class SyncStatus {
-  const SyncStatus({this.running = false, this.lastSync, this.lastReport});
+  const SyncStatus({
+    this.running = false,
+    this.lastSync,
+    this.lastReport,
+    this.afterLive = false,
+  });
 
   final bool running;
 
   /// End of the last completed run.
   final DateTime? lastSync;
   final SyncReport? lastReport;
+
+  /// [lastReport] is the run that caught up after live mode: its changes
+  /// came in during the performance and are summed up once (#691).
+  final bool afterLive;
 
   SyncStatus copyWith({
     bool? running,
@@ -66,6 +75,7 @@ class SyncStatus {
     running: running ?? this.running,
     lastSync: lastSync ?? this.lastSync,
     lastReport: lastReport ?? this.lastReport,
+    afterLive: afterLive,
   );
 }
 
@@ -82,6 +92,9 @@ class SyncController extends Notifier<SyncStatus> {
   Timer? _debounce;
   int _paused = 0;
   bool _requested = false;
+
+  /// The next run catches up on the syncs requested during live mode.
+  bool _catchingUp = false;
 
   /// Whether the scheduled (or deferred) sync must load the bands first.
   bool _refreshBands = false;
@@ -170,6 +183,8 @@ class SyncController extends Notifier<SyncStatus> {
       return null;
     }
     _requested = false;
+    final afterLive = _catchingUp;
+    _catchingUp = false;
     final bands = refreshBands || _refreshBands;
     _refreshBands = false;
     state = state.copyWith(running: true);
@@ -186,6 +201,7 @@ class SyncController extends Notifier<SyncStatus> {
     state = SyncStatus(
       lastSync: report.error == null ? DateTime.now() : state.lastSync,
       lastReport: report,
+      afterLive: afterLive,
     );
     return report;
   }
@@ -197,6 +213,7 @@ class SyncController extends Notifier<SyncStatus> {
   void resume() {
     if (_paused > 0) _paused--;
     if (_paused == 0 && _requested) {
+      _catchingUp = true;
       _schedule(remoteDelay, refreshBands: _refreshBands);
     }
   }

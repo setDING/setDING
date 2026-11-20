@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../sync_hints.dart';
 import '../../data/attachment_lookup.dart';
 import '../../data/attachment_storage.dart';
 import '../../data/database.dart';
@@ -179,6 +180,15 @@ class _SetScreenState extends ConsumerState<SetScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Someone else changed or deleted the set (#691); on wide screens the
+    // deleted set stays in its pane, as after deleting it here.
+    listenForSyncHints(
+      context,
+      ref,
+      recordId: widget.setId,
+      isSet: true,
+      onDeleted: widget.embedded ? null : () => closeRoute(context),
+    );
     final l10n = AppLocalizations.of(context);
     final setValue = ref.watch(setProvider(widget.setId));
     final itemsValue = ref.watch(setItemsProvider(widget.setId));

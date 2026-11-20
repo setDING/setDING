@@ -2639,5 +2639,122 @@
   },
   "libraryUsageHint": "Songs, die in keinem vergangenen Set einer Band der Organisation waren. Was keine Band mehr braucht, kannst du in den Papierkorb legen.",
   "libraryUsageNotLoaded": "Noch nicht geladen: Synchronisiere einmal mit Verbindung zum Server.",
-  "libraryUsageAllPlayed": "Jeder Song der Bibliothek wurde schon von einer Band gespielt."
+  "libraryUsageAllPlayed": "Jeder Song der Bibliothek wurde schon von einer Band gespielt.",
+  "syncHintSongChanged": "«{title}» wurde von {name} geändert.",
+  "@syncHintSongChanged": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "syncHintSongDeleted": "«{title}» wurde von {name} gelöscht.",
+  "@syncHintSongDeleted": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "syncHintSetChanged": "Das Set «{title}» wurde von {name} geändert.",
+  "@syncHintSetChanged": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "syncHintSetDeleted": "Das Set «{title}» wurde von {name} gelöscht.",
+  "@syncHintSetDeleted": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "syncHintSongChangedAnonymous": "«{title}» wurde von jemand anderem geändert.",
+  "@syncHintSongChangedAnonymous": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncHintSongDeletedAnonymous": "«{title}» wurde von jemand anderem gelöscht.",
+  "@syncHintSongDeletedAnonymous": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncHintSetChangedAnonymous": "Das Set «{title}» wurde von jemand anderem geändert.",
+  "@syncHintSetChangedAnonymous": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncHintSetDeletedAnonymous": "Das Set «{title}» wurde von jemand anderem gelöscht.",
+  "@syncHintSetDeletedAnonymous": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "syncHintAfterLive": "Während du live gespielt hast: {changes}.",
+  "@syncHintAfterLive": {
+    "placeholders": {
+      "changes": {
+        "type": "String"
+      }
+    }
+  },
+  "syncHintSongsChanged": "{count, plural, =1{1 Song geändert} other{{count} Songs geändert}}",
+  "@syncHintSongsChanged": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncHintSongsDeleted": "{count, plural, =1{1 Song gelöscht} other{{count} Songs gelöscht}}",
+  "@syncHintSongsDeleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncHintSetsChanged": "{count, plural, =1{1 Set geändert} other{{count} Sets geändert}}",
+  "@syncHintSetsChanged": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncHintSetsDeleted": "{count, plural, =1{1 Set gelöscht} other{{count} Sets gelöscht}}",
+  "@syncHintSetsDeleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncHintShowChanges": "Anzeigen"
 }

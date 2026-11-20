@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import settings from '../../../../../docs/screenshots/settings_de.png';
+import syncHint from '../../../../../docs/screenshots/sync_hint_de.png';
 
 setDING funktioniert auch ohne Konto, aber nur auf deinem Gerät. Mit einem Konto
 teilst du Songs und Sets mit deiner Band, und deine persönlichen Anpassungen und
@@ -49,6 +50,20 @@ Ohne Verbindung arbeitest du ganz normal weiter. setDING meldet **Keine Verbindu
 bist.
 
 <Image src={settings} alt="Die Einstellungen «Konto & Synchronisation» mit Konto, Synchronisation und Server" />
+
+## Änderungen von anderen
+
+Ändert oder löscht jemand anderes den Song oder das Set, das du gerade offen hast,
+zeigt setDING nach der Synchronisation einen Hinweis, zum Beispiel **«Morning Light»
+wurde von Anna geändert.** Ein gelöschter Song oder ein gelöschtes Set wird dabei
+geschlossen. Deine eigenen Änderungen, auch von deinen anderen Geräten, melden nichts.
+
+<Image src={syncHint} alt="Ein Song mit dem Hinweis: «Morning Light» wurde von Anna geändert." />
+
+Im Live-Modus ändert sich nichts auf der Bühne: setDING synchronisiert erst danach.
+Was andere in der Zwischenzeit geändert haben, fasst ein Hinweis zusammen, zum
+Beispiel **Während du live gespielt hast: 1 Song gelöscht, 2 Songs geändert.**
+**Anzeigen** öffnet die letzten Änderungen der Übersicht.
 
 ## setDING aktualisieren
 

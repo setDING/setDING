@@ -6828,6 +6828,90 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Jeder Song der Bibliothek wurde schon von einer Band gespielt.'**
   String get libraryUsageAllPlayed;
+
+  /// No description provided for @syncHintSongChanged.
+  ///
+  /// In de, this message translates to:
+  /// **'«{title}» wurde von {name} geändert.'**
+  String syncHintSongChanged(String title, String name);
+
+  /// No description provided for @syncHintSongDeleted.
+  ///
+  /// In de, this message translates to:
+  /// **'«{title}» wurde von {name} gelöscht.'**
+  String syncHintSongDeleted(String title, String name);
+
+  /// No description provided for @syncHintSetChanged.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Set «{title}» wurde von {name} geändert.'**
+  String syncHintSetChanged(String title, String name);
+
+  /// No description provided for @syncHintSetDeleted.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Set «{title}» wurde von {name} gelöscht.'**
+  String syncHintSetDeleted(String title, String name);
+
+  /// No description provided for @syncHintSongChangedAnonymous.
+  ///
+  /// In de, this message translates to:
+  /// **'«{title}» wurde von jemand anderem geändert.'**
+  String syncHintSongChangedAnonymous(String title);
+
+  /// No description provided for @syncHintSongDeletedAnonymous.
+  ///
+  /// In de, this message translates to:
+  /// **'«{title}» wurde von jemand anderem gelöscht.'**
+  String syncHintSongDeletedAnonymous(String title);
+
+  /// No description provided for @syncHintSetChangedAnonymous.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Set «{title}» wurde von jemand anderem geändert.'**
+  String syncHintSetChangedAnonymous(String title);
+
+  /// No description provided for @syncHintSetDeletedAnonymous.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Set «{title}» wurde von jemand anderem gelöscht.'**
+  String syncHintSetDeletedAnonymous(String title);
+
+  /// No description provided for @syncHintAfterLive.
+  ///
+  /// In de, this message translates to:
+  /// **'Während du live gespielt hast: {changes}.'**
+  String syncHintAfterLive(String changes);
+
+  /// No description provided for @syncHintSongsChanged.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song geändert} other{{count} Songs geändert}}'**
+  String syncHintSongsChanged(int count);
+
+  /// No description provided for @syncHintSongsDeleted.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song gelöscht} other{{count} Songs gelöscht}}'**
+  String syncHintSongsDeleted(int count);
+
+  /// No description provided for @syncHintSetsChanged.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Set geändert} other{{count} Sets geändert}}'**
+  String syncHintSetsChanged(int count);
+
+  /// No description provided for @syncHintSetsDeleted.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Set gelöscht} other{{count} Sets gelöscht}}'**
+  String syncHintSetsDeleted(int count);
+
+  /// No description provided for @syncHintShowChanges.
+  ///
+  /// In de, this message translates to:
+  /// **'Anzeigen'**
+  String get syncHintShowChanges;
 }
 
 class _AppLocalizationsDelegate
