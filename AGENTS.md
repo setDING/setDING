@@ -60,6 +60,28 @@ Every change follows [`docs/development/git-workflow.md`](docs/development/git-w
 - Remote: **GitHub** (`github.com/tafli/setDING`), CLI `gh` (logged in on the development machine): issues, PRs and squash merges go through `gh`. Without a login, fall back to workflow section 11.
 - Commits use the owner's global git identity and are **GPG-signed**; never set a repository-local identity or commit unsigned. Squash merges on GitHub use `gh pr merge --author-email andi@theboss.ch`. Every commit carries the `Co-Authored-By` trailer.
 
+## Permissions on the server (mandatory)
+
+The server is the only place where permissions are enforced (owner rule, issue #632).
+Anyone can call the PocketBase API directly (curl, Bruno, a modified client), so
+nobody may be able to do through the API what the app does not let them do.
+
+- **Every permission is enforced by the server**: collection API rules in
+  `server/pb_migrations/`, hooks and custom routes in `server/pb_hooks/`. Client
+  checks (`canManageSets`, `canEditSong`, … in `app/lib/data/band_view.dart`) only
+  hide the UI and never replace a server check.
+- **Deny by default.** The server refuses everything the permission matrix of
+  ADR-0023 does not grant, also actions the app never offers and fields it never
+  sends (e.g. `deleted`, `role`, tenant fields such as `organization`/`band`/`user`,
+  server-maintained fields such as `revision`, `updated_by`, `created_by`).
+- **Tested through the API.** Every new or changed collection, field, rule, hook,
+  route or role comes with server tests in `server/test/` that call the API
+  directly as each role that must be refused (and one that is allowed), and check
+  on the server that nothing changed, not only the status code. The permission
+  matrix test `server/test/permissions_test.dart` is kept complete.
+- **Client and server change together.** A change to a client permission check
+  changes the server rules, their tests and ADR-0023's matrix in the same PR.
+
 ## External libraries (mandatory)
 
 External libraries are always used in their **newest version** (owner rule,
