@@ -99,6 +99,17 @@ void main() {
       ),
       findsOneWidget,
     );
+    // Each link says when it was created, not only until when it is valid
+    // (issue #637).
+    expect(
+      find.descendant(
+        of: find.byKey(Key('invite-${orgLink.id}')),
+        matching: find.textContaining(
+          'Created Sun, Nov 15, valid until Sun, Nov 22',
+        ),
+      ),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byKey(Key('invite-show-${bandLink.id}')));
     await tester.pumpAndSettle();
