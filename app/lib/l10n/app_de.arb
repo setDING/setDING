@@ -2541,5 +2541,56 @@
         "type": "String"
       }
     }
-  }
+  },
+  "repertoire": "Repertoire",
+  "repertoireOf": "Repertoire von {band}",
+  "@repertoireOf": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "repertoireLastYear": "12 Monate",
+  "repertoireAllTime": "Gesamt",
+  "repertoireMostPlayed": "Meistgespielt",
+  "repertoireStale": "Länger nicht gespielt",
+  "repertoireStaleHint": "{months, plural, =1{Zuletzt vor mehr als einem Monat gespielt} other{Zuletzt vor mehr als {months} Monaten gespielt}}",
+  "@repertoireStaleHint": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "repertoireNeverPlayed": "Nie gespielt",
+  "repertoireNeverPlayedHint": "Songs der Bibliothek, die in keinem vergangenen Set der Band waren",
+  "repertoireNone": "Keine",
+  "repertoireEmpty": "Die Band hat noch keine Songs in vergangenen Sets gespielt.",
+  "repertoirePlays": "{count, plural, =1{1-mal} other{{count}-mal}}",
+  "@repertoirePlays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "repertoireThreshold": "Wann gilt ein Song als länger nicht gespielt?",
+  "repertoireMonths": "{months, plural, =1{Nach 1 Monat} other{Nach {months} Monaten}}",
+  "@repertoireMonths": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "repertoireDefault": "Standard: nach {months} Monaten",
+  "@repertoireDefault": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "sortByLastPlayed": "Zuletzt gespielt"
 }

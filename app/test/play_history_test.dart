@@ -262,4 +262,57 @@ void main() {
     );
     expect((await sets.getItems(upcoming)).single.item.played, isNull);
   });
+
+  group('repertoire', () {
+    Future<Repertoire> repertoire() =>
+        history.watchRepertoire(localBandId, localBandId, today: today).first;
+
+    test('counts the plays of every song of the library', () async {
+      final hit = await songs.createSong(source: '{title: Hit}');
+      final old = await songs.createSong(source: '{title: Oldie}');
+      final dusty = await songs.createSong(source: '{title: Dusty}');
+      final fresh = await songs.createSong(source: '{title: Fresh}');
+      final gone = await songs.createSong(source: '{title: Gone}');
+      await songs.deleteSong(gone);
+      await gig('A', daysAgo(5), [hit, hit]);
+      await gig('B', daysAgo(40), [hit, dusty]);
+      await gig('C', daysAgo(400), [old, old]);
+      await gig('D', daysAgo(500), [old]);
+      await gig('Next', daysAgo(-3), [fresh]);
+      final deleted = await gig('Deleted', daysAgo(10), [fresh]);
+      await sets.deleteSet(deleted);
+      await db
+          .into(db.bands)
+          .insert(BandsCompanion.insert(id: 'other', name: 'Other'));
+      await gig('Other band', daysAgo(2), [fresh], bandId: 'other');
+
+      final r = await repertoire();
+      final byTitle = {for (final s in r.songs) s.title: s};
+      expect(byTitle.keys, unorderedEquals(['Hit', 'Oldie', 'Dusty', 'Fresh']));
+      expect(
+        (byTitle['Hit']!.total, byTitle['Hit']!.lastYear, byTitle['Hit']!.last),
+        (2, 2, daysAgo(5)),
+      );
+      expect((byTitle['Oldie']!.total, byTitle['Oldie']!.lastYear), (2, 0));
+      expect(byTitle['Fresh']!.last, isNull);
+
+      expect(
+        [for (final s in r.mostPlayed(lastYear: true)) s.title],
+        ['Hit', 'Dusty'],
+      );
+      // A tie goes to the song played more recently.
+      expect(
+        [for (final s in r.mostPlayed(lastYear: false)) s.title],
+        ['Hit', 'Oldie', 'Dusty'],
+      );
+      expect(
+        [for (final s in r.mostPlayed(lastYear: false, limit: 1)) s.title],
+        ['Hit'],
+      );
+      expect([for (final s in r.notPlayedFor(6)) s.title], ['Oldie']);
+      expect([for (final s in r.notPlayedFor(1)) s.title], ['Oldie', 'Dusty']);
+      expect([for (final s in r.neverPlayed) s.title], ['Fresh']);
+      expect(staleBefore(DateTime(2026, 3, 31), 1), DateTime(2026, 2, 31));
+    });
+  });
 }

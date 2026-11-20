@@ -13,6 +13,7 @@ import '../songs/songs_screen.dart' show songListTwoColumnWidth;
 import '../trash/trash_screen.dart';
 import '../widgets/breakpoint_builder.dart';
 import '../widgets/dialogs.dart';
+import 'repertoire_screen.dart';
 import 'set_screen.dart';
 
 /// Minimum width for showing the list of sets and the selected set side by
@@ -108,6 +109,18 @@ class _SetsPane extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.navSets),
         actions: [
+          // The band's repertoire from its past sets (ADR-0046).
+          IconButton(
+            key: const Key('sets-repertoire'),
+            tooltip: l10n.repertoire,
+            icon: const Icon(Icons.leaderboard_outlined),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (_) => RepertoireScreen(band: band),
+              ),
+            ),
+          ),
           const BandSwitcher(),
           // ADR-0043: whoever may delete sets may restore them.
           if (band.canManageSets)

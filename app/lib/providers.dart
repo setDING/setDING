@@ -421,6 +421,15 @@ final songPlaysProvider = StreamProvider.autoDispose
           .watchSongPlays(key.band, key.song),
     );
 
+/// The repertoire of a band: the songs of its library with their plays
+/// (ADR-0046).
+final repertoireProvider = StreamProvider.autoDispose
+    .family<Repertoire, ({String band, String library})>(
+      (ref, key) => ref
+          .watch(playHistoryRepositoryProvider)
+          .watchRepertoire(key.band, key.library),
+    );
+
 /// When a band last played each song (ADR-0046).
 final lastPlayedProvider = StreamProvider.autoDispose
     .family<Map<String, DateTime>, String>(

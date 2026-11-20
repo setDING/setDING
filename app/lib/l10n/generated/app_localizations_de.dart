@@ -4181,4 +4181,83 @@ class AppLocalizationsDe extends AppLocalizations {
   String changeBy(String name) {
     return 'von $name';
   }
+
+  @override
+  String get repertoire => 'Repertoire';
+
+  @override
+  String repertoireOf(String band) {
+    return 'Repertoire von $band';
+  }
+
+  @override
+  String get repertoireLastYear => '12 Monate';
+
+  @override
+  String get repertoireAllTime => 'Gesamt';
+
+  @override
+  String get repertoireMostPlayed => 'Meistgespielt';
+
+  @override
+  String get repertoireStale => 'Länger nicht gespielt';
+
+  @override
+  String repertoireStaleHint(int months) {
+    String _temp0 = intl.Intl.pluralLogic(
+      months,
+      locale: localeName,
+      other: 'Zuletzt vor mehr als $months Monaten gespielt',
+      one: 'Zuletzt vor mehr als einem Monat gespielt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get repertoireNeverPlayed => 'Nie gespielt';
+
+  @override
+  String get repertoireNeverPlayedHint =>
+      'Songs der Bibliothek, die in keinem vergangenen Set der Band waren';
+
+  @override
+  String get repertoireNone => 'Keine';
+
+  @override
+  String get repertoireEmpty =>
+      'Die Band hat noch keine Songs in vergangenen Sets gespielt.';
+
+  @override
+  String repertoirePlays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count-mal',
+      one: '1-mal',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get repertoireThreshold =>
+      'Wann gilt ein Song als länger nicht gespielt?';
+
+  @override
+  String repertoireMonths(int months) {
+    String _temp0 = intl.Intl.pluralLogic(
+      months,
+      locale: localeName,
+      other: 'Nach $months Monaten',
+      one: 'Nach 1 Monat',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String repertoireDefault(int months) {
+    return 'Standard: nach $months Monaten';
+  }
+
+  @override
+  String get sortByLastPlayed => 'Zuletzt gespielt';
 }
