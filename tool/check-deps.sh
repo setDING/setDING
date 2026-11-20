@@ -10,8 +10,9 @@
 #   latest release; `make upgrade` runs `npm update`.
 # - the CycloneDX Gradle plugin of the SBOM (tool/sbom/gradle, ADR-0037) must be
 #   the latest release on the Gradle plugin portal (raised by hand).
-# - the check tools pinned in tool/fetch-tool.sh (ShellCheck, Caddy) must be
-#   the latest GitHub release (raised by hand, with the ShellCheck sums).
+# - the check tools pinned in tool/fetch-tool.sh (ShellCheck, Caddy,
+#   geckodriver) must be the latest GitHub release (raised by hand, with the
+#   ShellCheck and geckodriver sums).
 # Needs the pub.dev and npm registries; without network the check is skipped
 # with a warning.
 set -euo pipefail
@@ -96,7 +97,7 @@ fi
 
 # Check tools of the test gate (tool/fetch-tool.sh, issue #644).
 fetch="$ROOT/tool/fetch-tool.sh"
-for entry in SHELLCHECK_VERSION:koalaman/shellcheck CADDY_VERSION:caddyserver/caddy; do
+for entry in SHELLCHECK_VERSION:koalaman/shellcheck CADDY_VERSION:caddyserver/caddy GECKODRIVER_VERSION:mozilla/geckodriver; do
   var="${entry%%:*}" repo="${entry#*:}"
   current="$(sed -n "s/^$var=//p" "$fetch")"
   if ! latest="$(curl -fsS "https://api.github.com/repos/$repo/releases/latest" 2>/dev/null |
