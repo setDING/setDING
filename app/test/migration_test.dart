@@ -37,8 +37,16 @@ void downgradeToSchema19(Database raw) {
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN midi_programs');
 }
 
+/// Turns a current database back into schema 21: sets and band
+/// arrangements without their last editor (ADR-0045).
+void downgradeToSchema21(Database raw) {
+  raw.execute('ALTER TABLE setlists DROP COLUMN updated_by');
+  raw.execute('ALTER TABLE band_arrangements DROP COLUMN updated_by');
+}
+
 /// Turns a current database back into schema 20: no trash (ADR-0043).
 void downgradeToSchema20(Database raw) {
+  downgradeToSchema21(raw);
   for (final table in ['songs', 'attachments', 'setlists']) {
     raw.execute('ALTER TABLE $table DROP COLUMN deleted_at');
     raw.execute('ALTER TABLE $table DROP COLUMN purged');
@@ -739,6 +747,41 @@ void main() {
     expect(byId[kept]!.deletedAt, isNull);
     final set = await upgraded.select(upgraded.setlists).getSingle();
     expect(set.deletedAt, isNotNull);
+    await upgraded.close();
+  });
+
+  test('upgrades a schema 21 database: sets and arrangements get their '
+      'last editor (ADR-0045)', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final storage = FileAttachmentStorage(dir);
+    final song = await SongRepository(
+      current,
+      storage,
+    ).createSong(source: '{title: Old}');
+    final setId = await SetRepository(current, storage).createSet(name: 'Gig');
+    await ArrangementRepository(current).save('b1', song, transpose: 2);
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema21(raw);
+    raw.execute('PRAGMA user_version = 21');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final set = await upgraded.select(upgraded.setlists).getSingle();
+    expect((set.id, set.name, set.updatedBy), (setId, 'Gig', null));
+    final arrangement = await upgraded
+        .select(upgraded.bandArrangements)
+        .getSingle();
+    expect((arrangement.transpose, arrangement.updatedBy), (2, null));
+    await ArrangementRepository(
+      upgraded,
+      userId: 'ann',
+    ).save('b1', song, transpose: 3);
+    expect(
+      (await upgraded.select(upgraded.bandArrangements).getSingle()).updatedBy,
+      'ann',
+    );
     await upgraded.close();
   });
 }

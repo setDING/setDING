@@ -666,8 +666,10 @@ class FakeSyncBackend implements SyncBackend {
   /// Band arrangements by record ID (ADR-0025).
   final arrangements = <String, RemoteArrangement>{};
 
-  /// Simulates a change of an arrangement on another device.
-  RemoteArrangement putArrangement(RemoteArrangement a) {
+  /// Simulates a change of an arrangement on another device; [by] (or
+  /// [RemoteArrangement.updatedBy]) is recorded as the last editor, as the
+  /// server does.
+  RemoteArrangement putArrangement(RemoteArrangement a, {String? by}) {
     final stored = RemoteArrangement(
       id: a.id,
       bandId: a.bandId,
@@ -677,6 +679,7 @@ class FakeSyncBackend implements SyncBackend {
       tempo: a.tempo,
       revision: ++_serverRevision,
       deleted: a.deleted,
+      updatedBy: by ?? a.updatedBy,
     );
     arrangements[a.id] = stored;
     return stored;
@@ -716,7 +719,7 @@ class FakeSyncBackend implements SyncBackend {
     if (create && existing != null) {
       throw const BackendException(BackendErrorKind.server);
     }
-    return putArrangement(arrangement);
+    return putArrangement(arrangement, by: user!.id);
   }
 
   /// Personal settings by user ID (ADR-0027).
@@ -830,7 +833,9 @@ class FakeSyncBackend implements SyncBackend {
     return putOverlay(overlay);
   }
 
-  RemoteSet putSet(RemoteSet set) {
+  /// Simulates a change of a set; [by] (or [RemoteSet.updatedBy]) is
+  /// recorded as the last editor, as the server does.
+  RemoteSet putSet(RemoteSet set, {String? by}) {
     final stored = RemoteSet(
       id: set.id,
       bandId: set.bandId,
@@ -842,6 +847,7 @@ class FakeSyncBackend implements SyncBackend {
       deleted: set.deleted,
       deletedAt: set.deleted ? set.deletedAt ?? DateTime.now() : null,
       purged: set.purged,
+      updatedBy: by ?? set.updatedBy,
     );
     sets[set.id] = stored;
     return stored;
@@ -903,7 +909,7 @@ class FakeSyncBackend implements SyncBackend {
     if (!create && !sets.containsKey(set.id)) {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
-    return putSet(set);
+    return putSet(set, by: user!.id);
   }
 
   /// Server state: attachments by ID and their files.

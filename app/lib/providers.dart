@@ -227,6 +227,7 @@ final setRepositoryProvider = Provider<SetRepository>(
     ref.watch(databaseProvider),
     ref.watch(attachmentStorageProvider),
     bandId: ref.watch(_currentBandIdProvider),
+    userId: ref.watch(authProvider.select((u) => u?.id)),
   ),
 );
 
@@ -361,7 +362,10 @@ final annotationCountProvider = StreamProvider.autoDispose.family<int, String>(
 
 /// Band arrangements (ADR-0025).
 final arrangementRepositoryProvider = Provider<ArrangementRepository>(
-  (ref) => ArrangementRepository(ref.watch(databaseProvider)),
+  (ref) => ArrangementRepository(
+    ref.watch(databaseProvider),
+    userId: ref.watch(authProvider.select((u) => u?.id)),
+  ),
 );
 
 /// The band whose arrangement the song screen shows for songs of

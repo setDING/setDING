@@ -79,6 +79,7 @@ class SetSync {
             deleted: Value(remote.deleted),
             deletedAt: Value(remote.deletedAt),
             purged: Value(remote.purged),
+            updatedBy: Value(remote.updatedBy),
           ),
         );
     await (db.delete(
@@ -147,7 +148,10 @@ class SetSync {
       }
       await db.transaction(() async {
         await (db.update(db.setlists)..where((s) => s.id.equals(set.id))).write(
-          SetlistsCompanion(revision: Value(stored.revision)),
+          SetlistsCompanion(
+            revision: Value(stored.revision),
+            updatedBy: Value(stored.updatedBy),
+          ),
         );
         await store.done(entry);
       });

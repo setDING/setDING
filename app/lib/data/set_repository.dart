@@ -69,13 +69,26 @@ SetGroups groupSets(List<SetSummary> sets, DateTime today) {
 /// Access to sets (setlists) and their items of one band (the current
 /// band, or the local library by default).
 class SetRepository {
-  SetRepository(this.db, this.storage, {this.bandId = localBandId});
+  SetRepository(
+    this.db,
+    this.storage, {
+    this.bandId = localBandId,
+    this.userId,
+  });
 
   final AppDatabase db;
   final AttachmentStorage storage;
 
   /// Band whose sets are listed and to which new sets belong.
   final String bandId;
+
+  /// The signed-in user, or null.
+  final String? userId;
+
+  /// Last editor of a change of a set of [band] (ADR-0045): the signed-in
+  /// user for a band's sets, as the server will record it; nobody for the
+  /// local band.
+  String? _editorIn(String band) => band == localBandId ? null : userId;
 
   /// For each song in a set of the band with a gig date on [today] or
   /// later: the first of these sets (by date).
@@ -161,6 +174,7 @@ class SetRepository {
               gigDate: Value(gigDate),
               venue: Value(blankToNull(venue)),
               updatedAt: DateTime.now(),
+              updatedBy: Value(_editorIn(bandId)),
             ),
           );
       await markDirty(db, SyncCollection.setlists, id, scope: bandId);
@@ -418,7 +432,10 @@ class SetRepository {
     )..where((s) => s.id.equals(setId))).getSingleOrNull();
     if (current == null) return;
     await (db.update(db.setlists)..where((s) => s.id.equals(setId))).write(
-      SetlistsCompanion(updatedAt: Value(DateTime.now())),
+      SetlistsCompanion(
+        updatedAt: Value(DateTime.now()),
+        updatedBy: Value(_editorIn(current.bandId)),
+      ),
     );
     await markDirty(db, SyncCollection.setlists, setId, scope: current.bandId);
   }

@@ -3791,6 +3791,17 @@ class $SetlistsTable extends Setlists
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _updatedByMeta = const VerificationMeta(
+    'updatedBy',
+  );
+  @override
+  late final GeneratedColumn<String> updatedBy = GeneratedColumn<String>(
+    'updated_by',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _revisionMeta = const VerificationMeta(
     'revision',
   );
@@ -3860,6 +3871,7 @@ class $SetlistsTable extends Setlists
     name,
     gigDate,
     venue,
+    updatedBy,
     revision,
     updatedAt,
     deleted,
@@ -3909,6 +3921,12 @@ class $SetlistsTable extends Setlists
       context.handle(
         _venueMeta,
         venue.isAcceptableOrUnknown(data['venue']!, _venueMeta),
+      );
+    }
+    if (data.containsKey('updated_by')) {
+      context.handle(
+        _updatedByMeta,
+        updatedBy.isAcceptableOrUnknown(data['updated_by']!, _updatedByMeta),
       );
     }
     if (data.containsKey('revision')) {
@@ -3972,6 +3990,10 @@ class $SetlistsTable extends Setlists
         DriftSqlType.string,
         data['${effectivePrefix}venue'],
       ),
+      updatedBy: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_by'],
+      ),
       revision: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}revision'],
@@ -4007,6 +4029,11 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
   final String name;
   final DateTime? gigDate;
   final String? venue;
+
+  /// User who changed the set last, as the server reports it (ADR-0045,
+  /// schema 22): for the recent changes of the overview. Null for the
+  /// local band and for sets synced before.
+  final String? updatedBy;
   final int revision;
   final DateTime updatedAt;
   final bool deleted;
@@ -4023,6 +4050,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     required this.name,
     this.gigDate,
     this.venue,
+    this.updatedBy,
     required this.revision,
     required this.updatedAt,
     required this.deleted,
@@ -4040,6 +4068,9 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     }
     if (!nullToAbsent || venue != null) {
       map['venue'] = Variable<String>(venue);
+    }
+    if (!nullToAbsent || updatedBy != null) {
+      map['updated_by'] = Variable<String>(updatedBy);
     }
     map['revision'] = Variable<int>(revision);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -4062,6 +4093,9 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
       venue: venue == null && nullToAbsent
           ? const Value.absent()
           : Value(venue),
+      updatedBy: updatedBy == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedBy),
       revision: Value(revision),
       updatedAt: Value(updatedAt),
       deleted: Value(deleted),
@@ -4083,6 +4117,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
       name: serializer.fromJson<String>(json['name']),
       gigDate: serializer.fromJson<DateTime?>(json['gigDate']),
       venue: serializer.fromJson<String?>(json['venue']),
+      updatedBy: serializer.fromJson<String?>(json['updatedBy']),
       revision: serializer.fromJson<int>(json['revision']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deleted: serializer.fromJson<bool>(json['deleted']),
@@ -4099,6 +4134,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
       'name': serializer.toJson<String>(name),
       'gigDate': serializer.toJson<DateTime?>(gigDate),
       'venue': serializer.toJson<String?>(venue),
+      'updatedBy': serializer.toJson<String?>(updatedBy),
       'revision': serializer.toJson<int>(revision),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deleted': serializer.toJson<bool>(deleted),
@@ -4113,6 +4149,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     String? name,
     Value<DateTime?> gigDate = const Value.absent(),
     Value<String?> venue = const Value.absent(),
+    Value<String?> updatedBy = const Value.absent(),
     int? revision,
     DateTime? updatedAt,
     bool? deleted,
@@ -4124,6 +4161,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     name: name ?? this.name,
     gigDate: gigDate.present ? gigDate.value : this.gigDate,
     venue: venue.present ? venue.value : this.venue,
+    updatedBy: updatedBy.present ? updatedBy.value : this.updatedBy,
     revision: revision ?? this.revision,
     updatedAt: updatedAt ?? this.updatedAt,
     deleted: deleted ?? this.deleted,
@@ -4137,6 +4175,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
       name: data.name.present ? data.name.value : this.name,
       gigDate: data.gigDate.present ? data.gigDate.value : this.gigDate,
       venue: data.venue.present ? data.venue.value : this.venue,
+      updatedBy: data.updatedBy.present ? data.updatedBy.value : this.updatedBy,
       revision: data.revision.present ? data.revision.value : this.revision,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deleted: data.deleted.present ? data.deleted.value : this.deleted,
@@ -4153,6 +4192,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
           ..write('name: $name, ')
           ..write('gigDate: $gigDate, ')
           ..write('venue: $venue, ')
+          ..write('updatedBy: $updatedBy, ')
           ..write('revision: $revision, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deleted: $deleted, ')
@@ -4169,6 +4209,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     name,
     gigDate,
     venue,
+    updatedBy,
     revision,
     updatedAt,
     deleted,
@@ -4184,6 +4225,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
           other.name == this.name &&
           other.gigDate == this.gigDate &&
           other.venue == this.venue &&
+          other.updatedBy == this.updatedBy &&
           other.revision == this.revision &&
           other.updatedAt == this.updatedAt &&
           other.deleted == this.deleted &&
@@ -4197,6 +4239,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
   final Value<String> name;
   final Value<DateTime?> gigDate;
   final Value<String?> venue;
+  final Value<String?> updatedBy;
   final Value<int> revision;
   final Value<DateTime> updatedAt;
   final Value<bool> deleted;
@@ -4209,6 +4252,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     this.name = const Value.absent(),
     this.gigDate = const Value.absent(),
     this.venue = const Value.absent(),
+    this.updatedBy = const Value.absent(),
     this.revision = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deleted = const Value.absent(),
@@ -4222,6 +4266,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     required String name,
     this.gigDate = const Value.absent(),
     this.venue = const Value.absent(),
+    this.updatedBy = const Value.absent(),
     this.revision = const Value.absent(),
     required DateTime updatedAt,
     this.deleted = const Value.absent(),
@@ -4238,6 +4283,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     Expression<String>? name,
     Expression<DateTime>? gigDate,
     Expression<String>? venue,
+    Expression<String>? updatedBy,
     Expression<int>? revision,
     Expression<DateTime>? updatedAt,
     Expression<bool>? deleted,
@@ -4251,6 +4297,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
       if (name != null) 'name': name,
       if (gigDate != null) 'gig_date': gigDate,
       if (venue != null) 'venue': venue,
+      if (updatedBy != null) 'updated_by': updatedBy,
       if (revision != null) 'revision': revision,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deleted != null) 'deleted': deleted,
@@ -4266,6 +4313,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     Value<String>? name,
     Value<DateTime?>? gigDate,
     Value<String?>? venue,
+    Value<String?>? updatedBy,
     Value<int>? revision,
     Value<DateTime>? updatedAt,
     Value<bool>? deleted,
@@ -4279,6 +4327,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
       name: name ?? this.name,
       gigDate: gigDate ?? this.gigDate,
       venue: venue ?? this.venue,
+      updatedBy: updatedBy ?? this.updatedBy,
       revision: revision ?? this.revision,
       updatedAt: updatedAt ?? this.updatedAt,
       deleted: deleted ?? this.deleted,
@@ -4305,6 +4354,9 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     }
     if (venue.present) {
       map['venue'] = Variable<String>(venue.value);
+    }
+    if (updatedBy.present) {
+      map['updated_by'] = Variable<String>(updatedBy.value);
     }
     if (revision.present) {
       map['revision'] = Variable<int>(revision.value);
@@ -4335,6 +4387,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
           ..write('name: $name, ')
           ..write('gigDate: $gigDate, ')
           ..write('venue: $venue, ')
+          ..write('updatedBy: $updatedBy, ')
           ..write('revision: $revision, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deleted: $deleted, ')
@@ -5758,6 +5811,17 @@ class $BandArrangementsTable extends BandArrangements
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _updatedByMeta = const VerificationMeta(
+    'updatedBy',
+  );
+  @override
+  late final GeneratedColumn<String> updatedBy = GeneratedColumn<String>(
+    'updated_by',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _revisionMeta = const VerificationMeta(
     'revision',
   );
@@ -5792,6 +5856,7 @@ class $BandArrangementsTable extends BandArrangements
     transpose,
     sequence,
     tempo,
+    updatedBy,
     revision,
     deleted,
   ];
@@ -5841,6 +5906,12 @@ class $BandArrangementsTable extends BandArrangements
         tempo.isAcceptableOrUnknown(data['tempo']!, _tempoMeta),
       );
     }
+    if (data.containsKey('updated_by')) {
+      context.handle(
+        _updatedByMeta,
+        updatedBy.isAcceptableOrUnknown(data['updated_by']!, _updatedByMeta),
+      );
+    }
     if (data.containsKey('revision')) {
       context.handle(
         _revisionMeta,
@@ -5882,6 +5953,10 @@ class $BandArrangementsTable extends BandArrangements
         DriftSqlType.int,
         data['${effectivePrefix}tempo'],
       ),
+      updatedBy: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_by'],
+      ),
       revision: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}revision'],
@@ -5912,6 +5987,11 @@ class BandArrangement extends DataClass implements Insertable<BandArrangement> {
   /// Tempo in BPM; null = as in the song (`{tempo}`).
   final int? tempo;
 
+  /// User who changed the arrangement last, as the server reports it
+  /// (ADR-0045, schema 22). Null for the local band and for arrangements
+  /// synced before.
+  final String? updatedBy;
+
   /// Server revision; 0 = not on the server.
   final int revision;
 
@@ -5923,6 +6003,7 @@ class BandArrangement extends DataClass implements Insertable<BandArrangement> {
     required this.transpose,
     this.sequence,
     this.tempo,
+    this.updatedBy,
     required this.revision,
     required this.deleted,
   });
@@ -5937,6 +6018,9 @@ class BandArrangement extends DataClass implements Insertable<BandArrangement> {
     }
     if (!nullToAbsent || tempo != null) {
       map['tempo'] = Variable<int>(tempo);
+    }
+    if (!nullToAbsent || updatedBy != null) {
+      map['updated_by'] = Variable<String>(updatedBy);
     }
     map['revision'] = Variable<int>(revision);
     map['deleted'] = Variable<bool>(deleted);
@@ -5954,6 +6038,9 @@ class BandArrangement extends DataClass implements Insertable<BandArrangement> {
       tempo: tempo == null && nullToAbsent
           ? const Value.absent()
           : Value(tempo),
+      updatedBy: updatedBy == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedBy),
       revision: Value(revision),
       deleted: Value(deleted),
     );
@@ -5970,6 +6057,7 @@ class BandArrangement extends DataClass implements Insertable<BandArrangement> {
       transpose: serializer.fromJson<int>(json['transpose']),
       sequence: serializer.fromJson<String?>(json['sequence']),
       tempo: serializer.fromJson<int?>(json['tempo']),
+      updatedBy: serializer.fromJson<String?>(json['updatedBy']),
       revision: serializer.fromJson<int>(json['revision']),
       deleted: serializer.fromJson<bool>(json['deleted']),
     );
@@ -5983,6 +6071,7 @@ class BandArrangement extends DataClass implements Insertable<BandArrangement> {
       'transpose': serializer.toJson<int>(transpose),
       'sequence': serializer.toJson<String?>(sequence),
       'tempo': serializer.toJson<int?>(tempo),
+      'updatedBy': serializer.toJson<String?>(updatedBy),
       'revision': serializer.toJson<int>(revision),
       'deleted': serializer.toJson<bool>(deleted),
     };
@@ -5994,6 +6083,7 @@ class BandArrangement extends DataClass implements Insertable<BandArrangement> {
     int? transpose,
     Value<String?> sequence = const Value.absent(),
     Value<int?> tempo = const Value.absent(),
+    Value<String?> updatedBy = const Value.absent(),
     int? revision,
     bool? deleted,
   }) => BandArrangement(
@@ -6002,6 +6092,7 @@ class BandArrangement extends DataClass implements Insertable<BandArrangement> {
     transpose: transpose ?? this.transpose,
     sequence: sequence.present ? sequence.value : this.sequence,
     tempo: tempo.present ? tempo.value : this.tempo,
+    updatedBy: updatedBy.present ? updatedBy.value : this.updatedBy,
     revision: revision ?? this.revision,
     deleted: deleted ?? this.deleted,
   );
@@ -6012,6 +6103,7 @@ class BandArrangement extends DataClass implements Insertable<BandArrangement> {
       transpose: data.transpose.present ? data.transpose.value : this.transpose,
       sequence: data.sequence.present ? data.sequence.value : this.sequence,
       tempo: data.tempo.present ? data.tempo.value : this.tempo,
+      updatedBy: data.updatedBy.present ? data.updatedBy.value : this.updatedBy,
       revision: data.revision.present ? data.revision.value : this.revision,
       deleted: data.deleted.present ? data.deleted.value : this.deleted,
     );
@@ -6025,6 +6117,7 @@ class BandArrangement extends DataClass implements Insertable<BandArrangement> {
           ..write('transpose: $transpose, ')
           ..write('sequence: $sequence, ')
           ..write('tempo: $tempo, ')
+          ..write('updatedBy: $updatedBy, ')
           ..write('revision: $revision, ')
           ..write('deleted: $deleted')
           ..write(')'))
@@ -6038,6 +6131,7 @@ class BandArrangement extends DataClass implements Insertable<BandArrangement> {
     transpose,
     sequence,
     tempo,
+    updatedBy,
     revision,
     deleted,
   );
@@ -6050,6 +6144,7 @@ class BandArrangement extends DataClass implements Insertable<BandArrangement> {
           other.transpose == this.transpose &&
           other.sequence == this.sequence &&
           other.tempo == this.tempo &&
+          other.updatedBy == this.updatedBy &&
           other.revision == this.revision &&
           other.deleted == this.deleted);
 }
@@ -6060,6 +6155,7 @@ class BandArrangementsCompanion extends UpdateCompanion<BandArrangement> {
   final Value<int> transpose;
   final Value<String?> sequence;
   final Value<int?> tempo;
+  final Value<String?> updatedBy;
   final Value<int> revision;
   final Value<bool> deleted;
   final Value<int> rowid;
@@ -6069,6 +6165,7 @@ class BandArrangementsCompanion extends UpdateCompanion<BandArrangement> {
     this.transpose = const Value.absent(),
     this.sequence = const Value.absent(),
     this.tempo = const Value.absent(),
+    this.updatedBy = const Value.absent(),
     this.revision = const Value.absent(),
     this.deleted = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -6079,6 +6176,7 @@ class BandArrangementsCompanion extends UpdateCompanion<BandArrangement> {
     this.transpose = const Value.absent(),
     this.sequence = const Value.absent(),
     this.tempo = const Value.absent(),
+    this.updatedBy = const Value.absent(),
     this.revision = const Value.absent(),
     this.deleted = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -6090,6 +6188,7 @@ class BandArrangementsCompanion extends UpdateCompanion<BandArrangement> {
     Expression<int>? transpose,
     Expression<String>? sequence,
     Expression<int>? tempo,
+    Expression<String>? updatedBy,
     Expression<int>? revision,
     Expression<bool>? deleted,
     Expression<int>? rowid,
@@ -6100,6 +6199,7 @@ class BandArrangementsCompanion extends UpdateCompanion<BandArrangement> {
       if (transpose != null) 'transpose': transpose,
       if (sequence != null) 'sequence': sequence,
       if (tempo != null) 'tempo': tempo,
+      if (updatedBy != null) 'updated_by': updatedBy,
       if (revision != null) 'revision': revision,
       if (deleted != null) 'deleted': deleted,
       if (rowid != null) 'rowid': rowid,
@@ -6112,6 +6212,7 @@ class BandArrangementsCompanion extends UpdateCompanion<BandArrangement> {
     Value<int>? transpose,
     Value<String?>? sequence,
     Value<int?>? tempo,
+    Value<String?>? updatedBy,
     Value<int>? revision,
     Value<bool>? deleted,
     Value<int>? rowid,
@@ -6122,6 +6223,7 @@ class BandArrangementsCompanion extends UpdateCompanion<BandArrangement> {
       transpose: transpose ?? this.transpose,
       sequence: sequence ?? this.sequence,
       tempo: tempo ?? this.tempo,
+      updatedBy: updatedBy ?? this.updatedBy,
       revision: revision ?? this.revision,
       deleted: deleted ?? this.deleted,
       rowid: rowid ?? this.rowid,
@@ -6146,6 +6248,9 @@ class BandArrangementsCompanion extends UpdateCompanion<BandArrangement> {
     if (tempo.present) {
       map['tempo'] = Variable<int>(tempo.value);
     }
+    if (updatedBy.present) {
+      map['updated_by'] = Variable<String>(updatedBy.value);
+    }
     if (revision.present) {
       map['revision'] = Variable<int>(revision.value);
     }
@@ -6166,6 +6271,7 @@ class BandArrangementsCompanion extends UpdateCompanion<BandArrangement> {
           ..write('transpose: $transpose, ')
           ..write('sequence: $sequence, ')
           ..write('tempo: $tempo, ')
+          ..write('updatedBy: $updatedBy, ')
           ..write('revision: $revision, ')
           ..write('deleted: $deleted, ')
           ..write('rowid: $rowid')
@@ -11290,6 +11396,7 @@ typedef $$SetlistsTableCreateCompanionBuilder = SetlistsCompanion Function({
   required String name,
   Value<DateTime?> gigDate,
   Value<String?> venue,
+  Value<String?> updatedBy,
   Value<int> revision,
   required DateTime updatedAt,
   Value<bool> deleted,
@@ -11303,6 +11410,7 @@ typedef $$SetlistsTableUpdateCompanionBuilder = SetlistsCompanion Function({
   Value<String> name,
   Value<DateTime?> gigDate,
   Value<String?> venue,
+  Value<String?> updatedBy,
   Value<int> revision,
   Value<DateTime> updatedAt,
   Value<bool> deleted,
@@ -11377,6 +11485,11 @@ class $$SetlistsTableFilterComposer
 
   ColumnFilters<String> get venue => $composableBuilder(
     column: $table.venue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get updatedBy => $composableBuilder(
+    column: $table.updatedBy,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -11483,6 +11596,11 @@ class $$SetlistsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get updatedBy => $composableBuilder(
+    column: $table.updatedBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get revision => $composableBuilder(
     column: $table.revision,
     builder: (column) => ColumnOrderings(column),
@@ -11552,6 +11670,9 @@ class $$SetlistsTableAnnotationComposer
 
   GeneratedColumn<String> get venue =>
       $composableBuilder(column: $table.venue, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedBy =>
+      $composableBuilder(column: $table.updatedBy, builder: (column) => column);
 
   GeneratedColumn<int> get revision =>
       $composableBuilder(column: $table.revision, builder: (column) => column);
@@ -11650,6 +11771,7 @@ class $$SetlistsTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<DateTime?> gigDate = const Value.absent(),
                 Value<String?> venue = const Value.absent(),
+                Value<String?> updatedBy = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
@@ -11662,6 +11784,7 @@ class $$SetlistsTableTableManager
                 name: name,
                 gigDate: gigDate,
                 venue: venue,
+                updatedBy: updatedBy,
                 revision: revision,
                 updatedAt: updatedAt,
                 deleted: deleted,
@@ -11676,6 +11799,7 @@ class $$SetlistsTableTableManager
                 required String name,
                 Value<DateTime?> gigDate = const Value.absent(),
                 Value<String?> venue = const Value.absent(),
+                Value<String?> updatedBy = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 required DateTime updatedAt,
                 Value<bool> deleted = const Value.absent(),
@@ -11688,6 +11812,7 @@ class $$SetlistsTableTableManager
                 name: name,
                 gigDate: gigDate,
                 venue: venue,
+                updatedBy: updatedBy,
                 revision: revision,
                 updatedAt: updatedAt,
                 deleted: deleted,
@@ -12745,6 +12870,7 @@ typedef $$BandArrangementsTableCreateCompanionBuilder =
       Value<int> transpose,
       Value<String?> sequence,
       Value<int?> tempo,
+      Value<String?> updatedBy,
       Value<int> revision,
       Value<bool> deleted,
       Value<int> rowid,
@@ -12756,6 +12882,7 @@ typedef $$BandArrangementsTableUpdateCompanionBuilder =
       Value<int> transpose,
       Value<String?> sequence,
       Value<int?> tempo,
+      Value<String?> updatedBy,
       Value<int> revision,
       Value<bool> deleted,
       Value<int> rowid,
@@ -12814,6 +12941,11 @@ class $$BandArrangementsTableFilterComposer
 
   ColumnFilters<int> get tempo => $composableBuilder(
     column: $table.tempo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get updatedBy => $composableBuilder(
+    column: $table.updatedBy,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -12880,6 +13012,11 @@ class $$BandArrangementsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get updatedBy => $composableBuilder(
+    column: $table.updatedBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get revision => $composableBuilder(
     column: $table.revision,
     builder: (column) => ColumnOrderings(column),
@@ -12934,6 +13071,9 @@ class $$BandArrangementsTableAnnotationComposer
 
   GeneratedColumn<int> get tempo =>
       $composableBuilder(column: $table.tempo, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedBy =>
+      $composableBuilder(column: $table.updatedBy, builder: (column) => column);
 
   GeneratedColumn<int> get revision =>
       $composableBuilder(column: $table.revision, builder: (column) => column);
@@ -13000,6 +13140,7 @@ class $$BandArrangementsTableTableManager
                 Value<int> transpose = const Value.absent(),
                 Value<String?> sequence = const Value.absent(),
                 Value<int?> tempo = const Value.absent(),
+                Value<String?> updatedBy = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -13009,6 +13150,7 @@ class $$BandArrangementsTableTableManager
                 transpose: transpose,
                 sequence: sequence,
                 tempo: tempo,
+                updatedBy: updatedBy,
                 revision: revision,
                 deleted: deleted,
                 rowid: rowid,
@@ -13020,6 +13162,7 @@ class $$BandArrangementsTableTableManager
                 Value<int> transpose = const Value.absent(),
                 Value<String?> sequence = const Value.absent(),
                 Value<int?> tempo = const Value.absent(),
+                Value<String?> updatedBy = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -13029,6 +13172,7 @@ class $$BandArrangementsTableTableManager
                 transpose: transpose,
                 sequence: sequence,
                 tempo: tempo,
+                updatedBy: updatedBy,
                 revision: revision,
                 deleted: deleted,
                 rowid: rowid,
