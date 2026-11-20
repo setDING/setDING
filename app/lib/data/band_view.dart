@@ -153,6 +153,10 @@ class LibraryView {
   /// Delete songs and attachments: librarians.
   bool get canDeleteSongs => isLocal || isLibrarian;
 
+  /// Export the library as a backup archive (ADR-0043): the local library,
+  /// and organizations for librarians (organization admins included).
+  bool get canExportLibrary => isLocal || isLibrarian;
+
   @override
   bool operator ==(Object other) =>
       other is LibraryView &&

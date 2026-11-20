@@ -227,7 +227,7 @@ abstract class AppLocalizations {
   /// No description provided for @importDescription.
   ///
   /// In de, this message translates to:
-  /// **'Unterstützt werden .cho, .chordpro, .chopro, .crd, .pro, .txt und ZIP-Archive mit solchen Dateien.'**
+  /// **'Unterstützt werden .cho, .chordpro, .chopro, .crd, .pro, .txt, ZIP-Archive mit solchen Dateien und setDING-Sicherungen.'**
   String get importDescription;
 
   /// No description provided for @importGermanNotation.
@@ -5880,6 +5880,192 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'«{title}» wiederhergestellt'**
   String trashRestored(String title);
+
+  /// No description provided for @backupExport.
+  ///
+  /// In de, this message translates to:
+  /// **'Bibliothek sichern'**
+  String get backupExport;
+
+  /// No description provided for @backupSyncing.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit dem Server synchronisieren …'**
+  String get backupSyncing;
+
+  /// No description provided for @backupCollecting.
+  ///
+  /// In de, this message translates to:
+  /// **'Sicherung wird erstellt …'**
+  String get backupCollecting;
+
+  /// No description provided for @backupSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Sicherung gespeichert.'**
+  String get backupSaved;
+
+  /// No description provided for @backupFailedTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Sichern nicht möglich'**
+  String get backupFailedTitle;
+
+  /// No description provided for @backupSyncDeferred.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Live-Modus ist offen. Schliesse ihn und versuche es noch einmal.'**
+  String get backupSyncDeferred;
+
+  /// No description provided for @backupSyncFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Abgleich mit dem Server ist fehlgeschlagen. Eine Sicherung einer Organisation braucht eine Verbindung, damit sie alles enthält. Versuche es wieder, wenn du online bist.'**
+  String get backupSyncFailed;
+
+  /// No description provided for @backupPendingChanges.
+  ///
+  /// In de, this message translates to:
+  /// **'Änderungen auf diesem Gerät sind noch nicht auf dem Server. Warte den Abgleich ab und versuche es noch einmal.'**
+  String get backupPendingChanges;
+
+  /// No description provided for @backupConflicts.
+  ///
+  /// In de, this message translates to:
+  /// **'Einige Songs haben einen Konflikt. Löse zuerst die Konflikte.'**
+  String get backupConflicts;
+
+  /// No description provided for @backupMissingFiles.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch nicht alle Anhänge sind heruntergeladen. Warte den Download ab und versuche es noch einmal.'**
+  String get backupMissingFiles;
+
+  /// No description provided for @backupFileMissing.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Anhang «{name}» von «{song}» konnte nicht geladen werden.'**
+  String backupFileMissing(String name, String song);
+
+  /// No description provided for @backupInvalid.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Datei ist keine setDING-Sicherung.'**
+  String get backupInvalid;
+
+  /// No description provided for @backupNewer.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Sicherung stammt von einer neueren setDING-Version. Aktualisiere die App, um sie zu importieren.'**
+  String get backupNewer;
+
+  /// No description provided for @backupImportTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Sicherung importieren'**
+  String get backupImportTitle;
+
+  /// No description provided for @backupImportSummary.
+  ///
+  /// In de, this message translates to:
+  /// **'Sicherung von «{library}»: {songs, plural, =1{1 Song} other{{songs} Songs}}, {sets, plural, =1{1 Set} other{{sets} Sets}}.'**
+  String backupImportSummary(String library, int songs, int sets);
+
+  /// No description provided for @backupImportCopyHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Alles wird als Kopie in die aktuelle Bibliothek importiert. Bestehendes wird nicht verändert.'**
+  String get backupImportCopyHint;
+
+  /// No description provided for @backupImportIdentical.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song ist} other{{count} Songs sind}} schon mit gleichem Text hier und werden so verwendet.'**
+  String backupImportIdentical(int count);
+
+  /// No description provided for @backupImportDiffering.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song gibt} other{{count} Songs gibt}} es hier mit anderem Text:'**
+  String backupImportDiffering(int count);
+
+  /// No description provided for @backupKeepExisting.
+  ///
+  /// In de, this message translates to:
+  /// **'Bestehende Songs behalten'**
+  String get backupKeepExisting;
+
+  /// No description provided for @backupAddAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Als zusätzliche Songs importieren'**
+  String get backupAddAll;
+
+  /// No description provided for @backupImportSetsTo.
+  ///
+  /// In de, this message translates to:
+  /// **'Sets kommen nach:'**
+  String get backupImportSetsTo;
+
+  /// No description provided for @backupBandSets.
+  ///
+  /// In de, this message translates to:
+  /// **'{band} ({count, plural, =1{1 Set} other{{count} Sets}})'**
+  String backupBandSets(String band, int count);
+
+  /// No description provided for @backupSkipSets.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht importieren'**
+  String get backupSkipSets;
+
+  /// No description provided for @backupImportStart.
+  ///
+  /// In de, this message translates to:
+  /// **'Importieren'**
+  String get backupImportStart;
+
+  /// No description provided for @backupImportDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Sicherung importiert'**
+  String get backupImportDone;
+
+  /// No description provided for @backupResultSongs.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song importiert} other{{count} Songs importiert}}'**
+  String backupResultSongs(int count);
+
+  /// No description provided for @backupResultIdentical.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song war schon hier} other{{count} Songs waren schon hier}}'**
+  String backupResultIdentical(int count);
+
+  /// No description provided for @backupResultKept.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 bestehender Song behalten} other{{count} bestehende Songs behalten}}'**
+  String backupResultKept(int count);
+
+  /// No description provided for @backupResultSets.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{Keine Sets} =1{1 Set} other{{count} Sets}} importiert'**
+  String backupResultSets(int count);
+
+  /// No description provided for @backupResultFiles.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Anhang} other{{count} Anhänge}}'**
+  String backupResultFiles(int count);
+
+  /// No description provided for @backupResultAdditional.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Diesen Song gibt es jetzt zweimal. Vergleiche ihn mit dem bestehenden und lösche den, den du nicht brauchst:} other{Diese Songs gibt es jetzt zweimal. Vergleiche sie mit den bestehenden und lösche die, die du nicht brauchst:}}'**
+  String backupResultAdditional(int count);
 }
 
 class _AppLocalizationsDelegate

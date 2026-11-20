@@ -1,0 +1,730 @@
+import 'dart:convert';
+
+import 'package:archive/archive.dart';
+import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart' show compute, immutable;
+import 'package:path/path.dart' as p;
+import 'package:uuid/uuid.dart';
+
+import 'arrangement_repository.dart';
+import 'attachment_storage.dart';
+import 'database.dart';
+import 'import_export.dart' show safeFileName;
+import 'outbox.dart';
+import 'set_repository.dart';
+import 'song_repository.dart';
+
+const _uuid = Uuid();
+
+/// `format` of a backup archive's manifest (ADR-0043).
+const backupFormat = 'setding-backup';
+
+/// Newest `formatVersion` this app reads and the one it writes. A minor
+/// addition (an optional field) keeps the version; anything an older app
+/// would misread needs a new one.
+const backupFormatVersion = 1;
+
+/// Name of the manifest inside the archive.
+const backupManifestName = 'manifest.json';
+
+/// The archive is not a backup, or one this app cannot read.
+class BackupFormatException implements Exception {
+  const BackupFormatException({this.newerVersion});
+
+  /// The archive was written by a newer app ([backupFormatVersion] is
+  /// lower).
+  final int? newerVersion;
+
+  @override
+  String toString() => newerVersion == null
+      ? 'Not a setDING backup'
+      : 'Backup format $newerVersion is newer than $backupFormatVersion';
+}
+
+/// An attachment file could not be read for the export (not downloaded,
+/// web: not loadable).
+class BackupFileMissingException implements Exception {
+  const BackupFileMissingException(this.songTitle, this.name);
+
+  final String songTitle;
+  final String name;
+
+  @override
+  String toString() => 'Attachment "$name" of "$songTitle" is not available';
+}
+
+/// Why an organization cannot be exported right now (ADR-0043): the archive
+/// would miss something that is not on this device yet.
+enum BackupBlocker {
+  /// Local changes are waiting to be pushed.
+  pendingChanges,
+
+  /// Songs of the library have open sync conflicts.
+  conflicts,
+
+  /// Attachment files are not downloaded yet (native apps).
+  missingFiles,
+}
+
+/// How songs of the archive that exist in the target library with a
+/// different ChordPro text are imported.
+enum BackupDuplicates {
+  /// As additional songs next to the existing ones.
+  addAll,
+
+  /// Not at all: the existing song is used.
+  keepExisting,
+}
+
+/// A backup archive read into memory.
+@immutable
+class BackupContents {
+  const BackupContents(this.manifest, this.files);
+
+  final Map<String, dynamic> manifest;
+
+  /// Files of the archive by their path.
+  final Map<String, Uint8List> files;
+
+  List<Map<String, dynamic>> _list(String key) => [
+    for (final e in (manifest[key] as List?) ?? const [])
+      (e as Map).cast<String, dynamic>(),
+  ];
+
+  List<Map<String, dynamic>> get songs => _list('songs');
+  List<Map<String, dynamic>> get bands => _list('bands');
+  List<Map<String, dynamic>> get sets => _list('sets');
+  List<Map<String, dynamic>> get arrangements => _list('arrangements');
+  List<Map<String, dynamic>> get overlays => _list('overlays');
+  List<Map<String, dynamic>> get annotations => _list('annotations');
+
+  /// Name of the library the archive was made from.
+  String get sourceName =>
+      ((manifest['source'] as Map?)?['name'] as String?) ?? '';
+
+  /// The ChordPro text of a song of the archive ('' for PDF-only songs).
+  String sourceOf(Map<String, dynamic> song) {
+    final file = song['file'] as String?;
+    final bytes = file == null ? null : files[file];
+    return bytes == null ? '' : utf8.decode(bytes, allowMalformed: true);
+  }
+}
+
+/// What importing an archive into a library would find (ADR-0043).
+@immutable
+class BackupPreview {
+  const BackupPreview({
+    required this.songs,
+    required this.identical,
+    required this.differing,
+  });
+
+  final int songs;
+
+  /// Songs that exist with the same ChordPro text: the existing ones are
+  /// used.
+  final int identical;
+
+  /// Songs that exist (same ID, or same title and artist) with a different
+  /// text: the person chooses [BackupDuplicates].
+  final int differing;
+}
+
+/// Result of an import.
+@immutable
+class BackupImportResult {
+  const BackupImportResult({
+    required this.imported,
+    required this.identical,
+    required this.additional,
+    required this.keptExisting,
+    required this.sets,
+    required this.files,
+  });
+
+  /// Songs imported as new songs (including [additional]).
+  final int imported;
+
+  /// Songs not imported because they exist with the same text.
+  final int identical;
+
+  /// Songs imported next to an existing song with a different text, as
+  /// (new ID, title), to compare and delete.
+  final List<({String id, String title})> additional;
+
+  /// Songs with a different text not imported ([BackupDuplicates.keepExisting]).
+  final int keptExisting;
+
+  final int sets;
+  final int files;
+}
+
+/// Backup archive of a whole library (ADR-0043): export and import, always
+/// as a copy with new IDs.
+class BackupService {
+  BackupService(this.db, this.storage, {this.userId, this.appVersion = ''});
+
+  final AppDatabase db;
+  final AttachmentStorage storage;
+
+  /// The signed-in user: their own personal adjustments and annotations go
+  /// into the archive and are imported for them (ADR-0020).
+  final String? userId;
+
+  /// Written into the manifest.
+  final String appVersion;
+
+  // Export --------------------------------------------------------------------
+
+  /// What keeps [libraryId] from being exported after a sync, or null.
+  /// [checkFiles] is false on the web client, which loads the files for the
+  /// export instead.
+  Future<BackupBlocker?> blocker(
+    String libraryId, {
+    bool checkFiles = true,
+  }) async {
+    if (libraryId == localBandId) return null;
+    if ((await db.select(db.syncOutbox).get()).isNotEmpty) {
+      return BackupBlocker.pendingChanges;
+    }
+    final conflicts = await (db.select(db.songConflicts).join([
+      innerJoin(db.songs, db.songs.id.equalsExp(db.songConflicts.songId)),
+    ])..where(db.songs.libraryId.equals(libraryId))).get();
+    if (conflicts.isNotEmpty) return BackupBlocker.conflicts;
+    if (checkFiles) {
+      for (final (a, _) in await _attachments(libraryId)) {
+        if (!await storage.exists(a.fileName)) {
+          return BackupBlocker.missingFiles;
+        }
+      }
+    }
+    return null;
+  }
+
+  /// The attachments of the library's songs that are not deleted, with
+  /// their song.
+  Future<List<(AttachmentEntry, SongEntry)>> _attachments(
+    String libraryId,
+  ) async =>
+      (await (db.select(db.attachments).join([
+                  innerJoin(
+                    db.songs,
+                    db.songs.id.equalsExp(db.attachments.songId),
+                  ),
+                ])
+                ..where(
+                  db.songs.libraryId.equals(libraryId) &
+                      db.songs.deleted.equals(false) &
+                      db.attachments.deleted.equals(false),
+                )
+                ..orderBy([OrderingTerm.asc(db.attachments.name)]))
+              .get())
+          .map((r) => (r.readTable(db.attachments), r.readTable(db.songs)))
+          .toList();
+
+  /// Exports [libraryId] (the local library or an organization, named
+  /// [libraryName]) with the sets and arrangements of its bands on this
+  /// device. [readFile] reads an attachment file (default: from the
+  /// storage); null or an error means it is missing, which aborts the
+  /// export with [BackupFileMissingException].
+  Future<Uint8List> export(
+    String libraryId, {
+    required String libraryName,
+    Future<Uint8List?> Function(AttachmentEntry attachment)? readFile,
+    DateTime? now,
+  }) async {
+    final files = <String, Uint8List>{};
+    final used = <String>{};
+    String unique(String path) {
+      var candidate = path;
+      var n = 2;
+      final ext = p.extension(path);
+      final stem = path.substring(0, path.length - ext.length);
+      while (!used.add(candidate.toLowerCase())) {
+        candidate = '$stem ($n)$ext';
+        n++;
+      }
+      return candidate;
+    }
+
+    final songs =
+        await (db.select(db.songs)
+              ..where(
+                (s) => s.libraryId.equals(libraryId) & s.deleted.equals(false),
+              )
+              ..orderBy([(s) => OrderingTerm.asc(s.title)]))
+            .get();
+    final attachmentsBySong = <String, List<AttachmentEntry>>{};
+    for (final (a, song) in await _attachments(libraryId)) {
+      attachmentsBySong.putIfAbsent(song.id, () => []).add(a);
+    }
+    final songJson = <Map<String, dynamic>>[];
+    for (final song in songs) {
+      final base = safeFileName(song.title);
+      final short = song.id.length > 8 ? song.id.substring(0, 8) : song.id;
+      String? file;
+      if (song.chordproSource.isNotEmpty) {
+        file = unique('songs/$base ($short).cho');
+        files[file] = Uint8List.fromList(utf8.encode(song.chordproSource));
+      }
+      final attachments = <Map<String, dynamic>>[];
+      for (final a in attachmentsBySong[song.id] ?? const <AttachmentEntry>[]) {
+        Uint8List? bytes;
+        try {
+          bytes = await (readFile?.call(a) ?? _readStored(a));
+        } catch (_) {
+          bytes = null;
+        }
+        if (bytes == null) throw BackupFileMissingException(song.title, a.name);
+        final ext = p.extension(a.fileName);
+        final stem = p.basenameWithoutExtension(a.name);
+        final path = unique(
+          'attachments/$base ($short) - ${safeFileName(stem)}$ext',
+        );
+        files[path] = bytes;
+        attachments.add({
+          'id': a.id,
+          'name': a.name,
+          'file': path,
+          'pages': ?a.pages,
+        });
+      }
+      songJson.add({
+        'id': song.id,
+        'title': song.title,
+        'artist': ?song.artist,
+        'file': ?file,
+        'attachments': attachments,
+      });
+    }
+
+    final bands =
+        await (db.select(db.bands)..where(
+              (b) =>
+                  b.deleted.equals(false) &
+                  (libraryId == localBandId
+                      ? b.id.equals(localBandId)
+                      : b.organizationId.equals(libraryId)),
+            ))
+            .get();
+    final bandIds = [for (final b in bands) b.id];
+    final songIds = {for (final s in songs) s.id};
+    final sets =
+        await (db.select(db.setlists)
+              ..where((s) => s.bandId.isIn(bandIds) & s.deleted.equals(false))
+              ..orderBy([(s) => OrderingTerm.asc(s.name)]))
+            .get();
+    final setJson = <Map<String, dynamic>>[];
+    for (final set in sets) {
+      final items =
+          await (db.select(db.setItems)
+                ..where((i) => i.setId.equals(set.id))
+                ..orderBy([(i) => OrderingTerm.asc(i.position)]))
+              .get();
+      setJson.add({
+        'id': set.id,
+        'bandId': set.bandId,
+        'name': set.name,
+        'gigDate': ?set.gigDate?.toIso8601String(),
+        'venue': ?set.venue,
+        'items': [
+          for (final i in items)
+            {
+              'type': i.type.name,
+              if (i.songId != null && songIds.contains(i.songId))
+                'songId': i.songId,
+              if (i.transpose != 0) 'transpose': i.transpose,
+              'sequence': ?i.sequence,
+              'note': ?i.note,
+            },
+        ],
+      });
+    }
+    final arrangements =
+        await (db.select(db.bandArrangements)..where(
+              (a) =>
+                  a.bandId.isIn(bandIds) &
+                  a.songId.isIn(songIds) &
+                  a.deleted.equals(false),
+            ))
+            .get();
+    final owner = overlayOwnerFor(libraryId, userId);
+    final overlays = await (db.select(
+      db.personalOverlays,
+    )..where((o) => o.ownerId.equals(owner) & o.songId.isIn(songIds))).get();
+    final strokes =
+        await (db.select(db.annotations)..where(
+              (x) =>
+                  x.ownerId.equals(owner) &
+                  x.songId.isIn(songIds) &
+                  x.stroke.isNotNull(),
+            ))
+            .get();
+
+    final manifest = {
+      'format': backupFormat,
+      'formatVersion': backupFormatVersion,
+      'app': appVersion,
+      'createdAt': (now ?? DateTime.now()).toUtc().toIso8601String(),
+      'source': {
+        'kind': libraryId == localBandId ? 'local' : 'organization',
+        'id': libraryId,
+        'name': libraryName,
+      },
+      'songs': songJson,
+      'bands': [
+        for (final b in bands) {'id': b.id, 'name': b.name},
+      ],
+      'sets': setJson,
+      'arrangements': [
+        for (final a in arrangements)
+          {
+            'bandId': a.bandId,
+            'songId': a.songId,
+            'transpose': a.transpose,
+            'sequence': ?a.sequence,
+            'tempo': ?a.tempo,
+          },
+      ],
+      'overlays': [for (final o in overlays) _overlayJson(o)],
+      'annotations': [
+        for (final x in strokes)
+          {
+            'id': x.id,
+            'songId': x.songId,
+            'target': x.target,
+            'stroke': x.stroke,
+            'updatedAt': x.updatedAt,
+          },
+      ],
+    };
+    files[backupManifestName] = Uint8List.fromList(
+      utf8.encode(const JsonEncoder.withIndent('  ').convert(manifest)),
+    );
+    return compute(_zip, files);
+  }
+
+  Future<Uint8List?> _readStored(AttachmentEntry a) async {
+    final file = storage.file(a.fileName);
+    return await file.exists() ? file.readAsBytes() : null;
+  }
+
+  static Map<String, dynamic> _overlayJson(SongOverlay o) => {
+    'songId': o.songId,
+    'transpose': o.transpose,
+    'capoFret': ?o.capoFret,
+    'fontScale': o.fontScale,
+    'notes': ?o.notes,
+    'nashville': ?o.nashville,
+    'liveView': ?o.liveView,
+    'hideAnnotations': o.hideAnnotations,
+    'verseChords': o.verseChords.name,
+    'midi': ?o.midi?.toJson(),
+    'midiPrograms': ?o.midiPrograms?.toJson(),
+  };
+
+  /// A file name for the archive of [libraryName] on [date].
+  static String fileName(String libraryName, DateTime date) {
+    String two(int n) => n.toString().padLeft(2, '0');
+    final day = '${date.year}-${two(date.month)}-${two(date.day)}';
+    return '${safeFileName('setDING-Backup $libraryName $day')}.zip';
+  }
+
+  // Import --------------------------------------------------------------------
+
+  /// Whether [zip] is a backup archive (a ZIP with a backup manifest).
+  static Future<bool> isBackup(Uint8List zip) async {
+    try {
+      await read(zip);
+      return true;
+    } on BackupFormatException catch (e) {
+      // A newer backup is still a backup: the import reports it.
+      return e.newerVersion != null;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Reads a backup archive; throws [BackupFormatException] if it is none
+  /// or a newer one.
+  static Future<BackupContents> read(Uint8List zip) async {
+    final files = await compute(_unzipPaths, zip);
+    final raw = files[backupManifestName];
+    if (raw == null) throw const BackupFormatException();
+    final Object? manifest;
+    try {
+      manifest = jsonDecode(utf8.decode(raw));
+    } on FormatException {
+      throw const BackupFormatException();
+    }
+    if (manifest is! Map || manifest['format'] != backupFormat) {
+      throw const BackupFormatException();
+    }
+    final version = manifest['formatVersion'];
+    if (version is! int) throw const BackupFormatException();
+    if (version > backupFormatVersion) {
+      throw BackupFormatException(newerVersion: version);
+    }
+    return BackupContents(manifest.cast<String, dynamic>(), files);
+  }
+
+  /// Existing songs of [libraryId] by ID and by title and artist.
+  Future<_Existing> _existing(String libraryId) async {
+    final songs =
+        await (db.select(db.songs)..where(
+              (s) => s.libraryId.equals(libraryId) & s.deleted.equals(false),
+            ))
+            .get();
+    return _Existing(songs);
+  }
+
+  /// What importing [contents] into [libraryId] would find.
+  Future<BackupPreview> preview(
+    BackupContents contents,
+    String libraryId,
+  ) async {
+    final existing = await _existing(libraryId);
+    var identical = 0, differing = 0;
+    for (final song in contents.songs) {
+      switch (existing.match(song, contents.sourceOf(song))) {
+        case (_, true):
+          identical++;
+        case (_?, false):
+          differing++;
+        case (null, _):
+          break;
+      }
+    }
+    return BackupPreview(
+      songs: contents.songs.length,
+      identical: identical,
+      differing: differing,
+    );
+  }
+
+  /// Imports [contents] into the library [libraryId] as copies with new
+  /// IDs. [bands] maps each band of the archive to a band of the target
+  /// library, or null to skip its sets and arrangements.
+  Future<BackupImportResult> import(
+    BackupContents contents, {
+    required String libraryId,
+    required Map<String, String?> bands,
+    BackupDuplicates duplicates = BackupDuplicates.addAll,
+  }) async {
+    final songs = SongRepository(
+      db,
+      storage,
+      libraryId: libraryId,
+      userId: userId,
+    );
+    final existing = await _existing(libraryId);
+    // Original song ID -> song in the target library.
+    final songMap = <String, String>{};
+    // Original attachment ID -> new attachment ID.
+    final attachmentMap = <String, String>{};
+    // Original song IDs imported as new songs.
+    final imported = <String>{};
+    final additional = <({String id, String title})>[];
+    var identical = 0, keptExisting = 0, files = 0;
+
+    for (final song in contents.songs) {
+      final originalId = song['id'] as String;
+      final source = contents.sourceOf(song);
+      final (match, same) = existing.match(song, source);
+      if (match != null &&
+          (same || duplicates == BackupDuplicates.keepExisting)) {
+        songMap[originalId] = match.id;
+        same ? identical++ : keptExisting++;
+        continue;
+      }
+      final id = await songs.createSong(
+        source: source,
+        title: song['title'] as String?,
+        artist: song['artist'] as String?,
+      );
+      songMap[originalId] = id;
+      imported.add(originalId);
+      if (match != null) {
+        additional.add((id: id, title: (song['title'] as String?) ?? ''));
+      }
+      for (final a in [
+        for (final e in (song['attachments'] as List?) ?? const [])
+          (e as Map).cast<String, dynamic>(),
+      ]) {
+        final bytes = contents.files[a['file'] as String? ?? ''];
+        if (bytes == null || bytes.length > maxAttachmentBytes) continue;
+        final ext = p
+            .extension(a['file'] as String)
+            .replaceFirst('.', '')
+            .toLowerCase();
+        attachmentMap[a['id'] as String] = await songs.addAttachment(
+          id,
+          name: a['name'] as String? ?? '',
+          bytes: bytes,
+          pages: a['pages'] as int?,
+          extension: ext.isEmpty ? 'pdf' : ext,
+        );
+        files++;
+      }
+    }
+
+    // Personal adjustments and annotations only for new songs: existing
+    // songs keep the person's current ones.
+    for (final o in contents.overlays) {
+      final original = o['songId'] as String?;
+      if (!imported.contains(original)) continue;
+      final songId = songMap[original]!;
+      final current = await songs.getOverlay(songId);
+      final liveView = o['liveView'] as String?;
+      await songs.saveOverlay(
+        current.copyWith(
+          transpose: (o['transpose'] as int?) ?? 0,
+          capoFret: Value(o['capoFret'] as int?),
+          fontScale: (o['fontScale'] as num?)?.toDouble() ?? 1.0,
+          notes: Value(o['notes'] as String?),
+          nashville: Value(o['nashville'] as bool?),
+          liveView: Value(liveView == null ? null : attachmentMap[liveView]),
+          hideAnnotations: (o['hideAnnotations'] as bool?) ?? false,
+          verseChords:
+              VerseChords.values.asNameMap()[o['verseChords']] ??
+              VerseChords.all,
+          midi: Value(MidiProgram.fromJson(o['midi'])),
+          midiPrograms: Value(MidiPrograms.fromJson(o['midiPrograms'])),
+        ),
+      );
+    }
+    final owner = overlayOwnerFor(libraryId, userId);
+    await db.transaction(() async {
+      for (final x in contents.annotations) {
+        final original = x['songId'] as String?;
+        if (!imported.contains(original)) continue;
+        final target = x['target'] as String? ?? '';
+        final newTarget = target.isEmpty ? '' : attachmentMap[target];
+        if (newTarget == null) continue;
+        await db
+            .into(db.annotations)
+            .insert(
+              AnnotationsCompanion.insert(
+                id: _uuid.v4(),
+                ownerId: owner,
+                songId: songMap[original]!,
+                target: Value(newTarget),
+                stroke: Value(x['stroke'] as String?),
+                updatedAt:
+                    (x['updatedAt'] as int?) ??
+                    DateTime.now().millisecondsSinceEpoch,
+                // Synced as strokes that never reached the server.
+                pending: const Value(1),
+              ),
+            );
+      }
+    });
+
+    final arrangements = ArrangementRepository(db);
+    for (final a in contents.arrangements) {
+      final band = bands[a['bandId']];
+      final songId = songMap[a['songId']];
+      if (band == null || songId == null) continue;
+      // An existing song keeps the band's current arrangement.
+      if (await arrangements.get(band, songId) != null) continue;
+      await arrangements.save(
+        band,
+        songId,
+        transpose: (a['transpose'] as int?) ?? 0,
+        sequence: a['sequence'] as String?,
+        tempo: a['tempo'] as int?,
+      );
+    }
+
+    var setCount = 0;
+    for (final s in contents.sets) {
+      final band = bands[s['bandId']];
+      if (band == null) continue;
+      final repo = SetRepository(db, storage, bandId: band);
+      final gigDate = DateTime.tryParse(s['gigDate'] as String? ?? '');
+      final setId = await repo.createSet(
+        name: s['name'] as String? ?? '',
+        gigDate: gigDate,
+        venue: s['venue'] as String?,
+      );
+      await db.transaction(() async {
+        var position = 0;
+        for (final i in [
+          for (final e in (s['items'] as List?) ?? const [])
+            (e as Map).cast<String, dynamic>(),
+        ]) {
+          final type =
+              SetItemType.values.asNameMap()[i['type']] ?? SetItemType.text;
+          final songId = songMap[i['songId']];
+          // A song item whose song is not in the archive is left out.
+          if (type == SetItemType.song && songId == null) continue;
+          await db
+              .into(db.setItems)
+              .insert(
+                SetItemsCompanion.insert(
+                  id: _uuid.v4(),
+                  setId: setId,
+                  songId: Value(songId),
+                  position: position++,
+                  transpose: Value((i['transpose'] as int?) ?? 0),
+                  sequence: Value(i['sequence'] as String?),
+                  note: Value(i['note'] as String?),
+                  type: type,
+                ),
+              );
+        }
+        await markDirty(db, SyncCollection.setlists, setId, scope: band);
+      });
+      setCount++;
+    }
+
+    return BackupImportResult(
+      imported: imported.length,
+      identical: identical,
+      additional: additional,
+      keptExisting: keptExisting,
+      sets: setCount,
+      files: files,
+    );
+  }
+}
+
+/// Songs of the target library, to find the archive's songs in it.
+class _Existing {
+  _Existing(List<SongEntry> songs)
+    : _byId = {for (final s in songs) s.id: s},
+      _byName = {for (final s in songs) _key(s.title, s.artist): s};
+
+  final Map<String, SongEntry> _byId;
+  final Map<String, SongEntry> _byName;
+
+  static String _key(String? title, String? artist) =>
+      '${(title ?? '').trim().toLowerCase()}\n'
+      '${(artist ?? '').trim().toLowerCase()}';
+
+  /// The existing song for an archive song (same ID, else same title and
+  /// artist) and whether its ChordPro text is the same.
+  (SongEntry?, bool) match(Map<String, dynamic> song, String source) {
+    final found =
+        _byId[song['id']] ??
+        _byName[_key(song['title'] as String?, song['artist'] as String?)];
+    if (found == null) return (null, false);
+    return (found, found.chordproSource == source);
+  }
+}
+
+Uint8List _zip(Map<String, Uint8List> files) {
+  final archive = Archive();
+  for (final MapEntry(key: name, value: bytes) in files.entries) {
+    archive.addFile(ArchiveFile(name, bytes.length, bytes));
+  }
+  return Uint8List.fromList(ZipEncoder().encode(archive));
+}
+
+/// The files of a ZIP archive by their path (with folders), without macOS
+/// metadata.
+Map<String, Uint8List> _unzipPaths(Uint8List zip) => {
+  for (final entry in ZipDecoder().decodeBytes(zip).files)
+    if (entry.isFile && !entry.name.contains('__MACOSX'))
+      entry.name.replaceAll(r'\', '/'): Uint8List.fromList(entry.content),
+};

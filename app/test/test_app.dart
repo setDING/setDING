@@ -132,10 +132,11 @@ class TestApp {
     }),
   ];
 
-  Widget build({Widget? home}) => ProviderScope(
-    overrides: overrides,
-    child: SetdingApp(home: home),
-  );
+  Widget build({Widget? home, List<Override> extra = const []}) =>
+      ProviderScope(
+        overrides: [...overrides, ...extra],
+        child: SetdingApp(home: home),
+      );
 
   Future<void> dispose(WidgetTester tester) async {
     await tester.pumpWidget(const SizedBox());

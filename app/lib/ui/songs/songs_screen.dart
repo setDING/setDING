@@ -14,6 +14,7 @@ import '../trash/trash_screen.dart';
 import '../../settings/settings.dart';
 import '../../sync/sync_controller.dart';
 import '../account/sync_refresh.dart';
+import '../backup/backup_actions.dart';
 import '../bands/copy_to_band.dart';
 import '../bands/library_switcher.dart';
 import '../render/song_header.dart';
@@ -231,6 +232,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                             TrashScreen.songs(libraryId: library.id),
                       ),
                     ),
+                    'backup' => exportBackup(context, ref, library),
                     _ => setState(() => _selected = {}),
                   },
                   itemBuilder: (_) => [
@@ -244,6 +246,13 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                         key: const Key('songs-trash'),
                         value: 'trash',
                         child: Text(l10n.trash),
+                      ),
+                    // ADR-0043: the whole library as a backup archive.
+                    if (library.canExportLibrary)
+                      PopupMenuItem(
+                        key: const Key('songs-backup'),
+                        value: 'backup',
+                        child: Text(l10n.backupExport),
                       ),
                   ],
                 ),

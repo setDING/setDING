@@ -1,9 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/backup.dart';
 import '../../data/import_export.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
+import '../backup/backup_actions.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
 
@@ -15,13 +17,16 @@ Future<void> showImportDialog(
       pickFiles,
 }) => showDialog<void>(
   context: context,
-  builder: (_) => _ImportDialog(pick: pick),
+  builder: (_) => _ImportDialog(pick: pick, parent: context),
 );
 
 class _ImportDialog extends ConsumerStatefulWidget {
-  const _ImportDialog({required this.pick});
+  const _ImportDialog({required this.pick, required this.parent});
 
   final Future<List<ImportFile>> Function({List<String>? extensions}) pick;
+
+  /// Where the dialog was opened, for the backup import that replaces it.
+  final BuildContext parent;
 
   @override
   ConsumerState<_ImportDialog> createState() => _ImportDialogState();
@@ -44,6 +49,16 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
       );
       if (files.isEmpty) {
         setState(() => _busy = false);
+        return;
+      }
+      // A setDING backup is imported as a whole library (ADR-0043).
+      if (files.length == 1 &&
+          files.single.name.toLowerCase().endsWith('.zip') &&
+          await BackupService.isBackup(files.single.bytes)) {
+        if (!mounted) return;
+        Navigator.pop(context);
+        final parent = widget.parent;
+        if (parent.mounted) await importBackup(parent, files.single.bytes);
         return;
       }
       final result = await ref
