@@ -48,6 +48,21 @@ void main() {
       // The band setting was replaced by the librarian role (ADR-0023).
       expect(byAdmin.json.containsKey('members_can_edit_songs'), isFalse);
     });
+
+    test('bands cannot be deleted through the API (issue #627)', () async {
+      final f = await BandFixture.create(pb);
+      final leader = await f.addLeader();
+      for (final client in [leader, f.admin]) {
+        final r = await client.patch('bands', f.id, {'deleted': true});
+        expect(r.status, 404);
+      }
+      expect((await pb.superuser.view('bands', f.id)).json['deleted'], isFalse);
+      // Renaming together with an unchanged flag still works.
+      (await leader.patch('bands', f.id, {
+        'name': 'Still here',
+        'deleted': false,
+      })).expectStatus(200);
+    });
   });
 
   group('memberships', () {

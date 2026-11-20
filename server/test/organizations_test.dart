@@ -88,6 +88,19 @@ void main() {
       })).expectStatus(200);
     });
 
+    test(
+      'organizations cannot be deleted through the API (issue #627)',
+      () async {
+        final f = await BandFixture.create(pb);
+        final r = await f.admin.patch('organizations', f.orgId, {
+          'deleted': true,
+        });
+        expect(r.status, 404);
+        final org = await pb.superuser.view('organizations', f.orgId);
+        expect(org.json['deleted'], isFalse);
+      },
+    );
+
     test('users cannot add themselves to an organization', () async {
       final f = await BandFixture.create(pb);
       final r = await f.outsider.post('org_memberships', {
