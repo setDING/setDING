@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
-# Runs all local checks: format, static analysis and tests – the test gate.
+# Runs the local checks: format, static analysis and tests – the test gate.
 # Used by agents before every PR and merge (docs/development/git-workflow.md).
+#
+# By default only the jobs whose area the branch touches run: the changed
+# files against origin/main (committed, uncommitted and untracked) are mapped
+# to jobs by tool/check_select.py, which runs every job for shared files,
+# unknown files and larger changes. CHECK_FULL=1 (make check-full) always runs
+# every job; CHECK_BASE=<ref> compares against another ref (issue #684).
 #
 # Most tools (analyzer, test compiler, dart2js) use only one or a few cores, so
 # the independent parts run in parallel: each job writes its output to its own
@@ -31,9 +37,12 @@ parallel="${CHECK_PARALLEL:-1}"
 
 # Python tools: the coverage summary of make coverage (it does not run here:
 # measuring coverage slows the tests down).
+# And the job selection of this script (tool/check_select.py).
 job_tools() {
   cd "$ROOT/tool/coverage"
   python3 -m unittest -q test_summary
+  cd "$ROOT/tool"
+  python3 -m unittest -q test_check_select
 }
 
 # A pure Dart package: format, analysis, tests.
@@ -128,11 +137,56 @@ run_job() {
   pids+=("$!")
 }
 
+# --- Job selection ----------------------------------------------------------
+
+all_jobs=(chordpro server ops sbom changelog tools website app-static app-tests app-web)
+
+# changed_files: the files the branch changes against the merge base with
+# CHECK_BASE (default origin/main), including uncommitted and untracked ones.
+# Prints nothing when there is no base or no change; the selection then runs
+# every job.
+changed_files() {
+  local base
+  base="$(git -C "$ROOT" merge-base HEAD "${CHECK_BASE:-origin/main}" 2>/dev/null)" || return 0
+  {
+    git -C "$ROOT" diff --name-only "$base"
+    git -C "$ROOT" ls-files --others --exclude-standard
+  } | sort -u
+}
+
+if [ "${CHECK_FULL:-0}" = 1 ]; then
+  jobs=("${all_jobs[@]}")
+  deps_mode=strict
+  echo "full check (CHECK_FULL=1)"
+else
+  selection="$(changed_files | python3 "$ROOT/tool/check_select.py")"
+  read -r -a jobs <<<"$(sed -n 's/^jobs: *//p' <<<"$selection")"
+  deps_mode="$(sed -n 's/^deps: *//p' <<<"$selection")"
+  if [ ${#jobs[@]} -lt ${#all_jobs[@]} ]; then
+    skipped=()
+    for name in "${all_jobs[@]}"; do
+      [[ " ${jobs[*]} " == *" $name "* ]] || skipped+=("$name")
+    done
+    echo "affected jobs only (make check-full runs all); skipped: ${skipped[*]}"
+  fi
+fi
+
 # External libraries must be the newest versions (owner rule,
 # docs/development/dependencies.md). First and alone: it needs the website's
-# node_modules, which the website build reinstalls.
+# node_modules, which the website build reinstalls. It fails the full check
+# and changes to pinned libraries; otherwise a new upstream release only
+# warns, so it does not block unrelated changes (#684).
 step "dependencies"
-"$ROOT/tool/check-deps.sh"
+if [ "$deps_mode" = strict ]; then
+  "$ROOT/tool/check-deps.sh"
+elif ! "$ROOT/tool/check-deps.sh"; then
+  echo "WARNING: outdated libraries (not fatal for this change; make upgrade in its own PR, make check-full fails)"
+fi
+
+if [ ${#jobs[@]} -eq 0 ]; then
+  step "No job is affected by this change (make check-full runs all)"
+  exit 0
+fi
 
 step "preparing"
 pb_version="$(sed -n 's/^PB_VERSION *?= *//p' "$ROOT/Makefile")"
@@ -145,8 +199,6 @@ export CADDY_BIN
 # Before the app jobs, which all need the packages and must not fetch them at
 # the same time.
 (cd "$ROOT/app" && flutter pub get >/dev/null)
-
-jobs=(chordpro server ops sbom changelog tools website app-static app-tests app-web)
 
 [ "$parallel" = 0 ] || step "running in parallel: ${jobs[*]}"
 start=$SECONDS

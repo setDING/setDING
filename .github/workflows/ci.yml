@@ -55,4 +55,7 @@ jobs:
           free -h
 
       - name: Test gate (format, analyze, l10n, tests)
+        # Every job: CI checks the whole state, not only a branch's area (#684).
+        env:
+          CHECK_FULL: '1'
         run: tool/check.sh

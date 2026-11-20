@@ -91,7 +91,7 @@ BACKEND_REGISTRATION ?= open
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := SETDING_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build web web-serve site site-dev deps upgrade apk android-install android-keystore release release-linux release-check sbom changelog reset data-dir backend check test codegen l10n coverage android-test web-test perf screenshots branding examples doctor clean ci-image \
+.PHONY: help setup dev start build web web-serve site site-dev deps upgrade apk android-install android-keystore release release-linux release-check sbom changelog reset data-dir backend check check-full release-gate test codegen l10n coverage android-test web-test perf screenshots branding examples doctor clean ci-image \
 	server-target server-install server-release server-site server-status server-logs server-backup server-fetch-backup server-founder-invite server-ssh
 
 help: ## Show this help
@@ -202,8 +202,16 @@ upgrade: ## Upgrade all external libraries within their constraints
 	cd $(ROOT)/website && npm update --no-audit --no-fund
 	$(ROOT)/tool/check-deps.sh
 
-check: ## Run all checks (dependencies, format, analysis, l10n, tests, web build, website) – the test gate
+check: ## The test gate: the checks (dependencies, format, analysis, l10n, tests, web build, website) of the areas the branch changes
 	$(ROOT)/tool/check.sh
+
+check-full: ## Run every check regardless of the changed files (larger changes; dependency check fatal)
+	CHECK_FULL=1 $(ROOT)/tool/check.sh
+
+release-gate: ## Before a release: every check, then the web and Android integration tests (docs/development/releases.md)
+	CHECK_FULL=1 $(ROOT)/tool/check.sh
+	$(ROOT)/tool/web-test.sh
+	$(ROOT)/tool/android-test.sh
 
 test: ## Run all tests
 	cd $(PACKAGE) && $(DART) test

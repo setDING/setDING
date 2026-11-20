@@ -17,8 +17,12 @@ their newest version.**
   `# Pinned …` comment directly above the line and a reason (e.g.
   `pocketbase`, pinned to the server version, ADR-0004).
 
-`make check` enforces this with `tool/check-deps.sh` (`make deps` runs it
-alone). It queries pub.dev; without network it warns and skips.
+`tool/check-deps.sh` enforces this (`make deps` runs it alone). It fails
+`make check-full` and `make release-gate`, and `make check` when the branch
+changes a `pubspec.yaml`/`pubspec.lock`, `package.json` or the SBOM's Gradle
+plugin; otherwise `make check` only warns, so a new upstream release does not
+block unrelated changes (#684). Upgrade in its own PR. It queries pub.dev;
+without network it warns and skips.
 
 ## Updating
 

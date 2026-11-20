@@ -113,6 +113,18 @@ An agent runs all of the following and only continues when everything passes:
    build, website), prints one line per job and the full log of every failed job.
    `CHECK_PARALLEL=0 make check` runs the jobs one after another with their output
    streamed.
+   **Only the affected jobs run** (#684): `tool/check_select.py` maps the files the
+   branch changes against `origin/main` (committed, uncommitted, untracked) to
+   jobs, e.g. `app/lib/` → app analysis, tests and web build, `packages/chordpro/`
+   → the package and the app, `server/` → the server and the app tests,
+   `website/` and `docs/screenshots/` → the website; documentation alone runs no
+   job. Every job runs for files of the check itself (`Makefile`,
+   `tool/check.sh`, …), for files no rule knows, and for more than 40 changed
+   files. **For larger changes** (several areas, refactorings, library upgrades)
+   run `make check-full`, which always runs every job. The dependency check only
+   warns unless the change touches a `pubspec`/`package.json` or the run is full.
+   While working, run the tests of the area directly (`flutter test
+   test/foo_test.dart`, `dart test`) and the gate once before the PR and the merge.
 3. **Docs up to date:** ADRs and the architecture README updated in the same branch if
    the change touches an architectural decision ([AGENTS.md](../../AGENTS.md)).
 4. **Localization complete:** every new UI text exists in `app_de.arb` and `app_en.arb`.
@@ -144,9 +156,15 @@ merge, by agents and humans alike:
 - The full test suite runs on the **final state of the branch, rebased on the latest
   `main`** – not on an earlier state. If `main` moves on before the merge, rebase and
   run the tests again.
-- **Currently (early development): local test gate.** The agent runs the full suite
-  locally (`make check`) immediately before the merge and reports the result in the
+- **Currently (early development): local test gate.** The agent runs the test gate
+  locally (`make check`, the jobs the branch affects; `make check-full` for larger
+  changes, section 5) immediately before the merge and reports the result in the
   PR and the merge commit body. Agents do not wait for CI (section 7).
+- **Before a release** `make release-gate` runs every check (dependency check
+  fatal) and the web and Android integration tests on `main`
+  ([releases.md](releases.md)); the integration tests run per change only when it
+  touches platform code ([android-tests.md](android-tests.md),
+  [web-tests.md](web-tests.md)).
 - Once CI is a required check again (towards version 1): the required `test` check
   (and all other required checks) is green.
 - **New or changed behaviour comes with tests.** A PR that changes code without
