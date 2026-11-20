@@ -7,9 +7,11 @@ releases are not covered yet.
 ## Releasing a version (CI)
 
 The full sequence and its rules are in the git workflow (section 10); each step
-only after the previous one succeeded. Before it, run the integration tests
-on `main`: `make android-test` ([android-tests.md](android-tests.md)) and
-`make web-test` ([web-tests.md](web-tests.md)).
+only after the previous one succeeded. Before it, run `make release-gate` on
+`main`: every check with the dependency check fatal (`make check-full`), then
+the integration tests `make web-test` ([web-tests.md](web-tests.md)) and
+`make android-test` ([android-tests.md](android-tests.md)). The emulator the
+Android tests start is stopped at the end.
 
 1. Merge a `chore(release): vX.Y.Z` PR that sets `version: X.Y.Z` in
    `app/pubspec.yaml`, without a build number (CI sets it), and adds the version's

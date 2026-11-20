@@ -22,8 +22,10 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 - Conventional Commits, English, `Co-Authored-By` trailer naming Claude on every commit.
 - Local checks + self-review before a PR is marked ready. During early development the local test gate is binding and CI runs only on manual dispatch; required CI checks return when heading towards version 1.
 - **Squash merge** only; branch deleted after merge.
-- **Test gate:** all tests must pass on the final, rebased state of the branch before
-  every merge – no exceptions, no weakening of tests to get green.
+- **Test gate:** all tests of the areas a change affects must pass on the final,
+  rebased state of the branch before every merge – no exceptions, no weakening of
+  tests to get green. Every test runs for larger changes (`make check-full`) and
+  before every release (`make release-gate`, with the integration tests).
 - Agents **may merge their own PRs** from the start, when the test gate is satisfied,
   CI is green (while it is a required check) and no human-decision rule applies.
 - Human decision required for: accepting/rejecting ADRs, store releases, secrets and
@@ -69,6 +71,7 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 - 2026-11-17: App renamed to **setDING** (#318): repository `github.com/tafli/setDING`, worktrees in `../setDING-worktrees/<branch>`, CI image `ghcr.io/tafli/setding-ci`.
 - 2026-11-17: Releases (section 10, #345): the build number is the Release workflow's run number for releases and manual test builds alike and is no longer kept in `pubspec.yaml`; a release is done only after its release build passed and `make server-release` deployed the server from the tag (it refuses otherwise). A failed release build is fixed in a PR and released as the next patch version; pushed tags are never moved. Owner request.
 - 2026-11-20: The test gate also tests the operations files (#644): ShellCheck on all shell scripts, `caddy validate`/`fmt` of the Caddyfile, `systemd-analyze verify` of the units, a backup restore against a real PocketBase and the website server with the real Caddyfile ([operations tests](../../development/operations-tests.md)). ShellCheck (GPL-3.0) is allowed as a check tool only: pinned, downloaded into the cache and verified, never copied into the repository or shipped. Owner decision.
+- 2026-11-20: Test gate by affected area (#684): `make check` runs only the jobs whose area the branch changes (`tool/check_select.py`; every job for shared files, unknown files and more than 40 changed files), `make check-full` runs all of them and is used for larger changes, `make release-gate` runs every check plus the web and Android integration tests before a release; CI runs every job. The dependency check fails only the full check and changes to pinned libraries, otherwise it warns. Reason: running every job for every change, and every new upstream release failing unrelated PRs, slowed down parallel agent work too much. Owner decision.
 
 ## Open points
 
