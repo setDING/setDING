@@ -62,6 +62,8 @@ Findings (researched 2026-11-14):
 - 2026-11-18: SongSelect bar lines in chord brackets (`[|][G/B] [C2] [.] [.][|]`, `[||:]`, `[:||]`) can be converted to `{start_of_grid}` sections in the editor (#481): a dotted hint on the lines, a hint bar with Convert, and a Lines menu command for the selection or all blocks. The comment before the block becomes the grid label unless lyrics follow; the shape comes from the longest row and measure, shorter measures are filled with empty cells (`findCcliGrids`/`convertCcliGrids` in the `chordpro` package). Nothing is converted automatically on import.
 - 2026-11-21: The SongSelect directives outside the ChordPro specification are made standard-conforming on import (#777, `normalizeSongSelectDirectives` in the `chordpro` package): `{ccli: N}` becomes the setDING custom directive `{x_ccli: N}` (ADR-0012), and `{ccli_license: …}` is removed with its line, as it is the licence number of the downloading church, not song data. Both also in the `{meta: …}` form. `ccli` and `ccli_license` are no longer read as metadata; the editor's Song info menu inserts `{x_ccli}`. Songs saved earlier are not migrated; the editor shows a hint with **Convert** (`countSongSelectDirectives`, same conversion as the import), like the hint for short-form section labels.
 
+- 2026-11-21: The CCLI footer paragraph after the song (song number, copyright, terms of use, licence number) is removed on import; song number and copyright go into `{x_ccli}` and `{copyright}` if the song does not have them yet; the licence number belongs to the church, not to the song, and is dropped (#785). Songs that still contain it get a hint in the editor with a Remove action (`findCcliFooters`/`removeCcliFooters` in the `chordpro` package). This resolves the open point whether the copyright paragraph should be rendered smaller in live mode: it is no longer part of the song.
+
 ## Findings from a real SongSelect file (2026-11-14)
 
 A ChordPro file downloaded from SongSelect was tested (not committed to the repository
@@ -90,6 +92,4 @@ Resulting changes in the `chordpro` package and the app:
 
 ## Open points
 
-- Should the copyright paragraph be rendered smaller (as a footer) in live mode? It is
-  currently shown as written, at lyrics size.
 - Monitor whether CCLI reopens the partner program.

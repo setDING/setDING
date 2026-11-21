@@ -401,6 +401,32 @@ void main() {
       expect(await service.convertLegacyLabels(result.legacyLabels), 0);
     });
 
+    test('the import removes the CCLI footer (#785)', () async {
+      final service = ImportExportService(songs, sets);
+      final result = await service.importFiles([
+        ImportFile(
+          'song.cho',
+          Uint8List.fromList(
+            utf8.encode(
+              '{title: Song}\n\n[G]La la\n\nCCLI Song # 6016351\n'
+              '© 2011 Example Songs\n'
+              'For use solely with the SongSelect® Terms of Use. '
+              'All rights reserved. www.ccli.com\n'
+              'CCLI License # 1375063\n',
+            ),
+          ),
+        ),
+      ]);
+      expect(result.imported, 1);
+      final all = await songs.watchSongs().first;
+      final song = await songs.getSong(all.single.id);
+      expect(
+        song!.chordproSource,
+        '{title: Song}\n{x_ccli: 6016351}\n{copyright: 2011 Example Songs}\n'
+        '\n[G]La la\n',
+      );
+    });
+
     test('a file with several songs is imported as several songs', () async {
       final service = ImportExportService(songs, sets);
       final result = await service.importFiles([

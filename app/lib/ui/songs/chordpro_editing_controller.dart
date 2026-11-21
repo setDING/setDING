@@ -88,6 +88,18 @@ class ChordProEditingController extends TextEditingController {
     return _songSelectDirectives;
   }
 
+  String? _footersChecked;
+  List<CcliFooter> _ccliFooters = const [];
+
+  /// CCLI footers that can be removed (#785).
+  List<CcliFooter> get ccliFooters {
+    if (_footersChecked != text) {
+      _footersChecked = text;
+      _ccliFooters = findCcliFooters(text);
+    }
+    return _ccliFooters;
+  }
+
   /// The bracket next to the cursor and its partner (#37), if any.
   BracketMatch? get bracketMatch {
     final sel = selection;

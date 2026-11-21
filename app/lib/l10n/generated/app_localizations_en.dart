@@ -1307,6 +1307,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get remove => 'Remove';
+
+  @override
+  String get ccliFooterHint =>
+      'The song ends with the CCLI footer from SongSelect. Removing it keeps song number and copyright in the song details.';
+
+  @override
   String legacyLabelsHint(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
