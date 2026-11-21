@@ -43,6 +43,7 @@ import 'midi_program_field.dart';
 import 'band_arrangement_panel.dart';
 import 'play_history_panel.dart';
 import 'song_editor_screen.dart';
+import 'language_versions.dart';
 import 'song_language.dart';
 import 'song_links_panel.dart';
 
@@ -263,6 +264,9 @@ class _SongScreenState extends ConsumerState<SongScreen> {
         final hasSourceTitle = parsed.title != null;
         // Band leaders edit only their own songs (ADR-0023).
         final canEdit = library.canEditSong(song);
+        final hasVersions =
+            (ref.watch(languageVersionsProvider(song.id)).value?.length ?? 0) >
+            1;
 
         // Sources (`{x_link}`): recordings to listen to.
         final links = parsed.links;
@@ -511,6 +515,12 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   onSelected: (value) => switch (value) {
                     'title' => _editTitle(song),
                     'language' => _chooseLanguage(song),
+                    'linkVersion' => linkLanguageVersion(context, ref, song),
+                    'unlinkVersion' => unlinkLanguageVersion(
+                      context,
+                      ref,
+                      song,
+                    ),
                     'export' => _export(song),
                     'exportArchive' => exportSongArchive(context, ref, [
                       song.id,
@@ -532,6 +542,18 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                         key: const Key('song-language'),
                         value: 'language',
                         child: Text(l10n.songLanguageMenu),
+                      ),
+                    if (canEdit)
+                      PopupMenuItem(
+                        key: const Key('song-link-version'),
+                        value: 'linkVersion',
+                        child: Text(l10n.linkLanguageVersion),
+                      ),
+                    if (canEdit && hasVersions)
+                      PopupMenuItem(
+                        key: const Key('song-unlink-version'),
+                        value: 'unlinkVersion',
+                        child: Text(l10n.unlinkLanguageVersion),
                       ),
                     if (song.chordproSource.trim().isNotEmpty &&
                         !ref.read(webClientProvider))
@@ -575,6 +597,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                     song: parsed,
                     formatter: formatter,
                   ),
+                  LanguageVersionChips(song: song),
                   if (!parsed.hasContent) ...[
                     const SizedBox(height: 12),
                     attachmentsCard(inPanel: false),

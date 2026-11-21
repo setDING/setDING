@@ -2799,5 +2799,14 @@
   "songLanguageNotDetected": "Automatic (not detected)",
   "songLanguageAutomaticHint": "Detected from the lyrics; a choice by hand always wins.",
   "songLanguageDetectedTooltip": "{language} (detected from the lyrics)",
-  "songLanguageByHandTooltip": "{language} (set by hand)"
+  "songLanguageByHandTooltip": "{language} (set by hand)",
+  "languageVersions": "Language versions",
+  "linkLanguageVersion": "Link language version …",
+  "unlinkLanguageVersion": "Remove from the language versions",
+  "languageVersionPickerTitle": "Choose a language version",
+  "languageVersionPickerEmpty": "No other songs you may link",
+  "languageVersionLinked": "Linked as a language version",
+  "languageVersionNotAllowed": "Not linked: you may not change the other version.",
+  "languageVersionUnlinked": "Removed from the language versions",
+  "otherLanguageVersionsTooltip": "{count, plural, =1{One other language version} other{{count} other language versions}}"
 }

@@ -144,6 +144,50 @@ void main() {
       expect((await local(a)).language, isNull);
     });
 
+    test('only songs the person may edit are moved', () async {
+      final mine = await songs.createSong(source: '{title: Mine}');
+      final theirs = await songs.createSong(source: '{title: Theirs}');
+      final third = await songs.createSong(source: '{title: Third}');
+      bool mayEdit(SongEntry s) => s.id != theirs && s.id != third;
+      // Neither has a group: a new one would move both.
+      expect(
+        await songs.linkLanguageVersions(mine, theirs, mayEdit: mayEdit),
+        isFalse,
+      );
+      expect((await local(mine)).workId, isNull);
+      expect(await outbox(), hasLength(3)); // only the creates
+
+      // Theirs has a group: mine joins it instead of the other way round.
+      await songs.linkLanguageVersions(theirs, third);
+      final work = (await local(theirs)).workId;
+      expect(
+        await songs.linkLanguageVersions(theirs, mine, mayEdit: mayEdit),
+        isTrue,
+      );
+      expect((await local(mine)).workId, work);
+    });
+
+    test('the versions are watched, the song included', () async {
+      final a = await songs.createSong(source: '{title: A}');
+      final b = await songs.createSong(source: '{title: B}');
+      expect(await songs.watchLanguageVersions(a).first, isEmpty);
+      await songs.linkLanguageVersions(a, b);
+      expect(
+        [for (final s in await songs.watchLanguageVersions(a).first) s.id],
+        [a, b],
+      );
+      expect(await songs.watchWorkCounts().first, {
+        (await local(a)).workId!: 2,
+      });
+      await songs.unlinkLanguageVersion(b);
+      expect([
+        for (final s in await songs.watchLanguageVersions(b).first) s.id,
+      ], isEmpty);
+      final work = (await local(a)).workId;
+      await songs.setWorkId(b, work);
+      expect((await local(b)).workId, work);
+    });
+
     test('a copy is no version of the original', () async {
       final a = await songs.createSong(source: '{title: A}');
       final b = await songs.createSong(source: '{title: B}');

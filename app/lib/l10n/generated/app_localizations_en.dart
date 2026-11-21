@@ -5098,4 +5098,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String songLanguageByHandTooltip(String language) {
     return '$language (set by hand)';
   }
+
+  @override
+  String get languageVersions => 'Language versions';
+
+  @override
+  String get linkLanguageVersion => 'Link language version …';
+
+  @override
+  String get unlinkLanguageVersion => 'Remove from the language versions';
+
+  @override
+  String get languageVersionPickerTitle => 'Choose a language version';
+
+  @override
+  String get languageVersionPickerEmpty => 'No other songs you may link';
+
+  @override
+  String get languageVersionLinked => 'Linked as a language version';
+
+  @override
+  String get languageVersionNotAllowed =>
+      'Not linked: you may not change the other version.';
+
+  @override
+  String get languageVersionUnlinked => 'Removed from the language versions';
+
+  @override
+  String otherLanguageVersionsTooltip(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count other language versions',
+      one: 'One other language version',
+    );
+    return '$_temp0';
+  }
 }

@@ -14,6 +14,8 @@ import songImport from '../../../../../../docs/screenshots/song_import.png';
 import songsConversions from '../../../../../../docs/screenshots/songs_conversions.png';
 import songsLanguages from '../../../../../../docs/screenshots/songs_languages.png';
 import songLanguage from '../../../../../../docs/screenshots/song_language.png';
+import languageVersions from '../../../../../../docs/screenshots/language_versions.png';
+import languageVersionPicker from '../../../../../../docs/screenshots/language_version_picker.png';
 
 All songs belong to the organization; all its bands share the same song library.
 **Songs** shows them.
@@ -62,6 +64,27 @@ by hand under **⋮ → Language …**, also **Swiss German** or **Other**.
 always wins and reaches the other devices with the next sync.
 
 <Image src={songLanguage} alt="The Language dialog of a song: Automatic: German, and the list of languages with Swiss German chosen" />
+
+## Language versions
+
+Many songs exist in several languages: a translation, or a free adaptation in
+Swiss German. Link them, and every version shows the others below its header;
+a tap opens that version. The language of the app comes first.
+
+<Image src={languageVersions} alt="A song with the chips English (selected), German and Swiss German below its header" />
+
+Whoever may edit the song links it under **⋮ → Link language version …** and picks
+the other song; songs with the same artist, key, tempo or sequence are listed
+first. Linking a song that already has versions adds it to them.
+**⋮ → Remove from the language versions** takes a song out again, with **Undo**.
+In the song list, a translate icon marks
+songs with other language versions.
+
+<Image src={languageVersionPicker} alt="Choose a language version: the songs that can be linked, with their language codes" />
+
+Every version stays a song of its own, with its own key, arrangements and
+personal adjustments. A song in the trash is not shown as a version; restored, it
+is linked again.
 
 ## Write a song
 

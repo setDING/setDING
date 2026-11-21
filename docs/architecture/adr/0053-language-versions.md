@@ -178,6 +178,16 @@ the API directly as the refused roles (permission matrix test).
   Refinement: the song list shows the language tags and the language filter only
   when the library has songs in more than one language, so a library in one
   language stays as quiet as before. *Other* has no tag.
+- 2026-11-21: Linking implemented (#806): *Link language version …* and *Remove from
+  the language versions* (with Undo) in the song menu for whoever may edit the
+  song; the picker offers the songs of the library the person may edit, outside
+  the group, the most alike first (same artist, key, tempo, sequence). Linking only
+  moves songs the person may edit: if the smaller group holds another's song, the
+  other group moves instead, and when neither can move nothing is linked and the
+  app says so. The song view shows the versions as chips below its header (UI
+  language first, then by language code; named by language, by title while the
+  language is unknown or shared); the song list marks songs with other versions
+  with a translate icon.
 
 ## Open points
 

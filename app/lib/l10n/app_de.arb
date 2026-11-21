@@ -3172,5 +3172,21 @@
         "type": "String"
       }
     }
+  },
+  "languageVersions": "Sprachversionen",
+  "linkLanguageVersion": "Sprachversion verknüpfen …",
+  "unlinkLanguageVersion": "Aus den Sprachversionen lösen",
+  "languageVersionPickerTitle": "Sprachversion wählen",
+  "languageVersionPickerEmpty": "Keine weiteren Songs, die du verknüpfen darfst",
+  "languageVersionLinked": "Als Sprachversion verknüpft",
+  "languageVersionNotAllowed": "Nicht verknüpft: Du darfst die andere Version nicht ändern.",
+  "languageVersionUnlinked": "Aus den Sprachversionen gelöst",
+  "otherLanguageVersionsTooltip": "{count, plural, =1{Eine weitere Sprachversion} other{{count} weitere Sprachversionen}}",
+  "@otherLanguageVersionsTooltip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

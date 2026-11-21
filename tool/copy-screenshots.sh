@@ -65,6 +65,8 @@ map=(
   song_export 37_song_export
   song_import 37b_song_import
   songs_conversions 38_songs_conversions
+  language_versions 40_language_versions
+  language_version_picker 40b_language_version_picker
   songs_languages 39_songs_languages
   song_language 39b_song_language
 )
