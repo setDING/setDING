@@ -1,6 +1,6 @@
 # ADR-0053: Language versions of a song
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-21
 
 ## Context
@@ -156,6 +156,7 @@ the API directly as the refused roles (permission matrix test).
   word lists and set by hand, switching set items with the new version's band
   arrangement, adjustments per version with an offer to copy, linking by hand only,
   the group kept in archives.
+- 2026-11-21: Accepted by the owner (#803).
 
 ## Open points
 
