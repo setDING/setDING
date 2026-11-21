@@ -116,6 +116,7 @@ for creating an account, like every invitation.
 | Delete a band, restore it from the trash (ADR-0044) | ✓ | – | – | – | – |
 | Close the organization, restore it from the trash (ADR-0044) | ✓ | – | – | – | – |
 | Leave a band or organization | the person themselves | | | | |
+| Delete the own account (ADR-0052; not while the only admin of an organization) | the person themselves | | | | |
 
 ² Songs the leader created or imported and nobody else has changed since.
 
@@ -211,6 +212,7 @@ sets of that band like any member; librarian rights concern the library only.
   member of the organization sees, per song, which bands played it, when last,
   in which key and how often (never their sets); the library usage is for those
   who maintain the library.
+- 2026-11-21: Row *Delete the own account* (ADR-0052, #780): every person, for their own account only, with the password; refused while they are the only admin of an organization that is not closed.
 
 ## Open points
 

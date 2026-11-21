@@ -10,6 +10,12 @@ function keepLastAdmin(e, collection, scopeField) {
   if (scopeField === "band" && e.app.findRecordById("bands", e.record.getString("band")).getBool("deleted")) {
     return;
   }
+  // A closed organization keeps no admin when its last one deletes their
+  // account (ADR-0052); it takes no other writes (ADR-0044).
+  if (scopeField === "organization" &&
+    e.app.findRecordById("organizations", e.record.getString("organization")).getBool("deleted")) {
+    return;
+  }
   const before = e.record.original();
   const wasAdmin = before.getString("role") === "admin" && !before.getBool("deleted");
   const isAdmin = e.record.getString("role") === "admin" && !e.record.getBool("deleted");

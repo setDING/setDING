@@ -84,7 +84,7 @@ Enforced with PocketBase API rules; the client only mirrors them in the UI.
 | `songs`, `attachments` | members | admins; members if `members_can_edit_songs` | same as create; `deleted` admins only |
 | `setlists` | members | admins | admins |
 | `invites` | admins | – (invitation hooks, issue #16) | – |
-| `users` | self and current bandmates | sign-up open | self |
+| `users` | self and current bandmates | sign-up open | self (deleting: with the password, ADR-0052) |
 
 - Records cannot be moved to another band (`band`, `song`, `user` are fixed after
   creation); an attachment's song must belong to its band.
@@ -143,9 +143,12 @@ Enforced with PocketBase API rules; the client only mirrors them in the UI.
 - Purging soft-deleted records after a retention period (all devices must have synced).
 - Version history for songs (ADR-0004 open point) could reuse the revision counter.
 - Rate limiting for sign-up and auth endpoints (PocketBase settings).
-- Account deletion: deleting a user cascades to their memberships as a hard delete
-  (other devices do not learn about it through sync, and an organization could lose
-  its last admin). Users therefore cannot delete their account through the API
-  (`users.deleteRule = null`, issue #778); only superusers can. A deletion flow is
-  decided before the app offers it (issue #780).
+- Account deletion (ADR-0052): users delete only their own record, with their
+  password in the body of the `DELETE`; `pb_hooks/users.pb.js` refuses the only
+  admin of an organization that is not closed (also for superusers), soft-deletes
+  the memberships and clears every non-cascading reference to the user with a
+  direct update (memberships become tombstones without a person; `updated_by`,
+  `created_by`, `used_by` without a new revision). Personal adjustments,
+  annotations and personal settings cascade.
 - 2026-11-21: Users can no longer delete their own account through the API (issue #778): PocketBase's default `deleteRule` let them, which hard-deleted their memberships and could leave an organization without an admin. `users.deleteRule = null`; superusers still can. Migration `1796600000_users_no_self_delete.js`.
+- 2026-11-21: Deleting the own account (**ADR-0052**, issue #780): `users.deleteRule = "id = @request.auth.id"` again, `memberships.user` and `org_memberships.user` no longer cascade and are optional (tombstones without a person), rate limit `users:delete` (5 per minute); `pb_hooks/users.pb.js` with `lib/accounts.js` checks the password (`invalid_password`), refuses the only admin of an organization that is not closed (`organizations`/`last_admin`, the names in the message), soft-deletes the memberships, revokes the user's open invitations and clears the references in the delete's transaction. `keepLastAdmin` no longer applies in a closed organization. Migration `1796700000_account_deletion.js`.
