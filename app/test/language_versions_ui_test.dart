@@ -35,13 +35,6 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> menu(WidgetTester tester, String key) async {
-    await tester.tap(find.byType(PopupMenuButton<String>));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(Key(key)));
-    await tester.pumpAndSettle();
-  }
-
   testWidgets('a song is linked, its versions open each other, and unlinked', (
     tester,
   ) async {
