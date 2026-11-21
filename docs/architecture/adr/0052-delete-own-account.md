@@ -84,6 +84,7 @@ Deleting a user in the admin UI runs the same hook without the password check: m
 
 ## Decision log
 
+- 2026-11-21: Server implemented (#780): migration `1796700000_account_deletion.js`, `pb_hooks/users.pb.js`, `lib/accounts.js`. The hook clears `memberships.user` and `org_memberships.user` itself with the other references (a direct update after the soft delete), so PocketBase has nothing left to clear; `cascadeDelete: false` and an optional `user` remain as the safety net. The refusal names the organizations in `data.organizations.message`. `keepLastAdmin` skips closed organizations, so their last admin can leave with the account.
 - 2026-11-21: Accepted by the owner (#784), including the points the agent had decided: band leaders are not blocked, closed organizations do not block, references are cleared without new revisions, superusers go through the same hook with the last-admin refusal.
 - 2026-11-21: Proposed (#780). The owner decided: refused while the user is the last admin of an organization; immediate and final, confirmed with the password; changing the display name and the password come first (#779), changing the email address later.
 

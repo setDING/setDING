@@ -635,19 +635,26 @@ void main() {
     );
     refused(
       'member deletes somebody else\'s account',
-      () => member.delete('users', orgAdmin.id),
+      () => member.send(
+        'DELETE',
+        '/api/collections/users/records/${orgAdmin.id}',
+        body: {'password': 'password-123'},
+      ),
       unchanged: ('users', () => orgAdmin.id, 'email'),
     );
     refused(
-      'member deletes their own account (issue #778)',
+      'member deletes their own account without the password (ADR-0052)',
       () => member.delete('users', member.id),
       unchanged: ('users', () => member.id, 'email'),
     );
     refused(
-      'organization admin deletes their own account and leaves the '
-      'organization without an admin (issue #778)',
-      () => orgAdmin.delete('users', orgAdmin.id),
-      unchanged: ('org_memberships', () => adminOrgMembership, 'role'),
+      'only organization admin deletes their own account (ADR-0052)',
+      () => orgAdmin.send(
+        'DELETE',
+        '/api/collections/users/records/${orgAdmin.id}',
+        body: {'password': 'password-123'},
+      ),
+      unchanged: ('org_memberships', () => adminOrgMembership, 'deleted'),
     );
     refused(
       'member changes somebody else\'s password (issue #779)',
