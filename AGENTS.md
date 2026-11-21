@@ -51,7 +51,7 @@ The documentation must always reflect the current state of the project:
 Every change follows [`docs/development/git-workflow.md`](docs/development/git-workflow.md) (ADR-0010). The rules that are never skipped:
 
 - One issue = one branch (`<type>/<issue>-<slug>`) = one PR. **Never commit directly to `main`.**
-- **Every change happens in its own git worktree** (`git worktree add -b <branch> ../setDING-worktrees/<branch-with-dashes> origin/main`); the project folder always stays on `main` and is only fast-forwarded (`git pull --ff-only`).
+- **Every change happens in its own git worktree** (`git worktree add -b <branch> .worktrees/<branch-with-dashes> origin/main`, inside the project folder and git-ignored); the project folder always stays on `main` and is only fast-forwarded (`git pull --ff-only`).
 - **Test gate: `make check` passes on the final branch state rebased on `main` before every merge.** It runs the jobs of the areas the branch changes; run `make check-full` for larger changes, and `make release-gate` (every check plus web and Android integration tests) before a release. While working, run only the affected tests directly. Never skip, delete or weaken tests to get green. New or changed behaviour comes with tests. CI is manual-only for now; do not wait for it.
 - Conventional Commits in English, **GPG-signed** with the owner's global git identity (never a repository-local identity), and **every commit** (including squash merges) carries the `Co-Authored-By: Claude …` trailer.
 - Squash merge only, through `gh` with `--author-email andi@theboss.ch`; an agent may merge its own PR on a green local `make check` unless a "human must decide" rule applies (then label `needs-human`).

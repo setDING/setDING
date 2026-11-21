@@ -42,6 +42,9 @@ pb_data/
 # Claude Code local settings
 .claude/settings.local.json
 
+# Git worktrees, one per branch (docs/development/git-workflow.md)
+.worktrees/
+
 # Local test instance data (make dev / make start)
 .dev-data/
 
