@@ -4730,4 +4730,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shortcutKeySpace => 'Space';
+
+  @override
+  String get shortcutCloseSelection => 'Close the selection';
 }

@@ -2637,5 +2637,6 @@
   "shortcutBeat": "Start / stop the beat",
   "shortcutKeyPageDown": "Page Down",
   "shortcutKeyPageUp": "Page Up",
-  "shortcutKeySpace": "Space"
+  "shortcutKeySpace": "Space",
+  "shortcutCloseSelection": "Close the selection"
 }

@@ -42,6 +42,7 @@ focus (`DirectionalFocusIntent`).
    | + / − (also numpad) | song | personal transposition up/down (overlay, ADR-0006) |
    | ← / → | song opened from a set | previous/next song of the set; breaks and texts are skipped, the song replaces the current one, so back returns to the set |
    | / or Ctrl+F (Cmd+F) | song list | focus the search |
+   | Esc | song list with a selection | close the selection like the X, also from the search field (#739) |
 
    Live mode keeps its own keys (ADR-0007), the editor its Ctrl shortcuts.
 4. **Discoverability:** the **?** dialog lists all shortcuts, grouped by screen, with
@@ -70,6 +71,9 @@ focus (`DirectionalFocusIntent`).
 - 2026-11-21: Esc goes back (#726, implemented).
 - 2026-11-21: Proposed E, L, + / −, ← / →, / and Ctrl+F, and the ? dialog (#729).
 - 2026-11-21: Accepted by the owner; implemented in #729.
+- 2026-11-21: Esc closes the selection of the song list (#739); `PageShortcuts`
+  can let a shortcut that types nothing apply while a text field has the focus
+  (`whileTyping`).
 
 ## Open points
 
