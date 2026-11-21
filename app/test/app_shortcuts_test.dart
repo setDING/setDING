@@ -194,6 +194,37 @@ void main() {
       await app.dispose(tester);
     });
 
+    testWidgets('Esc closes the selection, also from the search', (
+      tester,
+    ) async {
+      final app = await pump(tester, const HomeScreen());
+      await openTab(tester, HomeTab.songs);
+      await app.songs.createSong(source: '{title: Ending}');
+      await tester.pumpAndSettle();
+      final title = find.descendant(
+        of: find.byType(AppBar),
+        matching: find.text('Songs'),
+      );
+      expect(title, findsOneWidget);
+
+      await tester.longPress(find.text('Ending'));
+      await tester.pumpAndSettle();
+      expect(title, findsNothing);
+      await press(tester, LogicalKeyboardKey.escape);
+      expect(title, findsOneWidget);
+
+      // From the search field, with the search text kept.
+      await tester.enterText(find.byType(SearchBar), 'End');
+      await tester.pumpAndSettle();
+      await tester.longPress(find.text('Ending'));
+      await tester.pumpAndSettle();
+      expect(searchField(tester).focusNode.hasFocus, isTrue);
+      await press(tester, LogicalKeyboardKey.escape);
+      expect(title, findsOneWidget);
+      expect(searchField(tester).controller.text, 'End');
+      await app.dispose(tester);
+    });
+
     testWidgets('a hidden tab takes no shortcuts', (tester) async {
       final app = await pump(tester, const HomeScreen());
       await openTab(tester, HomeTab.songs);

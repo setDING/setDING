@@ -238,8 +238,15 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
     });
 
     return PageShortcuts(
-      // / or Ctrl+F: search (#729).
-      bindings: {for (final a in searchShortcuts) a: _searchFocus.requestFocus},
+      // / or Ctrl+F: search (#729); Esc closes the selection like the X
+      // (#739), also from the search field.
+      bindings: {
+        for (final a in searchShortcuts) a: _searchFocus.requestFocus,
+        closeSelectionShortcut: selected == null
+            ? null
+            : () => setState(() => _selected = null),
+      },
+      whileTyping: const {closeSelectionShortcut},
       child: Scaffold(
         appBar: AppBar(
           leading: selected == null

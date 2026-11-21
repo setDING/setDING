@@ -4773,4 +4773,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get shortcutKeySpace => 'Leertaste';
+
+  @override
+  String get shortcutCloseSelection => 'Auswahl schliessen';
 }

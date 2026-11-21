@@ -17,11 +17,20 @@ import '../../l10n/generated/app_localizations.dart';
 /// - the screen is visible (not a hidden tab of an `IndexedStack`), and
 /// - no text field has the focus, so typing an "e" stays typing.
 class PageShortcuts extends StatefulWidget {
-  const PageShortcuts({super.key, required this.bindings, required this.child});
+  const PageShortcuts({
+    super.key,
+    required this.bindings,
+    this.whileTyping = const {},
+    required this.child,
+  });
 
   /// The shortcuts and what they do; a `null` callback is not active (e.g.
   /// editing without the permission).
   final Map<ShortcutActivator, VoidCallback?> bindings;
+
+  /// Shortcuts of [bindings] that also apply while a text field has the
+  /// focus, because they type nothing (Esc closing the selection, #739).
+  final Set<ShortcutActivator> whileTyping;
   final Widget child;
 
   @override
@@ -42,10 +51,12 @@ class _PageShortcutsState extends State<PageShortcuts> {
   }
 
   KeyEventResult _onKey(KeyEvent event) {
-    if (!mounted || !shortcutsActive(context)) return KeyEventResult.ignored;
+    if (!mounted || !screenActive(context)) return KeyEventResult.ignored;
+    final typing = textFieldFocused();
     for (final MapEntry(key: activator, value: callback)
         in widget.bindings.entries) {
       if (callback == null) continue;
+      if (typing && !widget.whileTyping.contains(activator)) continue;
       if (activator.accepts(event, HardwareKeyboard.instance)) {
         callback();
         return KeyEventResult.handled;
@@ -63,14 +74,13 @@ class _PageShortcutsState extends State<PageShortcuts> {
   );
 }
 
-/// Whether the screen of [context] takes single-key shortcuts now: its route
-/// is current, it is visible and no text field has the focus.
-bool shortcutsActive(BuildContext context) {
+/// Whether the screen of [context] takes shortcuts now: its route is current
+/// and it is visible.
+bool screenActive(BuildContext context) {
   final route = ModalRoute.of(context);
   if (route != null && !route.isCurrent) return false;
   // Hidden tabs of an IndexedStack have their tickers off.
-  if (!TickerMode.valuesOf(context).enabled) return false;
-  return !textFieldFocused();
+  return TickerMode.valuesOf(context).enabled;
 }
 
 /// Whether a text field has the keyboard focus.
@@ -125,6 +135,10 @@ const nextSongShortcut = SingleActivator(
   LogicalKeyboardKey.arrowRight,
   includeRepeats: false,
 );
+
+/// Esc: close the selection of the song list (#739); otherwise Esc goes
+/// back (`EscapeGoesBack`).
+const closeSelectionShortcut = SingleActivator(LogicalKeyboardKey.escape);
 
 /// ?: the list of all shortcuts.
 const helpShortcut = CharacterActivator('?');
@@ -216,6 +230,7 @@ class ShortcutHelpDialog extends StatelessWidget {
         l10n.shortcutsSongList,
         [
           (['/', _useMeta ? '⌘F' : 'Ctrl+F'], l10n.shortcutSearch),
+          (['Esc'], l10n.shortcutCloseSelection),
         ],
       ),
       (

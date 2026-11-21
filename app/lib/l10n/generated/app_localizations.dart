@@ -7434,6 +7434,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Leertaste'**
   String get shortcutKeySpace;
+
+  /// No description provided for @shortcutCloseSelection.
+  ///
+  /// In de, this message translates to:
+  /// **'Auswahl schliessen'**
+  String get shortcutCloseSelection;
 }
 
 class _AppLocalizationsDelegate

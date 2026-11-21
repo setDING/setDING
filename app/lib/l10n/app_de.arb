@@ -2954,5 +2954,6 @@
   "shortcutBeat": "Takt starten / stoppen",
   "shortcutKeyPageDown": "Bild ab",
   "shortcutKeyPageUp": "Bild auf",
-  "shortcutKeySpace": "Leertaste"
+  "shortcutKeySpace": "Leertaste",
+  "shortcutCloseSelection": "Auswahl schliessen"
 }
