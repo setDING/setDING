@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:setding/data/change_log.dart';
 import 'package:setding/data/database.dart';
+import 'package:setding/data/marker_icons.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/l10n/generated/app_localizations.dart';
 import 'package:setding/sync/band_service.dart';
@@ -83,7 +84,7 @@ void main() {
         gigDate: today.add(const Duration(days: 1)),
         venue: 'Club',
       );
-      await app.sets.addMarker(next, SetItemType.text, 'Welcome');
+      await app.sets.addMarker(next, MarkerIcons.announcement, 'Welcome');
       await app.sets.addSongs(next, [a, b]);
     });
     await tester.pumpWidget(app.build());

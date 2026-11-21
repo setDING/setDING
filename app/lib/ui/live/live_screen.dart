@@ -56,10 +56,12 @@ class LiveItem {
     this.setItemId,
     this.attachmentId,
   }) : type = SetItemType.song,
+       icon = null,
        label = null;
 
-  const LiveItem.marker(this.type, this.label)
-    : song = null,
+  const LiveItem.marker(this.icon, this.label)
+    : type = SetItemType.marker,
+      song = null,
       arrangement = null,
       setTranspose = 0,
       setSequence = null,
@@ -92,6 +94,9 @@ class LiveItem {
   final String? attachmentId;
   final String? label;
 
+  /// Key of a marker's icon (ADR-0047).
+  final String? icon;
+
   LiveItem withSetTranspose(int value) => LiveItem.song(
     song!,
     arrangement: arrangement,
@@ -101,10 +106,10 @@ class LiveItem {
     attachmentId: attachmentId,
   );
 
-  /// The song title, or the name of a pause or text item: its own note,
-  /// otherwise its type label in the current language (#289).
+  /// The song title, or the name of a marker: its own text, otherwise its
+  /// icon's name in the current language (#289, ADR-0047).
   String title(AppLocalizations l10n) => song == null
-      ? markerTitle(l10n, type, label)
+      ? markerTitle(l10n, icon, label)
       : (song!.title.isEmpty ? l10n.untitled : song!.title);
 }
 
@@ -162,7 +167,7 @@ class LiveScreen extends ConsumerStatefulWidget {
     final items = [
       for (final v in views)
         if (v.item.type != SetItemType.song)
-          LiveItem.marker(v.item.type, v.item.note)
+          LiveItem.marker(v.item.icon, v.item.note)
         else if (v.song != null)
           LiveItem.song(
             v.song!,
@@ -2417,9 +2422,7 @@ class _MarkerPage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              item.type == SetItemType.pause
-                  ? Icons.local_cafe_outlined
-                  : Icons.campaign_outlined,
+              markerIconData(item.icon),
               size: 72,
               color: theme.colorScheme.secondary,
             ),

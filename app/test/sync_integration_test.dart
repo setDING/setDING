@@ -12,6 +12,7 @@ import 'package:setding/data/arrangement_repository.dart';
 import 'package:setding/data/attachment_storage_io.dart';
 import 'package:setding/data/band_copy.dart';
 import 'package:setding/data/database.dart';
+import 'package:setding/data/marker_icons.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/data/song_repository.dart';
 import 'package:setding/sync/band_service.dart';
@@ -121,7 +122,7 @@ void main() {
         .createSong(source: '{title: Shared}\n{key: G}\n[G]Hello');
     final set = await ann.sets(band).createSet(name: 'Gig', venue: 'Bern');
     await ann.sets(band).addSongs(set, [song]);
-    await ann.sets(band).addMarker(set, SetItemType.pause, 'Break');
+    await ann.sets(band).addMarker(set, MarkerIcons.breakIcon, 'Break');
     expect((await ann.sync()).pushed, 2);
 
     await bob.sync();
@@ -149,7 +150,7 @@ void main() {
     await bob.sync();
     expect(await bob.songs(org).getSong(song), isNull);
     expect((await bob.sets(band).getItems(set)).map((i) => i.item.type), [
-      SetItemType.pause,
+      SetItemType.marker,
     ]);
     await ann.close();
     await bob.close();

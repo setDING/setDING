@@ -10,6 +10,7 @@ import 'package:uuid/uuid.dart';
 import 'arrangement_repository.dart';
 import 'attachment_storage.dart';
 import 'database.dart';
+import 'marker_icons.dart';
 import 'import_export.dart' show safeFileName, sourceWithMeta;
 import 'outbox.dart';
 import 'set_repository.dart';
@@ -420,12 +421,13 @@ class BackupService {
         'items': [
           for (final i in items)
             {
-              'type': i.type.name,
+              'type': writeItemType(i.type, i.icon),
               if (i.songId != null && songIds.contains(i.songId))
                 'songId': i.songId,
               if (i.transpose != 0) 'transpose': i.transpose,
               'sequence': ?i.sequence,
               'note': ?i.note,
+              if (i.type == SetItemType.marker) 'icon': ?i.icon,
               if (i.played case final played? when !played.isEmpty)
                 'played': played.toJson(),
             },
@@ -854,8 +856,7 @@ class BackupService {
           for (final e in (s['items'] as List?) ?? const [])
             (e as Map).cast<String, dynamic>(),
         ]) {
-          final type =
-              SetItemType.values.asNameMap()[i['type']] ?? SetItemType.text;
+          final (:type, :icon) = readItemType(i['type'], i['icon']);
           final songId = songMap[i['songId']];
           // A song item whose song is not in the archive is left out.
           if (type == SetItemType.song && songId == null) continue;
@@ -871,6 +872,7 @@ class BackupService {
                   sequence: Value(i['sequence'] as String?),
                   note: Value(i['note'] as String?),
                   type: type,
+                  icon: Value(icon),
                   played: Value(switch (i['played']) {
                     final Map<String, dynamic> played => PlayedValues.fromJson(
                       played,

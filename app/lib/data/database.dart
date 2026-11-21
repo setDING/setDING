@@ -224,8 +224,10 @@ class Setlists extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-/// Type of a set item.
-enum SetItemType { song, pause, text }
+/// Type of a set item: a song or a marker (break, announcement, encore, …
+/// with an icon and an optional text, ADR-0047). Schema 28 and older had
+/// `pause` and `text` instead of `marker`.
+enum SetItemType { song, marker }
 
 /// How the verses of a song show their chords (a personal adjustment,
 /// ADR-0006): all of them, in the first verse only (#518), or verses with
@@ -310,9 +312,13 @@ class SetItems extends Table {
   /// ADR-0006); null = as in the song.
   TextColumn get sequence => text().nullable()();
 
-  /// Label of a pause or text item.
+  /// Text of a marker; null or empty when it shows its icon's name.
   TextColumn get note => text().nullable()();
   TextColumn get type => textEnum<SetItemType>()();
+
+  /// Key of a marker's icon in the catalogue (`MarkerIcons`, ADR-0047);
+  /// null for songs.
+  TextColumn get icon => text().nullable()();
 
   /// How the song was played, frozen once the gig date is reached
   /// (ADR-0046); null before, and for sets of older clients.
@@ -612,7 +618,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 28;
+  int get schemaVersion => 29;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -858,6 +864,15 @@ class AppDatabase extends _$AppDatabase {
       if (from < 28) {
         // Origin of an imported set (ADR-0043 §1b, #707).
         await m.addColumn(setlists, setlists.origin);
+      }
+      if (from < 29) {
+        // Set markers (ADR-0047): breaks and texts become markers with an
+        // icon from their old type.
+        await m.addColumn(setItems, setItems.icon);
+        await customStatement(
+          "UPDATE set_items SET icon = CASE type WHEN 'pause' THEN 'break' "
+          "ELSE 'announcement' END, type = 'marker' WHERE type != 'song'",
+        );
       }
     },
     beforeOpen: (details) async {

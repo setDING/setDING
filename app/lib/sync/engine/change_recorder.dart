@@ -374,19 +374,21 @@ class ChangeRecorder {
     }
     Object key(
       SetItemType type,
+      String? icon,
       String? song,
       String? note,
       String? sequence,
       int transpose,
-    ) => (type, song, note ?? '', sequence ?? '', transpose);
+    ) => (type, icon, song, note ?? '', sequence ?? '', transpose);
     final old = [
       for (final i in before)
-        key(i.type, i.songId, i.note, i.sequence, i.transpose),
+        key(i.type, i.icon, i.songId, i.note, i.sequence, i.transpose),
     ];
     final current = [
       for (final i in remote.items)
         key(
           i.type,
+          i.icon,
           i.songId != null && songExists(i.songId!) ? i.songId : null,
           i.note,
           i.sequence,

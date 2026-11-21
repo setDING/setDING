@@ -4601,6 +4601,15 @@ class $SetItemsTable extends SetItems
         type: DriftSqlType.string,
         requiredDuringInsert: true,
       ).withConverter<SetItemType>($SetItemsTable.$convertertype);
+  static const VerificationMeta _iconMeta = const VerificationMeta('icon');
+  @override
+  late final GeneratedColumn<String> icon = GeneratedColumn<String>(
+    'icon',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   late final GeneratedColumnWithTypeConverter<PlayedValues?, String> played =
       GeneratedColumn<String>(
@@ -4629,6 +4638,7 @@ class $SetItemsTable extends SetItems
     sequence,
     note,
     type,
+    icon,
     played,
     extra,
   ];
@@ -4689,6 +4699,12 @@ class $SetItemsTable extends SetItems
         note.isAcceptableOrUnknown(data['note']!, _noteMeta),
       );
     }
+    if (data.containsKey('icon')) {
+      context.handle(
+        _iconMeta,
+        icon.isAcceptableOrUnknown(data['icon']!, _iconMeta),
+      );
+    }
     if (data.containsKey('extra')) {
       context.handle(
         _extraMeta,
@@ -4738,6 +4754,10 @@ class $SetItemsTable extends SetItems
           data['${effectivePrefix}type'],
         )!,
       ),
+      icon: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon'],
+      ),
       played: $SetItemsTable.$converterplayed.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.string,
@@ -4775,9 +4795,13 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
   /// ADR-0006); null = as in the song.
   final String? sequence;
 
-  /// Label of a pause or text item.
+  /// Text of a marker; null or empty when it shows its icon's name.
   final String? note;
   final SetItemType type;
+
+  /// Key of a marker's icon in the catalogue (`MarkerIcons`, ADR-0047);
+  /// null for songs.
+  final String? icon;
 
   /// How the song was played, frozen once the gig date is reached
   /// (ADR-0046); null before, and for sets of older clients.
@@ -4795,6 +4819,7 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
     this.sequence,
     this.note,
     required this.type,
+    this.icon,
     this.played,
     this.extra,
   });
@@ -4816,6 +4841,9 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
     }
     {
       map['type'] = Variable<String>($SetItemsTable.$convertertype.toSql(type));
+    }
+    if (!nullToAbsent || icon != null) {
+      map['icon'] = Variable<String>(icon);
     }
     if (!nullToAbsent || played != null) {
       map['played'] = Variable<String>(
@@ -4842,6 +4870,7 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
           : Value(sequence),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
       type: Value(type),
+      icon: icon == null && nullToAbsent ? const Value.absent() : Value(icon),
       played: played == null && nullToAbsent
           ? const Value.absent()
           : Value(played),
@@ -4867,6 +4896,7 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
       type: $SetItemsTable.$convertertype.fromJson(
         serializer.fromJson<String>(json['type']),
       ),
+      icon: serializer.fromJson<String?>(json['icon']),
       played: serializer.fromJson<PlayedValues?>(json['played']),
       extra: serializer.fromJson<String?>(json['extra']),
     );
@@ -4885,6 +4915,7 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
       'type': serializer.toJson<String>(
         $SetItemsTable.$convertertype.toJson(type),
       ),
+      'icon': serializer.toJson<String?>(icon),
       'played': serializer.toJson<PlayedValues?>(played),
       'extra': serializer.toJson<String?>(extra),
     };
@@ -4899,6 +4930,7 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
     Value<String?> sequence = const Value.absent(),
     Value<String?> note = const Value.absent(),
     SetItemType? type,
+    Value<String?> icon = const Value.absent(),
     Value<PlayedValues?> played = const Value.absent(),
     Value<String?> extra = const Value.absent(),
   }) => SetItemEntry(
@@ -4910,6 +4942,7 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
     sequence: sequence.present ? sequence.value : this.sequence,
     note: note.present ? note.value : this.note,
     type: type ?? this.type,
+    icon: icon.present ? icon.value : this.icon,
     played: played.present ? played.value : this.played,
     extra: extra.present ? extra.value : this.extra,
   );
@@ -4923,6 +4956,7 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
       sequence: data.sequence.present ? data.sequence.value : this.sequence,
       note: data.note.present ? data.note.value : this.note,
       type: data.type.present ? data.type.value : this.type,
+      icon: data.icon.present ? data.icon.value : this.icon,
       played: data.played.present ? data.played.value : this.played,
       extra: data.extra.present ? data.extra.value : this.extra,
     );
@@ -4939,6 +4973,7 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
           ..write('sequence: $sequence, ')
           ..write('note: $note, ')
           ..write('type: $type, ')
+          ..write('icon: $icon, ')
           ..write('played: $played, ')
           ..write('extra: $extra')
           ..write(')'))
@@ -4955,6 +4990,7 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
     sequence,
     note,
     type,
+    icon,
     played,
     extra,
   );
@@ -4970,6 +5006,7 @@ class SetItemEntry extends DataClass implements Insertable<SetItemEntry> {
           other.sequence == this.sequence &&
           other.note == this.note &&
           other.type == this.type &&
+          other.icon == this.icon &&
           other.played == this.played &&
           other.extra == this.extra);
 }
@@ -4983,6 +5020,7 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
   final Value<String?> sequence;
   final Value<String?> note;
   final Value<SetItemType> type;
+  final Value<String?> icon;
   final Value<PlayedValues?> played;
   final Value<String?> extra;
   final Value<int> rowid;
@@ -4995,6 +5033,7 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
     this.sequence = const Value.absent(),
     this.note = const Value.absent(),
     this.type = const Value.absent(),
+    this.icon = const Value.absent(),
     this.played = const Value.absent(),
     this.extra = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -5008,6 +5047,7 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
     this.sequence = const Value.absent(),
     this.note = const Value.absent(),
     required SetItemType type,
+    this.icon = const Value.absent(),
     this.played = const Value.absent(),
     this.extra = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -5024,6 +5064,7 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
     Expression<String>? sequence,
     Expression<String>? note,
     Expression<String>? type,
+    Expression<String>? icon,
     Expression<String>? played,
     Expression<String>? extra,
     Expression<int>? rowid,
@@ -5037,6 +5078,7 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
       if (sequence != null) 'sequence': sequence,
       if (note != null) 'note': note,
       if (type != null) 'type': type,
+      if (icon != null) 'icon': icon,
       if (played != null) 'played': played,
       if (extra != null) 'extra': extra,
       if (rowid != null) 'rowid': rowid,
@@ -5052,6 +5094,7 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
     Value<String?>? sequence,
     Value<String?>? note,
     Value<SetItemType>? type,
+    Value<String?>? icon,
     Value<PlayedValues?>? played,
     Value<String?>? extra,
     Value<int>? rowid,
@@ -5065,6 +5108,7 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
       sequence: sequence ?? this.sequence,
       note: note ?? this.note,
       type: type ?? this.type,
+      icon: icon ?? this.icon,
       played: played ?? this.played,
       extra: extra ?? this.extra,
       rowid: rowid ?? this.rowid,
@@ -5100,6 +5144,9 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
         $SetItemsTable.$convertertype.toSql(type.value),
       );
     }
+    if (icon.present) {
+      map['icon'] = Variable<String>(icon.value);
+    }
     if (played.present) {
       map['played'] = Variable<String>(
         $SetItemsTable.$converterplayed.toSql(played.value),
@@ -5125,6 +5172,7 @@ class SetItemsCompanion extends UpdateCompanion<SetItemEntry> {
           ..write('sequence: $sequence, ')
           ..write('note: $note, ')
           ..write('type: $type, ')
+          ..write('icon: $icon, ')
           ..write('played: $played, ')
           ..write('extra: $extra, ')
           ..write('rowid: $rowid')
@@ -13296,6 +13344,7 @@ typedef $$SetItemsTableCreateCompanionBuilder = SetItemsCompanion Function({
   Value<String?> sequence,
   Value<String?> note,
   required SetItemType type,
+  Value<String?> icon,
   Value<PlayedValues?> played,
   Value<String?> extra,
   Value<int> rowid,
@@ -13309,6 +13358,7 @@ typedef $$SetItemsTableUpdateCompanionBuilder = SetItemsCompanion Function({
   Value<String?> sequence,
   Value<String?> note,
   Value<SetItemType> type,
+  Value<String?> icon,
   Value<PlayedValues?> played,
   Value<String?> extra,
   Value<int> rowid,
@@ -13392,6 +13442,11 @@ class $$SetItemsTableFilterComposer
         column: $table.type,
         builder: (column) => ColumnWithTypeConverterFilters(column),
       );
+
+  ColumnFilters<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnWithTypeConverterFilters<PlayedValues?, PlayedValues, String>
   get played => $composableBuilder(
@@ -13490,6 +13545,11 @@ class $$SetItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get played => $composableBuilder(
     column: $table.played,
     builder: (column) => ColumnOrderings(column),
@@ -13573,6 +13633,9 @@ class $$SetItemsTableAnnotationComposer
 
   GeneratedColumnWithTypeConverter<SetItemType, String> get type =>
       $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get icon =>
+      $composableBuilder(column: $table.icon, builder: (column) => column);
 
   GeneratedColumnWithTypeConverter<PlayedValues?, String> get played =>
       $composableBuilder(column: $table.played, builder: (column) => column);
@@ -13663,6 +13726,7 @@ class $$SetItemsTableTableManager
                 Value<String?> sequence = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<SetItemType> type = const Value.absent(),
+                Value<String?> icon = const Value.absent(),
                 Value<PlayedValues?> played = const Value.absent(),
                 Value<String?> extra = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -13675,6 +13739,7 @@ class $$SetItemsTableTableManager
                 sequence: sequence,
                 note: note,
                 type: type,
+                icon: icon,
                 played: played,
                 extra: extra,
                 rowid: rowid,
@@ -13689,6 +13754,7 @@ class $$SetItemsTableTableManager
                 Value<String?> sequence = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 required SetItemType type,
+                Value<String?> icon = const Value.absent(),
                 Value<PlayedValues?> played = const Value.absent(),
                 Value<String?> extra = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -13701,6 +13767,7 @@ class $$SetItemsTableTableManager
                 sequence: sequence,
                 note: note,
                 type: type,
+                icon: icon,
                 played: played,
                 extra: extra,
                 rowid: rowid,

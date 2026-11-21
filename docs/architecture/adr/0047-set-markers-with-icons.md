@@ -195,6 +195,12 @@ their own fields and are decided separately.
 - 2026-11-21: Every marker is a divider in the set list (no divider per icon);
   the text is limited to 24 characters (owner, #717).
 - 2026-11-21: Accepted by the owner (#718).
+- 2026-11-21: Data layer implemented (#722): catalogue `MarkerIcons`
+  (`app/lib/data/marker_icons.dart`), local schema 29 (`set_items.type`
+  `song`/`marker`, `set_items.icon`), sync, backup and set archive with
+  `icon` and the derived `type`; the server hook `pb_hooks/setlists.pb.js`
+  keeps `played` and `icon` alike. A song missing from an imported set
+  archive (ADR-0043 §1b) becomes a marker with the *warning* icon.
 
 ## Open points
 

@@ -121,6 +121,7 @@ class SetSync {
               sequence: Value(item.sequence),
               note: Value(item.note),
               type: item.type,
+              icon: Value(item.icon),
               played: Value(item.played),
               extra: Value(item.extraJson),
             ),

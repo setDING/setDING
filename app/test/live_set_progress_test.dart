@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:pdfrx/pdfrx.dart';
-import 'package:setding/data/database.dart' show SetItemType;
+import 'package:setding/data/marker_icons.dart';
 import 'package:setding/data/demo_song.dart';
 import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/ui/live/set_progress_bar.dart';
@@ -94,7 +94,7 @@ void main() {
     await tester.pumpWidget(
       app.build(
         home: LiveScreen(
-          items: [...items, const LiveItem.marker(SetItemType.pause, null)],
+          items: [...items, const LiveItem.marker(MarkerIcons.breakIcon, null)],
         ),
       ),
     );
@@ -146,8 +146,8 @@ void main() {
       app.build(
         home: const LiveScreen(
           items: [
-            LiveItem.marker(SetItemType.pause, 'Break'),
-            LiveItem.marker(SetItemType.text, 'Hello'),
+            LiveItem.marker(MarkerIcons.breakIcon, 'Break'),
+            LiveItem.marker(MarkerIcons.announcement, 'Hello'),
           ],
         ),
       ),

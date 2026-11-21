@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:setding/data/attachment_storage_io.dart';
 import 'package:setding/data/change_log.dart';
 import 'package:setding/data/database.dart';
+import 'package:setding/data/marker_icons.dart';
 import 'package:setding/data/song_repository.dart';
 import 'package:setding/sync/band_service.dart';
 import 'package:setding/sync/engine/arrangement_sync.dart';
@@ -49,7 +50,11 @@ void main() {
           _song('1', 'a'),
           _song('4', 'd'),
           _song('5', 'e'),
-          const RemoteSetItem(id: '6', type: SetItemType.pause),
+          const RemoteSetItem(
+            id: '6',
+            type: SetItemType.marker,
+            icon: MarkerIcons.breakIcon,
+          ),
         ]),
         (2, 2, ''),
       );

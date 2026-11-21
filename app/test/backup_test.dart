@@ -11,6 +11,7 @@ import 'package:setding/data/arrangement_repository.dart';
 import 'package:setding/data/attachment_storage_io.dart';
 import 'package:setding/data/backup.dart';
 import 'package:setding/data/database.dart';
+import 'package:setding/data/marker_icons.dart';
 import 'package:setding/data/outbox.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/data/song_repository.dart';
@@ -87,7 +88,7 @@ void main() {
     await db
         .update(db.setItems)
         .write(const SetItemsCompanion(played: Value(PlayedValues(key: 'D'))));
-    await sets.addMarker(setId, SetItemType.pause, 'Break');
+    await sets.addMarker(setId, MarkerIcons.breakIcon, 'Break');
     return (song: song, pdfOnly: pdfOnly, attachment: attachment);
   }
 

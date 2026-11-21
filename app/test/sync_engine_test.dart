@@ -13,6 +13,7 @@ import 'package:setding/data/attachment_storage_io.dart';
 import 'package:setding/data/attachment_storage.dart';
 import 'package:setding/data/band_copy.dart';
 import 'package:setding/data/database.dart';
+import 'package:setding/data/marker_icons.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/data/song_repository.dart';
 import 'package:setding/data/outbox.dart';
@@ -295,7 +296,7 @@ void main() {
       await engine.sync();
       final setId = await sets.createSet(name: 'Gig', venue: 'Bern');
       await sets.addSongs(setId, ['s1']);
-      await sets.addMarker(setId, SetItemType.pause, 'Break');
+      await sets.addMarker(setId, MarkerIcons.breakIcon, 'Break');
       final item = (await sets.getItems(setId)).first.item;
       await sets.setItemTranspose(item.id, 2);
 
@@ -312,6 +313,7 @@ void main() {
             'id': (await sets.getItems(setId)).last.item.id,
             'type': 'pause',
             'note': 'Break',
+            'icon': 'break',
           },
         ],
       );
@@ -353,7 +355,12 @@ void main() {
               sequence: 'V, C',
             ),
             RemoteSetItem(id: 'i2', type: SetItemType.song, songId: 'unknown'),
-            RemoteSetItem(id: 'i3', type: SetItemType.text, note: 'Encore'),
+            RemoteSetItem(
+              id: 'i3',
+              type: SetItemType.marker,
+              icon: MarkerIcons.encore,
+              note: 'Encore',
+            ),
           ],
         ),
       );
@@ -727,7 +734,7 @@ void main() {
       final id = await songs.createSong(source: '{title: A}');
       final setId = await sets.createSet(name: 'Gig');
       await sets.addSongs(setId, [id]);
-      await sets.addMarker(setId, SetItemType.pause, 'Break');
+      await sets.addMarker(setId, MarkerIcons.breakIcon, 'Break');
       await engine.sync();
       final deleted = await sets.deleteSet(setId);
       await engine.sync();
@@ -1493,13 +1500,20 @@ void main() {
     expect(item.type, SetItemType.song);
     expect(item.transpose, -2);
     expect(item.toJson(), json);
-    // Unknown types (newer clients) become text items; no ID gets a new one.
+    // Unknown types (newer clients) become markers; no ID gets a new one.
     final odd = RemoteSetItem.fromJson({'type': 'medley', 'note': 'x'});
-    expect((odd.type, odd.id, odd.note), (SetItemType.text, '', 'x'));
-    expect(const RemoteSetItem(id: 'i2', type: SetItemType.pause).toJson(), {
-      'id': 'i2',
-      'type': 'pause',
-    });
+    expect(
+      (odd.type, odd.icon, odd.id, odd.note),
+      (SetItemType.marker, MarkerIcons.announcement, '', 'x'),
+    );
+    expect(
+      const RemoteSetItem(
+        id: 'i2',
+        type: SetItemType.marker,
+        icon: MarkerIcons.breakIcon,
+      ).toJson(),
+      {'id': 'i2', 'type': 'pause', 'icon': 'break'},
+    );
   });
 
   test('the sync store looks up large batches in chunks', () async {
@@ -1628,7 +1642,8 @@ void main() {
     expect(
       const RemoteSetItem(
         id: 'i2',
-        type: SetItemType.pause,
+        type: SetItemType.marker,
+        icon: MarkerIcons.breakIcon,
         extra: {'type': 'medley'},
       ).toJson()['type'],
       'pause',

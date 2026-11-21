@@ -878,6 +878,114 @@ abstract class AppLocalizations {
   /// **'z. B. Ansage oder Zugabe'**
   String get textItemHint;
 
+  /// No description provided for @markerIconBreak.
+  ///
+  /// In de, this message translates to:
+  /// **'Pause'**
+  String get markerIconBreak;
+
+  /// No description provided for @markerIconDrinks.
+  ///
+  /// In de, this message translates to:
+  /// **'Getränke'**
+  String get markerIconDrinks;
+
+  /// No description provided for @markerIconAnnouncement.
+  ///
+  /// In de, this message translates to:
+  /// **'Ansage'**
+  String get markerIconAnnouncement;
+
+  /// No description provided for @markerIconMicrophone.
+  ///
+  /// In de, this message translates to:
+  /// **'Rede'**
+  String get markerIconMicrophone;
+
+  /// No description provided for @markerIconGuest.
+  ///
+  /// In de, this message translates to:
+  /// **'Gast'**
+  String get markerIconGuest;
+
+  /// No description provided for @markerIconEncore.
+  ///
+  /// In de, this message translates to:
+  /// **'Zugabe'**
+  String get markerIconEncore;
+
+  /// No description provided for @markerIconTransition.
+  ///
+  /// In de, this message translates to:
+  /// **'Übergang'**
+  String get markerIconTransition;
+
+  /// No description provided for @markerIconSolo.
+  ///
+  /// In de, this message translates to:
+  /// **'Solo'**
+  String get markerIconSolo;
+
+  /// No description provided for @markerIconApplause.
+  ///
+  /// In de, this message translates to:
+  /// **'Applaus'**
+  String get markerIconApplause;
+
+  /// No description provided for @markerIconInstrument.
+  ///
+  /// In de, this message translates to:
+  /// **'Instrumentwechsel'**
+  String get markerIconInstrument;
+
+  /// No description provided for @markerIconTuning.
+  ///
+  /// In de, this message translates to:
+  /// **'Stimmen'**
+  String get markerIconTuning;
+
+  /// No description provided for @markerIconClick.
+  ///
+  /// In de, this message translates to:
+  /// **'Click'**
+  String get markerIconClick;
+
+  /// No description provided for @markerIconLight.
+  ///
+  /// In de, this message translates to:
+  /// **'Licht'**
+  String get markerIconLight;
+
+  /// No description provided for @markerIconEffects.
+  ///
+  /// In de, this message translates to:
+  /// **'Effekte'**
+  String get markerIconEffects;
+
+  /// No description provided for @markerIconCelebration.
+  ///
+  /// In de, this message translates to:
+  /// **'Feier'**
+  String get markerIconCelebration;
+
+  /// No description provided for @markerIconInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Hinweis'**
+  String get markerIconInfo;
+
+  /// No description provided for @markerIconWarning.
+  ///
+  /// In de, this message translates to:
+  /// **'Achtung'**
+  String get markerIconWarning;
+
+  /// No description provided for @marker.
+  ///
+  /// In de, this message translates to:
+  /// **'Hinweis'**
+  String get marker;
+
   /// No description provided for @setEmpty.
   ///
   /// In de, this message translates to:

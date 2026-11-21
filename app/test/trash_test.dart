@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:setding/data/attachment_storage_io.dart';
 import 'package:setding/data/band_copy.dart';
 import 'package:setding/data/database.dart';
+import 'package:setding/data/marker_icons.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/data/song_repository.dart';
 import 'package:setding/data/trash.dart';
@@ -97,7 +98,7 @@ void main() {
       final song = await songs.createSong(source: '{title: A}');
       final setId = await sets.createSet(name: 'Gig');
       await sets.addSongs(setId, [song]);
-      await sets.addMarker(setId, SetItemType.pause, 'Break');
+      await sets.addMarker(setId, MarkerIcons.breakIcon, 'Break');
       await sets.deleteSet(setId);
       expect(await sets.watchSets().first, isEmpty);
       expect(
@@ -113,7 +114,7 @@ void main() {
 
     test('the undo still works on a set that keeps its items', () async {
       final setId = await sets.createSet(name: 'Gig');
-      await sets.addMarker(setId, SetItemType.pause, 'Break');
+      await sets.addMarker(setId, MarkerIcons.breakIcon, 'Break');
       final deleted = await sets.deleteSet(setId);
       await sets.restoreSet(deleted);
       expect((await sets.watchSets().first).single.itemCount, 1);
@@ -188,7 +189,7 @@ void main() {
     test('the deletion time and the items of a deleted set reach the '
         'server', () async {
       final setId = await sets.createSet(name: 'Gig');
-      await sets.addMarker(setId, SetItemType.pause, 'Break');
+      await sets.addMarker(setId, MarkerIcons.breakIcon, 'Break');
       await engine.sync();
       await sets.deleteSet(setId);
       final local = (await (db.select(
@@ -205,7 +206,7 @@ void main() {
     test('a set deleted on another device is in the trash with its items '
         'and can be restored', () async {
       final setId = await sets.createSet(name: 'Gig');
-      await sets.addMarker(setId, SetItemType.pause, 'Break');
+      await sets.addMarker(setId, MarkerIcons.breakIcon, 'Break');
       await engine.sync();
       final remote = server.sets[setId]!;
       server.putSet(

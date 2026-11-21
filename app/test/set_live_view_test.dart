@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:setding/data/attachment_lookup.dart';
 import 'package:setding/data/database.dart';
+import 'package:setding/data/marker_icons.dart';
 import 'package:setding/data/song_repository.dart';
 import 'package:setding/ui/sets/set_screen.dart';
 import 'package:setding/ui/widgets/key_picker.dart';
@@ -46,7 +47,7 @@ Future<({String songId, String setId, List<String> pdfIds})> _setup(
   }
   final setId = await app.sets.createSet(name: 'Gig');
   await app.sets.addSongs(setId, [songId]);
-  if (pause) await app.sets.addMarker(setId, SetItemType.pause, 'Break');
+  if (pause) await app.sets.addMarker(setId, MarkerIcons.breakIcon, 'Break');
   return (songId: songId, setId: setId, pdfIds: pdfIds);
 }
 

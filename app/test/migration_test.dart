@@ -8,7 +8,7 @@ import 'package:setding/data/change_log.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/data/song_repository.dart';
-import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
+import 'package:drift/drift.dart' show OrderingTerm, Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqlite3/sqlite3.dart';
@@ -39,9 +39,20 @@ void downgradeToSchema19(Database raw) {
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN midi_programs');
 }
 
+/// Turns a current database back into schema 28: breaks and texts instead
+/// of markers with an icon (ADR-0047).
+void downgradeToSchema28(Database raw) {
+  raw.execute(
+    "UPDATE set_items SET type = CASE WHEN icon IN ('break', 'drinks') "
+    "THEN 'pause' ELSE 'text' END WHERE type = 'marker'",
+  );
+  raw.execute('ALTER TABLE set_items DROP COLUMN icon');
+}
+
 /// Turns a current database back into schema 27: sets without their
 /// origin (#707).
 void downgradeToSchema27(Database raw) {
+  downgradeToSchema28(raw);
   raw.execute('ALTER TABLE setlists DROP COLUMN origin');
 }
 
@@ -1009,6 +1020,40 @@ void main() {
     final upgraded = AppDatabase(NativeDatabase(file));
     final set = await upgraded.select(upgraded.setlists).getSingle();
     expect((set.name, set.venue, set.origin), ('Gig', 'Bern', null));
+    await upgraded.close();
+  });
+
+  test('upgrades a schema 28 database: breaks and texts become markers with '
+      'an icon (ADR-0047)', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final sets = SetRepository(current, FileAttachmentStorage(dir));
+    final setId = await sets.createSet(name: 'Gig');
+    await sets.addMarker(setId, 'break', '');
+    await sets.addMarker(setId, 'announcement', 'Hello');
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema28(raw);
+    expect(
+      raw
+          .select('SELECT type FROM set_items ORDER BY position')
+          .map((r) => r['type']),
+      ['pause', 'text'],
+    );
+    raw.execute('PRAGMA user_version = 28');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final items = await (upgraded.select(
+      upgraded.setItems,
+    )..orderBy([(i) => OrderingTerm(expression: i.position)])).get();
+    expect(
+      [for (final i in items) (i.type, i.icon, i.note)],
+      [
+        (SetItemType.marker, 'break', ''),
+        (SetItemType.marker, 'announcement', 'Hello'),
+      ],
+    );
     await upgraded.close();
   });
 }

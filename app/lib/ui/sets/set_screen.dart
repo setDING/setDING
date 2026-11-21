@@ -7,6 +7,7 @@ import '../sync_hints.dart';
 import '../../data/attachment_lookup.dart';
 import '../../data/attachment_storage.dart';
 import '../../data/database.dart';
+import '../../data/marker_icons.dart';
 import '../../data/import_export.dart';
 import '../../data/set_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
@@ -59,9 +60,9 @@ class _SetScreenState extends ConsumerState<SetScreen> {
     if (ids.isNotEmpty) await _repo.addSongs(widget.setId, ids);
   }
 
-  Future<void> _addMarker(SetItemType type) async {
+  Future<void> _addMarker(String icon) async {
     final l10n = AppLocalizations.of(context);
-    final pause = type == SetItemType.pause;
+    final pause = MarkerIcons.isBreak(icon);
     // A break needs no note of its own: left empty, it shows the type label
     // in each member's UI language (#289).
     final label = await askText(
@@ -71,7 +72,7 @@ class _SetScreenState extends ConsumerState<SetScreen> {
       allowEmpty: pause,
     );
     if (label != null) {
-      await _repo.addMarker(widget.setId, type, markerNote(type, label) ?? '');
+      await _repo.addMarker(widget.setId, icon, markerNote(icon, label) ?? '');
     }
   }
 
@@ -209,8 +210,8 @@ class _SetScreenState extends ConsumerState<SetScreen> {
               ],
               PopupMenuButton<String>(
                 onSelected: (value) => switch (value) {
-                  'pause' => _addMarker(SetItemType.pause),
-                  'text' => _addMarker(SetItemType.text),
+                  'pause' => _addMarker(MarkerIcons.breakIcon),
+                  'text' => _addMarker(MarkerIcons.announcement),
                   'export' => _export(set),
                   'exportListPdf' => _exportSetListPdf(set),
                   'copyToBand' => copySetToBand(context, ref, set.id),
@@ -346,7 +347,7 @@ class _SetItemTile extends ConsumerWidget {
         song == null
             ? l10n.songMissing
             : (song.title.isEmpty ? l10n.untitled : song.title),
-      _ => markerTitle(l10n, item.type, item.note),
+      _ => markerTitle(l10n, item.icon, item.note),
     };
     Future<void> remove() async {
       final messenger = ScaffoldMessenger.of(context);
@@ -361,16 +362,16 @@ class _SetItemTile extends ConsumerWidget {
     }
 
     Future<void> editMarker() async {
-      final pause = item.type == SetItemType.pause;
+      final pause = MarkerIcons.isBreak(item.icon);
       final label = await askText(
         context,
         title: l10n.edit,
-        initial: markerNote(item.type, item.note) ?? '',
+        initial: markerNote(item.icon, item.note) ?? '',
         hint: pause ? l10n.pause : l10n.textItemHint,
         allowEmpty: pause,
       );
       if (label != null) {
-        await repo.updateMarker(item.id, markerNote(item.type, label) ?? '');
+        await repo.updateMarker(item.id, markerNote(item.icon, label) ?? '');
       }
     }
 
@@ -378,8 +379,8 @@ class _SetItemTile extends ConsumerWidget {
       // The type label is shown once: as the title without a note of its own
       // (also a break still named "Pause" or "Break" from any UI language),
       // otherwise below the note (#268, #289).
-      final typeLabel = markerTypeLabel(l10n, item.type);
-      final note = markerNote(item.type, item.note);
+      final typeLabel = markerIconName(l10n, item.icon);
+      final note = markerNote(item.icon, item.note);
       final hasNote = note != null;
       return ListTile(
         leading: SizedBox(
