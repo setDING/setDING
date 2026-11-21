@@ -1,12 +1,15 @@
 ---
 title: Offline ready, print and share
-description: When a set can be played without a network, and how to print or share the set list.
+description: When a set can be played without a network, how to print or share the set list, and how to export and import a set.
 sidebar:
   order: 3
 ---
 
 import { Image } from 'astro:assets';
 import menu from '../../../../../../docs/screenshots/set_menu.png';
+import exportDialog from '../../../../../../docs/screenshots/set_export.png';
+import importDialog from '../../../../../../docs/screenshots/set_import.png';
+import importResult from '../../../../../../docs/screenshots/set_import_result.png';
 
 ## Offline ready
 
@@ -37,9 +40,48 @@ desk or the edge of the stage, for example.
   group chat or an email.
 - **Export set list (text)** saves the same text as a file.
 
-## Export the songs as a ZIP
+## Export a set
 
-**Export as ZIP** saves all songs of the set as ChordPro files with their PDF
-attachments in a ZIP archive, numbered in the order of the set, plus the set list as
-`setlist.txt`. Use it to pass the songs on to someone outside your band, or as a
-backup.
+**Export as ZIP** saves the set as a ZIP archive: every song as a ChordPro file,
+numbered in the order of the set, and a description from which setDING imports the
+set again – with its breaks, texts, date and venue. Before saving, choose what goes
+into the archive:
+
+- **Band arrangements of the songs** – the band's key, sequence and tempo.
+- **Key and sequence of the songs in this set**.
+- **Attachments** – PDFs and images of the songs.
+- **My personal adjustments and notes** – off by default. Leave it off if you pass
+  the file on.
+
+<Image src={exportDialog} alt="The dialog «Export set» with the options for band arrangements, key and sequence in this set, attachments and personal adjustments" />
+
+The ChordPro files can be opened without setDING too, so the archive also serves to
+pass songs on to someone outside your band. For the set list on its own, use the
+exports above.
+
+## Import a set
+
+Import the ZIP in the set list's ⋮ menu with **Import set**, or with **Import files** in
+the song list. setDING recognises an exported set and shows what the import will do
+before anything changes:
+
+- **Into band** – the band the set goes to.
+- Songs that are **already here** with the same text are used as they are; **new**
+  songs are added to the library. For songs that exist with a different text you
+  choose once: keep the existing ones or import them as additional songs.
+- If the set is **already in the band** (you exported it from there, or imported it
+  before), choose **Replace it** to bring it to the state of the archive, or **Add as
+  a copy**.
+- **Also import** – the same choices as for the export, as far as the archive holds
+  them. Band arrangements that the band already has stay as they are unless you tick
+  **Overwrite the band's arrangements**.
+- As a **set planner** you may not add songs to the library: songs that are missing
+  there become text items such as «Missing: Amazing Grace» in the set, and the report
+  lists them, so someone with the right can add them.
+
+<Image src={importDialog} alt="The dialog «Import set» with the band, the choice to replace the set or add a copy, the songs already here and new, and the options" />
+
+The report afterwards shows what was imported, with **Open set** to go straight to
+it.
+
+<Image src={importResult} alt="The report «Set imported»: the existing set was replaced, one song imported, one already here" />

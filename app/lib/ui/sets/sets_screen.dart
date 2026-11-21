@@ -14,6 +14,7 @@ import '../trash/trash_screen.dart';
 import '../widgets/breakpoint_builder.dart';
 import '../widgets/dialogs.dart';
 import 'repertoire_screen.dart';
+import 'set_archive_dialogs.dart';
 import 'set_screen.dart';
 
 /// Minimum width for showing the list of sets and the selected set side by
@@ -122,17 +123,25 @@ class _SetsPane extends ConsumerWidget {
             ),
           ),
           const BandSwitcher(),
-          // ADR-0043: whoever may delete sets may restore them.
+          // ADR-0043: whoever may delete sets may restore them, and import
+          // an exported set (§1b).
           if (band.canManageSets)
             PopupMenuButton<String>(
               key: const Key('sets-menu'),
-              onSelected: (_) => Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (_) => TrashScreen.sets(bandId: band.id),
-                ),
-              ),
+              onSelected: (value) => value == 'import'
+                  ? pickSetArchive(context, bandId: band.id)
+                  : Navigator.push(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (_) => TrashScreen.sets(bandId: band.id),
+                      ),
+                    ),
               itemBuilder: (_) => [
+                PopupMenuItem(
+                  key: const Key('sets-import'),
+                  value: 'import',
+                  child: Text(l10n.setImport),
+                ),
                 PopupMenuItem(
                   key: const Key('sets-trash'),
                   value: 'trash',

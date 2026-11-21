@@ -4388,4 +4388,140 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get syncHintShowChanges => 'Show';
+
+  @override
+  String get setExportTitle => 'Export set';
+
+  @override
+  String get setExportHint =>
+      'The ZIP holds the ChordPro files of the songs and a description from which setDING imports the set again as a set.';
+
+  @override
+  String get setArchiveArrangements =>
+      'Band arrangements of the songs (key, sequence, tempo)';
+
+  @override
+  String get setArchiveSetSettings =>
+      'Key and sequence of the songs in this set';
+
+  @override
+  String get setArchiveAttachments => 'Attachments (PDFs, images)';
+
+  @override
+  String get setArchivePersonal => 'My personal adjustments and notes';
+
+  @override
+  String get setArchivePersonalHint =>
+      'Leave this off if you pass the file on.';
+
+  @override
+  String get setExportStart => 'Export';
+
+  @override
+  String get setImport => 'Import set';
+
+  @override
+  String get setImportTitle => 'Import set';
+
+  @override
+  String setImportSummary(String set, String band, int songs) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: '$songs songs',
+      one: '1 song',
+      zero: 'no songs',
+    );
+    return '\"$set\" from $band: $_temp0.';
+  }
+
+  @override
+  String get setImportBand => 'Into band';
+
+  @override
+  String get setImportNoBand =>
+      'There is no band in this library whose sets you may manage.';
+
+  @override
+  String setImportAdded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs are new and will be added to the library.',
+      one: '1 song is new and will be added to the library.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String setImportMissing(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs are not in the library.',
+      one: '1 song is not in the library.',
+    );
+    return '$_temp0 You may not add songs, so the set shows them as text items:';
+  }
+
+  @override
+  String setImportExisting(String name) {
+    return 'This set is already in the band as \"$name\":';
+  }
+
+  @override
+  String get setImportReplace => 'Replace it';
+
+  @override
+  String get setImportCopy => 'Add as a copy';
+
+  @override
+  String get setImportAlso => 'Also import:';
+
+  @override
+  String setImportOverwriteArrangements(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs',
+      one: '1 song',
+    );
+    return 'Overwrite the band\'s arrangements of $_temp0';
+  }
+
+  @override
+  String get setImportDone => 'Set imported';
+
+  @override
+  String get setImportReplaced => 'The existing set was replaced.';
+
+  @override
+  String setImportResultArrangements(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count band arrangements saved',
+      one: '1 band arrangement saved',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get setImportResultMissing =>
+      'Not in the library, shown as text items in the set:';
+
+  @override
+  String get setImportOpen => 'Open set';
+
+  @override
+  String setImportMissingNote(String title) {
+    return 'Missing: $title';
+  }
+
+  @override
+  String get setArchiveInvalid => 'This file is not an exported set.';
+
+  @override
+  String get setArchiveNewer =>
+      'This set was exported with a newer version of setDING. Update the app to import it.';
 }

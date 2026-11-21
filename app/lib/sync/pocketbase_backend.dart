@@ -641,6 +641,7 @@ class PocketBaseBackend implements SyncBackend {
       name: r.getStringValue('name'),
       gigDate: date.isEmpty ? null : DateTime.parse(date),
       venue: venue.isEmpty ? null : venue,
+      origin: _nonEmpty(r.getStringValue('origin')),
       items: items is List
           ? [
               for (final i in items)
@@ -739,6 +740,8 @@ class PocketBaseBackend implements SyncBackend {
         'gig_date':
             set.gigDate?.toUtc().toIso8601String().replaceFirst('T', ' ') ?? '',
         'venue': set.venue ?? '',
+        // Only sent when set: an update without it keeps the stored one.
+        'origin': ?set.origin,
         'items': [for (final i in set.items) i.toJson()],
         'deleted': set.deleted,
         'deleted_at': _dateValue(set.deletedAt),

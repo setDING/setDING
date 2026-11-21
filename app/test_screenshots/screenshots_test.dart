@@ -13,6 +13,8 @@ import 'dart:ui' as ui;
 import 'package:chordpro/chordpro.dart' show Subdivision;
 
 import 'package:setding/data/arrangement_repository.dart';
+import 'package:setding/data/set_archive.dart';
+import 'package:setding/data/backup.dart';
 import 'package:setding/data/import_export.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/data/demo_song.dart';
@@ -695,6 +697,108 @@ void main() {
       }
       expect(report, findsOneWidget);
       await _shot(tester, '${lang}_23b_import_labels');
+      await app.dispose(tester);
+    });
+  }
+
+  // Set archive (ADR-0043 §1b, #707): the export options, the preview of an
+  // import that finds the set again and the report.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    _screenshotTest('set archive $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      final (setId, zip) = (await tester.runAsync(() async {
+        final morning = await app.songs.createSong(
+          source:
+              '{title: Morning Light}\n{artist: Ann Trainor}\n{key: D}\n'
+              '[D]Morning light on the [G]hill\n',
+        );
+        final grace = await app.songs.createSong(
+          source: '{title: Amazing Grace}\n{key: G}\n[G]Amazing grace\n',
+        );
+        await ArrangementRepository(app.db)
+            .save(localBandId, morning, transpose: 2, sequence: 'V1, C, V2, C');
+        final set = await app.sets.createSet(
+          name: lang == 'de' ? 'Sommerfest' : 'Summer party',
+          gigDate: DateTime(2027, 6, 21),
+          venue: 'Bern',
+        );
+        await app.sets.addSongs(set, [morning]);
+        await app.sets.addMarker(set, SetItemType.pause, '');
+        await app.sets.addSongs(set, [grace]);
+        final zip = await SetArchiveService(BackupService(app.db, app.storage))
+            .export(set);
+        // Gone from the library since: the import adds it again.
+        await app.songs.deleteSong(grace);
+        return (set, zip);
+      }))!;
+
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: SetScreen(setId: setId)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AppBar),
+          matching: find.byType(PopupMenuButton<String>),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text(lang == 'de' ? 'Als ZIP exportieren' : 'Export as ZIP'),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('set-export')), findsOneWidget);
+      await _shot(tester, '${lang}_27_set_export');
+
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => Center(
+                  child: TextButton(
+                    onPressed: () => showImportDialog(
+                      context,
+                      pick: ({extensions}) async => [
+                        ImportFile('set.zip', zip),
+                      ],
+                    ),
+                    child: const Text('import'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('import'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text(lang == 'de' ? 'Dateien auswählen' : 'Choose files'),
+      );
+      // The preview reads the database outside the fake clock.
+      Future<void> waitFor(Finder finder) async {
+        for (var i = 0; i < 100 && finder.evaluate().isEmpty; i++) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 20)),
+          );
+          await tester.pump(const Duration(milliseconds: 20));
+        }
+        expect(finder, findsOneWidget);
+      }
+
+      await waitFor(find.byKey(const Key('set-import-replace')));
+      await _shot(tester, '${lang}_27b_set_import');
+      await tester.tap(find.byKey(const Key('set-import-start')));
+      await waitFor(find.byKey(const Key('set-import-result')));
+      await _shot(tester, '${lang}_27c_set_import_result');
       await app.dispose(tester);
     });
   }

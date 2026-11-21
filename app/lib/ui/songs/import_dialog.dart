@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/backup.dart';
 import '../../data/import_export.dart';
+import '../../data/set_archive.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../backup/full_backup.dart';
+import '../sets/set_archive_dialogs.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
 
@@ -60,6 +62,33 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
         final parent = widget.parent;
         if (parent.mounted) await openBackup(parent, files.single.bytes);
         return;
+      }
+      // An exported set is imported as a set (ADR-0043 §1b).
+      if (files.length == 1 &&
+          files.single.name.toLowerCase().endsWith('.zip')) {
+        final SetArchive? archive;
+        try {
+          archive = await SetArchiveService.read(files.single.bytes);
+        } on BackupFormatException {
+          if (!mounted) return;
+          setState(() => _busy = false);
+          showMessage(context, l10n.setArchiveNewer);
+          return;
+        }
+        if (archive != null) {
+          if (!mounted) return;
+          Navigator.pop(context);
+          final parent = widget.parent;
+          if (parent.mounted) {
+            await importSetArchive(
+              parent,
+              files.single.bytes,
+              archive: archive,
+              bandId: ref.read(currentBandProvider).id,
+            );
+          }
+          return;
+        }
       }
       final result = await ref
           .read(importExportProvider)

@@ -39,9 +39,16 @@ void downgradeToSchema19(Database raw) {
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN midi_programs');
 }
 
+/// Turns a current database back into schema 27: sets without their
+/// origin (#707).
+void downgradeToSchema27(Database raw) {
+  raw.execute('ALTER TABLE setlists DROP COLUMN origin');
+}
+
 /// Turns a current database back into schema 26: overlays without the
 /// grouping and subdivisions of the click (#698).
 void downgradeToSchema26(Database raw) {
+  downgradeToSchema27(raw);
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN click_grouping');
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN click_subdivision');
 }
@@ -982,6 +989,26 @@ void main() {
         .getSingle();
     expect(changed.clickGrouping, '3+2+2');
     expect(changed.clickSubdivision, Subdivision.triplets);
+    await upgraded.close();
+  });
+
+  test('upgrades a schema 27 database: sets keep their values and have no '
+      'origin (#707)', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    await SetRepository(
+      current,
+      FileAttachmentStorage(dir),
+    ).createSet(name: 'Gig', venue: 'Bern');
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema27(raw);
+    raw.execute('PRAGMA user_version = 27');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final set = await upgraded.select(upgraded.setlists).getSingle();
+    expect((set.name, set.venue, set.origin), ('Gig', 'Bern', null));
     await upgraded.close();
   });
 }

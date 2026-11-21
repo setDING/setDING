@@ -40,6 +40,9 @@ map=(
   import_labels 23b_import_labels
   editor_ccli 24_editor_ccli
   sync_hint 26_sync_hint
+  set_export 27_set_export
+  set_import 27b_set_import
+  set_import_result 27c_set_import_result
 )
 
 for ((i = 0; i < ${#map[@]}; i += 2)); do

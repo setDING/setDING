@@ -138,8 +138,10 @@ again **as a set**:
   in the target band, as an earlier import remembers the original ID): the
   preview offers to **replace** the existing set (its fields and items) or to
   add a copy. This is the one exception to "nothing existing is
-  overwritten"; replacing is a normal change, so it can be undone and the
-  previous items stay in the change history.
+  overwritten"; replacing is a normal change of the set, synced like an
+  edit. The origin is the setlist field `origin` (schema 28, server
+  migration `1796500000_set_origin.js`); exporting an imported set keeps
+  the original ID, so copies of copies are found too.
 - **Missing songs** that the person may not create (set planner, ADR-0023)
   become text items "missing: <title>" in the set and are listed in the
   import report; the set is imported anyway.
@@ -225,6 +227,11 @@ Deleted songs and sets can be **restored for 30 days**.
   band in the app. Foreign set formats: #708.
 - 2026-11-21: Set archive (section 1b) accepted by the owner (#709);
   implementation in #707.
+- 2026-11-21: Implemented (#707): `SetArchiveService` (format `setding-set`,
+  version 1) shares the song and personal import with the backup; export
+  dialog in the set's menu, import from the import dialog of the song list
+  and from the set list's menu (also for set planners); setlist field
+  `origin`.
 
 ## Open points
 

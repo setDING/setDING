@@ -318,6 +318,26 @@ void main() {
       expect(await outbox(), isEmpty);
     });
 
+    test('syncs the origin of an imported set (#707)', () async {
+      await engine.sync();
+      final setId = await sets.createSet(name: 'Gig', origin: 'original');
+      await engine.sync();
+      expect(server.sets[setId]!.origin, 'original');
+
+      final stored = server.sets[setId]!;
+      server.putSet(
+        RemoteSet(
+          id: setId,
+          bandId: stored.bandId,
+          name: 'Renamed',
+          origin: stored.origin,
+        ),
+      );
+      await engine.sync();
+      final local = (await sets.getSet(setId))!;
+      expect((local.name, local.origin), ('Renamed', 'original'));
+    });
+
     test('pulls sets; unknown songs become missing items', () async {
       server.putSong(remoteSong('s1', '{title: A}'));
       server.putSet(

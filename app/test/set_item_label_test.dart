@@ -1,11 +1,9 @@
-import 'dart:convert';
-
-import 'package:archive/archive.dart';
 import 'package:chordpro/chordpro.dart' as cp;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:setding/data/backup.dart';
 import 'package:setding/data/database.dart';
-import 'package:setding/data/import_export.dart';
+import 'package:setding/data/set_archive.dart';
 import 'package:setding/l10n/generated/app_localizations.dart';
 import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/ui/sets/set_item_label.dart';
@@ -167,26 +165,20 @@ void main() {
         '— Coffee —\n',
       );
 
-      final service = ImportExportService(app.songs, app.sets);
-      final l10n = language == 'de' ? de : en;
+      // The set archive keeps the notes as stored: the label is shown in
+      // the language of whoever imports it (ADR-0043 §1b).
       final zip = (await tester.runAsync(
-        () => service.exportSet(
-          data.$1,
-          markerTitle: (item) => markerTitle(l10n, item.type, item.note),
-        ),
+        () =>
+            SetArchiveService(BackupService(app.db, app.storage))
+                .export(data.$1.id),
       ))!;
-      final setlist = ZipDecoder().decodeBytes(zip).findFile('setlist.txt')!;
-      expect(
-        utf8.decode(setlist.content as List<int>),
-        'Gig\n'
-        '\n'
-        '01  Song (G)\n'
-        '02  -- $label --\n'
-        '03  -- $label --\n'
-        '04  -- $label --\n'
-        '05  -- Coffee --\n'
-        '06  -- Text --\n',
-      );
+      final archive = (await tester.runAsync(
+        () => SetArchiveService.read(zip),
+      ))!;
+      final notes = [
+        for (final i in archive.set['items'] as List) (i as Map)['note'],
+      ];
+      expect(notes, [for (final v in data.$2) v.item.note]);
       await app.dispose(tester);
     });
   }
