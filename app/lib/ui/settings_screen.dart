@@ -24,7 +24,6 @@ import 'widgets/breakpoint_builder.dart';
 import 'widgets/click_pickers.dart' show subdivisionLabel;
 import 'widgets/dialogs.dart';
 import 'widgets/section_header.dart';
-import 'widgets/page_width.dart';
 
 /// The categories of the settings screen, in order.
 /// The most used ones come first; the account and the organizations and
@@ -111,14 +110,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
               const VerticalDivider(width: 1),
+              // The full width of the pane: wide enough, the sections flow
+              // into two columns (SettingsSections, #774).
               Expanded(
-                child: PageWidth(
-                  alignment: AlignmentDirectional.topStart,
-                  child: _CategoryContent(
-                    key: ValueKey(selected),
-                    category: selected,
-                    showTitle: true,
-                  ),
+                child: _CategoryContent(
+                  key: ValueKey(selected),
+                  category: selected,
+                  showTitle: true,
                 ),
               ),
             ],

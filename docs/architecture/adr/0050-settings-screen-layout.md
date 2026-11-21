@@ -64,6 +64,15 @@ without thinking about it.
 8. **Account & sync and Organization & bands are exempt** from the section rule:
    they show the account and lists of organizations and bands rather than options.
    Their options still have icons.
+9. **The content uses the width of its pane** (#774). Beside the category list, a
+   category fills the pane instead of a 720 column (ADR-0051). From a pane width of
+   **1040** (`settingsTwoColumnWidth`), `SettingsSections` flows the sections into
+   **two columns** of equal width: in order, the first sections on the left, split
+   where the two columns are closest in height, a divider between two sections of a
+   column. The keyboard moves through the left column first, then the right one.
+   Narrower, the sections fill the width in one column. *Song display* stays in one
+   column (`twoColumns: false`): its preview needs the width to show the song as on
+   the screen.
 
 ## Alternatives considered
 
@@ -88,6 +97,7 @@ without thinking about it.
 - 2026-11-21: Proposed (#766), together with the implementation.
 - 2026-11-21: Accepted by the owner (#768).
 - 2026-11-21: The section heading is the app-wide `SectionHeader` of ADR-0051 (#743): bold like the other sections of the app; the layout rules here are unchanged.
+- 2026-11-21: The owner decided that the settings use the width of their pane (#774): two columns of sections from 1040, full width below; the song display stays in one column for its preview (point 9).
 
 ## Open points
 

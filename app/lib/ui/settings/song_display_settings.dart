@@ -221,7 +221,9 @@ class SongDisplaySettings extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final display = ref.watch(settingsProvider.select((s) => s.songDisplay));
-    return SettingsSections([
+    // One column: the preview needs the width to show the song as on the
+    // screen (#774).
+    return SettingsSections(twoColumns: false, [
       SettingsSection(
         title: l10n.settingsHeadingStyle,
         children: [
