@@ -5,6 +5,9 @@ sidebar:
   order: 1
 ---
 
+import { Image } from 'astro:assets';
+import shortcuts from '../../../../../../docs/screenshots/shortcuts.png';
+
 ## The terms
 
 - **Organization:** for example a music school, a church or simply your band. All
@@ -35,9 +38,23 @@ Invitation links are valid for 7 days. If a link has expired, ask for a new one.
 
 ## With a keyboard
 
-On a computer or a tablet with a keyboard, the **Esc** key takes you one step back
-on every screen, like the arrow at the top left, e.g. from a song back to the song
-list. If a dialog or menu is open, Esc first closes only that.
+On a computer or a tablet with a keyboard, many things take a single key. The **?**
+key shows you all keyboard shortcuts at any time:
+
+<Image src={shortcuts} alt="The Keyboard shortcuts dialog: Esc, ?, E, L, + and −, arrow keys, search and the keys of live mode" />
+
+- **Esc** takes you one step back on every screen, like the arrow at the top left,
+  e.g. from a song back to the song list. If a dialog or menu is open, Esc first
+  closes only that.
+- **E** edits the song or set if you may; **L** starts live mode.
+- **+** and **−** transpose the song for you (like the key under **Personal
+  adjustments**).
+- **←** and **→** go to the previous and next song when you opened the song from a
+  set.
+- **/** or **Ctrl+F** (Mac: **⌘F**) jumps to the search of the song list.
+
+While you type in a text field, the letter shortcuts do not apply: an "e" stays an
+"e".
 
 ## Playing offline
 

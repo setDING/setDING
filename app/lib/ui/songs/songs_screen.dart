@@ -19,6 +19,7 @@ import '../bands/copy_to_band.dart';
 import '../bands/library_switcher.dart';
 import '../render/song_header.dart';
 import '../sets/sets_screen.dart' show formatGigDate;
+import '../widgets/app_shortcuts.dart';
 import '../widgets/breakpoint_builder.dart';
 import '../widgets/dialogs.dart';
 import 'chordpro_problems_badge.dart';
@@ -50,6 +51,7 @@ class SongsScreen extends ConsumerStatefulWidget {
 
 class _SongsScreenState extends ConsumerState<SongsScreen> {
   final _search = TextEditingController();
+  final _searchFocus = FocusNode();
   String _query = '';
   Timer? _searchDebounce;
 
@@ -87,6 +89,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
   void dispose() {
     _searchDebounce?.cancel();
     _search.dispose();
+    _searchFocus.dispose();
     super.dispose();
   }
 
@@ -203,236 +206,243 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
       if (previous?.id != next.id) setState(() => _selected = null);
     });
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: selected == null
-            ? null
-            : IconButton(
-                tooltip: l10n.cancel,
-                icon: const Icon(Icons.close),
-                onPressed: () => setState(() => _selected = null),
+    return PageShortcuts(
+      // / or Ctrl+F: search (#729).
+      bindings: {for (final a in searchShortcuts) a: _searchFocus.requestFocus},
+      child: Scaffold(
+        appBar: AppBar(
+          leading: selected == null
+              ? null
+              : IconButton(
+                  tooltip: l10n.cancel,
+                  icon: const Icon(Icons.close),
+                  onPressed: () => setState(() => _selected = null),
+                ),
+          title: Text(
+            selected == null
+                ? l10n.navSongs
+                : l10n.songsSelected(selected.length),
+          ),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(64),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: SearchBar(
+                controller: _search,
+                focusNode: _searchFocus,
+                hintText: l10n.searchSongs,
+                leading: const Icon(Icons.search),
+                trailing: [
+                  if (_search.text.isNotEmpty)
+                    IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _searchDebounce?.cancel();
+                        _search.clear();
+                        setState(() => _query = '');
+                      },
+                    ),
+                ],
+                onChanged: _onSearchChanged,
               ),
-        title: Text(
-          selected == null
-              ? l10n.navSongs
-              : l10n.songsSelected(selected.length),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(64),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            child: SearchBar(
-              controller: _search,
-              hintText: l10n.searchSongs,
-              leading: const Icon(Icons.search),
-              trailing: [
-                if (_search.text.isNotEmpty)
-                  IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () {
-                      _searchDebounce?.cancel();
-                      _search.clear();
-                      setState(() => _query = '');
-                    },
-                  ),
-              ],
-              onChanged: _onSearchChanged,
             ),
           ),
-        ),
-        actions: selected != null
-            ? [
-                IconButton(
-                  tooltip: l10n.selectAll,
-                  icon: const Icon(Icons.select_all),
-                  onPressed: () => setState(
-                    () => _selected = {
-                      for (final s in shownSongs(
-                        _shown?.songs ?? const <SongListEntry>[],
-                      ))
-                        s.id,
+          actions: selected != null
+              ? [
+                  IconButton(
+                    tooltip: l10n.selectAll,
+                    icon: const Icon(Icons.select_all),
+                    onPressed: () => setState(
+                      () => _selected = {
+                        for (final s in shownSongs(
+                          _shown?.songs ?? const <SongListEntry>[],
+                        ))
+                          s.id,
+                      },
+                    ),
+                  ),
+                  IconButton(
+                    key: const Key('songs-copy-to-band'),
+                    tooltip: l10n.copyToBand,
+                    icon: const Icon(Icons.drive_file_move_outline),
+                    onPressed: () async {
+                      await copySongsToBand(
+                        context,
+                        ref,
+                        selected.toList(),
+                        fromLibraryId: library.id,
+                      );
+                      if (mounted) setState(() => _selected = null);
                     },
                   ),
-                ),
-                IconButton(
-                  key: const Key('songs-copy-to-band'),
-                  tooltip: l10n.copyToBand,
-                  icon: const Icon(Icons.drive_file_move_outline),
-                  onPressed: () async {
-                    await copySongsToBand(
-                      context,
-                      ref,
-                      selected.toList(),
-                      fromLibraryId: library.id,
-                    );
-                    if (mounted) setState(() => _selected = null);
-                  },
-                ),
-              ]
-            : [
-                const LibrarySwitcher(),
-                if (library.canCreateSongs) ...[
-                  // Also on web: imported songs are synced (ADR-0018).
-                  IconButton(
-                    key: const Key('songs-import'),
-                    tooltip: l10n.importFiles,
-                    icon: const Icon(Icons.file_open_outlined),
-                    onPressed: () => showImportDialog(context),
-                  ),
-                  IconButton(
-                    tooltip: l10n.newPdfSong,
-                    icon: const Icon(Icons.picture_as_pdf_outlined),
-                    onPressed: _newPdfSong,
+                ]
+              : [
+                  const LibrarySwitcher(),
+                  if (library.canCreateSongs) ...[
+                    // Also on web: imported songs are synced (ADR-0018).
+                    IconButton(
+                      key: const Key('songs-import'),
+                      tooltip: l10n.importFiles,
+                      icon: const Icon(Icons.file_open_outlined),
+                      onPressed: () => showImportDialog(context),
+                    ),
+                    IconButton(
+                      tooltip: l10n.newPdfSong,
+                      icon: const Icon(Icons.picture_as_pdf_outlined),
+                      onPressed: _newPdfSong,
+                    ),
+                  ],
+                  PopupMenuButton<String>(
+                    key: const Key('songs-menu'),
+                    onSelected: (value) => switch (value) {
+                      'trash' => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) =>
+                              TrashScreen.songs(libraryId: library.id),
+                        ),
+                      ),
+                      'backup' => exportBackup(context, ref, library),
+                      'usage' => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) => LibraryUsageScreen(library: library),
+                        ),
+                      ),
+                      _ => setState(() => _selected = {}),
+                    },
+                    itemBuilder: (_) => [
+                      PopupMenuItem(
+                        value: 'select',
+                        child: Text(l10n.selectMode),
+                      ),
+                      // ADR-0043: whoever may delete songs may restore them.
+                      if (library.canDeleteSongs)
+                        PopupMenuItem(
+                          key: const Key('songs-trash'),
+                          value: 'trash',
+                          child: Text(l10n.trash),
+                        ),
+                      // ADR-0046: songs no band of the organization played,
+                      // for those who maintain the library.
+                      if (!library.isLocal && library.isLibrarian)
+                        PopupMenuItem(
+                          key: const Key('songs-usage'),
+                          value: 'usage',
+                          child: Text(l10n.libraryUsage),
+                        ),
+                      // ADR-0043: the whole library as a backup archive.
+                      if (library.canExportLibrary)
+                        PopupMenuItem(
+                          key: const Key('songs-backup'),
+                          value: 'backup',
+                          child: Text(l10n.backupExport),
+                        ),
+                    ],
                   ),
                 ],
-                PopupMenuButton<String>(
-                  key: const Key('songs-menu'),
-                  onSelected: (value) => switch (value) {
-                    'trash' => Navigator.push(
-                      context,
-                      MaterialPageRoute<void>(
-                        builder: (_) =>
-                            TrashScreen.songs(libraryId: library.id),
-                      ),
-                    ),
-                    'backup' => exportBackup(context, ref, library),
-                    'usage' => Navigator.push(
-                      context,
-                      MaterialPageRoute<void>(
-                        builder: (_) => LibraryUsageScreen(library: library),
-                      ),
-                    ),
-                    _ => setState(() => _selected = {}),
-                  },
-                  itemBuilder: (_) => [
-                    PopupMenuItem(
-                      value: 'select',
-                      child: Text(l10n.selectMode),
-                    ),
-                    // ADR-0043: whoever may delete songs may restore them.
-                    if (library.canDeleteSongs)
-                      PopupMenuItem(
-                        key: const Key('songs-trash'),
-                        value: 'trash',
-                        child: Text(l10n.trash),
-                      ),
-                    // ADR-0046: songs no band of the organization played,
-                    // for those who maintain the library.
-                    if (!library.isLocal && library.isLibrarian)
-                      PopupMenuItem(
-                        key: const Key('songs-usage'),
-                        value: 'usage',
-                        child: Text(l10n.libraryUsage),
-                      ),
-                    // ADR-0043: the whole library as a backup archive.
-                    if (library.canExportLibrary)
-                      PopupMenuItem(
-                        key: const Key('songs-backup'),
-                        value: 'backup',
-                        child: Text(l10n.backupExport),
-                      ),
-                  ],
+        ),
+        floatingActionButton: !library.canCreateSongs || selected != null
+            ? null
+            : FloatingActionButton.extended(
+                heroTag: null,
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) => const SongEditorScreen(),
+                  ),
                 ),
-              ],
-      ),
-      floatingActionButton: !library.canCreateSongs || selected != null
-          ? null
-          : FloatingActionButton.extended(
-              heroTag: null,
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (_) => const SongEditorScreen(),
-                ),
+                icon: const Icon(Icons.add),
+                label: Text(l10n.newSong),
               ),
-              icon: const Icon(Icons.add),
-              label: Text(l10n.newSong),
+        body: Column(
+          children: [
+            _Filters(
+              tag: _tag,
+              onTag: (tag) => setState(() => _tag = tag),
+              attention: attention,
+              showPlayed: lastPlayed != null,
+              played: played,
+              onPlayed: (filter) => setState(() => _played = filter),
             ),
-      body: Column(
-        children: [
-          _Filters(
-            tag: _tag,
-            onTag: (tag) => setState(() => _tag = tag),
-            attention: attention,
-            showPlayed: lastPlayed != null,
-            played: played,
-            onPlayed: (filter) => setState(() => _played = filter),
-          ),
-          Expanded(
-            child: AsyncBody(
-              value: results,
-              data: (results) {
-                final (songs: all, :hits, :sort) = results;
-                final list = shownSongs(all);
-                if (list.isEmpty) {
+            Expanded(
+              child: AsyncBody(
+                value: results,
+                data: (results) {
+                  final (songs: all, :hits, :sort) = results;
+                  final list = shownSongs(all);
+                  if (list.isEmpty) {
+                    return SyncRefresh(
+                      scrollable: false,
+                      child: EmptyState(
+                        icon: Icons.library_music_outlined,
+                        message:
+                            (attention == null && played == null) || all.isEmpty
+                            ? l10n.songsEmpty
+                            : l10n.songsFilterEmpty,
+                      ),
+                    );
+                  }
+                  final sections = _sectionsOf(
+                    list,
+                    byLastPlayed ? SongSort.lastPlayed : sort,
+                    notation,
+                    l10n,
+                  );
+                  Widget tile(int i) => SongTile(
+                    song: list[i],
+                    hasAttachments: (counts[list[i].id] ?? 0) > 0,
+                    arrangement: arrangements[list[i].id],
+                    hasConflict: conflicts.contains(list[i].id),
+                    showProblems: library.canEditSongBy(
+                      createdBy: list[i].createdBy,
+                      updatedBy: list[i].updatedBy,
+                    ),
+                    nextGig: gigs[list[i].id],
+                    hit: hits[list[i].id],
+                    bandName: band?.name ?? '',
+                    playedNote: !byLastPlayed
+                        ? null
+                        : switch (lastPlayed[list[i].id]) {
+                            final date? => l10n.songLastPlayed(
+                              formatGigDate(context, date),
+                            ),
+                            null => l10n.songNeverPlayed,
+                          },
+                    leading: selected == null
+                        ? null
+                        : Checkbox(
+                            value: selected.contains(list[i].id),
+                            onChanged: (_) => _toggle(list[i].id),
+                          ),
+                    onLongPress: () => _toggle(list[i].id),
+                    onTap: selected != null
+                        ? () => _toggle(list[i].id)
+                        : () => Navigator.push(
+                            context,
+                            MaterialPageRoute<void>(
+                              builder: (_) => SongScreen(songId: list[i].id),
+                            ),
+                          ),
+                  );
                   return SyncRefresh(
-                    scrollable: false,
-                    child: EmptyState(
-                      icon: Icons.library_music_outlined,
-                      message:
-                          (attention == null && played == null) || all.isEmpty
-                          ? l10n.songsEmpty
-                          : l10n.songsFilterEmpty,
+                    child: BreakpointBuilder(
+                      select: (constraints) =>
+                          constraints.maxWidth >= songListTwoColumnWidth
+                          ? 2
+                          : 1,
+                      builder: (context, columns) => _songList(
+                        songListRows(sections, columns),
+                        columns,
+                        tile,
+                      ),
                     ),
                   );
-                }
-                final sections = _sectionsOf(
-                  list,
-                  byLastPlayed ? SongSort.lastPlayed : sort,
-                  notation,
-                  l10n,
-                );
-                Widget tile(int i) => SongTile(
-                  song: list[i],
-                  hasAttachments: (counts[list[i].id] ?? 0) > 0,
-                  arrangement: arrangements[list[i].id],
-                  hasConflict: conflicts.contains(list[i].id),
-                  showProblems: library.canEditSongBy(
-                    createdBy: list[i].createdBy,
-                    updatedBy: list[i].updatedBy,
-                  ),
-                  nextGig: gigs[list[i].id],
-                  hit: hits[list[i].id],
-                  bandName: band?.name ?? '',
-                  playedNote: !byLastPlayed
-                      ? null
-                      : switch (lastPlayed[list[i].id]) {
-                          final date? => l10n.songLastPlayed(
-                            formatGigDate(context, date),
-                          ),
-                          null => l10n.songNeverPlayed,
-                        },
-                  leading: selected == null
-                      ? null
-                      : Checkbox(
-                          value: selected.contains(list[i].id),
-                          onChanged: (_) => _toggle(list[i].id),
-                        ),
-                  onLongPress: () => _toggle(list[i].id),
-                  onTap: selected != null
-                      ? () => _toggle(list[i].id)
-                      : () => Navigator.push(
-                          context,
-                          MaterialPageRoute<void>(
-                            builder: (_) => SongScreen(songId: list[i].id),
-                          ),
-                        ),
-                );
-                return SyncRefresh(
-                  child: BreakpointBuilder(
-                    select: (constraints) =>
-                        constraints.maxWidth >= songListTwoColumnWidth ? 2 : 1,
-                    builder: (context, columns) => _songList(
-                      songListRows(sections, columns),
-                      columns,
-                      tile,
-                    ),
-                  ),
-                );
-              },
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

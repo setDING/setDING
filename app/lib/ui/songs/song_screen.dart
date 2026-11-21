@@ -24,6 +24,7 @@ import '../render/render_cache.dart';
 import '../render/song_header.dart';
 import '../render/song_image.dart';
 import '../render/song_view.dart';
+import '../widgets/app_shortcuts.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
 import '../widgets/key_picker.dart';
@@ -50,10 +51,17 @@ class SongScreen extends ConsumerStatefulWidget {
     super.key,
     required this.songId,
     this.pickPdfOnOpen = false,
+    this.setSongs,
+    this.setIndex = 0,
   });
 
   final String songId;
   final bool pickPdfOnOpen;
+
+  /// The songs of the set the song was opened from, in order, and the
+  /// song's place among them: ← and → open the previous and next one (#729).
+  final List<String>? setSongs;
+  final int setIndex;
 
   @override
   ConsumerState<SongScreen> createState() => _SongScreenState();
@@ -83,6 +91,20 @@ class _SongScreenState extends ConsumerState<SongScreen> {
   }
 
   SongRepository get _repo => ref.read(songRepositoryProvider);
+
+  /// Opens the song [delta] places away in the set, in place of this one.
+  void Function()? _setSibling(int delta) {
+    final songs = widget.setSongs;
+    final index = widget.setIndex + delta;
+    if (songs == null || index < 0 || index >= songs.length) return null;
+    return () => Navigator.pushReplacement(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            SongScreen(songId: songs[index], setSongs: songs, setIndex: index),
+      ),
+    );
+  }
 
   Future<void> _updateOverlay(SongOverlay Function(SongOverlay) change) =>
       _repo.updateOverlay(widget.songId, change);
@@ -283,263 +305,284 @@ class _SongScreenState extends ConsumerState<SongScreen> {
               : showImageAttachment(context, a),
         );
 
-        return Scaffold(
-          key: _scaffold,
-          // The song stays readable behind a side panel.
-          drawerScrimColor: Colors.black12,
-          endDrawerEnableOpenDragGesture: false,
-          endDrawer: switch (_panel) {
-            _Panel.band when band != null => BandArrangementPanel(
-              band: band,
-              song: song,
-              parsed: parsed,
-              arrangement: arrangement,
-            ),
-            _Panel.played when historyBand != null => PlayHistoryPanel(
-              band: historyBand,
-              song: song,
-              parsed: parsed,
-            ),
-            _Panel.personal => SidePanel(
-              key: const Key('personal-adjustments'),
-              icon: Icons.tune,
-              title: l10n.personalAdjustments,
-              scope: SettingScope.personal,
-              children: [
-                _AdjustmentsBar(
-                  songKey: parsed.key,
-                  formatter: formatter,
-                  songCapo: parsed.capoFret,
-                  notation: settings.notation,
-                  overlay: overlay,
-                  deviceNashville: settings.nashville,
-                  hasKey: parsed.key != null,
-                  song: parsed,
-                  beatEnabled: settings.beatEnabled,
-                  playClick: settings.playClick,
-                  subdivisionSetting: settings.clickSubdivision,
-                  onChanged: _updateOverlay,
-                ),
-                // The keyboard programs per profile (ADR-0039, ADR-0042).
-                if (SongRepository.midiProgramsOf(
-                      overlay,
-                      settings.midiDeviceProfile.id,
-                    )
-                    case final programs
-                    when MidiProgramField.visible(
-                      keyboard: settings.isKeyboard,
-                      midiEnabled: settings.midiEnabled,
-                      programs: programs,
-                    )) ...[
-                  const SizedBox(height: 16),
-                  MidiProgramField(songId: song.id, programs: programs),
-                ],
-                const SizedBox(height: 16),
-                _AnnotationsSection(
-                  songId: song.id,
-                  overlay: overlay,
-                  onChanged: _updateOverlay,
-                ),
-              ],
-            ),
-            _Panel.links => SongLinksPanel(
-              links: links,
-              onAdd: canEdit
-                  ? (url, label) => _repo.updateSource(
-                      song.id,
-                      addSourceLink(song.chordproSource, url, label: label),
-                    )
-                  : null,
-              onChange: canEdit
-                  ? (index, url, label) => _repo.updateSource(
-                      song.id,
-                      replaceSourceLink(
-                        song.chordproSource,
-                        index,
-                        url,
-                        label: label,
-                      ),
-                    )
-                  : null,
-            ),
-            _Panel.attachments => SidePanel(
-              key: const Key('song-attachments'),
-              icon: Icons.attach_file,
-              title: l10n.attachments,
-              children: [attachmentsCard(inPanel: true)],
-            ),
-            _ => null,
+        void transpose(int delta) => _updateOverlay(
+          (o) => o.copyWith(transpose: normalizeSemitones(o.transpose + delta)),
+        );
+        return PageShortcuts(
+          bindings: {
+            editShortcut: canEdit
+                ? () =>
+                      _editSource(song, showProblem: song.chordproProblems > 0)
+                : null,
+            liveShortcut: () => LiveScreen.openSong(context, song.id),
+            for (final a in transposeUpShortcuts) a: () => transpose(1),
+            for (final a in transposeDownShortcuts) a: () => transpose(-1),
+            previousSongShortcut: _setSibling(-1),
+            nextSongShortcut: _setSibling(1),
           },
-          appBar: AppBar(
-            title: Text(song.title.isEmpty ? l10n.untitled : song.title),
-            actions: [
-              if (canEdit) ...[
-                // Editing is a key function: its own button rather than an
-                // overflow menu entry (#600). ChordPro problems show as its
-                // badge and open the editor at the first one (#314).
-                IconButton(
-                  key: const Key('edit-song'),
-                  tooltip: song.chordproProblems > 0
-                      ? l10n.chordProProblemsShow(song.chordproProblems)
-                      : l10n.editSource,
-                  icon: Badge(
-                    key: song.chordproProblems > 0
-                        ? const Key('song-problems')
-                        : null,
-                    isLabelVisible: song.chordproProblems > 0,
-                    backgroundColor: chordProProblemColor(context),
-                    textColor: Theme.of(context).colorScheme.surface,
-                    label: Text('${song.chordproProblems}'),
-                    child: const Icon(Icons.edit_outlined),
-                  ),
-                  onPressed: () =>
-                      _editSource(song, showProblem: song.chordproProblems > 0),
-                ),
-                // Sets the song's own edit button apart from the panels.
-                const VerticalDivider(
-                  key: Key('edit-song-divider'),
-                  width: 16,
-                  indent: 16,
-                  endIndent: 16,
-                ),
-              ],
-              if (showBand)
-                BadgedIconButton(
-                  key: const Key('open-band-arrangement'),
-                  tooltip: l10n.bandArrangement,
-                  icon: Icons.groups_outlined,
-                  active: arrangement != null,
-                  onPressed: () => _open(_Panel.band),
-                ),
-              // How the band played the song before (ADR-0046).
-              if (historyBand != null && (plays > 0 || otherPlays > 0))
-                BadgedIconButton(
-                  key: const Key('open-play-history'),
-                  tooltip: l10n.playHistory,
-                  icon: Icons.history,
-                  count: plays,
-                  onPressed: () => _open(_Panel.played),
-                ),
-              BadgedIconButton(
-                key: const Key('open-personal-adjustments'),
-                tooltip: l10n.personalAdjustments,
+          child: Scaffold(
+            key: _scaffold,
+            // The song stays readable behind a side panel.
+            drawerScrimColor: Colors.black12,
+            endDrawerEnableOpenDragGesture: false,
+            endDrawer: switch (_panel) {
+              _Panel.band when band != null => BandArrangementPanel(
+                band: band,
+                song: song,
+                parsed: parsed,
+                arrangement: arrangement,
+              ),
+              _Panel.played when historyBand != null => PlayHistoryPanel(
+                band: historyBand,
+                song: song,
+                parsed: parsed,
+              ),
+              _Panel.personal => SidePanel(
+                key: const Key('personal-adjustments'),
                 icon: Icons.tune,
-                // Freehand annotations change how the song looks, too.
-                active:
-                    overlay.hasAdjustments ||
-                    (!overlay.hideAnnotations &&
-                        settings.showAnnotations &&
-                        (ref.watch(annotationCountProvider(song.id)).value ??
-                                0) >
-                            0),
-                onPressed: () => _open(_Panel.personal),
-              ),
-              if (attachmentsInPanel)
-                BadgedIconButton(
-                  key: const Key('open-attachments'),
-                  tooltip: l10n.attachments,
-                  icon: Icons.attach_file,
-                  count: attachments.length,
-                  onPressed: () => _open(_Panel.attachments),
-                ),
-              if (links.isNotEmpty || canEdit)
-                BadgedIconButton(
-                  key: const Key('open-song-links'),
-                  tooltip: l10n.songLinks,
-                  icon: Icons.headphones_outlined,
-                  count: links.length,
-                  onPressed: () => _open(_Panel.links),
-                ),
-              PopupMenuButton<String>(
-                onSelected: (value) => switch (value) {
-                  'title' => _editTitle(song),
-                  'export' => _export(song),
-                  'copyToBand' => copySongsToBand(context, ref, [
-                    song.id,
-                  ], fromLibraryId: song.libraryId),
-                  'delete' => _delete(song),
-                  _ => null,
-                },
-                itemBuilder: (_) => [
-                  if (!hasSourceTitle && canEdit)
-                    PopupMenuItem(value: 'title', child: Text(l10n.editTitle)),
-                  if (song.chordproSource.trim().isNotEmpty &&
-                      !ref.read(webClientProvider))
-                    PopupMenuItem(
-                      value: 'export',
-                      child: Text(l10n.exportSong),
-                    ),
-                  PopupMenuItem(
-                    value: 'copyToBand',
-                    child: Text(l10n.copyToBand),
-                  ),
-                  if (library.canDeleteSongs)
-                    PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
-                ],
-              ),
-              LivePlayButton(
-                onPressed: () => LiveScreen.openSong(context, song.id),
-              ),
-            ],
-          ),
-          // The song is fitted to the visible area below the app bar; the
-          // header scrolls away above it.
-          body: LayoutBuilder(
-            builder: (context, constraints) => ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-              children: [
-                if (ref.watch(songConflictProvider(song.id)).value
-                    case final conflict?)
-                  ConflictBanner(conflict: conflict),
-                // The app bar shows the title (#268).
-                SongHeader(
-                  title: song.title.isEmpty ? l10n.untitled : song.title,
-                  showTitle: false,
-                  artist: song.artist,
-                  song: parsed,
-                  formatter: formatter,
-                ),
-                if (!parsed.hasContent) ...[
-                  const SizedBox(height: 12),
-                  attachmentsCard(inPanel: false),
-                ],
-                const SizedBox(height: 16),
-                if (parsed.hasContent)
-                  _FittedSongBody(
-                    songId: song.id,
-                    source: song.chordproSource,
-                    song: songWithVerseChords(parsed, overlay.verseChords),
-                    overlay: overlay,
+                title: l10n.personalAdjustments,
+                scope: SettingScope.personal,
+                children: [
+                  _AdjustmentsBar(
+                    songKey: parsed.key,
                     formatter: formatter,
-                    // The visible area without the list's padding.
-                    page: Size(
-                      constraints.maxWidth - 32,
-                      constraints.maxHeight - 40,
+                    songCapo: parsed.capoFret,
+                    notation: settings.notation,
+                    overlay: overlay,
+                    deviceNashville: settings.nashville,
+                    hasKey: parsed.key != null,
+                    song: parsed,
+                    beatEnabled: settings.beatEnabled,
+                    playClick: settings.playClick,
+                    subdivisionSetting: settings.clickSubdivision,
+                    onChanged: _updateOverlay,
+                  ),
+                  // The keyboard programs per profile (ADR-0039, ADR-0042).
+                  if (SongRepository.midiProgramsOf(
+                        overlay,
+                        settings.midiDeviceProfile.id,
+                      )
+                      case final programs
+                      when MidiProgramField.visible(
+                        keyboard: settings.isKeyboard,
+                        midiEnabled: settings.midiEnabled,
+                        programs: programs,
+                      )) ...[
+                    const SizedBox(height: 16),
+                    MidiProgramField(songId: song.id, programs: programs),
+                  ],
+                  const SizedBox(height: 16),
+                  _AnnotationsSection(
+                    songId: song.id,
+                    overlay: overlay,
+                    onChanged: _updateOverlay,
+                  ),
+                ],
+              ),
+              _Panel.links => SongLinksPanel(
+                links: links,
+                onAdd: canEdit
+                    ? (url, label) => _repo.updateSource(
+                        song.id,
+                        addSourceLink(song.chordproSource, url, label: label),
+                      )
+                    : null,
+                onChange: canEdit
+                    ? (index, url, label) => _repo.updateSource(
+                        song.id,
+                        replaceSourceLink(
+                          song.chordproSource,
+                          index,
+                          url,
+                          label: label,
+                        ),
+                      )
+                    : null,
+              ),
+              _Panel.attachments => SidePanel(
+                key: const Key('song-attachments'),
+                icon: Icons.attach_file,
+                title: l10n.attachments,
+                children: [attachmentsCard(inPanel: true)],
+              ),
+              _ => null,
+            },
+            appBar: AppBar(
+              title: Text(song.title.isEmpty ? l10n.untitled : song.title),
+              actions: [
+                if (canEdit) ...[
+                  // Editing is a key function: its own button rather than an
+                  // overflow menu entry (#600). ChordPro problems show as its
+                  // badge and open the editor at the first one (#314).
+                  IconButton(
+                    key: const Key('edit-song'),
+                    tooltip: song.chordproProblems > 0
+                        ? l10n.chordProProblemsShow(song.chordproProblems)
+                        : l10n.editSource,
+                    icon: Badge(
+                      key: song.chordproProblems > 0
+                          ? const Key('song-problems')
+                          : null,
+                      isLabelVisible: song.chordproProblems > 0,
+                      backgroundColor: chordProProblemColor(context),
+                      textColor: Theme.of(context).colorScheme.surface,
+                      label: Text('${song.chordproProblems}'),
+                      child: const Icon(Icons.edit_outlined),
                     ),
-                    attachments: attachments,
-                    imageLookup: (src) {
-                      final image = imageAttachmentFor(attachments, src);
-                      return image == null
-                          ? null
-                          : ref
-                                .read(attachmentStorageProvider)
-                                .file(image.fileName);
-                    },
-                  )
-                else
-                  Card.outlined(
-                    child: ListTile(
-                      leading: const Icon(Icons.text_snippet_outlined),
-                      title: Text(l10n.noContent),
-                      trailing: !canEdit
-                          ? null
-                          : FilledButton.tonal(
-                              onPressed: () => _editSource(song),
-                              child: Text(l10n.addChordPro),
-                            ),
+                    onPressed: () => _editSource(
+                      song,
+                      showProblem: song.chordproProblems > 0,
                     ),
                   ),
+                  // Sets the song's own edit button apart from the panels.
+                  const VerticalDivider(
+                    key: Key('edit-song-divider'),
+                    width: 16,
+                    indent: 16,
+                    endIndent: 16,
+                  ),
+                ],
+                if (showBand)
+                  BadgedIconButton(
+                    key: const Key('open-band-arrangement'),
+                    tooltip: l10n.bandArrangement,
+                    icon: Icons.groups_outlined,
+                    active: arrangement != null,
+                    onPressed: () => _open(_Panel.band),
+                  ),
+                // How the band played the song before (ADR-0046).
+                if (historyBand != null && (plays > 0 || otherPlays > 0))
+                  BadgedIconButton(
+                    key: const Key('open-play-history'),
+                    tooltip: l10n.playHistory,
+                    icon: Icons.history,
+                    count: plays,
+                    onPressed: () => _open(_Panel.played),
+                  ),
+                BadgedIconButton(
+                  key: const Key('open-personal-adjustments'),
+                  tooltip: l10n.personalAdjustments,
+                  icon: Icons.tune,
+                  // Freehand annotations change how the song looks, too.
+                  active:
+                      overlay.hasAdjustments ||
+                      (!overlay.hideAnnotations &&
+                          settings.showAnnotations &&
+                          (ref.watch(annotationCountProvider(song.id)).value ??
+                                  0) >
+                              0),
+                  onPressed: () => _open(_Panel.personal),
+                ),
+                if (attachmentsInPanel)
+                  BadgedIconButton(
+                    key: const Key('open-attachments'),
+                    tooltip: l10n.attachments,
+                    icon: Icons.attach_file,
+                    count: attachments.length,
+                    onPressed: () => _open(_Panel.attachments),
+                  ),
+                if (links.isNotEmpty || canEdit)
+                  BadgedIconButton(
+                    key: const Key('open-song-links'),
+                    tooltip: l10n.songLinks,
+                    icon: Icons.headphones_outlined,
+                    count: links.length,
+                    onPressed: () => _open(_Panel.links),
+                  ),
+                PopupMenuButton<String>(
+                  onSelected: (value) => switch (value) {
+                    'title' => _editTitle(song),
+                    'export' => _export(song),
+                    'copyToBand' => copySongsToBand(context, ref, [
+                      song.id,
+                    ], fromLibraryId: song.libraryId),
+                    'delete' => _delete(song),
+                    _ => null,
+                  },
+                  itemBuilder: (_) => [
+                    if (!hasSourceTitle && canEdit)
+                      PopupMenuItem(
+                        value: 'title',
+                        child: Text(l10n.editTitle),
+                      ),
+                    if (song.chordproSource.trim().isNotEmpty &&
+                        !ref.read(webClientProvider))
+                      PopupMenuItem(
+                        value: 'export',
+                        child: Text(l10n.exportSong),
+                      ),
+                    PopupMenuItem(
+                      value: 'copyToBand',
+                      child: Text(l10n.copyToBand),
+                    ),
+                    if (library.canDeleteSongs)
+                      PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
+                  ],
+                ),
+                LivePlayButton(
+                  onPressed: () => LiveScreen.openSong(context, song.id),
+                ),
               ],
+            ),
+            // The song is fitted to the visible area below the app bar; the
+            // header scrolls away above it.
+            body: LayoutBuilder(
+              builder: (context, constraints) => ListView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                children: [
+                  if (ref.watch(songConflictProvider(song.id)).value
+                      case final conflict?)
+                    ConflictBanner(conflict: conflict),
+                  // The app bar shows the title (#268).
+                  SongHeader(
+                    title: song.title.isEmpty ? l10n.untitled : song.title,
+                    showTitle: false,
+                    artist: song.artist,
+                    song: parsed,
+                    formatter: formatter,
+                  ),
+                  if (!parsed.hasContent) ...[
+                    const SizedBox(height: 12),
+                    attachmentsCard(inPanel: false),
+                  ],
+                  const SizedBox(height: 16),
+                  if (parsed.hasContent)
+                    _FittedSongBody(
+                      songId: song.id,
+                      source: song.chordproSource,
+                      song: songWithVerseChords(parsed, overlay.verseChords),
+                      overlay: overlay,
+                      formatter: formatter,
+                      // The visible area without the list's padding.
+                      page: Size(
+                        constraints.maxWidth - 32,
+                        constraints.maxHeight - 40,
+                      ),
+                      attachments: attachments,
+                      imageLookup: (src) {
+                        final image = imageAttachmentFor(attachments, src);
+                        return image == null
+                            ? null
+                            : ref
+                                  .read(attachmentStorageProvider)
+                                  .file(image.fileName);
+                      },
+                    )
+                  else
+                    Card.outlined(
+                      child: ListTile(
+                        leading: const Icon(Icons.text_snippet_outlined),
+                        title: Text(l10n.noContent),
+                        trailing: !canEdit
+                            ? null
+                            : FilledButton.tonal(
+                                onPressed: () => _editSource(song),
+                                child: Text(l10n.addChordPro),
+                              ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         );

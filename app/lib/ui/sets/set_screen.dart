@@ -26,6 +26,7 @@ import '../backup/backup_actions.dart' show openFileProvider, saveFileProvider;
 import '../widgets/key_picker.dart';
 import '../widgets/sequence_dialog.dart';
 import 'set_list_pdf.dart';
+import '../widgets/app_shortcuts.dart';
 import 'set_archive_dialogs.dart';
 import 'marker_dialog.dart';
 import 'set_item_label.dart';
@@ -179,117 +180,146 @@ class _SetScreenState extends ConsumerState<SetScreen> {
           if (set.gigDate != null) formatGigDate(context, set.gigDate!),
           if (set.venue != null) set.venue!,
         ].join(' · ');
+        // The set's songs in order, for ← and → in the song screen (#729).
+        final songs = [
+          for (final v in items)
+            if (v.song case final song?) song.id,
+        ];
+        final songPlaces = <int>[];
+        var place = 0;
+        for (final v in items) {
+          songPlaces.add(place);
+          if (v.song != null) place++;
+        }
 
-        return Scaffold(
-          appBar: AppBar(
-            automaticallyImplyLeading: !widget.embedded,
-            title: Text(set.name),
-            actions: [
-              if (canEdit) ...[
-                // Editing is a key function: its own button rather than an
-                // overflow menu entry, like editing a song (#713).
-                IconButton(
-                  key: const Key('edit-set'),
-                  tooltip: l10n.editSet,
-                  icon: const Icon(Icons.edit_outlined),
-                  onPressed: () => showSetDialog(context, ref, existing: set),
+        return PageShortcuts(
+          bindings: {
+            editShortcut: canEdit
+                ? () => showSetDialog(context, ref, existing: set)
+                : null,
+            liveShortcut: items.isEmpty
+                ? null
+                : () => LiveScreen.openSet(context, set.id),
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              automaticallyImplyLeading: !widget.embedded,
+              title: Text(set.name),
+              actions: [
+                if (canEdit) ...[
+                  // Editing is a key function: its own button rather than an
+                  // overflow menu entry, like editing a song (#713).
+                  IconButton(
+                    key: const Key('edit-set'),
+                    tooltip: l10n.editSet,
+                    icon: const Icon(Icons.edit_outlined),
+                    onPressed: () => showSetDialog(context, ref, existing: set),
+                  ),
+                  const VerticalDivider(
+                    key: Key('edit-set-divider'),
+                    width: 16,
+                    indent: 16,
+                    endIndent: 16,
+                  ),
+                ],
+                PopupMenuButton<String>(
+                  onSelected: (value) => switch (value) {
+                    'marker' => _addMarker(),
+                    'export' => _export(set),
+                    'exportListPdf' => _exportSetListPdf(set),
+                    'copyToBand' => copySetToBand(context, ref, set.id),
+                    'delete' => _delete(set),
+                    _ => null,
+                  },
+                  itemBuilder: (_) => [
+                    if (canEdit) ...[
+                      PopupMenuItem(
+                        value: 'marker',
+                        child: Text(l10n.addMarker),
+                      ),
+                      const PopupMenuDivider(),
+                    ],
+                    // Web: no file export, sets are synced (ADR-0018).
+                    if (!ref.read(webClientProvider)) ...[
+                      PopupMenuItem(
+                        value: 'exportListPdf',
+                        child: Text(l10n.exportSetListPdf),
+                      ),
+                      PopupMenuItem(
+                        value: 'export',
+                        child: Text(l10n.exportSet),
+                      ),
+                    ],
+                    PopupMenuItem(
+                      value: 'copyToBand',
+                      child: Text(l10n.copyToBand),
+                    ),
+                    if (canEdit) ...[
+                      const PopupMenuDivider(),
+                      PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
+                    ],
+                  ],
                 ),
-                const VerticalDivider(
-                  key: Key('edit-set-divider'),
-                  width: 16,
-                  indent: 16,
-                  endIndent: 16,
+                LivePlayButton(
+                  onPressed: items.isEmpty
+                      ? null
+                      : () => LiveScreen.openSet(context, set.id),
                 ),
               ],
-              PopupMenuButton<String>(
-                onSelected: (value) => switch (value) {
-                  'marker' => _addMarker(),
-                  'export' => _export(set),
-                  'exportListPdf' => _exportSetListPdf(set),
-                  'copyToBand' => copySetToBand(context, ref, set.id),
-                  'delete' => _delete(set),
-                  _ => null,
-                },
-                itemBuilder: (_) => [
-                  if (canEdit) ...[
-                    PopupMenuItem(value: 'marker', child: Text(l10n.addMarker)),
-                    const PopupMenuDivider(),
-                  ],
-                  // Web: no file export, sets are synced (ADR-0018).
-                  if (!ref.read(webClientProvider)) ...[
-                    PopupMenuItem(
-                      value: 'exportListPdf',
-                      child: Text(l10n.exportSetListPdf),
+            ),
+            floatingActionButton: !canEdit
+                ? null
+                : FloatingActionButton.extended(
+                    heroTag: null,
+                    onPressed: _addSongs,
+                    icon: const Icon(Icons.playlist_add),
+                    label: Text(l10n.addSongs),
+                  ),
+            body: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (details.isNotEmpty || ready != null)
+                  Padding(
+                    // Right: in line with the drag handles of the rows.
+                    padding: const EdgeInsets.fromLTRB(16, 4, 32, 8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            details,
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                        ),
+                        if (ready != null) OfflineBadge(ready: ready),
+                      ],
                     ),
-                    PopupMenuItem(value: 'export', child: Text(l10n.exportSet)),
-                  ],
-                  PopupMenuItem(
-                    value: 'copyToBand',
-                    child: Text(l10n.copyToBand),
                   ),
-                  if (canEdit) ...[
-                    const PopupMenuDivider(),
-                    PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
-                  ],
-                ],
-              ),
-              LivePlayButton(
-                onPressed: items.isEmpty
-                    ? null
-                    : () => LiveScreen.openSet(context, set.id),
-              ),
-            ],
-          ),
-          floatingActionButton: !canEdit
-              ? null
-              : FloatingActionButton.extended(
-                  heroTag: null,
-                  onPressed: _addSongs,
-                  icon: const Icon(Icons.playlist_add),
-                  label: Text(l10n.addSongs),
-                ),
-          body: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (details.isNotEmpty || ready != null)
-                Padding(
-                  // Right: in line with the drag handles of the rows.
-                  padding: const EdgeInsets.fromLTRB(16, 4, 32, 8),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          details,
-                          style: Theme.of(context).textTheme.bodyLarge,
+                const Divider(height: 1),
+                Expanded(
+                  child: items.isEmpty
+                      ? EmptyState(
+                          icon: Icons.playlist_add,
+                          message: l10n.setEmpty,
+                        )
+                      : ReorderableListView.builder(
+                          buildDefaultDragHandles: false,
+                          padding: const EdgeInsets.only(bottom: 88),
+                          itemCount: items.length,
+                          onReorderItem: (o, n) => _onReorder(items, o, n),
+                          itemBuilder: (context, i) => _SetItemTile(
+                            key: ValueKey(items[i].item.id),
+                            index: i,
+                            view: items[i],
+                            setId: widget.setId,
+                            bandId: set.bandId,
+                            canEdit: canEdit,
+                            setSongs: songs,
+                            songPlace: songPlaces[i],
+                          ),
                         ),
-                      ),
-                      if (ready != null) OfflineBadge(ready: ready),
-                    ],
-                  ),
                 ),
-              const Divider(height: 1),
-              Expanded(
-                child: items.isEmpty
-                    ? EmptyState(
-                        icon: Icons.playlist_add,
-                        message: l10n.setEmpty,
-                      )
-                    : ReorderableListView.builder(
-                        buildDefaultDragHandles: false,
-                        padding: const EdgeInsets.only(bottom: 88),
-                        itemCount: items.length,
-                        onReorderItem: (o, n) => _onReorder(items, o, n),
-                        itemBuilder: (context, i) => _SetItemTile(
-                          key: ValueKey(items[i].item.id),
-                          index: i,
-                          view: items[i],
-                          setId: widget.setId,
-                          bandId: set.bandId,
-                          canEdit: canEdit,
-                        ),
-                      ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -305,10 +335,16 @@ class _SetItemTile extends ConsumerWidget {
     required this.setId,
     required this.bandId,
     required this.canEdit,
+    required this.setSongs,
+    required this.songPlace,
   });
 
   final int index;
   final SetItemView view;
+
+  /// The set's songs and this song's place among them (#729).
+  final List<String> setSongs;
+  final int songPlace;
   final String setId;
 
   /// Band of the set, whose arrangements apply (ADR-0025).
@@ -513,7 +549,11 @@ class _SetItemTile extends ConsumerWidget {
           : () => Navigator.push(
               context,
               MaterialPageRoute<void>(
-                builder: (_) => SongScreen(songId: song.id),
+                builder: (_) => SongScreen(
+                  songId: song.id,
+                  setSongs: setSongs,
+                  setIndex: songPlace,
+                ),
               ),
             ),
       // Fixed slots, so the controls line up from row to row.

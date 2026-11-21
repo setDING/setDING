@@ -2909,5 +2909,25 @@
         "type": "int"
       }
     }
-  }
+  },
+  "keyboardShortcuts": "Tastenkürzel",
+  "shortcutsEverywhere": "Überall",
+  "shortcutsSong": "Song",
+  "shortcutsSet": "Set",
+  "shortcutsSongList": "Songliste",
+  "shortcutsLive": "Live-Modus",
+  "shortcutBack": "Zurück",
+  "shortcutHelp": "Tastenkürzel anzeigen",
+  "shortcutEditSong": "Song bearbeiten",
+  "shortcutEditSet": "Set bearbeiten",
+  "shortcutLive": "Live-Modus starten",
+  "shortcutTranspose": "Höher / tiefer transponieren",
+  "shortcutPreviousNextSong": "Vorheriger / nächster Song des Sets",
+  "shortcutSearch": "Songs durchsuchen",
+  "shortcutNextPage": "Nächste Seite",
+  "shortcutPreviousPage": "Vorherige Seite",
+  "shortcutBeat": "Takt starten / stoppen",
+  "shortcutKeyPageDown": "Bild ab",
+  "shortcutKeyPageUp": "Bild auf",
+  "shortcutKeySpace": "Leertaste"
 }
