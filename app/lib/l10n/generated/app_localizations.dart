@@ -7111,6 +7111,24 @@ abstract class AppLocalizations {
   /// **'{months, plural, =1{Zuletzt vor mehr als einem Monat gespielt} other{Zuletzt vor mehr als {months} Monaten gespielt}}'**
   String repertoireStaleHint(int months);
 
+  /// No description provided for @playedFilter.
+  ///
+  /// In de, this message translates to:
+  /// **'Gespielt'**
+  String get playedFilter;
+
+  /// No description provided for @playedAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle'**
+  String get playedAll;
+
+  /// No description provided for @filterByPlayed.
+  ///
+  /// In de, this message translates to:
+  /// **'Nach Einsätzen der Band filtern'**
+  String get filterByPlayed;
+
   /// No description provided for @repertoireNeverPlayed.
   ///
   /// In de, this message translates to:

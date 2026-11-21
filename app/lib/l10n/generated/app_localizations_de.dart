@@ -4533,6 +4533,15 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get playedFilter => 'Gespielt';
+
+  @override
+  String get playedAll => 'Alle';
+
+  @override
+  String get filterByPlayed => 'Nach Einsätzen der Band filtern';
+
+  @override
   String get repertoireNeverPlayed => 'Nie gespielt';
 
   @override

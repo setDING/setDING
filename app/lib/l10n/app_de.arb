@@ -2740,6 +2740,9 @@
       }
     }
   },
+  "playedFilter": "Gespielt",
+  "playedAll": "Alle",
+  "filterByPlayed": "Nach Einsätzen der Band filtern",
   "repertoireNeverPlayed": "Nie gespielt",
   "repertoireNeverPlayedHint": "Songs der Bibliothek, die in keinem vergangenen Set der Band waren",
   "repertoireNone": "Keine",

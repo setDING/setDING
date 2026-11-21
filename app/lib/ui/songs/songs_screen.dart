@@ -611,7 +611,7 @@ enum PlayedFilter { never, stale }
 
 /// Chips above the list: the order (a menu, see [SongSort]) and the
 /// filters, among them the tags used in the library (`{tag}`, a menu with
-/// several choices, #816).
+/// several choices, #816) and, last, the band's plays (a menu).
 class _Filters extends ConsumerWidget {
   const _Filters({
     required this.tags,
@@ -782,23 +782,6 @@ class _Filters extends ConsumerWidget {
                 ),
               ),
             ),
-          if (showPlayed)
-            for (final (filter, label) in [
-              (PlayedFilter.never, l10n.repertoireNeverPlayed),
-              (PlayedFilter.stale, l10n.repertoireStale),
-            ])
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: FilterChip(
-                  key: ValueKey('songs-played-${filter.name}'),
-                  avatar: played == filter
-                      ? null
-                      : const Icon(Icons.history, size: 16),
-                  label: Text(label),
-                  selected: played == filter,
-                  onSelected: (on) => onPlayed(on ? filter : null),
-                ),
-              ),
           if (offered.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(right: 8),
@@ -845,6 +828,51 @@ class _Filters extends ConsumerWidget {
                             t,
                             chosen.length - 1,
                           ),
+                        }),
+                        const Icon(Icons.arrow_drop_down, size: 18),
+                      ],
+                    ),
+                    onSelected: (_) => menu.isOpen ? menu.close() : menu.open(),
+                  ),
+                ),
+              ),
+            ),
+          if (showPlayed)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: MenuAnchor(
+                menuChildren: [
+                  for (final (filter, label) in [
+                    (null, l10n.playedAll),
+                    (PlayedFilter.never, l10n.repertoireNeverPlayed),
+                    (PlayedFilter.stale, l10n.repertoireStale),
+                  ]) ...[
+                    MenuItemButton(
+                      key: ValueKey('songs-played-${filter?.name ?? 'all'}'),
+                      onPressed: () => onPlayed(filter),
+                      leadingIcon: filter == played
+                          ? const Icon(Icons.check, size: 18)
+                          : const SizedBox.square(dimension: 18),
+                      child: Text(label),
+                    ),
+                    if (filter == null) const Divider(height: 1),
+                  ],
+                ],
+                builder: (context, menu, _) => Tooltip(
+                  message: l10n.filterByPlayed,
+                  child: FilterChip(
+                    key: const Key('songs-played'),
+                    avatar: played == null
+                        ? const Icon(Icons.history, size: 16)
+                        : null,
+                    selected: played != null,
+                    label: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(switch (played) {
+                          null => l10n.playedFilter,
+                          PlayedFilter.never => l10n.repertoireNeverPlayed,
+                          PlayedFilter.stale => l10n.repertoireStale,
                         }),
                         const Icon(Icons.arrow_drop_down, size: 18),
                       ],

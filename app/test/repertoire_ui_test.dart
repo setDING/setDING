@@ -217,14 +217,28 @@ void main() {
     expect(find.text('Last played on ${date(daysAgo(3))}'), findsOneWidget);
     expect(find.text('Never played'), findsWidgets);
 
-    await tester.tap(find.byKey(const ValueKey('songs-played-never')));
-    await tester.pumpAndSettle();
+    // One menu for the plays (#816), the last of the filters.
+    final played = find.byKey(const Key('songs-played'));
+    Future<void> choose(String filter) async {
+      await tester.tap(played);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(ValueKey('songs-played-$filter')));
+      await tester.pumpAndSettle();
+    }
+
+    expect(
+      find.descendant(of: played, matching: find.text('Played')),
+      findsOne,
+    );
+    await choose('never');
     expect(titles(), ['Fresh']);
-    await tester.tap(find.byKey(const ValueKey('songs-played-stale')));
-    await tester.pumpAndSettle();
+    expect(
+      find.descendant(of: played, matching: find.text('Never played')),
+      findsOne,
+    );
+    await choose('stale');
     expect(titles(), ['Oldie']);
-    await tester.tap(find.byKey(const ValueKey('songs-played-stale')));
-    await tester.pumpAndSettle();
+    await choose('all');
     expect(titles(), ['Hit', 'Oldie', 'Fresh']);
     expect(BandView.local.staleAfterMonths, 6);
     await app.dispose(tester);

@@ -2395,6 +2395,9 @@
       }
     }
   },
+  "playedFilter": "Played",
+  "playedAll": "All",
+  "filterByPlayed": "Filter by the band's plays",
   "repertoireNeverPlayed": "Never played",
   "repertoireNeverPlayedHint": "Songs of the library that were in no past set of the band",
   "repertoireNone": "None",

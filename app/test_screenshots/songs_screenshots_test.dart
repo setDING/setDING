@@ -66,7 +66,7 @@ void main() {
   }
 
   // The tag filter (#816): one menu with several tags ticked, songs with
-  // any of them.
+  // any of them; and the menu of the band's plays.
   for (final (lang, dark) in [('de', false), ('en', true)]) {
     screenshotTest('songs tags $lang', (tester) async {
       useTabletSize(tester);
@@ -105,6 +105,14 @@ void main() {
       }
       expect(find.text('Train to Nowhere'), findsNothing);
       await shot(tester, '${lang}_41_songs_tags');
+
+      // The band's plays (ADR-0046), the last filter: also a menu.
+      await tester.tapAt(Offset.zero);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('songs-played')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('songs-played-stale')), findsOneWidget);
+      await shot(tester, '${lang}_41b_songs_played');
       await app.dispose(tester);
     });
   }

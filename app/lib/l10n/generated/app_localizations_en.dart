@@ -4509,6 +4509,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get playedFilter => 'Played';
+
+  @override
+  String get playedAll => 'All';
+
+  @override
+  String get filterByPlayed => 'Filter by the band\'s plays';
+
+  @override
   String get repertoireNeverPlayed => 'Never played';
 
   @override
