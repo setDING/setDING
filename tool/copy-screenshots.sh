@@ -54,6 +54,7 @@ map=(
   lilypond 29_lilypond
   shortcuts 30_shortcuts
   editor_auto_close 31_editor_auto_close
+  editor_chorus_labels 33_editor_chorus_labels
   editor_save 32_editor_save
 )
 

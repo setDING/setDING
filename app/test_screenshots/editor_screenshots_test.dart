@@ -17,6 +17,47 @@ import 'screenshot_support.dart';
 void main() {
   setUpScreenshots();
 
+  // Chorus labels after `{chorus: ` (#758).
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('chorus labels $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      final (refrain, last) = lang == 'de'
+          ? ('Refrain', 'Schlussrefrain')
+          : ('Chorus', 'Final chorus');
+      final source =
+          '{title: Amazing Grace}\n{key: G}\n\n'
+          '{start_of_chorus label="$refrain"}\n'
+          'A[G]mazing [G7]grace, how [C]sweet the [G]sound\n'
+          '{end_of_chorus}\n\n'
+          '{start_of_chorus label="$last"}\n'
+          'I [G]once was [D]lost, but [G]now am found\n'
+          '{end_of_chorus}\n\n{chorus:}';
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: SongEditorScreen(initialSource: source)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(TextField));
+      await tester.pump();
+      final at = source.length - 1;
+      tester.testTextInput.updateEditingValue(
+        TextEditingValue(
+          text: source.replaceRange(at, at, ' '),
+          selection: TextSelection.collapsed(offset: at + 1),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byIcon(Icons.label_outline), findsNWidgets(2));
+      await shot(tester, '${lang}_33_editor_chorus_labels');
+      await app.dispose(tester);
+    });
+  }
+
   // Section labels in the short form (#672): the editor hint and the import
   // report that offer to convert them to label="…"; the CCLI bar line hint
   // (#481).
