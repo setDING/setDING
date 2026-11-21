@@ -416,6 +416,22 @@ void main() {
       expect(all.map((s) => s.title), ['One', 'Two']);
       expect(all.last.chordproSource, '{title: Two}\n[G]b\n');
     });
+
+    test('SongSelect directives are made standard-conforming (#777)', () async {
+      final service = ImportExportService(songs, sets);
+      await service.importFiles([
+        ImportFile(
+          'songselect.cho',
+          Uint8List.fromList(
+            utf8.encode(
+              '{title: S}\n{ccli_license: 1234567}\n{ccli: 7654321}\n[C]a\n',
+            ),
+          ),
+        ),
+      ]);
+      final song = (await songs.watchSongs().first).single;
+      expect(song.chordproSource, '{title: S}\n{x_ccli: 7654321}\n[C]a\n');
+    });
   });
 
   test('the song list sorts by title, artist, key or last edit', () async {

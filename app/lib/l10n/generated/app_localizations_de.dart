@@ -1325,6 +1325,17 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String songSelectDirectivesHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count CCLI-Direktiven entsprechen',
+      one: 'Eine CCLI-Direktive entspricht',
+    );
+    return '$_temp0 nicht der ChordPro-Spezifikation: ccli wird zu x_ccli, ccli_license wird entfernt.';
+  }
+
+  @override
   String importLegacyLabelsMessage(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

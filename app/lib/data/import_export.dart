@@ -116,7 +116,8 @@ class ImportExportService {
         skipped.add(name);
         return;
       }
-      var text = decodeText(bytes);
+      // SongSelect directives outside the specification (#777).
+      var text = cp.normalizeSongSelectDirectives(decodeText(bytes));
       if (germanNotation) text = cp.convertGermanToInternational(text);
       // A file may contain several songs separated by {new_song}.
       final parts = cp.splitChordProSongs(text);

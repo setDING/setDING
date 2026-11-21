@@ -631,6 +631,14 @@
     }
   },
   "legacyLabelsHint": "{count, plural, =1{Eine Abschnitts-Beschriftung steht} other{{count} Abschnitts-Beschriftungen stehen}} in der Kurzform. Die ChordPro-Spezifikation empfiehlt label=\"…\".",
+  "songSelectDirectivesHint": "{count, plural, =1{Eine CCLI-Direktive entspricht} other{{count} CCLI-Direktiven entsprechen}} nicht der ChordPro-Spezifikation: ccli wird zu x_ccli, ccli_license wird entfernt.",
+  "@songSelectDirectivesHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@legacyLabelsHint": {
     "placeholders": {
       "count": {

@@ -75,6 +75,19 @@ class ChordProEditingController extends TextEditingController {
     return _legacyLabels;
   }
 
+  String? _songSelectChecked;
+  int _songSelectDirectives = 0;
+
+  /// `{ccli}` and `{ccli_license}` directives outside the ChordPro
+  /// specification, from songs saved before #777.
+  int get songSelectDirectives {
+    if (_songSelectChecked != text) {
+      _songSelectChecked = text;
+      _songSelectDirectives = countSongSelectDirectives(text);
+    }
+    return _songSelectDirectives;
+  }
+
   /// The bracket next to the cursor and its partner (#37), if any.
   BracketMatch? get bracketMatch {
     final sel = selection;

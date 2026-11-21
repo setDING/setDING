@@ -31,6 +31,7 @@ export 'src/section_heading.dart'
     show SectionRole, sectionRoleOf, sectionRoleOfName;
 export 'src/sequence.dart';
 export 'src/song.dart';
+export 'src/songselect.dart';
 export 'src/stacked_verses.dart';
 export 'src/source_metadata.dart';
 export 'src/source_sections.dart';

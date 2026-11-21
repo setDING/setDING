@@ -40,15 +40,63 @@ CCLI-Liednummer 7654321
 ''';
 
 void main() {
-  final song = parseChordPro(_songSelectStyle);
+  final song = parseChordPro(normalizeSongSelectDirectives(_songSelectStyle));
+
+  group('normalizeSongSelectDirectives (#777)', () {
+    test('renames ccli to x_ccli and removes ccli_license', () {
+      final source = normalizeSongSelectDirectives(_songSelectStyle);
+      expect(source, contains('{tempo: 72}\n{x_ccli: 7654321}\n{copyright:'));
+      expect(source, isNot(contains('ccli_license')));
+      expect(source, isNot(contains('{ccli')));
+      // The plain-text CCLI paragraph after the song stays as written.
+      expect(source, contains('CCLI-Liednummer 7654321'));
+    });
+
+    test('handles spacing, case, meta form and CRLF', () {
+      expect(
+        normalizeSongSelectDirectives(
+          '{title: T}\r\n  { CCLI_License : 1}\r\n{CCLI:2}\r\n'
+          '{meta: ccli 3}\r\n{meta: ccli_license 4}\r\nLa\r\n',
+        ),
+        '{title: T}\r\n{x_ccli:2}\r\n{meta: x_ccli 3}\r\nLa\r\n',
+      );
+    });
+
+    test('a license directive on the last line is removed', () {
+      expect(normalizeSongSelectDirectives('La\n{ccli_license: 1}'), 'La\n');
+    });
+
+    test('counts the directives it changes', () {
+      expect(countSongSelectDirectives(_songSelectStyle), 2);
+      expect(countSongSelectDirectives('{meta: ccli 1}\n{x_ccli: 2}'), 1);
+      expect(
+        countSongSelectDirectives(
+          normalizeSongSelectDirectives(_songSelectStyle),
+        ),
+        0,
+      );
+    });
+
+    test('leaves other directives and text alone', () {
+      const source =
+          '{x_ccli: 1}\n{ccli_song: 2}\n{c: ccli 3}\n[C]{ccli: 4} in text\n';
+      expect(normalizeSongSelectDirectives(source), source);
+    });
+  });
+
+  test('ccli and ccli_license are not standard metadata', () {
+    final raw = parseChordPro(_songSelectStyle);
+    expect(raw.metaValue('ccli'), isNull);
+    expect(raw.metaValue('ccli_license'), isNull);
+  });
 
   test('reads SongSelect metadata', () {
     expect(song.title, 'Test Song');
     expect(song.keyName, 'Bb');
     expect(song.tempo, 72);
     expect(song.time, '4/4');
-    expect(song.metaValue('ccli'), '7654321');
-    expect(song.metaValue('ccli_license'), '1234567');
+    expect(song.metaValue('x_ccli'), '7654321');
+    expect(song.metaValue('ccli_license'), isNull);
     expect(song.metaValue('copyright'), startsWith('2024'));
   });
 

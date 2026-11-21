@@ -10,6 +10,7 @@ import editor from '../../../../../../docs/screenshots/editor.png';
 import editorLabels from '../../../../../../docs/screenshots/editor_labels.png';
 import editorSave from '../../../../../../docs/screenshots/editor_save.png';
 import editorCcli from '../../../../../../docs/screenshots/editor_ccli.png';
+import editorSongSelect from '../../../../../../docs/screenshots/editor_songselect.png';
 import editorAutoClose from '../../../../../../docs/screenshots/editor_auto_close.png';
 import editorChorusLabels from '../../../../../../docs/screenshots/editor_chorus_labels.png';
 
@@ -124,6 +125,16 @@ use **Convert bar lines to chord grids** in the Lines menu. The hint can be
 hidden with ✕.
 
 <Image src={editorCcli} alt="The editor with two blocks of CCLI bar lines marked with a dotted line and the hint with the Convert button" />
+
+## CCLI directives
+
+Songs from CCLI SongSelect contain `{ccli: …}` and `{ccli_license: …}`, which the
+ChordPro specification does not know. The import converts them; for songs saved
+earlier, the editor shows a hint above the text: **Convert** renames `{ccli}` to
+`{x_ccli}` and removes `{ccli_license}`, the licence number of the church that
+downloaded the song. The hint can be hidden with ✕.
+
+<Image src={editorSongSelect} alt="The editor with the hint about two CCLI directives that do not follow the ChordPro specification and the Convert button" />
 
 ## Section labels
 

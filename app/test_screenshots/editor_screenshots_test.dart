@@ -94,6 +94,20 @@ void main() {
       expect(find.byType(LegacyLabelHint), findsNothing);
       await shot(tester, '${lang}_24_editor_ccli');
 
+      // SongSelect directives outside the specification (#777): the hint
+      // that renames {ccli} and removes {ccli_license}.
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            home: const SongEditorScreen(initialSource: _songSelectDirectives),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(SongSelectDirectiveHint), findsOneWidget);
+      await shot(tester, '${lang}_24b_editor_songselect');
+
       // Typing aids (#747): Enter after a section start adds its end, a
       // typed `[` its `]`. Esc hides the chord suggestions, which would
       // cover the end directive.
@@ -202,6 +216,19 @@ void main() {
     });
   }
 }
+
+const _songSelectDirectives = '''{title: Amazing Grace}
+{artist: John Newton}
+{key: G}
+{ccli_license: 1234567}
+{ccli: 7654321}
+{copyright: Public Domain}
+
+{start_of_verse: label="Verse 1"}
+A[G]mazing grace, how [C]sweet the [G]sound
+That saved a wretch like [D]me
+{end_of_verse}
+''';
 
 const _ccliBars = '''{title: Amazing Grace}
 {artist: John Newton}
