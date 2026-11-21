@@ -5075,4 +5075,70 @@ class AppLocalizationsDe extends AppLocalizations {
     );
     return '$_temp0 bei vorhandenen Songs ergänzt';
   }
+
+  @override
+  String songLanguageName(String language) {
+    String _temp0 = intl.Intl.selectLogic(language, {
+      'de': 'Deutsch',
+      'gsw': 'Schweizerdeutsch',
+      'en': 'Englisch',
+      'fr': 'Französisch',
+      'it': 'Italienisch',
+      'es': 'Spanisch',
+      'pt': 'Portugiesisch',
+      'nl': 'Niederländisch',
+      'other': 'Andere',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String songLanguageShort(String language) {
+    String _temp0 = intl.Intl.selectLogic(language, {
+      'de': 'DE',
+      'gsw': 'CH',
+      'en': 'EN',
+      'fr': 'FR',
+      'it': 'IT',
+      'es': 'ES',
+      'pt': 'PT',
+      'nl': 'NL',
+      'other': '–',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get songLanguage => 'Sprache';
+
+  @override
+  String get songLanguageMenu => 'Sprache …';
+
+  @override
+  String get allLanguages => 'Alle Sprachen';
+
+  @override
+  String get filterByLanguage => 'Nach Sprache filtern';
+
+  @override
+  String songLanguageAutomatic(String language) {
+    return 'Automatisch: $language';
+  }
+
+  @override
+  String get songLanguageNotDetected => 'Automatisch (nicht erkannt)';
+
+  @override
+  String get songLanguageAutomaticHint =>
+      'Aus dem Liedtext erkannt; eine Wahl von Hand gilt immer.';
+
+  @override
+  String songLanguageDetectedTooltip(String language) {
+    return '$language (aus dem Text erkannt)';
+  }
+
+  @override
+  String songLanguageByHandTooltip(String language) {
+    return '$language (von Hand gesetzt)';
+  }
 }

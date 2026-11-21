@@ -28,6 +28,7 @@ import 'library_usage_screen.dart';
 import 'song_archive_dialogs.dart';
 import 'song_attention.dart';
 import 'song_editor_screen.dart';
+import 'song_language.dart';
 import 'song_screen.dart';
 import '../widgets/section_header.dart';
 
@@ -70,6 +71,9 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
   /// Only songs the band never played, or has not played for a while
   /// (ADR-0046); null for all songs.
   PlayedFilter? _played;
+
+  /// Only songs of this language (ADR-0053); null for all songs.
+  String? _language;
 
   /// Songs selected for copying, or null outside selection mode.
   Set<String>? _selected;
@@ -199,8 +203,20 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
               const <String, DateTime>{};
     final byLastPlayed = sort == SongSort.lastPlayed && lastPlayed != null;
     final played = lastPlayed == null ? null : _played;
+    // Language tags and the language filter only for a library with songs
+    // in more than one language (ADR-0053).
+    final languages =
+        ref.watch(songLanguagesProvider).value ?? const <String>{};
+    final mixedLanguages = languages.length > 1;
+    final language = _language;
     List<SongListEntry> shownSongs(List<SongListEntry> songs) {
       var list = visible(songs);
+      if (language != null) {
+        list = [
+          for (final s in list)
+            if (s.language == language) s,
+        ];
+      }
       if (played != null) {
         final before = staleBefore(
           DateTime.now(),
@@ -427,6 +443,9 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
               showPlayed: lastPlayed != null,
               played: played,
               onPlayed: (filter) => setState(() => _played = filter),
+              languages: languages,
+              language: language,
+              onLanguage: (l) => setState(() => _language = l),
             ),
             Expanded(
               child: AsyncBody(
@@ -440,7 +459,10 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                       child: EmptyState(
                         icon: Icons.library_music_outlined,
                         message:
-                            (attention == null && played == null) || all.isEmpty
+                            (attention == null &&
+                                    played == null &&
+                                    language == null) ||
+                                all.isEmpty
                             ? l10n.songsEmpty
                             : l10n.songsFilterEmpty,
                       ),
@@ -457,6 +479,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                     hasAttachments: (counts[list[i].id] ?? 0) > 0,
                     arrangement: arrangements[list[i].id],
                     hasConflict: conflicts.contains(list[i].id),
+                    showLanguage: mixedLanguages,
                     showProblems: library.canEditSongBy(
                       createdBy: list[i].createdBy,
                       updatedBy: list[i].updatedBy,
@@ -589,6 +612,9 @@ class _Filters extends ConsumerWidget {
     required this.showPlayed,
     required this.played,
     required this.onPlayed,
+    required this.languages,
+    required this.language,
+    required this.onLanguage,
   });
 
   final String? tag;
@@ -598,6 +624,12 @@ class _Filters extends ConsumerWidget {
   final bool showPlayed;
   final PlayedFilter? played;
   final ValueChanged<PlayedFilter?> onPlayed;
+
+  /// The languages of the library's songs and the one filtered by
+  /// (ADR-0053); offered when the library has more than one.
+  final Set<String> languages;
+  final String? language;
+  final ValueChanged<String?> onLanguage;
 
   /// The filter chosen on the overview (ADR-0045), shown first and
   /// removable.
@@ -687,6 +719,52 @@ class _Filters extends ConsumerWidget {
               ),
             ),
           ),
+          if (languages.length > 1 || language != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: MenuAnchor(
+                menuChildren: [
+                  for (final l in [
+                    null,
+                    ...orderedSongLanguages({...languages, ?language}),
+                  ])
+                    MenuItemButton(
+                      key: ValueKey('songs-language-${l ?? 'all'}'),
+                      onPressed: () => onLanguage(l),
+                      leadingIcon: l == language
+                          ? const Icon(Icons.check, size: 18)
+                          : const SizedBox.square(dimension: 18),
+                      child: Text(
+                        l == null
+                            ? l10n.allLanguages
+                            : songLanguageName(l10n, l),
+                      ),
+                    ),
+                ],
+                builder: (context, menu, _) => Tooltip(
+                  message: l10n.filterByLanguage,
+                  child: FilterChip(
+                    key: const Key('songs-language'),
+                    avatar: language == null
+                        ? const Icon(Icons.translate, size: 16)
+                        : null,
+                    selected: language != null,
+                    label: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          language == null
+                              ? l10n.allLanguages
+                              : songLanguageName(l10n, language!),
+                        ),
+                        const Icon(Icons.arrow_drop_down, size: 18),
+                      ],
+                    ),
+                    onSelected: (_) => menu.isOpen ? menu.close() : menu.open(),
+                  ),
+                ),
+              ),
+            ),
           if (showPlayed)
             for (final (filter, label) in [
               (PlayedFilter.never, l10n.repertoireNeverPlayed),
@@ -949,6 +1027,7 @@ class SongTile extends ConsumerWidget {
     this.arrangement,
     this.bandName = '',
     this.hasConflict = false,
+    this.showLanguage = false,
     this.showProblems = false,
     this.onConvert,
     this.nextGig,
@@ -961,6 +1040,10 @@ class SongTile extends ConsumerWidget {
 
   /// The song waits for a decision on a sync conflict (ADR-0004).
   final bool hasConflict;
+
+  /// Show the song's language after the title (ADR-0053): in a library
+  /// with songs in more than one language.
+  final bool showLanguage;
 
   /// Show a warning if the ChordPro source has problems (#314): only to
   /// people who may edit the song.
@@ -1024,13 +1107,26 @@ class SongTile extends ConsumerWidget {
           SongKeyBadge(keyName: key),
         ],
       ),
-      title: song.title.isEmpty
-          ? Text(l10n.untitled)
-          : Text.rich(
-              TextSpan(
-                children: highlightedSpans(hit?.title ?? song.title, hitStyle),
+      title: Text.rich(
+        TextSpan(
+          children: [
+            if (song.title.isEmpty)
+              TextSpan(text: l10n.untitled)
+            else
+              ...highlightedSpans(hit?.title ?? song.title, hitStyle),
+            if (showLanguage && song.language != null) ...[
+              const TextSpan(text: ' '),
+              WidgetSpan(
+                alignment: PlaceholderAlignment.middle,
+                child: SongLanguageTag(
+                  language: song.language!,
+                  byHand: song.languageByHand,
+                ),
               ),
-            ),
+            ],
+          ],
+        ),
+      ),
       subtitle:
           details.isEmpty &&
               sequence.isEmpty &&

@@ -43,6 +43,7 @@ import 'midi_program_field.dart';
 import 'band_arrangement_panel.dart';
 import 'play_history_panel.dart';
 import 'song_editor_screen.dart';
+import 'song_language.dart';
 import 'song_links_panel.dart';
 
 /// Shows a song. The band arrangement, the personal adjustments, the
@@ -145,6 +146,21 @@ class _SongScreenState extends ConsumerState<SongScreen> {
           ),
         ),
       );
+
+  /// Sets the language of [song] by hand or back to the detected one
+  /// (ADR-0053).
+  Future<void> _chooseLanguage(SongEntry song) async {
+    final repo = ref.read(songRepositoryProvider);
+    final detected = await repo.detectedLanguage(song.id);
+    if (!mounted) return;
+    final choice = await chooseSongLanguage(
+      context,
+      current: song.language,
+      detected: detected,
+    );
+    if (choice == null) return;
+    await repo.setLanguage(song.id, choice.language);
+  }
 
   Future<void> _editTitle(SongEntry song) async {
     final l10n = AppLocalizations.of(context);
@@ -494,6 +510,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                 PopupMenuButton<String>(
                   onSelected: (value) => switch (value) {
                     'title' => _editTitle(song),
+                    'language' => _chooseLanguage(song),
                     'export' => _export(song),
                     'exportArchive' => exportSongArchive(context, ref, [
                       song.id,
@@ -509,6 +526,12 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                       PopupMenuItem(
                         value: 'title',
                         child: Text(l10n.editTitle),
+                      ),
+                    if (canEdit)
+                      PopupMenuItem(
+                        key: const Key('song-language'),
+                        value: 'language',
+                        child: Text(l10n.songLanguageMenu),
                       ),
                     if (song.chordproSource.trim().isNotEmpty &&
                         !ref.read(webClientProvider))

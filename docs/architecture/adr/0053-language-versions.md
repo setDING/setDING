@@ -170,6 +170,14 @@ the API directly as the refused roles (permission matrix test).
   `SongRepository.linkLanguageVersions`, `unlinkLanguageVersion`, `setLanguage`
   and `languageVersions`. A copy of a song (another band's library, keeping both
   versions of a conflict) is no version of the original's work.
+- 2026-11-21: Language implemented (#805): `detectLanguage` (`app/lib/data/language_detection.dart`)
+  counts function words of de, en, fr, it, es, pt and nl and returns a language only
+  with at least 5 hits, 12 % of the words and 1.5 times the hits of the second; the
+  result is `songs.detected_language` (schema 32, derived, not synced). The song menu
+  has *Language …* (automatic or a language by hand) for whoever may edit the song.
+  Refinement: the song list shows the language tags and the language filter only
+  when the library has songs in more than one language, so a library in one
+  language stays as quiet as before. *Other* has no tag.
 
 ## Open points
 

@@ -528,6 +528,17 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _detectedLanguageMeta = const VerificationMeta(
+    'detectedLanguage',
+  );
+  @override
+  late final GeneratedColumn<String> detectedLanguage = GeneratedColumn<String>(
+    'detected_language',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -553,6 +564,7 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
     purged,
     workId,
     language,
+    detectedLanguage,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -718,6 +730,15 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
         language.isAcceptableOrUnknown(data['language']!, _languageMeta),
       );
     }
+    if (data.containsKey('detected_language')) {
+      context.handle(
+        _detectedLanguageMeta,
+        detectedLanguage.isAcceptableOrUnknown(
+          data['detected_language']!,
+          _detectedLanguageMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -819,6 +840,10 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
         DriftSqlType.string,
         data['${effectivePrefix}language'],
       ),
+      detectedLanguage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}detected_language'],
+      ),
     );
   }
 
@@ -892,8 +917,13 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
   final String? workId;
 
   /// Language set by hand (ADR-0053, schema 31): a code of
-  /// `songLanguages`; null uses the language detected on the device.
+  /// `songLanguages` (outbox.dart); null uses the language detected on the device.
   final String? language;
+
+  /// Language detected from the lyrics (ADR-0053, schema 32, #805):
+  /// derived on the device like [chordproProblems], never synced; null
+  /// when it is unclear.
+  final String? detectedLanguage;
   const SongEntry({
     required this.id,
     required this.libraryId,
@@ -918,6 +948,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     required this.purged,
     this.workId,
     this.language,
+    this.detectedLanguage,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -971,6 +1002,9 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     if (!nullToAbsent || language != null) {
       map['language'] = Variable<String>(language);
     }
+    if (!nullToAbsent || detectedLanguage != null) {
+      map['detected_language'] = Variable<String>(detectedLanguage);
+    }
     return map;
   }
 
@@ -1023,6 +1057,9 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       language: language == null && nullToAbsent
           ? const Value.absent()
           : Value(language),
+      detectedLanguage: detectedLanguage == null && nullToAbsent
+          ? const Value.absent()
+          : Value(detectedLanguage),
     );
   }
 
@@ -1057,6 +1094,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       purged: serializer.fromJson<bool>(json['purged']),
       workId: serializer.fromJson<String?>(json['workId']),
       language: serializer.fromJson<String?>(json['language']),
+      detectedLanguage: serializer.fromJson<String?>(json['detectedLanguage']),
     );
   }
   @override
@@ -1086,6 +1124,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       'purged': serializer.toJson<bool>(purged),
       'workId': serializer.toJson<String?>(workId),
       'language': serializer.toJson<String?>(language),
+      'detectedLanguage': serializer.toJson<String?>(detectedLanguage),
     };
   }
 
@@ -1113,6 +1152,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     bool? purged,
     Value<String?> workId = const Value.absent(),
     Value<String?> language = const Value.absent(),
+    Value<String?> detectedLanguage = const Value.absent(),
   }) => SongEntry(
     id: id ?? this.id,
     libraryId: libraryId ?? this.libraryId,
@@ -1137,6 +1177,9 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     purged: purged ?? this.purged,
     workId: workId.present ? workId.value : this.workId,
     language: language.present ? language.value : this.language,
+    detectedLanguage: detectedLanguage.present
+        ? detectedLanguage.value
+        : this.detectedLanguage,
   );
   SongEntry copyWithCompanion(SongsCompanion data) {
     return SongEntry(
@@ -1173,6 +1216,9 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       purged: data.purged.present ? data.purged.value : this.purged,
       workId: data.workId.present ? data.workId.value : this.workId,
       language: data.language.present ? data.language.value : this.language,
+      detectedLanguage: data.detectedLanguage.present
+          ? data.detectedLanguage.value
+          : this.detectedLanguage,
     );
   }
 
@@ -1201,7 +1247,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
           ..write('deletedAt: $deletedAt, ')
           ..write('purged: $purged, ')
           ..write('workId: $workId, ')
-          ..write('language: $language')
+          ..write('language: $language, ')
+          ..write('detectedLanguage: $detectedLanguage')
           ..write(')'))
         .toString();
   }
@@ -1231,6 +1278,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     purged,
     workId,
     language,
+    detectedLanguage,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -1258,7 +1306,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
           other.deletedAt == this.deletedAt &&
           other.purged == this.purged &&
           other.workId == this.workId &&
-          other.language == this.language);
+          other.language == this.language &&
+          other.detectedLanguage == this.detectedLanguage);
 }
 
 class SongsCompanion extends UpdateCompanion<SongEntry> {
@@ -1285,6 +1334,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
   final Value<bool> purged;
   final Value<String?> workId;
   final Value<String?> language;
+  final Value<String?> detectedLanguage;
   final Value<int> rowid;
   const SongsCompanion({
     this.id = const Value.absent(),
@@ -1310,6 +1360,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     this.purged = const Value.absent(),
     this.workId = const Value.absent(),
     this.language = const Value.absent(),
+    this.detectedLanguage = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SongsCompanion.insert({
@@ -1336,6 +1387,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     this.purged = const Value.absent(),
     this.workId = const Value.absent(),
     this.language = const Value.absent(),
+    this.detectedLanguage = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        libraryId = Value(libraryId),
@@ -1365,6 +1417,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     Expression<bool>? purged,
     Expression<String>? workId,
     Expression<String>? language,
+    Expression<String>? detectedLanguage,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1392,6 +1445,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
       if (purged != null) 'purged': purged,
       if (workId != null) 'work_id': workId,
       if (language != null) 'language': language,
+      if (detectedLanguage != null) 'detected_language': detectedLanguage,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1420,6 +1474,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     Value<bool>? purged,
     Value<String?>? workId,
     Value<String?>? language,
+    Value<String?>? detectedLanguage,
     Value<int>? rowid,
   }) {
     return SongsCompanion(
@@ -1446,6 +1501,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
       purged: purged ?? this.purged,
       workId: workId ?? this.workId,
       language: language ?? this.language,
+      detectedLanguage: detectedLanguage ?? this.detectedLanguage,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1522,6 +1578,9 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     if (language.present) {
       map['language'] = Variable<String>(language.value);
     }
+    if (detectedLanguage.present) {
+      map['detected_language'] = Variable<String>(detectedLanguage.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1554,6 +1613,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
           ..write('purged: $purged, ')
           ..write('workId: $workId, ')
           ..write('language: $language, ')
+          ..write('detectedLanguage: $detectedLanguage, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -9937,6 +9997,7 @@ typedef $$SongsTableCreateCompanionBuilder = SongsCompanion Function({
   Value<bool> purged,
   Value<String?> workId,
   Value<String?> language,
+  Value<String?> detectedLanguage,
   Value<int> rowid,
 });
 typedef $$SongsTableUpdateCompanionBuilder = SongsCompanion Function({
@@ -9963,6 +10024,7 @@ typedef $$SongsTableUpdateCompanionBuilder = SongsCompanion Function({
   Value<bool> purged,
   Value<String?> workId,
   Value<String?> language,
+  Value<String?> detectedLanguage,
   Value<int> rowid,
 });
 
@@ -10185,6 +10247,11 @@ class $$SongsTableFilterComposer extends Composer<_$AppDatabase, $SongsTable> {
 
   ColumnFilters<String> get language => $composableBuilder(
     column: $table.language,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get detectedLanguage => $composableBuilder(
+    column: $table.detectedLanguage,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -10437,6 +10504,11 @@ class $$SongsTableOrderingComposer
     column: $table.language,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get detectedLanguage => $composableBuilder(
+    column: $table.detectedLanguage,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SongsTableAnnotationComposer
@@ -10526,6 +10598,11 @@ class $$SongsTableAnnotationComposer
 
   GeneratedColumn<String> get language =>
       $composableBuilder(column: $table.language, builder: (column) => column);
+
+  GeneratedColumn<String> get detectedLanguage => $composableBuilder(
+    column: $table.detectedLanguage,
+    builder: (column) => column,
+  );
 
   Expression<T> attachmentsRefs<T extends Object>(
     Expression<T> Function($$AttachmentsTableAnnotationComposer a) f,
@@ -10710,6 +10787,7 @@ class $$SongsTableTableManager
                 Value<bool> purged = const Value.absent(),
                 Value<String?> workId = const Value.absent(),
                 Value<String?> language = const Value.absent(),
+                Value<String?> detectedLanguage = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SongsCompanion(
                 id: id,
@@ -10735,6 +10813,7 @@ class $$SongsTableTableManager
                 purged: purged,
                 workId: workId,
                 language: language,
+                detectedLanguage: detectedLanguage,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -10762,6 +10841,7 @@ class $$SongsTableTableManager
                 Value<bool> purged = const Value.absent(),
                 Value<String?> workId = const Value.absent(),
                 Value<String?> language = const Value.absent(),
+                Value<String?> detectedLanguage = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SongsCompanion.insert(
                 id: id,
@@ -10787,6 +10867,7 @@ class $$SongsTableTableManager
                 purged: purged,
                 workId: workId,
                 language: language,
+                detectedLanguage: detectedLanguage,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

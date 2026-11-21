@@ -3126,5 +3126,51 @@
         "type": "int"
       }
     }
+  },
+  "songLanguageName": "{language, select, de{Deutsch} gsw{Schweizerdeutsch} en{Englisch} fr{Französisch} it{Italienisch} es{Spanisch} pt{Portugiesisch} nl{Niederländisch} other{Andere}}",
+  "@songLanguageName": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "songLanguageShort": "{language, select, de{DE} gsw{CH} en{EN} fr{FR} it{IT} es{ES} pt{PT} nl{NL} other{–}}",
+  "@songLanguageShort": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "songLanguage": "Sprache",
+  "songLanguageMenu": "Sprache …",
+  "allLanguages": "Alle Sprachen",
+  "filterByLanguage": "Nach Sprache filtern",
+  "songLanguageAutomatic": "Automatisch: {language}",
+  "@songLanguageAutomatic": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "songLanguageNotDetected": "Automatisch (nicht erkannt)",
+  "songLanguageAutomaticHint": "Aus dem Liedtext erkannt; eine Wahl von Hand gilt immer.",
+  "songLanguageDetectedTooltip": "{language} (aus dem Text erkannt)",
+  "@songLanguageDetectedTooltip": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "songLanguageByHandTooltip": "{language} (von Hand gesetzt)",
+  "@songLanguageByHandTooltip": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
   }
 }

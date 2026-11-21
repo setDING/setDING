@@ -2788,5 +2788,16 @@
         "type": "int"
       }
     }
-  }
+  },
+  "songLanguageName": "{language, select, de{German} gsw{Swiss German} en{English} fr{French} it{Italian} es{Spanish} pt{Portuguese} nl{Dutch} other{Other}}",
+  "songLanguageShort": "{language, select, de{DE} gsw{CH} en{EN} fr{FR} it{IT} es{ES} pt{PT} nl{NL} other{–}}",
+  "songLanguage": "Language",
+  "songLanguageMenu": "Language …",
+  "allLanguages": "All languages",
+  "filterByLanguage": "Filter by language",
+  "songLanguageAutomatic": "Automatic: {language}",
+  "songLanguageNotDetected": "Automatic (not detected)",
+  "songLanguageAutomaticHint": "Detected from the lyrics; a choice by hand always wins.",
+  "songLanguageDetectedTooltip": "{language} (detected from the lyrics)",
+  "songLanguageByHandTooltip": "{language} (set by hand)"
 }
