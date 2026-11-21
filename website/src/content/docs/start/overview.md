@@ -37,6 +37,12 @@ alles. Mehr dazu unter [Rollen](/bands/roles/).
 
 Einladungslinks gelten 7 Tage. Ist ein Link abgelaufen, bitte um einen neuen.
 
+## Mit der Tastatur
+
+Am Computer oder an einem Tablet mit Tastatur bringt dich die Taste **Esc** überall
+einen Schritt zurück, wie der Pfeil oben links, z. B. vom Song zurück zur
+Songliste. Ist ein Dialog oder Menü offen, schliesst Esc zuerst nur dieses.
+
 ## Offline spielen
 
 setDING speichert alles auf deinem Gerät. Sobald bei einem Set **Offline bereit**
