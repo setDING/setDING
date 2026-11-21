@@ -157,6 +157,9 @@ the API directly as the refused roles (permission matrix test).
   arrangement, adjustments per version with an offer to copy, linking by hand only,
   the group kept in archives.
 - 2026-11-21: Accepted by the owner (#803).
+- 2026-11-21: Implementation split into #804 (data and sync), #805 (language),
+  #806 (linking), #807 (switching set items), #808 (copying adjustments) and #809
+  (archives).
 
 ## Open points
 
