@@ -18,6 +18,7 @@ List<String> labels(String marked) =>
     complete(marked)?.items.map((c) => c.label).toList() ?? const [];
 
 void main() {
+  _chorusLabelTests();
   group('directives', () {
     test('suggests names after {, long forms first', () {
       expect(labels('{ti|').take(2), ['title', 'time']);
@@ -158,5 +159,52 @@ void main() {
   test('a cursor at the start of the text suggests nothing', () {
     expect(completeChordPro(' b a', 0), isNull);
     expect(completeChordPro('', 0), isNull);
+  });
+}
+
+void _chorusLabelTests() {
+  group('chorus labels', () {
+    const song =
+        '{start_of_chorus label="Refrain"}\nla\n{end_of_chorus}\n'
+        '{soc: Final chorus}\nlu\n{eoc}\n'
+        '{chorus: Refrain}\n';
+
+    test('suggests the labels of the choruses after {chorus: ', () {
+      expect(labels('$song{chorus: |'), ['Refrain', 'Final chorus']);
+      expect(labels('$song{chorus: f|'), ['Final chorus']);
+      expect(complete('$song{chorus: |')!.kind, CompletionKind.label);
+      expect(labels('$song{chorus |'), ['Refrain', 'Final chorus']);
+    });
+
+    test('accepting completes the value and the brace', () {
+      expect(accept('$song{chorus: Re|', 'Refrain'), '$song{chorus: Refrain}|');
+      expect(
+        accept('$song{chorus: Re|xy}', 'Refrain'),
+        '$song{chorus: Refrain}|',
+      );
+      expect(
+        accept('$song{chorus label="|', 'Final chorus'),
+        '$song{chorus label="Final chorus"}|',
+      );
+      expect(
+        accept('$song{chorus label="F|"}', 'Final chorus'),
+        '$song{chorus label="Final chorus"}|',
+      );
+    });
+
+    test('nothing without chorus labels or when complete', () {
+      expect(
+        complete('{start_of_chorus}\n{end_of_chorus}\n{chorus: |'),
+        isNull,
+      );
+      expect(complete('$song{chorus: Refrain|'), isNull);
+      expect(complete('$song{chorus: x|'), isNull);
+      expect(complete('$song{comment: |'), isNull);
+    });
+
+    test('chorusLabels lists each label once, in order', () {
+      expect(chorusLabels(song), ['Refrain', 'Final chorus']);
+      expect(chorusLabels('{start_of_verse label="V"}'), isEmpty);
+    });
   });
 }

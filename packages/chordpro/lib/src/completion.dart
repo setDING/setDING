@@ -2,6 +2,7 @@
 library;
 
 import 'chord.dart';
+import 'directive.dart';
 import 'directive_names.dart';
 import 'highlight.dart';
 
@@ -81,7 +82,13 @@ class Completion {
   String toString() => label;
 }
 
-enum CompletionKind { directive, chord }
+enum CompletionKind {
+  directive,
+  chord,
+
+  /// A label of the song's choruses after `{chorus: ` (#758).
+  label,
+}
 
 /// Suggestions for the word at the cursor, which is [start]..[end].
 class CompletionResult {
@@ -104,6 +111,10 @@ class CompletionResult {
 
 final _directiveStart = RegExp(r'^\s*\{\s*([A-Za-z_][A-Za-z0-9_]*)?$');
 final _chordStart = RegExp(r'\[([^\[\]\s]*)$');
+final _chorusRecall = RegExp(
+  r'^\s*\{\s*chorus(?:\s*:\s*|\s+)(?:(label\s*=\s*")([^"}]*)|([^}="]*))$',
+  caseSensitive: false,
+);
 
 bool _isNameChar(int c) =>
     (c >= 0x30 && c <= 0x39) ||
@@ -112,7 +123,8 @@ bool _isNameChar(int c) =>
     c == 0x5f;
 
 /// Suggestions at [cursor] in [source]: directive names after `{`
-/// (including short forms, sections and `x_` directives) and chords after
+/// (including short forms, sections and `x_` directives), the labels of
+/// the song's choruses after `{chorus: ` or `{chorus label="`, and chords after
 /// `[` (chords already used in the song and common chords in the song's
 /// key, sorted alphabetically). Null if there is nothing to suggest. [tokens] are the
 /// highlighting tokens of [source], if already known.
@@ -148,6 +160,41 @@ CompletionResult? completeChordPro(
             kind: CompletionKind.directive,
             start: cursor - partial.length,
             end: end,
+            items: items,
+          );
+  }
+
+  final recall = _chorusRecall.firstMatch(before);
+  if (recall != null) {
+    final quoted = recall.group(1) != null;
+    final partial = recall.group(2) ?? recall.group(3)!;
+    final start = cursor - partial.length;
+    final rest = source.substring(cursor, lineEnd);
+    // The rest of the value is replaced too, up to the closing quote and
+    // brace, which are added when missing; the cursor ends after them.
+    final m = RegExp(
+      quoted ? r'^[^"}]*"?\s*\}?' : r'^[^}]*\}?',
+    ).firstMatch(rest)!;
+    final close = quoted ? '"}' : '}';
+    final items = [
+      // Not the label being typed on this line.
+      for (final label in chorusLabels(
+        source.replaceRange(lineStart, lineEnd, ''),
+      ))
+        if (label.toLowerCase().startsWith(partial.toLowerCase()) &&
+            label != partial)
+          Completion(
+            label,
+            text: '$label$close',
+            cursor: label.length + close.length,
+          ),
+    ];
+    return items.isEmpty
+        ? null
+        : CompletionResult(
+            kind: CompletionKind.label,
+            start: start,
+            end: cursor + m.end,
             items: items,
           );
   }
@@ -278,4 +325,22 @@ SourceTokenKind? _kindAt(List<SourceToken> tokens, int offset) {
     if (t.end > offset) return t.start <= offset ? t.kind : null;
   }
   return null;
+}
+
+/// Labels of the song's choruses in order of appearance, without
+/// duplicates: of `{start_of_chorus label="…"}` and its short forms, and
+/// of chorus recalls `{chorus: …}` (#758).
+List<String> chorusLabels(String source) {
+  final out = <String>{};
+  for (final line in source.split('\n')) {
+    final trimmed = line.trim();
+    if (!trimmed.startsWith('{') || !trimmed.endsWith('}')) continue;
+    final d = parseDirective(trimmed);
+    if (d == null) continue;
+    final name = d.name;
+    if (name == 'start_of_chorus' || name == 'soc' || name == 'chorus') {
+      if (d.label case final label?) out.add(label);
+    }
+  }
+  return out.toList();
 }

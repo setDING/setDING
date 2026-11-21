@@ -11,6 +11,7 @@ import editorLabels from '../../../../../../docs/screenshots/editor_labels.png';
 import editorSave from '../../../../../../docs/screenshots/editor_save.png';
 import editorCcli from '../../../../../../docs/screenshots/editor_ccli.png';
 import editorAutoClose from '../../../../../../docs/screenshots/editor_auto_close.png';
+import editorChorusLabels from '../../../../../../docs/screenshots/editor_chorus_labels.png';
 
 Songs are written in [ChordPro](https://www.chordpro.org/), the open format for
 chord sheets: chords go in square brackets right inside the lyrics, details such as
@@ -59,6 +60,12 @@ these lines, even when the selection starts or ends in the middle of a line.
 **Song details** edits the title, key, tempo and other details in a form. While you
 type, the editor suggests matching chords and directives. Chords are suggested in
 alphabetical order, after typing `[` and after **Insert chord**.
+
+After `{chorus: ` the editor suggests the labels of the song's choruses, so a repeat
+has the same name as its chorus. `{chorus}` always repeats the last chorus before it;
+the label only changes the name shown.
+
+<Image src={editorChorusLabels} alt="The editor with the suggestions Chorus and Final chorus below a line {chorus: }" />
 
 ## Closing brackets and sections
 

@@ -11,6 +11,7 @@ import editorLabels from '../../../../../docs/screenshots/editor_labels_de.png';
 import editorSave from '../../../../../docs/screenshots/editor_save_de.png';
 import editorCcli from '../../../../../docs/screenshots/editor_ccli_de.png';
 import editorAutoClose from '../../../../../docs/screenshots/editor_auto_close_de.png';
+import editorChorusLabels from '../../../../../docs/screenshots/editor_chorus_labels_de.png';
 
 Songs sind in [ChordPro](https://www.chordpro.org/) geschrieben, dem offenen Format
 für Akkordblätter: Akkorde stehen in eckigen Klammern direkt im Text, Angaben wie
@@ -64,6 +65,12 @@ endet.
 Formular. Beim Tippen schlägt der Editor passende Akkorde und Direktiven vor.
 Akkorde erscheinen alphabetisch sortiert, nach einem getippten `[` und nach
 **Akkord einfügen**.
+
+Nach `{chorus: ` schlägt der Editor die Beschriftungen der Refrains im Song vor,
+damit eine Wiederholung gleich heisst wie ihr Refrain. `{chorus}` wiederholt immer
+den letzten Refrain davor; die Beschriftung ändert nur den angezeigten Namen.
+
+<Image src={editorChorusLabels} alt="Der Editor mit den Vorschlägen Refrain und Schlussrefrain unter einer Zeile {chorus: }" />
 
 ## Klammern und Abschnitte schliessen
 

@@ -241,9 +241,11 @@ class _EditorAutocompleteState extends State<EditorAutocomplete> {
                   child: Row(
                     children: [
                       Icon(
-                        result.kind == CompletionKind.chord
-                            ? Icons.music_note
-                            : Icons.data_object,
+                        switch (result.kind) {
+                          CompletionKind.chord => Icons.music_note,
+                          CompletionKind.directive => Icons.data_object,
+                          CompletionKind.label => Icons.label_outline,
+                        },
                         size: 16,
                         color: scheme.onSurfaceVariant,
                       ),
