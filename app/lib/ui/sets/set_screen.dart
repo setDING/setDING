@@ -386,12 +386,9 @@ class _SetItemTile extends ConsumerWidget {
     }
 
     if (item.type != SetItemType.song) {
-      // The marker's icon, and its name once: as the title without a text
-      // of its own (also a break still named "Pause" or "Break" from any UI
-      // language), otherwise below the text (#268, #289, ADR-0047).
-      final typeLabel = markerIconName(l10n, item.icon);
-      final note = markerNote(item.icon, item.note);
-      final hasNote = note != null;
+      // The marker's icon and its title: its own text, otherwise the icon's
+      // name (also a break still named "Pause" or "Break" from any UI
+      // language), never both, as in live mode (#268, #289, ADR-0047).
       return ListTile(
         key: ValueKey('marker-${item.id}'),
         leading: SizedBox(
@@ -404,7 +401,7 @@ class _SetItemTile extends ConsumerWidget {
           ),
         ),
         title: Text(
-          note ?? typeLabel,
+          markerTitle(l10n, item.icon, item.note),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: theme.textTheme.titleMedium?.copyWith(
@@ -412,7 +409,6 @@ class _SetItemTile extends ConsumerWidget {
             color: theme.colorScheme.secondary,
           ),
         ),
-        subtitle: hasNote ? Text(typeLabel) : null,
         onTap: !canEdit ? null : editMarker,
         trailing: !canEdit
             ? null

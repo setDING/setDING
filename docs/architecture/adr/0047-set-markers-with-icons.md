@@ -64,7 +64,8 @@ their own, choosing another icon keeps it. The text can be overwritten or cleare
 at any time.
 
 Editing a marker opens the same dialog. The set editor shows the chosen icon in
-the marker's row.
+the marker's row with its text of its own, otherwise the icon's default name;
+never both, as in live mode.
 
 ### Default name in each member's language
 
@@ -211,6 +212,9 @@ their own fields and are decided separately.
   the title alone names the marker (resolves the open point). A longer note of
   an older app is shortened to 24 characters with an ellipsis. The plain-text
   export of the set list no longer exists (only the PDF).
+- 2026-11-21: The set editor no longer shows the icon's name below a marker's
+  text of its own: the icon already names the kind, and live mode shows only
+  the text too.
 
 ## Open points
 
