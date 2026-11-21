@@ -699,6 +699,46 @@ void main() {
       expect(find.byType(LegacyLabelHint), findsNothing);
       await _shot(tester, '${lang}_24_editor_ccli');
 
+      // Typing aids (#747): Enter after a section start adds its end, a
+      // typed `[` its `]`. Esc hides the chord suggestions, which would
+      // cover the end directive.
+      const autoClose =
+          '{title: Amazing Grace}\n{key: G}\n\n{start_of_verse}\n'
+          'A[G]mazing [G7]grace, how [C]sweet the [G]sound\n'
+          '{end_of_verse}\n\n{start_of_chorus}';
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            home: const SongEditorScreen(initialSource: autoClose),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(TextField));
+      await tester.pump();
+      final editor = tester.widget<TextField>(find.byType(TextField));
+      for (final char in ['\n', '[']) {
+        final value = editor.controller!.value;
+        final at = char == '\n'
+            ? value.text.length
+            : value.selection.baseOffset;
+        tester.testTextInput.updateEditingValue(
+          TextEditingValue(
+            text: value.text.replaceRange(at, at, char),
+            selection: TextSelection.collapsed(offset: at + 1),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(
+        editor.controller!.text,
+        endsWith('{start_of_chorus}\n[]\n{end_of_chorus}'),
+      );
+      await _shot(tester, '${lang}_31_editor_auto_close');
+
       ImportFile file(String name, String text) =>
           ImportFile(name, Uint8List.fromList(utf8.encode(text)));
       final files = [

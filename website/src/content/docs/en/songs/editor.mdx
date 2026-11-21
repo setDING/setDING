@@ -9,6 +9,7 @@ import { Image } from 'astro:assets';
 import editor from '../../../../../../docs/screenshots/editor.png';
 import editorLabels from '../../../../../../docs/screenshots/editor_labels.png';
 import editorCcli from '../../../../../../docs/screenshots/editor_ccli.png';
+import editorAutoClose from '../../../../../../docs/screenshots/editor_auto_close.png';
 
 Songs are written in [ChordPro](https://www.chordpro.org/), the open format for
 chord sheets: chords go in square brackets right inside the lyrics, details such as
@@ -54,6 +55,24 @@ ChordPro syntax:
 **Song details** edits the title, key, tempo and other details in a form. While you
 type, the editor suggests matching chords and directives. Chords are suggested in
 alphabetical order, after typing `[` and after **Insert chord**.
+
+## Closing brackets and sections
+
+The editor closes what you open:
+
+- When you type `[` or `{`, it puts the closing bracket right after the cursor. If
+  you type it yourself anyway, the cursor just steps over it. **Backspace** right
+  after an empty pair `[]` deletes both.
+- With text selected, `[` or `{` puts the brackets around the selection.
+- **Enter** at the end of a section start such as `{start_of_chorus}` adds an empty
+  line and the matching end `{end_of_chorus}`, with the cursor on the empty line.
+  Choosing `start_of_…` from the suggestions does the same. If the section is
+  already closed, Enter just starts a new line.
+
+In comment lines (`#`), after `\` and in tab and notation sections (ABC, LilyPond),
+brackets stay as you type them.
+
+<Image src={editorAutoClose} alt="The editor with a chorus section whose end was added automatically; on the empty line between them, a pair of chord brackets with the cursor" />
 
 ## Edit lines
 
