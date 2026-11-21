@@ -176,11 +176,26 @@ class _SetScreenState extends ConsumerState<SetScreen> {
             automaticallyImplyLeading: !widget.embedded,
             title: Text(set.name),
             actions: [
+              if (canEdit) ...[
+                // Editing is a key function: its own button rather than an
+                // overflow menu entry, like editing a song (#713).
+                IconButton(
+                  key: const Key('edit-set'),
+                  tooltip: l10n.editSet,
+                  icon: const Icon(Icons.edit_outlined),
+                  onPressed: () => showSetDialog(context, ref, existing: set),
+                ),
+                const VerticalDivider(
+                  key: Key('edit-set-divider'),
+                  width: 16,
+                  indent: 16,
+                  endIndent: 16,
+                ),
+              ],
               PopupMenuButton<String>(
                 onSelected: (value) => switch (value) {
                   'pause' => _addMarker(SetItemType.pause),
                   'text' => _addMarker(SetItemType.text),
-                  'edit' => showSetDialog(context, ref, existing: set),
                   'export' => _export(set),
                   'exportListPdf' => _exportSetListPdf(set),
                   'copyToBand' => copySetToBand(context, ref, set.id),
@@ -191,7 +206,6 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                   if (canEdit) ...[
                     PopupMenuItem(value: 'pause', child: Text(l10n.addPause)),
                     PopupMenuItem(value: 'text', child: Text(l10n.addText)),
-                    PopupMenuItem(value: 'edit', child: Text(l10n.editSet)),
                     const PopupMenuDivider(),
                   ],
                   // Web: no file export, sets are synced (ADR-0018).

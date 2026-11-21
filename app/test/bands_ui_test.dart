@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:setding/providers.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:setding/ui/bands/bands_screen.dart';
+import 'package:setding/data/set_repository.dart';
 import 'package:setding/ui/live/live_play_button.dart';
+import 'package:setding/ui/sets/set_screen.dart';
 import 'package:setding/ui/songs/song_screen.dart';
 import 'package:setding/ui/songs/songs_screen.dart';
 
@@ -799,5 +801,51 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Edit ChordPro'), findsNothing);
     await app.dispose(tester);
+  });
+
+  group('edit set button (#713)', () {
+    Future<TestApp> openSet(WidgetTester tester, BandRole role) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': 'en', 'currentBandId': 'b1'},
+        user: _bob,
+      );
+      app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+      app.backend.addMember('b1', _bob, role);
+      // The band reaches the local database with the first sync.
+      await tester.pumpWidget(app.build(home: const Scaffold()));
+      await syncNow(tester);
+      final id = await SetRepository(
+        app.db,
+        app.storage,
+        bandId: 'b1',
+        userId: 'bob',
+      ).createSet(name: 'Gig');
+      await tester.pumpWidget(app.build(home: SetScreen(setId: id)));
+      await tester.pumpAndSettle();
+      return app;
+    }
+
+    testWidgets('leaders edit the set with its own button', (tester) async {
+      final app = await openSet(tester, BandRole.admin);
+      expect(find.byKey(const Key('edit-set-divider')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('edit-set')));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(AlertDialog, 'Edit set'), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      // No longer in the menu as well.
+      await tester.tap(find.byType(PopupMenuButton<String>).first);
+      await tester.pumpAndSettle();
+      expect(find.text('Edit set'), findsNothing);
+      await app.dispose(tester);
+    });
+
+    testWidgets('members see no edit button', (tester) async {
+      final app = await openSet(tester, BandRole.member);
+      expect(find.byKey(const Key('edit-set')), findsNothing);
+      expect(find.byKey(const Key('edit-set-divider')), findsNothing);
+      await app.dispose(tester);
+    });
   });
 }
