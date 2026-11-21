@@ -12,6 +12,7 @@ import '../account/sign_in_screen.dart' show backendErrorText;
 import '../sets/sets_screen.dart' show formatGigDate;
 import '../widgets/dialogs.dart';
 import 'bands_screen.dart';
+import '../widgets/loading_indicator.dart';
 
 /// Deletes [band] after a confirmation that shows what goes with it and
 /// asks for the band's name (organization admins, ADR-0044). Closes the
@@ -209,7 +210,7 @@ class _DeletedBandsScreenState extends ConsumerState<DeletedBandsScreen> {
           }
           final bands = snapshot.data;
           if (bands == null) {
-            return const Center(child: CircularProgressIndicator());
+            return const LoadingIndicator();
           }
           if (bands.isEmpty) {
             return EmptyState(

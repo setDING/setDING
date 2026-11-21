@@ -55,6 +55,9 @@ class SongEditorScreen extends ConsumerStatefulWidget {
     this.selectFirstProblem = false,
   });
 
+  /// From this width on, the editor and the preview are side by side.
+  static const sideBySideWidth = 900.0;
+
   /// Null for a new song.
   final String? songId;
   final String? initialSource;
@@ -571,7 +574,8 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final wide = MediaQuery.sizeOf(context).width >= 900;
+    final wide =
+        MediaQuery.sizeOf(context).width >= SongEditorScreen.sideBySideWidth;
     final snippets = EditorSnippets(l10n);
 
     final editor = Column(

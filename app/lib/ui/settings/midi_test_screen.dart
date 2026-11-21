@@ -11,6 +11,7 @@ import '../../midi/midi_profile.dart';
 import '../../util/log.dart';
 import '../songs/midi_program_field.dart';
 import 'midi_guide.dart';
+import '../widgets/loading_indicator.dart';
 
 /// Prototype of ADR-0039 (#512): sends a program change to a keyboard
 /// connected by USB and logs what the keyboard sends back, to check the
@@ -455,7 +456,7 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
             ),
           ),
           if (devices == null)
-            const Center(child: CircularProgressIndicator())
+            const LoadingIndicator()
           else if (devices.isEmpty)
             ListTile(subtitle: Text(l10n.midiTestNoDevices))
           else

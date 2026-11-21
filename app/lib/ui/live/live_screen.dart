@@ -34,6 +34,7 @@ import '../render/song_image.dart';
 import '../render/song_view.dart';
 import '../sets/set_item_label.dart';
 import '../songs/midi_program_field.dart' show midiPatchShortLabel;
+import '../theme.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/key_picker.dart';
 import '../widgets/verse_chords_picker.dart';
@@ -498,7 +499,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
             pos.pixels + pos.viewportDimension * _step,
             pos.maxScrollExtent,
           ),
-          duration: const Duration(milliseconds: 250),
+          duration: shortAnimation,
           curve: Curves.easeOut,
         );
         return;
@@ -519,10 +520,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       // the turns are faster than the preparation.
       _songPages[_index + 1]?.first();
       _preparation.complete(_index + 1);
-      _pages.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
+      _pages.nextPage(duration: pageAnimation, curve: Curves.easeOut);
     }
   }
 
@@ -536,7 +534,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       final pos = sc.position;
       sc.animateTo(
         math.max(pos.pixels - pos.viewportDimension * _step, 0),
-        duration: const Duration(milliseconds: 250),
+        duration: shortAnimation,
         curve: Curves.easeOut,
       );
       return;
@@ -550,10 +548,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     }
     if (_index > 0) {
       _preparation.complete(_index - 1);
-      _pages.previousPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
+      _pages.previousPage(duration: pageAnimation, curve: Curves.easeOut);
     }
   }
 

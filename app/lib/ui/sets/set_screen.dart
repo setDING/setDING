@@ -22,7 +22,7 @@ import '../songs/play_history_panel.dart' show keyHistoryHint;
 import '../songs/song_screen.dart';
 import '../bands/copy_to_band.dart';
 import '../widgets/dialogs.dart';
-import '../backup/backup_actions.dart' show openFileProvider, saveFileProvider;
+import '../widgets/export_file.dart';
 import '../widgets/key_picker.dart';
 import '../widgets/sequence_dialog.dart';
 import 'set_list_pdf.dart';
@@ -94,30 +94,16 @@ class _SetScreenState extends ConsumerState<SetScreen> {
 
   /// Printable set list as PDF (ADR-0013).
   Future<void> _exportSetListPdf(SetlistEntry set) async {
-    final l10n = AppLocalizations.of(context);
     final list = await _setList(set);
-    if (list == null) return;
-    final pdf = await setListPdf(list, await SetListFonts.load());
-    final fileName = '${safeFileName(set.name)}.pdf';
-    const mimeType = 'application/pdf';
-    final saved = await ref.read(saveFileProvider)(
-      fileName,
-      pdf.bytes,
-      mimeType: mimeType,
-    );
-    if (!saved || !mounted) return;
-    final openFile = ref.read(openFileProvider);
-    final messenger = ScaffoldMessenger.of(context);
-    showMessageWithAction(
+    if (list == null || !mounted) return;
+    await exportFile(
       context,
-      l10n.exported,
-      actionLabel: l10n.exportedOpen,
-      onAction: () async {
-        final opened = await openFile(fileName, pdf.bytes, mimeType: mimeType);
-        if (!opened) {
-          messenger.showSnackBar(SnackBar(content: Text(l10n.openFileFailed)));
-        }
-      },
+      ref,
+      fileName: '${safeFileName(set.name)}.pdf',
+      mimeType: 'application/pdf',
+      openable: true,
+      build: () async =>
+          (await setListPdf(list, await SetListFonts.load())).bytes,
     );
   }
 

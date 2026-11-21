@@ -1,6 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:pdfrx/pdfrx.dart';
 
+import '../widgets/loading_indicator.dart';
+
 /// Position in a PDF shown as two pages side by side (ADR-0009).
 ///
 /// Spreads are pages 1–2, 3–4, …; a last odd page is shown alone on the
@@ -124,8 +126,7 @@ class _PdfSpreadViewState extends State<PdfSpreadView> {
       color: background,
       child: PdfDocumentViewBuilder(
         documentRef: _documentRef,
-        loadingBuilder: (context) =>
-            const Center(child: CircularProgressIndicator()),
+        loadingBuilder: (context) => const LoadingIndicator(),
         builder: (context, document) {
           if (document == null) return const SizedBox.expand();
           final controller = widget.controller.._attach(document.pages.length);

@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/generated/app_localizations.dart';
+import 'loading_indicator.dart';
 
 /// Asks for confirmation of a destructive action.
 Future<bool> confirm(
@@ -163,7 +164,7 @@ class AsyncBody<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) => value.when(
     data: data,
-    loading: () => const Center(child: CircularProgressIndicator()),
+    loading: () => const LoadingIndicator(),
     error: (error, _) => Center(
       child: Padding(
         padding: const EdgeInsets.all(24),

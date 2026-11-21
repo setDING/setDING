@@ -11,11 +11,12 @@ import '../../data/set_archive.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../sync/sync_controller.dart' show attachmentFetcherProvider;
-import '../backup/backup_actions.dart' show saveFileProvider;
 import '../songs/song_screen.dart';
 import '../widgets/dialogs.dart';
+import '../widgets/export_file.dart';
 import '../widgets/file_actions.dart';
 import 'set_screen.dart';
+import '../widgets/loading_indicator.dart';
 
 /// Asks what the archive of [set] holds and exports it (ADR-0043 §1b).
 Future<void> exportSetArchive(
@@ -28,34 +29,24 @@ Future<void> exportSetArchive(
     builder: (_) => const _ExportDialog(),
   );
   if (options == null || !context.mounted) return;
-  final l10n = AppLocalizations.of(context);
   final web = ref.read(webClientProvider);
   final fetcher = ref.read(attachmentFetcherProvider);
-  try {
-    final bytes = await ref
-        .read(setArchiveServiceProvider)
-        .export(
-          set.id,
-          options: options,
-          // The web client loads the files for the export (ADR-0018).
-          readFile: web
-              ? (AttachmentEntry a) async =>
-                    (await fetcher.fetch(a.id))?.readAsBytes()
-              : null,
-        );
-    final saved = await ref.read(saveFileProvider)(
-      SetArchiveService.fileName(set),
-      bytes,
-      mimeType: 'application/zip',
-    );
-    if (saved && context.mounted) showMessage(context, l10n.exported);
-  } on BackupFileMissingException catch (e) {
-    if (context.mounted) {
-      showMessage(context, l10n.backupFileMissing(e.name, e.songTitle));
-    }
-  } catch (e) {
-    if (context.mounted) showMessage(context, l10n.errorGeneric('$e'));
-  }
+  final service = ref.read(setArchiveServiceProvider);
+  await exportFile(
+    context,
+    ref,
+    fileName: SetArchiveService.fileName(set),
+    mimeType: 'application/zip',
+    build: () => service.export(
+      set.id,
+      options: options,
+      // The web client loads the files for the export (ADR-0018).
+      readFile: web
+          ? (AttachmentEntry a) async =>
+                (await fetcher.fetch(a.id))?.readAsBytes()
+          : null,
+    ),
+  );
 }
 
 /// The options of a set export.
@@ -446,7 +437,7 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
               if (targets.isNotEmpty && preview == null)
                 const Padding(
                   padding: EdgeInsets.all(16),
-                  child: Center(child: CircularProgressIndicator()),
+                  child: LoadingIndicator(),
                 ),
               if (preview != null) ..._previewParts(l10n, preview),
             ],

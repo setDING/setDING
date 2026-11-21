@@ -5,7 +5,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/backup.dart';
-import '../../platform/open_file.dart';
 import '../../data/band_view.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
@@ -13,28 +12,9 @@ import '../../settings/settings.dart' show sharedPreferencesProvider;
 import '../../sync/sync_controller.dart';
 import '../songs/song_screen.dart';
 import '../widgets/dialogs.dart';
-import '../widgets/file_actions.dart';
+import '../widgets/export_file.dart';
 import 'full_backup.dart' show lastBackupKey;
-
-/// Saves a file; tests replace it.
-typedef SaveFile = Future<bool> Function(
-  String fileName,
-  Uint8List bytes, {
-  String mimeType,
-});
-
-/// How the backup is saved: the platform's save dialog (a download on web).
-final saveFileProvider = Provider<SaveFile>((ref) => saveFile);
-
-/// Opens a file in the system's default app; tests replace it.
-typedef OpenFile = Future<bool> Function(
-  String fileName,
-  Uint8List bytes, {
-  required String mimeType,
-});
-
-/// How an exported PDF is opened (#721, ADR-0048).
-final openFileProvider = Provider<OpenFile>((ref) => openFileInDefaultApp);
+import '../widgets/loading_indicator.dart';
 
 /// Exports [library] as a backup archive (ADR-0043). An organization is
 /// synced first; the export stops if anything is not on this device yet.
@@ -321,7 +301,7 @@ class _BackupImportDialogState extends ConsumerState<_BackupImportDialog> {
       content: SizedBox(
         width: 480,
         child: preview == null
-            ? const Center(child: CircularProgressIndicator())
+            ? const LoadingIndicator()
             : SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

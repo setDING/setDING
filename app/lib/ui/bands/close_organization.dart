@@ -13,6 +13,7 @@ import '../backup/backup_actions.dart' show exportBackup;
 import '../sets/sets_screen.dart' show formatGigDate;
 import '../widgets/dialogs.dart';
 import 'bands_screen.dart';
+import '../widgets/loading_indicator.dart';
 
 /// Closes [org] after a confirmation that shows what goes with it, offers a
 /// backup first and asks for the organization's name (its admins,
@@ -203,7 +204,7 @@ class _ClosedOrganizationsScreenState
           }
           final orgs = snapshot.data;
           if (orgs == null) {
-            return const Center(child: CircularProgressIndicator());
+            return const LoadingIndicator();
           }
           if (orgs.isEmpty) {
             return EmptyState(

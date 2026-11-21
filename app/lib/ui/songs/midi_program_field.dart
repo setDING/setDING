@@ -467,6 +467,10 @@ class MidiProgramPicker extends StatefulWidget {
     this.onPreviewChanged,
   });
 
+  /// Below this screen width (phones), the dialog keeps a narrow margin, so
+  /// the grid gets as much width as possible.
+  static const narrowWidth = 480.0;
+
   final MidiProfile profile;
   final MidiProgram? initial;
 
@@ -631,9 +635,8 @@ class _MidiProgramPickerState extends State<MidiProgramPicker> {
     _previewPatch(patch);
 
     return AlertDialog(
-      // Phones keep as much width as possible for the grid.
       insetPadding: EdgeInsets.symmetric(
-        horizontal: width < 480 ? 12 : 40,
+        horizontal: width < MidiProgramPicker.narrowWidth ? 12 : 40,
         vertical: 24,
       ),
       title: Text(l10n.midiProgramTitle),
