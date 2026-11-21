@@ -3290,6 +3290,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get midiTestPart => 'Part';
 
   @override
+  String get settingsEditorTypingAids =>
+      'Close brackets and sections automatically';
+
+  @override
+  String get settingsEditorTypingAidsHint =>
+      'In the ChordPro editor: [ adds ], Enter after a section start adds its end, and renaming a section start renames its end too.';
+
+  @override
   String get settingsDeveloperMode => 'Developer mode';
 
   @override

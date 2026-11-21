@@ -9,10 +9,13 @@ import 'test_app.dart';
 /// the chordpro package (auto_close_test.dart).
 void main() {
   Future<(TestApp, TextEditingController)> pumpEditor(
-    WidgetTester tester,
-  ) async {
+    WidgetTester tester, {
+    bool typingAids = true,
+  }) async {
     useTabletSize(tester);
-    final app = await TestApp.create(prefs: {'language': 'en'});
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'editorTypingAids': typingAids},
+    );
     await tester.pumpWidget(
       app.build(home: const SongEditorScreen(initialSource: '')),
     );
@@ -103,6 +106,20 @@ void main() {
     await tester.pumpAndSettle();
     expect(controller.text, '{start_of_chorus}\n\n{end_of_chorus}');
     expect(controller.selection.baseOffset, 18);
+    await app.dispose(tester);
+  });
+
+  testWidgets('the setting turns the typing aids off', (tester) async {
+    final (app, controller) = await pumpEditor(tester, typingAids: false);
+    await typeChar(tester, controller, '[');
+    expect(controller.text, '[');
+    await tester.enterText(find.byType(TextField), '{start_of_cho');
+    await tester.pumpAndSettle();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    expect(controller.text, '{start_of_chorus}');
+    await typeChar(tester, controller, '\n');
+    expect(controller.text, '{start_of_chorus}\n');
     await app.dispose(tester);
   });
 }

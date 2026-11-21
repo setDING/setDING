@@ -338,6 +338,28 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('the editor typing aids are switched off in General (#757)', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await pumpSettings(tester);
+    await tester.tap(find.byKey(const Key('settings-category-general')));
+    await tester.pumpAndSettle();
+    final toggle = find.byKey(const Key('settings-editor-typing-aids'));
+    await tester.ensureVisible(toggle);
+    await tester.pumpAndSettle();
+    expect(find.text('Close brackets and sections automatically'), findsOne);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(SettingsScreen)),
+    );
+    expect(container.read(settingsProvider).editorTypingAids, isTrue);
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(container.read(settingsProvider).editorTypingAids, isFalse);
+    expect(AppSettings.scopes['editorTypingAids'], SettingSyncScope.personal);
+    await app.dispose(tester);
+  });
+
   testWidgets('developer mode shows the test features, the MIDI test only '
       'there (#559)', (tester) async {
     useTabletSize(tester);

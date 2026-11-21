@@ -1547,6 +1547,8 @@
   },
   "midiTestSong": "Song",
   "midiTestPart": "Part",
+  "settingsEditorTypingAids": "Close brackets and sections automatically",
+  "settingsEditorTypingAidsHint": "In the ChordPro editor: [ adds ], Enter after a section start adds its end, and renaming a section start renames its end too.",
   "settingsDeveloperMode": "Developer mode",
   "settingsDeveloperModeHint": "Shows the “Development” category with experimental features for testing. Not needed for normal use.",
   "settingsGroupDevelopment": "Development",

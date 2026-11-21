@@ -3311,6 +3311,14 @@ class AppLocalizationsDe extends AppLocalizations {
   String get midiTestPart => 'Teil';
 
   @override
+  String get settingsEditorTypingAids =>
+      'Klammern und Abschnitte automatisch schliessen';
+
+  @override
+  String get settingsEditorTypingAidsHint =>
+      'Im ChordPro-Editor: [ ergänzt ], Enter nach einem Abschnittsanfang ergänzt sein Ende, und ein umbenannter Abschnittsanfang benennt sein Ende mit um.';
+
+  @override
   String get settingsDeveloperMode => 'Entwickler-Modus';
 
   @override

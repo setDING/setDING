@@ -5587,6 +5587,18 @@ abstract class AppLocalizations {
   /// **'Teil'**
   String get midiTestPart;
 
+  /// No description provided for @settingsEditorTypingAids.
+  ///
+  /// In de, this message translates to:
+  /// **'Klammern und Abschnitte automatisch schliessen'**
+  String get settingsEditorTypingAids;
+
+  /// No description provided for @settingsEditorTypingAidsHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Im ChordPro-Editor: [ ergänzt ], Enter nach einem Abschnittsanfang ergänzt sein Ende, und ein umbenannter Abschnittsanfang benennt sein Ende mit um.'**
+  String get settingsEditorTypingAidsHint;
+
   /// No description provided for @settingsDeveloperMode.
   ///
   /// In de, this message translates to:

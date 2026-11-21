@@ -1780,6 +1780,8 @@
   },
   "midiTestSong": "Song",
   "midiTestPart": "Teil",
+  "settingsEditorTypingAids": "Klammern und Abschnitte automatisch schliessen",
+  "settingsEditorTypingAidsHint": "Im ChordPro-Editor: [ ergänzt ], Enter nach einem Abschnittsanfang ergänzt sein Ende, und ein umbenannter Abschnittsanfang benennt sein Ende mit um.",
   "settingsDeveloperMode": "Entwickler-Modus",
   "settingsDeveloperModeHint": "Zeigt die Kategorie «Entwicklung» mit experimentellen Funktionen zum Testen. Für den normalen Gebrauch nicht nötig.",
   "settingsGroupDevelopment": "Entwicklung",

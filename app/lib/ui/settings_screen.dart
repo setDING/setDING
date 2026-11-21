@@ -329,6 +329,14 @@ class _CategoryContent extends ConsumerWidget {
           onChanged: (v) => notifier.update((s) => s.copyWith(accent: v)),
         ),
         SwitchListTile(
+          key: const Key('settings-editor-typing-aids'),
+          title: Text(l10n.settingsEditorTypingAids),
+          subtitle: Text(l10n.settingsEditorTypingAidsHint),
+          value: s.editorTypingAids,
+          onChanged: (v) =>
+              notifier.update((s) => s.copyWith(editorTypingAids: v)),
+        ),
+        SwitchListTile(
           key: const Key('settings-developer-mode'),
           title: Text(l10n.settingsDeveloperMode),
           subtitle: Text(l10n.settingsDeveloperModeHint),
