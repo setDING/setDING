@@ -233,16 +233,16 @@ void main() {
       tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
       2,
     );
-    final chip = find.byKey(const Key('songs-attention-filter'));
-    expect(chip, findsOneWidget);
+    final chip = find.byKey(const ValueKey('songs-attention-problems'));
+    expect(tester.widget<FilterChip>(chip).selected, isTrue);
     expect(find.text('Washed'), findsOneWidget);
     expect(find.text('Fine'), findsNothing);
     expect(find.text('Sheet'), findsNothing);
 
     // Removing the filter shows all songs again.
-    await tester.tap(find.byTooltip('Remove filter'));
+    await tester.tap(chip);
     await tester.pumpAndSettle();
-    expect(chip, findsNothing);
+    expect(tester.widget<FilterChip>(chip).selected, isFalse);
     expect(find.text('Fine'), findsOneWidget);
     expect(find.text('Sheet'), findsOneWidget);
 

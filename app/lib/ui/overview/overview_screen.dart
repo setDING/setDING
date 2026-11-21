@@ -12,7 +12,6 @@ import '../bands/band_switcher.dart';
 import '../home_tab.dart';
 import '../live/live_screen.dart';
 import '../sets/sets_screen.dart' show daysBetween, formatGigDate, openSet;
-import '../songs/chordpro_problems_badge.dart';
 import '../songs/song_attention.dart';
 import '../widgets/app_info.dart';
 import 'recent_changes.dart';
@@ -287,10 +286,9 @@ class _TodoCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final colors = Theme.of(context).colorScheme;
-    Widget line(SongAttention kind, Widget icon, String text) => ListTile(
+    Widget line(SongAttention kind, String text) => ListTile(
       key: ValueKey('overview-todo-${kind.name}'),
-      leading: icon,
+      leading: songAttentionIcon(context, kind),
       title: Text(text),
       trailing: const Icon(Icons.chevron_right),
       onTap: () {
@@ -304,31 +302,14 @@ class _TodoCard extends ConsumerWidget {
       children: [
         for (final kind in SongAttention.values)
           if ((counts[kind] ?? 0) case final count when count > 0)
-            switch (kind) {
-              SongAttention.problems => line(
-                kind,
-                Icon(
-                  Icons.warning_amber_rounded,
-                  color: chordProProblemColor(context),
-                ),
-                l10n.overviewTodoProblems(count),
+            line(kind, switch (kind) {
+              SongAttention.problems => l10n.overviewTodoProblems(count),
+              SongAttention.conversions => l10n.overviewTodoConversions(count),
+              SongAttention.conflicts => l10n.overviewTodoConflicts(count),
+              SongAttention.sheetMusicOnly => l10n.overviewTodoSheetMusicOnly(
+                count,
               ),
-              SongAttention.conversions => line(
-                kind,
-                const Icon(chordProConversionsIcon),
-                l10n.overviewTodoConversions(count),
-              ),
-              SongAttention.conflicts => line(
-                kind,
-                Icon(Icons.sync_problem, color: colors.error),
-                l10n.overviewTodoConflicts(count),
-              ),
-              SongAttention.sheetMusicOnly => line(
-                kind,
-                const Icon(Icons.picture_as_pdf),
-                l10n.overviewTodoSheetMusicOnly(count),
-              ),
-            },
+            }),
       ],
     );
   }

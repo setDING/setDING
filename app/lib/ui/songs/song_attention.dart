@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../data/band_view.dart';
 import '../../data/database.dart' show SongConflict;
@@ -6,6 +7,7 @@ import '../../data/song_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../sync/sync_controller.dart';
+import 'chordpro_problems_badge.dart';
 
 /// What makes a song need attention by someone who may edit it: the
 /// lines of the overview's *To do* card (ADR-0045) and the filters of the
@@ -35,6 +37,26 @@ String songAttentionLabel(AppLocalizations l10n, SongAttention kind) =>
       SongAttention.conflicts => l10n.attentionConflicts,
       SongAttention.sheetMusicOnly => l10n.attentionSheetMusicOnly,
     };
+
+/// Icon of [kind], the same on the overview and in the song list.
+Widget songAttentionIcon(
+  BuildContext context,
+  SongAttention kind, {
+  double? size,
+}) => switch (kind) {
+  SongAttention.problems => Icon(
+    Icons.warning_amber_rounded,
+    size: size,
+    color: chordProProblemColor(context),
+  ),
+  SongAttention.conversions => Icon(chordProConversionsIcon, size: size),
+  SongAttention.conflicts => Icon(
+    Icons.sync_problem,
+    size: size,
+    color: Theme.of(context).colorScheme.error,
+  ),
+  SongAttention.sheetMusicOnly => Icon(Icons.picture_as_pdf, size: size),
+};
 
 /// Whether [song] of [library] needs [kind] of attention by the signed-in
 /// person. Only for people who may edit the song, the same check as the

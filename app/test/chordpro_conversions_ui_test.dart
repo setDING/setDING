@@ -36,10 +36,7 @@ void main() {
     expect(find.text('Old'), findsOneWidget);
     expect(find.text('Tidy'), findsNothing);
     expect(icon, findsOneWidget);
-    expect(
-      find.byTooltip('2 places in the ChordPro can be converted'),
-      findsOneWidget,
-    );
+    expect(find.byTooltip('Convert 2 places in the ChordPro'), findsOneWidget);
 
     await tester.runAsync(() async {
       await tester.tap(find.byKey(const Key('songs-convert-all')));
@@ -85,6 +82,73 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Old'), findsOneWidget);
     expect(icon, findsNothing);
+    await app.dispose(tester);
+  });
+
+  testWidgets('the song list offers the filter itself', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    await tester.runAsync(() async {
+      await app.songs.createSong(source: tidy);
+      await app.songs.createSong(source: songSelect);
+    });
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Songs').first);
+    await tester.pumpAndSettle();
+
+    final chip = find.byKey(const ValueKey('songs-attention-conversions'));
+    // Only kinds with songs get a chip.
+    expect(
+      find.byKey(const ValueKey('songs-attention-problems')),
+      findsNothing,
+    );
+    expect(find.text('Tidy'), findsOneWidget);
+    await tester.tap(chip);
+    await tester.pumpAndSettle();
+    expect(tester.widget<FilterChip>(chip).selected, isTrue);
+    expect(find.text('Tidy'), findsNothing);
+    expect(find.text('Old'), findsOneWidget);
+    expect(find.byKey(const Key('songs-convert-all')), findsOneWidget);
+
+    await tester.tap(chip);
+    await tester.pumpAndSettle();
+    expect(find.text('Tidy'), findsOneWidget);
+    expect(find.byKey(const Key('songs-convert-all')), findsNothing);
+    await app.dispose(tester);
+  });
+
+  testWidgets('a tap on the magic wand converts the song, with Undo', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final id = (await tester.runAsync(
+      () => app.songs.createSong(source: songSelect),
+    ))!;
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Songs').first);
+    await tester.pumpAndSettle();
+
+    await tester.runAsync(() async {
+      await tester.tap(icon);
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    });
+    await tester.pumpAndSettle();
+    expect(find.text('“Old” converted'), findsOneWidget);
+    expect(icon, findsNothing);
+    final converted = (await tester.runAsync(() => app.songs.getSong(id)))!;
+    expect(converted.chordproSource, contains('{x_ccli: 6016351}'));
+
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Undo'));
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    });
+    await tester.pumpAndSettle();
+    final restored = (await tester.runAsync(() => app.songs.getSong(id)))!;
+    expect(restored.chordproSource, songSelect);
+    expect(icon, findsOneWidget);
     await app.dispose(tester);
   });
 }

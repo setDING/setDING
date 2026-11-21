@@ -2234,7 +2234,7 @@
   "attentionProblems": "ChordPro problems",
   "attentionConflicts": "Sync conflicts",
   "attentionSheetMusicOnly": "Sheet music only",
-  "chordProConversionsTooltip": "{count, plural, =1{1 place in the ChordPro can be converted} other{{count} places in the ChordPro can be converted}}",
+  "chordProConversionsTooltip": "{count, plural, =1{Convert 1 place in the ChordPro} other{Convert {count} places in the ChordPro}}",
   "@chordProConversionsTooltip": {
     "placeholders": {
       "count": {
@@ -2269,7 +2269,14 @@
       }
     }
   },
-  "songsFilterClear": "Remove filter",
+  "songConverted": "“{title}” converted",
+  "@songConverted": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "songsFilterEmpty": "No songs left in this filter.",
   "playHistory": "Played",
   "playHistoryOf": "Played by {band}",

@@ -461,6 +461,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                       createdBy: list[i].createdBy,
                       updatedBy: list[i].updatedBy,
                     ),
+                    onConvert: () => _convertSong(context, ref, list[i]),
                     nextGig: gigs[list[i].id],
                     hit: hits[list[i].id],
                     bandName: band?.name ?? '',
@@ -607,6 +608,7 @@ class _Filters extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final used = ref.watch(tagsProvider).value ?? const <String>[];
     final sort = ref.watch(songSortProvider);
+    final counts = ref.watch(songAttentionCountsProvider);
     // A selected tag stays visible (and can be deselected) even when no
     // song uses it any more, e.g. after deleting its last song.
     final tags = [...used, if (tag case final t? when !used.contains(t)) t];
@@ -626,20 +628,24 @@ class _Filters extends ConsumerWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         children: [
-          if (attention case final kind?)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: InputChip(
-                key: const Key('songs-attention-filter'),
-                avatar: const Icon(Icons.filter_alt_outlined, size: 18),
-                label: Text(songAttentionLabel(l10n, kind)),
-                selected: true,
-                showCheckmark: false,
-                deleteButtonTooltipMessage: l10n.songsFilterClear,
-                onDeleted: () =>
-                    ref.read(songAttentionFilterProvider.notifier).select(null),
+          // The filters of the overview's To do card (ADR-0045), for
+          // the kinds with songs the person may edit, and the one chosen.
+          for (final kind in SongAttention.values)
+            if (kind == attention || (counts?[kind] ?? 0) > 0)
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  key: ValueKey('songs-attention-${kind.name}'),
+                  avatar: kind == attention
+                      ? null
+                      : songAttentionIcon(context, kind, size: 16),
+                  label: Text(songAttentionLabel(l10n, kind)),
+                  selected: kind == attention,
+                  onSelected: (on) => ref
+                      .read(songAttentionFilterProvider.notifier)
+                      .select(on ? kind : null),
+                ),
               ),
-            ),
           if (attention == SongAttention.conversions)
             Padding(
               padding: const EdgeInsets.only(right: 8),
@@ -755,6 +761,28 @@ Future<void> _convertAll(BuildContext context, WidgetRef ref) async {
   }
   final count = await ref.read(importExportProvider).convertAll(ids);
   showMessageOn(messenger, l10n.songsConverted(count));
+}
+
+/// Converts [song] at once (#800), with Undo: a tap on its magic wand.
+Future<void> _convertSong(
+  BuildContext context,
+  WidgetRef ref,
+  SongListEntry song,
+) async {
+  final l10n = AppLocalizations.of(context);
+  final messenger = ScaffoldMessenger.of(context);
+  final repo = ref.read(songRepositoryProvider);
+  final before = (await repo.getSong(song.id))?.chordproSource;
+  if (before == null) return;
+  final after = cp.applyChordProConversions(before);
+  if (after == before) return;
+  await repo.updateSource(song.id, after);
+  showUndo(
+    messenger,
+    l10n.songConverted(song.title),
+    undoLabel: l10n.undo,
+    onUndo: () => repo.updateSource(song.id, before),
+  );
 }
 
 /// [marked] (see [SearchHit]) as text spans, the hits in [hitStyle].
@@ -922,6 +950,7 @@ class SongTile extends ConsumerWidget {
     this.bandName = '',
     this.hasConflict = false,
     this.showProblems = false,
+    this.onConvert,
     this.nextGig,
     this.hit,
     this.playedNote,
@@ -936,6 +965,10 @@ class SongTile extends ConsumerWidget {
   /// Show a warning if the ChordPro source has problems (#314): only to
   /// people who may edit the song.
   final bool showProblems;
+
+  /// Converts the song (#800); its magic wand becomes a button, shown
+  /// with [showProblems] when the song has possible conversions.
+  final VoidCallback? onConvert;
 
   /// The next set of the band the song is played in.
   final UpcomingGig? nextGig;
@@ -1099,11 +1132,19 @@ class SongTile extends ConsumerWidget {
           message: l10n.chordProProblemsTooltip(song.problems),
         ),
       if (showProblems && song.conversions > 0)
-        icon(
-          const ValueKey('song-status-conversions'),
-          l10n.chordProConversionsTooltip(song.conversions),
-          chordProConversionsIcon,
-        ),
+        if (onConvert case final convert?)
+          IconButton(
+            key: const ValueKey('song-status-conversions'),
+            tooltip: l10n.chordProConversionsTooltip(song.conversions),
+            icon: const Icon(chordProConversionsIcon),
+            onPressed: convert,
+          )
+        else
+          icon(
+            const ValueKey('song-status-conversions'),
+            l10n.chordProConversionsTooltip(song.conversions),
+            chordProConversionsIcon,
+          ),
       if (nextGig case final gig?)
         icon(
           const ValueKey('song-status-gig'),

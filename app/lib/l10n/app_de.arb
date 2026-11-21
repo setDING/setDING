@@ -2530,7 +2530,7 @@
   "attentionProblems": "ChordPro-Probleme",
   "attentionConflicts": "Sync-Konflikte",
   "attentionSheetMusicOnly": "Nur Noten (PDF)",
-  "chordProConversionsTooltip": "{count, plural, =1{1 Stelle im ChordPro kann umgewandelt werden} other{{count} Stellen im ChordPro können umgewandelt werden}}",
+  "chordProConversionsTooltip": "{count, plural, =1{1 Stelle im ChordPro umwandeln} other{{count} Stellen im ChordPro umwandeln}}",
   "@chordProConversionsTooltip": {
     "placeholders": {
       "count": {
@@ -2565,7 +2565,14 @@
       }
     }
   },
-  "songsFilterClear": "Filter entfernen",
+  "songConverted": "«{title}» umgewandelt",
+  "@songConverted": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "songsFilterEmpty": "Keine Songs mehr in diesem Filter.",
   "playHistory": "Gespielt",
   "playHistoryOf": "Gespielt von {band}",

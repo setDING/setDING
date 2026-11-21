@@ -4285,8 +4285,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count places in the ChordPro can be converted',
-      one: '1 place in the ChordPro can be converted',
+      other: 'Convert $count places in the ChordPro',
+      one: 'Convert 1 place in the ChordPro',
     );
     return '$_temp0';
   }
@@ -4334,7 +4334,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get songsFilterClear => 'Remove filter';
+  String songConverted(String title) {
+    return '“$title” converted';
+  }
 
   @override
   String get songsFilterEmpty => 'No songs left in this filter.';

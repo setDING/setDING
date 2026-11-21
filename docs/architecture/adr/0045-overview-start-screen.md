@@ -197,6 +197,12 @@ Further rules:
   song list marks these songs for people who may edit them and, filtered
   to them, offers **Convert all** (`applyChordProConversions`) after a
   confirmation, as the songs are shared.
+- 2026-11-21: Owner request (#800): **the *To do* filters are chips of
+  the song list** too, one per kind with songs the person may edit (or
+  the one chosen), so they can be chosen without the overview; a second
+  tap removes the filter. The overview lines still set the same filter.
+  A tap on the **magic wand** of a song converts that song at once, with
+  *Undo* in the message (undo rather than ask, ADR-0051).
 
 ## Open points
 
