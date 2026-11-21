@@ -177,6 +177,81 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('changes the display name (issue #779)', (tester) async {
+    final app = await pumpSettings(tester, user: _ann);
+    await tester.tap(find.byKey(const Key('account-change-name')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byType(TextField),
+      ),
+      '  Ann Muster ',
+    );
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(app.backend.user!.name, 'Ann Muster');
+    expect(find.text('Ann Muster'), findsOneWidget);
+    expect(find.text('Name changed.'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('changes the password (issue #779)', (tester) async {
+    final app = await pumpSettings(tester, user: _ann);
+    app.backend.accounts[_ann.email] = 'old-password';
+    await tester.tap(find.byKey(const Key('account-change-password')));
+    await tester.pumpAndSettle();
+    await enter(tester, 'change-password-current', 'old-password');
+    await enter(tester, 'change-password-new', 'new-password');
+    await enter(tester, 'change-password-confirm', 'new-password');
+    await tester.tap(find.byKey(const Key('change-password-save')));
+    await tester.pumpAndSettle();
+
+    expect(app.backend.accounts[_ann.email], 'new-password');
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.textContaining('Password changed.'), findsOneWidget);
+    // Still signed in on this device.
+    expect(find.byKey(const Key('account-sign-out')), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('a wrong current password keeps the old one', (tester) async {
+    final app = await pumpSettings(tester, user: _ann);
+    app.backend.accounts[_ann.email] = 'old-password';
+    await tester.tap(find.byKey(const Key('account-change-password')));
+    await tester.pumpAndSettle();
+    await enter(tester, 'change-password-current', 'wrong-password');
+    await enter(tester, 'change-password-new', 'new-password');
+    await enter(tester, 'change-password-confirm', 'new-password');
+    await tester.tap(find.byKey(const Key('change-password-save')));
+    await tester.pumpAndSettle();
+
+    expect(app.backend.accounts[_ann.email], 'old-password');
+    expect(find.text('The current password is wrong.'), findsOneWidget);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('a short or unconfirmed new password is not sent', (
+    tester,
+  ) async {
+    final app = await pumpSettings(tester, user: _ann);
+    app.backend.accounts[_ann.email] = 'old-password';
+    await tester.tap(find.byKey(const Key('account-change-password')));
+    await tester.pumpAndSettle();
+    await enter(tester, 'change-password-current', 'old-password');
+    await enter(tester, 'change-password-new', 'short');
+    await enter(tester, 'change-password-confirm', 'other');
+    await tester.tap(find.byKey(const Key('change-password-save')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('At least 8 characters.'), findsOneWidget);
+    expect(find.text('The passwords do not match.'), findsOneWidget);
+    expect(app.backend.accounts[_ann.email], 'old-password');
+    await app.dispose(tester);
+  });
+
   testWidgets('signs out after confirmation', (tester) async {
     final app = await pumpSettings(tester, user: _ann);
     expect(find.text('Ann'), findsOneWidget);

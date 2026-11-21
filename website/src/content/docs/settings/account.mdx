@@ -1,6 +1,6 @@
 ---
 title: Konto und Synchronisation
-description: Anmelden, Konto erstellen, synchronisieren und abmelden.
+description: Anmelden, Konto erstellen, Name und Passwort ändern, synchronisieren und abmelden.
 sidebar:
   order: 4
 ---
@@ -8,6 +8,8 @@ sidebar:
 import { Image } from 'astro:assets';
 import settings from '../../../../../docs/screenshots/settings_de.png';
 import syncHint from '../../../../../docs/screenshots/sync_hint_de.png';
+import account from '../../../../../docs/screenshots/account_de.png';
+import changePassword from '../../../../../docs/screenshots/change_password_de.png';
 
 setDING funktioniert auch ohne Konto, aber nur auf deinem Gerät. Mit einem Konto
 teilst du Songs und Sets mit deiner Band, und deine persönlichen Anpassungen und
@@ -70,6 +72,23 @@ Beispiel **Während du live gespielt hast: 1 Song gelöscht, 2 Songs geändert.*
 Ist deine Version zu alt für den Server, erscheint **Bitte setDING aktualisieren**.
 Deine Änderungen bleiben auf dem Gerät und werden nach dem Update übertragen. Wie du
 aktualisierst, steht unter [Installation](/start/install/).
+
+## Name und Passwort ändern
+
+Bist du angemeldet, findest du unter **Einstellungen** → **Konto & Synchronisation**:
+
+- **Name ändern** – so sehen dich deine Bandmitglieder. Sie sehen den neuen Namen
+  nach ihrer nächsten Synchronisation.
+- **Passwort ändern** – gib dein **Aktuelles Passwort** und zweimal das **Neue
+  Passwort** ein (mindestens 8 Zeichen). Auf diesem Gerät bleibst du angemeldet;
+  auf deinen anderen Geräten wirst du abgemeldet und meldest dich mit dem neuen
+  Passwort wieder an.
+
+Beides braucht eine Verbindung zum Server.
+
+<Image src={account} alt="Die Einstellungen «Konto & Synchronisation» mit «Name ändern» und «Passwort ändern»" />
+
+<Image src={changePassword} alt="Der Dialog «Passwort ändern» mit aktuellem und neuem Passwort" />
 
 ## Abmelden
 

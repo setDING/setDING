@@ -67,4 +67,71 @@ void main() {
     (await pb.guest.send('GET', '/api/setding/config')).expectStatus(200);
     (await pb.guest.send('GET', '/api/health')).expectStatus(200);
   });
+
+  group('own account (issue #779)', () {
+    Future<int> signIn(String email, String password) async =>
+        (await pb.guest.send(
+          'POST',
+          '/api/collections/users/auth-with-password',
+          body: {'identity': email, 'password': password},
+        )).status;
+
+    Future<String> emailOf(User user) async =>
+        (await pb.superuser.view('users', user.id)).json['email'] as String;
+
+    test('users rename themselves, not others', () async {
+      final ann = await pb.signUp('Ann');
+      final bob = await pb.signUp('Bob');
+      (await ann.patch('users', ann.id, {'name': 'Ann M.'})).expectStatus(200);
+      expect((await pb.superuser.view('users', ann.id)).json['name'], 'Ann M.');
+      expect(
+        (await ann.patch('users', bob.id, {'name': 'hacked'})).status,
+        greaterThanOrEqualTo(400),
+      );
+      expect((await pb.superuser.view('users', bob.id)).json['name'], 'Bob');
+    });
+
+    test('a password changes only with the current one', () async {
+      final ann = await pb.signUp('Ann');
+      final bob = await pb.signUp('Bob');
+      final annEmail = await emailOf(ann);
+      final bobEmail = await emailOf(bob);
+
+      // Without or with a wrong current password, and for somebody else.
+      for (final body in [
+        {'password': 'changed-pw-1', 'passwordConfirm': 'changed-pw-1'},
+        {
+          'oldPassword': 'wrong-password',
+          'password': 'changed-pw-1',
+          'passwordConfirm': 'changed-pw-1',
+        },
+      ]) {
+        final r = await ann.patch('users', ann.id, body);
+        expect(r.status, 400, reason: '${r.json}');
+      }
+      expect(
+        (await ann.patch('users', bob.id, {
+          'oldPassword': 'password-123',
+          'password': 'changed-pw-1',
+          'passwordConfirm': 'changed-pw-1',
+        })).status,
+        greaterThanOrEqualTo(400),
+      );
+      expect(await signIn(annEmail, 'password-123'), 200);
+      expect(await signIn(bobEmail, 'password-123'), 200);
+
+      (await ann.patch('users', ann.id, {
+        'oldPassword': 'password-123',
+        'password': 'changed-pw-1',
+        'passwordConfirm': 'changed-pw-1',
+      })).expectStatus(200);
+      expect(await signIn(annEmail, 'password-123'), 400);
+      expect(await signIn(annEmail, 'changed-pw-1'), 200);
+      // The old session is invalidated.
+      expect(
+        (await ann.send('POST', '/api/collections/users/auth-refresh')).status,
+        401,
+      );
+    });
+  });
 }

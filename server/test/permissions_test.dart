@@ -650,6 +650,20 @@ void main() {
       unchanged: ('org_memberships', () => adminOrgMembership, 'role'),
     );
     refused(
+      'member changes somebody else\'s password (issue #779)',
+      () => member.patch('users', orgAdmin.id, {
+        'password': 'hacked-password',
+        'passwordConfirm': 'hacked-password',
+      }),
+    );
+    refused(
+      'member changes their password without the current one (issue #779)',
+      () => member.patch('users', member.id, {
+        'password': 'changed-password',
+        'passwordConfirm': 'changed-password',
+      }),
+    );
+    refused(
       'member changes their email without confirmation',
       () => member.patch('users', member.id, {'email': 'new@setding.test'}),
       unchanged: ('users', () => member.id, 'email'),

@@ -1679,6 +1679,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountPasswordMismatch => 'The passwords do not match.';
 
   @override
+  String get accountChangeName => 'Change name';
+
+  @override
+  String get accountNameChanged => 'Name changed.';
+
+  @override
+  String get accountChangePassword => 'Change password';
+
+  @override
+  String get accountChangePasswordHint =>
+      'You stay signed in on this device. Your other devices sign out.';
+
+  @override
+  String get accountCurrentPassword => 'Current password';
+
+  @override
+  String get accountNewPassword => 'New password';
+
+  @override
+  String get accountPasswordWrongCurrent => 'The current password is wrong.';
+
+  @override
+  String get accountPasswordChanged =>
+      'Password changed. Sign in again on your other devices.';
+
+  @override
   String get accountErrorNetwork =>
       'No connection to the server. Check your internet connection.';
 

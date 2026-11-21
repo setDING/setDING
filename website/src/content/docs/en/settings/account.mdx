@@ -1,6 +1,6 @@
 ---
 title: Account and sync
-description: Sign in, create an account, sync and sign out.
+description: Sign in, create an account, change your name and password, sync and sign out.
 sidebar:
   order: 4
 ---
@@ -8,6 +8,8 @@ sidebar:
 import { Image } from 'astro:assets';
 import settings from '../../../../../../docs/screenshots/settings.png';
 import syncHint from '../../../../../../docs/screenshots/sync_hint.png';
+import account from '../../../../../../docs/screenshots/account.png';
+import changePassword from '../../../../../../docs/screenshots/change_password.png';
 
 setDING works without an account too, but only on your device. With an account you
 share songs and sets with your band, and your personal adjustments and settings are
@@ -65,6 +67,22 @@ song deleted, 2 songs changed.** **Show** opens the recent changes of the overvi
 If your version is too old for the server, **Please update setDING** appears. Your
 changes stay on the device and are sent after the update. How to update is described
 in [Installation](/en/start/install/).
+
+## Change your name and password
+
+When you are signed in, **Settings** → **Account & sync** offers:
+
+- **Change name** – how your bandmates see you. They see the new name after their
+  next sync.
+- **Change password** – enter your **Current password** and the **New password**
+  twice (at least 8 characters). You stay signed in on this device; your other
+  devices sign out, and you sign in there with the new password.
+
+Both need a connection to the server.
+
+<Image src={account} alt="The “Account & sync” settings with “Change name” and “Change password”" />
+
+<Image src={changePassword} alt="The “Change password” dialog with the current and the new password" />
 
 ## Sign out
 

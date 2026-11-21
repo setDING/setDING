@@ -109,4 +109,32 @@ void main() {
       await app.dispose(tester);
     });
   }
+
+  // Managing the own account (issue #779): the account category with
+  // name and password, and the password dialog.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('account $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+        user: const AuthUser(
+          id: 'ann',
+          email: 'ann@example.test',
+          name: 'Ann Keller',
+        ),
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: const SettingsScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await openSettingsCategory(tester, SettingsCategory.account);
+      await shot(tester, '${lang}_35_account');
+      await tester.tap(find.byKey(const Key('account-change-password')));
+      await shot(tester, '${lang}_35b_change_password');
+      await app.dispose(tester);
+    });
+  }
 }

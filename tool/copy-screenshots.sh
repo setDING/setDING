@@ -58,6 +58,8 @@ map=(
   editor_chorus_labels 33_editor_chorus_labels
   editor_save 32_editor_save
   offline_status 34_offline_status
+  account 35_account
+  change_password 35b_change_password
 )
 
 copied=0

@@ -97,6 +97,69 @@ void main() {
     b.dispose();
   });
 
+  test('changes the name and the password (issue #779)', () async {
+    final store = MemorySessionStore();
+    final b = PocketBaseBackend(serverUrl: url, store: store);
+    final address = email();
+    await b.signUp(email: address, password: 'password-123', name: 'Ann');
+    final names = <String?>[];
+    final sub = b.userChanges.listen((u) => names.add(u?.name));
+
+    final renamed = await b.changeName('  Ann Muster ');
+    expect(renamed.name, 'Ann Muster');
+    expect(b.currentUser!.name, 'Ann Muster');
+
+    expect(
+      await kindOf(
+        () => b.changePassword(
+          oldPassword: 'wrong-password',
+          newPassword: 'password-456',
+        ),
+      ),
+      BackendErrorKind.invalidCredentials,
+    );
+    expect(
+      await kindOf(
+        () =>
+            b.changePassword(oldPassword: 'password-123', newPassword: 'short'),
+      ),
+      BackendErrorKind.weakPassword,
+    );
+
+    // Another device of the same account.
+    final other = PocketBaseBackend(
+      serverUrl: url,
+      store: MemorySessionStore(),
+    );
+    await other.signIn(email: address, password: 'password-123');
+
+    await b.changePassword(
+      oldPassword: 'password-123',
+      newPassword: 'password-456',
+    );
+    // This device stays signed in with a working session.
+    expect(b.currentUser?.email, address);
+    await b.refreshSession();
+    expect(b.currentUser?.name, 'Ann Muster');
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(names, isNot(contains(null)));
+
+    // The other device is signed out on its next contact.
+    await other.refreshSession();
+    expect(other.currentUser, isNull);
+    expect(
+      await kindOf(
+        () => other.signIn(email: address, password: 'password-123'),
+      ),
+      BackendErrorKind.invalidCredentials,
+    );
+    await other.signIn(email: address, password: 'password-456');
+
+    await sub.cancel();
+    b.dispose();
+    other.dispose();
+  });
+
   test('accepts a password reset request', () async {
     final b = PocketBaseBackend(serverUrl: url, store: MemorySessionStore());
     await b.requestPasswordReset('nobody@setding.test');
