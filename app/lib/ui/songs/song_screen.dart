@@ -26,6 +26,7 @@ import '../render/song_image.dart';
 import '../render/song_view.dart';
 import '../widgets/app_shortcuts.dart';
 import '../widgets/dialogs.dart';
+import '../widgets/export_file.dart';
 import '../widgets/file_actions.dart';
 import '../widgets/key_picker.dart';
 import '../widgets/click_pickers.dart';
@@ -165,13 +166,13 @@ class _SongScreenState extends ConsumerState<SongScreen> {
 
   Future<void> _export(SongEntry song) async {
     final service = ref.read(importExportProvider);
-    final l10n = AppLocalizations.of(context);
-    final saved = await saveFile(
-      service.songFileName(song),
-      service.exportSong(song),
+    await exportFile(
+      context,
+      ref,
+      fileName: service.songFileName(song),
       mimeType: 'text/plain',
+      build: () async => service.exportSong(song),
     );
-    if (saved && mounted) showMessage(context, l10n.exported);
   }
 
   Future<void> _delete(SongEntry song) async {

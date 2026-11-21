@@ -12,6 +12,7 @@ import '../render/render_cache.dart';
 import '../render/song_display_colors.dart';
 import '../render/song_view.dart';
 import '../sets/song_picker.dart';
+import '../theme.dart';
 import '../widgets/dialogs.dart';
 
 /// Song shown in the preview: every section type once. Original text
@@ -563,6 +564,9 @@ String _chain(AppLocalizations l10n, SongDisplay display, SectionRole role) {
 class SongDisplayPreview extends ConsumerStatefulWidget {
   const SongDisplayPreview({super.key, required this.display, this.role});
 
+  /// From this width on, the preview shows the song in two columns.
+  static const twoColumnWidth = 520.0;
+
   final SongDisplay display;
   final SectionRole? role;
 
@@ -612,7 +616,7 @@ class _SongDisplayPreviewState extends ConsumerState<SongDisplayPreview> {
     Scrollable.ensureVisible(
       target,
       alignment: 0.05,
-      duration: const Duration(milliseconds: 250),
+      duration: shortAnimation,
       curve: Curves.easeOut,
     );
   }
@@ -725,7 +729,11 @@ class _SongDisplayPreviewState extends ConsumerState<SongDisplayPreview> {
                           ),
                           lyricsOnly: lyricsOnly,
                           fontSize: 16,
-                          columns: constraints.maxWidth >= 520 ? 2 : 1,
+                          columns:
+                              constraints.maxWidth >=
+                                  SongDisplayPreview.twoColumnWidth
+                              ? 2
+                              : 1,
                           display: widget.display,
                         ),
                       ),

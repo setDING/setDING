@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../audio/metronome.dart';
 import '../../data/database.dart' show SongOverlay;
+import '../theme.dart';
 import '../widgets/click_pickers.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../settings/settings.dart';
@@ -472,7 +473,7 @@ class _CountInOverlayState extends _BeatState<CountInOverlay> {
     return IgnorePointer(
       child: AnimatedOpacity(
         opacity: show ? 1 : 0,
-        duration: const Duration(milliseconds: 250),
+        duration: shortAnimation,
         child: !show
             ? const SizedBox.expand()
             : ColoredBox(

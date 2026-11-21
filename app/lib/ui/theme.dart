@@ -7,6 +7,12 @@ import 'widgets/logo.dart' show BrandColors;
 /// the red of the former RealChord logo is the accent [AccentColor.red]).
 const brandSeed = BrandColors.tileBottom;
 
+/// Duration of short movements: scrolling by a step, fading in or out.
+const shortAnimation = Duration(milliseconds: 250);
+
+/// Duration of turning to the next or previous song (page view).
+const pageAnimation = Duration(milliseconds: 300);
+
 /// Seed colours and stage chord colours of the accent colours a user can
 /// choose (issue #300, docs/development/branding.md, "Accent colours").
 extension AccentColorPalette on AccentColor {

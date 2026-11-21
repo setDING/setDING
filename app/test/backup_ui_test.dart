@@ -8,7 +8,7 @@ import 'package:setding/data/database.dart' show localBandId;
 import 'package:setding/data/import_export.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/sync/sync_backend.dart';
-import 'package:setding/ui/backup/backup_actions.dart';
+import 'package:setding/ui/widgets/export_file.dart';
 import 'package:setding/ui/songs/import_dialog.dart';
 
 import 'test_app.dart';
