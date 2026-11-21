@@ -4,6 +4,7 @@
 library;
 
 export 'src/abc.dart';
+export 'src/auto_close.dart';
 export 'src/brackets.dart';
 export 'src/ccli_grid.dart';
 export 'src/chord.dart';

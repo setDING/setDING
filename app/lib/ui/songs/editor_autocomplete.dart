@@ -125,9 +125,13 @@ class _EditorAutocompleteState extends State<EditorAutocomplete> {
     if (result == null) return;
     final (text, cursor) = result.apply(widget.controller.text, item);
     _hide();
+    // A section start gets its end directive and an empty line (#747).
+    final block = result.kind == CompletionKind.directive
+        ? closeSectionBlock(text, cursor)
+        : null;
     widget.controller.value = TextEditingValue(
-      text: text,
-      selection: TextSelection.collapsed(offset: cursor),
+      text: block?.text ?? text,
+      selection: TextSelection.collapsed(offset: block?.base ?? cursor),
     );
   }
 

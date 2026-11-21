@@ -9,6 +9,7 @@ import { Image } from 'astro:assets';
 import editor from '../../../../../docs/screenshots/editor_de.png';
 import editorLabels from '../../../../../docs/screenshots/editor_labels_de.png';
 import editorCcli from '../../../../../docs/screenshots/editor_ccli_de.png';
+import editorAutoClose from '../../../../../docs/screenshots/editor_auto_close_de.png';
 
 Songs sind in [ChordPro](https://www.chordpro.org/) geschrieben, dem offenen Format
 für Akkordblätter: Akkorde stehen in eckigen Klammern direkt im Text, Angaben wie
@@ -58,6 +59,24 @@ ChordPro-Schreibweise kennen musst:
 Formular. Beim Tippen schlägt der Editor passende Akkorde und Direktiven vor.
 Akkorde erscheinen alphabetisch sortiert, nach einem getippten `[` und nach
 **Akkord einfügen**.
+
+## Klammern und Abschnitte schliessen
+
+Der Editor schliesst, was du öffnest:
+
+- Tippst du `[` oder `{`, setzt er die schliessende Klammer gleich hinter den
+  Cursor. Tippst du sie trotzdem selbst, springt der Cursor nur darüber.
+  **Rücktaste** direkt nach einer leeren Klammer `[]` löscht beide.
+- Ist Text markiert, setzt `[` oder `{` die Klammern um die Auswahl.
+- **Enter** am Ende eines Abschnittsanfangs wie `{start_of_chorus}` fügt eine leere
+  Zeile und das passende Ende `{end_of_chorus}` ein; der Cursor steht auf der leeren
+  Zeile. Dasselbe passiert, wenn du `start_of_…` aus den Vorschlägen wählst. Ist der
+  Abschnitt schon geschlossen, bleibt es bei einem normalen Zeilenumbruch.
+
+In Kommentarzeilen (`#`), nach `\` und in Tabulatur- und Notenabschnitten (ABC,
+LilyPond) bleiben Klammern, wie du sie tippst.
+
+<Image src={editorAutoClose} alt="Der Editor mit einem Chorus-Abschnitt, dessen Ende automatisch eingefügt wurde; auf der leeren Zeile dazwischen steht ein Akkord-Klammerpaar mit dem Cursor" />
 
 ## Zeilen bearbeiten
 

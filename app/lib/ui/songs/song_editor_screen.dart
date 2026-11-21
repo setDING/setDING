@@ -11,6 +11,7 @@ import '../render/song_header.dart';
 import '../render/song_view.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/sequence_dialog.dart';
+import 'auto_close_formatter.dart';
 import 'chordpro_editing_controller.dart';
 import 'editor_autocomplete.dart';
 import 'editor_search.dart';
@@ -663,6 +664,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
                         expands: true,
                         maxLines: null,
                         keyboardType: TextInputType.multiline,
+                        inputFormatters: const [AutoCloseFormatter()],
                         textAlignVertical: TextAlignVertical.top,
                         style: editorTextStyle,
                         decoration: const InputDecoration(
