@@ -123,15 +123,22 @@ class _EditorAutocompleteState extends State<EditorAutocomplete> {
   void _accept(Completion item) {
     final result = _result;
     if (result == null) return;
-    final (text, cursor) = result.apply(widget.controller.text, item);
+    final before = widget.controller.text;
+    var (text, cursor) = result.apply(before, item);
     _hide();
-    // A section start gets its end directive and an empty line (#747).
-    final block = result.kind == CompletionKind.directive
-        ? closeSectionBlock(text, cursor)
-        : null;
+    if (result.kind == CompletionKind.directive) {
+      // A renamed section start renames its end too (#755); a new one
+      // gets its end directive and an empty line (#747).
+      if (syncSectionPartner(before, text, cursor) case final synced?) {
+        (text, cursor) = (synced.text, synced.base);
+      }
+      if (closeSectionBlock(text, cursor) case final block?) {
+        (text, cursor) = (block.text, block.base);
+      }
+    }
     widget.controller.value = TextEditingValue(
-      text: block?.text ?? text,
-      selection: TextSelection.collapsed(offset: block?.base ?? cursor),
+      text: text,
+      selection: TextSelection.collapsed(offset: cursor),
     );
   }
 

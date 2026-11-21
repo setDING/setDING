@@ -2,7 +2,8 @@ import 'package:chordpro/chordpro.dart';
 import 'package:flutter/services.dart';
 
 /// Closes brackets and section blocks while typing in the ChordPro editor
-/// (#747), see [autoClose].
+/// (#747), see [autoClose], and renames the end of a section together with
+/// its start and the other way round (#755), see [syncSectionPartner].
 ///
 /// A formatter rather than key handling, so software keyboards (Android,
 /// iOS) get it too; the closing part lands in the same undo step as the
@@ -26,13 +27,15 @@ class AutoCloseFormatter extends TextInputFormatter {
         oldValue.text == newValue.text) {
       return newValue;
     }
-    final edit = autoClose(
-      oldValue.text,
-      old.start,
-      old.end,
-      newValue.text,
-      sel.baseOffset,
-    );
+    final edit =
+        autoClose(
+          oldValue.text,
+          old.start,
+          old.end,
+          newValue.text,
+          sel.baseOffset,
+        ) ??
+        syncSectionPartner(oldValue.text, newValue.text, sel.baseOffset);
     if (edit == null) return newValue;
     return TextEditingValue(
       text: edit.text,

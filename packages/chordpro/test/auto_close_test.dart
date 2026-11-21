@@ -39,6 +39,7 @@ String? _backspace(String marked) {
 }
 
 void main() {
+  _renameTests();
   group('brackets', () {
     test('[ and { insert their closing bracket after the cursor', () {
       expect(_type('Hel|lo', '['), 'Hel[|]lo');
@@ -185,6 +186,88 @@ void main() {
         '{start_of_grid}\n|\n{end_of_grid}',
       );
       expect(closeSectionBlock(text, 3), isNull);
+    });
+  });
+}
+
+/// Edits [marked] (cursor `|`) by replacing [from] in the line of the
+/// cursor with [to], cursor after it, and syncs the partner.
+String? _rename(String marked, String from, String to) {
+  final (text, at, _) = _parse(marked);
+  final lineStart = text.lastIndexOf('\n', at - 1) + 1;
+  final i = text.indexOf(from, lineStart);
+  final after = text.replaceRange(i, i + from.length, to);
+  return _mark(syncSectionPartner(text, after, i + to.length));
+}
+
+void _renameTests() {
+  group('rename section start and end together', () {
+    test('a renamed start renames its end', () {
+      expect(
+        _rename('{start_of_verse|}\nla\n{end_of_verse}', 'verse', 'chorus'),
+        '{start_of_chorus|}\nla\n{end_of_chorus}',
+      );
+      expect(
+        _rename('{start_of_verse label="V"|}\n{end_of_verse}', 'verse', 'b'),
+        '{start_of_b| label="V"}\n{end_of_b}',
+      );
+    });
+
+    test('a renamed end renames its start, the cursor moves along', () {
+      expect(
+        _rename('{start_of_verse}\nla\n{end_of_verse|}', 'verse', 'chorus'),
+        '{start_of_chorus}\nla\n{end_of_chorus|}',
+      );
+    });
+
+    test('short forms stay short where possible', () {
+      expect(_rename('{sov|}\n{eov}', 'sov', 'soc'), '{soc|}\n{eoc}');
+      expect(
+        _rename('{start_of_verse|}\n{eov}', 'verse', 'chorus'),
+        '{start_of_chorus|}\n{eoc}',
+      );
+      expect(
+        _rename('{start_of_verse|}\n{eov}', 'verse', 'abc'),
+        '{start_of_abc|}\n{end_of_abc}',
+      );
+    });
+
+    test('typing letter by letter keeps them together', () {
+      var text = '{start_of_verse}\n{end_of_verse}';
+      var cursor = 15;
+      for (var i = 0; i < 5; i++) {
+        final after = text.replaceRange(cursor - 1, cursor, '');
+        final edit = syncSectionPartner(text, after, cursor - 1)!;
+        (text, cursor) = (edit.text, edit.base);
+      }
+      expect(text, '{start_of_}\n{end_of_}');
+      for (final c in 'bridge'.split('')) {
+        final after = text.replaceRange(cursor, cursor, c);
+        final edit = syncSectionPartner(text, after, cursor + 1)!;
+        (text, cursor) = (edit.text, edit.base);
+      }
+      expect(text, '{start_of_bridge}\n{end_of_bridge}');
+    });
+
+    test('nothing without a matching partner', () {
+      expect(_rename('{start_of_verse|}\nla', 'verse', 'chorus'), isNull);
+      expect(
+        _rename('{start_of_verse|}\n{end_of_chorus}', 'verse', 'bridge'),
+        isNull,
+      );
+      expect(
+        _rename(
+          '{start_of_verse|}\n{start_of_chorus}\n{end_of_verse}',
+          'verse',
+          'bridge',
+        ),
+        isNull,
+      );
+      expect(_rename('{title: verse|}\n{end_of_verse}', 'verse', 'x'), isNull);
+      expect(
+        _rename('{start_of_verse label="a|"}\n{end_of_verse}', 'a', 'b'),
+        isNull,
+      );
     });
   });
 }
