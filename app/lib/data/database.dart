@@ -701,6 +701,8 @@ class AppDatabase extends _$AppDatabase {
               songs.chordproConversions,
               songs.deletedAt,
               songs.purged,
+              songs.workId,
+              songs.language,
             ],
           ),
         );
