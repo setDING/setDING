@@ -553,7 +553,7 @@
       }
     }
   },
-  "lilypondNotice": "Lilypond-Noten können auf diesem Gerät nicht dargestellt werden. Quelltext:",
+  "lilypondNotice": "Diese Lilypond-Noten verwenden Funktionen, die setDING nicht darstellen kann. Quelltext:",
   "sequenceLabel": "Songablauf",
   "sectionIntro": "Intro",
   "sectionPreChorus": "Pre-chorus",

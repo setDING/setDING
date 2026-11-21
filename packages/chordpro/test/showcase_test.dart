@@ -330,6 +330,24 @@ void main() {
         abc.lines.single.elements.whereType<AbcNote>().first.lyric,
         "Here's",
       );
+      // The Lilypond lead sheet is within the subset setDING draws.
+      final ly = parseLilypond(
+        delegates.firstWhere((d) => d.type == DelegateType.ly).content,
+      )!;
+      expect(ly.title, 'Showcase Lead Sheet');
+      expect(ly.key.name, 'G');
+      expect(ly.meter, '3/4');
+      final notes = [
+        for (final line in ly.lines) ...line.elements.whereType<AbcNote>(),
+      ];
+      expect(notes.map((n) => n.lyric).take(3), ['Sing', 'a', null]);
+      expect(notes[1].chordSymbol, 'G');
+      expect(notes.any((n) => n.tuplet == 3), isTrue);
+      final bars = [
+        for (final line in ly.lines) ...line.elements.whereType<AbcBar>(),
+      ];
+      expect(bars.map((b) => b.type), containsAll(['|:', ':|', '|]']));
+      expect(bars.map((b) => b.volta).whereType<int>(), [1, 2]);
     });
   });
 

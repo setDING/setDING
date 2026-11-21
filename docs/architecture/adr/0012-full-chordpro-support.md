@@ -34,7 +34,7 @@ as listed below. The ChordPro source stays the single source of truth (ADR-0003)
 | Markup | Pango subset: `<span …>` (font, size, style, weight, colours, underline, overline, strikethrough, rise), `<b> <i> <u> <s> <sub> <sup> <big> <small> <tt>`, `<strut/>` | Full in lyrics, chords, comments and labels; `href`/bookmarks are ignored |
 | Environments | `chorus`, `verse`, `bridge`, `tab`, `grid`, any `start_of_xxx`, `{chorus}` recall | Full; unknown environments are shown as lyrics |
 | Grids | `shape`, cells, bar lines (`\|`, `\|\|`, `\|.`, `\|:`, `:\|`, `:\|:`, voltas), `.` `/` `~` `%` `%%`, margins, strums | Full, chords transposed |
-| Delegated | `abc`, `ly`, `svg`, `textblock` | SVG and textblock rendered; ABC rendered as notation by setDING's own engraver (single voice, transposable); Lilypond shown as source with a notice (needs an external program that is not available on tablets) |
+| Delegated | `abc`, `ly`, `svg`, `textblock` | SVG and textblock rendered; ABC rendered as notation by setDING's own engraver (single voice, transposable); Lilypond: a lead-sheet subset is converted to the ABC model and drawn by the same engraver (melody, chord names, lyrics, transposable); anything outside the subset is shown as source with a notice |
 | Images | `image` with `src`, `width`, `height`, `scale`, `align`, … | Images are **attachments** of the song (like PDFs, ADR-0009), found by file name |
 | Chord diagrams | `define`, `chord`, `diagrams` | Diagrams for the instrument chosen in the settings; built-in chord library plus `define`/`chord` |
 | Transposition | `transpose` (`+n`, `-n`, `s`/`f` suffix, cancel, modulation mid-song) | Full; combined with set and personal transposition (ADR-0006) |
@@ -170,6 +170,28 @@ Each phase is a separate branch and merge (ADR-0010).
   with many empty beats (e.g. converted SongSelect bar lines) stay compact. A grid wider
   than the available width is scaled down as a whole, keeping its columns aligned.
 
+- 2026-11-21: Lilypond is drawn as notation for a subset (#725). LilyPond itself needs
+  an external program (with Guile and Ghostscript) that does not run on tablets, and
+  rendering on the server would break offline use and transposition (ADR-0001,
+  ADR-0003). setDING therefore reads the common lead-sheet syntax itself
+  (`parseLilypond` in the `chordpro` package) and converts it to the ABC tune model, so
+  the ABC engraver draws it and it follows the set and personal transposition:
+  `\relative`, `\fixed` and absolute pitches; Dutch, German and English note names;
+  durations, dots and multipliers; rests, spacers and full-measure rests; chords
+  `<…>` and `q`; ties, slurs and beams; `\key`, `\time` (4/4 and 2/2 as C and cut time,
+  as LilyPond shows them), `\partial`, `\clef`, `\bar`, `\break`, `\cadenzaOn`;
+  `\repeat volta` with `\alternative`, `\repeat unfold`; `\tuplet`/`\times`;
+  variables; `\header { title }`; lyrics (`\addlyrics`, `\lyricsto`, first verse);
+  chord names from `\chordmode`/`\chords`, placed above the note or rest that starts at
+  the same time; text scripts `^"…"`. Bar lines are placed from the time signature,
+  as LilyPond does (`|` is only a bar check). Layout settings (`\override`, `\set`,
+  `\layout`, `\paper`, Scheme values), dynamics and articulations are ignored; grace
+  notes are not drawn. Several voices or staves, `\transpose`, other note-name
+  languages and unknown words make the parser give up, and the source is shown with a
+  notice as before.
+
 ## Open points
 
 - ABC: multiple voices (`V:`), slurs and decorations are not drawn yet.
+- Lilypond: only the subset above; several voices or staves, `\transpose`, grace notes,
+  dynamics and further verses of lyrics are not drawn.

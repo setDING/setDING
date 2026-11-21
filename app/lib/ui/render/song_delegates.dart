@@ -62,7 +62,8 @@ class DelegateView extends StatelessWidget {
     this.transpose = 0,
   });
 
-  /// Semitones for ABC notation (set and personal transposition).
+  /// Semitones for ABC and Lilypond notation (set and personal
+  /// transposition).
   final int transpose;
 
   final DelegateSection delegate;
@@ -75,25 +76,23 @@ class DelegateView extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = lyrics.fontSize ?? 14;
     final l10n = AppLocalizations.of(context);
-    final abc = delegate.type == DelegateType.abc
-        ? abcTuneOf(delegate, transpose)
-        : null;
-    final title = delegate.label ?? abc?.title;
+    final tune = notationTuneOf(delegate, transpose);
+    final title = delegate.label ?? tune?.title;
     final content = switch (delegate.type) {
+      DelegateType.abc || DelegateType.ly when tune != null => AbcView(
+        tune: tune,
+        fontSize: size,
+        color: lyrics.color ?? colors.onSurface,
+        accent: colors.primary,
+        textStyle: lyrics,
+      ),
       DelegateType.svg => SongImageView(
         box: svgDelegateBox(delegate),
         fontSize: size,
         svg: delegate.content,
       ),
       DelegateType.textblock => _TextBlock(delegate: delegate, style: lyrics),
-      DelegateType.abc => AbcView(
-        tune: abc!,
-        fontSize: size,
-        color: lyrics.color ?? colors.onSurface,
-        accent: colors.primary,
-        textStyle: lyrics,
-      ),
-      DelegateType.ly => _Source(
+      DelegateType.abc || DelegateType.ly => _Source(
         notice: l10n.lilypondNotice,
         source: delegate.content,
         mono: mono,

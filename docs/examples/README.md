@@ -15,7 +15,7 @@
    - **My instrument** (guitar, ukulele, keyboard, …) and **My name or voice** (e.g. `alto`, `soprano`) change which conditional comments and sections appear.
    - **Chord diagrams** shows the fingerings for the chosen instrument (the song also asks for them with `{diagrams: bottom}`).
    - **Chord notation** (B/H) and **Nashville numbers** change how chords are displayed.
-3. Add the song to a set and start live mode; choose a key in the set list to see chords, grids and the ABC melody transposed.
+3. Add the song to a set and start live mode; choose a key in the set list to see chords, grids and the ABC and Lilypond melodies transposed.
 
 ## What it covers
 
@@ -25,7 +25,7 @@ brackets, all section types and labels, chorus recall, SongSelect-style headings
 `{transpose}` (sharps, flats, `f` suffix, cancel), key changes with Nashville numbers,
 tab, grids (shape, marks, voltas, strums), font/size/colour directives, conditional
 directives (instrument, user, metadata, negation), chord definitions and diagrams,
-images, SVG, textblock, ABC, Lilypond, `{columns}`, `{column_break}`, `{new_page}`,
+images, SVG, textblock, ABC, Lilypond (a lead sheet with chord names, lyrics, repeats and voltas), `{columns}`, `{column_break}`, `{new_page}`,
 custom `x_` directives (including setDING' `{x_sequence}` and `{x_time_grouping}` for the odd meter of the second song) and `{new_song}`.
 
 The file is also a regression test: `packages/chordpro/test/showcase_test.dart` and

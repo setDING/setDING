@@ -432,8 +432,8 @@ BlockMetrics _measureDelegate(
 ) {
   const f = _referenceFontSize;
   final format = block.startFormat;
-  final abc = d.type == DelegateType.abc ? abcTuneOf(d, transpose) : null;
-  final title = d.label ?? abc?.title;
+  final tune = notationTuneOf(d, transpose);
+  final title = d.label ?? tune?.title;
   final labelStyle = styles.labelFor(format);
   var fixed = SongSpacing.blockGap;
   var minWidth = 0.0;
@@ -441,15 +441,16 @@ BlockMetrics _measureDelegate(
     fixed += _labelLines(title) * lineUnits(labelStyle);
     minWidth = _labelWidth(title, labelStyle, spanWidth);
   }
+  if (tune != null) {
+    // Lines break at bar lines exactly as when rendering.
+    return BlockMetrics(
+      fixedHeight: fixed,
+      wrapping: const [],
+      minWidth: minWidth,
+      custom: [(f, width) => abcHeight(tune, f, width)],
+    );
+  }
   switch (d.type) {
-    case DelegateType.abc:
-      // Lines break at bar lines exactly as when rendering.
-      return BlockMetrics(
-        fixedHeight: fixed,
-        wrapping: const [],
-        minWidth: minWidth,
-        custom: [(f, width) => abcHeight(abc!, f, width)],
-      );
     case DelegateType.svg:
       return BlockMetrics(
         fixedHeight: fixed,
@@ -475,7 +476,7 @@ BlockMetrics _measureDelegate(
         ],
         minWidth: minWidth,
       );
-    case DelegateType.ly:
+    case DelegateType.abc || DelegateType.ly:
       final mono = styles.tabFor(format);
       // Same style as the notice in song_delegates.dart.
       final notice = styles
@@ -493,7 +494,8 @@ BlockMetrics _measureDelegate(
         wrapping: [
           (
             width: width(
-              'Lilypond notation cannot be rendered on this device. Source:',
+              'This Lilypond notation uses features setDING cannot draw. '
+              'Source:',
               notice,
             ),
             lineHeight: lineUnits(notice),

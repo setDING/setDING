@@ -17,6 +17,7 @@ export 'src/directive.dart' show SelectorContext;
 export 'src/format.dart';
 export 'src/formatter.dart';
 export 'src/grid.dart';
+export 'src/lilypond.dart';
 export 'src/highlight.dart';
 export 'src/links.dart';
 export 'src/markup.dart';

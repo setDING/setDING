@@ -393,7 +393,7 @@
       }
     }
   },
-  "lilypondNotice": "Lilypond notation cannot be rendered on this device. Source:",
+  "lilypondNotice": "This Lilypond notation uses features setDING cannot draw. Source:",
   "sequenceLabel": "Song sequence",
   "sectionIntro": "Intro",
   "sectionPreChorus": "Pre-chorus",

@@ -1,0 +1,134 @@
+---
+title: Noten (ABC und Lilypond)
+description: Schreib eine Melodie mit Akkordnamen und Liedtext in ABC oder Lilypond in einen Song; setDING zeichnet sie als Noten und transponiert sie.
+sidebar:
+  order: 4
+---
+
+import { Image } from 'astro:assets';
+import lilypond from '../../../../../docs/screenshots/lilypond_de.png';
+
+Ein Song kann eine Melodie als Noten enthalten, zum Beispiel das Riff im Intro oder
+die Melodie des Refrains. Du schreibst sie in [ABC](https://abcnotation.com/) oder in
+[Lilypond](https://lilypond.org/) zwischen zwei Direktiven. setDING zeichnet sie als
+Noten, auch offline, und **transponiert sie** zusammen mit den Akkorden, wenn das Set
+oder du die Tonart änderst.
+
+```
+{start_of_abc label="Intro"}
+…
+{end_of_abc}
+
+{start_of_ly label="Melodie"}
+…
+{end_of_ly}
+```
+
+Das `label` steht über den Noten. Ohne Label erscheint der Titel der Melodie (ABC
+`T:`, Lilypond `\header { title = "…" }`).
+
+<Image src={lilypond} alt="Ein Song mit einer Lilypond-Melodie: Noten in G-Dur und 3/4 mit Auftakt, Akkordnamen darüber, Liedtext darunter, eine Wiederholung mit erstem und zweitem Schluss" />
+
+## ABC
+
+setDING liest eine ABC-Stimme: Kopfzeilen (`T:`, `M:`, `L:`, `K:`), Noten mit
+Vorzeichen, Notenwerte, punktierte Rhythmen, Triolen, Haltebögen, Akkorde, Pausen,
+Taktstriche, Wiederholungen und Volten, Akkordsymbole (`"G"`), Anmerkungen, Tonart-
+und Taktwechsel sowie Liedtext (`w:`). Mehrere Stimmen, Bindebögen und Verzierungen
+werden nicht gezeichnet.
+
+```
+{start_of_abc}
+X:1
+T:Intro-Riff
+M:4/4
+L:1/8
+K:G
+|:"G"GABG DGBG|"D"A2 AB c2 Bc:|
+w:eins zwei drei vier
+{end_of_abc}
+```
+
+## Lilypond
+
+Lilypond ist eine ganze Programmiersprache für den Notensatz. setDING zeichnet den
+Teil, den Leadsheets brauchen: **eine Melodie** mit Akkordnamen und Liedtext. Braucht
+ein Lilypond-Block mehr (mehrere Stimmen oder Systeme, `\transpose`), zeigt setDING
+stattdessen den Quelltext mit einem Hinweis.
+
+```
+{start_of_ly label="Refrain"}
+\relative c' {
+  \key g \major \time 3/4 \partial 4
+  d4 | \repeat volta 2 { g4( a) b | c2 e,8[ fis] }
+  \alternative { { g2 d4 } { g2. } }
+}
+\addlyrics { Mor -- gen -- licht auf dem Hü -- gel }
+{end_of_ly}
+```
+
+### Noten
+
+| Schreibweise | Bedeutung |
+|---|---|
+| `c d e f g a b` | Notennamen (niederländisch, die Vorgabe von Lilypond; `b` ist das deutsche H) |
+| `cis`, `fis` / `bes`, `es`, `as` | Kreuz / B; `isis` und `eses` für doppelte |
+| `c'` `c,` | Eine Oktave höher / tiefer; im absoluten Modus ist `c'` das eingestrichene C |
+| `\relative c' { … }` | Jede Note liegt in der Oktave, die der vorherigen am nächsten ist (empfohlen) |
+| `\fixed c' { … }` | Jede Note in der Oktave von `c'`, wenn nicht anders markiert |
+| `4` `8` `2.` `16` | Notenwert: Viertel, Achtel, punktierte Halbe, Sechzehntel; der Wert gilt auch für die folgenden Noten |
+| `r4` / `s4` / `R1*4` | Pause / unsichtbare Pause / vier Takte Pause |
+| `<c e g>4` / `q` | Akkord aus Noten / letzten Akkord wiederholen |
+| `~` | Haltebogen |
+| `( )` / `[ ]` | Bindebogen / Balken; Noten unter einem Bindebogen teilen sich eine Silbe |
+| `^"Coda"` | Text über der Note |
+| `\language "deutsch"` | Deutsche Notennamen (`h` = H, `b` = B) |
+| `\language "english"` | Englische Notennamen (`cs`, `bf`, `fsharp`) |
+
+### Takte und Aufbau
+
+| Schreibweise | Bedeutung |
+|---|---|
+| `\key g \major`, `\key e \minor` | Tonart; auch `\dorian`, `\mixolydian` und die anderen Modi |
+| `\time 3/4` | Taktart; setDING setzt die Taktstriche danach, wie Lilypond. `\|` in den Noten ist nur eine Kontrolle |
+| `\partial 4` | Auftakt von einer Viertel |
+| `\clef bass` | Bassschlüssel |
+| `\bar "\|."`, `\bar "\|\|"` | Schluss- und Doppelstrich |
+| `\break` | Hier eine neue Zeile beginnen |
+| `\repeat volta 2 { … }` | Wiederholungszeichen |
+| `\alternative { { … } { … } }` | Erster und zweiter Schluss |
+| `\repeat unfold 2 { … }` | Noten zweimal ausschreiben |
+| `\tuplet 3/2 { c8 d e }` | Triole (auch `\times 2/3 { … }`) |
+
+### Akkordnamen und Liedtext
+
+Setze Melodie, Akkordnamen und Liedtext in `<< … >>`, damit sie gleichzeitig laufen.
+Ein Akkordname steht über der Note oder Pause, die im selben Moment beginnt; `s`
+überspringt Zeit ohne Akkord.
+
+```
+{start_of_ly}
+\header { title = "Morgenlicht" }
+melody = \relative c' { \time 4/4 c4 c g' g | a a g2 }
+harmonies = \chordmode { c2 c:7 | f2 c }
+<<
+  \new ChordNames \harmonies
+  \new Voice = "lead" \melody
+  \new Lyrics \lyricsto "lead" { Mor -- gen -- licht, so hell und klar }
+>>
+{end_of_ly}
+```
+
+- **Akkordnamen** in `\chordmode { … }` oder `\chords { … }`: `c1`, `a2:m`, `g4:7`,
+  `f:maj7`, `d:sus4`, `b:m7.5-` (Hm7b5), `c/e` (mit Basston).
+- **Liedtext** mit `\addlyrics { … }` direkt nach der Melodie oder mit `\lyricsto`:
+  Silben werden mit `--` getrennt, `_` überspringt eine Note. setDING zeigt die erste
+  Strophe.
+- **Variablen** wie `melody = …` und `\melody` funktionieren wie in Lilypond.
+
+### Was setDING übergeht
+
+Layout-Einstellungen (`\override`, `\set`, `\layout`, `\paper`, `\midi`), `\version`,
+`\tempo`, `\mark`, Dynamik (`\f`, `\p`) und Artikulation (`-.`, `->`, `\fermata`)
+werden akzeptiert, aber nicht gezeichnet; Vorschlagsnoten fallen weg. Dateien aus
+Lilypond lassen sich deshalb meist unverändert einfügen.
