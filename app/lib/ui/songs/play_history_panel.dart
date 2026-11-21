@@ -162,7 +162,7 @@ class _OtherBands extends ConsumerWidget {
           const SizedBox(height: 4),
           for (final p in others)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
+              padding: const EdgeInsets.symmetric(vertical: 4),
               child: Row(
                 children: [
                   Expanded(
@@ -258,7 +258,7 @@ class _PlayTile extends StatelessWidget {
     final sequence = values.sequence;
     return Padding(
       key: ValueKey('play-${play.setId}'),
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -47,7 +47,11 @@ the others are checked in review.
 ## 3. Layout and spacing
 
 - **Spacing** in steps of 4: 4, 8, 12, 16, 24, 32. The horizontal inset of content in
-  a list is **16**, aligned with the text of a `ListTile`.
+  a list is **16**, aligned with the text of a `ListTile`; the gap between an icon and
+  its text is **8**. The only smaller value is **2**, the inner padding of small badges
+  and key caps. This covers literal paddings, gaps (`SizedBox` with one dimension) and
+  `spacing`; the song renderer and the set list PDF scale with their font size and
+  paper and are exempt.
 - **Lists of tiles** (`ListView` of `ListTile`s) are the default for management
   screens. A `Card` is for a self-contained item among others (a set, a to-do on the
   overview), not for wrapping a whole page.
@@ -79,7 +83,9 @@ the others are checked in review.
   `FloatingActionButton` with icon and label.
 - **App bar actions:** icon buttons for the two or three most frequent actions, the
   rest in the overflow menu (`PopupMenuButton`). Every `IconButton` has a
-  **tooltip** (it is also its accessible name).
+  **tooltip** (it is also its accessible name). A deliberate exception (the stage's
+  MIDI button, whose long press a tooltip would take) has a `Semantics` label and a
+  `// No tooltip:` comment just above it that says why.
 - **Primary action of a dialog or form:** `FilledButton`; *Cancel* and secondary
   actions: `TextButton`, before the primary action.
 - **Danger zone** (deleting a band, closing an organization): an `OutlinedButton`

@@ -745,8 +745,8 @@ class _MidiProgramPickerState extends State<MidiProgramPicker> {
     required String Function(int) label,
     required ValueChanged<int> onSelected,
   }) => Wrap(
-    spacing: 6,
-    runSpacing: 6,
+    spacing: 8,
+    runSpacing: 8,
     children: [
       for (var i = 0; i < count; i++)
         ChoiceChip(
@@ -773,18 +773,18 @@ class _MidiProgramPickerState extends State<MidiProgramPicker> {
     // 5 pages (rows) × 5 buttons, labelled as on the display, e.g. "33".
     LayoutBuilder(
       builder: (context, constraints) {
-        final size = math.min(56.0, (constraints.maxWidth - 4 * 6) / 5);
+        final size = math.min(56.0, (constraints.maxWidth - 4 * 8) / 5);
         return Column(
           children: [
             for (var page = 1; page <= NordStage3.pages; page++)
               Padding(
-                padding: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     for (var button = 1; button <= NordStage3.buttons; button++)
                       Padding(
-                        padding: EdgeInsets.only(left: button == 1 ? 0 : 6),
+                        padding: EdgeInsets.only(left: button == 1 ? 0 : 8),
                         child: SizedBox.square(
                           dimension: size,
                           child: _gridButton(theme, page, button),

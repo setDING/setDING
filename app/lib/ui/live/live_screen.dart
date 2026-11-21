@@ -1052,7 +1052,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                 color: theme.colorScheme.surfaceContainer,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
-                  vertical: 6,
+                  vertical: 4,
                 ),
                 child: Row(
                   children: [
@@ -1077,7 +1077,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                         size: 18,
                         color: theme.colorScheme.error,
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 8),
                       Flexible(
                         child: Text(
                           l10n.liveWebNotice,
@@ -1119,7 +1119,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                         size: 18,
                         color: theme.colorScheme.error,
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 8),
                       Flexible(
                         child: Text(
                           l10n.liveWakeLockNotice,
@@ -1240,7 +1240,7 @@ class _MidiProgramLabel extends ConsumerWidget {
     )[profile.id];
     if (program == null) return const SizedBox.shrink();
     return Padding(
-      padding: const EdgeInsets.only(left: 6),
+      padding: const EdgeInsets.only(left: 8),
       child: Text(
         midiPatchShortLabel(
           AppLocalizations.of(context),

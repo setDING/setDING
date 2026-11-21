@@ -283,8 +283,8 @@ class _SequenceDialogState extends State<_SequenceDialog> {
                           child: Text(l10n.sequenceEmpty, style: muted),
                         )
                       : Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
+                          spacing: 8,
+                          runSpacing: 8,
                           crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             for (var i = 0; i < items.length; i++) entry(i),
@@ -306,8 +306,8 @@ class _SequenceDialogState extends State<_SequenceDialog> {
               ),
               const SizedBox(height: 8),
               Wrap(
-                spacing: 6,
-                runSpacing: 6,
+                spacing: 8,
+                runSpacing: 8,
                 children: [for (final item in parts) part(item)],
               ),
               const SizedBox(height: 8),

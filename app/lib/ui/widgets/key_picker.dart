@@ -163,7 +163,7 @@ class KeyPicker extends StatelessWidget {
     );
     if (dense) return picker;
     return Container(
-      padding: const EdgeInsets.only(left: 10, right: 6, top: 6, bottom: 6),
+      padding: const EdgeInsetsDirectional.fromSTEB(12, 4, 4, 4),
       decoration: BoxDecoration(
         border: Border.all(color: theme.colorScheme.outlineVariant),
         borderRadius: BorderRadius.circular(8),
@@ -176,7 +176,7 @@ class KeyPicker extends StatelessWidget {
             size: 18,
             color: theme.colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
           picker,
         ],
       ),

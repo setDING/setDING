@@ -634,7 +634,7 @@ class _Filters extends ConsumerWidget {
                         ref.read(songSortProvider.notifier).select(value),
                     leadingIcon: value == sort
                         ? const Icon(Icons.check, size: 18)
-                        : const SizedBox(width: 18),
+                        : const SizedBox.square(dimension: 18),
                     child: Text(label),
                   ),
               ],
@@ -820,7 +820,7 @@ class BandArrangementHint extends StatelessWidget {
     final label = l10n.arrangementOf(bandName);
     return Wrap(
       key: const ValueKey('band-arrangement-hint'),
-      spacing: 6,
+      spacing: 8,
       runSpacing: 4,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
@@ -963,7 +963,7 @@ class SongTile extends ConsumerWidget {
                           size: 16,
                           semanticLabel: l10n.foundInLyrics,
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: Text.rich(
                             TextSpan(
@@ -1003,7 +1003,7 @@ class SongTile extends ConsumerWidget {
                           size: 16,
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 8),
                         Expanded(child: Text(note)),
                       ],
                     ),
@@ -1089,7 +1089,7 @@ class SongKeyBadge extends StatelessWidget {
         key: const ValueKey('song-key-badge'),
         constraints: const BoxConstraints(minWidth: width, minHeight: 36),
         alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
           border: Border.all(color: scheme.primary, width: 1.5),
           borderRadius: BorderRadius.circular(8),

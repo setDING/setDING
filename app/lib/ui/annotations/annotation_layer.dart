@@ -1087,12 +1087,12 @@ class _Hints extends StatelessWidget {
           color: background,
           borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(icon, size: 16, color: foreground),
-                const SizedBox(width: 6),
+                const SizedBox(width: 8),
                 Flexible(
                   child: Text(
                     text,
