@@ -104,7 +104,7 @@ void main() {
         await tester.pumpAndSettle();
       }
       expect(find.text('Train to Nowhere'), findsNothing);
-      await shot(tester, '${lang}_41_songs_tags');
+      await shot(tester, '${lang}_42_songs_tags');
 
       // The band's plays (ADR-0046), the last filter: also a menu.
       await tester.tapAt(Offset.zero);
@@ -112,7 +112,7 @@ void main() {
       await tester.tap(find.byKey(const Key('songs-played')));
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('songs-played-stale')), findsOneWidget);
-      await shot(tester, '${lang}_41b_songs_played');
+      await shot(tester, '${lang}_42b_songs_played');
       await app.dispose(tester);
     });
   }
