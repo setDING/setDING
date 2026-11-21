@@ -65,30 +65,34 @@ List<VersionNotes> parseWhatsNew(String json) {
   return versions..sort((a, b) => compareVersions(b.version, a.version));
 }
 
-/// The notes to offer after an update to [current], newest first: of the
-/// versions after [lastSeen] up to [current]; without [lastSeen] only those
-/// of [current]. Versions without notes are left out.
-List<VersionNotes> notesSince(
+/// The notes to offer after an update to [current]: of the newest version
+/// after [lastSeen] up to [current] that has notes; without [lastSeen] only
+/// those of [current]. Only one version, so the dialog stays short; older
+/// notes are on the website and in the GitHub Releases.
+VersionNotes? notesSince(
   List<VersionNotes> all, {
   required String? lastSeen,
   required String current,
-}) => [
-  for (final v in all)
-    if (compareVersions(v.version, current) <= 0 &&
-        (lastSeen == null
-            ? compareVersions(v.version, current) == 0
-            : compareVersions(v.version, lastSeen) > 0) &&
-        !v.isEmpty)
-      v,
-];
+}) => all
+    .where(
+      (v) =>
+          compareVersions(v.version, current) <= 0 &&
+          (lastSeen == null
+              ? compareVersions(v.version, current) == 0
+              : compareVersions(v.version, lastSeen) > 0) &&
+          !v.isEmpty,
+    )
+    .firstOrNull;
 
-/// The notes of all versions up to [current] (all if unknown), newest first.
-List<VersionNotes> notesUpTo(List<VersionNotes> all, String? current) => [
-  for (final v in all)
-    if ((current == null || compareVersions(v.version, current) <= 0) &&
-        !v.isEmpty)
-      v,
-];
+/// The notes of the newest version up to [current] (any if unknown) that has
+/// notes: the running one, or the one before a patch without notes.
+VersionNotes? latestNotes(List<VersionNotes> all, String? current) => all
+    .where(
+      (v) =>
+          (current == null || compareVersions(v.version, current) <= 0) &&
+          !v.isEmpty,
+    )
+    .firstOrNull;
 
 /// On a new installation the running [version] counts as seen, so its notes
 /// are not offered (ADR-0041). Call before anything else is stored: a device
@@ -102,17 +106,18 @@ final whatsNewProvider = FutureProvider<List<VersionNotes>>(
   (ref) async => parseWhatsNew(await rootBundle.loadString(whatsNewAsset)),
 );
 
-/// The notes to offer once after an update, or null while they load or if
-/// the running version is unknown. Read when the app starts; [markWhatsNewSeen]
-/// does not change it.
-final pendingWhatsNewProvider = Provider<List<VersionNotes>?>((ref) {
+/// Whether notes are pending after an update, and which: `(notes: null)`
+/// when there are none to show; null while they load or if the running
+/// version is unknown. Read when the app starts; [markWhatsNewSeen] does not
+/// change it.
+final pendingWhatsNewProvider = Provider<({VersionNotes? notes})?>((ref) {
   final current = ref.watch(clientVersionProvider);
   final all = ref.watch(whatsNewProvider).value;
   if (current == null || all == null) return null;
   final lastSeen = ref
       .read(sharedPreferencesProvider)
       .getString(whatsNewSeenKey);
-  return notesSince(all, lastSeen: lastSeen, current: current);
+  return (notes: notesSince(all, lastSeen: lastSeen, current: current));
 });
 
 /// The notes up to the running version were offered.

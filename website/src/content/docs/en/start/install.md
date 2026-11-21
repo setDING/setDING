@@ -57,7 +57,7 @@ with a link to its download page (with **Install** on Windows if you installed
 setDING with the setup, and for the Linux AppImage). The hint never appears in live mode.
 
 After an update, setDING briefly shows **New in setDING …** once; **Show**
-lists what changed since the version you used before. You can read it again any
+lists what is new in this version; older versions are on the [news](/en/news/) page. You can read it again any
 time with **What's new** next to the version under **Settings → Storage & info**.
 
 ## iOS

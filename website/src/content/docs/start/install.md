@@ -62,7 +62,7 @@ Linux-AppImage). Im
 Live-Modus erscheint der Hinweis nie.
 
 Nach einem Update zeigt setDING einmal kurz **Neu in setDING …**; **Anzeigen**
-listet auf, was sich seit der zuvor genutzten Version geändert hat. Du kannst es
+listet auf, was in dieser Version neu ist; ältere Versionen findest du unter [Neuigkeiten](/news/). Du kannst es
 jederzeit mit **Was ist neu** neben der Version unter **Einstellungen → Speicher & Info**
 nachlesen.
 

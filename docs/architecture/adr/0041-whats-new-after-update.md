@@ -53,24 +53,26 @@ before a gig (ADR-0007, ADR-0036).
 - On a **new installation** nothing is shown; the running version counts as
   seen. A device that already used setDING before this feature counts as
   updated and gets the notes of the running version.
-- After an update the app collects the notes of **all versions after the last
-  seen one up to the running one** (SemVer precedence, ADR-0028), so a skipped
-  version is not lost. Versions with an empty list are skipped; if nothing is
-  left, the app stays silent and marks the version as seen.
+- After an update the app shows the notes of **one version**: the newest one
+  after the last seen one up to the running one (SemVer precedence, ADR-0028)
+  that has notes, usually the running one. Versions with an empty list are
+  skipped, so a patch without notes shows those of a skipped version before
+  it; if nothing is left, the app stays silent and marks the version as seen.
+  Older notes are on the website's news page and in the GitHub Releases.
 - On every platform, including the web client (a new deploy is an update
   there too) and debug builds.
 
 ### How they are shown
 
 - **Once**, a short SnackBar *"New in setDING x.y.z"* with *Show*, which opens a
-  dialog with the notes, newest version first, and a link to all changes (the
+  dialog with the notes of that version and a link to all changes (the
   GitHub Release, ADR-0036). The SnackBar goes away by itself
   (`persist: false`), like the update hint.
 - Only while the main navigation is on top, so never in live mode or while
   editing; otherwise at a later start.
 - **Any time** with the *What's new* button next to the version under
-  *Settings → Storage & info*, with the notes of
-  all versions up to the running one.
+  *Settings → Storage & info*, with the notes of the running version (or, for
+  a patch without notes, of the newest version before it with notes).
 - The notes are shown in the app language; a language without notes falls back
   to English.
 

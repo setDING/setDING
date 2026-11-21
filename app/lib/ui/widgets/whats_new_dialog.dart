@@ -5,9 +5,9 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../sync/update_check.dart' show releasePageUrl;
 import '../../update/whats_new.dart';
 
-/// The "What's new" notes of [versions], newest first (ADR-0041), in the
-/// app language.
-Future<void> showWhatsNew(BuildContext context, List<VersionNotes> versions) {
+/// The "What's new" notes of one version (ADR-0041), in the app language,
+/// with a link to all changes.
+Future<void> showWhatsNew(BuildContext context, VersionNotes version) {
   final l10n = AppLocalizations.of(context);
   final language = Localizations.localeOf(context).languageCode;
   final theme = Theme.of(context);
@@ -23,39 +23,36 @@ Future<void> showWhatsNew(BuildContext context, List<VersionNotes> versions) {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              for (final (i, v) in versions.indexed) ...[
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  l10n.whatsNewVersion(version.version),
+                  style: theme.textTheme.titleSmall,
+                ),
+              ),
+              for (final note in version.inLanguage(language))
                 Padding(
-                  padding: EdgeInsets.only(top: i == 0 ? 0 : 16, bottom: 4),
-                  child: Text(
-                    l10n.whatsNewVersion(v.version),
-                    style: theme.textTheme.titleSmall,
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('•  '),
+                      Expanded(child: Text(note)),
+                    ],
                   ),
                 ),
-                for (final note in v.inLanguage(language))
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 2),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('•  '),
-                        Expanded(child: Text(note)),
-                      ],
-                    ),
-                  ),
-              ],
             ],
           ),
         ),
       ),
       actions: [
-        if (versions.isNotEmpty)
-          TextButton(
-            onPressed: () => launchUrl(
-              releasePageUrl(versions.first.version),
-              mode: LaunchMode.externalApplication,
-            ),
-            child: Text(l10n.whatsNewAllChanges),
+        TextButton(
+          onPressed: () => launchUrl(
+            releasePageUrl(version.version),
+            mode: LaunchMode.externalApplication,
           ),
+          child: Text(l10n.whatsNewAllChanges),
+        ),
         FilledButton(
           key: const Key('whats-new-close'),
           onPressed: () => Navigator.pop(context),

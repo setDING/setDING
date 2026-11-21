@@ -67,7 +67,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         WidgetsBinding.instance.addPostFrameCallback((_) => _remind(days));
       }
     }, fireImmediately: true);
-    // After an update, the notes of the new versions (ADR-0041), once.
+    // After an update, the notes of the new version (ADR-0041), once.
     ref.listenManual(pendingWhatsNewProvider, (_, pending) {
       if (pending == null) return;
       WidgetsBinding.instance.addPostFrameCallback(
@@ -78,13 +78,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   /// Offers the notes of [pending] once, like the update hint: only while
   /// the main navigation is on top, otherwise at a later start.
-  void _offerWhatsNew(List<VersionNotes> pending) {
+  void _offerWhatsNew(({VersionNotes? notes}) pending) {
     if (!mounted || !(ModalRoute.of(context)?.isCurrent ?? true)) return;
     final current = ref.read(clientVersionProvider);
     final seen = ref.read(sharedPreferencesProvider).getString(whatsNewSeenKey);
     if (current == null || seen == current) return;
     markWhatsNewSeen(ref);
-    if (pending.isEmpty) return;
+    final notes = pending.notes;
+    if (notes == null) return;
     final l10n = AppLocalizations.of(context);
     // Queued behind another hint, e.g. the update hint, not replacing it.
     showMessageOn(
@@ -96,7 +97,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       action: (
         key: const Key('whats-new-show'),
         label: l10n.whatsNewShow,
-        onPressed: () => showWhatsNew(context, pending),
+        onPressed: () => showWhatsNew(context, notes),
       ),
     );
   }

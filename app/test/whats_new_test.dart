@@ -39,39 +39,35 @@ void main() {
       expect(() => parseWhatsNew('{"1.0.0": []}'), throwsFormatException);
     });
 
-    test('since the last seen version, without empty ones', () {
-      expect(versions(notesSince(all, lastSeen: '0.13.0', current: '0.15.0')), [
+    test('the newest since the last seen version, without empty ones', () {
+      expect(
+        notesSince(all, lastSeen: '0.13.0', current: '0.15.0')?.version,
         '0.15.0',
+      );
+      // A skipped version with notes before a patch without.
+      expect(
+        notesSince(all, lastSeen: '0.13.0', current: '0.14.1')?.version,
         '0.14.0',
-      ]);
-      expect(
-        versions(notesSince(all, lastSeen: '0.14.0', current: '0.14.1')),
-        isEmpty,
       );
-      expect(
-        versions(notesSince(all, lastSeen: '0.15.0', current: '0.15.0')),
-        isEmpty,
-      );
+      expect(notesSince(all, lastSeen: '0.14.0', current: '0.14.1'), isNull);
+      expect(notesSince(all, lastSeen: '0.15.0', current: '0.15.0'), isNull);
       // Downgrade.
-      expect(
-        versions(notesSince(all, lastSeen: '0.15.0', current: '0.14.0')),
-        isEmpty,
-      );
+      expect(notesSince(all, lastSeen: '0.15.0', current: '0.14.0'), isNull);
     });
 
     test('without a last seen version only the running one', () {
-      expect(versions(notesSince(all, lastSeen: null, current: '0.14.0')), [
-        '0.14.0',
-      ]);
       expect(
-        versions(notesSince(all, lastSeen: null, current: '0.14.1')),
-        isEmpty,
+        notesSince(all, lastSeen: null, current: '0.14.0')?.version,
+        '0.14.0',
       );
+      expect(notesSince(all, lastSeen: null, current: '0.14.1'), isNull);
     });
 
-    test('up to the running version for the settings', () {
-      expect(versions(notesUpTo(all, '0.14.1')), ['0.14.0', '0.13.0']);
-      expect(versions(notesUpTo(all, null)), ['0.15.0', '0.14.0', '0.13.0']);
+    test('the newest up to the running version for the settings', () {
+      expect(latestNotes(all, '0.15.0')?.version, '0.15.0');
+      expect(latestNotes(all, '0.14.1')?.version, '0.14.0');
+      expect(latestNotes(all, null)?.version, '0.15.0');
+      expect(latestNotes(all, '0.12.0'), isNull);
     });
 
     test('in the app language, otherwise in English', () {
@@ -165,9 +161,8 @@ void main() {
       expect(dialog, findsOneWidget);
       expect(find.text('Version 0.15.0'), findsOneWidget);
       expect(find.text('New.'), findsOneWidget);
-      expect(find.text('Version 0.14.0'), findsOneWidget);
-      expect(find.text('Middle.'), findsOneWidget);
-      // Seen before the update.
+      // Only the running version, not the skipped or older ones (#773).
+      expect(find.text('Middle.'), findsNothing);
       expect(find.text('Old.'), findsNothing);
       await tester.tap(find.byKey(const Key('whats-new-close')));
       await tester.pumpAndSettle();
@@ -224,8 +219,11 @@ void main() {
       await tester.tap(find.byKey(const Key('whats-new')));
       await tester.pumpAndSettle();
       expect(dialog, findsOneWidget);
+      // The patch has no notes: those of the version before it.
+      expect(find.text('Version 0.14.0'), findsOneWidget);
       expect(find.text('Middle.'), findsOneWidget);
-      expect(find.text('Old.'), findsOneWidget);
+      // Only one version (#773).
+      expect(find.text('Old.'), findsNothing);
       // Not yet installed.
       expect(find.text('New.'), findsNothing);
       await app.dispose(tester);
