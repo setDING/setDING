@@ -10,6 +10,14 @@
         android:name="android.software.midi"
         android:required="false"
         tools:replace="android:required"/>
+    <!-- open_filex (ADR-0048) asks for media and storage permissions to open
+         files anywhere; setDING only opens copies in its own cache, which
+         need none. Removed so the app does not ask for access to the user's
+         photos, videos and music. -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" tools:node="remove"/>
     <application
         android:label="${appLabel}"
         android:name="${applicationName}"

@@ -239,6 +239,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get exported => 'Exportiert';
 
   @override
+  String get exportedOpen => 'Öffnen';
+
+  @override
+  String get openFileFailed => 'Keine App konnte die Datei öffnen.';
+
+  @override
   String get playLive => 'Live spielen';
 
   @override

@@ -130,6 +130,29 @@ void showMessage(BuildContext context, String message) {
     ..showSnackBar(SnackBar(content: Text(message)));
 }
 
+/// How long a message with an action (e.g. "Open") stays.
+const messageActionDuration = Duration(seconds: 8);
+
+/// Shows a message with one action, e.g. "Open" after an export (#721).
+/// It disappears on its own after [messageActionDuration].
+void showMessageWithAction(
+  BuildContext context,
+  String message, {
+  required String actionLabel,
+  required VoidCallback onAction,
+}) {
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: messageActionDuration,
+        persist: false,
+        action: SnackBarAction(label: actionLabel, onPressed: onAction),
+      ),
+    );
+}
+
 /// Builds [data] once the [value] is available, with loading and error states.
 class AsyncBody<T> extends StatelessWidget {
   const AsyncBody({super.key, required this.value, required this.data});

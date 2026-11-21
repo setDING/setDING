@@ -63,6 +63,11 @@
   "liveViewChordPro": "ChordPro text",
   "exportSong": "Export",
   "exported": "Exported",
+  "exportedOpen": "Open",
+  "@exportedOpen": {
+    "description": "Action in the message after a PDF export: opens the PDF in the default app."
+  },
+  "openFileFailed": "No app could open the file.",
   "playLive": "Play live",
   "live": "Live",
   "nashville": "Nashville numbers",

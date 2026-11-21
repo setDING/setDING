@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import menu from '../../../../../docs/screenshots/set_menu_de.png';
+import pdfExported from '../../../../../docs/screenshots/set_pdf_exported_de.png';
 import exportDialog from '../../../../../docs/screenshots/set_export_de.png';
 import importDialog from '../../../../../docs/screenshots/set_import_de.png';
 import importResult from '../../../../../docs/screenshots/set_import_result_de.png';
@@ -33,6 +34,13 @@ Texte sind Trennzeilen. Speichere die Datei und drucke oder teile sie mit dem
 PDF-Betrachter deines Geräts – zum Beispiel für das Mischpult oder die Bühnenkante.
 
 <Image src={menu} alt="Das Menü ⋮ eines Sets mit den Exporten als PDF und ZIP" />
+
+Sobald die Datei gespeichert ist, bietet die Meldung unten einige Sekunden lang
+**Öffnen** an: Damit öffnet sich das PDF sofort in der Standard-App deines Geräts für
+PDFs, bereit zum Drucken oder Teilen. Kann keine App auf dem Gerät PDFs öffnen, sagt
+setDING das.
+
+<Image src={pdfExported} alt="Die Meldung «Exportiert» mit der Aktion Öffnen nach dem PDF-Export" />
 
 ## Set exportieren
 
