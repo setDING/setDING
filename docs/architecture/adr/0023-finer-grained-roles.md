@@ -107,6 +107,7 @@ for creating an account, like every invitation.
 | Create and import new songs | ✓ | ✓ | ✓ | – | – |
 | Edit existing songs and attachments | ✓ | ✓ | own songs² | – | – |
 | Delete songs and attachments | ✓ | ✓ | – | – | – |
+| Link language versions, set a song's language (ADR-0053) | ✓ | ✓ | own songs²³ | – | – |
 | Band settings, band members, band roles | ✓ all bands | – | ✓ | – | – |
 | When songs count as not played for a while (ADR-0046) | ✓ all bands | – | ✓ | ✓ | – |
 | See how the other bands of the organization played a song (ADR-0046) | ✓ | ✓ | ✓ | ✓ | ✓ |
@@ -119,6 +120,9 @@ for creating an account, like every invitation.
 | Delete the own account (ADR-0052; not while the only admin of an organization) | the person themselves | | | | |
 
 ² Songs the leader created or imported and nobody else has changed since.
+³ Linking changes the group of every song it moves; a leader can only move
+their own songs. Linking or setting the language keeps the last editor, so a
+librarian linking a leader's own song leaves it theirs.
 
 A person who is a librarian of the organization and a member of a band sees the
 sets of that band like any member; librarian rights concern the library only.
@@ -213,6 +217,7 @@ sets of that band like any member; librarian rights concern the library only.
   in which key and how often (never their sets); the library usage is for those
   who maintain the library.
 - 2026-11-21: Row *Delete the own account* (ADR-0052, #780): every person, for their own account only, with the password; refused while they are the only admin of an organization that is not closed.
+- 2026-11-21: Language versions (ADR-0053, #804): linking songs and setting their language follow the right to edit the song; a link-only change keeps `updated_by`, so a librarian linking a leader's own song does not take it from them. Server tests in `language_versions_test.dart` and the permission matrix.
 
 ## Open points
 

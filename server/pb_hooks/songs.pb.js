@@ -1,23 +1,38 @@
 /// <reference path="../pb_data/types.d.ts" />
 
 // Conflict detection for songs (ADR-0004): a client sends the revision its
-// change is based on in `revision`. If the server has moved on, the update is
-// refused with 409 and the client shows both versions; songs are never
-// silently overwritten. Sets use last writer wins and are not checked.
+// change is based on in `revision`. If the content of the song changed on the
+// server since then (`content_revision`, ADR-0053), the update is refused with
+// 409 and the client shows both versions; songs are never silently
+// overwritten. A change of the language version group or the language alone
+// needs no base revision: those fields are last writer wins (ADR-0053).
+// Sets use last writer wins and are not checked.
 onRecordUpdateRequest((e) => {
+  const songs = require(`${__hooks}/lib/songs.js`);
   const isUser = e.auth && e.auth.collection().name === "users";
   const base = e.requestInfo().body["revision"];
-  if (base === undefined || base === null || base === "") {
-    if (isUser) {
-      throw new BadRequestError("Missing base revision.", {
-        revision: new ValidationError("missing_base_revision", "Send the revision the change is based on."),
+  const original = e.record.original();
+  // Maintained by the server only.
+  e.record.set("content_revision", original.getInt("content_revision"));
+  if (!songs.isLinkOnlyRequest(e)) {
+    if (base === undefined || base === null || base === "") {
+      if (isUser) {
+        throw new BadRequestError("Missing base revision.", {
+          revision: new ValidationError("missing_base_revision", "Send the revision the change is based on."),
+        });
+      }
+    } else if (Number(base) < original.getInt("content_revision")) {
+      throw new ApiError(409, "The song was changed on the server.", {
+        revision: new ValidationError("conflict", "The song was changed on the server."),
       });
     }
-  } else if (Number(base) !== e.record.original().getInt("revision")) {
-    throw new ApiError(409, "The song was changed on the server.", {
-      revision: new ValidationError("conflict", "The song was changed on the server."),
-    });
   }
+  songs.checkWorkId(e);
+  e.next();
+}, "songs");
+
+onRecordCreateRequest((e) => {
+  require(`${__hooks}/lib/songs.js`).checkWorkId(e);
   e.next();
 }, "songs");
 

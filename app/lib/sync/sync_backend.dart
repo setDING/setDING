@@ -6,9 +6,11 @@ import 'package:flutter/foundation.dart';
 import '../data/band_role.dart';
 import '../data/database.dart' show PlayedValues, SetItemEntry, SetItemType;
 import '../data/marker_icons.dart';
+import '../data/outbox.dart' show SongLinkField;
 import '../midi/midi_message.dart';
 
 export '../data/band_role.dart';
+export '../data/outbox.dart' show SongLinkField;
 
 /// Default setDING server (ADR-0014).
 const defaultServerUrl = 'https://api.setding.app';
@@ -259,6 +261,9 @@ class RemoteSong {
     this.purged = false,
     this.createdBy,
     this.updatedBy,
+    this.workId,
+    this.language,
+    this.contentRevision = 0,
   });
 
   final String id;
@@ -279,6 +284,21 @@ class RemoteSong {
   /// Creator and last editor (ADR-0023); set by the server, never sent.
   final String? createdBy;
   final String? updatedBy;
+
+  /// Language version group and language set by hand (ADR-0053): last
+  /// writer wins per field, sent on create and by [SyncBackend.pushSongLink],
+  /// never with an update of the content.
+  final String? workId;
+  final String? language;
+
+  /// Revision of the last change of everything but [workId] and [language]
+  /// (ADR-0053), set by the server; 0 from a server before it, then
+  /// [revision] counts.
+  final int contentRevision;
+
+  /// The revision the content of the song last changed at.
+  int get effectiveContentRevision =>
+      contentRevision > 0 ? contentRevision : revision;
 }
 
 /// A band arrangement as stored on the server (ADR-0025).
@@ -914,6 +934,15 @@ abstract class SyncBackend {
   /// update sends [song]`.revision` as base revision; if the server has moved
   /// on, it fails with [BackendErrorKind.conflict].
   Future<RemoteSong> pushSong(RemoteSong song, {required bool create});
+
+  /// Sets one link field of an existing song to [value] (null clears it),
+  /// last writer wins without a base revision (ADR-0053), and returns the
+  /// server state.
+  Future<RemoteSong> pushSongLink(
+    String songId,
+    SongLinkField field,
+    String? value,
+  );
 
   /// Creates or updates a set (last writer wins) and returns the server
   /// state.

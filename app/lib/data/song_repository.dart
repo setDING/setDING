@@ -575,6 +575,117 @@ class SongRepository {
         );
       });
 
+  // Language versions (ADR-0053) ---------------------------------------------
+
+  /// Links [a] and [b] as language versions of one work (ADR-0053): both get
+  /// the same group ID, a new one if neither has one. Linking two groups
+  /// moves the smaller one (on a tie the one of [b]) into the other. Both
+  /// songs must be in the same library.
+  Future<void> linkLanguageVersions(String a, String b) => _write(() async {
+    if (a == b) return;
+    final songA = await getSong(a);
+    final songB = await getSong(b);
+    if (songA == null || songB == null) return;
+    if (songA.libraryId != songB.libraryId) {
+      throw ArgumentError('Language versions belong to one library');
+    }
+    final library = songA.libraryId;
+    final workA = songA.workId;
+    final workB = songB.workId;
+    if (workA != null && workA == workB) return;
+    final String target;
+    final List<String> moved;
+    if (workA == null && workB == null) {
+      target = _uuid.v4();
+      moved = [a, b];
+    } else if (workA == null) {
+      target = workB!;
+      moved = [a];
+    } else if (workB == null) {
+      target = workA;
+      moved = [b];
+    } else {
+      final groupA = await _workGroup(library, workA);
+      final groupB = await _workGroup(library, workB);
+      final keepB = groupB.length > groupA.length;
+      target = keepB ? workB : workA;
+      moved = keepB ? groupA : groupB;
+    }
+    for (final id in moved) {
+      await _setLink(id, library, SongLinkField.workId, target);
+    }
+  });
+
+  /// Removes [id] from its group of language versions (ADR-0053). A version
+  /// left alone keeps the group ID; it shows no other versions.
+  Future<void> unlinkLanguageVersion(String id) => _write(() async {
+    final song = await getSong(id);
+    if (song == null || song.workId == null) return;
+    await _setLink(id, song.libraryId, SongLinkField.workId, null);
+  });
+
+  /// Sets the language of [id] by hand (ADR-0053): a code of
+  /// [songLanguages], or null for the detected one.
+  Future<void> setLanguage(String id, String? language) => _write(() async {
+    if (language != null && !songLanguages.contains(language)) {
+      throw ArgumentError.value(language, 'language');
+    }
+    final song = await getSong(id);
+    if (song == null || song.language == language) return;
+    await _setLink(id, song.libraryId, SongLinkField.language, language);
+  });
+
+  /// The other language versions of [id] (ADR-0053) that are not in the
+  /// trash, by title.
+  Future<List<SongEntry>> languageVersions(String id) async {
+    final song = await getSong(id);
+    final work = song?.workId;
+    if (song == null || work == null) return const [];
+    return (db.select(db.songs)
+          ..where(
+            (s) =>
+                s.libraryId.equals(song.libraryId) &
+                s.workId.equals(work) &
+                s.id.equals(id).not() &
+                s.deleted.equals(false),
+          )
+          ..orderBy([(s) => OrderingTerm.asc(s.title)]))
+        .get();
+  }
+
+  /// IDs of the songs of [library] in the group [work], also those in the
+  /// trash: restored, they are linked again.
+  Future<List<String>> _workGroup(String library, String work) =>
+      (db.selectOnly(db.songs)
+            ..addColumns([db.songs.id])
+            ..where(
+              db.songs.libraryId.equals(library) & db.songs.workId.equals(work),
+            ))
+          .map((r) => r.read(db.songs.id)!)
+          .get();
+
+  /// Writes a link field and queues it for the sync on its own, last
+  /// writer wins (ADR-0053). The last editor stays, as on the server.
+  Future<void> _setLink(
+    String id,
+    String library,
+    SongLinkField field,
+    String? value,
+  ) async {
+    await (db.update(db.songs)..where((s) => s.id.equals(id))).write(
+      switch (field) {
+        SongLinkField.workId => SongsCompanion(workId: Value(value)),
+        SongLinkField.language => SongsCompanion(language: Value(value)),
+      },
+    );
+    await markDirty(
+      db,
+      SyncCollection.songLinks,
+      songLinkRecordId(id, field.serverName),
+      scope: library,
+    );
+  }
+
   /// Soft-deletes a song with its attachments and removes it from all
   /// sets. The attachment files are kept for an undo ([restoreSong]) until
   /// [purgeFiles].

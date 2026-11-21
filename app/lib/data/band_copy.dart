@@ -136,6 +136,9 @@ class BandCopyService {
             libraryId: targetLibraryId,
             revision: 0,
             updatedAt: DateTime.now(),
+            // A copy is no language version of the original's work; a group
+            // never spans libraries (ADR-0053). Its language stays.
+            workId: const Value(null),
           ),
         );
 

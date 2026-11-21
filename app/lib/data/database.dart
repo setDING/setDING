@@ -163,6 +163,15 @@ class Songs extends Table {
   /// (ADR-0043, schema 21): it is no longer in the trash.
   BoolColumn get purged => boolean().withDefault(const Constant(false))();
 
+  /// Shared ID of all language versions of a work (ADR-0053, schema 31):
+  /// translations and free adaptations of the song in the same library.
+  /// Null if the song has no other versions.
+  TextColumn get workId => text().nullable()();
+
+  /// Language set by hand (ADR-0053, schema 31): a code of
+  /// `songLanguages` (outbox.dart); null uses the language detected on the device.
+  TextColumn get language => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -624,7 +633,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 30;
+  int get schemaVersion => 31;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -692,6 +701,8 @@ class AppDatabase extends _$AppDatabase {
               songs.chordproConversions,
               songs.deletedAt,
               songs.purged,
+              songs.workId,
+              songs.language,
             ],
           ),
         );
@@ -886,6 +897,12 @@ class AppDatabase extends _$AppDatabase {
         // afterUpgrade (refreshAllMetadata); before schema 4 the rebuilt
         // table has the column already.
         await m.addColumn(songs, songs.chordproConversions);
+      }
+      if (from < 31 && from >= 4) {
+        // Language versions (ADR-0053, #804); before schema 4 the rebuilt
+        // table has the columns already.
+        await m.addColumn(songs, songs.workId);
+        await m.addColumn(songs, songs.language);
       }
     },
     beforeOpen: (details) async {

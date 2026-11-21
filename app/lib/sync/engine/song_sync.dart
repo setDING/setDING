@@ -13,6 +13,11 @@ const _log = Log('sync');
 
 /// Sync of songs (ADR-0004): delta pull per organization, push with the
 /// base revision, and conflicts the user resolves.
+///
+/// The language version group and the language (ADR-0053) are last writer
+/// wins per field: they are pushed on their own ([pushLink]), a pulled value
+/// never replaces one still waiting in the outbox, and a server change of
+/// only them is never a conflict.
 class SongSync {
   SongSync(this.db, this.backend, this.store, {this.copies, this.changes});
 
@@ -44,6 +49,11 @@ class SongSync {
         (s) => s.id,
       );
       final dirty = await store.dirty(SyncCollection.songs, ids);
+      final pendingLinks = await store.dirty(SyncCollection.songLinks, [
+        for (final id in ids)
+          for (final f in SongLinkField.values)
+            songLinkRecordId(id, f.serverName),
+      ]);
       final known = (await SyncStore.byId(
         ids,
         (chunk) => (db.select(
@@ -58,6 +68,7 @@ class SongSync {
           local: locals[song.id],
           dirty: dirty.contains(song.id),
           knownConflict: known.contains(song.id),
+          pendingLinks: pendingLinks,
           log: ChangeRecorder.records(song.updatedBy, logChangesFor),
         )) {
           conflicts++;
@@ -82,10 +93,24 @@ class SongSync {
     required SongEntry? local,
     required bool dirty,
     required bool knownConflict,
+    Set<String> pendingLinks = const {},
     bool log = false,
   }) async {
     if (local != null && remote.revision <= local.revision) return false;
+    if (local != null &&
+        dirty &&
+        remote.effectiveContentRevision <= local.revision) {
+      // Only the link fields changed on the server (ADR-0053): no conflict,
+      // the local change is pushed on top of the new revision.
+      await (db.update(db.songs)..where((s) => s.id.equals(remote.id))).write(
+        SongsCompanion(revision: Value(remote.revision)),
+      );
+      await _writeLinks(remote, pendingLinks);
+      return false;
+    }
     if (local != null && dirty) {
+      // The link fields are not part of the conflict.
+      await _writeLinks(remote, pendingLinks);
       // Changed here and on the server: never overwrite silently.
       await db
           .into(db.songConflicts)
@@ -103,11 +128,30 @@ class SongSync {
     }
     if (log) await changes?.song(local, remote, meta.title ?? remote.title);
     await writeSong(remote, meta: meta);
+    await _writeLinks(remote, pendingLinks);
     return false;
   }
 
+  /// Stores the link fields of a server song (ADR-0053), except those with a
+  /// local change still in the outbox ([pendingLinks]): that one wins.
+  Future<void> _writeLinks(RemoteSong remote, Set<String> pendingLinks) async {
+    bool pending(SongLinkField f) =>
+        pendingLinks.contains(songLinkRecordId(remote.id, f.serverName));
+    await (db.update(db.songs)..where((s) => s.id.equals(remote.id))).write(
+      SongsCompanion(
+        workId: pending(SongLinkField.workId)
+            ? const Value.absent()
+            : Value(remote.workId),
+        language: pending(SongLinkField.language)
+            ? const Value.absent()
+            : Value(remote.language),
+      ),
+    );
+  }
+
   /// Stores the server state of a song locally (no outbox entry); [meta]
-  /// is extracted from its source unless given.
+  /// is extracted from its source unless given. The link fields stay as
+  /// they are (see [_writeLinks]).
   Future<void> writeSong(RemoteSong remote, {SongMeta? meta}) async {
     meta ??= SongMeta.fromSource(remote.chordpro);
     await db
@@ -171,6 +215,9 @@ class SongSync {
       revision: song.revision,
       deleted: song.deleted,
       deletedAt: song.deletedAt,
+      // Sent on create only (ADR-0053).
+      workId: song.workId,
+      language: song.language,
     );
     try {
       final stored = await _pushSongOrRecover(remote, create: create);
@@ -207,6 +254,57 @@ class SongSync {
       if (e.kind == BackendErrorKind.notAllowed) {
         // No (longer) permission: the change stays local.
         _log.warning('Song ${song.id} not pushed: not allowed');
+        await store.done(entry);
+        return PushResult.skipped;
+      }
+      rethrow;
+    }
+  }
+
+  /// Pushes one link field of a song (ADR-0053): last writer wins, no base
+  /// revision. Waits until the song itself is on the server.
+  Future<PushResult> pushLink(OutboxEntry entry) async {
+    final (songId, name) = parseSongLinkRecordId(entry.recordId);
+    final field = SongLinkField.values
+        .where((f) => f.serverName == name)
+        .firstOrNull;
+    final song = await (db.select(
+      db.songs,
+    )..where((s) => s.id.equals(songId))).getSingleOrNull();
+    if (field == null || song == null || song.libraryId == localBandId) {
+      await store.done(entry);
+      return PushResult.skipped;
+    }
+    if (song.revision == 0) {
+      if (song.deleted) await store.done(entry); // never synced
+      return PushResult.skipped; // sent with the song's create
+    }
+    try {
+      final stored = await backend.pushSongLink(
+        songId,
+        field,
+        field == SongLinkField.workId ? song.workId : song.language,
+      );
+      await db.transaction(() async {
+        final current = await (db.select(
+          db.songs,
+        )..where((s) => s.id.equals(songId))).getSingle();
+        final conflict = await _conflict(songId);
+        // The new revision is the base of later changes as long as the
+        // content on the server is the one this device knows.
+        if (conflict == null &&
+            stored.effectiveContentRevision <= current.revision) {
+          await (db.update(db.songs)..where((s) => s.id.equals(songId))).write(
+            SongsCompanion(revision: Value(stored.revision)),
+          );
+        }
+        await store.done(entry);
+      });
+      return PushResult.done;
+    } on BackendException catch (e) {
+      if (e.kind == BackendErrorKind.notAllowed) {
+        // No (longer) permission: the change stays local.
+        _log.warning('Link of song $songId not pushed: not allowed');
         await store.done(entry);
         return PushResult.skipped;
       }

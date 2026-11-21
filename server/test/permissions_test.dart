@@ -426,6 +426,36 @@ void main() {
       }),
       unchanged: ('songs', () => song['id'] as String, 'organization'),
     );
+    // Language versions (ADR-0053): linking and the language need the
+    // right to edit the song, without a base revision.
+    refused(
+      'member links a song to a language version group',
+      () => member.patch('songs', song['id'] as String, {'work_id': uuid()}),
+      unchanged: ('songs', () => song['id'] as String, 'work_id'),
+    );
+    refused(
+      'set planner sets the language of a song',
+      () => planner.patch('songs', song['id'] as String, {'language': 'en'}),
+      unchanged: ('songs', () => song['id'] as String, 'language'),
+    );
+    refused(
+      'leader links a song somebody else created',
+      () => leader.patch('songs', song['id'] as String, {'work_id': uuid()}),
+      unchanged: ('songs', () => song['id'] as String, 'work_id'),
+    );
+    refused(
+      'admin of another organization links a song',
+      () => g.admin.patch('songs', song['id'] as String, {'work_id': uuid()}),
+      unchanged: ('songs', () => song['id'] as String, 'work_id'),
+    );
+    refused(
+      'librarian forges the content revision of a song',
+      () => librarian.patch('songs', song['id'] as String, {
+        'content_revision': 0,
+        'work_id': uuid(),
+      }),
+      unchanged: ('songs', () => song['id'] as String, 'work_id'),
+    );
     refused(
       'member hard-deletes a song',
       () => member.delete('songs', song['id'] as String),

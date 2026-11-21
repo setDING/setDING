@@ -268,6 +268,42 @@ void main() {
     },
   );
 
+  test('language versions sync without conflicts (ADR-0053)', () async {
+    final (ann, bob, org, _) = await twoDevices();
+    final a = await ann.songs(org).createSong(source: '{title: Grace}\n[G]La');
+    final b = await ann.songs(org).createSong(source: '{title: Gnade}\n[G]La');
+    await ann.songs(org).linkLanguageVersions(a, b);
+    await ann.songs(org).setLanguage(b, 'de');
+    await ann.sync();
+    await bob.sync();
+    final onBob = (await bob.songs(org).getSong(b))!;
+    expect(onBob.language, 'de');
+    expect(onBob.workId, isNotNull);
+    expect((await bob.songs(org).getSong(a))!.workId, onBob.workId);
+
+    // Bob changes the text offline while Ann marks the language: both
+    // arrive, nobody sees a conflict.
+    await bob.songs(org).updateSource(a, '{title: Grace}\n[C]Bob');
+    await ann.songs(org).setLanguage(a, 'en');
+    await ann.sync();
+    final report = await bob.sync();
+    expect(report.conflicts, 0);
+    await ann.sync();
+    final onAnn = (await ann.songs(org).getSong(a))!;
+    expect(onAnn.chordproSource, contains('Bob'));
+    expect(onAnn.language, 'en');
+    expect((await bob.songs(org).getSong(a))!.language, 'en');
+
+    // Unlinking reaches the other device.
+    await bob.songs(org).unlinkLanguageVersion(a);
+    await bob.sync();
+    await ann.sync();
+    expect((await ann.songs(org).getSong(a))!.workId, isNull);
+    expect(await ann.songs(org).languageVersions(b), isEmpty);
+    await ann.close();
+    await bob.close();
+  });
+
   test('sets: last writer wins', () async {
     final (ann, bob, _, band) = await twoDevices();
     final set = await ann.sets(band).createSet(name: 'First');

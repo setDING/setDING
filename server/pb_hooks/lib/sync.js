@@ -22,8 +22,15 @@ function requestUserId(e) {
 
 /// Handles a create or update request of a synced record: records the author
 /// and runs the save in a transaction (see nextRevision).
+/// A change of only the language version group or the language of a song
+/// keeps the last editor (ADR-0053): linking a band leader's own song does
+/// not take it from them (ADR-0023).
 function handleWriteRequest(e) {
-  e.record.set("updated_by", requestUserId(e));
+  const linkOnly =
+    e.record.collection().name === "songs" &&
+    !e.record.isNew() &&
+    require(`${__hooks}/lib/songs.js`).isLinkOnlyRequest(e);
+  if (!linkOnly) e.record.set("updated_by", requestUserId(e));
   e.app.runInTransaction((txApp) => {
     e.app = txApp;
     e.next();

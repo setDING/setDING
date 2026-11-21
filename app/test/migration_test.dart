@@ -39,9 +39,17 @@ void downgradeToSchema19(Database raw) {
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN midi_programs');
 }
 
+/// Turns a current database back into schema 30: songs without language
+/// versions (ADR-0053).
+void downgradeToSchema30(Database raw) {
+  raw.execute('ALTER TABLE songs DROP COLUMN work_id');
+  raw.execute('ALTER TABLE songs DROP COLUMN language');
+}
+
 /// Turns a current database back into schema 29: songs without the
 /// number of possible conversions (#798).
 void downgradeToSchema29(Database raw) {
+  downgradeToSchema30(raw);
   raw.execute('ALTER TABLE songs DROP COLUMN chordpro_conversions');
 }
 
@@ -1088,4 +1096,27 @@ void main() {
       await upgraded.close();
     },
   );
+
+  test('upgrades a schema 30 database: songs keep their values and have no '
+      'language versions', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final storage = FileAttachmentStorage(dir);
+    final id = await SongRepository(
+      current,
+      storage,
+    ).createSong(source: '{title: Old}\n[G]La');
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema30(raw);
+    raw.execute('PRAGMA user_version = 30');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final song = await SongRepository(upgraded, storage).getSong(id);
+    expect(song!.title, 'Old');
+    expect(song.workId, isNull);
+    expect(song.language, isNull);
+    await upgraded.close();
+  });
 }

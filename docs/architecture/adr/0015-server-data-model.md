@@ -68,8 +68,11 @@ edits can never produce a mixed or duplicated ordering.
 ### Conflict detection for songs
 
 When updating a song, the client sends the revision its change is based on in
-`revision`. If it differs from the server's revision, the server refuses the update
-with **HTTP 409** and the client resolves the conflict (ADR-0004). A missing base
+`revision`. If the song's content changed on the server since then (its
+`content_revision` is newer than the base, ADR-0053), the server refuses the update
+with **HTTP 409** and the client resolves the conflict (ADR-0004). A change of only
+the language version group or the language needs no base revision (last writer wins
+per field, ADR-0053). A missing base
 revision is refused with 400 for users (superusers in the admin UI are exempt).
 Sets and other collections use last writer wins.
 
@@ -152,3 +155,4 @@ Enforced with PocketBase API rules; the client only mirrors them in the UI.
   annotations and personal settings cascade.
 - 2026-11-21: Users can no longer delete their own account through the API (issue #778): PocketBase's default `deleteRule` let them, which hard-deleted their memberships and could leave an organization without an admin. `users.deleteRule = null`; superusers still can. Migration `1796600000_users_no_self_delete.js`.
 - 2026-11-21: Deleting the own account (**ADR-0052**, issue #780): `users.deleteRule = "id = @request.auth.id"` again, `memberships.user` and `org_memberships.user` no longer cascade and are optional (tombstones without a person), rate limit `users:delete` (5 per minute); `pb_hooks/users.pb.js` with `lib/accounts.js` checks the password (`invalid_password`), refuses the only admin of an organization that is not closed (`organizations`/`last_admin`, the names in the message), soft-deletes the memberships, revokes the user's open invitations and clears the references in the delete's transaction. `keepLastAdmin` no longer applies in a closed organization. Migration `1796700000_account_deletion.js`.
+- 2026-11-21: Language versions (**ADR-0053**, issue #804): `songs.work_id` (group ID, UUID), `songs.language` (`de|gsw|en|fr|it|es|pt|nl|other`) and the server-maintained `songs.content_revision`, the revision of the last change of anything but those two fields. The conflict check refuses an update whose base revision is older than `content_revision` (instead of any other revision), so a link change never makes a text change a conflict; a request that changes only `work_id` and/or `language` needs no base revision and keeps `updated_by` (a librarian linking a leader's own song does not take it from them, ADR-0023). A group ID used by a song of another organization is refused (`work_id`/`other_organization`). Hooks in `songs.pb.js`, `sync.pb.js` and `lib/songs.js`; migration `1796800000_language_versions.js`.
