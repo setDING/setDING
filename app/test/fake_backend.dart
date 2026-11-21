@@ -113,6 +113,24 @@ class FakeSyncBackend implements SyncBackend {
     accounts[u.email] = newPassword;
   }
 
+  /// Organizations whose only admin cannot delete the account (ADR-0052).
+  final soleAdminOrgs = <String>[];
+
+  @override
+  Future<void> deleteAccount(String password) async {
+    _check();
+    final u = user;
+    if (u == null) throw const BackendException(BackendErrorKind.signedOut);
+    if (accounts[u.email] != password) {
+      throw const BackendException(BackendErrorKind.invalidCredentials);
+    }
+    if (soleAdminOrgs.isNotEmpty) {
+      throw const BackendException(BackendErrorKind.soleOrgAdmin);
+    }
+    accounts.remove(u.email);
+    _set(null);
+  }
+
   @override
   Future<void> requestPasswordReset(String email) async {
     _check();

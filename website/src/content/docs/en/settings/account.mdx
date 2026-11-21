@@ -1,6 +1,6 @@
 ---
 title: Account and sync
-description: Sign in, create an account, change your name and password, sync and sign out.
+description: Sign in, create an account, change your name and password, sync, sign out and delete your account.
 sidebar:
   order: 4
 ---
@@ -10,6 +10,7 @@ import settings from '../../../../../../docs/screenshots/settings.png';
 import syncHint from '../../../../../../docs/screenshots/sync_hint.png';
 import account from '../../../../../../docs/screenshots/account.png';
 import changePassword from '../../../../../../docs/screenshots/change_password.png';
+import deleteAccount from '../../../../../../docs/screenshots/delete_account.png';
 
 setDING works without an account too, but only on your device. With an account you
 share songs and sets with your band, and your personal adjustments and settings are
@@ -89,3 +90,22 @@ Both need a connection to the server.
 **Sign out** ends the sign-in on this device. Songs and sets on the device are kept.
 
 Changing the **Server** field signs you out.
+
+## Delete your account
+
+**Delete account** is at the very end of **Account & sync**, in the **Danger zone**. Enter your password to
+confirm. This deletes for good:
+
+- your account (name, email address, password),
+- your personal adjustments, annotations and settings,
+- your memberships in organizations and bands.
+
+Songs and sets you created or edited stay with your organizations. You are signed
+out on all devices; this device removes the data of your organizations and keeps
+your local library. The server's backups keep a copy for up to 14 days. Deleting
+needs a connection to the server and cannot be undone.
+
+If you are the **only admin** of an organization, first make someone else admin or
+close the organization (see [Organization](/en/bands/organizations/)).
+
+<Image src={deleteAccount} alt="The “Delete account?” dialog with the password to confirm" />

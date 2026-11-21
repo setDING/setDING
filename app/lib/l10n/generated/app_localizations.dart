@@ -3050,6 +3050,48 @@ abstract class AppLocalizations {
   /// **'Passwort geändert. Melde dich auf deinen anderen Geräten neu an.'**
   String get accountPasswordChanged;
 
+  /// No description provided for @accountDelete.
+  ///
+  /// In de, this message translates to:
+  /// **'Konto löschen'**
+  String get accountDelete;
+
+  /// No description provided for @accountDeleteHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Löscht dein Konto und deine persönlichen Daten endgültig.'**
+  String get accountDeleteHint;
+
+  /// No description provided for @accountDeleteTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Konto löschen?'**
+  String get accountDeleteTitle;
+
+  /// No description provided for @accountDeleteMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Konto, deine persönlichen Anpassungen, Annotationen und Einstellungen werden endgültig gelöscht, und du wirst auf allen Geräten abgemeldet. Songs und Sets bleiben bei deinen Organisationen. Die Backups des Servers behalten bis zu 14 Tage eine Kopie. Gib zur Bestätigung dein Passwort ein.'**
+  String get accountDeleteMessage;
+
+  /// No description provided for @accountDeleteSoleAdmin.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist der einzige Admin dieser Organisationen. Ernenne zuerst jemand anderen zum Admin oder schliesse die Organisation:'**
+  String get accountDeleteSoleAdmin;
+
+  /// No description provided for @accountDeleted.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Konto wurde gelöscht.'**
+  String get accountDeleted;
+
+  /// No description provided for @settingsDangerZone.
+  ///
+  /// In de, this message translates to:
+  /// **'Gefahrenzone'**
+  String get settingsDangerZone;
+
   /// No description provided for @accountErrorNetwork.
   ///
   /// In de, this message translates to:

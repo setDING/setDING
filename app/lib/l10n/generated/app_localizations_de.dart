@@ -1713,6 +1713,30 @@ class AppLocalizationsDe extends AppLocalizations {
       'Passwort geändert. Melde dich auf deinen anderen Geräten neu an.';
 
   @override
+  String get accountDelete => 'Konto löschen';
+
+  @override
+  String get accountDeleteHint =>
+      'Löscht dein Konto und deine persönlichen Daten endgültig.';
+
+  @override
+  String get accountDeleteTitle => 'Konto löschen?';
+
+  @override
+  String get accountDeleteMessage =>
+      'Dein Konto, deine persönlichen Anpassungen, Annotationen und Einstellungen werden endgültig gelöscht, und du wirst auf allen Geräten abgemeldet. Songs und Sets bleiben bei deinen Organisationen. Die Backups des Servers behalten bis zu 14 Tage eine Kopie. Gib zur Bestätigung dein Passwort ein.';
+
+  @override
+  String get accountDeleteSoleAdmin =>
+      'Du bist der einzige Admin dieser Organisationen. Ernenne zuerst jemand anderen zum Admin oder schliesse die Organisation:';
+
+  @override
+  String get accountDeleted => 'Dein Konto wurde gelöscht.';
+
+  @override
+  String get settingsDangerZone => 'Gefahrenzone';
+
+  @override
   String get accountErrorNetwork =>
       'Keine Verbindung zum Server. Prüfe die Internetverbindung.';
 

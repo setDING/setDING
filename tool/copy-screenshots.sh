@@ -60,6 +60,7 @@ map=(
   offline_status 34_offline_status
   account 35_account
   change_password 35b_change_password
+  delete_account 36_delete_account
 )
 
 copied=0
