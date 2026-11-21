@@ -33,6 +33,8 @@
 {x_link: https://www.youtube.com/results?search_query=setding | Live video}
 {x_link: https://example.com/setding demo.mp3 | Demo recording}
 {x_link: open.spotify.com/search/setding}
+# CCLI song number ({ccli} in SongSelect files becomes {x_ccli} on import).
+{x_ccli: 1234567}
 {x_setding_note: custom directives starting with x_ are ignored}
 
 # ---------------------------------------------------------------------------
