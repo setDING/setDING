@@ -144,5 +144,8 @@ Enforced with PocketBase API rules; the client only mirrors them in the UI.
 - Version history for songs (ADR-0004 open point) could reuse the revision counter.
 - Rate limiting for sign-up and auth endpoints (PocketBase settings).
 - Account deletion: deleting a user cascades to their memberships as a hard delete
-  (other devices do not learn about it through sync, and a band could lose its last
-  admin). Decide on a deletion flow before the app offers it.
+  (other devices do not learn about it through sync, and an organization could lose
+  its last admin). Users therefore cannot delete their account through the API
+  (`users.deleteRule = null`, issue #778); only superusers can. A deletion flow is
+  decided before the app offers it (issue #780).
+- 2026-11-21: Users can no longer delete their own account through the API (issue #778): PocketBase's default `deleteRule` let them, which hard-deleted their memberships and could leave an organization without an admin. `users.deleteRule = null`; superusers still can. Migration `1796600000_users_no_self_delete.js`.

@@ -34,6 +34,7 @@ void main() {
   late String inviteId;
   late String memberMembership;
   late String memberOrgMembership;
+  late String adminOrgMembership;
 
   setUpAll(() async {
     pb = await PocketBase.start();
@@ -89,6 +90,12 @@ void main() {
         (await pb.superuser.list(
               'org_memberships',
               filter: 'organization = "${f.orgId}" && user = "${member.id}"',
+            )).single['id']
+            as String;
+    adminOrgMembership =
+        (await pb.superuser.list(
+              'org_memberships',
+              filter: 'organization = "${f.orgId}" && user = "${orgAdmin.id}"',
             )).single['id']
             as String;
   });
@@ -630,6 +637,17 @@ void main() {
       'member deletes somebody else\'s account',
       () => member.delete('users', orgAdmin.id),
       unchanged: ('users', () => orgAdmin.id, 'email'),
+    );
+    refused(
+      'member deletes their own account (issue #778)',
+      () => member.delete('users', member.id),
+      unchanged: ('users', () => member.id, 'email'),
+    );
+    refused(
+      'organization admin deletes their own account and leaves the '
+      'organization without an admin (issue #778)',
+      () => orgAdmin.delete('users', orgAdmin.id),
+      unchanged: ('org_memberships', () => adminOrgMembership, 'role'),
     );
     refused(
       'member changes their email without confirmation',
