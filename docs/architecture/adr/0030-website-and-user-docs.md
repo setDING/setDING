@@ -83,6 +83,10 @@ Constraints:
   downloads on every page, with a short language switch on phones (#400).
 - 2026-11-19: The header also shows the current version, linking to the news page
   with the "What's new" notes of every version (ADR-0041, #568).
+- 2026-11-21: Screenshots are rendered per PR only for the feature the PR adds or
+  changes (`make screenshots ONLY=…`); the release PR renders all of them and
+  commits the ones that changed in passing. The screenshot tests are split into
+  one file per area and skip the PNG encoding in the test gate (#759).
 
 ## Open points
 

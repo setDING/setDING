@@ -19,6 +19,7 @@ repository root):
 
 ```bash
 flutter test test_screenshots --dart-define=WRITE_SCREENSHOTS=true   # writes build/screenshots/*.png
+flutter test test_screenshots --dart-define=WRITE_SCREENSHOTS=true --name "set archive"   # only matching tests
 ```
 
 `tool/check.sh` runs the screenshot tests without the define: the screens are

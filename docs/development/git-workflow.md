@@ -273,7 +273,9 @@ Agents may create **proposals** for all of these (an ADR, a draft PR), just not 
      adds the section `## [X.Y.Z] - YYYY-MM-DD` to `CHANGELOG.md` (drafted with
      `make changelog`, rewritten for users; [releases.md](releases.md#changelog)) and
      the version's "What's new" notes in de-CH and en to `app/assets/whats_new.json`
-     ([releases.md](releases.md#whats-new-in-the-app), ADR-0041); test gate and squash
+     ([releases.md](releases.md#whats-new-in-the-app), ADR-0041), and the screenshots
+     rendered again with `make screenshots` (feature PRs render only their own,
+     [docs/screenshots/README.md](../screenshots/README.md)); test gate and squash
      merge as usual. The section becomes the release notes.
   2. Signed tag on the merged `main` and push it:
      `git tag -s vX.Y.Z -m "setDING X.Y.Z" && git push origin vX.Y.Z`.

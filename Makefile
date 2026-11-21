@@ -242,10 +242,11 @@ e2e: ## Run the end-to-end tests: Linux desktop and web client at the same time 
 perf: ## Measure performance on a USB-connected Android device (DEVICE=<id>; docs/development/performance.md)
 	$(ROOT)/tool/perf.sh
 
-screenshots: ## Render screenshots with real fonts to app/build/screenshots/ and copy those of the README and website to docs/screenshots/
-	cd $(APP) && $(FLUTTER) test test_screenshots --dart-define=WRITE_SCREENSHOTS=true
+screenshots: ## Render screenshots with real fonts to app/build/screenshots/ and copy those of the README and website to docs/screenshots/ (ONLY="<test name regex>": only the matching tests, for a PR; all of them in the release PR)
+	rm -rf $(APP)/build/screenshots
+	cd $(APP) && $(FLUTTER) test test_screenshots --dart-define=WRITE_SCREENSHOTS=true $(if $(ONLY),--name '$(ONLY)')
 	@echo "Screenshots: $(APP)/build/screenshots/"
-	$(ROOT)/tool/copy-screenshots.sh
+	$(ROOT)/tool/copy-screenshots.sh $(if $(ONLY),--partial)
 
 branding: ## Regenerate the splash screens, favicon and web icons from app/branding/*.svg
 	$(ROOT)/tool/branding.sh
