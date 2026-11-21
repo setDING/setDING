@@ -108,7 +108,7 @@ backup**:
   a backup at start, at most every 7 days and never in live mode.
 - No automatic backups.
 
-### 1b. Set archive (#707, proposed)
+### 1b. Set archive (#707)
 
 The ZIP export of a set (ADR-0009) becomes an archive that can be imported
 again **as a set**:
@@ -223,6 +223,8 @@ Deleted songs and sets can be **restored for 30 days**.
   "always as a copy"); missing songs a set planner may not create become text
   items. Rejected: importing a plain-text set list, sending a set to another
   band in the app. Foreign set formats: #708.
+- 2026-11-21: Set archive (section 1b) accepted by the owner (#709);
+  implementation in #707.
 
 ## Open points
 
