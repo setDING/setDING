@@ -3362,6 +3362,30 @@ abstract class AppLocalizations {
   /// **'Auswählen'**
   String get selectMode;
 
+  /// No description provided for @deleteSelected.
+  ///
+  /// In de, this message translates to:
+  /// **'Ausgewählte löschen'**
+  String get deleteSelected;
+
+  /// No description provided for @deleteSongsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song löschen?} other{{count} Songs löschen?}}'**
+  String deleteSongsTitle(int count);
+
+  /// No description provided for @deleteSongsMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Der ausgewählte Song wird gelöscht und aus allen Sets entfernt.} other{Die {count} ausgewählten Songs werden gelöscht und aus allen Sets entfernt.}} Im Papierkorb kannst du sie wiederherstellen.'**
+  String deleteSongsMessage(int count);
+
+  /// No description provided for @songsDeleted.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song gelöscht} other{{count} Songs gelöscht}}'**
+  String songsDeleted(int count);
+
   /// No description provided for @bandRoleOrgAdmin.
   ///
   /// In de, this message translates to:

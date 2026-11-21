@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import songs from '../../../../../../docs/screenshots/songs.png';
 import importLabels from '../../../../../../docs/screenshots/import_labels.png';
+import songsSelected from '../../../../../../docs/screenshots/songs_selected.png';
 
 All songs belong to the organization; all its bands share the same song library.
 **Songs** shows them.
@@ -77,6 +78,13 @@ In a song's ⋮ menu:
   anyway. Several songs at once: the song list's ⋮ menu → **Select**.
 - **Delete** deletes the song and removes it from all sets. Right afterwards,
   **Undo** brings it back.
+
+Several songs at once: the song list's ⋮ menu → **Select**, then tap the songs
+(or long-press a song). At the top are **Select all**, **Copy to band** and, if
+you may delete songs, **Delete selected**. After you confirm, the songs go to the
+trash; **Undo** brings all of them back.
+
+<Image src={songsSelected} alt="The song list with two selected songs and, at the top, the buttons Select all, Copy to band and Delete selected" />
 
 ## Trash
 

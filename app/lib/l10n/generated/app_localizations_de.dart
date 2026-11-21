@@ -1885,6 +1885,43 @@ class AppLocalizationsDe extends AppLocalizations {
   String get selectMode => 'Auswählen';
 
   @override
+  String get deleteSelected => 'Ausgewählte löschen';
+
+  @override
+  String deleteSongsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs löschen?',
+      one: '1 Song löschen?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String deleteSongsMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Die $count ausgewählten Songs werden gelöscht und aus allen Sets entfernt.',
+      one: 'Der ausgewählte Song wird gelöscht und aus allen Sets entfernt.',
+    );
+    return '$_temp0 Im Papierkorb kannst du sie wiederherstellen.';
+  }
+
+  @override
+  String songsDeleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs gelöscht',
+      one: '1 Song gelöscht',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get bandRoleOrgAdmin => 'Admin der Organisation';
 
   @override

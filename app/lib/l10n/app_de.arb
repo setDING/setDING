@@ -914,6 +914,31 @@
   },
   "selectAll": "Alle auswählen",
   "selectMode": "Auswählen",
+  "deleteSelected": "Ausgewählte löschen",
+  "deleteSongsTitle": "{count, plural, =1{1 Song löschen?} other{{count} Songs löschen?}}",
+  "@deleteSongsTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteSongsMessage": "{count, plural, =1{Der ausgewählte Song wird gelöscht und aus allen Sets entfernt.} other{Die {count} ausgewählten Songs werden gelöscht und aus allen Sets entfernt.}} Im Papierkorb kannst du sie wiederherstellen.",
+  "@deleteSongsMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songsDeleted": "{count, plural, =1{1 Song gelöscht} other{{count} Songs gelöscht}}",
+  "@songsDeleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "bandRoleOrgAdmin": "Admin der Organisation",
   "bandOrganization": "Organisation",
   "bandNewOrganization": "Neue Organisation",
