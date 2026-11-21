@@ -114,28 +114,28 @@ List<Widget> _optionTiles(
   SetArchiveOptions available = const SetArchiveOptions(personal: true),
 }) => [
   if (available.arrangements)
-    _OptionTile(
+    ArchiveOptionTile(
       key: Key('$keyPrefix-arrangements'),
       value: options.arrangements,
       title: l10n.setArchiveArrangements,
       onChanged: (v) => changed(options.copyWith(arrangements: v)),
     ),
   if (available.setSettings)
-    _OptionTile(
+    ArchiveOptionTile(
       key: Key('$keyPrefix-set-settings'),
       value: options.setSettings,
       title: l10n.setArchiveSetSettings,
       onChanged: (v) => changed(options.copyWith(setSettings: v)),
     ),
   if (available.attachments)
-    _OptionTile(
+    ArchiveOptionTile(
       key: Key('$keyPrefix-attachments'),
       value: options.attachments,
       title: l10n.setArchiveAttachments,
       onChanged: (v) => changed(options.copyWith(attachments: v)),
     ),
   if (available.personal)
-    _OptionTile(
+    ArchiveOptionTile(
       key: Key('$keyPrefix-personal'),
       value: options.personal,
       title: l10n.setArchivePersonal,
@@ -144,9 +144,9 @@ List<Widget> _optionTiles(
     ),
 ];
 
-/// A compact checkbox row, smaller than the headings.
-class _OptionTile extends StatelessWidget {
-  const _OptionTile({
+/// A compact checkbox row of an archive dialog, smaller than the headings.
+class ArchiveOptionTile extends StatelessWidget {
+  const ArchiveOptionTile({
     super.key,
     required this.value,
     required this.title,
@@ -174,9 +174,15 @@ class _OptionTile extends StatelessWidget {
   }
 }
 
-/// A line of the song balance with an icon.
-class _StatusRow extends StatelessWidget {
-  const _StatusRow(this.icon, this.text, {this.color, this.details = const []});
+/// A line of the song balance of an archive import, with an icon.
+class ArchiveStatusRow extends StatelessWidget {
+  const ArchiveStatusRow(
+    this.icon,
+    this.text, {
+    super.key,
+    this.color,
+    this.details = const [],
+  });
 
   final IconData icon;
   final String text;
@@ -312,6 +318,7 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
           bandId: band,
           canCreateSongs: _canCreateSongs,
           copyName: _copyName,
+          canEditSong: ref.read(currentLibraryProvider).canEditSong,
         );
     if (mounted && _band == band) setState(() => _preview = preview);
   }
@@ -335,6 +342,7 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
             duplicates: _duplicates,
             replace: preview.existingSet != null && _replace,
             overwriteArrangements: _overwrite,
+            canEditSong: ref.read(currentLibraryProvider).canEditSong,
           );
       if (mounted) {
         setState(() {
@@ -494,18 +502,18 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
         padding: SectionHeader.insetPadding,
       ),
       if (preview.identical > 0)
-        _StatusRow(
+        ArchiveStatusRow(
           Icons.check_circle_outline,
           l10n.setImportSongsHere(preview.identical),
           color: colors.primary,
         ),
       if (preview.added > 0)
-        _StatusRow(
+        ArchiveStatusRow(
           Icons.add_circle_outline,
           l10n.setImportSongsNew(preview.added),
         ),
       if (preview.differing > 0) ...[
-        _StatusRow(
+        ArchiveStatusRow(
           Icons.difference_outlined,
           l10n.setImportSongsDiffering(preview.differing),
         ),
@@ -535,8 +543,13 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
             ),
           ),
       ],
+      if (_options.attachments && preview.attachmentsAdded > 0)
+        ArchiveStatusRow(
+          Icons.attach_file,
+          l10n.archiveImportAttachmentsAdded(preview.attachmentsAdded),
+        ),
       if (preview.missing.isNotEmpty)
-        _StatusRow(
+        ArchiveStatusRow(
           Icons.warning_amber_outlined,
           l10n.setImportSongsMissing(preview.missing.length),
           color: colors.error,
@@ -561,7 +574,7 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
       if (_options.arrangements && preview.arrangementConflicts > 0)
         Padding(
           padding: const EdgeInsets.only(left: 32),
-          child: _OptionTile(
+          child: ArchiveOptionTile(
             key: const Key('set-import-overwrite'),
             value: _overwrite,
             title: l10n.setImportOverwriteArrangements(
@@ -597,6 +610,8 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
                   if (result.arrangements > 0)
                     l10n.setImportResultArrangements(result.arrangements),
                   if (songs.files > 0) l10n.backupResultFiles(songs.files),
+                  if (songs.completed > 0)
+                    l10n.archiveResultCompleted(songs.completed),
                 ].join('\n'),
               ),
               if (result.missing.isNotEmpty) ...[

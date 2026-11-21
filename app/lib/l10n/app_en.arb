@@ -2684,5 +2684,65 @@
   "settingsHeadingConnection": "Connection",
   "settingsHeadingKeyboard": "Keyboard",
   "settingsHeadingStyle": "Style",
-  "settingsHeadingPrototypes": "Prototypes"
+  "settingsHeadingPrototypes": "Prototypes",
+  "exportSongChordPro": "Export ChordPro file",
+  "exportSongArchive": "Export with attachments",
+  "songsExportSelected": "Export with attachments",
+  "songExportTitle": "{count, plural, =1{Export song} other{Export {count} songs}}",
+  "@songExportTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songExportHint": "The ZIP holds the ChordPro files, the attachments and a description from which setDING imports the songs again, with their attachments.",
+  "songExportArrangements": "Arrangements of \"{band}\" (key, sequence, tempo)",
+  "@songExportArrangements": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "songImportTitle": "Import songs",
+  "songImportFrom": "from {library} · {count, plural, =1{1 song} other{{count} songs}}",
+  "@songImportFrom": {
+    "placeholders": {
+      "library": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songImportLibrary": "Into the library \"{name}\"",
+  "@songImportLibrary": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "songImportArrangementsBand": "Band for the arrangements",
+  "songImportNoBand": "There is no band in this library whose arrangements you may change.",
+  "songImportDone": "Songs imported",
+  "songArchiveNewer": "These songs were exported with a newer version of setDING. Update the app to import them.",
+  "archiveImportAttachmentsAdded": "{count, plural, =1{1 attachment} other{{count} attachments}} added to songs that are already here",
+  "@archiveImportAttachmentsAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "archiveResultCompleted": "{count, plural, =1{1 attachment} other{{count} attachments}} added to existing songs",
+  "@archiveResultCompleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

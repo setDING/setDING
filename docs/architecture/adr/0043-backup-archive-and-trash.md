@@ -154,6 +154,42 @@ again **as a set**:
 - Rights are those of the records created or changed (sets, set items,
   arrangements, songs); the server enforces them as for any other change.
 
+### 1c. Song archive (#792)
+
+The export of a song (only its ChordPro file) gets a second form: a **song
+archive** that holds one or several songs with their attachments and can be
+imported again **like a set archive** (section 1b), only without a set:
+
+- **Format:** `songs/<title> (<short id>).cho` and the attachments as in
+  the backup archive, plus a `manifest.json` with `format: "setding-songs"`,
+  `formatVersion: 1`, the app version, the creation time, the source library
+  (ID and name), the export options and the songs with their original IDs
+  and their attachments' metadata; depending on the options also the band
+  arrangements of the songs (ADR-0025, of the band selected when exporting)
+  and the **exporting person's own** personal adjustments and annotations.
+- **Export:** from the song's menu ("Song with attachments (.zip)", next to
+  the ChordPro file) and for several songs from the selection mode of the
+  song list. Options: attachments (on), band arrangements (off), own personal
+  adjustments and annotations (off, because the archive is often passed on).
+  Anyone who sees the songs may export them.
+- **Import with a preview,** like the set import: a ZIP with such a manifest
+  is recognised by the normal import. Before anything is written, a preview
+  shows the target (the current library; a band for the arrangements), the
+  songs (already there, new, text differs), the attachments that will be
+  added and the options the archive holds.
+- **Songs** follow the duplicate rule of section 1 (identical songs reused,
+  differing ones optionally added); band arrangements already present in the
+  target band are kept unless the preview's option overwrites them.
+- **Attachments of existing songs are completed:** when a song of the
+  archive is reused, its attachments that the existing song does not have
+  (no attachment with the same name, ignoring case) are added, if the person
+  may edit the song (ADR-0023). This applies to the set archive as well,
+  whose preview shows them too; the backup archive keeps existing songs
+  unchanged.
+- The import is offered where songs are imported, to people who may create
+  songs in the library (ADR-0023); band arrangements go to a band whose sets
+  the person may manage, chosen in the preview.
+
 ### 2. Trash
 
 Deleted songs and sets can be **restored for 30 days**.
@@ -242,6 +278,11 @@ Deleted songs and sets can be **restored for 30 days**.
   headings (destination, set already here, songs, include), segmented
   buttons and song status rows; an added set is renamed as a copy when the
   band has a set with the same name and date.
+- 2026-11-21: Proposed: **song archive** (section 1c, #792). Owner
+  decisions: one or several songs; export options for band arrangements and
+  own personal adjustments as for the set archive; attachments missing on an
+  existing song are added (also for the set import); a preview
+  before the import like the set import.
 
 ## Open points
 

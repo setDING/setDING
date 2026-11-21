@@ -3022,5 +3022,65 @@
   "settingsHeadingConnection": "Verbindung",
   "settingsHeadingKeyboard": "Keyboard",
   "settingsHeadingStyle": "Stil",
-  "settingsHeadingPrototypes": "Prototypen"
+  "settingsHeadingPrototypes": "Prototypen",
+  "exportSongChordPro": "ChordPro-Datei exportieren",
+  "exportSongArchive": "Mit Anhängen exportieren",
+  "songsExportSelected": "Mit Anhängen exportieren",
+  "songExportTitle": "{count, plural, =1{Song exportieren} other{{count} Songs exportieren}}",
+  "@songExportTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songExportHint": "Das ZIP enthält die ChordPro-Dateien, die Anhänge und eine Beschreibung, mit der setDING die Songs samt Anhängen wieder importiert.",
+  "songExportArrangements": "Arrangements von «{band}» (Tonart, Ablauf, Tempo)",
+  "@songExportArrangements": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "songImportTitle": "Songs importieren",
+  "songImportFrom": "aus {library} · {count, plural, =1{1 Song} other{{count} Songs}}",
+  "@songImportFrom": {
+    "placeholders": {
+      "library": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songImportLibrary": "In die Bibliothek «{name}»",
+  "@songImportLibrary": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "songImportArrangementsBand": "Band für die Arrangements",
+  "songImportNoBand": "In dieser Bibliothek gibt es keine Band, deren Arrangements du ändern darfst.",
+  "songImportDone": "Songs importiert",
+  "songArchiveNewer": "Diese Songs wurden mit einer neueren Version von setDING exportiert. Aktualisiere die App, um sie zu importieren.",
+  "archiveImportAttachmentsAdded": "{count, plural, =1{1 Anhang wird} other{{count} Anhänge werden}} bei Songs ergänzt, die schon hier sind",
+  "@archiveImportAttachmentsAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "archiveResultCompleted": "{count, plural, =1{1 Anhang} other{{count} Anhänge}} bei vorhandenen Songs ergänzt",
+  "@archiveResultCompleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

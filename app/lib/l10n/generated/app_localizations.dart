@@ -7674,6 +7674,96 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Prototypen'**
   String get settingsHeadingPrototypes;
+
+  /// No description provided for @exportSongChordPro.
+  ///
+  /// In de, this message translates to:
+  /// **'ChordPro-Datei exportieren'**
+  String get exportSongChordPro;
+
+  /// No description provided for @exportSongArchive.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit Anhängen exportieren'**
+  String get exportSongArchive;
+
+  /// No description provided for @songsExportSelected.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit Anhängen exportieren'**
+  String get songsExportSelected;
+
+  /// No description provided for @songExportTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Song exportieren} other{{count} Songs exportieren}}'**
+  String songExportTitle(int count);
+
+  /// No description provided for @songExportHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Das ZIP enthält die ChordPro-Dateien, die Anhänge und eine Beschreibung, mit der setDING die Songs samt Anhängen wieder importiert.'**
+  String get songExportHint;
+
+  /// No description provided for @songExportArrangements.
+  ///
+  /// In de, this message translates to:
+  /// **'Arrangements von «{band}» (Tonart, Ablauf, Tempo)'**
+  String songExportArrangements(String band);
+
+  /// No description provided for @songImportTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Songs importieren'**
+  String get songImportTitle;
+
+  /// No description provided for @songImportFrom.
+  ///
+  /// In de, this message translates to:
+  /// **'aus {library} · {count, plural, =1{1 Song} other{{count} Songs}}'**
+  String songImportFrom(String library, int count);
+
+  /// No description provided for @songImportLibrary.
+  ///
+  /// In de, this message translates to:
+  /// **'In die Bibliothek «{name}»'**
+  String songImportLibrary(String name);
+
+  /// No description provided for @songImportArrangementsBand.
+  ///
+  /// In de, this message translates to:
+  /// **'Band für die Arrangements'**
+  String get songImportArrangementsBand;
+
+  /// No description provided for @songImportNoBand.
+  ///
+  /// In de, this message translates to:
+  /// **'In dieser Bibliothek gibt es keine Band, deren Arrangements du ändern darfst.'**
+  String get songImportNoBand;
+
+  /// No description provided for @songImportDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Songs importiert'**
+  String get songImportDone;
+
+  /// No description provided for @songArchiveNewer.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Songs wurden mit einer neueren Version von setDING exportiert. Aktualisiere die App, um sie zu importieren.'**
+  String get songArchiveNewer;
+
+  /// No description provided for @archiveImportAttachmentsAdded.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Anhang wird} other{{count} Anhänge werden}} bei Songs ergänzt, die schon hier sind'**
+  String archiveImportAttachmentsAdded(int count);
+
+  /// No description provided for @archiveResultCompleted.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Anhang} other{{count} Anhänge}} bei vorhandenen Songs ergänzt'**
+  String archiveResultCompleted(int count);
 }
 
 class _AppLocalizationsDelegate

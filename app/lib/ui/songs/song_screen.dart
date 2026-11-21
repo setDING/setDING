@@ -27,6 +27,7 @@ import '../render/song_view.dart';
 import '../widgets/app_shortcuts.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/export_file.dart';
+import 'song_archive_dialogs.dart';
 import '../widgets/file_actions.dart';
 import '../widgets/key_picker.dart';
 import '../widgets/click_pickers.dart';
@@ -494,6 +495,9 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   onSelected: (value) => switch (value) {
                     'title' => _editTitle(song),
                     'export' => _export(song),
+                    'exportArchive' => exportSongArchive(context, ref, [
+                      song.id,
+                    ]),
                     'copyToBand' => copySongsToBand(context, ref, [
                       song.id,
                     ], fromLibraryId: song.libraryId),
@@ -510,8 +514,14 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                         !ref.read(webClientProvider))
                       PopupMenuItem(
                         value: 'export',
-                        child: Text(l10n.exportSong),
+                        child: Text(l10n.exportSongChordPro),
                       ),
+                    // Also on web: the files are loaded for the export.
+                    PopupMenuItem(
+                      key: const Key('song-export-archive'),
+                      value: 'exportArchive',
+                      child: Text(l10n.exportSongArchive),
+                    ),
                     PopupMenuItem(
                       value: 'copyToBand',
                       child: Text(l10n.copyToBand),

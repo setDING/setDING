@@ -236,6 +236,45 @@ void main() {
     expect(overlay.notes, 'Slow intro');
   });
 
+  test('existing songs get the attachments they lack, if the person may '
+      'edit them (ADR-0043 §1c)', () async {
+    final ids = await fill();
+    final archive = (await SetArchiveService.read(
+      await service().export(ids.set),
+    ))!;
+    final other = AppDatabase(NativeDatabase.memory());
+    addTearDown(other.close);
+    final repo = SongRepository(other, storage);
+    final hello = await repo.createSong(
+      source: '{title: Hello}\n{artist: Band}\n[C]Hello [G]world',
+    );
+    final target = service(other);
+    Future<SetArchivePreview> preview(bool edit) => target.preview(
+      archive,
+      bandId: localBandId,
+      canCreateSongs: true,
+      copyName: copyOf,
+      canEditSong: (_) => edit,
+    );
+    expect((await preview(false)).attachmentsAdded, 0);
+    expect((await preview(true)).attachmentsAdded, 1);
+
+    final result = await target.import(
+      archive,
+      bandId: localBandId,
+      canCreateSongs: true,
+      missingNote: missing,
+      copyName: copyOf,
+      canEditSong: (_) => true,
+    );
+    expect(result.songs.completed, 1);
+    expect(
+      [for (final a in await repo.getAttachments(hello)) a.name],
+      ['Score'],
+    );
+    expect((await preview(true)).attachmentsAdded, 0);
+  });
+
   test('importing into the same library reuses the songs and finds the '
       'set again: replace or add a copy', () async {
     final ids = await fill();

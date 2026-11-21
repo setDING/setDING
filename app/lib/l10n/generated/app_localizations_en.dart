@@ -4886,4 +4886,88 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsHeadingPrototypes => 'Prototypes';
+
+  @override
+  String get exportSongChordPro => 'Export ChordPro file';
+
+  @override
+  String get exportSongArchive => 'Export with attachments';
+
+  @override
+  String get songsExportSelected => 'Export with attachments';
+
+  @override
+  String songExportTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Export $count songs',
+      one: 'Export song',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get songExportHint =>
+      'The ZIP holds the ChordPro files, the attachments and a description from which setDING imports the songs again, with their attachments.';
+
+  @override
+  String songExportArrangements(String band) {
+    return 'Arrangements of \"$band\" (key, sequence, tempo)';
+  }
+
+  @override
+  String get songImportTitle => 'Import songs';
+
+  @override
+  String songImportFrom(String library, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs',
+      one: '1 song',
+    );
+    return 'from $library · $_temp0';
+  }
+
+  @override
+  String songImportLibrary(String name) {
+    return 'Into the library \"$name\"';
+  }
+
+  @override
+  String get songImportArrangementsBand => 'Band for the arrangements';
+
+  @override
+  String get songImportNoBand =>
+      'There is no band in this library whose arrangements you may change.';
+
+  @override
+  String get songImportDone => 'Songs imported';
+
+  @override
+  String get songArchiveNewer =>
+      'These songs were exported with a newer version of setDING. Update the app to import them.';
+
+  @override
+  String archiveImportAttachmentsAdded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count attachments',
+      one: '1 attachment',
+    );
+    return '$_temp0 added to songs that are already here';
+  }
+
+  @override
+  String archiveResultCompleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count attachments',
+      one: '1 attachment',
+    );
+    return '$_temp0 added to existing songs';
+  }
 }
