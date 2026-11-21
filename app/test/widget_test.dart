@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:chordpro/chordpro.dart' show SequencePart, Subdivision;
 import 'package:setding/data/database.dart';
+import 'package:setding/data/marker_icons.dart';
 import 'package:setding/data/demo_song.dart';
 import 'package:setding/settings/settings.dart';
 import 'package:setding/ui/live/live_screen.dart';
@@ -459,9 +460,9 @@ void main() {
     final app = await TestApp.create(prefs: {'language': 'en'});
     final setId = await tester.runAsync(() async {
       final setId = await app.sets.createSet(name: 'Gig');
-      await app.sets.addMarker(setId, SetItemType.pause, 'Break');
-      await app.sets.addMarker(setId, SetItemType.pause, 'Coffee');
-      await app.sets.addMarker(setId, SetItemType.text, '');
+      await app.sets.addMarker(setId, MarkerIcons.breakIcon, 'Break');
+      await app.sets.addMarker(setId, MarkerIcons.breakIcon, 'Coffee');
+      await app.sets.addMarker(setId, MarkerIcons.announcement, '');
       return setId;
     });
     await tester.pumpWidget(app.build(home: SetScreen(setId: setId!)));
@@ -478,8 +479,8 @@ void main() {
       (t) => (t.title as Text?)?.data == 'Coffee',
     );
     expect((coffee.subtitle as Text?)?.data, 'Break');
-    // A text item without text shows its type once.
-    expect(find.text('Text'), findsOneWidget);
+    // A marker without text shows its icon's name once (ADR-0047).
+    expect(find.text('Announcement'), findsOneWidget);
     await app.dispose(tester);
   });
 
@@ -495,11 +496,11 @@ void main() {
       );
       final setId = await app.sets.createSet(name: 'Gig');
       await app.sets.addSongs(setId, [a, b]);
-      await app.sets.addMarker(setId, SetItemType.pause, 'Coffee');
+      await app.sets.addMarker(setId, MarkerIcons.breakIcon, 'Coffee');
       return [
         for (final v in await app.sets.getItems(setId))
           v.song == null
-              ? LiveItem.marker(v.item.type, v.item.note)
+              ? LiveItem.marker(v.item.icon, v.item.note)
               : LiveItem.song(v.song!),
       ];
     });

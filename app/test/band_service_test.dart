@@ -11,6 +11,7 @@ import 'package:setding/data/attachment_storage.dart';
 import 'package:setding/data/band_copy.dart';
 import 'package:setding/data/band_view.dart';
 import 'package:setding/data/database.dart';
+import 'package:setding/data/marker_icons.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/data/song_repository.dart';
 import 'package:setding/sync/band_service.dart';
@@ -416,7 +417,7 @@ void main() {
         final sets = SetRepository(db, storage);
         final setId = await sets.createSet(name: 'Gig');
         await sets.addSongs(setId, [a, a]);
-        await sets.addMarker(setId, SetItemType.pause, 'Break');
+        await sets.addMarker(setId, MarkerIcons.breakIcon, 'Break');
 
         final copyId = await BandCopyService(
           db,
@@ -427,7 +428,7 @@ void main() {
         expect(items.map((i) => i.item.type), [
           SetItemType.song,
           SetItemType.song,
-          SetItemType.pause,
+          SetItemType.marker,
         ]);
         // A song used twice is copied once, into the target library.
         expect(items[0].song!.id, items[1].song!.id);

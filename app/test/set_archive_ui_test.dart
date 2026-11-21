@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/data/backup.dart';
 import 'package:setding/data/database.dart';
+import 'package:setding/data/marker_icons.dart';
 import 'package:setding/data/import_export.dart';
 import 'package:setding/data/set_archive.dart';
 import 'package:setding/data/set_repository.dart';
@@ -114,7 +115,7 @@ void main() {
       final zip = await SetArchiveService(BackupService(app.db, app.storage))
           .export(set);
       // Changed since: the import puts it back.
-      await app.sets.addMarker(set, SetItemType.text, 'Later');
+      await app.sets.addMarker(set, MarkerIcons.announcement, 'Later');
       return (set, zip);
     }))!;
 
@@ -246,7 +247,8 @@ void main() {
       ),
     );
     await waitFor(tester, () => items.isNotEmpty);
-    expect(items.single.item.type, SetItemType.text);
+    expect(items.single.item.type, SetItemType.marker);
+    expect(items.single.item.icon, MarkerIcons.warning);
     expect(items.single.item.note, 'Missing: New one');
     await app.dispose(tester);
   });

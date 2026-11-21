@@ -168,7 +168,7 @@ erDiagram
     MEMBERSHIP { uuid band_id uuid user_id enum role "admin (leader)|planner|member" }
     SONG { uuid id string chordpro_source string title string artist string key int tempo int revision timestamp updated_at bool deleted timestamp deleted_at bool purged uuid created_by uuid updated_by }
     SETLIST { uuid id string name date gig_date string venue int revision bool deleted timestamp deleted_at bool purged uuid updated_by }
-    SET_ITEM { uuid id uuid set_id uuid song_id int position int transpose string sequence string note string type "song|break|text" string icon json played }
+    SET_ITEM { uuid id uuid set_id uuid song_id int position int transpose string sequence string note string type "song|marker" string icon json played }
     PERSONAL_OVERLAY { uuid user_id uuid song_id int transpose int capo float font_scale string notes bool nashville string live_view "chordpro|attachment_id" bool hide_annotations string verse_chords "all|first|stacked" json midi string click_grouping string click_subdivision "off|eighths|sixteenths|triplets" }
     ANNOTATION { uuid id uuid user_id uuid song_id string target json stroke int updated_at int pending }
     BAND_ARRANGEMENT { uuid band_id uuid song_id int transpose string sequence int tempo int revision bool deleted uuid updated_by }
@@ -244,7 +244,7 @@ Notes:
 | **Deleting bands, closing organizations** | Org admins delete bands and close organizations with a 30-day trash, then a purge (ADR-0044, accepted: ADR #634; deleting bands implemented in #628, closing organizations in #629). Since #627 the server refuses `deleted` on bands and organizations |
 | **Overview as the start screen** | First tab with the next set, things to do and recent changes (ADR-0045, accepted: #656); the tab with *Next set*, *To do* and the footer done (#666), *Recent changes* done (#667), hints after a sync on the open song or set and after live mode done (#691), entries of deleted songs and sets hidden (#701) |
 | **Song play history** | ADR-0046 accepted (#659): v1 panel *Played* and set editor hints (implemented in #660), v2 band repertoire (implemented in #661), v3 plays across the organization (implemented in #662) |
-| **Set markers** | ADR-0047 accepted (#717): one command *Add marker* with an icon from a catalogue and a prefilled text of up to 24 characters, every marker a divider in the set list, replacing *Add break* and *Add text*, no break or text type any more; implementation after acceptance |
+| **Set markers** | ADR-0047 accepted (#717), data layer done (#722): one command *Add marker* with an icon from a catalogue and a prefilled text of up to 24 characters, every marker a divider in the set list, replacing *Add break* and *Add text*, no break or text type any more; dialog (#723) and set list dividers (#724) open |
 | **Later** | Configurable page turner key mapping, band annotations shared with the band (follow-up of ADR-0032), MIDI program change per song in live mode (ADR-0039, accepted: prototype #512, data #561, settings and connection #562, sending in live mode #564; the song's program field #563, manual test with the Nord on Android passed #558; the manual test with a Nord on Windows, Linux and Chrome open), keyboard programs per device profile with a Yamaha Motif XF profile (ADR-0042, accepted: Motif XF profile #591, storage per profile #593; the manual test on a Motif XF8 open), MIDI page turning |
 
 ### MVP status (2026-11-14)

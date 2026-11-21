@@ -288,8 +288,9 @@ class SetRepository {
         await _touch(setId);
       });
 
-  /// Adds a pause or a text item (announcement, encore separator, …).
-  Future<void> addMarker(String setId, SetItemType type, String label) =>
+  /// Adds a marker (break, announcement, encore, …, ADR-0047) with the
+  /// catalogue [icon] and [label] (empty: the icon's name shows).
+  Future<void> addMarker(String setId, String icon, String label) =>
       db.transaction(() async {
         await db
             .into(db.setItems)
@@ -298,17 +299,22 @@ class SetRepository {
                 id: _uuid.v4(),
                 setId: setId,
                 position: await _nextPosition(setId),
-                type: type,
+                type: SetItemType.marker,
+                icon: Value(icon),
                 note: Value(label.trim()),
               ),
             );
         await _touch(setId);
       });
 
-  Future<void> updateMarker(String itemId, String label) =>
+  /// Changes the text of a marker and, if given, its [icon].
+  Future<void> updateMarker(String itemId, String label, {String? icon}) =>
       db.transaction(() async {
         await (db.update(db.setItems)..where((i) => i.id.equals(itemId))).write(
-          SetItemsCompanion(note: Value(label.trim())),
+          SetItemsCompanion(
+            note: Value(label.trim()),
+            icon: icon == null ? const Value.absent() : Value(icon),
+          ),
         );
         await _touchItem(itemId);
       });

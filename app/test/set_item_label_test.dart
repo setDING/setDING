@@ -2,7 +2,7 @@ import 'package:chordpro/chordpro.dart' as cp;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/data/backup.dart';
-import 'package:setding/data/database.dart';
+import 'package:setding/data/marker_icons.dart';
 import 'package:setding/data/set_archive.dart';
 import 'package:setding/l10n/generated/app_localizations.dart';
 import 'package:setding/ui/live/live_screen.dart';
@@ -30,25 +30,30 @@ void main() {
         'break ',
         'PAUSE',
       ]) {
-        expect(markerNote(SetItemType.pause, note), isNull, reason: note);
+        expect(markerNote(MarkerIcons.breakIcon, note), isNull, reason: note);
       }
-      expect(markerNote(SetItemType.text, 'Text'), isNull);
-      expect(markerNote(SetItemType.text, ''), isNull);
+      expect(markerNote(MarkerIcons.announcement, 'Text'), isNull);
+      expect(markerNote(MarkerIcons.announcement, ''), isNull);
     });
 
     test('keeps a note of its own', () {
-      expect(markerNote(SetItemType.pause, ' Coffee '), 'Coffee');
+      expect(markerNote(MarkerIcons.breakIcon, ' Coffee '), 'Coffee');
       // The label of the other type is a note of its own.
-      expect(markerNote(SetItemType.text, 'Pause'), 'Pause');
-      expect(markerNote(SetItemType.pause, 'Text'), 'Text');
+      expect(markerNote(MarkerIcons.announcement, 'Pause'), 'Pause');
+      expect(markerNote(MarkerIcons.breakIcon, 'Text'), 'Text');
     });
 
     test('names an item by the label of the current language', () {
-      expect(markerTitle(en, SetItemType.pause, 'Pause'), 'Break');
-      expect(markerTitle(de, SetItemType.pause, 'Break'), 'Pause');
-      expect(markerTitle(de, SetItemType.pause, null), 'Pause');
-      expect(markerTitle(en, SetItemType.text, ''), 'Text');
-      expect(markerTitle(de, SetItemType.pause, 'Kaffee'), 'Kaffee');
+      expect(markerTitle(en, MarkerIcons.breakIcon, 'Pause'), 'Break');
+      expect(markerTitle(de, MarkerIcons.breakIcon, 'Break'), 'Pause');
+      expect(markerTitle(de, MarkerIcons.breakIcon, null), 'Pause');
+      // A text item named "Text" by an older version shows the name of the
+      // icon it became (ADR-0047).
+      expect(markerTitle(en, MarkerIcons.announcement, ''), 'Announcement');
+      expect(markerTitle(de, MarkerIcons.announcement, 'Text'), 'Ansage');
+      expect(markerTitle(en, MarkerIcons.encore, 'Zugabe'), 'Encore');
+      expect(markerTitle(de, 'from-a-newer-app', null), 'Hinweis');
+      expect(markerTitle(de, MarkerIcons.breakIcon, 'Kaffee'), 'Kaffee');
     });
   });
 
@@ -59,17 +64,17 @@ void main() {
     final song = await app.songs.createSong(source: '{title: Song}\n{key: G}');
     final setId = await app.sets.createSet(name: 'Gig');
     await app.sets.addSongs(setId, [song]);
-    await app.sets.addMarker(setId, SetItemType.pause, 'Pause');
-    await app.sets.addMarker(setId, SetItemType.pause, 'Break');
-    await app.sets.addMarker(setId, SetItemType.pause, '');
-    await app.sets.addMarker(setId, SetItemType.pause, 'Coffee');
-    await app.sets.addMarker(setId, SetItemType.text, 'Text');
+    await app.sets.addMarker(setId, MarkerIcons.breakIcon, 'Pause');
+    await app.sets.addMarker(setId, MarkerIcons.breakIcon, 'Break');
+    await app.sets.addMarker(setId, MarkerIcons.breakIcon, '');
+    await app.sets.addMarker(setId, MarkerIcons.breakIcon, 'Coffee');
+    await app.sets.addMarker(setId, MarkerIcons.announcement, 'Text');
     return setId;
   }
 
-  for (final (language, label, other) in [
-    ('en', 'Break', 'Pause'),
-    ('de', 'Pause', 'Break'),
+  for (final (language, label, other, announcement) in [
+    ('en', 'Break', 'Pause', 'Announcement'),
+    ('de', 'Pause', 'Break', 'Ansage'),
   ]) {
     testWidgets('set screen shows the $language label once', (tester) async {
       useTabletSize(tester);
@@ -88,7 +93,7 @@ void main() {
       expect(find.text(other), findsNothing);
       final coffee = tiles.firstWhere((t) => title(t) == 'Coffee');
       expect(subtitle(coffee), label);
-      final text = tiles.firstWhere((t) => title(t) == 'Text');
+      final text = tiles.firstWhere((t) => title(t) == announcement);
       expect(subtitle(text), isNull);
       await app.dispose(tester);
     });
@@ -103,11 +108,11 @@ void main() {
         final setId = await app.sets.createSet(name: 'Gig');
         await app.sets.addSongs(setId, [song]);
         // Created in the other language.
-        await app.sets.addMarker(setId, SetItemType.pause, other);
+        await app.sets.addMarker(setId, MarkerIcons.breakIcon, other);
         return [
           for (final v in await app.sets.getItems(setId))
             v.song == null
-                ? LiveItem.marker(v.item.type, v.item.note)
+                ? LiveItem.marker(v.item.icon, v.item.note)
                 : LiveItem.song(v.song!),
         ];
       });

@@ -1,6 +1,7 @@
 import 'package:chordpro/chordpro.dart' as cp;
 
 import '../../data/database.dart';
+import '../../data/marker_icons.dart';
 import '../../data/set_repository.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/key_picker.dart';
@@ -65,8 +66,8 @@ SetList buildSetList(
   for (final view in items) {
     final item = view.item;
     if (item.type != SetItemType.song) {
-      final note = markerNote(item.type, item.note);
-      if (item.type == SetItemType.pause) {
+      final note = markerNote(item.icon, item.note);
+      if (MarkerIcons.isBreak(item.icon)) {
         rows.add(SetListMarker(note ?? pause, pause: true));
       } else if (note != null) {
         rows.add(SetListMarker(note, pause: false));

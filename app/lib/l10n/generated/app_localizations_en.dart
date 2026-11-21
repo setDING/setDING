@@ -455,6 +455,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String get textItemHint => 'e.g. announcement or encore';
 
   @override
+  String get markerIconBreak => 'Break';
+
+  @override
+  String get markerIconDrinks => 'Drinks';
+
+  @override
+  String get markerIconAnnouncement => 'Announcement';
+
+  @override
+  String get markerIconMicrophone => 'Speech';
+
+  @override
+  String get markerIconGuest => 'Guest';
+
+  @override
+  String get markerIconEncore => 'Encore';
+
+  @override
+  String get markerIconTransition => 'Transition';
+
+  @override
+  String get markerIconSolo => 'Solo';
+
+  @override
+  String get markerIconApplause => 'Applause';
+
+  @override
+  String get markerIconInstrument => 'Change of instrument';
+
+  @override
+  String get markerIconTuning => 'Tuning';
+
+  @override
+  String get markerIconClick => 'Click';
+
+  @override
+  String get markerIconLight => 'Light';
+
+  @override
+  String get markerIconEffects => 'Effects';
+
+  @override
+  String get markerIconCelebration => 'Celebration';
+
+  @override
+  String get markerIconInfo => 'Note';
+
+  @override
+  String get markerIconWarning => 'Attention';
+
+  @override
+  String get marker => 'Marker';
+
+  @override
   String get setEmpty => 'This set is empty. Add some songs.';
 
   @override

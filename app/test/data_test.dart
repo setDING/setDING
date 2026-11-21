@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:setding/data/attachment_storage_io.dart';
 import 'package:setding/data/attachment_storage.dart';
 import 'package:setding/data/database.dart';
+import 'package:setding/data/marker_icons.dart';
 import 'package:setding/data/import_export.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/data/song_repository.dart';
@@ -654,7 +655,7 @@ void main() {
       await sets.addSongs(first, [a, b, a]);
       final second = await sets.createSet(name: 'Second');
       await sets.addSongs(second, [b, a]);
-      await sets.addMarker(second, SetItemType.pause, 'Break');
+      await sets.addMarker(second, MarkerIcons.breakIcon, 'Break');
 
       final deleted = await songs.deleteSong(a);
       expect(await songs.getSong(a), isNull);
@@ -751,7 +752,7 @@ void main() {
       final a = await songs.createSong(source: '{title: A}');
       final setId = await sets.createSet(name: 'Gig');
       await sets.addSongs(setId, [a]);
-      await sets.addMarker(setId, SetItemType.text, 'Encore');
+      await sets.addMarker(setId, MarkerIcons.announcement, 'Encore');
 
       final deleted = await sets.deleteSet(setId);
       expect(await sets.watchSets().first, isEmpty);
@@ -789,7 +790,7 @@ void main() {
       final b = await songs.createSong(source: '{title: B}');
       final setId = await sets.createSet(name: 'Gig', venue: 'Club');
       await sets.addSongs(setId, [a, b]);
-      await sets.addMarker(setId, SetItemType.pause, 'Break');
+      await sets.addMarker(setId, MarkerIcons.breakIcon, 'Break');
 
       var items = await sets.getItems(setId);
       expect(items.map((v) => v.song?.title ?? v.item.note), [
@@ -844,7 +845,7 @@ void main() {
       final b = await songs.createSong(title: 'B');
       final ready = await sets.createSet(name: 'Ready');
       await sets.addSongs(ready, [a]);
-      await sets.addMarker(ready, SetItemType.pause, 'Break');
+      await sets.addMarker(ready, MarkerIcons.breakIcon, 'Break');
       final empty = await sets.createSet(name: 'Empty');
       final missingFile = await sets.createSet(name: 'Missing file');
       await sets.addSongs(missingFile, [b]);
@@ -894,7 +895,7 @@ void main() {
       final mixed = await sets.createSet(name: 'Mixed');
       // The same song twice counts once.
       await sets.addSongs(mixed, [ok, bad, worse, bad]);
-      await sets.addMarker(mixed, SetItemType.pause, 'Break');
+      await sets.addMarker(mixed, MarkerIcons.breakIcon, 'Break');
       expect(await sets.watchProblemSongCounts().first, {mixed: 2});
 
       // Fixing a song or deleting it updates the counts.

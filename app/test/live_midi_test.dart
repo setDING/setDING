@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:setding/data/database.dart' show SetItemType;
+import 'package:setding/data/marker_icons.dart';
 import 'package:setding/midi/midi_message.dart';
 import 'package:setding/midi/midi_output.dart';
 import 'package:setding/ui/live/live_screen.dart';
@@ -44,7 +44,7 @@ void main() {
       final items = <LiveItem>[];
       for (final (i, source) in sources.indexed) {
         if (source == null) {
-          items.add(const LiveItem.marker(SetItemType.pause, 'Break'));
+          items.add(const LiveItem.marker(MarkerIcons.breakIcon, 'Break'));
           continue;
         }
         final id = await app.songs.createSong(source: source);

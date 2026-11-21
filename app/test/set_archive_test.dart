@@ -10,6 +10,7 @@ import 'package:setding/data/arrangement_repository.dart';
 import 'package:setding/data/attachment_storage_io.dart';
 import 'package:setding/data/backup.dart';
 import 'package:setding/data/database.dart';
+import 'package:setding/data/marker_icons.dart';
 import 'package:setding/data/set_archive.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/data/song_repository.dart';
@@ -63,9 +64,9 @@ void main() {
       venue: 'Bern',
     );
     await sets.addSongs(set, [hello]);
-    await sets.addMarker(set, SetItemType.pause, 'Break');
+    await sets.addMarker(set, MarkerIcons.breakIcon, 'Break');
     await sets.addSongs(set, [bye]);
-    await sets.addMarker(set, SetItemType.text, 'Encore');
+    await sets.addMarker(set, MarkerIcons.announcement, 'Encore');
     final first = (await sets.getItems(set)).first.item;
     await sets.setItemTranspose(first.id, 3);
     return (set: set, hello: hello, bye: bye);
@@ -215,8 +216,13 @@ void main() {
     expect(set.origin, ids.set);
     final items = await SetRepository(other, storage).getItems(set.id);
     expect(
-      [for (final v in items) v.item.type],
-      [SetItemType.song, SetItemType.pause, SetItemType.song, SetItemType.text],
+      [for (final v in items) (v.item.type, v.item.icon)],
+      [
+        (SetItemType.song, null),
+        (SetItemType.marker, MarkerIcons.breakIcon),
+        (SetItemType.song, null),
+        (SetItemType.marker, MarkerIcons.announcement),
+      ],
     );
     expect(items.first.song!.title, 'Hello');
     expect(items.first.item.transpose, 3);
@@ -238,7 +244,7 @@ void main() {
     ))!;
     // The set changes after the export.
     await sets.updateSet(ids.set, name: 'Changed');
-    await sets.addMarker(ids.set, SetItemType.text, 'Later');
+    await sets.addMarker(ids.set, MarkerIcons.announcement, 'Later');
 
     final preview = await service().preview(
       archive,
@@ -355,7 +361,8 @@ void main() {
       expect(result.missing, ['Bye']);
       expect(await other.select(other.songs).get(), hasLength(1));
       final items = await SetRepository(other, storage).getItems(result.setId);
-      expect(items[2].item.type, SetItemType.text);
+      expect(items[2].item.type, SetItemType.marker);
+      expect(items[2].item.icon, MarkerIcons.warning);
       expect(items[2].item.note, 'missing: Bye');
       expect(items[2].item.songId, isNull);
     },

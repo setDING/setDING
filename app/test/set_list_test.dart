@@ -1,4 +1,4 @@
-import 'package:setding/data/database.dart';
+import 'package:setding/data/marker_icons.dart';
 import 'package:setding/ui/sets/set_list_pdf.dart';
 import 'package:setding/ui/sets/set_list.dart';
 import 'package:chordpro/chordpro.dart' as cp;
@@ -23,7 +23,7 @@ void main() {
         gigDate: DateTime(2027, 6, 21),
       );
       await app.sets.addSongs(setId, [a, b]);
-      await app.sets.addMarker(setId, SetItemType.pause, 'Break');
+      await app.sets.addMarker(setId, MarkerIcons.breakIcon, 'Break');
       await app.sets.addSongs(setId, [c, h]);
       final items = await app.sets.getItems(setId);
       // Set-specific key and sequence for the first song, +2 for "No Key".

@@ -17,6 +17,7 @@ import 'package:setding/data/set_archive.dart';
 import 'package:setding/data/backup.dart';
 import 'package:setding/data/import_export.dart';
 import 'package:setding/data/database.dart';
+import 'package:setding/data/marker_icons.dart';
 import 'package:setding/data/demo_song.dart';
 import 'package:setding/midi/midi_output.dart';
 import 'package:setding/ui/backup/backup_actions.dart' show saveFileProvider;
@@ -407,7 +408,7 @@ void main() {
         await app.sets.addSongs(setId, [a, b]);
         await app.sets.addMarker(
           setId,
-          SetItemType.pause,
+          MarkerIcons.breakIcon,
           lang == 'de' ? 'Pause' : 'Break',
         );
         return [a, setId];
@@ -454,7 +455,7 @@ void main() {
         () async => [
           for (final v in await app.sets.getItems(ids[1]))
             v.song == null
-                ? LiveItem.marker(v.item.type, v.item.note)
+                ? LiveItem.marker(v.item.icon, v.item.note)
                 : LiveItem.song(v.song!),
         ],
       );
@@ -727,7 +728,7 @@ void main() {
           venue: 'Bern',
         );
         await app.sets.addSongs(set, [morning]);
-        await app.sets.addMarker(set, SetItemType.pause, '');
+        await app.sets.addMarker(set, MarkerIcons.breakIcon, '');
         await app.sets.addSongs(set, [grace]);
         final zip = await SetArchiveService(BackupService(app.db, app.storage))
             .export(set);

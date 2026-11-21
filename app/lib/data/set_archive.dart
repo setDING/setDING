@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 import 'arrangement_repository.dart';
 import 'backup.dart';
 import 'database.dart';
+import 'marker_icons.dart';
 import 'import_export.dart' show safeFileName, sourceWithMeta;
 import 'outbox.dart';
 import 'set_repository.dart';
@@ -340,7 +341,7 @@ class SetArchiveService {
         'items': [
           for (final i in items)
             {
-              'type': i.type.name,
+              'type': writeItemType(i.type, i.icon),
               if (songs.containsKey(i.songId)) 'songId': i.songId,
               if (options.setSettings) ...{
                 if (i.transpose != 0) 'transpose': i.transpose,
@@ -349,6 +350,7 @@ class SetArchiveService {
                   'played': played.toJson(),
               },
               'note': ?i.note,
+              if (i.type == SetItemType.marker) 'icon': ?i.icon,
             },
         ],
       },
@@ -588,8 +590,7 @@ class SetArchiveService {
         for (final e in (set['items'] as List?) ?? const [])
           (e as Map).cast<String, dynamic>(),
       ]) {
-        var type =
-            SetItemType.values.asNameMap()[i['type']] ?? SetItemType.text;
+        var (:type, :icon) = readItemType(i['type'], i['icon']);
         var note = i['note'] as String?;
         final songId = songs.songIds[i['songId']];
         if (type == SetItemType.song && songId == null) {
@@ -598,7 +599,8 @@ class SetArchiveService {
           final title = archive.titleOf(i['songId'] as String?);
           if (title == null) continue;
           missing.add(title);
-          type = SetItemType.text;
+          type = SetItemType.marker;
+          icon = MarkerIcons.warning;
           note = missingNote(title);
         }
         final song = type == SetItemType.song;
@@ -620,6 +622,7 @@ class SetArchiveService {
                 ),
                 note: Value(note),
                 type: type,
+                icon: Value(icon),
                 played: Value(switch (i['played']) {
                   final Map<String, dynamic> played
                       when song && chosen.setSettings =>

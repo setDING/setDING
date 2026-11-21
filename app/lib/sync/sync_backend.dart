@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 
 import '../data/band_role.dart';
 import '../data/database.dart' show PlayedValues, SetItemEntry, SetItemType;
+import '../data/marker_icons.dart';
 import '../midi/midi_message.dart';
 
 export '../data/band_role.dart';
@@ -358,31 +359,34 @@ class RemoteSetItem {
     this.transpose = 0,
     this.sequence,
     this.note,
+    this.icon,
     this.played,
     this.extra = const {},
   });
 
-  /// Reads an entry; an unknown type is shown as a text item. Fields this
-  /// version does not know are kept in [extra] (ADR-0046).
-  factory RemoteSetItem.fromJson(Map<String, dynamic> json) => RemoteSetItem(
-    id: json['id'] as String? ?? '',
-    type: SetItemType.values.firstWhere(
-      (t) => t.name == json['type'],
-      orElse: () => SetItemType.text,
-    ),
-    songId: json['song'] as String?,
-    transpose: (json['transpose'] as num?)?.toInt() ?? 0,
-    sequence: json['sequence'] as String?,
-    note: json['note'] as String?,
-    played: switch (json['played']) {
-      final Map<String, dynamic> played => PlayedValues.fromJson(played),
-      _ => null,
-    },
-    extra: {
-      for (final e in json.entries)
-        if (!_knownFields.contains(e.key)) e.key: e.value,
-    },
-  );
+  /// Reads an entry; every type other than `song` is a marker, which gets
+  /// an icon from its type when an older app wrote it (ADR-0047). Fields
+  /// this version does not know are kept in [extra] (ADR-0046).
+  factory RemoteSetItem.fromJson(Map<String, dynamic> json) {
+    final kind = readItemType(json['type'], json['icon']);
+    return RemoteSetItem(
+      id: json['id'] as String? ?? '',
+      type: kind.type,
+      icon: kind.icon,
+      songId: json['song'] as String?,
+      transpose: (json['transpose'] as num?)?.toInt() ?? 0,
+      sequence: json['sequence'] as String?,
+      note: json['note'] as String?,
+      played: switch (json['played']) {
+        final Map<String, dynamic> played => PlayedValues.fromJson(played),
+        _ => null,
+      },
+      extra: {
+        for (final e in json.entries)
+          if (!_knownFields.contains(e.key)) e.key: e.value,
+      },
+    );
+  }
 
   /// An item of the local database.
   factory RemoteSetItem.fromEntry(SetItemEntry i) => RemoteSetItem(
@@ -392,6 +396,7 @@ class RemoteSetItem {
     transpose: i.transpose,
     sequence: i.sequence,
     note: i.note,
+    icon: i.type == SetItemType.marker ? i.icon : null,
     played: i.played,
     extra: decodeExtra(i.extra),
   );
@@ -403,6 +408,7 @@ class RemoteSetItem {
     'transpose',
     'sequence',
     'note',
+    'icon',
     'played',
   };
 
@@ -413,6 +419,9 @@ class RemoteSetItem {
   final int transpose;
   final String? sequence;
   final String? note;
+
+  /// Key of a marker's icon (ADR-0047); null for songs.
+  final String? icon;
 
   /// How the song was played, frozen on the gig day (ADR-0046).
   final PlayedValues? played;
@@ -439,11 +448,12 @@ class RemoteSetItem {
   Map<String, dynamic> toJson() => {
     ...extra,
     'id': id,
-    'type': type.name,
+    'type': writeItemType(type, icon),
     'song': ?songId,
     if (transpose != 0) 'transpose': transpose,
     'sequence': ?sequence,
     'note': ?note,
+    'icon': ?icon,
     if (played case final played? when !played.isEmpty)
       'played': played.toJson(),
   };
@@ -457,6 +467,7 @@ class RemoteSetItem {
       other.transpose == transpose &&
       other.sequence == sequence &&
       other.note == note &&
+      other.icon == icon &&
       other.played == played &&
       mapEquals(other.extra, extra);
 
@@ -468,6 +479,7 @@ class RemoteSetItem {
     transpose,
     sequence,
     note,
+    icon,
     played,
     extra.length,
   );

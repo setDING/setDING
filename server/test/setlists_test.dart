@@ -141,6 +141,48 @@ void main() {
     expect(r.status, isNot(200));
   });
 
+  group('set markers (ADR-0047)', () {
+    test('an older app saving a set keeps the icons of its markers', () async {
+      final f = await BandFixture.create(pb);
+      final encore = {
+        'id': uuid(),
+        'type': 'text',
+        'note': 'Zugabe',
+        'icon': 'encore',
+      };
+      final light = {'id': uuid(), 'type': 'text', 'icon': 'light'};
+      final set = await f.admin.post('setlists', {
+        'band': f.id,
+        'name': 'Gig',
+        'items': [encore, light],
+      });
+      set.expectStatus(200);
+
+      // An older app sends the markers without `icon`; a newer one sends a
+      // changed icon, and a new marker of an older app has none.
+      final added = {'id': uuid(), 'type': 'pause'};
+      final saved = await f.admin.patch('setlists', set.json['id'], {
+        'items': [
+          {'id': encore['id'], 'type': 'text', 'note': 'Zugabe!'},
+          {...light, 'icon': 'effects'},
+          added,
+        ],
+      });
+      saved.expectStatus(200);
+      final items =
+          (await f.member.view('setlists', set.json['id'])).json['items']
+              as List;
+      expect(items[0], {
+        'id': encore['id'],
+        'type': 'text',
+        'note': 'Zugabe!',
+        'icon': 'encore',
+      });
+      expect((items[1] as Map)['icon'], 'effects');
+      expect((items[2] as Map).containsKey('icon'), isFalse);
+    });
+  });
+
   group('song play history (ADR-0046)', () {
     test('an older app saving a set keeps how its songs were played', () async {
       final f = await BandFixture.create(pb);
