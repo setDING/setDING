@@ -1531,9 +1531,13 @@ void main() {
   });
 
   group('song play history (ADR-0046)', () {
-    final today = DateTime.now();
-    DateTime daysAgo(int days) =>
-        DateTime(today.year, today.month, today.day - days);
+    // From the current date when the test builds its data, as the engine
+    // freezes with the current date: a date taken when the file is loaded
+    // is a day off once the run crosses midnight (#817).
+    DateTime daysAgo(int days) {
+      final today = DateTime.now();
+      return DateTime(today.year, today.month, today.day - days);
+    }
 
     RemoteSet gig(String id, DateTime date, {String bandId = 'b1'}) =>
         RemoteSet(
@@ -1651,9 +1655,14 @@ void main() {
   });
 
   group('plays across the bands of the organization (ADR-0046)', () {
-    final today = DateTime.now();
-    DateTime daysAgo(int days) =>
-        DateTime(today.year, today.month, today.day - days);
+    // From the current date when the test builds its data, as the engine
+    // freezes with the current date: a date taken when the file is loaded
+    // is a day off once the run crosses midnight (#817).
+    DateTime daysAgo(int days) {
+      final today = DateTime.now();
+      return DateTime(today.year, today.month, today.day - days);
+    }
+
     const bob = AuthUser(id: 'bob', email: 'bob@example.test', name: 'Bob');
 
     test('are fetched with every sync and kept when the server does not '
