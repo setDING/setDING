@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import sequence from '../../../../../docs/screenshots/sequence_de.png';
+import setLanguageVersion from '../../../../../docs/screenshots/set_language_version_de.png';
 
 Ein Song ist so gespeichert, wie er geschrieben wurde. Wie deine Band ihn spielt –
 in welcher Tonart, in welchem Ablauf, in welchem Tempo – legt die Band fest, ohne den Song
@@ -73,6 +74,19 @@ ausgeblendeten Teile im Kopf des Songs. Das gilt auch, wenn du einen einzelnen S
 über **Live** startest: Dann zählt der Ablauf der Band, die du im Tab Sets oder im
 Band-Arrangement gewählt hast, sonst der Ablauf des Songs. Tonart und Tempo bleiben dort so, wie der Song
 geschrieben ist.
+
+## Eine andere Sprachversion
+
+Hat ein Song [Sprachversionen](/songs/library/#sprachversionen), spielt das Set heute
+vielleicht eine andere: **⋮ → Sprachversion wechseln …** neben dem Song zeigt die
+anderen Versionen mit der Tonart, die sie in diesem Set hätten; ein Tipp setzt die
+gewählte Version ins Set. Die Transposition des Sets bleibt, und es gilt das
+Band-Arrangement der neuen Version. Ergibt das eine andere Tonart, sagt setDING es,
+etwa *Gewechselt zu: Deutsch, im Set in E statt D*. Ein für dieses Set geänderter
+Songablauf bleibt, solange die neue Version alle seine Teile hat; sonst wird er
+entfernt, und setDING sagt es.
+
+<Image src={setLanguageVersion} alt="Sprachversion wechseln: Deutsch (Morgenlicht, im Set in E) und Schweizerdeutsch (Morgeliecht, im Set in D)" />
 
 ## Wie habt ihr den Song zuletzt gespielt?
 

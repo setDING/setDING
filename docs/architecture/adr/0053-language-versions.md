@@ -188,11 +188,15 @@ the API directly as the refused roles (permission matrix test).
   language first, then by language code; named by language, by title while the
   language is unknown or shared); the song list marks songs with other versions
   with a translate icon.
+- 2026-11-21: Switching set items implemented (#807), resolving the open point on
+  the set item's own sequence: it stays when every part it names exists in the new
+  version (`sequenceFits`), otherwise it is removed and the app says so. *Switch
+  language version …* in the set item's menu lists the other versions with the key
+  they would have in the set; after the switch the new version's band arrangement
+  applies, the set item's transposition stays, and a different resulting key is
+  named in the message.
 
 ## Open points
 
-- Does a set item's own sequence survive a switch? It names the sections of the old
-  version, which a free adaptation may not have. Tendency: keep it when every section
-  exists in the new version, otherwise clear it with a hint.
 - Switching the language of a whole set at once (e.g. "all songs in English").
 - Showing two versions side by side or line by line for songs sung in both languages.

@@ -88,6 +88,67 @@ void main() {
     });
   }
 
+  // Switching a set item to another language version (ADR-0053, #807).
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('set language version $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      final setId = (await tester.runAsync(() async {
+        final en = await app.songs.createSong(
+          source:
+              '{title: Morning Light}\n{artist: Ann Trainor}\n{key: D}\n'
+              '{start_of_verse}\n[D]I walk along the river\n{end_of_verse}\n'
+              '{start_of_chorus}\n[G]You are my light\n{end_of_chorus}\n',
+        );
+        final de = await app.songs.createSong(
+          source:
+              '{title: Morgenlicht}\n{artist: Ann Trainor}\n{key: E}\n'
+              '{start_of_verse}\n[E]Ich gehe durch die Nacht\n{end_of_verse}\n'
+              '{start_of_chorus}\n[A]Du bist mein Licht\n{end_of_chorus}\n',
+        );
+        final ch = await app.songs.createSong(
+          source:
+              '{title: Morgeliecht}\n{artist: Ann Trainor}\n{key: D}\n'
+              '{start_of_verse}\n[D]Mir sind hüt alli da\n{end_of_verse}\n',
+        );
+        await app.songs.setLanguage(en, 'en');
+        await app.songs.setLanguage(de, 'de');
+        await app.songs.setLanguage(ch, 'gsw');
+        await app.songs.linkLanguageVersions(en, de);
+        await app.songs.linkLanguageVersions(en, ch);
+        final grace = await app.songs.createSong(
+          source: '{title: Amazing Grace}\n{key: G}\n[G]Amazing grace\n',
+        );
+        final set = await app.sets.createSet(
+          name: lang == 'de' ? 'Sommerfest' : 'Summer party',
+          gigDate: DateTime(2027, 6, 21),
+          venue: 'Bern',
+        );
+        await app.sets.addSongs(set, [en, grace]);
+        return set;
+      }))!;
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: SetScreen(setId: setId)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find
+            .byWidgetPredicate((w) => '${w.key}'.contains('set-item-menu-'))
+            .first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('set-item-action-version')));
+      await tester.pumpAndSettle();
+      await shot(tester, '${lang}_41_set_language_version');
+      await app.dispose(tester);
+    });
+  }
+
   // Set archive (ADR-0043 §1b, #707): the export options, the preview of an
   // import that finds the set again and the report.
   for (final (lang, dark) in [('de', false), ('en', true)]) {

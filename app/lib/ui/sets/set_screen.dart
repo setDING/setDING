@@ -18,6 +18,7 @@ import '../live/live_screen.dart';
 import '../render/render_cache.dart';
 import '../render/song_header.dart';
 import '../songs/chordpro_problems_badge.dart';
+import '../songs/language_versions.dart';
 import '../songs/play_history_panel.dart' show keyHistoryHint;
 import '../songs/song_screen.dart';
 import '../bands/copy_to_band.dart';
@@ -475,6 +476,82 @@ class _SetItemTile extends ConsumerWidget {
       );
     }
 
+    // Other language versions of the song (ADR-0053).
+    final versions = song == null
+        ? const <SongEntry>[]
+        : ref.watch(languageVersionsProvider(song.id)).value ??
+              const <SongEntry>[];
+
+    /// The key [s] is played in this set: its band key and the set item's
+    /// transposition on top.
+    String? keyInSet(SongEntry s) {
+      final key = s.songKey == null ? null : cp.Key.tryParse(s.songKey!);
+      final band = ref.read(bandArrangementsProvider(bandId)).value?[s.id];
+      return key
+          ?.transpose((band?.transpose ?? 0) + item.transpose)
+          .format(notation);
+    }
+
+    Future<void> switchVersion() async {
+      final messenger = ScaffoldMessenger.of(context);
+      final others = [
+        for (final v in orderedLanguageVersions(
+          versions,
+          Localizations.localeOf(context).languageCode,
+        ))
+          if (v.id != song!.id) v,
+      ];
+      final choice = await showDialog<SongEntry>(
+        context: context,
+        builder: (context) => SimpleDialog(
+          title: Text(l10n.switchLanguageVersionTitle),
+          children: [
+            for (final v in others)
+              SimpleDialogOption(
+                key: ValueKey('switch-version-${v.id}'),
+                onPressed: () => Navigator.pop(context, v),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(languageVersionLabel(l10n, v, versions)),
+                    Text(
+                      switch (keyInSet(v)) {
+                        final key? => l10n.languageVersionInSet(
+                          v.title.isEmpty ? l10n.untitled : v.title,
+                          key,
+                        ),
+                        null => v.title.isEmpty ? l10n.untitled : v.title,
+                      },
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      );
+      if (choice == null) return;
+      final own = item.sequence;
+      final keep =
+          own == null ||
+          sequenceFits(own, parseChordProCached(choice.chordproSource));
+      final oldKey = keyInSet(song!);
+      final newKey = keyInSet(choice);
+      await repo.switchItemSong(item.id, choice.id, keepSequence: keep);
+      final name = languageVersionLabel(l10n, choice, versions);
+      showMessageOn(
+        messenger,
+        [
+          oldKey != null && newKey != null && oldKey != newKey
+              ? l10n.switchedLanguageVersionKey(name, newKey, oldKey)
+              : l10n.switchedLanguageVersion(name),
+          if (!keep) l10n.switchedLanguageVersionSequence,
+        ].join(' '),
+      );
+    }
+
     return ListTile(
       leading: SizedBox(
         width: 32,
@@ -584,6 +661,8 @@ class _SetItemTile extends ConsumerWidget {
               entries: [
                 if (song != null && hasChordPro)
                   ('sequence', l10n.sequenceEdit, changeSequence),
+                if (versions.length > 1)
+                  ('version', l10n.switchLanguageVersion, switchVersion),
                 ('remove', l10n.removeFromSet, remove),
               ],
             ),

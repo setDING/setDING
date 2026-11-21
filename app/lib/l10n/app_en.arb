@@ -2808,5 +2808,11 @@
   "languageVersionLinked": "Linked as a language version",
   "languageVersionNotAllowed": "Not linked: you may not change the other version.",
   "languageVersionUnlinked": "Removed from the language versions",
-  "otherLanguageVersionsTooltip": "{count, plural, =1{One other language version} other{{count} other language versions}}"
+  "otherLanguageVersionsTooltip": "{count, plural, =1{One other language version} other{{count} other language versions}}",
+  "switchLanguageVersion": "Switch language version …",
+  "switchedLanguageVersion": "Switched to: {version}",
+  "switchedLanguageVersionKey": "Switched to: {version}, in {newKey} instead of {oldKey} in this set",
+  "switchedLanguageVersionSequence": "The set’s own sequence does not fit the new version and was removed.",
+  "languageVersionInSet": "{title} · in {key} in this set",
+  "switchLanguageVersionTitle": "Switch language version"
 }

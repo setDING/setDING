@@ -7938,6 +7938,46 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count, plural, =1{Eine weitere Sprachversion} other{{count} weitere Sprachversionen}}'**
   String otherLanguageVersionsTooltip(int count);
+
+  /// No description provided for @switchLanguageVersion.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprachversion wechseln …'**
+  String get switchLanguageVersion;
+
+  /// No description provided for @switchedLanguageVersion.
+  ///
+  /// In de, this message translates to:
+  /// **'Gewechselt zu: {version}'**
+  String switchedLanguageVersion(String version);
+
+  /// No description provided for @switchedLanguageVersionKey.
+  ///
+  /// In de, this message translates to:
+  /// **'Gewechselt zu: {version}, im Set in {newKey} statt {oldKey}'**
+  String switchedLanguageVersionKey(
+    String version,
+    String newKey,
+    String oldKey,
+  );
+
+  /// No description provided for @switchedLanguageVersionSequence.
+  ///
+  /// In de, this message translates to:
+  /// **'Die eigene Reihenfolge des Sets passt nicht zur neuen Version und wurde entfernt.'**
+  String get switchedLanguageVersionSequence;
+
+  /// No description provided for @languageVersionInSet.
+  ///
+  /// In de, this message translates to:
+  /// **'{title} · im Set in {key}'**
+  String languageVersionInSet(String title, String key);
+
+  /// No description provided for @switchLanguageVersionTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprachversion wechseln'**
+  String get switchLanguageVersionTitle;
 }
 
 class _AppLocalizationsDelegate
