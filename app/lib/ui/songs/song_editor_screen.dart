@@ -110,6 +110,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
   /// preview is parsed again only when the text changed, shortly after the
   /// last keystroke.
   void _onChanged() {
+    _unsaved.value = _dirty;
     _checkPaste();
     if (_controller.text == _previewSource) {
       _previewDebounce?.cancel();
@@ -186,6 +187,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
   void dispose() {
     _previewDebounce?.cancel();
     _controller.dispose();
+    _unsaved.dispose();
     _focus.dispose();
     _scroll.dispose();
     _undo.dispose();
@@ -193,6 +195,10 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
   }
 
   bool get _dirty => _controller.text != _original;
+
+  /// [_dirty] for the save button; notifies only when it flips, not on
+  /// every controller notification (cursor, search matches).
+  final _unsaved = ValueNotifier(false);
 
   Future<void> _save() async {
     final repo = ref.read(songRepositoryProvider);
@@ -709,11 +715,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
                     : l10n.editorTitleEdit,
               ),
               actions: [
-                IconButton(
-                  tooltip: l10n.save,
-                  icon: const Icon(Icons.check),
-                  onPressed: _save,
-                ),
+                _SaveButton(unsaved: _unsaved, wide: wide, onPressed: _save),
               ],
               bottom: wide
                   ? null
@@ -897,6 +899,68 @@ class _ConvertHint extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// The save button in the app bar (#748): with a label on wide screens, a
+/// round icon button on narrow ones. Tonal while nothing changed, filled in
+/// the primary colour as soon as there are unsaved changes. Listens to
+/// [unsaved] itself, so a keystroke does not rebuild the whole editor.
+class _SaveButton extends StatelessWidget {
+  const _SaveButton({
+    required this.unsaved,
+    required this.wide,
+    required this.onPressed,
+  });
+
+  final ValueNotifier<bool> unsaved;
+  final bool wide;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return ValueListenableBuilder<bool>(
+      valueListenable: unsaved,
+      builder: (context, dirty, _) {
+        const icon = Icon(Icons.check);
+        if (!wide) {
+          return dirty
+              ? IconButton.filled(
+                  key: const ValueKey('editor-save'),
+                  tooltip: l10n.save,
+                  icon: icon,
+                  onPressed: onPressed,
+                )
+              : IconButton.filledTonal(
+                  key: const ValueKey('editor-save'),
+                  tooltip: l10n.save,
+                  icon: icon,
+                  onPressed: onPressed,
+                );
+        }
+        final label = Text(l10n.save);
+        return Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: Tooltip(
+            message: l10n.save,
+            child: dirty
+                ? FilledButton.icon(
+                    key: const ValueKey('editor-save'),
+                    onPressed: onPressed,
+                    icon: icon,
+                    label: label,
+                  )
+                : FilledButton.tonalIcon(
+                    key: const ValueKey('editor-save'),
+                    onPressed: onPressed,
+                    icon: icon,
+                    label: label,
+                  ),
+          ),
+        );
+      },
     );
   }
 }

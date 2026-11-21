@@ -206,7 +206,7 @@ void main() {
     await tester.pump();
     await tester.tap(find.byKey(const ValueKey('sequence-part-C')));
     await tester.pump();
-    await tester.tap(find.text('Save'));
+    await tester.tap(find.text('Save').last);
     await tester.pumpAndSettle();
     expect(
       field.controller!.text,
@@ -221,7 +221,7 @@ void main() {
     expect(find.byKey(const ValueKey('sequence-entry')), findsNWidgets(3));
     await tester.tap(find.text('Clear'));
     await tester.pump();
-    await tester.tap(find.text('Save'));
+    await tester.tap(find.text('Save').last);
     await tester.pumpAndSettle();
     expect(field.controller!.text, source);
     await app.dispose(tester);
@@ -265,7 +265,7 @@ void main() {
     // A tap still appends.
     await tester.tap(find.byKey(const ValueKey('sequence-part-V')));
     await tester.pump();
-    await tester.tap(find.text('Save'));
+    await tester.tap(find.text('Save').last);
     await tester.pumpAndSettle();
     expect(
       field.controller!.text,
@@ -292,7 +292,7 @@ void main() {
       await tester.pump();
     }
     expect(find.byKey(const ValueKey('sequence-entry')), findsNWidgets(2));
-    await tester.tap(find.text('Save'));
+    await tester.tap(find.text('Save').last);
     await tester.pumpAndSettle();
     expect(
       field.controller!.text,
@@ -395,7 +395,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('sequence-part-C')));
     await tester.tap(find.byKey(const ValueKey('sequence-part-C')));
     await tester.pump();
-    await tester.tap(find.text('Save'));
+    await tester.tap(find.text('Save').last);
     await tester.pumpAndSettle();
     // The form shows the new sequence; the source changes only on OK.
     expect(
@@ -420,7 +420,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('sequence-entry')), findsNWidgets(2));
     await tester.tap(find.text('Clear'));
-    await tester.tap(find.text('Save'));
+    await tester.tap(find.text('Save').last);
     await tester.pumpAndSettle();
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
