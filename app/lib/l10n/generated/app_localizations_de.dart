@@ -5141,4 +5141,41 @@ class AppLocalizationsDe extends AppLocalizations {
   String songLanguageByHandTooltip(String language) {
     return '$language (von Hand gesetzt)';
   }
+
+  @override
+  String get languageVersions => 'Sprachversionen';
+
+  @override
+  String get linkLanguageVersion => 'Sprachversion verknüpfen …';
+
+  @override
+  String get unlinkLanguageVersion => 'Aus den Sprachversionen lösen';
+
+  @override
+  String get languageVersionPickerTitle => 'Sprachversion wählen';
+
+  @override
+  String get languageVersionPickerEmpty =>
+      'Keine weiteren Songs, die du verknüpfen darfst';
+
+  @override
+  String get languageVersionLinked => 'Als Sprachversion verknüpft';
+
+  @override
+  String get languageVersionNotAllowed =>
+      'Nicht verknüpft: Du darfst die andere Version nicht ändern.';
+
+  @override
+  String get languageVersionUnlinked => 'Aus den Sprachversionen gelöst';
+
+  @override
+  String otherLanguageVersionsTooltip(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count weitere Sprachversionen',
+      one: 'Eine weitere Sprachversion',
+    );
+    return '$_temp0';
+  }
 }

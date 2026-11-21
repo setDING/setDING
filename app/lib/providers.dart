@@ -328,6 +328,12 @@ final songLanguagesProvider = StreamProvider<Set<String>>(
   (ref) => ref.watch(songRepositoryProvider).watchLanguages(),
 );
 
+/// How many songs of the current library share each group of language
+/// versions (ADR-0053).
+final workCountsProvider = StreamProvider<Map<String, int>>(
+  (ref) => ref.watch(songRepositoryProvider).watchWorkCounts(),
+);
+
 final songProvider = StreamProvider.autoDispose.family<SongEntry?, String>(
   (ref, id) => ref.watch(songRepositoryProvider).watchSong(id),
 );

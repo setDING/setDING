@@ -208,6 +208,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
     final languages =
         ref.watch(songLanguagesProvider).value ?? const <String>{};
     final mixedLanguages = languages.length > 1;
+    final works = ref.watch(workCountsProvider).value ?? const <String, int>{};
     final language = _language;
     List<SongListEntry> shownSongs(List<SongListEntry> songs) {
       var list = visible(songs);
@@ -480,6 +481,10 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                     arrangement: arrangements[list[i].id],
                     hasConflict: conflicts.contains(list[i].id),
                     showLanguage: mixedLanguages,
+                    otherVersions: switch (list[i].workId) {
+                      final w? => (works[w] ?? 1) - 1,
+                      null => 0,
+                    },
                     showProblems: library.canEditSongBy(
                       createdBy: list[i].createdBy,
                       updatedBy: list[i].updatedBy,
@@ -1028,6 +1033,7 @@ class SongTile extends ConsumerWidget {
     this.bandName = '',
     this.hasConflict = false,
     this.showLanguage = false,
+    this.otherVersions = 0,
     this.showProblems = false,
     this.onConvert,
     this.nextGig,
@@ -1044,6 +1050,10 @@ class SongTile extends ConsumerWidget {
   /// Show the song's language after the title (ADR-0053): in a library
   /// with songs in more than one language.
   final bool showLanguage;
+
+  /// How many other language versions the song has (ADR-0053), shown as an
+  /// icon.
+  final int otherVersions;
 
   /// Show a warning if the ChordPro source has problems (#314): only to
   /// people who may edit the song.
@@ -1241,6 +1251,12 @@ class SongTile extends ConsumerWidget {
             l10n.chordProConversionsTooltip(song.conversions),
             chordProConversionsIcon,
           ),
+      if (otherVersions > 0)
+        icon(
+          const ValueKey('song-status-versions'),
+          l10n.otherLanguageVersionsTooltip(otherVersions),
+          Icons.translate,
+        ),
       if (nextGig case final gig?)
         icon(
           const ValueKey('song-status-gig'),

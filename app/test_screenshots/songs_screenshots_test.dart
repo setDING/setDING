@@ -130,6 +130,74 @@ void main() {
     });
   }
 
+  // Language versions (ADR-0053, #806): the versions of a song below its
+  // header, and the picker that links another song.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('language versions $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      await tester.runAsync(() async {
+        final en = await app.songs.createSong(
+          source:
+              '{title: Morning Light}\n{artist: Ann Trainor}\n{key: D}\n'
+              '{start_of_verse}\n'
+              '[D]I walk along the [G]river and you are [A]always there with me,\n'
+              'when the [D]wind is in the [G]willows and the [A]night is calling me.\n'
+              '{end_of_verse}\n{start_of_chorus}\n'
+              'You are my [G]light, and [A]all the stars will [D]shine for you.\n'
+              '{end_of_chorus}',
+        );
+        final de = await app.songs.createSong(
+          source:
+              '{title: Morgenlicht}\n{artist: Ann Trainor}\n{key: D}\n'
+              '[D]Ich gehe durch die Nacht und du bist immer bei mir,\n'
+              'wenn der Wind über das Land zieht, singe ich mit dir.\n'
+              'Du bist mein Licht, auch wenn die Sterne nicht mehr scheinen.',
+        );
+        await app.songs.createSong(
+          source:
+              '{title: Lumière du matin}\n{artist: Ann Trainor}\n{key: D}\n'
+              '[D]Je marche dans la nuit et tu es toujours avec moi,\n'
+              'quand le vent chante sur la mer, je pense à toi.\n'
+              'Tu es ma lumière, et les étoiles brillent pour nous.',
+        );
+        final ch = await app.songs.createSong(
+          source:
+              '{title: Morgeliecht}\n{artist: Ann Trainor}\n{key: D}\n'
+              '[D]Mir sind hüt alli da und mir singed zäme es Lied,\n'
+              'das chunnt vo ganzem Härze, wo mer nöd vergässed.',
+        );
+        await app.songs.setLanguage(ch, 'gsw');
+        await app.songs.createSong(
+          source:
+              '{title: Train to Nowhere}\n{artist: House Band}\n{key: E}\n'
+              '[E]Waiting at the station for the train that never comes,\n'
+              'and all the people there are counting all the hours.',
+        );
+        await app.songs.linkLanguageVersions(en, de);
+        await app.songs.linkLanguageVersions(en, ch);
+      });
+      await tester.pumpWidget(
+        RepaintBoundary(key: UniqueKey(), child: app.build()),
+      );
+      await tester.pumpAndSettle();
+      await openTab(tester, HomeTab.songs);
+      await tester.tap(find.textContaining('Morning Light'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('language-versions')), findsOneWidget);
+      await shot(tester, '${lang}_40_language_versions');
+
+      await tester.tap(find.byType(PopupMenuButton<String>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('song-link-version')));
+      await tester.pumpAndSettle();
+      await shot(tester, '${lang}_40b_language_version_picker');
+      await app.dispose(tester);
+    });
+  }
+
   screenshotTest('song list search hits', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'de'});

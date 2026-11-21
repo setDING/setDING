@@ -7884,6 +7884,60 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{language} (von Hand gesetzt)'**
   String songLanguageByHandTooltip(String language);
+
+  /// No description provided for @languageVersions.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprachversionen'**
+  String get languageVersions;
+
+  /// No description provided for @linkLanguageVersion.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprachversion verknüpfen …'**
+  String get linkLanguageVersion;
+
+  /// No description provided for @unlinkLanguageVersion.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus den Sprachversionen lösen'**
+  String get unlinkLanguageVersion;
+
+  /// No description provided for @languageVersionPickerTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprachversion wählen'**
+  String get languageVersionPickerTitle;
+
+  /// No description provided for @languageVersionPickerEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine weiteren Songs, die du verknüpfen darfst'**
+  String get languageVersionPickerEmpty;
+
+  /// No description provided for @languageVersionLinked.
+  ///
+  /// In de, this message translates to:
+  /// **'Als Sprachversion verknüpft'**
+  String get languageVersionLinked;
+
+  /// No description provided for @languageVersionNotAllowed.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht verknüpft: Du darfst die andere Version nicht ändern.'**
+  String get languageVersionNotAllowed;
+
+  /// No description provided for @languageVersionUnlinked.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus den Sprachversionen gelöst'**
+  String get languageVersionUnlinked;
+
+  /// No description provided for @otherLanguageVersionsTooltip.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Eine weitere Sprachversion} other{{count} weitere Sprachversionen}}'**
+  String otherLanguageVersionsTooltip(int count);
 }
 
 class _AppLocalizationsDelegate
