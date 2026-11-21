@@ -516,6 +516,27 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
     _focus.requestFocus();
   }
 
+  /// Hint on SongSelect directives hidden by the author (#777).
+  bool _songSelectHintHidden = false;
+
+  /// Makes the SongSelect directives standard-conforming (#777); the
+  /// cursor stays on its line.
+  void _convertSongSelectDirectives() {
+    final text = _controller.text;
+    final converted = normalizeSongSelectDirectives(text);
+    if (converted == text) return;
+    final sel = _controller.selection;
+    final offset = sel.isValid ? sel.baseOffset : 0;
+    final lineStart = offset <= 0 ? 0 : text.lastIndexOf('\n', offset - 1) + 1;
+    _controller.value = TextEditingValue(
+      text: converted,
+      selection: TextSelection.collapsed(
+        offset: lineStart.clamp(0, converted.length),
+      ),
+    );
+    _focus.requestFocus();
+  }
+
   /// Edits title, key, tempo and more in a form instead of the text (#189).
   Future<void> _editDetails() async {
     final before = _controller.text;
@@ -640,6 +661,19 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
                 count: count,
                 onConvert: _convertLegacyLabels,
                 onHide: () => setState(() => _labelHintHidden = true),
+              );
+            },
+          ),
+        if (!_songSelectHintHidden)
+          ListenableBuilder(
+            listenable: _controller,
+            builder: (context, _) {
+              final count = _controller.songSelectDirectives;
+              if (count == 0) return const SizedBox.shrink();
+              return SongSelectDirectiveHint(
+                count: count,
+                onConvert: _convertSongSelectDirectives,
+                onHide: () => setState(() => _songSelectHintHidden = true),
               );
             },
           ),
@@ -862,6 +896,31 @@ class LegacyLabelHint extends StatelessWidget {
   Widget build(BuildContext context) => _ConvertHint(
     icon: Icons.label_outline,
     message: AppLocalizations.of(context).legacyLabelsHint(count),
+    onConvert: onConvert,
+    onHide: onHide,
+  );
+}
+
+/// Hint above the editor that the song has the SongSelect directives
+/// `{ccli}` and `{ccli_license}`, which the ChordPro specification does not
+/// define (#777): converting renames `{ccli}` to `{x_ccli}` and removes
+/// `{ccli_license}`, as the import does.
+class SongSelectDirectiveHint extends StatelessWidget {
+  const SongSelectDirectiveHint({
+    super.key,
+    required this.count,
+    required this.onConvert,
+    required this.onHide,
+  });
+
+  final int count;
+  final VoidCallback onConvert;
+  final VoidCallback onHide;
+
+  @override
+  Widget build(BuildContext context) => _ConvertHint(
+    icon: Icons.rule,
+    message: AppLocalizations.of(context).songSelectDirectivesHint(count),
     onConvert: onConvert,
     onHide: onHide,
   );

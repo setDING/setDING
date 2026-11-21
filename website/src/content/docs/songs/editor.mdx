@@ -10,6 +10,7 @@ import editor from '../../../../../docs/screenshots/editor_de.png';
 import editorLabels from '../../../../../docs/screenshots/editor_labels_de.png';
 import editorSave from '../../../../../docs/screenshots/editor_save_de.png';
 import editorCcli from '../../../../../docs/screenshots/editor_ccli_de.png';
+import editorSongSelect from '../../../../../docs/screenshots/editor_songselect_de.png';
 import editorAutoClose from '../../../../../docs/screenshots/editor_auto_close_de.png';
 import editorChorusLabels from '../../../../../docs/screenshots/editor_chorus_labels_de.png';
 
@@ -132,6 +133,16 @@ stehen. Für einzelne Blöcke: markieren und im Menü Zeilen **Taktzeilen in
 Chord-Grid umwandeln** wählen. Mit ✕ blendest du den Hinweis aus.
 
 <Image src={editorCcli} alt="Der Editor mit zwei gepunktet markierten Blöcken CCLI-Taktzeilen und dem Hinweis mit dem Knopf Umwandeln" />
+
+## CCLI-Direktiven
+
+Songs aus CCLI SongSelect enthalten `{ccli: …}` und `{ccli_license: …}`, die die
+ChordPro-Spezifikation nicht kennt. Der Import wandelt sie um; bei früher
+gespeicherten Songs zeigt der Editor einen Hinweis über dem Text: **Umwandeln**
+benennt `{ccli}` in `{x_ccli}` um und entfernt `{ccli_license}`, die Lizenznummer
+der Kirche, die den Song heruntergeladen hat. Mit ✕ blendest du den Hinweis aus.
+
+<Image src={editorSongSelect} alt="Der Editor mit dem Hinweis auf zwei CCLI-Direktiven, die nicht der ChordPro-Spezifikation entsprechen, und dem Knopf Umwandeln" />
 
 ## Beschriftungen der Abschnitte
 

@@ -20,6 +20,13 @@ final _ccliName = RegExp(
   caseSensitive: false,
 );
 
+/// How many `{ccli}` and `{ccli_license}` directives [source] has, which
+/// [normalizeSongSelectDirectives] changes. Songs saved before #777 keep
+/// them; the editor offers the conversion.
+int countSongSelectDirectives(String source) =>
+    _licenseLine.allMatches(source).length +
+    _ccliName.allMatches(source).length;
+
 /// [source] with the two directives of CCLI SongSelect files that the
 /// ChordPro specification does not define made standard-conforming:
 ///

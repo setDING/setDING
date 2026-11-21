@@ -265,4 +265,41 @@ void main() {
     expect(controller.text, source);
     await app.dispose(tester);
   });
+
+  testWidgets('the editor offers to convert SongSelect directives (#777)', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    const source = '{title: T}\n{ccli: 123}\n{ccli_license: 456}\n[C]a';
+    await tester.pumpWidget(
+      app.build(home: const SongEditorScreen(initialSource: source)),
+    );
+    await tester.pumpAndSettle();
+    final controller = tester
+        .widget<TextField>(find.byType(TextField))
+        .controller!;
+    expect(find.byType(SongSelectDirectiveHint), findsOneWidget);
+    expect(
+      find.textContaining('2 CCLI directives do not follow'),
+      findsOneWidget,
+    );
+    await tester.tap(
+      find.descendant(
+        of: find.byType(SongSelectDirectiveHint),
+        matching: find.widgetWithText(TextButton, 'Convert'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(controller.text, '{title: T}\n{x_ccli: 123}\n[C]a');
+    expect(find.byType(SongSelectDirectiveHint), findsNothing);
+    // Hiding leaves the text as it is.
+    controller.text = source;
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Hide hint'));
+    await tester.pumpAndSettle();
+    expect(find.byType(SongSelectDirectiveHint), findsNothing);
+    expect(controller.text, source);
+    await app.dispose(tester);
+  });
 }

@@ -192,7 +192,8 @@ Each phase is a separate branch and merge (ADR-0010).
 - 2026-11-21: setDING custom directive `{x_ccli: N}` for the CCLI song number (#777),
   kept as metadata (`%{x_ccli}`). The non-standard `{ccli}` and `{ccli_license}` of
   CCLI SongSelect files are no longer known metadata; on import `{ccli}` is renamed to
-  `{x_ccli}` and `{ccli_license}` is removed (ADR-0011).
+  `{x_ccli}` and `{ccli_license}` is removed (ADR-0011); the editor offers the same
+  conversion for songs saved earlier.
 
 ## Open points
 

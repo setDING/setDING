@@ -450,6 +450,14 @@
     }
   },
   "legacyLabelsHint": "{count, plural, =1{A section label is} other{{count} section labels are}} in the short form. The ChordPro specification recommends label=\"…\".",
+  "songSelectDirectivesHint": "{count, plural, =1{A CCLI directive does} other{{count} CCLI directives do}} not follow the ChordPro specification: ccli becomes x_ccli, ccli_license is removed.",
+  "@songSelectDirectivesHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@legacyLabelsHint": {
     "placeholders": {
       "count": {

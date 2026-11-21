@@ -46,6 +46,7 @@ map=(
   import_labels 23b_import_labels
   songs_selected 3c_songs_selected
   editor_ccli 24_editor_ccli
+  editor_songselect 24b_editor_songselect
   sync_hint 26_sync_hint
   set_export 27_set_export
   set_import 27b_set_import

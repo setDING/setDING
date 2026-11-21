@@ -66,6 +66,17 @@ void main() {
       expect(normalizeSongSelectDirectives('La\n{ccli_license: 1}'), 'La\n');
     });
 
+    test('counts the directives it changes', () {
+      expect(countSongSelectDirectives(_songSelectStyle), 2);
+      expect(countSongSelectDirectives('{meta: ccli 1}\n{x_ccli: 2}'), 1);
+      expect(
+        countSongSelectDirectives(
+          normalizeSongSelectDirectives(_songSelectStyle),
+        ),
+        0,
+      );
+    });
+
     test('leaves other directives and text alone', () {
       const source =
           '{x_ccli: 1}\n{ccli_song: 2}\n{c: ccli 3}\n[C]{ccli: 4} in text\n';

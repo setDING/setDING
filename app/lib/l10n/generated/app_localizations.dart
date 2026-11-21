@@ -2366,6 +2366,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Eine Abschnitts-Beschriftung steht} other{{count} Abschnitts-Beschriftungen stehen}} in der Kurzform. Die ChordPro-Spezifikation empfiehlt label=\"…\".'**
   String legacyLabelsHint(int count);
 
+  /// No description provided for @songSelectDirectivesHint.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Eine CCLI-Direktive entspricht} other{{count} CCLI-Direktiven entsprechen}} nicht der ChordPro-Spezifikation: ccli wird zu x_ccli, ccli_license wird entfernt.'**
+  String songSelectDirectivesHint(int count);
+
   /// No description provided for @importLegacyLabelsMessage.
   ///
   /// In de, this message translates to:
