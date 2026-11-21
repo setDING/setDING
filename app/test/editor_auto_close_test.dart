@@ -62,6 +62,39 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('renaming a section start renames its end', (tester) async {
+    final (app, controller) = await pumpEditor(tester);
+    await tester.enterText(
+      find.byType(TextField),
+      '{start_of_vers}\nla\n{end_of_vers}',
+    );
+    controller.selection = const TextSelection.collapsed(offset: 14);
+    await tester.pumpAndSettle();
+    await typeChar(tester, controller, 'e');
+    expect(controller.text, '{start_of_verse}\nla\n{end_of_verse}');
+    expect(controller.selection.baseOffset, 15);
+    await app.dispose(tester);
+  });
+
+  testWidgets('a section start chosen in the suggestions renames its end', (
+    tester,
+  ) async {
+    final (app, controller) = await pumpEditor(tester);
+    await tester.enterText(
+      find.byType(TextField),
+      '{start_of_ch}\nla\n{end_of_ch}',
+    );
+    controller.selection = const TextSelection.collapsed(offset: 12);
+    await tester.pumpAndSettle();
+    await typeChar(tester, controller, 'o');
+    expect(controller.text, '{start_of_cho}\nla\n{end_of_cho}');
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    expect(controller.text, '{start_of_chorus}\nla\n{end_of_chorus}');
+    expect(controller.selection.baseOffset, 17);
+    await app.dispose(tester);
+  });
+
   testWidgets('accepting a section start adds its end', (tester) async {
     final (app, controller) = await pumpEditor(tester);
     await tester.enterText(find.byType(TextField), '{start_of_cho');

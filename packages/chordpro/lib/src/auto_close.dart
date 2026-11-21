@@ -271,3 +271,127 @@ int _lineEnd(String text, int from) {
 
 String? _after(String name, String prefix) =>
     name.startsWith(prefix) ? name.substring(prefix.length) : null;
+
+/// A section directive line: start or end, its type (may be empty while
+/// the name is typed, `{start_of_}`) and whether it is a short form.
+typedef _SectionMark = ({bool start, String type, bool short});
+
+_SectionMark? _sectionMark(String line) {
+  final trimmed = line.trim();
+  if (!trimmed.startsWith('{') || !trimmed.endsWith('}')) return null;
+  final name = parseDirective(trimmed)?.name;
+  if (name == null) return null;
+  if (shortSectionStarts[name] case final type?) {
+    return (start: true, type: type, short: true);
+  }
+  if (shortSectionEnds[name] case final type?) {
+    return (start: false, type: type, short: true);
+  }
+  if (_after(name, 'start_of_') case final type?) {
+    return (start: true, type: type, short: false);
+  }
+  if (_after(name, 'end_of_') case final type?) {
+    return (start: false, type: type, short: false);
+  }
+  return null;
+}
+
+/// Name of the start or end directive of [type], short when [short] and
+/// a short form exists.
+String _sectionName(String type, {required bool start, required bool short}) {
+  if (short) {
+    final shorts = start ? shortSectionStarts : shortSectionEnds;
+    for (final MapEntry(:key, :value) in shorts.entries) {
+      if (value == type) return key;
+    }
+  }
+  return start ? 'start_of_$type' : 'end_of_$type';
+}
+
+/// Renames the partner of a section directive whose name an edit changed
+/// (#755): from [before] to [after] (cursor [cursor]), a changed
+/// `{start_of_verse}` → `{start_of_chorus}` also changes its end
+/// `{end_of_verse}` → `{end_of_chorus}`, and the other way round. Short
+/// forms stay short where the new type has one (`{eov}` → `{eoc}`).
+/// Null when the edit touches more than one line or no such partner
+/// exists; the partner is the next (previous) section directive, which
+/// must belong to the old type.
+SourceEdit? syncSectionPartner(String before, String after, int cursor) {
+  if (before == after) return null;
+  var p = 0;
+  final shorter = before.length < after.length ? before.length : after.length;
+  while (p < shorter && before.codeUnitAt(p) == after.codeUnitAt(p)) {
+    p++;
+  }
+  var q = 0;
+  while (q < shorter - p &&
+      before.codeUnitAt(before.length - 1 - q) ==
+          after.codeUnitAt(after.length - 1 - q)) {
+    q++;
+  }
+  if (before.substring(p, before.length - q).contains('\n') ||
+      after.substring(p, after.length - q).contains('\n')) {
+    return null;
+  }
+  final lineStart = p == 0 ? 0 : before.lastIndexOf('\n', p - 1) + 1;
+  final oldEnd = _lineEnd(before, lineStart);
+  final newEnd = _lineEnd(after, lineStart);
+  final old = _sectionMark(before.substring(lineStart, oldEnd));
+  final now = _sectionMark(after.substring(lineStart, newEnd));
+  if (old == null ||
+      now == null ||
+      old.start != now.start ||
+      old.type == now.type) {
+    return null;
+  }
+
+  // The partner line in [before].
+  int? partnerStart;
+  _SectionMark? partner;
+  if (old.start) {
+    var at = oldEnd + 1;
+    while (at <= before.length) {
+      final end = _lineEnd(before, at);
+      final mark = _sectionMark(before.substring(at, end));
+      if (mark != null) {
+        (partnerStart, partner) = (at, mark);
+        break;
+      }
+      at = end + 1;
+    }
+  } else {
+    var end = lineStart - 1;
+    while (end >= 0) {
+      final at = end == 0 ? 0 : before.lastIndexOf('\n', end - 1) + 1;
+      final mark = _sectionMark(before.substring(at, end));
+      if (mark != null) {
+        (partnerStart, partner) = (at, mark);
+        break;
+      }
+      if (at == 0) break;
+      end = at - 1;
+    }
+  }
+  if (partner == null ||
+      partner.start == old.start ||
+      partner.type != old.type) {
+    return null;
+  }
+
+  // The partner is outside the edited line, so it is unchanged in
+  // [after]; below the edit it moved by the length difference.
+  final shift = old.start ? after.length - before.length : 0;
+  final at = partnerStart! + shift;
+  final line = after.substring(at, _lineEnd(after, at));
+  final name = RegExp(r'^(\s*\{\s*)([A-Za-z_][A-Za-z0-9_]*)').firstMatch(line)!;
+  final renamed = _sectionName(
+    now.type,
+    start: partner.start,
+    short: partner.short,
+  );
+  final from = at + name.group(1)!.length;
+  final to = from + name.group(2)!.length;
+  final delta = renamed.length - (to - from);
+  final moved = old.start ? cursor : cursor + delta;
+  return SourceEdit(after.replaceRange(from, to, renamed), moved, moved);
+}

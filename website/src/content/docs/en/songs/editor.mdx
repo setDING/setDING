@@ -74,6 +74,9 @@ The editor closes what you open:
   already closed, Enter just starts a new line. With the start and the end on the
   same line, e.g. `{start_of_verse}{end_of_verse}`, **Enter** between them puts them
   on lines of their own with an empty line between.
+- When you change the name of a section start, e.g. `{start_of_verse}` to
+  `{start_of_chorus}`, the editor changes its end `{end_of_verse}` along with it, and
+  the other way round. Short forms stay short (`{sov}`/`{eov}` become `{soc}`/`{eoc}`).
 
 In comment lines (`#`), after `\` and in tab and notation sections (ABC, LilyPond),
 brackets stay as you type them.
