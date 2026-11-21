@@ -6,6 +6,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../sets/sets_screen.dart' show formatGigDate;
 import '../widgets/dialogs.dart';
+import '../widgets/page_width.dart';
 
 /// What a trash shows.
 enum TrashKind { songs, sets }
@@ -78,17 +79,19 @@ class TrashScreen extends ConsumerWidget {
                 icon: Icons.delete_outline,
                 message: l10n.trashEmpty(trashRetention.inDays),
               )
-            : ListView(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                    child: Text(
-                      l10n.trashHint(trashRetention.inDays),
-                      style: Theme.of(context).textTheme.bodyMedium,
+            : PageWidth(
+                child: ListView(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                      child: Text(
+                        l10n.trashHint(trashRetention.inDays),
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
                     ),
-                  ),
-                  for (final e in list) _TrashTile(entry: e),
-                ],
+                    for (final e in list) _TrashTile(entry: e),
+                  ],
+                ),
               ),
       ),
     );

@@ -16,6 +16,7 @@ import 'band_screen.dart';
 import 'close_organization.dart';
 import 'join_screen.dart';
 import 'organization_screen.dart';
+import '../widgets/page_width.dart';
 
 /// Runs a band action and shows backend errors as a message.
 Future<bool> runBandAction(
@@ -180,9 +181,11 @@ class BandsScreen extends ConsumerWidget {
     } else {
       body = RefreshIndicator(
         onRefresh: () => runBandAction(context, service.refresh),
-        child: ListView(
-          padding: const EdgeInsets.only(bottom: 88),
-          children: const [OrganizationBandTiles()],
+        child: PageWidth(
+          child: ListView(
+            padding: const EdgeInsets.only(bottom: 88),
+            children: const [OrganizationBandTiles()],
+          ),
         ),
       );
     }

@@ -85,10 +85,15 @@ above span all of them.
 - 2026-11-21: Proposed with the first set of rules and shared widgets (#743); numbered 0051 after ADR-0050 (settings screen layout) was accepted meanwhile, and related to it as the app-wide base.
 - 2026-11-21: The owner decided to keep this ADR separate from ADR-0050 (app-wide base, settings rules on top) instead of extending ADR-0050 (#746).
 - 2026-11-21: Accepted by the owner (#746).
+- 2026-11-21: Open point resolved (#770): the band, organization, bands, trash,
+  deleted bands, closed organizations and MIDI test pages limit their width with
+  the new shared `PageWidth`, which also replaces the own width limits of the
+  settings, repertoire, library usage, start, sign-in and join screens; the
+  checkable rule "no literal page width outside `PageWidth`" is in
+  `ui_rules_test.dart`. The MIDI test's mode picker became wrapping chips, so no
+  mode hides behind a sideways scroll in the narrower column.
 
 ## Open points
 
-- Pages of tiles that do not yet limit their width to 720 on large screens: band,
-  organization, trash and deleted bands, the MIDI test screen.
 - Further rules worth enforcing in the source: tooltips on every `IconButton`,
   spacing in steps of 4.

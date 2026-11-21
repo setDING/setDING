@@ -11,6 +11,7 @@ import '../widgets/dialogs.dart';
 import '../../util/semver.dart';
 import '../widgets/logo.dart';
 import '../widgets/update_required_banner.dart';
+import '../widgets/page_width.dart';
 
 const _log = Log('account');
 
@@ -202,206 +203,203 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               : (_signUp ? l10n.accountSignUp : l10n.accountSignIn),
         ),
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: Form(
-            key: _form,
-            child: AutofillGroup(
-              child: ListView(
-                padding: const EdgeInsets.all(24),
-                children: [
-                  if (outdated) ...[
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: UpdateRequiredBanner(minVersion: min),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                  if (widget.gate) ...[
-                    const Center(child: SetdingLogo(height: 36)),
-                    const SizedBox(height: 32),
-                    Text(
-                      _signUp ? l10n.accountSignUp : l10n.accountSignIn,
-                      style: theme.textTheme.headlineSmall,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(l10n.webSignInHint),
-                    const SizedBox(height: 24),
-                  ],
-                  if (_signUp) ...[
-                    TextFormField(
-                      key: const Key('account-name'),
-                      controller: _name,
-                      decoration: InputDecoration(
-                        labelText: l10n.accountName,
-                        helperText: l10n.accountNameHint,
-                      ),
-                      textInputAction: TextInputAction.next,
-                      autofillHints: const [AutofillHints.name],
-                      validator: required,
-                    ),
-                    const SizedBox(height: 16),
-                  ],
+      body: PageWidth(
+        maxWidth: formMaxWidth,
+        alignment: Alignment.center,
+        child: Form(
+          key: _form,
+          child: AutofillGroup(
+            child: ListView(
+              padding: const EdgeInsets.all(24),
+              children: [
+                if (outdated) ...[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: UpdateRequiredBanner(minVersion: min),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+                if (widget.gate) ...[
+                  const Center(child: SetdingLogo(height: 36)),
+                  const SizedBox(height: 32),
+                  Text(
+                    _signUp ? l10n.accountSignUp : l10n.accountSignIn,
+                    style: theme.textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(l10n.webSignInHint),
+                  const SizedBox(height: 24),
+                ],
+                if (_signUp) ...[
                   TextFormField(
-                    key: const Key('account-email'),
-                    controller: _email,
-                    decoration: InputDecoration(labelText: l10n.accountEmail),
-                    keyboardType: TextInputType.emailAddress,
+                    key: const Key('account-name'),
+                    controller: _name,
+                    decoration: InputDecoration(
+                      labelText: l10n.accountName,
+                      helperText: l10n.accountNameHint,
+                    ),
                     textInputAction: TextInputAction.next,
-                    autocorrect: false,
-                    autofillHints: const [AutofillHints.email],
+                    autofillHints: const [AutofillHints.name],
                     validator: required,
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    key: const Key('account-password'),
-                    controller: _password,
-                    decoration: InputDecoration(
-                      labelText: l10n.accountPassword,
-                      suffixIcon: IconButton(
-                        key: const Key('account-password-visibility'),
-                        icon: Icon(
-                          _showPassword
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                        ),
-                        tooltip: _showPassword
-                            ? l10n.accountPasswordHide
-                            : l10n.accountPasswordShow,
-                        onPressed: () =>
-                            setState(() => _showPassword = !_showPassword),
+                ],
+                TextFormField(
+                  key: const Key('account-email'),
+                  controller: _email,
+                  decoration: InputDecoration(labelText: l10n.accountEmail),
+                  keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.next,
+                  autocorrect: false,
+                  autofillHints: const [AutofillHints.email],
+                  validator: required,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  key: const Key('account-password'),
+                  controller: _password,
+                  decoration: InputDecoration(
+                    labelText: l10n.accountPassword,
+                    suffixIcon: IconButton(
+                      key: const Key('account-password-visibility'),
+                      icon: Icon(
+                        _showPassword
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
                       ),
+                      tooltip: _showPassword
+                          ? l10n.accountPasswordHide
+                          : l10n.accountPasswordShow,
+                      onPressed: () =>
+                          setState(() => _showPassword = !_showPassword),
+                    ),
+                  ),
+                  obscureText: !_showPassword,
+                  textInputAction: _signUp
+                      ? TextInputAction.next
+                      : TextInputAction.done,
+                  autofillHints: [
+                    _signUp
+                        ? AutofillHints.newPassword
+                        : AutofillHints.password,
+                  ],
+                  validator: (v) {
+                    if (v == null || v.isEmpty) {
+                      return l10n.accountFieldRequired;
+                    }
+                    if (_signUp && v.length < minPasswordLength) {
+                      return l10n.accountPasswordTooShort(minPasswordLength);
+                    }
+                    return null;
+                  },
+                  onFieldSubmitted: _signUp ? null : (_) => _submit(),
+                ),
+                if (_signUp) ...[
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    key: const Key('account-password-confirm'),
+                    controller: _confirm,
+                    decoration: InputDecoration(
+                      labelText: l10n.accountPasswordConfirm,
                     ),
                     obscureText: !_showPassword,
-                    textInputAction: _signUp
-                        ? TextInputAction.next
-                        : TextInputAction.done,
-                    autofillHints: [
-                      _signUp
-                          ? AutofillHints.newPassword
-                          : AutofillHints.password,
-                    ],
-                    validator: (v) {
-                      if (v == null || v.isEmpty) {
-                        return l10n.accountFieldRequired;
-                      }
-                      if (_signUp && v.length < minPasswordLength) {
-                        return l10n.accountPasswordTooShort(minPasswordLength);
-                      }
-                      return null;
-                    },
-                    onFieldSubmitted: _signUp ? null : (_) => _submit(),
+                    textInputAction: TextInputAction.done,
+                    validator: (v) => v != _password.text
+                        ? l10n.accountPasswordMismatch
+                        : null,
+                    onFieldSubmitted: (_) => _submit(),
                   ),
-                  if (_signUp) ...[
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      key: const Key('account-password-confirm'),
-                      controller: _confirm,
-                      decoration: InputDecoration(
-                        labelText: l10n.accountPasswordConfirm,
-                      ),
-                      obscureText: !_showPassword,
-                      textInputAction: TextInputAction.done,
-                      validator: (v) => v != _password.text
-                          ? l10n.accountPasswordMismatch
-                          : null,
-                      onFieldSubmitted: (_) => _submit(),
-                    ),
-                  ],
-                  if (browserSession) ...[
-                    const SizedBox(height: 8),
-                    CheckboxListTile(
-                      key: const Key('account-keep-signed-in'),
-                      contentPadding: EdgeInsets.zero,
-                      controlAffinity: ListTileControlAffinity.leading,
-                      value: _keepSignedIn,
-                      onChanged: _busy
-                          ? null
-                          : (v) => setState(() => _keepSignedIn = v ?? false),
-                      title: Text(l10n.accountKeepSignedIn),
-                      subtitle: Text(l10n.accountKeepSignedInHint),
-                    ),
-                  ],
-                  if (_unverified case final email?) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      l10n.accountVerifyEmail(email),
-                      key: const Key('account-verify'),
-                    ),
-                    Align(
-                      alignment: AlignmentDirectional.centerStart,
-                      child: TextButton(
-                        key: const Key('account-verify-resend'),
-                        onPressed: _busy ? null : _resendVerification,
-                        child: Text(l10n.accountVerifyResend),
-                      ),
-                    ),
-                  ],
-                  if (_error != null) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      _error!,
-                      key: const Key('account-error'),
-                      style: TextStyle(color: theme.colorScheme.error),
-                    ),
-                  ],
-                  const SizedBox(height: 24),
-                  FilledButton(
-                    key: const Key('account-submit'),
-                    onPressed: _busy ? null : _submit,
-                    child: _busy
-                        ? const SizedBox.square(
-                            dimension: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(
-                            _signUp ? l10n.accountSignUp : l10n.accountSignIn,
-                          ),
-                  ),
-                  const SizedBox(height: 8),
-                  if (canSignUp)
-                    TextButton(
-                      key: const Key('account-toggle'),
-                      onPressed: _busy
-                          ? null
-                          : () => setState(() {
-                              _signUp = !_signUp;
-                              _error = null;
-                            }),
-                      child: Text(
-                        _signUp ? l10n.accountToSignIn : l10n.accountToSignUp,
-                      ),
-                    )
-                  else
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Text(
-                        l10n.accountInviteOnlyHint,
-                        key: const Key('account-invite-only'),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  if (!_signUp)
-                    TextButton(
-                      onPressed: _busy ? null : _resetPassword,
-                      child: Text(l10n.accountForgotPassword),
-                    ),
-                  if ((widget.gate || !canSignUp) && widget.invite == null)
-                    TextButton.icon(
-                      key: const Key('account-open-join'),
-                      icon: const Icon(Icons.link),
-                      onPressed: _busy
-                          ? null
-                          : () => Navigator.of(context).push(
-                              MaterialPageRoute<bool>(
-                                builder: (_) => const JoinScreen(),
-                              ),
-                            ),
-                      label: Text(l10n.accountJoin),
-                    ),
                 ],
-              ),
+                if (browserSession) ...[
+                  const SizedBox(height: 8),
+                  CheckboxListTile(
+                    key: const Key('account-keep-signed-in'),
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    value: _keepSignedIn,
+                    onChanged: _busy
+                        ? null
+                        : (v) => setState(() => _keepSignedIn = v ?? false),
+                    title: Text(l10n.accountKeepSignedIn),
+                    subtitle: Text(l10n.accountKeepSignedInHint),
+                  ),
+                ],
+                if (_unverified case final email?) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.accountVerifyEmail(email),
+                    key: const Key('account-verify'),
+                  ),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: TextButton(
+                      key: const Key('account-verify-resend'),
+                      onPressed: _busy ? null : _resendVerification,
+                      child: Text(l10n.accountVerifyResend),
+                    ),
+                  ),
+                ],
+                if (_error != null) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    _error!,
+                    key: const Key('account-error'),
+                    style: TextStyle(color: theme.colorScheme.error),
+                  ),
+                ],
+                const SizedBox(height: 24),
+                FilledButton(
+                  key: const Key('account-submit'),
+                  onPressed: _busy ? null : _submit,
+                  child: _busy
+                      ? const SizedBox.square(
+                          dimension: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(_signUp ? l10n.accountSignUp : l10n.accountSignIn),
+                ),
+                const SizedBox(height: 8),
+                if (canSignUp)
+                  TextButton(
+                    key: const Key('account-toggle'),
+                    onPressed: _busy
+                        ? null
+                        : () => setState(() {
+                            _signUp = !_signUp;
+                            _error = null;
+                          }),
+                    child: Text(
+                      _signUp ? l10n.accountToSignIn : l10n.accountToSignUp,
+                    ),
+                  )
+                else
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      l10n.accountInviteOnlyHint,
+                      key: const Key('account-invite-only'),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                if (!_signUp)
+                  TextButton(
+                    onPressed: _busy ? null : _resetPassword,
+                    child: Text(l10n.accountForgotPassword),
+                  ),
+                if ((widget.gate || !canSignUp) && widget.invite == null)
+                  TextButton.icon(
+                    key: const Key('account-open-join'),
+                    icon: const Icon(Icons.link),
+                    onPressed: _busy
+                        ? null
+                        : () => Navigator.of(context).push(
+                            MaterialPageRoute<bool>(
+                              builder: (_) => const JoinScreen(),
+                            ),
+                          ),
+                    label: Text(l10n.accountJoin),
+                  ),
+              ],
             ),
           ),
         ),

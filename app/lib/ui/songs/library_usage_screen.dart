@@ -8,6 +8,7 @@ import '../../providers.dart';
 import '../sets/sets_screen.dart' show formatGigDate;
 import '../widgets/dialogs.dart';
 import 'song_screen.dart';
+import '../widgets/page_width.dart';
 
 /// The songs of an organization's library that no band played (ADR-0046),
 /// from the summary of the last sync, for organization admins and
@@ -58,70 +59,64 @@ class LibraryUsageScreen extends ConsumerWidget {
         value: usage,
         data: (usage) {
           final loaded = fetched.value != null;
-          return Align(
-            alignment: Alignment.topCenter,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 720),
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                children: [
-                  if (!loaded)
+          return PageWidth(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+              children: [
+                if (!loaded)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Text(
+                      l10n.libraryUsageNotLoaded,
+                      key: const Key('library-usage-not-loaded'),
+                      style: theme.textTheme.bodyLarge,
+                    ),
+                  )
+                else ...[
+                  Text(
+                    l10n.libraryUsageSummary(
+                      usage.unplayed.length,
+                      usage.total,
+                    ),
+                    style: theme.textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(l10n.libraryUsageHint, style: secondary),
+                  Text(
+                    l10n.playHistoryFetched(
+                      formatGigDate(context, fetched.value!),
+                    ),
+                    style: secondary,
+                  ),
+                  const SizedBox(height: 8),
+                  if (usage.unplayed.isEmpty)
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Text(
-                        l10n.libraryUsageNotLoaded,
-                        key: const Key('library-usage-not-loaded'),
-                        style: theme.textTheme.bodyLarge,
-                      ),
-                    )
-                  else ...[
-                    Text(
-                      l10n.libraryUsageSummary(
-                        usage.unplayed.length,
-                        usage.total,
-                      ),
-                      style: theme.textTheme.titleMedium,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(l10n.libraryUsageAllPlayed),
                     ),
-                    const SizedBox(height: 4),
-                    Text(l10n.libraryUsageHint, style: secondary),
-                    Text(
-                      l10n.playHistoryFetched(
-                        formatGigDate(context, fetched.value!),
+                  for (final song in usage.unplayed)
+                    ListTile(
+                      key: ValueKey('library-usage-${song.id}'),
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        song.title.isEmpty ? l10n.untitled : song.title,
                       ),
-                      style: secondary,
+                      subtitle: song.artist == null ? null : Text(song.artist!),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) => SongScreen(songId: song.id),
+                        ),
+                      ),
+                      trailing: IconButton(
+                        key: ValueKey('library-usage-delete-${song.id}'),
+                        tooltip: l10n.delete,
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () => _delete(context, ref, song),
+                      ),
                     ),
-                    const SizedBox(height: 8),
-                    if (usage.unplayed.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Text(l10n.libraryUsageAllPlayed),
-                      ),
-                    for (final song in usage.unplayed)
-                      ListTile(
-                        key: ValueKey('library-usage-${song.id}'),
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(
-                          song.title.isEmpty ? l10n.untitled : song.title,
-                        ),
-                        subtitle: song.artist == null
-                            ? null
-                            : Text(song.artist!),
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute<void>(
-                            builder: (_) => SongScreen(songId: song.id),
-                          ),
-                        ),
-                        trailing: IconButton(
-                          key: ValueKey('library-usage-delete-${song.id}'),
-                          tooltip: l10n.delete,
-                          icon: const Icon(Icons.delete_outline),
-                          onPressed: () => _delete(context, ref, song),
-                        ),
-                      ),
-                  ],
                 ],
-              ),
+              ],
             ),
           );
         },

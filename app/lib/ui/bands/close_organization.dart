@@ -14,6 +14,7 @@ import '../sets/sets_screen.dart' show formatGigDate;
 import '../widgets/dialogs.dart';
 import 'bands_screen.dart';
 import '../widgets/loading_indicator.dart';
+import '../widgets/page_width.dart';
 
 /// Closes [org] after a confirmation that shows what goes with it, offers a
 /// backup first and asks for the organization's name (its admins,
@@ -207,17 +208,19 @@ class _ClosedOrganizationsScreenState
               message: l10n.orgsClosedEmpty(days),
             );
           }
-          return ListView(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: Text(
-                  l10n.orgsClosedHint(days),
-                  style: Theme.of(context).textTheme.bodyMedium,
+          return PageWidth(
+            child: ListView(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Text(
+                    l10n.orgsClosedHint(days),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                 ),
-              ),
-              for (final o in orgs) _tile(context, o),
-            ],
+                for (final o in orgs) _tile(context, o),
+              ],
+            ),
           );
         },
       ),

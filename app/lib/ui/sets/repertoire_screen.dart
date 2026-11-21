@@ -10,6 +10,7 @@ import '../songs/song_screen.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/section_header.dart';
 import 'sets_screen.dart' show formatGigDate;
+import '../widgets/page_width.dart';
 
 /// The thresholds offered for "not played for a while", in months.
 const staleAfterChoices = [1, 2, 3, 4, 6, 9, 12, 18, 24, 36];
@@ -107,79 +108,73 @@ class _RepertoireScreenState extends ConsumerState<RepertoireScreen> {
           final stale = r.notPlayedFor(months);
           final never = r.neverPlayed;
           final played = r.songs.any((s) => s.total > 0);
-          return Align(
-            alignment: Alignment.topCenter,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 720),
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                children: [
-                  if (!played)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Text(
-                        l10n.repertoireEmpty,
-                        key: const Key('repertoire-empty'),
-                        style: theme.textTheme.bodyLarge,
+          return PageWidth(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+              children: [
+                if (!played)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Text(
+                      l10n.repertoireEmpty,
+                      key: const Key('repertoire-empty'),
+                      style: theme.textTheme.bodyLarge,
+                    ),
+                  ),
+                _Section(
+                  key: const Key('repertoire-most-played'),
+                  title: l10n.repertoireMostPlayed,
+                  trailing: SegmentedButton<bool>(
+                    showSelectedIcon: false,
+                    segments: [
+                      ButtonSegment(
+                        value: true,
+                        label: Text(l10n.repertoireLastYear),
                       ),
-                    ),
-                  _Section(
-                    key: const Key('repertoire-most-played'),
-                    title: l10n.repertoireMostPlayed,
-                    trailing: SegmentedButton<bool>(
-                      showSelectedIcon: false,
-                      segments: [
-                        ButtonSegment(
-                          value: true,
-                          label: Text(l10n.repertoireLastYear),
-                        ),
-                        ButtonSegment(
-                          value: false,
-                          label: Text(l10n.repertoireAllTime),
-                        ),
-                      ],
-                      selected: {_lastYear},
-                      onSelectionChanged: (v) =>
-                          setState(() => _lastYear = v.single),
-                    ),
-                    children: [
-                      if (most.isEmpty) _None(l10n.repertoireNone),
-                      for (final s in most)
-                        _MostPlayedTile(
-                          song: s,
-                          count: _lastYear ? s.lastYear : s.total,
-                          max: _lastYear
-                              ? most.first.lastYear
-                              : most.first.total,
-                        ),
+                      ButtonSegment(
+                        value: false,
+                        label: Text(l10n.repertoireAllTime),
+                      ),
                     ],
+                    selected: {_lastYear},
+                    onSelectionChanged: (v) =>
+                        setState(() => _lastYear = v.single),
                   ),
-                  _Section(
-                    key: const Key('repertoire-stale'),
-                    title: l10n.repertoireStale,
-                    subtitle: l10n.repertoireStaleHint(months),
-                    children: [
-                      if (stale.isEmpty) _None(l10n.repertoireNone),
-                      for (final s in stale)
-                        _SongTile(
-                          song: s,
-                          detail: l10n.songLastPlayed(
-                            formatGigDate(context, s.last!),
-                          ),
+                  children: [
+                    if (most.isEmpty) _None(l10n.repertoireNone),
+                    for (final s in most)
+                      _MostPlayedTile(
+                        song: s,
+                        count: _lastYear ? s.lastYear : s.total,
+                        max: _lastYear ? most.first.lastYear : most.first.total,
+                      ),
+                  ],
+                ),
+                _Section(
+                  key: const Key('repertoire-stale'),
+                  title: l10n.repertoireStale,
+                  subtitle: l10n.repertoireStaleHint(months),
+                  children: [
+                    if (stale.isEmpty) _None(l10n.repertoireNone),
+                    for (final s in stale)
+                      _SongTile(
+                        song: s,
+                        detail: l10n.songLastPlayed(
+                          formatGigDate(context, s.last!),
                         ),
-                    ],
-                  ),
-                  _Section(
-                    key: const Key('repertoire-never'),
-                    title: '${l10n.repertoireNeverPlayed} (${never.length})',
-                    subtitle: l10n.repertoireNeverPlayedHint,
-                    children: [
-                      if (never.isEmpty) _None(l10n.repertoireNone),
-                      for (final s in never) _SongTile(song: s),
-                    ],
-                  ),
-                ],
-              ),
+                      ),
+                  ],
+                ),
+                _Section(
+                  key: const Key('repertoire-never'),
+                  title: '${l10n.repertoireNeverPlayed} (${never.length})',
+                  subtitle: l10n.repertoireNeverPlayedHint,
+                  children: [
+                    if (never.isEmpty) _None(l10n.repertoireNone),
+                    for (final s in never) _SongTile(song: s),
+                  ],
+                ),
+              ],
             ),
           );
         },

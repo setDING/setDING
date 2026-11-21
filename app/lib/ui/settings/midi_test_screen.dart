@@ -14,6 +14,7 @@ import 'midi_guide.dart';
 import '../widgets/loading_indicator.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/section_header.dart';
+import '../widgets/page_width.dart';
 
 /// Prototype of ADR-0039 (#512): sends a program change to a keyboard
 /// connected by USB and logs what the keyboard sends back, to check the
@@ -439,155 +440,150 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
     final selected = _selected;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.midiTestTitle)),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        children: [
-          ListTile(subtitle: Text(l10n.midiTestHint)),
-          SectionHeader(
-            l10n.midiTestDevices,
-            trailing: TextButton.icon(
-              key: const Key('midi-refresh'),
-              onPressed: _refresh,
-              icon: const Icon(Icons.refresh),
-              label: Text(l10n.midiTestRefresh),
+      body: PageWidth(
+        child: ListView(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          children: [
+            ListTile(subtitle: Text(l10n.midiTestHint)),
+            SectionHeader(
+              l10n.midiTestDevices,
+              trailing: TextButton.icon(
+                key: const Key('midi-refresh'),
+                onPressed: _refresh,
+                icon: const Icon(Icons.refresh),
+                label: Text(l10n.midiTestRefresh),
+              ),
             ),
-          ),
-          if (devices == null)
-            const LoadingIndicator()
-          else if (devices.isEmpty)
-            ListTile(subtitle: Text(l10n.midiTestNoDevices))
-          else
-            for (final d in devices)
-              ListTile(
-                key: Key('midi-device-${d.id}'),
-                leading: const Icon(Icons.piano_outlined),
-                title: Text(d.name),
-                subtitle: _connected.contains(d.id)
-                    ? Text(l10n.midiTestConnected)
-                    : null,
-                trailing: OutlinedButton(
-                  onPressed: () => _toggle(d),
-                  child: Text(
-                    _connected.contains(d.id)
-                        ? l10n.midiTestDisconnect
-                        : l10n.midiTestConnect,
+            if (devices == null)
+              const LoadingIndicator()
+            else if (devices.isEmpty)
+              ListTile(subtitle: Text(l10n.midiTestNoDevices))
+            else
+              for (final d in devices)
+                ListTile(
+                  key: Key('midi-device-${d.id}'),
+                  leading: const Icon(Icons.piano_outlined),
+                  title: Text(d.name),
+                  subtitle: _connected.contains(d.id)
+                      ? Text(l10n.midiTestConnected)
+                      : null,
+                  trailing: OutlinedButton(
+                    onPressed: () => _toggle(d),
+                    child: Text(
+                      _connected.contains(d.id)
+                          ? l10n.midiTestDisconnect
+                          : l10n.midiTestConnect,
+                    ),
                   ),
                 ),
+            const Divider(),
+            ListTile(
+              title: Text(l10n.midiTestChannel),
+              trailing: DropdownButton<int>(
+                key: const Key('midi-channel'),
+                value: _channel,
+                items: [
+                  for (var c = 1; c <= 16; c++)
+                    DropdownMenuItem(value: c, child: Text('$c')),
+                ],
+                onChanged: (v) {
+                  setState(() => _channel = v ?? _channel);
+                  // The free receive listens on the new channel.
+                  _listen();
+                },
               ),
-          const Divider(),
-          ListTile(
-            title: Text(l10n.midiTestChannel),
-            trailing: DropdownButton<int>(
-              key: const Key('midi-channel'),
-              value: _channel,
-              items: [
-                for (var c = 1; c <= 16; c++)
-                  DropdownMenuItem(value: c, child: Text('$c')),
-              ],
-              onChanged: (v) {
-                setState(() => _channel = v ?? _channel);
-                // The free receive listens on the new channel.
-                _listen();
-              },
             ),
-          ),
-          ..._guideSection(l10n),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SegmentedButton<_Mode>(
-                segments: [
-                  ButtonSegment(
-                    value: _Mode.nordProgram,
-                    label: Text(l10n.midiTestModeNordProgram),
+            ..._guideSection(l10n),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              // Chips that wrap: all modes stay visible in the column of
+              // the page (#770), unlike a segmented button that scrolls.
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final (mode, label) in [
+                    (_Mode.nordProgram, l10n.midiTestModeNordProgram),
+                    (_Mode.nordSong, l10n.midiTestModeNordSong),
+                    (_Mode.nordLive, l10n.midiTestModeNordLive),
+                    (_Mode.motif, l10n.midiTestModeMotif),
+                    (_Mode.raw, l10n.midiTestModeRaw),
+                    (_Mode.controlChange, l10n.midiTestModeCc),
+                  ])
+                    ChoiceChip(
+                      label: Text(label),
+                      selected: _mode == mode,
+                      onSelected: (_) => setState(() => _mode = mode),
+                    ),
+                ],
+              ),
+            ),
+            ..._valueFields(l10n),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      selected == null
+                          ? l10n.midiTestInvalid
+                          : midiHex(selected),
+                      key: const Key('midi-preview'),
+                      style: const TextStyle(fontFamily: 'monospace'),
+                    ),
                   ),
-                  ButtonSegment(
-                    value: _Mode.nordSong,
-                    label: Text(l10n.midiTestModeNordSong),
-                  ),
-                  ButtonSegment(
-                    value: _Mode.nordLive,
-                    label: Text(l10n.midiTestModeNordLive),
-                  ),
-                  ButtonSegment(
-                    value: _Mode.motif,
-                    label: Text(l10n.midiTestModeMotif),
-                  ),
-                  ButtonSegment(
-                    value: _Mode.raw,
-                    label: Text(l10n.midiTestModeRaw),
-                  ),
-                  ButtonSegment(
-                    value: _Mode.controlChange,
-                    label: Text(l10n.midiTestModeCc),
+                  FilledButton.icon(
+                    key: const Key('midi-send'),
+                    onPressed: selected == null || _connected.isEmpty
+                        ? null
+                        : () => _send(selected),
+                    icon: const Icon(Icons.send),
+                    label: Text(l10n.midiTestSend),
                   ),
                 ],
-                selected: {_mode},
-                onSelectionChanged: (m) => setState(() => _mode = m.single),
               ),
             ),
-          ),
-          ..._valueFields(l10n),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    selected == null ? l10n.midiTestInvalid : midiHex(selected),
-                    key: const Key('midi-preview'),
-                    style: const TextStyle(fontFamily: 'monospace'),
+            const Divider(),
+            SectionHeader(
+              l10n.midiTestLog,
+              trailing: Wrap(
+                spacing: 8,
+                children: [
+                  IconButton(
+                    key: const Key('midi-copy'),
+                    tooltip: l10n.midiTestCopy,
+                    icon: const Icon(Icons.copy),
+                    onPressed: _log.isEmpty
+                        ? null
+                        : () async {
+                            final messenger = ScaffoldMessenger.of(context);
+                            await Clipboard.setData(
+                              ClipboardData(text: _log.reversed.join('\n')),
+                            );
+                            showMessageOn(messenger, l10n.midiTestCopied);
+                          },
                   ),
-                ),
-                FilledButton.icon(
-                  key: const Key('midi-send'),
-                  onPressed: selected == null || _connected.isEmpty
-                      ? null
-                      : () => _send(selected),
-                  icon: const Icon(Icons.send),
-                  label: Text(l10n.midiTestSend),
-                ),
-              ],
-            ),
-          ),
-          const Divider(),
-          SectionHeader(
-            l10n.midiTestLog,
-            trailing: Wrap(
-              spacing: 8,
-              children: [
-                IconButton(
-                  key: const Key('midi-copy'),
-                  tooltip: l10n.midiTestCopy,
-                  icon: const Icon(Icons.copy),
-                  onPressed: _log.isEmpty
-                      ? null
-                      : () async {
-                          final messenger = ScaffoldMessenger.of(context);
-                          await Clipboard.setData(
-                            ClipboardData(text: _log.reversed.join('\n')),
-                          );
-                          showMessageOn(messenger, l10n.midiTestCopied);
-                        },
-                ),
-                IconButton(
-                  tooltip: l10n.midiTestClear,
-                  icon: const Icon(Icons.delete_outline),
-                  onPressed: _log.isEmpty ? null : () => setState(_log.clear),
-                ),
-              ],
-            ),
-          ),
-          for (final line in _log)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-              child: SelectableText(
-                line,
-                style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+                  IconButton(
+                    tooltip: l10n.midiTestClear,
+                    icon: const Icon(Icons.delete_outline),
+                    onPressed: _log.isEmpty ? null : () => setState(_log.clear),
+                  ),
+                ],
               ),
             ),
-        ],
+            for (final line in _log)
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 2,
+                ),
+                child: SelectableText(
+                  line,
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
