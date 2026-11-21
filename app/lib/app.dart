@@ -12,6 +12,7 @@ import 'sync/sync_controller.dart';
 import 'ui/deep_links.dart';
 import 'ui/start_screen.dart';
 import 'ui/theme.dart';
+import 'ui/widgets/escape_goes_back.dart';
 
 /// Root widget: theme, localization (ADR-0008), navigation, invitation
 /// links (ADR-0005) and the sign-in gate of the web client (ADR-0018).
@@ -44,26 +45,33 @@ class _SetdingAppState extends ConsumerState<SetdingApp> {
     // Keeps the keyboard connected from app start (ADR-0039), without
     // rebuilding the app when its state changes.
     ref.listen(midiConnectionProvider, (_, _) {});
-    return MaterialApp(
-      navigatorKey: _navigatorKey,
-      onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
-      debugShowCheckedModeBanner: false,
-      theme: SetdingApp.theme(Brightness.light, accent),
-      darkTheme: SetdingApp.theme(Brightness.dark, accent),
-      themeMode: themeMode,
-      locale: locale,
-      supportedLocales: const [Locale('de', 'CH'), Locale('de'), Locale('en')],
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      localeListResolutionCallback: (locales, supported) =>
-          resolveLocale(null, locales ?? const []),
-      home: DeepLinkListener(
+    // Esc goes back on every screen, like the app bar's back button (#726).
+    return EscapeGoesBack(
+      child: MaterialApp(
         navigatorKey: _navigatorKey,
-        child: widget.home ?? const StartScreen(),
+        onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
+        debugShowCheckedModeBanner: false,
+        theme: SetdingApp.theme(Brightness.light, accent),
+        darkTheme: SetdingApp.theme(Brightness.dark, accent),
+        themeMode: themeMode,
+        locale: locale,
+        supportedLocales: const [
+          Locale('de', 'CH'),
+          Locale('de'),
+          Locale('en'),
+        ],
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        localeListResolutionCallback: (locales, supported) =>
+            resolveLocale(null, locales ?? const []),
+        home: DeepLinkListener(
+          navigatorKey: _navigatorKey,
+          child: widget.home ?? const StartScreen(),
+        ),
       ),
     );
   }

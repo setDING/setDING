@@ -33,6 +33,12 @@ admins may do everything. More in [Roles](/en/bands/roles/).
 
 Invitation links are valid for 7 days. If a link has expired, ask for a new one.
 
+## With a keyboard
+
+On a computer or a tablet with a keyboard, the **Esc** key takes you one step back
+on every screen, like the arrow at the top left, e.g. from a song back to the song
+list. If a dialog or menu is open, Esc first closes only that.
+
 ## Playing offline
 
 setDING keeps everything on your device. Once a set shows **Offline ready**, you no
