@@ -131,6 +131,69 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('the tag menu selects several tags, songs with any of them', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    for (final source in [
+      '{title: Carol}\n{tag: Advent}',
+      '{title: Hymn}\n{tag: Communion}',
+      '{title: Plain}',
+    ]) {
+      await tester.runAsync(() => app.songs.createSong(source: source));
+    }
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Songs').first);
+    await tester.pumpAndSettle();
+    // One chip for all tags (#816) instead of one per tag.
+    expect(find.byType(ChoiceChip), findsNothing);
+    final chip = find.byKey(const Key('songs-tags'));
+    expect(find.descendant(of: chip, matching: find.text('Tags')), findsOne);
+
+    await tester.tap(chip);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('songs-tag-Advent')).first);
+    await tester.pumpAndSettle();
+    // The menu stays open for the next tag.
+    await tester.tap(find.byKey(const ValueKey('songs-tag-Communion')).first);
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(of: chip, matching: find.text('Advent +1')),
+      findsOne,
+    );
+    await tester.tapAt(Offset.zero);
+    await tester.pumpAndSettle();
+    expect(find.text('Carol'), findsOne);
+    expect(find.text('Hymn'), findsOne);
+    expect(find.text('Plain'), findsNothing);
+
+    // Unticking one leaves the other.
+    await tester.tap(chip);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('songs-tag-Advent')).first);
+    await tester.pumpAndSettle();
+    await tester.tapAt(Offset.zero);
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(of: chip, matching: find.text('Communion')),
+      findsOne,
+    );
+    expect(find.text('Carol'), findsNothing);
+    expect(find.text('Hymn'), findsOne);
+
+    // "All" clears the selection and closes the menu.
+    await tester.tap(chip);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('songs-tags-all')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('songs-tags-all')), findsNothing);
+    expect(find.text('Carol'), findsOne);
+    expect(find.text('Plain'), findsOne);
+    await app.dispose(tester);
+  });
+
   testWidgets('tag filter stays after deleting the last song with the tag', (
     tester,
   ) async {
@@ -145,20 +208,27 @@ void main() {
     await tester.tap(find.text('Songs').first);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Gig'));
+    final chip = find.byKey(const Key('songs-tags'));
+    await tester.tap(chip);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('songs-tag-Gig')).first);
+    await tester.pumpAndSettle();
+    await tester.tapAt(Offset.zero);
     await tester.pumpAndSettle();
     expect(find.text('Plain'), findsNothing);
 
     await tester.runAsync(() => app.songs.deleteSong(tagged!));
     await tester.pumpAndSettle();
     expect(find.text('Tagged'), findsNothing);
-    // The filter bar is still there and "All" shows the other songs again.
-    expect(find.widgetWithText(ChoiceChip, 'Gig'), findsOneWidget);
-    await tester.tap(find.widgetWithText(ChoiceChip, 'All'));
+    // The filter is still there and "All" shows the other songs again.
+    expect(find.descendant(of: chip, matching: find.text('Gig')), findsOne);
+    await tester.tap(chip);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('songs-tags-all')));
     await tester.pumpAndSettle();
     expect(find.text('Plain'), findsOneWidget);
-    // Without a selection the unused tag disappears.
-    expect(find.byType(ChoiceChip), findsNothing);
+    // Without a selection the unused tag disappears, and with it the chip.
+    expect(chip, findsNothing);
     await app.dispose(tester);
   });
 

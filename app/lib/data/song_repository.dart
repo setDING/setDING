@@ -325,10 +325,14 @@ class SongRepository {
       overlayOwnerFor(await _libraryOf(songId), userId);
 
   /// Songs sorted by `{sorttitle}` (or title); optionally filtered by a
-  /// search [query] and a [tag].
-  Stream<List<SongEntry>> watchSongs({String query = '', String? tag}) =>
+  /// search [query] and [tags] (songs with any of them; all songs when
+  /// empty).
+  Stream<List<SongEntry>> watchSongs({
+    String query = '',
+    Set<String> tags = const {},
+  }) =>
       (db.select(db.songs)
-            ..where((_) => _filter(query, tag))
+            ..where((_) => _filter(query, tags))
             ..orderBy([(_) => _order]))
           .watch();
 
@@ -336,7 +340,7 @@ class SongRepository {
   /// text, which can be long).
   Stream<List<SongListEntry>> watchSongList({
     String query = '',
-    String? tag,
+    Set<String> tags = const {},
     SongSort sort = SongSort.title,
   }) {
     final s = db.songs;
@@ -361,7 +365,7 @@ class SongRepository {
         s.detectedLanguage,
         s.workId,
       ])
-      ..where(_filter(query, tag))
+      ..where(_filter(query, tags))
       // Title, artist and key are sorted in Dart (sortedFor).
       ..orderBy(switch (sort) {
         SongSort.recent => [OrderingTerm.desc(s.updatedAt), _order],
@@ -397,11 +401,17 @@ class SongRepository {
     coalesce([db.songs.sortTitle, db.songs.title]).collate(Collate.noCase),
   );
 
-  Expression<bool> _filter(String query, String? tag) {
+  Expression<bool> _filter(String query, Set<String> tags) {
     final s = db.songs;
     var filter = s.deleted.equals(false) & s.libraryId.equals(libraryId);
-    if (tag != null) {
-      filter = filter & s.tags.lower().like('%\n${tag.toLowerCase()}\n%');
+    if (tags.isNotEmpty) {
+      // Songs with any of the tags (#816).
+      filter =
+          filter &
+          Expression.or([
+            for (final t in tags)
+              s.tags.lower().like('%\n${t.toLowerCase()}\n%'),
+          ]);
     }
     if (query.trim().isNotEmpty) {
       final match = songSearchMatch(query);

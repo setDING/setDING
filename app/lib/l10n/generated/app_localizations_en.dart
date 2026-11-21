@@ -158,6 +158,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allTags => 'All';
 
   @override
+  String get tagsFilter => 'Tags';
+
+  @override
+  String get filterByTags => 'Filter by tags';
+
+  @override
+  String tagsFilterMore(String tag, int count) {
+    return '$tag +$count';
+  }
+
+  @override
   String get notes => 'My notes';
 
   @override

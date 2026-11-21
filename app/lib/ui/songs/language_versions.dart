@@ -200,7 +200,7 @@ class _LanguageVersionPickerState
     final l10n = AppLocalizations.of(context);
     final song = widget.song;
     final library = ref.watch(currentLibraryProvider);
-    final songs = ref.watch(songsProvider((query: _query, tag: null)));
+    final songs = ref.watch(songsProvider((query: _query, tags: const {})));
     final all = songs.value ?? const <SongListEntry>[];
     final self = [
       for (final s in all)

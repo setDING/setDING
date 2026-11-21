@@ -159,6 +159,17 @@ class AppLocalizationsDe extends AppLocalizations {
   String get allTags => 'Alle';
 
   @override
+  String get tagsFilter => 'Tags';
+
+  @override
+  String get filterByTags => 'Nach Tags filtern';
+
+  @override
+  String tagsFilterMore(String tag, int count) {
+    return '$tag +$count';
+  }
+
+  @override
   String get notes => 'Meine Notizen';
 
   @override

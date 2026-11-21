@@ -93,7 +93,7 @@ final conflictSongIdsProvider = Provider<Set<String>>(
 /// e.g. during a sync.
 final songAttentionCountsProvider =
     Provider.autoDispose<Map<SongAttention, int>?>((ref) {
-      final songs = ref.watch(songsProvider((query: '', tag: null))).value;
+      final songs = ref.watch(songsProvider((query: '', tags: const {}))).value;
       if (songs == null) return null;
       final library = ref.watch(currentLibraryProvider);
       final conflicts = ref.watch(conflictSongIdsProvider);

@@ -338,6 +338,24 @@ abstract class AppLocalizations {
   /// **'Alle'**
   String get allTags;
 
+  /// No description provided for @tagsFilter.
+  ///
+  /// In de, this message translates to:
+  /// **'Tags'**
+  String get tagsFilter;
+
+  /// No description provided for @filterByTags.
+  ///
+  /// In de, this message translates to:
+  /// **'Nach Tags filtern'**
+  String get filterByTags;
+
+  /// Tag filter chip with several selected tags: the first one and how many more.
+  ///
+  /// In de, this message translates to:
+  /// **'{tag} +{count}'**
+  String tagsFilterMore(String tag, int count);
+
   /// No description provided for @notes.
   ///
   /// In de, this message translates to:

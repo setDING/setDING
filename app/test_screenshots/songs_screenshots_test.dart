@@ -65,6 +65,50 @@ void main() {
     });
   }
 
+  // The tag filter (#816): one menu with several tags ticked, songs with
+  // any of them.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('songs tags $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      final (christmas, communion, current, archive) = lang == 'de'
+          ? ('Advent & Weihnachten', 'Abendmahl', 'Aktuelle Songs', 'Archiv')
+          : ('Advent & Christmas', 'Communion', 'Current songs', 'Archive');
+      await tester.runAsync(() async {
+        for (final (title, artist, key, tags) in [
+          ('Morning Light', 'Ann Trainor', 'D', [current]),
+          ('Silent Snow', 'House Band', 'G', [christmas]),
+          ('Bread and Wine', 'Ann Trainor', 'E', [communion, current]),
+          ('Train to Nowhere', 'House Band', 'E', [archive]),
+          ('Starlight Carol', 'The Choir', 'F', [christmas, archive]),
+        ]) {
+          await app.songs.createSong(
+            source:
+                '{title: $title}\n{artist: $artist}\n{key: $key}\n'
+                '${[for (final t in tags) '{tag: $t}\n'].join()}'
+                '[$key]Sing a song\n',
+          );
+        }
+      });
+      await tester.pumpWidget(
+        RepaintBoundary(key: UniqueKey(), child: app.build()),
+      );
+      await tester.pumpAndSettle();
+      await openTab(tester, HomeTab.songs);
+      await tester.tap(find.byKey(const Key('songs-tags')));
+      await tester.pumpAndSettle();
+      for (final t in [christmas, communion]) {
+        await tester.tap(find.byKey(ValueKey('songs-tag-$t')).first);
+        await tester.pumpAndSettle();
+      }
+      expect(find.text('Train to Nowhere'), findsNothing);
+      await shot(tester, '${lang}_41_songs_tags');
+      await app.dispose(tester);
+    });
+  }
+
   // The language of songs (ADR-0053, #805): tags and the language filter in
   // a library with songs in several languages, and the language of a song
   // set by hand.
