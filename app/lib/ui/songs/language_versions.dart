@@ -42,6 +42,23 @@ List<SongEntry> orderedLanguageVersions(
   });
 }
 
+/// The name of the language version [version] among [versions]: its
+/// language, or its title while the language is unknown, *other* or shared
+/// with another version.
+String languageVersionLabel(
+  AppLocalizations l10n,
+  SongEntry version,
+  List<SongEntry> versions,
+) {
+  final language = _languageOf(version);
+  final unique =
+      language != null &&
+      language != 'other' &&
+      versions.where((v) => _languageOf(v) == language).length == 1;
+  if (!unique) return version.title.isEmpty ? l10n.untitled : version.title;
+  return songLanguageName(l10n, language);
+}
+
 /// The language versions of [song] below its header (ADR-0053): one chip per
 /// version, named by its language (by its title while the language is
 /// unknown or shared with another version); a tap opens that version.
@@ -61,16 +78,7 @@ class LanguageVersionChips extends ConsumerWidget {
       versions,
       Localizations.localeOf(context).languageCode,
     );
-    final languages = [for (final v in ordered) _languageOf(v)];
-    String label(SongEntry v) {
-      final language = _languageOf(v);
-      final unique =
-          language != null &&
-          language != 'other' &&
-          languages.where((l) => l == language).length == 1;
-      if (!unique) return v.title.isEmpty ? l10n.untitled : v.title;
-      return songLanguageName(l10n, language);
-    }
+    String label(SongEntry v) => languageVersionLabel(l10n, v, versions);
 
     return Semantics(
       container: true,

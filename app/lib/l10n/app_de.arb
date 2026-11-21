@@ -3188,5 +3188,41 @@
         "type": "int"
       }
     }
-  }
+  },
+  "switchLanguageVersion": "Sprachversion wechseln …",
+  "switchedLanguageVersion": "Gewechselt zu: {version}",
+  "@switchedLanguageVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "switchedLanguageVersionKey": "Gewechselt zu: {version}, im Set in {newKey} statt {oldKey}",
+  "@switchedLanguageVersionKey": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "newKey": {
+        "type": "String"
+      },
+      "oldKey": {
+        "type": "String"
+      }
+    }
+  },
+  "switchedLanguageVersionSequence": "Die eigene Reihenfolge des Sets passt nicht zur neuen Version und wurde entfernt.",
+  "languageVersionInSet": "{title} · im Set in {key}",
+  "@languageVersionInSet": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "switchLanguageVersionTitle": "Sprachversion wechseln"
 }

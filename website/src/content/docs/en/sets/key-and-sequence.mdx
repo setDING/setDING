@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import sequence from '../../../../../../docs/screenshots/sequence.png';
+import setLanguageVersion from '../../../../../../docs/screenshots/set_language_version.png';
 
 A song is stored the way it was written. How your band plays it – in which key, in
 which sequence, at which tempo – you set without changing the song. setDING has two
@@ -68,6 +69,19 @@ the parts of the sequence and names the hidden parts in the song's header. This 
 applies when you start a single song with **Live**: then the sequence of the band
 chosen on the Sets tab or in the band arrangement counts, otherwise the song's own. Key and tempo stay as the
 song is written there.
+
+## Another language version
+
+If a song has [language versions](/en/songs/library/#language-versions), the set can
+play another one tonight: **⋮ → Switch language version …** next to the song lists
+the other versions with the key they would have in this set; a tap puts the chosen
+version into the set. The set's transposition stays, and the band arrangement of the
+new version applies. If that gives another key, setDING says so, e.g. *Switched to:
+German, in E instead of D in this set*. A song sequence changed for this set stays
+as long as the new version has all its parts; otherwise it is removed and setDING
+says so.
+
+<Image src={setLanguageVersion} alt="Switch language version: German (Morgenlicht, in E in this set) and Swiss German (Morgeliecht, in D in this set)" />
 
 ## How did we play it last time?
 

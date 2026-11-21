@@ -5178,4 +5178,33 @@ class AppLocalizationsDe extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get switchLanguageVersion => 'Sprachversion wechseln …';
+
+  @override
+  String switchedLanguageVersion(String version) {
+    return 'Gewechselt zu: $version';
+  }
+
+  @override
+  String switchedLanguageVersionKey(
+    String version,
+    String newKey,
+    String oldKey,
+  ) {
+    return 'Gewechselt zu: $version, im Set in $newKey statt $oldKey';
+  }
+
+  @override
+  String get switchedLanguageVersionSequence =>
+      'Die eigene Reihenfolge des Sets passt nicht zur neuen Version und wurde entfernt.';
+
+  @override
+  String languageVersionInSet(String title, String key) {
+    return '$title · im Set in $key';
+  }
+
+  @override
+  String get switchLanguageVersionTitle => 'Sprachversion wechseln';
 }

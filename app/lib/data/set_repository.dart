@@ -1,3 +1,4 @@
+import 'package:chordpro/chordpro.dart' as cp;
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
@@ -362,6 +363,25 @@ class SetRepository {
         await _touchItem(itemId);
       });
 
+  /// Puts another language version [songId] of its song into the set item
+  /// [itemId] (ADR-0053): the transposition stays (relative to the band's
+  /// key of the new version, ADR-0025), the set item's own sequence stays
+  /// only with [keepSequence] (see [sequenceFits]).
+  Future<void> switchItemSong(
+    String itemId,
+    String songId, {
+    required bool keepSequence,
+  }) => db.transaction(() async {
+    await (db.update(db.setItems)..where((i) => i.id.equals(itemId))).write(
+      SetItemsCompanion(
+        songId: Value(songId),
+        sequence: keepSequence ? const Value.absent() : const Value(null),
+      ),
+    );
+    await PlayHistoryRepository(db).refreshItems([itemId]);
+    await _touchItem(itemId);
+  });
+
   /// Set-specific song sequence; null or empty restores the song's own.
   Future<void> setItemSequence(String itemId, String? sequence) =>
       db.transaction(() async {
@@ -472,4 +492,18 @@ class SetRepository {
     )..where((i) => i.id.equals(itemId))).getSingleOrNull();
     if (item != null) await _touch(item.setId);
   }
+}
+
+/// Whether a set item's own [sequence] fits [song], another language version
+/// of its song (ADR-0053): every part it names (`V1`, `C`, `Bridge`, …)
+/// exists in [song]. A free adaptation with other parts does not fit.
+bool sequenceFits(String sequence, cp.Song song) {
+  final parts = cp.songParts(song);
+  bool has(cp.SequenceItem item) => parts.any(
+    (p) => item.part == cp.SequencePart.other
+        ? p.code.trim().toLowerCase() == item.code.trim().toLowerCase()
+        : p.part == item.part &&
+              (item.number == null || p.number == item.number),
+  );
+  return cp.parseSequence(sequence).every(has);
 }
