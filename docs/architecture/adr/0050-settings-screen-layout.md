@@ -1,6 +1,6 @@
 # ADR-0050: Settings screen layout
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-21
 
 ## Context
@@ -86,6 +86,7 @@ without thinking about it.
 ## Decision log
 
 - 2026-11-21: Proposed (#766), together with the implementation.
+- 2026-11-21: Accepted by the owner (#768).
 
 ## Open points
 
