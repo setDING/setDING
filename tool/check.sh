@@ -98,8 +98,8 @@ PY
 
 # Unit and widget tests, and the screenshot tests in the same run (one test
 # runner, so they do not compete for the test assets in build/). The screenshot
-# tests drive and render the real screens; without WRITE_SCREENSHOTS
-# (make screenshots) they write no files. Running them here keeps UI changes
+# tests drive, lay out and paint the real screens; without WRITE_SCREENSHOTS
+# (make screenshots) they neither rasterise nor write the images. Running them here keeps UI changes
 # from breaking them silently.
 job_app_tests() {
   cd "$ROOT/app"

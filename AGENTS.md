@@ -78,10 +78,12 @@ fails on outdated ones (`make check` only when a pubspec changes, otherwise it w
 A new or visibly changed feature updates its website page in both languages
 (`website/src/content/docs/`, ADR-0030) **and shows the feature in a screenshot**
 there, so users see what to look for: a screenshot test in
-`app/test_screenshots/screenshots_test.dart` (de and en), a line in
-`tool/copy-screenshots.sh`, the rendered images in `docs/screenshots/` and the
-image on the page. This includes hints, dialogs and import reports, not only whole
-screens. Details: [`website.md`](docs/development/website.md),
+`app/test_screenshots/` (de and en), a line in `tool/copy-screenshots.sh`, the
+rendered images in `docs/screenshots/` and the image on the page. This includes
+hints, dialogs and import reports, not only whole screens. A PR renders **only its
+own screenshots** (`make screenshots ONLY="<test name>"`); the release PR renders
+all of them (`make screenshots`) and commits the ones that changed since. Details:
+[`website.md`](docs/development/website.md),
 [`docs/screenshots/README.md`](docs/screenshots/README.md).
 
 ## ChordPro features

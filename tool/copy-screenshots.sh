@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Copies the screenshots used by the README and the website from
 # app/build/screenshots (make screenshots) to docs/screenshots.
+# With --partial (make screenshots ONLY=…) it copies only the screenshots that
+# were rendered and skips the others; without it every one must exist.
 # English files are rendered in the dark theme, *_de files in German and the
 # light theme. The list below is the single source; docs/screenshots/README.md
 # explains it.
@@ -9,6 +11,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SRC="$ROOT/app/build/screenshots"
 DST="$ROOT/docs/screenshots"
+partial=0
+[ "${1:-}" = --partial ] && partial=1
 
 # <file in docs/screenshots without .png> <rendered name without language and .png>
 map=(
@@ -53,9 +57,19 @@ map=(
   editor_save 32_editor_save
 )
 
+copied=0
+copy() {
+  if [ "$partial" = 1 ] && [ ! -e "$SRC/$1.png" ]; then return; fi
+  cp "$SRC/$1.png" "$DST/$2.png"
+  copied=$((copied + 1))
+}
 for ((i = 0; i < ${#map[@]}; i += 2)); do
   name="${map[i]}" shot="${map[i + 1]}"
-  cp "$SRC/en_$shot.png" "$DST/$name.png"
-  cp "$SRC/de_$shot.png" "$DST/${name}_de.png"
+  copy "en_$shot" "$name"
+  copy "de_$shot" "${name}_de"
 done
-echo "Copied ${#map[@]} screenshots to docs/screenshots"
+if [ "$copied" = 0 ]; then
+  echo "No screenshot of the list was rendered" >&2
+  exit 1
+fi
+echo "Copied $copied screenshots to docs/screenshots"

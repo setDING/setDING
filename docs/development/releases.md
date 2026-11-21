@@ -19,6 +19,9 @@ Android tests start is stopped at the end.
    section to [`CHANGELOG.md`](../../CHANGELOG.md) (see [Changelog](#changelog)) and its
    notes to `app/assets/whats_new.json` (see [What's new in the app](#whats-new-in-the-app)).
    Choose the number by the rules in [Version numbers](#version-numbers).
+   The PR also runs `make screenshots` and commits the images in `docs/screenshots/`
+   that changed: feature PRs render only their own screenshots, so the others are
+   brought up to date here ([docs/screenshots/README.md](../screenshots/README.md)).
 2. Tag `main` and push the tag:
 
    ```bash

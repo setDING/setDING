@@ -38,8 +38,8 @@ do not compile and on broken internal links.
   `website/`.
 - **Every page that documents a feature shows it in a screenshot** (in both
   languages). A new or visibly changed feature comes with a screenshot test in
-  `app/test_screenshots/screenshots_test.dart`, a line in
-  `tool/copy-screenshots.sh` and the image on its page; see
+  `app/test_screenshots/`, a line in `tool/copy-screenshots.sh` and the image on
+  its page, rendered with `make screenshots ONLY="<test name>"`; see
   [`docs/screenshots/README.md`](../screenshots/README.md). Pages that only explain
   concepts or installation (`start/`, `bands/roles`) need none.
 
