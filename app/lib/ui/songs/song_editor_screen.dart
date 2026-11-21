@@ -322,8 +322,17 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
       return;
     }
     final sel = _controller.selection;
-    final start = sel.isValid ? sel.start : text.length;
-    final end = sel.isValid ? sel.end : text.length;
+    var start = sel.isValid ? sel.start : text.length;
+    var end = sel.isValid ? sel.end : text.length;
+    // A section wraps the whole lines the selection touches (#756).
+    if (snippet.block &&
+        end > start &&
+        snippet.before.startsWith('{start_of_')) {
+      if (text[end - 1] == '\n') end--;
+      start = start == 0 ? 0 : text.lastIndexOf('\n', start - 1) + 1;
+      final nl = text.indexOf('\n', end);
+      end = end > start ? (nl < 0 ? text.length : nl) : end;
+    }
     final selected = text.substring(start, end);
     var before = snippet.before;
     var after = snippet.after;

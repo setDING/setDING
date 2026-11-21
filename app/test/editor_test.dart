@@ -103,6 +103,37 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('a section wraps the whole lines of a partial selection', (
+    tester,
+  ) async {
+    final (app, field) = await pumpEditor(tester, 'one\ntwo\nthree');
+    // From "ne" in the first line to "t" in the second.
+    field.controller!.selection = const TextSelection(
+      baseOffset: 1,
+      extentOffset: 5,
+    );
+    await tester.pump();
+    await choose(tester, 'Sections', 'Chorus');
+    expect(
+      field.controller!.text,
+      '{start_of_chorus}\none\ntwo\n{end_of_chorus}\nthree',
+    );
+    // A selection ending at the start of a line does not include it.
+    field.controller!.selection = const TextSelection(
+      baseOffset: 22,
+      extentOffset: 26,
+    );
+    await tester.pump();
+    expect(field.controller!.text.substring(22, 26), 'two\n');
+    await choose(tester, 'Sections', 'Bridge');
+    expect(
+      field.controller!.text,
+      '{start_of_chorus}\none\n{start_of_bridge}\ntwo\n{end_of_bridge}\n'
+      '{end_of_chorus}\nthree',
+    );
+    await app.dispose(tester);
+  });
+
   testWidgets('song info selects an existing directive', (tester) async {
     const source = '{title: T}\n{key: G}\n[G]la';
     final (app, field) = await pumpEditor(tester, source);
