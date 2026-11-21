@@ -1,9 +1,6 @@
-import 'dart:convert';
-
 import 'package:chordpro/chordpro.dart' as cp;
 import 'package:drift/drift.dart' show Value;
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../sync_hints.dart';
@@ -30,7 +27,7 @@ import '../widgets/sequence_dialog.dart';
 import 'set_list_pdf.dart';
 import 'set_archive_dialogs.dart';
 import 'set_item_label.dart';
-import 'set_list_text.dart';
+import 'set_list.dart';
 import 'sets_screen.dart';
 import 'song_picker.dart';
 
@@ -98,26 +95,6 @@ class _SetScreenState extends ConsumerState<SetScreen> {
       songMissing: l10n.songMissing,
       pause: l10n.pause,
     );
-  }
-
-  Future<void> _exportSetList(SetlistEntry set) async {
-    final l10n = AppLocalizations.of(context);
-    final list = await _setList(set);
-    if (list == null) return;
-    final saved = await saveFile(
-      '${safeFileName(set.name)}.txt',
-      Uint8List.fromList(utf8.encode(setListText(list))),
-      mimeType: 'text/plain',
-    );
-    if (saved && mounted) showMessage(context, l10n.exported);
-  }
-
-  Future<void> _copySetList(SetlistEntry set) async {
-    final l10n = AppLocalizations.of(context);
-    final list = await _setList(set);
-    if (list == null) return;
-    await Clipboard.setData(ClipboardData(text: setListText(list)));
-    if (mounted) showMessage(context, l10n.setListCopied);
   }
 
   /// Printable set list as PDF (ADR-0013).
@@ -205,9 +182,7 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                   'text' => _addMarker(SetItemType.text),
                   'edit' => showSetDialog(context, ref, existing: set),
                   'export' => _export(set),
-                  'exportList' => _exportSetList(set),
                   'exportListPdf' => _exportSetListPdf(set),
-                  'copyList' => _copySetList(set),
                   'copyToBand' => copySetToBand(context, ref, set.id),
                   'delete' => _delete(set),
                   _ => null,
@@ -219,19 +194,11 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                     PopupMenuItem(value: 'edit', child: Text(l10n.editSet)),
                     const PopupMenuDivider(),
                   ],
-                  PopupMenuItem(
-                    value: 'copyList',
-                    child: Text(l10n.copySetList),
-                  ),
                   // Web: no file export, sets are synced (ADR-0018).
                   if (!ref.read(webClientProvider)) ...[
                     PopupMenuItem(
                       value: 'exportListPdf',
                       child: Text(l10n.exportSetListPdf),
-                    ),
-                    PopupMenuItem(
-                      value: 'exportList',
-                      child: Text(l10n.exportSetList),
                     ),
                     PopupMenuItem(value: 'export', child: Text(l10n.exportSet)),
                   ],

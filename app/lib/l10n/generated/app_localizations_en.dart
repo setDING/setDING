@@ -1465,15 +1465,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sequenceAsText => 'Edit as text';
 
   @override
-  String get exportSetList => 'Export set list (text)';
-
-  @override
-  String get copySetList => 'Copy set list';
-
-  @override
-  String get setListCopied => 'Set list copied';
-
-  @override
   String get exportSetListPdf => 'Export set list (PDF for printing)';
 
   @override
