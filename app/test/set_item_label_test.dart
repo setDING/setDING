@@ -92,7 +92,7 @@ void main() {
       expect(breaks.map(subtitle), everyElement(isNull));
       expect(find.text(other), findsNothing);
       final coffee = tiles.firstWhere((t) => title(t) == 'Coffee');
-      expect(subtitle(coffee), label);
+      expect(subtitle(coffee), isNull);
       final text = tiles.firstWhere((t) => title(t) == announcement);
       expect(subtitle(text), isNull);
       await app.dispose(tester);

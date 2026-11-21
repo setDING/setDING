@@ -125,7 +125,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Coffee'), findsOneWidget);
-    expect(find.text('Break'), findsOneWidget); // the icon's name below
+    expect(find.text('Break'), findsNothing); // no icon name below the text
     await tester.tap(find.text('Coffee'));
     await tester.pumpAndSettle();
     expect(find.text(en.editMarker), findsOneWidget);

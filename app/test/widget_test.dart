@@ -467,8 +467,8 @@ void main() {
     });
     await tester.pumpWidget(app.build(home: SetScreen(setId: setId!)));
     await tester.pumpAndSettle();
-    // "Break" as the title only; below "Coffee" as the type.
-    expect(find.text('Break'), findsNWidgets(2));
+    // "Break" as the title only; "Coffee" without the icon's name.
+    expect(find.text('Break'), findsOneWidget);
     expect(find.text('Coffee'), findsOneWidget);
     final tiles = tester.widgetList<ListTile>(find.byType(ListTile)).toList();
     final breakTile = tiles.firstWhere(
@@ -478,7 +478,7 @@ void main() {
     final coffee = tiles.firstWhere(
       (t) => (t.title as Text?)?.data == 'Coffee',
     );
-    expect((coffee.subtitle as Text?)?.data, 'Break');
+    expect(coffee.subtitle, isNull);
     // A marker without text shows its icon's name once (ADR-0047).
     expect(find.text('Announcement'), findsOneWidget);
     await app.dispose(tester);
