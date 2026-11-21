@@ -314,6 +314,7 @@ class RemoteSet {
     required this.name,
     this.gigDate,
     this.venue,
+    this.origin,
     this.items = const [],
     this.revision = 0,
     this.deleted = false,
@@ -327,6 +328,9 @@ class RemoteSet {
   final String name;
   final DateTime? gigDate;
   final String? venue;
+
+  /// The set this one was imported from (ADR-0043 §1b).
+  final String? origin;
   final List<RemoteSetItem> items;
   final int revision;
   final bool deleted;

@@ -3851,6 +3851,15 @@ class $SetlistsTable extends Setlists
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _originMeta = const VerificationMeta('origin');
+  @override
+  late final GeneratedColumn<String> origin = GeneratedColumn<String>(
+    'origin',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _updatedByMeta = const VerificationMeta(
     'updatedBy',
   );
@@ -3931,6 +3940,7 @@ class $SetlistsTable extends Setlists
     name,
     gigDate,
     venue,
+    origin,
     updatedBy,
     revision,
     updatedAt,
@@ -3981,6 +3991,12 @@ class $SetlistsTable extends Setlists
       context.handle(
         _venueMeta,
         venue.isAcceptableOrUnknown(data['venue']!, _venueMeta),
+      );
+    }
+    if (data.containsKey('origin')) {
+      context.handle(
+        _originMeta,
+        origin.isAcceptableOrUnknown(data['origin']!, _originMeta),
       );
     }
     if (data.containsKey('updated_by')) {
@@ -4050,6 +4066,10 @@ class $SetlistsTable extends Setlists
         DriftSqlType.string,
         data['${effectivePrefix}venue'],
       ),
+      origin: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}origin'],
+      ),
       updatedBy: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}updated_by'],
@@ -4090,6 +4110,11 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
   final DateTime? gigDate;
   final String? venue;
 
+  /// The set this one was imported from, for re-importing a set archive
+  /// (ADR-0043 §1b, schema 28): the original ID of the exported set (or its
+  /// own origin). Null for sets made in the app.
+  final String? origin;
+
   /// User who changed the set last, as the server reports it (ADR-0045,
   /// schema 22): for the recent changes of the overview. Null for the
   /// local band and for sets synced before.
@@ -4110,6 +4135,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     required this.name,
     this.gigDate,
     this.venue,
+    this.origin,
     this.updatedBy,
     required this.revision,
     required this.updatedAt,
@@ -4128,6 +4154,9 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     }
     if (!nullToAbsent || venue != null) {
       map['venue'] = Variable<String>(venue);
+    }
+    if (!nullToAbsent || origin != null) {
+      map['origin'] = Variable<String>(origin);
     }
     if (!nullToAbsent || updatedBy != null) {
       map['updated_by'] = Variable<String>(updatedBy);
@@ -4153,6 +4182,9 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
       venue: venue == null && nullToAbsent
           ? const Value.absent()
           : Value(venue),
+      origin: origin == null && nullToAbsent
+          ? const Value.absent()
+          : Value(origin),
       updatedBy: updatedBy == null && nullToAbsent
           ? const Value.absent()
           : Value(updatedBy),
@@ -4177,6 +4209,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
       name: serializer.fromJson<String>(json['name']),
       gigDate: serializer.fromJson<DateTime?>(json['gigDate']),
       venue: serializer.fromJson<String?>(json['venue']),
+      origin: serializer.fromJson<String?>(json['origin']),
       updatedBy: serializer.fromJson<String?>(json['updatedBy']),
       revision: serializer.fromJson<int>(json['revision']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -4194,6 +4227,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
       'name': serializer.toJson<String>(name),
       'gigDate': serializer.toJson<DateTime?>(gigDate),
       'venue': serializer.toJson<String?>(venue),
+      'origin': serializer.toJson<String?>(origin),
       'updatedBy': serializer.toJson<String?>(updatedBy),
       'revision': serializer.toJson<int>(revision),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -4209,6 +4243,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     String? name,
     Value<DateTime?> gigDate = const Value.absent(),
     Value<String?> venue = const Value.absent(),
+    Value<String?> origin = const Value.absent(),
     Value<String?> updatedBy = const Value.absent(),
     int? revision,
     DateTime? updatedAt,
@@ -4221,6 +4256,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     name: name ?? this.name,
     gigDate: gigDate.present ? gigDate.value : this.gigDate,
     venue: venue.present ? venue.value : this.venue,
+    origin: origin.present ? origin.value : this.origin,
     updatedBy: updatedBy.present ? updatedBy.value : this.updatedBy,
     revision: revision ?? this.revision,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -4235,6 +4271,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
       name: data.name.present ? data.name.value : this.name,
       gigDate: data.gigDate.present ? data.gigDate.value : this.gigDate,
       venue: data.venue.present ? data.venue.value : this.venue,
+      origin: data.origin.present ? data.origin.value : this.origin,
       updatedBy: data.updatedBy.present ? data.updatedBy.value : this.updatedBy,
       revision: data.revision.present ? data.revision.value : this.revision,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -4252,6 +4289,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
           ..write('name: $name, ')
           ..write('gigDate: $gigDate, ')
           ..write('venue: $venue, ')
+          ..write('origin: $origin, ')
           ..write('updatedBy: $updatedBy, ')
           ..write('revision: $revision, ')
           ..write('updatedAt: $updatedAt, ')
@@ -4269,6 +4307,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     name,
     gigDate,
     venue,
+    origin,
     updatedBy,
     revision,
     updatedAt,
@@ -4285,6 +4324,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
           other.name == this.name &&
           other.gigDate == this.gigDate &&
           other.venue == this.venue &&
+          other.origin == this.origin &&
           other.updatedBy == this.updatedBy &&
           other.revision == this.revision &&
           other.updatedAt == this.updatedAt &&
@@ -4299,6 +4339,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
   final Value<String> name;
   final Value<DateTime?> gigDate;
   final Value<String?> venue;
+  final Value<String?> origin;
   final Value<String?> updatedBy;
   final Value<int> revision;
   final Value<DateTime> updatedAt;
@@ -4312,6 +4353,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     this.name = const Value.absent(),
     this.gigDate = const Value.absent(),
     this.venue = const Value.absent(),
+    this.origin = const Value.absent(),
     this.updatedBy = const Value.absent(),
     this.revision = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -4326,6 +4368,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     required String name,
     this.gigDate = const Value.absent(),
     this.venue = const Value.absent(),
+    this.origin = const Value.absent(),
     this.updatedBy = const Value.absent(),
     this.revision = const Value.absent(),
     required DateTime updatedAt,
@@ -4343,6 +4386,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     Expression<String>? name,
     Expression<DateTime>? gigDate,
     Expression<String>? venue,
+    Expression<String>? origin,
     Expression<String>? updatedBy,
     Expression<int>? revision,
     Expression<DateTime>? updatedAt,
@@ -4357,6 +4401,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
       if (name != null) 'name': name,
       if (gigDate != null) 'gig_date': gigDate,
       if (venue != null) 'venue': venue,
+      if (origin != null) 'origin': origin,
       if (updatedBy != null) 'updated_by': updatedBy,
       if (revision != null) 'revision': revision,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -4373,6 +4418,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     Value<String>? name,
     Value<DateTime?>? gigDate,
     Value<String?>? venue,
+    Value<String?>? origin,
     Value<String?>? updatedBy,
     Value<int>? revision,
     Value<DateTime>? updatedAt,
@@ -4387,6 +4433,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
       name: name ?? this.name,
       gigDate: gigDate ?? this.gigDate,
       venue: venue ?? this.venue,
+      origin: origin ?? this.origin,
       updatedBy: updatedBy ?? this.updatedBy,
       revision: revision ?? this.revision,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -4414,6 +4461,9 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     }
     if (venue.present) {
       map['venue'] = Variable<String>(venue.value);
+    }
+    if (origin.present) {
+      map['origin'] = Variable<String>(origin.value);
     }
     if (updatedBy.present) {
       map['updated_by'] = Variable<String>(updatedBy.value);
@@ -4447,6 +4497,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
           ..write('name: $name, ')
           ..write('gigDate: $gigDate, ')
           ..write('venue: $venue, ')
+          ..write('origin: $origin, ')
           ..write('updatedBy: $updatedBy, ')
           ..write('revision: $revision, ')
           ..write('updatedAt: $updatedAt, ')
@@ -12710,6 +12761,7 @@ typedef $$SetlistsTableCreateCompanionBuilder = SetlistsCompanion Function({
   required String name,
   Value<DateTime?> gigDate,
   Value<String?> venue,
+  Value<String?> origin,
   Value<String?> updatedBy,
   Value<int> revision,
   required DateTime updatedAt,
@@ -12724,6 +12776,7 @@ typedef $$SetlistsTableUpdateCompanionBuilder = SetlistsCompanion Function({
   Value<String> name,
   Value<DateTime?> gigDate,
   Value<String?> venue,
+  Value<String?> origin,
   Value<String?> updatedBy,
   Value<int> revision,
   Value<DateTime> updatedAt,
@@ -12799,6 +12852,11 @@ class $$SetlistsTableFilterComposer
 
   ColumnFilters<String> get venue => $composableBuilder(
     column: $table.venue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get origin => $composableBuilder(
+    column: $table.origin,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -12910,6 +12968,11 @@ class $$SetlistsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get origin => $composableBuilder(
+    column: $table.origin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get updatedBy => $composableBuilder(
     column: $table.updatedBy,
     builder: (column) => ColumnOrderings(column),
@@ -12984,6 +13047,9 @@ class $$SetlistsTableAnnotationComposer
 
   GeneratedColumn<String> get venue =>
       $composableBuilder(column: $table.venue, builder: (column) => column);
+
+  GeneratedColumn<String> get origin =>
+      $composableBuilder(column: $table.origin, builder: (column) => column);
 
   GeneratedColumn<String> get updatedBy =>
       $composableBuilder(column: $table.updatedBy, builder: (column) => column);
@@ -13085,6 +13151,7 @@ class $$SetlistsTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<DateTime?> gigDate = const Value.absent(),
                 Value<String?> venue = const Value.absent(),
+                Value<String?> origin = const Value.absent(),
                 Value<String?> updatedBy = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -13098,6 +13165,7 @@ class $$SetlistsTableTableManager
                 name: name,
                 gigDate: gigDate,
                 venue: venue,
+                origin: origin,
                 updatedBy: updatedBy,
                 revision: revision,
                 updatedAt: updatedAt,
@@ -13113,6 +13181,7 @@ class $$SetlistsTableTableManager
                 required String name,
                 Value<DateTime?> gigDate = const Value.absent(),
                 Value<String?> venue = const Value.absent(),
+                Value<String?> origin = const Value.absent(),
                 Value<String?> updatedBy = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 required DateTime updatedAt,
@@ -13126,6 +13195,7 @@ class $$SetlistsTableTableManager
                 name: name,
                 gigDate: gigDate,
                 venue: venue,
+                origin: origin,
                 updatedBy: updatedBy,
                 revision: revision,
                 updatedAt: updatedAt,

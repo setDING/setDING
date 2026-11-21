@@ -914,6 +914,7 @@ class FakeSyncBackend implements SyncBackend {
       name: set.name,
       gigDate: set.gigDate,
       venue: set.venue,
+      origin: set.origin ?? sets[set.id]?.origin,
       items: set.items,
       revision: ++_serverRevision,
       deleted: set.deleted,

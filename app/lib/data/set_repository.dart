@@ -158,10 +158,13 @@ class SetRepository {
             ..where((s) => s.id.equals(id) & s.deleted.equals(false)))
           .watchSingleOrNull();
 
+  /// Creates a set; [origin] is the set an imported one was made from
+  /// (ADR-0043 §1b).
   Future<String> createSet({
     required String name,
     DateTime? gigDate,
     String? venue,
+    String? origin,
   }) async {
     final id = _uuid.v4();
     await db.transaction(() async {
@@ -174,6 +177,7 @@ class SetRepository {
               name: name.trim(),
               gigDate: Value(gigDate),
               venue: Value(blankToNull(venue)),
+              origin: Value(origin),
               updatedAt: DateTime.now(),
               updatedBy: Value(_editorIn(bandId)),
             ),

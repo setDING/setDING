@@ -200,6 +200,11 @@ class Setlists extends Table {
   DateTimeColumn get gigDate => dateTime().nullable()();
   TextColumn get venue => text().nullable()();
 
+  /// The set this one was imported from, for re-importing a set archive
+  /// (ADR-0043 §1b, schema 28): the original ID of the exported set (or its
+  /// own origin). Null for sets made in the app.
+  TextColumn get origin => text().nullable()();
+
   /// User who changed the set last, as the server reports it (ADR-0045,
   /// schema 22): for the recent changes of the overview. Null for the
   /// local band and for sets synced before.
@@ -607,7 +612,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 27;
+  int get schemaVersion => 28;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -849,6 +854,10 @@ class AppDatabase extends _$AppDatabase {
         // schema 8 the rebuilt overlay table has the columns already.
         await m.addColumn(personalOverlays, personalOverlays.clickGrouping);
         await m.addColumn(personalOverlays, personalOverlays.clickSubdivision);
+      }
+      if (from < 28) {
+        // Origin of an imported set (ADR-0043 §1b, #707).
+        await m.addColumn(setlists, setlists.origin);
       }
     },
     beforeOpen: (details) async {

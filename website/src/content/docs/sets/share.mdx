@@ -1,12 +1,15 @@
 ---
 title: Offline bereit, drucken und teilen
-description: Wann ein Set ohne Netz spielbar ist und wie du die Set-Liste druckst oder teilst.
+description: Wann ein Set ohne Netz spielbar ist, wie du die Set-Liste druckst oder teilst und wie du ein Set exportierst und importierst.
 sidebar:
   order: 3
 ---
 
 import { Image } from 'astro:assets';
 import menu from '../../../../../docs/screenshots/set_menu_de.png';
+import exportDialog from '../../../../../docs/screenshots/set_export_de.png';
+import importDialog from '../../../../../docs/screenshots/set_import_de.png';
+import importResult from '../../../../../docs/screenshots/set_import_result_de.png';
 
 ## Offline bereit
 
@@ -37,9 +40,47 @@ PDF-Betrachter deines Geräts – zum Beispiel für das Mischpult oder die Bühn
   Einfügen in einen Gruppenchat oder eine Mail.
 - **Set-Liste exportieren (Text)** speichert denselben Text als Datei.
 
-## Songs als ZIP exportieren
+## Set exportieren
 
-**Als ZIP exportieren** speichert alle Songs des Sets als ChordPro-Dateien mit ihren
-PDF-Anhängen in einem ZIP-Archiv, nummeriert in der Reihenfolge des Sets, dazu die
-Set-Liste als `setlist.txt`. So gibst du die Songs an
-jemanden weiter, der nicht in deiner Band ist, oder legst eine Sicherung an.
+**Als ZIP exportieren** speichert das Set als ZIP-Archiv: jeden Song als
+ChordPro-Datei, nummeriert in der Reihenfolge des Sets, dazu eine Beschreibung, mit
+der setDING das Set wieder importiert – mit Pausen, Texten, Datum und Ort. Vor dem
+Speichern wählst du, was ins Archiv kommt:
+
+- **Band-Arrangements der Songs** – Tonart, Abfolge und Tempo der Band.
+- **Tonart und Songablauf der Songs in diesem Set**.
+- **Anhänge** – PDFs und Bilder der Songs.
+- **Meine persönlichen Anpassungen und Notizen** – standardmässig aus. Lass das aus,
+  wenn du die Datei weitergibst.
+
+<Image src={exportDialog} alt="Der Dialog «Set exportieren» mit den Optionen für Band-Arrangements, Tonart und Songablauf in diesem Set, Anhänge und persönliche Anpassungen" />
+
+Die ChordPro-Dateien lassen sich auch ohne setDING öffnen. So gibst du Songs auch an
+jemanden weiter, der nicht in deiner Band ist. Für die Set-Liste allein nimmst du die
+Exporte weiter oben.
+
+## Set importieren
+
+Importiere das ZIP im Menü ⋮ der Set-Liste mit **Set importieren** oder mit
+**Dateien importieren** in der Song-Liste. setDING erkennt ein exportiertes Set und zeigt,
+was der Import tun wird, bevor sich etwas ändert:
+
+- **In die Band** – die Band, in die das Set kommt.
+- Songs, die es **schon gibt** mit gleichem Text, werden verwendet; **neue** Songs
+  kommen in die Bibliothek. Für Songs, die es mit anderem Text gibt, wählst du
+  einmal: die bestehenden behalten oder als zusätzliche Songs importieren.
+- Gibt es das Set **schon in der Band** (du hast es dort exportiert oder früher
+  importiert), bringt **Ersetzen** es auf den Stand des Archivs; **Als Kopie
+  hinzufügen** legt ein zweites an.
+- **Ebenfalls importieren** – dieselbe Auswahl wie beim Export, soweit das Archiv sie
+  enthält. Band-Arrangements, die die Band schon hat, bleiben, ausser du kreuzt
+  **Band-Arrangements überschreiben** an.
+- In der **Setplanung** darfst du keine Songs in die Bibliothek aufnehmen: Songs, die
+  dort fehlen, stehen im Set als Text wie «Fehlt: Amazing Grace», und der Bericht
+  listet sie auf. So kann sie jemand mit dem Recht dazu nachtragen.
+
+<Image src={importDialog} alt="Der Dialog «Set importieren» mit der Band, der Wahl zwischen Ersetzen und Kopie, den vorhandenen und neuen Songs und den Optionen" />
+
+Der Bericht danach zeigt, was importiert wurde; **Set öffnen** führt direkt hin.
+
+<Image src={importResult} alt="Der Bericht «Set importiert»: das bestehende Set wurde ersetzt, ein Song importiert, einer war schon hier" />

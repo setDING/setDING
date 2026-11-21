@@ -36,6 +36,27 @@ void main() {
     expect(seen.json['items'], items.reversed.toList());
   });
 
+  test('the origin of an imported set is stored and kept on updates '
+      'without it (#707)', () async {
+    final f = await BandFixture.create(pb);
+    final origin = uuid();
+    final created = await f.admin.post('setlists', {
+      'band': f.id,
+      'name': 'Imported',
+      'origin': origin,
+    });
+    created.expectStatus(200);
+    expect(created.json['origin'], origin);
+    // Apps before the field send updates without it.
+    final renamed = await f.admin.patch('setlists', created.json['id'], {
+      'name': 'Renamed',
+    });
+    renamed.expectStatus(200);
+    expect(renamed.json['origin'], origin);
+    final seen = await f.member.view('setlists', created.json['id']);
+    expect(seen.json['origin'], origin);
+  });
+
   test('sets use last writer wins (no base revision needed)', () async {
     final f = await BandFixture.create(pb);
     final second = await pb.signUp();

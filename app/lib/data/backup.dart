@@ -10,7 +10,7 @@ import 'package:uuid/uuid.dart';
 import 'arrangement_repository.dart';
 import 'attachment_storage.dart';
 import 'database.dart';
-import 'import_export.dart' show safeFileName;
+import 'import_export.dart' show safeFileName, sourceWithMeta;
 import 'outbox.dart';
 import 'set_repository.dart';
 import 'song_repository.dart';
@@ -361,7 +361,7 @@ class BackupService {
       for (final a in attachmentsBySong[song.id] ?? const <AttachmentEntry>[]) {
         Uint8List? bytes;
         try {
-          bytes = await (readFile?.call(a) ?? _readStored(a));
+          bytes = await (readFile?.call(a) ?? readStored(a));
         } catch (_) {
           bytes = null;
         }
@@ -440,7 +440,7 @@ class BackupService {
                   a.deleted.equals(false),
             ))
             .get();
-    final (overlays, strokes) = await _personal(libraryId, songIds);
+    final (overlays, strokes) = await personalData(libraryId, songIds);
 
     final manifest = {
       'format': backupFormat,
@@ -467,14 +467,15 @@ class BackupService {
             'tempo': ?a.tempo,
           },
       ],
-      'overlays': [for (final o in overlays) _overlayJson(o)],
-      'annotations': [for (final x in strokes) _strokeJson(x)],
+      'overlays': [for (final o in overlays) overlayJson(o)],
+      'annotations': [for (final x in strokes) strokeJson(x)],
     };
-    files[backupManifestName] = _json(manifest);
+    files[backupManifestName] = json(manifest);
     return files;
   }
 
-  static Uint8List _json(Object value) => Uint8List.fromList(
+  /// [value] as indented JSON.
+  static Uint8List json(Object value) => Uint8List.fromList(
     utf8.encode(const JsonEncoder.withIndent('  ').convert(value)),
   );
 
@@ -512,15 +513,15 @@ class BackupService {
     }
     final personal = <Map<String, dynamic>>[];
     for (final library in personalOnly) {
-      final (overlays, strokes) = await _personal(library.id, null);
+      final (overlays, strokes) = await personalData(library.id, null);
       personal.add({
         'id': library.id,
         'name': library.name,
-        'overlays': [for (final o in overlays) _overlayJson(o)],
-        'annotations': [for (final x in strokes) _strokeJson(x)],
+        'overlays': [for (final o in overlays) overlayJson(o)],
+        'annotations': [for (final x in strokes) strokeJson(x)],
       });
     }
-    files[backupManifestName] = _json({
+    files[backupManifestName] = json({
       'format': backupFormat,
       'formatVersion': backupFullFormatVersion,
       'app': appVersion,
@@ -534,7 +535,7 @@ class BackupService {
 
   /// The person's adjustments and annotations of the songs of [libraryId]
   /// ([songIds] if given, else all songs that are not deleted).
-  Future<(List<SongOverlay>, List<AnnotationRow>)> _personal(
+  Future<(List<SongOverlay>, List<AnnotationRow>)> personalData(
     String libraryId,
     Set<String>? songIds,
   ) async {
@@ -564,7 +565,7 @@ class BackupService {
     return (overlays, strokes);
   }
 
-  static Map<String, dynamic> _strokeJson(AnnotationRow x) => {
+  static Map<String, dynamic> strokeJson(AnnotationRow x) => {
     'id': x.id,
     'songId': x.songId,
     'target': x.target,
@@ -572,12 +573,13 @@ class BackupService {
     'updatedAt': x.updatedAt,
   };
 
-  Future<Uint8List?> _readStored(AttachmentEntry a) async {
+  /// An attachment file from the storage, or null if it is not there.
+  Future<Uint8List?> readStored(AttachmentEntry a) async {
     final file = storage.file(a.fileName);
     return await file.exists() ? file.readAsBytes() : null;
   }
 
-  static Map<String, dynamic> _overlayJson(SongOverlay o) => {
+  static Map<String, dynamic> overlayJson(SongOverlay o) => {
     'songId': o.songId,
     'transpose': o.transpose,
     'capoFret': ?o.capoFret,
@@ -648,7 +650,16 @@ class BackupService {
     return FullBackup(manifest, libraries);
   }
 
-  static Map<String, dynamic> _manifest(Uint8List? raw) {
+  static Map<String, dynamic> _manifest(Uint8List? raw) =>
+      decodeManifest(raw, backupFormat, backupFormatVersion);
+
+  /// The manifest [raw] of an archive of [format]; throws
+  /// [BackupFormatException] if it is none or newer than [maxVersion].
+  static Map<String, dynamic> decodeManifest(
+    Uint8List? raw,
+    String format,
+    int maxVersion,
+  ) {
     if (raw == null) throw const BackupFormatException();
     final Object? manifest;
     try {
@@ -656,12 +667,12 @@ class BackupService {
     } on FormatException {
       throw const BackupFormatException();
     }
-    if (manifest is! Map || manifest['format'] != backupFormat) {
+    if (manifest is! Map || manifest['format'] != format) {
       throw const BackupFormatException();
     }
     final version = manifest['formatVersion'];
     if (version is! int) throw const BackupFormatException();
-    if (version > backupFormatVersion) {
+    if (version > maxVersion) {
       throw BackupFormatException(newerVersion: version);
     }
     return manifest.cast<String, dynamic>();
@@ -761,13 +772,13 @@ class BackupService {
   );
 
   /// Existing songs of [libraryId] by ID and by title and artist.
-  Future<_Existing> _existing(String libraryId) async {
+  Future<ExistingSongs> existingSongs(String libraryId) async {
     final songs =
         await (db.select(db.songs)..where(
               (s) => s.libraryId.equals(libraryId) & s.deleted.equals(false),
             ))
             .get();
-    return _Existing(songs);
+    return ExistingSongs(songs);
   }
 
   /// What importing [contents] into [libraryId] would find.
@@ -775,7 +786,7 @@ class BackupService {
     BackupContents contents,
     String libraryId,
   ) async {
-    final existing = await _existing(libraryId);
+    final existing = await existingSongs(libraryId);
     var identical = 0, differing = 0;
     for (final song in contents.songs) {
       switch (existing.match(song, contents.sourceOf(song))) {
@@ -803,106 +814,13 @@ class BackupService {
     required Map<String, String?> bands,
     BackupDuplicates duplicates = BackupDuplicates.addAll,
   }) async {
-    final songs = SongRepository(
-      db,
-      storage,
+    final songs = await importSongs(
+      contents,
       libraryId: libraryId,
-      userId: userId,
+      duplicates: duplicates,
     );
-    final existing = await _existing(libraryId);
-    // Original song ID -> song in the target library.
-    final songMap = <String, String>{};
-    // Original attachment ID -> new attachment ID.
-    final attachmentMap = <String, String>{};
-    // Original song IDs imported as new songs.
-    final imported = <String>{};
-    final additional = <({String id, String title})>[];
-    var identical = 0, keptExisting = 0, files = 0;
-
-    for (final song in contents.songs) {
-      final originalId = song['id'] as String;
-      final source = contents.sourceOf(song);
-      final (match, same) = existing.match(song, source);
-      if (match != null &&
-          (same || duplicates == BackupDuplicates.keepExisting)) {
-        songMap[originalId] = match.id;
-        same ? identical++ : keptExisting++;
-        continue;
-      }
-      final id = await songs.createSong(
-        source: source,
-        title: song['title'] as String?,
-        artist: song['artist'] as String?,
-      );
-      songMap[originalId] = id;
-      imported.add(originalId);
-      if (match != null) {
-        additional.add((id: id, title: (song['title'] as String?) ?? ''));
-      }
-      for (final a in [
-        for (final e in (song['attachments'] as List?) ?? const [])
-          (e as Map).cast<String, dynamic>(),
-      ]) {
-        final bytes = contents.files[a['file'] as String? ?? ''];
-        if (bytes == null || bytes.length > maxAttachmentBytes) continue;
-        final ext = p
-            .extension(a['file'] as String)
-            .replaceFirst('.', '')
-            .toLowerCase();
-        attachmentMap[a['id'] as String] = await songs.addAttachment(
-          id,
-          name: a['name'] as String? ?? '',
-          bytes: bytes,
-          pages: a['pages'] as int?,
-          extension: ext.isEmpty ? 'pdf' : ext,
-        );
-        files++;
-      }
-    }
-
-    // Personal adjustments and annotations only for new songs: existing
-    // songs keep the person's current ones.
-    for (final o in contents.overlays) {
-      final original = o['songId'] as String?;
-      if (!imported.contains(original)) continue;
-      final songId = songMap[original]!;
-      final current = await songs.getOverlay(songId);
-      final liveView = o['liveView'] as String?;
-      await songs.saveOverlay(
-        _overlayFrom(
-          current,
-          o,
-          liveView == null ? null : attachmentMap[liveView],
-        ),
-      );
-    }
-    final owner = overlayOwnerFor(libraryId, userId);
-    await db.transaction(() async {
-      for (final x in contents.annotations) {
-        final original = x['songId'] as String?;
-        if (!imported.contains(original)) continue;
-        final target = x['target'] as String? ?? '';
-        final newTarget = target.isEmpty ? '' : attachmentMap[target];
-        if (newTarget == null) continue;
-        await db
-            .into(db.annotations)
-            .insert(
-              AnnotationsCompanion.insert(
-                id: _uuid.v4(),
-                ownerId: owner,
-                songId: songMap[original]!,
-                target: Value(newTarget),
-                stroke: Value(x['stroke'] as String?),
-                updatedAt:
-                    (x['updatedAt'] as int?) ??
-                    DateTime.now().millisecondsSinceEpoch,
-                // Synced as strokes that never reached the server.
-                pending: const Value(1),
-              ),
-            );
-      }
-    });
-
+    await importPersonal(contents, libraryId: libraryId, songs: songs);
+    final songMap = songs.songIds;
     final arrangements = ArrangementRepository(db);
     for (final a in contents.arrangements) {
       final band = bands[a['bandId']];
@@ -968,19 +886,163 @@ class BackupService {
     }
 
     return BackupImportResult(
-      imported: imported.length,
-      identical: identical,
-      additional: additional,
-      keptExisting: keptExisting,
+      imported: songs.imported.length,
+      identical: songs.identical,
+      additional: songs.additional,
+      keptExisting: songs.keptExisting,
       sets: setCount,
-      files: files,
+      files: songs.files,
     );
+  }
+
+  /// Imports the songs of [contents] into [libraryId]: a song that exists
+  /// with the same text (or, with [BackupDuplicates.keepExisting], with a
+  /// different one) is not imported; the existing one is used. Without
+  /// [create] (the person may not create songs, ADR-0023) only existing
+  /// songs are used and the others are left out. [attachments]: whether
+  /// the attachments of new songs are imported.
+  Future<SongImport> importSongs(
+    BackupContents contents, {
+    required String libraryId,
+    BackupDuplicates duplicates = BackupDuplicates.addAll,
+    bool create = true,
+    bool attachments = true,
+  }) async {
+    final songs = SongRepository(
+      db,
+      storage,
+      libraryId: libraryId,
+      userId: userId,
+    );
+    final existing = await existingSongs(libraryId);
+    final result = SongImport();
+    for (final song in contents.songs) {
+      final originalId = song['id'] as String;
+      final source = contents.sourceOf(song);
+      final (match, same) = existing.match(song, source);
+      if (match != null &&
+          (same || duplicates == BackupDuplicates.keepExisting || !create)) {
+        result.songIds[originalId] = match.id;
+        same ? result.identical++ : result.keptExisting++;
+        continue;
+      }
+      if (!create) continue;
+      final id = await songs.createSong(
+        source: source,
+        title: song['title'] as String?,
+        artist: song['artist'] as String?,
+      );
+      result.songIds[originalId] = id;
+      result.imported.add(originalId);
+      if (match != null) {
+        result.additional.add((
+          id: id,
+          title: (song['title'] as String?) ?? '',
+        ));
+      }
+      if (!attachments) continue;
+      for (final a in [
+        for (final e in (song['attachments'] as List?) ?? const [])
+          (e as Map).cast<String, dynamic>(),
+      ]) {
+        final bytes = contents.files[a['file'] as String? ?? ''];
+        if (bytes == null || bytes.length > maxAttachmentBytes) continue;
+        final ext = p
+            .extension(a['file'] as String)
+            .replaceFirst('.', '')
+            .toLowerCase();
+        result.attachmentIds[a['id'] as String] = await songs.addAttachment(
+          id,
+          name: a['name'] as String? ?? '',
+          bytes: bytes,
+          pages: a['pages'] as int?,
+          extension: ext.isEmpty ? 'pdf' : ext,
+        );
+        result.files++;
+      }
+    }
+    return result;
+  }
+
+  /// Imports the person's adjustments and annotations of [contents] for the
+  /// songs [songs] imported as new songs: existing songs keep the person's
+  /// current ones.
+  Future<void> importPersonal(
+    BackupContents contents, {
+    required String libraryId,
+    required SongImport songs,
+  }) async {
+    final repo = SongRepository(
+      db,
+      storage,
+      libraryId: libraryId,
+      userId: userId,
+    );
+    for (final o in contents.overlays) {
+      final original = o['songId'] as String?;
+      if (!songs.imported.contains(original)) continue;
+      final songId = songs.songIds[original]!;
+      final current = await repo.getOverlay(songId);
+      final liveView = o['liveView'] as String?;
+      await repo.saveOverlay(
+        _overlayFrom(
+          current,
+          o,
+          liveView == null ? null : songs.attachmentIds[liveView],
+        ),
+      );
+    }
+    final owner = overlayOwnerFor(libraryId, userId);
+    await db.transaction(() async {
+      for (final x in contents.annotations) {
+        final original = x['songId'] as String?;
+        if (!songs.imported.contains(original)) continue;
+        final target = x['target'] as String? ?? '';
+        final newTarget = target.isEmpty ? '' : songs.attachmentIds[target];
+        if (newTarget == null) continue;
+        await db
+            .into(db.annotations)
+            .insert(
+              AnnotationsCompanion.insert(
+                id: _uuid.v4(),
+                ownerId: owner,
+                songId: songs.songIds[original]!,
+                target: Value(newTarget),
+                stroke: Value(x['stroke'] as String?),
+                updatedAt:
+                    (x['updatedAt'] as int?) ??
+                    DateTime.now().millisecondsSinceEpoch,
+                // Synced as strokes that never reached the server.
+                pending: const Value(1),
+              ),
+            );
+      }
+    });
   }
 }
 
-/// Songs of the target library, to find the archive's songs in it.
-class _Existing {
-  _Existing(List<SongEntry> songs)
+/// What [BackupService.importSongs] did.
+class SongImport {
+  /// Original song ID -> song in the target library.
+  final songIds = <String, String>{};
+
+  /// Original attachment ID -> new attachment ID.
+  final attachmentIds = <String, String>{};
+
+  /// Original song IDs imported as new songs.
+  final imported = <String>{};
+
+  /// New songs next to an existing song with a different text.
+  final additional = <({String id, String title})>[];
+
+  int identical = 0;
+  int keptExisting = 0;
+  int files = 0;
+}
+
+/// Songs of the target library, to find an archive's songs in it.
+class ExistingSongs {
+  ExistingSongs(List<SongEntry> songs)
     : _byId = {for (final s in songs) s.id: s},
       _byName = {for (final s in songs) _key(s.title, s.artist): s};
 
@@ -998,7 +1060,13 @@ class _Existing {
         _byId[song['id']] ??
         _byName[_key(song['title'] as String?, song['artist'] as String?)];
     if (found == null) return (null, false);
-    return (found, found.chordproSource == source);
+    // A set archive adds title and artist directives that are missing.
+    return (
+      found,
+      found.chordproSource == source ||
+          sourceWithMeta(found.chordproSource, found.title, found.artist) ==
+              source,
+    );
   }
 }
 
@@ -1009,6 +1077,14 @@ Uint8List _zip(Map<String, Uint8List> files) {
   }
   return Uint8List.fromList(ZipEncoder().encode(archive));
 }
+
+/// Zips [files] (path -> bytes) outside the UI isolate.
+Future<Uint8List> zipArchive(Map<String, Uint8List> files) =>
+    compute(_zip, files);
+
+/// The files of a ZIP archive by their path, outside the UI isolate.
+Future<Map<String, Uint8List>> unzipArchive(Uint8List zip) =>
+    compute(_unzipPaths, zip);
 
 /// The files of a ZIP archive by their path (with folders), without macOS
 /// metadata.

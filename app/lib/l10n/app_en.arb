@@ -2436,5 +2436,88 @@
       }
     }
   },
-  "syncHintShowChanges": "Show"
+  "syncHintShowChanges": "Show",
+  "setExportTitle": "Export set",
+  "setExportHint": "The ZIP holds the ChordPro files of the songs and a description from which setDING imports the set again as a set.",
+  "setArchiveArrangements": "Band arrangements of the songs (key, sequence, tempo)",
+  "setArchiveSetSettings": "Key and sequence of the songs in this set",
+  "setArchiveAttachments": "Attachments (PDFs, images)",
+  "setArchivePersonal": "My personal adjustments and notes",
+  "setArchivePersonalHint": "Leave this off if you pass the file on.",
+  "setExportStart": "Export",
+  "setImport": "Import set",
+  "setImportTitle": "Import set",
+  "setImportSummary": "\"{set}\" from {band}: {songs, plural, =0{no songs} =1{1 song} other{{songs} songs}}.",
+  "@setImportSummary": {
+    "placeholders": {
+      "set": {
+        "type": "String"
+      },
+      "band": {
+        "type": "String"
+      },
+      "songs": {
+        "type": "int"
+      }
+    }
+  },
+  "setImportBand": "Into band",
+  "setImportNoBand": "There is no band in this library whose sets you may manage.",
+  "setImportAdded": "{count, plural, =1{1 song is new and will be added to the library.} other{{count} songs are new and will be added to the library.}}",
+  "@setImportAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setImportMissing": "{count, plural, =1{1 song is not in the library.} other{{count} songs are not in the library.}} You may not add songs, so the set shows them as text items:",
+  "@setImportMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setImportExisting": "This set is already in the band as \"{name}\":",
+  "@setImportExisting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "setImportReplace": "Replace it",
+  "setImportCopy": "Add as a copy",
+  "setImportAlso": "Also import:",
+  "setImportOverwriteArrangements": "Overwrite the band's arrangements of {count, plural, =1{1 song} other{{count} songs}}",
+  "@setImportOverwriteArrangements": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setImportDone": "Set imported",
+  "setImportReplaced": "The existing set was replaced.",
+  "setImportResultArrangements": "{count, plural, =1{1 band arrangement saved} other{{count} band arrangements saved}}",
+  "@setImportResultArrangements": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setImportResultMissing": "Not in the library, shown as text items in the set:",
+  "setImportOpen": "Open set",
+  "setImportMissingNote": "Missing: {title}",
+  "@setImportMissingNote": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "setArchiveInvalid": "This file is not an exported set.",
+  "setArchiveNewer": "This set was exported with a newer version of setDING. Update the app to import it."
 }

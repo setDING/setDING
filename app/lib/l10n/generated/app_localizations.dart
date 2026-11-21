@@ -6912,6 +6912,174 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Anzeigen'**
   String get syncHintShowChanges;
+
+  /// No description provided for @setExportTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Set exportieren'**
+  String get setExportTitle;
+
+  /// No description provided for @setExportHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Das ZIP enthält die ChordPro-Dateien der Songs und eine Beschreibung, mit der setDING das Set wieder als Set importiert.'**
+  String get setExportHint;
+
+  /// No description provided for @setArchiveArrangements.
+  ///
+  /// In de, this message translates to:
+  /// **'Band-Arrangements der Songs (Tonart, Abfolge, Tempo)'**
+  String get setArchiveArrangements;
+
+  /// No description provided for @setArchiveSetSettings.
+  ///
+  /// In de, this message translates to:
+  /// **'Tonart und Songablauf der Songs in diesem Set'**
+  String get setArchiveSetSettings;
+
+  /// No description provided for @setArchiveAttachments.
+  ///
+  /// In de, this message translates to:
+  /// **'Anhänge (PDFs, Bilder)'**
+  String get setArchiveAttachments;
+
+  /// No description provided for @setArchivePersonal.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine persönlichen Anpassungen und Notizen'**
+  String get setArchivePersonal;
+
+  /// No description provided for @setArchivePersonalHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Lass das aus, wenn du die Datei weitergibst.'**
+  String get setArchivePersonalHint;
+
+  /// No description provided for @setExportStart.
+  ///
+  /// In de, this message translates to:
+  /// **'Exportieren'**
+  String get setExportStart;
+
+  /// No description provided for @setImport.
+  ///
+  /// In de, this message translates to:
+  /// **'Set importieren'**
+  String get setImport;
+
+  /// No description provided for @setImportTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Set importieren'**
+  String get setImportTitle;
+
+  /// No description provided for @setImportSummary.
+  ///
+  /// In de, this message translates to:
+  /// **'«{set}» von {band}: {songs, plural, =0{keine Songs} =1{1 Song} other{{songs} Songs}}.'**
+  String setImportSummary(String set, String band, int songs);
+
+  /// No description provided for @setImportBand.
+  ///
+  /// In de, this message translates to:
+  /// **'In die Band'**
+  String get setImportBand;
+
+  /// No description provided for @setImportNoBand.
+  ///
+  /// In de, this message translates to:
+  /// **'In dieser Bibliothek gibt es keine Band, deren Sets du verwalten darfst.'**
+  String get setImportNoBand;
+
+  /// No description provided for @setImportAdded.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song ist neu und wird in die Bibliothek aufgenommen.} other{{count} Songs sind neu und werden in die Bibliothek aufgenommen.}}'**
+  String setImportAdded(int count);
+
+  /// No description provided for @setImportMissing.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song ist nicht in der Bibliothek.} other{{count} Songs sind nicht in der Bibliothek.}} Du darfst keine Songs hinzufügen, darum zeigt das Set sie als Text:'**
+  String setImportMissing(int count);
+
+  /// No description provided for @setImportExisting.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Set gibt es in der Band schon als «{name}»:'**
+  String setImportExisting(String name);
+
+  /// No description provided for @setImportReplace.
+  ///
+  /// In de, this message translates to:
+  /// **'Ersetzen'**
+  String get setImportReplace;
+
+  /// No description provided for @setImportCopy.
+  ///
+  /// In de, this message translates to:
+  /// **'Als Kopie hinzufügen'**
+  String get setImportCopy;
+
+  /// No description provided for @setImportAlso.
+  ///
+  /// In de, this message translates to:
+  /// **'Ebenfalls importieren:'**
+  String get setImportAlso;
+
+  /// No description provided for @setImportOverwriteArrangements.
+  ///
+  /// In de, this message translates to:
+  /// **'Band-Arrangements von {count, plural, =1{1 Song} other{{count} Songs}} überschreiben'**
+  String setImportOverwriteArrangements(int count);
+
+  /// No description provided for @setImportDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Set importiert'**
+  String get setImportDone;
+
+  /// No description provided for @setImportReplaced.
+  ///
+  /// In de, this message translates to:
+  /// **'Das bestehende Set wurde ersetzt.'**
+  String get setImportReplaced;
+
+  /// No description provided for @setImportResultArrangements.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Band-Arrangement gespeichert} other{{count} Band-Arrangements gespeichert}}'**
+  String setImportResultArrangements(int count);
+
+  /// No description provided for @setImportResultMissing.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht in der Bibliothek, im Set als Text:'**
+  String get setImportResultMissing;
+
+  /// No description provided for @setImportOpen.
+  ///
+  /// In de, this message translates to:
+  /// **'Set öffnen'**
+  String get setImportOpen;
+
+  /// No description provided for @setImportMissingNote.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehlt: {title}'**
+  String setImportMissingNote(String title);
+
+  /// No description provided for @setArchiveInvalid.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Datei ist kein exportiertes Set.'**
+  String get setArchiveInvalid;
+
+  /// No description provided for @setArchiveNewer.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Set wurde mit einer neueren Version von setDING exportiert. Aktualisiere die App, um es zu importieren.'**
+  String get setArchiveNewer;
 }
 
 class _AppLocalizationsDelegate

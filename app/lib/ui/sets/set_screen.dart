@@ -28,6 +28,7 @@ import '../widgets/file_actions.dart';
 import '../widgets/key_picker.dart';
 import '../widgets/sequence_dialog.dart';
 import 'set_list_pdf.dart';
+import 'set_archive_dialogs.dart';
 import 'set_item_label.dart';
 import 'set_list_text.dart';
 import 'sets_screen.dart';
@@ -77,20 +78,7 @@ class _SetScreenState extends ConsumerState<SetScreen> {
     }
   }
 
-  Future<void> _export(SetlistEntry set) async {
-    final l10n = AppLocalizations.of(context);
-    final service = ref.read(importExportProvider);
-    final bytes = await service.exportSet(
-      set,
-      markerTitle: (item) => markerTitle(l10n, item.type, item.note),
-    );
-    final saved = await saveFile(
-      service.setFileName(set),
-      bytes,
-      mimeType: 'application/zip',
-    );
-    if (saved && mounted) showMessage(context, l10n.exported);
-  }
+  Future<void> _export(SetlistEntry set) => exportSetArchive(context, ref, set);
 
   /// The set list: one row per song with title, key and sequence.
   Future<SetList?> _setList(SetlistEntry set) async {
