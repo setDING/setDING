@@ -2530,6 +2530,41 @@
   "attentionProblems": "ChordPro-Probleme",
   "attentionConflicts": "Sync-Konflikte",
   "attentionSheetMusicOnly": "Nur Noten (PDF)",
+  "chordProConversionsTooltip": "{count, plural, =1{1 Stelle im ChordPro kann umgewandelt werden} other{{count} Stellen im ChordPro können umgewandelt werden}}",
+  "@chordProConversionsTooltip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "overviewTodoConversions": "{count, plural, =1{1 Song mit möglichen Umwandlungen} other{{count} Songs mit möglichen Umwandlungen}}",
+  "@overviewTodoConversions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "attentionConversions": "Umwandelbar",
+  "convertAllSongs": "Alle umwandeln",
+  "convertAllSongsTitle": "Alle Songs umwandeln?",
+  "convertAllSongsMessage": "{count, plural, =1{Der Song wird} other{Die {count} Songs werden}} für alle umgewandelt: CCLI-Direktiven und Abschnitts-Beschriftungen nach der ChordPro-Spezifikation, CCLI-Taktzeilen als Grid, der CCLI-Footer entfernt.",
+  "@convertAllSongsMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songsConverted": "{count, plural, =1{1 Song umgewandelt} other{{count} Songs umgewandelt}}",
+  "@songsConverted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "songsFilterClear": "Filter entfernen",
   "songsFilterEmpty": "Keine Songs mehr in diesem Filter.",
   "playHistory": "Gespielt",

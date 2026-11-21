@@ -76,6 +76,7 @@ void main() {
     createdBy: createdBy,
     updatedBy: updatedBy,
     chordproProblems: 0,
+    chordproConversions: 0,
   );
 
   test('permissions follow the roles (ADR-0023)', () async {

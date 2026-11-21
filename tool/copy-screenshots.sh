@@ -64,6 +64,7 @@ map=(
   delete_account 36_delete_account
   song_export 37_song_export
   song_import 37b_song_import
+  songs_conversions 38_songs_conversions
 )
 
 copied=0

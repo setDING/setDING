@@ -27,6 +27,43 @@ import 'screenshot_support.dart';
 void main() {
   setUpScreenshots();
 
+  // Songs with possible conversions (#798): the song list filtered from the
+  // overview's To do card, with the icon and Convert all.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('songs conversions $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      final verse = lang == 'de' ? 'Strophe 1' : 'Verse 1';
+      await tester.runAsync(() async {
+        await app.songs.createSong(
+          source:
+              '{title: Morning Light}\n{artist: Ann Trainor}\n{key: D}\n'
+              '{ccli: 6016351}\n{ccli_license: 1375063}\n'
+              '{start_of_verse: $verse}\n[D]Morning light on the hill\n'
+              '{end_of_verse}\n',
+        );
+        await app.songs.createSong(
+          source:
+              '{title: Train to Nowhere}\n{artist: House Band}\n{key: E}\n'
+              '{start_of_verse: $verse}\n[E]Waiting at the station\n'
+              '{end_of_verse}\n',
+        );
+        await app.songs.createSong(source: demoSongSource);
+      });
+      await tester.pumpWidget(
+        RepaintBoundary(key: UniqueKey(), child: app.build()),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('overview-todo-conversions')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('songs-convert-all')), findsOneWidget);
+      await shot(tester, '${lang}_38_songs_conversions');
+      await app.dispose(tester);
+    });
+  }
+
   screenshotTest('song list search hits', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'de'});

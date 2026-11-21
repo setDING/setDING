@@ -135,6 +135,12 @@ class Songs extends Table {
   /// the device like [searchText], for the warning icons in lists.
   IntColumn get chordproProblems => integer().withDefault(const Constant(0))();
 
+  /// Number of places the editor offers to convert, e.g. CCLI directives
+  /// or short-form section labels (`countChordProConversions`, schema 30,
+  /// #798): derived on the device like [chordproProblems].
+  IntColumn get chordproConversions =>
+      integer().withDefault(const Constant(0))();
+
   /// `{tag}` values, each enclosed in newlines (`\nRock\nLive\n`) so a tag
   /// can be matched exactly with LIKE (schema 2).
   TextColumn get tags => text().nullable()();
@@ -618,7 +624,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 29;
+  int get schemaVersion => 30;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -683,6 +689,7 @@ class AppDatabase extends _$AppDatabase {
               songs.updatedBy,
               songs.sequence,
               songs.chordproProblems,
+              songs.chordproConversions,
               songs.deletedAt,
               songs.purged,
             ],
@@ -873,6 +880,12 @@ class AppDatabase extends _$AppDatabase {
           "UPDATE set_items SET icon = CASE type WHEN 'pause' THEN 'break' "
           "ELSE 'announcement' END, type = 'marker' WHERE type != 'song'",
         );
+      }
+      if (from < 30 && from >= 4) {
+        // Possible conversions for the song list (#798): filled by
+        // afterUpgrade (refreshAllMetadata); before schema 4 the rebuilt
+        // table has the column already.
+        await m.addColumn(songs, songs.chordproConversions);
       }
     },
     beforeOpen: (details) async {

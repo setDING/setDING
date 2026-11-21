@@ -183,6 +183,21 @@ class ImportExportService {
     return fixed;
   }
 
+  /// Applies every conversion the editor offers to [songIds]
+  /// (`applyChordProConversions`, #798); returns how many songs changed.
+  Future<int> convertAll(Iterable<String> songIds) async {
+    var converted = 0;
+    for (final id in songIds) {
+      final song = await songs.getSong(id);
+      if (song == null) continue;
+      final source = cp.applyChordProConversions(song.chordproSource);
+      if (source == song.chordproSource) continue;
+      await songs.updateSource(id, source);
+      converted++;
+    }
+    return converted;
+  }
+
   /// Converts the section labels of [songIds] to the attribute form
   /// `{start_of_verse: label="Verse 1"}` (#672); returns how many songs
   /// changed.

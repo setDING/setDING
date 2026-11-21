@@ -11,6 +11,7 @@ import importLabels from '../../../../../../docs/screenshots/import_labels.png';
 import songsSelected from '../../../../../../docs/screenshots/songs_selected.png';
 import songExport from '../../../../../../docs/screenshots/song_export.png';
 import songImport from '../../../../../../docs/screenshots/song_import.png';
+import songsConversions from '../../../../../../docs/screenshots/songs_conversions.png';
 
 All songs belong to the organization; all its bands share the same song library.
 **Songs** shows them.
@@ -69,9 +70,24 @@ editor. These songs are marked with a warning icon in the list.
 
 Songs that write section labels in the short form `{start_of_verse: Verse 1}` are
 listed there too: **Convert labels** writes them as `label="…"`, as the ChordPro
-specification recommends. They look the same either way and are not marked.
+specification recommends. They look the same either way.
 
 <Image src={importLabels} alt="Check the import: one song with a place to fix, two songs with short-form section labels, and the buttons Convert labels and Fix automatically" />
+
+## Convert songs
+
+Some songs show as intended but do not follow the ChordPro specification yet, or
+still contain parts of a SongSelect file: `{ccli}` and `{ccli_license}`, the CCLI
+footer, CCLI bar lines that can become a grid, or section labels in the short form.
+The editor offers to convert each of these. So that you find these songs, the song
+list marks them with a magic wand icon, and the **To do** card on the **Overview**
+counts them (**songs with possible conversions**). Only people who may edit the song
+see them.
+
+The line on the overview opens the song list filtered to these songs. **Convert all**
+converts all of them at once, for everyone who uses the songs.
+
+<Image src={songsConversions} alt="The song list filtered to Convertible: two songs with the magic wand icon and the Convert all button" />
 
 ## Export, copy, delete
 

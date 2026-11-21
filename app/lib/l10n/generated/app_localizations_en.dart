@@ -4281,6 +4281,59 @@ class AppLocalizationsEn extends AppLocalizations {
   String get attentionSheetMusicOnly => 'Sheet music only';
 
   @override
+  String chordProConversionsTooltip(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count places in the ChordPro can be converted',
+      one: '1 place in the ChordPro can be converted',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String overviewTodoConversions(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs with possible conversions',
+      one: '1 song with possible conversions',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get attentionConversions => 'Convertible';
+
+  @override
+  String get convertAllSongs => 'Convert all';
+
+  @override
+  String get convertAllSongsTitle => 'Convert all songs?';
+
+  @override
+  String convertAllSongsMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'The $count songs are',
+      one: 'The song is',
+    );
+    return '$_temp0 converted for everyone: CCLI directives and section labels as the ChordPro specification recommends, CCLI bar lines as grids, the CCLI footer removed.';
+  }
+
+  @override
+  String songsConverted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs converted',
+      one: '1 song converted',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get songsFilterClear => 'Remove filter';
 
   @override

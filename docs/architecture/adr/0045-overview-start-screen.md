@@ -187,6 +187,16 @@ Further rules:
   record. The rows stay in the change log: a song or set restored from
   the trash (ADR-0043) shows its earlier entries again while they are
   within the 30 days. Deletions themselves are still not logged.
+- 2026-11-21: Owner request (#798): ***To do* also counts songs with
+  possible conversions**, the places the editor offers to convert
+  (`{ccli}`/`{ccli_license}`, the CCLI footer, CCLI bar lines, short-form
+  section labels; `countChordProConversions`). They show as intended, so
+  they are a line of their own after the problems, with a quiet icon
+  instead of the warning colour; the count is derived on the device like
+  the problems (`songs.chordpro_conversions`, schema 30, not synced). The
+  song list marks these songs for people who may edit them and, filtered
+  to them, offers **Convert all** (`applyChordProConversions`) after a
+  confirmation, as the songs are shared.
 
 ## Open points
 

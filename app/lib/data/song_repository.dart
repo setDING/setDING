@@ -24,12 +24,14 @@ class SongMeta {
     this.searchText,
     this.sequence,
     this.problems = 0,
+    this.conversions = 0,
   });
 
   factory SongMeta.fromSource(String source) {
     final song = cp.parseChordPro(source);
     return SongMeta(
       problems: cp.validateChordPro(source).length,
+      conversions: cp.countChordProConversions(source),
       title: blankToNull(song.title),
       artist: blankToNull(song.artist),
       key: blankToNull(song.keyName),
@@ -71,6 +73,10 @@ class SongMeta {
 
   /// Number of ChordPro problems (`validateChordPro`, #314).
   final int problems;
+
+  /// Number of places the editor offers to convert
+  /// (`countChordProConversions`, #798).
+  final int conversions;
 
   /// Tags as stored in the database (see `Songs.tags`).
   String? get tagsColumn => tags.isEmpty ? null : '\n${tags.join('\n')}\n';
@@ -171,6 +177,7 @@ class SongListEntry {
     this.sortArtist,
     this.hasChords = true,
     this.problems = 0,
+    this.conversions = 0,
     this.createdBy,
     this.updatedBy,
   });
@@ -200,6 +207,10 @@ class SongListEntry {
   /// Number of ChordPro problems (`validateChordPro`, #314).
   final int problems;
 
+  /// Number of places the editor offers to convert
+  /// (`countChordProConversions`, #798).
+  final int conversions;
+
   /// Creator and last editor, for the edit permission of band leaders
   /// (ADR-0023).
   final String? createdBy;
@@ -221,6 +232,7 @@ class SongListEntry {
       other.sortArtist == sortArtist &&
       other.hasChords == hasChords &&
       other.problems == problems &&
+      other.conversions == conversions &&
       other.createdBy == createdBy &&
       other.updatedBy == updatedBy;
 
@@ -237,6 +249,7 @@ class SongListEntry {
     sortArtist,
     hasChords,
     problems,
+    conversions,
     createdBy,
     updatedBy,
   );
@@ -316,6 +329,7 @@ class SongRepository {
         s.sortArtist,
         hasChords,
         s.chordproProblems,
+        s.chordproConversions,
         s.createdBy,
         s.updatedBy,
       ])
@@ -340,6 +354,7 @@ class SongRepository {
             sortArtist: r.read(s.sortArtist),
             hasChords: r.read(hasChords) ?? true,
             problems: r.read(s.chordproProblems) ?? 0,
+            conversions: r.read(s.chordproConversions) ?? 0,
             createdBy: r.read(s.createdBy),
             updatedBy: r.read(s.updatedBy),
           ),
@@ -448,6 +463,7 @@ class SongRepository {
               tags: Value(meta.tagsColumn),
               searchText: Value(meta.searchText),
               chordproProblems: Value(meta.problems),
+              chordproConversions: Value(meta.conversions),
               updatedAt: DateTime.now(),
               createdBy: Value(_editorIn(libraryId)),
               updatedBy: Value(_editorIn(libraryId)),
@@ -477,6 +493,7 @@ class SongRepository {
           tags: Value(meta.tagsColumn),
           searchText: Value(meta.searchText),
           chordproProblems: Value(meta.problems),
+          chordproConversions: Value(meta.conversions),
           updatedAt: Value(DateTime.now()),
           updatedBy: Value(_editorIn(existing.libraryId)),
         ),
@@ -530,6 +547,7 @@ class SongRepository {
             searchText: Value(meta.searchText),
             sequence: Value(meta.sequence),
             chordproProblems: Value(meta.problems),
+            chordproConversions: Value(meta.conversions),
           ),
         );
       }

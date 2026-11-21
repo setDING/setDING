@@ -6829,6 +6829,48 @@ abstract class AppLocalizations {
   /// **'Nur Noten (PDF)'**
   String get attentionSheetMusicOnly;
 
+  /// No description provided for @chordProConversionsTooltip.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Stelle im ChordPro kann umgewandelt werden} other{{count} Stellen im ChordPro können umgewandelt werden}}'**
+  String chordProConversionsTooltip(int count);
+
+  /// No description provided for @overviewTodoConversions.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song mit möglichen Umwandlungen} other{{count} Songs mit möglichen Umwandlungen}}'**
+  String overviewTodoConversions(int count);
+
+  /// No description provided for @attentionConversions.
+  ///
+  /// In de, this message translates to:
+  /// **'Umwandelbar'**
+  String get attentionConversions;
+
+  /// No description provided for @convertAllSongs.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle umwandeln'**
+  String get convertAllSongs;
+
+  /// No description provided for @convertAllSongsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Songs umwandeln?'**
+  String get convertAllSongsTitle;
+
+  /// No description provided for @convertAllSongsMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Der Song wird} other{Die {count} Songs werden}} für alle umgewandelt: CCLI-Direktiven und Abschnitts-Beschriftungen nach der ChordPro-Spezifikation, CCLI-Taktzeilen als Grid, der CCLI-Footer entfernt.'**
+  String convertAllSongsMessage(int count);
+
+  /// No description provided for @songsConverted.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song umgewandelt} other{{count} Songs umgewandelt}}'**
+  String songsConverted(int count);
+
   /// No description provided for @songsFilterClear.
   ///
   /// In de, this message translates to:

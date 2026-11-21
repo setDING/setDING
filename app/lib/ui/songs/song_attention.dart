@@ -15,6 +15,11 @@ enum SongAttention {
   /// (`songs.chordpro_problems`, #314).
   problems,
 
+  /// Places the editor offers to convert, e.g. CCLI directives or
+  /// short-form section labels (`songs.chordpro_conversions`, #798). The
+  /// song shows as intended; converting only tidies the source.
+  conversions,
+
   /// Changed here and on the server, waiting for a decision (ADR-0004).
   conflicts,
 
@@ -26,6 +31,7 @@ enum SongAttention {
 String songAttentionLabel(AppLocalizations l10n, SongAttention kind) =>
     switch (kind) {
       SongAttention.problems => l10n.attentionProblems,
+      SongAttention.conversions => l10n.attentionConversions,
       SongAttention.conflicts => l10n.attentionConflicts,
       SongAttention.sheetMusicOnly => l10n.attentionSheetMusicOnly,
     };
@@ -46,6 +52,7 @@ bool needsAttention(
     ) &&
     switch (kind) {
       SongAttention.problems => song.problems > 0,
+      SongAttention.conversions => song.conversions > 0,
       SongAttention.conflicts => conflicts.contains(song.id),
       SongAttention.sheetMusicOnly => !song.hasChords,
     };
