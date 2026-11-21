@@ -470,6 +470,13 @@ void main() {
         ),
       );
       await _shot(tester, '${lang}_3_song');
+      // ? lists the keyboard shortcuts (#729).
+      await tester.sendKeyEvent(
+        LogicalKeyboardKey.slash,
+        character: '?',
+        physicalKey: PhysicalKeyboardKey.slash,
+      );
+      await _shot(tester, '${lang}_30_shortcuts');
 
       await tester.pumpWidget(
         RepaintBoundary(

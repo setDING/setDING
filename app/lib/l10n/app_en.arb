@@ -2592,5 +2592,25 @@
         "type": "int"
       }
     }
-  }
+  },
+  "keyboardShortcuts": "Keyboard shortcuts",
+  "shortcutsEverywhere": "Everywhere",
+  "shortcutsSong": "Song",
+  "shortcutsSet": "Set",
+  "shortcutsSongList": "Song list",
+  "shortcutsLive": "Live mode",
+  "shortcutBack": "Back",
+  "shortcutHelp": "Show the keyboard shortcuts",
+  "shortcutEditSong": "Edit the song",
+  "shortcutEditSet": "Edit the set",
+  "shortcutLive": "Start live mode",
+  "shortcutTranspose": "Transpose up / down",
+  "shortcutPreviousNextSong": "Previous / next song of the set",
+  "shortcutSearch": "Search songs",
+  "shortcutNextPage": "Next page",
+  "shortcutPreviousPage": "Previous page",
+  "shortcutBeat": "Start / stop the beat",
+  "shortcutKeyPageDown": "Page Down",
+  "shortcutKeyPageUp": "Page Up",
+  "shortcutKeySpace": "Space"
 }

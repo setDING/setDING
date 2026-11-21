@@ -5,6 +5,9 @@ sidebar:
   order: 1
 ---
 
+import { Image } from 'astro:assets';
+import shortcuts from '../../../../../docs/screenshots/shortcuts_de.png';
+
 ## Die Begriffe
 
 - **Organisation:** zum Beispiel eine Musikschule, eine Kirche oder einfach deine
@@ -39,9 +42,24 @@ Einladungslinks gelten 7 Tage. Ist ein Link abgelaufen, bitte um einen neuen.
 
 ## Mit der Tastatur
 
-Am Computer oder an einem Tablet mit Tastatur bringt dich die Taste **Esc** überall
-einen Schritt zurück, wie der Pfeil oben links, z. B. vom Song zurück zur
-Songliste. Ist ein Dialog oder Menü offen, schliesst Esc zuerst nur dieses.
+Am Computer oder an einem Tablet mit Tastatur geht vieles mit einer Taste. Die
+Taste **?** zeigt dir jederzeit alle Tastenkürzel:
+
+<Image src={shortcuts} alt="Der Dialog Tastenkürzel: Esc, ?, E, L, + und −, Pfeiltasten, Suche und die Tasten im Live-Modus" />
+
+- **Esc** bringt dich überall einen Schritt zurück, wie der Pfeil oben links, z. B.
+  vom Song zurück zur Songliste. Ist ein Dialog oder Menü offen, schliesst Esc
+  zuerst nur dieses.
+- **E** bearbeitet den Song oder das Set, wenn du das darfst; **L** startet den
+  Live-Modus.
+- **+** und **−** transponieren den Song für dich (wie die Tonart unter
+  **Persönliche Anpassungen**).
+- **←** und **→** blättern zum vorherigen und nächsten Song, wenn du den Song aus
+  einem Set geöffnet hast.
+- **/** oder **Ctrl+F** (Mac: **⌘F**) springt in der Songliste in die Suche.
+
+Solange du in ein Textfeld schreibst, gelten die Buchstaben-Kürzel nicht: Ein «e»
+bleibt ein «e».
 
 ## Offline spielen
 

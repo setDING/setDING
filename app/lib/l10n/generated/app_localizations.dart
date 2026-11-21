@@ -7290,6 +7290,126 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{name} (Kopie {number})'**
   String setImportCopyNameNumbered(String name, int number);
+
+  /// No description provided for @keyboardShortcuts.
+  ///
+  /// In de, this message translates to:
+  /// **'Tastenkürzel'**
+  String get keyboardShortcuts;
+
+  /// No description provided for @shortcutsEverywhere.
+  ///
+  /// In de, this message translates to:
+  /// **'Überall'**
+  String get shortcutsEverywhere;
+
+  /// No description provided for @shortcutsSong.
+  ///
+  /// In de, this message translates to:
+  /// **'Song'**
+  String get shortcutsSong;
+
+  /// No description provided for @shortcutsSet.
+  ///
+  /// In de, this message translates to:
+  /// **'Set'**
+  String get shortcutsSet;
+
+  /// No description provided for @shortcutsSongList.
+  ///
+  /// In de, this message translates to:
+  /// **'Songliste'**
+  String get shortcutsSongList;
+
+  /// No description provided for @shortcutsLive.
+  ///
+  /// In de, this message translates to:
+  /// **'Live-Modus'**
+  String get shortcutsLive;
+
+  /// No description provided for @shortcutBack.
+  ///
+  /// In de, this message translates to:
+  /// **'Zurück'**
+  String get shortcutBack;
+
+  /// No description provided for @shortcutHelp.
+  ///
+  /// In de, this message translates to:
+  /// **'Tastenkürzel anzeigen'**
+  String get shortcutHelp;
+
+  /// No description provided for @shortcutEditSong.
+  ///
+  /// In de, this message translates to:
+  /// **'Song bearbeiten'**
+  String get shortcutEditSong;
+
+  /// No description provided for @shortcutEditSet.
+  ///
+  /// In de, this message translates to:
+  /// **'Set bearbeiten'**
+  String get shortcutEditSet;
+
+  /// No description provided for @shortcutLive.
+  ///
+  /// In de, this message translates to:
+  /// **'Live-Modus starten'**
+  String get shortcutLive;
+
+  /// No description provided for @shortcutTranspose.
+  ///
+  /// In de, this message translates to:
+  /// **'Höher / tiefer transponieren'**
+  String get shortcutTranspose;
+
+  /// No description provided for @shortcutPreviousNextSong.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorheriger / nächster Song des Sets'**
+  String get shortcutPreviousNextSong;
+
+  /// No description provided for @shortcutSearch.
+  ///
+  /// In de, this message translates to:
+  /// **'Songs durchsuchen'**
+  String get shortcutSearch;
+
+  /// No description provided for @shortcutNextPage.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächste Seite'**
+  String get shortcutNextPage;
+
+  /// No description provided for @shortcutPreviousPage.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorherige Seite'**
+  String get shortcutPreviousPage;
+
+  /// No description provided for @shortcutBeat.
+  ///
+  /// In de, this message translates to:
+  /// **'Takt starten / stoppen'**
+  String get shortcutBeat;
+
+  /// No description provided for @shortcutKeyPageDown.
+  ///
+  /// In de, this message translates to:
+  /// **'Bild ab'**
+  String get shortcutKeyPageDown;
+
+  /// No description provided for @shortcutKeyPageUp.
+  ///
+  /// In de, this message translates to:
+  /// **'Bild auf'**
+  String get shortcutKeyPageUp;
+
+  /// No description provided for @shortcutKeySpace.
+  ///
+  /// In de, this message translates to:
+  /// **'Leertaste'**
+  String get shortcutKeySpace;
 }
 
 class _AppLocalizationsDelegate

@@ -47,6 +47,7 @@ map=(
   set_import_result 27c_set_import_result
   set_pdf_exported 28_set_pdf_exported
   lilypond 29_lilypond
+  shortcuts 30_shortcuts
 )
 
 for ((i = 0; i < ${#map[@]}; i += 2)); do

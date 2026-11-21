@@ -4633,4 +4633,64 @@ class AppLocalizationsEn extends AppLocalizations {
   String setImportCopyNameNumbered(String name, int number) {
     return '$name (copy $number)';
   }
+
+  @override
+  String get keyboardShortcuts => 'Keyboard shortcuts';
+
+  @override
+  String get shortcutsEverywhere => 'Everywhere';
+
+  @override
+  String get shortcutsSong => 'Song';
+
+  @override
+  String get shortcutsSet => 'Set';
+
+  @override
+  String get shortcutsSongList => 'Song list';
+
+  @override
+  String get shortcutsLive => 'Live mode';
+
+  @override
+  String get shortcutBack => 'Back';
+
+  @override
+  String get shortcutHelp => 'Show the keyboard shortcuts';
+
+  @override
+  String get shortcutEditSong => 'Edit the song';
+
+  @override
+  String get shortcutEditSet => 'Edit the set';
+
+  @override
+  String get shortcutLive => 'Start live mode';
+
+  @override
+  String get shortcutTranspose => 'Transpose up / down';
+
+  @override
+  String get shortcutPreviousNextSong => 'Previous / next song of the set';
+
+  @override
+  String get shortcutSearch => 'Search songs';
+
+  @override
+  String get shortcutNextPage => 'Next page';
+
+  @override
+  String get shortcutPreviousPage => 'Previous page';
+
+  @override
+  String get shortcutBeat => 'Start / stop the beat';
+
+  @override
+  String get shortcutKeyPageDown => 'Page Down';
+
+  @override
+  String get shortcutKeyPageUp => 'Page Up';
+
+  @override
+  String get shortcutKeySpace => 'Space';
 }
