@@ -12,6 +12,8 @@ import '../../util/log.dart';
 import '../songs/midi_program_field.dart';
 import 'midi_guide.dart';
 import '../widgets/loading_indicator.dart';
+import '../widgets/dialogs.dart';
+import '../widgets/section_header.dart';
 
 /// Prototype of ADR-0039 (#512): sends a program change to a keyboard
 /// connected by USB and logs what the keyboard sends back, to check the
@@ -325,8 +327,8 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
     final done = _step >= _guide.length;
     final step = done ? null : _guide[_step];
     return [
-      ListTile(
-        title: Text(l10n.midiGuideTitle, style: theme.textTheme.titleSmall),
+      SectionHeader(
+        l10n.midiGuideTitle,
         trailing: DropdownButton<MidiGuide>(
           key: const Key('midi-guide-kind'),
           value: _guideKind,
@@ -426,9 +428,7 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
         ),
       ),
       const Divider(),
-      ListTile(
-        title: Text(l10n.midiTestFree, style: theme.textTheme.titleSmall),
-      ),
+      SectionHeader(l10n.midiTestFree),
     ];
   }
 
@@ -443,11 +443,8 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
         padding: const EdgeInsets.symmetric(vertical: 8),
         children: [
           ListTile(subtitle: Text(l10n.midiTestHint)),
-          ListTile(
-            title: Text(
-              l10n.midiTestDevices,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
+          SectionHeader(
+            l10n.midiTestDevices,
             trailing: TextButton.icon(
               key: const Key('midi-refresh'),
               onPressed: _refresh,
@@ -555,11 +552,8 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
             ),
           ),
           const Divider(),
-          ListTile(
-            title: Text(
-              l10n.midiTestLog,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
+          SectionHeader(
+            l10n.midiTestLog,
             trailing: Wrap(
               spacing: 8,
               children: [
@@ -574,9 +568,7 @@ class _MidiTestScreenState extends ConsumerState<MidiTestScreen> {
                           await Clipboard.setData(
                             ClipboardData(text: _log.reversed.join('\n')),
                           );
-                          messenger.showSnackBar(
-                            SnackBar(content: Text(l10n.midiTestCopied)),
-                          );
+                          showMessageOn(messenger, l10n.midiTestCopied);
                         },
                 ),
                 IconButton(

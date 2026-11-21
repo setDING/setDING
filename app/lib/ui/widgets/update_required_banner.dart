@@ -10,6 +10,7 @@ import '../../sync/sync_controller.dart';
 import '../../sync/update_check.dart' show releasesUrl;
 import '../../update/update_providers.dart';
 import 'app_update.dart';
+import 'dialogs.dart';
 
 export '../../sync/update_check.dart' show releasesUrl;
 
@@ -101,8 +102,9 @@ class UpdateRequiredBanner extends ConsumerWidget {
                           const ClipboardData(text: releasesUrl),
                         );
                         if (!context.mounted) return;
-                        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-                          SnackBar(content: Text(l10n.updateRequiredCopied)),
+                        showMessageOn(
+                          ScaffoldMessenger.maybeOf(context),
+                          l10n.updateRequiredCopied,
                         );
                       },
                       child: Text(l10n.updateRequiredCopyLink),

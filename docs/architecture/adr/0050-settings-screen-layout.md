@@ -87,6 +87,7 @@ without thinking about it.
 
 - 2026-11-21: Proposed (#766), together with the implementation.
 - 2026-11-21: Accepted by the owner (#768).
+- 2026-11-21: The section heading is the app-wide `SectionHeader` of ADR-0051 (#743): bold like the other sections of the app; the layout rules here are unchanged.
 
 ## Open points
 

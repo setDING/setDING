@@ -1,11 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../theme.dart';
+
 /// Colour of the ChordPro problem warnings (#314): a warning, not an error,
 /// so it stays apart from the sync conflict icon.
 Color chordProProblemColor(BuildContext context) =>
-    Theme.of(context).brightness == Brightness.dark
-    ? Colors.amber.shade400
-    : Colors.amber.shade900;
+    StatusColors.of(context).warning;
 
 /// Warning icon for ChordPro sources with problems (`validateChordPro`,
 /// #314); its meaning in the tooltip.

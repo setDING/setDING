@@ -50,6 +50,7 @@ class AccountSection extends ConsumerWidget {
                       ? l10n.accountSignOutMessageWeb
                       : l10n.accountSignOutMessage,
                   action: l10n.accountSignOut,
+                  destructive: false,
                 );
                 if (ok) await ref.read(authProvider.notifier).signOut();
               },
@@ -84,9 +85,7 @@ class AccountSection extends ConsumerWidget {
     if (value == null) return;
     final url = normalizeServerUrl(value);
     if (url == null) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.settingsServerInvalid)),
-      );
+      showMessageOn(messenger, l10n.settingsServerInvalid);
       return;
     }
     if (url == current) return;

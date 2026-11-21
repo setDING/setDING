@@ -17,6 +17,7 @@
   "errorGeneric": "Something went wrong: {error}",
   "songsEmpty": "No songs yet. Create a new song or import ChordPro files.",
   "searchSongs": "Search songs",
+  "searchClear": "Clear search",
   "newSong": "New song",
   "newPdfSong": "New PDF song",
   "importFiles": "Import files",

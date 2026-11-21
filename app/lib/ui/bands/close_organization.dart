@@ -72,9 +72,7 @@ Future<void> closeOrganization(
         // Its songs and sets come back from the server.
         await sync.syncNow();
       } on BackendException catch (e) {
-        messenger.showSnackBar(
-          SnackBar(content: Text(backendErrorText(l10n, e.kind))),
-        );
+        showMessageOn(messenger, backendErrorText(l10n, e.kind));
       }
     },
   );
@@ -154,10 +152,7 @@ class _CloseOrganizationDialogState extends State<_CloseOrganizationDialog> {
         ),
         FilledButton(
           key: const Key('org-close-confirm'),
-          style: FilledButton.styleFrom(
-            backgroundColor: theme.colorScheme.error,
-            foregroundColor: theme.colorScheme.onError,
-          ),
+          style: destructiveButtonStyle(context),
           onPressed: _confirmed ? () => Navigator.pop(context, true) : null,
           child: Text(l10n.orgClose),
         ),

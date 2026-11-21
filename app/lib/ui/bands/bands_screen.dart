@@ -28,9 +28,7 @@ Future<bool> runBandAction(
     await action();
     return true;
   } on BackendException catch (e) {
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(backendErrorText(l10n, e.kind))));
+    showMessageOn(messenger, backendErrorText(l10n, e.kind));
     return false;
   }
 }

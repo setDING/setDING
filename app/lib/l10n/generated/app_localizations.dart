@@ -200,6 +200,12 @@ abstract class AppLocalizations {
   /// **'Songs suchen'**
   String get searchSongs;
 
+  /// No description provided for @searchClear.
+  ///
+  /// In de, this message translates to:
+  /// **'Suche leeren'**
+  String get searchClear;
+
   /// No description provided for @newSong.
   ///
   /// In de, this message translates to:

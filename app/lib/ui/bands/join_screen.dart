@@ -6,6 +6,7 @@ import '../../providers.dart';
 import '../../sync/auth_providers.dart';
 import '../../sync/sync_backend.dart';
 import '../account/sign_in_screen.dart';
+import '../widgets/dialogs.dart';
 
 /// Joins an organization with an invitation link (ADR-0005, ADR-0017):
 /// opened by a deep link or by pasting the link. The link is checked first,
@@ -84,14 +85,11 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
     await _run(() async {
       await ref.read(syncBackendProvider).redeemInvite(_token!);
       await ref.read(bandServiceProvider).refresh();
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            preview.founder
-                ? l10n.joinFoundDone(preview.organizationName)
-                : l10n.joinDone(preview.organizationName),
-          ),
-        ),
+      showMessageOn(
+        messenger,
+        preview.founder
+            ? l10n.joinFoundDone(preview.organizationName)
+            : l10n.joinDone(preview.organizationName),
       );
       navigator.pop(true);
     });

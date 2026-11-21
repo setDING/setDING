@@ -6,6 +6,7 @@ import '../../sync/auth_providers.dart';
 import '../../sync/sync_backend.dart';
 import '../../sync/sync_controller.dart';
 import 'sign_in_screen.dart' show backendErrorText;
+import '../widgets/dialogs.dart';
 
 /// Pull to refresh on a list (#384): pulling down and releasing starts a
 /// sync, like "Sync now" in the settings. A failed sync is reported in a
@@ -26,17 +27,12 @@ class SyncRefresh extends ConsumerWidget {
     final report = await ref.read(syncControllerProvider.notifier).syncNow();
     final error = report?.error;
     if (error == null || error == BackendErrorKind.updateRequired) return;
-    messenger
-      ?..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            error == BackendErrorKind.network
-                ? l10n.syncOffline
-                : backendErrorText(l10n, error),
-          ),
-        ),
-      );
+    showMessageOn(
+      messenger,
+      error == BackendErrorKind.network
+          ? l10n.syncOffline
+          : backendErrorText(l10n, error),
+    );
   }
 
   @override

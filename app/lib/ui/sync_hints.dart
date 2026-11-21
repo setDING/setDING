@@ -5,6 +5,7 @@ import '../l10n/generated/app_localizations.dart';
 import '../sync/sync_controller.dart';
 import '../sync/sync_engine.dart';
 import 'overview/recent_changes.dart';
+import 'widgets/dialogs.dart';
 
 /// Hints after a sync (#691): when someone else changed or deleted the song
 /// or set on the screen, the person is told; a deleted one closes its
@@ -42,14 +43,11 @@ void listenForSyncHints(
     );
     if (change.kind.isDeletion) onDeleted?.call();
     if (next.afterLive || messenger == null) return;
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          key: Key('sync-hint-${change.kind.name}'),
-          content: Text(message),
-        ),
-      );
+    showMessageOn(
+      messenger,
+      message,
+      key: Key('sync-hint-${change.kind.name}'),
+    );
   });
 }
 
@@ -68,23 +66,18 @@ void listenForLiveSummary(BuildContext context, WidgetRef ref) {
     final summary = liveSummaryText(l10n, report.changes);
     if (summary == null) return;
     final navigator = Navigator.of(context);
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          key: const Key('sync-hint-after-live'),
-          content: Text(summary),
-          duration: const Duration(seconds: 8),
-          action: SnackBarAction(
-            label: l10n.syncHintShowChanges,
-            onPressed: () => navigator.push(
-              MaterialPageRoute<void>(
-                builder: (_) => const RecentChangesScreen(),
-              ),
-            ),
-          ),
+    showMessageOn(
+      ScaffoldMessenger.of(context),
+      summary,
+      key: const Key('sync-hint-after-live'),
+      action: (
+        label: l10n.syncHintShowChanges,
+        key: null,
+        onPressed: () => navigator.push(
+          MaterialPageRoute<void>(builder: (_) => const RecentChangesScreen()),
         ),
-      );
+      ),
+    );
   });
 }
 

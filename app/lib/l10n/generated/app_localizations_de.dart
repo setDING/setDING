@@ -64,6 +64,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get searchSongs => 'Songs suchen';
 
   @override
+  String get searchClear => 'Suche leeren';
+
+  @override
   String get newSong => 'Neuer Song';
 
   @override

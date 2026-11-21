@@ -8,6 +8,7 @@ import '../../providers.dart';
 import '../bands/bands_screen.dart' show runBandAction;
 import '../songs/song_screen.dart';
 import '../widgets/dialogs.dart';
+import '../widgets/section_header.dart';
 import 'sets_screen.dart' show formatGigDate;
 
 /// The thresholds offered for "not played for a while", in months.
@@ -216,7 +217,10 @@ class _Section extends StatelessWidget {
             spacing: 16,
             runSpacing: 8,
             children: [
-              Text(title, style: theme.textTheme.titleMedium),
+              Semantics(
+                header: true,
+                child: Text(title, style: SectionHeader.style(context)),
+              ),
               ?trailing,
             ],
           ),

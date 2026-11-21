@@ -155,29 +155,24 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
     final start = prefix;
     final end = after.length - suffix;
     final l10n = AppLocalizations.of(context);
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(l10n.pastedChordsOverLyrics),
-          action: SnackBarAction(
-            label: l10n.convert,
-            onPressed: () {
-              // Only if the text is still as pasted.
-              if (!mounted || _controller.text != after) return;
-              final edit = convertChordsOverLyricsIn(after, start, end);
-              if (edit == null) return;
-              _controller.value = TextEditingValue(
-                text: edit.text,
-                selection: TextSelection(
-                  baseOffset: edit.base,
-                  extentOffset: edit.extent,
-                ),
-              );
-            },
+    showMessageWithAction(
+      context,
+      l10n.pastedChordsOverLyrics,
+      actionLabel: l10n.convert,
+      onAction: () {
+        // Only if the text is still as pasted.
+        if (!mounted || _controller.text != after) return;
+        final edit = convertChordsOverLyricsIn(after, start, end);
+        if (edit == null) return;
+        _controller.value = TextEditingValue(
+          text: edit.text,
+          selection: TextSelection(
+            baseOffset: edit.base,
+            extentOffset: edit.extent,
           ),
-        ),
-      );
+        );
+      },
+    );
   }
 
   Song _parse(String source) =>
