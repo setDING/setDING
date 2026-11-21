@@ -69,7 +69,18 @@ void main() {
 
     expect(find.text('Export set'), findsOneWidget);
     final personal = find.byKey(const Key('set-export-personal'));
-    expect(tester.widget<CheckboxListTile>(personal).value, isFalse);
+    expect(
+      tester
+          .widget<CheckboxListTile>(
+            find.descendant(
+              of: personal,
+              matching: find.byType(CheckboxListTile),
+            ),
+          )
+          .value,
+      isFalse,
+    );
+    expect(find.text('Include in the archive'), findsOneWidget);
     expect(
       find.text('Leave this off if you pass the file on.'),
       findsOneWidget,
@@ -93,7 +104,7 @@ void main() {
   });
 
   testWidgets('the import dialog recognises an exported set and replaces the '
-      'set it came from', (tester) async {
+      'set it came from by default', (tester) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'en'});
     final (setId, zip) = (await tester.runAsync(() async {
@@ -103,7 +114,6 @@ void main() {
       final zip = await SetArchiveService(BackupService(app.db, app.storage))
           .export(set);
       // Changed since: the import puts it back.
-      await app.sets.updateSet(set, name: 'Changed');
       await app.sets.addMarker(set, SetItemType.text, 'Later');
       return (set, zip);
     }))!;
@@ -128,13 +138,34 @@ void main() {
     await tester.tap(find.text('Choose files'));
     await waitFor(tester, () => shown(const Key('set-import-replace')));
     expect(find.text('Import set'), findsOneWidget);
-    expect(find.textContaining('"Gig" from'), findsOneWidget);
+    expect(find.text('Gig'), findsOneWidget);
+    expect(find.textContaining('from '), findsOneWidget);
+    for (final heading in [
+      'Destination',
+      'Set already here',
+      'Songs',
+      'Include',
+    ]) {
+      expect(find.text(heading), findsOneWidget, reason: heading);
+    }
     expect(
-      find.text('This set is already in the band as "Changed":'),
+      find.text('The band already has this set as "Gig".'),
       findsOneWidget,
     );
-    expect(find.textContaining('1 song is already here'), findsOneWidget);
-    expect(find.text('Also import:'), findsOneWidget);
+    expect(find.text('1 already here with the same text'), findsOneWidget);
+    // Replacing is the default (#719); a copy gets a copy name.
+    SegmentedButton<bool> mode() => tester.widget<SegmentedButton<bool>>(
+      find.byKey(const Key('set-import-mode')),
+    );
+    expect(mode().selected, {true});
+    expect(shown(const Key('set-import-new-name')), isFalse);
+    await tester.tap(find.byKey(const Key('set-import-copy')));
+    await tester.pumpAndSettle();
+    expect(mode().selected, {false});
+    expect(find.text('Will be added as "Gig (copy)".'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('set-import-replace')));
+    await tester.pumpAndSettle();
+    expect(shown(const Key('set-import-new-name')), isFalse);
 
     await tester.tap(find.byKey(const Key('set-import-start')));
     await waitFor(tester, () => shown(const Key('set-import-result')));
@@ -194,7 +225,7 @@ void main() {
           shown(const Key('set-import-start')) &&
           find.textContaining('not in the library').evaluate().isNotEmpty,
     );
-    expect(find.text('• New one'), findsOneWidget);
+    expect(find.text('New one'), findsOneWidget);
     await tester.tap(find.byKey(const Key('set-import-start')));
     await waitFor(tester, () => shown(const Key('set-import-result')));
     expect(

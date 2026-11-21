@@ -141,7 +141,13 @@ again **as a set**:
   overwritten"; replacing is a normal change of the set, synced like an
   edit. The origin is the setlist field `origin` (schema 28, server
   migration `1796500000_set_origin.js`); exporting an imported set keeps
-  the original ID, so copies of copies are found too.
+  the original ID, so copies of copies are found too. Replacing is the
+  default.
+- **Copy names:** an added set keeps its name unless the band has a set
+  (not deleted) with the same name (ignoring case) and the same gig date
+  (or both without one); then it gets the first free "<name> (copy)",
+  "<name> (copy 2)", … in the importer's language. The preview shows the
+  name (#719).
 - **Missing songs** that the person may not create (set planner, ADR-0023)
   become text items "missing: <title>" in the set and are listed in the
   import report; the set is imported anyway.
@@ -232,6 +238,10 @@ Deleted songs and sets can be **restored for 30 days**.
   dialog in the set's menu, import from the import dialog of the song list
   and from the set list's menu (also for set planners); setlist field
   `origin`.
+- 2026-11-21: Owner decisions (#719): the import dialog gets sections with
+  headings (destination, set already here, songs, include), segmented
+  buttons and song status rows; an added set is renamed as a copy when the
+  band has a set with the same name and date.
 
 ## Open points
 

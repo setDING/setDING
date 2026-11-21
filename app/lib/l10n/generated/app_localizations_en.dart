@@ -4415,49 +4415,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get setImportTitle => 'Import set';
 
   @override
-  String setImportSummary(String set, String band, int songs) {
-    String _temp0 = intl.Intl.pluralLogic(
-      songs,
-      locale: localeName,
-      other: '$songs songs',
-      one: '1 song',
-      zero: 'no songs',
-    );
-    return '\"$set\" from $band: $_temp0.';
-  }
-
-  @override
-  String get setImportBand => 'Into band';
+  String get setImportBand => 'Band';
 
   @override
   String get setImportNoBand =>
       'There is no band in this library whose sets you may manage.';
 
   @override
-  String setImportAdded(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count songs are new and will be added to the library.',
-      one: '1 song is new and will be added to the library.',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String setImportMissing(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count songs are not in the library.',
-      one: '1 song is not in the library.',
-    );
-    return '$_temp0 You may not add songs, so the set shows them as text items:';
-  }
-
-  @override
   String setImportExisting(String name) {
-    return 'This set is already in the band as \"$name\":';
+    return 'The band already has this set as \"$name\".';
   }
 
   @override
@@ -4465,9 +4431,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get setImportCopy => 'Add as a copy';
-
-  @override
-  String get setImportAlso => 'Also import:';
 
   @override
   String setImportOverwriteArrangements(int count) {
@@ -4515,4 +4478,78 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get setArchiveNewer =>
       'This set was exported with a newer version of setDING. Update the app to import it.';
+
+  @override
+  String setImportFrom(String band, int songs) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: '$songs songs',
+      one: '1 song',
+      zero: 'no songs',
+    );
+    return 'from $band · $_temp0';
+  }
+
+  @override
+  String get setImportHeadingTarget => 'Destination';
+
+  @override
+  String get setImportHeadingExisting => 'Set already here';
+
+  @override
+  String get setImportHeadingSongs => 'Songs';
+
+  @override
+  String get setImportHeadingInclude => 'Include';
+
+  @override
+  String get setExportHeadingInclude => 'Include in the archive';
+
+  @override
+  String setImportNewName(String name) {
+    return 'Will be added as \"$name\".';
+  }
+
+  @override
+  String setImportSongsHere(int count) {
+    return '$count already here with the same text';
+  }
+
+  @override
+  String setImportSongsNew(int count) {
+    return '$count new, added to the library';
+  }
+
+  @override
+  String setImportSongsDiffering(int count) {
+    return '$count here with a different text';
+  }
+
+  @override
+  String setImportSongsMissing(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'them',
+      one: 'it',
+    );
+    return '$count not in the library – you may not add songs, so the set shows $_temp0 as text';
+  }
+
+  @override
+  String get setImportKeep => 'Keep existing';
+
+  @override
+  String get setImportAddAll => 'Import as well';
+
+  @override
+  String setImportCopyName(String name) {
+    return '$name (copy)';
+  }
+
+  @override
+  String setImportCopyNameNumbered(String name, int number) {
+    return '$name (copy $number)';
+  }
 }

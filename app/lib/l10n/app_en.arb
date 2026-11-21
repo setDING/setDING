@@ -2444,39 +2444,9 @@
   "setExportStart": "Export",
   "setImport": "Import set",
   "setImportTitle": "Import set",
-  "setImportSummary": "\"{set}\" from {band}: {songs, plural, =0{no songs} =1{1 song} other{{songs} songs}}.",
-  "@setImportSummary": {
-    "placeholders": {
-      "set": {
-        "type": "String"
-      },
-      "band": {
-        "type": "String"
-      },
-      "songs": {
-        "type": "int"
-      }
-    }
-  },
-  "setImportBand": "Into band",
+  "setImportBand": "Band",
   "setImportNoBand": "There is no band in this library whose sets you may manage.",
-  "setImportAdded": "{count, plural, =1{1 song is new and will be added to the library.} other{{count} songs are new and will be added to the library.}}",
-  "@setImportAdded": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "setImportMissing": "{count, plural, =1{1 song is not in the library.} other{{count} songs are not in the library.}} You may not add songs, so the set shows them as text items:",
-  "@setImportMissing": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "setImportExisting": "This set is already in the band as \"{name}\":",
+  "setImportExisting": "The band already has this set as \"{name}\".",
   "@setImportExisting": {
     "placeholders": {
       "name": {
@@ -2486,7 +2456,6 @@
   },
   "setImportReplace": "Replace it",
   "setImportCopy": "Add as a copy",
-  "setImportAlso": "Also import:",
   "setImportOverwriteArrangements": "Overwrite the band's arrangements of {count, plural, =1{1 song} other{{count} songs}}",
   "@setImportOverwriteArrangements": {
     "placeholders": {
@@ -2516,5 +2485,82 @@
     }
   },
   "setArchiveInvalid": "This file is not an exported set.",
-  "setArchiveNewer": "This set was exported with a newer version of setDING. Update the app to import it."
+  "setArchiveNewer": "This set was exported with a newer version of setDING. Update the app to import it.",
+  "setImportFrom": "from {band} · {songs, plural, =0{no songs} =1{1 song} other{{songs} songs}}",
+  "@setImportFrom": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      },
+      "songs": {
+        "type": "int"
+      }
+    }
+  },
+  "setImportHeadingTarget": "Destination",
+  "setImportHeadingExisting": "Set already here",
+  "setImportHeadingSongs": "Songs",
+  "setImportHeadingInclude": "Include",
+  "setExportHeadingInclude": "Include in the archive",
+  "setImportNewName": "Will be added as \"{name}\".",
+  "@setImportNewName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "setImportSongsHere": "{count} already here with the same text",
+  "@setImportSongsHere": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setImportSongsNew": "{count} new, added to the library",
+  "@setImportSongsNew": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setImportSongsDiffering": "{count} here with a different text",
+  "@setImportSongsDiffering": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setImportSongsMissing": "{count} not in the library – you may not add songs, so the set shows {count, plural, =1{it} other{them}} as text",
+  "@setImportSongsMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setImportKeep": "Keep existing",
+  "setImportAddAll": "Import as well",
+  "setImportCopyName": "{name} (copy)",
+  "@setImportCopyName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "setImportCopyNameNumbered": "{name} (copy {number})",
+  "@setImportCopyNameNumbered": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "number": {
+        "type": "int"
+      }
+    }
+  }
 }

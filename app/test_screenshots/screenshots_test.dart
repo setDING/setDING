@@ -795,6 +795,10 @@ void main() {
       }
 
       await waitFor(find.byKey(const Key('set-import-replace')));
+      // As a copy: the preview shows the copy name (#719).
+      await tester.tap(find.byKey(const Key('set-import-copy')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('set-import-new-name')), findsOneWidget);
       await _shot(tester, '${lang}_27b_set_import');
       await tester.tap(find.byKey(const Key('set-import-start')));
       await waitFor(find.byKey(const Key('set-import-result')));

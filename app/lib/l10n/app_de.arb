@@ -2764,39 +2764,9 @@
   "setExportStart": "Exportieren",
   "setImport": "Set importieren",
   "setImportTitle": "Set importieren",
-  "setImportSummary": "«{set}» von {band}: {songs, plural, =0{keine Songs} =1{1 Song} other{{songs} Songs}}.",
-  "@setImportSummary": {
-    "placeholders": {
-      "set": {
-        "type": "String"
-      },
-      "band": {
-        "type": "String"
-      },
-      "songs": {
-        "type": "int"
-      }
-    }
-  },
-  "setImportBand": "In die Band",
+  "setImportBand": "Band",
   "setImportNoBand": "In dieser Bibliothek gibt es keine Band, deren Sets du verwalten darfst.",
-  "setImportAdded": "{count, plural, =1{1 Song ist neu und wird in die Bibliothek aufgenommen.} other{{count} Songs sind neu und werden in die Bibliothek aufgenommen.}}",
-  "@setImportAdded": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "setImportMissing": "{count, plural, =1{1 Song ist nicht in der Bibliothek.} other{{count} Songs sind nicht in der Bibliothek.}} Du darfst keine Songs hinzufügen, darum zeigt das Set sie als Text:",
-  "@setImportMissing": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "setImportExisting": "Dieses Set gibt es in der Band schon als «{name}»:",
+  "setImportExisting": "Die Band hat dieses Set schon als «{name}».",
   "@setImportExisting": {
     "placeholders": {
       "name": {
@@ -2806,7 +2776,6 @@
   },
   "setImportReplace": "Ersetzen",
   "setImportCopy": "Als Kopie hinzufügen",
-  "setImportAlso": "Ebenfalls importieren:",
   "setImportOverwriteArrangements": "Band-Arrangements von {count, plural, =1{1 Song} other{{count} Songs}} überschreiben",
   "@setImportOverwriteArrangements": {
     "placeholders": {
@@ -2836,5 +2805,82 @@
     }
   },
   "setArchiveInvalid": "Diese Datei ist kein exportiertes Set.",
-  "setArchiveNewer": "Dieses Set wurde mit einer neueren Version von setDING exportiert. Aktualisiere die App, um es zu importieren."
+  "setArchiveNewer": "Dieses Set wurde mit einer neueren Version von setDING exportiert. Aktualisiere die App, um es zu importieren.",
+  "setImportFrom": "von {band} · {songs, plural, =0{keine Songs} =1{1 Song} other{{songs} Songs}}",
+  "@setImportFrom": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      },
+      "songs": {
+        "type": "int"
+      }
+    }
+  },
+  "setImportHeadingTarget": "Ziel",
+  "setImportHeadingExisting": "Set schon vorhanden",
+  "setImportHeadingSongs": "Songs",
+  "setImportHeadingInclude": "Übernehmen",
+  "setExportHeadingInclude": "Ins Archiv",
+  "setImportNewName": "Wird angelegt als «{name}».",
+  "@setImportNewName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "setImportSongsHere": "{count, plural, =1{1 schon hier mit gleichem Text} other{{count} schon hier mit gleichem Text}}",
+  "@setImportSongsHere": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setImportSongsNew": "{count, plural, =1{1 neu, kommt in die Bibliothek} other{{count} neu, kommen in die Bibliothek}}",
+  "@setImportSongsNew": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setImportSongsDiffering": "{count, plural, =1{1 hier mit anderem Text} other{{count} hier mit anderem Text}}",
+  "@setImportSongsDiffering": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setImportSongsMissing": "{count, plural, =1{1 nicht in der Bibliothek – du darfst keine Songs hinzufügen, es wird Text im Set} other{{count} nicht in der Bibliothek – du darfst keine Songs hinzufügen, sie werden Text im Set}}",
+  "@setImportSongsMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setImportKeep": "Bestehende behalten",
+  "setImportAddAll": "Zusätzlich importieren",
+  "setImportCopyName": "{name} (Kopie)",
+  "@setImportCopyName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "setImportCopyNameNumbered": "{name} (Kopie {number})",
+  "@setImportCopyNameNumbered": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "number": {
+        "type": "int"
+      }
+    }
+  }
 }

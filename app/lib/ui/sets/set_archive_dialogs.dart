@@ -83,7 +83,7 @@ class _ExportDialogState extends State<_ExportDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(l10n.setExportHint),
-              const SizedBox(height: 8),
+              _Heading(l10n.setExportHeadingInclude),
               ..._optionTiles(
                 l10n,
                 _options,
@@ -119,41 +119,134 @@ List<Widget> _optionTiles(
   SetArchiveOptions available = const SetArchiveOptions(personal: true),
 }) => [
   if (available.arrangements)
-    CheckboxListTile(
+    _OptionTile(
       key: Key('$keyPrefix-arrangements'),
-      contentPadding: EdgeInsets.zero,
       value: options.arrangements,
-      title: Text(l10n.setArchiveArrangements),
+      title: l10n.setArchiveArrangements,
       onChanged: (v) => changed(options.copyWith(arrangements: v)),
     ),
   if (available.setSettings)
-    CheckboxListTile(
+    _OptionTile(
       key: Key('$keyPrefix-set-settings'),
-      contentPadding: EdgeInsets.zero,
       value: options.setSettings,
-      title: Text(l10n.setArchiveSetSettings),
+      title: l10n.setArchiveSetSettings,
       onChanged: (v) => changed(options.copyWith(setSettings: v)),
     ),
   if (available.attachments)
-    CheckboxListTile(
+    _OptionTile(
       key: Key('$keyPrefix-attachments'),
-      contentPadding: EdgeInsets.zero,
       value: options.attachments,
-      title: Text(l10n.setArchiveAttachments),
+      title: l10n.setArchiveAttachments,
       onChanged: (v) => changed(options.copyWith(attachments: v)),
     ),
   if (available.personal)
-    CheckboxListTile(
+    _OptionTile(
       key: Key('$keyPrefix-personal'),
-      contentPadding: EdgeInsets.zero,
       value: options.personal,
-      title: Text(l10n.setArchivePersonal),
-      subtitle: keyPrefix == 'set-export'
-          ? Text(l10n.setArchivePersonalHint)
-          : null,
+      title: l10n.setArchivePersonal,
+      subtitle: keyPrefix == 'set-export' ? l10n.setArchivePersonalHint : null,
       onChanged: (v) => changed(options.copyWith(personal: v)),
     ),
 ];
+
+/// A section heading of the set archive dialogs, styled like the section
+/// headers of the song list (#719).
+class _Heading extends StatelessWidget {
+  const _Heading(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Semantics(
+      header: true,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 20, bottom: 6),
+        child: Text(
+          text,
+          style: theme.textTheme.titleSmall?.copyWith(
+            color: theme.colorScheme.primary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A compact checkbox row, smaller than the headings.
+class _OptionTile extends StatelessWidget {
+  const _OptionTile({
+    super.key,
+    required this.value,
+    required this.title,
+    required this.onChanged,
+    this.subtitle,
+  });
+
+  final bool value;
+  final String title;
+  final String? subtitle;
+  final ValueChanged<bool?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return CheckboxListTile(
+      contentPadding: EdgeInsets.zero,
+      dense: true,
+      visualDensity: VisualDensity.compact,
+      value: value,
+      title: Text(title, style: theme.textTheme.bodyMedium),
+      subtitle: subtitle == null ? null : Text(subtitle!),
+      onChanged: onChanged,
+    );
+  }
+}
+
+/// A line of the song balance with an icon.
+class _StatusRow extends StatelessWidget {
+  const _StatusRow(this.icon, this.text, {this.color, this.details = const []});
+
+  final IconData icon;
+  final String text;
+  final Color? color;
+
+  /// Song titles listed below the line.
+  final List<String> details;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = this.color ?? theme.colorScheme.onSurfaceVariant;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: color),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(text, style: theme.textTheme.bodyMedium),
+                for (final d in details)
+                  Text(
+                    d,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 /// Lets the person choose a ZIP file and imports it as a set into [bandId]
 /// (preselected). [pick] chooses the file (tests pass theirs).
@@ -230,6 +323,14 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
 
   bool get _canCreateSongs => ref.read(currentLibraryProvider).canCreateSongs;
 
+  /// "Gig (copy)", "Gig (copy 2)", … in the person's language (#719).
+  String _copyName(String name, int number) {
+    final l10n = AppLocalizations.of(context);
+    return number == 1
+        ? l10n.setImportCopyName(name)
+        : l10n.setImportCopyNameNumbered(name, number);
+  }
+
   Future<void> _load(String band) async {
     setState(() {
       _band = band;
@@ -237,7 +338,12 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
     });
     final preview = await ref
         .read(setArchiveServiceProvider)
-        .preview(widget.archive, bandId: band, canCreateSongs: _canCreateSongs);
+        .preview(
+          widget.archive,
+          bandId: band,
+          canCreateSongs: _canCreateSongs,
+          copyName: _copyName,
+        );
     if (mounted && _band == band) setState(() => _preview = preview);
   }
 
@@ -255,6 +361,7 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
             bandId: band,
             canCreateSongs: _canCreateSongs,
             missingNote: l10n.setImportMissingNote,
+            copyName: _copyName,
             options: _options,
             duplicates: _duplicates,
             replace: preview.existingSet != null && _replace,
@@ -289,6 +396,7 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
     }
     final preview = _preview;
     final archive = widget.archive;
+    final theme = Theme.of(context);
     return AlertDialog(
       key: const Key('set-import'),
       title: Text(l10n.setImportTitle),
@@ -300,20 +408,32 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                l10n.setImportSummary(
-                  archive.name,
+                archive.name,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Text(
+                l10n.setImportFrom(
                   archive.bandName,
                   archive.contents.songs.length,
                 ),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
-              const SizedBox(height: 12),
+              _Heading(l10n.setImportHeadingTarget),
               if (targets.isEmpty)
                 Text(l10n.setImportNoBand)
               else
                 DropdownButtonFormField<String>(
                   key: const Key('set-import-band'),
                   initialValue: _band,
-                  decoration: InputDecoration(labelText: l10n.setImportBand),
+                  decoration: InputDecoration(
+                    labelText: l10n.setImportBand,
+                    border: const OutlineInputBorder(),
+                    isDense: true,
+                  ),
                   items: [
                     for (final t in targets)
                       DropdownMenuItem(
@@ -354,78 +474,101 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
 
   List<Widget> _previewParts(AppLocalizations l10n, SetArchivePreview preview) {
     final holds = widget.archive.holds;
+    final colors = Theme.of(context).colorScheme;
+    final adding = preview.existingSet == null || !_replace;
     return [
       if (preview.existingSet case final existing?) ...[
-        const SizedBox(height: 12),
+        _Heading(l10n.setImportHeadingExisting),
         Text(l10n.setImportExisting(existing.name)),
-        RadioGroup<bool>(
-          groupValue: _replace,
-          onChanged: (v) => setState(() => _replace = v!),
-          child: Column(
-            children: [
-              RadioListTile(
-                key: const Key('set-import-replace'),
-                contentPadding: EdgeInsets.zero,
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: SegmentedButton<bool>(
+            key: const Key('set-import-mode'),
+            segments: [
+              ButtonSegment(
                 value: true,
-                title: Text(l10n.setImportReplace),
+                label: Text(
+                  l10n.setImportReplace,
+                  key: const Key('set-import-replace'),
+                ),
               ),
-              RadioListTile(
-                key: const Key('set-import-copy'),
-                contentPadding: EdgeInsets.zero,
+              ButtonSegment(
                 value: false,
-                title: Text(l10n.setImportCopy),
+                label: Text(
+                  l10n.setImportCopy,
+                  key: const Key('set-import-copy'),
+                ),
               ),
             ],
+            selected: {_replace},
+            onSelectionChanged: (v) => setState(() => _replace = v.single),
           ),
         ),
       ],
-      if (preview.identical > 0) ...[
-        const SizedBox(height: 12),
-        Text(l10n.backupImportIdentical(preview.identical)),
-      ],
-      if (preview.added > 0) ...[
-        const SizedBox(height: 12),
-        Text(l10n.setImportAdded(preview.added)),
-      ],
-      if (preview.differing > 0 && _canCreateSongs) ...[
-        const SizedBox(height: 12),
-        Text(l10n.backupImportDiffering(preview.differing)),
-        RadioGroup<BackupDuplicates>(
-          groupValue: _duplicates,
-          onChanged: (v) => setState(() => _duplicates = v!),
-          child: Column(
-            children: [
-              RadioListTile(
-                key: const Key('set-import-keep-existing'),
-                contentPadding: EdgeInsets.zero,
-                value: BackupDuplicates.keepExisting,
-                title: Text(l10n.backupKeepExisting),
-              ),
-              RadioListTile(
-                key: const Key('set-import-add-all'),
-                contentPadding: EdgeInsets.zero,
-                value: BackupDuplicates.addAll,
-                title: Text(l10n.backupAddAll),
-              ),
-            ],
+      if (adding && preview.newName != widget.archive.name.trim())
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text(
+            l10n.setImportNewName(preview.newName),
+            key: const Key('set-import-new-name'),
           ),
         ),
-      ],
-      if (preview.missing.isNotEmpty) ...[
-        const SizedBox(height: 12),
-        Text(l10n.setImportMissing(preview.missing.length)),
-        for (final title in preview.missing)
+      _Heading(l10n.setImportHeadingSongs),
+      if (preview.identical > 0)
+        _StatusRow(
+          Icons.check_circle_outline,
+          l10n.setImportSongsHere(preview.identical),
+          color: colors.primary,
+        ),
+      if (preview.added > 0)
+        _StatusRow(
+          Icons.add_circle_outline,
+          l10n.setImportSongsNew(preview.added),
+        ),
+      if (preview.differing > 0) ...[
+        _StatusRow(
+          Icons.difference_outlined,
+          l10n.setImportSongsDiffering(preview.differing),
+        ),
+        if (_canCreateSongs)
           Padding(
-            padding: const EdgeInsets.only(left: 8, top: 4),
-            child: Text('• $title'),
+            padding: const EdgeInsets.only(left: 32, top: 4, bottom: 4),
+            child: SegmentedButton<BackupDuplicates>(
+              key: const Key('set-import-duplicates'),
+              segments: [
+                ButtonSegment(
+                  value: BackupDuplicates.keepExisting,
+                  label: Text(
+                    l10n.setImportKeep,
+                    key: const Key('set-import-keep-existing'),
+                  ),
+                ),
+                ButtonSegment(
+                  value: BackupDuplicates.addAll,
+                  label: Text(
+                    l10n.setImportAddAll,
+                    key: const Key('set-import-add-all'),
+                  ),
+                ),
+              ],
+              selected: {_duplicates},
+              onSelectionChanged: (v) => setState(() => _duplicates = v.single),
+            ),
           ),
       ],
+      if (preview.missing.isNotEmpty)
+        _StatusRow(
+          Icons.warning_amber_outlined,
+          l10n.setImportSongsMissing(preview.missing.length),
+          color: colors.error,
+          details: preview.missing,
+        ),
       if (holds.arrangements ||
           holds.setSettings ||
           holds.attachments ||
           holds.personal) ...[
-        const SizedBox(height: 12),
-        Text(l10n.setImportAlso),
+        _Heading(l10n.setImportHeadingInclude),
         ..._optionTiles(
           l10n,
           _options,
@@ -435,14 +578,16 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
         ),
       ],
       if (_options.arrangements && preview.arrangementConflicts > 0)
-        CheckboxListTile(
-          key: const Key('set-import-overwrite'),
-          contentPadding: EdgeInsets.zero,
-          value: _overwrite,
-          title: Text(
-            l10n.setImportOverwriteArrangements(preview.arrangementConflicts),
+        Padding(
+          padding: const EdgeInsets.only(left: 32),
+          child: _OptionTile(
+            key: const Key('set-import-overwrite'),
+            value: _overwrite,
+            title: l10n.setImportOverwriteArrangements(
+              preview.arrangementConflicts,
+            ),
+            onChanged: (v) => setState(() => _overwrite = v ?? false),
           ),
-          onChanged: (v) => setState(() => _overwrite = v ?? false),
         ),
     ];
   }
