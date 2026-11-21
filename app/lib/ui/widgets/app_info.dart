@@ -10,12 +10,12 @@ import '../../update/whats_new.dart';
 import 'app_update.dart';
 import 'whats_new_dialog.dart';
 
-/// The notes of the versions up to the running one, newest first (ADR-0041);
-/// null while they load.
-final recentNotesProvider = Provider<List<VersionNotes>?>((ref) {
+/// The notes of the running version, or of the newest one before it with
+/// notes (ADR-0041); null while they load or if there are none.
+final recentNotesProvider = Provider<VersionNotes?>((ref) {
   final current = ref.watch(clientVersionProvider);
   return switch (ref.watch(whatsNewProvider).value) {
-    final all? => notesUpTo(all, current),
+    final all? => latestNotes(all, current),
     null => null,
   };
 });
@@ -64,7 +64,7 @@ class UpdateAvailableTile extends ConsumerWidget {
   }
 }
 
-/// Shows the notes of the recent versions again (ADR-0041). Empty when
+/// Shows the notes of the running version again (ADR-0041). Empty when
 /// there are none.
 class WhatsNewButton extends ConsumerWidget {
   const WhatsNewButton({super.key});
@@ -72,7 +72,7 @@ class WhatsNewButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notes = ref.watch(recentNotesProvider);
-    if (notes == null || notes.isEmpty) return const SizedBox.shrink();
+    if (notes == null) return const SizedBox.shrink();
     return OutlinedButton.icon(
       icon: const Icon(Icons.new_releases_outlined),
       label: Text(AppLocalizations.of(context).whatsNewTitle),

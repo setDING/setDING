@@ -1011,8 +1011,8 @@ class _AboutSections extends ConsumerWidget {
             leading: const Icon(Icons.info_outline),
             title: version == null ? null : Text(l10n.settingsVersion(version)),
             subtitle: Text(l10n.settingsAbout),
-            // The notes of the recent versions, again (ADR-0041).
-            trailing: whatsNew != null && whatsNew.isNotEmpty
+            // The notes of the running version, again (ADR-0041).
+            trailing: whatsNew != null
                 ? const WhatsNewButton(key: Key('whats-new'))
                 : null,
           ),
