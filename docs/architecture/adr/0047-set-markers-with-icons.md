@@ -1,6 +1,6 @@
 # ADR-0047: Set markers with a chosen icon and text
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-21
 
 ## Context
@@ -194,6 +194,7 @@ their own fields and are decided separately.
   overwritten; `type` is written only for older apps (owner, #717).
 - 2026-11-21: Every marker is a divider in the set list (no divider per icon);
   the text is limited to 24 characters (owner, #717).
+- 2026-11-21: Accepted by the owner (#718).
 
 ## Open points
 
