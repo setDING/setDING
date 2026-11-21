@@ -204,6 +204,51 @@ class PocketBaseBackend implements SyncBackend {
   @override
   Future<void> signOut() async => _pb.authStore.clear();
 
+  @override
+  Future<AuthUser> changeName(String name) async {
+    final user = currentUser;
+    if (user == null) throw const BackendException(BackendErrorKind.signedOut);
+    // The SDK updates the stored session with the returned record, which
+    // emits the new name through [userChanges].
+    await _call(
+      () => _pb.collection(_users).update(user.id, body: {'name': name.trim()}),
+    );
+    return currentUser!;
+  }
+
+  @override
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    final user = currentUser;
+    if (user == null) throw const BackendException(BackendErrorKind.signedOut);
+    try {
+      await _pb
+          .collection(_users)
+          .update(
+            user.id,
+            body: {
+              'oldPassword': oldPassword,
+              'password': newPassword,
+              'passwordConfirm': newPassword,
+            },
+          );
+      // The new password invalidated the token of this session too, and
+      // the server refuses every request that carries it (401), signing in
+      // included. Sign in on a client without the old token and take over
+      // its session: clearing the session first would sign out on the way
+      // (the web client deletes its data then, ADR-0018).
+      final fresh = await PocketBase(
+        serverUrl,
+        httpClientFactory: _httpClientFactory,
+      ).collection(_users).authWithPassword(user.email, newPassword);
+      _pb.authStore.save(fresh.token, fresh.record);
+    } on ClientException catch (e) {
+      throw _map(e);
+    }
+  }
+
   // Organizations and bands ----------------------------------------------------
 
   @override
@@ -1221,6 +1266,13 @@ class PocketBaseBackend implements SyncBackend {
       }
       if (email != null) {
         return BackendException(BackendErrorKind.invalidEmail, e.response);
+      }
+      // Changing the password with a wrong current one (issue #779).
+      if (code('oldPassword') != null) {
+        return BackendException(
+          BackendErrorKind.invalidCredentials,
+          e.response,
+        );
       }
       if (code('password') != null || code('passwordConfirm') != null) {
         return BackendException(BackendErrorKind.weakPassword, e.response);

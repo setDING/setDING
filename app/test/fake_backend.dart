@@ -90,6 +90,30 @@ class FakeSyncBackend implements SyncBackend {
   }
 
   @override
+  Future<AuthUser> changeName(String name) async {
+    _check();
+    final u = user;
+    if (u == null) throw const BackendException(BackendErrorKind.signedOut);
+    final changed = AuthUser(id: u.id, email: u.email, name: name.trim());
+    _set(changed);
+    return changed;
+  }
+
+  @override
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    _check();
+    final u = user;
+    if (u == null) throw const BackendException(BackendErrorKind.signedOut);
+    if (accounts[u.email] != oldPassword) {
+      throw const BackendException(BackendErrorKind.invalidCredentials);
+    }
+    accounts[u.email] = newPassword;
+  }
+
+  @override
   Future<void> requestPasswordReset(String email) async {
     _check();
     resetRequests.add(email);

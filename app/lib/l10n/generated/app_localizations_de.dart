@@ -1687,6 +1687,32 @@ class AppLocalizationsDe extends AppLocalizations {
   String get accountPasswordMismatch => 'Die Passwörter stimmen nicht überein.';
 
   @override
+  String get accountChangeName => 'Name ändern';
+
+  @override
+  String get accountNameChanged => 'Name geändert.';
+
+  @override
+  String get accountChangePassword => 'Passwort ändern';
+
+  @override
+  String get accountChangePasswordHint =>
+      'Auf diesem Gerät bleibst du angemeldet. Deine anderen Geräte werden abgemeldet.';
+
+  @override
+  String get accountCurrentPassword => 'Aktuelles Passwort';
+
+  @override
+  String get accountNewPassword => 'Neues Passwort';
+
+  @override
+  String get accountPasswordWrongCurrent => 'Das aktuelle Passwort ist falsch.';
+
+  @override
+  String get accountPasswordChanged =>
+      'Passwort geändert. Melde dich auf deinen anderen Geräten neu an.';
+
+  @override
   String get accountErrorNetwork =>
       'Keine Verbindung zum Server. Prüfe die Internetverbindung.';
 

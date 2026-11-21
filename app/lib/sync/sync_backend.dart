@@ -770,6 +770,19 @@ abstract class SyncBackend {
   /// Signs out on this device. Local songs and sets are kept.
   Future<void> signOut();
 
+  /// Changes the display name of the signed-in user (issue #779); bandmates
+  /// see it after their next sync.
+  Future<AuthUser> changeName(String name);
+
+  /// Changes the password of the signed-in user (issue #779). Fails with
+  /// [BackendErrorKind.invalidCredentials] if [oldPassword] is wrong. The
+  /// server invalidates every session of the account; this device signs in
+  /// again with [newPassword], other devices are signed out.
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  });
+
   // Organizations and bands (ADR-0005, ADR-0017) ------------------------------
 
   /// The organizations of the signed-in user with their people and the

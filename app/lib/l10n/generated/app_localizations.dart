@@ -3002,6 +3002,54 @@ abstract class AppLocalizations {
   /// **'Die Passwörter stimmen nicht überein.'**
   String get accountPasswordMismatch;
 
+  /// No description provided for @accountChangeName.
+  ///
+  /// In de, this message translates to:
+  /// **'Name ändern'**
+  String get accountChangeName;
+
+  /// No description provided for @accountNameChanged.
+  ///
+  /// In de, this message translates to:
+  /// **'Name geändert.'**
+  String get accountNameChanged;
+
+  /// No description provided for @accountChangePassword.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort ändern'**
+  String get accountChangePassword;
+
+  /// No description provided for @accountChangePasswordHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf diesem Gerät bleibst du angemeldet. Deine anderen Geräte werden abgemeldet.'**
+  String get accountChangePasswordHint;
+
+  /// No description provided for @accountCurrentPassword.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktuelles Passwort'**
+  String get accountCurrentPassword;
+
+  /// No description provided for @accountNewPassword.
+  ///
+  /// In de, this message translates to:
+  /// **'Neues Passwort'**
+  String get accountNewPassword;
+
+  /// No description provided for @accountPasswordWrongCurrent.
+  ///
+  /// In de, this message translates to:
+  /// **'Das aktuelle Passwort ist falsch.'**
+  String get accountPasswordWrongCurrent;
+
+  /// No description provided for @accountPasswordChanged.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort geändert. Melde dich auf deinen anderen Geräten neu an.'**
+  String get accountPasswordChanged;
+
   /// No description provided for @accountErrorNetwork.
   ///
   /// In de, this message translates to:
