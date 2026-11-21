@@ -12,6 +12,8 @@ import songsSelected from '../../../../../../docs/screenshots/songs_selected.png
 import songExport from '../../../../../../docs/screenshots/song_export.png';
 import songImport from '../../../../../../docs/screenshots/song_import.png';
 import songsConversions from '../../../../../../docs/screenshots/songs_conversions.png';
+import songsLanguages from '../../../../../../docs/screenshots/songs_languages.png';
+import songLanguage from '../../../../../../docs/screenshots/song_language.png';
 
 All songs belong to the organization; all its bands share the same song library.
 **Songs** shows them.
@@ -42,6 +44,24 @@ has an arrangement for it.
 If you are in several organizations, switch at the top with **Switch song library**.
 
 <Image src={songs} alt="The song list with key, artist and icons for attachments and sets" />
+
+## Languages
+
+setDING recognises the language of a song from its lyrics: German, English, French,
+Italian, Spanish, Portuguese and Dutch. When the library has songs in more than one
+language, the list shows a small code after the title (**DE**, **EN**, **CH**, …)
+and offers a language filter next to the order; **All languages** shows all songs
+again.
+
+<Image src={songsLanguages} alt="The song list with language codes after the titles (FR, CH, DE, EN) and the All languages filter" />
+
+If the lyrics are short, mix two languages evenly or are written in a dialect, no
+language may be recognised, or the wrong one. Whoever may edit the song sets it
+by hand under **⋮ → Language …**, also **Swiss German** or **Other**.
+**Automatic** goes back to the recognised language. A language set by hand
+always wins and reaches the other devices with the next sync.
+
+<Image src={songLanguage} alt="The Language dialog of a song: Automatic: German, and the list of languages with Swiss German chosen" />
 
 ## Write a song
 

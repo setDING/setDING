@@ -12,6 +12,8 @@ import songsSelected from '../../../../../docs/screenshots/songs_selected_de.png
 import songExport from '../../../../../docs/screenshots/song_export_de.png';
 import songImport from '../../../../../docs/screenshots/song_import_de.png';
 import songsConversions from '../../../../../docs/screenshots/songs_conversions_de.png';
+import songsLanguages from '../../../../../docs/screenshots/songs_languages_de.png';
+import songLanguage from '../../../../../docs/screenshots/song_language_de.png';
 
 Alle Songs gehören der Organisation; alle ihre Bands teilen dieselbe
 Songbibliothek. Unter **Songs** siehst du sie.
@@ -45,6 +47,25 @@ Bist du in mehreren Organisationen, wechselst du oben mit **Songbibliothek
 wechseln**.
 
 <Image src={songs} alt="Die Songliste mit Tonart, Interpret und Symbolen für Anhänge und Sets" />
+
+## Sprachen
+
+setDING erkennt die Sprache eines Songs an seinem Liedtext: Deutsch, Englisch,
+Französisch, Italienisch, Spanisch, Portugiesisch und Niederländisch. Hat die
+Bibliothek Songs in mehr als einer Sprache, zeigt die Liste nach dem Titel ein
+kleines Kürzel (**DE**, **EN**, **CH**, …) und bietet neben der Sortierung einen
+Sprachfilter an; **Alle Sprachen** zeigt wieder alle Songs.
+
+<Image src={songsLanguages} alt="Die Songliste mit Sprachkürzeln nach den Titeln (FR, CH, DE, EN) und dem Filter Alle Sprachen" />
+
+Ist der Text kurz, mischt er zwei Sprachen zu gleichen Teilen oder ist er in Mundart
+geschrieben, wird vielleicht keine oder die falsche Sprache erkannt. Wer den Song
+bearbeiten darf, setzt sie dann unter **⋮ → Sprache …** von Hand, auch
+**Schweizerdeutsch** oder **Andere**. **Automatisch** kehrt zur erkannten Sprache
+zurück. Eine von Hand gesetzte Sprache gilt immer und erreicht die anderen Geräte
+mit der nächsten Synchronisation.
+
+<Image src={songLanguage} alt="Der Dialog Sprache eines Songs: Automatisch: Deutsch und die Liste der Sprachen mit Schweizerdeutsch ausgewählt" />
 
 ## Einen Song erfassen
 

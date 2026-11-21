@@ -172,6 +172,11 @@ class Songs extends Table {
   /// `songLanguages` (outbox.dart); null uses the language detected on the device.
   TextColumn get language => text().nullable()();
 
+  /// Language detected from the lyrics (ADR-0053, schema 32, #805):
+  /// derived on the device like [chordproProblems], never synced; null
+  /// when it is unclear.
+  TextColumn get detectedLanguage => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -633,7 +638,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 31;
+  int get schemaVersion => 32;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -703,6 +708,7 @@ class AppDatabase extends _$AppDatabase {
               songs.purged,
               songs.workId,
               songs.language,
+              songs.detectedLanguage,
             ],
           ),
         );
@@ -903,6 +909,12 @@ class AppDatabase extends _$AppDatabase {
         // table has the columns already.
         await m.addColumn(songs, songs.workId);
         await m.addColumn(songs, songs.language);
+      }
+      if (from < 32 && from >= 4) {
+        // Detected language (ADR-0053, #805): filled by afterUpgrade
+        // (refreshAllMetadata); before schema 4 the rebuilt table has the
+        // column already.
+        await m.addColumn(songs, songs.detectedLanguage);
       }
     },
     beforeOpen: (details) async {

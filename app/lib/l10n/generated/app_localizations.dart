@@ -7818,6 +7818,72 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count, plural, =1{1 Anhang} other{{count} Anhänge}} bei vorhandenen Songs ergänzt'**
   String archiveResultCompleted(int count);
+
+  /// No description provided for @songLanguageName.
+  ///
+  /// In de, this message translates to:
+  /// **'{language, select, de{Deutsch} gsw{Schweizerdeutsch} en{Englisch} fr{Französisch} it{Italienisch} es{Spanisch} pt{Portugiesisch} nl{Niederländisch} other{Andere}}'**
+  String songLanguageName(String language);
+
+  /// No description provided for @songLanguageShort.
+  ///
+  /// In de, this message translates to:
+  /// **'{language, select, de{DE} gsw{CH} en{EN} fr{FR} it{IT} es{ES} pt{PT} nl{NL} other{–}}'**
+  String songLanguageShort(String language);
+
+  /// No description provided for @songLanguage.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprache'**
+  String get songLanguage;
+
+  /// No description provided for @songLanguageMenu.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprache …'**
+  String get songLanguageMenu;
+
+  /// No description provided for @allLanguages.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Sprachen'**
+  String get allLanguages;
+
+  /// No description provided for @filterByLanguage.
+  ///
+  /// In de, this message translates to:
+  /// **'Nach Sprache filtern'**
+  String get filterByLanguage;
+
+  /// No description provided for @songLanguageAutomatic.
+  ///
+  /// In de, this message translates to:
+  /// **'Automatisch: {language}'**
+  String songLanguageAutomatic(String language);
+
+  /// No description provided for @songLanguageNotDetected.
+  ///
+  /// In de, this message translates to:
+  /// **'Automatisch (nicht erkannt)'**
+  String get songLanguageNotDetected;
+
+  /// No description provided for @songLanguageAutomaticHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus dem Liedtext erkannt; eine Wahl von Hand gilt immer.'**
+  String get songLanguageAutomaticHint;
+
+  /// No description provided for @songLanguageDetectedTooltip.
+  ///
+  /// In de, this message translates to:
+  /// **'{language} (aus dem Text erkannt)'**
+  String songLanguageDetectedTooltip(String language);
+
+  /// No description provided for @songLanguageByHandTooltip.
+  ///
+  /// In de, this message translates to:
+  /// **'{language} (von Hand gesetzt)'**
+  String songLanguageByHandTooltip(String language);
 }
 
 class _AppLocalizationsDelegate

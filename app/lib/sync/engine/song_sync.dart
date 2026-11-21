@@ -172,6 +172,7 @@ class SongSync {
             searchText: Value(meta.searchText),
             chordproProblems: Value(meta.problems),
             chordproConversions: Value(meta.conversions),
+            detectedLanguage: Value(meta.language),
             revision: Value(remote.revision),
             updatedAt: DateTime.now(),
             deleted: Value(remote.deleted),

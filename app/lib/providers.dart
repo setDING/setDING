@@ -323,6 +323,11 @@ final tagsProvider = StreamProvider<List<String>>(
   (ref) => ref.watch(songRepositoryProvider).watchTags(),
 );
 
+/// The languages of the songs of the current library (ADR-0053).
+final songLanguagesProvider = StreamProvider<Set<String>>(
+  (ref) => ref.watch(songRepositoryProvider).watchLanguages(),
+);
+
 final songProvider = StreamProvider.autoDispose.family<SongEntry?, String>(
   (ref, id) => ref.watch(songRepositoryProvider).watchSong(id),
 );

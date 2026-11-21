@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import 'attachment_storage.dart';
 import 'database.dart';
 import 'deletions.dart';
+import 'language_detection.dart';
 import 'outbox.dart';
 import 'text.dart';
 
@@ -25,10 +26,21 @@ class SongMeta {
     this.sequence,
     this.problems = 0,
     this.conversions = 0,
+    this.language,
   });
 
   factory SongMeta.fromSource(String source) {
     final song = cp.parseChordPro(source);
+    final searchText = blankToNull(
+      [
+        for (final section in song.sections)
+          for (final line in section.lines)
+            if (line is cp.LyricLine)
+              line.plainText
+            else if (line is cp.CommentLine)
+              cp.stripMarkup(line.text),
+      ].join('\n'),
+    );
     return SongMeta(
       problems: cp.validateChordPro(source).length,
       conversions: cp.countChordProConversions(source),
@@ -43,16 +55,8 @@ class SongMeta {
         for (final t in song.tags)
           if (t.trim().isNotEmpty) t.trim(),
       ],
-      searchText: blankToNull(
-        [
-          for (final section in song.sections)
-            for (final line in section.lines)
-              if (line is cp.LyricLine)
-                line.plainText
-              else if (line is cp.CommentLine)
-                cp.stripMarkup(line.text),
-        ].join('\n'),
-      ),
+      searchText: searchText,
+      language: detectLanguage(searchText),
     );
   }
 
@@ -77,6 +81,10 @@ class SongMeta {
   /// Number of places the editor offers to convert
   /// (`countChordProConversions`, #798).
   final int conversions;
+
+  /// Language detected from the lyrics (ADR-0053, `detectLanguage`), or
+  /// null when it is unclear.
+  final String? language;
 
   /// Tags as stored in the database (see `Songs.tags`).
   String? get tagsColumn => tags.isEmpty ? null : '\n${tags.join('\n')}\n';
@@ -180,6 +188,8 @@ class SongListEntry {
     this.conversions = 0,
     this.createdBy,
     this.updatedBy,
+    this.language,
+    this.languageByHand = false,
   });
 
   final String id;
@@ -216,6 +226,11 @@ class SongListEntry {
   final String? createdBy;
   final String? updatedBy;
 
+  /// Language of the song (ADR-0053): set by hand ([languageByHand]) or
+  /// detected from the lyrics; null if neither.
+  final String? language;
+  final bool languageByHand;
+
   List<String> get tagList => _tags(tags);
 
   @override
@@ -234,7 +249,9 @@ class SongListEntry {
       other.problems == problems &&
       other.conversions == conversions &&
       other.createdBy == createdBy &&
-      other.updatedBy == updatedBy;
+      other.updatedBy == updatedBy &&
+      other.language == language &&
+      other.languageByHand == languageByHand;
 
   @override
   int get hashCode => Object.hash(
@@ -252,6 +269,8 @@ class SongListEntry {
     conversions,
     createdBy,
     updatedBy,
+    language,
+    languageByHand,
   );
 }
 
@@ -332,6 +351,8 @@ class SongRepository {
         s.chordproConversions,
         s.createdBy,
         s.updatedBy,
+        s.language,
+        s.detectedLanguage,
       ])
       ..where(_filter(query, tag))
       // Title, artist and key are sorted in Dart (sortedFor).
@@ -357,6 +378,8 @@ class SongRepository {
             conversions: r.read(s.chordproConversions) ?? 0,
             createdBy: r.read(s.createdBy),
             updatedBy: r.read(s.updatedBy),
+            language: r.read(s.language) ?? r.read(s.detectedLanguage),
+            languageByHand: r.read(s.language) != null,
           ),
       ].sortedFor(sort),
     );
@@ -464,6 +487,7 @@ class SongRepository {
               searchText: Value(meta.searchText),
               chordproProblems: Value(meta.problems),
               chordproConversions: Value(meta.conversions),
+              detectedLanguage: Value(meta.language),
               updatedAt: DateTime.now(),
               createdBy: Value(_editorIn(libraryId)),
               updatedBy: Value(_editorIn(libraryId)),
@@ -494,6 +518,7 @@ class SongRepository {
           searchText: Value(meta.searchText),
           chordproProblems: Value(meta.problems),
           chordproConversions: Value(meta.conversions),
+          detectedLanguage: Value(meta.language),
           updatedAt: Value(DateTime.now()),
           updatedBy: Value(_editorIn(existing.libraryId)),
         ),
@@ -528,6 +553,30 @@ class SongRepository {
               ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
           });
 
+  /// The languages of the songs of [libraryId] (ADR-0053): set by hand or
+  /// detected; songs without one are left out.
+  Stream<Set<String>> watchLanguages() {
+    final s = db.songs;
+    final language = coalesce([s.language, s.detectedLanguage]);
+    return (db.selectOnly(s, distinct: true)
+          ..addColumns([language])
+          ..where(
+            s.deleted.equals(false) &
+                s.libraryId.equals(libraryId) &
+                language.isNotNull(),
+          ))
+        .watch()
+        .map((rows) => {for (final r in rows) r.read(language)!});
+  }
+
+  /// The language of [id] detected from its lyrics (ADR-0053), or null.
+  Future<String?> detectedLanguage(String id) =>
+      (db.selectOnly(db.songs)
+            ..addColumns([db.songs.detectedLanguage])
+            ..where(db.songs.id.equals(id)))
+          .map((r) => r.read(db.songs.detectedLanguage))
+          .getSingleOrNull();
+
   /// Recomputes the stored metadata of all songs from their ChordPro
   /// source (used after a database upgrade).
   Future<void> refreshAllMetadata() async {
@@ -548,6 +597,7 @@ class SongRepository {
             sequence: Value(meta.sequence),
             chordproProblems: Value(meta.problems),
             chordproConversions: Value(meta.conversions),
+            detectedLanguage: Value(meta.language),
           ),
         );
       }

@@ -8,6 +8,7 @@ import 'package:setding/data/arrangement_repository.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/data/demo_song.dart';
 import 'package:setding/ui/home_screen.dart';
+import 'package:setding/ui/home_tab.dart';
 import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/data/backup.dart';
 import 'package:setding/data/import_export.dart';
@@ -60,6 +61,71 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('songs-convert-all')), findsOneWidget);
       await shot(tester, '${lang}_38_songs_conversions');
+      await app.dispose(tester);
+    });
+  }
+
+  // The language of songs (ADR-0053, #805): tags and the language filter in
+  // a library with songs in several languages, and the language of a song
+  // set by hand.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('songs languages $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      await tester.runAsync(() async {
+        await app.songs.createSong(
+          source:
+              '{title: Morning Light}\n{artist: Ann Trainor}\n{key: D}\n'
+              '[D]I walk along the river and you are always there with me,\n'
+              'when the wind is in the willows and the night is calling me.\n'
+              'You are my light, and all the stars will shine for you.',
+        );
+        await app.songs.createSong(
+          source:
+              '{title: Morgenlicht}\n{artist: Ann Trainor}\n{key: D}\n'
+              '[D]Ich gehe durch die Nacht und du bist immer bei mir,\n'
+              'wenn der Wind über das Land zieht, singe ich mit dir.\n'
+              'Du bist mein Licht, auch wenn die Sterne nicht mehr scheinen.',
+        );
+        await app.songs.createSong(
+          source:
+              '{title: Lumière du matin}\n{artist: Ann Trainor}\n{key: D}\n'
+              '[D]Je marche dans la nuit et tu es toujours avec moi,\n'
+              'quand le vent chante sur la mer, je pense à toi.\n'
+              'Tu es ma lumière, et les étoiles brillent pour nous.',
+        );
+        final id = await app.songs.createSong(
+          source:
+              '{title: Morgeliecht}\n{artist: Ann Trainor}\n{key: D}\n'
+              '[D]Mir sind hüt alli da und mir singed zäme es Lied,\n'
+              'das chunnt vo ganzem Härze, wo mer nöd vergässed.',
+        );
+        await app.songs.setLanguage(id, 'gsw');
+        await app.songs.createSong(
+          source:
+              '{title: Train to Nowhere}\n{artist: House Band}\n{key: E}\n'
+              '[E]Waiting at the station for the train that never comes,\n'
+              'and all the people there are counting all the hours.',
+        );
+      });
+      await tester.pumpWidget(
+        RepaintBoundary(key: UniqueKey(), child: app.build()),
+      );
+      await tester.pumpAndSettle();
+      await openTab(tester, HomeTab.songs);
+      expect(find.byKey(const ValueKey('song-language-tag')), findsNWidgets(5));
+      await shot(tester, '${lang}_39_songs_languages');
+
+      await tester.tap(find.textContaining('Morgeliecht'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(PopupMenuButton<String>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('song-language')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('song-language-gsw')), findsOneWidget);
+      await shot(tester, '${lang}_39b_song_language');
       await app.dispose(tester);
     });
   }

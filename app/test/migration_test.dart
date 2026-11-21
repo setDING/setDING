@@ -39,9 +39,16 @@ void downgradeToSchema19(Database raw) {
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN midi_programs');
 }
 
+/// Turns a current database back into schema 31: songs without a detected
+/// language (#805).
+void downgradeToSchema31(Database raw) {
+  raw.execute('ALTER TABLE songs DROP COLUMN detected_language');
+}
+
 /// Turns a current database back into schema 30: songs without language
 /// versions (ADR-0053).
 void downgradeToSchema30(Database raw) {
+  downgradeToSchema31(raw);
   raw.execute('ALTER TABLE songs DROP COLUMN work_id');
   raw.execute('ALTER TABLE songs DROP COLUMN language');
 }
@@ -1119,4 +1126,32 @@ void main() {
     expect(song.language, isNull);
     await upgraded.close();
   });
+
+  test(
+    'upgrades a schema 31 database: songs know their detected language',
+    () async {
+      final current = AppDatabase(NativeDatabase(file));
+      final storage = FileAttachmentStorage(dir);
+      await SongRepository(current, storage).createSong(
+        source:
+            '{title: Old}\nI walk along the river and you are always there '
+            'with me, when the wind is in the willows and the night is '
+            'calling me. You are my light, and all the stars will shine.',
+      );
+      await current.close();
+
+      final raw = sqlite3.open(file.path);
+      downgradeToSchema31(raw);
+      raw.execute('PRAGMA user_version = 31');
+      raw.close();
+
+      final upgraded = AppDatabase(NativeDatabase(file));
+      final repo = SongRepository(upgraded, storage);
+      upgraded.afterUpgrade = (db) => repo.refreshAllMetadata();
+      final song = (await repo.watchSongList().first).single;
+      expect(song.language, 'en');
+      expect(song.languageByHand, isFalse);
+      await upgraded.close();
+    },
+  );
 }
