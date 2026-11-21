@@ -722,19 +722,32 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
                       ],
                     ),
             ),
-            body: wide
-                ? Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(child: editor),
-                      const VerticalDivider(width: 1),
-                      Expanded(child: preview),
-                    ],
-                  )
-                : TabBarView(
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: [editor, preview],
-                  ),
+            // Esc leaves the editor like the back button, so unsaved changes
+            // still ask (#749). The text field swallows Esc before
+            // `EscapeGoesBack` sees it: it only hides its toolbar and
+            // otherwise hands the `DismissIntent` up to here. Inside the
+            // Scaffold, whose drawer action would stop it otherwise.
+            // Autocomplete and search see Esc first and close themselves.
+            body: Actions(
+              actions: {
+                DismissIntent: CallbackAction<DismissIntent>(
+                  onInvoke: (_) => Navigator.maybePop(context),
+                ),
+              },
+              child: wide
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(child: editor),
+                        const VerticalDivider(width: 1),
+                        Expanded(child: preview),
+                      ],
+                    )
+                  : TabBarView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: [editor, preview],
+                    ),
+            ),
           ),
         ),
       ),

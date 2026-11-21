@@ -74,6 +74,11 @@ focus (`DirectionalFocusIntent`).
 - 2026-11-21: Esc closes the selection of the song list (#739); `PageShortcuts`
   can let a shortcut that types nothing apply while a text field has the focus
   (`whileTyping`).
+- 2026-11-21: Esc also goes back from the song editor's text field (#749). A text
+  field consumes Esc (`EditableText` maps `DismissIntent` to hiding its toolbar)
+  before `EscapeGoesBack` sees it; without a toolbar it hands the intent up, so the
+  editor maps `DismissIntent` to `maybePop` inside its `Scaffold` (whose disabled
+  drawer action would hide an outer one). Unsaved changes still ask (`PopScope`).
 
 ## Open points
 
