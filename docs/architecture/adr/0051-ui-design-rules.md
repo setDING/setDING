@@ -83,6 +83,7 @@ above span all of them.
 ## Decision log
 
 - 2026-11-21: Proposed with the first set of rules and shared widgets (#743); numbered 0051 after ADR-0050 (settings screen layout) was accepted meanwhile, and related to it as the app-wide base.
+- 2026-11-21: The owner decided to keep this ADR separate from ADR-0050 (app-wide base, settings rules on top) instead of extending ADR-0050 (#746).
 
 ## Open points
 
