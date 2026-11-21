@@ -434,10 +434,39 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get offlineReady => 'Offline ready';
+  String offlineMissing(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs not offline',
+      one: '1 song not offline',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get notOfflineReady => 'Not offline ready';
+  String get offlineMissingTooltip =>
+      'Not all songs and PDFs of this set are on the device. Connect it to the network and wait for the sync.';
+
+  @override
+  String syncStale(String time) {
+    return 'Last sync with the server: $time. The sets on this device may not be up to date.';
+  }
+
+  @override
+  String get syncStaleNever =>
+      'This device has not synced with the server yet. The sets may not be up to date.';
+
+  @override
+  String syncUnsent(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes from this device have',
+      one: '1 change from this device has',
+    );
+    return '$_temp0 not reached the server yet.';
+  }
 
   @override
   String get addSongs => 'Add songs';

@@ -217,8 +217,32 @@
       }
     }
   },
-  "offlineReady": "Offline bereit",
-  "notOfflineReady": "Nicht offline bereit",
+  "offlineMissing": "{count, plural, =1{1 Song nicht offline} other{{count} Songs nicht offline}}",
+  "@offlineMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "offlineMissingTooltip": "Nicht alle Songs und PDFs dieses Sets sind auf dem Gerät. Verbinde es mit dem Netz und warte den Abgleich ab.",
+  "syncStale": "Letzter Abgleich mit dem Server: {time}. Die Sets auf diesem Gerät sind vielleicht nicht aktuell.",
+  "@syncStale": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncStaleNever": "Dieses Gerät hat sich noch nicht mit dem Server abgeglichen. Die Sets sind vielleicht nicht aktuell.",
+  "syncUnsent": "{count, plural, =1{1 Änderung von diesem Gerät ist} other{{count} Änderungen von diesem Gerät sind}} noch nicht auf dem Server.",
+  "@syncUnsent": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "addSongs": "Songs hinzufügen",
   "pause": "Pause",
   "textItem": "Text",

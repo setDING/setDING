@@ -46,17 +46,23 @@ void main() {
   late _CountingEngine engine;
   late ProviderContainer container;
 
-  Future<void> start(SyncMode? mode) async {
+  late SharedPreferences preferences;
+
+  Future<void> start(
+    SyncMode? mode, {
+    Map<String, Object> prefs = const {},
+  }) async {
     SharedPreferences.setMockInitialValues({
       if (mode != null) 'syncMode': mode.name,
+      ...prefs,
     });
-    final prefs = await SharedPreferences.getInstance();
+    preferences = await SharedPreferences.getInstance();
     container = ProviderContainer(
       overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
+        sharedPreferencesProvider.overrideWithValue(preferences),
         databaseProvider.overrideWithValue(db),
         userSettingsStoreProvider.overrideWithValue(
-          await UserSettingsStore.open(db, prefs),
+          await UserSettingsStore.open(db, preferences),
         ),
         attachmentStorageProvider.overrideWithValue(FileAttachmentStorage(dir)),
         sessionStoreProvider.overrideWithValue(MemorySessionStore()),
@@ -108,6 +114,21 @@ void main() {
     expect(engine.runs, 0);
     await container.read(syncControllerProvider.notifier).syncNow();
     expect(engine.runs, 1);
+  });
+
+  test('the last sync survives a restart (#744)', () async {
+    await start(
+      SyncMode.manual,
+      prefs: {'lastSync.ann': DateTime(2026, 1, 2, 3, 4).toIso8601String()},
+    );
+    expect(
+      container.read(syncControllerProvider).lastSync,
+      DateTime(2026, 1, 2, 3, 4),
+    );
+    await container.read(syncControllerProvider.notifier).syncNow();
+    final stored = DateTime.parse(preferences.getString('lastSync.ann')!);
+    expect(stored.isAfter(DateTime(2026, 1, 2, 3, 4)), isTrue);
+    expect(container.read(syncControllerProvider).lastSync, stored);
   });
 
   test('automatic: changes start a sync, its own cleanup does not', () async {

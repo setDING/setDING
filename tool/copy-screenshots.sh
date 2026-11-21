@@ -56,6 +56,7 @@ map=(
   editor_auto_close 31_editor_auto_close
   editor_chorus_labels 33_editor_chorus_labels
   editor_save 32_editor_save
+  offline_status 34_offline_status
 )
 
 copied=0

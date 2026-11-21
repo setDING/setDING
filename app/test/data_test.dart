@@ -832,11 +832,11 @@ void main() {
       await songs.addAttachment(a, name: 'P', bytes: Uint8List.fromList([1]));
       final setId = await sets.createSet(name: 'Gig');
       await sets.addSongs(setId, [a]);
-      expect(await sets.isOfflineReady(setId), isTrue);
+      expect(await sets.offlineMissing(setId), 0);
 
       final file = (await songs.getAttachments(a)).single.fileName;
       await File('${dir.path}/$file').delete();
-      expect(await sets.isOfflineReady(setId), isFalse);
+      expect(await sets.offlineMissing(setId), 1);
     });
 
     test('offline status of all sets comes from one stream', () async {
@@ -873,17 +873,26 @@ void main() {
       final otherSet = await other.createSet(name: 'Other');
       await other.addSongs(otherSet, [b]);
 
-      final stream = sets.watchNotOfflineReady();
-      expect(await stream.first, {missingFile, missingSong});
-      expect(await sets.isOfflineReady(ready), isTrue);
-      expect(await sets.isOfflineReady(empty), isTrue);
-      expect(await sets.isOfflineReady(missingFile), isFalse);
-      expect(await sets.isOfflineReady(missingSong), isFalse);
-      expect(await other.isOfflineReady(otherSet), isFalse);
+      // A song with two missing files counts once.
+      await songs.addAttachment(b, name: 'R', bytes: Uint8List.fromList([3]));
+      final fileR = (await songs.getAttachments(b))
+          .firstWhere((x) => x.name == 'R')
+          .fileName;
+      await File('${dir.path}/$fileR').delete();
+      // Two items with missing songs and files count as two.
+      await sets.addSongs(missingSong, [b]);
 
-      // Removing the song with the missing file makes the set ready.
+      final stream = sets.watchOfflineMissing();
+      expect(await stream.first, {missingFile: 1, missingSong: 2});
+      expect(await sets.offlineMissing(ready), 0);
+      expect(await sets.offlineMissing(empty), 0);
+      expect(await sets.offlineMissing(missingFile), 1);
+      expect(await sets.offlineMissing(missingSong), 2);
+      expect(await other.offlineMissing(otherSet), 1);
+
+      // Removing the song with the missing files makes the set ready.
       await songs.deleteSong(b);
-      expect(await sets.watchNotOfflineReady().first, {missingSong});
+      expect(await sets.watchOfflineMissing().first, {missingSong: 1});
     });
 
     test('songs with ChordPro problems per set (#314)', () async {

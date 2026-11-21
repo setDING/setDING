@@ -153,7 +153,7 @@ class _SetScreenState extends ConsumerState<SetScreen> {
     final l10n = AppLocalizations.of(context);
     final setValue = ref.watch(setProvider(widget.setId));
     final itemsValue = ref.watch(setItemsProvider(widget.setId));
-    final ready = ref.watch(offlineReadyProvider(widget.setId)).value;
+    final missing = ref.watch(offlineMissingProvider(widget.setId)).value ?? 0;
     final canEdit = ref.watch(currentBandProvider).canManageSets;
 
     return AsyncBody(
@@ -264,7 +264,7 @@ class _SetScreenState extends ConsumerState<SetScreen> {
             body: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (details.isNotEmpty || ready != null)
+                if (details.isNotEmpty || missing > 0)
                   Padding(
                     // Right: in line with the drag handles of the rows.
                     padding: const EdgeInsets.fromLTRB(16, 4, 32, 8),
@@ -276,7 +276,7 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                             style: Theme.of(context).textTheme.bodyLarge,
                           ),
                         ),
-                        if (ready != null) OfflineBadge(ready: ready),
+                        if (missing > 0) OfflineMissingBadge(missing: missing),
                       ],
                     ),
                   ),

@@ -541,21 +541,21 @@ final setItemsProvider = StreamProvider.autoDispose
       (ref, setId) => ref.watch(setRepositoryProvider).watchItems(setId),
     );
 
-/// Sets of the current band that are not offline ready, from one query.
-final _notOfflineReadySetsProvider = StreamProvider.autoDispose<Set<String>>(
-  (ref) => ref.watch(setRepositoryProvider).watchNotOfflineReady(),
+/// Per set of the current band, the song items not available offline,
+/// from one query.
+final _offlineMissingProvider = StreamProvider.autoDispose<Map<String, int>>(
+  (ref) => ref.watch(setRepositoryProvider).watchOfflineMissing(),
 );
 
-/// Whether a set of the current band is offline ready (ADR-0001).
-/// Whether a set is offline ready (ADR-0001); null on the web client, which
-/// makes no offline promise (ADR-0018).
-final offlineReadyProvider = FutureProvider.autoDispose.family<bool?, String>((
+/// How many songs of a set are not available offline (ADR-0001): 0 = the set
+/// is offline ready; null on the web client, which makes no offline promise
+/// (ADR-0018).
+final offlineMissingProvider = FutureProvider.autoDispose.family<int?, String>((
   ref,
   setId,
 ) async {
   if (ref.watch(webClientProvider)) return null;
-  return !(await ref.watch(_notOfflineReadySetsProvider.future))
-      .contains(setId);
+  return (await ref.watch(_offlineMissingProvider.future))[setId] ?? 0;
 });
 
 /// Number of songs with ChordPro problems per set of the current band

@@ -1,5 +1,8 @@
-// Screenshots of the splash screen, the set list and the set archive.
+// Screenshots of the splash screen, the set list, its offline status and
+// the set archive.
 // See screenshot_support.dart.
+
+import 'dart:io';
 
 import 'package:setding/data/arrangement_repository.dart';
 import 'package:setding/data/set_archive.dart';
@@ -7,6 +10,9 @@ import 'package:setding/data/backup.dart';
 import 'package:setding/data/import_export.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/data/marker_icons.dart';
+import 'package:setding/sync/sync_backend.dart';
+import 'package:setding/sync/sync_controller.dart' show syncClockProvider;
+import 'package:setding/ui/home_tab.dart';
 import 'package:setding/ui/widgets/export_file.dart' show saveFileProvider;
 import 'package:setding/ui/sets/set_screen.dart';
 import 'package:setding/ui/songs/import_dialog.dart';
@@ -14,6 +20,7 @@ import 'package:setding/ui/widgets/logo.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../test/sync_ui_test.dart' show syncNow;
 import '../test/test_app.dart';
 
 import 'screenshot_support.dart';
@@ -222,6 +229,99 @@ void main() {
       await tester.tap(find.byKey(const Key('set-import-start')));
       await waitFor(find.byKey(const Key('set-import-result')));
       await shot(tester, '${lang}_27c_set_import_result');
+      await app.dispose(tester);
+    });
+  }
+
+  // The offline status (ADR-0001, #744): a set with a song that is not on
+  // the device, and the warning when the last sync is too long ago.
+  for (final lang in ['de', 'en']) {
+    screenshotTest('offline status $lang', (tester) async {
+      useTabletSize(tester, landscape: false);
+      const ann = AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann');
+      final app = await TestApp.create(
+        prefs: {
+          'language': lang,
+          'themeMode': lang == 'de' ? 'light' : 'dark',
+          'currentBandId': 'b1',
+        },
+        user: ann,
+      );
+      app.backend.addBand('b1', 'Rock', admin: ann, organizationId: 'o1');
+      // The data comes from the server, as on a member's device.
+      RemoteSong song(String id, String title, String key) => RemoteSong(
+        id: id,
+        organizationId: 'o1',
+        title: title,
+        chordpro: '{title: $title}\n{key: $key}',
+      );
+      RemoteSetItem item(String id, String songId) =>
+          RemoteSetItem(id: id, type: SetItemType.song, songId: songId);
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      app.backend
+        ..putSong(song('s1', 'Morning Light', 'D'))
+        ..putSong(song('s2', 'Late Train Home', 'E'))
+        ..putAttachment(
+          const RemoteAttachment(
+            id: 'a1',
+            organizationId: 'o1',
+            songId: 's2',
+            name: 'Lead sheet',
+            pages: 1,
+            sizeBytes: 3,
+          ),
+          bytes: [1, 2, 3],
+        )
+        ..putSet(
+          RemoteSet(
+            id: 'set1',
+            bandId: 'b1',
+            name: 'Sommerfest',
+            venue: 'Bern',
+            gigDate: today.add(const Duration(days: 3)),
+            items: [item('i1', 's1'), item('i2', 's2')],
+          ),
+        );
+      // The last sync was three days ago.
+      final later = now.add(const Duration(days: 3));
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            extra: [syncClockProvider.overrideWithValue(() => later)],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await syncNow(tester);
+      // The PDF is gone from this device; the next sync brings another set,
+      // which refreshes the status.
+      await tester.runAsync(() async {
+        for (final f in app.dir.listSync().whereType<File>()) {
+          if (f.path.endsWith('.pdf')) f.deleteSync();
+        }
+      });
+      app.backend.putSet(
+        RemoteSet(
+          id: 'set2',
+          bandId: 'b1',
+          name: 'Probe',
+          items: [item('i3', 's1')],
+        ),
+      );
+      await syncNow(tester);
+      await openTab(tester, HomeTab.sets);
+      // The file check is real I/O.
+      for (var i = 0; i < 20; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 5)),
+        );
+        await tester.pump();
+      }
+      expect(find.byKey(const Key('sync-stale-banner')), findsOneWidget);
+      expect(find.byKey(const ValueKey('offline-missing')), findsOneWidget);
+      await shot(tester, '${lang}_34_offline_status');
       await app.dispose(tester);
     });
   }

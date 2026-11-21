@@ -376,16 +376,17 @@ class SetRepository {
       });
 
   /// A set is "offline ready" when all its songs and their attachment files
-  /// are available locally (ADR-0001).
-  Future<bool> isOfflineReady(String setId) async =>
-      !(await _notReady(await _offlineQuery(setId: setId).get()))
-          .contains(setId);
+  /// are available locally (ADR-0001): the number of its song items that are
+  /// not (song missing, or one of its files missing); 0 = offline ready.
+  Future<int> offlineMissing(String setId) async =>
+      (await _missing(await _offlineQuery(setId: setId).get()))[setId] ?? 0;
 
-  /// IDs of the band's sets that are not offline ready (see
-  /// [isOfflineReady]), from one query for all sets; updated when sets,
-  /// items, songs or attachments change.
-  Stream<Set<String>> watchNotOfflineReady() =>
-      _offlineQuery().watch().asyncMap(_notReady);
+  /// Per set of the band, the number of song items that are not available
+  /// offline (see [offlineMissing]), from one query for all sets; offline
+  /// ready sets are missing. Updated when sets, items, songs or attachments
+  /// change.
+  Stream<Map<String, int>> watchOfflineMissing() =>
+      _offlineQuery().watch().asyncMap(_missing);
 
   /// Number of songs with ChordPro problems per set of the band (#314);
   /// sets without such songs are missing.
@@ -410,7 +411,8 @@ class SetRepository {
   /// One row per song item and attachment: the item's set, its song (null
   /// if missing) and an attachment file (null if none).
   Selectable<QueryRow> _offlineQuery({String? setId}) => db.customSelect(
-    'SELECT i.set_id AS set_id, s.id AS song, s.deleted AS song_deleted, '
+    'SELECT i.set_id AS set_id, i.id AS item, s.id AS song, '
+    's.deleted AS song_deleted, '
     'a.file_name AS file FROM set_items i '
     'JOIN setlists l ON l.id = i.set_id '
     'LEFT JOIN songs s ON s.id = i.song_id '
@@ -421,26 +423,31 @@ class SetRepository {
     readsFrom: {db.setItems, db.setlists, db.songs, db.attachments},
   );
 
-  /// Sets with a missing song or file; each file is checked once.
-  Future<Set<String>> _notReady(List<QueryRow> rows) async {
-    final notReady = <String>{};
-    final setsByFile = <String, Set<String>>{};
+  /// Song items per set with a missing song or file; each file is checked
+  /// once.
+  Future<Map<String, int>> _missing(List<QueryRow> rows) async {
+    final missing = <String, Set<String>>{};
+    final itemsByFile = <String, Set<(String, String)>>{};
     for (final row in rows) {
       final set = row.read<String>('set_id');
+      final item = row.read<String>('item');
       if (row.readNullable<String>('song') == null ||
           row.read<bool>('song_deleted')) {
-        notReady.add(set);
+        (missing[set] ??= {}).add(item);
         continue;
       }
       final file = row.readNullable<String>('file');
-      if (file != null) (setsByFile[file] ??= {}).add(set);
+      if (file != null) (itemsByFile[file] ??= {}).add((set, item));
     }
-    final files = setsByFile.keys.toList();
+    final files = itemsByFile.keys.toList();
     final exists = await Future.wait(files.map(storage.exists));
     for (var i = 0; i < files.length; i++) {
-      if (!exists[i]) notReady.addAll(setsByFile[files[i]]!);
+      if (exists[i]) continue;
+      for (final (set, item) in itemsByFile[files[i]]!) {
+        (missing[set] ??= {}).add(item);
+      }
     }
-    return notReady;
+    return {for (final e in missing.entries) e.key: e.value.length};
   }
 
   /// Records a change of the set (or one of its items) for the sync. Runs in

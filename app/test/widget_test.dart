@@ -973,13 +973,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Late Train Home'), findsOneWidget);
-    // An icon, aligned right; its meaning is in the tooltip.
-    final badge = find.byType(OfflineBadge);
-    expect(find.byTooltip('Offline ready'), findsOneWidget);
-    expect(
-      tester.getRect(badge).right,
-      greaterThan(tester.getSize(find.byType(MaterialApp)).width - 40),
-    );
+    // Everything is on the device: no offline mark (#744).
+    expect(find.byType(OfflineMissingBadge), findsNothing);
     await app.dispose(tester);
   });
 

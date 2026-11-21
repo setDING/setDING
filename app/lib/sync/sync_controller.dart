@@ -116,9 +116,16 @@ class SyncController extends Notifier<SyncStatus> {
       _stopAutomatic();
       _debounce?.cancel();
     });
-    if (userId == null || !ref.watch(autoSyncProvider)) {
-      return const SyncStatus();
-    }
+    _userId = userId;
+    // The last sync of this person on this device survives a restart, for
+    // the stale sync warning (#744).
+    final stored = userId == null
+        ? null
+        : ref.read(sharedPreferencesProvider).getString(_lastSyncKey(userId));
+    final initial = SyncStatus(
+      lastSync: stored == null ? null : DateTime.tryParse(stored),
+    );
+    if (userId == null || !ref.watch(autoSyncProvider)) return initial;
     // Read, not watched: changing the mode must not rebuild (and reset)
     // the controller.
     final mode = ref.read(settingsProvider).syncMode;
@@ -129,8 +136,12 @@ class SyncController extends Notifier<SyncStatus> {
     _applyMode(mode);
     // At start and after signing in.
     if (mode != SyncMode.manual) Future.microtask(syncNow);
-    return const SyncStatus();
+    return initial;
   }
+
+  String? _userId;
+
+  static String _lastSyncKey(String userId) => 'lastSync.$userId';
 
   void _applyMode(SyncMode mode) {
     _stopAutomatic();
@@ -198,8 +209,17 @@ class SyncController extends Notifier<SyncStatus> {
       _debounce?.cancel();
       ref.invalidate(serverConfigProvider);
     }
+    final lastSync = report.error == null ? DateTime.now() : state.lastSync;
+    final userId = _userId;
+    if (report.error == null && userId != null) {
+      unawaited(
+        ref
+            .read(sharedPreferencesProvider)
+            .setString(_lastSyncKey(userId), lastSync!.toIso8601String()),
+      );
+    }
     state = SyncStatus(
-      lastSync: report.error == null ? DateTime.now() : state.lastSync,
+      lastSync: lastSync,
       lastReport: report,
       afterLive: afterLive,
     );
@@ -231,6 +251,51 @@ final pendingChangesProvider = StreamProvider<int>((ref) {
     db.syncOutbox,
   )..addColumns([count])).watchSingle().map((r) => r.read(count) ?? 0);
 });
+
+/// The last successful sync is older than this: the sets on this device may
+/// not be up to date (ADR-0001, #744).
+const syncStaleAfter = Duration(hours: 24);
+
+/// Why the data on this device may not be up to date, for the warning
+/// above the sets (#744).
+@immutable
+class SyncStaleness {
+  const SyncStaleness({
+    required this.lastSync,
+    required this.stale,
+    required this.unsent,
+  });
+
+  /// The last successful sync; null if there was none on this device.
+  final DateTime? lastSync;
+
+  /// The last successful sync is missing or older than [syncStaleAfter].
+  final bool stale;
+
+  /// Local changes not on the server because the last sync failed.
+  final int unsent;
+}
+
+/// The stale sync warning, or null when the data is up to date (or nothing
+/// is synced: signed out, or the web client, ADR-0018). [syncClockProvider]
+/// gives the time.
+final syncStalenessProvider = Provider<SyncStaleness?>((ref) {
+  if (ref.watch(webClientProvider)) return null;
+  if (ref.watch(authProvider) == null) return null;
+  final status = ref.watch(syncControllerProvider);
+  if (status.running) return null;
+  final pending = ref.watch(pendingChangesProvider).value ?? 0;
+  final last = status.lastSync;
+  final stale =
+      last == null ||
+      ref.watch(syncClockProvider)().difference(last) > syncStaleAfter;
+  final unsent = status.lastReport?.error != null ? pending : 0;
+  if (!stale && unsent == 0) return null;
+  return SyncStaleness(lastSync: last, stale: stale, unsent: unsent);
+});
+
+/// The current time for [syncStalenessProvider]; tests override it.
+final syncClockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
 
 /// Synced attachment files that are not downloaded yet (ADR-0009).
 final missingFilesProvider = StreamProvider<int>((ref) async* {
