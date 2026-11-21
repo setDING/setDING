@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:setding/data/database.dart' show SetItemType;
+import 'package:setding/data/marker_icons.dart';
 import 'package:setding/ui/home_screen.dart';
 import 'package:setding/ui/home_tab.dart';
 import 'package:setding/ui/live/live_screen.dart';
@@ -100,7 +100,7 @@ void main() {
       ];
       final setId = await app.sets.createSet(name: 'Gig');
       await app.sets.addSongs(setId, ids.sublist(0, 2));
-      await app.sets.addMarker(setId, SetItemType.pause, 'Break');
+      await app.sets.addMarker(setId, MarkerIcons.breakIcon, 'Break');
       await app.sets.addSongs(setId, ids.sublist(2));
       await tester.pumpWidget(app.build(home: SetScreen(setId: setId)));
       await tester.pumpAndSettle();
