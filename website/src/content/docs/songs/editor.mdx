@@ -69,10 +69,15 @@ Der Editor schliesst, was du öffnest:
   Cursor. Tippst du sie trotzdem selbst, springt der Cursor nur darüber.
   **Rücktaste** direkt nach einer leeren Klammer `[]` löscht beide.
 - Ist Text markiert, setzt `[` oder `{` die Klammern um die Auswahl.
+- In einer Direktive schliesst `"` nach `=` oder `:` gleich mit, z. B. bei
+  `{start_of_chorus label="…"}`. Auch hier springt der Cursor über das
+  schliessende `"`, und **Rücktaste** löscht ein leeres `""` ganz.
 - **Enter** am Ende eines Abschnittsanfangs wie `{start_of_chorus}` fügt eine leere
   Zeile und das passende Ende `{end_of_chorus}` ein; der Cursor steht auf der leeren
   Zeile. Dasselbe passiert, wenn du `start_of_…` aus den Vorschlägen wählst. Ist der
-  Abschnitt schon geschlossen, bleibt es bei einem normalen Zeilenumbruch.
+  Abschnitt schon geschlossen, bleibt es bei einem normalen Zeilenumbruch. Stehen
+  Anfang und Ende auf derselben Zeile, z. B. `{start_of_verse}{end_of_verse}`, trennt
+  **Enter** dazwischen die beiden und lässt eine leere Zeile frei.
 
 In Kommentarzeilen (`#`), nach `\` und in Tabulatur- und Notenabschnitten (ABC,
 LilyPond) bleiben Klammern, wie du sie tippst.
