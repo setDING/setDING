@@ -6,10 +6,11 @@ import 'package:setding/data/database.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/ui/render/song_header.dart';
-import 'package:setding/ui/sets/set_list_text.dart';
+import 'package:setding/ui/sets/set_list.dart';
 import 'package:setding/ui/songs/song_screen.dart';
 import 'package:setding/ui/songs/songs_screen.dart';
 
+import 'set_list_lines.dart';
 import 'test_app.dart';
 
 const _ann = AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann');
@@ -354,7 +355,7 @@ void main() {
       );
     });
     // G + 3 (band) − 1 (tonight) = A; the band's sequence.
-    expect(setListText(list!), contains('1. Late Train – A – V1, C, C'));
+    expect(describeSetList(list!), contains('1. Late Train – A – V1, C, C'));
     await app.dispose(tester);
   });
 }

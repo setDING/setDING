@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
-import 'set_list_text.dart';
+import 'set_list.dart';
 
 /// Fonts embedded in the PDF (ADR-0013): the standard PDF fonts only cover
 /// Latin-1.

@@ -1472,15 +1472,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get sequenceAsText => 'Als Text bearbeiten';
 
   @override
-  String get exportSetList => 'Set-Liste exportieren (Text)';
-
-  @override
-  String get copySetList => 'Set-Liste kopieren';
-
-  @override
-  String get setListCopied => 'Set-Liste kopiert';
-
-  @override
   String get exportSetListPdf => 'Set-Liste exportieren (PDF zum Drucken)';
 
   @override

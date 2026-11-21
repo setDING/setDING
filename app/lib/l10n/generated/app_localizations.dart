@@ -2642,24 +2642,6 @@ abstract class AppLocalizations {
   /// **'Als Text bearbeiten'**
   String get sequenceAsText;
 
-  /// No description provided for @exportSetList.
-  ///
-  /// In de, this message translates to:
-  /// **'Set-Liste exportieren (Text)'**
-  String get exportSetList;
-
-  /// No description provided for @copySetList.
-  ///
-  /// In de, this message translates to:
-  /// **'Set-Liste kopieren'**
-  String get copySetList;
-
-  /// No description provided for @setListCopied.
-  ///
-  /// In de, this message translates to:
-  /// **'Set-Liste kopiert'**
-  String get setListCopied;
-
   /// No description provided for @exportSetListPdf.
   ///
   /// In de, this message translates to:

@@ -1,12 +1,10 @@
 import 'package:setding/data/database.dart';
 import 'package:setding/ui/sets/set_list_pdf.dart';
-import 'package:setding/ui/sets/set_list_text.dart';
-import 'package:setding/ui/sets/set_screen.dart';
+import 'package:setding/ui/sets/set_list.dart';
 import 'package:chordpro/chordpro.dart' as cp;
-import 'package:material_ui/material_ui.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'set_list_lines.dart';
 import 'test_app.dart';
 
 void main() {
@@ -49,7 +47,7 @@ void main() {
         await app.sets.getItems(setId),
       ),
     );
-    String text(cp.ChordNotation notation) => setListText(
+    String text(cp.ChordNotation notation) => describeSetList(
       buildSetList(
         data!.$1,
         data.$2,
@@ -77,37 +75,6 @@ void main() {
     );
     expect(song!.chordproSource, contains('{x_sequence: V1, C, V2, C}'));
     expect(text(cp.ChordNotation.german), contains('4. Hm – Hm\n'));
-    await app.dispose(tester);
-  });
-
-  testWidgets('copies the set list from the set menu', (tester) async {
-    useTabletSize(tester);
-    final (app, setId) = await createSet(tester);
-    String? copied;
-    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      SystemChannels.platform,
-      (call) async {
-        if (call.method == 'Clipboard.setData') {
-          copied = (call.arguments as Map)['text'] as String;
-        }
-        return null;
-      },
-    );
-    addTearDown(
-      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-        SystemChannels.platform,
-        null,
-      ),
-    );
-    await tester.pumpWidget(app.build(home: SetScreen(setId: setId)));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byType(PopupMenuButton<String>));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Copy set list'));
-    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
-    await tester.pumpAndSettle();
-    expect(copied, contains('1. Late Train – A – I, V1, C x2\n'));
-    expect(find.text('Set list copied'), findsOneWidget);
     await app.dispose(tester);
   });
 

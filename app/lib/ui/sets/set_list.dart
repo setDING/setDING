@@ -6,10 +6,7 @@ import '../widgets/dialogs.dart';
 import '../widgets/key_picker.dart';
 import 'set_item_label.dart';
 
-/// Separator between title, key and sequence of a song line.
-const setListSeparator = ' – ';
-
-/// One row of a set list, shared by the text and PDF export.
+/// One row of the printable set list (ADR-0013).
 sealed class SetListRow {
   const SetListRow();
 }
@@ -103,38 +100,4 @@ SetList buildSetList(
     );
   }
   return SetList(set.name, details.isEmpty ? null : details.join(' · '), rows);
-}
-
-/// Plain-text set list: a header (name, date, venue) and one line per song
-/// with its title, key and sequence; pauses and text items get their own
-/// lines.
-///
-/// ```
-/// Summer Festival
-/// 21 Jun 2027 · Bern
-///
-/// 1. Late Train Home – A – V1, C, V2, C x2
-/// — Break —
-/// 2. Blue Monday Groove – Bb
-/// ```
-String setListText(SetList list) {
-  final out = StringBuffer()..writeln(list.name);
-  if (list.details case final details?) out.writeln(details);
-  out.writeln();
-  for (final row in list.rows) {
-    switch (row) {
-      case SetListMarker(:final text, :final pause):
-        out.writeln(pause ? '— $text —' : text);
-      case SetListSong(
-        :final number,
-        :final title,
-        :final key,
-        :final sequence,
-      ):
-        out.writeln(
-          '$number. ${[title, ?key, ?sequence].join(setListSeparator)}',
-        );
-    }
-  }
-  return out.toString();
 }

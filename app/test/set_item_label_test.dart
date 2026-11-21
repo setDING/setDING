@@ -7,9 +7,10 @@ import 'package:setding/data/set_archive.dart';
 import 'package:setding/l10n/generated/app_localizations.dart';
 import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/ui/sets/set_item_label.dart';
-import 'package:setding/ui/sets/set_list_text.dart';
+import 'package:setding/ui/sets/set_list.dart';
 import 'package:setding/ui/sets/set_screen.dart';
 
+import 'set_list_lines.dart';
 import 'test_app.dart';
 
 /// Breaks and text items named after their type in any UI language show
@@ -142,7 +143,7 @@ void main() {
           await app.sets.getItems(setId),
         );
       });
-      final text = setListText(
+      final text = describeSetList(
         buildSetList(
           data!.$1,
           data.$2,
