@@ -739,6 +739,20 @@ void main() {
       );
       await _shot(tester, '${lang}_31_editor_auto_close');
 
+      // The save button (#748): filled as soon as there are unsaved changes.
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            home: SongEditorScreen(initialSource: demoSongSource),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final saveField = tester.widget<TextField>(find.byType(TextField));
+      saveField.controller!.text = '$demoSongSource\n';
+      await _shot(tester, '${lang}_32_editor_save');
+
       ImportFile file(String name, String text) =>
           ImportFile(name, Uint8List.fromList(utf8.encode(text)));
       final files = [

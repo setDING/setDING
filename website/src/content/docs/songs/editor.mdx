@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import editor from '../../../../../docs/screenshots/editor_de.png';
 import editorLabels from '../../../../../docs/screenshots/editor_labels_de.png';
+import editorSave from '../../../../../docs/screenshots/editor_save_de.png';
 import editorCcli from '../../../../../docs/screenshots/editor_ccli_de.png';
 import editorAutoClose from '../../../../../docs/screenshots/editor_auto_close_de.png';
 
@@ -122,7 +123,14 @@ Beschriftungen in der empfohlenen Form. Mit ✕ lässt sich der Hinweis ausblend
 
 ## Speichern
 
-**Speichern** speichert den Song für alle. Findet setDING Stellen, die
+**Speichern** (✓, oben rechts) speichert den Song für alle. Der Knopf wechselt von
+einer blassen zu einer kräftigen Farbe, sobald du etwas änderst. So siehst du auf
+einen Blick, dass es ungespeicherte Änderungen gibt. Auf schmalen Bildschirmen
+zeigt er nur das ✓.
+
+<Image src={editorSave} alt="Der Editor mit ungespeicherten Änderungen: der Knopf Speichern oben rechts ist kräftig gefüllt" />
+
+Findet setDING beim Speichern Stellen, die
 wahrscheinlich nicht wie gewollt angezeigt werden – z. B. eine Klammer, die nicht
 geschlossen wird –, fragt es **ChordPro prüfen?** und nennt die Zeilen. Du kannst
 **Automatisch korrigieren**, **Weiter bearbeiten** oder **Trotzdem speichern**.

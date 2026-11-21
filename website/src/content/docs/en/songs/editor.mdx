@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import editor from '../../../../../../docs/screenshots/editor.png';
 import editorLabels from '../../../../../../docs/screenshots/editor_labels.png';
+import editorSave from '../../../../../../docs/screenshots/editor_save.png';
 import editorCcli from '../../../../../../docs/screenshots/editor_ccli.png';
 import editorAutoClose from '../../../../../../docs/screenshots/editor_auto_close.png';
 
@@ -116,7 +117,13 @@ hint can be hidden with ✕.
 
 ## Save
 
-**Save** saves the song for everyone. If setDING finds places that will probably not
+**Save** (✓, top right) saves the song for everyone. The button turns from a pale to
+a filled colour as soon as you change something, so you see at a glance that there
+are unsaved changes. On narrow screens it shows only the ✓.
+
+<Image src={editorSave} alt="The editor with unsaved changes: the Save button at the top right is filled" />
+
+If setDING finds places while saving that will probably not
 be shown as intended – e.g. a bracket that is never closed – it asks **Check the
 ChordPro?** and names the lines. You can **Fix automatically**, **Keep editing** or
 **Save anyway**.

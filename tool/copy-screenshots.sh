@@ -50,6 +50,7 @@ map=(
   lilypond 29_lilypond
   shortcuts 30_shortcuts
   editor_auto_close 31_editor_auto_close
+  editor_save 32_editor_save
 )
 
 for ((i = 0; i < ${#map[@]}; i += 2)); do
