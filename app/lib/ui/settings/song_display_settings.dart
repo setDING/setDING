@@ -243,20 +243,18 @@ class SongDisplaySettings extends ConsumerWidget {
               child: _FontChoice(display: display, padding: EdgeInsets.zero),
             ),
           ),
-          Padding(
-            // Below the titles, after the icons of the tiles.
-            padding: const EdgeInsetsDirectional.fromSTEB(56, 8, 16, 0),
-            child: Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: FilledButton.icon(
-                key: const Key('song-display-customise'),
-                icon: const Icon(Icons.tune),
-                label: Text(l10n.songDisplayCustomise),
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const SongDisplayEditorScreen(),
-                  ),
-                ),
+          // A row of its own below a divider: it opens the editor for the
+          // whole display, not only the font above it (#787).
+          const Divider(height: 16, indent: 16, endIndent: 16),
+          ListTile(
+            key: const Key('song-display-customise'),
+            leading: const Icon(Icons.tune),
+            title: Text(l10n.songDisplayCustomise),
+            subtitle: Text(l10n.songDisplayCustomiseHint),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const SongDisplayEditorScreen(),
               ),
             ),
           ),

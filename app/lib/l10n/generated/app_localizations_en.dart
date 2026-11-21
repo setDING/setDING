@@ -3014,7 +3014,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get songColorBlackWhite => 'Black/White';
 
   @override
-  String get songDisplayCustomise => 'Customise';
+  String get songDisplayCustomise => 'Customise display';
+
+  @override
+  String get songDisplayCustomiseHint =>
+      'Chords, lyrics, headings, bars and colours';
 
   @override
   String get songDisplayEditorTitle => 'Customise song display';

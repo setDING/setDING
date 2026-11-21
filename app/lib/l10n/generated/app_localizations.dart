@@ -5111,8 +5111,14 @@ abstract class AppLocalizations {
   /// No description provided for @songDisplayCustomise.
   ///
   /// In de, this message translates to:
-  /// **'Anpassen'**
+  /// **'Darstellung anpassen'**
   String get songDisplayCustomise;
+
+  /// No description provided for @songDisplayCustomiseHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Akkorde, Text, Überschriften, Balken und Farben'**
+  String get songDisplayCustomiseHint;
 
   /// No description provided for @songDisplayEditorTitle.
   ///

@@ -63,6 +63,25 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('customising is a row of its own that leads to the editor, '
+      'not a button under the font (#787)', (tester) async {
+    final app = await pumpSettings(tester);
+    final row = find.byKey(const Key('song-display-customise'));
+    final tile = tester.widget<ListTile>(row);
+    expect(tile.leading, isNotNull);
+    expect((tile.trailing! as Icon).icon, Icons.chevron_right);
+    expect(
+      find.descendant(
+        of: row,
+        matching: find.text('Chords, lyrics, headings, bars and colours'),
+      ),
+      findsOneWidget,
+    );
+    await openEditor(tester);
+    expect(find.text('Customise song display'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
   testWidgets('choosing a preset and changing a style makes it custom', (
     tester,
   ) async {
