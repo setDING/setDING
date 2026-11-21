@@ -147,9 +147,8 @@ neutral marker icon.
   default name).
 - **Live mode:** the marker's page shows its icon and title (ADR-0007).
 - **Printable set list (ADR-0013)** and **text export:** every marker as a
-  divider line with its title in the middle; the PDF shows the icon next to the
-  title if the PDF font can render it. The set list is thus split into blocks at
-  every marker.
+  divider line with its title in the middle (no icon, see the decision log).
+  The set list is thus split into blocks at every marker.
 
 ### Not in this decision
 
@@ -205,11 +204,16 @@ their own fields and are decided separately.
   *Add text*; icon groups side by side, text prefilled and limited to 24
   characters, preview; the set editor shows the marker's icon, live mode its
   icon and title.
+- 2026-11-21: Set list dividers implemented (#724): every marker is a divider
+  line with its title in the printable set list; a text marker without a note
+  of its own shows its icon's name instead of being left out. The PDF shows
+  **no icon**: the PDF renderer cannot use the app's Material icon font, and
+  the title alone names the marker (resolves the open point). A longer note of
+  an older app is shortened to 24 characters with an ellipsis. The plain-text
+  export of the set list no longer exists (only the PDF).
 
 ## Open points
 
 - The final catalogue (icons, keys, names, groups).
-- Whether the printable set list embeds the Material icon font or uses neutral
-  symbols.
 - Follow-ups: break duration with a countdown, markers per instrument or role,
   colours, a set split.

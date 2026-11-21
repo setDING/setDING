@@ -1,7 +1,6 @@
 import 'package:chordpro/chordpro.dart' as cp;
 
 import '../../data/database.dart';
-import '../../data/marker_icons.dart';
 import '../../data/set_repository.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/key_picker.dart';
@@ -22,12 +21,15 @@ class SetListSong extends SetListRow {
   final String? sequence;
 }
 
-/// A pause or text item.
+/// A marker (break, announcement, encore, …, ADR-0047): a divider with
+/// its title.
 class SetListMarker extends SetListRow {
-  const SetListMarker(this.text, {required this.pause});
+  const SetListMarker(this.text, {this.icon});
 
   final String text;
-  final bool pause;
+
+  /// Key of the marker's icon in the catalogue.
+  final String? icon;
 }
 
 /// The header and rows of a set list.
@@ -43,10 +45,10 @@ class SetList {
 
 /// Builds the set list: songs are numbered and get the key for this set
 /// (band arrangement and set transposition, ADR-0025, ADR-0006) and their
-/// sequence (set-specific, from the band or from the song); pauses and text
-/// items become markers. A pause without a note of its own shows [pause],
-/// the type label in the current language (#289); a text item without text
-/// is left out.
+/// sequence (set-specific, from the band or from the song). Every marker
+/// is a divider with its text; a marker without a text of its own shows
+/// [markerName] of its icon, the name in the current language (#289,
+/// ADR-0047).
 SetList buildSetList(
   SetlistEntry set,
   List<SetItemView> items, {
@@ -55,7 +57,7 @@ SetList buildSetList(
   required String Function(DateTime date) formatDate,
   required String untitled,
   required String songMissing,
-  required String pause,
+  required String Function(String? icon) markerName,
 }) {
   final details = [
     if (set.gigDate case final date?) formatDate(date),
@@ -66,12 +68,12 @@ SetList buildSetList(
   for (final view in items) {
     final item = view.item;
     if (item.type != SetItemType.song) {
-      final note = markerNote(item.icon, item.note);
-      if (MarkerIcons.isBreak(item.icon)) {
-        rows.add(SetListMarker(note ?? pause, pause: true));
-      } else if (note != null) {
-        rows.add(SetListMarker(note, pause: false));
-      }
+      rows.add(
+        SetListMarker(
+          markerNote(item.icon, item.note) ?? markerName(item.icon),
+          icon: item.icon,
+        ),
+      );
       continue;
     }
     number++;

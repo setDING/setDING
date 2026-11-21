@@ -55,7 +55,7 @@ void main() {
         formatDate: (d) => '${d.day}.${d.month}.${d.year}',
         untitled: 'Untitled',
         songMissing: 'Missing',
-        pause: 'Break',
+        markerName: (_) => 'Break',
       ),
     );
     expect(
@@ -78,6 +78,55 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('every marker is a divider, also one without a text of its '
+      'own (ADR-0047)', (tester) async {
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final data = await tester.runAsync(() async {
+      final song = await app.songs.createSong(source: '{title: Song}');
+      final setId = await app.sets.createSet(name: 'Gig');
+      await app.sets.addMarker(setId, MarkerIcons.announcement, 'Hello Bern');
+      await app.sets.addSongs(setId, [song]);
+      await app.sets.addMarker(setId, MarkerIcons.encore, '');
+      await app.sets.addMarker(setId, MarkerIcons.light, '');
+      return ((await app.sets.getSet(setId))!, await app.sets.getItems(setId));
+    });
+    final list = buildSetList(
+      data!.$1,
+      data.$2,
+      notation: cp.ChordNotation.international,
+      formatDate: (d) => '',
+      untitled: 'Untitled',
+      songMissing: 'Missing',
+      markerName: (icon) => 'name of $icon',
+    );
+    expect(
+      describeSetList(list),
+      'Gig\n'
+      '\n'
+      '— Hello Bern —\n'
+      '1. Song\n'
+      '— name of encore —\n'
+      '— name of light —\n',
+    );
+    expect(
+      [
+        for (final row in list.rows)
+          if (row is SetListMarker) row.icon,
+      ],
+      [MarkerIcons.announcement, MarkerIcons.encore, MarkerIcons.light],
+    );
+    await app.dispose(tester);
+  });
+
+  test('a long marker text of an older app is shortened in the PDF', () {
+    expect(shortenMarkerText('Zugabe'), 'Zugabe');
+    expect(shortenMarkerText('x' * MarkerIcons.maxTextLength), hasLength(24));
+    expect(
+      shortenMarkerText('Announcement of the next tour dates'),
+      'Announcement of the nex…',
+    );
+  });
+
   group('PDF', () {
     SetList list(
       int songs, {
@@ -90,7 +139,7 @@ void main() {
           key: 'B♭',
           sequence: sequence,
         ),
-        if (i == 3) const SetListMarker('Pause', pause: true),
+        if (i == 3) const SetListMarker('Pause', icon: MarkerIcons.breakIcon),
       ],
     ]);
 

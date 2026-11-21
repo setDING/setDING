@@ -156,10 +156,12 @@ void main() {
           formatDate: (d) => '',
           untitled: 'Untitled',
           songMissing: 'Missing',
-          pause: label,
+          markerName: (icon) =>
+              markerIconName(language == 'de' ? de : en, icon),
         ),
       );
-      // The text item without text of its own is left out.
+      // Every marker is a divider; the text item named "Text" shows its
+      // icon's name (ADR-0047).
       expect(
         text,
         'Gig\n'
@@ -168,7 +170,8 @@ void main() {
         '— $label —\n'
         '— $label —\n'
         '— $label —\n'
-        '— Coffee —\n',
+        '— Coffee —\n'
+        '— $announcement —\n',
       );
 
       // The set archive keeps the notes as stored: the label is shown in

@@ -88,7 +88,7 @@ class _SetScreenState extends ConsumerState<SetScreen> {
       formatDate: (date) => formatGigDate(context, date),
       untitled: l10n.untitled,
       songMissing: l10n.songMissing,
-      pause: l10n.pause,
+      markerName: (icon) => markerIconName(l10n, icon),
     );
   }
 

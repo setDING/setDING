@@ -1,7 +1,9 @@
+import 'package:flutter/widgets.dart' show StringCharacters;
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import '../../data/marker_icons.dart';
 import 'set_list.dart';
 
 /// Fonts embedded in the PDF (ADR-0013): the standard PDF fonts only cover
@@ -94,20 +96,20 @@ pw.Document _build(SetList list, SetListFonts fonts, double size) {
     ],
   );
 
+  // Every marker is a divider with its title in the middle (ADR-0047). A
+  // longer text of an older app is shortened so the line stays visible.
   pw.Widget marker(SetListMarker marker) => pw.Padding(
     padding: pw.EdgeInsets.symmetric(vertical: size * 0.4),
-    child: marker.pause
-        ? pw.Row(
-            children: [
-              pw.Expanded(child: pw.Divider(color: _muted, thickness: 1)),
-              pw.Padding(
-                padding: pw.EdgeInsets.symmetric(horizontal: size * 0.5),
-                child: pw.Text(marker.text, style: muted),
-              ),
-              pw.Expanded(child: pw.Divider(color: _muted, thickness: 1)),
-            ],
-          )
-        : pw.Text(marker.text, style: muted),
+    child: pw.Row(
+      children: [
+        pw.Expanded(child: pw.Divider(color: _muted, thickness: 1)),
+        pw.Padding(
+          padding: pw.EdgeInsets.symmetric(horizontal: size * 0.5),
+          child: pw.Text(shortenMarkerText(marker.text), style: muted),
+        ),
+        pw.Expanded(child: pw.Divider(color: _muted, thickness: 1)),
+      ],
+    ),
   );
 
   // Consecutive songs form one table; markers sit between the tables.
@@ -167,4 +169,13 @@ pw.Document _build(SetList list, SetListFonts fonts, double size) {
     ),
   );
   return doc;
+}
+
+/// [text] shortened with an ellipsis to the longest marker text
+/// ([MarkerIcons.maxTextLength]); notes of older apps may be longer.
+String shortenMarkerText(String text) {
+  final chars = text.characters;
+  return chars.length <= MarkerIcons.maxTextLength
+      ? text
+      : '${chars.take(MarkerIcons.maxTextLength - 1).toString().trimRight()}…';
 }

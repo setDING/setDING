@@ -351,7 +351,7 @@ void main() {
         formatDate: (d) => '$d',
         untitled: 'Untitled',
         songMissing: 'Missing',
-        pause: 'Break',
+        markerName: (_) => 'Break',
       );
     });
     // G + 3 (band) − 1 (tonight) = A; the band's sequence.
