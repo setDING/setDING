@@ -7452,6 +7452,102 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Auswahl schliessen'**
   String get shortcutCloseSelection;
+
+  /// No description provided for @settingsHeadingLanguageTheme.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprache & Design'**
+  String get settingsHeadingLanguageTheme;
+
+  /// No description provided for @settingsHeadingEditor.
+  ///
+  /// In de, this message translates to:
+  /// **'Editor'**
+  String get settingsHeadingEditor;
+
+  /// No description provided for @settingsHeadingAdvanced.
+  ///
+  /// In de, this message translates to:
+  /// **'Erweitert'**
+  String get settingsHeadingAdvanced;
+
+  /// No description provided for @settingsHeadingChords.
+  ///
+  /// In de, this message translates to:
+  /// **'Akkorde'**
+  String get settingsHeadingChords;
+
+  /// No description provided for @settingsHeadingContent.
+  ///
+  /// In de, this message translates to:
+  /// **'Inhalt'**
+  String get settingsHeadingContent;
+
+  /// No description provided for @settingsHeadingSetNotes.
+  ///
+  /// In de, this message translates to:
+  /// **'Set & Notizen'**
+  String get settingsHeadingSetNotes;
+
+  /// No description provided for @settingsHeadingInstrument.
+  ///
+  /// In de, this message translates to:
+  /// **'Instrument & Stimme'**
+  String get settingsHeadingInstrument;
+
+  /// No description provided for @settingsHeadingScreen.
+  ///
+  /// In de, this message translates to:
+  /// **'Bildschirm'**
+  String get settingsHeadingScreen;
+
+  /// No description provided for @settingsHeadingControls.
+  ///
+  /// In de, this message translates to:
+  /// **'Bedienung'**
+  String get settingsHeadingControls;
+
+  /// No description provided for @settingsHeadingClick.
+  ///
+  /// In de, this message translates to:
+  /// **'Klick auf diesem Gerät'**
+  String get settingsHeadingClick;
+
+  /// No description provided for @settingsHeadingStorage.
+  ///
+  /// In de, this message translates to:
+  /// **'Speicher & Sicherung'**
+  String get settingsHeadingStorage;
+
+  /// No description provided for @settingsHeadingHelp.
+  ///
+  /// In de, this message translates to:
+  /// **'Hilfe & Info'**
+  String get settingsHeadingHelp;
+
+  /// No description provided for @settingsHeadingConnection.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbindung'**
+  String get settingsHeadingConnection;
+
+  /// No description provided for @settingsHeadingKeyboard.
+  ///
+  /// In de, this message translates to:
+  /// **'Keyboard'**
+  String get settingsHeadingKeyboard;
+
+  /// No description provided for @settingsHeadingStyle.
+  ///
+  /// In de, this message translates to:
+  /// **'Stil'**
+  String get settingsHeadingStyle;
+
+  /// No description provided for @settingsHeadingPrototypes.
+  ///
+  /// In de, this message translates to:
+  /// **'Prototypen'**
+  String get settingsHeadingPrototypes;
 }
 
 class _AppLocalizationsDelegate

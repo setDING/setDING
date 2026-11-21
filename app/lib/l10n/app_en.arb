@@ -2640,5 +2640,21 @@
   "shortcutKeyPageDown": "Page Down",
   "shortcutKeyPageUp": "Page Up",
   "shortcutKeySpace": "Space",
-  "shortcutCloseSelection": "Close the selection"
+  "shortcutCloseSelection": "Close the selection",
+  "settingsHeadingLanguageTheme": "Language & theme",
+  "settingsHeadingEditor": "Editor",
+  "settingsHeadingAdvanced": "Advanced",
+  "settingsHeadingChords": "Chords",
+  "settingsHeadingContent": "Content",
+  "settingsHeadingSetNotes": "Set & notes",
+  "settingsHeadingInstrument": "Instrument & voice",
+  "settingsHeadingScreen": "Screen",
+  "settingsHeadingControls": "Controls",
+  "settingsHeadingClick": "Click on this device",
+  "settingsHeadingStorage": "Storage & backup",
+  "settingsHeadingHelp": "Help & info",
+  "settingsHeadingConnection": "Connection",
+  "settingsHeadingKeyboard": "Keyboard",
+  "settingsHeadingStyle": "Style",
+  "settingsHeadingPrototypes": "Prototypes"
 }

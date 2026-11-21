@@ -16,6 +16,7 @@ import 'bands/bands_settings.dart';
 import 'settings/latency_calibration.dart';
 import 'settings/midi_settings.dart';
 import 'settings/midi_test_screen.dart';
+import 'settings/settings_layout.dart';
 import 'settings/song_display_settings.dart';
 import 'theme.dart';
 import 'widgets/app_info.dart';
@@ -296,15 +297,16 @@ class _CategoryContent extends ConsumerWidget {
       SettingsCategory.account => [
         const AccountSection(),
         if (ref.watch(authProvider) != null)
-          _Choice(
-            l10n.settingsSyncMode,
-            s.syncMode,
-            {
+          SettingsChoice(
+            icon: Icons.sync,
+            title: l10n.settingsSyncMode,
+            value: s.syncMode,
+            options: {
               SyncMode.automatic: l10n.syncModeAutomatic,
               SyncMode.onStart: l10n.syncModeOnStart,
               SyncMode.manual: l10n.syncModeManual,
             },
-            (v) => notifier.update((s) => s.copyWith(syncMode: v)),
+            onChanged: (v) => notifier.update((s) => s.copyWith(syncMode: v)),
             hint: switch (s.syncMode) {
               SyncMode.automatic => l10n.syncModeAutomaticHint,
               SyncMode.onStart => l10n.syncModeOnStartHint,
@@ -314,221 +316,342 @@ class _CategoryContent extends ConsumerWidget {
       ],
       SettingsCategory.bands => [const BandsSettings()],
       SettingsCategory.general => [
-        _Choice(l10n.settingsLanguage, s.language, {
-          LanguageMode.system: l10n.languageSystem,
-          LanguageMode.de: l10n.languageDe,
-          LanguageMode.en: l10n.languageEn,
-        }, (v) => notifier.update((s) => s.copyWith(language: v))),
-        _Choice(l10n.settingsTheme, s.themeMode, {
-          ThemeMode.system: l10n.themeSystem,
-          ThemeMode.light: l10n.themeLight,
-          ThemeMode.dark: l10n.themeDark,
-        }, (v) => notifier.update((s) => s.copyWith(themeMode: v))),
-        _AccentTile(
-          value: s.accent,
-          onChanged: (v) => notifier.update((s) => s.copyWith(accent: v)),
-        ),
-        SwitchListTile(
-          key: const Key('settings-editor-typing-aids'),
-          title: Text(l10n.settingsEditorTypingAids),
-          subtitle: Text(l10n.settingsEditorTypingAidsHint),
-          value: s.editorTypingAids,
-          onChanged: (v) =>
-              notifier.update((s) => s.copyWith(editorTypingAids: v)),
-        ),
-        SwitchListTile(
-          key: const Key('settings-developer-mode'),
-          title: Text(l10n.settingsDeveloperMode),
-          subtitle: Text(l10n.settingsDeveloperModeHint),
-          value: s.developerMode,
-          onChanged: (v) =>
-              notifier.update((s) => s.copyWith(developerMode: v)),
-        ),
+        SettingsSections([
+          SettingsSection(
+            title: l10n.settingsHeadingLanguageTheme,
+            children: [
+              SettingsChoice(
+                icon: Icons.language,
+                title: l10n.settingsLanguage,
+                value: s.language,
+                options: {
+                  LanguageMode.system: l10n.languageSystem,
+                  LanguageMode.de: l10n.languageDe,
+                  LanguageMode.en: l10n.languageEn,
+                },
+                onChanged: (v) =>
+                    notifier.update((s) => s.copyWith(language: v)),
+              ),
+              SettingsChoice(
+                icon: Icons.brightness_6_outlined,
+                title: l10n.settingsTheme,
+                value: s.themeMode,
+                options: {
+                  ThemeMode.system: l10n.themeSystem,
+                  ThemeMode.light: l10n.themeLight,
+                  ThemeMode.dark: l10n.themeDark,
+                },
+                onChanged: (v) =>
+                    notifier.update((s) => s.copyWith(themeMode: v)),
+              ),
+              _AccentTile(
+                value: s.accent,
+                onChanged: (v) => notifier.update((s) => s.copyWith(accent: v)),
+              ),
+            ],
+          ),
+          SettingsSection(
+            title: l10n.settingsHeadingEditor,
+            children: [
+              SettingsSwitch(
+                tileKey: const Key('settings-editor-typing-aids'),
+                icon: Icons.auto_fix_high_outlined,
+                title: l10n.settingsEditorTypingAids,
+                hint: l10n.settingsEditorTypingAidsHint,
+                value: s.editorTypingAids,
+                onChanged: (v) =>
+                    notifier.update((s) => s.copyWith(editorTypingAids: v)),
+              ),
+            ],
+          ),
+          SettingsSection(
+            title: l10n.settingsHeadingAdvanced,
+            children: [
+              SettingsSwitch(
+                tileKey: const Key('settings-developer-mode'),
+                icon: Icons.code,
+                title: l10n.settingsDeveloperMode,
+                hint: l10n.settingsDeveloperModeHint,
+                value: s.developerMode,
+                onChanged: (v) =>
+                    notifier.update((s) => s.copyWith(developerMode: v)),
+              ),
+            ],
+          ),
+        ]),
       ],
       SettingsCategory.songDisplay => [const SongDisplaySettings()],
       SettingsCategory.musician => [
-        _InstrumentTile(settings: s, notifier: notifier),
-        ListTile(
-          title: Text(l10n.settingsUserName),
-          subtitle: Text(
-            s.userName.isEmpty
-                ? '${l10n.notSet} – ${l10n.settingsUserNameHint}'
-                : s.userName,
+        SettingsSections([
+          SettingsSection(
+            title: l10n.settingsHeadingInstrument,
+            children: [
+              _InstrumentTile(settings: s, notifier: notifier),
+              ListTile(
+                leading: const Icon(Icons.record_voice_over_outlined),
+                title: Text(l10n.settingsUserName),
+                subtitle: Text(
+                  s.userName.isEmpty
+                      ? '${l10n.notSet} – ${l10n.settingsUserNameHint}'
+                      : s.userName,
+                ),
+                trailing: const Icon(Icons.edit_outlined),
+                onTap: () async {
+                  final name = await askText(
+                    context,
+                    title: l10n.settingsUserName,
+                    initial: s.userName,
+                    hint: l10n.settingsUserNameHint,
+                    allowEmpty: true,
+                  );
+                  if (name != null) {
+                    await notifier.update((s) => s.copyWith(userName: name));
+                  }
+                },
+              ),
+              SettingsChoice(
+                icon: Icons.grid_view_outlined,
+                title: l10n.settingsDiagrams,
+                value: s.diagrams,
+                options: {
+                  DiagramsPosition.off: l10n.diagramsOff,
+                  DiagramsPosition.top: l10n.diagramsTop,
+                  DiagramsPosition.bottom: l10n.diagramsBottom,
+                },
+                onChanged: (v) =>
+                    notifier.update((s) => s.copyWith(diagrams: v)),
+                hint: l10n.settingsDiagramsHint,
+              ),
+            ],
           ),
-          trailing: const Icon(Icons.edit_outlined),
-          onTap: () async {
-            final name = await askText(
-              context,
-              title: l10n.settingsUserName,
-              initial: s.userName,
-              hint: l10n.settingsUserNameHint,
-              allowEmpty: true,
-            );
-            if (name != null) {
-              await notifier.update((s) => s.copyWith(userName: name));
-            }
-          },
-        ),
-        _Choice(
-          l10n.settingsDiagrams,
-          s.diagrams,
-          {
-            DiagramsPosition.off: l10n.diagramsOff,
-            DiagramsPosition.top: l10n.diagramsTop,
-            DiagramsPosition.bottom: l10n.diagramsBottom,
-          },
-          (v) => notifier.update((s) => s.copyWith(diagrams: v)),
-          hint: l10n.settingsDiagramsHint,
-        ),
-        ..._beatTiles(l10n, s, notifier),
+          _beatSection(l10n, s, notifier),
+        ]),
       ],
       SettingsCategory.display => [
-        _Choice(l10n.settingsNotation, s.notation, {
-          ChordNotation.international: l10n.notationInternational,
-          ChordNotation.german: l10n.notationGerman,
-        }, (v) => notifier.update((s) => s.copyWith(notation: v))),
-        SwitchListTile(
-          title: Text(l10n.settingsNashville),
-          subtitle: Text(l10n.settingsNashvilleHint),
-          value: s.nashville,
-          onChanged: (v) => notifier.update((s) => s.copyWith(nashville: v)),
-        ),
-        _Choice(
-          l10n.settingsChordStyle,
-          s.chordStyle,
-          {
-            ChordStyle.asWritten: l10n.chordStyleAsWritten,
-            ChordStyle.standard: l10n.chordStyleStandard,
-            ChordStyle.jazz: l10n.chordStyleJazz,
-          },
-          (v) => notifier.update((s) => s.copyWith(chordStyle: v)),
-          hint: l10n.settingsChordStyleHint,
-        ),
-        SwitchListTile(
-          title: Text(l10n.settingsChordSuperscript),
-          subtitle: Text(l10n.settingsChordSuperscriptHint),
-          value: s.chordSuperscript,
-          onChanged: s.chordStyle == ChordStyle.asWritten
-              ? null
-              : (v) => notifier.update((s) => s.copyWith(chordSuperscript: v)),
-        ),
-        _Choice(l10n.settingsDisplayMode, s.displayMode, {
-          DisplayMode.lyricsAndChords: l10n.displayLyricsAndChords,
-          DisplayMode.lyricsOnly: l10n.displayLyricsOnly,
-        }, (v) => notifier.update((s) => s.copyWith(displayMode: v))),
-        _Choice(
-          l10n.settingsChorusRepeat,
-          s.chorusRepeat,
-          {
-            ChorusRepeat.auto: l10n.chorusRepeatAuto,
-            ChorusRepeat.full: l10n.chorusRepeatFull,
-            ChorusRepeat.label: l10n.chorusRepeatLabel,
-          },
-          (v) => notifier.update((s) => s.copyWith(chorusRepeat: v)),
-          hint: l10n.settingsChorusRepeatHint,
-        ),
-        SwitchListTile(
-          key: const Key('settings-show-outside-sequence'),
-          title: Text(l10n.settingsShowOutsideSequence),
-          subtitle: Text(l10n.settingsShowOutsideSequenceHint),
-          value: s.showOutsideSequence,
-          onChanged: (v) =>
-              notifier.update((s) => s.copyWith(showOutsideSequence: v)),
-        ),
-        SwitchListTile(
-          title: Text(l10n.settingsSetProgress),
-          subtitle: Text(l10n.settingsSetProgressHint),
-          value: s.setProgress,
-          onChanged: (v) => notifier.update((s) => s.copyWith(setProgress: v)),
-        ),
-        // Freehand annotations (ADR-0032).
-        SwitchListTile(
-          key: const Key('settings-show-annotations'),
-          title: Text(l10n.settingsShowAnnotations),
-          subtitle: Text(l10n.settingsShowAnnotationsHint),
-          value: s.showAnnotations,
-          onChanged: (v) =>
-              notifier.update((s) => s.copyWith(showAnnotations: v)),
-        ),
+        SettingsSections([
+          SettingsSection(
+            title: l10n.settingsHeadingChords,
+            children: [
+              SettingsChoice(
+                icon: Icons.abc,
+                title: l10n.settingsNotation,
+                value: s.notation,
+                options: {
+                  ChordNotation.international: l10n.notationInternational,
+                  ChordNotation.german: l10n.notationGerman,
+                },
+                onChanged: (v) =>
+                    notifier.update((s) => s.copyWith(notation: v)),
+              ),
+              SettingsSwitch(
+                icon: Icons.numbers,
+                title: l10n.settingsNashville,
+                hint: l10n.settingsNashvilleHint,
+                value: s.nashville,
+                onChanged: (v) =>
+                    notifier.update((s) => s.copyWith(nashville: v)),
+              ),
+              SettingsChoice(
+                icon: Icons.text_format,
+                title: l10n.settingsChordStyle,
+                value: s.chordStyle,
+                options: {
+                  ChordStyle.asWritten: l10n.chordStyleAsWritten,
+                  ChordStyle.standard: l10n.chordStyleStandard,
+                  ChordStyle.jazz: l10n.chordStyleJazz,
+                },
+                onChanged: (v) =>
+                    notifier.update((s) => s.copyWith(chordStyle: v)),
+                hint: l10n.settingsChordStyleHint,
+              ),
+              SettingsSwitch(
+                icon: Icons.superscript,
+                title: l10n.settingsChordSuperscript,
+                hint: l10n.settingsChordSuperscriptHint,
+                value: s.chordSuperscript,
+                onChanged: s.chordStyle == ChordStyle.asWritten
+                    ? null
+                    : (v) => notifier.update(
+                        (s) => s.copyWith(chordSuperscript: v),
+                      ),
+              ),
+            ],
+          ),
+          SettingsSection(
+            title: l10n.settingsHeadingContent,
+            children: [
+              SettingsChoice(
+                icon: Icons.lyrics_outlined,
+                title: l10n.settingsDisplayMode,
+                value: s.displayMode,
+                options: {
+                  DisplayMode.lyricsAndChords: l10n.displayLyricsAndChords,
+                  DisplayMode.lyricsOnly: l10n.displayLyricsOnly,
+                },
+                onChanged: (v) =>
+                    notifier.update((s) => s.copyWith(displayMode: v)),
+              ),
+              SettingsChoice(
+                icon: Icons.repeat,
+                title: l10n.settingsChorusRepeat,
+                value: s.chorusRepeat,
+                options: {
+                  ChorusRepeat.auto: l10n.chorusRepeatAuto,
+                  ChorusRepeat.full: l10n.chorusRepeatFull,
+                  ChorusRepeat.label: l10n.chorusRepeatLabel,
+                },
+                onChanged: (v) =>
+                    notifier.update((s) => s.copyWith(chorusRepeat: v)),
+                hint: l10n.settingsChorusRepeatHint,
+              ),
+              SettingsSwitch(
+                tileKey: const Key('settings-show-outside-sequence'),
+                icon: Icons.visibility_outlined,
+                title: l10n.settingsShowOutsideSequence,
+                hint: l10n.settingsShowOutsideSequenceHint,
+                value: s.showOutsideSequence,
+                onChanged: (v) =>
+                    notifier.update((s) => s.copyWith(showOutsideSequence: v)),
+              ),
+            ],
+          ),
+          SettingsSection(
+            title: l10n.settingsHeadingSetNotes,
+            children: [
+              SettingsSwitch(
+                icon: Icons.linear_scale,
+                title: l10n.settingsSetProgress,
+                hint: l10n.settingsSetProgressHint,
+                value: s.setProgress,
+                onChanged: (v) =>
+                    notifier.update((s) => s.copyWith(setProgress: v)),
+              ),
+              // Freehand annotations (ADR-0032).
+              SettingsSwitch(
+                tileKey: const Key('settings-show-annotations'),
+                icon: Icons.draw_outlined,
+                title: l10n.settingsShowAnnotations,
+                hint: l10n.settingsShowAnnotationsHint,
+                value: s.showAnnotations,
+                onChanged: (v) =>
+                    notifier.update((s) => s.copyWith(showAnnotations: v)),
+              ),
+            ],
+          ),
+        ]),
       ],
       SettingsCategory.live => [
-        ListTile(
-          title: Text(l10n.settingsFontSize),
-          subtitle: Slider(
-            value: s.fontSize,
-            min: AppSettings.minFontSize,
-            max: AppSettings.maxFontSize,
-            divisions: (AppSettings.maxFontSize - AppSettings.minFontSize)
-                .round(),
-            label: s.fontSize.round().toString(),
-            onChanged: (v) => notifier.update((s) => s.copyWith(fontSize: v)),
+        SettingsSections([
+          SettingsSection(
+            title: l10n.settingsHeadingScreen,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.format_size),
+                title: Text(l10n.settingsFontSize),
+                subtitle: Slider(
+                  value: s.fontSize,
+                  min: AppSettings.minFontSize,
+                  max: AppSettings.maxFontSize,
+                  divisions: (AppSettings.maxFontSize - AppSettings.minFontSize)
+                      .round(),
+                  label: s.fontSize.round().toString(),
+                  onChanged: (v) =>
+                      notifier.update((s) => s.copyWith(fontSize: v)),
+                ),
+                trailing: Text('${s.fontSize.round()}'),
+              ),
+              SettingsSwitch(
+                icon: Icons.fit_screen_outlined,
+                title: l10n.settingsAutoFit,
+                hint: l10n.settingsAutoFitHint,
+                value: s.autoFit,
+                onChanged: (v) =>
+                    notifier.update((s) => s.copyWith(autoFit: v)),
+              ),
+              SettingsChoice(
+                icon: Icons.view_column_outlined,
+                title: l10n.settingsColumns,
+                value: s.columns,
+                options: {
+                  ColumnMode.auto: l10n.columnsAuto,
+                  ColumnMode.one: l10n.columnsOne,
+                  ColumnMode.two: l10n.columnsTwo,
+                  ColumnMode.three: l10n.columnsThree,
+                },
+                onChanged: (v) =>
+                    notifier.update((s) => s.copyWith(columns: v)),
+                hint: l10n.settingsColumnsHint,
+              ),
+              SettingsChoice(
+                icon: Icons.dark_mode_outlined,
+                title: l10n.settingsLiveAppearance,
+                value: s.liveAppearance,
+                options: {
+                  LiveAppearance.app: l10n.liveAppearanceApp,
+                  LiveAppearance.dark: l10n.liveAppearanceDark,
+                  LiveAppearance.black: l10n.liveAppearanceBlack,
+                },
+                onChanged: (v) =>
+                    notifier.update((s) => s.copyWith(liveAppearance: v)),
+                hint: l10n.settingsLiveAppearanceHint,
+              ),
+            ],
           ),
-          trailing: Text('${s.fontSize.round()}'),
-        ),
-        SwitchListTile(
-          title: Text(l10n.settingsAutoFit),
-          subtitle: Text(l10n.settingsAutoFitHint),
-          value: s.autoFit,
-          onChanged: (v) => notifier.update((s) => s.copyWith(autoFit: v)),
-        ),
-        _Choice(
-          l10n.settingsColumns,
-          s.columns,
-          {
-            ColumnMode.auto: l10n.columnsAuto,
-            ColumnMode.one: l10n.columnsOne,
-            ColumnMode.two: l10n.columnsTwo,
-            ColumnMode.three: l10n.columnsThree,
-          },
-          (v) => notifier.update((s) => s.copyWith(columns: v)),
-          hint: l10n.settingsColumnsHint,
-        ),
-        _Choice(l10n.settingsPageTurn, s.pageTurn, {
-          PageTurnMode.full: l10n.pageTurnFull,
-          PageTurnMode.half: l10n.pageTurnHalf,
-        }, (v) => notifier.update((s) => s.copyWith(pageTurn: v))),
-        ListTile(
-          leading: const Icon(Icons.touch_app_outlined),
-          subtitle: Text(l10n.settingsPageTurnHint),
-        ),
-        _Choice(
-          l10n.settingsLiveAppearance,
-          s.liveAppearance,
-          {
-            LiveAppearance.app: l10n.liveAppearanceApp,
-            LiveAppearance.dark: l10n.liveAppearanceDark,
-            LiveAppearance.black: l10n.liveAppearanceBlack,
-          },
-          (v) => notifier.update((s) => s.copyWith(liveAppearance: v)),
-          hint: l10n.settingsLiveAppearanceHint,
-        ),
-        ..._clickDeviceTiles(l10n, s, notifier),
-        // Freehand annotations (ADR-0032).
-        SwitchListTile(
-          key: const Key('settings-annotation-finger'),
-          title: Text(l10n.settingsAnnotationFinger),
-          subtitle: Text(l10n.settingsAnnotationFingerHint),
-          value: s.annotationFinger,
-          onChanged: (v) =>
-              notifier.update((s) => s.copyWith(annotationFinger: v)),
-        ),
+          SettingsSection(
+            title: l10n.settingsHeadingControls,
+            children: [
+              SettingsChoice(
+                icon: Icons.auto_stories_outlined,
+                title: l10n.settingsPageTurn,
+                value: s.pageTurn,
+                options: {
+                  PageTurnMode.full: l10n.pageTurnFull,
+                  PageTurnMode.half: l10n.pageTurnHalf,
+                },
+                onChanged: (v) =>
+                    notifier.update((s) => s.copyWith(pageTurn: v)),
+                hint: l10n.settingsPageTurnHint,
+              ),
+              // Freehand annotations (ADR-0032).
+              SettingsSwitch(
+                tileKey: const Key('settings-annotation-finger'),
+                icon: Icons.gesture,
+                title: l10n.settingsAnnotationFinger,
+                hint: l10n.settingsAnnotationFingerHint,
+                value: s.annotationFinger,
+                onChanged: (v) =>
+                    notifier.update((s) => s.copyWith(annotationFinger: v)),
+              ),
+            ],
+          ),
+          if (s.playClick) _clickDeviceSection(l10n, s, notifier),
+        ]),
       ],
       // MIDI program changes to a keyboard (ADR-0039).
       SettingsCategory.midi => [const MidiSettings()],
-      SettingsCategory.about => [const _AboutTiles()],
+      SettingsCategory.about => [const _AboutSections()],
       SettingsCategory.development => [
         const _ExperimentalNote(),
-        // Prototype of MIDI program changes (ADR-0039, #512).
-        ListTile(
-          key: const Key('settings-midi-test'),
-          leading: const Icon(Icons.piano_outlined),
-          title: Text(l10n.midiTestTitle),
-          subtitle: Text(l10n.midiTestTileHint),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => const MidiTestScreen()),
+        SettingsSections([
+          SettingsSection(
+            title: l10n.settingsHeadingPrototypes,
+            children: [
+              // Prototype of MIDI program changes (ADR-0039, #512).
+              ListTile(
+                key: const Key('settings-midi-test'),
+                leading: const Icon(Icons.piano_outlined),
+                title: Text(l10n.midiTestTitle),
+                subtitle: Text(l10n.midiTestTileHint),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const MidiTestScreen(),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
+        ]),
       ],
     };
 
@@ -628,7 +751,8 @@ class _GroupHeader extends StatelessWidget {
   }
 }
 
-/// Explains at the top of a category whether its settings are synced.
+/// Explains at the top of a category whether its settings are synced: a
+/// tonal banner, so it is not taken for a setting (ADR-0050).
 class _ScopeNote extends ConsumerWidget {
   const _ScopeNote(this.scope);
 
@@ -637,126 +761,170 @@ class _ScopeNote extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
     final signedIn = ref.watch(authProvider.select((u) => u != null));
-    return ListTile(
+    final color = theme.colorScheme.onSurfaceVariant;
+    return Container(
       key: Key('settings-scope-${scope.name}'),
-      leading: Icon(scopeIcon(scope)),
-      subtitle: Text(switch (scope) {
-        SettingSyncScope.personal when signedIn =>
-          l10n.settingsScopePersonalHint,
-        SettingSyncScope.personal => l10n.settingsScopePersonalSignedOutHint,
-        SettingSyncScope.device => l10n.settingsScopeDeviceHint,
-      }),
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(scopeIcon(scope), size: 20, color: color),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(switch (scope) {
+              SettingSyncScope.personal when signedIn =>
+                l10n.settingsScopePersonalHint,
+              SettingSyncScope.personal =>
+                l10n.settingsScopePersonalSignedOutHint,
+              SettingSyncScope.device => l10n.settingsScopeDeviceHint,
+            }, style: theme.textTheme.bodySmall?.copyWith(color: color)),
+          ),
+        ],
+      ),
     );
   }
 }
 
-/// Beat and click in live mode (ADR-0026), personal (ADR-0027): a group of
-/// the musician settings. Edge flash and song map are offered for drums
+/// Beat and click in live mode (ADR-0026), personal (ADR-0027): a section
+/// of the musician settings. Edge flash and song map are offered for drums
 /// only; the click's details only while it is on.
-List<Widget> _beatTiles(
+Widget _beatSection(
   AppLocalizations l10n,
   AppSettings s,
   SettingsNotifier notifier,
-) => [
-  const Divider(),
-  ListTile(
-    key: const Key('settings-beat-section'),
-    leading: const Icon(Icons.timer_outlined),
-    title: Text(l10n.settingsBeatSection),
-    subtitle: Text(l10n.settingsBeatSectionHint),
-  ),
-  SwitchListTile(
-    key: const Key('settings-beat-display'),
-    title: Text(l10n.settingsBeatDisplay),
-    subtitle: Text(l10n.settingsBeatDisplayHint),
-    value: s.showBeat,
-    onChanged: (v) => notifier.update((s) => s.copyWith(beatDisplay: v)),
-  ),
-  if (s.isDrums)
-    SwitchListTile(
-      key: const Key('settings-edge-flash'),
-      title: Text(l10n.settingsEdgeFlash),
-      subtitle: Text(l10n.settingsEdgeFlashHint),
-      value: s.showEdgeFlash,
-      onChanged: (v) => notifier.update((s) => s.copyWith(edgeFlash: v)),
+) => SettingsSection(
+  key: const Key('settings-beat-section'),
+  title: l10n.settingsBeatSection,
+  hint: l10n.settingsBeatSectionHint,
+  children: [
+    SettingsSwitch(
+      tileKey: const Key('settings-beat-display'),
+      icon: Icons.av_timer,
+      title: l10n.settingsBeatDisplay,
+      hint: l10n.settingsBeatDisplayHint,
+      value: s.showBeat,
+      onChanged: (v) => notifier.update((s) => s.copyWith(beatDisplay: v)),
     ),
-  SwitchListTile(
-    key: const Key('settings-click'),
-    title: Text(l10n.settingsClick),
-    subtitle: Text(l10n.settingsClickHint),
-    value: s.playClick,
-    onChanged: (v) => notifier.update((s) => s.copyWith(click: v)),
-  ),
-  if (s.beatEnabled) ...[
-    _Choice(
-      l10n.settingsClickStart,
-      s.beatStart,
-      {
-        ClickStart.automatic: l10n.clickStartAutomatic,
-        ClickStart.manual: l10n.clickStartManual,
-      },
-      (v) => notifier.update((s) => s.copyWith(clickStart: v)),
-      hint: l10n.settingsClickStartHint,
+    if (s.isDrums)
+      SettingsSwitch(
+        tileKey: const Key('settings-edge-flash'),
+        icon: Icons.flash_on_outlined,
+        title: l10n.settingsEdgeFlash,
+        hint: l10n.settingsEdgeFlashHint,
+        value: s.showEdgeFlash,
+        onChanged: (v) => notifier.update((s) => s.copyWith(edgeFlash: v)),
+      ),
+    SettingsSwitch(
+      tileKey: const Key('settings-click'),
+      icon: Icons.graphic_eq,
+      title: l10n.settingsClick,
+      hint: l10n.settingsClickHint,
+      value: s.playClick,
+      onChanged: (v) => notifier.update((s) => s.copyWith(click: v)),
     ),
-    _Choice(l10n.settingsCountIn, s.countInBars, {
-      0: l10n.countInOff,
-      1: l10n.countInOneBar,
-      2: l10n.countInTwoBars,
-    }, (v) => notifier.update((s) => s.copyWith(countInBars: v))),
-    _Choice(l10n.settingsClickDuration, s.clickDuration, {
-      ClickDuration.wholeSong: l10n.clickDurationSong,
-      ClickDuration.countIn: l10n.clickDurationCountIn,
-    }, (v) => notifier.update((s) => s.copyWith(clickDuration: v))),
-    _Choice(
-      l10n.settingsClickInBackground,
-      s.clickInBackground,
-      {
-        ClickInBackground.stop: l10n.clickInBackgroundStop,
-        ClickInBackground.keepPlaying: l10n.clickInBackgroundKeepPlaying,
-      },
-      (v) => notifier.update((s) => s.copyWith(clickInBackground: v)),
-      hint: l10n.settingsClickInBackgroundHint,
-    ),
+    if (s.beatEnabled) ...[
+      SettingsChoice(
+        icon: Icons.play_arrow_outlined,
+        title: l10n.settingsClickStart,
+        value: s.beatStart,
+        options: {
+          ClickStart.automatic: l10n.clickStartAutomatic,
+          ClickStart.manual: l10n.clickStartManual,
+        },
+        onChanged: (v) => notifier.update((s) => s.copyWith(clickStart: v)),
+        hint: l10n.settingsClickStartHint,
+      ),
+      SettingsChoice(
+        icon: Icons.exposure_plus_1,
+        title: l10n.settingsCountIn,
+        value: s.countInBars,
+        options: {
+          0: l10n.countInOff,
+          1: l10n.countInOneBar,
+          2: l10n.countInTwoBars,
+        },
+        onChanged: (v) => notifier.update((s) => s.copyWith(countInBars: v)),
+      ),
+      SettingsChoice(
+        icon: Icons.hourglass_bottom,
+        title: l10n.settingsClickDuration,
+        value: s.clickDuration,
+        options: {
+          ClickDuration.wholeSong: l10n.clickDurationSong,
+          ClickDuration.countIn: l10n.clickDurationCountIn,
+        },
+        onChanged: (v) => notifier.update((s) => s.copyWith(clickDuration: v)),
+      ),
+      SettingsChoice(
+        icon: Icons.layers_outlined,
+        title: l10n.settingsClickInBackground,
+        value: s.clickInBackground,
+        options: {
+          ClickInBackground.stop: l10n.clickInBackgroundStop,
+          ClickInBackground.keepPlaying: l10n.clickInBackgroundKeepPlaying,
+        },
+        onChanged: (v) =>
+            notifier.update((s) => s.copyWith(clickInBackground: v)),
+        hint: l10n.settingsClickInBackgroundHint,
+      ),
+    ],
+    if (s.playClick) ...[
+      SettingsChoice(
+        icon: Icons.surround_sound_outlined,
+        title: l10n.settingsClickSound,
+        value: s.clickSound,
+        options: {
+          ClickSound.click: l10n.clickSoundClick,
+          ClickSound.woodblock: l10n.clickSoundWoodblock,
+          ClickSound.beep: l10n.clickSoundBeep,
+        },
+        onChanged: (v) => notifier.update((s) => s.copyWith(clickSound: v)),
+      ),
+      SettingsSwitch(
+        icon: Icons.looks_one_outlined,
+        title: l10n.settingsClickAccent,
+        value: s.clickAccent,
+        onChanged: (v) => notifier.update((s) => s.copyWith(clickAccent: v)),
+      ),
+      SettingsChoice(
+        icon: Icons.more_horiz,
+        title: l10n.settingsClickSubdivision,
+        value: s.clickSubdivision,
+        options: {
+          for (final v in Subdivision.values) v: subdivisionLabel(l10n, v),
+        },
+        onChanged: (v) =>
+            notifier.update((s) => s.copyWith(clickSubdivision: v)),
+        hint: l10n.settingsClickSubdivisionHint,
+      ),
+    ],
+    if (s.isDrums)
+      SettingsSwitch(
+        tileKey: const Key('settings-song-map'),
+        icon: Icons.map_outlined,
+        title: l10n.settingsSongMap,
+        hint: l10n.settingsSongMapHint,
+        value: s.showSongMap,
+        onChanged: (v) => notifier.update((s) => s.copyWith(songMap: v)),
+      ),
   ],
-  if (s.playClick) ...[
-    _Choice(l10n.settingsClickSound, s.clickSound, {
-      ClickSound.click: l10n.clickSoundClick,
-      ClickSound.woodblock: l10n.clickSoundWoodblock,
-      ClickSound.beep: l10n.clickSoundBeep,
-    }, (v) => notifier.update((s) => s.copyWith(clickSound: v))),
-    SwitchListTile(
-      title: Text(l10n.settingsClickAccent),
-      value: s.clickAccent,
-      onChanged: (v) => notifier.update((s) => s.copyWith(clickAccent: v)),
-    ),
-    _Choice(
-      l10n.settingsClickSubdivision,
-      s.clickSubdivision,
-      {for (final v in Subdivision.values) v: subdivisionLabel(l10n, v)},
-      (v) => notifier.update((s) => s.copyWith(clickSubdivision: v)),
-      hint: l10n.settingsClickSubdivisionHint,
-    ),
-  ],
-  if (s.isDrums)
-    SwitchListTile(
-      key: const Key('settings-song-map'),
-      title: Text(l10n.settingsSongMap),
-      subtitle: Text(l10n.settingsSongMapHint),
-      value: s.showSongMap,
-      onChanged: (v) => notifier.update((s) => s.copyWith(songMap: v)),
-    ),
-];
+);
 
 /// The click on this device (ADR-0026, ADR-0027): volume and the delay of
 /// the audio output, which depend on the device and its headphones.
-List<Widget> _clickDeviceTiles(
+Widget _clickDeviceSection(
   AppLocalizations l10n,
   AppSettings s,
   SettingsNotifier notifier,
-) => [
-  if (s.playClick) ...[
-    const Divider(),
+) => SettingsSection(
+  title: l10n.settingsHeadingClick,
+  children: [
     ListTile(
       key: const Key('settings-click-volume'),
       leading: const Icon(Icons.volume_up_outlined),
@@ -770,6 +938,7 @@ List<Widget> _clickDeviceTiles(
     ),
     ListTile(
       key: const Key('settings-audio-latency'),
+      leading: const Icon(Icons.speed),
       title: Text(l10n.settingsAudioLatency),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -803,11 +972,11 @@ List<Widget> _clickDeviceTiles(
       ),
     ),
   ],
-];
+);
 
-/// Storage, diagnostic log and version.
-class _AboutTiles extends ConsumerWidget {
-  const _AboutTiles();
+/// Storage and backup; update, diagnostic log and version.
+class _AboutSections extends ConsumerWidget {
+  const _AboutSections();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -815,90 +984,57 @@ class _AboutTiles extends ConsumerWidget {
     final usage = ref.watch(storageUsageProvider).value;
     final version = ref.watch(appVersionProvider).value;
     final whatsNew = ref.watch(recentNotesProvider);
-    return Column(
-      children: [
-        // A newer release (ADR-0036).
-        if (ref.watch(updateCheckProvider) != null)
-          const UpdateAvailableTile(key: Key('update-available')),
-        ListTile(
-          leading: const Icon(Icons.sd_storage_outlined),
-          title: Text(l10n.settingsStorageUsed(formatBytes(usage ?? 0))),
-        ),
-        // Full backup and restore (#639, ADR-0043).
-        const BackupTiles(),
-        ListTile(
-          key: const Key('copy-log'),
-          leading: const Icon(Icons.bug_report_outlined),
-          title: Text(l10n.settingsLogCopy),
-          subtitle: Text(l10n.settingsLogCopyHint),
-          onTap: () async {
-            await Clipboard.setData(
-              ClipboardData(
-                text: [
-                  if (version != null) 'setDING $version',
-                  Log.export(),
-                ].join('\n'),
-              ),
-            );
-            if (context.mounted) {
-              showMessage(context, l10n.settingsLogCopied);
-            }
-          },
-        ),
-        ListTile(
-          key: const Key('app-version'),
-          leading: const Icon(Icons.info_outline),
-          title: version == null ? null : Text(l10n.settingsVersion(version)),
-          subtitle: Text(l10n.settingsAbout),
-          // The notes of the recent versions, again (ADR-0041).
-          trailing: whatsNew != null && whatsNew.isNotEmpty
-              ? const WhatsNewButton(key: Key('whats-new'))
-              : null,
-        ),
-      ],
-    );
-  }
-}
-
-/// A setting with a few options, shown as a segmented button.
-class _Choice<T> extends StatelessWidget {
-  const _Choice(
-    this.title,
-    this.value,
-    this.options,
-    this.onChanged, {
-    this.hint,
-  });
-
-  final String title;
-  final T value;
-  final Map<T, String> options;
-  final void Function(T) onChanged;
-  final String? hint;
-
-  @override
-  Widget build(BuildContext context) => ListTile(
-    title: Text(title),
-    subtitle: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (hint != null)
-          Padding(padding: const EdgeInsets.only(top: 4), child: Text(hint!)),
-        Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: SegmentedButton<T>(
-            showSelectedIcon: false,
-            segments: [
-              for (final e in options.entries)
-                ButtonSegment(value: e.key, label: Text(e.value)),
-            ],
-            selected: {value},
-            onSelectionChanged: (v) => onChanged(v.first),
+    return SettingsSections([
+      SettingsSection(
+        title: l10n.settingsHeadingStorage,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.sd_storage_outlined),
+            title: Text(l10n.settingsStorageUsed(formatBytes(usage ?? 0))),
           ),
-        ),
-      ],
-    ),
-  );
+          // Full backup and restore (#639, ADR-0043).
+          const BackupTiles(),
+        ],
+      ),
+      SettingsSection(
+        title: l10n.settingsHeadingHelp,
+        children: [
+          // A newer release (ADR-0036).
+          if (ref.watch(updateCheckProvider) != null)
+            const UpdateAvailableTile(key: Key('update-available')),
+          ListTile(
+            key: const Key('copy-log'),
+            leading: const Icon(Icons.bug_report_outlined),
+            title: Text(l10n.settingsLogCopy),
+            subtitle: Text(l10n.settingsLogCopyHint),
+            onTap: () async {
+              await Clipboard.setData(
+                ClipboardData(
+                  text: [
+                    if (version != null) 'setDING $version',
+                    Log.export(),
+                  ].join('\n'),
+                ),
+              );
+              if (context.mounted) {
+                showMessage(context, l10n.settingsLogCopied);
+              }
+            },
+          ),
+          ListTile(
+            key: const Key('app-version'),
+            leading: const Icon(Icons.info_outline),
+            title: version == null ? null : Text(l10n.settingsVersion(version)),
+            subtitle: Text(l10n.settingsAbout),
+            // The notes of the recent versions, again (ADR-0041).
+            trailing: whatsNew != null && whatsNew.isNotEmpty
+                ? const WhatsNewButton(key: Key('whats-new'))
+                : null,
+          ),
+        ],
+      ),
+    ]);
+  }
 }
 
 /// The accent colour (issue #300): one swatch per colour in the current
@@ -928,11 +1064,13 @@ class _AccentTile extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ListTile(
+          leading: const Icon(Icons.color_lens_outlined),
           title: Text(l10n.settingsAccent),
           subtitle: Text(label(l10n, value)),
         ),
         Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 8),
+          // Below the title, after the icon of the tile.
+          padding: const EdgeInsetsDirectional.fromSTEB(56, 0, 16, 8),
           child: Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -1022,6 +1160,7 @@ class _InstrumentTile extends StatelessWidget {
     final current = settings.instrument.trim().toLowerCase();
     final isPreset = names.containsKey(current);
     return ListTile(
+      leading: const Icon(Icons.music_note_outlined),
       title: Text(l10n.settingsInstrument),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -2957,5 +2957,21 @@
   "shortcutKeyPageDown": "Bild ab",
   "shortcutKeyPageUp": "Bild auf",
   "shortcutKeySpace": "Leertaste",
-  "shortcutCloseSelection": "Auswahl schliessen"
+  "shortcutCloseSelection": "Auswahl schliessen",
+  "settingsHeadingLanguageTheme": "Sprache & Design",
+  "settingsHeadingEditor": "Editor",
+  "settingsHeadingAdvanced": "Erweitert",
+  "settingsHeadingChords": "Akkorde",
+  "settingsHeadingContent": "Inhalt",
+  "settingsHeadingSetNotes": "Set & Notizen",
+  "settingsHeadingInstrument": "Instrument & Stimme",
+  "settingsHeadingScreen": "Bildschirm",
+  "settingsHeadingControls": "Bedienung",
+  "settingsHeadingClick": "Klick auf diesem Gerät",
+  "settingsHeadingStorage": "Speicher & Sicherung",
+  "settingsHeadingHelp": "Hilfe & Info",
+  "settingsHeadingConnection": "Verbindung",
+  "settingsHeadingKeyboard": "Keyboard",
+  "settingsHeadingStyle": "Stil",
+  "settingsHeadingPrototypes": "Prototypen"
 }
