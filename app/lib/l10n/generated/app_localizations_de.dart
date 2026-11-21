@@ -4929,4 +4929,88 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsHeadingPrototypes => 'Prototypen';
+
+  @override
+  String get exportSongChordPro => 'ChordPro-Datei exportieren';
+
+  @override
+  String get exportSongArchive => 'Mit Anhängen exportieren';
+
+  @override
+  String get songsExportSelected => 'Mit Anhängen exportieren';
+
+  @override
+  String songExportTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs exportieren',
+      one: 'Song exportieren',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get songExportHint =>
+      'Das ZIP enthält die ChordPro-Dateien, die Anhänge und eine Beschreibung, mit der setDING die Songs samt Anhängen wieder importiert.';
+
+  @override
+  String songExportArrangements(String band) {
+    return 'Arrangements von «$band» (Tonart, Ablauf, Tempo)';
+  }
+
+  @override
+  String get songImportTitle => 'Songs importieren';
+
+  @override
+  String songImportFrom(String library, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs',
+      one: '1 Song',
+    );
+    return 'aus $library · $_temp0';
+  }
+
+  @override
+  String songImportLibrary(String name) {
+    return 'In die Bibliothek «$name»';
+  }
+
+  @override
+  String get songImportArrangementsBand => 'Band für die Arrangements';
+
+  @override
+  String get songImportNoBand =>
+      'In dieser Bibliothek gibt es keine Band, deren Arrangements du ändern darfst.';
+
+  @override
+  String get songImportDone => 'Songs importiert';
+
+  @override
+  String get songArchiveNewer =>
+      'Diese Songs wurden mit einer neueren Version von setDING exportiert. Aktualisiere die App, um sie zu importieren.';
+
+  @override
+  String archiveImportAttachmentsAdded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Anhänge werden',
+      one: '1 Anhang wird',
+    );
+    return '$_temp0 bei Songs ergänzt, die schon hier sind';
+  }
+
+  @override
+  String archiveResultCompleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Anhänge',
+      one: '1 Anhang',
+    );
+    return '$_temp0 bei vorhandenen Songs ergänzt';
+  }
 }

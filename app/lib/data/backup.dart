@@ -902,13 +902,17 @@ class BackupService {
   /// different one) is not imported; the existing one is used. Without
   /// [create] (the person may not create songs, ADR-0023) only existing
   /// songs are used and the others are left out. [attachments]: whether
-  /// the attachments of new songs are imported.
+  /// the attachments of new songs are imported. [completeAttachments]:
+  /// whether an existing song that is used gets the archive's attachments
+  /// it does not have ([missingAttachments], ADR-0043 §1c); null keeps
+  /// existing songs unchanged.
   Future<SongImport> importSongs(
     BackupContents contents, {
     required String libraryId,
     BackupDuplicates duplicates = BackupDuplicates.addAll,
     bool create = true,
     bool attachments = true,
+    bool Function(SongEntry song)? completeAttachments,
   }) async {
     final songs = SongRepository(
       db,
@@ -926,6 +930,15 @@ class BackupService {
           (same || duplicates == BackupDuplicates.keepExisting || !create)) {
         result.songIds[originalId] = match.id;
         same ? result.identical++ : result.keptExisting++;
+        if (attachments && (completeAttachments?.call(match) ?? false)) {
+          for (final a in await missingAttachments(contents, song, match.id)) {
+            final id = await _addAttachment(songs, match.id, contents, a);
+            if (id == null) continue;
+            result.attachmentIds[a['id'] as String] = id;
+            result.files++;
+            result.completed++;
+          }
+        }
         continue;
       }
       if (!create) continue;
@@ -943,27 +956,69 @@ class BackupService {
         ));
       }
       if (!attachments) continue;
-      for (final a in [
-        for (final e in (song['attachments'] as List?) ?? const [])
-          (e as Map).cast<String, dynamic>(),
-      ]) {
-        final bytes = contents.files[a['file'] as String? ?? ''];
-        if (bytes == null || bytes.length > maxAttachmentBytes) continue;
-        final ext = p
-            .extension(a['file'] as String)
-            .replaceFirst('.', '')
-            .toLowerCase();
-        result.attachmentIds[a['id'] as String] = await songs.addAttachment(
-          id,
-          name: a['name'] as String? ?? '',
-          bytes: bytes,
-          pages: a['pages'] as int?,
-          extension: ext.isEmpty ? 'pdf' : ext,
-        );
+      for (final a in attachmentsOf(song)) {
+        final added = await _addAttachment(songs, id, contents, a);
+        if (added == null) continue;
+        result.attachmentIds[a['id'] as String] = added;
         result.files++;
       }
     }
     return result;
+  }
+
+  /// The attachments of a song of an archive.
+  static List<Map<String, dynamic>> attachmentsOf(Map<String, dynamic> song) =>
+      [
+        for (final e in (song['attachments'] as List?) ?? const [])
+          (e as Map).cast<String, dynamic>(),
+      ];
+
+  /// The attachments of the archive's [song] that the existing song
+  /// [songId] does not have: none of its attachments has the same name
+  /// (ignoring case and surrounding spaces) (ADR-0043 §1c).
+  Future<List<Map<String, dynamic>>> missingAttachments(
+    BackupContents contents,
+    Map<String, dynamic> song,
+    String songId,
+  ) async {
+    final archived = attachmentsOf(song);
+    if (archived.isEmpty) return const [];
+    String key(String? name) => (name ?? '').trim().toLowerCase();
+    final present = {
+      for (final a in await (db.select(
+        db.attachments,
+      )..where((a) => a.songId.equals(songId) & a.deleted.equals(false))).get())
+        key(a.name),
+    };
+    return [
+      for (final a in archived)
+        if (contents.files.containsKey(a['file']) &&
+            present.add(key(a['name'] as String?)))
+          a,
+    ];
+  }
+
+  /// Adds the attachment [a] of [contents] to [songId]; null if its file is
+  /// missing or too large.
+  Future<String?> _addAttachment(
+    SongRepository songs,
+    String songId,
+    BackupContents contents,
+    Map<String, dynamic> a,
+  ) async {
+    final bytes = contents.files[a['file'] as String? ?? ''];
+    if (bytes == null || bytes.length > maxAttachmentBytes) return null;
+    final ext = p
+        .extension(a['file'] as String)
+        .replaceFirst('.', '')
+        .toLowerCase();
+    return songs.addAttachment(
+      songId,
+      name: a['name'] as String? ?? '',
+      bytes: bytes,
+      pages: a['pages'] as int?,
+      extension: ext.isEmpty ? 'pdf' : ext,
+    );
   }
 
   /// Imports the person's adjustments and annotations of [contents] for the
@@ -1039,7 +1094,12 @@ class SongImport {
 
   int identical = 0;
   int keptExisting = 0;
+
+  /// Attachment files added, to new and to existing songs.
   int files = 0;
+
+  /// Of [files]: attachments added to existing songs (ADR-0043 §1c).
+  int completed = 0;
 }
 
 /// Songs of the target library, to find an archive's songs in it.

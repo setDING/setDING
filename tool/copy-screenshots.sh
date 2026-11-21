@@ -61,6 +61,8 @@ map=(
   account 35_account
   change_password 35b_change_password
   delete_account 36_delete_account
+  song_export 37_song_export
+  song_import 37b_song_import
 )
 
 copied=0

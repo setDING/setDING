@@ -1,12 +1,18 @@
 // Screenshots of the song list and the song screen.
 // See screenshot_support.dart.
 
+import 'dart:typed_data';
+
 import 'package:setding/ui/render/abc_view.dart';
 import 'package:setding/data/arrangement_repository.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/data/demo_song.dart';
 import 'package:setding/ui/home_screen.dart';
 import 'package:setding/ui/live/live_screen.dart';
+import 'package:setding/data/backup.dart';
+import 'package:setding/data/import_export.dart';
+import 'package:setding/data/song_archive.dart';
+import 'package:setding/ui/songs/import_dialog.dart';
 import 'package:setding/ui/songs/song_screen.dart';
 import 'package:setding/ui/songs/songs_screen.dart';
 import 'package:setding/sync/sync_backend.dart';
@@ -267,6 +273,109 @@ void main() {
       await syncNow(tester);
       expect(find.byKey(const Key('sync-hint-songChanged')), findsOneWidget);
       await shot(tester, '${lang}_26_sync_hint');
+      await app.dispose(tester);
+    });
+  }
+
+  // Song archive (ADR-0043 §1c, #792): the export options and the preview
+  // of an import that adds a new song and completes an existing one.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('song archive $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      final pdf = Uint8List.fromList('%PDF-1.4 lead sheet'.codeUnits);
+      final (morning, zip) = (await tester.runAsync(() async {
+        final morning = await app.songs.createSong(
+          source:
+              '{title: Morning Light}\n{artist: Ann Trainor}\n{key: D}\n'
+              '[D]Morning light on the [G]hill\n',
+        );
+        await app.songs.addAttachment(
+          morning,
+          name: 'Lead sheet',
+          bytes: pdf,
+          pages: 1,
+        );
+        final train = await app.songs.createSong(
+          source:
+              '{title: Late Train Home}\n{artist: Ann Trainor}\n{key: E}\n'
+              '[E]The last train leaves at [A]dawn\n',
+        );
+        await app.songs.addAttachment(
+          train,
+          name: 'Horns',
+          bytes: pdf,
+          pages: 1,
+        );
+        final zip = await SongArchiveService(BackupService(app.db, app.storage))
+            .export([morning, train]);
+        // Here the lead sheet is missing and the other song is gone: the
+        // import adds both again.
+        for (final a in await app.songs.getAttachments(morning)) {
+          await app.songs.deleteAttachment(a);
+        }
+        await app.songs.deleteSong(train);
+        return (morning, zip);
+      }))!;
+
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: SongScreen(songId: morning)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AppBar),
+          matching: find.byType(PopupMenuButton<String>),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('song-export-archive')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('song-export')), findsOneWidget);
+      await shot(tester, '${lang}_37_song_export');
+
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => Center(
+                  child: TextButton(
+                    onPressed: () => showImportDialog(
+                      context,
+                      pick: ({extensions}) async => [
+                        ImportFile('songs.zip', zip),
+                      ],
+                    ),
+                    child: const Text('import'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('import'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text(lang == 'de' ? 'Dateien auswählen' : 'Choose files'),
+      );
+      // The preview reads the database outside the fake clock.
+      final added = find.byIcon(Icons.attach_file);
+      for (var i = 0; i < 100 && added.evaluate().isEmpty; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump(const Duration(milliseconds: 20));
+      }
+      expect(added, findsOneWidget);
+      await shot(tester, '${lang}_37b_song_import');
       await app.dispose(tester);
     });
   }

@@ -11,6 +11,7 @@ import 'data/database.dart';
 import 'data/import_export.dart';
 import 'data/play_history.dart';
 import 'data/set_archive.dart';
+import 'data/song_archive.dart';
 import 'data/set_repository.dart';
 import 'data/song_repository.dart';
 import 'data/trash.dart';
@@ -255,6 +256,10 @@ final backupServiceProvider = Provider<BackupService>(
 /// Set archive export and import (ADR-0043 §1b).
 final setArchiveServiceProvider = Provider<SetArchiveService>(
   (ref) => SetArchiveService(ref.watch(backupServiceProvider)),
+);
+
+final songArchiveServiceProvider = Provider<SongArchiveService>(
+  (ref) => SongArchiveService(ref.watch(backupServiceProvider)),
 );
 
 final importExportProvider = Provider<ImportExportService>(

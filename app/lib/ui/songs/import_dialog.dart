@@ -4,12 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/backup.dart';
 import '../../data/import_export.dart';
 import '../../data/set_archive.dart';
+import '../../data/song_archive.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../backup/full_backup.dart';
 import '../sets/set_archive_dialogs.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
+import 'song_archive_dialogs.dart';
 
 /// Shows the import dialog and imports the chosen files. [pick] chooses
 /// them (the platform's file dialog by default; tests pass their files).
@@ -85,6 +87,32 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
               files.single.bytes,
               archive: archive,
               bandId: ref.read(currentBandProvider).id,
+            );
+          }
+          return;
+        }
+      }
+      // Exported songs are imported with their attachments (ADR-0043 §1c).
+      if (files.length == 1 &&
+          files.single.name.toLowerCase().endsWith('.zip')) {
+        final SongArchive? archive;
+        try {
+          archive = await SongArchiveService.read(files.single.bytes);
+        } on BackupFormatException {
+          if (!mounted) return;
+          setState(() => _busy = false);
+          showMessage(context, l10n.songArchiveNewer);
+          return;
+        }
+        if (archive != null) {
+          if (!mounted) return;
+          Navigator.pop(context);
+          final parent = widget.parent;
+          if (parent.mounted) {
+            await importSongArchive(
+              parent,
+              files.single.bytes,
+              archive: archive,
             );
           }
           return;

@@ -9,6 +9,8 @@ import { Image } from 'astro:assets';
 import songs from '../../../../../docs/screenshots/songs_de.png';
 import importLabels from '../../../../../docs/screenshots/import_labels_de.png';
 import songsSelected from '../../../../../docs/screenshots/songs_selected_de.png';
+import songExport from '../../../../../docs/screenshots/song_export_de.png';
+import songImport from '../../../../../docs/screenshots/song_import_de.png';
 
 Alle Songs gehören der Organisation; alle ihre Bands teilen dieselbe
 Songbibliothek. Unter **Songs** siehst du sie.
@@ -77,7 +79,9 @@ aus und werden nicht markiert.
 
 Im Menü ⋮ eines Songs:
 
-- **Exportieren** speichert den Song als ChordPro-Datei.
+- **ChordPro-Datei exportieren** speichert nur den Text des Songs als ChordPro-Datei.
+- **Mit Anhängen exportieren** speichert den Song samt Anhängen als ZIP, das
+  setDING wieder importiert (siehe unten).
 - **In Band kopieren** kopiert den Song in die Songbibliothek einer anderen
   Organisation, in der du Songs erstellen darfst. Bands derselben Organisation
   teilen ihre Songs ohnehin. Mehrere Songs auf einmal: Menü ⋮ der Songliste →
@@ -87,11 +91,35 @@ Im Menü ⋮ eines Songs:
 
 Mehrere Songs auf einmal: Menü ⋮ der Songliste → **Auswählen**, dann die Songs
 antippen (oder lange auf einen Song drücken). Oben stehen **Alle auswählen**,
-**In Band kopieren** und, wenn du Songs löschen darfst, **Ausgewählte löschen**.
+**In Band kopieren**, **Mit Anhängen exportieren** und, wenn du Songs löschen darfst, **Ausgewählte löschen**.
 Nach dem Bestätigen landen die Songs im Papierkorb; **Rückgängig** holt alle
 zurück.
 
 <Image src={songsSelected} alt="Die Songliste mit zwei ausgewählten Songs und oben den Knöpfen Alle auswählen, In Band kopieren und Ausgewählte löschen" />
+
+## Songs mit Anhängen weitergeben
+
+**Mit Anhängen exportieren** – im Menü ⋮ eines Songs oder für ausgewählte Songs in
+der Songliste – speichert die Songs als ZIP-Archiv: jeden Song als ChordPro-Datei,
+dazu die Anhänge und eine Beschreibung, mit der setDING die Songs wieder importiert.
+Vor dem Speichern wählst du, was ins Archiv kommt:
+
+- **Anhänge** – PDFs und Bilder der Songs.
+- **Arrangements** der aktuellen Band – Tonart, Abfolge und Tempo.
+- **Meine persönlichen Anpassungen und Notizen** – standardmässig aus. Lass das aus,
+  wenn du die Datei weitergibst.
+
+<Image src={songExport} alt="Der Dialog «Song exportieren» mit den Optionen für Anhänge, Arrangements und persönliche Anpassungen" />
+
+Zum Importieren wählst du das ZIP unter **Dateien importieren**. Bevor etwas
+gespeichert wird, zeigt setDING eine Vorschau: welche Songs schon da sind, welche
+neu dazukommen und welche mit anderem Text schon da sind – dann wählst du, ob du die
+bestehenden behältst oder die Songs zusätzlich importierst. Fehlt einem Song, der
+schon da ist, ein Anhang aus dem Archiv, wird er **ergänzt**, sofern du den Song
+bearbeiten darfst; vorhandene Anhänge mit gleichem Namen bleiben unverändert. Das
+gilt auch beim Import eines Sets.
+
+<Image src={songImport} alt="Die Vorschau «Songs importieren»: ein Song schon hier, ein neuer Song und ein Anhang, der bei einem vorhandenen Song ergänzt wird" />
 
 ## Papierkorb
 

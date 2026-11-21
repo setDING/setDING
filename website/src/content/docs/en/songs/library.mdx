@@ -9,6 +9,8 @@ import { Image } from 'astro:assets';
 import songs from '../../../../../../docs/screenshots/songs.png';
 import importLabels from '../../../../../../docs/screenshots/import_labels.png';
 import songsSelected from '../../../../../../docs/screenshots/songs_selected.png';
+import songExport from '../../../../../../docs/screenshots/song_export.png';
+import songImport from '../../../../../../docs/screenshots/song_import.png';
 
 All songs belong to the organization; all its bands share the same song library.
 **Songs** shows them.
@@ -73,7 +75,9 @@ specification recommends. They look the same either way and are not marked.
 
 In a song's ⋮ menu:
 
-- **Export** saves the song as a ChordPro file.
+- **Export ChordPro file** saves only the song's text as a ChordPro file.
+- **Export with attachments** saves the song with its attachments as a ZIP that
+  setDING imports again (see below).
 - **Copy to band** copies the song into the song library of another organization in
   which you may create songs. Bands of the same organization share their songs
   anyway. Several songs at once: the song list's ⋮ menu → **Select**.
@@ -81,11 +85,34 @@ In a song's ⋮ menu:
   **Undo** brings it back.
 
 Several songs at once: the song list's ⋮ menu → **Select**, then tap the songs
-(or long-press a song). At the top are **Select all**, **Copy to band** and, if
-you may delete songs, **Delete selected**. After you confirm, the songs go to the
+(or long-press a song). At the top are **Select all**, **Copy to band**,
+**Export with attachments** and, if you may delete songs, **Delete selected**. After you confirm, the songs go to the
 trash; **Undo** brings all of them back.
 
 <Image src={songsSelected} alt="The song list with two selected songs and, at the top, the buttons Select all, Copy to band and Delete selected" />
+
+## Pass on songs with their attachments
+
+**Export with attachments** – in a song's ⋮ menu, or for selected songs in the song
+list – saves the songs as a ZIP archive: each song as a ChordPro file, plus the
+attachments and a description from which setDING imports the songs again. Before
+saving, you choose what goes into the archive:
+
+- **Attachments** – PDFs and images of the songs.
+- **Arrangements** of the current band – key, sequence and tempo.
+- **My personal adjustments and notes** – off by default. Leave this off if you pass
+  the file on.
+
+<Image src={songExport} alt="The Export song dialog with the options for attachments, arrangements and personal adjustments" />
+
+To import, choose the ZIP under **Import files**. Before anything is saved, setDING
+shows a preview: which songs are already here, which are new and which are here with
+a different text – then you choose whether to keep the existing ones or import the
+songs as well. If a song that is already here lacks an attachment from the archive,
+it is **added**, provided you may edit the song; existing attachments with the same
+name stay as they are. This also applies when you import a set.
+
+<Image src={songImport} alt="The Import songs preview: one song already here, one new song and one attachment added to an existing song" />
 
 ## Trash
 

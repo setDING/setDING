@@ -145,6 +145,7 @@ class SetArchivePreview {
     required this.missing,
     required this.arrangementConflicts,
     required this.newName,
+    this.attachmentsAdded = 0,
     this.existingSet,
   });
 
@@ -165,6 +166,9 @@ class SetArchivePreview {
 
   /// Songs whose band arrangement in the target band would be overwritten.
   final int arrangementConflicts;
+
+  /// Attachments added to existing songs that lack them (ADR-0043 §1c).
+  final int attachmentsAdded;
 
   /// The same set in the target band, from an earlier import or the export
   /// itself: the person may replace it.
@@ -454,16 +458,19 @@ class SetArchiveService {
   }
 
   /// What importing [archive] into [bandId] would find. [canCreateSongs]:
-  /// whether the person may create songs in the band's library (ADR-0023).
+  /// whether the person may create songs in the band's library;
+  /// [canEditSong]: whether they may add attachments to an existing song
+  /// (ADR-0023).
   Future<SetArchivePreview> preview(
     SetArchive archive, {
     required String bandId,
     required bool canCreateSongs,
     required CopyName copyName,
+    bool Function(SongEntry song)? canEditSong,
   }) async {
     final existing = await backup.existingSongs(await _libraryOf(bandId));
     final arrangements = ArrangementRepository(db);
-    var identical = 0, differing = 0, added = 0, conflicts = 0;
+    var identical = 0, differing = 0, added = 0, conflicts = 0, files = 0;
     final missing = <String>[];
     final matched = <String, String>{};
     for (final song in archive.contents.songs) {
@@ -474,6 +481,13 @@ class SetArchiveService {
       if (match != null) {
         matched[song['id'] as String] = match.id;
         same ? identical++ : differing++;
+        if (canEditSong?.call(match) ?? false) {
+          files += (await backup.missingAttachments(
+            archive.contents,
+            song,
+            match.id,
+          )).length;
+        }
       } else if (canCreateSongs) {
         added++;
       } else {
@@ -493,6 +507,7 @@ class SetArchiveService {
       added: added,
       missing: missing,
       arrangementConflicts: conflicts,
+      attachmentsAdded: files,
       existingSet: await existingSet(archive, bandId),
       newName: await newSetName(archive, bandId, copyName: copyName),
     );
@@ -504,7 +519,8 @@ class SetArchiveService {
   /// arrangements of the band are replaced by the archive's. Songs that are
   /// missing and may not be created ([canCreateSongs] false) become text
   /// items with [missingNote]. An added set gets a [copyName] if the band
-  /// has a set with the same name and date ([newSetName]).
+  /// has a set with the same name and date ([newSetName]). Existing songs
+  /// the person may edit ([canEditSong]) get the attachments they lack.
   Future<SetArchiveResult> import(
     SetArchive archive, {
     required String bandId,
@@ -515,6 +531,7 @@ class SetArchiveService {
     BackupDuplicates duplicates = BackupDuplicates.keepExisting,
     bool replace = false,
     bool overwriteArrangements = false,
+    bool Function(SongEntry song)? canEditSong,
   }) async {
     final chosen = options.and(archive.holds);
     final libraryId = await _libraryOf(bandId);
@@ -524,6 +541,7 @@ class SetArchiveService {
       duplicates: duplicates,
       create: canCreateSongs,
       attachments: chosen.attachments,
+      completeAttachments: canEditSong,
     );
     if (chosen.personal) {
       await backup.importPersonal(

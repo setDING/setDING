@@ -25,6 +25,7 @@ import '../widgets/dialogs.dart';
 import 'chordpro_problems_badge.dart';
 import 'import_dialog.dart';
 import 'library_usage_screen.dart';
+import 'song_archive_dialogs.dart';
 import 'song_attention.dart';
 import 'song_editor_screen.dart';
 import 'song_screen.dart';
@@ -314,6 +315,21 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                       );
                       if (mounted) setState(() => _selected = null);
                     },
+                  ),
+                  IconButton(
+                    key: const Key('songs-export-selected'),
+                    tooltip: l10n.songsExportSelected,
+                    icon: const Icon(Icons.ios_share),
+                    onPressed: selected.isEmpty
+                        ? null
+                        : () async {
+                            await exportSongArchive(
+                              context,
+                              ref,
+                              selected.toList(),
+                            );
+                            if (mounted) setState(() => _selected = null);
+                          },
                   ),
                   if (library.canDeleteSongs)
                     IconButton(
