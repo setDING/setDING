@@ -1,6 +1,6 @@
 # ADR-0049: Keyboard shortcuts
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-21
 
 ## Context
@@ -69,6 +69,7 @@ focus (`DirectionalFocusIntent`).
 
 - 2026-11-21: Esc goes back (#726, implemented).
 - 2026-11-21: Proposed E, L, + / −, ← / →, / and Ctrl+F, and the ? dialog (#729).
+- 2026-11-21: Accepted by the owner; implemented in #729.
 
 ## Open points
 

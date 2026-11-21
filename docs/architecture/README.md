@@ -246,7 +246,7 @@ Notes:
 | **Overview as the start screen** | First tab with the next set, things to do and recent changes (ADR-0045, accepted: #656); the tab with *Next set*, *To do* and the footer done (#666), *Recent changes* done (#667), hints after a sync on the open song or set and after live mode done (#691), entries of deleted songs and sets hidden (#701) |
 | **Song play history** | ADR-0046 accepted (#659): v1 panel *Played* and set editor hints (implemented in #660), v2 band repertoire (implemented in #661), v3 plays across the organization (implemented in #662) |
 | **Set markers** | ADR-0047 accepted (#717), data layer (#722) and dialog (#723) done: one command *Add marker* with an icon from a catalogue and a prefilled text of up to 24 characters, every marker a divider in the set list, replacing *Add break* and *Add text*, no break or text type any more; set list dividers (#724) open |
-| **Keyboard shortcuts** | Esc goes back (#726, implemented); ADR-0049 proposed (#729): E, L, + / −, ← / →, / and Ctrl+F, and the ? dialog (implemented in #729) |
+| **Keyboard shortcuts** | Esc goes back (#726, implemented); ADR-0049 accepted (#729): E, L, + / −, ← / →, / and Ctrl+F, and the ? dialog (implemented in #729) |
 | **Later** | Configurable page turner key mapping, band annotations shared with the band (follow-up of ADR-0032), MIDI program change per song in live mode (ADR-0039, accepted: prototype #512, data #561, settings and connection #562, sending in live mode #564; the song's program field #563, manual test with the Nord on Android passed #558; the manual test with a Nord on Windows, Linux and Chrome open), keyboard programs per device profile with a Yamaha Motif XF profile (ADR-0042, accepted: Motif XF profile #591, storage per profile #593; the manual test on a Motif XF8 open), MIDI page turning |
 
 ### MVP status (2026-11-14)
@@ -347,7 +347,7 @@ See "Open points" in the individual ADRs. The most important:
 41. How did we play a song last time? → ADR-0046 (accepted, #659): a song in a past set counts as played; key, tempo and sequence frozen in the set item on the gig day; v1 song panel and set editor hints (implemented in #660), v2 band repertoire (implemented in #661), v3 across the organization via a server route (implemented in #662). Decided: repertoire view in the Sets tab, threshold per band (`bands.stale_after_months`, default 6, set by band leaders and set planners), all organization members see other bands' plays, v3 stored at sync for offline use
 42. How can a set show more than breaks and texts (encore, change of instrument, tuning, light)? → ADR-0047 (accepted, #717): one command *Add marker* with an icon from a curated catalogue and a text prefilled with the icon's name; no break or text type any more; every marker is a divider in the set list; text up to 24 characters; stored as `icon` in the set item. Open: the final catalogue, icons in the printable set list, follow-ups (break duration, markers per instrument or role, colours)
 43. Can an exported PDF be opened right away? → ADR-0048 (accepted and implemented, #721): the message after a PDF export offers *Open*; a copy in the app's cache opens in the default app with `open_filex`, its Android media permissions removed. Open: *Open* for other exports
-44. Can setDING be used with the keyboard on a computer? → ADR-0049 (proposed, #729): Esc goes back everywhere (#726); single-key shortcuts per screen (E edit, L live, + / − transpose, ← / → previous/next song of the set, / or Ctrl+F search), never while typing in a text field; ? lists them all. Open: further shortcuts, keys in tooltips
+44. Can setDING be used with the keyboard on a computer? → ADR-0049 (accepted, #729): Esc goes back everywhere (#726); single-key shortcuts per screen (E edit, L live, + / − transpose, ← / → previous/next song of the set, / or Ctrl+F search), never while typing in a text field; ? lists them all. Open: further shortcuts, keys in tooltips
 
 ## 10. ADR index
 
@@ -400,6 +400,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0046](adr/0046-song-play-history.md) | Song play history per band | Accepted |
 | [0047](adr/0047-set-markers-with-icons.md) | Set markers with a chosen icon and text | Accepted |
 | [0048](adr/0048-open-exported-pdf.md) | Opening an exported PDF in the default app | Accepted |
-| [0049](adr/0049-keyboard-shortcuts.md) | Keyboard shortcuts | Proposed |
+| [0049](adr/0049-keyboard-shortcuts.md) | Keyboard shortcuts | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.
