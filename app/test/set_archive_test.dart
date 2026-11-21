@@ -40,6 +40,8 @@ void main() {
       SetArchiveService(BackupService(on ?? db, storage, appVersion: '1.2.3'));
 
   String missing(String title) => 'missing: $title';
+  String copyOf(String name, int n) =>
+      n == 1 ? '$name (copy)' : '$name (copy $n)';
 
   /// A set "Gig" with "Hello" (transposed, with an attachment, an
   /// adjustment and a band arrangement), a break, "Bye" without a title
@@ -186,6 +188,7 @@ void main() {
       archive,
       bandId: localBandId,
       canCreateSongs: true,
+      copyName: copyOf,
     );
     expect((preview.songs, preview.added, preview.identical), (2, 2, 0));
     expect(preview.missing, isEmpty);
@@ -196,6 +199,7 @@ void main() {
       bandId: localBandId,
       canCreateSongs: true,
       missingNote: missing,
+      copyName: copyOf,
     );
     expect(result.replaced, isFalse);
     expect(result.songs.imported, hasLength(2));
@@ -240,6 +244,7 @@ void main() {
       archive,
       bandId: localBandId,
       canCreateSongs: true,
+      copyName: copyOf,
     );
     expect((preview.identical, preview.added), (2, 0));
     expect(preview.existingSet?.id, ids.set);
@@ -250,6 +255,7 @@ void main() {
       bandId: localBandId,
       canCreateSongs: true,
       missingNote: missing,
+      copyName: copyOf,
       replace: true,
     );
     expect((replaced.replaced, replaced.setId), (true, ids.set));
@@ -263,6 +269,7 @@ void main() {
       bandId: localBandId,
       canCreateSongs: true,
       missingNote: missing,
+      copyName: copyOf,
     );
     expect(copy.replaced, isFalse);
     expect(copy.setId, isNot(ids.set));
@@ -275,6 +282,7 @@ void main() {
       archive,
       bandId: localBandId,
       canCreateSongs: true,
+      copyName: copyOf,
     );
     expect(again.existingSet?.id, copy.setId);
     final reexported = (await SetArchiveService.read(
@@ -298,6 +306,7 @@ void main() {
         bandId: localBandId,
         canCreateSongs: true,
         missingNote: missing,
+        copyName: copyOf,
       );
       expect((await arrangements.get(localBandId, ids.hello))!.transpose, 5);
 
@@ -306,6 +315,7 @@ void main() {
         bandId: localBandId,
         canCreateSongs: true,
         missingNote: missing,
+        copyName: copyOf,
         overwriteArrangements: true,
       );
       expect((await arrangements.get(localBandId, ids.hello))!.transpose, -2);
@@ -330,6 +340,7 @@ void main() {
         archive,
         bandId: localBandId,
         canCreateSongs: false,
+        copyName: copyOf,
       );
       expect((preview.identical, preview.added), (1, 0));
       expect(preview.missing, ['Bye']);
@@ -339,6 +350,7 @@ void main() {
         bandId: localBandId,
         canCreateSongs: false,
         missingNote: missing,
+        copyName: copyOf,
       );
       expect(result.missing, ['Bye']);
       expect(await other.select(other.songs).get(), hasLength(1));
@@ -361,10 +373,80 @@ void main() {
         bandId: localBandId,
         canCreateSongs: true,
         missingNote: missing,
+        copyName: copyOf,
         options: const SetArchiveOptions(setSettings: false),
       );
       final items = await sets.getItems(result.setId);
       expect(items.first.item.transpose, 0);
+    },
+  );
+
+  test(
+    'a copy gets a copy name only if name and date are taken (#719)',
+    () async {
+      final ids = await fill();
+      final archive = (await SetArchiveService.read(
+        await service().export(ids.set),
+      ))!;
+      Future<String> importCopy() async {
+        final result = await service().import(
+          archive,
+          bandId: localBandId,
+          canCreateSongs: true,
+          missingNote: missing,
+          copyName: copyOf,
+        );
+        return (await sets.getSet(result.setId))!.name;
+      }
+
+      final preview = await service().preview(
+        archive,
+        bandId: localBandId,
+        canCreateSongs: true,
+        copyName: copyOf,
+      );
+      expect(preview.newName, 'Gig (copy)');
+      expect(await importCopy(), 'Gig (copy)');
+      expect(await importCopy(), 'Gig (copy 2)');
+
+      // Replacing keeps the archive's name.
+      final replaced = await service().import(
+        archive,
+        bandId: localBandId,
+        canCreateSongs: true,
+        missingNote: missing,
+        copyName: copyOf,
+        replace: true,
+      );
+      expect((await sets.getSet(replaced.setId))!.name, 'Gig');
+
+      // The same name on another date is no clash.
+      await sets.updateSet(ids.set, name: 'Gig', gigDate: DateTime(2027, 7, 1));
+      final other = AppDatabase(NativeDatabase.memory());
+      addTearDown(other.close);
+      final elsewhere = SetRepository(other, storage);
+      await elsewhere.createSet(name: 'gig', gigDate: DateTime(2027, 6, 22));
+      final result = await service(other).import(
+        archive,
+        bandId: localBandId,
+        canCreateSongs: true,
+        missingNote: missing,
+        copyName: copyOf,
+      );
+      expect((await elsewhere.getSet(result.setId))!.name, 'Gig');
+      // Same name (ignoring case) and date: a copy.
+      await elsewhere.createSet(
+        name: 'GIG',
+        gigDate: DateTime(2027, 6, 21, 20),
+      );
+      final second = await service(other).import(
+        archive,
+        bandId: localBandId,
+        canCreateSongs: true,
+        missingNote: missing,
+        copyName: copyOf,
+      );
+      expect((await elsewhere.getSet(second.setId))!.name, 'Gig (copy)');
     },
   );
 }

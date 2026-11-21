@@ -6955,16 +6955,10 @@ abstract class AppLocalizations {
   /// **'Set importieren'**
   String get setImportTitle;
 
-  /// No description provided for @setImportSummary.
-  ///
-  /// In de, this message translates to:
-  /// **'«{set}» von {band}: {songs, plural, =0{keine Songs} =1{1 Song} other{{songs} Songs}}.'**
-  String setImportSummary(String set, String band, int songs);
-
   /// No description provided for @setImportBand.
   ///
   /// In de, this message translates to:
-  /// **'In die Band'**
+  /// **'Band'**
   String get setImportBand;
 
   /// No description provided for @setImportNoBand.
@@ -6973,22 +6967,10 @@ abstract class AppLocalizations {
   /// **'In dieser Bibliothek gibt es keine Band, deren Sets du verwalten darfst.'**
   String get setImportNoBand;
 
-  /// No description provided for @setImportAdded.
-  ///
-  /// In de, this message translates to:
-  /// **'{count, plural, =1{1 Song ist neu und wird in die Bibliothek aufgenommen.} other{{count} Songs sind neu und werden in die Bibliothek aufgenommen.}}'**
-  String setImportAdded(int count);
-
-  /// No description provided for @setImportMissing.
-  ///
-  /// In de, this message translates to:
-  /// **'{count, plural, =1{1 Song ist nicht in der Bibliothek.} other{{count} Songs sind nicht in der Bibliothek.}} Du darfst keine Songs hinzufügen, darum zeigt das Set sie als Text:'**
-  String setImportMissing(int count);
-
   /// No description provided for @setImportExisting.
   ///
   /// In de, this message translates to:
-  /// **'Dieses Set gibt es in der Band schon als «{name}»:'**
+  /// **'Die Band hat dieses Set schon als «{name}».'**
   String setImportExisting(String name);
 
   /// No description provided for @setImportReplace.
@@ -7002,12 +6984,6 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Als Kopie hinzufügen'**
   String get setImportCopy;
-
-  /// No description provided for @setImportAlso.
-  ///
-  /// In de, this message translates to:
-  /// **'Ebenfalls importieren:'**
-  String get setImportAlso;
 
   /// No description provided for @setImportOverwriteArrangements.
   ///
@@ -7062,6 +7038,96 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Dieses Set wurde mit einer neueren Version von setDING exportiert. Aktualisiere die App, um es zu importieren.'**
   String get setArchiveNewer;
+
+  /// No description provided for @setImportFrom.
+  ///
+  /// In de, this message translates to:
+  /// **'von {band} · {songs, plural, =0{keine Songs} =1{1 Song} other{{songs} Songs}}'**
+  String setImportFrom(String band, int songs);
+
+  /// No description provided for @setImportHeadingTarget.
+  ///
+  /// In de, this message translates to:
+  /// **'Ziel'**
+  String get setImportHeadingTarget;
+
+  /// No description provided for @setImportHeadingExisting.
+  ///
+  /// In de, this message translates to:
+  /// **'Set schon vorhanden'**
+  String get setImportHeadingExisting;
+
+  /// No description provided for @setImportHeadingSongs.
+  ///
+  /// In de, this message translates to:
+  /// **'Songs'**
+  String get setImportHeadingSongs;
+
+  /// No description provided for @setImportHeadingInclude.
+  ///
+  /// In de, this message translates to:
+  /// **'Übernehmen'**
+  String get setImportHeadingInclude;
+
+  /// No description provided for @setExportHeadingInclude.
+  ///
+  /// In de, this message translates to:
+  /// **'Ins Archiv'**
+  String get setExportHeadingInclude;
+
+  /// No description provided for @setImportNewName.
+  ///
+  /// In de, this message translates to:
+  /// **'Wird angelegt als «{name}».'**
+  String setImportNewName(String name);
+
+  /// No description provided for @setImportSongsHere.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 schon hier mit gleichem Text} other{{count} schon hier mit gleichem Text}}'**
+  String setImportSongsHere(int count);
+
+  /// No description provided for @setImportSongsNew.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 neu, kommt in die Bibliothek} other{{count} neu, kommen in die Bibliothek}}'**
+  String setImportSongsNew(int count);
+
+  /// No description provided for @setImportSongsDiffering.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 hier mit anderem Text} other{{count} hier mit anderem Text}}'**
+  String setImportSongsDiffering(int count);
+
+  /// No description provided for @setImportSongsMissing.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 nicht in der Bibliothek – du darfst keine Songs hinzufügen, es wird Text im Set} other{{count} nicht in der Bibliothek – du darfst keine Songs hinzufügen, sie werden Text im Set}}'**
+  String setImportSongsMissing(int count);
+
+  /// No description provided for @setImportKeep.
+  ///
+  /// In de, this message translates to:
+  /// **'Bestehende behalten'**
+  String get setImportKeep;
+
+  /// No description provided for @setImportAddAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Zusätzlich importieren'**
+  String get setImportAddAll;
+
+  /// No description provided for @setImportCopyName.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} (Kopie)'**
+  String setImportCopyName(String name);
+
+  /// No description provided for @setImportCopyNameNumbered.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} (Kopie {number})'**
+  String setImportCopyNameNumbered(String name, int number);
 }
 
 class _AppLocalizationsDelegate

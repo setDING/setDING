@@ -128,6 +128,11 @@ class SetArchive {
   }
 }
 
+/// The name of a copy of the set [name]: [number] 1 is the first copy
+/// ("Gig (copy)"), then 2, 3, … ("Gig (copy 2)"), in the importer's
+/// language.
+typedef CopyName = String Function(String name, int number);
+
 /// What importing a set archive into a band would find.
 @immutable
 class SetArchivePreview {
@@ -138,6 +143,7 @@ class SetArchivePreview {
     required this.added,
     required this.missing,
     required this.arrangementConflicts,
+    required this.newName,
     this.existingSet,
   });
 
@@ -162,6 +168,10 @@ class SetArchivePreview {
   /// The same set in the target band, from an earlier import or the export
   /// itself: the person may replace it.
   final SetlistEntry? existingSet;
+
+  /// Name of the set when it is added (not replaced): the archive's name,
+  /// or a copy name if the band has a set with the same name and date.
+  final String newName;
 }
 
 /// Result of a set import.
@@ -412,12 +422,42 @@ class SetArchiveService {
           ?.organizationId ??
       localBandId;
 
+  /// The name of [archive]'s set when it is added to [bandId]: unchanged,
+  /// unless the band has a set (not deleted, other than [except]) with the
+  /// same name and gig date; then the first free [copyName] (#719).
+  Future<String> newSetName(
+    SetArchive archive,
+    String bandId, {
+    required CopyName copyName,
+    String? except,
+  }) async {
+    String? day(DateTime? date) =>
+        date == null ? null : '${date.year}-${date.month}-${date.day}';
+    final date = day(
+      DateTime.tryParse(archive.set['gigDate'] as String? ?? ''),
+    );
+    final taken = {
+      for (final s in await (db.select(
+        db.setlists,
+      )..where((s) => s.bandId.equals(bandId) & s.deleted.equals(false))).get())
+        if (s.id != except && day(s.gigDate) == date)
+          s.name.trim().toLowerCase(),
+    };
+    final name = archive.name.trim();
+    if (!taken.contains(name.toLowerCase())) return name;
+    for (var n = 1; ; n++) {
+      final candidate = copyName(name, n);
+      if (!taken.contains(candidate.toLowerCase())) return candidate;
+    }
+  }
+
   /// What importing [archive] into [bandId] would find. [canCreateSongs]:
   /// whether the person may create songs in the band's library (ADR-0023).
   Future<SetArchivePreview> preview(
     SetArchive archive, {
     required String bandId,
     required bool canCreateSongs,
+    required CopyName copyName,
   }) async {
     final existing = await backup.existingSongs(await _libraryOf(bandId));
     final arrangements = ArrangementRepository(db);
@@ -452,6 +492,7 @@ class SetArchiveService {
       missing: missing,
       arrangementConflicts: conflicts,
       existingSet: await existingSet(archive, bandId),
+      newName: await newSetName(archive, bandId, copyName: copyName),
     );
   }
 
@@ -460,12 +501,14 @@ class SetArchiveService {
   /// ([existingSet]) instead of adding one. [overwriteArrangements]:
   /// arrangements of the band are replaced by the archive's. Songs that are
   /// missing and may not be created ([canCreateSongs] false) become text
-  /// items with [missingNote].
+  /// items with [missingNote]. An added set gets a [copyName] if the band
+  /// has a set with the same name and date ([newSetName]).
   Future<SetArchiveResult> import(
     SetArchive archive, {
     required String bandId,
     required bool canCreateSongs,
     required String Function(String title) missingNote,
+    required CopyName copyName,
     SetArchiveOptions options = const SetArchiveOptions(personal: true),
     BackupDuplicates duplicates = BackupDuplicates.keepExisting,
     bool replace = false,
@@ -530,7 +573,7 @@ class SetArchiveService {
       );
     } else {
       setId = await repo.createSet(
-        name: archive.name,
+        name: await newSetName(archive, bandId, copyName: copyName),
         gigDate: gigDate,
         venue: venue,
         origin: archive.setId.isEmpty ? null : archive.setId,

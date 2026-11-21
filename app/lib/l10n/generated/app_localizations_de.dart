@@ -4439,49 +4439,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get setImportTitle => 'Set importieren';
 
   @override
-  String setImportSummary(String set, String band, int songs) {
-    String _temp0 = intl.Intl.pluralLogic(
-      songs,
-      locale: localeName,
-      other: '$songs Songs',
-      one: '1 Song',
-      zero: 'keine Songs',
-    );
-    return '«$set» von $band: $_temp0.';
-  }
-
-  @override
-  String get setImportBand => 'In die Band';
+  String get setImportBand => 'Band';
 
   @override
   String get setImportNoBand =>
       'In dieser Bibliothek gibt es keine Band, deren Sets du verwalten darfst.';
 
   @override
-  String setImportAdded(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count Songs sind neu und werden in die Bibliothek aufgenommen.',
-      one: '1 Song ist neu und wird in die Bibliothek aufgenommen.',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String setImportMissing(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count Songs sind nicht in der Bibliothek.',
-      one: '1 Song ist nicht in der Bibliothek.',
-    );
-    return '$_temp0 Du darfst keine Songs hinzufügen, darum zeigt das Set sie als Text:';
-  }
-
-  @override
   String setImportExisting(String name) {
-    return 'Dieses Set gibt es in der Band schon als «$name»:';
+    return 'Die Band hat dieses Set schon als «$name».';
   }
 
   @override
@@ -4489,9 +4455,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get setImportCopy => 'Als Kopie hinzufügen';
-
-  @override
-  String get setImportAlso => 'Ebenfalls importieren:';
 
   @override
   String setImportOverwriteArrangements(int count) {
@@ -4539,4 +4502,97 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get setArchiveNewer =>
       'Dieses Set wurde mit einer neueren Version von setDING exportiert. Aktualisiere die App, um es zu importieren.';
+
+  @override
+  String setImportFrom(String band, int songs) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: '$songs Songs',
+      one: '1 Song',
+      zero: 'keine Songs',
+    );
+    return 'von $band · $_temp0';
+  }
+
+  @override
+  String get setImportHeadingTarget => 'Ziel';
+
+  @override
+  String get setImportHeadingExisting => 'Set schon vorhanden';
+
+  @override
+  String get setImportHeadingSongs => 'Songs';
+
+  @override
+  String get setImportHeadingInclude => 'Übernehmen';
+
+  @override
+  String get setExportHeadingInclude => 'Ins Archiv';
+
+  @override
+  String setImportNewName(String name) {
+    return 'Wird angelegt als «$name».';
+  }
+
+  @override
+  String setImportSongsHere(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count schon hier mit gleichem Text',
+      one: '1 schon hier mit gleichem Text',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String setImportSongsNew(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count neu, kommen in die Bibliothek',
+      one: '1 neu, kommt in die Bibliothek',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String setImportSongsDiffering(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hier mit anderem Text',
+      one: '1 hier mit anderem Text',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String setImportSongsMissing(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count nicht in der Bibliothek – du darfst keine Songs hinzufügen, sie werden Text im Set',
+      one: '1 nicht in der Bibliothek – du darfst keine Songs hinzufügen, es wird Text im Set',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get setImportKeep => 'Bestehende behalten';
+
+  @override
+  String get setImportAddAll => 'Zusätzlich importieren';
+
+  @override
+  String setImportCopyName(String name) {
+    return '$name (Kopie)';
+  }
+
+  @override
+  String setImportCopyNameNumbered(String name, int number) {
+    return '$name (Kopie $number)';
+  }
 }
