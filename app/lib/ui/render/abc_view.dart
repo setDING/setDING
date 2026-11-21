@@ -78,10 +78,17 @@ const _baseDurations = [1.0, 0.5, 0.25, 0.125, 0.0625, 0.03125];
   return (_baseDurations.last, 0);
 }
 
-/// The tune of an ABC delegate, transposed by [semitones].
-AbcTune abcTuneOf(DelegateSection d, int semitones) {
-  final tune = parseAbc(d.content);
-  return semitones == 0 ? tune : transposeAbc(tune, semitones);
+/// The tune of an ABC or Lilypond delegate, transposed by [semitones];
+/// null for other delegates and for Lilypond outside the subset setDING
+/// can draw (ADR-0012).
+AbcTune? notationTuneOf(DelegateSection d, int semitones) {
+  final tune = switch (d.type) {
+    DelegateType.abc => parseAbc(d.content),
+    DelegateType.ly => parseLilypond(d.content),
+    _ => null,
+  };
+  if (tune == null || semitones == 0) return tune;
+  return transposeAbc(tune, semitones);
 }
 
 /// Height in pixels of [tune] laid out at [fontSize] in [columnWidth].

@@ -216,7 +216,20 @@ w:Here's a lit-tle tune to play
 {end_of_abc}
 
 {start_of_ly label="Lilypond"}
-\relative c' { \key g \major g4 a b c | d2 d }
+% setDING draws a subset of LilyPond: one melody with chord names and lyrics.
+\header { title = "Showcase Lead Sheet" }
+melody = \relative c' {
+  \key g \major \time 3/4 \partial 4
+  d4 | \repeat volta 2 { g4( a) b | c2 e,8[ fis] }
+  \alternative { { g2 d4 } { g2. } }
+  \tuplet 3/2 { b8 c d } e4~ e | g2 r4 \bar "|."
+}
+harmonies = \chordmode { s4 | g2. | c2 d4:7 | g2. | g | e2.:m | c2 d4:7/fis }
+<<
+  \new ChordNames \harmonies
+  \new Voice = "lead" \melody
+  \new Lyrics \lyricsto "lead" { Sing a lit -- tle song for me, me, oh yes a -- gain }
+>>
 {end_of_ly}
 
 # ---------------------------------------------------------------------------

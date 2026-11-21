@@ -171,7 +171,8 @@ void main() {
             '{image: src="missing.png"}\n'
             '{start_of_svg}\n$_svg\n{end_of_svg}\n'
             '{start_of_textblock flush=right}\nShe died of the fever\n{end_of_textblock}\n'
-            '{start_of_ly label="Score"}\n\\relative c\' { c d e }\n{end_of_ly}\n',
+            '{start_of_ly label="Score"}\n\\relative c\' { c d e }\n{end_of_ly}\n'
+            '{start_of_ly}\n\\relative c\' { << { c d } \\\\ { e f } >> }\n{end_of_ly}\n',
       );
       await app.songs.addAttachment(
         id,
@@ -197,8 +198,10 @@ void main() {
     expect(find.text('missing.png'), findsOneWidget); // placeholder
     expect(find.byType(SvgPicture), findsOneWidget);
     expect(find.text('She died of the fever'), findsOneWidget);
+    // Lilypond within the subset is drawn; two voices show the source.
+    expect(find.byType(AbcView), findsOneWidget);
     expect(
-      find.textContaining('Lilypond notation cannot be rendered'),
+      find.textContaining('uses features setDING cannot draw'),
       findsOneWidget,
     );
     expect(find.text('SCORE'), findsOneWidget);
@@ -312,10 +315,10 @@ void abcGroup() {
       final box = tester.getSize(find.byType(FittedBox).first);
       expect(body.height, lessThanOrEqualTo(box.height + 0.5));
       // Transposed by the set item: D major becomes E major.
-      final tune = abcTuneOf(
+      final tune = notationTuneOf(
         parseChordPro(source).elements.whereType<DelegateSection>().single,
         2,
-      );
+      )!;
       expect(tune.key.name, 'E');
       await app.dispose(tester);
     });

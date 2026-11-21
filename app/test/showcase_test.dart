@@ -65,7 +65,8 @@ void main() {
     expect(find.byType(GridRowView), findsWidgets);
     expect(find.byKey(const ValueKey('sequence-chip')), findsNWidgets(8));
     expect(find.byType(ChordDiagramView, skipOffstage: false), findsWidgets);
-    expect(find.byType(AbcView, skipOffstage: false), findsOneWidget);
+    // ABC and the Lilypond lead sheet.
+    expect(find.byType(AbcView, skipOffstage: false), findsNWidgets(2));
     expect(find.byType(SvgPicture, skipOffstage: false), findsNWidgets(2));
     expect(
       find.text('Shown only for guitar', skipOffstage: false),

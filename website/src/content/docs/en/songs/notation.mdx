@@ -1,0 +1,132 @@
+---
+title: Sheet music (ABC and Lilypond)
+description: Write a melody with chord names and lyrics in ABC or Lilypond inside a song; setDING draws it as notes and transposes it.
+sidebar:
+  order: 4
+---
+
+import { Image } from 'astro:assets';
+import lilypond from '../../../../../../docs/screenshots/lilypond.png';
+
+A song can contain a melody as sheet music, for example the riff of the intro or the
+lead line of the chorus. Write it in [ABC](https://abcnotation.com/) or in
+[Lilypond](https://lilypond.org/) between two directives. setDING draws it as notes,
+also offline, and **transposes it** together with the chords when the set or you
+change the key.
+
+```
+{start_of_abc label="Intro"}
+…
+{end_of_abc}
+
+{start_of_ly label="Melody"}
+…
+{end_of_ly}
+```
+
+The `label` is shown above the notes. Without a label, the title of the tune (ABC
+`T:`, Lilypond `\header { title = "…" }`) is used.
+
+<Image src={lilypond} alt="A song with a Lilypond melody: notes in G major and 3/4 with an upbeat, chord names above, lyrics below, a repeat with first and second ending" />
+
+## ABC
+
+setDING reads one ABC voice: header fields (`T:`, `M:`, `L:`, `K:`), notes with
+accidentals, durations, broken rhythm, tuplets, ties, chords, rests, bar lines,
+repeats and voltas, chord symbols (`"G"`), annotations, key and meter changes and
+lyrics (`w:`). Multiple voices, slurs and decorations are not drawn.
+
+```
+{start_of_abc}
+X:1
+T:Intro riff
+M:4/4
+L:1/8
+K:G
+|:"G"GABG DGBG|"D"A2 AB c2 Bc:|
+w:one two three four
+{end_of_abc}
+```
+
+## Lilypond
+
+Lilypond is a whole programming language for engraving scores. setDING draws the part
+that lead sheets use: **one melody** with chord names and lyrics. If a Lilypond block
+uses more than that (several voices or staves, `\transpose`), setDING shows the source
+text with a notice instead.
+
+```
+{start_of_ly label="Chorus"}
+\relative c' {
+  \key g \major \time 3/4 \partial 4
+  d4 | \repeat volta 2 { g4( a) b | c2 e,8[ fis] }
+  \alternative { { g2 d4 } { g2. } }
+}
+\addlyrics { Morn -- ing light, on the hill a -- gain }
+{end_of_ly}
+```
+
+### Notes
+
+| Write | Meaning |
+|---|---|
+| `c d e f g a b` | Note names (Dutch, the Lilypond default) |
+| `cis`, `fis` / `bes`, `es`, `as` | Sharp / flat; `isis` and `eses` for double |
+| `c'` `c,` | One octave up / down; in absolute mode `c'` is middle C |
+| `\relative c' { … }` | Every note is placed in the octave nearest to the previous one (recommended) |
+| `\fixed c' { … }` | Every note in the octave of `c'`, unless marked |
+| `4` `8` `2.` `16` | Duration: quarter, eighth, dotted half, sixteenth; the duration carries over to the next notes |
+| `r4` / `s4` / `R1*4` | Rest / invisible rest / four bars rest |
+| `<c e g>4` / `q` | Chord of notes / repeat the last chord |
+| `~` | Tie |
+| `( )` / `[ ]` | Slur / beam; notes under a slur share one syllable |
+| `^"Coda"` | Text above the note |
+| `\language "deutsch"` | German note names (`h` = B, `b` = B flat) |
+| `\language "english"` | English note names (`cs`, `bf`, `fsharp`) |
+
+### Bars and structure
+
+| Write | Meaning |
+|---|---|
+| `\key g \major`, `\key e \minor` | Key; also `\dorian`, `\mixolydian` and the other modes |
+| `\time 3/4` | Time signature; setDING draws the bar lines from it, as Lilypond does. `\|` in the music is only a check |
+| `\partial 4` | Upbeat of a quarter |
+| `\clef bass` | Bass clef |
+| `\bar "\|."`, `\bar "\|\|"` | Final and double bar line |
+| `\break` | Start a new line here |
+| `\repeat volta 2 { … }` | Repeat signs |
+| `\alternative { { … } { … } }` | First and second ending |
+| `\repeat unfold 2 { … }` | Write the music out twice |
+| `\tuplet 3/2 { c8 d e }` | Triplet (also `\times 2/3 { … }`) |
+
+### Chord names and lyrics
+
+Put the melody, chord names and lyrics in `<< … >>` so they run at the same time.
+A chord name is shown above the note or rest that starts at the same moment;
+`s` skips time without a chord.
+
+```
+{start_of_ly}
+\header { title = "Morning Light" }
+melody = \relative c' { \time 4/4 c4 c g' g | a a g2 }
+harmonies = \chordmode { c2 c:7 | f2 c }
+<<
+  \new ChordNames \harmonies
+  \new Voice = "lead" \melody
+  \new Lyrics \lyricsto "lead" { Twin -- kle twin -- kle lit -- tle star }
+>>
+{end_of_ly}
+```
+
+- **Chord names** in `\chordmode { … }` or `\chords { … }`: `c1`, `a2:m`, `g4:7`,
+  `f:maj7`, `d:sus4`, `b:m7.5-` (Bm7b5), `c/e` (with bass note).
+- **Lyrics** with `\addlyrics { … }` right after the melody, or `\lyricsto`:
+  syllables are separated by `--`, `_` skips a note. setDING shows the first verse.
+- **Variables** such as `melody = …` and `\melody` work as in Lilypond.
+
+### What setDING ignores
+
+Layout settings (`\override`, `\set`, `\layout`, `\paper`, `\midi`), `\version`,
+`\tempo`, `\mark`, dynamics (`\f`, `\p`) and articulations (`-.`, `->`, `\fermata`)
+are accepted but not drawn; grace notes are left out. Files from Lilypond can
+therefore usually be pasted as they are.

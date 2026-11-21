@@ -1151,7 +1151,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get lilypondNotice =>
-      'Lilypond-Noten können auf diesem Gerät nicht dargestellt werden. Quelltext:';
+      'Diese Lilypond-Noten verwenden Funktionen, die setDING nicht darstellen kann. Quelltext:';
 
   @override
   String get sequenceLabel => 'Songablauf';

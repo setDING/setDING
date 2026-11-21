@@ -12,6 +12,7 @@ import 'dart:ui' as ui;
 
 import 'package:chordpro/chordpro.dart' show Subdivision;
 
+import 'package:setding/ui/render/abc_view.dart';
 import 'package:setding/data/arrangement_repository.dart';
 import 'package:setding/data/set_archive.dart';
 import 'package:setding/data/backup.dart';
@@ -105,6 +106,25 @@ Future<void> _shot(WidgetTester tester, String name) async {
   File('build/screenshots/$name.png')
       .writeAsBytesSync(bytes.buffer.asUint8List());
 }
+
+/// A Lilypond lead sheet for the notation screenshot (#725).
+const _lilypond = r'''{title: Morning Light}
+{artist: Ann Trainor}
+{key: G}
+{time: 3/4}
+
+{start_of_ly label="Melody"}
+<<
+  \chords { s4 | g2. | c2 d4:7 | g2. | g }
+  \relative c' {
+    \key g \major \time 3/4 \partial 4
+    d4 | \repeat volta 2 { g4( a) b | c2 e,8[ fis] }
+    \alternative { { g2 d4 } { g2. } }
+  }
+  \addlyrics { Morn -- ing light, on the hill a -- gain }
+>>
+{end_of_ly}
+''';
 
 /// Editor content for the highlighting screenshot: one line per token kind.
 const _highlightSource = '''{title: Highlighting}
@@ -844,6 +864,29 @@ void main() {
       await tester.tap(find.byKey(const Key('set-import-start')));
       await waitFor(find.byKey(const Key('set-import-result')));
       await _shot(tester, '${lang}_27c_set_import_result');
+      await app.dispose(tester);
+    });
+  }
+
+  // Lilypond notation drawn as notes with chord names and lyrics (#725).
+  for (final lang in ['de', 'en']) {
+    _screenshotTest('lilypond $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': lang == 'de' ? 'light' : 'dark'},
+      );
+      final id = await tester.runAsync(
+        () => app.songs.createSong(source: _lilypond),
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: SongScreen(songId: id!)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(AbcView), findsOneWidget);
+      await _shot(tester, '${lang}_29_lilypond');
       await app.dispose(tester);
     });
   }

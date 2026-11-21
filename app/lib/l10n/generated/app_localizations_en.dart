@@ -1144,7 +1144,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lilypondNotice =>
-      'Lilypond notation cannot be rendered on this device. Source:';
+      'This Lilypond notation uses features setDING cannot draw. Source:';
 
   @override
   String get sequenceLabel => 'Song sequence';

@@ -2111,7 +2111,7 @@ abstract class AppLocalizations {
   /// No description provided for @lilypondNotice.
   ///
   /// In de, this message translates to:
-  /// **'Lilypond-Noten können auf diesem Gerät nicht dargestellt werden. Quelltext:'**
+  /// **'Diese Lilypond-Noten verwenden Funktionen, die setDING nicht darstellen kann. Quelltext:'**
   String get lilypondNotice;
 
   /// No description provided for @sequenceLabel.
