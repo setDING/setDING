@@ -108,6 +108,44 @@ backup**:
   a backup at start, at most every 7 days and never in live mode.
 - No automatic backups.
 
+### 1b. Set archive (#707)
+
+The ZIP export of a set (ADR-0009) becomes an archive that can be imported
+again **as a set**:
+
+- **Format:** the numbered ChordPro files (`NN - <title>.cho`) and the
+  attachments as before, plus a `manifest.json` with
+  `format: "setding-set"`, `formatVersion: 1`, the app version, the creation
+  time and the records of the set with their original IDs: the set (name,
+  date, venue, items with pauses and text items, set transposition and
+  sequence), its songs and, depending on the export options, the band
+  arrangements of the songs (ADR-0025), the attachments and the **exporting
+  person's own** personal adjustments and annotations. The plain-text
+  `setlist.txt` is dropped; the text and PDF set list export (ADR-0013)
+  covers it.
+- **Export options:** band arrangements, set-specific settings, attachments,
+  own personal adjustments and annotations. Personal adjustments and
+  annotations are off by default, because a set ZIP is often passed on.
+- **Import with a preview:** a ZIP with such a manifest is recognised by the
+  normal import. Before anything is written, a preview shows the target
+  library and band, the songs (already there, new, text differs, missing)
+  and the same options as the export.
+- **Songs** follow the duplicate rule of section 1 (identical songs reused,
+  differing ones optionally added).
+- **Band arrangements** already present in the target band are **kept**; an
+  option in the preview overwrites them.
+- **Importing the same set again** (a set with the set's original ID exists
+  in the target band, as an earlier import remembers the original ID): the
+  preview offers to **replace** the existing set (its fields and items) or to
+  add a copy. This is the one exception to "nothing existing is
+  overwritten"; replacing is a normal change, so it can be undone and the
+  previous items stay in the change history.
+- **Missing songs** that the person may not create (set planner, ADR-0023)
+  become text items "missing: <title>" in the set and are listed in the
+  import report; the set is imported anyway.
+- Rights are those of the records created or changed (sets, set items,
+  arrangements, songs); the server enforces them as for any other change.
+
 ### 2. Trash
 
 Deleted songs and sets can be **restored for 30 days**.
@@ -176,6 +214,17 @@ Deleted songs and sets can be **restored for 30 days**.
   optional; a reminder for the local library after 30 days; no automatic
   backups.
 - 2026-11-20: Implemented for organizations (#629, ADR-0044): the daily purge first deletes organizations closed more than 30 days ago for good (all their records and attachment files, a tombstone without a name stays); `POST /api/setding/trash/purge` also takes `{"collection": "organizations", "id": …}`.
+
+- 2026-11-21: Proposed: **set archive** (section 1b, #707). Owner
+  decisions: `setlist.txt` dropped (no older exports in use); export and
+  import with options, personal adjustments off by default; a preview before
+  the import; existing band arrangements kept unless overwriting is chosen;
+  re-importing a set offers to replace it or add a copy (exception to
+  "always as a copy"); missing songs a set planner may not create become text
+  items. Rejected: importing a plain-text set list, sending a set to another
+  band in the app. Foreign set formats: #708.
+- 2026-11-21: Set archive (section 1b) accepted by the owner (#709);
+  implementation in #707.
 
 ## Open points
 
