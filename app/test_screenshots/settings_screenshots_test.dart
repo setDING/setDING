@@ -82,8 +82,12 @@ void main() {
       // The musician settings: instrument, voice, diagrams, beat.
       await tester.tap(find.text(lang == 'de' ? 'Musiker' : 'Musician'));
       await shot(tester, '${lang}_16_settings_musician');
+      // On a wide screen the sections flow into two columns (#774).
+      tester.view.physicalSize = const Size(1680, 900);
       await tester.tap(find.byKey(const Key('settings-category-general')));
       await shot(tester, '${lang}_18_settings_general');
+      useTabletSize(tester);
+      await tester.pumpAndSettle();
       // Song display styles (ADR-0033) with a preset of colours.
       await tester.tap(find.byKey(const Key('settings-category-songDisplay')));
       await tester.pumpAndSettle();

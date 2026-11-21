@@ -98,6 +98,8 @@ above span all of them.
   renderer and the set list PDF exempt). The 23 places that used 3, 6, 10 or 18 moved
   onto the scale; icon-to-text gaps are 8.
 
+- 2026-11-21: The settings are an exception to the width limit (#774): their content uses the width of its pane, in two columns of sections from 1040 (ADR-0050).
+
 ## Open points
 
 - None.

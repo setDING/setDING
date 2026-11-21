@@ -60,7 +60,9 @@ the others are checked in review.
   single-purpose forms such as signing in to **480** (`PageWidth(maxWidth:
   formMaxWidth)`). Controls inside the column wrap rather than scroll sideways
   (e.g. chips in a `Wrap` instead of a long segmented button). Lists that use the width (songs in two columns, the set
-  grid) choose their columns with `BreakpointBuilder`.
+  grid) choose their columns with `BreakpointBuilder`. The settings are the
+  exception: their content uses the full width of its pane and, from 1040, flows its
+  sections into two columns (ADR-0050).
 - Leave room under the last item for a floating action button (`bottom: 88`).
 
 ## 4. Section headers
