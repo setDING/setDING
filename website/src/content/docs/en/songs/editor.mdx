@@ -65,10 +65,15 @@ The editor closes what you open:
   you type it yourself anyway, the cursor just steps over it. **Backspace** right
   after an empty pair `[]` deletes both.
 - With text selected, `[` or `{` puts the brackets around the selection.
+- In a directive, `"` after `=` or `:` is closed too, e.g. in
+  `{start_of_chorus label="…"}`. Here too the cursor steps over the closing
+  `"`, and **Backspace** deletes an empty `""` completely.
 - **Enter** at the end of a section start such as `{start_of_chorus}` adds an empty
   line and the matching end `{end_of_chorus}`, with the cursor on the empty line.
   Choosing `start_of_…` from the suggestions does the same. If the section is
-  already closed, Enter just starts a new line.
+  already closed, Enter just starts a new line. With the start and the end on the
+  same line, e.g. `{start_of_verse}{end_of_verse}`, **Enter** between them puts them
+  on lines of their own with an empty line between.
 
 In comment lines (`#`), after `\` and in tab and notation sections (ABC, LilyPond),
 brackets stay as you type them.

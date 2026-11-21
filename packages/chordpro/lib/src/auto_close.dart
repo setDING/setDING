@@ -23,6 +23,9 @@ const _rawSections = {'tab', 'abc', 'ly', 'svg', 'textblock'};
 ///   selection within one line.
 /// - `]` / `}` right before the same character steps over it.
 /// - Backspace in an empty pair `[]` / `{}` deletes both.
+/// - `"` after `=` or `:` in a directive also inserts the closing `"`
+///   (`{start_of_chorus label="|"}`); a typed `"` before the closing one
+///   steps over it; Backspace in an empty `""` deletes both (#754).
 /// - Enter at the end of an open section start (`{start_of_verse}`) adds
 ///   an empty line and the end directive, see [closeSectionBlock].
 ///
@@ -54,6 +57,21 @@ SourceEdit? autoClose(
       cursor,
     );
   }
+  // Backspace right after the opening quote of an empty `""`.
+  if (start == end &&
+      start > 0 &&
+      start < before.length &&
+      cursor == start - 1 &&
+      after == before.replaceRange(start - 1, start, '') &&
+      before[start - 1] == '"' &&
+      before[start] == '"' &&
+      _opensQuote(before, start - 1)) {
+    return SourceEdit(
+      before.replaceRange(start - 1, start + 1, ''),
+      cursor,
+      cursor,
+    );
+  }
 
   if (after.length < prefix.length + suffix.length ||
       !after.startsWith(prefix) ||
@@ -64,6 +82,16 @@ SourceEdit? autoClose(
   if (cursor != start + typed.length) return null;
 
   if (typed == '\n' && start == end) return closeSectionBlock(before, start);
+
+  if (typed == '"' && start == end) {
+    if (start < before.length &&
+        before[start] == '"' &&
+        _quoteOpen(before, start)) {
+      return SourceEdit(before, start + 1, start + 1);
+    }
+    if (!_opensQuote(before, start)) return null;
+    return SourceEdit('$prefix""$suffix', start + 1, start + 1);
+  }
 
   if (typed == ']' || typed == '}') {
     // Step over the closing bracket that is already there.
@@ -98,11 +126,15 @@ SourceEdit? autoClose(
 ///
 /// The section counts as closed when the next section directive below is
 /// its end directive; sections do not nest (ADR-0012).
+///
+/// With the matching end directive right after the cursor on the same
+/// line (`{start_of_verse}|{end_of_verse}`), both get lines of their own
+/// with the empty line between them (#754).
 SourceEdit? closeSectionBlock(String text, int cursor) {
   if (cursor < 0 || cursor > text.length) return null;
   final lineStart = cursor == 0 ? 0 : text.lastIndexOf('\n', cursor - 1) + 1;
   final lineEnd = _lineEnd(text, cursor);
-  if (text.substring(cursor, lineEnd).trim().isNotEmpty) return null;
+  final rest = text.substring(cursor, lineEnd).trim();
   final line = text.substring(lineStart, cursor);
   final trimmed = line.trim();
   if (!trimmed.startsWith('{') || !trimmed.endsWith('}')) return null;
@@ -111,9 +143,20 @@ SourceEdit? closeSectionBlock(String text, int cursor) {
   final short = shortSectionStarts[name];
   final type = short ?? _after(name, 'start_of_');
   if (type == null || type.isEmpty) return null;
+  final indent = RegExp(r'^[ \t]*').stringMatch(line)!;
+  if (rest.isNotEmpty) {
+    if (_endType(rest) != type) return null;
+    // Split `{start_of_verse}|{end_of_verse}`.
+    final endAt = text.indexOf(rest, cursor);
+    final at = cursor + 1 + indent.length;
+    return SourceEdit(
+      text.replaceRange(cursor, endAt, '\n$indent\n$indent'),
+      at,
+      at,
+    );
+  }
   if (_isClosed(text, lineEnd, type)) return null;
 
-  final indent = RegExp(r'^[ \t]*').stringMatch(line)!;
   final endDirective = short != null
       ? '{e${name.substring(1)}}'
       : '{end_of_$type}';
@@ -143,6 +186,43 @@ bool _isClosed(String text, int from, String type) {
   return false;
 }
 
+/// The section type a line ends (`{end_of_verse}`, `{eov}`), if any.
+String? _endType(String line) {
+  final trimmed = line.trim();
+  if (!trimmed.startsWith('{') || !trimmed.endsWith('}')) return null;
+  final name = parseDirective(trimmed)?.name;
+  if (name == null) return null;
+  return shortSectionEnds[name] ?? _after(name, 'end_of_');
+}
+
+/// The part of the directive before [offset] on its line, or null when
+/// [offset] is not inside a directive (after its `{`, before its `}`).
+String? _directiveBefore(String text, int offset) {
+  final lineStart = offset == 0 ? 0 : text.lastIndexOf('\n', offset - 1) + 1;
+  final line = text.substring(lineStart, offset);
+  final open = line.lastIndexOf('{');
+  if (open < 0 || line.substring(0, open).trim().isNotEmpty) return null;
+  final inside = line.substring(open);
+  return inside.contains('}') ? null : inside;
+}
+
+/// Whether a `"` typed at [offset] opens a quoted value: inside a
+/// directive, after `=` or `:` (spaces between allowed), not inside
+/// another quoted value.
+bool _opensQuote(String text, int offset) {
+  final inside = _directiveBefore(text, offset);
+  if (inside == null || !_bracketsAllowed(text, offset)) return false;
+  if ('"'.allMatches(inside).length.isOdd) return false;
+  final last = inside.trimRight();
+  return last.endsWith('=') || last.endsWith(':');
+}
+
+/// Whether [offset] is inside a quoted value of a directive.
+bool _quoteOpen(String text, int offset) {
+  final inside = _directiveBefore(text, offset);
+  return inside != null && '"'.allMatches(inside).length.isOdd;
+}
+
 /// Whether brackets typed at [offset] are ChordPro syntax.
 bool _bracketsAllowed(String text, int offset) {
   if (offset > 0 && text[offset - 1] == r'\') return false;
@@ -159,19 +239,12 @@ bool _bracketsAllowed(String text, int offset) {
     final lastLineStart = text.lastIndexOf('\n', section.end - 1) + 1;
     if (lastLineStart > firstLineEnd &&
         offset >= lastLineStart &&
-        _isEndDirective(text.substring(lastLineStart, section.end))) {
+        _endType(text.substring(lastLineStart, section.end)) != null) {
       continue;
     }
     return false;
   }
   return true;
-}
-
-bool _isEndDirective(String line) {
-  final trimmed = line.trim();
-  final name = trimmed.startsWith('{') ? parseDirective(trimmed)?.name : null;
-  return name != null &&
-      (shortSectionEnds.containsKey(name) || name.startsWith('end_of_'));
 }
 
 /// Whether [rest] has a [close] bracket before any [open] one.

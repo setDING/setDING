@@ -95,6 +95,35 @@ void main() {
     });
   });
 
+  group('quotes', () {
+    test('" after = or : in a directive is closed', () {
+      expect(
+        _type('{start_of_chorus label=|}', '"'),
+        '{start_of_chorus label="|"}',
+      );
+      expect(_type('{title: |}', '"'), '{title: "|"}');
+      expect(_type('{title:|', '"'), '{title:"|"');
+    });
+
+    test('not in lyrics, values or comments', () {
+      expect(_type('He said |', '"'), isNull);
+      expect(_type('{title: 12|}', '"'), isNull);
+      expect(_type('# {x: |', '"'), isNull);
+      expect(_type('{a: b} c=|', '"'), isNull);
+      expect(_type('{start_of_tab}\n{x=|', '"'), isNull);
+    });
+
+    test('a closing quote is typed or stepped over', () {
+      expect(_type('{c label="Refrain|"}', '"'), '{c label="Refrain"|}');
+      expect(_type('{c label="Refrain|}', '"'), isNull);
+    });
+
+    test('Backspace in an empty pair deletes both', () {
+      expect(_backspace('{c label="|"}'), '{c label=|}');
+      expect(_backspace('{c label="a"|"}'), isNull);
+    });
+  });
+
   group('section blocks', () {
     test('Enter after a section start adds the end directive', () {
       expect(
@@ -137,6 +166,16 @@ void main() {
       expect(_type('{chorus}|', '\n'), isNull);
       expect(_type('{title: A}|', '\n'), isNull);
       expect(_type('<{start_of_verse}>', '\n'), isNull);
+    });
+
+    test('Enter between a section start and its end splits them', () {
+      expect(
+        _type('{start_of_verse}|{end_of_verse}', '\n'),
+        '{start_of_verse}\n|\n{end_of_verse}',
+      );
+      expect(_type('{soc}| {eoc}\nx', '\n'), '{soc}\n|\n{eoc}\nx');
+      expect(_type('{start_of_verse}|{end_of_chorus}', '\n'), isNull);
+      expect(_type('{start_of_verse}|x{end_of_verse}', '\n'), isNull);
     });
 
     test('closeSectionBlock works at the cursor', () {
