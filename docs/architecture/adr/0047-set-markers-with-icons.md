@@ -42,9 +42,10 @@ Constraints:
 ### One kind of marker, no type
 
 Breaks and texts become one kind of entry, a **marker**, made of an **icon** and
-an optional **text**. There is no break or text type any more in the app: every
-difference of today (icon, empty text, divider in the set list) follows from the
-chosen icon. The stored `type` stays only for older apps (see *Data*).
+an optional **text**. There is no break or text type any more in the app: the
+icon and the default name follow from the chosen icon, and **every marker is a
+divider** in the printable set list and the text export. The stored `type` stays
+only for older apps (see *Data*).
 
 ### One command: *Add marker*
 
@@ -53,7 +54,8 @@ The set's menu gets one command **Add marker** (*Hinweis hinzufügen*) in place 
 
 1. an **icon grid**, grouped by topic (see the catalogue below), one icon
    selected (default: *break*);
-2. a **text** field, **prefilled with the default name of the selected icon**;
+2. a **text** field, **prefilled with the default name of the selected icon**,
+   limited to **24 characters** (see *Text length*);
 3. a **preview** of the marker's page in live mode.
 
 Choosing another icon replaces the text with the new icon's default name as long
@@ -73,44 +75,57 @@ was left as it is shows as "Encore" in English. This extends #289 (where a break
 named "Pause" or "Break" counts as no note) from the type label to the icon's
 name (`markerNote`, `markerTitle`). A text of its own is shown as typed.
 
+### Text length
+
+A marker's text is limited to **24 characters**. It is a short label, not a
+paragraph: it has to fit in the middle of a divider line of the printable set
+list next to the song titles, and to stay readable at a glance in large type on
+the stage page. 24 characters hold the longer default names ("Change of
+instrument", "Instrumentwechsel") and short notes like "Ansage: Begrüssung" or
+"Zugabe: Last Call"; anything longer belongs in a song's notes. The dialog shows
+a counter and accepts no more. Notes of older apps may be longer: they are kept
+as they are and shortened with an ellipsis where space is tight (set list
+divider, set editor row); live mode wraps them. The server does not enforce the
+limit, so older apps keep working.
+
 ### Icon catalogue
 
 The app has a **curated catalogue** of marker icons. Each entry has a **stable
 key** stored in the data (never a Material code point or an icon name of a font),
-a Material icon, a localized **default name** (ARB, de-CH and en) and whether the
-marker is a **divider** in the printable set list and the text export:
+a Material icon and a localized **default name** (ARB, de-CH and en) of at most
+24 characters:
 
-| Group | Key | Default name (en / de-CH) | Divider |
-|---|---|---|---|
-| Break | `break` | Break / Pause | ✓ |
-| Break | `drinks` | Drinks / Getränke | ✓ |
-| Announcement | `announcement` | Announcement / Ansage | |
-| Announcement | `microphone` | Speech / Rede | |
-| Announcement | `guest` | Guest / Gast | |
-| Flow | `encore` | Encore / Zugabe | ✓ |
-| Flow | `transition` | Transition / Übergang | |
-| Flow | `solo` | Solo / Solo | |
-| Flow | `applause` | Applause / Applaus | |
-| Stage | `instrument` | Change of instrument / Instrumentwechsel | |
-| Stage | `tuning` | Tuning / Stimmen | |
-| Stage | `click` | Click / Click | |
-| Show | `light` | Light / Licht | |
-| Show | `effects` | Effects / Effekte | |
-| Show | `celebration` | Celebration / Feier | |
-| General | `info` | Note / Hinweis | |
-| General | `warning` | Attention / Achtung | |
+| Group | Key | Default name (en / de-CH) |
+|---|---|---|
+| Break | `break` | Break / Pause |
+| Break | `drinks` | Drinks / Getränke |
+| Announcement | `announcement` | Announcement / Ansage |
+| Announcement | `microphone` | Speech / Rede |
+| Announcement | `guest` | Guest / Gast |
+| Flow | `encore` | Encore / Zugabe |
+| Flow | `transition` | Transition / Übergang |
+| Flow | `solo` | Solo / Solo |
+| Flow | `applause` | Applause / Applaus |
+| Stage | `instrument` | Change of instrument / Instrumentwechsel |
+| Stage | `tuning` | Tuning / Stimmen |
+| Stage | `click` | Click / Click |
+| Show | `light` | Light / Licht |
+| Show | `effects` | Effects / Effekte |
+| Show | `celebration` | Celebration / Feier |
+| General | `info` | Note / Hinweis |
+| General | `warning` | Attention / Achtung |
 
-The exact icons, names and dividers are settled in the implementation; new
-entries can be added later without a schema change. An unknown key (from a newer
-app) shows a neutral marker icon and is no divider.
+The exact icons and names are settled in the implementation; new entries can be
+added later without a schema change. An unknown key (from a newer app) shows a
+neutral marker icon.
 
 ### Data
 
 - **Server:** a new optional field **`icon`** (catalogue key) in the item JSON of
   `setlists.items` (ADR-0015). No schema change.
 - **`type` for older apps only:** apps with this ADR still write `type`, derived
-  from the icon: `pause` for divider icons, `text` for the others, so older apps
-  keep showing breaks as breaks. They never read it for a marker that has an
+  from the icon: `pause` for the icons of the *Break* group, `text` for the
+  others, so older apps keep showing breaks as breaks. They never read it for a marker that has an
   `icon`.
 - **Markers without an icon** (written by older apps) get one from their type:
   `pause` → `break`, `text` → `announcement`. A text item without a note of its
@@ -131,10 +146,10 @@ app) shows a neutral marker icon and is no divider.
 - **Set editor:** the icon in the leading slot and the title (text of its own or
   default name).
 - **Live mode:** the marker's page shows its icon and title (ADR-0007).
-- **Printable set list (ADR-0013)** and **text export:** every marker with its
-  title; a divider icon as a divider line with the title in the middle, the
-  others as a plain muted line. The PDF shows the icon too if the PDF font can
-  render it.
+- **Printable set list (ADR-0013)** and **text export:** every marker as a
+  divider line with its title in the middle; the PDF shows the icon next to the
+  title if the PDF font can render it. The set list is thus split into blocks at
+  every marker.
 
 ### Not in this decision
 
@@ -146,7 +161,9 @@ their own fields and are decided separately.
 
 | Option | Pros | Cons |
 |---|---|---|
-| **One kind of marker, icon from a curated catalogue, divider per icon, text prefilled** (chosen) | One place to add any marker; no type to understand; any icon can be a divider (e.g. encore); same look on every platform; default names translated | A curated list may lack an icon a band wants (new entries need an app update) |
+| **One kind of marker, icon from a curated catalogue, every marker a divider, text prefilled and limited** (chosen) | One place to add any marker; no type to understand; one rule for the set list; same look on every platform; default names translated | Many small markers split the set list into many blocks; a curated list may lack an icon a band wants (new entries need an app update) |
+| A divider per icon (e.g. only break and encore) | The set list shows only the big parts as blocks | One more property per icon to explain; unclear which markers divide |
+| No limit on the text | Any note fits | Long notes break the divider line and the stage page |
 | Keep the types, the icon decides the type | No local schema change of `type` | Two concepts for one thing; the divider is tied to "break" |
 | Keep two commands, add an icon picker to *Add text* only | Smallest change | Two commands for the same thing; breaks still cannot get another icon |
 | Free choice of any Material icon, stored as a code point | Unlimited choice | Code points are not stable across Flutter versions; the web build tree-shakes unused icons; no translated default names |
@@ -163,7 +180,8 @@ their own fields and are decided separately.
 - One client schema migration (`set_items.type` and `set_items.icon`); the sync,
   backup and set archive formats gain the optional field; the server hook gains
   the keep rule.
-- Text markers without a note of their own now appear in the set list.
+- Text markers without a note of their own now appear in the set list, and
+  every former text item becomes a divider there.
 - The website pages for sets and live mode and their screenshots are updated
   (ADR-0030).
 - An app update is needed for each new catalogue entry.
@@ -174,10 +192,12 @@ their own fields and are decided separately.
 - 2026-11-21: No break or text type any more: the icon decides the divider in
   the set list, the text is prefilled with the icon's default name and can be
   overwritten; `type` is written only for older apps (owner, #717).
+- 2026-11-21: Every marker is a divider in the set list (no divider per icon);
+  the text is limited to 24 characters (owner, #717).
 
 ## Open points
 
-- The final catalogue (icons, keys, names, groups, dividers).
+- The final catalogue (icons, keys, names, groups).
 - Whether the printable set list embeds the Material icon font or uses neutral
   symbols.
 - Follow-ups: break duration with a countdown, markers per instrument or role,
