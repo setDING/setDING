@@ -253,7 +253,11 @@ void main() {
   test('a song added to a past set is frozen as it is now', () async {
     final song = await songs.createSong(source: '{title: S}\n{key: F}');
     final past = await sets.createSet(name: 'Past', gigDate: daysAgo(40));
-    final upcoming = await sets.createSet(name: 'Next', gigDate: daysAgo(-1));
+    // Adding a song compares with the real clock, not with [today].
+    final upcoming = await sets.createSet(
+      name: 'Next',
+      gigDate: DateTime.now().add(const Duration(days: 2)),
+    );
     await sets.addSongs(past, [song]);
     await sets.addSongs(upcoming, [song]);
     expect(
