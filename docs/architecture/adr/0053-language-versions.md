@@ -160,6 +160,16 @@ the API directly as the refused roles (permission matrix test).
 - 2026-11-21: Implementation split into #804 (data and sync), #805 (language),
   #806 (linking), #807 (switching set items), #808 (copying adjustments) and #809
   (archives).
+- 2026-11-21: Data and sync implemented (#804): on the server `songs.work_id`,
+  `songs.language` and the server-maintained `songs.content_revision` (the
+  revision of the last change of anything else), which the conflict check uses;
+  a change of only the link fields needs no base revision and keeps the last
+  editor, so linking a band leader's own song leaves it theirs (ADR-0023). In
+  the client the columns `songs.work_id` and `songs.language` (schema 31), each
+  link field pushed on its own from the outbox (`song_links`), and
+  `SongRepository.linkLanguageVersions`, `unlinkLanguageVersion`, `setLanguage`
+  and `languageVersions`. A copy of a song (another band's library, keeping both
+  versions of a conflict) is no version of the original's work.
 
 ## Open points
 

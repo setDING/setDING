@@ -678,6 +678,9 @@ class PocketBaseBackend implements SyncBackend {
     purged: r.getBoolValue('purged'),
     createdBy: _nonEmpty(r.getStringValue('created_by')),
     updatedBy: _nonEmpty(r.getStringValue('updated_by')),
+    workId: _nonEmpty(r.getStringValue('work_id')),
+    language: _nonEmpty(r.getStringValue('language')),
+    contentRevision: r.getIntValue('content_revision'),
   );
 
   static String? _nonEmpty(String value) => value.isEmpty ? null : value;
@@ -779,6 +782,10 @@ class PocketBaseBackend implements SyncBackend {
                       'id': song.id,
                       'organization': song.organizationId,
                       ...body,
+                      // Link fields only on create; later by pushSongLink
+                      // (ADR-0053).
+                      'work_id': ?song.workId,
+                      'language': ?song.language,
                     },
                   )
             : await _pb
@@ -790,6 +797,19 @@ class PocketBaseBackend implements SyncBackend {
           : _map(e),
     );
   }
+
+  @override
+  Future<RemoteSong> pushSongLink(
+    String songId,
+    SongLinkField field,
+    String? value,
+  ) => _signedIn(
+    () async => _song(
+      await _pb
+          .collection('songs')
+          .update(songId, body: {field.serverName: value ?? ''}),
+    ),
+  );
 
   @override
   Future<RemoteSet> pushSet(RemoteSet set, {required bool create}) async {

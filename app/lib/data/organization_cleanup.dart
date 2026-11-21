@@ -61,6 +61,8 @@ Future<void> removeOrganizationData(
         if (records.contains(e.recordId) ||
             (e.collection == SyncCollection.overlays &&
                 songs.contains(parseOverlayRecordId(e.recordId).$2)) ||
+            (e.collection == SyncCollection.songLinks &&
+                songs.contains(parseSongLinkRecordId(e.recordId).$1)) ||
             (e.collection == SyncCollection.arrangements &&
                 (bands.any((b) => e.recordId.startsWith('$b:')) ||
                     songs.any((s) => e.recordId.endsWith(':$s')))))

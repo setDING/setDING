@@ -508,6 +508,26 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _workIdMeta = const VerificationMeta('workId');
+  @override
+  late final GeneratedColumn<String> workId = GeneratedColumn<String>(
+    'work_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _languageMeta = const VerificationMeta(
+    'language',
+  );
+  @override
+  late final GeneratedColumn<String> language = GeneratedColumn<String>(
+    'language',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -531,6 +551,8 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
     deleted,
     deletedAt,
     purged,
+    workId,
+    language,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -684,6 +706,18 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
         purged.isAcceptableOrUnknown(data['purged']!, _purgedMeta),
       );
     }
+    if (data.containsKey('work_id')) {
+      context.handle(
+        _workIdMeta,
+        workId.isAcceptableOrUnknown(data['work_id']!, _workIdMeta),
+      );
+    }
+    if (data.containsKey('language')) {
+      context.handle(
+        _languageMeta,
+        language.isAcceptableOrUnknown(data['language']!, _languageMeta),
+      );
+    }
     return context;
   }
 
@@ -777,6 +811,14 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
         DriftSqlType.bool,
         data['${effectivePrefix}purged'],
       )!,
+      workId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}work_id'],
+      ),
+      language: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}language'],
+      ),
     );
   }
 
@@ -843,6 +885,15 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
   /// The server purged the deleted record's content after 30 days
   /// (ADR-0043, schema 21): it is no longer in the trash.
   final bool purged;
+
+  /// Shared ID of all language versions of a work (ADR-0053, schema 31):
+  /// translations and free adaptations of the song in the same library.
+  /// Null if the song has no other versions.
+  final String? workId;
+
+  /// Language set by hand (ADR-0053, schema 31): a code of
+  /// `songLanguages`; null uses the language detected on the device.
+  final String? language;
   const SongEntry({
     required this.id,
     required this.libraryId,
@@ -865,6 +916,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     required this.deleted,
     this.deletedAt,
     required this.purged,
+    this.workId,
+    this.language,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -912,6 +965,12 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
     }
     map['purged'] = Variable<bool>(purged);
+    if (!nullToAbsent || workId != null) {
+      map['work_id'] = Variable<String>(workId);
+    }
+    if (!nullToAbsent || language != null) {
+      map['language'] = Variable<String>(language);
+    }
     return map;
   }
 
@@ -958,6 +1017,12 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
           ? const Value.absent()
           : Value(deletedAt),
       purged: Value(purged),
+      workId: workId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(workId),
+      language: language == null && nullToAbsent
+          ? const Value.absent()
+          : Value(language),
     );
   }
 
@@ -990,6 +1055,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       deleted: serializer.fromJson<bool>(json['deleted']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
       purged: serializer.fromJson<bool>(json['purged']),
+      workId: serializer.fromJson<String?>(json['workId']),
+      language: serializer.fromJson<String?>(json['language']),
     );
   }
   @override
@@ -1017,6 +1084,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       'deleted': serializer.toJson<bool>(deleted),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
       'purged': serializer.toJson<bool>(purged),
+      'workId': serializer.toJson<String?>(workId),
+      'language': serializer.toJson<String?>(language),
     };
   }
 
@@ -1042,6 +1111,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     bool? deleted,
     Value<DateTime?> deletedAt = const Value.absent(),
     bool? purged,
+    Value<String?> workId = const Value.absent(),
+    Value<String?> language = const Value.absent(),
   }) => SongEntry(
     id: id ?? this.id,
     libraryId: libraryId ?? this.libraryId,
@@ -1064,6 +1135,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     deleted: deleted ?? this.deleted,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
     purged: purged ?? this.purged,
+    workId: workId.present ? workId.value : this.workId,
+    language: language.present ? language.value : this.language,
   );
   SongEntry copyWithCompanion(SongsCompanion data) {
     return SongEntry(
@@ -1098,6 +1171,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       deleted: data.deleted.present ? data.deleted.value : this.deleted,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
       purged: data.purged.present ? data.purged.value : this.purged,
+      workId: data.workId.present ? data.workId.value : this.workId,
+      language: data.language.present ? data.language.value : this.language,
     );
   }
 
@@ -1124,7 +1199,9 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
           ..write('updatedAt: $updatedAt, ')
           ..write('deleted: $deleted, ')
           ..write('deletedAt: $deletedAt, ')
-          ..write('purged: $purged')
+          ..write('purged: $purged, ')
+          ..write('workId: $workId, ')
+          ..write('language: $language')
           ..write(')'))
         .toString();
   }
@@ -1152,6 +1229,8 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     deleted,
     deletedAt,
     purged,
+    workId,
+    language,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -1177,7 +1256,9 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
           other.updatedAt == this.updatedAt &&
           other.deleted == this.deleted &&
           other.deletedAt == this.deletedAt &&
-          other.purged == this.purged);
+          other.purged == this.purged &&
+          other.workId == this.workId &&
+          other.language == this.language);
 }
 
 class SongsCompanion extends UpdateCompanion<SongEntry> {
@@ -1202,6 +1283,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
   final Value<bool> deleted;
   final Value<DateTime?> deletedAt;
   final Value<bool> purged;
+  final Value<String?> workId;
+  final Value<String?> language;
   final Value<int> rowid;
   const SongsCompanion({
     this.id = const Value.absent(),
@@ -1225,6 +1308,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     this.deleted = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.purged = const Value.absent(),
+    this.workId = const Value.absent(),
+    this.language = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SongsCompanion.insert({
@@ -1249,6 +1334,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     this.deleted = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.purged = const Value.absent(),
+    this.workId = const Value.absent(),
+    this.language = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        libraryId = Value(libraryId),
@@ -1276,6 +1363,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     Expression<bool>? deleted,
     Expression<DateTime>? deletedAt,
     Expression<bool>? purged,
+    Expression<String>? workId,
+    Expression<String>? language,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1301,6 +1390,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
       if (deleted != null) 'deleted': deleted,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (purged != null) 'purged': purged,
+      if (workId != null) 'work_id': workId,
+      if (language != null) 'language': language,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1327,6 +1418,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     Value<bool>? deleted,
     Value<DateTime?>? deletedAt,
     Value<bool>? purged,
+    Value<String?>? workId,
+    Value<String?>? language,
     Value<int>? rowid,
   }) {
     return SongsCompanion(
@@ -1351,6 +1444,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
       deleted: deleted ?? this.deleted,
       deletedAt: deletedAt ?? this.deletedAt,
       purged: purged ?? this.purged,
+      workId: workId ?? this.workId,
+      language: language ?? this.language,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1421,6 +1516,12 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     if (purged.present) {
       map['purged'] = Variable<bool>(purged.value);
     }
+    if (workId.present) {
+      map['work_id'] = Variable<String>(workId.value);
+    }
+    if (language.present) {
+      map['language'] = Variable<String>(language.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1451,6 +1552,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
           ..write('deleted: $deleted, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('purged: $purged, ')
+          ..write('workId: $workId, ')
+          ..write('language: $language, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -9832,6 +9935,8 @@ typedef $$SongsTableCreateCompanionBuilder = SongsCompanion Function({
   Value<bool> deleted,
   Value<DateTime?> deletedAt,
   Value<bool> purged,
+  Value<String?> workId,
+  Value<String?> language,
   Value<int> rowid,
 });
 typedef $$SongsTableUpdateCompanionBuilder = SongsCompanion Function({
@@ -9856,6 +9961,8 @@ typedef $$SongsTableUpdateCompanionBuilder = SongsCompanion Function({
   Value<bool> deleted,
   Value<DateTime?> deletedAt,
   Value<bool> purged,
+  Value<String?> workId,
+  Value<String?> language,
   Value<int> rowid,
 });
 
@@ -10068,6 +10175,16 @@ class $$SongsTableFilterComposer extends Composer<_$AppDatabase, $SongsTable> {
 
   ColumnFilters<bool> get purged => $composableBuilder(
     column: $table.purged,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get workId => $composableBuilder(
+    column: $table.workId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get language => $composableBuilder(
+    column: $table.language,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -10310,6 +10427,16 @@ class $$SongsTableOrderingComposer
     column: $table.purged,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get workId => $composableBuilder(
+    column: $table.workId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get language => $composableBuilder(
+    column: $table.language,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SongsTableAnnotationComposer
@@ -10393,6 +10520,12 @@ class $$SongsTableAnnotationComposer
 
   GeneratedColumn<bool> get purged =>
       $composableBuilder(column: $table.purged, builder: (column) => column);
+
+  GeneratedColumn<String> get workId =>
+      $composableBuilder(column: $table.workId, builder: (column) => column);
+
+  GeneratedColumn<String> get language =>
+      $composableBuilder(column: $table.language, builder: (column) => column);
 
   Expression<T> attachmentsRefs<T extends Object>(
     Expression<T> Function($$AttachmentsTableAnnotationComposer a) f,
@@ -10575,6 +10708,8 @@ class $$SongsTableTableManager
                 Value<bool> deleted = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<bool> purged = const Value.absent(),
+                Value<String?> workId = const Value.absent(),
+                Value<String?> language = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SongsCompanion(
                 id: id,
@@ -10598,6 +10733,8 @@ class $$SongsTableTableManager
                 deleted: deleted,
                 deletedAt: deletedAt,
                 purged: purged,
+                workId: workId,
+                language: language,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -10623,6 +10760,8 @@ class $$SongsTableTableManager
                 Value<bool> deleted = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<bool> purged = const Value.absent(),
+                Value<String?> workId = const Value.absent(),
+                Value<String?> language = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SongsCompanion.insert(
                 id: id,
@@ -10646,6 +10785,8 @@ class $$SongsTableTableManager
                 deleted: deleted,
                 deletedAt: deletedAt,
                 purged: purged,
+                workId: workId,
+                language: language,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

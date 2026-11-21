@@ -15,13 +15,24 @@ onRecordUpdateRequest(
   "organizations", "org_memberships", "bands", "memberships", "songs", "attachments", "setlists", "overlays", "arrangements", "user_settings", "annotations",
 );
 
+// Songs also keep the revision of their last content change (ADR-0053).
 onRecordCreateExecute((e) => {
-  e.record.set("revision", require(`${__hooks}/lib/sync.js`).nextRevision(e.app));
+  const revision = require(`${__hooks}/lib/sync.js`).nextRevision(e.app);
+  e.record.set("revision", revision);
+  if (e.record.collection().name === "songs") e.record.set("content_revision", revision);
   e.next();
 }, "organizations", "org_memberships", "bands", "memberships", "songs", "attachments", "setlists", "overlays", "arrangements", "user_settings", "annotations");
 
 onRecordUpdateExecute((e) => {
-  e.record.set("revision", require(`${__hooks}/lib/sync.js`).nextRevision(e.app));
+  const revision = require(`${__hooks}/lib/sync.js`).nextRevision(e.app);
+  e.record.set("revision", revision);
+  if (e.record.collection().name === "songs") {
+    const songs = require(`${__hooks}/lib/songs.js`);
+    e.record.set(
+      "content_revision",
+      songs.contentChanged(e.record) ? revision : e.record.original().getInt("content_revision"),
+    );
+  }
   e.next();
 }, "organizations", "org_memberships", "bands", "memberships", "songs", "attachments", "setlists", "overlays", "arrangements", "user_settings", "annotations");
 

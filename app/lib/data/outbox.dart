@@ -5,6 +5,11 @@ import 'database.dart';
 /// Server collections of synced records (ADR-0015, ADR-0017).
 abstract final class SyncCollection {
   static const songs = 'songs';
+
+  /// A link field of a song (ADR-0053), pushed on its own, last writer wins
+  /// per field; the outbox record ID is [songLinkRecordId]. Never a server
+  /// collection of its own.
+  static const songLinks = 'song_links';
   static const setlists = 'setlists';
   static const attachments = 'attachments';
 
@@ -38,6 +43,41 @@ String annotationRecordId(String ownerId, String songId, String target) =>
 (String, String, String) parseAnnotationRecordId(String id) {
   final parts = id.split(':');
   return (parts[0], parts[1], parts.length > 2 ? parts[2] : '');
+}
+
+/// Languages a song can be marked with (ADR-0053): German, Swiss German,
+/// English, French, Italian, Spanish, Portuguese, Dutch and other.
+const songLanguages = [
+  'de',
+  'gsw',
+  'en',
+  'fr',
+  'it',
+  'es',
+  'pt',
+  'nl',
+  'other',
+];
+
+/// A link field of a song (ADR-0053), synced last writer wins per field.
+enum SongLinkField {
+  workId('work_id'),
+  language('language');
+
+  const SongLinkField(this.serverName);
+
+  /// Name of the field on the server.
+  final String serverName;
+}
+
+/// Outbox record ID of the link field [field] (its server name, e.g.
+/// `work_id`) of [songId] (ADR-0053).
+String songLinkRecordId(String songId, String field) => '$songId:$field';
+
+/// Song and field of a [songLinkRecordId].
+(String, String) parseSongLinkRecordId(String id) {
+  final i = id.indexOf(':');
+  return (id.substring(0, i), id.substring(i + 1));
 }
 
 /// Outbox record ID of the arrangement of [bandId] for [songId].

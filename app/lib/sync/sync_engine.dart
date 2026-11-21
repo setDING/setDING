@@ -353,6 +353,8 @@ class SyncEngine {
     // Songs first: attachments and overlays need their song on the server.
     const order = [
       SyncCollection.songs,
+      // After its song, which may have to be created first (ADR-0053).
+      SyncCollection.songLinks,
       SyncCollection.setlists,
       SyncCollection.attachments,
       SyncCollection.overlays,
@@ -371,6 +373,8 @@ class SyncEngine {
           final r = await _songs.push(entry);
           if (r == PushResult.done) pushed++;
           if (r == PushResult.conflict) conflicts++;
+        case SyncCollection.songLinks:
+          if (await _songs.pushLink(entry) == PushResult.done) pushed++;
         case SyncCollection.setlists:
           if (await _sets.push(entry) == PushResult.done) pushed++;
         case SyncCollection.attachments:

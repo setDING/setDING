@@ -720,23 +720,58 @@ class FakeSyncBackend implements SyncBackend {
   ///
   /// [by] (or [RemoteSong.updatedBy]) is recorded as the last editor, and as
   /// the creator of a new song, as the server does.
+  ///
+  /// The link fields (ADR-0053) are taken from [song] for a new song and kept
+  /// otherwise, as an update of the content does not send them.
   RemoteSong putSong(RemoteSong song, {String? by}) {
     final editor = by ?? song.updatedBy;
+    final existing = songs[song.id];
+    final revision = ++_serverRevision;
     final stored = RemoteSong(
       id: song.id,
       organizationId: song.organizationId,
       title: song.title,
       chordpro: song.chordpro,
-      revision: ++_serverRevision,
+      revision: revision,
       deleted: song.deleted,
       deletedAt: song.deleted ? song.deletedAt ?? DateTime.now() : null,
       purged: song.purged,
-      createdBy: songs[song.id]?.createdBy ?? song.createdBy ?? editor,
+      createdBy: existing?.createdBy ?? song.createdBy ?? editor,
       updatedBy: editor,
+      workId: existing == null ? song.workId : existing.workId,
+      language: existing == null ? song.language : existing.language,
+      contentRevision: revision,
     );
     songs[song.id] = stored;
     return stored;
   }
+
+  /// Sets a link field of a song (ADR-0053), as the server does for
+  /// [pushSongLink] or a change by someone else: last writer wins, the
+  /// content revision and the last editor stay.
+  RemoteSong putSongLink(String songId, SongLinkField field, String? value) {
+    final s = songs[songId]!;
+    final stored = RemoteSong(
+      id: s.id,
+      organizationId: s.organizationId,
+      title: s.title,
+      chordpro: s.chordpro,
+      revision: ++_serverRevision,
+      deleted: s.deleted,
+      deletedAt: s.deletedAt,
+      purged: s.purged,
+      createdBy: s.createdBy,
+      updatedBy: s.updatedBy,
+      workId: field == SongLinkField.workId ? value : s.workId,
+      language: field == SongLinkField.language ? value : s.language,
+      contentRevision: s.effectiveContentRevision,
+    );
+    songs[songId] = stored;
+    return stored;
+  }
+
+  /// Link fields pushed with [pushSongLink], in order.
+  final songLinkPushes = <(String, SongLinkField, String?)>[];
 
   /// Personal adjustments by record ID (ADR-0020).
   final overlays = <String, RemoteOverlay>{};
@@ -1004,11 +1039,26 @@ class FakeSyncBackend implements SyncBackend {
       if (existing == null) {
         throw const BackendException(BackendErrorKind.notAllowed);
       }
-      if (existing.revision != song.revision) {
+      if (existing.effectiveContentRevision > song.revision) {
         throw const BackendException(BackendErrorKind.conflict);
       }
     }
     return putSong(song);
+  }
+
+  @override
+  Future<RemoteSong> pushSongLink(
+    String songId,
+    SongLinkField field,
+    String? value,
+  ) async {
+    _requireUser();
+    pushCount++;
+    if (!songs.containsKey(songId)) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    songLinkPushes.add((songId, field, value));
+    return putSongLink(songId, field, value);
   }
 
   @override
