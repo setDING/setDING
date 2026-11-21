@@ -39,9 +39,16 @@ void downgradeToSchema19(Database raw) {
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN midi_programs');
 }
 
+/// Turns a current database back into schema 29: songs without the
+/// number of possible conversions (#798).
+void downgradeToSchema29(Database raw) {
+  raw.execute('ALTER TABLE songs DROP COLUMN chordpro_conversions');
+}
+
 /// Turns a current database back into schema 28: breaks and texts instead
 /// of markers with an icon (ADR-0047).
 void downgradeToSchema28(Database raw) {
+  downgradeToSchema29(raw);
   raw.execute(
     "UPDATE set_items SET type = CASE WHEN icon IN ('break', 'drinks') "
     "THEN 'pause' ELSE 'text' END WHERE type = 'marker'",
@@ -1056,4 +1063,29 @@ void main() {
     );
     await upgraded.close();
   });
+
+  test(
+    'upgrades a schema 29 database: songs know their possible conversions',
+    () async {
+      final current = AppDatabase(NativeDatabase(file));
+      final storage = FileAttachmentStorage(dir);
+      await SongRepository(current, storage).createSong(
+        source:
+            '{title: Old}\n{ccli: 123}\n{start_of_verse: Verse 1}\n'
+            '[G]La\n{end_of_verse}',
+      );
+      await current.close();
+
+      final raw = sqlite3.open(file.path);
+      downgradeToSchema29(raw);
+      raw.execute('PRAGMA user_version = 29');
+      raw.close();
+
+      final upgraded = AppDatabase(NativeDatabase(file));
+      final repo = SongRepository(upgraded, storage);
+      upgraded.afterUpgrade = (db) => repo.refreshAllMetadata();
+      expect((await repo.watchSongList().first).single.conversions, 2);
+      await upgraded.close();
+    },
+  );
 }

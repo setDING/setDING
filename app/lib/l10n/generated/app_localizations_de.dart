@@ -4304,6 +4304,59 @@ class AppLocalizationsDe extends AppLocalizations {
   String get attentionSheetMusicOnly => 'Nur Noten (PDF)';
 
   @override
+  String chordProConversionsTooltip(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Stellen im ChordPro können umgewandelt werden',
+      one: '1 Stelle im ChordPro kann umgewandelt werden',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String overviewTodoConversions(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs mit möglichen Umwandlungen',
+      one: '1 Song mit möglichen Umwandlungen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get attentionConversions => 'Umwandelbar';
+
+  @override
+  String get convertAllSongs => 'Alle umwandeln';
+
+  @override
+  String get convertAllSongsTitle => 'Alle Songs umwandeln?';
+
+  @override
+  String convertAllSongsMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Die $count Songs werden',
+      one: 'Der Song wird',
+    );
+    return '$_temp0 für alle umgewandelt: CCLI-Direktiven und Abschnitts-Beschriftungen nach der ChordPro-Spezifikation, CCLI-Taktzeilen als Grid, der CCLI-Footer entfernt.';
+  }
+
+  @override
+  String songsConverted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs umgewandelt',
+      one: '1 Song umgewandelt',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get songsFilterClear => 'Filter entfernen';
 
   @override

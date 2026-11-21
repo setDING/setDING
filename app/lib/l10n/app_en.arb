@@ -2234,6 +2234,41 @@
   "attentionProblems": "ChordPro problems",
   "attentionConflicts": "Sync conflicts",
   "attentionSheetMusicOnly": "Sheet music only",
+  "chordProConversionsTooltip": "{count, plural, =1{1 place in the ChordPro can be converted} other{{count} places in the ChordPro can be converted}}",
+  "@chordProConversionsTooltip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "overviewTodoConversions": "{count, plural, =1{1 song with possible conversions} other{{count} songs with possible conversions}}",
+  "@overviewTodoConversions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "attentionConversions": "Convertible",
+  "convertAllSongs": "Convert all",
+  "convertAllSongsTitle": "Convert all songs?",
+  "convertAllSongsMessage": "{count, plural, =1{The song is} other{The {count} songs are}} converted for everyone: CCLI directives and section labels as the ChordPro specification recommends, CCLI bar lines as grids, the CCLI footer removed.",
+  "@convertAllSongsMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songsConverted": "{count, plural, =1{1 song converted} other{{count} songs converted}}",
+  "@songsConverted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "songsFilterClear": "Remove filter",
   "songsFilterEmpty": "No songs left in this filter.",
   "playHistory": "Played",

@@ -11,6 +11,7 @@ import importLabels from '../../../../../docs/screenshots/import_labels_de.png';
 import songsSelected from '../../../../../docs/screenshots/songs_selected_de.png';
 import songExport from '../../../../../docs/screenshots/song_export_de.png';
 import songImport from '../../../../../docs/screenshots/song_import_de.png';
+import songsConversions from '../../../../../docs/screenshots/songs_conversions_de.png';
 
 Alle Songs gehören der Organisation; alle ihre Bands teilen dieselbe
 Songbibliothek. Unter **Songs** siehst du sie.
@@ -74,9 +75,24 @@ Warnsymbol markiert.
 Songs, die Abschnitts-Beschriftungen in der Kurzform `{start_of_verse: Strophe 1}`
 schreiben, erscheinen dort ebenfalls: **Beschriftungen umwandeln** schreibt sie als
 `label="…"`, wie es die ChordPro-Spezifikation empfiehlt. Sie sehen so oder so gleich
-aus und werden nicht markiert.
+aus.
 
 <Image src={importLabels} alt="Import prüfen: ein Song mit einer Stelle zum Korrigieren, zwei Songs mit Beschriftungen in der Kurzform und die Knöpfe Beschriftungen umwandeln und Automatisch korrigieren" />
+
+## Songs umwandeln
+
+Manche Songs werden richtig angezeigt, folgen aber noch nicht der
+ChordPro-Spezifikation oder enthalten noch Teile einer SongSelect-Datei: `{ccli}`
+und `{ccli_license}`, den CCLI-Footer, CCLI-Taktzeilen, die ein Grid werden
+können, oder Abschnitts-Beschriftungen in der Kurzform. Der Editor bietet an, sie
+umzuwandeln. Damit du diese Songs findest, markiert die Songliste sie mit einem
+Zauberstab, und die Karte **Zu tun** in der **Übersicht** zählt sie (**Songs mit
+möglichen Umwandlungen**). Nur wer den Song bearbeiten darf, sieht sie.
+
+Die Zeile in der Übersicht öffnet die Songliste mit diesen Songs. **Alle umwandeln**
+wandelt alle auf einmal um, für alle, die die Songs verwenden.
+
+<Image src={songsConversions} alt="Die Songliste mit dem Filter Umwandelbar: zwei Songs mit dem Zauberstab und der Knopf Alle umwandeln" />
 
 ## Exportieren, kopieren, löschen
 

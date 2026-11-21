@@ -640,6 +640,16 @@ class _Filters extends ConsumerWidget {
                     ref.read(songAttentionFilterProvider.notifier).select(null),
               ),
             ),
+          if (attention == SongAttention.conversions)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: ActionChip(
+                key: const Key('songs-convert-all'),
+                avatar: const Icon(chordProConversionsIcon, size: 18),
+                label: Text(l10n.convertAllSongs),
+                onPressed: () => _convertAll(context, ref),
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: MenuAnchor(
@@ -711,6 +721,40 @@ class _Filters extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Converts every song of the library the person may edit that has
+/// possible conversions (#798), after asking: the songs are shared.
+Future<void> _convertAll(BuildContext context, WidgetRef ref) async {
+  final l10n = AppLocalizations.of(context);
+  // All songs of the library, also while a search narrows the list.
+  final songs = await ref.read(songRepositoryProvider).watchSongList().first;
+  if (!context.mounted) return;
+  final library = ref.read(currentLibraryProvider);
+  final conflicts = ref.read(conflictSongIdsProvider);
+  final ids = [
+    for (final s in songs)
+      if (needsAttention(
+        SongAttention.conversions,
+        s,
+        library: library,
+        conflicts: conflicts,
+      ))
+        s.id,
+  ];
+  if (ids.isEmpty) return;
+  final messenger = ScaffoldMessenger.of(context);
+  if (!await confirm(
+    context,
+    title: l10n.convertAllSongsTitle,
+    message: l10n.convertAllSongsMessage(ids.length),
+    action: l10n.convert,
+    destructive: false,
+  )) {
+    return;
+  }
+  final count = await ref.read(importExportProvider).convertAll(ids);
+  showMessageOn(messenger, l10n.songsConverted(count));
 }
 
 /// [marked] (see [SearchHit]) as text spans, the hits in [hitStyle].
@@ -1053,6 +1097,12 @@ class SongTile extends ConsumerWidget {
         ChordProProblemsBadge(
           key: const ValueKey('song-status-problems'),
           message: l10n.chordProProblemsTooltip(song.problems),
+        ),
+      if (showProblems && song.conversions > 0)
+        icon(
+          const ValueKey('song-status-conversions'),
+          l10n.chordProConversionsTooltip(song.conversions),
+          chordProConversionsIcon,
         ),
       if (nextGig case final gig?)
         icon(

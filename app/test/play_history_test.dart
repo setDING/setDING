@@ -79,6 +79,7 @@ void main() {
       tempo: 90,
       sequence: 'V C',
       chordproProblems: 0,
+      chordproConversions: 0,
       revision: 0,
       updatedAt: today,
       deleted: false,

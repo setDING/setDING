@@ -313,6 +313,11 @@ class _TodoCard extends ConsumerWidget {
                 ),
                 l10n.overviewTodoProblems(count),
               ),
+              SongAttention.conversions => line(
+                kind,
+                const Icon(chordProConversionsIcon),
+                l10n.overviewTodoConversions(count),
+              ),
               SongAttention.conflicts => line(
                 kind,
                 Icon(Icons.sync_problem, color: colors.error),

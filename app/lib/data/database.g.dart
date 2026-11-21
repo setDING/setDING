@@ -404,6 +404,17 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _chordproConversionsMeta =
+      const VerificationMeta('chordproConversions');
+  @override
+  late final GeneratedColumn<int> chordproConversions = GeneratedColumn<int>(
+    'chordpro_conversions',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   static const VerificationMeta _tagsMeta = const VerificationMeta('tags');
   @override
   late final GeneratedColumn<String> tags = GeneratedColumn<String>(
@@ -511,6 +522,7 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
     sortArtist,
     searchText,
     chordproProblems,
+    chordproConversions,
     tags,
     createdBy,
     updatedBy,
@@ -610,6 +622,15 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
         chordproProblems.isAcceptableOrUnknown(
           data['chordpro_problems']!,
           _chordproProblemsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('chordpro_conversions')) {
+      context.handle(
+        _chordproConversionsMeta,
+        chordproConversions.isAcceptableOrUnknown(
+          data['chordpro_conversions']!,
+          _chordproConversionsMeta,
         ),
       );
     }
@@ -720,6 +741,10 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
         DriftSqlType.int,
         data['${effectivePrefix}chordpro_problems'],
       )!,
+      chordproConversions: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}chordpro_conversions'],
+      )!,
       tags: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}tags'],
@@ -793,6 +818,11 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
   /// the device like [searchText], for the warning icons in lists.
   final int chordproProblems;
 
+  /// Number of places the editor offers to convert, e.g. CCLI directives
+  /// or short-form section labels (`countChordProConversions`, schema 30,
+  /// #798): derived on the device like [chordproProblems].
+  final int chordproConversions;
+
   /// `{tag}` values, each enclosed in newlines (`\nRock\nLive\n`) so a tag
   /// can be matched exactly with LIKE (schema 2).
   final String? tags;
@@ -826,6 +856,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     this.sortArtist,
     this.searchText,
     required this.chordproProblems,
+    required this.chordproConversions,
     this.tags,
     this.createdBy,
     this.updatedBy,
@@ -864,6 +895,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       map['search_text'] = Variable<String>(searchText);
     }
     map['chordpro_problems'] = Variable<int>(chordproProblems);
+    map['chordpro_conversions'] = Variable<int>(chordproConversions);
     if (!nullToAbsent || tags != null) {
       map['tags'] = Variable<String>(tags);
     }
@@ -911,6 +943,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
           ? const Value.absent()
           : Value(searchText),
       chordproProblems: Value(chordproProblems),
+      chordproConversions: Value(chordproConversions),
       tags: tags == null && nullToAbsent ? const Value.absent() : Value(tags),
       createdBy: createdBy == null && nullToAbsent
           ? const Value.absent()
@@ -946,6 +979,9 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       sortArtist: serializer.fromJson<String?>(json['sortArtist']),
       searchText: serializer.fromJson<String?>(json['searchText']),
       chordproProblems: serializer.fromJson<int>(json['chordproProblems']),
+      chordproConversions: serializer.fromJson<int>(
+        json['chordproConversions'],
+      ),
       tags: serializer.fromJson<String?>(json['tags']),
       createdBy: serializer.fromJson<String?>(json['createdBy']),
       updatedBy: serializer.fromJson<String?>(json['updatedBy']),
@@ -972,6 +1008,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       'sortArtist': serializer.toJson<String?>(sortArtist),
       'searchText': serializer.toJson<String?>(searchText),
       'chordproProblems': serializer.toJson<int>(chordproProblems),
+      'chordproConversions': serializer.toJson<int>(chordproConversions),
       'tags': serializer.toJson<String?>(tags),
       'createdBy': serializer.toJson<String?>(createdBy),
       'updatedBy': serializer.toJson<String?>(updatedBy),
@@ -996,6 +1033,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     Value<String?> sortArtist = const Value.absent(),
     Value<String?> searchText = const Value.absent(),
     int? chordproProblems,
+    int? chordproConversions,
     Value<String?> tags = const Value.absent(),
     Value<String?> createdBy = const Value.absent(),
     Value<String?> updatedBy = const Value.absent(),
@@ -1017,6 +1055,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     sortArtist: sortArtist.present ? sortArtist.value : this.sortArtist,
     searchText: searchText.present ? searchText.value : this.searchText,
     chordproProblems: chordproProblems ?? this.chordproProblems,
+    chordproConversions: chordproConversions ?? this.chordproConversions,
     tags: tags.present ? tags.value : this.tags,
     createdBy: createdBy.present ? createdBy.value : this.createdBy,
     updatedBy: updatedBy.present ? updatedBy.value : this.updatedBy,
@@ -1048,6 +1087,9 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       chordproProblems: data.chordproProblems.present
           ? data.chordproProblems.value
           : this.chordproProblems,
+      chordproConversions: data.chordproConversions.present
+          ? data.chordproConversions.value
+          : this.chordproConversions,
       tags: data.tags.present ? data.tags.value : this.tags,
       createdBy: data.createdBy.present ? data.createdBy.value : this.createdBy,
       updatedBy: data.updatedBy.present ? data.updatedBy.value : this.updatedBy,
@@ -1074,6 +1116,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
           ..write('sortArtist: $sortArtist, ')
           ..write('searchText: $searchText, ')
           ..write('chordproProblems: $chordproProblems, ')
+          ..write('chordproConversions: $chordproConversions, ')
           ..write('tags: $tags, ')
           ..write('createdBy: $createdBy, ')
           ..write('updatedBy: $updatedBy, ')
@@ -1087,7 +1130,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     libraryId,
     chordproSource,
@@ -1100,6 +1143,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     sortArtist,
     searchText,
     chordproProblems,
+    chordproConversions,
     tags,
     createdBy,
     updatedBy,
@@ -1108,7 +1152,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     deleted,
     deletedAt,
     purged,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1125,6 +1169,7 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
           other.sortArtist == this.sortArtist &&
           other.searchText == this.searchText &&
           other.chordproProblems == this.chordproProblems &&
+          other.chordproConversions == this.chordproConversions &&
           other.tags == this.tags &&
           other.createdBy == this.createdBy &&
           other.updatedBy == this.updatedBy &&
@@ -1148,6 +1193,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
   final Value<String?> sortArtist;
   final Value<String?> searchText;
   final Value<int> chordproProblems;
+  final Value<int> chordproConversions;
   final Value<String?> tags;
   final Value<String?> createdBy;
   final Value<String?> updatedBy;
@@ -1170,6 +1216,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     this.sortArtist = const Value.absent(),
     this.searchText = const Value.absent(),
     this.chordproProblems = const Value.absent(),
+    this.chordproConversions = const Value.absent(),
     this.tags = const Value.absent(),
     this.createdBy = const Value.absent(),
     this.updatedBy = const Value.absent(),
@@ -1193,6 +1240,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     this.sortArtist = const Value.absent(),
     this.searchText = const Value.absent(),
     this.chordproProblems = const Value.absent(),
+    this.chordproConversions = const Value.absent(),
     this.tags = const Value.absent(),
     this.createdBy = const Value.absent(),
     this.updatedBy = const Value.absent(),
@@ -1219,6 +1267,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     Expression<String>? sortArtist,
     Expression<String>? searchText,
     Expression<int>? chordproProblems,
+    Expression<int>? chordproConversions,
     Expression<String>? tags,
     Expression<String>? createdBy,
     Expression<String>? updatedBy,
@@ -1242,6 +1291,8 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
       if (sortArtist != null) 'sort_artist': sortArtist,
       if (searchText != null) 'search_text': searchText,
       if (chordproProblems != null) 'chordpro_problems': chordproProblems,
+      if (chordproConversions != null)
+        'chordpro_conversions': chordproConversions,
       if (tags != null) 'tags': tags,
       if (createdBy != null) 'created_by': createdBy,
       if (updatedBy != null) 'updated_by': updatedBy,
@@ -1267,6 +1318,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     Value<String?>? sortArtist,
     Value<String?>? searchText,
     Value<int>? chordproProblems,
+    Value<int>? chordproConversions,
     Value<String?>? tags,
     Value<String?>? createdBy,
     Value<String?>? updatedBy,
@@ -1290,6 +1342,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
       sortArtist: sortArtist ?? this.sortArtist,
       searchText: searchText ?? this.searchText,
       chordproProblems: chordproProblems ?? this.chordproProblems,
+      chordproConversions: chordproConversions ?? this.chordproConversions,
       tags: tags ?? this.tags,
       createdBy: createdBy ?? this.createdBy,
       updatedBy: updatedBy ?? this.updatedBy,
@@ -1341,6 +1394,9 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     if (chordproProblems.present) {
       map['chordpro_problems'] = Variable<int>(chordproProblems.value);
     }
+    if (chordproConversions.present) {
+      map['chordpro_conversions'] = Variable<int>(chordproConversions.value);
+    }
     if (tags.present) {
       map['tags'] = Variable<String>(tags.value);
     }
@@ -1386,6 +1442,7 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
           ..write('sortArtist: $sortArtist, ')
           ..write('searchText: $searchText, ')
           ..write('chordproProblems: $chordproProblems, ')
+          ..write('chordproConversions: $chordproConversions, ')
           ..write('tags: $tags, ')
           ..write('createdBy: $createdBy, ')
           ..write('updatedBy: $updatedBy, ')
@@ -9766,6 +9823,7 @@ typedef $$SongsTableCreateCompanionBuilder = SongsCompanion Function({
   Value<String?> sortArtist,
   Value<String?> searchText,
   Value<int> chordproProblems,
+  Value<int> chordproConversions,
   Value<String?> tags,
   Value<String?> createdBy,
   Value<String?> updatedBy,
@@ -9789,6 +9847,7 @@ typedef $$SongsTableUpdateCompanionBuilder = SongsCompanion Function({
   Value<String?> sortArtist,
   Value<String?> searchText,
   Value<int> chordproProblems,
+  Value<int> chordproConversions,
   Value<String?> tags,
   Value<String?> createdBy,
   Value<String?> updatedBy,
@@ -9964,6 +10023,11 @@ class $$SongsTableFilterComposer extends Composer<_$AppDatabase, $SongsTable> {
 
   ColumnFilters<int> get chordproProblems => $composableBuilder(
     column: $table.chordproProblems,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get chordproConversions => $composableBuilder(
+    column: $table.chordproConversions,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -10202,6 +10266,11 @@ class $$SongsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get chordproConversions => $composableBuilder(
+    column: $table.chordproConversions,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get tags => $composableBuilder(
     column: $table.tags,
     builder: (column) => ColumnOrderings(column),
@@ -10293,6 +10362,11 @@ class $$SongsTableAnnotationComposer
 
   GeneratedColumn<int> get chordproProblems => $composableBuilder(
     column: $table.chordproProblems,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get chordproConversions => $composableBuilder(
+    column: $table.chordproConversions,
     builder: (column) => column,
   );
 
@@ -10492,6 +10566,7 @@ class $$SongsTableTableManager
                 Value<String?> sortArtist = const Value.absent(),
                 Value<String?> searchText = const Value.absent(),
                 Value<int> chordproProblems = const Value.absent(),
+                Value<int> chordproConversions = const Value.absent(),
                 Value<String?> tags = const Value.absent(),
                 Value<String?> createdBy = const Value.absent(),
                 Value<String?> updatedBy = const Value.absent(),
@@ -10514,6 +10589,7 @@ class $$SongsTableTableManager
                 sortArtist: sortArtist,
                 searchText: searchText,
                 chordproProblems: chordproProblems,
+                chordproConversions: chordproConversions,
                 tags: tags,
                 createdBy: createdBy,
                 updatedBy: updatedBy,
@@ -10538,6 +10614,7 @@ class $$SongsTableTableManager
                 Value<String?> sortArtist = const Value.absent(),
                 Value<String?> searchText = const Value.absent(),
                 Value<int> chordproProblems = const Value.absent(),
+                Value<int> chordproConversions = const Value.absent(),
                 Value<String?> tags = const Value.absent(),
                 Value<String?> createdBy = const Value.absent(),
                 Value<String?> updatedBy = const Value.absent(),
@@ -10560,6 +10637,7 @@ class $$SongsTableTableManager
                 sortArtist: sortArtist,
                 searchText: searchText,
                 chordproProblems: chordproProblems,
+                chordproConversions: chordproConversions,
                 tags: tags,
                 createdBy: createdBy,
                 updatedBy: updatedBy,
