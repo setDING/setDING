@@ -1,6 +1,6 @@
 # ADR-0048: Opening an exported PDF in the default app
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-21
 
 ## Context
@@ -62,6 +62,7 @@ opened reliably:
 
 - 2026-11-21: Proposed (#721). The owner chose `open_filex` over own native code
   and limited the action to PDF exports.
+- 2026-11-21: Accepted by the owner; implemented in #721.
 
 ## Open points
 
