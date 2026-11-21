@@ -70,6 +70,8 @@ map=(
   language_version_picker 40b_language_version_picker
   songs_languages 39_songs_languages
   song_language 39b_song_language
+  songs_tags 42_songs_tags
+  songs_played 42b_songs_played
 )
 
 copied=0

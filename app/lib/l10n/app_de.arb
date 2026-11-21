@@ -106,6 +106,16 @@
     }
   },
   "allTags": "Alle",
+  "tagsFilter": "Tags",
+  "filterByTags": "Nach Tags filtern",
+  "tagsFilterMore": "{tag} +{count}",
+  "@tagsFilterMore": {
+    "description": "Tag filter chip with several selected tags: the first one and how many more.",
+    "placeholders": {
+      "tag": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
   "notes": "Meine Notizen",
   "notesHint": "Nur du siehst diese Notiz.",
   "editSource": "ChordPro bearbeiten",
@@ -2730,6 +2740,9 @@
       }
     }
   },
+  "playedFilter": "Gespielt",
+  "playedAll": "Alle",
+  "filterByPlayed": "Nach Einsätzen der Band filtern",
   "repertoireNeverPlayed": "Nie gespielt",
   "repertoireNeverPlayedHint": "Songs der Bibliothek, die in keinem vergangenen Set der Band waren",
   "repertoireNone": "Keine",

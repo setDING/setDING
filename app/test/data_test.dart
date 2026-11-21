@@ -319,7 +319,7 @@ void main() {
   });
 
   group('Tags, sorting and import', () {
-    test('sorts by sorttitle and filters by tag', () async {
+    test('sorts by sorttitle and filters by tags', () async {
       await songs.createSong(
         source: '{title: The Zebra}\n{sorttitle: Zebra}\n{tag: Rock}',
       );
@@ -332,11 +332,19 @@ void main() {
         'Mango',
         'The Zebra',
       ]);
-      expect((await songs.watchSongs(tag: 'Rock').first).map((s) => s.title), [
-        'Apple',
-        'The Zebra',
-      ]);
-      expect(await songs.watchTags().first, ['Ballad', 'Rock']);
+      expect(
+        (await songs.watchSongs(tags: {'Rock'}).first).map((s) => s.title),
+        ['Apple', 'The Zebra'],
+      );
+      // Several tags: songs with any of them (#816).
+      await songs.createSong(source: '{title: Bolero}\n{tag: Latin}');
+      expect(
+        (await songs.watchSongs(tags: {'Ballad', 'latin'}).first).map(
+          (s) => s.title,
+        ),
+        ['Apple', 'Bolero'],
+      );
+      expect(await songs.watchTags().first, ['Ballad', 'Latin', 'Rock']);
     });
 
     test('the import reports songs with ChordPro problems (#314)', () async {
@@ -598,7 +606,7 @@ void main() {
       (await songs.watchSongList(query: 'rain').first).map((s) => s.title),
       ['Beta'],
     );
-    expect((await songs.watchSongList(tag: 'rock').first).map((s) => s.id), [
+    expect((await songs.watchSongList(tags: {'rock'}).first).map((s) => s.id), [
       a,
     ]);
   });

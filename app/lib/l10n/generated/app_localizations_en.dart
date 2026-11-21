@@ -158,6 +158,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allTags => 'All';
 
   @override
+  String get tagsFilter => 'Tags';
+
+  @override
+  String get filterByTags => 'Filter by tags';
+
+  @override
+  String tagsFilterMore(String tag, int count) {
+    return '$tag +$count';
+  }
+
+  @override
   String get notes => 'My notes';
 
   @override
@@ -4496,6 +4507,15 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get playedFilter => 'Played';
+
+  @override
+  String get playedAll => 'All';
+
+  @override
+  String get filterByPlayed => 'Filter by the band\'s plays';
 
   @override
   String get repertoireNeverPlayed => 'Never played';

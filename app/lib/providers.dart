@@ -289,14 +289,18 @@ final songSortProvider = NotifierProvider<SongSortNotifier, SongSort>(
   SongSortNotifier.new,
 );
 
-/// Songs filtered by search text and optional tag, in the chosen order.
+/// Songs filtered by search text and tags (any of them; all songs when
+/// empty), in the chosen order.
+///
+/// A set compares by identity, so callers keep the same set instance
+/// until the selection changes (or pass `const {}`).
 final songsProvider = StreamProvider.autoDispose
-    .family<List<SongListEntry>, ({String query, String? tag})>(
+    .family<List<SongListEntry>, ({String query, Set<String> tags})>(
       (ref, filter) => ref
           .watch(songRepositoryProvider)
           .watchSongList(
             query: filter.query,
-            tag: filter.tag,
+            tags: filter.tags,
             sort: ref.watch(songSortProvider),
           ),
     );

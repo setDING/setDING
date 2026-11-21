@@ -338,6 +338,24 @@ abstract class AppLocalizations {
   /// **'Alle'**
   String get allTags;
 
+  /// No description provided for @tagsFilter.
+  ///
+  /// In de, this message translates to:
+  /// **'Tags'**
+  String get tagsFilter;
+
+  /// No description provided for @filterByTags.
+  ///
+  /// In de, this message translates to:
+  /// **'Nach Tags filtern'**
+  String get filterByTags;
+
+  /// Tag filter chip with several selected tags: the first one and how many more.
+  ///
+  /// In de, this message translates to:
+  /// **'{tag} +{count}'**
+  String tagsFilterMore(String tag, int count);
+
   /// No description provided for @notes.
   ///
   /// In de, this message translates to:
@@ -7092,6 +7110,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{months, plural, =1{Zuletzt vor mehr als einem Monat gespielt} other{Zuletzt vor mehr als {months} Monaten gespielt}}'**
   String repertoireStaleHint(int months);
+
+  /// No description provided for @playedFilter.
+  ///
+  /// In de, this message translates to:
+  /// **'Gespielt'**
+  String get playedFilter;
+
+  /// No description provided for @playedAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle'**
+  String get playedAll;
+
+  /// No description provided for @filterByPlayed.
+  ///
+  /// In de, this message translates to:
+  /// **'Nach Einsätzen der Band filtern'**
+  String get filterByPlayed;
 
   /// No description provided for @repertoireNeverPlayed.
   ///

@@ -65,8 +65,10 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
     });
   }
 
-  /// Selected tag filter, or null for all songs.
-  String? _tag;
+  /// Selected tags: songs with any of them (#816); empty for all songs.
+  /// Replaced, never changed in place: [songsProvider] compares it by
+  /// identity.
+  Set<String> _tags = const {};
 
   /// Only songs the band never played, or has not played for a while
   /// (ADR-0046); null for all songs.
@@ -151,7 +153,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final songs = ref.watch(songsProvider((query: _query, tag: _tag)));
+    final songs = ref.watch(songsProvider((query: _query, tags: _tags)));
     final hits = ref.watch(searchHitsProvider(_query));
     final sort = ref.watch(songSortProvider);
     if (songs.hasValue && !songs.isLoading && !hits.isLoading) {
@@ -438,8 +440,8 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
         body: Column(
           children: [
             _Filters(
-              tag: _tag,
-              onTag: (tag) => setState(() => _tag = tag),
+              tags: _tags,
+              onTags: (tags) => setState(() => _tags = tags),
               attention: attention,
               showPlayed: lastPlayed != null,
               played: played,
@@ -607,12 +609,13 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
 /// Songs the band never played, or has not played for a while (ADR-0046).
 enum PlayedFilter { never, stale }
 
-/// Chips above the list: the order (a menu, see [SongSort]) and the tags
-/// used in the library (`{tag}`).
+/// Chips above the list: the order (a menu, see [SongSort]) and the
+/// filters, among them the tags used in the library (`{tag}`, a menu with
+/// several choices, #816) and, last, the band's plays (a menu).
 class _Filters extends ConsumerWidget {
   const _Filters({
-    required this.tag,
-    required this.onTag,
+    required this.tags,
+    required this.onTags,
     required this.attention,
     required this.showPlayed,
     required this.played,
@@ -622,8 +625,9 @@ class _Filters extends ConsumerWidget {
     required this.onLanguage,
   });
 
-  final String? tag;
-  final ValueChanged<String?> onTag;
+  /// The selected tags; songs with any of them are shown.
+  final Set<String> tags;
+  final ValueChanged<Set<String>> onTags;
 
   /// Offer the order and filters by the band's plays (ADR-0046).
   final bool showPlayed;
@@ -648,7 +652,15 @@ class _Filters extends ConsumerWidget {
     final counts = ref.watch(songAttentionCountsProvider);
     // A selected tag stays visible (and can be deselected) even when no
     // song uses it any more, e.g. after deleting its last song.
-    final tags = [...used, if (tag case final t? when !used.contains(t)) t];
+    final offered = [
+      ...used,
+      for (final t in tags)
+        if (!used.contains(t)) t,
+    ];
+    final chosen = [
+      for (final t in offered)
+        if (tags.contains(t)) t,
+    ];
     final orders = [
       (SongSort.title, l10n.sortByTitle),
       (SongSort.artist, l10n.sortByArtist),
@@ -770,40 +782,104 @@ class _Filters extends ConsumerWidget {
                 ),
               ),
             ),
-          if (showPlayed)
-            for (final (filter, label) in [
-              (PlayedFilter.never, l10n.repertoireNeverPlayed),
-              (PlayedFilter.stale, l10n.repertoireStale),
-            ])
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: FilterChip(
-                  key: ValueKey('songs-played-${filter.name}'),
-                  avatar: played == filter
-                      ? null
-                      : const Icon(Icons.history, size: 16),
-                  label: Text(label),
-                  selected: played == filter,
-                  onSelected: (on) => onPlayed(on ? filter : null),
+          if (offered.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: MenuAnchor(
+                menuChildren: [
+                  MenuItemButton(
+                    key: const Key('songs-tags-all'),
+                    onPressed: () => onTags(const {}),
+                    leadingIcon: tags.isEmpty
+                        ? const Icon(Icons.check, size: 18)
+                        : const SizedBox.square(dimension: 18),
+                    child: Text(l10n.allTags),
+                  ),
+                  const Divider(height: 1),
+                  // Several tags can be ticked: the menu stays open.
+                  for (final t in offered)
+                    CheckboxMenuButton(
+                      key: ValueKey('songs-tag-$t'),
+                      value: tags.contains(t),
+                      closeOnActivate: false,
+                      onChanged: (on) => onTags({
+                        for (final s in tags)
+                          if (s != t) s,
+                        if (on ?? false) t,
+                      }),
+                      child: Text(t),
+                    ),
+                ],
+                builder: (context, menu, _) => Tooltip(
+                  message: l10n.filterByTags,
+                  child: FilterChip(
+                    key: const Key('songs-tags'),
+                    avatar: chosen.isEmpty
+                        ? const Icon(Icons.sell_outlined, size: 16)
+                        : null,
+                    selected: chosen.isNotEmpty,
+                    label: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(switch (chosen) {
+                          [] => l10n.tagsFilter,
+                          [final t] => t,
+                          [final t, ...] => l10n.tagsFilterMore(
+                            t,
+                            chosen.length - 1,
+                          ),
+                        }),
+                        const Icon(Icons.arrow_drop_down, size: 18),
+                      ],
+                    ),
+                    onSelected: (_) => menu.isOpen ? menu.close() : menu.open(),
+                  ),
                 ),
               ),
-          if (tags.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: ChoiceChip(
-                label: Text(l10n.allTags),
-                selected: tag == null,
-                onSelected: (_) => onTag(null),
-              ),
             ),
-          for (final t in tags)
+          if (showPlayed)
             Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: ChoiceChip(
-                avatar: const Icon(Icons.sell_outlined, size: 16),
-                label: Text(t),
-                selected: tag == t,
-                onSelected: (on) => onTag(on ? t : null),
+              child: MenuAnchor(
+                menuChildren: [
+                  for (final (filter, label) in [
+                    (null, l10n.playedAll),
+                    (PlayedFilter.never, l10n.repertoireNeverPlayed),
+                    (PlayedFilter.stale, l10n.repertoireStale),
+                  ]) ...[
+                    MenuItemButton(
+                      key: ValueKey('songs-played-${filter?.name ?? 'all'}'),
+                      onPressed: () => onPlayed(filter),
+                      leadingIcon: filter == played
+                          ? const Icon(Icons.check, size: 18)
+                          : const SizedBox.square(dimension: 18),
+                      child: Text(label),
+                    ),
+                    if (filter == null) const Divider(height: 1),
+                  ],
+                ],
+                builder: (context, menu, _) => Tooltip(
+                  message: l10n.filterByPlayed,
+                  child: FilterChip(
+                    key: const Key('songs-played'),
+                    avatar: played == null
+                        ? const Icon(Icons.history, size: 16)
+                        : null,
+                    selected: played != null,
+                    label: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(switch (played) {
+                          null => l10n.playedFilter,
+                          PlayedFilter.never => l10n.repertoireNeverPlayed,
+                          PlayedFilter.stale => l10n.repertoireStale,
+                        }),
+                        const Icon(Icons.arrow_drop_down, size: 18),
+                      ],
+                    ),
+                    onSelected: (_) => menu.isOpen ? menu.close() : menu.open(),
+                  ),
+                ),
               ),
             ),
         ],
