@@ -4784,4 +4784,52 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get shortcutCloseSelection => 'Auswahl schliessen';
+
+  @override
+  String get settingsHeadingLanguageTheme => 'Sprache & Design';
+
+  @override
+  String get settingsHeadingEditor => 'Editor';
+
+  @override
+  String get settingsHeadingAdvanced => 'Erweitert';
+
+  @override
+  String get settingsHeadingChords => 'Akkorde';
+
+  @override
+  String get settingsHeadingContent => 'Inhalt';
+
+  @override
+  String get settingsHeadingSetNotes => 'Set & Notizen';
+
+  @override
+  String get settingsHeadingInstrument => 'Instrument & Stimme';
+
+  @override
+  String get settingsHeadingScreen => 'Bildschirm';
+
+  @override
+  String get settingsHeadingControls => 'Bedienung';
+
+  @override
+  String get settingsHeadingClick => 'Klick auf diesem Gerät';
+
+  @override
+  String get settingsHeadingStorage => 'Speicher & Sicherung';
+
+  @override
+  String get settingsHeadingHelp => 'Hilfe & Info';
+
+  @override
+  String get settingsHeadingConnection => 'Verbindung';
+
+  @override
+  String get settingsHeadingKeyboard => 'Keyboard';
+
+  @override
+  String get settingsHeadingStyle => 'Stil';
+
+  @override
+  String get settingsHeadingPrototypes => 'Prototypen';
 }

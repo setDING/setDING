@@ -7,6 +7,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../midi/midi_connection.dart';
 import '../../midi/midi_output.dart';
 import '../../settings/settings.dart';
+import 'settings_layout.dart';
 
 /// The device settings of MIDI program changes to a keyboard (ADR-0039):
 /// on or off, the output, the device profile and the channel, taking over
@@ -31,104 +32,118 @@ class MidiSettings extends ConsumerWidget {
       ),
       MidiProfileKind.generic => null,
     };
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SwitchListTile(
-          key: const Key('settings-midi-enabled'),
-          title: Text(l10n.settingsMidiEnabled),
-          subtitle: Text(l10n.settingsMidiEnabledHint),
-          value: s.midiEnabled,
-          onChanged: (v) => notifier.update((s) => s.copyWith(midiEnabled: v)),
-        ),
-        if (s.midiEnabled) ...[
-          ListTile(
-            key: const Key('settings-midi-status'),
-            leading: Icon(
-              status.connected ? Icons.usb : Icons.usb_off,
-              color: status.connected
-                  ? Theme.of(context).colorScheme.primary
-                  : null,
-            ),
-            title: Text(
-              status.connected
-                  ? l10n.settingsMidiConnected(status.deviceName!)
-                  : l10n.settingsMidiNotConnected,
-            ),
+    return SettingsSections([
+      SettingsSection(
+        title: l10n.settingsHeadingConnection,
+        children: [
+          SettingsSwitch(
+            tileKey: const Key('settings-midi-enabled'),
+            icon: Icons.piano_outlined,
+            title: l10n.settingsMidiEnabled,
+            hint: l10n.settingsMidiEnabledHint,
+            value: s.midiEnabled,
+            onChanged: (v) =>
+                notifier.update((s) => s.copyWith(midiEnabled: v)),
           ),
-          const _OutputPicker(),
-          // A drop-down, as more device profiles will follow; "Generic"
-          // first, then the keyboards (#586).
-          ListTile(
-            key: const Key('settings-midi-profile'),
-            title: Text(l10n.settingsMidiProfile),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(l10n.settingsMidiProfileHint),
-                ),
-                DropdownButton<MidiProfileKind>(
-                  key: const Key('settings-midi-profile-dropdown'),
-                  value: s.midiProfile,
-                  items: [
-                    for (final (kind, label) in [
-                      (MidiProfileKind.generic, l10n.midiProfileGeneric),
-                      (MidiProfileKind.nordStage3, l10n.midiProfileNordStage3),
-                      (MidiProfileKind.motifXf, l10n.midiProfileMotifXf),
-                    ])
-                      DropdownMenuItem(value: kind, child: Text(label)),
-                  ],
-                  onChanged: (v) {
-                    if (v != null) {
-                      notifier.update((s) => s.copyWith(midiProfile: v));
-                    }
-                  },
-                ),
-              ],
+          if (s.midiEnabled) ...[
+            ListTile(
+              key: const Key('settings-midi-status'),
+              leading: Icon(
+                status.connected ? Icons.usb : Icons.usb_off,
+                color: status.connected
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
+              ),
+              title: Text(
+                status.connected
+                    ? l10n.settingsMidiConnected(status.deviceName!)
+                    : l10n.settingsMidiNotConnected,
+              ),
             ),
-          ),
-          ListTile(
-            key: const Key('settings-midi-channel'),
-            title: Text(l10n.settingsMidiChannel),
-            subtitle: Text(l10n.settingsMidiChannelHint),
-            trailing: DropdownButton<int>(
-              value: s.midiChannel,
-              items: [
-                for (var c = 1; c <= 16; c++)
-                  DropdownMenuItem(value: c, child: Text('$c')),
-              ],
-              onChanged: (v) {
-                if (v != null) {
-                  notifier.update((s) => s.copyWith(midiChannel: v));
-                }
-              },
+            const _OutputPicker(),
+          ],
+        ],
+      ),
+      if (s.midiEnabled)
+        SettingsSection(
+          title: l10n.settingsHeadingKeyboard,
+          children: [
+            // A drop-down, as more device profiles will follow; "Generic"
+            // first, then the keyboards (#586).
+            ListTile(
+              key: const Key('settings-midi-profile'),
+              leading: const Icon(Icons.settings_input_component_outlined),
+              title: Text(l10n.settingsMidiProfile),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(l10n.settingsMidiProfileHint),
+                  ),
+                  DropdownButton<MidiProfileKind>(
+                    key: const Key('settings-midi-profile-dropdown'),
+                    value: s.midiProfile,
+                    items: [
+                      for (final (kind, label) in [
+                        (MidiProfileKind.generic, l10n.midiProfileGeneric),
+                        (
+                          MidiProfileKind.nordStage3,
+                          l10n.midiProfileNordStage3,
+                        ),
+                        (MidiProfileKind.motifXf, l10n.midiProfileMotifXf),
+                      ])
+                        DropdownMenuItem(value: kind, child: Text(label)),
+                    ],
+                    onChanged: (v) {
+                      if (v != null) {
+                        notifier.update((s) => s.copyWith(midiProfile: v));
+                      }
+                    },
+                  ),
+                ],
+              ),
             ),
-          ),
-          // Only for profiles whose sending is known (#608).
-          if (s.midiDeviceProfile.takesOver)
-            SwitchListTile(
-              key: const Key('settings-midi-take-over'),
-              title: Text(l10n.settingsMidiTakeOver),
-              subtitle: Text(
-                s.midiProfile == MidiProfileKind.nordStage3
+            ListTile(
+              key: const Key('settings-midi-channel'),
+              leading: const Icon(Icons.tag),
+              title: Text(l10n.settingsMidiChannel),
+              subtitle: Text(l10n.settingsMidiChannelHint),
+              trailing: DropdownButton<int>(
+                value: s.midiChannel,
+                items: [
+                  for (var c = 1; c <= 16; c++)
+                    DropdownMenuItem(value: c, child: Text('$c')),
+                ],
+                onChanged: (v) {
+                  if (v != null) {
+                    notifier.update((s) => s.copyWith(midiChannel: v));
+                  }
+                },
+              ),
+            ),
+            // Only for profiles whose sending is known (#608).
+            if (s.midiDeviceProfile.takesOver)
+              SettingsSwitch(
+                tileKey: const Key('settings-midi-take-over'),
+                icon: Icons.download_outlined,
+                title: l10n.settingsMidiTakeOver,
+                hint: s.midiProfile == MidiProfileKind.nordStage3
                     ? l10n.settingsMidiTakeOverNordHint
                     : l10n.settingsMidiTakeOverHint,
+                value: s.midiTakeOver,
+                onChanged: (v) =>
+                    notifier.update((s) => s.copyWith(midiTakeOver: v)),
               ),
-              value: s.midiTakeOver,
-              onChanged: (v) =>
-                  notifier.update((s) => s.copyWith(midiTakeOver: v)),
-            ),
-          if (hint case (final key, final text))
-            ListTile(
-              key: key,
-              leading: const Icon(Icons.info_outline),
-              subtitle: Text(text),
-            ),
-        ],
-      ],
-    );
+            if (hint case (final key, final text))
+              ListTile(
+                key: key,
+                leading: const Icon(Icons.info_outline),
+                subtitle: Text(text),
+              ),
+          ],
+        ),
+    ]);
   }
 }
 
@@ -180,6 +195,7 @@ class _OutputPickerState extends ConsumerState<_OutputPicker> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ListTile(
+          leading: const Icon(Icons.cable),
           title: Text(l10n.settingsMidiOutput),
           subtitle: Text(l10n.settingsMidiOutputHint),
           trailing: IconButton(
@@ -222,7 +238,8 @@ class _OutputPickerState extends ConsumerState<_OutputPicker> {
     required void Function(String) onTap,
   }) => ListTile(
     key: Key('settings-midi-output-$name'),
-    contentPadding: const EdgeInsetsDirectional.only(start: 32, end: 16),
+    // Below the text of the output tile, after its icon.
+    contentPadding: const EdgeInsetsDirectional.only(start: 56, end: 16),
     leading: Icon(
       selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
     ),

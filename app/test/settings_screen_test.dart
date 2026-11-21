@@ -193,6 +193,10 @@ void main() {
       200,
       scrollable: find.byType(Scrollable).last,
     );
+    // The sections are built as a whole, so the option may be built but
+    // still below the screen.
+    await tester.ensureVisible(find.text('Lyrics only'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Lyrics only'));
     await tester.pumpAndSettle();
     expect(app.personal()['displayMode'], 'lyricsOnly');

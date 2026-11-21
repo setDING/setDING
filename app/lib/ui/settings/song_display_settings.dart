@@ -14,6 +14,7 @@ import '../render/song_view.dart';
 import '../sets/song_picker.dart';
 import '../theme.dart';
 import '../widgets/dialogs.dart';
+import 'settings_layout.dart';
 
 /// Song shown in the preview: every section type once. Original text
 /// written for setDING, like the demo song.
@@ -131,15 +132,21 @@ Future<void> _choosePreset(
 
 /// The font of the song text, for all section types.
 class _FontChoice extends ConsumerWidget {
-  const _FontChoice({required this.display});
+  const _FontChoice({
+    required this.display,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16),
+  });
 
   final SongDisplay display;
+
+  /// Around the control; none inside a settings tile.
+  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: padding,
       child: Align(
         alignment: AlignmentDirectional.centerStart,
         child: SegmentedButton<SongFont>(
@@ -165,15 +172,21 @@ class _FontChoice extends ConsumerWidget {
 
 /// The presets of the song display.
 class _PresetChips extends ConsumerWidget {
-  const _PresetChips({required this.display});
+  const _PresetChips({
+    required this.display,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16),
+  });
 
   final SongDisplay display;
+
+  /// Around the control; none inside a settings tile.
+  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: padding,
       child: Wrap(
         spacing: 8,
         runSpacing: 8,
@@ -207,39 +220,54 @@ class SongDisplaySettings extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final display = ref.watch(settingsProvider.select((s) => s.songDisplay));
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _Heading(l10n.songDisplayPreset),
-        _PresetChips(display: display),
-        _Heading(l10n.songDisplayFont),
-        _FontChoice(display: display),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-          child: Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: FilledButton.icon(
-              key: const Key('song-display-customise'),
-              icon: const Icon(Icons.tune),
-              label: Text(l10n.songDisplayCustomise),
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const SongDisplayEditorScreen(),
+    return SettingsSections([
+      SettingsSection(
+        title: l10n.settingsHeadingStyle,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.style_outlined),
+            title: Text(l10n.songDisplayPreset),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: _PresetChips(display: display, padding: EdgeInsets.zero),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.font_download_outlined),
+            title: Text(l10n.songDisplayFont),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: _FontChoice(display: display, padding: EdgeInsets.zero),
+            ),
+          ),
+          Padding(
+            // Below the titles, after the icons of the tiles.
+            padding: const EdgeInsetsDirectional.fromSTEB(56, 8, 16, 0),
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: FilledButton.icon(
+                key: const Key('song-display-customise'),
+                icon: const Icon(Icons.tune),
+                label: Text(l10n.songDisplayCustomise),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const SongDisplayEditorScreen(),
+                  ),
                 ),
               ),
             ),
           ),
+        ],
+      ),
+      // The preview has its own heading, in the style of a section.
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: SizedBox(
+          height: previewHeight,
+          child: SongDisplayPreview(display: display),
         ),
-        const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: SizedBox(
-            height: previewHeight,
-            child: SongDisplayPreview(display: display),
-          ),
-        ),
-      ],
-    );
+      ),
+    ]);
   }
 }
 

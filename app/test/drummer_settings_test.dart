@@ -189,6 +189,9 @@ void main() {
       200,
       scrollable: find.byType(Scrollable).last,
     );
+    // Built with its section, maybe still below the screen.
+    await tester.ensureVisible(measure);
+    await tester.pumpAndSettle();
     await tester.tap(measure);
     await tester.pumpAndSettle();
 

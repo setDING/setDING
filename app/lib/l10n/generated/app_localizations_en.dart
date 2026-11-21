@@ -4741,4 +4741,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shortcutCloseSelection => 'Close the selection';
+
+  @override
+  String get settingsHeadingLanguageTheme => 'Language & theme';
+
+  @override
+  String get settingsHeadingEditor => 'Editor';
+
+  @override
+  String get settingsHeadingAdvanced => 'Advanced';
+
+  @override
+  String get settingsHeadingChords => 'Chords';
+
+  @override
+  String get settingsHeadingContent => 'Content';
+
+  @override
+  String get settingsHeadingSetNotes => 'Set & notes';
+
+  @override
+  String get settingsHeadingInstrument => 'Instrument & voice';
+
+  @override
+  String get settingsHeadingScreen => 'Screen';
+
+  @override
+  String get settingsHeadingControls => 'Controls';
+
+  @override
+  String get settingsHeadingClick => 'Click on this device';
+
+  @override
+  String get settingsHeadingStorage => 'Storage & backup';
+
+  @override
+  String get settingsHeadingHelp => 'Help & info';
+
+  @override
+  String get settingsHeadingConnection => 'Connection';
+
+  @override
+  String get settingsHeadingKeyboard => 'Keyboard';
+
+  @override
+  String get settingsHeadingStyle => 'Style';
+
+  @override
+  String get settingsHeadingPrototypes => 'Prototypes';
 }
