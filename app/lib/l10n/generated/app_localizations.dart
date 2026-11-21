@@ -6832,7 +6832,7 @@ abstract class AppLocalizations {
   /// No description provided for @chordProConversionsTooltip.
   ///
   /// In de, this message translates to:
-  /// **'{count, plural, =1{1 Stelle im ChordPro kann umgewandelt werden} other{{count} Stellen im ChordPro können umgewandelt werden}}'**
+  /// **'{count, plural, =1{1 Stelle im ChordPro umwandeln} other{{count} Stellen im ChordPro umwandeln}}'**
   String chordProConversionsTooltip(int count);
 
   /// No description provided for @overviewTodoConversions.
@@ -6871,11 +6871,11 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 Song umgewandelt} other{{count} Songs umgewandelt}}'**
   String songsConverted(int count);
 
-  /// No description provided for @songsFilterClear.
+  /// No description provided for @songConverted.
   ///
   /// In de, this message translates to:
-  /// **'Filter entfernen'**
-  String get songsFilterClear;
+  /// **'«{title}» umgewandelt'**
+  String songConverted(String title);
 
   /// No description provided for @songsFilterEmpty.
   ///

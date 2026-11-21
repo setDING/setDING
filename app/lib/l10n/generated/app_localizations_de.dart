@@ -4308,8 +4308,8 @@ class AppLocalizationsDe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count Stellen im ChordPro können umgewandelt werden',
-      one: '1 Stelle im ChordPro kann umgewandelt werden',
+      other: '$count Stellen im ChordPro umwandeln',
+      one: '1 Stelle im ChordPro umwandeln',
     );
     return '$_temp0';
   }
@@ -4357,7 +4357,9 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get songsFilterClear => 'Filter entfernen';
+  String songConverted(String title) {
+    return '«$title» umgewandelt';
+  }
 
   @override
   String get songsFilterEmpty => 'Keine Songs mehr in diesem Filter.';
