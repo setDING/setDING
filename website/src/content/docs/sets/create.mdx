@@ -1,6 +1,6 @@
 ---
 title: Set erstellen
-description: Ein Set anlegen, Songs hinzufügen und ordnen, Pausen und Texte einfügen.
+description: Ein Set anlegen, Songs hinzufügen und ordnen, Hinweise wie Pausen, Ansagen oder die Zugabe einfügen.
 sidebar:
   order: 1
 ---
@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import set from '../../../../../docs/screenshots/set_de.png';
 import sets from '../../../../../docs/screenshots/sets_de.png';
+import markerDialog from '../../../../../docs/screenshots/marker_dialog_de.png';
 
 Ein Set sind die Songs eines Auftritts oder einer Probe in der richtigen
 Reihenfolge. Jedes Set gehört zu einer Band; alle Mitglieder der Band sehen es auf
@@ -51,18 +52,29 @@ Name, Ort und Datum änderst du später mit dem Stift **Set bearbeiten** oben im
 Die Reihenfolge änderst du, indem du einen Eintrag am Griff rechts nach oben oder
 unten ziehst.
 
-## Pausen und Texte
+## Hinweise: Pausen, Ansagen, Zugabe …
 
-Im Menü ⋮ des Sets fügst du am Ende des Sets ein:
+Mit **Hinweis hinzufügen** im Menü ⋮ des Sets fügst du am Ende des Sets einen
+Hinweis ein, zum Beispiel eine Pause, eine Ansage, die Zugabe, einen
+Instrumentwechsel oder einen Licht-Effekt:
 
-- **Pause hinzufügen** – eine Pause, optional mit einem Namen.
-- **Text hinzufügen** – ein kurzer Text, z. B. eine Ansage oder die Zugabe.
+1. Wähle ein **Symbol**. Die Symbole sind nach Themen geordnet: Pause, Ansage,
+   Ablauf, Bühne, Show und Allgemein.
+2. Das Feld **Text** übernimmt den Namen des Symbols, z. B. «Zugabe». Du kannst ihn
+   so lassen oder überschreiben, z. B. mit «Zugabe: Last Call». Der Text hat höchstens
+   24 Zeichen.
+3. Die **Vorschau** zeigt, wie der Hinweis im Live-Modus aussieht. Tippe auf
+   **Speichern**.
 
-Ziehe den Eintrag danach an die richtige Stelle.
+<Image src={markerDialog} alt="Der Dialog «Hinweis hinzufügen» mit den Symbolen nach Themen, dem Text «Zugabe» und der Vorschau" />
 
-Pausen und Texte erscheinen im Live-Modus als eigene Seite und in der gedruckten
-Set-Liste als Trennzeile. Mit dem Menü ⋮ des Eintrags kannst du sie
-**Bearbeiten**.
+Lässt du den Namen des Symbols stehen, sieht jedes Bandmitglied ihn in seiner
+Sprache: aus «Zugabe» wird auf Englisch «Encore». Ziehe den Hinweis danach an die
+richtige Stelle.
+
+Hinweise erscheinen im Set mit ihrem Symbol, im Live-Modus als eigene Seite und in
+der gedruckten Set-Liste als Trennzeile. Tippe auf einen Hinweis, um Symbol und Text
+zu ändern.
 
 ## Einträge entfernen
 

@@ -848,18 +848,6 @@ abstract class AppLocalizations {
   /// **'Songs hinzufügen'**
   String get addSongs;
 
-  /// No description provided for @addPause.
-  ///
-  /// In de, this message translates to:
-  /// **'Pause hinzufügen'**
-  String get addPause;
-
-  /// No description provided for @addText.
-  ///
-  /// In de, this message translates to:
-  /// **'Text hinzufügen'**
-  String get addText;
-
   /// No description provided for @pause.
   ///
   /// In de, this message translates to:
@@ -871,12 +859,6 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Text'**
   String get textItem;
-
-  /// No description provided for @textItemHint.
-  ///
-  /// In de, this message translates to:
-  /// **'z. B. Ansage oder Zugabe'**
-  String get textItemHint;
 
   /// No description provided for @markerIconBreak.
   ///
@@ -985,6 +967,66 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Hinweis'**
   String get marker;
+
+  /// No description provided for @addMarker.
+  ///
+  /// In de, this message translates to:
+  /// **'Hinweis hinzufügen'**
+  String get addMarker;
+
+  /// No description provided for @editMarker.
+  ///
+  /// In de, this message translates to:
+  /// **'Hinweis bearbeiten'**
+  String get editMarker;
+
+  /// No description provided for @markerText.
+  ///
+  /// In de, this message translates to:
+  /// **'Text'**
+  String get markerText;
+
+  /// No description provided for @markerPreview.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorschau'**
+  String get markerPreview;
+
+  /// No description provided for @markerGroupBreak.
+  ///
+  /// In de, this message translates to:
+  /// **'Pause'**
+  String get markerGroupBreak;
+
+  /// No description provided for @markerGroupAnnouncement.
+  ///
+  /// In de, this message translates to:
+  /// **'Ansage'**
+  String get markerGroupAnnouncement;
+
+  /// No description provided for @markerGroupFlow.
+  ///
+  /// In de, this message translates to:
+  /// **'Ablauf'**
+  String get markerGroupFlow;
+
+  /// No description provided for @markerGroupStage.
+  ///
+  /// In de, this message translates to:
+  /// **'Bühne'**
+  String get markerGroupStage;
+
+  /// No description provided for @markerGroupShow.
+  ///
+  /// In de, this message translates to:
+  /// **'Show'**
+  String get markerGroupShow;
+
+  /// No description provided for @markerGroupGeneral.
+  ///
+  /// In de, this message translates to:
+  /// **'Allgemein'**
+  String get markerGroupGeneral;
 
   /// No description provided for @setEmpty.
   ///
@@ -1655,7 +1697,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsSetProgressHint.
   ///
   /// In de, this message translates to:
-  /// **'Ein schmaler Balken über der Fusszeile zeigt die Songs des Sets und die Seiten des aktuellen Songs: die aktuelle Seite in der Akzentfarbe, noch folgende Seiten heller. Pausen und Texte sind gestrichelt.'**
+  /// **'Ein schmaler Balken über der Fusszeile zeigt die Songs des Sets und die Seiten des aktuellen Songs: die aktuelle Seite in der Akzentfarbe, noch folgende Seiten heller. Hinweise wie Pausen sind gestrichelt.'**
   String get settingsSetProgressHint;
 
   /// No description provided for @settingsBeatSection.

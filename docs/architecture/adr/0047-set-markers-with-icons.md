@@ -201,6 +201,10 @@ their own fields and are decided separately.
   `icon` and the derived `type`; the server hook `pb_hooks/setlists.pb.js`
   keeps `played` and `icon` alike. A song missing from an imported set
   archive (ADR-0043 §1b) becomes a marker with the *warning* icon.
+- 2026-11-21: Dialog implemented (#723): *Add marker* replaces *Add break* and
+  *Add text*; icon groups side by side, text prefilled and limited to 24
+  characters, preview; the set editor shows the marker's icon, live mode its
+  icon and title.
 
 ## Open points
 

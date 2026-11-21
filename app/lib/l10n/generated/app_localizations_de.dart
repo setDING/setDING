@@ -444,19 +444,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get addSongs => 'Songs hinzufügen';
 
   @override
-  String get addPause => 'Pause hinzufügen';
-
-  @override
-  String get addText => 'Text hinzufügen';
-
-  @override
   String get pause => 'Pause';
 
   @override
   String get textItem => 'Text';
-
-  @override
-  String get textItemHint => 'z. B. Ansage oder Zugabe';
 
   @override
   String get markerIconBreak => 'Pause';
@@ -511,6 +502,36 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get marker => 'Hinweis';
+
+  @override
+  String get addMarker => 'Hinweis hinzufügen';
+
+  @override
+  String get editMarker => 'Hinweis bearbeiten';
+
+  @override
+  String get markerText => 'Text';
+
+  @override
+  String get markerPreview => 'Vorschau';
+
+  @override
+  String get markerGroupBreak => 'Pause';
+
+  @override
+  String get markerGroupAnnouncement => 'Ansage';
+
+  @override
+  String get markerGroupFlow => 'Ablauf';
+
+  @override
+  String get markerGroupStage => 'Bühne';
+
+  @override
+  String get markerGroupShow => 'Show';
+
+  @override
+  String get markerGroupGeneral => 'Allgemein';
 
   @override
   String get setEmpty => 'Dieses Set ist leer. Füge Songs hinzu.';
@@ -890,7 +911,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsSetProgressHint =>
-      'Ein schmaler Balken über der Fusszeile zeigt die Songs des Sets und die Seiten des aktuellen Songs: die aktuelle Seite in der Akzentfarbe, noch folgende Seiten heller. Pausen und Texte sind gestrichelt.';
+      'Ein schmaler Balken über der Fusszeile zeigt die Songs des Sets und die Seiten des aktuellen Songs: die aktuelle Seite in der Akzentfarbe, noch folgende Seiten heller. Hinweise wie Pausen sind gestrichelt.';
 
   @override
   String get settingsBeatSection => 'Takt und Klick';
