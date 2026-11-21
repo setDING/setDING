@@ -836,17 +836,35 @@ abstract class AppLocalizations {
   /// **'{count, plural, =0{Leer} =1{1 Eintrag} other{{count} Einträge}}'**
   String itemCount(int count);
 
-  /// No description provided for @offlineReady.
+  /// No description provided for @offlineMissing.
   ///
   /// In de, this message translates to:
-  /// **'Offline bereit'**
-  String get offlineReady;
+  /// **'{count, plural, =1{1 Song nicht offline} other{{count} Songs nicht offline}}'**
+  String offlineMissing(int count);
 
-  /// No description provided for @notOfflineReady.
+  /// No description provided for @offlineMissingTooltip.
   ///
   /// In de, this message translates to:
-  /// **'Nicht offline bereit'**
-  String get notOfflineReady;
+  /// **'Nicht alle Songs und PDFs dieses Sets sind auf dem Gerät. Verbinde es mit dem Netz und warte den Abgleich ab.'**
+  String get offlineMissingTooltip;
+
+  /// No description provided for @syncStale.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzter Abgleich mit dem Server: {time}. Die Sets auf diesem Gerät sind vielleicht nicht aktuell.'**
+  String syncStale(String time);
+
+  /// No description provided for @syncStaleNever.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Gerät hat sich noch nicht mit dem Server abgeglichen. Die Sets sind vielleicht nicht aktuell.'**
+  String get syncStaleNever;
+
+  /// No description provided for @syncUnsent.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Änderung von diesem Gerät ist} other{{count} Änderungen von diesem Gerät sind}} noch nicht auf dem Server.'**
+  String syncUnsent(int count);
 
   /// No description provided for @addSongs.
   ///

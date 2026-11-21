@@ -11,19 +11,32 @@ import pdfExported from '../../../../../docs/screenshots/set_pdf_exported_de.png
 import exportDialog from '../../../../../docs/screenshots/set_export_de.png';
 import importDialog from '../../../../../docs/screenshots/set_import_de.png';
 import importResult from '../../../../../docs/screenshots/set_import_result_de.png';
+import offlineStatus from '../../../../../docs/screenshots/offline_status_de.png';
 
 ## Offline bereit
 
-In der Liste der Sets und im Set selbst zeigt setDING, ob das Set auf diesem Gerät
-ohne Netz spielbar ist:
+Ein Set ist offline bereit, wenn alle seine Songs und ihre PDF-Anhänge auf dem Gerät
+sind. Dann brauchst du für den Auftritt kein WLAN mehr, und setDING zeigt beim Set
+nichts an.
 
-- **Offline bereit** – alle Songs und ihre PDF-Anhänge sind auf dem Gerät. Du
-  brauchst für den Auftritt kein WLAN mehr.
-- **Nicht offline bereit** – ein Song oder ein PDF fehlt noch. Verbinde das Gerät
-  mit dem Netz und warte, bis die Synchronisation fertig ist, oder ziehe die Liste
-  der Sets nach unten, um sofort zu synchronisieren.
+Fehlt etwas, steht in der Liste der Sets und im Set selbst zum Beispiel
+**1 Song nicht offline**. Verbinde das Gerät mit dem Netz und warte, bis die
+Synchronisation fertig ist, oder ziehe die Liste der Sets nach unten, um sofort zu
+synchronisieren.
 
-Prüfe vor dem Auftritt auf jedem Gerät, dass **Offline bereit** steht.
+Damit die Sets auch **aktuell** sind, warnt setDING über den Sets, wenn
+
+- der letzte Abgleich mit dem Server länger als einen Tag her ist (mit Datum und
+  Zeit des letzten Abgleichs) oder dieses Gerät sich noch nie abgeglichen hat,
+- Änderungen von diesem Gerät noch nicht auf dem Server sind, weil der letzte
+  Abgleich fehlgeschlagen ist.
+
+**Jetzt synchronisieren** in der Warnung gleicht sofort ab.
+
+<Image src={offlineStatus} alt="Die Liste der Sets mit der Warnung, dass der letzte Abgleich mit dem Server zu lange her ist, und einem Set mit dem Hinweis «1 Song nicht offline»" />
+
+Prüfe vor dem Auftritt auf jedem Gerät, dass weder eine Warnung noch ein
+Hinweis beim Set steht.
 
 ## Set-Liste drucken
 

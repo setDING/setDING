@@ -301,7 +301,9 @@ void main() {
     // neither has the status.
     expect(find.text('Gig'), findsNWidgets(2));
     expect(find.byType(SetScreen), findsOneWidget);
-    expect(find.byType(OfflineBadge), findsNothing);
+    expect(find.byType(OfflineMissingBadge), findsNothing);
+    // No sync warning either: the web client makes no offline promise.
+    expect(find.byKey(const Key('sync-stale-banner')), findsNothing);
     await app.dispose(tester);
   });
 

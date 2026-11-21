@@ -18,6 +18,7 @@ import 'repertoire_screen.dart';
 import 'set_archive_dialogs.dart';
 import 'set_screen.dart';
 import '../widgets/section_header.dart';
+import 'sync_stale_banner.dart';
 
 /// Minimum width for showing the list of sets and the selected set side by
 /// side (#266); the same as for the song list's two columns.
@@ -188,6 +189,7 @@ class _SetsPane extends ConsumerWidget {
             onTap: () => openSet(context, ref, s.set.id, wide: wide),
           );
           final rows = <Widget>[
+            const SyncStaleBanner(),
             if (groups.upcoming.isNotEmpty) ...[
               _SectionHeader(l10n.setsUpcoming),
               for (final (i, s) in groups.upcoming.indexed)
@@ -311,7 +313,7 @@ class _SetCard extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).colorScheme;
     final set = summary.set;
-    final ready = ref.watch(offlineReadyProvider(set.id)).value;
+    final missing = ref.watch(offlineMissingProvider(set.id)).value ?? 0;
     // Songs with ChordPro problems, for who prepares the sets (#314).
     final problems = ref.watch(currentBandProvider).canManageSets
         ? (ref.watch(problemSongCountsProvider).value?[set.id] ?? 0)
@@ -359,7 +361,7 @@ class _SetCard extends ConsumerWidget {
                 ],
               ),
         subtitle: Text(details),
-        trailing: ready == null && problems == 0
+        trailing: missing == 0 && problems == 0
             ? null
             : Row(
                 mainAxisSize: MainAxisSize.min,
@@ -370,7 +372,7 @@ class _SetCard extends ConsumerWidget {
                       key: const ValueKey('set-problems'),
                       message: l10n.setChordProProblemsTooltip(problems),
                     ),
-                  if (ready != null) OfflineBadge(ready: ready),
+                  if (missing > 0) OfflineMissingBadge(missing: missing),
                 ],
               ),
         onTap: onTap,
@@ -379,23 +381,37 @@ class _SetCard extends ConsumerWidget {
   }
 }
 
-/// "Offline ready" indicator (ADR-0001): an icon, its meaning in the
-/// tooltip.
-class OfflineBadge extends StatelessWidget {
-  const OfflineBadge({super.key, required this.ready});
+/// Shown on a set whose songs are not all available offline (ADR-0001):
+/// an icon and a short text, so it is understood without a tooltip. Offline
+/// ready sets show nothing: a mark that is almost always there is not
+/// noticed (#744).
+class OfflineMissingBadge extends StatelessWidget {
+  const OfflineMissingBadge({super.key, required this.missing});
 
-  final bool ready;
+  /// Song items of the set that are not available offline.
+  final int missing;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final colors = Theme.of(context).colorScheme;
-    final label = ready ? l10n.offlineReady : l10n.notOfflineReady;
-    final icon = Icon(
-      ready ? Icons.offline_pin : Icons.cloud_off,
-      color: ready ? StatusColors.of(context).success : colors.error,
+    // A warning, not an error (ui-design.md §2), like ChordPro problems.
+    final color = StatusColors.of(context).warning;
+    return Tooltip(
+      key: const ValueKey('offline-missing'),
+      message: l10n.offlineMissingTooltip,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 4,
+        children: [
+          Icon(Icons.cloud_off_outlined, color: color, size: 20),
+          Text(
+            l10n.offlineMissing(missing),
+            style: Theme.of(context).textTheme.labelMedium
+                ?.copyWith(color: color),
+          ),
+        ],
+      ),
     );
-    return Tooltip(message: label, child: icon);
   }
 }
 

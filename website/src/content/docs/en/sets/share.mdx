@@ -11,19 +11,31 @@ import pdfExported from '../../../../../../docs/screenshots/set_pdf_exported.png
 import exportDialog from '../../../../../../docs/screenshots/set_export.png';
 import importDialog from '../../../../../../docs/screenshots/set_import.png';
 import importResult from '../../../../../../docs/screenshots/set_import_result.png';
+import offlineStatus from '../../../../../../docs/screenshots/offline_status.png';
 
 ## Offline ready
 
-The list of sets and the set itself show whether the set can be played on this
-device without a network:
+A set is offline ready when all its songs and their PDF attachments are on the
+device. Then you do not need Wi-Fi for the gig any more, and setDING shows nothing
+on the set.
 
-- **Offline ready** – all songs and their PDF attachments are on the device. You do
-  not need Wi-Fi for the gig any more.
-- **Not offline ready** – a song or a PDF is still missing. Connect the device to the
-  network and wait until the sync is done, or pull down the list of sets to sync
-  right away.
+If something is missing, the list of sets and the set itself say, for
+example, **1 song not offline**. Connect the device to the network and wait until
+the sync is done, or pull down the list of sets to sync right away.
 
-Before the gig, check that every device says **Offline ready**.
+So that the sets are also **up to date**, setDING shows a warning above the sets when
+
+- the last sync with the server is more than a day ago (with the date and time of
+  the last sync), or this device has never synced,
+- changes from this device have not reached the server because the last sync
+  failed.
+
+**Sync now** in the warning syncs right away.
+
+<Image src={offlineStatus} alt="The list of sets with the warning that the last sync with the server is too long ago, and a set saying “1 song not offline”" />
+
+Before the gig, check on every device that there is no warning and no note on
+the set.
 
 ## Print the set list
 
