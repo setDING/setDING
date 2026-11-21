@@ -77,4 +77,81 @@ void main() {
       isEmpty,
     );
   });
+
+  test('icon buttons have a tooltip', () {
+    // The tooltip is also the button's accessible name. A deliberate
+    // exception says why in a "No tooltip:" comment just above the button.
+    final offenders = <String>[];
+    for (final f in files) {
+      final source = f.readAsStringSync();
+      for (final m in RegExp(r'\bIconButton(\.\w+)?\(').allMatches(source)) {
+        if (m.group(1) == '.styleFrom') continue;
+        final call = source.substring(m.start, _callEnd(source, m.end - 1));
+        final before = source.substring(0, m.start).split('\n');
+        final above = before.skip(before.length - 8).join('\n');
+        if (!RegExp(r'\btooltip:').hasMatch(call) &&
+            !above.contains('No tooltip:')) {
+          offenders.add('${f.path}:${before.length}');
+        }
+      }
+    }
+    expect(offenders, isEmpty);
+  });
+
+  test('spacing follows the scale in steps of 4', () {
+    // Literal paddings, gaps and spacings are 0, 2 (the inner padding of
+    // small badges and key caps) or a multiple of 4. The song renderer and
+    // the PDF scale with their font size and paper (ADR-0007).
+    bool onScale(String n) {
+      final v = double.parse(n);
+      return v == 0 || v == 2 || v % 4 == 0;
+    }
+
+    final literal = RegExp(r'(?<=[(,:]\s*)(\d+(?:\.\d+)?)(?=\s*[,)])');
+    final offenders = <String>[];
+    for (final f in files) {
+      final path = f.path.replaceAll(r'\', '/');
+      if (path.contains('ui/render/') || path.endsWith('set_list_pdf.dart')) {
+        continue;
+      }
+      final source = f.readAsStringSync();
+      void check(int start, Iterable<String> values) {
+        for (final v in values) {
+          if (!onScale(v)) {
+            final line = source.substring(0, start).split('\n').length;
+            offenders.add('$path:$line: $v');
+          }
+        }
+      }
+
+      for (final m in RegExp(
+        r'\bEdgeInsets(Directional)?\.\w+\(',
+      ).allMatches(source)) {
+        final call = source.substring(m.end - 1, _callEnd(source, m.end - 1));
+        check(m.start, literal.allMatches(call).map((l) => l.group(1)!));
+      }
+      for (final m in RegExp(
+        r'\b(?:spacing|runSpacing): (\d+(?:\.\d+)?)\b',
+      ).allMatches(source)) {
+        check(m.start, [m.group(1)!]);
+      }
+      // A SizedBox with one dimension and no child is a gap.
+      for (final m in RegExp(
+        r'\bSizedBox\((?:width|height): (\d+(?:\.\d+)?)\)',
+      ).allMatches(source)) {
+        check(m.start, [m.group(1)!]);
+      }
+    }
+    expect(offenders, isEmpty);
+  });
+}
+
+/// The index after the parenthesis closing the one at [open] in [source].
+int _callEnd(String source, int open) {
+  var depth = 0;
+  for (var i = open; i < source.length; i++) {
+    if (source[i] == '(') depth++;
+    if (source[i] == ')' && --depth == 0) return i + 1;
+  }
+  return source.length;
 }

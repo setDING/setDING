@@ -471,13 +471,13 @@ class EditorToolbar extends StatelessWidget {
             ],
           );
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
           Wrap(
-            spacing: 6,
+            spacing: 8,
             runSpacing: 4,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [

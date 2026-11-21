@@ -263,7 +263,7 @@ class ShortcutHelpDialog extends StatelessWidget {
                 ),
                 for (final (keys, action) in rows)
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 3),
+                    padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Row(
                       children: [
                         SizedBox(
@@ -306,7 +306,7 @@ class _KeyCap extends StatelessWidget {
     final style = theme.textTheme.labelMedium;
     return Container(
       constraints: const BoxConstraints(minWidth: 26),
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest,
         border: Border.all(color: theme.colorScheme.outlineVariant),

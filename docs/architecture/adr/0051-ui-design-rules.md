@@ -92,8 +92,12 @@ above span all of them.
   checkable rule "no literal page width outside `PageWidth`" is in
   `ui_rules_test.dart`. The MIDI test's mode picker became wrapping chips, so no
   mode hides behind a sideways scroll in the narrower column.
+- 2026-11-21: Last open point resolved (#772): `ui_rules_test.dart` also checks that
+  every `IconButton` has a tooltip (or a `// No tooltip:` comment saying why) and
+  that literal paddings, gaps and `spacing` are 0, 2 or a multiple of 4 (the song
+  renderer and the set list PDF exempt). The 23 places that used 3, 6, 10 or 18 moved
+  onto the scale; icon-to-text gaps are 8.
 
 ## Open points
 
-- Further rules worth enforcing in the source: tooltips on every `IconButton`,
-  spacing in steps of 4.
+- None.
