@@ -59,24 +59,26 @@ switches branches in it. Every change – by agents and humans, also small docs 
 is made in a separate worktree, so parallel sessions never disturb each other and the
 main checkout is always a clean, current `main` to start from.
 
-- **Location:** a sibling folder of the main checkout,
-  `../setDING-worktrees/<branch with "/" replaced by "-">`, e.g.
-  `../setDING-worktrees/feat-12-chordpro-parser`. Outside the repository on
-  purpose: tools that scan the tree (`dart format .`, the analyzer, IDE indexing)
-  never see a second copy of the code.
+- **Location:** inside the project folder,
+  `.worktrees/<branch with "/" replaced by "-">`, e.g.
+  `.worktrees/feat-12-chordpro-parser`. The folder is in `.gitignore`, so the main
+  checkout stays clean, and tools scoped to the project folder (e.g. a Claude Code
+  desktop session) reach the worktrees too. The formatter and analyzer run inside
+  `app/` and `packages/*` and never see the second copy; an IDE that opens the
+  repository root should mark `.worktrees/` as excluded.
 - **Create** the branch and its worktree in one step from the latest `origin/main`:
-  `git fetch origin && git worktree add -b <branch> ../setDING-worktrees/<dir> origin/main`.
+  `git fetch origin && git worktree add -b <branch> .worktrees/<dir> origin/main`.
   All further commands (`make check`, commits, `git push`) run inside the worktree.
   Local data is per worktree (`.dev-data/`, `.dart_tool/`), so the first
   `make check` in a new worktree fetches the packages again.
 - **Tools that offer their own worktrees** (e.g. Claude Code worktree sessions) may
   use their own location, as long as the main checkout stays on `main`.
 - **Remove** the worktree after the merge (section 6):
-  `git worktree remove ../setDING-worktrees/<dir>`, then delete the branch.
+  `git worktree remove .worktrees/<dir>` (from the main checkout), then delete the branch.
   `git worktree list` shows the open worktrees; `git worktree prune` cleans up
   entries of folders deleted by hand.
 - **Taking over** a branch of another agent (section 8): fetch it and add a worktree
-  for it (`git worktree add ../setDING-worktrees/<dir> <branch>`).
+  for it (`git worktree add .worktrees/<dir> <branch>`).
 
 ## 4. Commits
 
@@ -340,8 +342,8 @@ has not logged in yet):
 ```bash
 # in the main checkout (always on main)
 git fetch origin
-git worktree add -b feat/12-chordpro-parser ../setDING-worktrees/feat-12-chordpro-parser origin/main
-cd ../setDING-worktrees/feat-12-chordpro-parser
+git worktree add -b feat/12-chordpro-parser .worktrees/feat-12-chordpro-parser origin/main
+cd .worktrees/feat-12-chordpro-parser
 # … work, commit in Conventional Commit format …
 git fetch origin && git rebase origin/main
 make check
@@ -351,8 +353,8 @@ gh pr create --draft --base main --body-file pr.md --title "feat(chordpro): …"
 gh pr ready <number>
 gh pr checks <number>
 gh pr merge --squash --delete-branch --author-email andi@theboss.ch --body-file merge.md <number>   # only if section 6 "Who merges" allows it; merge.md ends with the Co-Authored-By trailer
-cd ../../setDING   # back to the main checkout
-git worktree remove ../setDING-worktrees/feat-12-chordpro-parser
+cd ../..   # back to the main checkout
+git worktree remove .worktrees/feat-12-chordpro-parser
 git pull --ff-only
 git branch -D feat/12-chordpro-parser   # delete the merged branch locally too
 ```

@@ -18,7 +18,7 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 
 - Backlog as issues in the GitHub repository, with labels for agents (`agent:ready`, `agent:in-progress`, `needs-human`).
 - One issue = one branch (`<type>/<issue>-<slug>`) = one PR; no direct commits to `main`.
-- Every branch lives in its own git worktree (`../setDING-worktrees/<branch>`); the main checkout always stays on `main` and is only fast-forwarded.
+- Every branch lives in its own git worktree (`.worktrees/<branch>` inside the project folder, git-ignored); the main checkout always stays on `main` and is only fast-forwarded.
 - Conventional Commits, English, `Co-Authored-By` trailer naming Claude on every commit.
 - Local checks + self-review before a PR is marked ready. During early development the local test gate is binding and CI runs only on manual dispatch; required CI checks return when heading towards version 1.
 - **Squash merge** only; branch deleted after merge.
@@ -73,6 +73,7 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 - 2026-11-20: The test gate also tests the operations files (#644): ShellCheck on all shell scripts, `caddy validate`/`fmt` of the Caddyfile, `systemd-analyze verify` of the units, a backup restore against a real PocketBase and the website server with the real Caddyfile ([operations tests](../../development/operations-tests.md)). ShellCheck (GPL-3.0) is allowed as a check tool only: pinned, downloaded into the cache and verified, never copied into the repository or shipped. Owner decision.
 - 2026-11-20: Test gate by affected area (#684): `make check` runs only the jobs whose area the branch changes (`tool/check_select.py`; every job for shared files, unknown files and more than 40 changed files), `make check-full` runs all of them and is used for larger changes, `make release-gate` runs every check plus the web and Android integration tests before a release; CI runs every job. The dependency check fails only the full check and changes to pinned libraries, otherwise it warns. Reason: running every job for every change, and every new upstream release failing unrelated PRs, slowed down parallel agent work too much. Owner decision.
 - 2026-11-20: `make release-gate` runs the web integration tests in Chrome and in Firefox (#688, owner decision).
+- 2026-11-21: Worktrees move into the project folder, `.worktrees/<branch>`, ignored in `.gitignore` (#731). Tools scoped to the project folder (e.g. a Claude Code desktop session: file pane, permissions) reach them too. The formatter and analyzer run inside `app/` and `packages/*` and do not see the folder; an IDE that opens the repository root excludes it. Owner request.
 
 ## Open points
 
