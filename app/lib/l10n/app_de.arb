@@ -24,6 +24,7 @@
   },
   "songsEmpty": "Noch keine Songs. Erstelle einen neuen Song oder importiere ChordPro-Dateien.",
   "searchSongs": "Songs suchen",
+  "searchClear": "Suche leeren",
   "newSong": "Neuer Song",
   "newPdfSong": "Neuer PDF-Song",
   "importFiles": "Dateien importieren",

@@ -28,6 +28,7 @@ import 'library_usage_screen.dart';
 import 'song_attention.dart';
 import 'song_editor_screen.dart';
 import 'song_screen.dart';
+import '../widgets/section_header.dart';
 
 /// Delay before a changed search text is applied, so that typing does not
 /// start a database query per keystroke.
@@ -273,6 +274,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                 trailing: [
                   if (_search.text.isNotEmpty)
                     IconButton(
+                      tooltip: l10n.searchClear,
                       icon: const Icon(Icons.clear),
                       onPressed: () {
                         _searchDebounce?.cancel();
@@ -777,23 +779,8 @@ class SongSectionHeader extends StatelessWidget {
   final String label;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Semantics(
-      header: true,
-      child: Padding(
-        key: const ValueKey('song-section-header'),
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-        child: Text(
-          label,
-          style: theme.textTheme.titleSmall?.copyWith(
-            color: theme.colorScheme.primary,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) =>
+      SectionHeader(label, key: const ValueKey('song-section-header'));
 }
 
 /// What the band's arrangement changes against the song (ADR-0025): its

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import '../../l10n/generated/app_localizations.dart';
 import 'chordpro_editing_controller.dart';
 import 'line_number_gutter.dart';
+import '../widgets/dialogs.dart';
 
 /// Search bar of the ChordPro editor (#368): highlights all matches in the
 /// source, selects the current one and scrolls it into view. Enter goes to
@@ -150,9 +151,10 @@ class _EditorSearchBarState extends State<EditorSearchBar> {
       selection: TextSelection.collapsed(offset: cursor),
     );
     final l10n = AppLocalizations.of(context);
-    ScaffoldMessenger.maybeOf(context)
-      ?..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l10n.replacedCount(count))));
+    showMessageOn(
+      ScaffoldMessenger.maybeOf(context),
+      l10n.replacedCount(count),
+    );
   }
 
   void _toggleCase() {

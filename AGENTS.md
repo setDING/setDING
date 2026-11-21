@@ -86,6 +86,15 @@ all of them (`make screenshots`) and commits the ones that changed since. Detail
 [`website.md`](docs/development/website.md),
 [`docs/screenshots/README.md`](docs/screenshots/README.md).
 
+## UI design (mandatory)
+
+Every screen, dialog and panel follows the [UI design rules](docs/development/ui-design.md)
+(ADR-0051) and uses the shared widgets in `app/lib/ui/widgets/` instead of own
+versions: `SectionHeader`, `confirm()` / `destructiveButtonStyle()`, `showMessage…` /
+`showUndo()`, `AsyncBody`, `EmptyState`, `SidePanel`, and colours only from the colour
+scheme or `StatusColors`. `app/test/ui_rules_test.dart` enforces what it can; a
+deliberate exception changes the rules document first.
+
 ## ChordPro features
 
 `docs/examples/feature-showcase.cho` uses every supported ChordPro feature and is a

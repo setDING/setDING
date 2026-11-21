@@ -87,17 +87,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (pending.isEmpty) return;
     final l10n = AppLocalizations.of(context);
     // Queued behind another hint, e.g. the update hint, not replacing it.
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        key: const Key('whats-new-snackbar'),
-        persist: false,
-        duration: _whatsNewHintDuration,
-        content: Text(l10n.whatsNewAvailable(current)),
-        action: SnackBarAction(
-          key: const Key('whats-new-show'),
-          label: l10n.whatsNewShow,
-          onPressed: () => showWhatsNew(context, pending),
-        ),
+    showMessageOn(
+      ScaffoldMessenger.of(context),
+      l10n.whatsNewAvailable(current),
+      key: const Key('whats-new-snackbar'),
+      duration: _whatsNewHintDuration,
+      queue: true,
+      action: (
+        key: const Key('whats-new-show'),
+        label: l10n.whatsNewShow,
+        onPressed: () => showWhatsNew(context, pending),
       ),
     );
   }
@@ -109,20 +108,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (!takeBackupReminder(ref)) return;
     final l10n = AppLocalizations.of(context);
     // Queued behind another hint, not replacing it.
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        key: const Key('backup-reminder'),
-        persist: false,
-        duration: _whatsNewHintDuration,
-        content: Text(l10n.backupReminder(days)),
-        action: SnackBarAction(
-          key: const Key('backup-reminder-action'),
-          label: l10n.backupReminderAction,
-          onPressed: () async {
-            await exportFullBackup(context, ref);
-            ref.invalidate(backupReminderProvider);
-          },
-        ),
+    showMessageOn(
+      ScaffoldMessenger.of(context),
+      l10n.backupReminder(days),
+      key: const Key('backup-reminder'),
+      duration: _whatsNewHintDuration,
+      queue: true,
+      action: (
+        key: const Key('backup-reminder-action'),
+        label: l10n.backupReminderAction,
+        onPressed: () async {
+          await exportFullBackup(context, ref);
+          ref.invalidate(backupReminderProvider);
+        },
       ),
     );
   }
@@ -135,31 +133,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (!check.shouldNotify(version)) return;
     check.markNotified(version);
     final l10n = AppLocalizations.of(context);
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          key: const Key('update-available-snackbar'),
-          // Goes away by itself, despite the action: a hint, not a question.
-          persist: false,
-          duration: _updateHintDuration,
-          content: Text(l10n.updateAvailableTitle(version)),
-          // The Windows app installs it itself (ADR-0035), after asking.
-          action: ref.read(installableUpdateProvider) == version
-              ? SnackBarAction(
-                  key: const Key('update-available-install'),
-                  label: l10n.appUpdateInstall,
-                  onPressed: () => installAppUpdate(context, version),
-                )
-              : SnackBarAction(
-                  label: l10n.updateAvailableDetails,
-                  onPressed: () => launchUrl(
-                    releasePageUrl(version),
-                    mode: LaunchMode.externalApplication,
-                  ),
-                ),
-        ),
-      );
+    // Goes away by itself, despite the action: a hint, not a question.
+    showMessageOn(
+      ScaffoldMessenger.of(context),
+      l10n.updateAvailableTitle(version),
+      key: const Key('update-available-snackbar'),
+      duration: _updateHintDuration,
+      // The Windows app installs it itself (ADR-0035), after asking.
+      action: ref.read(installableUpdateProvider) == version
+          ? (
+              key: const Key('update-available-install'),
+              label: l10n.appUpdateInstall,
+              onPressed: () => installAppUpdate(context, version),
+            )
+          : (
+              key: null,
+              label: l10n.updateAvailableDetails,
+              onPressed: () => launchUrl(
+                releasePageUrl(version),
+                mode: LaunchMode.externalApplication,
+              ),
+            ),
+    );
   }
 
   @override

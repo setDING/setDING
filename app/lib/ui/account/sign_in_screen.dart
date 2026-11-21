@@ -146,12 +146,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     final messenger = ScaffoldMessenger.of(context);
     try {
       await ref.read(syncBackendProvider).requestVerification(_unverified!);
-      messenger.showSnackBar(SnackBar(content: Text(l10n.accountVerifySent)));
+      showMessageOn(messenger, l10n.accountVerifySent);
     } on BackendException catch (e) {
       _log.warning('Verification mail failed', e);
-      messenger.showSnackBar(
-        SnackBar(content: Text(backendErrorText(l10n, e.kind))),
-      );
+      showMessageOn(messenger, backendErrorText(l10n, e.kind));
     }
   }
 
@@ -167,12 +165,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     final messenger = ScaffoldMessenger.of(context);
     try {
       await ref.read(syncBackendProvider).requestPasswordReset(email);
-      messenger.showSnackBar(SnackBar(content: Text(l10n.accountResetSent)));
+      showMessageOn(messenger, l10n.accountResetSent);
     } on BackendException catch (e) {
       _log.warning('Password reset failed', e);
-      messenger.showSnackBar(
-        SnackBar(content: Text(backendErrorText(l10n, e.kind))),
-      );
+      showMessageOn(messenger, backendErrorText(l10n, e.kind));
     }
   }
 

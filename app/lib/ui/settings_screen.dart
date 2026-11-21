@@ -23,6 +23,7 @@ import 'widgets/app_info.dart';
 import 'widgets/breakpoint_builder.dart';
 import 'widgets/click_pickers.dart' show subdivisionLabel;
 import 'widgets/dialogs.dart';
+import 'widgets/section_header.dart';
 
 /// The categories of the settings screen, in order.
 /// The most used ones come first; the account and the organizations and
@@ -719,34 +720,20 @@ class _GroupHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final color = theme.colorScheme.primary;
-    return Padding(
+    return SectionHeader(
       key: Key('settings-group-${group.name}'),
-      padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 4),
-      child: Row(
-        children: [
-          Icon(
-            switch (group) {
-              _CategoryGroup.personal => scopeIcon(SettingSyncScope.personal),
-              _CategoryGroup.device => scopeIcon(SettingSyncScope.device),
-              _CategoryGroup.account => Icons.account_circle_outlined,
-              _CategoryGroup.development => Icons.science_outlined,
-            },
-            size: 18,
-            color: color,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(switch (group) {
-              _CategoryGroup.personal => l10n.settingsGroupPersonal,
-              _CategoryGroup.device => l10n.settingsGroupDevice,
-              _CategoryGroup.account => l10n.settingsGroupAccount,
-              _CategoryGroup.development => l10n.settingsGroupDevelopment,
-            }, style: theme.textTheme.titleSmall?.copyWith(color: color)),
-          ),
-        ],
-      ),
+      icon: switch (group) {
+        _CategoryGroup.personal => scopeIcon(SettingSyncScope.personal),
+        _CategoryGroup.device => scopeIcon(SettingSyncScope.device),
+        _CategoryGroup.account => Icons.account_circle_outlined,
+        _CategoryGroup.development => Icons.science_outlined,
+      },
+      switch (group) {
+        _CategoryGroup.personal => l10n.settingsGroupPersonal,
+        _CategoryGroup.device => l10n.settingsGroupDevice,
+        _CategoryGroup.account => l10n.settingsGroupAccount,
+        _CategoryGroup.development => l10n.settingsGroupDevelopment,
+      },
     );
   }
 }

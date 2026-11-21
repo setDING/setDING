@@ -82,9 +82,7 @@ Future<void> deleteBand(
       try {
         await service.restoreBand(band.id);
       } on BackendException catch (e) {
-        messenger.showSnackBar(
-          SnackBar(content: Text(backendErrorText(l10n, e.kind))),
-        );
+        showMessageOn(messenger, backendErrorText(l10n, e.kind));
       }
     },
   );
@@ -161,10 +159,7 @@ class _DeleteBandDialogState extends State<_DeleteBandDialog> {
         ),
         FilledButton(
           key: const Key('band-delete-confirm'),
-          style: FilledButton.styleFrom(
-            backgroundColor: theme.colorScheme.error,
-            foregroundColor: theme.colorScheme.onError,
-          ),
+          style: destructiveButtonStyle(context),
           onPressed: _confirmed ? () => Navigator.pop(context, true) : null,
           child: Text(l10n.delete),
         ),

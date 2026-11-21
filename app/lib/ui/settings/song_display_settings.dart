@@ -15,6 +15,7 @@ import '../sets/song_picker.dart';
 import '../theme.dart';
 import '../widgets/dialogs.dart';
 import 'settings_layout.dart';
+import '../widgets/section_header.dart';
 
 /// Song shown in the preview: every section type once. Original text
 /// written for setDING, like the demo song.
@@ -313,11 +314,11 @@ class _SongDisplayEditorState extends ConsumerState<SongDisplayEditorScreen> {
       key: const Key('song-display-controls'),
       padding: const EdgeInsets.only(bottom: 32),
       children: [
-        _Heading(l10n.songDisplayPreset),
+        SectionHeader(l10n.songDisplayPreset),
         _PresetChips(display: display),
-        _Heading(l10n.songDisplayFont),
+        SectionHeader(l10n.songDisplayFont),
         _FontChoice(display: display),
-        _Heading(l10n.songDisplaySection),
+        SectionHeader(l10n.songDisplaySection),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Wrap(
@@ -369,7 +370,7 @@ class _SongDisplayEditorState extends ConsumerState<SongDisplayEditorScreen> {
         if (inherits)
           _Hint(l10n.songDisplayInheritsHint(_chain(l10n, display, _role)))
         else ...[
-          _Heading(l10n.songDisplayChords),
+          SectionHeader(l10n.songDisplayChords),
           _Row(
             children: [
               _Toggles(
@@ -396,7 +397,7 @@ class _SongDisplayEditorState extends ConsumerState<SongDisplayEditorScreen> {
             value: style.chordColor,
             onChanged: (v) => change((s) => s.copyWith(chordColor: v)),
           ),
-          _Heading(l10n.songDisplayLyrics),
+          SectionHeader(l10n.songDisplayLyrics),
           _Row(
             children: [
               _Toggles(
@@ -413,7 +414,7 @@ class _SongDisplayEditorState extends ConsumerState<SongDisplayEditorScreen> {
             value: style.textColor,
             onChanged: (v) => change((s) => s.copyWith(textColor: v)),
           ),
-          _Heading(l10n.songDisplayHeading),
+          SectionHeader(l10n.songDisplayHeading),
           SwitchListTile(
             key: const Key('song-display-showLabel'),
             title: Text(l10n.songDisplayShowHeading),
@@ -449,7 +450,7 @@ class _SongDisplayEditorState extends ConsumerState<SongDisplayEditorScreen> {
               onChanged: (v) => change((s) => s.copyWith(labelColor: v)),
             ),
           ],
-          _Heading(l10n.songDisplayBar),
+          SectionHeader(l10n.songDisplayBar),
           SwitchListTile(
             key: const Key('song-display-bar'),
             title: Text(l10n.songDisplayShowBar),
@@ -688,10 +689,9 @@ class _SongDisplayPreviewState extends ConsumerState<SongDisplayPreview> {
         Row(
           children: [
             Expanded(
-              child: Text(
+              child: SectionHeader(
                 l10n.songDisplayPreview,
-                style: Theme.of(context).textTheme.titleSmall
-                    ?.copyWith(color: Theme.of(context).colorScheme.primary),
+                padding: EdgeInsets.zero,
               ),
             ),
             PopupMenuButton<String>(
@@ -775,22 +775,6 @@ class _SongDisplayPreviewState extends ConsumerState<SongDisplayPreview> {
       ],
     );
   }
-}
-
-class _Heading extends StatelessWidget {
-  const _Heading(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-    child: Text(
-      text,
-      style: Theme.of(context).textTheme.titleSmall
-          ?.copyWith(color: Theme.of(context).colorScheme.primary),
-    ),
-  );
 }
 
 class _Hint extends StatelessWidget {

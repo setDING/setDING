@@ -17,6 +17,7 @@ import '../widgets/export_file.dart';
 import '../widgets/file_actions.dart';
 import 'set_screen.dart';
 import '../widgets/loading_indicator.dart';
+import '../widgets/section_header.dart';
 
 /// Asks what the archive of [set] holds and exports it (ADR-0043 §1b).
 Future<void> exportSetArchive(
@@ -74,7 +75,10 @@ class _ExportDialogState extends State<_ExportDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(l10n.setExportHint),
-              _Heading(l10n.setExportHeadingInclude),
+              SectionHeader(
+                l10n.setExportHeadingInclude,
+                padding: SectionHeader.insetPadding,
+              ),
               ..._optionTiles(
                 l10n,
                 _options,
@@ -139,32 +143,6 @@ List<Widget> _optionTiles(
       onChanged: (v) => changed(options.copyWith(personal: v)),
     ),
 ];
-
-/// A section heading of the set archive dialogs, styled like the section
-/// headers of the song list (#719).
-class _Heading extends StatelessWidget {
-  const _Heading(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Semantics(
-      header: true,
-      child: Padding(
-        padding: const EdgeInsets.only(top: 20, bottom: 6),
-        child: Text(
-          text,
-          style: theme.textTheme.titleSmall?.copyWith(
-            color: theme.colorScheme.primary,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 /// A compact checkbox row, smaller than the headings.
 class _OptionTile extends StatelessWidget {
@@ -413,7 +391,10 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
-              _Heading(l10n.setImportHeadingTarget),
+              SectionHeader(
+                l10n.setImportHeadingTarget,
+                padding: SectionHeader.insetPadding,
+              ),
               if (targets.isEmpty)
                 Text(l10n.setImportNoBand)
               else
@@ -469,7 +450,10 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
     final adding = preview.existingSet == null || !_replace;
     return [
       if (preview.existingSet case final existing?) ...[
-        _Heading(l10n.setImportHeadingExisting),
+        SectionHeader(
+          l10n.setImportHeadingExisting,
+          padding: SectionHeader.insetPadding,
+        ),
         Text(l10n.setImportExisting(existing.name)),
         const SizedBox(height: 8),
         SizedBox(
@@ -505,7 +489,10 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
             key: const Key('set-import-new-name'),
           ),
         ),
-      _Heading(l10n.setImportHeadingSongs),
+      SectionHeader(
+        l10n.setImportHeadingSongs,
+        padding: SectionHeader.insetPadding,
+      ),
       if (preview.identical > 0)
         _StatusRow(
           Icons.check_circle_outline,
@@ -559,7 +546,10 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
           holds.setSettings ||
           holds.attachments ||
           holds.personal) ...[
-        _Heading(l10n.setImportHeadingInclude),
+        SectionHeader(
+          l10n.setImportHeadingInclude,
+          padding: SectionHeader.insetPadding,
+        ),
         ..._optionTiles(
           l10n,
           _options,

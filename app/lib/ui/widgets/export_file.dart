@@ -61,9 +61,7 @@ Future<bool> exportFile(
       onAction: () async {
         final opened = await open(fileName, bytes, mimeType: mimeType);
         if (!opened) {
-          messenger
-            ..hideCurrentSnackBar()
-            ..showSnackBar(SnackBar(content: Text(l10n.openFileFailed)));
+          showMessageOn(messenger, l10n.openFileFailed);
         }
       },
     );

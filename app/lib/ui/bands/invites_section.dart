@@ -8,6 +8,7 @@ import '../../sync/auth_providers.dart';
 import '../../sync/sync_backend.dart';
 import '../widgets/dialogs.dart';
 import 'bands_screen.dart';
+import '../widgets/section_header.dart';
 
 /// Invitation links of an organization (organization admins), or of one
 /// of its bands (band leaders, ADR-0023).
@@ -87,14 +88,7 @@ class InvitesSection extends ConsumerWidget {
           ),
           onTap: () => _create(context, ref),
         ),
-        if (invites.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-            child: Text(
-              l10n.invitesTitle,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-          ),
+        if (invites.isNotEmpty) SectionHeader(l10n.invitesTitle),
         for (final i in invites) _inviteTile(context, ref, i, l10n, date),
       ],
     );

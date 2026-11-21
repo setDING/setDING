@@ -11,6 +11,7 @@ import 'band_labels.dart';
 import 'bands_screen.dart';
 import 'delete_band.dart';
 import 'invites_section.dart';
+import '../widgets/section_header.dart';
 
 /// Settings and members of one band. Band leaders and organization admins
 /// rename the band, add people of the organization, invite new people into
@@ -130,14 +131,7 @@ class BandScreen extends ConsumerWidget {
                     ? Text(l10n.bandPlannerHint)
                     : null,
               ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-              child: Text(
-                l10n.bandMembers,
-                style: Theme.of(context).textTheme.titleSmall
-                    ?.copyWith(color: Theme.of(context).colorScheme.primary),
-              ),
-            ),
+            SectionHeader(l10n.bandMembers),
             for (final m in members)
               _MemberTile(member: m, band: band, isMe: m.userId == me.id),
             if (band.canManageBand) ...[

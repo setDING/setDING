@@ -75,6 +75,48 @@ ColorScheme appColorScheme(
   };
 }
 
+/// Colours of states the colour scheme has no role for: a positive state
+/// (e.g. "available offline") and a warning that is not an error (e.g.
+/// ChordPro problems, #314). The same for every accent, readable on the
+/// surface in light and dark (docs/development/ui-design.md, "Colours").
+@immutable
+class StatusColors extends ThemeExtension<StatusColors> {
+  const StatusColors({required this.success, required this.warning});
+
+  static const light = StatusColors(
+    success: Color(0xFF2E7D32),
+    warning: Color(0xFFFF6F00),
+  );
+  static const dark = StatusColors(
+    success: Color(0xFF81C784),
+    warning: Color(0xFFFFCA28),
+  );
+
+  final Color success;
+  final Color warning;
+
+  /// The status colours of the current theme.
+  static StatusColors of(BuildContext context) {
+    final theme = Theme.of(context);
+    return theme.extension<StatusColors>() ??
+        (theme.brightness == Brightness.dark ? dark : light);
+  }
+
+  @override
+  StatusColors copyWith({Color? success, Color? warning}) => StatusColors(
+    success: success ?? this.success,
+    warning: warning ?? this.warning,
+  );
+
+  @override
+  StatusColors lerp(StatusColors? other, double t) => other == null
+      ? this
+      : StatusColors(
+          success: Color.lerp(success, other.success, t)!,
+          warning: Color.lerp(warning, other.warning, t)!,
+        );
+}
+
 /// Built once per brightness and accent: the colour scheme is computed from
 /// the seed colour.
 final _themes = <(Brightness, AccentColor), ThemeData>{};
@@ -88,5 +130,8 @@ ThemeData appTheme(
   () => ThemeData(
     colorScheme: appColorScheme(brightness, accent),
     useMaterial3: true,
+    extensions: [
+      brightness == Brightness.dark ? StatusColors.dark : StatusColors.light,
+    ],
   ),
 );

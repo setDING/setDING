@@ -108,7 +108,7 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
         return;
       }
       if (mounted) Navigator.pop(context);
-      messenger.showSnackBar(SnackBar(content: Text(message)));
+      showMessageOn(messenger, message);
     } catch (e) {
       if (!mounted) return;
       setState(() => _busy = false);
@@ -145,9 +145,7 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
     setState(() => _busy = true);
     try {
       final count = await action(ref.read(importExportProvider));
-      messenger
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(done(count))));
+      showMessageOn(messenger, done(count));
       if (!mounted) return;
       if (rest.problems.any((p) => p.fixable) || rest.legacyLabels.isNotEmpty) {
         setState(() {

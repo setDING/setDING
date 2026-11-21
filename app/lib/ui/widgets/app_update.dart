@@ -26,6 +26,7 @@ Future<void> installAppUpdate(BuildContext context, String version) async {
     title: l10n.appUpdateInstallTitle(version),
     message: l10n.appUpdateInstallBody,
     action: l10n.appUpdateInstall,
+    destructive: false,
   );
   if (!ok || !context.mounted) return;
 

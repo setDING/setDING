@@ -13,6 +13,7 @@ import 'close_organization.dart';
 import 'delete_band.dart';
 import 'bands_screen.dart';
 import 'invites_section.dart';
+import '../widgets/section_header.dart';
 
 /// An organization (ADR-0017): its bands and people. Organization admins
 /// rename it, create bands in it and manage people and their roles;
@@ -40,16 +41,6 @@ class OrganizationScreen extends ConsumerWidget {
     if (org == null || me == null) return Scaffold(appBar: AppBar());
     final own = people.where((p) => p.userId == me.id).firstOrNull;
     final theme = Theme.of(context);
-
-    Widget header(String text) => Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-      child: Text(
-        text,
-        style: theme.textTheme.titleSmall?.copyWith(
-          color: theme.colorScheme.primary,
-        ),
-      ),
-    );
 
     return Scaffold(
       appBar: AppBar(title: Text(org.name)),
@@ -81,7 +72,7 @@ class OrganizationScreen extends ConsumerWidget {
               leading: const Icon(Icons.library_music_outlined),
               subtitle: Text(l10n.orgSongsShared),
             ),
-            header(l10n.orgBands),
+            SectionHeader(l10n.orgBands),
             for (final b in bands)
               ListTile(
                 leading: const Icon(Icons.groups_outlined),
@@ -140,7 +131,7 @@ class OrganizationScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-            header(l10n.orgPeople),
+            SectionHeader(l10n.orgPeople),
             for (final p in people)
               _PersonTile(
                 person: p,

@@ -23,6 +23,8 @@ import 'package:setding/ui/home_tab.dart';
 
 import 'test_app.dart';
 
+import 'package:setding/ui/widgets/section_header.dart';
+
 void main() {
   testWidgets('shows German UI with Swiss spelling when selected', (
     tester,
@@ -331,7 +333,7 @@ void main() {
     List<String> headers() => [
       for (final e
           in find.byKey(const ValueKey('song-section-header')).evaluate())
-        ((e.widget as Padding).child! as Text).data!,
+        (e.widget as SectionHeader).label,
     ];
     // By title: first letters without accents, others under #.
     expect(headers(), ['#', 'A', 'B']);

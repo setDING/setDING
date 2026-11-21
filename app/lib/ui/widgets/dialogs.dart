@@ -4,12 +4,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/generated/app_localizations.dart';
 import 'loading_indicator.dart';
 
-/// Asks for confirmation of a destructive action.
+/// The style of the button that confirms a destructive action (deleting,
+/// removing, leaving, discarding): filled in the error colours, so it never
+/// looks like an ordinary "OK" (docs/development/ui-design.md, "Dialogs").
+ButtonStyle destructiveButtonStyle(BuildContext context) {
+  final colors = Theme.of(context).colorScheme;
+  return FilledButton.styleFrom(
+    backgroundColor: colors.error,
+    foregroundColor: colors.onError,
+  );
+}
+
+/// Asks for confirmation. [action] names what happens ("Delete" by
+/// default); a [destructive] action gets a button in the error colours.
 Future<bool> confirm(
   BuildContext context, {
   required String title,
   required String message,
   String? action,
+  bool destructive = true,
 }) async {
   final l10n = AppLocalizations.of(context);
   final result = await showDialog<bool>(
@@ -23,6 +36,8 @@ Future<bool> confirm(
           child: Text(l10n.cancel),
         ),
         FilledButton(
+          key: const Key('confirm-action'),
+          style: destructive ? destructiveButtonStyle(context) : null,
           onPressed: () => Navigator.pop(context, true),
           child: Text(action ?? l10n.delete),
         ),
@@ -124,15 +139,59 @@ class _TextDialogState extends State<_TextDialog> {
   }
 }
 
-/// Shows a short message at the bottom of the screen.
-void showMessage(BuildContext context, String message) {
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(message)));
-}
+/// An action of a message, e.g. "Open" or "Undo".
+typedef MessageAction = ({String label, VoidCallback onPressed, Key? key});
+
+/// How long a message without an action stays (Flutter's default).
+const messageDuration = Duration(seconds: 4);
 
 /// How long a message with an action (e.g. "Open") stays.
 const messageActionDuration = Duration(seconds: 8);
+
+/// Shows a short message at the bottom of the screen
+/// (docs/development/ui-design.md, "Messages").
+void showMessage(BuildContext context, String message) =>
+    showMessageOn(ScaffoldMessenger.of(context), message);
+
+/// Shows [message] through [messenger], taken before an async gap or before
+/// the screen closes, so the message shows on the next screen.
+///
+/// The message replaces one still shown, unless [queue] is set (hints at
+/// app start that must not hide each other). A message with an [action]
+/// still goes away by itself, after [duration] or [messageActionDuration]:
+/// a hint, never a question.
+void showMessageOn(
+  ScaffoldMessengerState? messenger,
+  String message, {
+  Key? key,
+  MessageAction? action,
+  Duration? duration,
+  bool queue = false,
+}) {
+  if (messenger == null) return;
+  if (!queue) messenger.hideCurrentSnackBar();
+  messenger.showSnackBar(_snackBar(message, key, action, duration));
+}
+
+SnackBar _snackBar(
+  String message,
+  Key? key,
+  MessageAction? action,
+  Duration? duration,
+) => SnackBar(
+  key: key,
+  content: Text(message),
+  duration:
+      duration ?? (action == null ? messageDuration : messageActionDuration),
+  persist: false,
+  action: action == null
+      ? null
+      : SnackBarAction(
+          key: action.key,
+          label: action.label,
+          onPressed: action.onPressed,
+        ),
+);
 
 /// Shows a message with one action, e.g. "Open" after an export (#721).
 /// It disappears on its own after [messageActionDuration].
@@ -141,18 +200,11 @@ void showMessageWithAction(
   String message, {
   required String actionLabel,
   required VoidCallback onAction,
-}) {
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: messageActionDuration,
-        persist: false,
-        action: SnackBarAction(label: actionLabel, onPressed: onAction),
-      ),
-    );
-}
+}) => showMessageOn(
+  ScaffoldMessenger.of(context),
+  message,
+  action: (label: actionLabel, onPressed: onAction, key: null),
+);
 
 /// Builds [data] once the [value] is available, with loading and error states.
 class AsyncBody<T> extends StatelessWidget {
@@ -245,12 +297,11 @@ void showUndo(
 }) {
   messenger.hideCurrentSnackBar();
   final controller = messenger.showSnackBar(
-    SnackBar(
-      content: Text(message),
-      duration: undoDuration,
-      persist: false,
-      action: SnackBarAction(label: undoLabel, onPressed: onUndo),
-    ),
+    _snackBar(message, null, (
+      label: undoLabel,
+      onPressed: onUndo,
+      key: null,
+    ), undoDuration),
   );
   if (onGone != null) {
     controller.closed.then((reason) {

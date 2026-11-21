@@ -1,5 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../widgets/section_header.dart';
+
 // The building blocks of the settings categories (ADR-0050): a category is
 // a SettingsSections list of titled SettingsSection groups, separated by
 // dividers, and every option in them has a leading icon, so all texts start
@@ -47,17 +49,11 @@ class SettingsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
+        // The section header of the whole app (ADR-0051), less space above
+        // it: the divider between two sections adds its own.
+        SectionHeader(
+          title,
           padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 4),
-          child: Semantics(
-            header: true,
-            child: Text(
-              title,
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: theme.colorScheme.primary,
-              ),
-            ),
-          ),
         ),
         if (hint case final hint?)
           Padding(

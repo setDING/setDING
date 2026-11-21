@@ -10,12 +10,14 @@ import '../account/sync_refresh.dart';
 import '../bands/band_switcher.dart';
 import '../songs/chordpro_problems_badge.dart';
 import '../songs/songs_screen.dart' show songListTwoColumnWidth;
+import '../theme.dart';
 import '../trash/trash_screen.dart';
 import '../widgets/breakpoint_builder.dart';
 import '../widgets/dialogs.dart';
 import 'repertoire_screen.dart';
 import 'set_archive_dialogs.dart';
 import 'set_screen.dart';
+import '../widgets/section_header.dart';
 
 /// Minimum width for showing the list of sets and the selected set side by
 /// side (#266); the same as for the song list's two columns.
@@ -249,22 +251,13 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final text = Text(
-      label,
-      style: theme.textTheme.titleSmall?.copyWith(
-        color: theme.colorScheme.primary,
-        fontWeight: FontWeight.w700,
-      ),
-    );
+    final text = Text(label, style: SectionHeader.style(context));
     final onToggle = this.onToggle;
     if (onToggle == null) {
-      return Semantics(
-        header: true,
-        child: Padding(
-          key: const ValueKey('set-section-header'),
-          padding: const EdgeInsets.fromLTRB(4, 16, 4, 4),
-          child: text,
-        ),
+      return SectionHeader(
+        label,
+        key: const ValueKey('set-section-header'),
+        padding: const EdgeInsets.fromLTRB(4, 16, 4, 4),
       );
     }
     return Semantics(
@@ -400,7 +393,7 @@ class OfflineBadge extends StatelessWidget {
     final label = ready ? l10n.offlineReady : l10n.notOfflineReady;
     final icon = Icon(
       ready ? Icons.offline_pin : Icons.cloud_off,
-      color: ready ? Colors.green.shade600 : colors.error,
+      color: ready ? StatusColors.of(context).success : colors.error,
     );
     return Tooltip(message: label, child: icon);
   }
