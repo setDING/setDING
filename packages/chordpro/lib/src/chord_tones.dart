@@ -80,11 +80,15 @@ ChordTones chordTones(Chord chord) {
     third = 3;
     fifth = 6;
     extra.add(10);
-  } else if (take('dim7') || take('°7') || take('o7')) {
+  } else if (RegExp(r'^h\d').hasMatch(s) && take('h')) {
+    // `h7`, `h9`: half-diminished; the number adds the seventh.
+    third = 3;
+    fifth = 6;
+  } else if (take('dim7') || take('°7') || take('o7') || take('07')) {
     third = 3;
     fifth = 6;
     extra.add(9);
-  } else if (take('dim') || take('°') || take('o')) {
+  } else if (take('dim') || take('°') || take('o') || take('0')) {
     third = 3;
     fifth = 6;
   } else if (take('aug') || take('+')) {
@@ -96,7 +100,10 @@ ChordTones chordTones(Chord chord) {
 
   // Numbers and alterations.
   while (s.isNotEmpty) {
-    if (take('sus2')) {
+    if (take('sus9')) {
+      third = null;
+      extra.add(14);
+    } else if (take('sus2')) {
       third = null;
       extra.add(2);
     } else if (take('sus4') || take('sus')) {
@@ -133,6 +140,19 @@ ChordTones chordTones(Chord chord) {
       extra.add(18);
     } else if (take('b13')) {
       extra.add(20);
+    } else if (_majorMarker.firstMatch(s) case final m?) {
+      // `m9maj7`, `m(maj9)`, `m#7`: the seventh is major.
+      s = s.substring(m.group(0)!.length);
+      _extensions(int.parse(m.group(1)!), extra, includeSeventh: false);
+      extra
+        ..remove(10)
+        ..add(11);
+    } else if (s.startsWith('+') && !RegExp(r'^\+\d').hasMatch(s)) {
+      s = s.substring(1);
+      // `7+`: raised fifth.
+      fifth = 8;
+    } else if (take('add3')) {
+      third = 4;
     } else if (take('no3')) {
       third = null;
     } else if (take('no5')) {
@@ -158,6 +178,11 @@ ChordTones chordTones(Chord chord) {
     bass: bass == chord.root.pitch ? null : bass,
   );
 }
+
+/// A major seventh marker with its number after the quality.
+final _majorMarker = RegExp(
+  r'^(?:(?:maj|Maj|MAJ|Ma|M|\^|Δ|△)(?=7|9|11|13)|#(?=7))(13|11|9|7)',
+);
 
 void _extensions(int number, Set<int> extra, {bool includeSeventh = true}) {
   if (includeSeventh) extra.add(10);

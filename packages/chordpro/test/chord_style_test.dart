@@ -67,14 +67,74 @@ void main() {
       expect(ChordSuffix.tryParse('5')!.extension, '5');
     });
 
+    test('a major seventh after the extension', () {
+      const minMaj9 = ChordSuffix(
+        quality: ChordQuality.minor,
+        extension: '9',
+        majorSeventh: true,
+      );
+      for (final s in ['m9maj7', 'm9^7', 'min9maj7', '-9maj7', 'm(maj9)']) {
+        expect(ChordSuffix.tryParse(s), minMaj9, reason: s);
+      }
+      expect(
+        ChordSuffix.tryParse('m#7'),
+        const ChordSuffix(
+          quality: ChordQuality.minor,
+          extension: '7',
+          majorSeventh: true,
+        ),
+      );
+    });
+
+    test('ChordPro reference suffixes', () {
+      expect(ChordSuffix.tryParse('711')!.modifiers, ['add11']);
+      expect(ChordSuffix.tryParse('911')!.modifiers, ['add11']);
+      expect(ChordSuffix.tryParse('maj911')!.modifiers, ['add11']);
+      expect(ChordSuffix.tryParse('7+')!.modifiers, ['#5']);
+      expect(ChordSuffix.tryParse('9+')!.modifiers, ['#5']);
+      expect(ChordSuffix.tryParse('7susadd3')!.modifiers, ['sus4', 'add3']);
+      expect(ChordSuffix.tryParse('no3')!.modifiers, ['no3']);
+      expect(ChordSuffix.tryParse('sus9')!.modifiers, ['sus9']);
+      expect(ChordSuffix.tryParse('0')!.quality, ChordQuality.diminished);
+      expect(
+        ChordSuffix.tryParse('h7'),
+        const ChordSuffix(quality: ChordQuality.halfDiminished),
+      );
+      expect(ChordSuffix.tryParse('h9')!.extension, '9');
+    });
+
     test('unknown suffixes are not parsed', () {
-      for (final s in ['x', 'm7(', 'm7)', 'maj7maj7', 'add', 'b3', 'Msus']) {
+      for (final s in [
+        'x',
+        'm7(',
+        'm7)',
+        'maj7maj7',
+        'add',
+        'b3',
+        'Msus',
+        // `Ah`, `Eh` are words, not chords.
+        'h',
+        '7maj7',
+        '97',
+        '7maj9',
+      ]) {
         expect(ChordSuffix.tryParse(s), isNull, reason: s);
       }
     });
   });
 
   group('Chord styles', () {
+    test('Cm9maj7 is raised like Cm(maj9)', () {
+      final parts = Chord.tryParse(
+        'Cm9maj7',
+      )!.formatParts(ChordNotation.international, style: ChordStyle.standard);
+      expect(mergeChordParts(parts), const [
+        ChordPart('Cm'),
+        ChordPart('(maj9)', raised: true),
+      ]);
+      expect(styled('Cm9maj7', ChordStyle.jazz), 'C−Δ9');
+    });
+
     test('as written keeps the suffix', () {
       expect(styled('Ami7', ChordStyle.asWritten), 'Ami7');
       expect(styled('C-7b5', ChordStyle.asWritten), 'C-7b5');

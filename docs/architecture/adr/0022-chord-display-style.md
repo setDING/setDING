@@ -36,7 +36,10 @@ while the ChordPro source stays unchanged. The chord style fits the same pattern
    *quality*, *extension*, *alterations/additions* (in their written order) and keeps
    the *bass* note. Input variants are normalised, e.g. `m7`, `min7`, `mi7`, `-7` and
    `−7` are all a minor seventh; `maj7`, `Maj7`, `M7`, `Δ7`, `^7` are a major seventh;
-   `dim`/`°`, `aug`/`+`, `m7b5`/`ø`. A suffix the parser does not fully understand is
+   `dim`/`°`/`0`, `aug`/`+`, `m7b5`/`ø`/`h7`; `m9maj7` is `m(maj9)`. The parser
+   understands every suffix of the list in the ChordPro reference implementation
+   ([chordpro-chords](https://www.chordpro.org/chordpro/chordpro-chords/)) except a
+   bare `3` and `h` (so lyrics like `Ah` stay words). A suffix the parser does not fully understand is
    kept **as written** and shown unchanged in every style (no chord is ever displayed
    wrongly or dropped). `isMinor` and the Nashville conversion use the parsed quality.
 2. **Global device setting "chord style"** with the values:
@@ -103,6 +106,12 @@ while the ChordPro source stays unchanged. The chord style fits the same pattern
 - 2026-11-16: Implemented (#196): `ChordSuffix`, `ChordStyle` and
   `ChordPart` in the `chordpro` package, `ChordText` in the renderer, settings
   in the display category.
+
+- 2026-11-21: The suffix parser covers the extension list of the ChordPro
+  reference implementation: a major seventh after the extension (`m9maj7`,
+  `m9^7`), a second number as an added tone (`711` is `7add11`), `+` after a
+  number (`7+` is `7#5`), `m#7`, `sus9`, `add3`/`no3`, `0` (diminished) and
+  `h7`/`h9` (half-diminished). The chord tones for diagrams follow.
 
 ## Open points
 
