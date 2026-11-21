@@ -56,6 +56,10 @@ enum BackendErrorKind {
   /// The band must keep at least one admin (ADR-0005).
   lastAdmin,
 
+  /// The account cannot be deleted while the person is the only admin of
+  /// an organization (ADR-0052).
+  soleOrgAdmin,
+
   /// The record does not exist or the user may not change it.
   notAllowed,
 
@@ -782,6 +786,12 @@ abstract class SyncBackend {
     required String oldPassword,
     required String newPassword,
   });
+
+  /// Deletes the account of the signed-in user for good (ADR-0052) and
+  /// signs out. Fails with [BackendErrorKind.invalidCredentials] if
+  /// [password] is wrong and with [BackendErrorKind.soleOrgAdmin] while
+  /// the person is the only admin of an organization.
+  Future<void> deleteAccount(String password);
 
   // Organizations and bands (ADR-0005, ADR-0017) ------------------------------
 

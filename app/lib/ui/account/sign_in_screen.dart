@@ -29,6 +29,7 @@ String backendErrorText(
   BackendErrorKind.invalidEmail => l10n.accountErrorInvalidEmail,
   BackendErrorKind.weakPassword => l10n.accountErrorWeakPassword,
   BackendErrorKind.lastAdmin => l10n.bandErrorLastAdmin,
+  BackendErrorKind.soleOrgAdmin => l10n.accountDeleteSoleAdmin,
   BackendErrorKind.notAllowed => l10n.bandErrorNotAllowed,
   BackendErrorKind.notOrgMember => l10n.bandErrorNotOrgMember,
   BackendErrorKind.inviteUnknown => l10n.inviteErrorUnknown,

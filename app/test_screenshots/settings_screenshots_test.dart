@@ -134,6 +134,16 @@ void main() {
       await shot(tester, '${lang}_35_account');
       await tester.tap(find.byKey(const Key('account-change-password')));
       await shot(tester, '${lang}_35b_change_password');
+      await tester.tap(find.text(lang == 'de' ? 'Abbrechen' : 'Cancel'));
+      await tester.pumpAndSettle();
+      // Deleting the account (ADR-0052).
+      await tester.tap(find.byKey(const Key('account-delete')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('delete-account-password')),
+        'password-123',
+      );
+      await shot(tester, '${lang}_36_delete_account');
       await app.dispose(tester);
     });
   }

@@ -160,6 +160,35 @@ void main() {
     other.dispose();
   });
 
+  test('deletes the own account (ADR-0052)', () async {
+    final b = PocketBaseBackend(serverUrl: url, store: MemorySessionStore());
+    final address = email();
+    await b.signUp(email: address, password: 'password-123', name: 'Ann');
+    // Ann founds an organization and is its only admin.
+    await b.createBand(id: const Uuid().v4(), name: 'Ann\'s band');
+
+    expect(
+      await kindOf(() => b.deleteAccount('wrong-password')),
+      BackendErrorKind.invalidCredentials,
+    );
+    expect(
+      await kindOf(() => b.deleteAccount('password-123')),
+      BackendErrorKind.soleOrgAdmin,
+    );
+    expect(b.currentUser, isNotNull);
+
+    // Closing the organization lifts the block (ADR-0052).
+    final org = (await b.fetchOrganizations()).single;
+    await b.closeOrganization(org.id);
+    await b.deleteAccount('password-123');
+    expect(b.currentUser, isNull);
+    expect(
+      await kindOf(() => b.signIn(email: address, password: 'password-123')),
+      BackendErrorKind.invalidCredentials,
+    );
+    b.dispose();
+  });
+
   test('accepts a password reset request', () async {
     final b = PocketBaseBackend(serverUrl: url, store: MemorySessionStore());
     await b.requestPasswordReset('nobody@setding.test');

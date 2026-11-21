@@ -1,6 +1,6 @@
 ---
 title: Konto und Synchronisation
-description: Anmelden, Konto erstellen, Name und Passwort ändern, synchronisieren und abmelden.
+description: Anmelden, Konto erstellen, Name und Passwort ändern, synchronisieren, abmelden und Konto löschen.
 sidebar:
   order: 4
 ---
@@ -10,6 +10,7 @@ import settings from '../../../../../docs/screenshots/settings_de.png';
 import syncHint from '../../../../../docs/screenshots/sync_hint_de.png';
 import account from '../../../../../docs/screenshots/account_de.png';
 import changePassword from '../../../../../docs/screenshots/change_password_de.png';
+import deleteAccount from '../../../../../docs/screenshots/delete_account_de.png';
 
 setDING funktioniert auch ohne Konto, aber nur auf deinem Gerät. Mit einem Konto
 teilst du Songs und Sets mit deiner Band, und deine persönlichen Anpassungen und
@@ -96,3 +97,25 @@ Beides braucht eine Verbindung zum Server.
 bleiben erhalten.
 
 Wechselst du im Feld **Server** den Server, wirst du abgemeldet.
+
+## Konto löschen
+
+**Konto löschen** steht ganz unten unter **Konto & Synchronisation** im Abschnitt
+**Gefahrenzone**. Gib zur
+Bestätigung dein Passwort ein. Dann werden endgültig gelöscht:
+
+- dein Konto (Name, E-Mail-Adresse, Passwort),
+- deine persönlichen Anpassungen, Annotationen und Einstellungen,
+- deine Mitgliedschaften in Organisationen und Bands.
+
+Songs und Sets, die du erstellt oder bearbeitet hast, bleiben bei deinen
+Organisationen. Auf allen Geräten wirst du abgemeldet; auf diesem Gerät werden die
+Daten deiner Organisationen entfernt, deine lokale Bibliothek bleibt. Die Backups
+des Servers behalten bis zu 14 Tage eine Kopie. Löschen braucht eine Verbindung zum
+Server und lässt sich nicht rückgängig machen.
+
+Bist du der **einzige Admin** einer Organisation, geht das erst, wenn du jemand
+anderen zum Admin ernannt oder die Organisation geschlossen hast (siehe
+[Organisation](/bands/organizations/)).
+
+<Image src={deleteAccount} alt="Der Dialog «Konto löschen?» mit dem Passwort zur Bestätigung" />

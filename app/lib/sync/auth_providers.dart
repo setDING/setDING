@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/account_cleanup.dart';
 import '../data/song_repository.dart' show adoptLocalOverlays;
 import '../providers.dart'
     show
@@ -143,6 +144,27 @@ class AuthNotifier extends Notifier<AuthUser?> {
   }
 
   Future<void> signOut() => ref.read(syncBackendProvider).signOut();
+
+  /// Deletes the account for good (ADR-0052), which signs out, and removes
+  /// its data from this device. Throws [BackendException] if the server
+  /// refuses (wrong password, only admin of an organization, offline).
+  Future<void> deleteAccount(String password) async {
+    final userId = state?.id;
+    await ref.read(syncBackendProvider).deleteAccount(password);
+    if (userId == null) return;
+    try {
+      await removeAccountData(
+        ref.read(databaseProvider),
+        userId,
+        storage: ref.read(attachmentStorageProvider),
+      );
+      await ref.read(userSettingsStoreProvider).reload();
+      await ref.read(selectedBandIdProvider.notifier).reset();
+      await ref.read(selectedLibraryIdProvider.notifier).reset();
+    } catch (e) {
+      _log.error('Could not delete the data of the deleted account', e);
+    }
+  }
 }
 
 final authProvider = NotifierProvider<AuthNotifier, AuthUser?>(

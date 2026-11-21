@@ -249,6 +249,20 @@ class PocketBaseBackend implements SyncBackend {
     }
   }
 
+  @override
+  Future<void> deleteAccount(String password) async {
+    final user = currentUser;
+    if (user == null) throw const BackendException(BackendErrorKind.signedOut);
+    try {
+      // The SDK clears the session after deleting the own record.
+      await _pb
+          .collection(_users)
+          .delete(user.id, body: {'password': password});
+    } on ClientException catch (e) {
+      throw _map(e);
+    }
+  }
+
   // Organizations and bands ----------------------------------------------------
 
   @override
@@ -1267,8 +1281,14 @@ class PocketBaseBackend implements SyncBackend {
       if (email != null) {
         return BackendException(BackendErrorKind.invalidEmail, e.response);
       }
-      // Changing the password with a wrong current one (issue #779).
-      if (code('oldPassword') != null) {
+      // Deleting the account (ADR-0052).
+      if (code('organizations') == 'last_admin') {
+        return BackendException(BackendErrorKind.soleOrgAdmin, e.response);
+      }
+      // Changing the password or deleting the account with a wrong
+      // current password (issue #779, ADR-0052).
+      if (code('oldPassword') != null ||
+          code('password') == 'invalid_password') {
         return BackendException(
           BackendErrorKind.invalidCredentials,
           e.response,

@@ -1705,6 +1705,30 @@ class AppLocalizationsEn extends AppLocalizations {
       'Password changed. Sign in again on your other devices.';
 
   @override
+  String get accountDelete => 'Delete account';
+
+  @override
+  String get accountDeleteHint =>
+      'Deletes your account and your personal data for good.';
+
+  @override
+  String get accountDeleteTitle => 'Delete account?';
+
+  @override
+  String get accountDeleteMessage =>
+      'Your account, your personal adjustments, annotations and settings are deleted for good, and you are signed out on all devices. Songs and sets stay with your organizations. The server\'s backups keep a copy for up to 14 days. Enter your password to confirm.';
+
+  @override
+  String get accountDeleteSoleAdmin =>
+      'You are the only admin of these organizations. First make someone else admin or close the organization:';
+
+  @override
+  String get accountDeleted => 'Your account was deleted.';
+
+  @override
+  String get settingsDangerZone => 'Danger zone';
+
+  @override
   String get accountErrorNetwork =>
       'No connection to the server. Check your internet connection.';
 

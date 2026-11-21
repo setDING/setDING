@@ -252,6 +252,111 @@ void main() {
     await app.dispose(tester);
   });
 
+  group('deleting the account (ADR-0052)', () {
+    const bob = AuthUser(id: 'u2', email: 'bob@example.test', name: 'Bob');
+
+    /// Ann in an organization: its only admin, or a member next to Bob.
+    Future<TestApp> pumpWithOrg(
+      WidgetTester tester, {
+      required bool soleAdmin,
+    }) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'}, user: _ann);
+      app.backend.accounts[_ann.email] = 'secret-pw';
+      app.backend.addOrganization(
+        'o1',
+        'Music School',
+        admin: soleAdmin ? _ann : bob,
+      );
+      if (!soleAdmin) app.backend.addOrgMember('o1', _ann, OrgRole.member);
+      await tester.pumpWidget(app.build(home: const SettingsScreen()));
+      await tester.pumpAndSettle();
+      await openSettingsCategory(tester, SettingsCategory.account);
+      expect(await app.db.select(app.db.organizations).get(), isNotEmpty);
+      return app;
+    }
+
+    Future<void> openDialog(WidgetTester tester) async {
+      await tester.ensureVisible(find.byKey(const Key('account-delete')));
+      await tester.tap(find.byKey(const Key('account-delete')));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('deletes the account and its data on this device', (
+      tester,
+    ) async {
+      final app = await pumpWithOrg(tester, soleAdmin: false);
+      await openDialog(tester);
+      final confirm = find.byKey(const Key('delete-account-confirm'));
+      expect(tester.widget<FilledButton>(confirm).onPressed, isNull);
+      await enter(tester, 'delete-account-password', 'secret-pw');
+      await tester.pumpAndSettle();
+      await tester.tap(confirm);
+      await tester.pumpAndSettle();
+
+      expect(app.backend.user, isNull);
+      expect(app.backend.accounts, isNot(contains(_ann.email)));
+      expect(find.text('Your account was deleted.'), findsOneWidget);
+      expect(find.text('Not signed in'), findsOneWidget);
+      expect(await app.db.select(app.db.organizations).get(), isEmpty);
+      expect(await app.db.select(app.db.orgMemberships).get(), isEmpty);
+      expect(
+        await (app.db.select(
+          app.db.userSettings,
+        )..where((s) => s.ownerId.equals(_ann.id))).get(),
+        isEmpty,
+      );
+      await app.dispose(tester);
+    });
+
+    testWidgets('a wrong password keeps the account', (tester) async {
+      final app = await pumpWithOrg(tester, soleAdmin: false);
+      await openDialog(tester);
+      await enter(tester, 'delete-account-password', 'wrong-pw');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('delete-account-confirm')));
+      await tester.pumpAndSettle();
+
+      expect(app.backend.user, isNotNull);
+      expect(find.text('The current password is wrong.'), findsOneWidget);
+      expect(await app.db.select(app.db.organizations).get(), isNotEmpty);
+      await app.dispose(tester);
+    });
+
+    testWidgets('the only admin of an organization is asked to hand it over', (
+      tester,
+    ) async {
+      final app = await pumpWithOrg(tester, soleAdmin: true);
+      await openDialog(tester);
+
+      expect(find.textContaining('only admin'), findsOneWidget);
+      expect(find.text('• Music School'), findsOneWidget);
+      expect(find.byKey(const Key('delete-account-confirm')), findsNothing);
+      expect(find.byKey(const Key('delete-account-password')), findsNothing);
+      await tester.tap(find.text('Close'));
+      await tester.pumpAndSettle();
+      expect(app.backend.user, isNotNull);
+      await app.dispose(tester);
+    });
+
+    testWidgets('shows the server\'s refusal for the only admin', (
+      tester,
+    ) async {
+      final app = await pumpWithOrg(tester, soleAdmin: false);
+      // The server knows more than this device (e.g. a role changed).
+      app.backend.soleAdminOrgs.add('o2');
+      await openDialog(tester);
+      await enter(tester, 'delete-account-password', 'secret-pw');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('delete-account-confirm')));
+      await tester.pumpAndSettle();
+
+      expect(app.backend.user, isNotNull);
+      expect(find.byKey(const Key('delete-account-error')), findsOneWidget);
+      await app.dispose(tester);
+    });
+  });
+
   testWidgets('signs out after confirmation', (tester) async {
     final app = await pumpSettings(tester, user: _ann);
     expect(find.text('Ann'), findsOneWidget);

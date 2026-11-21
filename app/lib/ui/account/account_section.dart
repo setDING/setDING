@@ -9,6 +9,7 @@ import '../widgets/dialogs.dart';
 import '../bands/join_screen.dart';
 import '../../sync/sync_backend.dart';
 import 'change_password_dialog.dart';
+import 'delete_account_dialog.dart';
 import 'sign_in_screen.dart';
 import 'sync_tile.dart';
 
@@ -191,4 +192,32 @@ String? normalizeServerUrl(String input) {
     return null;
   }
   return url;
+}
+
+/// Deleting the account, in the danger zone at the end of the account
+/// category, shown while signed in (ADR-0052, docs/development/ui-design.md).
+class DeleteAccountTile extends ConsumerWidget {
+  const DeleteAccountTile({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final error = Theme.of(context).colorScheme.error;
+    return ListTile(
+      leading: Icon(Icons.person_remove_outlined, color: error),
+      title: Text(l10n.accountDelete),
+      subtitle: Text(l10n.accountDeleteHint),
+      trailing: OutlinedButton(
+        key: const Key('account-delete'),
+        style: OutlinedButton.styleFrom(foregroundColor: error),
+        onPressed: () async {
+          final messenger = ScaffoldMessenger.of(context);
+          if (await showDeleteAccountDialog(context, ref)) {
+            showMessageOn(messenger, l10n.accountDeleted);
+          }
+        },
+        child: Text(l10n.accountDelete),
+      ),
+    );
+  }
 }
