@@ -495,6 +495,27 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
     _focus.requestFocus();
   }
 
+  /// Hint on the CCLI footer hidden by the author for this editor (#785).
+  bool _footerHintHidden = false;
+
+  /// Removes the CCLI footers and keeps song number and copyright as
+  /// metadata (#785);
+  /// the cursor stays where it was, as far as the text allows.
+  void _removeCcliFooters() {
+    final text = _controller.text;
+    final cleaned = removeCcliFooters(text);
+    if (cleaned == text) return;
+    final sel = _controller.selection;
+    final offset = sel.isValid ? sel.baseOffset : 0;
+    _controller.value = TextEditingValue(
+      text: cleaned,
+      selection: TextSelection.collapsed(
+        offset: offset.clamp(0, cleaned.length),
+      ),
+    );
+    _focus.requestFocus();
+  }
+
   /// Hint on short-form section labels hidden by the author (#672).
   bool _labelHintHidden = false;
 
@@ -648,6 +669,19 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
                 count: count,
                 onConvert: () => _convertCcliGrids(),
                 onHide: () => setState(() => _ccliHintHidden = true),
+              );
+            },
+          ),
+        if (!_footerHintHidden)
+          ListenableBuilder(
+            listenable: _controller,
+            builder: (context, _) {
+              if (_controller.ccliFooters.isEmpty) {
+                return const SizedBox.shrink();
+              }
+              return CcliFooterHint(
+                onRemove: _removeCcliFooters,
+                onHide: () => setState(() => _footerHintHidden = true),
               );
             },
           ),
@@ -877,6 +911,31 @@ class CcliGridHint extends StatelessWidget {
   );
 }
 
+/// Hint above the editor that the song ends with the CCLI footer of
+/// SongSelect, which would be shown as lyrics (#785).
+class CcliFooterHint extends StatelessWidget {
+  const CcliFooterHint({
+    super.key,
+    required this.onRemove,
+    required this.onHide,
+  });
+
+  final VoidCallback onRemove;
+  final VoidCallback onHide;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return _ConvertHint(
+      icon: Icons.copyright,
+      message: l10n.ccliFooterHint,
+      action: l10n.remove,
+      onConvert: onRemove,
+      onHide: onHide,
+    );
+  }
+}
+
 /// Hint above the editor that section labels are in the short form
 /// `{start_of_verse: Verse 1}` and can be converted to the attribute form
 /// the ChordPro specification recommends (#672).
@@ -931,12 +990,16 @@ class _ConvertHint extends StatelessWidget {
   const _ConvertHint({
     required this.icon,
     required this.message,
+    this.action,
     required this.onConvert,
     required this.onHide,
   });
 
   final IconData icon;
   final String message;
+
+  /// Label of the action button; "Convert" by default.
+  final String? action;
   final VoidCallback onConvert;
   final VoidCallback onHide;
 
@@ -958,7 +1021,10 @@ class _ConvertHint extends StatelessWidget {
                 style: TextStyle(color: scheme.onTertiaryContainer),
               ),
             ),
-            TextButton(onPressed: onConvert, child: Text(l10n.convert)),
+            TextButton(
+              onPressed: onConvert,
+              child: Text(action ?? l10n.convert),
+            ),
             IconButton(
               tooltip: l10n.hideHint,
               icon: const Icon(Icons.close),

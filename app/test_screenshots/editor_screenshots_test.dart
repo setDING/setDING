@@ -58,6 +58,31 @@ void main() {
     });
   }
 
+  // The CCLI footer of SongSelect files (#785): the editor hint that
+  // removes it and keeps its values as metadata.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('ccli footer $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            home: SongEditorScreen(
+              initialSource: lang == 'de' ? _ccliFooterDe : _ccliFooter,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(CcliFooterHint), findsOneWidget);
+      await shot(tester, '${lang}_24c_editor_ccli_footer');
+      await app.dispose(tester);
+    });
+  }
+
   // Section labels in the short form (#672): the editor hint and the import
   // report that offer to convert them to label="…"; the CCLI bar line hint
   // (#481).
@@ -228,6 +253,36 @@ const _songSelectDirectives = '''{title: Amazing Grace}
 A[G]mazing grace, how [C]sweet the [G]sound
 That saved a wretch like [D]me
 {end_of_verse}
+''';
+
+const _ccliFooter = '''{title: Amazing Grace}
+{artist: John Newton}
+{key: G}
+
+{start_of_verse: label="Verse 1"}
+A[G]mazing grace, how [C]sweet the [G]sound
+That saved a wretch like [D]me
+{end_of_verse}
+
+CCLI Song # 1234567
+© Public Domain
+For use solely with the SongSelect® Terms of Use. All rights reserved. www.ccli.com
+CCLI License # 7654321
+''';
+
+const _ccliFooterDe = '''{title: Amazing Grace}
+{artist: John Newton}
+{key: G}
+
+{start_of_verse: label="Strophe 1"}
+A[G]mazing grace, how [C]sweet the [G]sound
+That saved a wretch like [D]me
+{end_of_verse}
+
+CCLI-Liednummer 1234567
+© Public Domain
+Nur zur Verwendung gemäss den SongSelect® Nutzungsbedingungen. Alle Rechte vorbehalten. www.ccli.com
+CCLI-Lizenznummer 7654321
 ''';
 
 const _ccliBars = '''{title: Amazing Grace}

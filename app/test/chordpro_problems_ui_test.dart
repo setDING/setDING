@@ -302,4 +302,46 @@ void main() {
     expect(controller.text, source);
     await app.dispose(tester);
   });
+
+  testWidgets('the editor offers to remove the CCLI footer (#785)', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    const source =
+        '{title: T}\n{x_ccli: 1}\n\n[C]a\n\nCCLI Song # 1\n'
+        '© 2020 Example\nCCLI License # 2\n';
+    await tester.pumpWidget(
+      app.build(home: const SongEditorScreen(initialSource: source)),
+    );
+    await tester.pumpAndSettle();
+    final controller = tester
+        .widget<TextField>(find.byType(TextField))
+        .controller!;
+    expect(find.byType(CcliFooterHint), findsOneWidget);
+    await tester.tap(
+      find.descendant(
+        of: find.byType(CcliFooterHint),
+        matching: find.widgetWithText(TextButton, 'Remove'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      controller.text,
+      '{title: T}\n{x_ccli: 1}\n{copyright: 2020 Example}\n\n[C]a\n',
+    );
+    expect(find.byType(CcliFooterHint), findsNothing);
+    controller.text = source;
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byType(CcliFooterHint),
+        matching: find.byTooltip('Hide hint'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(CcliFooterHint), findsNothing);
+    expect(controller.text, source);
+    await app.dispose(tester);
+  });
 }

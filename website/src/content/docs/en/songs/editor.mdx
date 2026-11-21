@@ -11,6 +11,7 @@ import editorLabels from '../../../../../../docs/screenshots/editor_labels.png';
 import editorSave from '../../../../../../docs/screenshots/editor_save.png';
 import editorCcli from '../../../../../../docs/screenshots/editor_ccli.png';
 import editorSongSelect from '../../../../../../docs/screenshots/editor_songselect.png';
+import editorCcliFooter from '../../../../../../docs/screenshots/editor_ccli_footer.png';
 import editorAutoClose from '../../../../../../docs/screenshots/editor_auto_close.png';
 import editorChorusLabels from '../../../../../../docs/screenshots/editor_chorus_labels.png';
 
@@ -135,6 +136,16 @@ earlier, the editor shows a hint above the text: **Convert** renames `{ccli}` to
 downloaded the song. The hint can be hidden with ✕.
 
 <Image src={editorSongSelect} alt="The editor with the hint about two CCLI directives that do not follow the ChordPro specification and the Convert button" />
+
+## CCLI footer
+
+ChordPro files from CCLI SongSelect end with a paragraph with the CCLI song number,
+the copyright, the terms of use and the CCLI licence number. The import removes it.
+For songs that still contain it, the editor shows a hint above the text:
+**Remove** deletes the paragraph and keeps song number and copyright in the song
+details (`{x_ccli}`, `{copyright}`), unless the song already has them. The hint can be hidden with ✕.
+
+<Image src={editorCcliFooter} alt="The editor with the CCLI footer at the end of the song and the hint with the Remove button" />
 
 ## Section labels
 

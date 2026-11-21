@@ -96,6 +96,9 @@ class ImportExportService {
 
   /// Imports ChordPro files and ZIP archives containing ChordPro files.
   ///
+  /// The CCLI footer of SongSelect files is removed; song number and
+  /// copyright are kept as metadata (`removeCcliFooters`, #785).
+  ///
   /// With [germanNotation], chords are converted from H/B to international
   /// notation before saving (ADR-0003).
   Future<ImportResult> importFiles(
@@ -119,6 +122,8 @@ class ImportExportService {
       // SongSelect directives outside the specification (#777).
       var text = cp.normalizeSongSelectDirectives(decodeText(bytes));
       if (germanNotation) text = cp.convertGermanToInternational(text);
+      // The CCLI footer of SongSelect files would be shown as lyrics (#785).
+      text = cp.removeCcliFooters(text);
       // A file may contain several songs separated by {new_song}.
       final parts = cp.splitChordProSongs(text);
       final base = p.basenameWithoutExtension(name);

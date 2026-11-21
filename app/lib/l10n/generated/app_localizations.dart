@@ -2360,6 +2360,18 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Ein Block mit Taktzeilen kann} other{{count} Blöcke mit Taktzeilen können}} als Chord-Grid dargestellt werden.'**
   String ccliGridsHint(int count);
 
+  /// No description provided for @remove.
+  ///
+  /// In de, this message translates to:
+  /// **'Entfernen'**
+  String get remove;
+
+  /// No description provided for @ccliFooterHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Am Ende steht der CCLI-Footer von SongSelect. Entfernen übernimmt Songnummer und Copyright in die Songdetails.'**
+  String get ccliFooterHint;
+
   /// No description provided for @legacyLabelsHint.
   ///
   /// In de, this message translates to:

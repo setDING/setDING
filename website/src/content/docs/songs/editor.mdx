@@ -11,6 +11,7 @@ import editorLabels from '../../../../../docs/screenshots/editor_labels_de.png';
 import editorSave from '../../../../../docs/screenshots/editor_save_de.png';
 import editorCcli from '../../../../../docs/screenshots/editor_ccli_de.png';
 import editorSongSelect from '../../../../../docs/screenshots/editor_songselect_de.png';
+import editorCcliFooter from '../../../../../docs/screenshots/editor_ccli_footer_de.png';
 import editorAutoClose from '../../../../../docs/screenshots/editor_auto_close_de.png';
 import editorChorusLabels from '../../../../../docs/screenshots/editor_chorus_labels_de.png';
 
@@ -143,6 +144,16 @@ benennt `{ccli}` in `{x_ccli}` um und entfernt `{ccli_license}`, die Lizenznumme
 der Kirche, die den Song heruntergeladen hat. Mit ✕ blendest du den Hinweis aus.
 
 <Image src={editorSongSelect} alt="Der Editor mit dem Hinweis auf zwei CCLI-Direktiven, die nicht der ChordPro-Spezifikation entsprechen, und dem Knopf Umwandeln" />
+
+## CCLI-Footer
+
+ChordPro-Dateien aus CCLI SongSelect enden mit einem Absatz mit CCLI-Liednummer,
+Copyright, Nutzungsbedingungen und CCLI-Lizenznummer. Der Import entfernt ihn.
+Bei Songs, die ihn noch enthalten, zeigt der Editor über dem Text einen Hinweis:
+**Entfernen** löscht den Absatz und übernimmt Songnummer und Copyright in die
+Songdetails (`{x_ccli}`, `{copyright}`), sofern der Song sie noch nicht hat. Mit ✕ blendest du den Hinweis aus.
+
+<Image src={editorCcliFooter} alt="Der Editor mit dem CCLI-Footer am Ende des Songs und dem Hinweis mit dem Knopf Entfernen" />
 
 ## Beschriftungen der Abschnitte
 

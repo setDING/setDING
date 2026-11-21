@@ -449,6 +449,8 @@
       }
     }
   },
+  "remove": "Remove",
+  "ccliFooterHint": "The song ends with the CCLI footer from SongSelect. Removing it keeps song number and copyright in the song details.",
   "legacyLabelsHint": "{count, plural, =1{A section label is} other{{count} section labels are}} in the short form. The ChordPro specification recommends label=\"…\".",
   "songSelectDirectivesHint": "{count, plural, =1{A CCLI directive does} other{{count} CCLI directives do}} not follow the ChordPro specification: ccli becomes x_ccli, ccli_license is removed.",
   "@songSelectDirectivesHint": {
