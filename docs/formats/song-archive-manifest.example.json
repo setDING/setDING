@@ -17,6 +17,25 @@
           "name": "Lead Sheet",
           "file": "attachments/Amazing Grace (7012345) - Lead Sheet.pdf",
           "pages": 2
+        },
+        {
+          "id": "ccli-7012345-vocal",
+          "name": "Vocal Sheet",
+          "file": "attachments/Amazing Grace (7012345) - Vocal Sheet.pdf",
+          "pages": 3
+        }
+      ]
+    },
+    {
+      "id": "ccli-7054321",
+      "title": "Morning Song",
+      "artist": "Some Band",
+      "file": "songs/Morning Song (7054321).cho",
+      "attachments": [
+        {
+          "id": "ccli-7054321-chart",
+          "name": "Chord Chart",
+          "file": "attachments/Morning Song (7054321) - Chord Chart.png"
         }
       ]
     },

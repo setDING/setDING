@@ -13,13 +13,19 @@ in sync.
 
 ## ZIP layout
 
+One archive holds **one or several songs**, and every song **any number of
+attachments** (none, one or several). The example archive holds three songs:
+
 ```text
-Amazing Grace.zip
+setDING-Songs 2026-11-21.zip
 ├── manifest.json
 ├── songs/
-│   └── Amazing Grace (7012345).cho
+│   ├── Amazing Grace (7012345).cho
+│   └── Morning Song (7054321).cho
 └── attachments/
     ├── Amazing Grace (7012345) - Lead Sheet.pdf
+    ├── Amazing Grace (7012345) - Vocal Sheet.pdf
+    ├── Morning Song (7054321) - Chord Chart.png
     └── Only a Score (7098765) - Score.pdf
 ```
 
@@ -103,6 +109,22 @@ person picks in the preview.
 | `sequence` | string | Optional sequence of the parts. |
 | `tempo` | integer | Optional tempo in BPM. |
 
+## Several songs and several attachments
+
+- `songs` lists every song of the archive; there is no limit on their number. The
+  import preview shows them in this order and imports them one after the other.
+- Each song lists **its own** attachments in `attachments`. An attachment belongs
+  to the song whose entry lists it; the folder or file name does not matter.
+- `file` paths must be unique within the ZIP: two attachments that are different
+  files need different paths. Two songs with the same title therefore need
+  different paths too; setDING adds the short song ID, and on a clash ` (2)`,
+  ` (3)` … before the extension.
+- `id` values must be unique across the whole archive (songs and attachments).
+- Each song is matched and imported on its own (next section): in one import some
+  songs may be new, others already exist and only get their missing attachments.
+- Several attachments of one song should have **different `name`s**; an existing
+  song only gets attachments whose name it does not have yet.
+
 ## How the import treats the songs
 
 1. **Matching:** an archive song is the same as an existing song of the target
@@ -140,8 +162,13 @@ unchanged: setDING reads its structure (`{comment: …}` section headings, the
 
 ## Example manifest
 
-The example holds a song with ChordPro text and a PDF, and a song that only has a
-PDF. It is the file
+The example holds three songs:
+
+- "Amazing Grace" with ChordPro text and **two** PDFs,
+- "Morning Song" with ChordPro text and an image,
+- "Only a Score" without text, with only a PDF.
+
+It is the file
 [`song-archive-manifest.example.json`](song-archive-manifest.example.json):
 
 ```json
@@ -164,6 +191,25 @@ PDF. It is the file
           "name": "Lead Sheet",
           "file": "attachments/Amazing Grace (7012345) - Lead Sheet.pdf",
           "pages": 2
+        },
+        {
+          "id": "ccli-7012345-vocal",
+          "name": "Vocal Sheet",
+          "file": "attachments/Amazing Grace (7012345) - Vocal Sheet.pdf",
+          "pages": 3
+        }
+      ]
+    },
+    {
+      "id": "ccli-7054321",
+      "title": "Morning Song",
+      "artist": "Some Band",
+      "file": "songs/Morning Song (7054321).cho",
+      "attachments": [
+        {
+          "id": "ccli-7054321-chart",
+          "name": "Chord Chart",
+          "file": "attachments/Morning Song (7054321) - Chord Chart.png"
         }
       ]
     },
