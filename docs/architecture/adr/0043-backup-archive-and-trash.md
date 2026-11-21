@@ -283,6 +283,12 @@ Deleted songs and sets can be **restored for 30 days**.
   own personal adjustments as for the set archive; attachments missing on an
   existing song are added (also for the set import); a preview
   before the import like the set import.
+- 2026-11-21: Song archive (section 1c) accepted by the owner and
+  implemented (#792): `SongArchiveService` (format `setding-songs`,
+  version 1) shares the song import with the set and backup archives;
+  export from the song's menu and the song list's selection mode, import
+  with a preview from the import dialog; `importSongs` completes the
+  attachments of reused songs for set and song archives.
 
 ## Open points
 
