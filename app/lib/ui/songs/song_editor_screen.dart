@@ -593,6 +593,9 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
     final wide =
         MediaQuery.sizeOf(context).width >= SongEditorScreen.sideBySideWidth;
     final snippets = EditorSnippets(l10n);
+    final typingAids = ref.watch(
+      settingsProvider.select((s) => s.editorTypingAids),
+    );
 
     final editor = Column(
       children: [
@@ -658,6 +661,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
               ),
               Expanded(
                 child: EditorAutocomplete(
+                  typingAids: typingAids,
                   controller: _controller,
                   focusNode: _focus,
                   fieldKey: _fieldKey,
@@ -679,7 +683,9 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
                         expands: true,
                         maxLines: null,
                         keyboardType: TextInputType.multiline,
-                        inputFormatters: const [AutoCloseFormatter()],
+                        inputFormatters: [
+                          if (typingAids) const AutoCloseFormatter(),
+                        ],
                         textAlignVertical: TextAlignVertical.top,
                         style: editorTextStyle,
                         decoration: const InputDecoration(

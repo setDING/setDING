@@ -15,6 +15,7 @@ class EditorAutocomplete extends StatefulWidget {
     required this.focusNode,
     required this.fieldKey,
     required this.child,
+    this.typingAids = true,
   });
 
   final ChordProEditingController controller;
@@ -23,6 +24,10 @@ class EditorAutocomplete extends StatefulWidget {
   /// Key of the editor's [TextField], to place the list at the cursor.
   final GlobalKey fieldKey;
   final Widget child;
+
+  /// Whether an accepted section start also renames or adds its end
+  /// (setting *Close brackets and sections automatically*, #757).
+  final bool typingAids;
 
   /// Number of suggestions visible without scrolling.
   static const visibleItems = 6;
@@ -126,7 +131,7 @@ class _EditorAutocompleteState extends State<EditorAutocomplete> {
     final before = widget.controller.text;
     var (text, cursor) = result.apply(before, item);
     _hide();
-    if (result.kind == CompletionKind.directive) {
+    if (widget.typingAids && result.kind == CompletionKind.directive) {
       // A renamed section start renames its end too (#755); a new one
       // gets its end directive and an empty line (#747).
       if (syncSectionPartner(before, text, cursor) case final synced?) {

@@ -138,6 +138,7 @@ class AppSettings {
     this.showOutsideSequence = true,
     this.annotationFinger = false,
     this.songDisplay = SongDisplay.classic,
+    this.editorTypingAids = true,
     this.developerMode = false,
     this.midiEnabled = false,
     this.midiOutputName = '',
@@ -243,6 +244,11 @@ class AppSettings {
   /// Fingers draw annotations too, not only a stylus or a mouse; for
   /// devices without a stylus (ADR-0032).
   final bool annotationFinger;
+
+  /// The editor closes brackets, quotes and section blocks and renames a
+  /// section's start and end together (#747, #754, #755); off for people
+  /// who prefer to type everything themselves (#757).
+  final bool editorTypingAids;
 
   /// Shows the *Development* settings category with experimental and test
   /// features, e.g. the MIDI test; off for normal users (#559).
@@ -374,6 +380,7 @@ class AppSettings {
     bool? showOutsideSequence,
     bool? annotationFinger,
     SongDisplay? songDisplay,
+    bool? editorTypingAids,
     bool? developerMode,
     bool? midiEnabled,
     String? midiOutputName,
@@ -419,6 +426,7 @@ class AppSettings {
     showOutsideSequence: showOutsideSequence ?? this.showOutsideSequence,
     annotationFinger: annotationFinger ?? this.annotationFinger,
     songDisplay: songDisplay ?? this.songDisplay,
+    editorTypingAids: editorTypingAids ?? this.editorTypingAids,
     developerMode: developerMode ?? this.developerMode,
     midiEnabled: midiEnabled ?? this.midiEnabled,
     midiOutputName: midiOutputName ?? this.midiOutputName,
@@ -475,6 +483,7 @@ class AppSettings {
     'showOutsideSequence': SettingSyncScope.personal,
     // Song display styles (ADR-0033): a reading habit of the person.
     'songDisplay': SettingSyncScope.personal,
+    'editorTypingAids': SettingSyncScope.personal,
     // Developer mode (#559): a choice of the person, on every device.
     'developerMode': SettingSyncScope.personal,
     // MIDI (ADR-0039): the keyboard on the stage is connected to this
@@ -531,6 +540,7 @@ class AppSettings {
     'showOutsideSequence': showOutsideSequence,
     'annotationFinger': annotationFinger,
     'songDisplay': songDisplay.toJsonString(),
+    'editorTypingAids': editorTypingAids,
     'developerMode': developerMode,
     'midiEnabled': midiEnabled,
     'midiOutputName': midiOutputName,
@@ -637,6 +647,7 @@ class AppSettings {
       showAnnotations: flag('showAnnotations', d.showAnnotations),
       showOutsideSequence: flag('showOutsideSequence', d.showOutsideSequence),
       annotationFinger: flag('annotationFinger', d.annotationFinger),
+      editorTypingAids: flag('editorTypingAids', d.editorTypingAids),
       developerMode: flag('developerMode', d.developerMode),
       midiEnabled: flag('midiEnabled', d.midiEnabled),
       midiOutputName: text('midiOutputName', d.midiOutputName),
