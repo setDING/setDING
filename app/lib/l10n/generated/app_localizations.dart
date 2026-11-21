@@ -476,6 +476,18 @@ abstract class AppLocalizations {
   /// **'Exportiert'**
   String get exported;
 
+  /// No description provided for @exportedOpen.
+  ///
+  /// In de, this message translates to:
+  /// **'Öffnen'**
+  String get exportedOpen;
+
+  /// No description provided for @openFileFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine App konnte die Datei öffnen.'**
+  String get openFileFailed;
+
   /// No description provided for @playLive.
   ///
   /// In de, this message translates to:

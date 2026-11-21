@@ -43,6 +43,7 @@ map=(
   set_export 27_set_export
   set_import 27b_set_import
   set_import_result 27c_set_import_result
+  set_pdf_exported 28_set_pdf_exported
 )
 
 for ((i = 0; i < ${#map[@]}; i += 2)); do

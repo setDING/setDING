@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import menu from '../../../../../../docs/screenshots/set_menu.png';
+import pdfExported from '../../../../../../docs/screenshots/set_pdf_exported.png';
 import exportDialog from '../../../../../../docs/screenshots/set_export.png';
 import importDialog from '../../../../../../docs/screenshots/set_import.png';
 import importResult from '../../../../../../docs/screenshots/set_import_result.png';
@@ -33,6 +34,12 @@ Save the file and print or share it with your device's PDF viewer – for the mi
 desk or the edge of the stage, for example.
 
 <Image src={menu} alt="The ⋮ menu of a set with the exports as PDF and ZIP" />
+
+Once the file is saved, the message at the bottom offers **Open** for a few seconds:
+it opens the PDF straight away in your device's default app for PDFs, ready to print
+or share. If no app on the device can open PDFs, setDING says so.
+
+<Image src={pdfExported} alt="The message “Exported” with the action Open after the PDF export" />
 
 ## Export a set
 

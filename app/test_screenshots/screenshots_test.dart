@@ -19,6 +19,7 @@ import 'package:setding/data/import_export.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/data/demo_song.dart';
 import 'package:setding/midi/midi_output.dart';
+import 'package:setding/ui/backup/backup_actions.dart' show saveFileProvider;
 import 'package:setding/ui/home_screen.dart';
 import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/ui/bands/band_screen.dart';
@@ -735,20 +736,59 @@ void main() {
         return (set, zip);
       }))!;
 
+      var pdfSaved = false;
       await tester.pumpWidget(
         RepaintBoundary(
           key: UniqueKey(),
-          child: app.build(home: SetScreen(setId: setId)),
+          child: app.build(
+            home: SetScreen(setId: setId),
+            extra: [
+              saveFileProvider.overrideWithValue((
+                name,
+                bytes, {
+                mimeType = '',
+              }) async {
+                pdfSaved = true;
+                return true;
+              }),
+            ],
+          ),
         ),
       );
       await tester.pumpAndSettle();
+      Future<void> openSetMenu() async {
+        await tester.tap(
+          find.descendant(
+            of: find.byType(AppBar),
+            matching: find.byType(PopupMenuButton<String>),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+
+      // After the PDF export, the message offers "Open" (#721).
+      await openSetMenu();
       await tester.tap(
-        find.descendant(
-          of: find.byType(AppBar),
-          matching: find.byType(PopupMenuButton<String>),
+        find.text(
+          lang == 'de'
+              ? 'Set-Liste exportieren (PDF zum Drucken)'
+              : 'Export set list (PDF for printing)',
         ),
       );
+      // The PDF is built outside the fake clock (fonts, isolates).
+      for (var i = 0; i < 200 && !pdfSaved; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump(const Duration(milliseconds: 20));
+      }
+      expect(find.byType(SnackBarAction), findsOneWidget);
+      await _shot(tester, '${lang}_28_set_pdf_exported');
+      ScaffoldMessenger.of(tester.element(find.byType(SetScreen)))
+          .removeCurrentSnackBar();
       await tester.pumpAndSettle();
+
+      await openSetMenu();
       await tester.tap(
         find.text(lang == 'de' ? 'Als ZIP exportieren' : 'Export as ZIP'),
       );

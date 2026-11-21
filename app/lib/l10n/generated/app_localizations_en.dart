@@ -238,6 +238,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exported => 'Exported';
 
   @override
+  String get exportedOpen => 'Open';
+
+  @override
+  String get openFileFailed => 'No app could open the file.';
+
+  @override
   String get playLive => 'Play live';
 
   @override

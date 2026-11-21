@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/backup.dart';
+import '../../platform/open_file.dart';
 import '../../data/band_view.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
@@ -24,6 +25,16 @@ typedef SaveFile = Future<bool> Function(
 
 /// How the backup is saved: the platform's save dialog (a download on web).
 final saveFileProvider = Provider<SaveFile>((ref) => saveFile);
+
+/// Opens a file in the system's default app; tests replace it.
+typedef OpenFile = Future<bool> Function(
+  String fileName,
+  Uint8List bytes, {
+  required String mimeType,
+});
+
+/// How an exported PDF is opened (#721, ADR-0048).
+final openFileProvider = Provider<OpenFile>((ref) => openFileInDefaultApp);
 
 /// Exports [library] as a backup archive (ADR-0043). An organization is
 /// synced first; the export stops if anything is not on this device yet.

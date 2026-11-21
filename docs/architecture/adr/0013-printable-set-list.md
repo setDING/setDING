@@ -80,6 +80,8 @@ Constraints:
 - 2026-11-21: The set list as text (clipboard and `.txt` file) was removed by the
   owner as useless (#714); the PDF is the only set list export. Sets themselves are
   passed on as a set archive (ADR-0043).
+- 2026-11-21: After the export, the message offers **Open**, which opens the PDF in
+  the default app (ADR-0048, #721).
 
 ## Open points
 
