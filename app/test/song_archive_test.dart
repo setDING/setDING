@@ -384,4 +384,80 @@ void main() {
       'setDING-Songs 2027-03-04.zip',
     );
   });
+  test('the documented example archive imports (docs/formats)', () async {
+    // The example manifest of docs/formats/song-archive.md, as an external
+    // tool would write it: own IDs, a PDF-only song.
+    final manifest = jsonDecode(
+      File('../docs/formats/song-archive-manifest.example.json')
+          .readAsStringSync(),
+    ) as Map<String, dynamic>;
+    const cho =
+        '{title: Amazing Grace}\n{artist: John Newton}\n{key: G}\n'
+        '{ccli: 7012345}\n\n[G]Amazing [G7]grace, how [C]sweet the [G]sound\n';
+    Uint8List zipOf(Map<String, dynamic> manifest) {
+      final archive = Archive();
+      void add(String name, List<int> bytes) =>
+          archive.addFile(ArchiveFile.bytes(name, bytes));
+      add(backupManifestName, utf8.encode(jsonEncode(manifest)));
+      add('songs/Amazing Grace (7012345).cho', utf8.encode(cho));
+      add('attachments/Amazing Grace (7012345) - Lead Sheet.pdf', pdf);
+      add('attachments/Only a Score (7098765) - Score.pdf', pdf);
+      return Uint8List.fromList(ZipEncoder().encode(archive));
+    }
+
+    final archive = (await SongArchiveService.read(zipOf(manifest)))!;
+    expect(archive.libraryName, 'CCLI SongSelect');
+    expect(archive.titles, ['Amazing Grace', 'Only a Score']);
+    final result = await service().import(
+      archive,
+      libraryId: localBandId,
+      canEditSong: any,
+    );
+    expect(result.songs.imported, hasLength(2));
+    expect(result.songs.files, 2);
+
+    final grace = (await songs.getSong(result.songs.songIds['ccli-7012345']!))!;
+    expect((grace.title, grace.artist), ('Amazing Grace', 'John Newton'));
+    expect(grace.chordproSource, cho);
+    final lead = (await songs.getAttachments(grace.id)).single;
+    expect((lead.name, lead.pages), ('Lead Sheet', 2));
+
+    final score = (await songs.getSong(result.songs.songIds['ccli-7098765']!))!;
+    expect((score.title, score.artist), ('Only a Score', 'Some Writer'));
+    expect(score.chordproSource, isEmpty);
+    expect(
+      [for (final a in await songs.getAttachments(score.id)) a.name],
+      ['Score'],
+    );
+
+    // Running the exporter again with a new PDF completes the songs.
+    final again = jsonDecode(jsonEncode(manifest)) as Map<String, dynamic>;
+    (((again['songs'] as List).first as Map)['attachments'] as List).add({
+      'id': 'ccli-7012345-chords',
+      'name': 'Chord Chart',
+      'file': 'attachments/Only a Score (7098765) - Score.pdf',
+    });
+    final second = await service().import(
+      (await SongArchiveService.read(zipOf(again)))!,
+      libraryId: localBandId,
+      canEditSong: any,
+    );
+    expect(second.songs.imported, isEmpty);
+    expect(second.songs.completed, 1);
+    expect(
+      [for (final a in await songs.getAttachments(grace.id)) a.name]..sort(),
+      ['Chord Chart', 'Lead Sheet'],
+    );
+
+    // Without options.attachments no attachments are imported.
+    final other = AppDatabase(NativeDatabase.memory());
+    addTearDown(other.close);
+    final bare = Map<String, dynamic>.of(manifest)..remove('options');
+    final withoutOptions = await service(other).import(
+      (await SongArchiveService.read(zipOf(bare)))!,
+      libraryId: localBandId,
+    );
+    expect(withoutOptions.songs.imported, hasLength(2));
+    expect(withoutOptions.songs.files, 0);
+  });
 }

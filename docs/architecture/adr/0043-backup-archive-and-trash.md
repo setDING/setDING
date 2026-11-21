@@ -167,6 +167,8 @@ imported again **like a set archive** (section 1b), only without a set:
   and their attachments' metadata; depending on the options also the band
   arrangements of the songs (ADR-0025, of the band selected when exporting)
   and the **exporting person's own** personal adjustments and annotations.
+  Field-by-field reference with an example, for tools that write song
+  archives: [`docs/formats/song-archive.md`](../../formats/song-archive.md).
 - **Export:** from the song's menu ("Song with attachments (.zip)", next to
   the ChordPro file) and for several songs from the selection mode of the
   song list. Options: attachments (on), band arrangements (off), own personal

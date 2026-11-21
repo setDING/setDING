@@ -1,0 +1,36 @@
+{
+  "format": "setding-songs",
+  "formatVersion": 1,
+  "app": "ccli-export 0.1.0",
+  "createdAt": "2026-11-21T10:00:00.000Z",
+  "source": { "id": "ccli", "name": "CCLI SongSelect" },
+  "options": { "attachments": true, "arrangements": false, "personal": false },
+  "songs": [
+    {
+      "id": "ccli-7012345",
+      "title": "Amazing Grace",
+      "artist": "John Newton",
+      "file": "songs/Amazing Grace (7012345).cho",
+      "attachments": [
+        {
+          "id": "ccli-7012345-lead",
+          "name": "Lead Sheet",
+          "file": "attachments/Amazing Grace (7012345) - Lead Sheet.pdf",
+          "pages": 2
+        }
+      ]
+    },
+    {
+      "id": "ccli-7098765",
+      "title": "Only a Score",
+      "artist": "Some Writer",
+      "attachments": [
+        {
+          "id": "ccli-7098765-score",
+          "name": "Score",
+          "file": "attachments/Only a Score (7098765) - Score.pdf"
+        }
+      ]
+    }
+  ]
+}
