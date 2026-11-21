@@ -52,8 +52,10 @@ the others are checked in review.
   screens. A `Card` is for a self-contained item among others (a set, a to-do on the
   overview), not for wrapping a whole page.
 - **Width on large screens:** pages of tiles and forms limit their content to
-  **720** (`ConstrainedBox(maxWidth: 720)`, centred), single-purpose forms such as
-  signing in to **480**. Lists that use the width (songs in two columns, the set
+  **720** with **`PageWidth`** (`widgets/page_width.dart`, top and centred),
+  single-purpose forms such as signing in to **480** (`PageWidth(maxWidth:
+  formMaxWidth)`). Controls inside the column wrap rather than scroll sideways
+  (e.g. chips in a `Wrap` instead of a long segmented button). Lists that use the width (songs in two columns, the set
   grid) choose their columns with `BreakpointBuilder`.
 - Leave room under the last item for a floating action button (`bottom: 88`).
 
@@ -145,7 +147,7 @@ the others are checked in review.
 - [ ] Uses `SectionHeader`, `confirm()`/`destructiveButtonStyle`, `showMessage…`,
       `AsyncBody`, `EmptyState` where they apply.
 - [ ] Colours only from the scheme or `StatusColors`.
-- [ ] Width limited on large screens, spacing in steps of 4.
+- [ ] Width limited with `PageWidth` on large screens, spacing in steps of 4.
 - [ ] Tooltips on icon buttons, texts in both ARB files.
 - [ ] Shortcuts and Esc behave (ADR-0049).
 - [ ] A screenshot on the website page (AGENTS.md, "User documentation and screenshots").

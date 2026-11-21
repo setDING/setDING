@@ -13,6 +13,7 @@ import '../sets/sets_screen.dart' show formatGigDate;
 import '../widgets/dialogs.dart';
 import 'bands_screen.dart';
 import '../widgets/loading_indicator.dart';
+import '../widgets/page_width.dart';
 
 /// Deletes [band] after a confirmation that shows what goes with it and
 /// asks for the band's name (organization admins, ADR-0044). Closes the
@@ -213,17 +214,19 @@ class _DeletedBandsScreenState extends ConsumerState<DeletedBandsScreen> {
               message: l10n.trashBandsEmpty(days),
             );
           }
-          return ListView(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: Text(
-                  l10n.trashBandsHint(days),
-                  style: Theme.of(context).textTheme.bodyMedium,
+          return PageWidth(
+            child: ListView(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Text(
+                    l10n.trashBandsHint(days),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                 ),
-              ),
-              for (final b in bands) _tile(context, b),
-            ],
+                for (final b in bands) _tile(context, b),
+              ],
+            ),
           );
         },
       ),

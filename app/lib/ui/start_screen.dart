@@ -10,6 +10,7 @@ import 'bands/bands_screen.dart';
 import 'bands/join_screen.dart';
 import 'home_screen.dart';
 import 'widgets/logo.dart';
+import 'widgets/page_width.dart';
 
 /// The first screen. The native apps start with the [HomeScreen]; the web
 /// client requires signing in and a band first (ADR-0018).
@@ -44,40 +45,39 @@ class _NoBandScreen extends ConsumerWidget {
     return Scaffold(
       key: const Key('web-no-band'),
       appBar: AppBar(title: Text(l10n.appTitle)),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: ListView(
-            shrinkWrap: true,
-            padding: const EdgeInsets.all(24),
-            children: [
-              Text(l10n.webNoBandTitle, style: theme.textTheme.headlineSmall),
-              const SizedBox(height: 8),
-              Text(l10n.webNoBandMessage),
-              const SizedBox(height: 24),
-              FilledButton.icon(
-                icon: const Icon(Icons.groups_outlined),
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => const BandsScreen()),
-                ),
-                label: Text(l10n.bandManage),
+      body: PageWidth(
+        maxWidth: formMaxWidth,
+        alignment: Alignment.center,
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.all(24),
+          children: [
+            Text(l10n.webNoBandTitle, style: theme.textTheme.headlineSmall),
+            const SizedBox(height: 8),
+            Text(l10n.webNoBandMessage),
+            const SizedBox(height: 24),
+            FilledButton.icon(
+              icon: const Icon(Icons.groups_outlined),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const BandsScreen()),
               ),
-              const SizedBox(height: 8),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.link),
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<bool>(builder: (_) => const JoinScreen()),
-                ),
-                label: Text(l10n.accountJoin),
+              label: Text(l10n.bandManage),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.link),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<bool>(builder: (_) => const JoinScreen()),
               ),
-              const SizedBox(height: 8),
-              TextButton(
-                key: const Key('web-no-band-sign-out'),
-                onPressed: () => ref.read(authProvider.notifier).signOut(),
-                child: Text(l10n.accountSignOut),
-              ),
-            ],
-          ),
+              label: Text(l10n.accountJoin),
+            ),
+            const SizedBox(height: 8),
+            TextButton(
+              key: const Key('web-no-band-sign-out'),
+              onPressed: () => ref.read(authProvider.notifier).signOut(),
+              child: Text(l10n.accountSignOut),
+            ),
+          ],
         ),
       ),
     );

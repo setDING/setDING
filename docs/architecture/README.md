@@ -353,7 +353,7 @@ See "Open points" in the individual ADRs. The most important:
 43. Can an exported PDF be opened right away? → ADR-0048 (accepted and implemented, #721): the message after a PDF export offers *Open*; a copy in the app's cache opens in the default app with `open_filex`, its Android media permissions removed. Open: *Open* for other exports
 44. Can setDING be used with the keyboard on a computer? → ADR-0049 (accepted, #729): Esc goes back everywhere (#726); single-key shortcuts per screen (E edit, L live, + / − transpose, ← / → previous/next song of the set, / or Ctrl+F search), never while typing in a text field; ? lists them all. Open: further shortcuts, keys in tooltips
 45. How do new settings stay consistent with the existing ones? → ADR-0050 (accepted, #766): titled sections with dividers, a leading icon on every option, the scope note as a banner; `app/test/settings_layout_test.dart` enforces it. Open: the song display editor
-46. Do all screens follow the same design? → ADR-0051 (accepted, #743): written UI design rules (`docs/development/ui-design.md`) as the app-wide base under ADR-0050, shared widgets for section headers, confirmations, messages and status colours, and a source test for the checkable rules. Open: width limit on the band, organization, trash and MIDI test screens; tooltips and spacing as checked rules
+46. Do all screens follow the same design? → ADR-0051 (accepted, #743): written UI design rules (`docs/development/ui-design.md`) as the app-wide base under ADR-0050, shared widgets for section headers, confirmations, messages and status colours, and a source test for the checkable rules. every page of tiles limits its width with `PageWidth` (#770). Open: tooltips and spacing as checked rules
 
 ## 10. ADR index
 

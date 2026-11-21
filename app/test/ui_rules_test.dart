@@ -67,4 +67,14 @@ void main() {
       isEmpty,
     );
   });
+
+  test('page widths use PageWidth', () {
+    expect(
+      offending(
+        RegExp(r'maxWidth: (720|480)\b'),
+        allowed: ['widgets/page_width.dart'],
+      ),
+      isEmpty,
+    );
+  });
 }
