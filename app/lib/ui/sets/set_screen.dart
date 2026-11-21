@@ -27,6 +27,7 @@ import '../widgets/key_picker.dart';
 import '../widgets/sequence_dialog.dart';
 import 'set_list_pdf.dart';
 import 'set_archive_dialogs.dart';
+import 'marker_dialog.dart';
 import 'set_item_label.dart';
 import 'set_list.dart';
 import 'sets_screen.dart';
@@ -60,19 +61,11 @@ class _SetScreenState extends ConsumerState<SetScreen> {
     if (ids.isNotEmpty) await _repo.addSongs(widget.setId, ids);
   }
 
-  Future<void> _addMarker(String icon) async {
-    final l10n = AppLocalizations.of(context);
-    final pause = MarkerIcons.isBreak(icon);
-    // A break needs no note of its own: left empty, it shows the type label
-    // in each member's UI language (#289).
-    final label = await askText(
-      context,
-      title: pause ? l10n.addPause : l10n.addText,
-      hint: pause ? l10n.pause : l10n.textItemHint,
-      allowEmpty: pause,
-    );
-    if (label != null) {
-      await _repo.addMarker(widget.setId, icon, markerNote(icon, label) ?? '');
+  /// Adds a marker with an icon and a text (ADR-0047).
+  Future<void> _addMarker() async {
+    final marker = await showMarkerDialog(context);
+    if (marker != null) {
+      await _repo.addMarker(widget.setId, marker.icon, marker.note);
     }
   }
 
@@ -210,8 +203,7 @@ class _SetScreenState extends ConsumerState<SetScreen> {
               ],
               PopupMenuButton<String>(
                 onSelected: (value) => switch (value) {
-                  'pause' => _addMarker(MarkerIcons.breakIcon),
-                  'text' => _addMarker(MarkerIcons.announcement),
+                  'marker' => _addMarker(),
                   'export' => _export(set),
                   'exportListPdf' => _exportSetListPdf(set),
                   'copyToBand' => copySetToBand(context, ref, set.id),
@@ -220,8 +212,7 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                 },
                 itemBuilder: (_) => [
                   if (canEdit) ...[
-                    PopupMenuItem(value: 'pause', child: Text(l10n.addPause)),
-                    PopupMenuItem(value: 'text', child: Text(l10n.addText)),
+                    PopupMenuItem(value: 'marker', child: Text(l10n.addMarker)),
                     const PopupMenuDivider(),
                   ],
                   // Web: no file export, sets are synced (ADR-0018).
@@ -362,35 +353,38 @@ class _SetItemTile extends ConsumerWidget {
     }
 
     Future<void> editMarker() async {
-      final pause = MarkerIcons.isBreak(item.icon);
-      final label = await askText(
+      final marker = await showMarkerDialog(
         context,
-        title: l10n.edit,
-        initial: markerNote(item.icon, item.note) ?? '',
-        hint: pause ? l10n.pause : l10n.textItemHint,
-        allowEmpty: pause,
+        icon: item.icon ?? MarkerIcons.defaultIcon,
+        note: item.note,
       );
-      if (label != null) {
-        await repo.updateMarker(item.id, markerNote(item.icon, label) ?? '');
+      if (marker != null) {
+        await repo.updateMarker(item.id, marker.note, icon: marker.icon);
       }
     }
 
     if (item.type != SetItemType.song) {
-      // The type label is shown once: as the title without a note of its own
-      // (also a break still named "Pause" or "Break" from any UI language),
-      // otherwise below the note (#268, #289).
+      // The marker's icon, and its name once: as the title without a text
+      // of its own (also a break still named "Pause" or "Break" from any UI
+      // language), otherwise below the text (#268, #289, ADR-0047).
       final typeLabel = markerIconName(l10n, item.icon);
       final note = markerNote(item.icon, item.note);
       final hasNote = note != null;
       return ListTile(
+        key: ValueKey('marker-${item.id}'),
         leading: SizedBox(
           width: 32,
           child: Center(
-            child: Text('${index + 1}', style: theme.textTheme.titleMedium),
+            child: Icon(
+              markerIconData(item.icon),
+              color: theme.colorScheme.secondary,
+            ),
           ),
         ),
         title: Text(
           note ?? typeLabel,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: theme.textTheme.titleMedium?.copyWith(
             fontStyle: FontStyle.italic,
             color: theme.colorScheme.secondary,

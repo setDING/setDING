@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import live from '../../../../../docs/screenshots/live_de.png';
 import controls from '../../../../../docs/screenshots/live_controls_de.png';
+import liveMarker from '../../../../../docs/screenshots/live_marker_de.png';
 
 Der Live-Modus zeigt einen Song im Vollbild, so gross wie möglich, und blättert mit
 einem Tipp, einem Wisch oder einem Fusspedal weiter. Der Bildschirm bleibt an,
@@ -18,7 +19,7 @@ solange der Live-Modus offen ist.
 ## Live-Modus starten
 
 - **Ein Set:** Öffne das Set und tippe oben rechts auf **Live**. Du blätterst
-  durch alle Songs, Pausen und Texte des Sets.
+  durch alle Songs und Hinweise des Sets.
 - **Ein einzelner Song:** Öffne den Song und tippe oben rechts auf **Live**.
 
 Der farbige Knopf **Live** steht immer ganz rechts in der Titelleiste, abgetrennt
@@ -75,9 +76,12 @@ Tippe in die Mitte des Bildschirms, um die Steuerleiste ein- oder auszublenden:
   und Taktart. Gilt ein Songablauf, zeigt setDING nur dessen Teile und nennt die
   ausgeblendeten.
 - **Fortschrittsbalken:** Ein schmaler Balken über der Fusszeile zeigt die Songs des
-  Sets und die Seiten des aktuellen Songs, gut sichtbar aus dem Augenwinkel. Pausen
-  und Texte sind gestrichelt.
-- **Pausen und Texte** bekommen eine eigene Seite mit grosser Schrift.
+  Sets und die Seiten des aktuellen Songs, gut sichtbar aus dem Augenwinkel.
+  Hinweise sind gestrichelt.
+- **Hinweise** wie Pausen, Ansagen oder die Zugabe bekommen eine eigene Seite mit
+  ihrem Symbol und grosser Schrift.
+
+<Image src={liveMarker} alt="Live-Modus: die Seite eines Hinweises mit dem Symbol einer Kaffeetasse und dem Text «Pause»" />
 - **PDF-Noten** werden mit denselben Gesten geblättert, Seite für Seite.
 
 Änderungen, die während des Auftritts vom Server kommen, übernimmt setDING erst,

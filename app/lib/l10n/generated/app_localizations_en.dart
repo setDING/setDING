@@ -440,19 +440,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addSongs => 'Add songs';
 
   @override
-  String get addPause => 'Add break';
-
-  @override
-  String get addText => 'Add text';
-
-  @override
   String get pause => 'Break';
 
   @override
   String get textItem => 'Text';
-
-  @override
-  String get textItemHint => 'e.g. announcement or encore';
 
   @override
   String get markerIconBreak => 'Break';
@@ -507,6 +498,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marker => 'Marker';
+
+  @override
+  String get addMarker => 'Add marker';
+
+  @override
+  String get editMarker => 'Edit marker';
+
+  @override
+  String get markerText => 'Text';
+
+  @override
+  String get markerPreview => 'Preview';
+
+  @override
+  String get markerGroupBreak => 'Break';
+
+  @override
+  String get markerGroupAnnouncement => 'Announcement';
+
+  @override
+  String get markerGroupFlow => 'Flow';
+
+  @override
+  String get markerGroupStage => 'Stage';
+
+  @override
+  String get markerGroupShow => 'Show';
+
+  @override
+  String get markerGroupGeneral => 'General';
 
   @override
   String get setEmpty => 'This set is empty. Add some songs.';
@@ -883,7 +904,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsSetProgressHint =>
-      'A thin bar above the bottom bar shows the songs of the set and the pages of the current song: the current page in the accent colour, pages still to come in a lighter tone. Pauses and texts are dashed.';
+      'A thin bar above the bottom bar shows the songs of the set and the pages of the current song: the current page in the accent colour, pages still to come in a lighter tone. Markers such as breaks are dashed.';
 
   @override
   String get settingsBeatSection => 'Beat and click';

@@ -454,6 +454,14 @@ void main() {
         ),
       );
       await _shot(tester, '${lang}_2b_set_menu');
+      // The marker dialog with an icon and a text (ADR-0047).
+      await tester.tap(
+        find.text(lang == 'de' ? 'Hinweis hinzufügen' : 'Add marker'),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('marker-icon-encore')));
+      await tester.pumpAndSettle();
+      await _shot(tester, '${lang}_2c_marker_dialog');
 
       await tester.pumpWidget(
         RepaintBoundary(
@@ -489,6 +497,14 @@ void main() {
       // A tap in the middle shows the control bar.
       await tester.tapAt(tester.getRect(find.byType(PageView)).center);
       await _shot(tester, '${lang}_4b_live_controls');
+      // The page of a marker (ADR-0047): the break after the two songs.
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: LiveScreen(items: items, initialIndex: 2)),
+        ),
+      );
+      await _shot(tester, '${lang}_4c_live_marker');
       // Stage appearance independent of the app theme (#263): dark on the
       // light German app, true black on the dark English one.
       final stage = lang == 'de' ? 'dark' : 'black';

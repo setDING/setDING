@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import live from '../../../../../../docs/screenshots/live.png';
 import controls from '../../../../../../docs/screenshots/live_controls.png';
+import liveMarker from '../../../../../../docs/screenshots/live_marker.png';
 
 Live mode shows a song in full screen, as large as possible, and turns pages with a
 tap, a swipe or a foot pedal. The screen stays on while live mode is open.
@@ -17,7 +18,7 @@ tap, a swipe or a foot pedal. The screen stays on while live mode is open.
 ## Start live mode
 
 - **A set:** open the set and tap **Live** at the top right. You go through all the
-  songs, breaks and texts of the set.
+  songs and markers of the set.
 - **A single song:** open the song and tap **Live** at the top right.
 
 The coloured **Live** button is always at the far right of the title bar, set apart
@@ -69,9 +70,12 @@ Tap the middle of the screen to show or hide the control bar:
   signature. If a song sequence applies, setDING shows only its parts and names the
   hidden ones.
 - **Progress bar:** a thin bar above the bottom bar shows the songs of the set and
-  the pages of the current song, easy to see from the corner of your eye. Breaks and
-  texts are dashed.
-- **Breaks and texts** get a page of their own in large type.
+  the pages of the current song, easy to see from the corner of your eye. Markers
+  are dashed.
+- **Markers** such as breaks, announcements or the encore get a page of their own
+  with their icon in large type.
+
+<Image src={liveMarker} alt="Live mode: the page of a marker with a coffee cup icon and the text Break" />
 - **PDF sheet music** is turned with the same gestures, page by page.
 
 Changes that arrive from the server during the gig are applied only when you leave

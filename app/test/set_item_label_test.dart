@@ -203,7 +203,7 @@ void main() {
     Future<void> addBreak(String text) async {
       await tester.tap(find.byType(PopupMenuButton<String>));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(de.addPause));
+      await tester.tap(find.text(de.addMarker));
       await tester.pumpAndSettle();
       if (text.isNotEmpty) {
         await tester.enterText(find.byType(TextField), text);
