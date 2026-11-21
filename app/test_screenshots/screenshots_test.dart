@@ -485,6 +485,13 @@ void main() {
         ),
       );
       await _shot(tester, '${lang}_3_songs');
+      // Selection mode: select all, copy to band and delete selected (#738).
+      await tester.longPress(find.text('Blue Monday Groove'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byWidgetPredicate((w) => w is Checkbox && w.value == false).first,
+      );
+      await _shot(tester, '${lang}_3c_songs_selected');
 
       final items = await tester.runAsync(
         () async => [

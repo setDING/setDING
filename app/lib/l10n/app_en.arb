@@ -754,6 +754,31 @@
   },
   "selectAll": "Select all",
   "selectMode": "Select",
+  "deleteSelected": "Delete selected",
+  "deleteSongsTitle": "{count, plural, =1{Delete 1 song?} other{Delete {count} songs?}}",
+  "@deleteSongsTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteSongsMessage": "{count, plural, =1{The selected song will be deleted and removed from all sets.} other{The {count} selected songs will be deleted and removed from all sets.}} You can restore them from the trash.",
+  "@deleteSongsMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songsDeleted": "{count, plural, =1{1 song deleted} other{{count} songs deleted}}",
+  "@songsDeleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "bandRoleOrgAdmin": "Organization admin",
   "bandOrganization": "Organization",
   "bandNewOrganization": "New organization",

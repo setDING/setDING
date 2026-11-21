@@ -85,6 +85,37 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
     _selected = selected.isEmpty ? null : selected;
   });
 
+  /// Deletes the selected songs after a confirmation; they go to the trash
+  /// (ADR-0043) and one undo restores all of them.
+  Future<void> _deleteSelected(Set<String> ids) async {
+    final l10n = AppLocalizations.of(context);
+    final ok = await confirm(
+      context,
+      title: l10n.deleteSongsTitle(ids.length),
+      message: l10n.deleteSongsMessage(ids.length),
+    );
+    if (!ok || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final repo = ref.read(songRepositoryProvider);
+    final deleted = [for (final id in ids) await repo.deleteSong(id)];
+    if (mounted) setState(() => _selected = null);
+    showUndo(
+      messenger,
+      l10n.songsDeleted(deleted.length),
+      undoLabel: l10n.undo,
+      onUndo: () async {
+        for (final song in deleted) {
+          await repo.restoreSong(song);
+        }
+      },
+      onGone: () async {
+        for (final song in deleted) {
+          await repo.purgeFiles(song.attachments);
+        }
+      },
+    );
+  }
+
   @override
   void dispose() {
     _searchDebounce?.cancel();
@@ -275,6 +306,13 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                       if (mounted) setState(() => _selected = null);
                     },
                   ),
+                  if (library.canDeleteSongs)
+                    IconButton(
+                      key: const Key('songs-delete-selected'),
+                      tooltip: l10n.deleteSelected,
+                      icon: const Icon(Icons.delete_outline),
+                      onPressed: () => _deleteSelected(selected),
+                    ),
                 ]
               : [
                   const LibrarySwitcher(),

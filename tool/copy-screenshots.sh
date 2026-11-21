@@ -40,6 +40,7 @@ map=(
   live_midi 22b_live_midi
   editor_labels 23_editor_labels
   import_labels 23b_import_labels
+  songs_selected 3c_songs_selected
   editor_ccli 24_editor_ccli
   sync_hint 26_sync_hint
   set_export 27_set_export

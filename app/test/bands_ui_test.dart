@@ -210,6 +210,71 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('deletes selected songs after confirming, and undo', (
+    tester,
+  ) async {
+    final app = await start(tester);
+    await app.songs.createSong(source: '{title: Alpha}');
+    await app.songs.createSong(source: '{title: Beta}');
+    await app.songs.createSong(source: '{title: Gamma}');
+    await openSongs(tester);
+
+    await tester.longPress(find.text('Alpha'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Beta'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('songs-delete-selected')));
+    await tester.pumpAndSettle();
+    expect(find.text('Delete 2 songs?'), findsOneWidget);
+    // Cancelling keeps the songs and the selection.
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(find.text('2 selected'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('songs-delete-selected')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+    await tester.pumpAndSettle();
+    expect(find.text('2 songs deleted'), findsOneWidget);
+    expect(find.text('2 selected'), findsNothing);
+    expect(find.text('Alpha'), findsNothing);
+    expect(find.text('Beta'), findsNothing);
+    expect(find.text('Gamma'), findsOneWidget);
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+    expect(find.text('Alpha'), findsOneWidget);
+    expect(find.text('Beta'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('leaders cannot delete selected songs of the organization', (
+    tester,
+  ) async {
+    final app = await start(
+      tester,
+      user: _bob,
+      server: (app) {
+        app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+        app.backend.addMember('b1', _bob, BandRole.admin);
+      },
+    );
+    await TestApp.songsIn(
+      app,
+      'o1',
+      userId: 'bob',
+    ).createSong(source: '{title: Shared}');
+    await openSongs(tester);
+    await switchLibrary(tester, 'Rock');
+
+    await tester.longPress(find.text('Shared'));
+    await tester.pumpAndSettle();
+    expect(find.text('1 selected'), findsOneWidget);
+    expect(find.byKey(const Key('songs-copy-to-band')), findsOneWidget);
+    expect(find.byKey(const Key('songs-delete-selected')), findsNothing);
+    await app.dispose(tester);
+  });
+
   testWidgets('creating a band selects it and creates an organization', (
     tester,
   ) async {
