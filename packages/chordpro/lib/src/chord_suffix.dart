@@ -62,7 +62,10 @@ List<ChordPart> mergeChordParts(
 /// split into quality, extension and modifiers.
 ///
 /// Spelling variants are normalised: `m7`, `min7`, `mi7`, `-7` and `−7` are
-/// all a minor seventh, `maj7`, `M7`, `Δ7` and `^7` a major seventh.
+/// all a minor seventh, `maj7`, `M7`, `Δ7` and `^7` a major seventh. The
+/// suffixes of the ChordPro reference implementation are understood, e.g.
+/// `m9maj7` (minor ninth with a major seventh), `711` (`7add11`), `7+`
+/// (`7#5`), `h7` (half-diminished) and `0` (diminished).
 class ChordSuffix {
   const ChordSuffix({
     this.quality = ChordQuality.major,
@@ -81,7 +84,7 @@ class ChordSuffix {
   final bool majorSeventh;
 
   /// Alterations and additions in written order, normalised to `b5`, `#9`,
-  /// `add9`, `sus4`, `sus2`, `alt`, `no3`.
+  /// `add9`, `sus4`, `sus2`, `sus9`, `alt`, `no3`.
   final List<String> modifiers;
 
   bool get isMinor =>
@@ -222,8 +225,14 @@ class _SuffixParser {
 
   ChordQuality _parseQuality() {
     if (_take('ø') || _take('Ø')) return ChordQuality.halfDiminished;
+    // `h7`, `h9`: only with a number, so words like `Ah` stay lyrics.
+    if (text.startsWith('h', _i) && _digitAhead(1)) {
+      _i += 1;
+      return ChordQuality.halfDiminished;
+    }
     if (_take('dim') ||
         _take('°') ||
+        _take('0') ||
         (!text.startsWith('omit', _i) && _take('o'))) {
       return ChordQuality.diminished;
     }
@@ -262,8 +271,17 @@ class _SuffixParser {
       }
       return null;
     }
-    if (_majorSeventh || _extension.isNotEmpty) return false;
+    if (_majorSeventh) return false;
     final number = _parseNumber();
+    // `m9maj7`, `m9^7`: a ninth (eleventh, thirteenth) chord whose seventh
+    // is major, the same chord as `m(maj9)`.
+    if (_extension.isNotEmpty) {
+      if (number != '7' || !const {'9', '11', '13'}.contains(_extension)) {
+        return false;
+      }
+      _majorSeventh = true;
+      return true;
+    }
     if (number != null && !const {'7', '9', '11', '13'}.contains(number)) {
       return false;
     }
@@ -315,11 +333,12 @@ class _SuffixParser {
       }
       final mod = _parseModifier();
       if (mod == null) {
-        // A major seventh may also come in parentheses: `m(maj7)`.
+        // A major seventh may also come in parentheses: `m(maj7)`, or after
+        // the extension: `m9maj7`.
         if (_parseMajorMarker() == true) continue;
         return false;
       }
-      _modifiers.add(mod);
+      if (mod.isNotEmpty) _modifiers.add(mod);
     }
     return depth == 0;
   }
@@ -327,24 +346,52 @@ class _SuffixParser {
   String? _parseModifier() {
     if (_take('sus')) {
       if (_take('2')) return 'sus2';
+      if (_take('9')) return 'sus9';
       _take('4');
       return 'sus4';
     }
     if (_take('add')) {
-      final n = _parseNumber();
+      final n = _take('3') ? '3' : _parseNumber();
       return n == null || n == '6/9' ? null : 'add$n';
     }
     if (_take('alt')) return 'alt';
     if (_take('no') || _take('omit')) {
-      final n = _parseNumber();
+      final n = _take('3') ? '3' : _parseNumber();
       return n == null || n == '6/9' ? null : 'no$n';
+    }
+    // A second number adds a tone: `711` is `7add11`, `911` is `9add11`.
+    if (_extension.isNotEmpty) {
+      final start = _i;
+      final n = _parseNumber();
+      if (n != null) {
+        if (const {'9', '11', '13'}.contains(n) &&
+            int.parse(n) > _extensionNumber) {
+          return 'add$n';
+        }
+        _i = start;
+        return null;
+      }
     }
     final c = text[_i];
     final flat = c == 'b' || c == '♭' || c == '-' || c == '−';
     final sharp = c == '#' || c == '♯' || c == '+';
     if (flat || sharp) {
       _i++;
+      // `m#7` is a minor chord with a major seventh.
+      if (sharp &&
+          _extension.isEmpty &&
+          !_majorSeventh &&
+          !_digitAhead(1) &&
+          _take('7')) {
+        _majorSeventh = true;
+        _extension = '7';
+        return '';
+      }
       final n = _parseNumber();
+      // A plain `+` after a number raises the fifth: `7+`, `9+`.
+      if (n == null && c == '+' && _extension.isNotEmpty && !_digitAhead(0)) {
+        return '#5';
+      }
       if (n == null || !const {'5', '6', '9', '11', '13'}.contains(n)) {
         return null;
       }
@@ -352,4 +399,8 @@ class _SuffixParser {
     }
     return null;
   }
+
+  /// The extension as a number (`6/9` counts as 9), 0 if there is none.
+  int get _extensionNumber =>
+      _extension.isEmpty ? 0 : int.parse(_extension.split('/').last);
 }

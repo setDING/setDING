@@ -37,6 +37,17 @@ void main() {
       expect(intervals('E5'), [0, 7]);
     });
 
+    test('ChordPro reference suffixes', () {
+      expect(intervals('Cm9maj7'), [0, 3, 7, 11, 14]);
+      expect(intervals('Cm9^7'), [0, 3, 7, 11, 14]);
+      expect(intervals('Cm(maj9)'), [0, 3, 7, 11, 14]);
+      expect(intervals('Cm#7'), [0, 3, 7, 11]);
+      expect(intervals('Ch7'), [0, 3, 6, 10]);
+      expect(intervals('C0'), [0, 3, 6]);
+      expect(intervals('C7+'), [0, 4, 8, 10]);
+      expect(intervals('Csus9'), [0, 7, 14]);
+    });
+
     test('slash chords keep the bass note', () {
       final t = chordTones(c('D/F#'));
       expect(t.bass, 6);

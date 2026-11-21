@@ -194,8 +194,9 @@ void main() {
           'CΔ7',
           'Bø',
           'C°7',
+          'Cm9maj7',
         ].map((r) => styled(r, ChordStyle.standard)).toList(),
-        ['Am7', 'Am7', 'Cmaj7', 'Bm7b5', 'Cdim7'],
+        ['Am7', 'Am7', 'Cmaj7', 'Bm7b5', 'Cdim7', 'Cm(maj9)'],
       );
       expect(
         [
@@ -204,8 +205,9 @@ void main() {
           'CΔ7',
           'Bø',
           'C°7',
+          'Cm9maj7',
         ].map((r) => styled(r, ChordStyle.jazz)).toList(),
-        ['A−7', 'A−7', 'CΔ7', 'Bø7', 'C°7'],
+        ['A−7', 'A−7', 'CΔ7', 'Bø7', 'C°7', 'C−Δ9'],
       );
       expect(shown('CΔ7'), 'DΔ7'); // as written, transposed
       final escaped = verse.lines.whereType<LyricLine>().firstWhere(
