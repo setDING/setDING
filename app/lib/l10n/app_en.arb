@@ -168,7 +168,6 @@
   "setEmpty": "This set is empty. Add some songs.",
   "deleteSetTitle": "Delete set?",
   "deleteSetMessage": "\"{name}\" will be deleted. The songs are kept.",
-  "exportSet": "Export as ZIP",
   "removeFromSet": "Remove from set",
   "selectSongs": "Select songs",
   "selectedCount": "{count, plural, =0{None selected} =1{1 selected} other{{count} selected}}",
@@ -585,7 +584,6 @@
   "sequenceCommonParts": "Common parts (the song has no sections yet)",
   "sequenceClear": "Clear",
   "sequenceAsText": "Edit as text",
-  "exportSetListPdf": "Export set list (PDF for printing)",
   "settingsSectionAccount": "Account & sync",
   "accountSignedOut": "Not signed in",
   "accountSignedOutHint": "Sign in to share songs and sets with your band. Without an account, setDING keeps working locally on this device.",
@@ -2586,6 +2584,16 @@
   "setArchivePersonal": "My personal adjustments and notes",
   "setArchivePersonalHint": "Leave this off if you pass the file on.",
   "setExportStart": "Export",
+  "exportMenu": "Export …",
+  "exportFormat": "Format",
+  "exportFormatChordPro": "ChordPro file",
+  "exportFormatChordProHint": "For other apps, without attachments and arrangements",
+  "exportFormatSetListPdf": "Set list as PDF",
+  "exportFormatSetListPdfHint": "For printing",
+  "exportFormatArchive": "setDING archive (ZIP)",
+  "exportFormatArchiveHint": "For importing into setDING, with attachments and arrangements if you like",
+  "songExportHintChordPro": "The ChordPro file holds the lyrics and chords of the song and opens in any app that knows ChordPro.",
+  "setExportHintPdf": "The set list shows every song with its key and sequence, for printing for the stage.",
   "setImport": "Import set",
   "setImportTitle": "Import set",
   "setImportBand": "Band",
@@ -2744,9 +2752,6 @@
   "settingsHeadingKeyboard": "Keyboard",
   "settingsHeadingStyle": "Style",
   "settingsHeadingPrototypes": "Prototypes",
-  "exportSongChordPro": "Export ChordPro file",
-  "exportSongArchive": "Export with attachments",
-  "songsExportSelected": "Export with attachments",
   "songExportTitle": "{count, plural, =1{Export song} other{Export {count} songs}}",
   "@songExportTitle": {
     "placeholders": {
@@ -2755,7 +2760,7 @@
       }
     }
   },
-  "songExportHint": "The ZIP holds the ChordPro files, the attachments and a description from which setDING imports the songs again, with their attachments.",
+  "songExportHint": "The ZIP holds the ChordPro files and a description from which setDING imports the songs again, plus what you choose below.",
   "songExportArrangements": "Arrangements of \"{band}\" (key, sequence, tempo)",
   "@songExportArrangements": {
     "placeholders": {

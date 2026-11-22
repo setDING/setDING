@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/misc.dart' show Override;
@@ -58,11 +59,16 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byType(PopupMenuButton<String>).last);
     await tester.pumpAndSettle();
-    expect(find.text('Export ChordPro file'), findsOneWidget);
-    await tester.tap(find.byKey(const Key('song-export-archive')));
+    expect(find.text('Export …'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('song-export-menu')));
     await tester.pumpAndSettle();
 
     expect(find.text('Export song'), findsOneWidget);
+    // The ChordPro file is preselected; the archive options show only for
+    // the archive (#870).
+    expect(find.byKey(const Key('song-export-attachments')), findsNothing);
+    await tester.tap(find.byKey(const Key('export-format-archive')));
+    await tester.pumpAndSettle();
     // Attachments on, the own adjustments off by default; the local band's
     // arrangements may be added.
     bool checked(String key) => tester
@@ -91,6 +97,60 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('a song is exported as a ChordPro file from the same dialog, '
+      'which remembers the format', (tester) async {
+    useTabletSize(tester);
+    final saved = <(String, Uint8List)>[];
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final songId = (await tester.runAsync(
+      () => app.songs.createSong(source: '{title: Hello}\n[C]x'),
+    ))!;
+    await tester.pumpWidget(
+      app.build(
+        home: SongScreen(songId: songId),
+        extra: [saveTo(saved)],
+      ),
+    );
+    await tester.pumpAndSettle();
+    Future<void> openExport() async {
+      await tester.tap(find.byType(PopupMenuButton<String>).last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('song-export-menu')));
+      await tester.pumpAndSettle();
+    }
+
+    await openExport();
+    expect(find.text('Format'), findsOneWidget);
+    expect(
+      find.text(
+        'The ChordPro file holds the lyrics and chords of the song and '
+        'opens in any app that knows ChordPro.',
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const Key('song-export-start')));
+    await waitFor(tester, () => saved.isNotEmpty);
+    expect(saved.single.$1, endsWith('.cho'));
+    expect(utf8.decode(saved.single.$2), contains('{title: Hello}'));
+
+    // The archive chosen once is preselected the next time.
+    await openExport();
+    await tester.tap(find.byKey(const Key('export-format-archive')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    await openExport();
+    expect(find.byKey(const Key('song-export-attachments')), findsNothing);
+    await tester.tap(find.byKey(const Key('export-format-archive')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('song-export-start')));
+    await waitFor(tester, () => saved.length == 2);
+    expect(saved.last.$1, 'Hello.zip');
+    await openExport();
+    expect(find.byKey(const Key('song-export-attachments')), findsOneWidget);
+    await app.dispose(tester);
+  });
+
   testWidgets('selected songs are exported together from the song list', (
     tester,
   ) async {
@@ -114,6 +174,9 @@ void main() {
     await tester.tap(find.byKey(const Key('songs-export-selected')));
     await tester.pumpAndSettle();
     expect(find.text('Export 2 songs'), findsOneWidget);
+    // Several songs: only the archive, so no format choice (#870).
+    expect(find.byKey(const Key('export-format-archive')), findsNothing);
+    expect(find.byKey(const Key('song-export-attachments')), findsOneWidget);
     await tester.tap(find.byKey(const Key('song-export-start')));
     await waitFor(tester, () => saved.isNotEmpty);
 

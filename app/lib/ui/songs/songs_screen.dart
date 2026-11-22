@@ -341,16 +341,12 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                   ),
                   IconButton(
                     key: const Key('songs-export-selected'),
-                    tooltip: l10n.songsExportSelected,
-                    icon: const Icon(Icons.ios_share),
+                    tooltip: l10n.exportSong,
+                    icon: const Icon(Icons.file_download_outlined),
                     onPressed: selected.isEmpty
                         ? null
                         : () async {
-                            await exportSongArchive(
-                              context,
-                              ref,
-                              selected.toList(),
-                            );
+                            await exportSongs(context, ref, selected.toList());
                             if (mounted) setState(() => _selected = null);
                           },
                   ),

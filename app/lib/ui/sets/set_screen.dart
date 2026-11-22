@@ -72,7 +72,9 @@ class _SetScreenState extends ConsumerState<SetScreen> {
     }
   }
 
-  Future<void> _export(SetlistEntry set) => exportSetArchive(context, ref, set);
+  /// The set list as PDF or the set as archive (issue #870).
+  Future<void> _export(SetlistEntry set) =>
+      exportSet(context, ref, set, exportPdf: () => _exportSetListPdf(set));
 
   /// The set list: one row per song with title, key and sequence.
   Future<SetList?> _setList(SetlistEntry set) async {
@@ -214,7 +216,6 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                   onSelected: (value) => switch (value) {
                     'marker' => _addMarker(),
                     'export' => _export(set),
-                    'exportListPdf' => _exportSetListPdf(set),
                     'copyToBand' => copySetToBand(context, ref, set.id),
                     'delete' => _delete(set),
                     _ => null,
@@ -231,14 +232,10 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                     // Web: no file export, sets are synced (ADR-0018).
                     if (!ref.read(webClientProvider)) ...[
                       MenuAction(
-                        value: 'exportListPdf',
-                        icon: Icons.picture_as_pdf_outlined,
-                        label: l10n.exportSetListPdf,
-                      ),
-                      MenuAction(
+                        key: const Key('set-export-menu'),
                         value: 'export',
                         icon: Icons.file_download_outlined,
-                        label: l10n.exportSet,
+                        label: l10n.exportMenu,
                       ),
                     ],
                     MenuAction(

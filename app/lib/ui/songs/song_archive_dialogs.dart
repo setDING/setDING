@@ -13,12 +13,14 @@ import '../../sync/sync_controller.dart' show attachmentFetcherProvider;
 import '../sets/set_archive_dialogs.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/export_file.dart';
+import '../widgets/export_format.dart';
 import '../widgets/loading_indicator.dart';
 import '../widgets/section_header.dart';
 import 'song_screen.dart';
 
-/// Asks what the archive of [songIds] holds and exports it (ADR-0043 §1c).
-Future<void> exportSongArchive(
+/// Exports [songIds]: as one ChordPro file (a single song, not on web) or
+/// as a setDING archive with options (ADR-0043 §1c, issue #870).
+Future<void> exportSongs(
   BuildContext context,
   WidgetRef ref,
   List<String> songIds,
@@ -33,16 +35,46 @@ Future<void> exportSongArchive(
   };
   final songs = [for (final id in songIds) ?byId[id]];
   if (songs.isEmpty || !context.mounted) return;
+  final web = ref.read(webClientProvider);
+  final formats = [
+    // Web: no single file export (ADR-0018).
+    if (songs.length == 1 &&
+        songs.single.chordproSource.trim().isNotEmpty &&
+        !web)
+      ExportFormat.chordPro,
+    ExportFormat.archive,
+  ];
   // The arrangements are those of the current band, if the songs are in
   // its library.
   final band = ref.read(currentBandProvider);
   final arrangementsOf = band.libraryId == songs.first.libraryId ? band : null;
-  final options = await showDialog<SongArchiveOptions>(
+  final choice = await showDialog<(ExportFormat, SongArchiveOptions)>(
     context: context,
-    builder: (_) => _ExportDialog(count: songs.length, band: arrangementsOf),
+    builder: (_) => _ExportDialog(
+      count: songs.length,
+      band: arrangementsOf,
+      formats: formats,
+      initial: initialExportFormat(
+        formats,
+        ref.read(lastSongExportFormatProvider),
+      ),
+    ),
   );
-  if (options == null || !context.mounted) return;
-  final web = ref.read(webClientProvider);
+  if (choice == null || !context.mounted) return;
+  final (format, options) = choice;
+  ref.read(lastSongExportFormatProvider.notifier).choose(format);
+  if (format == ExportFormat.chordPro) {
+    final service = ref.read(importExportProvider);
+    final song = songs.single;
+    await exportFile(
+      context,
+      ref,
+      fileName: service.songFileName(song),
+      mimeType: 'text/plain',
+      build: () async => service.exportSong(song),
+    );
+    return;
+  }
   final fetcher = ref.read(attachmentFetcherProvider);
   final service = ref.read(songArchiveServiceProvider);
   await exportFile(
@@ -63,11 +95,18 @@ Future<void> exportSongArchive(
   );
 }
 
-/// The options of a song export.
+/// The format and options of a song export.
 class _ExportDialog extends StatefulWidget {
-  const _ExportDialog({required this.count, this.band});
+  const _ExportDialog({
+    required this.count,
+    required this.formats,
+    required this.initial,
+    this.band,
+  });
 
   final int count;
+  final List<ExportFormat> formats;
+  final ExportFormat initial;
 
   /// The band whose arrangements may be exported.
   final BandView? band;
@@ -77,12 +116,14 @@ class _ExportDialog extends StatefulWidget {
 }
 
 class _ExportDialogState extends State<_ExportDialog> {
+  late var _format = widget.initial;
   var _options = const SongArchiveOptions();
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final band = widget.band;
+    final archive = _format == ExportFormat.archive;
     return AlertDialog(
       key: const Key('song-export'),
       title: Text(l10n.songExportTitle(widget.count)),
@@ -93,38 +134,45 @@ class _ExportDialogState extends State<_ExportDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(l10n.songExportHint),
-              SectionHeader(
-                l10n.setExportHeadingInclude,
-                padding: SectionHeader.insetPadding,
+              Text(archive ? l10n.songExportHint : l10n.songExportHintChordPro),
+              ExportFormatChoice(
+                available: widget.formats,
+                value: _format,
+                onChanged: (f) => setState(() => _format = f),
               ),
-              ArchiveOptionTile(
-                key: const Key('song-export-attachments'),
-                value: _options.attachments,
-                title: l10n.setArchiveAttachments,
-                onChanged: (v) => setState(
-                  () => _options = _options.copyWith(attachments: v),
+              if (archive) ...[
+                SectionHeader(
+                  l10n.setExportHeadingInclude,
+                  padding: SectionHeader.insetPadding,
                 ),
-              ),
-              if (band != null)
                 ArchiveOptionTile(
-                  key: const Key('song-export-arrangements'),
-                  value: _options.arrangements,
-                  title: l10n.songExportArrangements(
-                    band.isLocal ? l10n.bandLocal : band.name,
-                  ),
+                  key: const Key('song-export-attachments'),
+                  value: _options.attachments,
+                  title: l10n.setArchiveAttachments,
                   onChanged: (v) => setState(
-                    () => _options = _options.copyWith(arrangements: v),
+                    () => _options = _options.copyWith(attachments: v),
                   ),
                 ),
-              ArchiveOptionTile(
-                key: const Key('song-export-personal'),
-                value: _options.personal,
-                title: l10n.setArchivePersonal,
-                subtitle: l10n.setArchivePersonalHint,
-                onChanged: (v) =>
-                    setState(() => _options = _options.copyWith(personal: v)),
-              ),
+                if (band != null)
+                  ArchiveOptionTile(
+                    key: const Key('song-export-arrangements'),
+                    value: _options.arrangements,
+                    title: l10n.songExportArrangements(
+                      band.isLocal ? l10n.bandLocal : band.name,
+                    ),
+                    onChanged: (v) => setState(
+                      () => _options = _options.copyWith(arrangements: v),
+                    ),
+                  ),
+                ArchiveOptionTile(
+                  key: const Key('song-export-personal'),
+                  value: _options.personal,
+                  title: l10n.setArchivePersonal,
+                  subtitle: l10n.setArchivePersonalHint,
+                  onChanged: (v) =>
+                      setState(() => _options = _options.copyWith(personal: v)),
+                ),
+              ],
             ],
           ),
         ),
@@ -136,7 +184,7 @@ class _ExportDialogState extends State<_ExportDialog> {
         ),
         FilledButton(
           key: const Key('song-export-start'),
-          onPressed: () => Navigator.pop(context, _options),
+          onPressed: () => Navigator.pop(context, (_format, _options)),
           child: Text(l10n.setExportStart),
         ),
       ],

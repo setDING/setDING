@@ -65,10 +65,16 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byType(PopupMenuButton<String>).last);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Export as ZIP'));
+    await tester.tap(find.text('Export …'));
     await tester.pumpAndSettle();
 
     expect(find.text('Export set'), findsOneWidget);
+    // The set list PDF is preselected; the archive options show only for
+    // the archive (#870).
+    expect(find.text('Set list as PDF'), findsOneWidget);
+    expect(find.byKey(const Key('set-export-personal')), findsNothing);
+    await tester.tap(find.byKey(const Key('export-format-archive')));
+    await tester.pumpAndSettle();
     final personal = find.byKey(const Key('set-export-personal'));
     expect(
       tester

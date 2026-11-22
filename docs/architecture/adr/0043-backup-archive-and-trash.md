@@ -169,9 +169,9 @@ imported again **like a set archive** (section 1b), only without a set:
   and the **exporting person's own** personal adjustments and annotations.
   Field-by-field reference with an example, for tools that write song
   archives: [`docs/formats/song-archive.md`](../../formats/song-archive.md).
-- **Export:** from the song's menu ("Song with attachments (.zip)", next to
-  the ChordPro file) and for several songs from the selection mode of the
-  song list. Options: attachments (on), band arrangements (off), own personal
+- **Export:** from the song's menu ("Export …", a dialog with the format:
+  ChordPro file or setDING archive) and for several songs from the selection
+  mode of the song list (archive only). Options: attachments (on), band arrangements (off), own personal
   adjustments and annotations (off, because the archive is often passed on).
   Anyone who sees the songs may export them.
 - **Import with a preview,** like the set import: a ZIP with such a manifest
@@ -297,6 +297,14 @@ Deleted songs and sets can be **restored for 30 days**.
   also be restored by replacing the whole local library with the original
   IDs, an exception to "import always as a copy" (section 1). Organizations
   are unchanged.
+- 2026-11-22: One export entry per object (#870): the song's menu, the
+  song list's selection and the set's menu have one entry "Export …" that
+  opens a dialog with the format at the top (song: ChordPro file or setDING
+  archive; set: set list as PDF or setDING archive). The archive options
+  show only for the archive, the hint follows the format, and the dialog
+  preselects the format exported last while the app runs. The menu labels
+  named a format or one option ("Export with attachments" was wrong once
+  attachments were unticked). The archives keep the `.zip` extension.
 
 ## Open points
 

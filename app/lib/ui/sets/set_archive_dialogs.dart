@@ -14,22 +14,38 @@ import '../../sync/sync_controller.dart' show attachmentFetcherProvider;
 import '../songs/song_screen.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/export_file.dart';
+import '../widgets/export_format.dart';
 import '../widgets/file_actions.dart';
 import 'set_screen.dart';
 import '../widgets/loading_indicator.dart';
 import '../widgets/section_header.dart';
 
-/// Asks what the archive of [set] holds and exports it (ADR-0043 §1b).
-Future<void> exportSetArchive(
+/// Exports [set]: as the printable set list ([exportPdf], if given) or as a
+/// setDING archive with options (ADR-0043 §1b, issue #870).
+Future<void> exportSet(
   BuildContext context,
   WidgetRef ref,
-  SetlistEntry set,
-) async {
-  final options = await showDialog<SetArchiveOptions>(
+  SetlistEntry set, {
+  Future<void> Function()? exportPdf,
+}) async {
+  final formats = [
+    if (exportPdf != null) ExportFormat.setListPdf,
+    ExportFormat.archive,
+  ];
+  final choice = await showDialog<(ExportFormat, SetArchiveOptions)>(
     context: context,
-    builder: (_) => const _ExportDialog(),
+    builder: (_) => _ExportDialog(
+      formats: formats,
+      initial: initialExportFormat(
+        formats,
+        ref.read(lastSetExportFormatProvider),
+      ),
+    ),
   );
-  if (options == null || !context.mounted) return;
+  if (choice == null || !context.mounted) return;
+  final (format, options) = choice;
+  ref.read(lastSetExportFormatProvider.notifier).choose(format);
+  if (format == ExportFormat.setListPdf) return exportPdf!();
   final web = ref.read(webClientProvider);
   final fetcher = ref.read(attachmentFetcherProvider);
   final service = ref.read(setArchiveServiceProvider);
@@ -50,20 +66,25 @@ Future<void> exportSetArchive(
   );
 }
 
-/// The options of a set export.
+/// The format and options of a set export.
 class _ExportDialog extends StatefulWidget {
-  const _ExportDialog();
+  const _ExportDialog({required this.formats, required this.initial});
+
+  final List<ExportFormat> formats;
+  final ExportFormat initial;
 
   @override
   State<_ExportDialog> createState() => _ExportDialogState();
 }
 
 class _ExportDialogState extends State<_ExportDialog> {
+  late var _format = widget.initial;
   var _options = const SetArchiveOptions();
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final archive = _format == ExportFormat.archive;
     return AlertDialog(
       key: const Key('set-export'),
       title: Text(l10n.setExportTitle),
@@ -74,17 +95,24 @@ class _ExportDialogState extends State<_ExportDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(l10n.setExportHint),
-              SectionHeader(
-                l10n.setExportHeadingInclude,
-                padding: SectionHeader.insetPadding,
+              Text(archive ? l10n.setExportHint : l10n.setExportHintPdf),
+              ExportFormatChoice(
+                available: widget.formats,
+                value: _format,
+                onChanged: (f) => setState(() => _format = f),
               ),
-              ..._optionTiles(
-                l10n,
-                _options,
-                (o) => setState(() => _options = o),
-                keyPrefix: 'set-export',
-              ),
+              if (archive) ...[
+                SectionHeader(
+                  l10n.setExportHeadingInclude,
+                  padding: SectionHeader.insetPadding,
+                ),
+                ..._optionTiles(
+                  l10n,
+                  _options,
+                  (o) => setState(() => _options = o),
+                  keyPrefix: 'set-export',
+                ),
+              ],
             ],
           ),
         ),
@@ -96,7 +124,7 @@ class _ExportDialogState extends State<_ExportDialog> {
         ),
         FilledButton(
           key: const Key('set-export-start'),
-          onPressed: () => Navigator.pop(context, _options),
+          onPressed: () => Navigator.pop(context, (_format, _options)),
           child: Text(l10n.setExportStart),
         ),
       ],

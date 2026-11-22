@@ -158,9 +158,8 @@ there are such songs; tap a filter again to show all songs.
 
 In a song's ⋮ menu:
 
-- **Export ChordPro file** saves only the song's text as a ChordPro file.
-- **Export with attachments** saves the song with its attachments as a ZIP that
-  setDING imports again (see below).
+- **Export …** saves the song as a ChordPro file for other apps or as a setDING
+  archive, with its attachments if you like (see below).
 - **Copy to band** copies the song into the song library of another organization in
   which you may create songs. Bands of the same organization share their songs
   anyway. Several songs at once: the song list's ⋮ menu → **Select**.
@@ -169,17 +168,22 @@ In a song's ⋮ menu:
 
 Several songs at once: the song list's ⋮ menu → **Select**, then tap the songs
 (or long-press a song). At the top are **Select all**, **Copy to band**,
-**Export with attachments** and, if you may delete songs, **Delete selected**. After you confirm, the songs go to the
+**Export** and, if you may delete songs, **Delete selected**. After you confirm, the songs go to the
 trash; **Undo** brings all of them back.
 
 <Image src={songsSelected} alt="The song list with two selected songs and, at the top, the buttons Select all, Copy to band and Delete selected" />
 
 ## Pass on songs with their attachments
 
-**Export with attachments** – in a song's ⋮ menu, or for selected songs in the song
-list – saves the songs as a ZIP archive: each song as a ChordPro file, plus the
-attachments and a description from which setDING imports the songs again. Before
-saving, you choose what goes into the archive:
+**Export …** in a song's ⋮ menu first asks for the **format**:
+
+- **ChordPro file** – only lyrics and chords, for any app that knows ChordPro.
+- **setDING archive (ZIP)** – each song as a ChordPro file and a description from
+  which setDING imports the songs again.
+
+For selected songs in the song list, **Export** always saves a setDING archive. The
+format chosen last is preselected the next time. For the archive, you choose what
+goes into it:
 
 - **Attachments** – PDFs and images of the songs.
 - **Arrangements** of the current band – key, sequence and tempo.
