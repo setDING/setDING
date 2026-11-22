@@ -156,6 +156,9 @@ conversion needs no new parsing.
   the chord view menu, linked from the related pages and from the setting in
   the app (`DocsLink`, #909). Chords fall back to fonts with `♭` and `♯`
   (#915), which Roboto lacks.
+- 2026-11-22: The page embeds an example song to copy or download
+  (`docs/examples/chord-views-de.cho`, `chord-views-en.cho`, #920); a package
+  test checks the numerals and Nashville numbers the page lists.
 
 ## Open points
 

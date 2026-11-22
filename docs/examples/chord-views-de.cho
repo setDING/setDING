@@ -1,0 +1,35 @@
+{title: Stufen-Test}
+{artist: setDING}
+{key: C}
+
+{start_of_verse: label="Dur: die sieben Stufen"}
+[C]Eins und [Dm]zwei und [Em]drei und [F]vier
+[G]Fünf und [Am]sechs, [Bdim]sieben, [C]hier
+{end_of_verse}
+
+{start_of_verse: label="Jazz: ii – V – I"}
+[Dm7]Leise [G7]Schritte [Cmaj7]heim
+[Em7]Lichter [A7]an der [Dm9]Wand
+[G13]Spät am [C6/9]Abend
+[Am(maj7)]Schatten [Am7]an der [D7]Hand
+{end_of_verse}
+
+{start_of_chorus: label="Fremde Akkorde"}
+[C]Dann ein [Bb7]Umweg, [Eb]weit und [Ab]breit
+[Db]Neapel [G7b9]ruft, es [G7#11]wird schon [C]Zeit
+[Caug]Spannung, [Csus4]Schweben, [C]Ruh
+{end_of_chorus}
+
+{start_of_bridge: label="Bass und Zwischendominanten"}
+[C/E]Treppe [F]hoch, [G/B]noch ein [C]Stück
+[C/Bb]Abwärts [F/A]Schritt um [Fm/Ab]Schritt zu[G7]rück
+[E7]Dominante [Am]von der Sechs
+[D7]Dominante [G7]von der Fünf
+{end_of_bridge}
+
+{key: Am}
+{start_of_verse: label="Moll in A (Jazz-Stil)"}
+[Am]Moll be[Bm7b5]ginnt, [E7]Dominante [Am]Dur
+[Dm7]Unter[G]wegs nach [C]Hause [F]nur
+[Bdim7]Stufe [E7b9]sieben, [Am]Schluss
+{end_of_verse}

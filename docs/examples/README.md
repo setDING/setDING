@@ -7,6 +7,7 @@
 | [`feature-showcase.zip`](feature-showcase.zip) | Both files in one archive: importing it creates the two songs and attaches the image automatically. Rebuild it with `make examples` after changing the files. |
 | [`nord-test/`](nord-test/) | Nine short songs for testing MIDI program changes on a **Nord Stage 3** in live mode (ADR-0039). Each song shows the program the Nord should switch to and the MIDI values sent. Original lyrics and music, free to use. |
 | [`nord-test.zip`](nord-test.zip) | The nine songs in one archive, rebuilt with `make examples`. |
+| [`chord-views-de.cho`](chord-views-de.cho), [`chord-views-en.cho`](chord-views-en.cho) | One test song (German and English lyrics, the same chords) for the **chord views** of ADR-0055: the seven degrees, jazz chords, borrowed chords (`♭VII`, `♭III`, `♭VI`, `♭II`), altered dominants, `aug`/`sus`, slash chords, secondary dominants and a part in A minor with its own `{key}`. Shown on the website page *Akkorde, Nashville und Stufen* / *Chords, Nashville and numerals*. Original lyrics, free to use. |
 
 ## Trying it out
 
@@ -14,7 +15,7 @@
 2. Open "Feature Showcase" and use the settings to see the conditional and optional parts:
    - **My instrument** (guitar, ukulele, keyboard, …) and **My name or voice** (e.g. `alto`, `soprano`) change which conditional comments and sections appear.
    - **Chord diagrams** shows the fingerings for the chosen instrument (the song also asks for them with `{diagrams: bottom}`).
-   - **Chord notation** (B/H) and **Nashville numbers** change how chords are displayed.
+   - **Chord notation** (B/H) and **Show chords as** (chords, Nashville, numerals) change how chords are displayed.
 3. Add the song to a set and start live mode; choose a key in the set list to see chords, grids and the ABC and Lilypond melodies transposed.
 
 ## What it covers
@@ -30,6 +31,16 @@ custom `x_` directives (including setDING' `{x_sequence}` and `{x_time_grouping}
 
 The file is also a regression test: `packages/chordpro/test/showcase_test.dart` and
 `app/test/showcase_test.dart` parse, import and render it.
+
+## Chord views test song
+
+Import `chord-views-de.cho` or `chord-views-en.cho` (or paste it into the editor of
+a new song) and switch the chord view between *Chords*, *Nashville* and *Numerals*
+in the settings, the song's personal adjustments or live mode; the chord style
+(*Standard*, *Jazz*) and *Raise extensions* show the same chords in other
+spellings. The website page embeds the file as it is, and
+`packages/chordpro/test/chord_views_example_test.dart` checks the numerals and
+Nashville numbers the page lists.
 
 ## Nord Stage 3 test set
 
