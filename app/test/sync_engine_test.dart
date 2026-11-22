@@ -1,5 +1,6 @@
 import 'package:chordpro/chordpro.dart' show ChordView, Subdivision;
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -603,12 +604,17 @@ void main() {
     test('a broken connection stops the downloads, no partial file', () async {
       putAttachments(SyncEngine.parallelDownloads + 3, bytes: pdf);
       server.offlineFiles.add('a0_abc.pdf');
+      // The connection breaks while the other workers are still
+      // downloading (#935).
+      server.downloadGate = Completer();
 
       final report = await engine.sync();
       expect(report.error, BackendErrorKind.network);
       expect(server.downloadsClosed, 1);
-      // The workers stop taking new files; the broken one is not stored.
-      expect(server.downloads, lessThan(SyncEngine.parallelDownloads + 3));
+      // The workers finish what they started but take no new file, also
+      // while the broken one is still cleaned up (#935); the broken one is
+      // not stored.
+      expect(server.downloads, SyncEngine.parallelDownloads);
       final a0 = (await songs.getAttachments('s1'))
           .firstWhere((a) => a.id == 'a0');
       expect(await storage.exists(a0.fileName), isFalse);

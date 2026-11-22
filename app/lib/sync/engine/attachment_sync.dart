@@ -148,19 +148,25 @@ class AttachmentSync {
       while (offline == null && next < missing.length) {
         final (a, libraryId) = missing[next++];
         try {
-          await storage.writeWith(
-            a.fileName,
-            (temp) => downloads.download(
-              RemoteAttachment(
-                id: a.id,
-                organizationId: libraryId,
-                songId: a.songId,
-                name: a.name,
-                file: a.remoteFile,
-              ),
-              temp,
-            ),
-          );
+          await storage.writeWith(a.fileName, (temp) async {
+            try {
+              await downloads.download(
+                RemoteAttachment(
+                  id: a.id,
+                  organizationId: libraryId,
+                  songId: a.songId,
+                  name: a.name,
+                  file: a.remoteFile,
+                ),
+                temp,
+              );
+            } on BackendException catch (e) {
+              // Recorded at once, not after the partial file is removed:
+              // meanwhile the other workers must not take new files (#935).
+              if (e.kind == BackendErrorKind.network) offline ??= e;
+              rethrow;
+            }
+          });
           count++;
         } on BackendException catch (e) {
           if (e.kind == BackendErrorKind.network) {
