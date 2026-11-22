@@ -403,8 +403,16 @@
   "instrumentVocals": "Gesang",
   "instrumentDrums": "Schlagzeug",
   "instrumentOther": "Anderes …",
-  "settingsUserName": "Mein Name oder meine Stimme",
-  "settingsUserNameHint": "Für bedingte Abschnitte, z. B. «alto» oder «tenor».",
+  "settingsUserName": "Stimme oder Rolle (optional)",
+  "settingsUserNameHint": "Dein Instrument zählt schon. Nur nötig, wenn ein Song Teile für einzelne Stimmen oder Personen hat, z. B. «alto» oder «tenor».",
+  "settingsUserNameIsInstrument": "«{name}» ist ein Instrument. Dafür reicht die Einstellung Instrument, dieses Feld kannst du leer lassen.",
+  "@settingsUserNameIsInstrument": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "settingsDiagrams": "Griffdiagramme",
   "settingsDiagramsHint": "Zeigt die Griffe aller Akkorde des Songs für dein Instrument. Ein Song kann das mit der Direktive diagrams selbst festlegen.",
   "diagramsOff": "Aus",
@@ -3556,7 +3564,6 @@
     }
   },
   "readinessNoInstrument": "Kein Instrument gewählt",
-  "readinessNoName": "Kein Name festgelegt (für Stellen, die für dich markiert sind, z. B. eine Stimme)",
   "readinessMidiConnected": "MIDI: {device} verbunden",
   "@readinessMidiConnected": {
     "placeholders": {

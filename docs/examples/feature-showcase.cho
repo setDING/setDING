@@ -159,7 +159,7 @@ Serif again (previous font restored).
 {labelcolour}
 
 # ---------------------------------------------------------------------------
-# Conditional directives (Settings → My instrument / My name or voice)
+# Conditional directives (Settings → My instrument / Voice or role)
 # ---------------------------------------------------------------------------
 {comment-guitar: Shown only for guitar}
 {comment-ukulele: Shown only for ukulele}

@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import musician from '../../../../../docs/screenshots/settings_musician_de.png';
+import voiceHint from '../../../../../docs/screenshots/settings_voice_hint_de.png';
 import screen from '../../../../../docs/screenshots/settings_live_de.png';
 
 Unter **Einstellungen** legst du fest, wie setDING Songs für dich zeigt. Der Song
@@ -67,8 +68,12 @@ links ein Icon.
   für dein Instrument. Das Instrument bestimmt auch die Griffdiagramme. Mit
   **Keyboard** gibt es zudem die Einstellungen, um
   [ein Keyboard zu verbinden (MIDI)](/live/keyboard/).
-- **Mein Name oder meine Stimme** – für Teile nur für eine Stimme oder eine Person,
-  z. B. «alto» oder «tenor».
+- **Stimme oder Rolle (optional)** – nur nötig, wenn ein Song Teile für einzelne
+  Stimmen oder Personen hat, z. B. «alto» oder «tenor». Dein Instrument zählt schon,
+  du musst es hier nicht noch einmal eintragen; trägst du trotzdem ein Instrument
+  ein, weist setDING dich darauf hin. Die meisten lassen das Feld leer.
+
+  <Image src={voiceHint} alt="Der Hinweis, wenn unter «Stimme oder Rolle» ein Instrument steht" />
 - **Griffdiagramme** – zeigt die Griffe aller Akkorde des Songs für dein Instrument,
   **Oben** oder **Unten**, oder **Aus**.
 - **Takt und Klick** – siehe [Takt, Klick und Schlagzeug](/live/beat/).

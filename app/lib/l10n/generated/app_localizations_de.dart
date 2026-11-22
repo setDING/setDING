@@ -761,11 +761,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get instrumentOther => 'Anderes …';
 
   @override
-  String get settingsUserName => 'Mein Name oder meine Stimme';
+  String get settingsUserName => 'Stimme oder Rolle (optional)';
 
   @override
   String get settingsUserNameHint =>
-      'Für bedingte Abschnitte, z. B. «alto» oder «tenor».';
+      'Dein Instrument zählt schon. Nur nötig, wenn ein Song Teile für einzelne Stimmen oder Personen hat, z. B. «alto» oder «tenor».';
+
+  @override
+  String settingsUserNameIsInstrument(String name) {
+    return '«$name» ist ein Instrument. Dafür reicht die Einstellung Instrument, dieses Feld kannst du leer lassen.';
+  }
 
   @override
   String get settingsDiagrams => 'Griffdiagramme';
@@ -5676,10 +5681,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get readinessNoInstrument => 'Kein Instrument gewählt';
-
-  @override
-  String get readinessNoName =>
-      'Kein Name festgelegt (für Stellen, die für dich markiert sind, z. B. eine Stimme)';
 
   @override
   String readinessMidiConnected(String device) {

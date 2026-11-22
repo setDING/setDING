@@ -51,8 +51,9 @@ class ReadinessItem {
 /// Formats a point in time for a line, e.g. "22.11.26 20:15".
 typedef ReadinessTime = String Function(DateTime time);
 
-/// Instrument and name (ADR-0012): no instrument or no name is worth
-/// knowing, not a problem.
+/// Instrument and voice or role (ADR-0012): no instrument is worth knowing,
+/// not a problem. The voice or role is optional and only shown when set
+/// (#939): most musicians need none, the instrument already counts.
 ReadinessItem musicianReadiness(AppLocalizations l10n, AppSettings s) {
   final instrument = s.instrument.trim();
   final name = s.userName.trim();
@@ -64,11 +65,8 @@ ReadinessItem musicianReadiness(AppLocalizations l10n, AppSettings s) {
   ].join(' · ');
   return ReadinessItem(
     check: ReadinessCheck.musician,
-    level: instrument.isEmpty || name.isEmpty
-        ? ReadinessLevel.info
-        : ReadinessLevel.ok,
+    level: instrument.isEmpty ? ReadinessLevel.info : ReadinessLevel.ok,
     title: l10n.readinessMusician(who),
-    detail: name.isEmpty ? l10n.readinessNoName : null,
     category: SettingsCategory.musician,
   );
 }

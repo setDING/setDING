@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import musician from '../../../../../../docs/screenshots/settings_musician.png';
+import voiceHint from '../../../../../../docs/screenshots/settings_voice_hint.png';
 import screen from '../../../../../../docs/screenshots/settings_live.png';
 
 In **Settings** you choose how setDING shows songs to you. The song itself stays
@@ -63,8 +64,12 @@ and **Set & notes** under **Display**, and each setting has an icon on the left.
   guitar solo as a tab; you see the parts for your instrument. The instrument also
   decides the chord diagrams. With **Keyboard** you also get the settings for
   [connecting a keyboard (MIDI)](/en/live/keyboard/).
-- **My name or voice** – for parts for one voice or person only, e.g. "alto" or
-  "tenor".
+- **Voice or role (optional)** – only needed when a song has parts for single
+  voices or people, e.g. "alto" or "tenor". Your instrument already counts, you do
+  not need to enter it here again; if you do, setDING points this out. Most people
+  leave the field empty.
+
+  <Image src={voiceHint} alt="The hint when “Voice or role” names an instrument" />
 - **Chord diagrams** – shows the fingerings of all chords of the song for your
   instrument, at the **Top** or **Bottom**, or **Off**.
 - **Beat and click** – see [Beat, click and drums](/en/live/beat/).

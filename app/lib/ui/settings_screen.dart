@@ -443,28 +443,7 @@ class _CategoryContent extends ConsumerWidget {
             title: l10n.settingsHeadingInstrument,
             children: [
               _InstrumentTile(settings: s, notifier: notifier),
-              ListTile(
-                leading: const Icon(Icons.record_voice_over_outlined),
-                title: Text(l10n.settingsUserName),
-                subtitle: Text(
-                  s.userName.isEmpty
-                      ? '${l10n.notSet} – ${l10n.settingsUserNameHint}'
-                      : s.userName,
-                ),
-                trailing: const Icon(Icons.edit_outlined),
-                onTap: () async {
-                  final name = await askText(
-                    context,
-                    title: l10n.settingsUserName,
-                    initial: s.userName,
-                    hint: l10n.settingsUserNameHint,
-                    allowEmpty: true,
-                  );
-                  if (name != null) {
-                    await notifier.update((s) => s.copyWith(userName: name));
-                  }
-                },
-              ),
+              _VoiceTile(settings: s, notifier: notifier),
               SettingsChoice(
                 icon: Icons.grid_view_outlined,
                 title: l10n.settingsDiagrams,
@@ -1227,6 +1206,66 @@ Map<String, String> instrumentNames(AppLocalizations l10n) => {
 /// The instrument [instrument] in the current language, or as entered.
 String instrumentLabel(AppLocalizations l10n, String instrument) =>
     instrumentNames(l10n)[instrument.trim().toLowerCase()] ?? instrument.trim();
+
+/// Whether [voice] names one of the instruments to choose from, by its
+/// stored name or its label (#939): the instrument setting already matches
+/// such selectors, so the voice or role setting is not needed for it.
+bool voiceIsInstrument(AppLocalizations l10n, String voice) {
+  final v = voice.trim().toLowerCase();
+  if (v.isEmpty) return false;
+  return instrumentNames(l10n).entries
+      .any((e) => e.key == v || e.value.toLowerCase() == v);
+}
+
+/// The optional voice or role for conditional ChordPro parts (ADR-0012).
+class _VoiceTile extends StatelessWidget {
+  const _VoiceTile({required this.settings, required this.notifier});
+
+  final AppSettings settings;
+  final SettingsNotifier notifier;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final voice = settings.userName.trim();
+    return ListTile(
+      key: const Key('settings-voice'),
+      leading: const Icon(Icons.record_voice_over_outlined),
+      title: Text(l10n.settingsUserName),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            voice.isEmpty
+                ? '${l10n.notSet} – ${l10n.settingsUserNameHint}'
+                : voice,
+          ),
+          if (voiceIsInstrument(l10n, voice))
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                l10n.settingsUserNameIsInstrument(voice),
+                style: TextStyle(color: StatusColors.of(context).warning),
+              ),
+            ),
+        ],
+      ),
+      trailing: const Icon(Icons.edit_outlined),
+      onTap: () async {
+        final name = await askText(
+          context,
+          title: l10n.settingsUserName,
+          initial: settings.userName,
+          hint: l10n.settingsUserNameHint,
+          allowEmpty: true,
+        );
+        if (name != null) {
+          await notifier.update((s) => s.copyWith(userName: name));
+        }
+      },
+    );
+  }
+}
 
 class _InstrumentTile extends StatelessWidget {
   const _InstrumentTile({required this.settings, required this.notifier});

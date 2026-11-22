@@ -1373,14 +1373,20 @@ abstract class AppLocalizations {
   /// No description provided for @settingsUserName.
   ///
   /// In de, this message translates to:
-  /// **'Mein Name oder meine Stimme'**
+  /// **'Stimme oder Rolle (optional)'**
   String get settingsUserName;
 
   /// No description provided for @settingsUserNameHint.
   ///
   /// In de, this message translates to:
-  /// **'Für bedingte Abschnitte, z. B. «alto» oder «tenor».'**
+  /// **'Dein Instrument zählt schon. Nur nötig, wenn ein Song Teile für einzelne Stimmen oder Personen hat, z. B. «alto» oder «tenor».'**
   String get settingsUserNameHint;
+
+  /// No description provided for @settingsUserNameIsInstrument.
+  ///
+  /// In de, this message translates to:
+  /// **'«{name}» ist ein Instrument. Dafür reicht die Einstellung Instrument, dieses Feld kannst du leer lassen.'**
+  String settingsUserNameIsInstrument(String name);
 
   /// No description provided for @settingsDiagrams.
   ///
@@ -8583,12 +8589,6 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Kein Instrument gewählt'**
   String get readinessNoInstrument;
-
-  /// No description provided for @readinessNoName.
-  ///
-  /// In de, this message translates to:
-  /// **'Kein Name festgelegt (für Stellen, die für dich markiert sind, z. B. eine Stimme)'**
-  String get readinessNoName;
 
   /// No description provided for @readinessMidiConnected.
   ///
