@@ -85,6 +85,7 @@ above span all of them.
 - 2026-11-21: Proposed with the first set of rules and shared widgets (#743); numbered 0051 after ADR-0050 (settings screen layout) was accepted meanwhile, and related to it as the app-wide base.
 - 2026-11-21: The owner decided to keep this ADR separate from ADR-0050 (app-wide base, settings rules on top) instead of extending ADR-0050 (#746).
 - 2026-11-22: Danger zones (deleting the account, deleting a band, closing an organization) use the shared `DangerZone` tile, tinted with `errorContainer` and outlined in the error colour; `SectionHeader` takes an optional colour for its header (#828, owner's wish).
+- 2026-11-22: The song list and the song picker of a set are one list (#884, #886, owner's wish): both are built from the shared parts in `ui/songs/song_list.dart` (search, filters, sections, columns, tile), a change to the list or its filters reaches both, and `song_list_parity_test.dart` fails when they differ.
 - 2026-11-21: Accepted by the owner (#746).
 - 2026-11-21: Open point resolved (#770): the band, organization, bands, trash,
   deleted bands, closed organizations and MIDI test pages limit their width with

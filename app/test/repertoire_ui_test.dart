@@ -7,6 +7,7 @@ import 'package:setding/data/database.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:setding/ui/sets/repertoire_screen.dart';
 import 'package:setding/ui/sets/sets_screen.dart';
+import 'package:setding/ui/songs/song_list.dart';
 import 'package:setding/ui/songs/songs_screen.dart';
 
 import 'test_app.dart';

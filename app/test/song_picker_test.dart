@@ -4,7 +4,7 @@ import 'package:setding/data/song_repository.dart';
 import 'package:setding/ui/sets/set_screen.dart';
 import 'package:setding/ui/songs/song_attention.dart';
 import 'package:setding/ui/songs/song_language.dart';
-import 'package:setding/ui/songs/songs_screen.dart';
+import 'package:setding/ui/songs/song_list.dart';
 
 import 'test_app.dart';
 

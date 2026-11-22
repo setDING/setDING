@@ -16,6 +16,7 @@ import 'package:setding/data/import_export.dart';
 import 'package:setding/data/song_archive.dart';
 import 'package:setding/ui/songs/import_dialog.dart';
 import 'package:setding/ui/songs/song_screen.dart';
+import 'package:setding/ui/songs/song_list.dart';
 import 'package:setding/ui/songs/songs_screen.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:material_ui/material_ui.dart';

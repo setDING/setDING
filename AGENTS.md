@@ -92,7 +92,10 @@ Every screen, dialog and panel follows the [UI design rules](docs/development/ui
 (ADR-0051) and uses the shared widgets in `app/lib/ui/widgets/` instead of own
 versions: `SectionHeader`, `confirm()` / `destructiveButtonStyle()`, `showMessage…` /
 `showUndo()`, `AsyncBody`, `EmptyState`, `SidePanel`, `PageWidth`, `MenuAction`, `AppBarActions`, and colours only from the colour
-scheme or `StatusColors`. `app/test/ui_rules_test.dart` enforces what it can; a
+scheme or `StatusColors`. The song list and the song picker of a set are one
+list: a change to its search, orders, filters, sections, columns or tile goes into
+`app/lib/ui/songs/song_list.dart` and reaches both (`song_list_parity_test.dart`).
+`app/test/ui_rules_test.dart` enforces what it can; a
 deliberate exception changes the rules document first.
 
 ## ChordPro features

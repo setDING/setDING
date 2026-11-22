@@ -10,7 +10,7 @@ import '../account/sync_refresh.dart';
 import '../bands/band_switcher.dart';
 import '../bands/no_band_hint.dart';
 import '../songs/chordpro_problems_badge.dart';
-import '../songs/songs_screen.dart' show songListTwoColumnWidth;
+import '../songs/song_list.dart' show songListTwoColumnWidth;
 import '../theme.dart';
 import '../trash/trash_screen.dart';
 import '../widgets/breakpoint_builder.dart';

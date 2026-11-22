@@ -64,6 +64,17 @@ the others are checked in review.
   exception: their content uses the full width of its pane and, from 1040, flows its
   sections into two columns (ADR-0050).
 - Leave room under the last item for a floating action button (`bottom: 88`).
+- **Song lists are one list.** The song list (Songs tab) and the song picker of a
+  set (`ui/sets/song_picker.dart`) are built from the same parts in
+  `ui/songs/song_list.dart`: `SongSearchBar`, `SongListFilter` with
+  `SongFilters`, `SongListView` (sections and columns) and `SongTile`. A change to
+  the search, an order, a filter, the sections, the columns or the tile is made
+  there, so both get it; a new filter is a field of `SongListFilter`, a chip in
+  `SongFilters` and a step in `filterSongList`. Only the overview's To do filters
+  are left out of the picker (`attentionFilters: false`), and only the song list
+  has selection mode and the management actions. `app/test/song_list_parity_test.dart`
+  shows both with the same songs and fails when they offer different filters or
+  show different songs; a new order or filter adds a case there (#886).
 
 ## 4. Section headers
 
@@ -194,3 +205,5 @@ the others are checked in review.
 - [ ] Tooltips on icon buttons, texts in both ARB files.
 - [ ] Shortcuts and Esc behave (ADR-0049).
 - [ ] A screenshot on the website page (AGENTS.md, "User documentation and screenshots").
+- [ ] A list of songs uses the parts of `ui/songs/song_list.dart`, and a change to
+      the song list also reaches the song picker of a set (section 3).
