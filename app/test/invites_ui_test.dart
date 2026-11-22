@@ -266,6 +266,22 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('unknown registration mode: no sign-up without a link (#829)', (
+    tester,
+  ) async {
+    final app = await pump(tester, null, const SettingsScreen());
+    await openSettingsCategory(tester, SettingsCategory.account);
+    app.backend.config = ServerConfig.unknown;
+    await tester.tap(find.byKey(const Key('account-open-sign-in')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('account-toggle')), findsNothing);
+    // Not known to be invite-only either: no such hint, but joining with a
+    // link stays possible.
+    expect(find.byKey(const Key('account-invite-only')), findsNothing);
+    expect(find.byKey(const Key('account-open-join')), findsOneWidget);
+    await app.dispose(tester);
+  });
+
   group('invite-only server (ADR-0024)', () {
     testWidgets('accounts only with a link; the token goes along', (
       tester,

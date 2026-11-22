@@ -195,6 +195,15 @@ void main() {
       final config = await b.fetchServerConfig();
       expect(config.minClientVersion, isNull);
       expect(config.latestClientVersion, isNull);
+      expect(config.openRegistration, isTrue);
+    });
+
+    test('an unrecognised registration mode is unknown, not open', () async {
+      final b = backend(MemorySessionStore(), (r) async => _json(200, {}));
+      final config = await b.fetchServerConfig();
+      expect(config.registration, RegistrationMode.unknown);
+      expect(config.openRegistration, isFalse);
+      expect(config.inviteOnly, isFalse);
     });
   });
 

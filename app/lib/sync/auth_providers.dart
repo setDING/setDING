@@ -41,9 +41,10 @@ final syncBackendProvider = Provider<SyncBackend>((ref) {
   return backend;
 });
 
-/// Registration settings of the configured server (ADR-0024); assumes an
-/// open server if it cannot be asked (offline, older server), since the
-/// server enforces its own settings anyway.
+/// Registration settings of the configured server (ADR-0024);
+/// [ServerConfig.unknown] if it cannot be asked (offline, older server),
+/// which the app does not treat as open (issue #829). The sync controller
+/// asks again after the next successful sync.
 final serverConfigProvider = FutureProvider<ServerConfig>((ref) async {
   final backend = ref.watch(syncBackendProvider);
   try {

@@ -21,8 +21,9 @@ class FakeSyncBackend implements SyncBackend {
   final resetRequests = <String>[];
   final verificationRequests = <String>[];
 
-  /// Registration settings reported by [fetchServerConfig] (ADR-0024).
-  ServerConfig config = ServerConfig.unknown;
+  /// Registration settings reported by [fetchServerConfig] (ADR-0024);
+  /// an open server unless a test asks otherwise.
+  ServerConfig config = const ServerConfig();
 
   /// Accounts whose address is not confirmed (sign-in fails).
   final unverified = <String>{};

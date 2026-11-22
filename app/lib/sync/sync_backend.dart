@@ -632,8 +632,10 @@ class RemoteAttachment {
 /// `used` only for founder invitations, which can be used once (ADR-0024).
 enum InviteStatus { valid, expired, revoked, used }
 
-/// Who may create accounts on the server (ADR-0024).
-enum RegistrationMode { open, inviteOnly }
+/// Who may create accounts on the server (ADR-0024). [unknown] when the
+/// server could not be asked; the app then offers nothing that needs an
+/// open server.
+enum RegistrationMode { open, inviteOnly, unknown }
 
 /// Settings of the server the app needs before signing in (ADR-0024).
 @immutable
@@ -645,9 +647,10 @@ class ServerConfig {
     this.latestClientVersion,
   });
 
-  /// Assumed when the server cannot be asked (offline, older server); the
-  /// server still enforces its own settings.
-  static const unknown = ServerConfig();
+  /// Assumed when the server cannot be asked (offline, older server): not
+  /// treated as open, so the app offers no sign-up without an invitation and
+  /// no new organization (issue #829); the server enforces its own settings.
+  static const unknown = ServerConfig(registration: RegistrationMode.unknown);
 
   final RegistrationMode registration;
 
@@ -663,6 +666,10 @@ class ServerConfig {
   final String? latestClientVersion;
 
   bool get inviteOnly => registration == RegistrationMode.inviteOnly;
+
+  /// Anyone may sign up and found organizations; false while the mode is
+  /// [RegistrationMode.unknown].
+  bool get openRegistration => registration == RegistrationMode.open;
 }
 
 /// An invitation link with its URL: right after creating it, or shown again

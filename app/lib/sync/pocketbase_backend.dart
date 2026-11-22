@@ -170,9 +170,11 @@ class PocketBaseBackend implements SyncBackend {
   Future<ServerConfig> fetchServerConfig() async {
     final data = await _sendPublic('/api/setding/config');
     return ServerConfig(
-      registration: data['registration'] == 'open'
-          ? RegistrationMode.open
-          : RegistrationMode.inviteOnly,
+      registration: switch (data['registration']) {
+        'open' => RegistrationMode.open,
+        'invite_only' => RegistrationMode.inviteOnly,
+        _ => RegistrationMode.unknown,
+      },
       emailVerification: data['emailVerification'] == 'required',
       minClientVersion: data['minClientVersion'] as String?,
       latestClientVersion: data['latestClientVersion'] as String?,

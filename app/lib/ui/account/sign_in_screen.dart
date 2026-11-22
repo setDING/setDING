@@ -184,15 +184,16 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     final browserSession =
         ref.watch(sessionStoreProvider) is BrowserSessionStore;
     final config = ref.watch(serverConfigProvider).value;
-    final inviteOnly = config?.inviteOnly ?? false;
     // The server no longer accepts this version (ADR-0029): say so before
     // anyone tries to sign in.
     final min = config?.minClientVersion;
     final current = ref.watch(clientVersionProvider);
     final outdated =
         min != null && current != null && isOlderThan(current, min);
-    // New accounts only with an invitation on invite-only servers (ADR-0024).
-    final canSignUp = !inviteOnly || widget.invite != null;
+    // New accounts without an invitation only on open servers (ADR-0024);
+    // an unknown mode counts as not open (issue #829).
+    final canSignUp =
+        (config?.openRegistration ?? false) || widget.invite != null;
     if (!canSignUp && _signUp) _signUp = false;
 
     return Scaffold(
@@ -373,7 +374,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       _signUp ? l10n.accountToSignIn : l10n.accountToSignUp,
                     ),
                   )
-                else
+                else if (config?.inviteOnly ?? false)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Text(
