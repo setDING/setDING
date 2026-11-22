@@ -35,6 +35,7 @@ map=(
   settings_song_display 20_settings_song_display
   song_display_editor 21_song_display_editor
   set_menu 2b_set_menu
+  sets_menu 2c_sets_menu
   marker_dialog 2c_marker_dialog
   live_marker 4c_live_marker
   live_controls 4b_live_controls

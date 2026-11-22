@@ -15,6 +15,7 @@ import 'package:setding/sync/sync_controller.dart' show syncClockProvider;
 import 'package:setding/ui/home_tab.dart';
 import 'package:setding/ui/widgets/export_file.dart' show saveFileProvider;
 import 'package:setding/ui/sets/set_screen.dart';
+import 'package:setding/ui/sets/sets_screen.dart';
 import 'package:setding/ui/songs/import_dialog.dart';
 import 'package:setding/ui/widgets/logo.dart';
 import 'package:material_ui/material_ui.dart';
@@ -62,6 +63,38 @@ void main() {
         RepaintBoundary(key: UniqueKey(), child: app.build()),
       );
       await shot(tester, 'de_1_sets_grouped${dark ? '_dark' : ''}');
+      await app.dispose(tester);
+    });
+  }
+
+  // Repertoire at the top of the set list's ⋮ menu (#853).
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('sets menu repertoire $lang', (tester) async {
+      useTabletSize(tester, landscape: false);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      await tester.runAsync(() async {
+        for (final (name, days) in [('Sommerfest', 3), ('Jazznacht', -12)]) {
+          await app.sets.createSet(
+            name: name,
+            gigDate: today.add(Duration(days: days)),
+          );
+        }
+      });
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: const SetsScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('sets-menu')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('sets-repertoire')), findsOneWidget);
+      await shot(tester, '${lang}_2c_sets_menu');
       await app.dispose(tester);
     });
   }
