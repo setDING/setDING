@@ -35,7 +35,7 @@ void main() {
     await pumpUntil(tester, find.byType(HomeScreen));
 
     // The first start added the demo song to the local library.
-    await tester.tap(find.byIcon(Icons.library_music_outlined));
+    await tester.tap(find.byKey(const Key('nav-songs')));
     await pumpUntil(tester, find.text(_demoTitle));
     await tester.tap(find.text(_demoTitle).first);
     await pumpUntil(tester, find.byType(SongScreen));

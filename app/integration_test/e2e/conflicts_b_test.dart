@@ -95,7 +95,7 @@ void main() {
     );
 
     // 4. Carla resolves them on the songs' screens.
-    await tester.tap(find.byIcon(Icons.library_music_outlined));
+    await tester.tap(find.byKey(const Key('nav-songs')));
     await pumpUntil(tester, find.text(offlineSong));
 
     await _resolve(tester, keepMine, 'conflict-keep-mine');

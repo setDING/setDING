@@ -88,7 +88,7 @@ void main() {
       await _settle(tester);
 
       // Song list: scroll through the library.
-      await tester.tap(find.byIcon(Icons.library_music_outlined));
+      await tester.tap(find.byKey(const Key('nav-songs')));
       await _settle(tester);
       final list = find
           .descendant(

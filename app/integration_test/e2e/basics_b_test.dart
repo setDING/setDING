@@ -36,7 +36,7 @@ void main() {
     await barrier(tester, 'a-ready');
 
     // 1. Anna's new song shows up in the song list by itself (realtime).
-    await tester.tap(find.byIcon(Icons.library_music_outlined));
+    await tester.tap(find.byKey(const Key('nav-songs')));
     await pumpUntil(tester, find.text(fixtureSong));
     await barrier(tester, 'song-created');
     await pumpUntil(tester, find.text(_song));
@@ -64,7 +64,7 @@ void main() {
     // 3. Her gig today is the next set on the overview; Ben plays it live,
     // the song and then the PDF fetched from the server.
     await barrier(tester, 'set-created');
-    await tester.tap(find.byIcon(Icons.dashboard_outlined));
+    await tester.tap(find.byKey(const Key('nav-overview')));
     await pumpUntil(tester, find.text(_set));
     final startLive = find.byKey(const Key('overview-start-live'));
     await pumpUntil(tester, startLive);
