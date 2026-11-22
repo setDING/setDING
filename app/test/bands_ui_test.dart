@@ -164,6 +164,60 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('the band switcher groups bands by organization (#864)', (
+    tester,
+  ) async {
+    final app = await start(
+      tester,
+      user: _ann,
+      server: (app) {
+        app.backend.addOrganization('o1', 'School', admin: _ann);
+        app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+        app.backend.addBand('b2', 'Jazz', admin: _ann, organizationId: 'o1');
+        app.backend.addOrganization('o2', 'Church', admin: _ann);
+        app.backend.addBand('b3', 'Choir', admin: _ann, organizationId: 'o2');
+      },
+    );
+    await switchTo(tester, 'Rock');
+    await tester.tap(find.byKey(const Key('band-switcher')).first);
+    await tester.pumpAndSettle();
+
+    // Each organization is a header with the organization icon.
+    for (final org in ['School', 'Church']) {
+      final header = find.ancestor(
+        of: find.text(org),
+        matching: find.byType(Row),
+      );
+      expect(
+        find.descendant(of: header.first, matching: find.byIcon(Icons.domain)),
+        findsOneWidget,
+      );
+    }
+    // The chosen band keeps its icon and carries the check at the end.
+    final rock = find.ancestor(
+      of: find.text('Rock').last,
+      matching: find.byType(ListTile),
+    );
+    final tile = tester.widget<ListTile>(rock);
+    expect(tile.selected, isTrue);
+    expect(
+      find.descendant(of: rock, matching: find.byIcon(Icons.groups)),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: rock, matching: find.byIcon(Icons.check)),
+      findsOneWidget,
+    );
+    expect(find.byIcon(Icons.check), findsOneWidget);
+    // The role is a compact label of the row, not a second line.
+    expect(
+      find.descendant(of: rock, matching: find.text('Leader')),
+      findsOneWidget,
+    );
+    expect(find.byType(PopupMenuDivider), findsNWidgets(3));
+    await app.dispose(tester);
+  });
+
   testWidgets('an organization without own bands is a song library', (
     tester,
   ) async {

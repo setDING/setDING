@@ -77,6 +77,7 @@ map=(
   songs_tags 42_songs_tags
   songs_played 42b_songs_played
   no_band 43_no_band
+  band_switcher 43b_band_switcher
 )
 
 copied=0

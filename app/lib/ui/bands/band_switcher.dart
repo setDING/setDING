@@ -43,29 +43,36 @@ class BandSwitcher extends ConsumerWidget {
       },
       itemBuilder: (_) => [
         for (final (i, b) in bands.indexed) ...[
-          // Header per organization (ADR-0017).
+          // Header per organization (ADR-0017), with the organization icon
+          // of the song library switcher; a divider separates the
+          // organizations (#864).
           if (!b.isLocal &&
-              (i == 0 || bands[i - 1].organizationId != b.organizationId))
+              (i == 0 || bands[i - 1].organizationId != b.organizationId)) ...[
+            if (i > 0) const PopupMenuDivider(),
             PopupMenuItem<String>(
               enabled: false,
-              height: 32,
-              child: Text(
-                b.organizationName,
-                style: Theme.of(context).textTheme.labelMedium,
-              ),
+              height: 40,
+              child: _OrganizationHeader(b.organizationName),
             ),
+          ],
           PopupMenuItem(
             value: b.id,
             child: ListTile(
-              contentPadding: EdgeInsets.zero,
+              // Bands are indented under their organization.
+              contentPadding: EdgeInsets.only(left: b.isLocal ? 0 : 16),
+              selected: b.id == current.id,
               leading: Icon(
-                b.id == current.id
-                    ? Icons.check
-                    : (b.isLocal ? Icons.phone_android : Icons.groups_outlined),
+                b.isLocal
+                    ? Icons.phone_android
+                    : (b.id == current.id
+                          ? Icons.groups
+                          : Icons.groups_outlined),
               ),
               title: Text(bandLabel(l10n, b)),
-              subtitle: Text(
-                b.isLocal ? l10n.bandLocalHint : bandRoleLabel(l10n, b),
+              subtitle: b.isLocal ? Text(l10n.bandLocalHint) : null,
+              trailing: _BandTrailing(
+                role: b.isLocal ? null : bandRoleLabel(l10n, b),
+                chosen: b.id == current.id,
               ),
             ),
           ),
@@ -104,6 +111,65 @@ class BandSwitcher extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Group header of an organization in the band switcher (#864).
+class _OrganizationHeader extends StatelessWidget {
+  const _OrganizationHeader(this.name);
+
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = theme.colorScheme.onSurfaceVariant;
+    return Row(
+      children: [
+        Icon(Icons.domain, size: 20, color: color),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            name,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.labelLarge?.copyWith(color: color),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The user's role in a band, compact at the end of its row, and the check
+/// of the chosen band (#864).
+class _BandTrailing extends StatelessWidget {
+  const _BandTrailing({required this.role, required this.chosen});
+
+  final String? role;
+  final bool chosen;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (role != null)
+          Text(
+            role!,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 24,
+          child: chosen
+              ? Icon(Icons.check, color: theme.colorScheme.primary)
+              : null,
+        ),
+      ],
     );
   }
 }

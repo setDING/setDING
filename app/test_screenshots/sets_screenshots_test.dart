@@ -456,4 +456,46 @@ void main() {
       await app.dispose(tester);
     });
   }
+
+  // The band switcher of the sets tab, grouped by organization (#864).
+  for (final lang in ['de', 'en']) {
+    screenshotTest('band switcher $lang', (tester) async {
+      useTabletSize(tester, landscape: false);
+      const ann = AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann');
+      const bob = AuthUser(id: 'bob', email: 'bob@example.test', name: 'Bob');
+      final de = lang == 'de';
+      final app = await TestApp.create(
+        prefs: {
+          'language': lang,
+          'themeMode': de ? 'light' : 'dark',
+          'currentBandId': 'b2',
+          'currentLibraryId': 'o1',
+        },
+        user: ann,
+      );
+      app.backend
+        ..addOrganization('o1', de ? 'Musikschule' : 'Music School', admin: ann)
+        ..addBand('b1', 'Rockband', admin: ann, organizationId: 'o1')
+        ..addBand('b2', 'Jazz Combo', admin: ann, organizationId: 'o1')
+        ..addOrganization('o2', de ? 'Kirchgemeinde' : 'Parish', admin: bob)
+        ..addBand(
+          'b3',
+          de ? 'Lobpreis' : 'Worship',
+          admin: bob,
+          organizationId: 'o2',
+        )
+        ..addMember('b3', ann, BandRole.member);
+      await tester.pumpWidget(
+        RepaintBoundary(key: UniqueKey(), child: app.build()),
+      );
+      await tester.pumpAndSettle();
+      await syncNow(tester);
+      await openTab(tester, HomeTab.sets);
+      await tester.tap(find.byKey(const Key('band-switcher')).first);
+      await tester.pumpAndSettle();
+      expect(find.byIcon(Icons.domain), findsNWidgets(2));
+      await shot(tester, '${lang}_43b_band_switcher');
+      await app.dispose(tester);
+    });
+  }
 }
