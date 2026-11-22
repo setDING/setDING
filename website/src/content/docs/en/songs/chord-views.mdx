@@ -6,8 +6,8 @@ sidebar:
 ---
 
 import { Image } from 'astro:assets';
-import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
-import example from '../../../../../../docs/examples/chord-views-en.cho?raw';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import ExampleSong from '../../../../components/ExampleSong.astro';
 import chords from '../../../../../../docs/screenshots/chord_view_chords.png';
 import nashville from '../../../../../../docs/screenshots/chord_view_nashville.png';
 import numerals from '../../../../../../docs/screenshots/chord_view_numerals.png';
@@ -67,12 +67,10 @@ The same song in C, with chord names, as Nashville numbers and as numerals:
 This song has every case on this page: the seven degrees, jazz chords, borrowed
 chords with accidentals, bass notes, secondary dominants and, at the end, a part in
 A minor with its own key (`{key: Am}`). Copy it into the editor of a **New song**
-or download
-[`chord-views-en.cho`](https://github.com/tafli/setDING/raw/main/docs/examples/chord-views-en.cho)
-and import it under **Songs** → **Import files**. Then switch between **Chords**,
-**Nashville** and **Numerals** and compare.
+or import the song archive. Then switch between **Chords**, **Nashville** and
+**Numerals** and compare.
 
-<Code code={example} lang="text" title="chord-views-en.cho" />
+<ExampleSong name="chord-views-en" />
 
 ## How to read numerals
 

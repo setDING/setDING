@@ -6,6 +6,7 @@ sidebar:
 ---
 
 import { Image } from 'astro:assets';
+import ExampleSong from '../../../../components/ExampleSong.astro';
 import song from '../../../../../../docs/screenshots/song.png';
 import adjustmentOffer from '../../../../../../docs/screenshots/adjustment_offer.png';
 import phoneMenu from '../../../../../../docs/screenshots/song_phone_menu.png';
@@ -73,6 +74,15 @@ pick one. Notes, text size, display and annotations are not copied. **No thanks*
 hides the offer for this song on this device.
 
 <Image src={adjustmentOffer} alt="A song with the offer: Your adjustments in “English”: key, capo. Use them for this version too? and the buttons Use them and No thanks" />
+
+### Try it yourself
+
+This song is in A and played with a capo on the 2nd fret, so the chords are shaped
+in G. Its three verses have the same chords. Under **Chords in verses**, try showing
+chords in the first verse only or stacking the verses, and set another capo or **No
+capo**: the chords change, the key of the song stays.
+
+<ExampleSong name="personal-en" />
 
 ## PDF attachments
 

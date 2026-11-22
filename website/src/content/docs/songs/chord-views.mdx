@@ -6,8 +6,8 @@ sidebar:
 ---
 
 import { Image } from 'astro:assets';
-import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
-import example from '../../../../../docs/examples/chord-views-de.cho?raw';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import ExampleSong from '../../../components/ExampleSong.astro';
 import chords from '../../../../../docs/screenshots/chord_view_chords_de.png';
 import nashville from '../../../../../docs/screenshots/chord_view_nashville_de.png';
 import numerals from '../../../../../docs/screenshots/chord_view_numerals_de.png';
@@ -69,12 +69,10 @@ als Stufen:
 Dieser Song enthält alle Fälle dieser Seite: die sieben Stufen, Jazz-Akkorde,
 fremde Akkorde mit Vorzeichen, Bassnoten, Zwischendominanten und am Schluss einen
 Teil in A-Moll mit eigener Tonart (`{key: Am}`). Kopiere ihn in den Editor eines
-**Neuen Songs** oder lade die Datei
-[`chord-views-de.cho`](https://github.com/tafli/setDING/raw/main/docs/examples/chord-views-de.cho)
-herunter und importiere sie unter **Songs** → **Dateien importieren**. Dann
-schaltest du zwischen **Akkorde**, **Nashville** und **Stufen** um und vergleichst.
+**Neuen Songs** oder importiere das Song-Archiv. Dann schaltest du zwischen
+**Akkorde**, **Nashville** und **Stufen** um und vergleichst.
 
-<Code code={example} lang="text" title="chord-views-de.cho" />
+<ExampleSong name="chord-views-de" />
 
 ## So liest du Stufen
 

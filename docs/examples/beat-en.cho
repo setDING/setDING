@@ -1,0 +1,36 @@
+{title: Seven Eighths}
+{artist: setDING}
+{key: D}
+{time: 7/8}
+{tempo: 168}
+# An odd meter counted in eighths; the accents of the beat display and click:
+{x_time_grouping: 2+2+3}
+{x_sequence: I, V1, C, V2, C, O}
+
+{start_of_intro: label="Intro"}
+{comment-drums: Hi-hat only, count 2+2+3}
+[D]One two, one two, [G]one two three
+{end_of_intro}
+
+{start_of_verse: label="Verse 1"}
+{comment-drums: Rim shot on 3, kick on 1}
+[D]Seven steps a[G]cross the night
+[Bm]no one drops the [A]beat
+{end_of_verse}
+
+{start_of_chorus: label="Chorus"}
+{comment-drums: Ride cymbal, crash on 1}
+[G]Two and two and [A]three
+[D]that's the way it [Bm]runs for [A]me
+{end_of_chorus}
+
+{start_of_verse: label="Verse 2"}
+{comment-drums: As verse 1, toms from bar 3}
+[D]Odd is easy [G]once you know
+[Bm]count along and [A]go
+{end_of_verse}
+
+{start_of_outro: label="Outro"}
+{comment-drums: Ritardando, end on 1}
+[G]Two, two, [A]three, [D]end
+{end_of_outro}

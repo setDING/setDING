@@ -1,0 +1,33 @@
+{title: Drei gleiche Strophen}
+{artist: setDING}
+{key: A}
+{capo: 2}
+{tempo: 80}
+
+{start_of_verse: label="Verse 1"}
+[G]Die erste Strophe [C]singt vom Morgen
+[Em]vom Licht, das durch die [D]Fenster fällt
+[G]vom Kaffee und den [C]kleinen Sorgen
+[D]die keiner [G]zählt
+{end_of_verse}
+
+{start_of_chorus: label="Chorus"}
+[C]Und alles bleibt, [G]wie es war
+[Am]nur ein Tag mehr [D]in diesem Jahr
+{end_of_chorus}
+
+{start_of_verse: label="Verse 2"}
+[G]Die zweite Strophe [C]singt vom Mittag
+[Em]vom Lärm auf jeder [D]Gasse hier
+[G]vom Brot und einem [C]kurzen Schlaf
+[D]gleich neben [G]dir
+{end_of_verse}
+
+{start_of_verse: label="Verse 3"}
+[G]Die dritte Strophe [C]singt vom Abend
+[Em]vom Weg nach Hause [D]durch den Wind
+[G]von allem, was wir [C]heute haben
+[D]so wie wir [G]sind
+{end_of_verse}
+
+{chorus}

@@ -36,6 +36,14 @@ do not compile and on broken internal links.
 - Screenshots come from `docs/screenshots/` (`make screenshots`); import them in MDX
   (see `index.mdx`) so Astro converts and sizes them. Do not copy them into
   `website/`.
+- **Example songs** to try a feature live in `docs/examples/` as `<name>-de.cho` and
+  `<name>-en.cho` (same chords, original lyrics), each with a song archive
+  `<name>.setDING.zip` written by `make examples`. A page shows its song with
+  `<ExampleSong name="<name>-de" />` (`src/components/ExampleSong.astro`: the text
+  to copy and the archive to download); other example ZIPs are linked as
+  `/examples/<file>`. The build serves every ZIP of `docs/examples` under
+  `/examples/` (`src/examples-integration.mjs`); `src/examples.test.ts` checks the
+  links. See [`docs/examples/README.md`](../examples/README.md).
 - **Every page that documents a feature shows it in a screenshot** (in both
   languages). A new or visibly changed feature comes with a screenshot test in
   `app/test_screenshots/`, a line in `tool/copy-screenshots.sh` and the image on
