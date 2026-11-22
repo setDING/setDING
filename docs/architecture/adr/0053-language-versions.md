@@ -209,6 +209,9 @@ the API directly as the refused roles (permission matrix test).
   its own group). Older archives import as before. The format reference
   (`docs/formats/song-archive.md`) and its example describe the fields. With this,
   ADR-0053 is implemented.
+- 2026-11-22: The language filter offers *No language* (#834) below *All
+  languages* and above a divider and the languages: the songs whose language is
+  neither set by hand nor detected, to find the ones to set by hand.
 
 ## Open points
 

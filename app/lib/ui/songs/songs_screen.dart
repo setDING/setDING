@@ -74,7 +74,8 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
   /// (ADR-0046); null for all songs.
   PlayedFilter? _played;
 
-  /// Only songs of this language (ADR-0053); null for all songs.
+  /// Only songs of this language (ADR-0053), [noSongLanguage] for songs
+  /// without one; null for all songs.
   String? _language;
 
   /// Songs selected for copying, or null outside selection mode.
@@ -217,7 +218,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
       if (language != null) {
         list = [
           for (final s in list)
-            if (s.language == language) s,
+            if ((s.language ?? noSongLanguage) == language) s,
         ];
       }
       if (played != null) {
@@ -661,6 +662,21 @@ class _Filters extends ConsumerWidget {
       for (final t in offered)
         if (tags.contains(t)) t,
     ];
+    String languageLabel(String? l) => switch (l) {
+      null => l10n.allLanguages,
+      noSongLanguage => l10n.noLanguage,
+      _ => songLanguageName(l10n, l),
+    };
+    Widget item(String? l) => MenuItemButton(
+      key: ValueKey(
+        'songs-language-${l == noSongLanguage ? 'none' : l ?? 'all'}',
+      ),
+      onPressed: () => onLanguage(l),
+      leadingIcon: l == language
+          ? const Icon(Icons.check, size: 18)
+          : const SizedBox.square(dimension: 18),
+      child: Text(languageLabel(l)),
+    );
     final orders = [
       (SongSort.title, l10n.sortByTitle),
       (SongSort.artist, l10n.sortByArtist),
@@ -741,22 +757,13 @@ class _Filters extends ConsumerWidget {
               padding: const EdgeInsets.only(right: 8),
               child: MenuAnchor(
                 menuChildren: [
-                  for (final l in [
-                    null,
-                    ...orderedSongLanguages({...languages, ?language}),
-                  ])
-                    MenuItemButton(
-                      key: ValueKey('songs-language-${l ?? 'all'}'),
-                      onPressed: () => onLanguage(l),
-                      leadingIcon: l == language
-                          ? const Icon(Icons.check, size: 18)
-                          : const SizedBox.square(dimension: 18),
-                      child: Text(
-                        l == null
-                            ? l10n.allLanguages
-                            : songLanguageName(l10n, l),
-                      ),
-                    ),
+                  for (final l in [null, noSongLanguage]) item(l),
+                  const Divider(height: 1),
+                  for (final l in orderedSongLanguages({
+                    ...languages,
+                    ?language,
+                  }))
+                    item(l),
                 ],
                 builder: (context, menu, _) => Tooltip(
                   message: l10n.filterByLanguage,
@@ -769,11 +776,7 @@ class _Filters extends ConsumerWidget {
                     label: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          language == null
-                              ? l10n.allLanguages
-                              : songLanguageName(l10n, language!),
-                        ),
+                        Text(languageLabel(language)),
                         const Icon(Icons.arrow_drop_down, size: 18),
                       ],
                     ),

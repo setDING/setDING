@@ -7885,6 +7885,12 @@ abstract class AppLocalizations {
   /// **'Alle Sprachen'**
   String get allLanguages;
 
+  /// No description provided for @noLanguage.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Sprache'**
+  String get noLanguage;
+
   /// No description provided for @filterByLanguage.
   ///
   /// In de, this message translates to:

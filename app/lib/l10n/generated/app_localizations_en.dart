@@ -5095,6 +5095,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allLanguages => 'All languages';
 
   @override
+  String get noLanguage => 'No language';
+
+  @override
   String get filterByLanguage => 'Filter by language';
 
   @override

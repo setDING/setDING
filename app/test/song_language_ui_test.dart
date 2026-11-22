@@ -79,6 +79,36 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('songs-language-all')));
     await tester.pumpAndSettle();
     expect(find.text('Instrumental'), findsOneWidget);
+
+    // No language: the songs without one, above a divider (#834).
+    await tester.tap(filter);
+    await tester.pumpAndSettle();
+    final none = find.byKey(const ValueKey('songs-language-none'));
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('songs-language-all'))).dy,
+      lessThan(tester.getTopLeft(none).dy),
+    );
+    expect(
+      tester.getTopLeft(none).dy,
+      lessThan(
+        tester.getTopLeft(find.byKey(const ValueKey('songs-language-de'))).dy,
+      ),
+    );
+    final divider = tester.getTopLeft(find.byType(Divider).last).dy;
+    expect(tester.getTopLeft(none).dy, lessThan(divider));
+    expect(
+      divider,
+      lessThan(
+        tester.getTopLeft(find.byKey(const ValueKey('songs-language-de'))).dy,
+      ),
+    );
+    await tester.tap(none);
+    await tester.pumpAndSettle();
+    expect(find.text('Instrumental'), findsOneWidget);
+    expect(find.textContaining('Fluss'), findsNothing);
+    expect(find.textContaining('River'), findsNothing);
+    expect(find.text('No language'), findsOneWidget);
+    expect(tester.widget<FilterChip>(filter).selected, isTrue);
     await app.dispose(tester);
   });
 

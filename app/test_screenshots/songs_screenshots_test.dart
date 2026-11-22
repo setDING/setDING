@@ -171,6 +171,15 @@ void main() {
       expect(find.byKey(const ValueKey('song-language-tag')), findsNWidgets(5));
       await shot(tester, '${lang}_39_songs_languages');
 
+      // The language filter: All languages and No language above the
+      // languages (#834).
+      await tester.tap(find.byKey(const Key('songs-language')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('songs-language-none')), findsOneWidget);
+      await shot(tester, '${lang}_39a_songs_language_filter');
+      await tester.tap(find.byKey(const ValueKey('songs-language-all')));
+      await tester.pumpAndSettle();
+
       await tester.tap(find.textContaining('Morgeliecht'));
       await tester.pumpAndSettle();
       await tester.tap(find.byType(PopupMenuButton<String>));
