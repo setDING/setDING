@@ -24,6 +24,7 @@ import '../render/render_cache.dart';
 import '../render/song_header.dart';
 import '../render/song_image.dart';
 import '../render/song_view.dart';
+import '../widgets/app_bar_actions.dart';
 import '../widgets/app_shortcuts.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/export_file.dart';
@@ -466,54 +467,65 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                     endIndent: 16,
                   ),
                 ],
-                if (showBand)
-                  BadgedIconButton(
-                    key: const Key('open-band-arrangement'),
-                    tooltip: l10n.bandArrangement,
-                    icon: Icons.groups_outlined,
-                    active: arrangement != null,
-                    onPressed: () => _open(_Panel.band),
-                  ),
-                // How the band played the song before (ADR-0046).
-                if (historyBand != null && (plays > 0 || otherPlays > 0))
-                  BadgedIconButton(
-                    key: const Key('open-play-history'),
-                    tooltip: l10n.playHistory,
-                    icon: Icons.history,
-                    count: plays,
-                    onPressed: () => _open(_Panel.played),
-                  ),
-                BadgedIconButton(
-                  key: const Key('open-personal-adjustments'),
-                  tooltip: l10n.personalAdjustments,
-                  icon: Icons.person_outline,
-                  // Freehand annotations change how the song looks, too.
-                  active:
-                      overlay.hasAdjustments ||
-                      (!overlay.hideAnnotations &&
-                          settings.showAnnotations &&
-                          (ref.watch(annotationCountProvider(song.id)).value ??
-                                  0) >
-                              0),
-                  onPressed: () => _open(_Panel.personal),
-                ),
-                if (attachmentsInPanel)
-                  BadgedIconButton(
-                    key: const Key('open-attachments'),
-                    tooltip: l10n.attachments,
-                    icon: Icons.attach_file,
-                    count: attachments.length,
-                    onPressed: () => _open(_Panel.attachments),
-                  ),
-                if (links.isNotEmpty || canEdit)
-                  BadgedIconButton(
-                    key: const Key('open-song-links'),
-                    tooltip: l10n.songLinks,
-                    icon: Icons.headphones_outlined,
-                    count: links.length,
-                    onPressed: () => _open(_Panel.links),
-                  ),
-                PopupMenuButton<String>(
+                // Panels: as buttons where the width allows, otherwise at
+                // the top of the ⋮ menu (#838).
+                AppBarActions<String>(
+                  otherWidth:
+                      (canEdit ? AppBarActions.actionWidth + 16 : 0) +
+                      LivePlayButton.widthOn(MediaQuery.sizeOf(context).width),
+                  actions: [
+                    if (showBand)
+                      AppBarAction(
+                        id: 'open-band-arrangement',
+                        label: l10n.bandArrangement,
+                        icon: Icons.groups_outlined,
+                        active: arrangement != null,
+                        onPressed: () => _open(_Panel.band),
+                      ),
+                    // How the band played the song before (ADR-0046).
+                    if (historyBand != null && (plays > 0 || otherPlays > 0))
+                      AppBarAction(
+                        id: 'open-play-history',
+                        label: l10n.playHistory,
+                        icon: Icons.history,
+                        count: plays,
+                        onPressed: () => _open(_Panel.played),
+                      ),
+                    AppBarAction(
+                      id: 'open-personal-adjustments',
+                      label: l10n.personalAdjustments,
+                      icon: Icons.person_outline,
+                      // Freehand annotations change how the song looks, too.
+                      active:
+                          overlay.hasAdjustments ||
+                          (!overlay.hideAnnotations &&
+                              settings.showAnnotations &&
+                              (ref
+                                          .watch(
+                                            annotationCountProvider(song.id),
+                                          )
+                                          .value ??
+                                      0) >
+                                  0),
+                      onPressed: () => _open(_Panel.personal),
+                    ),
+                    if (attachmentsInPanel)
+                      AppBarAction(
+                        id: 'open-attachments',
+                        label: l10n.attachments,
+                        icon: Icons.attach_file,
+                        count: attachments.length,
+                        onPressed: () => _open(_Panel.attachments),
+                      ),
+                    if (links.isNotEmpty || canEdit)
+                      AppBarAction(
+                        id: 'open-song-links',
+                        label: l10n.songLinks,
+                        icon: Icons.headphones_outlined,
+                        count: links.length,
+                        onPressed: () => _open(_Panel.links),
+                      ),
+                  ],
                   onSelected: (value) => switch (value) {
                     'title' => _editTitle(song),
                     'language' => _chooseLanguage(song),

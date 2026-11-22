@@ -15,6 +15,11 @@ class LivePlayButton extends StatelessWidget {
   /// Below this screen width the button shows only its icon.
   static const labelWidth = 600.0;
 
+  /// At least the width the button takes in an app bar on a screen
+  /// [screenWidth] wide, with its divider and padding.
+  static double widthOn(double screenWidth) =>
+      screenWidth >= labelWidth ? 150 : 73;
+
   /// Null disables the button (an empty set).
   final VoidCallback? onPressed;
 

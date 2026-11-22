@@ -91,6 +91,12 @@ the others are checked in review.
   An action that deletes or removes something (delete, remove from set, remove a
   member, delete all annotations) is `MenuAction(destructive: true)`: icon and
   label in the error colour, like the danger zone (#839).
+  **On narrow screens** the icon buttons that do not fit move to the top of the
+  overflow menu, above a divider: **`AppBarActions`** (`widgets/app_bar_actions.dart`,
+  #838) takes them in order of importance, shows as many as the screen width leaves
+  room for next to the title and the others as `MenuAction`s with their badge; a
+  dot on ⋮ shows that a hidden one has a badge. A key function (the song's *Edit*,
+  #600) and the live button stay in the bar.
   Every `IconButton` has a
   **tooltip** (it is also its accessible name). A deliberate exception (the stage's
   MIDI button, whose long press a tooltip would take) has a `Semantics` label and a

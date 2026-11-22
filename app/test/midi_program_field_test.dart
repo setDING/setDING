@@ -62,7 +62,15 @@ void main() {
     }))!;
     await tester.pumpWidget(app.build(home: SongScreen(songId: songId)));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('open-personal-adjustments')));
+    final button = find.byKey(const Key('open-personal-adjustments'));
+    if (button.evaluate().isNotEmpty) {
+      await tester.tap(button);
+    } else {
+      // On a phone the panel opens from the ⋮ menu (#838).
+      await tester.tap(find.byKey(const Key('app-bar-menu')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('open-personal-adjustments-menu')));
+    }
     await tester.pumpAndSettle();
   }
 

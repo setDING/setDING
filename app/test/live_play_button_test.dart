@@ -57,6 +57,20 @@ void main() {
     expect(tapped, 1);
   });
 
+  // AppBarActions keeps room for it (#838).
+  for (final width in [360.0, 900.0]) {
+    testWidgets('takes no more than widthOn, width $width', (tester) async {
+      tester.view.physicalSize = Size(width, 740);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await pump(tester, () {});
+      expect(
+        tester.getSize(find.byType(LivePlayButton)).width,
+        lessThanOrEqualTo(LivePlayButton.widthOn(width)),
+      );
+    });
+  }
+
   testWidgets('is disabled without an action', (tester) async {
     await pump(tester, null);
     final button = tester.widget<FilledButton>(

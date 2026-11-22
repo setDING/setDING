@@ -66,6 +66,7 @@ map=(
   song_import 37b_song_import
   songs_conversions 38_songs_conversions
   adjustment_offer 42_adjustment_offer
+  song_phone_menu 42c_song_phone_menu
   set_language_version 41_set_language_version
   language_versions 40_language_versions
   language_version_picker 40b_language_version_picker
