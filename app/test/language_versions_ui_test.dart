@@ -171,6 +171,13 @@ void main() {
     final saveButton = find.byKey(const Key('language-versions-save'));
     expect(tester.widget<TextButton>(saveButton).onPressed, isNull);
     await tester.tap(find.byKey(ValueKey('language-version-candidate-$de')));
+    await tester.pumpAndSettle();
+    // Wide: a chosen song moves from the library to the right, no tick boxes.
+    expect(
+      find.byKey(ValueKey('language-version-candidate-$de')),
+      findsNothing,
+    );
+    expect(find.byType(Checkbox), findsNothing);
     await tester.tap(find.byKey(ValueKey('language-version-candidate-$other')));
     await tester.pumpAndSettle();
     expect(find.text('Linked versions (2)'), findsOneWidget);
@@ -195,6 +202,11 @@ void main() {
     expect(
       find.byKey(ValueKey('language-version-chosen-$other')),
       findsNothing,
+    );
+    // Removed, it is back in the library.
+    expect(
+      find.byKey(ValueKey('language-version-candidate-$other')),
+      findsOneWidget,
     );
     expect(find.text('Linked versions (1)'), findsOneWidget);
     await save();
@@ -238,6 +250,12 @@ void main() {
     await tester.pumpAndSettle();
     final chip = find.byKey(ValueKey('language-version-chosen-$de'));
     expect(tester.widget(chip), isA<InputChip>());
+    // Narrow: the chosen song stays in the list, ticked.
+    expect(
+      find.byKey(ValueKey('language-version-candidate-$de')),
+      findsOneWidget,
+    );
+    expect(find.byType(Checkbox), findsWidgets);
     await tester.tap(find.byTooltip('Remove').first);
     await tester.pumpAndSettle();
     expect(chip, findsNothing);
