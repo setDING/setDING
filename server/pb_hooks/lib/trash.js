@@ -16,9 +16,9 @@ const PURGEABLE = ["songs", "setlists"];
 /// content is cleared like by the daily purge; the update rules allow it to
 /// those who may delete the record. Otherwise clients cannot set `purged`,
 /// and a purged record cannot be restored. Superusers (operators, tests) are
-/// not changed. Returns true if the request purges the record.
+/// not changed. A purged song takes its attachments along (trash.pb.js).
 function handleTrashRequest(e) {
-  if (!(e.auth && e.auth.collection().name === "users")) return false;
+  if (!(e.auth && e.auth.collection().name === "users")) return;
   const original = e.record.original();
   const isNew = e.record.isNew();
   const wasDeleted = !isNew && original.getBool("deleted");
@@ -46,7 +46,6 @@ function handleTrashRequest(e) {
     if (sent.isZero() || sent.after(now)) e.record.set("deleted_at", now);
   }
   if (purging) clearContent(e.record);
-  return purging;
 }
 
 /// Clears what a purged record no longer keeps: the song text, the set
@@ -103,11 +102,13 @@ function purgeTrash(app) {
       { cutoff: cutoff.string() },
     );
     for (const record of records) {
+      // A song's attachments first, so they are counted here; saving the
+      // purged song finds none left (trash.pb.js).
+      if (name === "songs") purged += purgeAttachmentsOf(app, record);
       record.set("purged", true);
       clearContent(record);
       app.runInTransaction((txApp) => txApp.save(record));
       purged++;
-      if (name === "songs") purged += purgeAttachmentsOf(app, record);
     }
   }
   return purged;

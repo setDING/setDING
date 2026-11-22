@@ -10,16 +10,19 @@ onRecordCreateRequest((e) => {
   e.next();
 }, "songs", "setlists", "attachments");
 
-// A song purged by a user (#866) takes its attachments with it, as the
-// daily purge does.
 onRecordUpdateRequest((e) => {
-  const trash = require(`${__hooks}/lib/trash.js`);
-  const purging = trash.handleTrashRequest(e);
+  require(`${__hooks}/lib/trash.js`).handleTrashRequest(e);
   e.next();
-  if (purging && e.record.collection().name === "songs") {
-    trash.purgeAttachmentsOf(e.app, e.record);
-  }
 }, "songs", "setlists", "attachments");
+
+// A song purged by a user (#866) takes its attachments with it, as the
+// daily purge does, in the same transaction and before the response (code
+// after `e.next()` of a request hook runs once the response is sent).
+onRecordUpdateExecute((e) => {
+  const purging = e.record.getBool("purged") && !e.record.original().getBool("purged");
+  e.next();
+  if (purging) require(`${__hooks}/lib/trash.js`).purgeAttachmentsOf(e.app, e.record);
+}, "songs");
 
 cronAdd("setding_trash_purge", "17 3 * * *", () => {
   const purged = require(`${__hooks}/lib/trash.js`).purgeTrash($app);
