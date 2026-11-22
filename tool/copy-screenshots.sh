@@ -79,6 +79,7 @@ map=(
   no_band 43_no_band
   band_switcher 43b_band_switcher
   settings_auto_backup 43_settings_auto_backup
+  overview 44_overview
 )
 
 copied=0

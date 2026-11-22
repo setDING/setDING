@@ -7009,12 +7009,6 @@ abstract class AppLocalizations {
   /// **'Neueste Songs'**
   String get overviewNewestSongs;
 
-  /// No description provided for @overviewSongAdded.
-  ///
-  /// In de, this message translates to:
-  /// **'Hinzugefügt am {date}'**
-  String overviewSongAdded(String date);
-
   /// No description provided for @recentChangesEmpty.
   ///
   /// In de, this message translates to:

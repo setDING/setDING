@@ -204,6 +204,30 @@ Further rules:
   A tap on the **magic wand** of a song converts that song at once, with
   *Undo* in the message (undo rather than ask, ADR-0051).
 
+- 2026-11-22: Owner request (#868): the overview looked empty without
+  anything to do and without changes, so **three more cards** that always
+  have something to show, each entry opening a song or set (no statistics,
+  see the alternatives above). In this order after the existing ones, each
+  left out when it has nothing to show:
+  - **More sets**, right after *Next set*: the upcoming sets of the band
+    after the next one, at most three, with date, days until the gig and
+    venue.
+  - **Newest songs**, after *Recent changes*: the five songs of the band's
+    library created last, not in the trash, with artist, key and the day
+    they were added. Unlike *Recent changes* it shows the person's own
+    songs too and never empties. The creation date is a new local column
+    `songs.created_at` (schema 33): the server's `created` for synced
+    songs (sent with every pull, nothing new on the server), the time of
+    creation on the device for the local library, a copy and a song not
+    pushed yet. On the upgrade the songs of every library are pulled once
+    more from the start; a pull fills the date of a song it already has
+    without changing anything else (no conflict, no change log entry).
+    Songs of the local library take their last change as the best guess.
+  - **Not played for a while** (the title of the repertoire's section,
+    ADR-0046), last: the songs the band has not played for longer than its
+    threshold, longest ago first, at most five, with *Show all* opening
+    the repertoire.
+
 ## Open points
 
 - Further cards later, e.g. pending invitations or the reminder for a full

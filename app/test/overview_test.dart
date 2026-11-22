@@ -725,10 +725,7 @@ void main() {
       ];
       expect(titles, ['Song 6', 'Song 5', 'Song 4', 'Song 3', 'Song 2']);
       expect(
-        find.descendant(
-          of: card,
-          matching: find.textContaining('Band 6 · G · Added on'),
-        ),
+        find.descendant(of: card, matching: find.text('Band 6 · G')),
         findsOneWidget,
       );
 

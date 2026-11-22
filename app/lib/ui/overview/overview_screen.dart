@@ -51,8 +51,10 @@ const songsOnCard = 5;
 List<SetSummary> moreSets(List<SetSummary> sets, DateTime today) =>
     groupSets(sets, today).upcoming.skip(1).take(moreSetsOnCard).toList();
 
-/// The start screen (ADR-0045): cards with the next set, what needs to be
-/// done, the recent changes by other people and the version. A card with
+/// The start screen (ADR-0045): cards with the next set and the ones after
+/// it, what needs to be done, the recent changes by other people, the
+/// newest songs, the songs not played for a while (#868) and the version.
+/// A card with
 /// nothing to show is left out. One column on phones, two from
 /// [navigationRailWidth]. Everything comes from the local database and
 /// updates live during a sync.
@@ -451,6 +453,10 @@ class _NewestSongsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final dates = MaterialLocalizations.of(context);
+    String subtitle(SongEntry song) =>
+        [?song.artist, ?song.songKey].join(' · ');
     return _OverviewCard(
       key: const Key('overview-newest-songs'),
       title: l10n.overviewNewestSongs,
@@ -464,12 +470,15 @@ class _NewestSongsCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            subtitle: Text(
-              [
-                ?song.artist,
-                ?song.songKey,
-                l10n.overviewSongAdded(formatGigDate(context, song.createdAt!)),
-              ].join(' · '),
+            subtitle: subtitle(song).isEmpty ? null : Text(subtitle(song)),
+            // The day it was added, with the year when it is not this one.
+            trailing: Text(
+              song.createdAt!.year == DateTime.now().year
+                  ? dates.formatShortMonthDay(song.createdAt!)
+                  : dates.formatShortDate(song.createdAt!),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
             onTap: () => _openSong(context, song.id),
           ),

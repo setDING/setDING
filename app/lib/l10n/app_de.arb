@@ -2678,14 +2678,6 @@
   "overviewShowAll": "Alle anzeigen",
   "overviewMoreSets": "Weitere Sets",
   "overviewNewestSongs": "Neueste Songs",
-  "overviewSongAdded": "Hinzugefügt am {date}",
-  "@overviewSongAdded": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
   "recentChangesEmpty": "Keine Änderungen von anderen in den letzten 30 Tagen.",
   "changeSongAdded": "Neuer Song",
   "changeNewSet": "Neues Set",
