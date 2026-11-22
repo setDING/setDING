@@ -216,6 +216,8 @@ void main() {
       await tester.tap(find.text('Settings').last);
       await tester.pumpAndSettle();
       await tapSettingsCategory(tester, 'about');
+      await tester.ensureVisible(find.byKey(const Key('whats-new')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('whats-new')));
       await tester.pumpAndSettle();
       expect(dialog, findsOneWidget);

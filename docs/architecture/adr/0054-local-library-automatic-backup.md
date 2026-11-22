@@ -206,6 +206,17 @@ the server sync (ADR-0004).
   local library (e.g. a song of an organization) gets a new one. The local
   band's play history comes from its past sets (ADR-0046), so it comes back
   with the sets of the backup.
+- 2026-11-22: Hiding the local library implemented (#842). The setting
+  `showLocalLibrary` is a device setting of the app settings (so a full
+  backup restores it with the device settings). One provider decides
+  whether the local library is shown (not on the web client, not when
+  switched off while signed in) and filters the lists of libraries and
+  bands, as the web client already did; so the switchers, the overview, the
+  song and set lists, import and copy targets all follow it, and the
+  current band and library fall back to an organization's. The full backup
+  reads every library, also the hidden one; the automatic backup works on
+  the local library directly. Signed in without any organization, the
+  local library is still the fallback, as nothing else can be shown.
 
 ## Open points
 

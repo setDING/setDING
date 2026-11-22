@@ -46,13 +46,22 @@ final bandServiceProvider = Provider<BandService>(
   ),
 );
 
-/// The local library followed by the bands of the signed-in user. The web
-/// client has no local library (ADR-0018).
+/// Whether the local library "On this device" is shown: not on the web
+/// client (ADR-0018), and not when the person switched it off while signed
+/// in (ADR-0054); signed out it is always shown. Its data stays.
+final localLibraryShownProvider = Provider<bool>((ref) {
+  if (ref.watch(webClientProvider)) return false;
+  if (ref.watch(authProvider.select((u) => u == null))) return true;
+  return ref.watch(settingsProvider.select((s) => s.showLocalLibrary));
+});
+
+/// The local library followed by the bands of the signed-in user, without
+/// the local library when it is not shown ([localLibraryShownProvider]).
 final bandsProvider = StreamProvider<List<BandView>>((ref) {
   final bands = ref
       .watch(bandServiceProvider)
       .watchBands(ref.watch(authProvider.select((u) => u?.id)));
-  if (!ref.watch(webClientProvider)) return bands;
+  if (ref.watch(localLibraryShownProvider)) return bands;
   return bands.map(
     (list) => [
       for (final b in list)
@@ -74,13 +83,13 @@ const noBandId = '';
 
 String _lastBandKey(String libraryId) => 'lastBandId.$libraryId';
 
-/// The bands the app can show, while they load: the local library on
-/// devices, none on the web (ADR-0018).
+/// The bands the app can show, while they load: the local library when it
+/// is shown, none on the web (ADR-0018) or when it is hidden (ADR-0054).
 List<BandView> _availableBands(Ref ref) =>
     ref.watch(bandsProvider).value ??
-    (ref.watch(webClientProvider)
-        ? const <BandView>[]
-        : const [BandView.local]);
+    (ref.watch(localLibraryShownProvider)
+        ? const [BandView.local]
+        : const <BandView>[]);
 
 /// The band chosen in the band switcher (stored per device). Choosing a
 /// band also chooses its song library ([selectedLibraryIdProvider]).
@@ -171,14 +180,29 @@ final _bandLibraryIdProvider = Provider<String>(
 
 // Song libraries (ADR-0017) ---------------------------------------------------
 
-/// The local library followed by the libraries of the user's
-/// organizations. The web client has no local library (ADR-0018).
-final librariesProvider = StreamProvider<List<LibraryView>>((ref) {
+/// Every library on this device, the local one also when it is hidden
+/// (ADR-0054); the web client has none (ADR-0018).
+final allLibrariesProvider = StreamProvider<List<LibraryView>>((ref) {
   final libraries = ref
       .watch(bandServiceProvider)
       .watchLibraries(ref.watch(authProvider.select((u) => u?.id)));
   if (!ref.watch(webClientProvider)) return libraries;
   return libraries.map(
+    (list) => [
+      for (final l in list)
+        if (!l.isLocal) l,
+    ],
+  );
+});
+
+/// The local library followed by the libraries of the user's
+/// organizations, without the local library when it is not shown
+/// ([localLibraryShownProvider]). The full and the automatic backup use
+/// [allLibrariesProvider] instead.
+final librariesProvider = Provider<AsyncValue<List<LibraryView>>>((ref) {
+  final libraries = ref.watch(allLibrariesProvider);
+  if (ref.watch(localLibraryShownProvider)) return libraries;
+  return libraries.whenData(
     (list) => [
       for (final l in list)
         if (!l.isLocal) l,
@@ -249,9 +273,9 @@ final selectedLibraryIdProvider =
 final currentLibraryProvider = Provider<LibraryView>((ref) {
   final libraries =
       ref.watch(librariesProvider).value ??
-      (ref.watch(webClientProvider)
-          ? const <LibraryView>[]
-          : const [LibraryView.local]);
+      (ref.watch(localLibraryShownProvider)
+          ? const [LibraryView.local]
+          : const <LibraryView>[]);
   final bands = _availableBands(ref);
   LibraryView? withId(String? id) =>
       libraries.where((l) => l.id == id).firstOrNull;

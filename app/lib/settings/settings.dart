@@ -141,6 +141,7 @@ class AppSettings {
     this.editorTypingAids = true,
     this.developerMode = false,
     this.midiEnabled = false,
+    this.showLocalLibrary = true,
     this.midiOutputName = '',
     this.midiProfile = MidiProfileKind.nordStage3,
     this.midiChannel = 1,
@@ -261,6 +262,10 @@ class AppSettings {
 
   /// Program changes are sent to the keyboard; off by default.
   final bool midiEnabled;
+
+  /// The local library "On this device" is shown (ADR-0054); only switched
+  /// off when signed in, signed out it is always shown.
+  final bool showLocalLibrary;
 
   /// The MIDI output, remembered by its name (device ids change when it is
   /// plugged in again); empty for none.
@@ -383,6 +388,7 @@ class AppSettings {
     bool? editorTypingAids,
     bool? developerMode,
     bool? midiEnabled,
+    bool? showLocalLibrary,
     String? midiOutputName,
     MidiProfileKind? midiProfile,
     int? midiChannel,
@@ -429,6 +435,7 @@ class AppSettings {
     editorTypingAids: editorTypingAids ?? this.editorTypingAids,
     developerMode: developerMode ?? this.developerMode,
     midiEnabled: midiEnabled ?? this.midiEnabled,
+    showLocalLibrary: showLocalLibrary ?? this.showLocalLibrary,
     midiOutputName: midiOutputName ?? this.midiOutputName,
     midiProfile: midiProfile ?? this.midiProfile,
     midiChannel: midiChannel ?? this.midiChannel,
@@ -489,6 +496,8 @@ class AppSettings {
     // MIDI (ADR-0039): the keyboard on the stage is connected to this
     // device.
     'midiEnabled': SettingSyncScope.device,
+    // The local library is on this device only (ADR-0054).
+    'showLocalLibrary': SettingSyncScope.device,
     'midiOutputName': SettingSyncScope.device,
     'midiProfile': SettingSyncScope.device,
     'midiChannel': SettingSyncScope.device,
@@ -543,6 +552,7 @@ class AppSettings {
     'editorTypingAids': editorTypingAids,
     'developerMode': developerMode,
     'midiEnabled': midiEnabled,
+    'showLocalLibrary': showLocalLibrary,
     'midiOutputName': midiOutputName,
     'midiProfile': midiProfile.name,
     'midiChannel': midiChannel,
@@ -650,6 +660,7 @@ class AppSettings {
       editorTypingAids: flag('editorTypingAids', d.editorTypingAids),
       developerMode: flag('developerMode', d.developerMode),
       midiEnabled: flag('midiEnabled', d.midiEnabled),
+      showLocalLibrary: flag('showLocalLibrary', d.showLocalLibrary),
       midiOutputName: text('midiOutputName', d.midiOutputName),
       midiProfile: pick(MidiProfileKind.values, 'midiProfile', d.midiProfile),
       midiChannel: (number('midiChannel')?.toInt() ?? d.midiChannel).clamp(

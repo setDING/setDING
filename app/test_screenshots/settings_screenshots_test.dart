@@ -272,4 +272,54 @@ void main() {
       await app.dispose(tester);
     });
   }
+  // Hiding the local library (ADR-0054): the setting in *Storage & backup*
+  // and the hint after switching it off.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('hide local library $lang', (tester) async {
+      useTabletSize(tester);
+      const ann = AuthUser(
+        id: 'ann',
+        email: 'ann@example.test',
+        name: 'Ann Keller',
+      );
+      final app = await TestApp.create(
+        prefs: {
+          'language': lang,
+          'themeMode': dark ? 'dark' : 'light',
+          // Nothing runs on the settings screen alone.
+          AutoBackupController.enabledKey: true,
+          AutoBackupController.locationKey: 'content://nextcloud/setDING',
+          AutoBackupController.folderNameKey: 'Nextcloud › setDING',
+        },
+        user: ann,
+      );
+      app.backend.addBand('b1', 'Rock Band', admin: ann);
+      await tester.runAsync(() async {
+        for (final t in ['Hallelujah', 'Rocky Road', 'Demo']) {
+          await app.songs.createSong(source: '{title: $t}');
+        }
+        await app.sets.createSet(name: lang == 'de' ? 'Probe' : 'Rehearsal');
+      });
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: const SettingsScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await openSettingsCategory(tester, SettingsCategory.about);
+      final tile = find.byKey(const Key('settings-show-local-library'));
+      await tester.ensureVisible(tile);
+      await tester.pumpAndSettle();
+      await tester.tap(tile);
+      for (var i = 0; i < 20; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump();
+      }
+      await shot(tester, '${lang}_45_hide_local_library');
+      await app.dispose(tester);
+    });
+  }
 }

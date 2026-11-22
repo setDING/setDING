@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import general from '../../../../../docs/screenshots/settings_general_de.png';
 import autoBackup from '../../../../../docs/screenshots/settings_auto_backup_de.png';
+import hideLocal from '../../../../../docs/screenshots/hide_local_library_de.png';
 
 ## Allgemein
 
@@ -51,6 +52,17 @@ damit ihre Vorschau die ganze Breite hat.
   siehe [Lokale Bibliothek ersetzen](/songs/library/#lokale-bibliothek-ersetzen).
   Mehr dazu unter
   [Bibliothek sichern](/songs/library/#bibliothek-sichern).
+- **Lokale Bibliothek anzeigen** (nicht in der Web-App): Spielst du nur in
+  Organisationen, blendest du damit *Auf diesem Gerät* aus den Listen der
+  Bibliotheken und Bands, der Übersicht, den Song- und Setlisten, Importen und dem
+  Kopieren aus. Neue Songs kommen dann in die aktuelle Organisation. Ihre Songs und
+  Sets bleiben auf diesem Gerät und kommen zurück, wenn du sie wieder einschaltest;
+  die vollständige und die automatische Sicherung enthalten sie weiterhin, und
+  setDING erinnert nicht mehr ans Sichern. Ausschalten kannst du sie nur, wenn du
+  angemeldet bist; ohne Anmeldung wird die lokale Bibliothek immer angezeigt.
+
+<Image src={hideLocal} alt="«Lokale Bibliothek anzeigen» ausgeschaltet in «Speicher & Info», mit dem Hinweis, dass ihre 3 Songs und 1 Set auf diesem Gerät bleiben und die automatische Sicherung weiterläuft" />
+
 - **Automatische Sicherung** (nicht in der Web-App) speichert die Bibliothek
   *Auf diesem Gerät* in einen Ordner deiner Wahl, höchstens einmal täglich und nur,
   wenn sie sich geändert hat. Wähle einen Ordner in deinem Cloud-Speicher, damit

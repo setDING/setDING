@@ -84,6 +84,7 @@ map=(
   songs_trash_menu 45b_songs_trash_menu
   backup_replace_choice 44_backup_replace_choice
   backup_replace 44b_backup_replace
+  hide_local_library 45_hide_local_library
 )
 
 copied=0
