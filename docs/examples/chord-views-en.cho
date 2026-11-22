@@ -1,0 +1,35 @@
+{title: Numerals Test}
+{artist: setDING}
+{key: C}
+
+{start_of_verse: label="Major: the seven degrees"}
+[C]One and [Dm]two and [Em]three and [F]four
+[G]Five and [Am]six, [Bdim]seven, [C]home once more
+{end_of_verse}
+
+{start_of_verse: label="Jazz: ii – V – I"}
+[Dm7]Quiet [G7]steps back [Cmaj7]home
+[Em7]Lights up[A7]on the [Dm9]wall
+[G13]Late at [C6/9]night
+[Am(maj7)]Shadows [Am7]in the [D7]hall
+{end_of_verse}
+
+{start_of_chorus: label="Borrowed chords"}
+[C]Then a [Bb7]detour, [Eb]far and [Ab]wide
+[Db]Naples [G7b9]calls, it's [G7#11]time to [C]ride
+[Caug]Tension, [Csus4]floating, [C]rest
+{end_of_chorus}
+
+{start_of_bridge: label="Bass notes and secondary dominants"}
+[C/E]Up the [F]stairs, [G/B]one more [C]flight
+[C/Bb]Down a[F/A]gain, step [Fm/Ab]by step, [G7]right
+[E7]Dominant [Am]of the six
+[D7]Dominant [G7]of the five
+{end_of_bridge}
+
+{key: Am}
+{start_of_verse: label="Minor in A (jazz style)"}
+[Am]Minor [Bm7b5]starts, [E7]dominant [Am]bright
+[Dm7]On the [G]way back [C]home to[F]night
+[Bdim7]Degree [E7b9]seven, [Am]end
+{end_of_verse}
