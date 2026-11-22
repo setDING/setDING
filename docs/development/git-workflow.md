@@ -129,12 +129,19 @@ An agent runs all of the following and only continues when everything passes:
    test/foo_test.dart`, `dart test`) and the gate once before the PR and the merge.
 3. **Docs up to date:** ADRs and the architecture README updated in the same branch if
    the change touches an architectural decision ([AGENTS.md](../../AGENTS.md)).
-4. **Localization complete:** every new UI text exists in `app_de.arb` and `app_en.arb`.
-5. **Permissions enforced on the server:** every permission the change adds or
+4. **Tests for the change:** new or changed behaviour comes with tests. **A bug fix
+   comes with a regression test** that reproduces the bug: write it first, see it
+   fail on the unfixed code, then fix the bug and see it pass. Put it at the lowest
+   level that can show the bug (package, server, unit or widget test; an
+   integration or e2e test only when nothing lower can) and name the issue in the
+   test (`// Regression test for #123`). If a test is truly impossible (e.g. a
+   platform-only rendering glitch), say why in the PR under "How it was tested".
+5. **Localization complete:** every new UI text exists in `app_de.arb` and `app_en.arb`.
+6. **Permissions enforced on the server:** every permission the change adds or
    touches is enforced by server rules, hooks or routes and tested with direct API
    calls as the refused roles, including the permission matrix test
    `server/test/permissions_test.dart` ([AGENTS.md](../../AGENTS.md)).
-6. **Self-review** of the full diff (e.g. a code-review tool), and fix the findings.
+7. **Self-review** of the full diff (e.g. a code-review tool), and fix the findings.
 
 ## 6. Pull requests
 
