@@ -8,6 +8,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../account/sync_refresh.dart';
 import '../bands/band_switcher.dart';
+import '../bands/no_band_hint.dart';
 import '../songs/chordpro_problems_badge.dart';
 import '../songs/songs_screen.dart' show songListTwoColumnWidth;
 import '../theme.dart';
@@ -110,6 +111,15 @@ class _SetsPane extends ConsumerWidget {
     final band = ref.watch(currentBandProvider);
     final wide = shown != null;
 
+    if (!ref.watch(hasCurrentBandProvider)) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.navSets),
+          actions: const [BandSwitcher()],
+        ),
+        body: const NoBandHint(),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.navSets),

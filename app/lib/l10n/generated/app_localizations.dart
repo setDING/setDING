@@ -3266,6 +3266,18 @@ abstract class AppLocalizations {
   /// **'Bands verwalten'**
   String get bandManage;
 
+  /// No description provided for @bandNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Band'**
+  String get bandNone;
+
+  /// No description provided for @noBandInLibrary.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist in keiner Band von {organization}. Sets gehören zu einer Band: Erstelle eine oder lass dich hinzufügen.'**
+  String noBandInLibrary(String organization);
+
   /// No description provided for @librarySwitch.
   ///
   /// In de, this message translates to:

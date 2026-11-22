@@ -683,6 +683,15 @@
   "bandLocalHint": "Only on this device, not synced.",
   "bandSwitch": "Switch band",
   "bandManage": "Manage bands",
+  "bandNone": "No band",
+  "noBandInLibrary": "You are not in a band of {organization}. Sets belong to a band: create one or ask to be added.",
+  "@noBandInLibrary": {
+    "placeholders": {
+      "organization": {
+        "type": "String"
+      }
+    }
+  },
   "librarySwitch": "Switch song library",
   "bandsTitle": "Bands",
   "bandsEmpty": "You are not in a band yet. Create a band for your songs and sets.",

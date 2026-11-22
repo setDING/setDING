@@ -8,8 +8,8 @@ import '../../sync/auth_providers.dart';
 import 'bands_screen.dart';
 
 /// App bar button of the songs tab showing the current song library: the
-/// local library or an organization's library (ADR-0017). Songs belong to
-/// the organization, so the choice is independent of the band. Hidden while
+/// local library or an organization's library (ADR-0017). Choosing a
+/// library also chooses a band of it for the sets tab (#856). Hidden while
 /// there is only the local library and nobody is signed in, so the
 /// single-device app looks as before.
 class LibrarySwitcher extends ConsumerWidget {

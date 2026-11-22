@@ -419,4 +419,41 @@ void main() {
       await app.dispose(tester);
     });
   }
+
+  // An organization without a band of the user (#856): band and song
+  // library are one selection, so the sets tab shows a hint instead of the
+  // sets of another band.
+  for (final lang in ['de', 'en']) {
+    screenshotTest('no band $lang', (tester) async {
+      useTabletSize(tester, landscape: false);
+      const ann = AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann');
+      const bob = AuthUser(id: 'bob', email: 'bob@example.test', name: 'Bob');
+      final app = await TestApp.create(
+        prefs: {
+          'language': lang,
+          'themeMode': lang == 'de' ? 'light' : 'dark',
+          'currentBandId': '',
+          'currentLibraryId': 'o2',
+        },
+        user: ann,
+      );
+      app.backend
+        ..addBand('b1', 'Rock', admin: ann, organizationId: 'o1')
+        ..addOrganization(
+          'o2',
+          lang == 'de' ? 'Kirchenchor' : 'Church Choir',
+          admin: bob,
+        )
+        ..addOrgMember('o2', ann, OrgRole.member);
+      await tester.pumpWidget(
+        RepaintBoundary(key: UniqueKey(), child: app.build()),
+      );
+      await tester.pumpAndSettle();
+      await syncNow(tester);
+      await openTab(tester, HomeTab.sets);
+      expect(find.byKey(const Key('no-band-hint')), findsOneWidget);
+      await shot(tester, '${lang}_43_no_band');
+      await app.dispose(tester);
+    });
+  }
 }

@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import organization from '../../../../../docs/screenshots/organization_de.png';
 import band from '../../../../../docs/screenshots/band_de.png';
+import noBand from '../../../../../docs/screenshots/no_band_de.png';
 
 Eine **Organisation** ist z. B. eine Musikschule, eine Kirche oder einfach deine Band.
 Ihr gehören die Songs und die Leute. Eine **Band** ist eine Gruppe von Leuten aus
@@ -111,6 +112,14 @@ Bist du in mehreren Bands, wählst du unter **Sets** oben mit **Band wechseln**,
 welcher Band du arbeitest: Du siehst dann ihre Sets, und Songs zeigen ihr
 Band-Arrangement. Unter **Songs** wechselst du mit **Songbibliothek wechseln** die
 Organisation.
+
+Band und Songbibliothek gehören zusammen: Wählst du eine Band, zeigt **Songs** die
+Songs ihrer Organisation. Wählst du eine andere Songbibliothek, wechseln die Sets zu
+einer Band dieser Organisation, zu der Band, die du dort zuletzt gewählt hast.
+Bist du in keiner Band der Organisation, zeigen die Sets einen Hinweis statt der
+Sets einer anderen Band.
+
+<Image src={noBand} alt="Die Sets mit «Keine Band» und dem Hinweis, dass du in keiner Band der Organisation bist, mit «Bands verwalten»" />
 
 Ein Set oder Songs bringst du mit **In Band kopieren** in eine andere Band oder
 Organisation.

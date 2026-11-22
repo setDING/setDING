@@ -76,6 +76,7 @@ map=(
   song_language 39b_song_language
   songs_tags 42_songs_tags
   songs_played 42b_songs_played
+  no_band 43_no_band
 )
 
 copied=0

@@ -57,7 +57,29 @@ final bandsProvider = StreamProvider<List<BandView>>((ref) {
   );
 });
 
-/// The band chosen in the band switcher (stored per device).
+// Band and song library selection (#856) --------------------------------------
+//
+// The band (sets, overview) and the song library (songs tab) are one
+// selection across the app: choosing a band shows its organization's songs,
+// choosing a library selects a band of it. Only an organization without a
+// band of the user is a library without a band ([noBandId]).
+
+/// [BandView.id] of [currentBandProvider] while the chosen song library has
+/// no band of the user.
+const noBandId = '';
+
+String _lastBandKey(String libraryId) => 'lastBandId.$libraryId';
+
+/// The bands the app can show, while they load: the local library on
+/// devices, none on the web (ADR-0018).
+List<BandView> _availableBands(Ref ref) =>
+    ref.watch(bandsProvider).value ??
+    (ref.watch(webClientProvider)
+        ? const <BandView>[]
+        : const [BandView.local]);
+
+/// The band chosen in the band switcher (stored per device). Choosing a
+/// band also chooses its song library ([selectedLibraryIdProvider]).
 class SelectedBandNotifier extends Notifier<String> {
   static const _key = 'currentBandId';
 
@@ -66,6 +88,22 @@ class SelectedBandNotifier extends Notifier<String> {
       ref.watch(sharedPreferencesProvider).getString(_key) ?? localBandId;
 
   Future<void> select(String bandId) async {
+    final band = (ref.read(bandsProvider).value ?? const <BandView>[])
+        .where((b) => b.id == bandId)
+        .firstOrNull;
+    final libraryId =
+        band?.libraryId ?? (bandId == localBandId ? localBandId : null);
+    await _store(bandId);
+    if (libraryId != null) {
+      await ref
+          .read(sharedPreferencesProvider)
+          .setString(_lastBandKey(libraryId), bandId);
+      await ref.read(selectedLibraryIdProvider.notifier)._store(libraryId);
+    }
+  }
+
+  /// Stores [bandId]; [noBandId] while the chosen library has no band.
+  Future<void> _store(String bandId) async {
     state = bandId;
     await ref.read(sharedPreferencesProvider).setString(_key, bandId);
   }
@@ -81,22 +119,41 @@ final selectedBandIdProvider = NotifierProvider<SelectedBandNotifier, String>(
   SelectedBandNotifier.new,
 );
 
-/// The band whose songs and sets are shown. Falls back to the local library
-/// when the selected band is not available (signed out, removed).
+/// The band shown on the sets tab and the overview: a band of the current
+/// song library ([currentLibraryProvider]) – the chosen one, else the one
+/// last chosen in that library, else its first band. Without a band in that
+/// library a band with the id [noBandId] that allows nothing.
 final currentBandProvider = Provider<BandView>((ref) {
-  // The web client never falls back to the local library (ADR-0018); its
-  // start screen waits for a band.
-  final bands =
-      ref.watch(bandsProvider).value ??
-      (ref.watch(webClientProvider)
-          ? const <BandView>[]
-          : const [BandView.local]);
-  final selected = ref.watch(selectedBandIdProvider);
-  return bands.firstWhere(
-    (b) => b.id == selected,
-    orElse: () => bands.firstOrNull ?? BandView.local,
-  );
+  final bands = _availableBands(ref);
+  final library = ref.watch(currentLibraryProvider);
+  final inLibrary = [
+    for (final b in bands)
+      if (b.libraryId == library.id) b,
+  ];
+  BandView? withId(String? id) =>
+      inLibrary.where((b) => b.id == id).firstOrNull;
+  final last = ref
+      .watch(sharedPreferencesProvider)
+      .getString(_lastBandKey(library.id));
+  return withId(ref.watch(selectedBandIdProvider)) ??
+      withId(last) ??
+      inLibrary.firstOrNull ??
+      // The web client without any band shows its start screen instead.
+      (bands.isEmpty
+          ? BandView.local
+          : BandView(
+              id: noBandId,
+              name: '',
+              organizationId: library.isLocal ? null : library.id,
+              organizationName: library.name,
+            ));
 });
+
+/// Whether the current song library has a band of the user; without one the
+/// sets tab and the overview show a hint instead of sets.
+final hasCurrentBandProvider = Provider<bool>(
+  (ref) => ref.watch(currentBandProvider.select((b) => b.id != noBandId)),
+);
 
 final _currentBandIdProvider = Provider<String>(
   (ref) => ref.watch(currentBandProvider.select((b) => b.id)),
@@ -125,8 +182,9 @@ final librariesProvider = StreamProvider<List<LibraryView>>((ref) {
   );
 });
 
-/// The song library chosen on the songs tab (stored per device),
-/// independent of the band; null until one is chosen.
+/// The song library chosen on the songs tab (stored per device); null until
+/// one is chosen. Choosing a library also chooses a band of it
+/// ([currentBandProvider]).
 class SelectedLibraryNotifier extends Notifier<String?> {
   static const _key = 'currentLibraryId';
 
@@ -134,15 +192,44 @@ class SelectedLibraryNotifier extends Notifier<String?> {
   String? build() => ref.watch(sharedPreferencesProvider).getString(_key);
 
   Future<void> select(String libraryId) async {
+    await _store(libraryId);
+    // Keep the chosen band only while it belongs to the library, so a band
+    // of another library never wins over this choice.
+    final bands = ref.read(bandsProvider).value ?? const [BandView.local];
+    final selected = ref.read(selectedBandIdProvider);
+    final keeps = bands.any(
+      (b) => b.id == selected && b.libraryId == libraryId,
+    );
+    if (!keeps) {
+      final last = ref
+          .read(sharedPreferencesProvider)
+          .getString(_lastBandKey(libraryId));
+      final inLibrary = [
+        for (final b in bands)
+          if (b.libraryId == libraryId) b.id,
+      ];
+      await ref
+          .read(selectedBandIdProvider.notifier)
+          ._store(
+            inLibrary.contains(last)
+                ? last!
+                : inLibrary.firstOrNull ?? noBandId,
+          );
+    }
+  }
+
+  Future<void> _store(String? libraryId) async {
+    final prefs = ref.read(sharedPreferencesProvider);
     state = libraryId;
-    await ref.read(sharedPreferencesProvider).setString(_key, libraryId);
+    if (libraryId == null) {
+      await prefs.remove(_key);
+    } else {
+      await prefs.setString(_key, libraryId);
+    }
   }
 
   /// Forgets the choice (web sign-out).
-  Future<void> reset() async {
-    state = null;
-    await ref.read(sharedPreferencesProvider).remove(_key);
-  }
+  Future<void> reset() => _store(null);
 }
 
 final selectedLibraryIdProvider =
@@ -150,19 +237,26 @@ final selectedLibraryIdProvider =
       SelectedLibraryNotifier.new,
     );
 
-/// The song library shown on the songs tab. Without a choice, or when the
-/// chosen library is not available (signed out, left the organization),
-/// the library of the current band.
+/// The song library shown on the songs tab, the sets tab and the overview:
+/// the library of the chosen band, else the chosen library (an
+/// organization without a band of the user), else the library of the first
+/// band, else the first library. A choice that is not available (signed
+/// out, left the band or organization) is skipped.
 final currentLibraryProvider = Provider<LibraryView>((ref) {
   final libraries =
       ref.watch(librariesProvider).value ??
       (ref.watch(webClientProvider)
           ? const <LibraryView>[]
           : const [LibraryView.local]);
-  final bandLibrary = ref.watch(_bandLibraryIdProvider);
-  final selected = ref.watch(selectedLibraryIdProvider) ?? bandLibrary;
-  return libraries.where((l) => l.id == selected).firstOrNull ??
-      libraries.where((l) => l.id == bandLibrary).firstOrNull ??
+  final bands = _availableBands(ref);
+  LibraryView? withId(String? id) =>
+      libraries.where((l) => l.id == id).firstOrNull;
+  final selectedBand = ref.watch(selectedBandIdProvider);
+  return withId(
+        bands.where((b) => b.id == selectedBand).firstOrNull?.libraryId,
+      ) ??
+      withId(ref.watch(selectedLibraryIdProvider)) ??
+      withId(bands.firstOrNull?.libraryId) ??
       libraries.firstOrNull ??
       LibraryView.local;
 });
