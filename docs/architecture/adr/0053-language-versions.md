@@ -202,6 +202,13 @@ the API directly as the refused roles (permission matrix test).
   when several have some), notes, font size, display and annotations stay. *No
   thanks* hides the offer for that song on this device (device setting
   `adjustmentOfferDismissed`, never synced).
+- 2026-11-22: Archives implemented (#809): song, set and backup archives write
+  `workId` and `language` per song (`BackupService.languageJson`); the import sets
+  the language on new songs and links the new songs that shared a `workId` under a
+  new group, never with songs already in the library (a reused identical song keeps
+  its own group). Older archives import as before. The format reference
+  (`docs/formats/song-archive.md`) and its example describe the fields. With this,
+  ADR-0053 is implemented.
 
 ## Open points
 
