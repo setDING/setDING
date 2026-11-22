@@ -77,8 +77,8 @@ the item JSON of `setlists.items` (ADR-0015) and in local columns:
      that differs from today's band key is highlighted.
    - Set editor: the key picker shows "Last D on 12.10.2026 · mostly D (12 of
      14)"; the song picker shows when each song was last played ("never").
-2. **v2 – band repertoire** (#661), computed locally: a *Repertoire* button at
-   the top of the **Sets tab** opens the view for the current band: most played
+2. **v2 – band repertoire** (#661), computed locally: *Repertoire* in the ⋮
+   menu of the **Sets tab** (#853) opens the view for the current band: most played
    songs, songs not played for a while and never played songs of the
    organization's library, for 12 months or all; the song list gets the sort
    *Last played* and the filters *Never played* and *Not played for a while*.
@@ -153,6 +153,9 @@ the item JSON of `setlists.items` (ADR-0015) and in local columns:
   stays. The Played panel shows *Other bands* below the band's own plays, also
   when the band never played the song; *Library usage* is in the menu of the
   songs tab and offers moving a song to the trash.
+- 2026-11-22: *Repertoire* moved from an app bar icon of the Sets tab to the top
+  of its ⋮ menu (#853), as it is used rarely; every role sees the menu, import and
+  trash stay with those who may manage sets.
 
 ## Open points
 

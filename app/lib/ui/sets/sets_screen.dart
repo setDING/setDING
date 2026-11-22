@@ -114,33 +114,33 @@ class _SetsPane extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.navSets),
         actions: [
-          // The band's repertoire from its past sets (ADR-0046).
-          IconButton(
-            key: const Key('sets-repertoire'),
-            tooltip: l10n.repertoire,
-            icon: const Icon(Icons.leaderboard_outlined),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute<void>(
-                builder: (_) => RepertoireScreen(band: band),
-              ),
-            ),
-          ),
           const BandSwitcher(),
-          // ADR-0043: whoever may delete sets may restore them, and import
-          // an exported set (§1b).
-          if (band.canManageSets)
-            PopupMenuButton<String>(
-              key: const Key('sets-menu'),
-              onSelected: (value) => value == 'import'
-                  ? pickSetArchive(context, bandId: band.id)
-                  : Navigator.push(
-                      context,
-                      MaterialPageRoute<void>(
-                        builder: (_) => TrashScreen.sets(bandId: band.id),
-                      ),
-                    ),
-              itemBuilder: (_) => [
+          PopupMenuButton<String>(
+            key: const Key('sets-menu'),
+            onSelected: (value) => switch (value) {
+              'import' => pickSetArchive(context, bandId: band.id),
+              _ => Navigator.push(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (_) => value == 'trash'
+                      ? TrashScreen.sets(bandId: band.id)
+                      : RepertoireScreen(band: band),
+                ),
+              ),
+            },
+            itemBuilder: (_) => [
+              // The band's repertoire from its past sets (ADR-0046); rarely
+              // needed, so in the menu rather than the app bar (#853).
+              MenuAction(
+                key: const Key('sets-repertoire'),
+                value: 'repertoire',
+                icon: Icons.leaderboard_outlined,
+                label: l10n.repertoire,
+              ),
+              // ADR-0043: whoever may delete sets may restore them, and
+              // import an exported set (§1b).
+              if (band.canManageSets) ...[
+                const PopupMenuDivider(),
                 MenuAction(
                   key: const Key('sets-import'),
                   value: 'import',
@@ -154,7 +154,8 @@ class _SetsPane extends ConsumerWidget {
                   label: l10n.trash,
                 ),
               ],
-            ),
+            ],
+          ),
         ],
       ),
       floatingActionButton: !band.canManageSets

@@ -74,11 +74,19 @@ void main() {
     return app;
   }
 
+  /// Repertoire is at the top of the sets tab's ⋮ menu (#853).
+  Future<void> openRepertoire(WidgetTester tester) async {
+    expect(find.byTooltip('Repertoire'), findsNothing);
+    await tester.tap(find.byKey(const Key('sets-menu')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('sets-repertoire')));
+  }
+
   testWidgets('the sets tab opens the repertoire of the band', (tester) async {
     final app = await local(tester);
     await tester.pumpWidget(app.build(home: const SetsScreen()));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('sets-repertoire')));
+    await openRepertoire(tester);
     await tester.pumpAndSettle();
 
     expect(find.byType(RepertoireScreen), findsOneWidget);
@@ -121,6 +129,43 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('members find Repertoire in the menu, without import and '
+      'trash', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'currentBandId': 'b1'},
+      user: _ann,
+    );
+    app.backend.addBand('b1', 'Rock', admin: _bob, organizationId: 'o1');
+    app.backend.addMember('b1', _ann, BandRole.member);
+    await tester.runAsync(() async {
+      await app.db
+          .into(app.db.organizations)
+          .insert(OrganizationsCompanion.insert(id: 'o1', name: 'Org'));
+      await app.db
+          .into(app.db.bands)
+          .insert(
+            BandsCompanion.insert(
+              id: 'b1',
+              name: 'Rock',
+              organizationId: const Value('o1'),
+            ),
+          );
+    });
+    await tester.pumpWidget(app.build(home: const SetsScreen()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('sets-menu')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('sets-repertoire')), findsOneWidget);
+    expect(find.byKey(const Key('sets-import')), findsNothing);
+    expect(find.byKey(const Key('sets-trash')), findsNothing);
+    expect(find.byType(PopupMenuDivider), findsNothing);
+    await tester.tap(find.byKey(const Key('sets-repertoire')));
+    await tester.pumpAndSettle();
+    expect(find.text('Repertoire of Rock'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
   testWidgets(
     'set planners choose when songs count as not played for a while',
     (tester) async {
@@ -153,7 +198,7 @@ void main() {
       });
       await tester.pumpWidget(app.build(home: const SetsScreen()));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('sets-repertoire')));
+      await openRepertoire(tester);
       await tester.pumpAndSettle();
 
       expect(find.text('Repertoire of Rock'), findsOneWidget);
