@@ -5,6 +5,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/data/database.dart';
+import 'package:setding/util/app_version.dart';
 
 import '../test/test_app.dart';
 
@@ -13,7 +14,8 @@ import 'screenshot_support.dart';
 void main() {
   setUpScreenshots();
 
-  // The next set, more sets, newest songs and songs not played for a while.
+  // The next set, more sets, newest songs and songs not played for a while;
+  // the version and What's new at the bottom of the screen (#896).
   for (final (lang, dark) in [('de', false), ('en', true)]) {
     screenshotTest('overview cards $lang', (tester) async {
       useTabletSize(tester, landscape: false);
@@ -64,12 +66,20 @@ void main() {
         }
       });
       await tester.pumpWidget(
-        RepaintBoundary(key: UniqueKey(), child: app.build()),
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            extra: [
+              appVersionProvider.overrideWith((ref) async => '0.18.0 (1)'),
+            ],
+          ),
+        ),
       );
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('overview-more-sets')), findsOneWidget);
       expect(find.byKey(const Key('overview-newest-songs')), findsOneWidget);
       expect(find.byKey(const Key('overview-not-played')), findsOneWidget);
+      expect(find.byKey(const Key('overview-version')), findsOneWidget);
       await shot(tester, '${lang}_44_overview');
       await app.dispose(tester);
     });

@@ -145,30 +145,47 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
         actions: const [BandSwitcher()],
       ),
       body: SyncRefresh(
-        child: ListView(
+        // The footer sits at the bottom of the screen while the cards leave
+        // room, and at the end of the list once they do not (#896).
+        child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
-          children: [
-            if (twoColumns && cards.length > 1)
-              Row(
-                key: const Key('overview-two-columns'),
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 12,
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+              sliver: SliverList.list(
                 children: [
-                  for (final column in [0, 1])
-                    Expanded(
-                      child: Column(
-                        children: [
-                          for (final (i, card) in cards.indexed)
-                            if (i % 2 == column) card,
-                        ],
-                      ),
-                    ),
+                  if (twoColumns && cards.length > 1)
+                    Row(
+                      key: const Key('overview-two-columns'),
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 12,
+                      children: [
+                        for (final column in [0, 1])
+                          Expanded(
+                            child: Column(
+                              children: [
+                                for (final (i, card) in cards.indexed)
+                                  if (i % 2 == column) card,
+                              ],
+                            ),
+                          ),
+                      ],
+                    )
+                  else
+                    ...cards,
                 ],
-              )
-            else
-              ...cards,
-            const _Footer(),
+              ),
+            ),
+            const SliverFillRemaining(
+              hasScrollBody: false,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(12, 0, 12, 24),
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: _Footer(),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -539,6 +556,7 @@ class _Footer extends ConsumerWidget {
       key: const Key('overview-footer'),
       padding: const EdgeInsets.only(top: 16),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           const UpdateAvailableTile(
             key: Key('overview-update'),

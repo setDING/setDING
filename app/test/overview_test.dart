@@ -340,6 +340,38 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('the footer sits at the bottom of the screen (#896)', (
+    tester,
+  ) async {
+    usePhoneSize(tester);
+    PackageInfo.setMockInitialValues(
+      appName: 'setDING',
+      packageName: 'app.setding',
+      version: '0.1.1',
+      buildNumber: '3',
+      buildSignature: '',
+    );
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+    final version = find.byKey(const Key('overview-version'));
+    final footer = find.byKey(const Key('overview-footer'));
+    final list = find.descendant(
+      of: find.byType(OverviewScreen),
+      matching: find.byType(Scrollable),
+    );
+    // No cards: not under the app bar, but at the bottom edge.
+    expect(
+      tester.getBottomLeft(footer).dy,
+      moreOrLessEquals(tester.getBottomLeft(list.first).dy - 24),
+    );
+    expect(
+      tester.getBottomLeft(version).dy,
+      greaterThan(tester.getBottomLeft(list.first).dy - 80),
+    );
+    await app.dispose(tester);
+  });
+
   group('recent changes', () {
     final recent = find.byKey(const Key('overview-recent-changes'));
     final lastShown = now.subtract(const Duration(hours: 2));
