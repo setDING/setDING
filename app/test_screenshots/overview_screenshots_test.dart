@@ -5,6 +5,8 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/data/database.dart';
+import 'package:setding/ui/widgets/app_info.dart';
+import 'package:setding/update/whats_new.dart';
 import 'package:setding/util/app_version.dart';
 
 import '../test/test_app.dart';
@@ -71,6 +73,11 @@ void main() {
           child: app.build(
             extra: [
               appVersionProvider.overrideWith((ref) async => '0.18.0 (1)'),
+              recentNotesProvider.overrideWithValue(
+                const VersionNotes('0.18.0', {
+                  'en': ['Language versions of songs'],
+                }),
+              ),
             ],
           ),
         ),
@@ -80,6 +87,7 @@ void main() {
       expect(find.byKey(const Key('overview-newest-songs')), findsOneWidget);
       expect(find.byKey(const Key('overview-not-played')), findsOneWidget);
       expect(find.byKey(const Key('overview-version')), findsOneWidget);
+      expect(find.byKey(const Key('overview-whats-new')), findsOneWidget);
       await shot(tester, '${lang}_44_overview');
       await app.dispose(tester);
     });
