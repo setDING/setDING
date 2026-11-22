@@ -4125,7 +4125,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backupRestoreHint =>
-      'Imports a backup file as a copy. Nothing existing is changed.';
+      'Imports a backup file as a copy, or replaces the library “On this device” by its backup.';
 
   @override
   String get backupRestoreTitle => 'Restore backup';
@@ -5419,5 +5419,125 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String autoBackupSaved(String file) {
     return 'Saved as “$file”';
+  }
+
+  @override
+  String get backupModeCopy => 'Add as a copy';
+
+  @override
+  String get backupModeCopyHint =>
+      'Songs and sets are added with new IDs; nothing existing is changed.';
+
+  @override
+  String get backupModeReplace => 'Replace the local library';
+
+  @override
+  String get backupModeReplaceHint =>
+      'The library “On this device” becomes exactly as in the backup, e.g. on a new device or to go back to an earlier state.';
+
+  @override
+  String get backupReplaceTitle => 'Replace the local library?';
+
+  @override
+  String backupReplaceFromDevice(
+    String device,
+    String date,
+    int songs,
+    int sets,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: '$songs songs',
+      one: '1 song',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      sets,
+      locale: localeName,
+      other: '$sets sets',
+      one: '1 set',
+    );
+    return 'Backup of “$device” from $date: $_temp0, $_temp1.';
+  }
+
+  @override
+  String backupReplaceFrom(String date, int songs, int sets) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: '$songs songs',
+      one: '1 song',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      sets,
+      locale: localeName,
+      other: '$sets sets',
+      one: '1 set',
+    );
+    return 'Backup from $date: $_temp0, $_temp1.';
+  }
+
+  @override
+  String backupReplaceNow(int songs, int sets) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: '$songs songs',
+      one: '1 song',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      sets,
+      locale: localeName,
+      other: '$sets sets',
+      one: '1 set',
+    );
+    return 'Now on this device: $_temp0, $_temp1. They are removed, also those in the trash.';
+  }
+
+  @override
+  String get backupReplaceKeeps =>
+      'The play history comes back with the sets of the backup. Settings and organizations are not changed.';
+
+  @override
+  String get backupReplaceSafety => 'Save a safety backup first';
+
+  @override
+  String backupReplaceSafetyFolder(String folder) {
+    return 'Into the folder of the automatic backup ($folder).';
+  }
+
+  @override
+  String get backupReplaceSafetyChoose => 'You choose where to save it.';
+
+  @override
+  String get backupReplaceSafetySkip =>
+      'Without a safety backup, the current library cannot be restored.';
+
+  @override
+  String get backupReplaceAction => 'Replace';
+
+  @override
+  String get backupReplaceRunning => 'Replacing the local library …';
+
+  @override
+  String backupReplaceDone(int songs, int sets) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: '$songs songs',
+      one: '1 song',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      sets,
+      locale: localeName,
+      other: '$sets sets',
+      one: '1 set',
+    );
+    return 'Local library replaced: $_temp0, $_temp1.';
+  }
+
+  @override
+  String backupReplaceSafetyFailed(String reason) {
+    return 'The safety backup could not be saved, so nothing was replaced: $reason';
   }
 }

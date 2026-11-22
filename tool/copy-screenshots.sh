@@ -82,6 +82,8 @@ map=(
   overview 44_overview
   songs_trash 45_songs_trash
   songs_trash_menu 45b_songs_trash_menu
+  backup_replace_choice 44_backup_replace_choice
+  backup_replace 44b_backup_replace
 )
 
 copied=0

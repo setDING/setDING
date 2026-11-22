@@ -4148,7 +4148,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get backupRestoreHint =>
-      'Importiert eine Sicherungsdatei als Kopie. Bestehendes wird nicht verändert.';
+      'Importiert eine Sicherungsdatei als Kopie oder ersetzt die Bibliothek «Auf diesem Gerät» durch ihre Sicherung.';
 
   @override
   String get backupRestoreTitle => 'Sicherung wiederherstellen';
@@ -5464,5 +5464,125 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String autoBackupSaved(String file) {
     return 'Gespeichert als «$file»';
+  }
+
+  @override
+  String get backupModeCopy => 'Als Kopie hinzufügen';
+
+  @override
+  String get backupModeCopyHint =>
+      'Songs und Sets kommen mit neuen IDs dazu; Bestehendes wird nicht verändert.';
+
+  @override
+  String get backupModeReplace => 'Lokale Bibliothek ersetzen';
+
+  @override
+  String get backupModeReplaceHint =>
+      'Die Bibliothek «Auf diesem Gerät» wird genau wie in der Sicherung, z. B. auf einem neuen Gerät oder um zu einem früheren Stand zurückzukehren.';
+
+  @override
+  String get backupReplaceTitle => 'Lokale Bibliothek ersetzen?';
+
+  @override
+  String backupReplaceFromDevice(
+    String device,
+    String date,
+    int songs,
+    int sets,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: '$songs Songs',
+      one: '1 Song',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      sets,
+      locale: localeName,
+      other: '$sets Sets',
+      one: '1 Set',
+    );
+    return 'Sicherung von «$device» vom $date: $_temp0, $_temp1.';
+  }
+
+  @override
+  String backupReplaceFrom(String date, int songs, int sets) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: '$songs Songs',
+      one: '1 Song',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      sets,
+      locale: localeName,
+      other: '$sets Sets',
+      one: '1 Set',
+    );
+    return 'Sicherung vom $date: $_temp0, $_temp1.';
+  }
+
+  @override
+  String backupReplaceNow(int songs, int sets) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: '$songs Songs',
+      one: '1 Song',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      sets,
+      locale: localeName,
+      other: '$sets Sets',
+      one: '1 Set',
+    );
+    return 'Jetzt auf diesem Gerät: $_temp0, $_temp1. Sie werden entfernt, auch die im Papierkorb.';
+  }
+
+  @override
+  String get backupReplaceKeeps =>
+      'Der Spielverlauf kommt mit den Sets der Sicherung zurück. Einstellungen und Organisationen werden nicht verändert.';
+
+  @override
+  String get backupReplaceSafety => 'Zuerst eine Sicherheitskopie speichern';
+
+  @override
+  String backupReplaceSafetyFolder(String folder) {
+    return 'In den Ordner der automatischen Sicherung ($folder).';
+  }
+
+  @override
+  String get backupReplaceSafetyChoose => 'Du wählst, wo sie gespeichert wird.';
+
+  @override
+  String get backupReplaceSafetySkip =>
+      'Ohne Sicherheitskopie lässt sich die jetzige Bibliothek nicht wiederherstellen.';
+
+  @override
+  String get backupReplaceAction => 'Ersetzen';
+
+  @override
+  String get backupReplaceRunning => 'Lokale Bibliothek wird ersetzt …';
+
+  @override
+  String backupReplaceDone(int songs, int sets) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: '$songs Songs',
+      one: '1 Song',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      sets,
+      locale: localeName,
+      other: '$sets Sets',
+      one: '1 Set',
+    );
+    return 'Lokale Bibliothek ersetzt: $_temp0, $_temp1.';
+  }
+
+  @override
+  String backupReplaceSafetyFailed(String reason) {
+    return 'Die Sicherheitskopie konnte nicht gespeichert werden, darum wurde nichts ersetzt: $reason';
   }
 }

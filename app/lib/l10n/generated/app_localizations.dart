@@ -6676,7 +6676,7 @@ abstract class AppLocalizations {
   /// No description provided for @backupRestoreHint.
   ///
   /// In de, this message translates to:
-  /// **'Importiert eine Sicherungsdatei als Kopie. Bestehendes wird nicht verändert.'**
+  /// **'Importiert eine Sicherungsdatei als Kopie oder ersetzt die Bibliothek «Auf diesem Gerät» durch ihre Sicherung.'**
   String get backupRestoreHint;
 
   /// No description provided for @backupRestoreTitle.
@@ -8344,6 +8344,113 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Gespeichert als «{file}»'**
   String autoBackupSaved(String file);
+
+  /// No description provided for @backupModeCopy.
+  ///
+  /// In de, this message translates to:
+  /// **'Als Kopie hinzufügen'**
+  String get backupModeCopy;
+
+  /// No description provided for @backupModeCopyHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Songs und Sets kommen mit neuen IDs dazu; Bestehendes wird nicht verändert.'**
+  String get backupModeCopyHint;
+
+  /// No description provided for @backupModeReplace.
+  ///
+  /// In de, this message translates to:
+  /// **'Lokale Bibliothek ersetzen'**
+  String get backupModeReplace;
+
+  /// No description provided for @backupModeReplaceHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Bibliothek «Auf diesem Gerät» wird genau wie in der Sicherung, z. B. auf einem neuen Gerät oder um zu einem früheren Stand zurückzukehren.'**
+  String get backupModeReplaceHint;
+
+  /// No description provided for @backupReplaceTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Lokale Bibliothek ersetzen?'**
+  String get backupReplaceTitle;
+
+  /// No description provided for @backupReplaceFromDevice.
+  ///
+  /// In de, this message translates to:
+  /// **'Sicherung von «{device}» vom {date}: {songs, plural, =1{1 Song} other{{songs} Songs}}, {sets, plural, =1{1 Set} other{{sets} Sets}}.'**
+  String backupReplaceFromDevice(
+    String device,
+    String date,
+    int songs,
+    int sets,
+  );
+
+  /// No description provided for @backupReplaceFrom.
+  ///
+  /// In de, this message translates to:
+  /// **'Sicherung vom {date}: {songs, plural, =1{1 Song} other{{songs} Songs}}, {sets, plural, =1{1 Set} other{{sets} Sets}}.'**
+  String backupReplaceFrom(String date, int songs, int sets);
+
+  /// No description provided for @backupReplaceNow.
+  ///
+  /// In de, this message translates to:
+  /// **'Jetzt auf diesem Gerät: {songs, plural, =1{1 Song} other{{songs} Songs}}, {sets, plural, =1{1 Set} other{{sets} Sets}}. Sie werden entfernt, auch die im Papierkorb.'**
+  String backupReplaceNow(int songs, int sets);
+
+  /// No description provided for @backupReplaceKeeps.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Spielverlauf kommt mit den Sets der Sicherung zurück. Einstellungen und Organisationen werden nicht verändert.'**
+  String get backupReplaceKeeps;
+
+  /// No description provided for @backupReplaceSafety.
+  ///
+  /// In de, this message translates to:
+  /// **'Zuerst eine Sicherheitskopie speichern'**
+  String get backupReplaceSafety;
+
+  /// No description provided for @backupReplaceSafetyFolder.
+  ///
+  /// In de, this message translates to:
+  /// **'In den Ordner der automatischen Sicherung ({folder}).'**
+  String backupReplaceSafetyFolder(String folder);
+
+  /// No description provided for @backupReplaceSafetyChoose.
+  ///
+  /// In de, this message translates to:
+  /// **'Du wählst, wo sie gespeichert wird.'**
+  String get backupReplaceSafetyChoose;
+
+  /// No description provided for @backupReplaceSafetySkip.
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Sicherheitskopie lässt sich die jetzige Bibliothek nicht wiederherstellen.'**
+  String get backupReplaceSafetySkip;
+
+  /// No description provided for @backupReplaceAction.
+  ///
+  /// In de, this message translates to:
+  /// **'Ersetzen'**
+  String get backupReplaceAction;
+
+  /// No description provided for @backupReplaceRunning.
+  ///
+  /// In de, this message translates to:
+  /// **'Lokale Bibliothek wird ersetzt …'**
+  String get backupReplaceRunning;
+
+  /// No description provided for @backupReplaceDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Lokale Bibliothek ersetzt: {songs, plural, =1{1 Song} other{{songs} Songs}}, {sets, plural, =1{1 Set} other{{sets} Sets}}.'**
+  String backupReplaceDone(int songs, int sets);
+
+  /// No description provided for @backupReplaceSafetyFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Sicherheitskopie konnte nicht gespeichert werden, darum wurde nichts ersetzt: {reason}'**
+  String backupReplaceSafetyFailed(String reason);
 }
 
 class _AppLocalizationsDelegate

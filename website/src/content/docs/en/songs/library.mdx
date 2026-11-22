@@ -6,6 +6,8 @@ sidebar:
 ---
 
 import { Image } from 'astro:assets';
+import replaceChoice from '../../../../../../docs/screenshots/backup_replace_choice.png';
+import replace from '../../../../../../docs/screenshots/backup_replace.png';
 import songs from '../../../../../../docs/screenshots/songs.png';
 import importLabels from '../../../../../../docs/screenshots/import_labels.png';
 import songsSelected from '../../../../../../docs/screenshots/songs_selected.png';
@@ -256,6 +258,26 @@ different text, you choose whether to keep the existing one or to import the bac
 as an additional song; setDING lists the additional songs afterwards so that you can
 compare and clean up. For each band of the backup you choose which band gets its
 sets.
+
+### Replace the local library
+
+A backup of the library *On this device* can also **replace** it, e.g. on a new
+device or to go back to an earlier state. Import it while *On this device* is the
+current library and choose **Replace the local library**. The songs, sets,
+attachments, adjustments and notes come back exactly as in the backup, with the same
+IDs; what is there now is removed, also from the trash. The play history comes back
+with the sets of the backup; settings and organizations are not changed. The
+local library in a full backup (**Restore backup** in the settings) can replace it
+the same way.
+
+<Image src={replaceChoice} alt="Importing a backup of «On this device»: «Add as a copy» or «Replace the local library»" />
+
+Before anything is removed, setDING shows what the backup holds (which device, when)
+and what is there now, and saves a **safety backup** of the current library: into the
+folder of the [automatic backup](/en/settings/general/#storage--info) if you use one,
+otherwise where you choose. Only if you untick it, there is none.
+
+<Image src={replace} alt="Replace the local library? The backup of «Rehearsal tablet» with 3 songs and 1 set, now 4 songs and 1 set on this device, and the safety backup into the Nextcloud folder" />
 
 The library *On this device* can also be backed up **automatically** into a folder
 of your cloud storage, once a day after changes: see

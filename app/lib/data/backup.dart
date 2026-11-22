@@ -113,6 +113,13 @@ class BackupContents {
   String get sourceName =>
       ((manifest['source'] as Map?)?['name'] as String?) ?? '';
 
+  /// The device that wrote the archive (automatic backup), or null.
+  String? get device => (manifest['source'] as Map?)?['device'] as String?;
+
+  /// When the archive was written, or null.
+  DateTime? get createdAt =>
+      DateTime.tryParse(manifest['createdAt'] as String? ?? '')?.toLocal();
+
   /// The ChordPro text of a song of the archive ('' for PDF-only songs).
   String sourceOf(Map<String, dynamic> song) {
     final file = song['file'] as String?;
@@ -309,6 +316,7 @@ class BackupService {
     required String libraryName,
     Future<Uint8List?> Function(AttachmentEntry attachment)? readFile,
     DateTime? now,
+    String? device,
   }) async => compute(
     _zip,
     await _collect(
@@ -316,6 +324,7 @@ class BackupService {
       libraryName: libraryName,
       readFile: readFile,
       now: now,
+      device: device,
     ),
   );
 
@@ -347,6 +356,7 @@ class BackupService {
     required String libraryName,
     Future<Uint8List?> Function(AttachmentEntry attachment)? readFile,
     DateTime? now,
+    String? device,
   }) async {
     final files = <String, Uint8List>{};
     final used = <String>{};
@@ -478,6 +488,8 @@ class BackupService {
         'kind': libraryId == localBandId ? 'local' : 'organization',
         'id': libraryId,
         'name': libraryName,
+        // The device that wrote it (automatic backup, ADR-0054).
+        'device': ?device,
       },
       'songs': songJson,
       'bands': [
@@ -883,40 +895,7 @@ class BackupService {
         gigDate: gigDate,
         venue: s['venue'] as String?,
       );
-      await db.transaction(() async {
-        var position = 0;
-        for (final i in [
-          for (final e in (s['items'] as List?) ?? const [])
-            (e as Map).cast<String, dynamic>(),
-        ]) {
-          final (:type, :icon) = readItemType(i['type'], i['icon']);
-          final songId = songMap[i['songId']];
-          // A song item whose song is not in the archive is left out.
-          if (type == SetItemType.song && songId == null) continue;
-          await db
-              .into(db.setItems)
-              .insert(
-                SetItemsCompanion.insert(
-                  id: _uuid.v4(),
-                  setId: setId,
-                  songId: Value(songId),
-                  position: position++,
-                  transpose: Value((i['transpose'] as int?) ?? 0),
-                  sequence: Value(i['sequence'] as String?),
-                  note: Value(i['note'] as String?),
-                  type: type,
-                  icon: Value(icon),
-                  played: Value(switch (i['played']) {
-                    final Map<String, dynamic> played => PlayedValues.fromJson(
-                      played,
-                    ),
-                    _ => null,
-                  }),
-                ),
-              );
-        }
-        await markDirty(db, SyncCollection.setlists, setId, scope: band);
-      });
+      await _insertItems(s, setId: setId, band: band, songMap: songMap);
       setCount++;
     }
 
@@ -927,6 +906,285 @@ class BackupService {
       keptExisting: songs.keptExisting,
       sets: setCount,
       files: songs.files,
+    );
+  }
+
+  /// Inserts the items of the archive set [s] into the set [setId] of
+  /// [band]; song items whose song is not in [songMap] are left out.
+  Future<void> _insertItems(
+    Map<String, dynamic> s, {
+    required String setId,
+    required String band,
+    required Map<String, String> songMap,
+  }) => db.transaction(() async {
+    var position = 0;
+    for (final i in [
+      for (final e in (s['items'] as List?) ?? const [])
+        (e as Map).cast<String, dynamic>(),
+    ]) {
+      final (:type, :icon) = readItemType(i['type'], i['icon']);
+      final songId = songMap[i['songId']];
+      // A song item whose song is not in the archive is left out.
+      if (type == SetItemType.song && songId == null) continue;
+      await db
+          .into(db.setItems)
+          .insert(
+            SetItemsCompanion.insert(
+              id: _uuid.v4(),
+              setId: setId,
+              songId: Value(songId),
+              position: position++,
+              transpose: Value((i['transpose'] as int?) ?? 0),
+              sequence: Value(i['sequence'] as String?),
+              note: Value(i['note'] as String?),
+              type: type,
+              icon: Value(icon),
+              played: Value(switch (i['played']) {
+                final Map<String, dynamic> played => PlayedValues.fromJson(
+                  played,
+                ),
+                _ => null,
+              }),
+            ),
+          );
+    }
+    await markDirty(db, SyncCollection.setlists, setId, scope: band);
+  });
+
+  // Replacing the local library (ADR-0054 section 2) -------------------------
+
+  /// Whether [contents] is the archive of a local library: only those can
+  /// replace the local library.
+  static bool isLocalArchive(BackupContents contents) =>
+      (contents.manifest['source'] as Map?)?['kind'] == 'local';
+
+  /// The songs and sets of the local library now (not in the trash).
+  Future<({int songs, int sets})> localCounts() async {
+    final songs =
+        await (db.select(db.songs)..where(
+              (s) => s.libraryId.equals(localBandId) & s.deleted.equals(false),
+            ))
+            .get();
+    final sets =
+        await (db.select(db.setlists)..where(
+              (s) => s.bandId.equals(localBandId) & s.deleted.equals(false),
+            ))
+            .get();
+    return (songs: songs.length, sets: sets.length);
+  }
+
+  /// Replaces the whole local library by [contents] (ADR-0054 section 2):
+  /// its songs, attachments, sets, arrangements, personal adjustments and
+  /// annotations and its trash are removed on the device, then the
+  /// archive's records are written with their original IDs. An ID that is
+  /// already used outside the local library gets a new one. The play
+  /// history of the local band comes from its sets and is restored with
+  /// them; settings and organizations are not touched.
+  Future<BackupImportResult> replaceLocal(BackupContents contents) async {
+    final songs = SongRepository(db, storage, libraryId: localBandId);
+    final oldFiles = <String>{};
+    final newFiles = <String>{};
+    var songCount = 0, setCount = 0, fileCount = 0;
+    await db.transaction(() async {
+      // Remove -----------------------------------------------------------
+      final songIds = [
+        for (final s in await (db.select(
+          db.songs,
+        )..where((s) => s.libraryId.equals(localBandId))).get())
+          s.id,
+      ];
+      final setIds = [
+        for (final s in await (db.select(
+          db.setlists,
+        )..where((s) => s.bandId.equals(localBandId))).get())
+          s.id,
+      ];
+      oldFiles.addAll([
+        for (final a in await (db.select(
+          db.attachments,
+        )..where((a) => a.songId.isIn(songIds))).get())
+          a.fileName,
+      ]);
+      await (db.delete(
+        db.annotations,
+      )..where((a) => a.songId.isIn(songIds))).go();
+      await (db.delete(
+        db.personalOverlays,
+      )..where((o) => o.songId.isIn(songIds))).go();
+      await (db.delete(db.bandArrangements)..where(
+            (a) => a.bandId.equals(localBandId) | a.songId.isIn(songIds),
+          ))
+          .go();
+      await (db.delete(
+        db.setItems,
+      )..where((i) => i.setId.isIn(setIds) | i.songId.isIn(songIds))).go();
+      await (db.delete(
+        db.setlists,
+      )..where((s) => s.bandId.equals(localBandId))).go();
+      await (db.delete(
+        db.attachments,
+      )..where((a) => a.songId.isIn(songIds))).go();
+      await (db.delete(
+        db.songConflicts,
+      )..where((c) => c.songId.isIn(songIds))).go();
+      await (db.delete(
+        db.songs,
+      )..where((s) => s.libraryId.equals(localBandId))).go();
+
+      // Write ------------------------------------------------------------
+      Future<String> keep(
+        String? id,
+        Future<bool> Function(String id) used,
+      ) async => id == null || id.isEmpty || await used(id) ? _uuid.v4() : id;
+      final songMap = <String, String>{};
+      final attachmentMap = <String, String>{};
+      for (final song in contents.songs) {
+        final original = song['id'] as String;
+        final id = await keep(
+          original,
+          (id) async =>
+              await (db.select(
+                db.songs,
+              )..where((s) => s.id.equals(id))).getSingleOrNull() !=
+              null,
+        );
+        await songs.createSong(
+          source: contents.sourceOf(song),
+          title: song['title'] as String?,
+          artist: song['artist'] as String?,
+          id: id,
+        );
+        songMap[original] = id;
+        songCount++;
+        if (song['language'] case final String language
+            when songLanguages.contains(language)) {
+          await songs.setLanguage(id, language);
+        }
+        // The IDs are kept, so the language version groups too (ADR-0053).
+        if (song['workId'] case final String work when work.isNotEmpty) {
+          await songs.setWorkId(id, work);
+        }
+        for (final a in attachmentsOf(song)) {
+          final bytes = contents.files[a['file'] as String? ?? ''];
+          if (bytes == null || bytes.length > maxAttachmentBytes) continue;
+          final attachmentId = await keep(
+            a['id'] as String?,
+            (id) async =>
+                await (db.select(
+                  db.attachments,
+                )..where((x) => x.id.equals(id))).getSingleOrNull() !=
+                null,
+          );
+          final ext = p
+              .extension(a['file'] as String)
+              .replaceFirst('.', '')
+              .toLowerCase();
+          await songs.addAttachment(
+            id,
+            name: a['name'] as String? ?? '',
+            bytes: bytes,
+            pages: a['pages'] as int?,
+            extension: ext.isEmpty ? 'pdf' : ext,
+            id: attachmentId,
+          );
+          final stored = await (db.select(
+            db.attachments,
+          )..where((x) => x.id.equals(attachmentId))).getSingle();
+          newFiles.add(stored.fileName);
+          if (a['id'] case final String original) {
+            attachmentMap[original] = attachmentId;
+          }
+          fileCount++;
+        }
+      }
+      for (final o in contents.overlays) {
+        final songId = songMap[o['songId']];
+        if (songId == null) continue;
+        final liveView = o['liveView'] as String?;
+        await songs.saveOverlay(
+          _overlayFrom(
+            await songs.getOverlay(songId),
+            o,
+            liveView == null ? null : attachmentMap[liveView],
+          ),
+        );
+      }
+      for (final x in contents.annotations) {
+        final songId = songMap[x['songId']];
+        final target = x['target'] as String? ?? '';
+        final newTarget = target.isEmpty ? '' : attachmentMap[target];
+        if (songId == null || newTarget == null) continue;
+        await db
+            .into(db.annotations)
+            .insert(
+              AnnotationsCompanion.insert(
+                id: await keep(
+                  x['id'] as String?,
+                  (id) async =>
+                      await (db.select(
+                        db.annotations,
+                      )..where((a) => a.id.equals(id))).getSingleOrNull() !=
+                      null,
+                ),
+                ownerId: localOwnerId,
+                songId: songId,
+                target: Value(newTarget),
+                stroke: Value(x['stroke'] as String?),
+                updatedAt:
+                    (x['updatedAt'] as int?) ??
+                    DateTime.now().millisecondsSinceEpoch,
+              ),
+            );
+      }
+      final arrangements = ArrangementRepository(db);
+      for (final a in contents.arrangements) {
+        final songId = songMap[a['songId']];
+        if (songId == null) continue;
+        await arrangements.save(
+          localBandId,
+          songId,
+          transpose: (a['transpose'] as int?) ?? 0,
+          sequence: a['sequence'] as String?,
+          tempo: a['tempo'] as int?,
+        );
+      }
+      final sets = SetRepository(db, storage, bandId: localBandId);
+      for (final s in contents.sets) {
+        final setId = await sets.createSet(
+          id: await keep(
+            s['id'] as String?,
+            (id) async =>
+                await (db.select(
+                  db.setlists,
+                )..where((x) => x.id.equals(id))).getSingleOrNull() !=
+                null,
+          ),
+          name: s['name'] as String? ?? '',
+          gigDate: DateTime.tryParse(s['gigDate'] as String? ?? ''),
+          venue: s['venue'] as String?,
+        );
+        await _insertItems(
+          s,
+          setId: setId,
+          band: localBandId,
+          songMap: songMap,
+        );
+        setCount++;
+      }
+    });
+    // Files of removed attachments that no restored one uses.
+    for (final f in oldFiles.difference(newFiles)) {
+      try {
+        await storage.delete(f);
+      } catch (_) {}
+    }
+    return BackupImportResult(
+      imported: songCount,
+      identical: 0,
+      additional: const [],
+      keptExisting: 0,
+      sets: setCount,
+      files: fileCount,
     );
   }
 

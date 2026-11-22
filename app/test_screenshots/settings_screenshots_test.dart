@@ -2,6 +2,9 @@
 // See screenshot_support.dart.
 
 import 'package:setding/data/auto_backup.dart';
+import 'package:setding/data/backup.dart';
+import 'package:setding/data/database.dart' show localBandId;
+import 'package:setding/ui/backup/backup_actions.dart';
 import 'package:setding/ui/bands/band_screen.dart';
 import 'package:setding/ui/bands/organization_screen.dart';
 import 'package:setding/ui/settings_screen.dart';
@@ -185,6 +188,87 @@ void main() {
         scrollable: find.byType(Scrollable).last,
       );
       await shot(tester, '${lang}_43_settings_auto_backup');
+      await app.dispose(tester);
+    });
+  }
+
+  // Restoring by replacing the local library (ADR-0054): the choice in the
+  // import of a backup of the local library and the preview with the
+  // safety backup.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('replace local library $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {
+          'language': lang,
+          'themeMode': dark ? 'dark' : 'light',
+          AutoBackupController.enabledKey: true,
+          AutoBackupController.locationKey: 'content://nextcloud/setDING',
+          AutoBackupController.folderNameKey: 'Nextcloud › setDING',
+        },
+      );
+      final zip = (await tester.runAsync(() async {
+        final titles = lang == 'de'
+            ? ['Hallelujah', 'Rocky Road', 'Sternennacht']
+            : ['Hallelujah', 'Rocky Road', 'Starry Night'];
+        final ids = [
+          for (final t in titles)
+            await app.songs.createSong(source: '{title: $t}'),
+        ];
+        final set = await app.sets.createSet(
+          name: lang == 'de' ? 'Sommerfest' : 'Summer party',
+        );
+        await app.sets.addSongs(set, ids);
+        final zip = await BackupService(app.db, app.storage).export(
+          localBandId,
+          libraryName: lang == 'de' ? 'Auf diesem Gerät' : 'On this device',
+          device: lang == 'de' ? 'Tablet Probe' : 'Rehearsal tablet',
+          now: DateTime(2026, 11, 20, 21, 15),
+        );
+        await app.songs.createSong(source: '{title: Demo}');
+        return zip;
+      }))!;
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => TextButton(
+                  onPressed: () => importBackup(context, zip),
+                  child: const Text('open'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      for (var i = 0; i < 100; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump();
+        if (find
+            .byKey(const Key('backup-mode-replace'))
+            .evaluate()
+            .isNotEmpty) {
+          break;
+        }
+      }
+      await tester.tap(find.byKey(const Key('backup-mode-replace')));
+      await shot(tester, '${lang}_44_backup_replace_choice');
+      await tester.tap(find.byKey(const Key('backup-import-start')));
+      for (var i = 0; i < 100; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump();
+        if (find.byKey(const Key('backup-replace')).evaluate().isNotEmpty) {
+          break;
+        }
+      }
+      await shot(tester, '${lang}_44b_backup_replace');
       await app.dispose(tester);
     });
   }

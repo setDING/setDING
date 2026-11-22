@@ -2406,7 +2406,7 @@
     }
   },
   "backupRestore": "Sicherung wiederherstellen",
-  "backupRestoreHint": "Importiert eine Sicherungsdatei als Kopie. Bestehendes wird nicht verändert.",
+  "backupRestoreHint": "Importiert eine Sicherungsdatei als Kopie oder ersetzt die Bibliothek «Auf diesem Gerät» durch ihre Sicherung.",
   "backupRestoreTitle": "Sicherung wiederherstellen",
   "backupLibraryTo": "«{library}» ({songs, plural, =1{1 Song} other{{songs} Songs}}, {sets, plural, =1{1 Set} other{{sets} Sets}}) nach",
   "@backupLibraryTo": {
@@ -3411,6 +3411,86 @@
   "@autoBackupSaved": {
     "placeholders": {
       "file": {
+        "type": "String"
+      }
+    }
+  },
+  "backupModeCopy": "Als Kopie hinzufügen",
+  "backupModeCopyHint": "Songs und Sets kommen mit neuen IDs dazu; Bestehendes wird nicht verändert.",
+  "backupModeReplace": "Lokale Bibliothek ersetzen",
+  "backupModeReplaceHint": "Die Bibliothek «Auf diesem Gerät» wird genau wie in der Sicherung, z. B. auf einem neuen Gerät oder um zu einem früheren Stand zurückzukehren.",
+  "backupReplaceTitle": "Lokale Bibliothek ersetzen?",
+  "backupReplaceFromDevice": "Sicherung von «{device}» vom {date}: {songs, plural, =1{1 Song} other{{songs} Songs}}, {sets, plural, =1{1 Set} other{{sets} Sets}}.",
+  "@backupReplaceFromDevice": {
+    "placeholders": {
+      "device": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      },
+      "songs": {
+        "type": "int"
+      },
+      "sets": {
+        "type": "int"
+      }
+    }
+  },
+  "backupReplaceFrom": "Sicherung vom {date}: {songs, plural, =1{1 Song} other{{songs} Songs}}, {sets, plural, =1{1 Set} other{{sets} Sets}}.",
+  "@backupReplaceFrom": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "songs": {
+        "type": "int"
+      },
+      "sets": {
+        "type": "int"
+      }
+    }
+  },
+  "backupReplaceNow": "Jetzt auf diesem Gerät: {songs, plural, =1{1 Song} other{{songs} Songs}}, {sets, plural, =1{1 Set} other{{sets} Sets}}. Sie werden entfernt, auch die im Papierkorb.",
+  "@backupReplaceNow": {
+    "placeholders": {
+      "songs": {
+        "type": "int"
+      },
+      "sets": {
+        "type": "int"
+      }
+    }
+  },
+  "backupReplaceKeeps": "Der Spielverlauf kommt mit den Sets der Sicherung zurück. Einstellungen und Organisationen werden nicht verändert.",
+  "backupReplaceSafety": "Zuerst eine Sicherheitskopie speichern",
+  "backupReplaceSafetyFolder": "In den Ordner der automatischen Sicherung ({folder}).",
+  "@backupReplaceSafetyFolder": {
+    "placeholders": {
+      "folder": {
+        "type": "String"
+      }
+    }
+  },
+  "backupReplaceSafetyChoose": "Du wählst, wo sie gespeichert wird.",
+  "backupReplaceSafetySkip": "Ohne Sicherheitskopie lässt sich die jetzige Bibliothek nicht wiederherstellen.",
+  "backupReplaceAction": "Ersetzen",
+  "backupReplaceRunning": "Lokale Bibliothek wird ersetzt …",
+  "backupReplaceDone": "Lokale Bibliothek ersetzt: {songs, plural, =1{1 Song} other{{songs} Songs}}, {sets, plural, =1{1 Set} other{{sets} Sets}}.",
+  "@backupReplaceDone": {
+    "placeholders": {
+      "songs": {
+        "type": "int"
+      },
+      "sets": {
+        "type": "int"
+      }
+    }
+  },
+  "backupReplaceSafetyFailed": "Die Sicherheitskopie konnte nicht gespeichert werden, darum wurde nichts ersetzt: {reason}",
+  "@backupReplaceSafetyFailed": {
+    "placeholders": {
+      "reason": {
         "type": "String"
       }
     }

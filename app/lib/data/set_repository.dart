@@ -160,20 +160,22 @@ class SetRepository {
           .watchSingleOrNull();
 
   /// Creates a set; [origin] is the set an imported one was made from
-  /// (ADR-0043 §1b).
+  /// (ADR-0043 §1b). [id]: kept when the local library is restored
+  /// (ADR-0054); default a new one.
   Future<String> createSet({
     required String name,
     DateTime? gigDate,
     String? venue,
     String? origin,
+    String? id,
   }) async {
-    final id = _uuid.v4();
+    final newId = id ?? _uuid.v4();
     await db.transaction(() async {
       await db
           .into(db.setlists)
           .insert(
             SetlistsCompanion.insert(
-              id: id,
+              id: newId,
               bandId: bandId,
               name: name.trim(),
               gigDate: Value(gigDate),
@@ -183,9 +185,9 @@ class SetRepository {
               updatedBy: Value(_editorIn(bandId)),
             ),
           );
-      await markDirty(db, SyncCollection.setlists, id, scope: bandId);
+      await markDirty(db, SyncCollection.setlists, newId, scope: bandId);
     });
-    return id;
+    return newId;
   }
 
   Future<void> updateSet(
