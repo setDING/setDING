@@ -116,6 +116,34 @@ void main() {
     });
   }
 
+  testWidgets('a divider sets the danger zone apart from the content above '
+      '(#890)', (tester) async {
+    await tester.pumpWidget(
+      app(
+        const Column(
+          children: [
+            Text('Above'),
+            DangerZone(children: [Text('Delete')]),
+          ],
+        ),
+      ),
+    );
+    final divider = find.byKey(const Key('danger-zone-divider'));
+    expect(divider, findsOneWidget);
+    expect(tester.widget(divider), isA<Divider>());
+    final line = tester.getRect(divider);
+    expect(
+      line.top,
+      greaterThanOrEqualTo(tester.getRect(find.text('Above')).bottom),
+    );
+    expect(
+      line.bottom,
+      lessThanOrEqualTo(
+        tester.getRect(find.byKey(const Key('danger-zone'))).top,
+      ),
+    );
+  });
+
   testWidgets('a destructive menu action is in the error colour', (
     tester,
   ) async {
