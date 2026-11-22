@@ -68,6 +68,7 @@ A user can be a member of several organizations and bands; roles are defined per
 | Sheet music | **PDF attachments** per song, synced and available offline, shown in live mode | [ADR-0009](adr/0009-pdf-attachments.md) |
 | Chord display style | Suffix parsed into quality, extension and alterations; **device setting** *As written* / *Standard* / *Jazz* plus optional superscript, combinable with B/H and Nashville; source unchanged | [ADR-0022](adr/0022-chord-display-style.md) |
 | Roman numerals | The Nashville switch becomes a **chord view** *Chords* / *Nashville* / *Numerals* (device setting, per-song overlay, live toggle); numerals computed from chords and key, case shows the quality (`vi7`, `viiø7`, `V7`), minor keys counted from the parallel major (`i – ♭III – ♭VII`), slash chords as `I/3`, fixed jazz spelling, no `V/V`; explained on its own website page | [ADR-0055](adr/0055-roman-numeral-chords.md) |
+| Key suggestion | Songs without `{key}` get a **key guessed from the chords** in the song details (best key and, when close, the runner-up), written only after a person picks it and taps *OK*; never a conversion and never an implicit key for the chord views; a *To do* line and song list filter *No key* | [ADR-0056](adr/0056-key-suggestion-from-chords.md) |
 | Song display styles | Personal **Song display** settings: Standard style plus seven fixed section types (intro, verse, pre-chorus, chorus, bridge, interlude, outro) derived from the section name, each with its own style or **inheriting from a chosen type**; chords, lyrics, heading, indent bar and tint; a font choice (standard or monospace) for the whole song; curated palette with light and dark tones; presets; explicit colours beat song directives, inline markup always wins; live mode and song view, not the editor preview | [ADR-0033](adr/0033-song-display-styles.md) |
 | ChordPro coverage | **Whole specification** (transpose, grids, markup, conditionals, diagrams, images, delegated environments; ABC and a Lilypond lead-sheet subset drawn by setDING's own engraver) | [ADR-0012](adr/0012-full-chordpro-support.md) |
 | SongSelect (CCLI) | **No API integration** (partner program closed); manual import of ChordPro files downloaded from SongSelect | [ADR-0011](adr/0011-songselect-import.md) |
@@ -129,7 +130,7 @@ flowchart LR
 
 | Module | Responsibility |
 |---|---|
-| `chordpro` | Parser (ChordPro → AST), chord model (incl. structured suffix, ADR-0022), transposition, Nashville and Roman numeral conversion (ADR-0055), metadata extraction. Pure Dart package without UI dependencies, easy to test. |
+| `chordpro` | Parser (ChordPro → AST), chord model (incl. structured suffix, ADR-0022), transposition, Nashville and Roman numeral conversion (ADR-0055), key suggestion from the chords (ADR-0056), metadata extraction. Pure Dart package without UI dependencies, easy to test. |
 | `render` | Rendering the AST: chords above lyrics, sections (verse/chorus), one or more columns, auto-fit with song pages in live mode, notation B/H, Nashville numbers, chord style with raised extensions (ADR-0022), song display styles per section type (ADR-0033) |
 | `pdf` | Displaying PDF attachments (fit to width/page, two-page view) |
 | `data` | Local DB (SQLite, e.g. via `drift`), repositories, domain model |
@@ -261,6 +262,7 @@ Notes:
 | **Settings layout** | ADR-0050 accepted (#766): sections with dividers and an icon on every option, enforced by a test (implemented in #766); full pane width with two columns of sections on wide screens (#774) |
 | **Language versions** | ADR-0053 accepted (#802, #803); implementation: data and sync #804 (done), language #805 (done), linking #806 (done), switching set items #807 (done), copying adjustments #808 (done), archives #809 (done), choosing several versions at once #851 (done): linking translations and free adaptations of a song with a group ID, a detected or chosen language per song, language tags and filter, switching a set item to another version |
 | **Roman numerals** | ADR-0055 accepted (#899); implementation: chordpro conversion #906 (done), setting and adjustment #907 (done), live toggle #908 (done), website page #909 (done): chord view *Chords* / *Nashville* / *Numerals*, Roman numerals in jazz style, documentation page |
+| **Key suggestion** | ADR-0056 accepted (#919, #924), implemented with it: a key guessed from the chords in the song details, a *To do* line and filter *No key* |
 | **Later** | Configurable page turner key mapping, band annotations shared with the band (follow-up of ADR-0032), MIDI program change per song in live mode (ADR-0039, accepted: prototype #512, data #561, settings and connection #562, sending in live mode #564; the song's program field #563, manual test with the Nord on Android passed #558; the manual test with a Nord on Windows, Linux and Chrome open), keyboard programs per device profile with a Yamaha Motif XF profile (ADR-0042, accepted: Motif XF profile #591, storage per profile #593; the manual test on a Motif XF8 open), MIDI page turning |
 
 ### MVP status (2026-11-14)
@@ -369,6 +371,7 @@ See "Open points" in the individual ADRs. The most important:
 47. Can users delete their account? → ADR-0052 (accepted, #784; implementation #780): yes, immediately and for good with the password; refused while they are the last admin of an organization; memberships soft-deleted, private data removed, shared content stays. Until it is implemented, the server refuses it (#778).
 48. How does the app show that a song exists in other languages? → ADR-0053 (accepted, #802): a shared group ID on the song (`work_id`) links translations and free adaptations, all equal without an original; a language per song detected from word lists or set by hand; tags and a filter in the song list, the versions in the song view; set items can be switched to another version with that version's band arrangement; adjustments stay per version with an offer to copy. Open: switching a whole set, showing two versions side by side
 49. Can chords be shown as Roman numerals (numeral chart, *Stufenanalyse*)? → ADR-0055 (accepted, #899; implementation #906–#909): a three-way chord view *Chords* / *Nashville* / *Numerals* replaces the Nashville switch; numerals in jazz style (case for the quality, minor keys counted from the parallel major, slash chords as `I/3`, no secondary dominants), explained on a website page of their own
+50. Can the app tell the key of a song without `{key}`? → ADR-0056 (accepted, #919): it suggests one from the chords in the song details, with the runner-up when close; a person confirms it per song, it is never written by itself or used as an implicit key. Open: the suggestion in the import report
 
 ## 10. ADR index
 
@@ -428,5 +431,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0053](adr/0053-language-versions.md) | Language versions of a song | Accepted |
 | [0054](adr/0054-local-library-automatic-backup.md) | Automatic backup of the local library | Accepted |
 | [0055](adr/0055-roman-numeral-chords.md) | Chords as Roman numerals | Accepted |
+| [0056](adr/0056-key-suggestion-from-chords.md) | Key suggested from the chords | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.

@@ -5744,4 +5744,26 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get readinessBackupFailed => 'Automatische Sicherung fehlgeschlagen';
+
+  @override
+  String get keyGuessHint => 'Aus den Akkorden erraten:';
+
+  @override
+  String keyGuessUse(String key) {
+    return '$key als Tonart nehmen';
+  }
+
+  @override
+  String get attentionNoKey => 'Ohne Tonart';
+
+  @override
+  String overviewTodoNoKey(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs ohne Tonart',
+      one: '1 Song ohne Tonart',
+    );
+    return '$_temp0';
+  }
 }

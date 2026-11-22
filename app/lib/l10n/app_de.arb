@@ -3606,5 +3606,23 @@
     }
   },
   "readinessBackupNoFolder": "Automatische Sicherung: kein Ordner gewählt",
-  "readinessBackupFailed": "Automatische Sicherung fehlgeschlagen"
+  "readinessBackupFailed": "Automatische Sicherung fehlgeschlagen",
+  "keyGuessHint": "Aus den Akkorden erraten:",
+  "keyGuessUse": "{key} als Tonart nehmen",
+  "@keyGuessUse": {
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "attentionNoKey": "Ohne Tonart",
+  "overviewTodoNoKey": "{count, plural, =1{1 Song ohne Tonart} other{{count} Songs ohne Tonart}}",
+  "@overviewTodoNoKey": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

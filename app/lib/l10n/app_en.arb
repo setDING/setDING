@@ -3058,5 +3058,23 @@
   "readinessPageTurnerNever": "Page turner: not used on this device yet",
   "readinessPageTurnerDetail": "Turns: {mode} · press the pedal here to test it",
   "readinessBackupNoFolder": "Automatic backup: no folder chosen",
-  "readinessBackupFailed": "Automatic backup failed"
+  "readinessBackupFailed": "Automatic backup failed",
+  "keyGuessHint": "Suggested from the chords:",
+  "keyGuessUse": "Use {key} as the key",
+  "@keyGuessUse": {
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "attentionNoKey": "No key",
+  "overviewTodoNoKey": "{count, plural, =1{1 song without a key} other{{count} songs without a key}}",
+  "@overviewTodoNoKey": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

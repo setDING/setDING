@@ -8679,6 +8679,30 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Automatische Sicherung fehlgeschlagen'**
   String get readinessBackupFailed;
+
+  /// No description provided for @keyGuessHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus den Akkorden erraten:'**
+  String get keyGuessHint;
+
+  /// No description provided for @keyGuessUse.
+  ///
+  /// In de, this message translates to:
+  /// **'{key} als Tonart nehmen'**
+  String keyGuessUse(String key);
+
+  /// No description provided for @attentionNoKey.
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Tonart'**
+  String get attentionNoKey;
+
+  /// No description provided for @overviewTodoNoKey.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song ohne Tonart} other{{count} Songs ohne Tonart}}'**
+  String overviewTodoNoKey(int count);
 }
 
 class _AppLocalizationsDelegate

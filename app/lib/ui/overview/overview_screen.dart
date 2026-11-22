@@ -545,6 +545,7 @@ class _TodoCard extends ConsumerWidget {
               SongAttention.sheetMusicOnly => l10n.overviewTodoSheetMusicOnly(
                 count,
               ),
+              SongAttention.noKey => l10n.overviewTodoNoKey(count),
             }),
       ],
     );

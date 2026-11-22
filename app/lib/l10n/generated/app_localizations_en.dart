@@ -5698,4 +5698,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get readinessBackupFailed => 'Automatic backup failed';
+
+  @override
+  String get keyGuessHint => 'Suggested from the chords:';
+
+  @override
+  String keyGuessUse(String key) {
+    return 'Use $key as the key';
+  }
+
+  @override
+  String get attentionNoKey => 'No key';
+
+  @override
+  String overviewTodoNoKey(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs without a key',
+      one: '1 song without a key',
+    );
+    return '$_temp0';
+  }
 }

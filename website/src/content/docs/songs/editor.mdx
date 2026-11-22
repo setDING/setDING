@@ -14,6 +14,7 @@ import editorSongSelect from '../../../../../docs/screenshots/editor_songselect_
 import editorCcliFooter from '../../../../../docs/screenshots/editor_ccli_footer_de.png';
 import editorAutoClose from '../../../../../docs/screenshots/editor_auto_close_de.png';
 import editorChorusLabels from '../../../../../docs/screenshots/editor_chorus_labels_de.png';
+import songDetailsKey from '../../../../../docs/screenshots/song_details_key_de.png';
 
 Songs sind in [ChordPro](https://www.chordpro.org/) geschrieben, dem offenen Format
 für Akkordblätter: Akkorde stehen in eckigen Klammern direkt im Text, Angaben wie
@@ -64,7 +65,16 @@ Ende um diese Zeilen, auch wenn die Markierung mitten in einer Zeile beginnt ode
 endet.
 
 **Songdetails** bearbeitet Titel, Tonart, Tempo und weitere Angaben in einem
-Formular. Beim Tippen schlägt der Editor passende Akkorde und Direktiven vor.
+Formular. Hat der Song noch keine Tonart, schlägt das Formular unter der Tonart eine
+aus den Akkorden vor, manchmal mit einer zweiten (z. B. **Am** oder **C**, die
+dieselben Akkorde haben). Gezählt werden die Akkorde vor dem ersten Tonartwechsel,
+der erste und der letzte Akkord zählen mehr. Ein Tipp auf einen Vorschlag setzt ihn
+ins Feld Tonart; geschrieben wird erst mit **OK**. Ohne Tonart zeigt der Song keine
+Nashville-Zahlen und keine Stufen.
+
+<Image src={songDetailsKey} alt="Die Songdetails ohne Tonart und der Vorschlag G aus den Akkorden unter dem Feld Tonart" />
+
+Beim Tippen schlägt der Editor passende Akkorde und Direktiven vor.
 Akkorde erscheinen alphabetisch sortiert, nach einem getippten `[` und nach
 **Akkord einfügen**.
 

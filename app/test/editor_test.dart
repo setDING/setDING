@@ -407,6 +407,58 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('song details suggest a key from the chords (#919)', (
+    tester,
+  ) async {
+    const source = '{title: T}\n[Am]La [F]la [C]la [G]la [Am]la';
+    final (app, field) = await pumpEditor(tester, source);
+    await tester.tap(find.text('Song details'));
+    await tester.pumpAndSettle();
+    expect(find.text('Suggested from the chords:'), findsOneWidget);
+    // The best key and the relative major, nothing written yet.
+    final am = find.byKey(const ValueKey('songDetail-keyGuess-Am'));
+    expect(am, findsOneWidget);
+    expect(find.byKey(const ValueKey('songDetail-keyGuess-C')), findsOneWidget);
+    expect(field.controller!.text, source);
+
+    await tester.tap(am);
+    await tester.pumpAndSettle();
+    // The key field shows it and the suggestion is gone.
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('songDetail-key')),
+        matching: find.text('Am'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('songDetail-keyGuess')), findsNothing);
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect(
+      field.controller!.text,
+      '{title: T}\n{key: Am}\n[Am]La [F]la [C]la [G]la [Am]la',
+    );
+    await app.dispose(tester);
+  });
+
+  testWidgets(
+    'song details suggest no key when there is one or too few chords',
+    (tester) async {
+      for (final source in [
+        '{title: T}\n{key: G}\n[G]La [C]la [D]la',
+        '{title: T}\n[G]La [D]la',
+      ]) {
+        final (app, _) = await pumpEditor(tester, source);
+        await tester.tap(find.text('Song details'));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const ValueKey('songDetail-keyGuess')), findsNothing);
+        await tester.tap(find.text('Cancel'));
+        await tester.pumpAndSettle();
+        await app.dispose(tester);
+      }
+    },
+  );
+
   testWidgets('song details edit the sequence in the dialog of the sets', (
     tester,
   ) async {

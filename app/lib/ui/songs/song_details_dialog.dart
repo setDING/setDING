@@ -93,6 +93,20 @@ class _SongDetailsDialogState extends State<_SongDetailsDialog> {
       name: TextEditingController(text: _values[name]),
   };
 
+  /// The key suggested from the chords while the song has none (#919,
+  /// ADR-0056); a person picks it, it is never written on its own.
+  late final cp.KeyGuess? _keyGuess = cp.guessKey(
+    cp.parseChordPro(widget.source),
+  );
+
+  /// Bumped when a suggested key is picked, so the key dropdown shows it.
+  int _keyRevision = 0;
+
+  void _pickKey(cp.Key key) => setState(() {
+    _values['key'] = key.format(cp.ChordNotation.international);
+    _keyRevision++;
+  });
+
   @override
   void dispose() {
     for (final c in _text.values) {
@@ -212,11 +226,14 @@ class _SongDetailsDialogState extends State<_SongDetailsDialog> {
               field('title', l10n.title, autofocus: true),
               field('artist', l10n.artist),
               pair(
-                dropdown(
-                  'key',
-                  l10n.metaKey,
-                  l10n.noKey,
-                  keyDetailOptions(_values['key']!, widget.notation),
+                KeyedSubtree(
+                  key: ValueKey(_keyRevision),
+                  child: dropdown(
+                    'key',
+                    l10n.metaKey,
+                    l10n.noKey,
+                    keyDetailOptions(_values['key']!, widget.notation),
+                  ),
                 ),
                 dropdown('capo', l10n.capo, l10n.noCapo, [
                   if (capo.isNotEmpty && !frets.contains(capo))
@@ -225,6 +242,12 @@ class _SongDetailsDialogState extends State<_SongDetailsDialog> {
                     (value: f, label: capoLabel(int.parse(f))),
                 ]),
               ),
+              if (_keyGuess case final guess? when _values['key']!.isEmpty)
+                _KeySuggestion(
+                  guess: guess,
+                  notation: widget.notation,
+                  onPick: _pickKey,
+                ),
               pair(
                 field('tempo', l10n.metaTempo, number: true),
                 field('time', l10n.metaTime, hint: l10n.timeHint),
@@ -265,6 +288,57 @@ class _SongDetailsDialogState extends State<_SongDetailsDialog> {
         ),
         FilledButton(onPressed: _apply, child: Text(l10n.ok)),
       ],
+    );
+  }
+}
+
+/// The keys suggested from the chords, as chips that set the key field.
+class _KeySuggestion extends StatelessWidget {
+  const _KeySuggestion({
+    required this.guess,
+    required this.notation,
+    required this.onPick,
+  });
+
+  final cp.KeyGuess guess;
+  final cp.ChordNotation notation;
+  final ValueChanged<cp.Key> onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    Widget chip(cp.Key key) {
+      final value = key.format(cp.ChordNotation.international);
+      return ActionChip(
+        key: ValueKey('songDetail-keyGuess-$value'),
+        avatar: const Icon(Icons.auto_fix_high, size: 18),
+        label: Text(key.format(notation)),
+        tooltip: l10n.keyGuessUse(key.format(notation)),
+        onPressed: () => onPick(key),
+      );
+    }
+
+    return Container(
+      // Left-aligned like the fields above, not centred in the column.
+      width: double.infinity,
+      padding: const EdgeInsets.only(top: 8),
+      child: Wrap(
+        key: const ValueKey('songDetail-keyGuess'),
+        spacing: 8,
+        runSpacing: 4,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text(
+            l10n.keyGuessHint,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          chip(guess.key),
+          if (guess.alternative case final alternative?) chip(alternative),
+        ],
+      ),
     );
   }
 }
