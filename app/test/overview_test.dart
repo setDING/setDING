@@ -228,6 +228,8 @@ void main() {
     expect(find.text('1 song with ChordPro problems'), findsOneWidget);
     expect(find.text('1 song with sheet music (PDF) only'), findsOneWidget);
     expect(find.byKey(const ValueKey('overview-todo-conflicts')), findsNothing);
+    // Fine has chords but no key; Washed (broken) has chords too.
+    expect(find.byKey(const ValueKey('overview-todo-noKey')), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('overview-todo-problems')));
     await tester.pumpAndSettle();
@@ -256,6 +258,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Sheet'), findsOneWidget);
     expect(find.text('Washed'), findsNothing);
+
+    // Songs with chords but without a key (#919).
+    await openTab(tester, HomeTab.overview);
+    await tester.tap(find.byKey(const ValueKey('overview-todo-noKey')));
+    await tester.pumpAndSettle();
+    expect(find.text('Fine'), findsOneWidget);
+    expect(find.text('Sheet'), findsNothing);
     await app.dispose(tester);
   });
 
@@ -826,9 +835,13 @@ void main() {
         findsOneWidget,
       );
 
-      await tester.ensureVisible(
+      // Past the navigation bar: the card is the last one on the page.
+      await tester.scrollUntilVisible(
         find.byKey(const Key('overview-not-played-all')),
+        200,
       );
+      await tester.drag(find.byType(Scrollable).first, const Offset(0, -400));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('overview-not-played-all')));
       await tester.pumpAndSettle();
       expect(find.byType(RepertoireScreen), findsOneWidget);

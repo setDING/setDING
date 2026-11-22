@@ -58,6 +58,36 @@ void main() {
     });
   }
 
+  // A key suggested from the chords in the song details (#919).
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('key suggestion $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      const source =
+          '{title: Amazing Grace}\n\n'
+          'A[G]mazing [G7]grace, how [C]sweet the [G]sound\n'
+          'That [G]saved a [Em]wretch like [D]me\n'
+          'I [G]once was [G7]lost, but [C]now am [G]found\n'
+          'Was [Em]blind but [D]now I [G]see';
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: SongEditorScreen(initialSource: source)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text(lang == 'de' ? 'Songdetails' : 'Song details'),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('songDetail-keyGuess-G')), findsOne);
+      await shot(tester, '${lang}_47_song_details_key');
+      await app.dispose(tester);
+    });
+  }
+
   // The CCLI footer of SongSelect files (#785): the editor hint that
   // removes it and keeps its values as metadata.
   for (final (lang, dark) in [('de', false), ('en', true)]) {

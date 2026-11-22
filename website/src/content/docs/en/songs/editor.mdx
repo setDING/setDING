@@ -14,6 +14,7 @@ import editorSongSelect from '../../../../../../docs/screenshots/editor_songsele
 import editorCcliFooter from '../../../../../../docs/screenshots/editor_ccli_footer.png';
 import editorAutoClose from '../../../../../../docs/screenshots/editor_auto_close.png';
 import editorChorusLabels from '../../../../../../docs/screenshots/editor_chorus_labels.png';
+import songDetailsKey from '../../../../../../docs/screenshots/song_details_key.png';
 
 Songs are written in [ChordPro](https://www.chordpro.org/), the open format for
 chord sheets: chords go in square brackets right inside the lyrics, details such as
@@ -59,8 +60,16 @@ ChordPro syntax:
 With lines selected, a section (e.g. **Insert chorus**) puts its start and end around
 these lines, even when the selection starts or ends in the middle of a line.
 
-**Song details** edits the title, key, tempo and other details in a form. While you
-type, the editor suggests matching chords and directives. Chords are suggested in
+**Song details** edits the title, key, tempo and other details in a form. If the
+song has no key yet, the form suggests one from the chords below the key, sometimes
+with a second one (e.g. **Am** or **C**, which share their chords). The guess counts
+the chords before the first key change and favours the first and last chord. A tap
+on a suggestion puts it in the key field; nothing is written until you tap **OK**.
+Without a key, the song cannot show Nashville numbers or numerals.
+
+<Image src={songDetailsKey} alt="The song details without a key and the suggestion G from the chords below the key field" />
+
+While you type, the editor suggests matching chords and directives. Chords are suggested in
 alphabetical order, after typing `[` and after **Insert chord**.
 
 After `{chorus: ` the editor suggests the labels of the song's choruses, so a repeat

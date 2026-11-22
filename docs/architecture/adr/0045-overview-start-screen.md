@@ -260,6 +260,10 @@ Further rules:
   category selected next to the list on wide screens, its own page on
   narrow ones. Not signed in is no warning: the local library works
   without an account. Nothing new on the server.
+- 2026-11-22: Owner request (#919, ADR-0056): ***To do* also counts songs
+  with chords but without a key** (de-CH *Ohne Tonart*, en *No key*), with
+  the same filter chip of the song list; the song details suggest a key
+  from the chords.
 
 ## Open points
 

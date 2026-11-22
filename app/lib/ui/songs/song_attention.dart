@@ -27,6 +27,10 @@ enum SongAttention {
 
   /// Sheet music (PDF) only, no ChordPro text.
   sheetMusicOnly,
+
+  /// Chords but no `{key}`: no transposing by key, no Nashville numbers or
+  /// numerals. The song details suggest one from the chords (#919).
+  noKey,
 }
 
 /// Short name of [kind], e.g. for the filter chip of the song list.
@@ -36,6 +40,7 @@ String songAttentionLabel(AppLocalizations l10n, SongAttention kind) =>
       SongAttention.conversions => l10n.attentionConversions,
       SongAttention.conflicts => l10n.attentionConflicts,
       SongAttention.sheetMusicOnly => l10n.attentionSheetMusicOnly,
+      SongAttention.noKey => l10n.attentionNoKey,
     };
 
 /// Icon of [kind], the same on the overview and in the song list.
@@ -56,6 +61,7 @@ Widget songAttentionIcon(
     color: Theme.of(context).colorScheme.error,
   ),
   SongAttention.sheetMusicOnly => Icon(Icons.picture_as_pdf, size: size),
+  SongAttention.noKey => Icon(Icons.music_off_outlined, size: size),
 };
 
 /// Whether [song] of [library] needs [kind] of attention by the signed-in
@@ -77,6 +83,8 @@ bool needsAttention(
       SongAttention.conversions => song.conversions > 0,
       SongAttention.conflicts => conflicts.contains(song.id),
       SongAttention.sheetMusicOnly => !song.hasChords,
+      SongAttention.noKey =>
+        song.hasChords && (song.songKey ?? '').trim().isEmpty,
     };
 
 /// The songs with an open sync conflict.
