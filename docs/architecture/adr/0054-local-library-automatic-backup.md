@@ -224,6 +224,12 @@ the server sync (ADR-0004).
   with the old name `setDING-Backup … .zip` still count as this device's
   backups and are sorted by their time, so the rotation removes them as
   they age.
+- 2026-11-22: Fix (#876): replacing the local library gave every restored
+  song the time of the restore as its creation date, so all of them showed
+  as *Newest songs* on the overview. The archive's songs now carry their
+  creation date and replacing keeps it; from an archive without it the date
+  stays unknown, and such songs are left out of *Newest songs*. Importing
+  as a copy still makes new songs.
 
 ## Open points
 

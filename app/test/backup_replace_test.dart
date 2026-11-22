@@ -208,4 +208,35 @@ void main() {
     expect(await db.select(db.annotations).get(), isEmpty);
     expect(await db.select(db.bandArrangements).get(), isEmpty);
   });
+
+  // Regression (#876): replacing created every song again, so each got the
+  // restore time and all of them showed as *Newest songs*.
+  test('restored songs keep when they were created', () async {
+    final song = await songs.createSong(source: '{title: Old}');
+    final created = DateTime(2025, 3, 4, 5, 6);
+    await (db.update(db.songs)..where((s) => s.id.equals(song))).write(
+      SongsCompanion(createdAt: Value(created)),
+    );
+    final contents = await backup();
+    await service.replaceLocal(contents);
+    final restored = await songs.getSong(song);
+    expect(restored!.createdAt, created);
+    expect(await songs.watchNewestSongs().first, hasLength(1));
+  });
+
+  test('without a creation date in the archive it stays unknown', () async {
+    final song = await songs.createSong(source: '{title: Old}');
+    final contents = await backup();
+    // An archive written before the date was in it.
+    final manifest = {
+      ...contents.manifest,
+      'songs': [
+        for (final s in contents.songs) {...s}..remove('createdAt'),
+      ],
+    };
+    await service.replaceLocal(BackupContents(manifest, contents.files));
+    expect((await songs.getSong(song))!.createdAt, isNull);
+    // Not among the newest songs: its age is unknown.
+    expect(await songs.watchNewestSongs().first, isEmpty);
+  });
 }

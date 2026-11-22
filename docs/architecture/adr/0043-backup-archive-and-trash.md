@@ -341,6 +341,9 @@ Deleted songs and sets can be **restored for 30 days**.
   mode like the song list. Implemented in #866: the client sends `purged`
   with a deleted song or set; server migration
   `1796900000_trash_purge_rights.js`.
+- 2026-11-22: The songs of the manifest may carry an optional `createdAt`
+  (the creation date of ADR-0045's *Newest songs*, #876); readers that do
+  not know it ignore it, the format version stays 1.
 
 ## Open points
 
