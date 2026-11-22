@@ -26,6 +26,7 @@ map=(
   drums 11_live_drums
   live_click 25_live_click
   organization 12_organization
+  invite_hint 13a_invite_hint
   invite 13_invite
   band 14_band
   settings 15_settings

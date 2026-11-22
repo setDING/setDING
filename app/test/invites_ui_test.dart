@@ -39,6 +39,13 @@ void main() {
       _ann,
       const OrganizationScreen(organizationId: 'o1'),
     );
+    // The hint says the person joins as a member but no band yet (#893).
+    expect(
+      find.textContaining(
+        'joins the organization as a member, but no band yet',
+      ),
+      findsOneWidget,
+    );
     await tester.tap(find.byKey(const Key('invite-create')));
     await tester.pumpAndSettle();
 
@@ -111,6 +118,9 @@ void main() {
       findsOneWidget,
     );
 
+    // The list is longer than the screen: scroll to its end.
+    await tester.drag(find.byType(ListView), const Offset(0, -2000));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(Key('invite-show-${bandLink.id}')));
     await tester.pumpAndSettle();
     expect(find.byType(QrImageView), findsOneWidget);
@@ -118,6 +128,9 @@ void main() {
     await tester.tap(find.text('Close'));
     await tester.pumpAndSettle();
 
+    // The list is longer than the screen: scroll to its end.
+    await tester.drag(find.byType(ListView), const Offset(0, -2000));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(Key('invite-show-${old.id}')));
     await tester.pumpAndSettle();
     expect(find.byType(QrImageView), findsNothing);

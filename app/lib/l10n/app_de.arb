@@ -1052,7 +1052,7 @@
   "orgSongsShared": "Alle Bands der Organisation teilen dieselben Songs.",
   "copyToLibraryTitle": "In welche Songbibliothek kopieren?",
   "inviteCreate": "Personen einladen",
-  "inviteCreateHint": "Erstellt einen Link, der 7 Tage gilt. Wer ihn öffnet, wird Mitglied der Organisation.",
+  "inviteCreateHint": "Erstellt einen Link, der 7 Tage gilt. Wer ihn öffnet, kommt als Mitglied in die Organisation, aber noch in keine Band. Füge die Person danach einer Band hinzu; unter Personen kannst du ihre Rolle ändern.",
   "inviteLinkTitle": "Einladungslink",
   "inviteLinkHint": "Teile den Link, z. B. im Gruppenchat, oder lass den QR-Code scannen. Gültig bis {date}. Du kannst ihn in der Liste der Einladungslinks wieder anzeigen.",
   "@inviteLinkHint": {

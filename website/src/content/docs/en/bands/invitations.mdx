@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import invite from '../../../../../../docs/screenshots/invite.png';
+import inviteHint from '../../../../../../docs/screenshots/invite_hint.png';
 
 New people join the organization with an invitation link – by group chat, email or
 QR code.
@@ -16,11 +17,15 @@ QR code.
 There are two kinds of invitations:
 
 - **Into the organization:** admins of the organization open the organization and
-  tap **Invite people**. Whoever opens the link becomes a member of the
-  organization; an admin can then add them to a band.
+  tap **Invite people**. Whoever opens the link joins the organization with the
+  role **Member**, but no band yet: an admin then adds them to a band (**Add
+  member**) and can change their [role](/en/bands/roles/) under **People**, for
+  example to **Librarian** or **Admin**.
 - **Straight into a band:** the band's **Leader** and the admins open the band and
   tap **Invite people** there. Whoever opens the link joins the organization and
   this band.
+
+<Image src={inviteHint} alt="“Invite people” in the organization with the hint that the person joins as a member, but no band yet" />
 
 setDING shows the **Invitation link** and a QR code. Share the link with **Copy
 link** or let people scan the QR code. The link is valid for **7 days**; several
