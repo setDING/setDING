@@ -1169,6 +1169,49 @@ class SongRepository {
     required String deviceProfile,
   }) => setMidiProgram(songId, profile, null, deviceProfile: deviceProfile);
 
+  /// Whether [overlay] has musical adjustments (ADR-0053): a transposition,
+  /// a capo, keyboard programs or the click. Notes, the font size, the
+  /// display and annotations are not musical; they are never copied.
+  static bool hasMusicalAdjustments(SongOverlay overlay) =>
+      overlay.transpose != 0 ||
+      overlay.capoFret != null ||
+      !(overlay.midiPrograms?.isEmpty ?? overlay.midi == null) ||
+      overlay.clickGrouping != null ||
+      overlay.clickSubdivision != null;
+
+  /// The other language versions of [songId] whose personal adjustments
+  /// are musical (ADR-0053), with them, by title.
+  Future<List<(SongEntry, SongOverlay)>> musicalAdjustmentSources(
+    String songId,
+  ) async => [
+    for (final version in await languageVersions(songId))
+      if (await getOverlay(version.id) case final o
+          when hasMusicalAdjustments(o))
+        (version, o),
+  ];
+
+  /// Copies the musical adjustments of [from] to [to] (ADR-0053), replacing
+  /// those of [to]; the rest of [to]'s adjustments stays. Returns what [to]
+  /// had before, for an undo with [saveOverlay].
+  Future<SongOverlay> copyMusicalAdjustments({
+    required String from,
+    required String to,
+  }) => _write(() async {
+    final source = await getOverlay(from);
+    final before = await getOverlay(to);
+    await saveOverlay(
+      before.copyWith(
+        transpose: source.transpose,
+        capoFret: Value(source.capoFret),
+        midi: Value(source.midi),
+        midiPrograms: Value(source.midiPrograms),
+        clickGrouping: Value(source.clickGrouping),
+        clickSubdivision: Value(source.clickSubdivision),
+      ),
+    );
+    return before;
+  });
+
   /// No adjustments: as written in the song.
   static SongOverlay defaultOverlay(
     String songId, {

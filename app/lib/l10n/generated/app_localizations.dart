@@ -8014,6 +8014,66 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Sprachversion wechseln'**
   String get switchLanguageVersionTitle;
+
+  /// No description provided for @adjustmentOfferOne.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Anpassungen in «{version}»: {what}. Für diese Version übernehmen?'**
+  String adjustmentOfferOne(String version, String what);
+
+  /// No description provided for @adjustmentOfferMany.
+  ///
+  /// In de, this message translates to:
+  /// **'Andere Sprachversionen haben deine Anpassungen. Für diese Version übernehmen?'**
+  String get adjustmentOfferMany;
+
+  /// No description provided for @adjustmentKindTranspose.
+  ///
+  /// In de, this message translates to:
+  /// **'Tonart'**
+  String get adjustmentKindTranspose;
+
+  /// No description provided for @adjustmentKindCapo.
+  ///
+  /// In de, this message translates to:
+  /// **'Capo'**
+  String get adjustmentKindCapo;
+
+  /// No description provided for @adjustmentKindMidi.
+  ///
+  /// In de, this message translates to:
+  /// **'Keyboard-Programm'**
+  String get adjustmentKindMidi;
+
+  /// No description provided for @adjustmentKindClick.
+  ///
+  /// In de, this message translates to:
+  /// **'Click'**
+  String get adjustmentKindClick;
+
+  /// No description provided for @adjustmentOfferCopy.
+  ///
+  /// In de, this message translates to:
+  /// **'Übernehmen'**
+  String get adjustmentOfferCopy;
+
+  /// No description provided for @adjustmentOfferDismiss.
+  ///
+  /// In de, this message translates to:
+  /// **'Nein danke'**
+  String get adjustmentOfferDismiss;
+
+  /// No description provided for @adjustmentOfferPick.
+  ///
+  /// In de, this message translates to:
+  /// **'Anpassungen übernehmen von'**
+  String get adjustmentOfferPick;
+
+  /// No description provided for @adjustmentsCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Anpassungen von «{version}» übernommen'**
+  String adjustmentsCopied(String version);
 }
 
 class _AppLocalizationsDelegate

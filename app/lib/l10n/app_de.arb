@@ -112,8 +112,12 @@
   "@tagsFilterMore": {
     "description": "Tag filter chip with several selected tags: the first one and how many more.",
     "placeholders": {
-      "tag": {"type": "String"},
-      "count": {"type": "int"}
+      "tag": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
     }
   },
   "notes": "Meine Notizen",
@@ -3237,5 +3241,32 @@
       }
     }
   },
-  "switchLanguageVersionTitle": "Sprachversion wechseln"
+  "switchLanguageVersionTitle": "Sprachversion wechseln",
+  "adjustmentOfferOne": "Deine Anpassungen in «{version}»: {what}. Für diese Version übernehmen?",
+  "@adjustmentOfferOne": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "adjustmentOfferMany": "Andere Sprachversionen haben deine Anpassungen. Für diese Version übernehmen?",
+  "adjustmentKindTranspose": "Tonart",
+  "adjustmentKindCapo": "Capo",
+  "adjustmentKindMidi": "Keyboard-Programm",
+  "adjustmentKindClick": "Click",
+  "adjustmentOfferCopy": "Übernehmen",
+  "adjustmentOfferDismiss": "Nein danke",
+  "adjustmentOfferPick": "Anpassungen übernehmen von",
+  "adjustmentsCopied": "Anpassungen von «{version}» übernommen",
+  "@adjustmentsCopied": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  }
 }

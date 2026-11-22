@@ -5227,4 +5227,39 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get switchLanguageVersionTitle => 'Sprachversion wechseln';
+
+  @override
+  String adjustmentOfferOne(String version, String what) {
+    return 'Deine Anpassungen in «$version»: $what. Für diese Version übernehmen?';
+  }
+
+  @override
+  String get adjustmentOfferMany =>
+      'Andere Sprachversionen haben deine Anpassungen. Für diese Version übernehmen?';
+
+  @override
+  String get adjustmentKindTranspose => 'Tonart';
+
+  @override
+  String get adjustmentKindCapo => 'Capo';
+
+  @override
+  String get adjustmentKindMidi => 'Keyboard-Programm';
+
+  @override
+  String get adjustmentKindClick => 'Click';
+
+  @override
+  String get adjustmentOfferCopy => 'Übernehmen';
+
+  @override
+  String get adjustmentOfferDismiss => 'Nein danke';
+
+  @override
+  String get adjustmentOfferPick => 'Anpassungen übernehmen von';
+
+  @override
+  String adjustmentsCopied(String version) {
+    return 'Anpassungen von «$version» übernommen';
+  }
 }

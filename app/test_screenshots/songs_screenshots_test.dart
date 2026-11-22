@@ -3,6 +3,7 @@
 
 import 'dart:typed_data';
 
+import 'package:drift/drift.dart' show Value;
 import 'package:setding/ui/render/abc_view.dart';
 import 'package:setding/data/arrangement_repository.dart';
 import 'package:setding/data/database.dart';
@@ -246,6 +247,49 @@ void main() {
       await tester.tap(find.byKey(const Key('song-link-version')));
       await tester.pumpAndSettle();
       await shot(tester, '${lang}_40b_language_version_picker');
+      await app.dispose(tester);
+    });
+  }
+
+  // The offer to copy the adjustments of another language version
+  // (ADR-0053, #808).
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('adjustment offer $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      final de = (await tester.runAsync(() async {
+        final en = await app.songs.createSong(
+          source:
+              '{title: Morning Light}\n{artist: Ann Trainor}\n{key: D}\n'
+              '{start_of_verse}\n[D]I walk along the [G]river\n{end_of_verse}\n',
+        );
+        final de = await app.songs.createSong(
+          source:
+              '{title: Morgenlicht}\n{artist: Ann Trainor}\n{key: D}\n'
+              '{start_of_verse}\n[D]Ich gehe durch die [G]Nacht\n'
+              '{end_of_verse}\n{start_of_chorus}\n'
+              '[G]Du bist mein [A]Licht\n{end_of_chorus}\n',
+        );
+        await app.songs.setLanguage(en, 'en');
+        await app.songs.setLanguage(de, 'de');
+        await app.songs.linkLanguageVersions(en, de);
+        await app.songs.updateOverlay(
+          en,
+          (o) => o.copyWith(transpose: -2, capoFret: const Value(2)),
+        );
+        return de;
+      }))!;
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: SongScreen(songId: de)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('adjustment-offer')), findsOneWidget);
+      await shot(tester, '${lang}_42_adjustment_offer');
       await app.dispose(tester);
     });
   }

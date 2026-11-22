@@ -43,6 +43,7 @@ import 'midi_program_field.dart';
 import 'band_arrangement_panel.dart';
 import 'play_history_panel.dart';
 import 'song_editor_screen.dart';
+import 'adjustment_offer.dart';
 import 'language_versions.dart';
 import 'song_language.dart';
 import 'song_links_panel.dart';
@@ -598,6 +599,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                     formatter: formatter,
                   ),
                   LanguageVersionChips(song: song),
+                  AdjustmentOfferBanner(song: song, overlay: overlay),
                   if (!parsed.hasContent) ...[
                     const SizedBox(height: 12),
                     attachmentsCard(inPanel: false),
