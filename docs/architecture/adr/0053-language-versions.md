@@ -219,6 +219,8 @@ the API directly as the refused roles (permission matrix test).
   are simplified SVGs drawn for the project and bundled in the app (Windows has no
   flag emoji). They appear only in this dialog: the tags in the song list and the
   song view stay text codes, because a language is not a country.
+- 2026-11-22: Like the languages, *No language* is offered only when the library
+  has songs without a language, or while it is selected (#843).
 
 ## Open points
 

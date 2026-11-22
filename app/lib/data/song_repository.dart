@@ -572,17 +572,17 @@ class SongRepository {
           });
 
   /// The languages of the songs of [libraryId] (ADR-0053): set by hand or
-  /// detected; songs without one are left out.
+  /// detected, and the empty string when a song has neither (#843).
   Stream<Set<String>> watchLanguages() {
     final s = db.songs;
-    final language = coalesce([s.language, s.detectedLanguage]);
+    final language = coalesce([
+      s.language,
+      s.detectedLanguage,
+      const Constant(''),
+    ]);
     return (db.selectOnly(s, distinct: true)
           ..addColumns([language])
-          ..where(
-            s.deleted.equals(false) &
-                s.libraryId.equals(libraryId) &
-                language.isNotNull(),
-          ))
+          ..where(s.deleted.equals(false) & s.libraryId.equals(libraryId)))
         .watch()
         .map((rows) => {for (final r in rows) r.read(language)!});
   }

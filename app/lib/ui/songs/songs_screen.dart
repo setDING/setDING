@@ -209,9 +209,11 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
     final played = lastPlayed == null ? null : _played;
     // Language tags and the language filter only for a library with songs
     // in more than one language (ADR-0053).
-    final languages =
+    final usedLanguages =
         ref.watch(songLanguagesProvider).value ?? const <String>{};
+    final languages = usedLanguages.difference(const {noSongLanguage});
     final mixedLanguages = languages.length > 1;
+    final withoutLanguage = usedLanguages.contains(noSongLanguage);
     final works = ref.watch(workCountsProvider).value ?? const <String, int>{};
     final language = _language;
     List<SongListEntry> shownSongs(List<SongListEntry> songs) {
@@ -453,6 +455,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
               played: played,
               onPlayed: (filter) => setState(() => _played = filter),
               languages: languages,
+              withoutLanguage: withoutLanguage,
               language: language,
               onLanguage: (l) => setState(() => _language = l),
             ),
@@ -627,6 +630,7 @@ class _Filters extends ConsumerWidget {
     required this.played,
     required this.onPlayed,
     required this.languages,
+    required this.withoutLanguage,
     required this.language,
     required this.onLanguage,
   });
@@ -643,6 +647,10 @@ class _Filters extends ConsumerWidget {
   /// The languages of the library's songs and the one filtered by
   /// (ADR-0053); offered when the library has more than one.
   final Set<String> languages;
+
+  /// Whether the library has songs without a language; only then is
+  /// *No language* offered (#843).
+  final bool withoutLanguage;
   final String? language;
   final ValueChanged<String?> onLanguage;
 
@@ -762,7 +770,11 @@ class _Filters extends ConsumerWidget {
               padding: const EdgeInsets.only(right: 8),
               child: MenuAnchor(
                 menuChildren: [
-                  for (final l in [null, noSongLanguage]) item(l),
+                  item(null),
+                  // Offered like the languages: only when songs have none,
+                  // or while it is selected (#843).
+                  if (withoutLanguage || language == noSongLanguage)
+                    item(noSongLanguage),
                   const Divider(height: 1),
                   for (final l in orderedSongLanguages({
                     ...languages,

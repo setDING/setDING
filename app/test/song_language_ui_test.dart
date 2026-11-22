@@ -46,6 +46,56 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('No language is offered only for songs without one (#843)', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    late final String instrumental;
+    await tester.runAsync(() async {
+      await app.songs.createSong(source: english);
+      await app.songs.createSong(source: german);
+    });
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+    await openSongs(tester);
+
+    final none = find.byKey(const ValueKey('songs-language-none'));
+    await tester.tap(filter);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('songs-language-de')), findsOneWidget);
+    expect(none, findsNothing);
+    await tester.tap(find.byKey(const ValueKey('songs-language-all')));
+    await tester.pumpAndSettle();
+
+    // A song without a language brings it back.
+    await tester.runAsync(() async {
+      instrumental = await app.songs.createSong(
+        source: '{title: Instrumental}',
+      );
+    });
+    await tester.pumpAndSettle();
+    await tester.tap(filter);
+    await tester.pumpAndSettle();
+    await tester.tap(none);
+    await tester.pumpAndSettle();
+    expect(find.text('Instrumental'), findsOneWidget);
+
+    // Selected, it stays offered after its last song gets a language.
+    await tester.runAsync(() => app.songs.setLanguage(instrumental, 'en'));
+    await tester.pumpAndSettle();
+    expect(find.text('Instrumental'), findsNothing);
+    await tester.tap(filter);
+    await tester.pumpAndSettle();
+    expect(none, findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('songs-language-all')));
+    await tester.pumpAndSettle();
+    await tester.tap(filter);
+    await tester.pumpAndSettle();
+    expect(none, findsNothing);
+    await app.dispose(tester);
+  });
+
   testWidgets('songs in several languages get tags and a language filter', (
     tester,
   ) async {
