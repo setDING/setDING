@@ -291,6 +291,12 @@ Deleted songs and sets can be **restored for 30 days**.
   export from the song's menu and the song list's selection mode, import
   with a preview from the import dialog; `importSongs` completes the
   attachments of reused songs for set and song archives.
+- 2026-11-22: **ADR-0054** (proposed, #832): for the local library only,
+  an optional automatic backup into a folder the person chooses replaces
+  "No automatic backups" (section 1a), and a backup of a local library can
+  also be restored by replacing the whole local library with the original
+  IDs, an exception to "import always as a copy" (section 1). Organizations
+  are unchanged.
 
 ## Open points
 
