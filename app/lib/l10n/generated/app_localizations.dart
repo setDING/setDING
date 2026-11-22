@@ -8841,6 +8841,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count, plural, =0{Keine Tonart gesetzt} =1{Tonart in 1 Song gesetzt} other{Tonart in {count} Songs gesetzt}}'**
   String importKeysSet(int count);
+
+  /// No description provided for @readinessPageTurnerNotPaired.
+  ///
+  /// In de, this message translates to:
+  /// **'Seitenwender nicht zugeordnet'**
+  String get readinessPageTurnerNotPaired;
+
+  /// No description provided for @readinessPageTurnerPairDetail.
+  ///
+  /// In de, this message translates to:
+  /// **'Zuordnen, damit die Übersicht zeigt, ob er verbunden ist · Blättern: {mode}'**
+  String readinessPageTurnerPairDetail(String mode);
 }
 
 class _AppLocalizationsDelegate

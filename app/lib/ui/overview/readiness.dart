@@ -157,7 +157,8 @@ ReadinessItem? syncReadiness(
 }
 
 /// The page turner (#911): whether the paired one is connected (ADR-0057,
-/// #913), otherwise whether it responded to the test on the overview or
+/// #913) or that none is paired (#928); where pairing is not possible,
+/// whether it responded to the test on the overview or
 /// when it was last used, and how it turns. On iOS only whether a keyboard
 /// is connected; a missing one is a warning once a page turner was used.
 ReadinessItem pageTurnerReadiness(
@@ -169,10 +170,11 @@ ReadinessItem pageTurnerReadiness(
   PageTurnerConnection connection = PageTurnerConnection.unknown,
 }) {
   final last = state.lastUsed;
-  final turns = l10n.readinessPageTurnerDetail(switch (mode) {
+  final modeLabel = switch (mode) {
     PageTurnMode.full => l10n.pageTurnFull,
     PageTurnMode.half => l10n.pageTurnHalf,
-  });
+  };
+  final turns = l10n.readinessPageTurnerDetail(modeLabel);
   final used = state.responded
       ? l10n.readinessPageTurnerResponds
       : last == null
@@ -188,6 +190,14 @@ ReadinessItem pageTurnerReadiness(
       );
   final name = paired?.name ?? '';
   switch (connection) {
+    // Without a pairing a key from any keyboard would count, so no quick
+    // test and no last use: the line asks to pair it (#928).
+    case PageTurnerConnection.notPaired:
+      return item(
+        ReadinessLevel.info,
+        l10n.readinessPageTurnerNotPaired,
+        l10n.readinessPageTurnerPairDetail(modeLabel),
+      );
     case PageTurnerConnection.connected:
       return item(
         ReadinessLevel.ok,

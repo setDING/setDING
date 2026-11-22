@@ -3127,5 +3127,7 @@
         "type": "int"
       }
     }
-  }
+  },
+  "readinessPageTurnerNotPaired": "Page turner not paired",
+  "readinessPageTurnerPairDetail": "Pair it so the overview shows whether it is connected · Turns: {mode}"
 }

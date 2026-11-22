@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/l10n/generated/app_localizations.dart';
@@ -88,7 +89,9 @@ void main() {
     );
     const devices = InputDeviceSupport.devices;
     expect(of(devices, pedal, null), PageTurnerConnection.unknown);
-    expect(of(devices, null, [pedal]), PageTurnerConnection.unknown);
+    // Not paired (#928), also while the devices are loaded.
+    expect(of(devices, null, [pedal]), PageTurnerConnection.notPaired);
+    expect(of(devices, null, null), PageTurnerConnection.notPaired);
     expect(of(devices, pedal, [pedal]), PageTurnerConnection.connected);
     expect(of(devices, pedal, []), PageTurnerConnection.notConnected);
     const ios = InputDeviceSupport.keyboardOnly;
@@ -289,6 +292,56 @@ void main() {
     await tester.pumpAndSettle();
     expect(line, findsNothing);
     expect(find.byKey(const Key('overview-readiness-all-set')), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  // Regression test for #928: after forgetting the page turner, the
+  // overview still said "Page turner responds" from the quick test.
+  testWidgets('without a pairing the overview says so, not "responds"', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(
+      prefs: {
+        'language': 'en',
+        PairedPageTurnerNotifier.nameKey: pedal.name,
+        PairedPageTurnerNotifier.vendorKey: pedal.vendorId,
+        PairedPageTurnerNotifier.productKey: pedal.productId,
+      },
+    );
+    app.inputDevices.connected.add(pedal);
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+    // The quick test on the overview.
+    await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
+    await tester.pumpAndSettle();
+
+    await openLiveSettings(tester);
+    await tester.tap(find.byKey(const Key('settings-page-turner-menu')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('settings-page-turner-forget')));
+    await tester.pumpAndSettle();
+
+    await openTab(tester, HomeTab.overview);
+    final details = find.byKey(const Key('overview-readiness-details'));
+    await tester.ensureVisible(details);
+    await tester.tap(details);
+    await tester.pumpAndSettle();
+    final line = find.byKey(const Key('overview-readiness-pageTurner'));
+    expect(
+      find.descendant(
+        of: line,
+        matching: find.text(l10n.readinessPageTurnerResponds),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.descendant(
+        of: line,
+        matching: find.text(l10n.readinessPageTurnerNotPaired),
+      ),
+      findsOneWidget,
+    );
     await app.dispose(tester);
   });
 }

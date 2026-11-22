@@ -5822,4 +5822,12 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get readinessPageTurnerNotPaired => 'Page turner not paired';
+
+  @override
+  String readinessPageTurnerPairDetail(String mode) {
+    return 'Pair it so the overview shows whether it is connected · Turns: $mode';
+  }
 }
