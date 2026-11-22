@@ -60,9 +60,9 @@ only.
   never during another import or export. **Back up now** writes one at once.
 - **Safe writing:** the archive is written under a temporary name and renamed
   when complete, so a sync client never uploads half a file.
-- **Keeping:** the newest **10** automatic backups of this device stay in the
-  folder; older ones of this device are deleted. Other files are never
-  touched.
+- **Keeping:** the newest automatic backups of this device stay in the
+  folder, as many as the setting says: **1 to 10, 10 by default**; older ones
+  of this device are deleted. Other files are never touched.
 - **Errors:** when the folder is not reachable or the permission was lost, the
   app shows a hint at the start (at most once a day, never in live mode) with
   an action to choose the folder again. The setting shows the last automatic
@@ -166,11 +166,16 @@ the server sync (ADR-0004).
   question; a setting to hide the local library, also when it is not empty,
   with a hint that names the automatic backup; no sync through WebDAV,
   Dropbox or OneDrive.
+- 2026-11-22: Owner decisions in the review of #833: the number of kept
+  backups is a setting with at most 10 (default 10); everything else as
+  proposed (content only the local library, daily after changes, device
+  name in the file name, safety backup that can be skipped, trash emptied
+  and play history kept when replacing, hiding as a device setting, both
+  settings in *Storage & backup*, no sync).
 
 ## Open points
 
 - Library or platform code for folders of document providers on Android and
   iOS; which providers offer folders (Google Drive on Android).
-- Whether the number of kept backups (10) should be a setting.
 - Size of large PDF libraries in a daily archive (ADR-0043: archives zipped in
   memory).
