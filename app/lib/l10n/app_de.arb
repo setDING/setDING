@@ -826,7 +826,7 @@
   "accountDeleteMessage": "Dein Konto, deine persönlichen Anpassungen, Annotationen und Einstellungen werden endgültig gelöscht, und du wirst auf allen Geräten abgemeldet. Songs und Sets bleiben bei deinen Organisationen. Die Backups des Servers behalten bis zu 14 Tage eine Kopie. Gib zur Bestätigung dein Passwort ein.",
   "accountDeleteSoleAdmin": "Du bist der einzige Admin dieser Organisationen. Ernenne zuerst jemand anderen zum Admin oder schliesse die Organisation:",
   "accountDeleted": "Dein Konto wurde gelöscht.",
-  "settingsDangerZone": "Gefahrenzone",
+  "dangerZone": "Gefahrenzone",
   "accountErrorNetwork": "Keine Verbindung zum Server. Prüfe die Internetverbindung.",
   "accountErrorInvalidCredentials": "E-Mail oder Passwort ist falsch.",
   "accountErrorEmailTaken": "Mit dieser E-Mail-Adresse gibt es bereits ein Konto.",

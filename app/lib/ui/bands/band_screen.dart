@@ -11,6 +11,7 @@ import 'band_labels.dart';
 import 'bands_screen.dart';
 import 'delete_band.dart';
 import 'invites_section.dart';
+import '../widgets/danger_zone.dart';
 import '../widgets/section_header.dart';
 import '../widgets/page_width.dart';
 
@@ -174,18 +175,26 @@ class BandScreen extends ConsumerWidget {
                 ),
               // Organization admins delete the band (ADR-0044).
               if (band.canDeleteBand)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                  child: OutlinedButton.icon(
-                    key: const Key('band-delete'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Theme.of(context).colorScheme.error,
+                DangerZone(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                      child: OutlinedButton.icon(
+                        key: const Key('band-delete'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Theme.of(context).colorScheme.error,
+                        ),
+                        icon: const Icon(Icons.delete_outline),
+                        label: Text(l10n.bandDelete),
+                        onPressed: () => deleteBand(
+                          context,
+                          ref,
+                          band,
+                          members: members.length,
+                        ),
+                      ),
                     ),
-                    icon: const Icon(Icons.delete_outline),
-                    label: Text(l10n.bandDelete),
-                    onPressed: () =>
-                        deleteBand(context, ref, band, members: members.length),
-                  ),
+                  ],
                 ),
             ],
           ),

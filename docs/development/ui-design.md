@@ -90,8 +90,12 @@ the others are checked in review.
   `// No tooltip:` comment just above it that says why.
 - **Primary action of a dialog or form:** `FilledButton`; *Cancel* and secondary
   actions: `TextButton`, before the primary action.
-- **Danger zone** (deleting a band, closing an organization): an `OutlinedButton`
-  with the error colour as foreground, at the end of the screen.
+- **Danger zone** (deleting the account, deleting a band, closing an organization):
+  at the end of the screen, in the **`DangerZone`** tile (`widgets/danger_zone.dart`,
+  #828): tinted with `errorContainer`, outlined in the error colour, with a
+  *Danger zone* header in the error colour. Its actions are `OutlinedButton`s with
+  the error colour as foreground. In the settings, `SettingsSection(danger: true)`
+  draws the same tile.
 - Keyboard: Esc goes back, single-key shortcuts per screen with `PageShortcuts`
   (ADR-0049). A new frequent action gets a shortcut and a line in the *?* dialog.
 

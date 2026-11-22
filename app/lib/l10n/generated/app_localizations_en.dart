@@ -1744,7 +1744,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountDeleted => 'Your account was deleted.';
 
   @override
-  String get settingsDangerZone => 'Danger zone';
+  String get dangerZone => 'Danger zone';
 
   @override
   String get accountErrorNetwork =>

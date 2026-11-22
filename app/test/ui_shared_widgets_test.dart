@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/l10n/generated/app_localizations.dart';
 import 'package:setding/ui/theme.dart';
+import 'package:setding/ui/widgets/danger_zone.dart';
 import 'package:setding/ui/widgets/dialogs.dart';
 import 'package:setding/ui/widgets/section_header.dart';
 
@@ -79,6 +80,40 @@ void main() {
     );
     semantics.dispose();
   });
+
+  for (final brightness in Brightness.values) {
+    testWidgets('the danger zone is a tile in the error colours '
+        '(${brightness.name})', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        app(
+          const DangerZone(children: [Text('Delete')]),
+          brightness: brightness,
+        ),
+      );
+      final scheme = Theme.of(tester.element(find.text('Delete'))).colorScheme;
+      final tile = tester.widget<Material>(
+        find.byKey(const Key('danger-zone')),
+      );
+      expect(tile.color, scheme.errorContainer.withValues(alpha: 0.4));
+      final shape = tile.shape! as RoundedRectangleBorder;
+      expect(shape.side.color, scheme.error.withValues(alpha: 0.6));
+      final header = tester.widget<Text>(find.text('Danger zone'));
+      expect(header.style?.color, scheme.error);
+      expect(
+        tester.getSemantics(find.text('Danger zone')),
+        matchesSemantics(label: 'Danger zone', isHeader: true),
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('danger-zone')),
+          matching: find.text('Delete'),
+        ),
+        findsOneWidget,
+      );
+      semantics.dispose();
+    });
+  }
 
   testWidgets('a message replaces the one shown, unless queued', (
     tester,

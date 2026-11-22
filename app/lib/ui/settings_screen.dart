@@ -311,13 +311,12 @@ class _CategoryContent extends ConsumerWidget {
             },
           ),
         // Danger zone at the end of the page (ADR-0052).
-        if (ref.watch(authProvider) != null) ...[
-          const Divider(),
+        if (ref.watch(authProvider) != null)
           SettingsSection(
-            title: l10n.settingsDangerZone,
+            title: l10n.dangerZone,
+            danger: true,
             children: const [DeleteAccountTile()],
           ),
-        ],
       ],
       SettingsCategory.bands => [const BandsSettings()],
       SettingsCategory.general => [
