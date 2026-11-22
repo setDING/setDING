@@ -1,0 +1,29 @@
+---
+// An example song of docs/examples (#923): the ChordPro text to copy, and the
+// song archive to download from /examples/ (served by
+// src/examples-integration.mjs). `name` is the file name without extension,
+// e.g. `beat-de`; its suffix picks the language of the labels.
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  name: string;
+}
+
+const { name } = Astro.props;
+const sources = import.meta.glob('../../../docs/examples/*.cho', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>;
+const code = sources[`../../../docs/examples/${name}.cho`];
+if (code === undefined) throw new Error(`docs/examples/${name}.cho not found`);
+const archive = `${name}.setDING.zip`;
+const de = name.endsWith('-de');
+---
+
+<Code code={code} lang="text" title={`${name}.cho`} />
+<p>
+  {de ? 'Song-Archiv zum Importieren unter ' : 'Song archive to import under '}
+  <strong>Songs</strong> → <strong>{de ? 'Dateien importieren' : 'Import files'}</strong>:
+  <a href={`/examples/${archive}`} download>{archive}</a>
+</p>

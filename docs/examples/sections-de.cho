@@ -1,0 +1,44 @@
+{title: Alle Abschnitte}
+{artist: setDING}
+{key: G}
+{tempo: 96}
+{x_sequence: I, V1, PC, C, V2, PC, C, Solo, B, C x2, O}
+
+{start_of_intro: label="Intro"}
+[G]  [C]  [Em]  [D]
+{end_of_intro}
+
+{start_of_verse: label="Verse 1"}
+[G]Morgens früh am [C]Bahnhof
+[Em]wartet schon der [D]Zug
+{end_of_verse}
+
+{start_of_verse: label="Verse 2"}
+[G]Abends spät im [C]Regen
+[Em]fährt er wieder [D]heim
+{end_of_verse}
+
+{start_of_pre_chorus: label="Pre-Chorus"}
+[Am]Noch ein Halt, noch [C]einer
+[D]gleich sind wir da
+{end_of_pre_chorus}
+
+{start_of_chorus: label="Chorus"}
+[G]Fahr mit, fahr [D]mit
+[Em]durch das ganze [C]Land
+[G]fahr mit, fahr [D]mit
+[C]Hand in [D]Hand
+{end_of_chorus}
+
+{start_of_solo: label="Solo"}
+[Em]  [C]  [G]  [D]
+{end_of_solo}
+
+{start_of_bridge: label="Bridge"}
+[C]Und wenn die [D]Schienen enden
+[Em]gehen wir zu [D]Fuss
+{end_of_bridge}
+
+{start_of_outro: label="Outro"}
+[C]Hand in [D]Hand, [G]Schluss
+{end_of_outro}

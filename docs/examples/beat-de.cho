@@ -1,0 +1,36 @@
+{title: Sieben Achtel}
+{artist: setDING}
+{key: D}
+{time: 7/8}
+{tempo: 168}
+# Ein ungerader Takt in Achteln; die Betonungen für Taktanzeige und Klick:
+{x_time_grouping: 2+2+3}
+{x_sequence: I, V1, C, V2, C, O}
+
+{start_of_intro: label="Intro"}
+{comment-drums: Nur Hi-Hat, 2+2+3 zählen}
+[D]Eins zwei, eins zwei, [G]eins zwei drei
+{end_of_intro}
+
+{start_of_verse: label="Verse 1"}
+{comment-drums: Rimshot auf der 3, Bassdrum auf der 1}
+[D]Sieben Schritte [G]durch die Nacht
+[Bm]keiner fällt aus [A]dem Takt
+{end_of_verse}
+
+{start_of_chorus: label="Chorus"}
+{comment-drums: Ride-Becken, Crash auf der 1}
+[G]Zwei und zwei und [A]drei
+[D]so geht der [Bm]Lauf vor[A]bei
+{end_of_chorus}
+
+{start_of_verse: label="Verse 2"}
+{comment-drums: Wie Verse 1, ab Takt 3 Toms}
+[D]Ungerade [G]läuft es gut
+[Bm]wer mitzählt, [A]hat den Mut
+{end_of_verse}
+
+{start_of_outro: label="Outro"}
+{comment-drums: Ritardando, Schluss auf der 1}
+[G]Zwei, zwei, [A]drei, [D]Schluss
+{end_of_outro}

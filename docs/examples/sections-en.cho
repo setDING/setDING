@@ -1,0 +1,44 @@
+{title: Every Section}
+{artist: setDING}
+{key: G}
+{tempo: 96}
+{x_sequence: I, V1, PC, C, V2, PC, C, Solo, B, C x2, O}
+
+{start_of_intro: label="Intro"}
+[G]  [C]  [Em]  [D]
+{end_of_intro}
+
+{start_of_verse: label="Verse 1"}
+[G]Early at the [C]station
+[Em]waiting for the [D]train
+{end_of_verse}
+
+{start_of_verse: label="Verse 2"}
+[G]Late at night it's [C]raining
+[Em]riding home a[D]gain
+{end_of_verse}
+
+{start_of_pre_chorus: label="Pre-Chorus"}
+[Am]One more stop, one [C]more one
+[D]almost there
+{end_of_pre_chorus}
+
+{start_of_chorus: label="Chorus"}
+[G]Come along, come a[D]long
+[Em]all across the [C]land
+[G]come along, come a[D]long
+[C]hand in [D]hand
+{end_of_chorus}
+
+{start_of_solo: label="Solo"}
+[Em]  [C]  [G]  [D]
+{end_of_solo}
+
+{start_of_bridge: label="Bridge"}
+[C]And when the [D]tracks are ending
+[Em]we will walk on [D]foot
+{end_of_bridge}
+
+{start_of_outro: label="Outro"}
+[C]Hand in [D]hand, [G]end
+{end_of_outro}

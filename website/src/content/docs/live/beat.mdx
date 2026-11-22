@@ -6,6 +6,7 @@ sidebar:
 ---
 
 import { Image } from 'astro:assets';
+import ExampleSong from '../../../components/ExampleSong.astro';
 import drums from '../../../../../docs/screenshots/drums_de.png';
 import click from '../../../../../docs/screenshots/live_click_de.png';
 
@@ -96,3 +97,14 @@ Pedal von Song zu Song.
 Schlagzeug-Notizen schreibst du im Song als Abschnitte oder Kommentare nur für
 Schlagzeug, z. B. `{comment-drums: Hi-Hat halb offen}`. Wer ein anderes Instrument
 eingestellt hat, sieht sie nicht.
+
+## Zum Ausprobieren
+
+Dieser Song steht im 7/8-Takt mit der Gruppierung 2+2+3 und 168 BPM. Jeder Teil
+hat eine Schlagzeug-Notiz, und der Songablauf `I, V1, C, V2, C, O` ergibt die
+Song-Landkarte. Importiere ihn, stelle als Instrument **Schlagzeug** ein und
+starte ihn im Live-Modus: Die Taktanzeige betont die 1, die 3 und die 5, der Klick
+ebenso. Mit **Gruppierung** in der Steuerleiste hörst du 3+2+2 oder **Ohne
+Gruppen**. Mit einem anderen Instrument verschwinden die Schlagzeug-Notizen.
+
+<ExampleSong name="beat-de" />

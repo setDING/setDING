@@ -6,6 +6,7 @@ sidebar:
 ---
 
 import { Image } from 'astro:assets';
+import ExampleSong from '../../../../components/ExampleSong.astro';
 import sequence from '../../../../../../docs/screenshots/sequence.png';
 import setLanguageVersion from '../../../../../../docs/screenshots/set_language_version.png';
 import songsPlayed from '../../../../../../docs/screenshots/songs_played.png';
@@ -71,6 +72,16 @@ the parts of the sequence and names the hidden parts in the song's header. This 
 applies when you start a single song with **Live**: then the sequence of the band
 chosen on the Sets tab or in the band arrangement counts, otherwise the song's own. Key and tempo stay as the
 song is written there.
+
+### Try it yourself
+
+This song has every kind of part, from the intro through pre-chorus, solo and bridge
+to the outro, and the sequence `I, V1, PC, C, V2, PC, C, Solo, B, C x2, O`. Add it
+to a set and try it: drop the solo from the song sequence, play the bridge before
+the second verse, or give it another key and tempo in the band arrangement. In live
+mode the parts outside the sequence are then dimmed.
+
+<ExampleSong name="sections-en" />
 
 ## Another language version
 

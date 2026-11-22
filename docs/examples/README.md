@@ -7,7 +7,24 @@
 | [`feature-showcase.zip`](feature-showcase.zip) | Both files in one archive: importing it creates the two songs and attaches the image automatically. Rebuild it with `make examples` after changing the files. |
 | [`nord-test/`](nord-test/) | Nine short songs for testing MIDI program changes on a **Nord Stage 3** in live mode (ADR-0039). Each song shows the program the Nord should switch to and the MIDI values sent. Original lyrics and music, free to use. |
 | [`nord-test.zip`](nord-test.zip) | The nine songs in one archive, rebuilt with `make examples`. |
-| [`chord-views-de.cho`](chord-views-de.cho), [`chord-views-en.cho`](chord-views-en.cho) | One test song (German and English lyrics, the same chords) for the **chord views** of ADR-0055: the seven degrees, jazz chords, borrowed chords (`♭VII`, `♭III`, `♭VI`, `♭II`), altered dominants, `aug`/`sus`, slash chords, secondary dominants and a part in A minor with its own `{key}`. Shown on the website page *Akkorde, Nashville und Stufen* / *Chords, Nashville and numerals*. Original lyrics, free to use. |
+| `chord-views-{de,en}.cho` | The **chord views** of ADR-0055 (`songs/chord-views`): the seven degrees, jazz chords, borrowed chords (`♭VII`, `♭III`, `♭VI`, `♭II`), altered dominants, `aug`/`sus`, slash chords, secondary dominants and a part in A minor with its own `{key}`. |
+| `beat-{de,en}.cho` | **Beat and click** (`live/beat`): 7/8 with `{x_time_grouping: 2+2+3}` at 168 BPM, a drum note in every part and a sequence for the song map. |
+| `sections-{de,en}.cho` | **Sections and sequence** (`sets/key-and-sequence`, `settings/song-display`): every section role once (intro, verses, pre-chorus, chorus, solo, bridge, outro) and `{x_sequence}`. |
+| `personal-{de,en}.cho` | **Personal adjustments** (`songs/personal`): a capo on the 2nd fret and three verses with the same chords (*chords in verses*). |
+| `*.setDING.zip` | Each of the songs above as a **song archive** (ADR-0043), the app's own export format, written by `make examples` from its `.cho`. |
+
+The website songs come in German and English (`-de`, `-en`) with the same chords;
+their lyrics are original and free to use. Each page shows its song with the
+`ExampleSong` component, which embeds the `.cho` to copy and links the song
+archive. The website build serves every ZIP of this folder under
+`https://setding.app/examples/` (`website/src/examples-integration.mjs`), so
+nothing is copied into `website/`.
+
+**Checks:** `packages/chordpro/test/doc_examples_test.dart` and
+`chord_views_example_test.dart` check that each song shows what its page says;
+`app/test/doc_examples_archive_test.dart` fails when a song archive no longer
+matches its `.cho` (run `make examples`); `website/src/examples.test.ts` checks
+that every link and example song on the website has its files.
 
 ## Trying it out
 
@@ -34,8 +51,8 @@ The file is also a regression test: `packages/chordpro/test/showcase_test.dart` 
 
 ## Chord views test song
 
-Import `chord-views-de.cho` or `chord-views-en.cho` (or paste it into the editor of
-a new song) and switch the chord view between *Chords*, *Nashville* and *Numerals*
+Import `chord-views-de.setDING.zip` or `chord-views-en.setDING.zip` (or paste the
+`.cho` into the editor of a new song) and switch the chord view between *Chords*, *Nashville* and *Numerals*
 in the settings, the song's personal adjustments or live mode; the chord style
 (*Standard*, *Jazz*) and *Raise extensions* show the same chords in other
 spellings. The website page embeds the file as it is, and

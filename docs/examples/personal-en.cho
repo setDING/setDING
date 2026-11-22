@@ -1,0 +1,33 @@
+{title: Three Alike Verses}
+{artist: setDING}
+{key: A}
+{capo: 2}
+{tempo: 80}
+
+{start_of_verse: label="Verse 1"}
+[G]The first verse sings a[C]bout the morning
+[Em]the light that falls a[D]cross the floor
+[G]the coffee and the [C]little worries
+[D]and nothing [G]more
+{end_of_verse}
+
+{start_of_chorus: label="Chorus"}
+[C]And all stays just [G]the way it was
+[Am]one more day goes [D]by because
+{end_of_chorus}
+
+{start_of_verse: label="Verse 2"}
+[G]The second verse sings [C]of the noon time
+[Em]the noise in every [D]little street
+[G]the bread, a nap, a [C]short and soon time
+[D]right at your [G]feet
+{end_of_verse}
+
+{start_of_verse: label="Verse 3"}
+[G]The third verse sings a[C]bout the evening
+[Em]the way back home a[D]gainst the wind
+[G]of all the things we [C]keep believing
+[D]the way we've [G]been
+{end_of_verse}
+
+{chorus}

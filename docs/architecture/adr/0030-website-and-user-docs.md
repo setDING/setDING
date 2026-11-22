@@ -87,6 +87,11 @@ Constraints:
   changes (`make screenshots ONLY=…`); the release PR renders all of them and
   commits the ones that changed in passing. The screenshot tests are split into
   one file per area and skip the PNG encoding in the test gate (#759).
+- 2026-11-22: Example songs to try a feature are served by the website itself
+  under `/examples/` (copied from `docs/examples` by the build, not stored in
+  `website/`), as song archives `.setDING.zip` and the existing example ZIPs,
+  instead of links to GitHub (#923). Pages embed the song to copy with the
+  `ExampleSong` component.
 
 ## Open points
 

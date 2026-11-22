@@ -4,12 +4,15 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import starlightLinksValidator from 'starlight-links-validator';
+import examples from './src/examples-integration.mjs';
 
 export default defineConfig({
   site: 'https://setding.app',
   // Logo and screenshots are shared with the app and the README.
   vite: { server: { fs: { allow: ['..'] } } },
   integrations: [
+    // Example songs as downloads under /examples/ (#923).
+    examples(),
     starlight({
       title: 'setDING',
       logo: {
