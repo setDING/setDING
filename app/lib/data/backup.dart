@@ -634,7 +634,9 @@ class BackupService {
     'capoFret': ?o.capoFret,
     'fontScale': o.fontScale,
     'notes': ?o.notes,
-    'nashville': ?o.nashville,
+    'chordView': ?o.chordView?.name,
+    // For older app versions, which only know Nashville numbers.
+    'nashville': ?o.chordView?.isDegrees,
     'liveView': ?o.liveView,
     'hideAnnotations': o.hideAnnotations,
     'verseChords': o.verseChords.name,
@@ -807,7 +809,7 @@ class BackupService {
     capoFret: Value(o['capoFret'] as int?),
     fontScale: (o['fontScale'] as num?)?.toDouble() ?? 1.0,
     notes: Value(o['notes'] as String?),
-    nashville: Value(o['nashville'] as bool?),
+    chordView: Value(chordViewOf(o['chordView'], o['nashville'])),
     liveView: Value(liveView),
     hideAnnotations: (o['hideAnnotations'] as bool?) ?? false,
     verseChords:

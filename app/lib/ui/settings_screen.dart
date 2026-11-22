@@ -23,6 +23,7 @@ import 'settings/song_display_settings.dart';
 import 'theme.dart';
 import 'widgets/app_info.dart';
 import 'widgets/breakpoint_builder.dart';
+import 'widgets/chord_view_picker.dart' show chordViewLabel;
 import 'widgets/click_pickers.dart' show subdivisionLabel;
 import 'widgets/dialogs.dart';
 import 'widgets/section_header.dart';
@@ -449,13 +450,18 @@ class _CategoryContent extends ConsumerWidget {
                 onChanged: (v) =>
                     notifier.update((s) => s.copyWith(notation: v)),
               ),
-              SettingsSwitch(
+              SettingsChoice(
+                tileKey: const Key('settings-chord-view'),
                 icon: Icons.numbers,
-                title: l10n.settingsNashville,
-                hint: l10n.settingsNashvilleHint,
-                value: s.nashville,
+                title: l10n.settingsChordView,
+                hint: l10n.settingsChordViewHint,
+                value: s.chordView,
+                options: {
+                  for (final view in ChordView.values)
+                    view: chordViewLabel(l10n, view),
+                },
                 onChanged: (v) =>
-                    notifier.update((s) => s.copyWith(nashville: v)),
+                    notifier.update((s) => s.copyWith(chordView: v)),
               ),
               SettingsChoice(
                 icon: Icons.text_format,

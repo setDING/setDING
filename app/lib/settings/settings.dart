@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../sync/auth_providers.dart' show authProvider;
 import '../sync/sync_backend.dart' show defaultServerUrl;
-import '../data/database.dart' show localOwnerId;
+import '../data/database.dart' show chordViewOf, localOwnerId;
 import '../midi/midi_profile.dart';
 import 'display_options.dart';
 import 'song_display.dart';
@@ -103,7 +103,7 @@ class AppSettings {
   const AppSettings({
     this.language = LanguageMode.system,
     this.notation = ChordNotation.international,
-    this.nashville = false,
+    this.chordView = ChordView.chords,
     this.chordStyle = ChordStyle.asWritten,
     this.chordSuperscript = false,
     this.displayMode = DisplayMode.lyricsAndChords,
@@ -151,7 +151,9 @@ class AppSettings {
 
   final LanguageMode language;
   final ChordNotation notation;
-  final bool nashville;
+
+  /// Chord names, Nashville numbers or Roman numerals (ADR-0055).
+  final ChordView chordView;
 
   /// Spelling of chord suffixes (ADR-0022).
   final ChordStyle chordStyle;
@@ -350,7 +352,7 @@ class AppSettings {
   AppSettings copyWith({
     LanguageMode? language,
     ChordNotation? notation,
-    bool? nashville,
+    ChordView? chordView,
     ChordStyle? chordStyle,
     bool? chordSuperscript,
     DisplayMode? displayMode,
@@ -397,7 +399,7 @@ class AppSettings {
   }) => AppSettings(
     language: language ?? this.language,
     notation: notation ?? this.notation,
-    nashville: nashville ?? this.nashville,
+    chordView: chordView ?? this.chordView,
     chordStyle: chordStyle ?? this.chordStyle,
     chordSuperscript: chordSuperscript ?? this.chordSuperscript,
     displayMode: displayMode ?? this.displayMode,
@@ -449,6 +451,8 @@ class AppSettings {
   static const scopes = <String, SettingSyncScope>{
     'language': SettingSyncScope.personal,
     'notation': SettingSyncScope.personal,
+    'chordView': SettingSyncScope.personal,
+    // Written for older app versions, which only know Nashville numbers.
     'nashville': SettingSyncScope.personal,
     'chordStyle': SettingSyncScope.personal,
     'chordSuperscript': SettingSyncScope.personal,
@@ -513,7 +517,8 @@ class AppSettings {
   Map<String, Object> toJson() => {
     'language': language.name,
     'notation': notation.name,
-    'nashville': nashville,
+    'chordView': chordView.name,
+    'nashville': chordView.isDegrees,
     'chordStyle': chordStyle.name,
     'chordSuperscript': chordSuperscript,
     'displayMode': displayMode.name,
@@ -596,7 +601,8 @@ class AppSettings {
     return AppSettings(
       language: pick(LanguageMode.values, 'language', d.language),
       notation: pick(ChordNotation.values, 'notation', d.notation),
-      nashville: flag('nashville', d.nashville),
+      chordView:
+          chordViewOf(json['chordView'], json['nashville']) ?? d.chordView,
       chordStyle: pick(ChordStyle.values, 'chordStyle', d.chordStyle),
       chordSuperscript: flag('chordSuperscript', d.chordSuperscript),
       displayMode: pick(DisplayMode.values, 'displayMode', d.displayMode),

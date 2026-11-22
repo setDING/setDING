@@ -141,6 +141,14 @@ conversion needs no new parsing.
 - 2026-11-22: Accepted by the owner (#899). Implementation: `chordpro`
   conversion #906, chord view setting and adjustment #907, live toggle #908,
   website page with screenshots #909.
+- 2026-11-22: Implemented in the `chordpro` package (#906): `ChordView`,
+  `Chord.toNumeralParts`, `ChordFormatter.view`.
+- 2026-11-22: Chord view in the app (#907): device setting `chordView` and
+  overlay column `chord_view` (schema 34, the flag converted), both still
+  writing the `nashville` flag; `chordViewOf` reconciles the two (a flag
+  switched by an older version wins). The song's personal panel has a chord
+  view chip with a menu; the live toggle offers chords and Nashville until
+  #908.
 
 ## Open points
 

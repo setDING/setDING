@@ -30,6 +30,7 @@ import '../widgets/dialogs.dart';
 import 'song_archive_dialogs.dart';
 import '../widgets/file_actions.dart';
 import '../widgets/key_picker.dart';
+import '../widgets/chord_view_picker.dart';
 import '../widgets/click_pickers.dart';
 import '../widgets/verse_chords_picker.dart';
 import '../widgets/scope_info.dart';
@@ -248,9 +249,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
           transpose: overlay.transpose,
           capo: overlay.capoFret,
           notation: settings.notation,
-          view: (overlay.nashville ?? settings.nashville)
-              ? ChordView.nashville
-              : ChordView.chords,
+          view: overlay.chordView ?? settings.chordView,
           style: settings.chordStyle,
           superscript: settings.chordSuperscript,
         );
@@ -364,7 +363,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                     songCapo: parsed.capoFret,
                     notation: settings.notation,
                     overlay: overlay,
-                    deviceNashville: settings.nashville,
+                    deviceChordView: settings.chordView,
                     hasKey: parsed.key != null,
                     song: parsed,
                     beatEnabled: settings.beatEnabled,
@@ -939,7 +938,7 @@ final _fits = LruCache<Object, SongFit>(8);
 /// Measured songs for the song screen when they do not fit.
 final _layouts = LruCache<Object, SongLayout>(8);
 
-/// Transposition, capo, font size, Nashville and notes (layer 3, ADR-0006).
+/// Transposition, capo, font size, chord view and notes (layer 3, ADR-0006).
 class _AdjustmentsBar extends StatelessWidget {
   const _AdjustmentsBar({
     required this.songKey,
@@ -947,7 +946,7 @@ class _AdjustmentsBar extends StatelessWidget {
     required this.songCapo,
     required this.notation,
     required this.overlay,
-    required this.deviceNashville,
+    required this.deviceChordView,
     required this.hasKey,
     required this.song,
     this.beatEnabled = false,
@@ -965,7 +964,7 @@ class _AdjustmentsBar extends StatelessWidget {
   final int songCapo;
   final ChordNotation notation;
   final SongOverlay overlay;
-  final bool deviceNashville;
+  final ChordView deviceChordView;
   final bool hasKey;
 
   /// The parsed song, for the choices of how verses show their chords.
@@ -1049,20 +1048,14 @@ class _AdjustmentsBar extends StatelessWidget {
             (o) => o.copyWith(fontScale: (o.fontScale + 0.1).clamp(0.5, 2.5)),
           ),
         ),
-        Tooltip(
-          message: hasKey ? '' : l10n.noKeyForNashville,
-          child: FilterChip(
-            label: Text(l10n.nashville),
-            selected: overlay.nashville ?? deviceNashville,
-            onSelected: hasKey
-                ? (selected) => onChanged(
-                    (o) => o.copyWith(
-                      nashville: Value(
-                        selected == deviceNashville ? null : selected,
-                      ),
-                    ),
-                  )
-                : null,
+        // Chord names, Nashville numbers or Roman numerals (ADR-0055).
+        ChordViewPicker(
+          view: overlay.chordView ?? deviceChordView,
+          hasKey: hasKey,
+          onChanged: (view) => onChanged(
+            (o) => o.copyWith(
+              chordView: Value(view == deviceChordView ? null : view),
+            ),
           ),
         ),
         // Chords in the first verse only (#518) or stacked verses (#521).
@@ -1118,7 +1111,7 @@ class _AdjustmentsBar extends StatelessWidget {
                 transpose: 0,
                 capoFret: const Value(null),
                 fontScale: 1.0,
-                nashville: const Value(null),
+                chordView: const Value(null),
                 verseChords: VerseChords.all,
                 clickGrouping: const Value(null),
                 clickSubdivision: const Value(null),
@@ -1388,7 +1381,7 @@ extension on SongOverlay {
       transpose != 0 ||
       capoFret != null ||
       fontScale != 1.0 ||
-      nashville != null ||
+      chordView != null ||
       verseChords != VerseChords.all ||
       clickGrouping != null ||
       clickSubdivision != null;

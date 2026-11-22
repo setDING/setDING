@@ -74,7 +74,7 @@
   "openFileFailed": "No app could open the file.",
   "playLive": "Play live",
   "live": "Live",
-  "nashville": "Nashville numbers",
+  "chordView": "Chord view",
   "useDeviceSetting": "As in settings",
   "on": "On",
   "off": "Off",
@@ -97,7 +97,7 @@
   "addChordPro": "Add ChordPro text",
   "keyLabel": "Key: {key}",
   "bpm": "{tempo} BPM",
-  "noKeyForNashville": "Nashville numbers need a key in the song.",
+  "noKeyForDegrees": "Nashville numbers and numerals need a key in the song.",
   "firstVerseChordsOnly": "Chords in verse 1 only",
   "noVersesForFirstVerseChords": "The song has no further verses with chords.",
   "verseChords": "Chords in verses",
@@ -222,7 +222,7 @@
   "settingsCategoryAccountHint": "Sign-in, server and sync",
   "settingsCategoryGeneralHint": "Language and theme",
   "settingsCategoryMusicianHint": "Instrument, voice, chord diagrams, beat",
-  "settingsCategoryDisplayHint": "Chord notation, Nashville numbers, content, chorus, progress",
+  "settingsCategoryDisplayHint": "Chord notation, Nashville and numerals, content, chorus, progress",
   "settingsCategoryLiveHint": "Font size, fit to screen, columns, page turn",
   "settingsCategoryAboutHint": "Storage, diagnostic log and version",
   "settingsInstrument": "My instrument",
@@ -261,8 +261,8 @@
   "settingsNotation": "Chord notation",
   "notationInternational": "International (B, Bb)",
   "notationGerman": "German (H, B)",
-  "settingsNashville": "Show Nashville numbers",
-  "settingsNashvilleHint": "Chords as scale degrees, e.g. 1, 4, 5, 6m. Needs a key in the song.",
+  "settingsChordView": "Show chords as",
+  "settingsChordViewHint": "Chords (Am7), Nashville numbers (6m7) or Roman numerals (vi7). Numbers and numerals need a key in the song.",
   "settingsChordStyle": "Chord style",
   "settingsChordStyleHint": "How chords are spelled, e.g. Am7, Cmaj7, Em7b5 (standard) or A−7, CΔ7, Eø7 (jazz). The song itself is not changed.",
   "chordStyleAsWritten": "As written",
@@ -3020,5 +3020,8 @@
       }
     }
   },
-  "localLibraryHiddenAutoBackup": "The automatic backup keeps running; you can switch it off here."
+  "localLibraryHiddenAutoBackup": "The automatic backup keeps running; you can switch it off here.",
+  "chordViewChords": "Chords",
+  "chordViewNashville": "Nashville",
+  "chordViewNumerals": "Numerals"
 }

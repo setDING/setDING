@@ -5539,20 +5539,15 @@ class $PersonalOverlaysTable extends PersonalOverlays
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _nashvilleMeta = const VerificationMeta(
-    'nashville',
-  );
   @override
-  late final GeneratedColumn<bool> nashville = GeneratedColumn<bool>(
-    'nashville',
-    aliasedName,
-    true,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("nashville" IN (0, 1))',
-    ),
-  );
+  late final GeneratedColumnWithTypeConverter<ChordView?, String> chordView =
+      GeneratedColumn<String>(
+        'chord_view',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      ).withConverter<ChordView?>($PersonalOverlaysTable.$converterchordViewn);
   static const VerificationMeta _liveViewMeta = const VerificationMeta(
     'liveView',
   );
@@ -5653,7 +5648,7 @@ class $PersonalOverlaysTable extends PersonalOverlays
     capoFret,
     fontScale,
     notes,
-    nashville,
+    chordView,
     liveView,
     hideAnnotations,
     verseChords,
@@ -5717,12 +5712,6 @@ class $PersonalOverlaysTable extends PersonalOverlays
       context.handle(
         _notesMeta,
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
-      );
-    }
-    if (data.containsKey('nashville')) {
-      context.handle(
-        _nashvilleMeta,
-        nashville.isAcceptableOrUnknown(data['nashville']!, _nashvilleMeta),
       );
     }
     if (data.containsKey('live_view')) {
@@ -5792,9 +5781,11 @@ class $PersonalOverlaysTable extends PersonalOverlays
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
       ),
-      nashville: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}nashville'],
+      chordView: $PersonalOverlaysTable.$converterchordViewn.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}chord_view'],
+        ),
       ),
       liveView: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -5845,6 +5836,10 @@ class $PersonalOverlaysTable extends PersonalOverlays
     return $PersonalOverlaysTable(attachedDatabase, alias);
   }
 
+  static JsonTypeConverter2<ChordView, String, String> $converterchordView =
+      const EnumNameConverter<ChordView>(ChordView.values);
+  static JsonTypeConverter2<ChordView?, String?, String?> $converterchordViewn =
+      JsonTypeConverter2.asNullable($converterchordView);
   static JsonTypeConverter2<VerseChords, String, String> $converterverseChords =
       const EnumNameConverter<VerseChords>(VerseChords.values);
   static TypeConverter<MidiProgram?, String?> $convertermidi =
@@ -5876,8 +5871,10 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
   final double fontScale;
   final String? notes;
 
-  /// Per-song Nashville override; null = use device setting.
-  final bool? nashville;
+  /// Per-song chord view (names, Nashville numbers or Roman numerals,
+  /// ADR-0055, schema 34; a Nashville flag before); null = use the device
+  /// setting.
+  final ChordView? chordView;
 
   /// What live mode shows: null = ChordPro, otherwise an attachment ID.
   final String? liveView;
@@ -5917,7 +5914,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     this.capoFret,
     required this.fontScale,
     this.notes,
-    this.nashville,
+    this.chordView,
     this.liveView,
     required this.hideAnnotations,
     required this.verseChords,
@@ -5941,8 +5938,10 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
     }
-    if (!nullToAbsent || nashville != null) {
-      map['nashville'] = Variable<bool>(nashville);
+    if (!nullToAbsent || chordView != null) {
+      map['chord_view'] = Variable<String>(
+        $PersonalOverlaysTable.$converterchordViewn.toSql(chordView),
+      );
     }
     if (!nullToAbsent || liveView != null) {
       map['live_view'] = Variable<String>(liveView);
@@ -5990,9 +5989,9 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
-      nashville: nashville == null && nullToAbsent
+      chordView: chordView == null && nullToAbsent
           ? const Value.absent()
-          : Value(nashville),
+          : Value(chordView),
       liveView: liveView == null && nullToAbsent
           ? const Value.absent()
           : Value(liveView),
@@ -6025,7 +6024,9 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       capoFret: serializer.fromJson<int?>(json['capoFret']),
       fontScale: serializer.fromJson<double>(json['fontScale']),
       notes: serializer.fromJson<String?>(json['notes']),
-      nashville: serializer.fromJson<bool?>(json['nashville']),
+      chordView: $PersonalOverlaysTable.$converterchordViewn.fromJson(
+        serializer.fromJson<String?>(json['chordView']),
+      ),
       liveView: serializer.fromJson<String?>(json['liveView']),
       hideAnnotations: serializer.fromJson<bool>(json['hideAnnotations']),
       verseChords: $PersonalOverlaysTable.$converterverseChords.fromJson(
@@ -6050,7 +6051,9 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       'capoFret': serializer.toJson<int?>(capoFret),
       'fontScale': serializer.toJson<double>(fontScale),
       'notes': serializer.toJson<String?>(notes),
-      'nashville': serializer.toJson<bool?>(nashville),
+      'chordView': serializer.toJson<String?>(
+        $PersonalOverlaysTable.$converterchordViewn.toJson(chordView),
+      ),
       'liveView': serializer.toJson<String?>(liveView),
       'hideAnnotations': serializer.toJson<bool>(hideAnnotations),
       'verseChords': serializer.toJson<String>(
@@ -6076,7 +6079,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     Value<int?> capoFret = const Value.absent(),
     double? fontScale,
     Value<String?> notes = const Value.absent(),
-    Value<bool?> nashville = const Value.absent(),
+    Value<ChordView?> chordView = const Value.absent(),
     Value<String?> liveView = const Value.absent(),
     bool? hideAnnotations,
     VerseChords? verseChords,
@@ -6093,7 +6096,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     capoFret: capoFret.present ? capoFret.value : this.capoFret,
     fontScale: fontScale ?? this.fontScale,
     notes: notes.present ? notes.value : this.notes,
-    nashville: nashville.present ? nashville.value : this.nashville,
+    chordView: chordView.present ? chordView.value : this.chordView,
     liveView: liveView.present ? liveView.value : this.liveView,
     hideAnnotations: hideAnnotations ?? this.hideAnnotations,
     verseChords: verseChords ?? this.verseChords,
@@ -6116,7 +6119,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       capoFret: data.capoFret.present ? data.capoFret.value : this.capoFret,
       fontScale: data.fontScale.present ? data.fontScale.value : this.fontScale,
       notes: data.notes.present ? data.notes.value : this.notes,
-      nashville: data.nashville.present ? data.nashville.value : this.nashville,
+      chordView: data.chordView.present ? data.chordView.value : this.chordView,
       liveView: data.liveView.present ? data.liveView.value : this.liveView,
       hideAnnotations: data.hideAnnotations.present
           ? data.hideAnnotations.value
@@ -6148,7 +6151,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
           ..write('capoFret: $capoFret, ')
           ..write('fontScale: $fontScale, ')
           ..write('notes: $notes, ')
-          ..write('nashville: $nashville, ')
+          ..write('chordView: $chordView, ')
           ..write('liveView: $liveView, ')
           ..write('hideAnnotations: $hideAnnotations, ')
           ..write('verseChords: $verseChords, ')
@@ -6170,7 +6173,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     capoFret,
     fontScale,
     notes,
-    nashville,
+    chordView,
     liveView,
     hideAnnotations,
     verseChords,
@@ -6191,7 +6194,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
           other.capoFret == this.capoFret &&
           other.fontScale == this.fontScale &&
           other.notes == this.notes &&
-          other.nashville == this.nashville &&
+          other.chordView == this.chordView &&
           other.liveView == this.liveView &&
           other.hideAnnotations == this.hideAnnotations &&
           other.verseChords == this.verseChords &&
@@ -6210,7 +6213,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
   final Value<int?> capoFret;
   final Value<double> fontScale;
   final Value<String?> notes;
-  final Value<bool?> nashville;
+  final Value<ChordView?> chordView;
   final Value<String?> liveView;
   final Value<bool> hideAnnotations;
   final Value<VerseChords> verseChords;
@@ -6228,7 +6231,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     this.capoFret = const Value.absent(),
     this.fontScale = const Value.absent(),
     this.notes = const Value.absent(),
-    this.nashville = const Value.absent(),
+    this.chordView = const Value.absent(),
     this.liveView = const Value.absent(),
     this.hideAnnotations = const Value.absent(),
     this.verseChords = const Value.absent(),
@@ -6247,7 +6250,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     this.capoFret = const Value.absent(),
     this.fontScale = const Value.absent(),
     this.notes = const Value.absent(),
-    this.nashville = const Value.absent(),
+    this.chordView = const Value.absent(),
     this.liveView = const Value.absent(),
     this.hideAnnotations = const Value.absent(),
     this.verseChords = const Value.absent(),
@@ -6266,7 +6269,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     Expression<int>? capoFret,
     Expression<double>? fontScale,
     Expression<String>? notes,
-    Expression<bool>? nashville,
+    Expression<String>? chordView,
     Expression<String>? liveView,
     Expression<bool>? hideAnnotations,
     Expression<String>? verseChords,
@@ -6285,7 +6288,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
       if (capoFret != null) 'capo_fret': capoFret,
       if (fontScale != null) 'font_scale': fontScale,
       if (notes != null) 'notes': notes,
-      if (nashville != null) 'nashville': nashville,
+      if (chordView != null) 'chord_view': chordView,
       if (liveView != null) 'live_view': liveView,
       if (hideAnnotations != null) 'hide_annotations': hideAnnotations,
       if (verseChords != null) 'verse_chords': verseChords,
@@ -6306,7 +6309,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     Value<int?>? capoFret,
     Value<double>? fontScale,
     Value<String?>? notes,
-    Value<bool?>? nashville,
+    Value<ChordView?>? chordView,
     Value<String?>? liveView,
     Value<bool>? hideAnnotations,
     Value<VerseChords>? verseChords,
@@ -6325,7 +6328,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
       capoFret: capoFret ?? this.capoFret,
       fontScale: fontScale ?? this.fontScale,
       notes: notes ?? this.notes,
-      nashville: nashville ?? this.nashville,
+      chordView: chordView ?? this.chordView,
       liveView: liveView ?? this.liveView,
       hideAnnotations: hideAnnotations ?? this.hideAnnotations,
       verseChords: verseChords ?? this.verseChords,
@@ -6362,8 +6365,10 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
-    if (nashville.present) {
-      map['nashville'] = Variable<bool>(nashville.value);
+    if (chordView.present) {
+      map['chord_view'] = Variable<String>(
+        $PersonalOverlaysTable.$converterchordViewn.toSql(chordView.value),
+      );
     }
     if (liveView.present) {
       map['live_view'] = Variable<String>(liveView.value);
@@ -6415,7 +6420,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
           ..write('capoFret: $capoFret, ')
           ..write('fontScale: $fontScale, ')
           ..write('notes: $notes, ')
-          ..write('nashville: $nashville, ')
+          ..write('chordView: $chordView, ')
           ..write('liveView: $liveView, ')
           ..write('hideAnnotations: $hideAnnotations, ')
           ..write('verseChords: $verseChords, ')
@@ -14232,7 +14237,7 @@ typedef $$PersonalOverlaysTableCreateCompanionBuilder =
       Value<int?> capoFret,
       Value<double> fontScale,
       Value<String?> notes,
-      Value<bool?> nashville,
+      Value<ChordView?> chordView,
       Value<String?> liveView,
       Value<bool> hideAnnotations,
       Value<VerseChords> verseChords,
@@ -14252,7 +14257,7 @@ typedef $$PersonalOverlaysTableUpdateCompanionBuilder =
       Value<int?> capoFret,
       Value<double> fontScale,
       Value<String?> notes,
-      Value<bool?> nashville,
+      Value<ChordView?> chordView,
       Value<String?> liveView,
       Value<bool> hideAnnotations,
       Value<VerseChords> verseChords,
@@ -14329,10 +14334,11 @@ class $$PersonalOverlaysTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<bool> get nashville => $composableBuilder(
-    column: $table.nashville,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnWithTypeConverterFilters<ChordView?, ChordView, String> get chordView =>
+      $composableBuilder(
+        column: $table.chordView,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 
   ColumnFilters<String> get liveView => $composableBuilder(
     column: $table.liveView,
@@ -14441,8 +14447,8 @@ class $$PersonalOverlaysTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<bool> get nashville => $composableBuilder(
-    column: $table.nashville,
+  ColumnOrderings<String> get chordView => $composableBuilder(
+    column: $table.chordView,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -14537,8 +14543,8 @@ class $$PersonalOverlaysTableAnnotationComposer
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
 
-  GeneratedColumn<bool> get nashville =>
-      $composableBuilder(column: $table.nashville, builder: (column) => column);
+  GeneratedColumnWithTypeConverter<ChordView?, String> get chordView =>
+      $composableBuilder(column: $table.chordView, builder: (column) => column);
 
   GeneratedColumn<String> get liveView =>
       $composableBuilder(column: $table.liveView, builder: (column) => column);
@@ -14638,7 +14644,7 @@ class $$PersonalOverlaysTableTableManager
                 Value<int?> capoFret = const Value.absent(),
                 Value<double> fontScale = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
-                Value<bool?> nashville = const Value.absent(),
+                Value<ChordView?> chordView = const Value.absent(),
                 Value<String?> liveView = const Value.absent(),
                 Value<bool> hideAnnotations = const Value.absent(),
                 Value<VerseChords> verseChords = const Value.absent(),
@@ -14656,7 +14662,7 @@ class $$PersonalOverlaysTableTableManager
                 capoFret: capoFret,
                 fontScale: fontScale,
                 notes: notes,
-                nashville: nashville,
+                chordView: chordView,
                 liveView: liveView,
                 hideAnnotations: hideAnnotations,
                 verseChords: verseChords,
@@ -14676,7 +14682,7 @@ class $$PersonalOverlaysTableTableManager
                 Value<int?> capoFret = const Value.absent(),
                 Value<double> fontScale = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
-                Value<bool?> nashville = const Value.absent(),
+                Value<ChordView?> chordView = const Value.absent(),
                 Value<String?> liveView = const Value.absent(),
                 Value<bool> hideAnnotations = const Value.absent(),
                 Value<VerseChords> verseChords = const Value.absent(),
@@ -14694,7 +14700,7 @@ class $$PersonalOverlaysTableTableManager
                 capoFret: capoFret,
                 fontScale: fontScale,
                 notes: notes,
-                nashville: nashville,
+                chordView: chordView,
                 liveView: liveView,
                 hideAnnotations: hideAnnotations,
                 verseChords: verseChords,

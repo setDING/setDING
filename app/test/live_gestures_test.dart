@@ -1,4 +1,7 @@
 import 'dart:convert';
+
+import 'package:chordpro/chordpro.dart' show ChordView;
+
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -357,8 +360,8 @@ void main() {
     // Stored as the personal overlay of the song.
     final id = items.first.song!.id;
     expect(
-      (await tester.runAsync(() => app.songs.getOverlay(id)))!.nashville,
-      isTrue,
+      (await tester.runAsync(() => app.songs.getOverlay(id)))!.chordView,
+      ChordView.nashville,
     );
 
     await tester.tap(
@@ -369,7 +372,7 @@ void main() {
     expect(find.text('4'), findsNothing);
     // Back to the device setting.
     expect(
-      (await tester.runAsync(() => app.songs.getOverlay(id)))!.nashville,
+      (await tester.runAsync(() => app.songs.getOverlay(id)))!.chordView,
       isNull,
     );
 
