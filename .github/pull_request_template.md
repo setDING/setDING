@@ -15,6 +15,7 @@ Closes #
 <!-- Commands run, tests added, manual checks. -->
 
 - [ ] `tool/check.sh` passes (format, analyze, tests)
+- [ ] Bug fix: a regression test reproduces the bug, failed before the fix and passes after it (or why a test is impossible)
 
 ## Checklist
 

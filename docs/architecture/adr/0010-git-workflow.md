@@ -74,6 +74,7 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 - 2026-11-20: Test gate by affected area (#684): `make check` runs only the jobs whose area the branch changes (`tool/check_select.py`; every job for shared files, unknown files and more than 40 changed files), `make check-full` runs all of them and is used for larger changes, `make release-gate` runs every check plus the web and Android integration tests before a release; CI runs every job. The dependency check fails only the full check and changes to pinned libraries, otherwise it warns. Reason: running every job for every change, and every new upstream release failing unrelated PRs, slowed down parallel agent work too much. Owner decision.
 - 2026-11-20: `make release-gate` runs the web integration tests in Chrome and in Firefox (#688, owner decision).
 - 2026-11-21: Worktrees move into the project folder, `.worktrees/<branch>`, ignored in `.gitignore` (#731). Tools scoped to the project folder (e.g. a Claude Code desktop session: file pane, permissions) reach them too. The formatter and analyzer run inside `app/` and `packages/*` and do not see the folder; an IDE that opens the repository root excludes it. Owner request.
+- 2026-11-22: Every bug fix comes with a regression test that reproduces the bug, fails without the fix and passes with it, at the lowest test level that can show it; a PR that cannot add one says why (#861). Owner request.
 
 ## Open points
 
