@@ -67,9 +67,10 @@ void main() {
     });
   }
 
-  // Repertoire at the top of the set list's ⋮ menu (#853).
+  // Repertoire in the set list's app bar, the trash at the end of the list
+  // (#853, #882).
   for (final (lang, dark) in [('de', false), ('en', true)]) {
-    screenshotTest('sets menu repertoire $lang', (tester) async {
+    screenshotTest('sets repertoire and trash $lang', (tester) async {
       useTabletSize(tester, landscape: false);
       final app = await TestApp.create(
         prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
@@ -91,10 +92,31 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('sets-menu')));
-      await tester.pumpAndSettle();
       expect(find.byKey(const Key('sets-repertoire')), findsOneWidget);
-      await shot(tester, '${lang}_2c_sets_menu');
+      expect(find.byKey(const Key('sets-trash')), findsOneWidget);
+      await shot(tester, '${lang}_2c_sets_tools');
+      await app.dispose(tester);
+    });
+  }
+
+  // Importing a set from the "New set" dialog (#882).
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('new set dialog import $lang', (tester) async {
+      useTabletSize(tester, landscape: false);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: const SetsScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('set-dialog-import')), findsOneWidget);
+      await shot(tester, '${lang}_2d_new_set_import');
       await app.dispose(tester);
     });
   }

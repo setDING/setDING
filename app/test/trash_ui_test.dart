@@ -53,8 +53,8 @@ void main() {
     await tester.tap(find.text('Sets').first);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('sets-menu')));
-    await tester.pumpAndSettle();
+    // The trash is at the end of the list, also when every set is deleted
+    // (#882).
     await tester.tap(find.byKey(const Key('sets-trash')));
     await tester.pumpAndSettle();
     expect(find.text('Deleted sets'), findsOneWidget);

@@ -4852,6 +4852,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get setImport => 'Set importieren';
 
   @override
+  String get setImportFromFile => 'Aus Datei importieren …';
+
+  @override
   String get setImportTitle => 'Set importieren';
 
   @override

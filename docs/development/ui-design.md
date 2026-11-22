@@ -101,6 +101,11 @@ the others are checked in review.
   room for next to the title and the others as `MenuAction`s with their badge; a
   dot on ⋮ shows that a hidden one has a badge. A key function (the song's *Edit*,
   #600) and the live button stay in the bar.
+  **One ⋮ per view:** where a list and the open item sit side by side (sets),
+  only the item has an overflow menu; a second ⋮ a few pixels away is taken
+  for the item's (#882). The list's own actions are icon buttons, the trash is
+  an entry at the end of the list (under the empty state when the list is
+  empty), and importing is a secondary action of the *New …* dialog.
   Every `IconButton` has a
   **tooltip** (it is also its accessible name). A deliberate exception (the stage's
   MIDI button, whose long press a tooltip would take) has a `Semantics` label and a

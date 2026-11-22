@@ -316,4 +316,36 @@ void main() {
     expect(icon.text.style?.color, scheme.onPrimary);
     await app.dispose(tester);
   });
+
+  // Regression test for #882: next to the open set's ⋮ menu, the list had a
+  // ⋮ menu of its own, which was mistaken for the set's (e.g. to delete it).
+  testWidgets('wide: only the open set has a ⋮ menu in its app bar', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await withSets(tester);
+
+    Finder menusIn(Finder appBar) => find.descendant(
+      of: appBar,
+      matching: find.byWidgetPredicate((w) => w is PopupMenuButton),
+    );
+    expect(menusIn(find.byType(AppBar).first), findsNothing);
+    expect(menusIn(find.byType(AppBar).last), findsOneWidget);
+    // Its actions moved: Repertoire into the app bar, the trash to the end
+    // of the list, importing into the "New set" dialog.
+    expect(find.byTooltip('Repertoire'), findsOneWidget);
+    expect(find.byKey(const Key('sets-trash')), findsOneWidget);
+    await tester.tap(find.text('New set'));
+    await tester.pumpAndSettle();
+    expect(find.text('Import from file …'), findsOneWidget);
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    // Editing a set does not offer it.
+    await tester.tap(find.byTooltip('Edit set'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('set-dialog-import')), findsNothing);
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    await app.dispose(tester);
+  });
 }

@@ -7513,6 +7513,12 @@ abstract class AppLocalizations {
   /// **'Set importieren'**
   String get setImport;
 
+  /// No description provided for @setImportFromFile.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus Datei importieren …'**
+  String get setImportFromFile;
+
   /// No description provided for @setImportTitle.
   ///
   /// In de, this message translates to:
