@@ -31,9 +31,11 @@ class BandCopyService {
     final copies = <String>[];
     final files = <(String, String)>[];
     await db.transaction(() async {
+      final works = <String, List<String>>{};
       for (final id in songIds) {
-        copies.add(await _copySong(id, targetLibraryId, files));
+        copies.add(await _copySong(id, targetLibraryId, files, works));
       }
+      await _linkCopies(works);
     });
     await _copyFiles(files);
     return copies;
@@ -71,6 +73,7 @@ class BandCopyService {
                 ..orderBy([(i) => OrderingTerm.asc(i.position)]))
               .get();
       final songCopies = <String, String>{};
+      final works = <String, List<String>>{};
       for (final item in items) {
         String? songId;
         if (item.songId case final original?) {
@@ -83,6 +86,7 @@ class BandCopyService {
                   original,
                   targetLibraryId,
                   files,
+                  works,
                 )
               : original;
         }
@@ -96,6 +100,7 @@ class BandCopyService {
               ),
             );
       }
+      await _linkCopies(works);
       await markDirty(
         db,
         SyncCollection.setlists,
@@ -117,13 +122,30 @@ class BandCopyService {
     }
   }
 
+  /// Links the copies that were language versions of one work among the
+  /// copied songs ([works]: original group, copies) under a new group of the
+  /// target library, as an archive import does (ADR-0053, #878); never with
+  /// songs already there. Set before the copies' first push, so they are
+  /// created with their group.
+  Future<void> _linkCopies(Map<String, List<String>> works) async {
+    for (final ids in works.values) {
+      if (ids.length < 2) continue;
+      final work = _uuid.v4();
+      await (db.update(db.songs)..where((s) => s.id.isIn(ids))).write(
+        SongsCompanion(workId: Value(work)),
+      );
+    }
+  }
+
   /// Copies a song into the database; its attachment files are added to
-  /// [files] for [_copyFiles].
+  /// [files] for [_copyFiles], the copy to its original's group in [works]
+  /// for [_linkCopies].
   Future<String> _copySong(
     String songId,
     String targetLibraryId,
-    List<(String, String)> files,
-  ) async {
+    List<(String, String)> files, [
+    Map<String, List<String>>? works,
+  ]) async {
     final song = await (db.select(
       db.songs,
     )..where((s) => s.id.equals(songId))).getSingle();
@@ -140,10 +162,14 @@ class BandCopyService {
             // A copy is a new song of the target library (#868).
             createdAt: Value(now),
             // A copy is no language version of the original's work; a group
-            // never spans libraries (ADR-0053). Its language stays.
+            // never spans libraries (ADR-0053). Its language stays; copies
+            // of versions copied together are linked by [_linkCopies].
             workId: const Value(null),
           ),
         );
+    if ((song.workId, works) case (final work?, final works?)) {
+      (works[work] ??= []).add(newId);
+    }
 
     final attachments = await (db.select(
       db.attachments,
