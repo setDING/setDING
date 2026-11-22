@@ -19,6 +19,27 @@ void main() {
     expect(problems(''), isEmpty);
   });
 
+  test('an empty or invalid {key} (#933)', () {
+    expect(problems('{title: T}\n{key}\n[G]la\n  {key: }  \n{key: Xyz}'), [
+      (P.invalidKey, 2, '{key}'),
+      (P.invalidKey, 4, '{key: }'),
+      (P.invalidKey, 5, '{key: Xyz}'),
+    ]);
+    // Keys the parser understands, also conditional and in the middle.
+    expect(
+      problems(
+        '{key: G}\n{key:H}\n{key: F#m}\n{key: Bb}\n{key: G/D}\n{key-piano: Eb}\n'
+        '[G]la\n{key: Ebm}',
+      ),
+      isEmpty,
+    );
+    // Without {key} a song is valid: the key is optional.
+    expect(problems('{title: T}\n[G]la'), isEmpty);
+    // Inside a delegated environment nothing is a directive.
+    expect(problems('{start_of_abc}\n{key}\n{end_of_abc}'), isEmpty);
+    expect(canFixChordProProblem(validateChordPro('{key}').single), isFalse);
+  });
+
   test('unclosed brackets', () {
     expect(problems('{title: T\n[G]la [Am li\n{c: ok}'), [
       (P.unclosedDirective, 1, '{title: T'),

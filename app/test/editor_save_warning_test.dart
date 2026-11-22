@@ -117,6 +117,31 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('an empty or invalid key asks before saving (#933)', (
+    tester,
+  ) async {
+    const source = '{title: T}\n{key}\n[G]la\n{key: Xyz}';
+    final (app, id, controller) = await pumpEditor(tester, source);
+
+    await tester.tap(find.byTooltip('Save'));
+    await tester.pumpAndSettle();
+    expect(find.text('Check the ChordPro?'), findsOneWidget);
+    expect(
+      find.text(
+        '• Line 2: the key directive names no key; the song has no key for '
+        'transposing and the chord views.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Line 4: the key directive'), findsOneWidget);
+    expect(find.text('Fix automatically'), findsNothing);
+
+    await tester.tap(find.text('Keep editing'));
+    await tester.pumpAndSettle();
+    expect(controller.selection.textInside(controller.text), '{key}');
+    await app.dispose(tester);
+  });
+
   testWidgets('a valid song is saved without asking', (tester) async {
     const source = '{title: T}\n[G]la [Am]li\n';
     final (app, id, _) = await pumpEditor(tester, source);

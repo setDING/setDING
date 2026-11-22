@@ -58,6 +58,32 @@ void main() {
     });
   }
 
+  // An empty or invalid {key} in the save warning (#933).
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('invalid key $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      const source =
+          '{title: Amazing Grace}\n{key}\n\n'
+          'A[G]mazing [G7]grace, how [C]sweet the [G]sound\n'
+          'That [G]saved a [Em]wretch like [D]me';
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: SongEditorScreen(initialSource: source)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip(lang == 'de' ? 'Speichern' : 'Save'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsOne);
+      await shot(tester, '${lang}_48_editor_invalid_key');
+      await app.dispose(tester);
+    });
+  }
+
   // A key suggested from the chords in the song details (#919).
   for (final (lang, dark) in [('de', false), ('en', true)]) {
     screenshotTest('key suggestion $lang', (tester) async {

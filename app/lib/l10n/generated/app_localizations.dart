@@ -4112,6 +4112,12 @@ abstract class AppLocalizations {
   /// **'Zeile {line}: Nach der Direktive steht noch Text; die ganze Zeile wird als Liedtext angezeigt.'**
   String problemTextAfterDirective(int line);
 
+  /// No description provided for @problemInvalidKey.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeile {line}: Die Direktive key nennt keine Tonart; der Song hat keine Tonart zum Transponieren und für die Akkord-Ansichten.'**
+  String problemInvalidKey(int line);
+
   /// No description provided for @chordProProblemsTooltip.
   ///
   /// In de, this message translates to:

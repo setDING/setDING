@@ -228,6 +228,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
       ChordProProblemKind.textAfterDirective => l10n.problemTextAfterDirective(
         p.line,
       ),
+      ChordProProblemKind.invalidKey => l10n.problemInvalidKey(p.line),
     };
     final fixable = problems.any(canFixChordProProblem);
     final action = await showDialog<_ProblemAction>(

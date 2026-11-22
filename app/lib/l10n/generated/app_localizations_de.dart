@@ -2420,6 +2420,11 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String problemInvalidKey(int line) {
+    return 'Zeile $line: Die Direktive key nennt keine Tonart; der Song hat keine Tonart zum Transponieren und für die Akkord-Ansichten.';
+  }
+
+  @override
   String chordProProblemsTooltip(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
