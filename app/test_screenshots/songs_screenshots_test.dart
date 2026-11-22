@@ -172,7 +172,13 @@ void main() {
       await shot(tester, '${lang}_39_songs_languages');
 
       // The language filter: All languages and No language above the
-      // languages (#834).
+      // languages (#834), No language only with a song without one (#843).
+      await tester.runAsync(
+        () => app.songs.createSong(
+          source: '{title: Intro}\n{artist: House Band}\n{key: E}\n[E] [A] [B]',
+        ),
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('songs-language')));
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('songs-language-none')), findsOneWidget);
