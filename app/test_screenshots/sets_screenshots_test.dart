@@ -121,6 +121,65 @@ void main() {
     });
   }
 
+  // The song picker of a set, built like the song list: filters, sections
+  // and two columns (#884).
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('set song picker $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      final setId = await tester.runAsync(() async {
+        final ids = <String>[];
+        for (final (title, artist, key, tag) in [
+          ('All of Me', 'Gerald Marks', 'C', 'Jazz'),
+          ('Autumn Leaves', 'Joseph Kosma', 'Gm', 'Jazz'),
+          ('Blue Moon', 'Richard Rodgers', 'Eb', 'Ballad'),
+          ('Bye Bye Blackbird', 'Ray Henderson', 'F', 'Jazz'),
+          ('Fly Me to the Moon', 'Bart Howard', 'C', 'Swing'),
+          ('Georgia on My Mind', 'Hoagy Carmichael', 'F', 'Ballad'),
+          ('Misty', 'Erroll Garner', 'Eb', 'Ballad'),
+          ('Moondance', 'Van Morrison', 'Am', 'Swing'),
+        ]) {
+          ids.add(
+            await app.songs.createSong(
+              source:
+                  '{title: $title}\n{artist: $artist}\n{key: $key}\n'
+                  '{tag: $tag}\n[$key]x',
+            ),
+          );
+        }
+        final now = DateTime.now();
+        final past = await app.sets.createSet(
+          name: 'Jazznacht',
+          gigDate: now.subtract(const Duration(days: 30)),
+        );
+        await app.sets.addSongs(past, [ids[1], ids[6]]);
+        return app.sets.createSet(
+          name: 'Sommerfest',
+          gigDate: now.add(const Duration(days: 3)),
+        );
+      });
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: SetScreen(setId: setId!)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text(lang == 'de' ? 'Songs hinzufügen' : 'Add songs'),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Misty'));
+      await tester.tap(find.text('All of Me'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('songs-tags')), findsOneWidget);
+      await shot(tester, '${lang}_2e_song_picker');
+      await app.dispose(tester);
+    });
+  }
+
   for (final dark in [false, true]) {
     screenshotTest('splash ${dark ? 'dark' : 'light'}', (tester) async {
       tester.view.physicalSize = const Size(1080, 1920);

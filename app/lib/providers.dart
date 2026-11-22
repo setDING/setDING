@@ -458,13 +458,42 @@ final songsProvider = StreamProvider.autoDispose
           ),
     );
 
-/// Songs of the current band's library filtered by search text, for adding
-/// them to a set.
+/// Songs of the current band's library filtered by search text and tags,
+/// in the chosen order, for adding them to a set (#884): the song picker
+/// shows the band's library, not the one chosen on the songs tab.
+///
+/// A set compares by identity, as for [songsProvider].
 final bandSongsProvider = StreamProvider.autoDispose
-    .family<List<SongListEntry>, String>(
-      (ref, query) =>
-          ref.watch(bandSongRepositoryProvider).watchSongList(query: query),
+    .family<List<SongListEntry>, ({String query, Set<String> tags})>(
+      (ref, filter) => ref
+          .watch(bandSongRepositoryProvider)
+          .watchSongList(
+            query: filter.query,
+            tags: filter.tags,
+            sort: ref.watch(songSortProvider),
+          ),
     );
+
+/// Where the search text matched the songs of the current band's library,
+/// for the song picker of a set (#884).
+final bandSearchHitsProvider = StreamProvider.autoDispose
+    .family<Map<String, SearchHit>, String>(
+      (ref, query) => query.trim().isEmpty
+          ? Stream.value(const {})
+          : ref.watch(bandSongRepositoryProvider).watchSearchHits(query),
+    );
+
+/// All tags used in the current band's library, for the song picker
+/// (#884).
+final bandTagsProvider = StreamProvider.autoDispose<List<String>>(
+  (ref) => ref.watch(bandSongRepositoryProvider).watchTags(),
+);
+
+/// The languages of the songs of the current band's library (ADR-0053),
+/// for the song picker (#884).
+final bandSongLanguagesProvider = StreamProvider.autoDispose<Set<String>>(
+  (ref) => ref.watch(bandSongRepositoryProvider).watchLanguages(),
+);
 
 /// The songs of the current band's library created last, for the
 /// overview (ADR-0045, #868).
