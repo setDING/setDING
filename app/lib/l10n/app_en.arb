@@ -1810,6 +1810,15 @@
     }
   },
   "trash": "Trash",
+  "trashWithCount": "Trash ({count})",
+  "@trashWithCount": {
+    "description": "Link at the end of the sets list to the deleted sets, with their number (#888).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "trashSongsTitle": "Deleted songs",
   "trashSetsTitle": "Deleted sets",
   "trashEmpty": "The trash is empty. Deleted songs and sets can be restored here for {days} days.",

@@ -2089,6 +2089,15 @@
     }
   },
   "trash": "Papierkorb",
+  "trashWithCount": "Papierkorb ({count})",
+  "@trashWithCount": {
+    "description": "Link at the end of the sets list to the deleted sets, with their number (#888).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "trashSongsTitle": "Gelöschte Songs",
   "trashSetsTitle": "Gelöschte Sets",
   "trashEmpty": "Der Papierkorb ist leer. Gelöschte Songs und Sets lassen sich hier {days} Tage lang wiederherstellen.",

@@ -3716,6 +3716,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get trash => 'Trash';
 
   @override
+  String trashWithCount(int count) {
+    return 'Trash ($count)';
+  }
+
+  @override
   String get trashSongsTitle => 'Deleted songs';
 
   @override

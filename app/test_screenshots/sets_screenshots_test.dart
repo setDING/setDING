@@ -84,6 +84,10 @@ void main() {
             gigDate: today.add(Duration(days: days)),
           );
         }
+        // A deleted set, so the trash link shows (#888).
+        await app.sets.deleteSet(
+          await app.sets.createSet(name: lang == 'de' ? 'Probe' : 'Rehearsal'),
+        );
       });
       await tester.pumpWidget(
         RepaintBoundary(

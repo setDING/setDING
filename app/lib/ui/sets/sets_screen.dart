@@ -109,6 +109,10 @@ class _SetsPane extends ConsumerWidget {
     final sets = ref.watch(setsProvider);
     final band = ref.watch(currentBandProvider);
     final wide = shown != null;
+    // How many deleted sets the band's trash holds (ADR-0043, #888).
+    final trashed = band.canManageSets
+        ? ref.watch(trashedSetsProvider(band.id)).value?.length ?? 0
+        : 0;
 
     if (!ref.watch(hasCurrentBandProvider)) {
       return Scaffold(
@@ -162,28 +166,19 @@ class _SetsPane extends ConsumerWidget {
         value: sets,
         data: (list) {
           // ADR-0043: whoever may delete sets may restore them. The trash
-          // is at the end of the list (#882); without sets, under the empty
-          // state, so deleted sets can still be brought back.
-          void openTrash() => Navigator.push(
-            context,
-            MaterialPageRoute<void>(
-              builder: (_) => TrashScreen.sets(bandId: band.id),
-            ),
-          );
+          // is a small link at the end of the list (#882), only while it
+          // holds sets (#888); without sets, under the empty state, so
+          // deleted sets can still be brought back.
+          final trash = band.canManageSets ? trashed : null;
           if (list.isEmpty) {
             return SyncRefresh(
               scrollable: false,
               child: EmptyState(
                 icon: Icons.queue_music,
                 message: l10n.setsEmpty,
-                action: !band.canManageSets
+                action: trash == null || trash == 0
                     ? null
-                    : TextButton.icon(
-                        key: const Key('sets-trash'),
-                        icon: const Icon(Icons.delete_outline),
-                        label: Text(l10n.trash),
-                        onPressed: openTrash,
-                      ),
+                    : _TrashLink(bandId: band.id, count: trash),
               ),
             );
           }
@@ -217,10 +212,13 @@ class _SetsPane extends ConsumerWidget {
               if (!pastCollapsed)
                 for (final s in groups.past) card(s),
             ],
-            if (band.canManageSets) ...[
-              const Divider(height: 24),
-              _TrashTile(onTap: openTrash),
-            ],
+            if (trash != null && trash > 0)
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Center(
+                  child: _TrashLink(bandId: band.id, count: trash),
+                ),
+              ),
           ];
           return SyncRefresh(
             child: ListView.builder(
@@ -236,20 +234,22 @@ class _SetsPane extends ConsumerWidget {
   }
 }
 
-/// The entry at the end of the sets list that opens the deleted sets.
-class _TrashTile extends StatelessWidget {
-  const _TrashTile({required this.onTap});
+/// The quiet link to the band's deleted sets (#888), with their [count].
+class _TrashLink extends StatelessWidget {
+  const _TrashLink({required this.bandId, required this.count});
 
-  final VoidCallback onTap;
+  final String bandId;
+  final int count;
 
   @override
-  Widget build(BuildContext context) => ListTile(
+  Widget build(BuildContext context) => TextButton.icon(
     key: const Key('sets-trash'),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-    leading: const Icon(Icons.delete_outline),
-    title: Text(AppLocalizations.of(context).trash),
-    trailing: const Icon(Icons.chevron_right),
-    onTap: onTap,
+    icon: const Icon(Icons.delete_outline, size: 18),
+    label: Text(AppLocalizations.of(context).trashWithCount(count)),
+    onPressed: () => Navigator.push(
+      context,
+      MaterialPageRoute<void>(builder: (_) => TrashScreen.sets(bandId: bandId)),
+    ),
   );
 }
 
