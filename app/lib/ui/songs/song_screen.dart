@@ -47,6 +47,7 @@ import 'adjustment_offer.dart';
 import 'language_versions.dart';
 import 'song_language.dart';
 import 'song_links_panel.dart';
+import '../widgets/menu_action.dart';
 
 /// Shows a song. The band arrangement, the personal adjustments, the
 /// sources and the attachments open in side panels from the app bar, so the
@@ -534,46 +535,57 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   },
                   itemBuilder: (_) => [
                     if (!hasSourceTitle && canEdit)
-                      PopupMenuItem(
+                      MenuAction(
                         value: 'title',
-                        child: Text(l10n.editTitle),
+                        icon: Icons.title,
+                        label: l10n.editTitle,
                       ),
                     if (canEdit)
-                      PopupMenuItem(
+                      MenuAction(
                         key: const Key('song-language'),
                         value: 'language',
-                        child: Text(l10n.songLanguageMenu),
+                        icon: Icons.language,
+                        label: l10n.songLanguageMenu,
                       ),
                     if (canEdit)
-                      PopupMenuItem(
+                      MenuAction(
                         key: const Key('song-link-version'),
                         value: 'linkVersion',
-                        child: Text(l10n.linkLanguageVersion),
+                        icon: Icons.link,
+                        label: l10n.linkLanguageVersion,
                       ),
                     if (canEdit && hasVersions)
-                      PopupMenuItem(
+                      MenuAction(
                         key: const Key('song-unlink-version'),
                         value: 'unlinkVersion',
-                        child: Text(l10n.unlinkLanguageVersion),
+                        icon: Icons.link_off,
+                        label: l10n.unlinkLanguageVersion,
                       ),
                     if (song.chordproSource.trim().isNotEmpty &&
                         !ref.read(webClientProvider))
-                      PopupMenuItem(
+                      MenuAction(
                         value: 'export',
-                        child: Text(l10n.exportSongChordPro),
+                        icon: Icons.file_download_outlined,
+                        label: l10n.exportSongChordPro,
                       ),
                     // Also on web: the files are loaded for the export.
-                    PopupMenuItem(
+                    MenuAction(
                       key: const Key('song-export-archive'),
                       value: 'exportArchive',
-                      child: Text(l10n.exportSongArchive),
+                      icon: Icons.archive_outlined,
+                      label: l10n.exportSongArchive,
                     ),
-                    PopupMenuItem(
+                    MenuAction(
                       value: 'copyToBand',
-                      child: Text(l10n.copyToBand),
+                      icon: Icons.copy_all_outlined,
+                      label: l10n.copyToBand,
                     ),
                     if (library.canDeleteSongs)
-                      PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
+                      MenuAction(
+                        value: 'delete',
+                        icon: Icons.delete_outline,
+                        label: l10n.delete,
+                      ),
                   ],
                 ),
                 LivePlayButton(
@@ -1358,8 +1370,18 @@ class _AttachmentsCard extends ConsumerWidget {
         }
       },
       itemBuilder: (_) => [
-        if (canRename) PopupMenuItem(value: 'rename', child: Text(l10n.rename)),
-        if (canDelete) PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
+        if (canRename)
+          MenuAction(
+            value: 'rename',
+            icon: Icons.edit_outlined,
+            label: l10n.rename,
+          ),
+        if (canDelete)
+          MenuAction(
+            value: 'delete',
+            icon: Icons.delete_outline,
+            label: l10n.delete,
+          ),
       ],
     );
   }

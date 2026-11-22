@@ -16,6 +16,7 @@ import '../theme.dart';
 import '../widgets/dialogs.dart';
 import 'settings_layout.dart';
 import '../widgets/section_header.dart';
+import '../widgets/menu_action.dart';
 
 /// Song shown in the preview: every section type once. Original text
 /// written for setDING, like the demo song.
@@ -699,15 +700,17 @@ class _SongDisplayPreviewState extends ConsumerState<SongDisplayPreview> {
               tooltip: l10n.songDisplayPickSong,
               onSelected: _chooseSong,
               itemBuilder: (context) => [
-                PopupMenuItem(
+                MenuAction(
                   key: const Key('song-display-preview-demo'),
                   value: 'demo',
-                  child: Text(l10n.songDisplayDemoSong),
+                  icon: Icons.auto_awesome_outlined,
+                  label: l10n.songDisplayDemoSong,
                 ),
-                PopupMenuItem(
+                MenuAction(
                   key: const Key('song-display-preview-library'),
                   value: 'library',
-                  child: Text(l10n.songDisplayLibrarySong),
+                  icon: Icons.library_music_outlined,
+                  label: l10n.songDisplayLibrarySong,
                 ),
               ],
               child: Padding(

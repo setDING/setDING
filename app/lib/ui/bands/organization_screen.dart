@@ -16,6 +16,7 @@ import 'invites_section.dart';
 import '../widgets/danger_zone.dart';
 import '../widgets/section_header.dart';
 import '../widgets/page_width.dart';
+import '../widgets/menu_action.dart';
 
 /// An organization (ADR-0017): its bands and people. Organization admins
 /// rename it, create bands in it and manage people and their roles;
@@ -262,22 +263,29 @@ class _PersonTile extends ConsumerWidget {
               },
               itemBuilder: (_) => [
                 if (person.role != OrgRole.admin)
-                  PopupMenuItem(
+                  MenuAction(
                     value: 'admin',
-                    child: Text(l10n.bandMakeAdmin),
+                    icon: Icons.admin_panel_settings_outlined,
+                    label: l10n.bandMakeAdmin,
                   ),
                 if (person.role != OrgRole.librarian)
-                  PopupMenuItem(
+                  MenuAction(
                     value: 'librarian',
-                    child: Text(l10n.orgMakeLibrarian),
+                    icon: Icons.local_library_outlined,
+                    label: l10n.orgMakeLibrarian,
                   ),
                 if (person.role != OrgRole.member)
-                  PopupMenuItem(
+                  MenuAction(
                     value: 'member',
-                    child: Text(l10n.bandMakeMember),
+                    icon: Icons.person_outline,
+                    label: l10n.bandMakeMember,
                   ),
                 if (!isMe)
-                  PopupMenuItem(value: 'remove', child: Text(l10n.orgRemove)),
+                  MenuAction(
+                    value: 'remove',
+                    icon: Icons.person_remove_outlined,
+                    label: l10n.orgRemove,
+                  ),
               ],
             ),
     );

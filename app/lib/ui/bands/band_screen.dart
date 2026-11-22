@@ -14,6 +14,7 @@ import 'invites_section.dart';
 import '../widgets/danger_zone.dart';
 import '../widgets/section_header.dart';
 import '../widgets/page_width.dart';
+import '../widgets/menu_action.dart';
 
 /// Settings and members of one band. Band leaders and organization admins
 /// rename the band, add people of the organization, invite new people into
@@ -259,24 +260,28 @@ class _MemberTile extends ConsumerWidget {
               },
               itemBuilder: (_) => [
                 if (member.role != BandRole.admin)
-                  PopupMenuItem(
+                  MenuAction(
                     value: 'admin',
-                    child: Text(l10n.bandMakeLeader),
+                    icon: Icons.admin_panel_settings_outlined,
+                    label: l10n.bandMakeLeader,
                   ),
                 if (member.role != BandRole.planner)
-                  PopupMenuItem(
+                  MenuAction(
                     value: 'planner',
-                    child: Text(l10n.bandMakePlanner),
+                    icon: Icons.edit_calendar_outlined,
+                    label: l10n.bandMakePlanner,
                   ),
                 if (member.role != BandRole.member)
-                  PopupMenuItem(
+                  MenuAction(
                     value: 'member',
-                    child: Text(l10n.bandMakeMember),
+                    icon: Icons.person_outline,
+                    label: l10n.bandMakeMember,
                   ),
                 if (!isMe)
-                  PopupMenuItem(
+                  MenuAction(
                     value: 'remove',
-                    child: Text(l10n.bandRemoveMember),
+                    icon: Icons.person_remove_outlined,
+                    label: l10n.bandRemoveMember,
                   ),
               ],
             ),

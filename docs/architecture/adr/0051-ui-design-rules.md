@@ -100,6 +100,10 @@ above span all of them.
   onto the scale; icon-to-text gaps are 8.
 
 - 2026-11-21: The settings are an exception to the width limit (#774): their content uses the width of its pane, in two columns of sections from 1040 (ADR-0050).
+- 2026-11-22: Every action in a `PopupMenuButton` menu shows an icon through the
+  new shared `MenuAction` (#835); menus that choose a value keep the check. The
+  checkable rule "no `PopupMenuItem` with a plain text label" is in
+  `ui_rules_test.dart`.
 
 ## Open points
 
