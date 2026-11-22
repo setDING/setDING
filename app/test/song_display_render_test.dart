@@ -189,6 +189,34 @@ void main() {
     });
   });
 
+  group('music signs (#915)', () {
+    SongTextStyles styles() => SongTextStyles.fromBase(
+      const TextStyle(),
+      20,
+      colors: appColorScheme(Brightness.light),
+      display: SongDisplay.classic,
+    );
+
+    test('chords fall back to a font with flat and sharp signs', () {
+      final s = styles();
+      final format = FormatState();
+      for (final style in [s.chordFor(format), s.gridChordFor(format)]) {
+        expect(style.fontFamilyFallback, containsAll(musicSignFallback));
+      }
+    });
+
+    test('also with a ChordPro chord font', () {
+      final block = blockOf(
+        '{chordfont: serif}\n{sov: Verse}\n[Bb]Line\n{eov}',
+        'Verse',
+      );
+      final style = styles().chordFor(block.startFormat);
+      expect(style.fontFamily, 'serif');
+      expect(style.fontFamilyFallback, contains('Noto Serif'));
+      expect(style.fontFamilyFallback, containsAll(musicSignFallback));
+    });
+  });
+
   group('rendering', () {
     const source =
         '{c: Intro}\n[G]Intro line\n\n{sov: Verse 1}\n[G]Verse line\n{eov}\n\n'

@@ -53,6 +53,19 @@ Future<void> _loadFonts() async {
       ),
     );
   await noto.load();
+  // A system font with the flat and sharp signs of chords (#915), if
+  // available; registered under a name the chord fallback lists.
+  for (final (family, file) in [
+    ('Noto Sans Symbols', '/usr/share/fonts/noto/NotoSansSymbols-Regular.ttf'),
+    ('DejaVu Sans', '/usr/share/fonts/TTF/DejaVuSans.ttf'),
+  ]) {
+    if (!File(file).existsSync()) continue;
+    final loader = FontLoader(family)
+      ..addFont(
+        Future.value(ByteData.sublistView(File(file).readAsBytesSync())),
+      );
+    await loader.load();
+  }
   // A system monospace font for tabs and sources, if available.
   const mono = '/usr/share/fonts/TTF/DejaVuSansMono.ttf';
   if (File(mono).existsSync()) {
