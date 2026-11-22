@@ -113,6 +113,15 @@ the others are checked in review.
   *Danger zone* header in the error colour. Its actions are `OutlinedButton`s with
   the error colour as foreground. In the settings, `SettingsSection(danger: true)`
   draws the same tile.
+- **Checkboxes lead their row**, in lists and in dialogs alike: the checkbox
+  stands in front of its label, where the eye starts reading and every box lines
+  up in one column, however long the labels (#881). A `CheckboxListTile` sets
+  `controlAffinity: ListTileControlAffinity.leading` (Flutter puts it at the end
+  by default). **Switches stay at the end**, like in the settings (ADR-0050).
+- **Multi-select in a list** (songs, the trash, the song picker): a long press
+  starts it, a tap then toggles an entry. The checkbox takes the place of the
+  row's leading icon; the row's own menu is hidden while selecting, and the app
+  bar shows *N selected* with the actions for the selection.
 - Keyboard: Esc goes back, single-key shortcuts per screen with `PageShortcuts`
   (ADR-0049). A new frequent action gets a shortcut and a line in the *?* dialog.
 

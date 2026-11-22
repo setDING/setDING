@@ -192,6 +192,7 @@ class ArchiveOptionTile extends StatelessWidget {
     final theme = Theme.of(context);
     return CheckboxListTile(
       contentPadding: EdgeInsets.zero,
+      controlAffinity: ListTileControlAffinity.leading,
       dense: true,
       visualDensity: VisualDensity.compact,
       value: value,

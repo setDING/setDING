@@ -453,6 +453,7 @@ class _FullRestoreDialogState extends ConsumerState<_FullRestoreDialog> {
                   CheckboxListTile(
                     key: const Key('backup-restore-replace-local'),
                     contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
                     value: _replaceLocal,
                     onChanged: (v) =>
                         setState(() => _replaceLocal = v ?? false),
@@ -483,6 +484,7 @@ class _FullRestoreDialogState extends ConsumerState<_FullRestoreDialog> {
                 CheckboxListTile(
                   key: const Key('backup-restore-personal'),
                   contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
                   value: _personal,
                   onChanged: (v) => setState(() => _personal = v ?? false),
                   title: Text(l10n.backupRestorePersonal),
@@ -496,6 +498,7 @@ class _FullRestoreDialogState extends ConsumerState<_FullRestoreDialog> {
                 CheckboxListTile(
                   key: const Key('backup-restore-settings'),
                   contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
                   value: _settings,
                   onChanged: (v) => setState(() => _settings = v ?? false),
                   title: Text(l10n.backupRestoreSettings),
