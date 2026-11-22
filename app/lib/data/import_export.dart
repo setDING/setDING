@@ -34,6 +34,14 @@ typedef ImportProblem = ({
   bool fixable,
 });
 
+/// An imported song without `{key}` and the key suggested from its chords
+/// (#925, ADR-0056); a person picks it in the import report.
+typedef ImportKeySuggestion = ({
+  String songId,
+  String title,
+  cp.KeyGuess guess,
+});
+
 /// Result of an import.
 class ImportResult {
   const ImportResult(
@@ -41,6 +49,7 @@ class ImportResult {
     this.skipped, [
     this.problems = const [],
     this.legacyLabels = const [],
+    this.keySuggestions = const [],
   ]);
 
   final int imported;
@@ -53,17 +62,33 @@ class ImportResult {
   /// `{start_of_verse: Verse 1}` (#672), in import order.
   final List<String> legacyLabels;
 
+  /// Imported songs without `{key}` with a key suggested from their
+  /// chords, in import order.
+  final List<ImportKeySuggestion> keySuggestions;
+
   /// Whether the import has something to report beyond the counts.
-  bool get needsReview => problems.isNotEmpty || legacyLabels.isNotEmpty;
+  bool get needsReview =>
+      problems.isNotEmpty ||
+      legacyLabels.isNotEmpty ||
+      keySuggestions.isNotEmpty;
+
+  /// Whether the report still offers something to do: fix problems,
+  /// convert labels or pick a key.
+  bool get hasActions =>
+      problems.any((p) => p.fixable) ||
+      legacyLabels.isNotEmpty ||
+      keySuggestions.isNotEmpty;
 
   ImportResult copyWith({
     List<ImportProblem>? problems,
     List<String>? legacyLabels,
+    List<ImportKeySuggestion>? keySuggestions,
   }) => ImportResult(
     imported,
     skipped,
     problems ?? this.problems,
     legacyLabels ?? this.legacyLabels,
+    keySuggestions ?? this.keySuggestions,
   );
 }
 
@@ -109,6 +134,7 @@ class ImportExportService {
     final skipped = <String>[];
     final problems = <ImportProblem>[];
     final legacyLabels = <String>[];
+    final keySuggestions = <ImportKeySuggestion>[];
 
     Future<void> importOne(
       String name,
@@ -131,17 +157,26 @@ class ImportExportService {
         final title = parts.length == 1 ? base : '$base (${i + 1})';
         final id = await songs.createSong(source: parts[i], title: title);
         imported++;
+        final song = cp.parseChordPro(parts[i]);
         final found = cp.validateChordPro(parts[i]);
         if (found.isNotEmpty) {
           problems.add((
             songId: id,
-            title: cp.parseChordPro(parts[i]).title ?? title,
+            title: song.title ?? title,
             count: found.length,
             fixable: found.any(cp.canFixChordProProblem),
           ));
         }
         if (cp.findLegacySectionLabels(parts[i]).isNotEmpty) {
           legacyLabels.add(id);
+        }
+        // No guess for a song with {key} (ADR-0056).
+        if (cp.guessKey(song) case final guess?) {
+          keySuggestions.add((
+            songId: id,
+            title: song.title ?? title,
+            guess: guess,
+          ));
         }
         // Attach images from the same archive that {image} refers to.
         if (images.isNotEmpty) await _attachImages(id, parts[i], images);
@@ -164,7 +199,13 @@ class ImportExportService {
         await importOne(file.name, file.bytes);
       }
     }
-    return ImportResult(imported, skipped, problems, legacyLabels);
+    return ImportResult(
+      imported,
+      skipped,
+      problems,
+      legacyLabels,
+      keySuggestions,
+    );
   }
 
   /// Fixes the ChordPro problems of [songIds] that can be fixed
@@ -212,6 +253,22 @@ class ImportExportService {
       converted++;
     }
     return converted;
+  }
+
+  /// Writes [key] as the `{key}` of [songId], picked in the import report
+  /// (#925, ADR-0056); false when the song is gone.
+  Future<bool> setKey(String songId, cp.Key key) async {
+    final song = await songs.getSong(songId);
+    if (song == null) return false;
+    final source = cp.setSourceMetadata(
+      song.chordproSource,
+      'key',
+      key.format(cp.ChordNotation.international),
+    );
+    if (source != song.chordproSource) {
+      await songs.updateSource(songId, source);
+    }
+    return true;
   }
 
   Future<void> _attachImages(

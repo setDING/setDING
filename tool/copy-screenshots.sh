@@ -71,6 +71,7 @@ map=(
   song_import 37b_song_import
   songs_conversions 38_songs_conversions
   song_details_key 47_song_details_key
+  import_keys 47b_import_keys
   adjustment_offer 42_adjustment_offer
   song_phone_menu 42c_song_phone_menu
   set_language_version 41_set_language_version

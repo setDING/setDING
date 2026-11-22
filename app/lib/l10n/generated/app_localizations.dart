@@ -8817,6 +8817,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Gerät ohne Namen'**
   String get pageTurnerUnnamed;
+
+  /// No description provided for @importKeySuggestionsMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 importierter Song hat} other{{count} importierte Songs haben}} keine Tonart. Aus den Akkorden erraten; ein Tipp setzt die Tonart:'**
+  String importKeySuggestionsMessage(int count);
+
+  /// No description provided for @importKeySuggestionsMore.
+  ///
+  /// In de, this message translates to:
+  /// **'… und {count} weitere: Zu tun auf der Übersicht, Ohne Tonart.'**
+  String importKeySuggestionsMore(int count);
+
+  /// No description provided for @importKeysSet.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{Keine Tonart gesetzt} =1{Tonart in 1 Song gesetzt} other{Tonart in {count} Songs gesetzt}}'**
+  String importKeysSet(int count);
 }
 
 class _AppLocalizationsDelegate

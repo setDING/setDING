@@ -412,6 +412,36 @@ void main() {
       expect(await service.convertLegacyLabels(result.legacyLabels), 0);
     });
 
+    test('the import suggests keys for songs without one (#925)', () async {
+      final service = ImportExportService(songs, sets);
+      ImportFile file(String name, String text) =>
+          ImportFile(name, Uint8List.fromList(utf8.encode(text)));
+      final result = await service.importFiles([
+        file('g.cho', '{title: In G}\n[G]a [C]b [D]c [G]d\n'),
+        file('keyed.cho', '{title: Keyed}\n{key: A}\n[A]a [D]b [E]c\n'),
+        file('few.cho', '{title: Few}\n[G]a [D]b\n'),
+        file('am.cho', '{title: In Am}\n[Am]a [F]b [C]c [G]d [Am]e\n'),
+      ]);
+      expect(result.needsReview, isTrue);
+      expect(result.hasActions, isTrue);
+      expect(
+        [for (final k in result.keySuggestions) (k.title, '${k.guess}')],
+        [('In G', 'G'), ('In Am', 'Am (or C)')],
+      );
+      // Nothing is written until a key is picked.
+      final g = result.keySuggestions.first;
+      expect((await songs.getSong(g.songId))!.songKey, isNull);
+
+      expect(await service.setKey(g.songId, g.guess.key), isTrue);
+      final song = (await songs.getSong(g.songId))!;
+      expect(
+        song.chordproSource,
+        '{title: In G}\n{key: G}\n[G]a [C]b [D]c [G]d\n',
+      );
+      expect(song.songKey, 'G');
+      expect(await service.setKey('gone', g.guess.key), isFalse);
+    });
+
     test('the import removes the CCLI footer (#785)', () async {
       final service = ImportExportService(songs, sets);
       final result = await service.importFiles([

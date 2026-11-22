@@ -3671,5 +3671,29 @@
       }
     }
   },
-  "pageTurnerUnnamed": "Gerät ohne Namen"
+  "pageTurnerUnnamed": "Gerät ohne Namen",
+  "importKeySuggestionsMessage": "{count, plural, =1{1 importierter Song hat} other{{count} importierte Songs haben}} keine Tonart. Aus den Akkorden erraten; ein Tipp setzt die Tonart:",
+  "@importKeySuggestionsMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importKeySuggestionsMore": "… und {count} weitere: Zu tun auf der Übersicht, Ohne Tonart.",
+  "@importKeySuggestionsMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importKeysSet": "{count, plural, =0{Keine Tonart gesetzt} =1{Tonart in 1 Song gesetzt} other{Tonart in {count} Songs gesetzt}}",
+  "@importKeysSet": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

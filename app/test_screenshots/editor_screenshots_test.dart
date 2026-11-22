@@ -270,6 +270,77 @@ void main() {
       await app.dispose(tester);
     });
   }
+
+  // Keys suggested from the chords in the import report (#925).
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('import key suggestions $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      ImportFile file(String name, String text) =>
+          ImportFile(name, Uint8List.fromList(utf8.encode(text)));
+      final files = [
+        file(
+          'amazing-grace.cho',
+          '{title: Amazing Grace}\n'
+              'A[G]mazing [G7]grace, how [C]sweet the [G]sound\n'
+              'That [G]saved a [Em]wretch like [D]me\n'
+              'Was [Em]blind but [D]now I [G]see\n',
+        ),
+        file(
+          'house-of-the-rising-sun.cho',
+          '{title: House of the Rising Sun}\n'
+              'There [Am]is a [C]house in [D]New Or[F]leans\n'
+              'They [Am]call the [C]Rising [E]Sun\n'
+              'And it\'s [Am]been the [C]ruin of [D]many a poor [F]boy\n'
+              'And [Am]God, I [E]know I\'m [Am]one\n',
+        ),
+        file(
+          'morning-light.cho',
+          '{title: Morning Light}\n'
+              '[Am]Morning [F]light on the [C]hill, the [G]sun is [Am]rising\n',
+        ),
+      ];
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => Center(
+                  child: TextButton(
+                    onPressed: () => showImportDialog(
+                      context,
+                      pick: ({extensions}) async => files,
+                    ),
+                    child: const Text('import'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('import'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text(lang == 'de' ? 'Dateien auswählen' : 'Choose files'),
+      );
+      // The import writes to the database outside the fake clock.
+      final keys = find.byKey(const Key('import-key-suggestions'));
+      for (var i = 0; i < 100 && keys.evaluate().isEmpty; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump(const Duration(milliseconds: 20));
+      }
+      expect(keys, findsOneWidget);
+      await tester.pumpAndSettle();
+      await shot(tester, '${lang}_47b_import_keys');
+      await app.dispose(tester);
+    });
+  }
 }
 
 const _songSelectDirectives = '''{title: Amazing Grace}
