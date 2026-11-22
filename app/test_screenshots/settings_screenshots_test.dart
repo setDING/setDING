@@ -7,6 +7,8 @@ import 'package:setding/data/database.dart' show localBandId;
 import 'package:setding/ui/backup/backup_actions.dart';
 import 'package:setding/ui/bands/band_screen.dart';
 import 'package:setding/ui/bands/organization_screen.dart';
+import 'package:setding/platform/input_devices.dart';
+import 'package:setding/ui/live/page_turner.dart';
 import 'package:setding/ui/settings_screen.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:material_ui/material_ui.dart';
@@ -338,6 +340,44 @@ void main() {
         await tester.pump();
       }
       await shot(tester, '${lang}_45_hide_local_library');
+      await app.dispose(tester);
+    });
+  }
+
+  // The paired page turner in the live settings (ADR-0057, #913), connected.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('settings page turner $lang', (tester) async {
+      tester.view.physicalSize = const Size(420, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      const pedal = InputDeviceInfo(
+        name: 'AirTurn DUO',
+        vendorId: 0x1234,
+        productId: 0x5678,
+      );
+      final app = await TestApp.create(
+        prefs: {
+          'language': lang,
+          'themeMode': dark ? 'dark' : 'light',
+          PairedPageTurnerNotifier.nameKey: pedal.name,
+          PairedPageTurnerNotifier.vendorKey: pedal.vendorId,
+          PairedPageTurnerNotifier.productKey: pedal.productId,
+        },
+      );
+      app.inputDevices.connected.add(pedal);
+      await tester.pumpWidget(
+        RepaintBoundary(key: UniqueKey(), child: app.build()),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('nav-settings')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('settings-category-live')));
+      await tester.pumpAndSettle();
+      final tile = find.byKey(const Key('settings-page-turner'));
+      await tester.scrollUntilVisible(tile, 200);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('settings-page-turner-paired')), findsOne);
+      await shot(tester, '${lang}_19b_settings_page_turner');
       await app.dispose(tester);
     });
   }

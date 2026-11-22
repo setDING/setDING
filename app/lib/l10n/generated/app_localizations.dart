@@ -8703,6 +8703,120 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count, plural, =1{1 Song ohne Tonart} other{{count} Songs ohne Tonart}}'**
   String overviewTodoNoKey(int count);
+
+  /// No description provided for @readinessPageTurnerConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'Seitenwender {name} verbunden'**
+  String readinessPageTurnerConnected(String name);
+
+  /// No description provided for @readinessPageTurnerNotConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'Seitenwender {name} nicht verbunden'**
+  String readinessPageTurnerNotConnected(String name);
+
+  /// No description provided for @readinessKeyboardConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'Eine Tastatur ist verbunden'**
+  String get readinessKeyboardConnected;
+
+  /// No description provided for @readinessKeyboardNotConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'Seitenwender: keine Tastatur verbunden'**
+  String get readinessKeyboardNotConnected;
+
+  /// No description provided for @settingsPageTurner.
+  ///
+  /// In de, this message translates to:
+  /// **'Seitenwender'**
+  String get settingsPageTurner;
+
+  /// No description provided for @settingsPageTurnerNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht zugeordnet'**
+  String get settingsPageTurnerNone;
+
+  /// No description provided for @settingsPageTurnerConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'verbunden'**
+  String get settingsPageTurnerConnected;
+
+  /// No description provided for @settingsPageTurnerNotConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'nicht verbunden'**
+  String get settingsPageTurnerNotConnected;
+
+  /// No description provided for @settingsPageTurnerHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Ordne dein Pedal zu, damit die Übersicht zeigt, ob es verbunden ist.'**
+  String get settingsPageTurnerHint;
+
+  /// No description provided for @settingsPageTurnerPair.
+  ///
+  /// In de, this message translates to:
+  /// **'Zuordnen'**
+  String get settingsPageTurnerPair;
+
+  /// No description provided for @settingsPageTurnerPairAgain.
+  ///
+  /// In de, this message translates to:
+  /// **'Neu zuordnen'**
+  String get settingsPageTurnerPairAgain;
+
+  /// No description provided for @settingsPageTurnerForget.
+  ///
+  /// In de, this message translates to:
+  /// **'Seitenwender vergessen'**
+  String get settingsPageTurnerForget;
+
+  /// No description provided for @settingsPageTurnerKeyboardOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Gerät meldet nur, ob eine Tastatur verbunden ist, nicht welche. Das zeigt die Übersicht.'**
+  String get settingsPageTurnerKeyboardOnly;
+
+  /// No description provided for @settingsPageTurnerUnsupported.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf dieser Plattform nicht möglich. Die Übersicht zeigt, wann der Seitenwender zuletzt benutzt wurde.'**
+  String get settingsPageTurnerUnsupported;
+
+  /// No description provided for @pairPageTurnerTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Seitenwender zuordnen'**
+  String get pairPageTurnerTitle;
+
+  /// No description provided for @pairPageTurnerPrompt.
+  ///
+  /// In de, this message translates to:
+  /// **'Tritt jetzt aufs Pedal.'**
+  String get pairPageTurnerPrompt;
+
+  /// No description provided for @pageTurnerPaired.
+  ///
+  /// In de, this message translates to:
+  /// **'Seitenwender zugeordnet: {name}'**
+  String pageTurnerPaired(String name);
+
+  /// No description provided for @pageTurnerForgotten.
+  ///
+  /// In de, this message translates to:
+  /// **'Seitenwender vergessen: {name}'**
+  String pageTurnerForgotten(String name);
+
+  /// No description provided for @pageTurnerUnnamed.
+  ///
+  /// In de, this message translates to:
+  /// **'Gerät ohne Namen'**
+  String get pageTurnerUnnamed;
 }
 
 class _AppLocalizationsDelegate

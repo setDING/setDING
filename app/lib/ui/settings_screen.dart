@@ -18,6 +18,7 @@ import 'bands/bands_settings.dart';
 import 'settings/latency_calibration.dart';
 import 'settings/midi_settings.dart';
 import 'settings/midi_test_screen.dart';
+import 'settings/page_turner_settings.dart';
 import 'settings/settings_layout.dart';
 import 'settings/song_display_settings.dart';
 import 'theme.dart';
@@ -677,6 +678,8 @@ class _CategoryContent extends ConsumerWidget {
                     notifier.update((s) => s.copyWith(pageTurn: v)),
                 hint: l10n.settingsPageTurnHint,
               ),
+              // The paired page turner (ADR-0057).
+              const PageTurnerTile(),
               // Freehand annotations (ADR-0032).
               SettingsSwitch(
                 tileKey: const Key('settings-annotation-finger'),

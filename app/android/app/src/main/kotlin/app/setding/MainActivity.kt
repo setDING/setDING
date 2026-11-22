@@ -2,6 +2,7 @@ package app.setding
 
 import android.content.Intent
 import android.os.Build
+import android.view.KeyEvent
 import android.view.View
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -10,9 +11,20 @@ class MainActivity : FlutterActivity() {
     /** The folder of the automatic backup (ADR-0054). */
     private var backupFolder: BackupFolderChannel? = null
 
+    /** The keyboards, for pairing the page turner (ADR-0057). */
+    private var inputDevices: InputDevicesChannel? = null
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        backupFolder = BackupFolderChannel(this, flutterEngine.dartExecutor.binaryMessenger)
+        val messenger = flutterEngine.dartExecutor.binaryMessenger
+        backupFolder = BackupFolderChannel(this, messenger)
+        inputDevices = InputDevicesChannel(this, messenger)
+    }
+
+    /** Tells which device a key came from, then passes the key on unchanged. */
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        inputDevices?.onKey(event)
+        return super.dispatchKeyEvent(event)
     }
 
     @Deprecated("Deprecated in Java")

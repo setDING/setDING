@@ -5,6 +5,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../midi/midi_connection.dart';
 import '../../settings/settings.dart';
 import '../../sync/sync_controller.dart';
+import '../../platform/input_devices.dart';
 import '../live/page_turner.dart';
 import '../settings_screen.dart' show SettingsCategory, instrumentLabel;
 
@@ -155,32 +156,73 @@ ReadinessItem? syncReadiness(
   );
 }
 
-/// The page turner (#911): a keyboard without a setting of its own, so
-/// only whether it responded to the test on the overview or when it was
-/// last used, and how it turns.
+/// The page turner (#911): whether the paired one is connected (ADR-0057,
+/// #913), otherwise whether it responded to the test on the overview or
+/// when it was last used, and how it turns. On iOS only whether a keyboard
+/// is connected; a missing one is a warning once a page turner was used.
 ReadinessItem pageTurnerReadiness(
   AppLocalizations l10n,
   ReadinessTime time, {
   required PageTurnMode mode,
   required PageTurnerState state,
+  InputDeviceInfo? paired,
+  PageTurnerConnection connection = PageTurnerConnection.unknown,
 }) {
   final last = state.lastUsed;
-  return ReadinessItem(
-    check: ReadinessCheck.pageTurner,
-    level: state.responded || last != null
-        ? ReadinessLevel.ok
-        : ReadinessLevel.info,
-    title: state.responded
-        ? l10n.readinessPageTurnerResponds
-        : last == null
-        ? l10n.readinessPageTurnerNever
-        : l10n.readinessPageTurnerLastUsed(time(last)),
-    detail: l10n.readinessPageTurnerDetail(switch (mode) {
-      PageTurnMode.full => l10n.pageTurnFull,
-      PageTurnMode.half => l10n.pageTurnHalf,
-    }),
-    category: SettingsCategory.live,
-  );
+  final turns = l10n.readinessPageTurnerDetail(switch (mode) {
+    PageTurnMode.full => l10n.pageTurnFull,
+    PageTurnMode.half => l10n.pageTurnHalf,
+  });
+  final used = state.responded
+      ? l10n.readinessPageTurnerResponds
+      : last == null
+      ? l10n.readinessPageTurnerNever
+      : l10n.readinessPageTurnerLastUsed(time(last));
+  ReadinessItem item(ReadinessLevel level, String title, String detail) =>
+      ReadinessItem(
+        check: ReadinessCheck.pageTurner,
+        level: level,
+        title: title,
+        detail: detail,
+        category: SettingsCategory.live,
+      );
+  final name = paired?.name ?? '';
+  switch (connection) {
+    case PageTurnerConnection.connected:
+      return item(
+        ReadinessLevel.ok,
+        state.responded
+            ? l10n.readinessPageTurnerResponds
+            : l10n.readinessPageTurnerConnected(name),
+        turns,
+      );
+    case PageTurnerConnection.notConnected:
+      return item(
+        ReadinessLevel.warning,
+        l10n.readinessPageTurnerNotConnected(name),
+        turns,
+      );
+    case PageTurnerConnection.noKeyboard when last != null:
+      return item(
+        ReadinessLevel.warning,
+        l10n.readinessKeyboardNotConnected,
+        turns,
+      );
+    case PageTurnerConnection.keyboardConnected:
+      return item(
+        ReadinessLevel.ok,
+        used,
+        '${l10n.readinessKeyboardConnected}\n$turns',
+      );
+    case PageTurnerConnection.noKeyboard || PageTurnerConnection.unknown:
+      return item(
+        state.responded || last != null
+            ? ReadinessLevel.ok
+            : ReadinessLevel.info,
+        used,
+        turns,
+      );
+  }
 }
 
 /// The automatic backup of the local library (ADR-0054), only when it is

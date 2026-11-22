@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import live from '../../../../../../docs/screenshots/live.png';
+import pageTurner from '../../../../../../docs/screenshots/settings_page_turner.png';
 import controls from '../../../../../../docs/screenshots/live_controls.png';
 import liveMarker from '../../../../../../docs/screenshots/live_marker.png';
 
@@ -44,6 +45,18 @@ bottom bar shows where you are, e.g. **Page 1/2**, and which song comes next.
 Bluetooth page turners (foot pedals) connect to the device as a keyboard. Pair the
 pedal in your device's Bluetooth settings; setDING understands the keys above without
 further setup. One press turns exactly once, even if you hold the pedal down.
+
+Under **Settings › Screen & live mode › Page turner** you can **pair** your
+pedal: tap **Pair** and press the pedal. setDING remembers the device, and
+[Ready to play](/en/start/overview/#ready-to-play) on the overview then shows
+before the gig whether your pedal is connected. Use **⋮** to pair it again or
+forget it.
+
+<Image src={pageTurner} alt="The Page turner setting with the paired pedal AirTurn DUO, connected" />
+
+This works on Android and Windows. An iPad only tells whether a keyboard is
+connected, not which one; on the web and on Linux it is not possible. There,
+Ready to play shows when the page turner was last used.
 
 ## The control bar
 

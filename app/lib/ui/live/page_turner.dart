@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../platform/input_devices.dart';
 import '../../settings/settings.dart' show sharedPreferencesProvider;
 
 /// Keys that turn forward, exactly like the right tap zone (ADR-0007).
@@ -92,3 +93,116 @@ final pageTurnerProvider =
     NotifierProvider<PageTurnerNotifier, PageTurnerState>(
       PageTurnerNotifier.new,
     );
+
+/// The keyboards of the platform (ADR-0057); a fake in tests.
+final inputDevicesProvider = Provider<InputDevices>(
+  (ref) => ChannelInputDevices(),
+);
+
+/// The page turner paired on this device (ADR-0057), a device setting in the
+/// shared preferences that is never synced; null when none is paired.
+class PairedPageTurnerNotifier extends Notifier<InputDeviceInfo?> {
+  static const nameKey = 'pageTurnerName',
+      vendorKey = 'pageTurnerVendor',
+      productKey = 'pageTurnerProduct';
+
+  @override
+  InputDeviceInfo? build() {
+    final prefs = ref.read(sharedPreferencesProvider);
+    final name = prefs.getString(nameKey);
+    if (name == null) return null;
+    return InputDeviceInfo(
+      name: name,
+      vendorId: prefs.getInt(vendorKey) ?? 0,
+      productId: prefs.getInt(productKey) ?? 0,
+    );
+  }
+
+  Future<void> pair(InputDeviceInfo device) async {
+    final prefs = ref.read(sharedPreferencesProvider);
+    await prefs.setString(nameKey, device.name);
+    await prefs.setInt(vendorKey, device.vendorId);
+    await prefs.setInt(productKey, device.productId);
+    state = device;
+  }
+
+  Future<void> forget() async {
+    final prefs = ref.read(sharedPreferencesProvider);
+    for (final key in [nameKey, vendorKey, productKey]) {
+      await prefs.remove(key);
+    }
+    state = null;
+  }
+}
+
+final pairedPageTurnerProvider =
+    NotifierProvider<PairedPageTurnerNotifier, InputDeviceInfo?>(
+      PairedPageTurnerNotifier.new,
+    );
+
+/// The connected keyboards (ADR-0057), again after every connect or
+/// disconnect; empty where the platform tells nothing.
+final connectedKeyboardsProvider = StreamProvider<List<InputDeviceInfo>>((
+  ref,
+) async* {
+  final devices = ref.watch(inputDevicesProvider);
+  if (devices.support == InputDeviceSupport.none) {
+    yield const [];
+    return;
+  }
+  yield await devices.devices();
+  await for (final _ in devices.changes) {
+    yield await devices.devices();
+  }
+});
+
+/// Whether the page turner is connected now, as far as the platform can
+/// tell (ADR-0057).
+enum PageTurnerConnection {
+  /// Nothing known: no pairing, or the platform tells nothing.
+  unknown,
+
+  /// The paired page turner is connected.
+  connected,
+
+  /// The paired page turner is not connected.
+  notConnected,
+
+  /// iOS: a hardware keyboard is connected (maybe the page turner).
+  keyboardConnected,
+
+  /// iOS: no hardware keyboard is connected.
+  noKeyboard,
+}
+
+/// The [PageTurnerConnection] of [support], the [paired] page turner and the
+/// [connected] keyboards (null while they are loaded: unknown).
+PageTurnerConnection pageTurnerConnection({
+  required InputDeviceSupport support,
+  required InputDeviceInfo? paired,
+  required List<InputDeviceInfo>? connected,
+}) {
+  if (connected == null) return PageTurnerConnection.unknown;
+  return switch (support) {
+    InputDeviceSupport.none => PageTurnerConnection.unknown,
+    InputDeviceSupport.keyboardOnly =>
+      connected.isEmpty
+          ? PageTurnerConnection.noKeyboard
+          : PageTurnerConnection.keyboardConnected,
+    InputDeviceSupport.devices =>
+      paired == null
+          ? PageTurnerConnection.unknown
+          : connected.any((d) => d.matches(paired))
+          ? PageTurnerConnection.connected
+          : PageTurnerConnection.notConnected,
+  };
+}
+
+/// [pageTurnerConnection] of this device.
+final pageTurnerConnectionProvider = Provider<PageTurnerConnection>(
+  (ref) => pageTurnerConnection(
+    support: ref.watch(inputDevicesProvider).support,
+    paired: ref.watch(pairedPageTurnerProvider),
+    connected: ref.watch(connectedKeyboardsProvider).value,
+  ),
+);

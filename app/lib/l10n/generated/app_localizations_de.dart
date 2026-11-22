@@ -5766,4 +5766,73 @@ class AppLocalizationsDe extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String readinessPageTurnerConnected(String name) {
+    return 'Seitenwender $name verbunden';
+  }
+
+  @override
+  String readinessPageTurnerNotConnected(String name) {
+    return 'Seitenwender $name nicht verbunden';
+  }
+
+  @override
+  String get readinessKeyboardConnected => 'Eine Tastatur ist verbunden';
+
+  @override
+  String get readinessKeyboardNotConnected =>
+      'Seitenwender: keine Tastatur verbunden';
+
+  @override
+  String get settingsPageTurner => 'Seitenwender';
+
+  @override
+  String get settingsPageTurnerNone => 'Nicht zugeordnet';
+
+  @override
+  String get settingsPageTurnerConnected => 'verbunden';
+
+  @override
+  String get settingsPageTurnerNotConnected => 'nicht verbunden';
+
+  @override
+  String get settingsPageTurnerHint =>
+      'Ordne dein Pedal zu, damit die Übersicht zeigt, ob es verbunden ist.';
+
+  @override
+  String get settingsPageTurnerPair => 'Zuordnen';
+
+  @override
+  String get settingsPageTurnerPairAgain => 'Neu zuordnen';
+
+  @override
+  String get settingsPageTurnerForget => 'Seitenwender vergessen';
+
+  @override
+  String get settingsPageTurnerKeyboardOnly =>
+      'Dieses Gerät meldet nur, ob eine Tastatur verbunden ist, nicht welche. Das zeigt die Übersicht.';
+
+  @override
+  String get settingsPageTurnerUnsupported =>
+      'Auf dieser Plattform nicht möglich. Die Übersicht zeigt, wann der Seitenwender zuletzt benutzt wurde.';
+
+  @override
+  String get pairPageTurnerTitle => 'Seitenwender zuordnen';
+
+  @override
+  String get pairPageTurnerPrompt => 'Tritt jetzt aufs Pedal.';
+
+  @override
+  String pageTurnerPaired(String name) {
+    return 'Seitenwender zugeordnet: $name';
+  }
+
+  @override
+  String pageTurnerForgotten(String name) {
+    return 'Seitenwender vergessen: $name';
+  }
+
+  @override
+  String get pageTurnerUnnamed => 'Gerät ohne Namen';
 }

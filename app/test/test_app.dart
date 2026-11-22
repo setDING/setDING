@@ -10,6 +10,7 @@ import 'package:setding/data/database.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/data/song_repository.dart';
 import 'package:setding/platform/stage_wake_lock.dart';
+import 'package:setding/ui/live/page_turner.dart' show inputDevicesProvider;
 import 'package:setding/providers.dart';
 import 'package:setding/settings/settings.dart';
 import 'package:setding/sync/auth_providers.dart';
@@ -31,6 +32,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'fake_backend.dart';
 import 'fake_backup_folder.dart';
 import 'fake_click_output.dart';
+import 'fake_input_devices.dart';
 import 'fake_midi_output.dart';
 
 /// App with an in-memory database for widget tests.
@@ -117,6 +119,9 @@ class TestApp {
   /// MIDI to a keyboard (ADR-0039), in memory.
   final midiOutput = FakeMidiOutput();
 
+  /// The keyboards of the platform (ADR-0057), in memory.
+  final inputDevices = FakeInputDevices();
+
   /// Provider overrides of the test app (also for a [ProviderContainer]).
   List<Override> get overrides => [
     sharedPreferencesProvider.overrideWithValue(prefs),
@@ -131,6 +136,7 @@ class TestApp {
     autoSyncProvider.overrideWithValue(false),
     clickOutputProvider.overrideWithValue(clickOutput),
     midiOutputProvider.overrideWithValue(midiOutput),
+    inputDevicesProvider.overrideWithValue(inputDevices),
     stageWakeLockProvider.overrideWith((ref) {
       final lock = StageWakeLock(wakeLock);
       ref.onDispose(lock.dispose);

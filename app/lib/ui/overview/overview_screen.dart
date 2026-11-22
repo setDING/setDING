@@ -432,6 +432,8 @@ class _ReadinessCardState extends ConsumerState<_ReadinessCard> {
         time,
         mode: settings.pageTurn,
         state: ref.watch(pageTurnerProvider),
+        paired: ref.watch(pairedPageTurnerProvider),
+        connection: ref.watch(pageTurnerConnectionProvider),
       ),
       ?backupReadiness(
         l10n,
