@@ -143,7 +143,7 @@ class AdjustmentOfferBanner extends ConsumerWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.tune, color: scheme.onSecondaryContainer),
+                Icon(Icons.person_outline, color: scheme.onSecondaryContainer),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(

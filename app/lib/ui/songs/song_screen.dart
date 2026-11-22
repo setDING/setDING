@@ -363,7 +363,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
               ),
               _Panel.personal => SidePanel(
                 key: const Key('personal-adjustments'),
-                icon: Icons.tune,
+                icon: Icons.person_outline,
                 title: l10n.personalAdjustments,
                 scope: SettingScope.personal,
                 children: [
@@ -486,7 +486,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                 BadgedIconButton(
                   key: const Key('open-personal-adjustments'),
                   tooltip: l10n.personalAdjustments,
-                  icon: Icons.tune,
+                  icon: Icons.person_outline,
                   // Freehand annotations change how the song looks, too.
                   active:
                       overlay.hasAdjustments ||
