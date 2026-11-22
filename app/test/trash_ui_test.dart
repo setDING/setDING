@@ -54,7 +54,8 @@ void main() {
     await tester.pumpAndSettle();
 
     // The trash is at the end of the list, also when every set is deleted
-    // (#882).
+    // (#882), with the number of deleted sets (#888).
+    expect(find.text('Trash (1)'), findsOneWidget);
     await tester.tap(find.byKey(const Key('sets-trash')));
     await tester.pumpAndSettle();
     expect(find.text('Deleted sets'), findsOneWidget);
@@ -65,8 +66,41 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
     expect(find.text('Lost gig'), findsOneWidget);
+    // An empty trash is not offered (#888).
+    expect(find.byKey(const Key('sets-trash')), findsNothing);
     await app.dispose(tester);
   });
+
+  // #888: the trash on the sets page was too prominent; it is a small link
+  // that appears only while it holds deleted sets.
+  for (final deleted in [0, 2]) {
+    testWidgets('the sets page with $deleted deleted sets', (tester) async {
+      useTabletSize(tester, landscape: false);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      await tester.runAsync(() async {
+        await app.sets.createSet(name: 'Gig');
+        for (var i = 0; i < deleted; i++) {
+          await app.sets.deleteSet(await app.sets.createSet(name: 'Old $i'));
+        }
+      });
+      await tester.pumpWidget(app.build());
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sets').first);
+      await tester.pumpAndSettle();
+      expect(find.text('Gig'), findsOneWidget);
+      // No row of its own any more, only the link.
+      expect(find.widgetWithText(ListTile, 'Trash'), findsNothing);
+      expect(
+        find.widgetWithText(TextButton, 'Trash ($deleted)'),
+        deleted == 0 ? findsNothing : findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('sets-trash')),
+        deleted == 0 ? findsNothing : findsOneWidget,
+      );
+      await app.dispose(tester);
+    });
+  }
 
   Future<TestApp> openSongTrash(
     WidgetTester tester,

@@ -6247,6 +6247,12 @@ abstract class AppLocalizations {
   /// **'Papierkorb'**
   String get trash;
 
+  /// Link at the end of the sets list to the deleted sets, with their number (#888).
+  ///
+  /// In de, this message translates to:
+  /// **'Papierkorb ({count})'**
+  String trashWithCount(int count);
+
   /// No description provided for @trashSongsTitle.
   ///
   /// In de, this message translates to:

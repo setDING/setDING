@@ -332,9 +332,10 @@ void main() {
     expect(menusIn(find.byType(AppBar).first), findsNothing);
     expect(menusIn(find.byType(AppBar).last), findsOneWidget);
     // Its actions moved: Repertoire into the app bar, the trash to the end
-    // of the list, importing into the "New set" dialog.
+    // of the list (only with deleted sets, #888), importing into the
+    // "New set" dialog.
     expect(find.byTooltip('Repertoire'), findsOneWidget);
-    expect(find.byKey(const Key('sets-trash')), findsOneWidget);
+    expect(find.byKey(const Key('sets-trash')), findsNothing);
     await tester.tap(find.text('New set'));
     await tester.pumpAndSettle();
     expect(find.text('Import from file …'), findsOneWidget);
