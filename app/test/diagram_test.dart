@@ -84,8 +84,30 @@ void main() {
         DiagramInstrument.ukulele,
       );
       expect(diagramInstrumentFor('bass'), DiagramInstrument.bass);
+      expect(
+        diagramInstrumentFor('bass', bassStrings: 5),
+        DiagramInstrument.bass5,
+      );
+      expect(
+        diagramInstrumentFor('guitar', bassStrings: 5),
+        DiagramInstrument.guitar,
+      );
       expect(diagramInstrumentFor('Piano'), DiagramInstrument.keyboard);
       expect(diagramInstrumentFor('vocals'), DiagramInstrument.none);
+    });
+
+    test('a five-string bass gets diagrams with five strings (#940)', () {
+      final four = resolver('[C]x', instrument: DiagramInstrument.bass);
+      final five = resolver('[C]x', instrument: DiagramInstrument.bass5);
+      expect(four.allChords().single.shape!.frets, hasLength(4));
+      final shape = five.allChords().single.shape!;
+      expect(shape.frets, hasLength(5));
+      // A {define} for a four-string bass does not fit five strings.
+      final defined = resolver(
+        '{define: C base-fret 1 frets x 3 5 x}\n[C]x',
+        instrument: DiagramInstrument.bass5,
+      );
+      expect(defined.allChords().single.shape!.frets, hasLength(5));
     });
 
     test('song directive wins over the setting', () {

@@ -19,6 +19,7 @@ void main() {
   final setups = <String, Map<String, Object>>{
     'drums': {'instrument': 'drums', 'click': true, 'developerMode': true},
     'keyboard': {'instrument': 'keyboard', 'midiEnabled': true},
+    'bass': {'instrument': 'bass', 'bassStrings': 5},
   };
 
   for (final MapEntry(key: name, value: prefs) in setups.entries) {

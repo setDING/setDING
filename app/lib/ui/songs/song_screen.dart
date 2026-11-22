@@ -690,7 +690,10 @@ class _FittedSongBody extends ConsumerWidget {
     final resolver = DiagramResolver(
       song,
       formatter,
-      diagramInstrumentFor(settings.instrument),
+      diagramInstrumentFor(
+        settings.instrument,
+        bassStrings: settings.bassStrings,
+      ),
     );
     final diagrams = diagramsPosition(song.diagrams, settings.diagrams);
     final textScaler = MediaQuery.textScalerOf(context);

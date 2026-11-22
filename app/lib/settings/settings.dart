@@ -117,6 +117,7 @@ class AppSettings {
     this.chorusRepeat = ChorusRepeat.auto,
     this.fontSize = 20,
     this.instrument = 'guitar',
+    this.bassStrings = 4,
     this.userName = '',
     this.diagrams = DiagramsPosition.off,
     this.serverUrl = defaultServerUrl,
@@ -185,6 +186,13 @@ class AppSettings {
   /// Instrument type for conditional directives and chord diagrams
   /// (ADR-0012), e.g. `guitar`, `ukulele` or a free text.
   final String instrument;
+
+  /// Strings of the bass for chord diagrams (4 or 5, #940); only used when
+  /// [instrument] is a bass.
+  final int bassStrings;
+
+  /// Choices for [bassStrings].
+  static const bassStringCounts = [4, 5];
 
   /// User name for conditional directives (e.g. a voice like `alto`).
   final String userName;
@@ -366,6 +374,7 @@ class AppSettings {
     ChorusRepeat? chorusRepeat,
     double? fontSize,
     String? instrument,
+    int? bassStrings,
     String? userName,
     DiagramsPosition? diagrams,
     String? serverUrl,
@@ -412,6 +421,7 @@ class AppSettings {
     setProgress: setProgress ?? this.setProgress,
     chorusRepeat: chorusRepeat ?? this.chorusRepeat,
     instrument: instrument ?? this.instrument,
+    bassStrings: bassStrings ?? this.bassStrings,
     userName: userName ?? this.userName,
     diagrams: diagrams ?? this.diagrams,
     fontSize: fontSize ?? this.fontSize,
@@ -462,6 +472,7 @@ class AppSettings {
     'setProgress': SettingSyncScope.personal,
     'chorusRepeat': SettingSyncScope.personal,
     'instrument': SettingSyncScope.personal,
+    'bassStrings': SettingSyncScope.personal,
     'userName': SettingSyncScope.personal,
     'diagrams': SettingSyncScope.personal,
     'columns': SettingSyncScope.device,
@@ -531,6 +542,7 @@ class AppSettings {
     'setProgress': setProgress,
     'chorusRepeat': chorusRepeat.name,
     'instrument': instrument,
+    'bassStrings': bassStrings,
     'userName': userName,
     'diagrams': diagrams.name,
     'fontSize': fontSize,
@@ -619,6 +631,10 @@ class AppSettings {
       setProgress: flag('setProgress', d.setProgress),
       chorusRepeat: pick(ChorusRepeat.values, 'chorusRepeat', d.chorusRepeat),
       instrument: text('instrument', d.instrument),
+      bassStrings: switch (json['bassStrings']) {
+        final int v when bassStringCounts.contains(v) => v,
+        _ => d.bassStrings,
+      },
       userName: text('userName', d.userName),
       diagrams: pick(DiagramsPosition.values, 'diagrams', d.diagrams),
       serverUrl: text('serverUrl', d.serverUrl),

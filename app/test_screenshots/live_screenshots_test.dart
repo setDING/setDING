@@ -236,6 +236,47 @@ void main() {
       await app.dispose(tester);
     });
   }
+
+  // A five-string bass (#940): the choice in the musician settings and the
+  // chord diagrams with the low B string, root and fifth on low strings.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('bass diagrams $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {
+          'language': lang,
+          'themeMode': dark ? 'dark' : 'light',
+          'instrument': 'bass',
+          'bassStrings': 5,
+          'diagrams': 'top',
+        },
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: const SettingsScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('settings-category-musician')));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const Key('bassStrings')));
+      await shot(tester, '${lang}_49_settings_bass');
+
+      final song = await tester.runAsync(() async {
+        final id = await app.songs.createSong(source: demoSongSource);
+        return app.songs.getSong(id);
+      });
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: LiveScreen(items: [LiveItem.song(song!)])),
+        ),
+      );
+      await shot(tester, '${lang}_50_bass_diagrams');
+      await app.dispose(tester);
+    });
+  }
 }
 
 /// Where the freehand notes screenshot draws, relative to the live page.

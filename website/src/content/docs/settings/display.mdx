@@ -9,6 +9,8 @@ import { Image } from 'astro:assets';
 import musician from '../../../../../docs/screenshots/settings_musician_de.png';
 import voiceHint from '../../../../../docs/screenshots/settings_voice_hint_de.png';
 import screen from '../../../../../docs/screenshots/settings_live_de.png';
+import bass from '../../../../../docs/screenshots/settings_bass_de.png';
+import bassDiagrams from '../../../../../docs/screenshots/bass_diagrams_de.png';
 
 Unter **Einstellungen** legst du fest, wie setDING Songs für dich zeigt. Der Song
 selbst bleibt dabei für alle unverändert.
@@ -76,9 +78,19 @@ links ein Icon.
   <Image src={voiceHint} alt="Der Hinweis, wenn unter «Stimme oder Rolle» ein Instrument steht" />
 - **Griffdiagramme** – zeigt die Griffe aller Akkorde des Songs für dein Instrument,
   **Oben** oder **Unten**, oder **Aus**.
+- **Saiten des Basses** – nur mit dem Instrument **Bass**: **4 Saiten** (E-A-D-G)
+  oder **5 Saiten** mit tiefer H-Saite. Die Griffdiagramme zeigen den Grundton
+  (oder den Bass eines Slash-Akkords) auf einer tiefen Saite, dazu die Quinte;
+  die übrigen Saiten sind gedämpft.
 - **Takt und Klick** – siehe [Takt, Klick und Schlagzeug](/live/beat/).
 
 <Image src={musician} alt="Die Einstellungen «Musiker» mit Instrument, Stimme, Griffdiagrammen und Takt" />
+
+Spielst du Bass, wählst du unter den Griffdiagrammen die Zahl der Saiten:
+
+<Image src={bass} alt="Die Einstellungen «Musiker» mit dem Instrument Bass und der Wahl «4 Saiten» oder «5 Saiten»" />
+
+<Image src={bassDiagrams} alt="Ein Song mit Griffdiagrammen für einen 5-saitigen Bass: Grundton und Quinte auf den tiefen Saiten" />
 
 ## Bildschirm & Live-Modus
 

@@ -468,4 +468,34 @@ void main() {
     expect(find.text('Language'), findsOneWidget);
     await app.dispose(tester);
   });
+
+  testWidgets('the bass strings only for bass players (#940)', (tester) async {
+    useTabletSize(tester);
+    tester.view.physicalSize = const Size(1280, 2000);
+    final app = await pumpSettings(tester);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(SettingsScreen)),
+    );
+    await tester.tap(find.byKey(const Key('settings-category-musician')));
+    await tester.pumpAndSettle();
+    final tile = find.byKey(const Key('bassStrings'));
+    expect(tile, findsNothing);
+
+    await tester.runAsync(
+      () => container
+          .read(settingsProvider.notifier)
+          .update((s) => s.copyWith(instrument: 'bass')),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(tile);
+    await tester.pumpAndSettle();
+    expect(container.read(settingsProvider).bassStrings, 4);
+    await tester.tap(
+      find.descendant(of: tile, matching: find.text('5 strings')),
+    );
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pumpAndSettle();
+    expect(container.read(settingsProvider).bassStrings, 5);
+    await app.dispose(tester);
+  });
 }

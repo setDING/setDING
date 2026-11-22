@@ -9,6 +9,8 @@ import { Image } from 'astro:assets';
 import musician from '../../../../../../docs/screenshots/settings_musician.png';
 import voiceHint from '../../../../../../docs/screenshots/settings_voice_hint.png';
 import screen from '../../../../../../docs/screenshots/settings_live.png';
+import bass from '../../../../../../docs/screenshots/settings_bass.png';
+import bassDiagrams from '../../../../../../docs/screenshots/bass_diagrams.png';
 
 In **Settings** you choose how setDING shows songs to you. The song itself stays
 unchanged for everybody.
@@ -72,9 +74,19 @@ and **Set & notes** under **Display**, and each setting has an icon on the left.
   <Image src={voiceHint} alt="The hint when “Voice or role” names an instrument" />
 - **Chord diagrams** – shows the fingerings of all chords of the song for your
   instrument, at the **Top** or **Bottom**, or **Off**.
+- **Bass strings** – only with the instrument **Bass**: **4 strings** (E-A-D-G) or
+  **5 strings** with a low B string. The chord diagrams show the root (or the bass
+  note of a slash chord) on a low string with the fifth; the other strings are
+  muted.
 - **Beat and click** – see [Beat, click and drums](/en/live/beat/).
 
 <Image src={musician} alt="The “Musician” settings with instrument, voice, chord diagrams and beat" />
+
+If you play bass, choose the number of strings below the chord diagrams:
+
+<Image src={bass} alt="The “Musician” settings with the instrument Bass and the choice “4 strings” or “5 strings”" />
+
+<Image src={bassDiagrams} alt="A song with chord diagrams for a five-string bass: root and fifth on the low strings" />
 
 ## Screen & live mode
 

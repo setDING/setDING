@@ -50,6 +50,7 @@ void main() {
       }
       for (final key in [
         'instrument',
+        'bassStrings',
         'userName',
         'notation',
         'language',
@@ -63,6 +64,7 @@ void main() {
       const s = AppSettings(
         notation: ChordNotation.german,
         instrument: 'bass',
+        bassStrings: 5,
         fontSize: 30,
       );
       expect(AppSettings.fromJson(s.toJson()).toJson(), s.toJson());
@@ -71,10 +73,12 @@ void main() {
         'nashville': 'yes',
         'chordView': 'klingon',
         'fontSize': 99,
+        'bassStrings': 7,
       });
       expect(odd.notation, ChordNotation.international);
       expect(odd.chordView, ChordView.chords);
       expect(odd.fontSize, AppSettings.maxFontSize);
+      expect(odd.bassStrings, 4);
     });
 
     test('the chord view keeps the Nashville flag of older versions in step '

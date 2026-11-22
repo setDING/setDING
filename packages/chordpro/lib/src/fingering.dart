@@ -14,6 +14,7 @@ class StringInstrument {
     this.tuning, {
     this.maxMuted = 2,
     this.rootInBass = true,
+    this.bassLine = false,
   });
 
   final String name;
@@ -28,6 +29,9 @@ class StringInstrument {
   /// re-entrant tunings such as the ukulele, where chords are inverted.
   final bool rootInBass;
 
+  /// A bass: plays only the lowest note and one more chord tone (#940).
+  final bool bassLine;
+
   int get strings => tuning.length;
 
   static const guitar = StringInstrument('guitar', [40, 45, 50, 55, 59, 64]);
@@ -40,7 +44,21 @@ class StringInstrument {
     rootInBass: false,
   );
 
-  static const bass = StringInstrument('bass', [28, 33, 38, 43], maxMuted: 2);
+  /// Four-string bass, E-A-D-G.
+  static const bass = StringInstrument(
+    'bass',
+    [28, 33, 38, 43],
+    maxMuted: 3,
+    bassLine: true,
+  );
+
+  /// Five-string bass with a low B string, B-E-A-D-G.
+  static const bass5 = StringInstrument(
+    'bass5',
+    [23, 28, 33, 38, 43],
+    maxMuted: 4,
+    bassLine: true,
+  );
 }
 
 /// A generated fingering: frets per string from the lowest (`null` =
@@ -95,10 +113,12 @@ Fingering? fingeringFor(Chord chord, StringInstrument instrument) {
 Fingering? _search(Chord chord, StringInstrument instrument) {
   final tones = chordTones(chord);
   final allowed = tones.pitchClasses;
-  // On a bass only the lowest note matters, plus one or two chord tones.
-  final isBass = instrument.name == 'bass';
+  // On a bass only the lowest note matters, plus the fifth of the chord
+  // (also a diminished or augmented one) when it has one.
+  final isBass = instrument.bassLine;
+  final fifth = [7, 6, 8].where(tones.intervals.contains).firstOrNull;
   final required = isBass
-      ? {tones.lowest, (tones.root + 7) % 12}
+      ? {tones.lowest, if (fifth != null) (tones.root + fifth) % 12}
       : tones.required;
   final strings = instrument.strings;
 
@@ -123,13 +143,25 @@ Fingering? _search(Chord chord, StringInstrument instrument) {
     if (lowestString < 0) return;
     if (!sounding.toSet().containsAll(required)) return;
     if (instrument.rootInBass && lowestPitch % 12 != tones.lowest) return;
-    // Muted strings only at the low end.
+    // Muted strings only at the low end; a bass mutes the strings above
+    // its notes as well, but never one between them (#940).
     var muted = 0;
     for (var s = 0; s < strings && frets[s] == null; s++) {
       muted++;
     }
+    var mutedHigh = 0;
+    if (isBass) {
+      for (var s = strings - 1; s >= 0 && frets[s] == null; s--) {
+        mutedHigh++;
+      }
+    }
     if (muted > instrument.maxMuted) return;
-    if (frets.skip(muted).any((f) => f == null)) return;
+    if (frets
+        .skip(muted)
+        .take(strings - muted - mutedHigh)
+        .any((f) => f == null)) {
+      return;
+    }
     if (isBass && sounding.length > 2) return;
 
     final fretted = [

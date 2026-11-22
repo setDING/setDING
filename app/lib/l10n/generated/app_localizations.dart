@@ -1400,6 +1400,24 @@ abstract class AppLocalizations {
   /// **'Zeigt die Griffe aller Akkorde des Songs für dein Instrument. Ein Song kann das mit der Direktive diagrams selbst festlegen.'**
   String get settingsDiagramsHint;
 
+  /// No description provided for @settingsBassStrings.
+  ///
+  /// In de, this message translates to:
+  /// **'Saiten des Basses'**
+  String get settingsBassStrings;
+
+  /// No description provided for @settingsBassStringsHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Griffdiagramme zeigen einen 4-Saiter (E-A-D-G) oder einen 5-Saiter mit tiefer H-Saite.'**
+  String get settingsBassStringsHint;
+
+  /// No description provided for @bassStringCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Saiten'**
+  String bassStringCount(int count);
+
   /// No description provided for @diagramsOff.
   ///
   /// In de, this message translates to:

@@ -1845,7 +1845,10 @@ class _ChordProPage extends ConsumerWidget {
     final resolver = DiagramResolver(
       parsed,
       formatter,
-      diagramInstrumentFor(settings.instrument),
+      diagramInstrumentFor(
+        settings.instrument,
+        bassStrings: settings.bassStrings,
+      ),
     );
     final diagrams = diagramsPosition(parsed.diagrams, settings.diagrams);
     // The margins belong to the scroll view (and the header to the drag

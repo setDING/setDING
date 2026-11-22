@@ -195,6 +195,14 @@ Each phase is a separate branch and merge (ADR-0010).
   `{x_ccli}` and `{ccli_license}` is removed (ADR-0011); the editor offers the same
   conversion for songs saved earlier.
 - 2026-11-22: The user name setting is shown as the optional **voice or role** (#939): the instrument already matches selectors, so the field is only for voices or people; the readiness overview no longer reports it as missing, and an instrument entered there gets a hint.
+- 2026-11-22: Bass with 4 or 5 strings (#940). A personal setting `bassStrings` (4 or
+  5, synced like the instrument, ADR-0027) is shown when the instrument is a bass; the
+  instrument name stays `bass`, so conditional directives are unchanged. A 5-string
+  bass is tuned B-E-A-D-G. Generated bass fingerings play the lowest note (root or
+  slash bass) and the chord's fifth (also a diminished or augmented one) on adjacent
+  strings and mute the strings below *and* above them; before, the guitar rule "mute
+  only low strings" moved them up the neck. `{define}` shapes are used only when
+  their string count matches.
 
 ## Open points
 
