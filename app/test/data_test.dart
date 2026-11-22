@@ -1,4 +1,7 @@
 import 'dart:io';
+
+import 'package:chordpro/chordpro.dart' show ChordView;
+
 import 'dart:typed_data';
 
 import 'dart:convert';
@@ -159,22 +162,22 @@ void main() {
       );
       await songs.saveOverlay(
         (await songs.getOverlay(id)).copyWith(
-          nashville: const Value(true),
+          chordView: const Value(ChordView.numerals),
           notes: const Value('note'),
           liveView: Value(attId),
         ),
       );
-      expect((await songs.getOverlay(id)).nashville, isTrue);
+      expect((await songs.getOverlay(id)).chordView, ChordView.numerals);
 
       await songs.saveOverlay(
         (await songs.getOverlay(id)).copyWith(
-          nashville: const Value(null),
+          chordView: const Value(null),
           notes: const Value(null),
           liveView: const Value(null),
         ),
       );
       final overlay = await songs.getOverlay(id);
-      expect(overlay.nashville, isNull);
+      expect(overlay.chordView, isNull);
       expect(overlay.notes, isNull);
       expect(overlay.liveView, isNull);
     });

@@ -265,7 +265,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get live => 'Live';
 
   @override
-  String get nashville => 'Nashville-Nummern';
+  String get chordView => 'Akkord-Ansicht';
 
   @override
   String get useDeviceSetting => 'Wie in den Einstellungen';
@@ -340,8 +340,8 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get noKeyForNashville =>
-      'Für Nashville-Nummern braucht der Song eine Tonart.';
+  String get noKeyForDegrees =>
+      'Für Nashville-Zahlen und Stufen braucht der Song eine Tonart.';
 
   @override
   String get firstVerseChordsOnly => 'Akkorde nur in Verse 1';
@@ -728,7 +728,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsCategoryDisplayHint =>
-      'Akkord-Notation, Nashville-Zahlen, Inhalt, Chorus, Fortschritt';
+      'Akkord-Notation, Nashville und Stufen, Inhalt, Chorus, Fortschritt';
 
   @override
   String get settingsCategoryLiveHint =>
@@ -850,11 +850,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get notationGerman => 'Deutsch (H, B)';
 
   @override
-  String get settingsNashville => 'Nashville-Nummern anzeigen';
+  String get settingsChordView => 'Akkorde anzeigen als';
 
   @override
-  String get settingsNashvilleHint =>
-      'Akkorde als Stufen der Tonart, z. B. 1, 4, 5, 6m. Braucht eine Tonart im Song.';
+  String get settingsChordViewHint =>
+      'Akkorde (Am7), Nashville-Zahlen (6m7) oder Stufen in römischen Zahlen (vi7). Zahlen und Stufen brauchen eine Tonart im Song.';
 
   @override
   String get settingsChordStyle => 'Akkordschreibweise';
@@ -5631,4 +5631,13 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get localLibraryHiddenAutoBackup =>
       'Die automatische Sicherung läuft weiter; du kannst sie hier ausschalten.';
+
+  @override
+  String get chordViewChords => 'Akkorde';
+
+  @override
+  String get chordViewNashville => 'Nashville';
+
+  @override
+  String get chordViewNumerals => 'Stufen';
 }

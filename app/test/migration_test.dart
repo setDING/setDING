@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:chordpro/chordpro.dart' show Subdivision;
+import 'package:chordpro/chordpro.dart' show ChordView, Subdivision;
 import 'package:setding/data/arrangement_repository.dart';
 import 'package:setding/data/attachment_storage_io.dart';
 import 'package:setding/data/change_log.dart';
@@ -39,9 +39,24 @@ void downgradeToSchema19(Database raw) {
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN midi_programs');
 }
 
+/// Turns a current database back into schema 33: overlays with the
+/// Nashville flag instead of the chord view (ADR-0055).
+void downgradeToSchema33(Database raw) {
+  raw.execute(
+    'ALTER TABLE personal_overlays ADD COLUMN nashville INTEGER NULL',
+  );
+  raw.execute(
+    'UPDATE personal_overlays SET nashville = CASE '
+    'WHEN chord_view IS NULL THEN NULL '
+    "WHEN chord_view = 'chords' THEN 0 ELSE 1 END",
+  );
+  raw.execute('ALTER TABLE personal_overlays DROP COLUMN chord_view');
+}
+
 /// Turns a current database back into schema 32: songs without their
 /// creation date (#868).
 void downgradeToSchema32(Database raw) {
+  downgradeToSchema33(raw);
   raw.execute('ALTER TABLE songs DROP COLUMN created_at');
 }
 
@@ -437,7 +452,8 @@ void main() {
     final local = SongRepository(current, storage);
     final id = await local.createSong(source: '{title: Mine}');
     await local.saveOverlay(
-      (await local.getOverlay(id)).copyWith(transpose: 3),
+      (await local.getOverlay(id))
+          .copyWith(transpose: 3, chordView: const Value(ChordView.nashville)),
     );
     await current.close();
 
@@ -450,6 +466,7 @@ void main() {
     final overlay = await SongRepository(upgraded, storage).getOverlay(id);
     expect(overlay.ownerId, localOwnerId);
     expect(overlay.transpose, 3);
+    expect(overlay.chordView, ChordView.nashville);
     await upgraded.close();
   });
 
@@ -1200,6 +1217,42 @@ void main() {
     expect((await repo.getSong(synced))!.createdAt, isNull);
     final cursors = await upgraded.select(upgraded.syncCursors).get();
     expect([for (final c in cursors) c.collection], ['setlists']);
+    await upgraded.close();
+  });
+
+  test('upgrades a schema 33 database: the Nashville flag becomes the chord '
+      'view (ADR-0055)', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final storage = FileAttachmentStorage(dir);
+    final repo = SongRepository(current, storage);
+    final on = await repo.createSong(source: '{title: On}');
+    final off = await repo.createSong(source: '{title: Off}');
+    final unset = await repo.createSong(source: '{title: Unset}');
+    await repo.saveOverlay(
+      (await repo.getOverlay(on))
+          .copyWith(chordView: const Value(ChordView.nashville)),
+    );
+    await repo.saveOverlay(
+      (await repo.getOverlay(off))
+          .copyWith(chordView: const Value(ChordView.chords)),
+    );
+    await repo.saveOverlay(
+      (await repo.getOverlay(unset)).copyWith(transpose: 1),
+    );
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema33(raw);
+    raw.execute('PRAGMA user_version = 33');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final songs = SongRepository(upgraded, storage);
+    expect((await songs.getOverlay(on)).chordView, ChordView.nashville);
+    expect((await songs.getOverlay(off)).chordView, ChordView.chords);
+    final kept = await songs.getOverlay(unset);
+    expect(kept.chordView, isNull);
+    expect(kept.transpose, 1);
     await upgraded.close();
   });
 }

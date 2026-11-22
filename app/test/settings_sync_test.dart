@@ -1,4 +1,4 @@
-import 'package:chordpro/chordpro.dart' show ChordNotation;
+import 'package:chordpro/chordpro.dart' show ChordNotation, ChordView;
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -69,11 +69,37 @@ void main() {
       final odd = AppSettings.fromJson({
         'notation': 'klingon',
         'nashville': 'yes',
+        'chordView': 'klingon',
         'fontSize': 99,
       });
       expect(odd.notation, ChordNotation.international);
-      expect(odd.nashville, isFalse);
+      expect(odd.chordView, ChordView.chords);
       expect(odd.fontSize, AppSettings.maxFontSize);
+    });
+
+    test('the chord view keeps the Nashville flag of older versions in step '
+        '(ADR-0055)', () {
+      AppSettings read(Map<String, Object?> json) => AppSettings.fromJson(json);
+      // Settings of an older version: only the flag.
+      expect(read({'nashville': true}).chordView, ChordView.nashville);
+      expect(read({'nashville': false}).chordView, ChordView.chords);
+      // Written by this version: the view, and the flag for older ones.
+      final numerals = const AppSettings(chordView: ChordView.numerals)
+          .toJson();
+      expect(numerals['chordView'], 'numerals');
+      expect(numerals['nashville'], isTrue);
+      expect(read(numerals).chordView, ChordView.numerals);
+      expect(const AppSettings().toJson()['nashville'], isFalse);
+      // An older version switched the flag off: chord names.
+      expect(
+        read({'chordView': 'numerals', 'nashville': false}).chordView,
+        ChordView.chords,
+      );
+      // An older version switched the flag on: Nashville numbers.
+      expect(
+        read({'chordView': 'chords', 'nashville': true}).chordView,
+        ChordView.nashville,
+      );
     });
 
     test('parts outside the sequence are shown unless switched off', () {

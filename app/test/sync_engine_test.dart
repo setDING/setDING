@@ -1,4 +1,4 @@
-import 'package:chordpro/chordpro.dart' show Subdivision;
+import 'package:chordpro/chordpro.dart' show ChordView, Subdivision;
 
 import 'dart:io';
 import 'dart:typed_data';
@@ -1050,6 +1050,7 @@ void main() {
             verseChords: VerseChords.stacked,
             clickGrouping: const Value('3+2+2'),
             clickSubdivision: const Value(Subdivision.triplets),
+            chordView: const Value(ChordView.numerals),
           ),
         );
         final report = await engine.sync();
@@ -1062,6 +1063,9 @@ void main() {
         expect(remote.data['verse_chords'], 'stacked');
         expect(remote.data['click_grouping'], '3+2+2');
         expect(remote.data['click_subdivision'], 'triplets');
+        // The chord view, and the Nashville flag for older app versions.
+        expect(remote.data['chord_view'], 'numerals');
+        expect(remote.data['nashville'], isTrue);
         expect((await mine.getOverlay('s1')).revision, remote.revision);
         expect(await outbox(), isEmpty);
       },
@@ -1080,11 +1084,14 @@ void main() {
             'verse_chords': 'stacked',
             'click_grouping': '7',
             'click_subdivision': 'sixteenths',
+            'chord_view': 'numerals',
+            'nashville': true,
           },
         ),
       );
       await engine.sync();
       final o = await mine.getOverlay('s1');
+      expect(o.chordView, ChordView.numerals);
       expect((o.transpose, o.capoFret, o.fontScale), (-3, 2, 1.2));
       expect(o.verseChords, VerseChords.stacked);
       expect(o.clickGrouping, '7');
@@ -1233,6 +1240,20 @@ void main() {
         server.overlays[id]!.midiPrograms,
         const MidiPrograms({'nordStage3': MidiProgram(program: 3)}),
       );
+    });
+
+    test('reads the chord view of older and newer clients (ADR-0055)', () {
+      expect(chordViewOf(null, null), isNull);
+      // Older clients: only the Nashville flag.
+      expect(chordViewOf(null, true), ChordView.nashville);
+      expect(chordViewOf(null, false), ChordView.chords);
+      expect(chordViewOf('numerals', true), ChordView.numerals);
+      // An older client switched the flag off or on.
+      expect(chordViewOf('numerals', false), ChordView.chords);
+      expect(chordViewOf('chords', true), ChordView.nashville);
+      // A value of a newer client without a flag counts as not set.
+      expect(chordViewOf('other', null), isNull);
+      expect(chordViewOf('other', true), ChordView.nashville);
     });
 
     test('reads the verse chords of older and newer clients', () {

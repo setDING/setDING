@@ -1319,9 +1319,7 @@ class _ControlBar extends ConsumerWidget {
     final originalKey = song?.songKey == null
         ? null
         : cp.Key.tryParse(song!.songKey!)?.transpose(item.bandTranspose);
-    final deviceNashville = ref.watch(
-      settingsProvider.select((s) => s.nashville),
-    );
+    final deviceView = ref.watch(settingsProvider.select((s) => s.chordView));
     final parsed = song == null
         ? null
         : parseChordProCached(
@@ -1331,13 +1329,16 @@ class _ControlBar extends ConsumerWidget {
     final toggle = adjust == null || parsed == null
         ? null
         : _NashvilleToggle(
-            selected: overlay?.nashville ?? deviceNashville,
+            selected: (overlay?.chordView ?? deviceView).isDegrees,
             hasKey: parsed.key != null,
-            onChanged: (selected) => adjust(
-              (o) => o.copyWith(
-                nashville: Value(selected == deviceNashville ? null : selected),
-              ),
-            ),
+            onChanged: (selected) {
+              final view = selected ? ChordView.nashville : ChordView.chords;
+              adjust(
+                (o) => o.copyWith(
+                  chordView: Value(view == deviceView ? null : view),
+                ),
+              );
+            },
           );
     final leading = <Widget>[
       IconButton(
@@ -1533,7 +1534,7 @@ class _NashvilleToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Tooltip(
-      message: hasKey ? '' : l10n.noKeyForNashville,
+      message: hasKey ? '' : l10n.noKeyForDegrees,
       child: SegmentedButton<bool>(
         key: const Key('live-nashville'),
         showSelectedIcon: false,
@@ -1832,9 +1833,7 @@ class _ChordProPage extends ConsumerWidget {
       transpose: setTranspose + overlay.transpose,
       capo: overlay.capoFret,
       notation: settings.notation,
-      view: (overlay.nashville ?? settings.nashville)
-          ? ChordView.nashville
-          : ChordView.chords,
+      view: overlay.chordView ?? settings.chordView,
       style: settings.chordStyle,
       superscript: settings.chordSuperscript,
     );

@@ -524,11 +524,11 @@ abstract class AppLocalizations {
   /// **'Live'**
   String get live;
 
-  /// No description provided for @nashville.
+  /// No description provided for @chordView.
   ///
   /// In de, this message translates to:
-  /// **'Nashville-Nummern'**
-  String get nashville;
+  /// **'Akkord-Ansicht'**
+  String get chordView;
 
   /// No description provided for @useDeviceSetting.
   ///
@@ -662,11 +662,11 @@ abstract class AppLocalizations {
   /// **'{tempo} BPM'**
   String bpm(int tempo);
 
-  /// No description provided for @noKeyForNashville.
+  /// No description provided for @noKeyForDegrees.
   ///
   /// In de, this message translates to:
-  /// **'Für Nashville-Nummern braucht der Song eine Tonart.'**
-  String get noKeyForNashville;
+  /// **'Für Nashville-Zahlen und Stufen braucht der Song eine Tonart.'**
+  String get noKeyForDegrees;
 
   /// No description provided for @firstVerseChordsOnly.
   ///
@@ -1313,7 +1313,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsCategoryDisplayHint.
   ///
   /// In de, this message translates to:
-  /// **'Akkord-Notation, Nashville-Zahlen, Inhalt, Chorus, Fortschritt'**
+  /// **'Akkord-Notation, Nashville und Stufen, Inhalt, Chorus, Fortschritt'**
   String get settingsCategoryDisplayHint;
 
   /// No description provided for @settingsCategoryLiveHint.
@@ -1544,17 +1544,17 @@ abstract class AppLocalizations {
   /// **'Deutsch (H, B)'**
   String get notationGerman;
 
-  /// No description provided for @settingsNashville.
+  /// No description provided for @settingsChordView.
   ///
   /// In de, this message translates to:
-  /// **'Nashville-Nummern anzeigen'**
-  String get settingsNashville;
+  /// **'Akkorde anzeigen als'**
+  String get settingsChordView;
 
-  /// No description provided for @settingsNashvilleHint.
+  /// No description provided for @settingsChordViewHint.
   ///
   /// In de, this message translates to:
-  /// **'Akkorde als Stufen der Tonart, z. B. 1, 4, 5, 6m. Braucht eine Tonart im Song.'**
-  String get settingsNashvilleHint;
+  /// **'Akkorde (Am7), Nashville-Zahlen (6m7) oder Stufen in römischen Zahlen (vi7). Zahlen und Stufen brauchen eine Tonart im Song.'**
+  String get settingsChordViewHint;
 
   /// No description provided for @settingsChordStyle.
   ///
@@ -8505,6 +8505,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Die automatische Sicherung läuft weiter; du kannst sie hier ausschalten.'**
   String get localLibraryHiddenAutoBackup;
+
+  /// No description provided for @chordViewChords.
+  ///
+  /// In de, this message translates to:
+  /// **'Akkorde'**
+  String get chordViewChords;
+
+  /// No description provided for @chordViewNashville.
+  ///
+  /// In de, this message translates to:
+  /// **'Nashville'**
+  String get chordViewNashville;
+
+  /// No description provided for @chordViewNumerals.
+  ///
+  /// In de, this message translates to:
+  /// **'Stufen'**
+  String get chordViewNumerals;
 }
 
 class _AppLocalizationsDelegate

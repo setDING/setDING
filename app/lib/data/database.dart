@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:chordpro/chordpro.dart' show Subdivision;
+import 'package:chordpro/chordpro.dart' show ChordView, Subdivision;
 import 'package:drift/drift.dart';
 
 import '../midi/midi_message.dart';
@@ -260,6 +260,20 @@ enum SetItemType { song, marker }
 /// the same chords stacked line by line (#521).
 enum VerseChords { all, first, stacked }
 
+/// The chord view stored as [view] by name, reconciled with the Nashville
+/// flag [legacy] that older app versions read and write (ADR-0055): an
+/// older version only turns the flag on or off, so a flag that is off means
+/// chord names, and a flag that is on with no numbers view means Nashville
+/// numbers. Null when neither is set.
+ChordView? chordViewOf(Object? view, Object? legacy) {
+  final named = ChordView.values.asNameMap()[view];
+  return switch (legacy) {
+    false => ChordView.chords,
+    true when named == null || named == ChordView.chords => ChordView.nashville,
+    _ => named,
+  };
+}
+
 /// Stores a [MidiProgram] as its JSON (ADR-0039); a value that cannot be
 /// read is no program.
 class MidiProgramConverter extends TypeConverter<MidiProgram?, String?> {
@@ -376,8 +390,10 @@ class PersonalOverlays extends Table {
   RealColumn get fontScale => real().withDefault(const Constant(1.0))();
   TextColumn get notes => text().nullable()();
 
-  /// Per-song Nashville override; null = use device setting.
-  BoolColumn get nashville => boolean().nullable()();
+  /// Per-song chord view (names, Nashville numbers or Roman numerals,
+  /// ADR-0055, schema 34; a Nashville flag before); null = use the device
+  /// setting.
+  TextColumn get chordView => textEnum<ChordView>().nullable()();
 
   /// What live mode shows: null = ChordPro, otherwise an attachment ID.
   TextColumn get liveView => text().nullable()();
@@ -644,7 +660,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 33;
+  int get schemaVersion => 34;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -758,6 +774,13 @@ class AppDatabase extends _$AppDatabase {
               personalOverlays.clickGrouping,
               personalOverlays.clickSubdivision,
             ],
+            // The Nashville flag becomes the chord view (ADR-0055).
+            columnTransformer: {
+              personalOverlays.chordView: const CustomExpression<String>(
+                "CASE nashville WHEN 1 THEN 'nashville' "
+                "WHEN 0 THEN 'chords' END",
+              ),
+            },
           ),
         );
       } else if (from < 9) {
@@ -936,6 +959,18 @@ class AppDatabase extends _$AppDatabase {
         );
         await customStatement(
           "DELETE FROM sync_cursors WHERE collection = 'songs'",
+        );
+      }
+      if (from < 34 && from >= 8) {
+        // The Nashville flag becomes the chord view (ADR-0055); before
+        // schema 8 the rebuilt overlay table converts it.
+        await m.addColumn(personalOverlays, personalOverlays.chordView);
+        await customStatement(
+          "UPDATE personal_overlays SET chord_view = CASE nashville "
+          "WHEN 1 THEN 'nashville' WHEN 0 THEN 'chords' END",
+        );
+        await customStatement(
+          'ALTER TABLE personal_overlays DROP COLUMN nashville',
         );
       }
     },

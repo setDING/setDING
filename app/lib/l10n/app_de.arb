@@ -155,7 +155,7 @@
   "openFileFailed": "Keine App konnte die Datei öffnen.",
   "playLive": "Live spielen",
   "live": "Live",
-  "nashville": "Nashville-Nummern",
+  "chordView": "Akkord-Ansicht",
   "useDeviceSetting": "Wie in den Einstellungen",
   "on": "Ein",
   "off": "Aus",
@@ -192,7 +192,7 @@
       }
     }
   },
-  "noKeyForNashville": "Für Nashville-Nummern braucht der Song eine Tonart.",
+  "noKeyForDegrees": "Für Nashville-Zahlen und Stufen braucht der Song eine Tonart.",
   "firstVerseChordsOnly": "Akkorde nur in Verse 1",
   "noVersesForFirstVerseChords": "Der Song hat keine weiteren Verses mit Akkorden.",
   "verseChords": "Akkorde in Verses",
@@ -393,7 +393,7 @@
   "settingsCategoryAccountHint": "Anmeldung, Server und Synchronisation",
   "settingsCategoryGeneralHint": "Sprache und Design",
   "settingsCategoryMusicianHint": "Instrument, Stimme, Akkorddiagramme, Takt",
-  "settingsCategoryDisplayHint": "Akkord-Notation, Nashville-Zahlen, Inhalt, Chorus, Fortschritt",
+  "settingsCategoryDisplayHint": "Akkord-Notation, Nashville und Stufen, Inhalt, Chorus, Fortschritt",
   "settingsCategoryLiveHint": "Schriftgrösse, an Bildschirm anpassen, Spalten, Blättern",
   "settingsCategoryAboutHint": "Speicher, Diagnoseprotokoll und Version",
   "settingsInstrument": "Mein Instrument",
@@ -432,8 +432,8 @@
   "settingsNotation": "Akkord-Notation",
   "notationInternational": "International (B, Bb)",
   "notationGerman": "Deutsch (H, B)",
-  "settingsNashville": "Nashville-Nummern anzeigen",
-  "settingsNashvilleHint": "Akkorde als Stufen der Tonart, z. B. 1, 4, 5, 6m. Braucht eine Tonart im Song.",
+  "settingsChordView": "Akkorde anzeigen als",
+  "settingsChordViewHint": "Akkorde (Am7), Nashville-Zahlen (6m7) oder Stufen in römischen Zahlen (vi7). Zahlen und Stufen brauchen eine Tonart im Song.",
   "settingsChordStyle": "Akkordschreibweise",
   "settingsChordStyleHint": "Wie Akkorde geschrieben werden, z. B. Am7, Cmaj7, Em7b5 (Standard) oder A−7, CΔ7, Eø7 (Jazz). Der Song selbst bleibt unverändert.",
   "chordStyleAsWritten": "Wie geschrieben",
@@ -3521,5 +3521,8 @@
       }
     }
   },
-  "localLibraryHiddenAutoBackup": "Die automatische Sicherung läuft weiter; du kannst sie hier ausschalten."
+  "localLibraryHiddenAutoBackup": "Die automatische Sicherung läuft weiter; du kannst sie hier ausschalten.",
+  "chordViewChords": "Akkorde",
+  "chordViewNashville": "Nashville",
+  "chordViewNumerals": "Stufen"
 }

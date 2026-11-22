@@ -1,6 +1,7 @@
 import 'dart:io';
 
-import 'package:chordpro/chordpro.dart' show SequencePart, Subdivision;
+import 'package:chordpro/chordpro.dart'
+    show ChordView, SequencePart, Subdivision;
 import 'package:setding/data/database.dart';
 import 'package:setding/data/marker_icons.dart';
 import 'package:setding/data/demo_song.dart';
@@ -232,7 +233,9 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('Nashville can be switched on and off per song', (tester) async {
+  testWidgets('the chord view can be chosen per song (ADR-0055)', (
+    tester,
+  ) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'en'});
     final id = await tester.runAsync(
@@ -244,15 +247,39 @@ void main() {
 
     await tester.tap(find.byTooltip('Personal adjustments'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Nashville numbers'));
-    await tester.pumpAndSettle();
+    final button = find.byKey(const Key('chord-view-button'));
+    expect(
+      find.descendant(of: button, matching: find.text('Chord view: Chords')),
+      findsOneWidget,
+    );
+    Future<void> choose(String view) async {
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(Key('chord-view-$view')));
+      await tester.pumpAndSettle();
+    }
+
+    await choose('nashville');
     expect(find.text('4'), findsOneWidget);
     expect(find.text('C'), findsNothing);
+    expect(
+      (await tester.runAsync(() => app.songs.getOverlay(id)))!.chordView,
+      ChordView.nashville,
+    );
 
-    await tester.tap(find.text('Nashville numbers'));
-    await tester.pumpAndSettle();
+    await choose('numerals');
+    expect(find.text('IV'), findsOneWidget);
+    expect(find.text('I'), findsOneWidget);
+    expect(find.text('Chord view: Numerals'), findsOneWidget);
+
+    await choose('chords');
     expect(find.text('C'), findsOneWidget);
-    expect(find.text('4'), findsNothing);
+    expect(find.text('IV'), findsNothing);
+    // Back to the device setting.
+    expect(
+      (await tester.runAsync(() => app.songs.getOverlay(id)))!.chordView,
+      isNull,
+    );
     await app.dispose(tester);
   });
 

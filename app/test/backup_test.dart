@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
-import 'package:chordpro/chordpro.dart' show Subdivision;
+import 'package:chordpro/chordpro.dart' show ChordView, Subdivision;
 import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -60,6 +60,7 @@ void main() {
         notes: const Value('Slow intro'),
         liveView: Value(attachment),
         clickGrouping: const Value('3+2+2'),
+        chordView: const Value(ChordView.numerals),
         clickSubdivision: const Value(Subdivision.sixteenths),
       ),
     );
@@ -120,7 +121,11 @@ void main() {
     expect(cho.single, startsWith('songs/Hello ('));
     expect(utf8.decode(files[cho.single]!), contains('[C]Hello'));
     expect(files.keys.where((k) => k.startsWith('attachments/')), hasLength(2));
-    expect(((manifest['overlays'] as List).single as Map)['songId'], ids.song);
+    final overlay = (manifest['overlays'] as List).single as Map;
+    expect(overlay['songId'], ids.song);
+    // The chord view, and the Nashville flag for older app versions.
+    expect(overlay['chordView'], 'numerals');
+    expect(overlay['nashville'], isTrue);
     expect((manifest['annotations'] as List), hasLength(1));
     expect(((manifest['arrangements'] as List).single as Map)['transpose'], -2);
     expect(await BackupService.isBackup(zip), isTrue);
@@ -162,6 +167,7 @@ void main() {
     expect(overlay.liveView, score.id, reason: 'mapped to the copy');
     expect(overlay.clickGrouping, '3+2+2');
     expect(overlay.clickSubdivision, Subdivision.sixteenths);
+    expect(overlay.chordView, ChordView.numerals);
     final strokes = await other.select(other.annotations).get();
     expect(strokes.single.songId, hello.id);
     expect(strokes.single.target, score.id);

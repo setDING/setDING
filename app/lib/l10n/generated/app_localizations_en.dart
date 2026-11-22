@@ -264,7 +264,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get live => 'Live';
 
   @override
-  String get nashville => 'Nashville numbers';
+  String get chordView => 'Chord view';
 
   @override
   String get useDeviceSetting => 'As in settings';
@@ -339,7 +339,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get noKeyForNashville => 'Nashville numbers need a key in the song.';
+  String get noKeyForDegrees =>
+      'Nashville numbers and numerals need a key in the song.';
 
   @override
   String get firstVerseChordsOnly => 'Chords in verse 1 only';
@@ -722,7 +723,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsCategoryDisplayHint =>
-      'Chord notation, Nashville numbers, content, chorus, progress';
+      'Chord notation, Nashville and numerals, content, chorus, progress';
 
   @override
   String get settingsCategoryLiveHint =>
@@ -843,11 +844,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notationGerman => 'German (H, B)';
 
   @override
-  String get settingsNashville => 'Show Nashville numbers';
+  String get settingsChordView => 'Show chords as';
 
   @override
-  String get settingsNashvilleHint =>
-      'Chords as scale degrees, e.g. 1, 4, 5, 6m. Needs a key in the song.';
+  String get settingsChordViewHint =>
+      'Chords (Am7), Nashville numbers (6m7) or Roman numerals (vi7). Numbers and numerals need a key in the song.';
 
   @override
   String get settingsChordStyle => 'Chord style';
@@ -5586,4 +5587,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get localLibraryHiddenAutoBackup =>
       'The automatic backup keeps running; you can switch it off here.';
+
+  @override
+  String get chordViewChords => 'Chords';
+
+  @override
+  String get chordViewNashville => 'Nashville';
+
+  @override
+  String get chordViewNumerals => 'Numerals';
 }
