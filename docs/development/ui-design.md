@@ -125,7 +125,7 @@ the others are checked in review.
   actions: `TextButton`, before the primary action.
 - **Danger zone** (deleting the account, deleting a band, closing an organization):
   at the end of the screen, in the **`DangerZone`** tile (`widgets/danger_zone.dart`,
-  #828): tinted with `errorContainer`, outlined in the error colour, with a
+  #828), set apart from the content above by a full-width divider (#890): tinted with `errorContainer`, outlined in the error colour, with a
   *Danger zone* header in the error colour. Its actions are `OutlinedButton`s with
   the error colour as foreground. In the settings, `SettingsSection(danger: true)`
   draws the same tile.
