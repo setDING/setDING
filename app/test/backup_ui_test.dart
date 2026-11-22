@@ -79,8 +79,8 @@ void main() {
     await waitFor(tester, () => saved.isNotEmpty);
 
     final (name, bytes) = saved.single;
-    expect(name, startsWith('setDING-Backup On this device '));
-    expect(name, endsWith('.zip'));
+    expect(name, startsWith('Backup On this device '));
+    expect(name, endsWith('.setDING.zip'));
     final contents = (await tester.runAsync(() => BackupService.read(bytes)))!;
     expect(contents.songs.map((s) => s['title']), contains('Kept safe'));
     expect(find.text('Backup saved.'), findsOneWidget);
@@ -120,7 +120,7 @@ void main() {
     );
     await backUp(tester);
     await waitFor(tester, () => saved.isNotEmpty);
-    expect(saved.single.$1, startsWith('setDING-Backup School '));
+    expect(saved.single.$1, startsWith('Backup School '));
     expect(app.backend.songs.values.map((s) => s.title), contains('New'));
     await app.dispose(tester);
   });

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../data/auto_backup.dart';
+import '../../data/import_export.dart' show archiveExtension;
 import '../../data/backup.dart';
 import '../../data/database.dart' show localBandId;
 import '../../l10n/generated/app_localizations.dart';
@@ -20,10 +21,11 @@ import 'full_backup.dart' show backupReminderProvider;
 
 /// The file name of the safety backup: like an automatic backup, but never
 /// counted (and deleted) as one.
-String safetyBackupFileName(String device, DateTime time) => autoBackupFileName(
-  device,
-  time,
-).replaceFirst(RegExp(r'\.zip$'), ' before restore.zip');
+String safetyBackupFileName(String device, DateTime time) {
+  final name = autoBackupFileName(device, time);
+  return '${name.substring(0, name.length - archiveExtension.length)}'
+      ' before restore$archiveExtension';
+}
 
 /// Shows the preview of replacing the local library by [contents] and, once
 /// confirmed, saves the safety backup unless the person skipped it. True

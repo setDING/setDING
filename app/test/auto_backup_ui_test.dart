@@ -48,7 +48,7 @@ void main() {
     await waitFor(tester, () => app.backupFolder.files.isNotEmpty);
 
     final name = app.backupFolder.files.keys.single;
-    expect(name, startsWith('setDING-Backup Test tablet '));
+    expect(name, startsWith('Backup Test tablet '));
     final contents = (await tester.runAsync(
       () => BackupService.read(app.backupFolder.files[name]!),
     ))!;

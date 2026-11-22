@@ -9,7 +9,7 @@ import 'arrangement_repository.dart';
 import 'backup.dart';
 import 'database.dart';
 import 'marker_icons.dart';
-import 'import_export.dart' show safeFileName, sourceWithMeta;
+import 'import_export.dart' show archiveExtension, safeFileName, sourceWithMeta;
 import 'outbox.dart';
 import 'set_repository.dart';
 
@@ -216,7 +216,8 @@ class SetArchiveService {
   // Export --------------------------------------------------------------------
 
   /// A file name for the archive of [set].
-  static String fileName(SetlistEntry set) => '${safeFileName(set.name)}.zip';
+  static String fileName(SetlistEntry set) =>
+      '${safeFileName(set.name)}$archiveExtension';
 
   /// Exports [setId] with what [options] include. [readFile] reads an
   /// attachment file (default: from the storage); a missing file aborts the

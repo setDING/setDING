@@ -85,7 +85,7 @@ void main() {
     await tester.tap(find.byKey(const Key('song-export-start')));
     await waitFor(tester, () => saved.isNotEmpty);
 
-    expect(saved.single.$1, 'Hello.zip');
+    expect(saved.single.$1, 'Hello.setDING.zip');
     final archive = (await tester.runAsync(
       () => SongArchiveService.read(saved.single.$2),
     ))!;
@@ -145,7 +145,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('song-export-start')));
     await waitFor(tester, () => saved.length == 2);
-    expect(saved.last.$1, 'Hello.zip');
+    expect(saved.last.$1, 'Hello.setDING.zip');
     await openExport();
     expect(find.byKey(const Key('song-export-attachments')), findsOneWidget);
     await app.dispose(tester);
@@ -180,7 +180,7 @@ void main() {
     await tester.tap(find.byKey(const Key('song-export-start')));
     await waitFor(tester, () => saved.isNotEmpty);
 
-    expect(saved.single.$1, startsWith('setDING-Songs '));
+    expect(saved.single.$1, startsWith('Songs '));
     final archive = (await tester.runAsync(
       () => SongArchiveService.read(saved.single.$2),
     ))!;

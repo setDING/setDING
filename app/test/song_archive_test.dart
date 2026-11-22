@@ -378,10 +378,10 @@ void main() {
     final ids = await fill();
     final hello = (await songs.getSong(ids.hello))!;
     final bye = (await songs.getSong(ids.bye))!;
-    expect(SongArchiveService.fileName([hello]), 'Hello.zip');
+    expect(SongArchiveService.fileName([hello]), 'Hello.setDING.zip');
     expect(
       SongArchiveService.fileName([hello, bye], now: DateTime(2027, 3, 4)),
-      'setDING-Songs 2027-03-04.zip',
+      'Songs 2027-03-04.setDING.zip',
     );
   });
   group('language versions (ADR-0053)', () {

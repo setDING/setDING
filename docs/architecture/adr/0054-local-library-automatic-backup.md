@@ -50,7 +50,8 @@ only.
   arrangements of its band, the personal adjustments and annotations on its
   songs. Everything else (organizations, own adjustments in organizations,
   personal settings) is already on the server.
-- **File name:** `setDING-Backup <device> <yyyy-mm-dd HHmm>.zip`. The device
+- **File name:** `Backup <device> <yyyy-mm-dd HHmm>.setDING.zip` (before
+  #874: `setDING-Backup <device> <yyyy-mm-dd HHmm>.zip`, still recognised). The device
   name defaults to the operating system's device name and can be changed in the
   setting, so several devices can write into the same folder without
   overwriting each other.
@@ -217,6 +218,12 @@ the server sync (ADR-0004).
   reads every library, also the hidden one; the automatic backup works on
   the local library directly. Signed in without any organization, the
   local library is still the fallback, as nothing else can be shown.
+- 2026-11-22: File name `Backup <device> <yyyy-mm-dd HHmm>.setDING.zip`
+  (#874, ADR-0043); the safety backup before a restore is
+  `Backup <device> <yyyy-mm-dd HHmm> before restore.setDING.zip`. Backups
+  with the old name `setDING-Backup … .zip` still count as this device's
+  backups and are sorted by their time, so the rotation removes them as
+  they age.
 
 ## Open points
 

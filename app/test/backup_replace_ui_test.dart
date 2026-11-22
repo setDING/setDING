@@ -7,6 +7,7 @@ import 'package:setding/data/backup.dart';
 import 'package:setding/data/database.dart' show localBandId;
 import 'package:setding/ui/backup/backup_actions.dart';
 import 'package:setding/ui/backup/full_backup.dart';
+import 'package:setding/ui/backup/replace_local.dart';
 import 'package:setding/ui/widgets/export_file.dart';
 
 import 'test_app.dart';
@@ -100,6 +101,13 @@ void main() {
     );
   }
 
+  test('the safety backup is named like an automatic backup but never '
+      'counted as one (#874)', () {
+    final name = safetyBackupFileName('Tab', DateTime(2026, 5, 2, 8, 30));
+    expect(name, 'Backup Tab 2026-05-02 0830 before restore.setDING.zip');
+    expect(autoBackupsOf('Tab', [name]), isEmpty);
+  });
+
   testWidgets('replaces the local library after a safety backup', (
     tester,
   ) async {
@@ -117,7 +125,7 @@ void main() {
       tester,
       () => find.textContaining('Local library replaced').evaluate().isNotEmpty,
     );
-    expect(saved.single, endsWith(' before restore.zip'));
+    expect(saved.single, endsWith(' before restore.setDING.zip'));
     expect(await titles(tester, app), ['Old:{title: Old}\n[C]A']);
     await app.dispose(tester);
   });
@@ -148,8 +156,8 @@ void main() {
     );
     expect(saved, isEmpty);
     final name = app.backupFolder.files.keys.single;
-    expect(name, startsWith('setDING-Backup Test tablet '));
-    expect(name, endsWith(' before restore.zip'));
+    expect(name, startsWith('Backup Test tablet '));
+    expect(name, endsWith(' before restore.setDING.zip'));
     // It holds the library as it was before.
     final safety = (await tester.runAsync(
       () => BackupService.read(app.backupFolder.files[name]!),
@@ -260,7 +268,7 @@ void main() {
           .evaluate()
           .isNotEmpty,
     );
-    expect(saved.single, endsWith(' before restore.zip'));
+    expect(saved.single, endsWith(' before restore.setDING.zip'));
     expect(await titles(tester, app), ['Old:{title: Old}']);
     await app.dispose(tester);
   });

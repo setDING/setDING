@@ -13,7 +13,7 @@ import 'arrangement_repository.dart';
 import 'attachment_storage.dart';
 import 'database.dart';
 import 'marker_icons.dart';
-import 'import_export.dart' show safeFileName, sourceWithMeta;
+import 'import_export.dart' show archiveExtension, safeFileName, sourceWithMeta;
 import 'outbox.dart';
 import 'set_repository.dart';
 import 'song_repository.dart';
@@ -646,7 +646,7 @@ class BackupService {
   static String fileName(String libraryName, DateTime date) {
     String two(int n) => n.toString().padLeft(2, '0');
     final day = '${date.year}-${two(date.month)}-${two(date.day)}';
-    return '${safeFileName('setDING-Backup $libraryName $day')}.zip';
+    return '${safeFileName('Backup $libraryName $day')}$archiveExtension';
   }
 
   // Import --------------------------------------------------------------------

@@ -74,7 +74,7 @@ void main() {
     await waitFor(tester, () => saved.isNotEmpty);
 
     final (name, bytes) = saved.single;
-    expect(name, startsWith('setDING-Backup all '));
+    expect(name, startsWith('Backup all '));
     final backup = (await tester.runAsync(
       () => BackupService.readFull(bytes),
     ))!;
