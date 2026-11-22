@@ -315,11 +315,19 @@ class _TrashTile extends StatelessWidget {
     final selecting = selected != null;
     return ListTile(
       key: ValueKey('trash-${entry.id}'),
-      leading: Icon(
-        kind == TrashKind.songs
-            ? Icons.music_note_outlined
-            : Icons.queue_music_outlined,
-      ),
+      // In selection mode the checkbox takes the icon's place, leading like
+      // in the other multi-select lists.
+      leading: selecting
+          ? Checkbox(
+              key: ValueKey('trash-check-${entry.id}'),
+              value: selected,
+              onChanged: (_) => onToggle(),
+            )
+          : Icon(
+              kind == TrashKind.songs
+                  ? Icons.music_note_outlined
+                  : Icons.queue_music_outlined,
+            ),
       title: Text(entry.title),
       subtitle: Text(
         [
@@ -334,9 +342,7 @@ class _TrashTile extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _DaysLeft(deletedAt: entry.deletedAt),
-          if (selecting)
-            Checkbox(value: selected, onChanged: (_) => onToggle())
-          else
+          if (!selecting)
             PopupMenuButton<String>(
               key: ValueKey('trash-menu-${entry.id}'),
               tooltip: l10n.trashMenu(entry.title),

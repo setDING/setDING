@@ -121,6 +121,25 @@ void main() {
     await tester.longPress(find.text('One'));
     await tester.pumpAndSettle();
     expect(find.text('1 selected'), findsOneWidget);
+    // The checkbox leads the row in place of the icon, like in the other
+    // multi-select lists.
+    final row = find.ancestor(
+      of: find.text('One'),
+      matching: find.byType(ListTile),
+    );
+    final checkbox = find.descendant(of: row, matching: find.byType(Checkbox));
+    expect(checkbox, findsOneWidget);
+    expect(
+      tester.getCenter(checkbox).dx,
+      lessThan(tester.getTopLeft(find.text('One')).dx),
+    );
+    expect(
+      find.descendant(
+        of: row,
+        matching: find.byIcon(Icons.music_note_outlined),
+      ),
+      findsNothing,
+    );
     await tester.tap(find.text('Two'));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('trash-restore-selected')));
