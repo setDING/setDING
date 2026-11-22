@@ -59,7 +59,10 @@ no API to list input devices. What the platforms offer differs:
    connected", no pairing), `none` elsewhere. Where pairing is not possible,
    the setting says why, and the readiness card keeps the last use and the
    quick test of #911.
-6. **Readiness card:** with a paired page turner, the page turner line is
+6. **Readiness card:** without a pairing on Android and Windows, the line
+   says *"Page turner not paired"* with the hint to pair it (worth knowing,
+   no warning): a key from any keyboard would count, so there is no quick
+   test there (#928). With a paired page turner, the page turner line is
    *"Page turner <name> connected"* or a warning *"… not connected"*, leading
    to *Settings › Live*. On iOS a missing keyboard is a warning only when a
    page turner was used on the device before.
@@ -96,9 +99,15 @@ no API to list input devices. What the platforms offer differs:
   on Android (Galaxy Tab S5e, Android 15, AirTurn DUO500): pairing,
   connect and disconnect without a restart, live mode, forget and pair
   again. The Windows build and test and the iPad check were not done yet.
+- 2026-11-22: Owner decision (#928): after *Forget* the overview still said
+  "Page turner responds" from the quick test. Without a pairing on Android
+  and Windows the line now asks to pair the page turner; the quick test and
+  the last use stay where pairing is not possible (iPad, web, Linux).
 
 ## Open points
 
+- Whether a person uses a page turner at all (a setting), and an offer on
+  the overview to pair a page turner that is detected but not paired.
 - Windows: the runner code (`windows/runner/input_devices.cpp`) was not
   compiled when accepted; build it and repeat the manual test with a page
   turner.

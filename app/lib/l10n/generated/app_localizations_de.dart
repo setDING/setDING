@@ -5868,4 +5868,12 @@ class AppLocalizationsDe extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get readinessPageTurnerNotPaired => 'Seitenwender nicht zugeordnet';
+
+  @override
+  String readinessPageTurnerPairDetail(String mode) {
+    return 'Zuordnen, damit die Übersicht zeigt, ob er verbunden ist · Blättern: $mode';
+  }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/l10n/generated/app_localizations.dart';
+import 'package:setding/platform/input_devices.dart';
 import 'package:setding/ui/home_tab.dart';
 import 'package:setding/ui/live/page_turner.dart';
 import 'package:setding/ui/sets/set_screen.dart';
@@ -126,6 +127,9 @@ void main() {
   ) async {
     usePhoneSize(tester);
     final app = await TestApp.create(prefs: {'language': 'en'});
+    // Where pairing is not possible (web, Linux); on Android and Windows
+    // the line asks to pair the page turner instead (#928).
+    app.inputDevices.support = InputDeviceSupport.none;
     await tester.pumpWidget(app.build());
     await tester.pumpAndSettle();
     await showDetails(tester);

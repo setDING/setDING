@@ -159,8 +159,11 @@ final connectedKeyboardsProvider = StreamProvider<List<InputDeviceInfo>>((
 /// Whether the page turner is connected now, as far as the platform can
 /// tell (ADR-0057).
 enum PageTurnerConnection {
-  /// Nothing known: no pairing, or the platform tells nothing.
+  /// Nothing known: the platform tells nothing, or still loading.
   unknown,
+
+  /// Android and Windows: no page turner is paired (#928).
+  notPaired,
 
   /// The paired page turner is connected.
   connected,
@@ -182,6 +185,9 @@ PageTurnerConnection pageTurnerConnection({
   required InputDeviceInfo? paired,
   required List<InputDeviceInfo>? connected,
 }) {
+  if (support == InputDeviceSupport.devices && paired == null) {
+    return PageTurnerConnection.notPaired;
+  }
   if (connected == null) return PageTurnerConnection.unknown;
   return switch (support) {
     InputDeviceSupport.none => PageTurnerConnection.unknown,
@@ -191,7 +197,7 @@ PageTurnerConnection pageTurnerConnection({
           : PageTurnerConnection.keyboardConnected,
     InputDeviceSupport.devices =>
       paired == null
-          ? PageTurnerConnection.unknown
+          ? PageTurnerConnection.notPaired
           : connected.any((d) => d.matches(paired))
           ? PageTurnerConnection.connected
           : PageTurnerConnection.notConnected,

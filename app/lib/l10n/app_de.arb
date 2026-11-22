@@ -3703,5 +3703,14 @@
         "type": "int"
       }
     }
+  },
+  "readinessPageTurnerNotPaired": "Seitenwender nicht zugeordnet",
+  "readinessPageTurnerPairDetail": "Zuordnen, damit die Übersicht zeigt, ob er verbunden ist · Blättern: {mode}",
+  "@readinessPageTurnerPairDetail": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
   }
 }
