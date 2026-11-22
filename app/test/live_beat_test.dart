@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import 'package:chordpro/chordpro.dart' show Subdivision;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/audio/metronome.dart';
+import 'package:setding/data/database.dart' show SongOverlay;
 import 'package:setding/ui/live/live_beat.dart';
 import 'package:setding/ui/live/live_screen.dart';
+import 'package:setding/settings/settings.dart';
 
 import 'fake_click_output.dart';
 import 'test_app.dart';
@@ -326,5 +330,28 @@ void main() {
       expect(out.stops, isEmpty);
       await app.dispose(tester);
     });
+  });
+
+  testWidgets('an overlay loaded after leaving live mode is ignored (#825)', (
+    tester,
+  ) async {
+    final app = await TestApp.create(prefs: const {'language': 'en'});
+    final item = await song(tester, app, 'Song 1');
+    final loading = Completer<SongOverlay?>();
+    final beat = LiveBeat(
+      metronome: Metronome(output: FakeClickOutput()),
+      items: [item],
+      settings: () => const AppSettings(),
+      loadOverlay: (_) => loading.future,
+    );
+    var notified = 0;
+    beat.addListener(() => notified++);
+    final shown = beat.onItemShown(0);
+    beat.dispose();
+    loading.complete(null);
+    await shown;
+    expect(notified, 0);
+    expect(tester.takeException(), isNull);
+    await app.dispose(tester);
   });
 }

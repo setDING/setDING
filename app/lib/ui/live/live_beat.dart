@@ -50,6 +50,9 @@ class LiveBeat extends ChangeNotifier {
 
   static Future<SongOverlay?> _noOverlay(String _) async => null;
 
+  /// Set by [dispose]; the loading of an overlay may finish afterwards.
+  bool _disposed = false;
+
   /// Loads the personal adjustments of [index]: once before a start, again
   /// each time the item is shown ([reload]; a sync may have changed them).
   Future<void> _ensureOverlay(int index, {bool reload = false}) async {
@@ -57,6 +60,8 @@ class LiveBeat extends ChangeNotifier {
     if (id == null || (!reload && _overlays.containsKey(id))) return;
     final before = _overlays[id];
     final overlay = await _loadOverlay(id);
+    // Live mode may have been left meanwhile (#825).
+    if (_disposed) return;
     // A change reported meanwhile is newer.
     if (!identical(_overlays[id], before)) return;
     _overlays[id] = overlay;
@@ -157,6 +162,7 @@ class LiveBeat extends ChangeNotifier {
   Future<void> start(int index) async {
     if (!canBeat(index)) return;
     await _ensureOverlay(index);
+    if (_disposed) return;
     final s = settings;
     _active = index;
     notifyListeners();
@@ -186,6 +192,7 @@ class LiveBeat extends ChangeNotifier {
     if (index >= 0 && index < _items.length) {
       await _ensureOverlay(index, reload: true);
     }
+    if (_disposed) return;
     if (_active != null && _active != index) await stop();
     if (settings.beatStart == ClickStart.automatic &&
         _active != index &&
@@ -225,6 +232,7 @@ class LiveBeat extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
     metronome.running.removeListener(_onRunning);
     metronome.stop();
     super.dispose();
