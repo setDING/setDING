@@ -249,13 +249,17 @@ class SongTextStyles {
     bool sized = true,
   }) {
     final s = sectionStyle(role);
-    return _styled(
+    final styled = _styled(
       chord,
       values,
       bold: s.chordBold,
       italic: s.chordItalic,
       size: sized ? s.chordSize.factor : 1,
       color: s.chordColor,
+    );
+    // Flat and sharp signs after the chord font and its own fallback.
+    return styled.copyWith(
+      fontFamilyFallback: [...?styled.fontFamilyFallback, ...musicSignFallback],
     );
   }
 
@@ -302,6 +306,18 @@ final _fallbackScheme = appColorScheme(Brightness.light);
 /// Reference size in points for absolute ChordPro sizes (`{textsize: 14}`,
 /// `<span size="14">`): 12 pt corresponds to the normal size of an item.
 const chordProReferencePoints = 12.0;
+
+/// Fonts with the flat and sharp signs (`♭`, `♯`) of the jazz chord style
+/// and Roman numerals (ADR-0022, ADR-0055), which Roboto lacks: chords fall
+/// back to them where the platform does not on its own (#915).
+const musicSignFallback = [
+  'Noto Sans Symbols',
+  'Noto Sans Symbols 2',
+  'Noto Music',
+  'DejaVu Sans',
+  'Segoe UI Symbol',
+  'Apple Symbols',
+];
 
 const _serifFallback = [
   'Noto Serif',
