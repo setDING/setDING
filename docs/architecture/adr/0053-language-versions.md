@@ -212,6 +212,13 @@ the API directly as the refused roles (permission matrix test).
 - 2026-11-22: The language filter offers *No language* (#834) below *All
   languages* and above a divider and the languages: the songs whose language is
   neither set by hand nor detected, to find the ones to set by hand.
+- 2026-11-22: The dialog that sets a song's language shows a small flag in front of
+  every language (#845), so the wanted one is found faster: de Germany, gsw
+  Switzerland, en the Union Jack, fr, it, es, pt and nl their countries; *Other* a
+  neutral language icon, *Automatic* the flag of the detected language. The flags
+  are simplified SVGs drawn for the project and bundled in the app (Windows has no
+  flag emoji). They appear only in this dialog: the tags in the song list and the
+  song view stay text codes, because a language is not a country.
 
 ## Open points
 
