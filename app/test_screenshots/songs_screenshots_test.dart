@@ -260,6 +260,39 @@ void main() {
     });
   }
 
+  // On a phone the panel buttons move into the ⋮ menu (#838).
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('song phone menu $lang', (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      final song = (await tester.runAsync(() async {
+        final id = await app.songs.createSong(source: demoSongSource);
+        await app.songs.updateOverlay(id, (o) => o.copyWith(transpose: 2));
+        return id;
+      }))!;
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: SongScreen(songId: song)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('open-personal-adjustments')), findsNothing);
+      await tester.tap(find.byKey(const Key('app-bar-menu')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('open-personal-adjustments-menu')),
+        findsOneWidget,
+      );
+      await shot(tester, '${lang}_42c_song_phone_menu');
+      await app.dispose(tester);
+    });
+  }
+
   // The offer to copy the adjustments of another language version
   // (ADR-0053, #808).
   for (final (lang, dark) in [('de', false), ('en', true)]) {

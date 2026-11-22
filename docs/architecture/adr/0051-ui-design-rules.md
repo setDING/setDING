@@ -107,6 +107,10 @@ above span all of them.
 - 2026-11-22: Menu actions that delete or remove something are drawn in the error
   colour (`MenuAction(destructive: true)`, #839); `ui_rules_test.dart` checks it for
   actions with a delete or remove icon.
+- 2026-11-22: App bar actions on narrow screens (#838): the shared
+  `AppBarActions` moves the icon buttons that do not fit next to the title to the
+  top of the overflow menu, above a divider, as `MenuAction`s that keep their
+  badge (`MenuAction` takes `active` and `count`); the song screen uses it.
 
 ## Open points
 

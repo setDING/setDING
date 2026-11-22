@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import song from '../../../../../../docs/screenshots/song.png';
 import adjustmentOffer from '../../../../../../docs/screenshots/adjustment_offer.png';
+import phoneMenu from '../../../../../../docs/screenshots/song_phone_menu.png';
 
 When you open a song, there are three icons at the top:
 
@@ -17,6 +18,12 @@ When you open a song, there are three icons at the top:
   (see [Key and sequence](/en/sets/key-and-sequence/)).
 
 <Image src={song} alt="A song with controls for key, capo, font size, Nashville numbers and a personal note" />
+
+On a phone, or wherever the screen is too narrow, the icons that do not fit move to
+the top of the **⋮** menu, above a line. A dot or number shows there as well, and a
+dot on **⋮** tells you that one of them is in effect, e.g. your personal adjustments.
+
+<Image src={phoneMenu} alt="The ⋮ menu of a song on a phone: personal adjustments, attachments and sources at the top, above the other song actions" />
 
 ## Personal adjustments
 
