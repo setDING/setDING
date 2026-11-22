@@ -1167,6 +1167,12 @@ class FakeSyncBackend implements SyncBackend {
   /// Server files whose download fails with a network error.
   final offlineFiles = <String>{};
 
+  /// When set, downloads of the other files wait for it; it completes on
+  /// the next turn of the event loop after a download of [offlineFiles]
+  /// failed, so the connection breaks while the other downloads are still
+  /// running (#935).
+  Completer<void>? downloadGate;
+
   @override
   AttachmentDownloads openDownloads() {
     downloadsOpened++;
@@ -1244,11 +1250,14 @@ class _FakeDownloads implements AttachmentDownloads {
   ) async {
     _server._requireUser();
     _server.downloads++;
+    final gate = _server.downloadGate;
     if (_server.offlineFiles.contains(attachment.file)) {
       // Part of the file arrived before the connection broke.
       target.add([1, 2]);
+      if (gate != null && !gate.isCompleted) Timer.run(gate.complete);
       throw const BackendException(BackendErrorKind.network);
     }
+    await gate?.future;
     final bytes = _server.files[attachment.file];
     if (bytes == null) {
       throw const BackendException(BackendErrorKind.notAllowed);
