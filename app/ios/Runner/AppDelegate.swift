@@ -1,4 +1,5 @@
 import Flutter
+import GameController
 import UIKit
 import UniformTypeIdentifiers
 
@@ -6,6 +7,9 @@ import UniformTypeIdentifiers
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   /// The folder of the automatic backup (ADR-0054).
   private var backupFolder: BackupFolderChannel?
+
+  /// Whether a keyboard is connected, for the page turner (ADR-0057).
+  private var inputDevices: InputDevicesChannel?
 
   override func application(
     _ application: UIApplication,
@@ -18,6 +22,9 @@ import UniformTypeIdentifiers
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "BackupFolderChannel") {
       backupFolder = BackupFolderChannel(messenger: registrar.messenger())
+    }
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "InputDevicesChannel") {
+      inputDevices = InputDevicesChannel(messenger: registrar.messenger())
     }
   }
 }
@@ -193,5 +200,54 @@ class BackupFolderChannel: NSObject, UIDocumentPickerDelegate {
   func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
     pending?(nil)
     pending = nil
+  }
+}
+
+/// Whether a hardware keyboard is connected, for the page turner (ADR-0057).
+/// iOS merges all keyboards into one (`GCKeyboard.coalesced`) without a name,
+/// so `devices` is one entry without a name while a keyboard is connected,
+/// and the event channel reports connects and disconnects. There is no
+/// device per key, so pairing is not possible.
+class InputDevicesChannel: NSObject, FlutterStreamHandler {
+  private let methods: FlutterMethodChannel
+  private let events: FlutterEventChannel
+  private var sink: FlutterEventSink?
+  private var observers: [NSObjectProtocol] = []
+
+  init(messenger: FlutterBinaryMessenger) {
+    methods = FlutterMethodChannel(name: "app.setding/input_devices", binaryMessenger: messenger)
+    events = FlutterEventChannel(
+      name: "app.setding/input_devices/events", binaryMessenger: messenger)
+    super.init()
+    methods.setMethodCallHandler { call, result in
+      switch call.method {
+      case "devices":
+        result(GCKeyboard.coalesced == nil ? [] : [["name": "", "vendorId": 0, "productId": 0]])
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
+    events.setStreamHandler(self)
+  }
+
+  func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink)
+    -> FlutterError?
+  {
+    sink = events
+    let center = NotificationCenter.default
+    for name in [Notification.Name.GCKeyboardDidConnect, .GCKeyboardDidDisconnect] {
+      observers.append(
+        center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+          self?.sink?(["type": "changed"])
+        })
+    }
+    return nil
+  }
+
+  func onCancel(withArguments arguments: Any?) -> FlutterError? {
+    observers.forEach { NotificationCenter.default.removeObserver($0) }
+    observers = []
+    sink = nil
+    return nil
   }
 }

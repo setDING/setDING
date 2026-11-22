@@ -3624,5 +3624,52 @@
         "type": "int"
       }
     }
-  }
+  },
+  "readinessPageTurnerConnected": "Seitenwender {name} verbunden",
+  "@readinessPageTurnerConnected": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "readinessPageTurnerNotConnected": "Seitenwender {name} nicht verbunden",
+  "@readinessPageTurnerNotConnected": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "readinessKeyboardConnected": "Eine Tastatur ist verbunden",
+  "readinessKeyboardNotConnected": "Seitenwender: keine Tastatur verbunden",
+  "settingsPageTurner": "Seitenwender",
+  "settingsPageTurnerNone": "Nicht zugeordnet",
+  "settingsPageTurnerConnected": "verbunden",
+  "settingsPageTurnerNotConnected": "nicht verbunden",
+  "settingsPageTurnerHint": "Ordne dein Pedal zu, damit die Übersicht zeigt, ob es verbunden ist.",
+  "settingsPageTurnerPair": "Zuordnen",
+  "settingsPageTurnerPairAgain": "Neu zuordnen",
+  "settingsPageTurnerForget": "Seitenwender vergessen",
+  "settingsPageTurnerKeyboardOnly": "Dieses Gerät meldet nur, ob eine Tastatur verbunden ist, nicht welche. Das zeigt die Übersicht.",
+  "settingsPageTurnerUnsupported": "Auf dieser Plattform nicht möglich. Die Übersicht zeigt, wann der Seitenwender zuletzt benutzt wurde.",
+  "pairPageTurnerTitle": "Seitenwender zuordnen",
+  "pairPageTurnerPrompt": "Tritt jetzt aufs Pedal.",
+  "pageTurnerPaired": "Seitenwender zugeordnet: {name}",
+  "@pageTurnerPaired": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pageTurnerForgotten": "Seitenwender vergessen: {name}",
+  "@pageTurnerForgotten": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pageTurnerUnnamed": "Gerät ohne Namen"
 }

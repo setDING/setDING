@@ -5720,4 +5720,73 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String readinessPageTurnerConnected(String name) {
+    return 'Page turner $name connected';
+  }
+
+  @override
+  String readinessPageTurnerNotConnected(String name) {
+    return 'Page turner $name not connected';
+  }
+
+  @override
+  String get readinessKeyboardConnected => 'A keyboard is connected';
+
+  @override
+  String get readinessKeyboardNotConnected =>
+      'Page turner: no keyboard connected';
+
+  @override
+  String get settingsPageTurner => 'Page turner';
+
+  @override
+  String get settingsPageTurnerNone => 'Not paired';
+
+  @override
+  String get settingsPageTurnerConnected => 'connected';
+
+  @override
+  String get settingsPageTurnerNotConnected => 'not connected';
+
+  @override
+  String get settingsPageTurnerHint =>
+      'Pair your pedal so the overview shows whether it is connected.';
+
+  @override
+  String get settingsPageTurnerPair => 'Pair';
+
+  @override
+  String get settingsPageTurnerPairAgain => 'Pair again';
+
+  @override
+  String get settingsPageTurnerForget => 'Forget page turner';
+
+  @override
+  String get settingsPageTurnerKeyboardOnly =>
+      'This device only tells whether a keyboard is connected, not which one. The overview shows that.';
+
+  @override
+  String get settingsPageTurnerUnsupported =>
+      'Not possible on this platform. The overview shows when the page turner was last used.';
+
+  @override
+  String get pairPageTurnerTitle => 'Pair page turner';
+
+  @override
+  String get pairPageTurnerPrompt => 'Press the pedal now.';
+
+  @override
+  String pageTurnerPaired(String name) {
+    return 'Page turner paired: $name';
+  }
+
+  @override
+  String pageTurnerForgotten(String name) {
+    return 'Page turner forgotten: $name';
+  }
+
+  @override
+  String get pageTurnerUnnamed => 'Device without a name';
 }

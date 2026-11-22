@@ -3076,5 +3076,24 @@
         "type": "int"
       }
     }
-  }
+  },
+  "readinessPageTurnerConnected": "Page turner {name} connected",
+  "readinessPageTurnerNotConnected": "Page turner {name} not connected",
+  "readinessKeyboardConnected": "A keyboard is connected",
+  "readinessKeyboardNotConnected": "Page turner: no keyboard connected",
+  "settingsPageTurner": "Page turner",
+  "settingsPageTurnerNone": "Not paired",
+  "settingsPageTurnerConnected": "connected",
+  "settingsPageTurnerNotConnected": "not connected",
+  "settingsPageTurnerHint": "Pair your pedal so the overview shows whether it is connected.",
+  "settingsPageTurnerPair": "Pair",
+  "settingsPageTurnerPairAgain": "Pair again",
+  "settingsPageTurnerForget": "Forget page turner",
+  "settingsPageTurnerKeyboardOnly": "This device only tells whether a keyboard is connected, not which one. The overview shows that.",
+  "settingsPageTurnerUnsupported": "Not possible on this platform. The overview shows when the page turner was last used.",
+  "pairPageTurnerTitle": "Pair page turner",
+  "pairPageTurnerPrompt": "Press the pedal now.",
+  "pageTurnerPaired": "Page turner paired: {name}",
+  "pageTurnerForgotten": "Page turner forgotten: {name}",
+  "pageTurnerUnnamed": "Device without a name"
 }
