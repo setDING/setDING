@@ -1,4 +1,20 @@
 {
+  "0.18.0": {
+    "de": [
+      "Songs in mehreren Sprachen lassen sich als Sprachversionen verknüpfen; im Set wechselst du mit einem Tipp zu einer anderen Sprache.",
+      "Im Set trennen Marker mit Symbol und Text die Teile, zum Beispiel Pause oder Zugabe.",
+      "Im Konto änderst du deinen Namen und dein Passwort oder löschst dein Konto.",
+      "Der Song-Editor schliesst Klammern und Abschnitte selbst; das lässt sich in den Einstellungen ausschalten.",
+      "Ein Set zeigt nur noch Probleme beim Offline-Stand und warnt, wenn die letzte Synchronisation zu alt ist."
+    ],
+    "en": [
+      "Songs in several languages can be linked as language versions; in a set, one tap switches to another language.",
+      "In a set, markers with an icon and text separate the parts, for example a break or the encore.",
+      "In your account you change your name and password or delete your account.",
+      "The song editor closes brackets and sections itself; you can turn this off in the settings.",
+      "A set shows only problems with its offline state and warns when the last sync is too old."
+    ]
+  },
   "0.17.0": {
     "de": [
       "Die App startet neu auf der Übersicht: nächstes Set mit Live-Start, offene Aufgaben und die letzten Änderungen der anderen Mitglieder.",

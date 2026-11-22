@@ -8,6 +8,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 with the setDING-specific bump rules of
 [ADR-0028](docs/architecture/adr/0028-versioning-scheme.md).
 
+## [0.18.0] - 2026-11-22
+
+### Added
+
+- Language versions of a song (ADR-0053): setDING detects the language of a song, lets you set it and filter the song list by it ([#811](https://github.com/tafli/setDING/pull/811), [#812](https://github.com/tafli/setDING/pull/812)); songs in different languages can be linked as versions of one song and are shown in the song view ([#815](https://github.com/tafli/setDING/pull/815)); a set item can switch to another language version ([#820](https://github.com/tafli/setDING/pull/820)), personal adjustments can be copied from another version ([#821](https://github.com/tafli/setDING/pull/821)), and song and backup archives keep the links ([#822](https://github.com/tafli/setDING/pull/822))
+- Account: change your display name and password, and delete your own account (ADR-0052) ([#786](https://github.com/tafli/setDING/pull/786), [#790](https://github.com/tafli/setDING/pull/790), [#791](https://github.com/tafli/setDING/pull/791))
+- Set markers with an icon and text (ADR-0047): a dialog with an icon picker adds them, and every marker is a divider in the set list ([#735](https://github.com/tafli/setDING/pull/735), [#737](https://github.com/tafli/setDING/pull/737), [#740](https://github.com/tafli/setDING/pull/740))
+- Set archive (ADR-0043): an exported set can be imported again as a set, with a clearer import dialog and names for copies; exported PDFs open in the default app ([#712](https://github.com/tafli/setDING/pull/712), [#720](https://github.com/tafli/setDING/pull/720), [#728](https://github.com/tafli/setDING/pull/728))
+- Songs can be exported and imported with their attachments ([#793](https://github.com/tafli/setDING/pull/793))
+- The SongSelect import removes the CCLI footer and keeps song number and copyright as directives ([#788](https://github.com/tafli/setDING/pull/788)); songs with places the editor offers to convert get a magic wand icon in the song list and the overview and can be converted from it ([#799](https://github.com/tafli/setDING/pull/799), [#801](https://github.com/tafli/setDING/pull/801))
+- Song list: the overview's to-do filters as filter chips, a *Played* chip and tag filters in menus, and deleting several selected songs ([#801](https://github.com/tafli/setDING/pull/801), [#818](https://github.com/tafli/setDING/pull/818), [#741](https://github.com/tafli/setDING/pull/741))
+- Song editor typing aids: brackets, quotes and section blocks close themselves, section start and end are renamed together, snippets wrap the selected lines, chorus labels are suggested after `{chorus:`; a switch in the settings turns the aids off ([#751](https://github.com/tafli/setDING/pull/751), [#760](https://github.com/tafli/setDING/pull/760), [#761](https://github.com/tafli/setDING/pull/761), [#762](https://github.com/tafli/setDING/pull/762), [#765](https://github.com/tafli/setDING/pull/765), [#764](https://github.com/tafli/setDING/pull/764))
+- LilyPond blocks are drawn as notation (a lead-sheet subset) instead of only their source ([#736](https://github.com/tafli/setDING/pull/736))
+- The drummer sets the grouping of an odd meter and the subdivisions of the click per song ([#702](https://github.com/tafli/setDING/pull/702))
+- A hint says who changed the open song or set when a sync brings changes ([#705](https://github.com/tafli/setDING/pull/705))
+- Keyboard shortcuts: Esc goes back on every screen and closes the song selection and editor; E, L, +/-, the arrow keys and search, with a help overview ([#727](https://github.com/tafli/setDING/pull/727), [#734](https://github.com/tafli/setDING/pull/734), [#742](https://github.com/tafli/setDING/pull/742), [#752](https://github.com/tafli/setDING/pull/752))
+
+### Changed
+
+- The offline status of a set shows only problems and warns when the last sync is too old, instead of a green mark on every set ([#769](https://github.com/tafli/setDING/pull/769))
+- *Edit set* is a pencil button in the set's app bar; the set list as text was removed ([#715](https://github.com/tafli/setDING/pull/715)); a tap on the set card of the overview opens the set ([#694](https://github.com/tafli/setDING/pull/694))
+- Settings in sections with dividers and an icon on every option, in two columns on wide screens; the song display is customised from a row of its own ([#768](https://github.com/tafli/setDING/pull/768), [#781](https://github.com/tafli/setDING/pull/781), [#789](https://github.com/tafli/setDING/pull/789))
+- A more consistent UI across screens: shared page widths, dialogs, messages and export flows (ADR-0051); the song editor's save button is easier to see ([#746](https://github.com/tafli/setDING/pull/746), [#750](https://github.com/tafli/setDING/pull/750), [#771](https://github.com/tafli/setDING/pull/771), [#775](https://github.com/tafli/setDING/pull/775), [#753](https://github.com/tafli/setDING/pull/753))
+
+### Fixed
+
+- Chord suffixes of the ChordPro reference list are recognised ([#814](https://github.com/tafli/setDING/pull/814))
+- Directives of CCLI SongSelect files are made standard-conforming on import ([#782](https://github.com/tafli/setDING/pull/782))
+- *What's new* shows only the current version ([#776](https://github.com/tafli/setDING/pull/776))
+- A set marker shows its own text without the icon's name ([#767](https://github.com/tafli/setDING/pull/767))
+- Leaving live mode while a song's personal adjustments were loading could raise an error ([#826](https://github.com/tafli/setDING/pull/826))
+- *Recent changes* hides songs and sets deleted afterwards ([#706](https://github.com/tafli/setDING/pull/706))
+- The Motif XF menu path in the MIDI help is Utility → Control → MIDI ([#697](https://github.com/tafli/setDING/pull/697))
+
+### Security
+
+- The server refuses deleting a user account directly through the API; accounts are deleted only through the account deletion flow ([#783](https://github.com/tafli/setDING/pull/783))
+
 ## [0.17.0] - 2026-11-20
 
 ### Added
@@ -340,6 +378,7 @@ with the setDING-specific bump rules of
 
 - First release, built on GitHub Actions for Linux, Android and Windows ([#138](https://github.com/tafli/setDING/pull/138))
 
+[0.18.0]: https://github.com/tafli/setDING/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/tafli/setDING/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/tafli/setDING/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/tafli/setDING/compare/v0.14.0...v0.15.0
