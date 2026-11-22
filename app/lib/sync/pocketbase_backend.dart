@@ -683,6 +683,7 @@ class PocketBaseBackend implements SyncBackend {
     workId: _nonEmpty(r.getStringValue('work_id')),
     language: _nonEmpty(r.getStringValue('language')),
     contentRevision: r.getIntValue('content_revision'),
+    created: _date(r.getStringValue('created')),
   );
 
   static String? _nonEmpty(String value) => value.isEmpty ? null : value;

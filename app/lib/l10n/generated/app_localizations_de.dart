@@ -4443,6 +4443,17 @@ class AppLocalizationsDe extends AppLocalizations {
   String get overviewShowAll => 'Alle anzeigen';
 
   @override
+  String get overviewMoreSets => 'Weitere Sets';
+
+  @override
+  String get overviewNewestSongs => 'Neueste Songs';
+
+  @override
+  String overviewSongAdded(String date) {
+    return 'Hinzugefügt am $date';
+  }
+
+  @override
   String get recentChangesEmpty =>
       'Keine Änderungen von anderen in den letzten 30 Tagen.';
 

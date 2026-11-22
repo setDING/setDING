@@ -128,6 +128,7 @@ class BandCopyService {
       db.songs,
     )..where((s) => s.id.equals(songId))).getSingle();
     final newId = _uuid.v4();
+    final now = DateTime.now();
     await db
         .into(db.songs)
         .insert(
@@ -135,7 +136,9 @@ class BandCopyService {
             id: newId,
             libraryId: targetLibraryId,
             revision: 0,
-            updatedAt: DateTime.now(),
+            updatedAt: now,
+            // A copy is a new song of the target library (#868).
+            createdAt: Value(now),
             // A copy is no language version of the original's work; a group
             // never spans libraries (ADR-0053). Its language stays.
             workId: const Value(null),

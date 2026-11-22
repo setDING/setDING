@@ -177,6 +177,12 @@ class Songs extends Table {
   /// when it is unclear.
   TextColumn get detectedLanguage => text().nullable()();
 
+  /// When the song was created, for *Newest songs* on the overview
+  /// (ADR-0045, schema 33, #868): the server's `created` for synced songs,
+  /// the time of creation on this device for the local library and for
+  /// songs not pushed yet. Null until the sync has filled it.
+  DateTimeColumn get createdAt => dateTime().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -638,7 +644,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 32;
+  int get schemaVersion => 33;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -709,6 +715,7 @@ class AppDatabase extends _$AppDatabase {
               songs.workId,
               songs.language,
               songs.detectedLanguage,
+              songs.createdAt,
             ],
           ),
         );
@@ -915,6 +922,21 @@ class AppDatabase extends _$AppDatabase {
         // (refreshAllMetadata); before schema 4 the rebuilt table has the
         // column already.
         await m.addColumn(songs, songs.detectedLanguage);
+      }
+      if (from < 33) {
+        // Creation date for *Newest songs* (ADR-0045, #868); before schema
+        // 4 the rebuilt table has the column already. The local library
+        // never synced: its last change is the best guess. Synced songs
+        // get the server's date: the songs are pulled once more from the
+        // start, and a pull fills the date of a song it already has.
+        if (from >= 4) await m.addColumn(songs, songs.createdAt);
+        await customStatement(
+          'UPDATE songs SET created_at = updated_at WHERE library_id = ?',
+          [localBandId],
+        );
+        await customStatement(
+          "DELETE FROM sync_cursors WHERE collection = 'songs'",
+        );
       }
     },
     beforeOpen: (details) async {

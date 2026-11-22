@@ -4420,6 +4420,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get overviewShowAll => 'Show all';
 
   @override
+  String get overviewMoreSets => 'More sets';
+
+  @override
+  String get overviewNewestSongs => 'Newest songs';
+
+  @override
+  String overviewSongAdded(String date) {
+    return 'Added on $date';
+  }
+
+  @override
   String get recentChangesEmpty => 'No changes by others in the last 30 days.';
 
   @override

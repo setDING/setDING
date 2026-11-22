@@ -486,6 +486,7 @@ class SongRepository {
   }) async {
     final meta = SongMeta.fromSource(source);
     final id = _uuid.v4();
+    final now = DateTime.now();
     await _write(() async {
       await db
           .into(db.songs)
@@ -506,7 +507,8 @@ class SongRepository {
               chordproProblems: Value(meta.problems),
               chordproConversions: Value(meta.conversions),
               detectedLanguage: Value(meta.language),
-              updatedAt: DateTime.now(),
+              updatedAt: now,
+              createdAt: Value(now),
               createdBy: Value(_editorIn(libraryId)),
               updatedBy: Value(_editorIn(libraryId)),
             ),
@@ -771,6 +773,24 @@ class SongRepository {
     if (song == null || song.workId == work) return;
     await _setLink(id, song.libraryId, SongLinkField.workId, work);
   });
+
+  /// The [limit] songs of the library created last, not in the trash,
+  /// newest first; songs without a known creation date are left out
+  /// (*Newest songs* on the overview, ADR-0045, #868).
+  Stream<List<SongEntry>> watchNewestSongs({int limit = 5}) =>
+      (db.select(db.songs)
+            ..where(
+              (s) =>
+                  s.libraryId.equals(libraryId) &
+                  s.deleted.equals(false) &
+                  s.createdAt.isNotNull(),
+            )
+            ..orderBy([
+              (s) => OrderingTerm.desc(s.createdAt),
+              (s) => OrderingTerm.asc(s.title),
+            ])
+            ..limit(limit))
+          .watch();
 
   /// The language versions of the work of [id] that are not in the trash,
   /// including [id] itself; empty while it has no group (ADR-0053).
