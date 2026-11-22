@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'data/annotation_repository.dart';
 import 'data/arrangement_repository.dart';
 import 'data/attachment_storage.dart';
+import 'data/auto_backup.dart';
 import 'data/backup.dart';
 import 'data/band_copy.dart';
 import 'data/band_view.dart';
@@ -15,6 +18,7 @@ import 'data/song_archive.dart';
 import 'data/set_repository.dart';
 import 'data/song_repository.dart';
 import 'data/trash.dart';
+import 'platform/backup_folder.dart';
 import 'settings/settings.dart';
 import 'sync/auth_providers.dart';
 import 'sync/band_service.dart';
@@ -347,7 +351,38 @@ final backupServiceProvider = Provider<BackupService>(
   ),
 );
 
-/// Set archive export and import (ADR-0043 §1b).
+/// The folder of the automatic backup (ADR-0054).
+final backupFolderProvider = Provider<BackupFolder>(
+  (ref) => createBackupFolder(),
+);
+
+/// The setting and state of the automatic backup of the local library
+/// (ADR-0054).
+final autoBackupProvider =
+    NotifierProvider<AutoBackupNotifier, AutoBackupState>(
+      AutoBackupNotifier.new,
+    );
+
+class AutoBackupNotifier extends Notifier<AutoBackupState> {
+  late AutoBackupController controller;
+
+  @override
+  AutoBackupState build() {
+    controller = AutoBackupController(
+      prefs: ref.watch(sharedPreferencesProvider),
+      folder: ref.watch(backupFolderProvider),
+      backups: () => ref.read(backupServiceProvider),
+      onChanged: (s) {
+        if (ref.mounted) state = s;
+      },
+    );
+    if (controller.folder.supported) {
+      unawaited(controller.loadSystemDeviceName());
+    }
+    return controller.state;
+  }
+}
+
 final setArchiveServiceProvider = Provider<SetArchiveService>(
   (ref) => SetArchiveService(ref.watch(backupServiceProvider)),
 );

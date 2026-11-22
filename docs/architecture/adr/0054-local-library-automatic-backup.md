@@ -173,10 +173,29 @@ the server sync (ADR-0004).
   and play history kept when replacing, hiding as a device setting, both
   settings in *Storage & backup*, no sync).
 - 2026-11-22: Accepted by the owner (#833).
+- 2026-11-22: Automatic backup implemented (#840). Folder access is **own
+  platform code**, no new dependency: a method channel
+  `app.setding/backup_folder` in `MainActivity` (Android, Storage Access
+  Framework: `ACTION_OPEN_DOCUMENT_TREE`, a persisted URI permission,
+  `DocumentsContract` to create, rename, list and delete) and in
+  `AppDelegate` (iOS, document picker for a folder, a bookmark of the
+  security-scoped URL, `NSFileCoordinator` for writing); desktops use
+  `dart:io` with the folder picker of `file_picker`. Evaluated and not
+  chosen: `saf_util`/`saf_stream` (BSD-3-Clause, Android only), `docman`
+  (MIT, Android only, no release since January 2025), `shared_storage`
+  (MIT, unmaintained since 2024); no maintained package keeps folders of the
+  Files app on iOS (`macos_secure_bookmarks` is macOS only). Providers
+  that cannot rename get the file written directly under its final name.
+  The setting is kept in the device's preferences, not in the settings (a
+  folder of one device means nothing on another, so it is not in a full
+  backup). "Changed since the last automatic backup" is a fingerprint of
+  the archive's content without the attachment bytes (their ID, file and
+  last change stand in for them), so personal adjustments and set items,
+  which have no change time, count too.
 
 ## Open points
 
-- Library or platform code for folders of document providers on Android and
-  iOS; which providers offer folders (Google Drive on Android).
+- Which providers offer folders on Android (Google Drive); to be checked on
+  devices.
 - Size of large PDF libraries in a daily archive (ADR-0043: archives zipped in
   memory).

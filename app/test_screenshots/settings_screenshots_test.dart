@@ -1,6 +1,7 @@
 // Screenshots of the organization, band and settings screens.
 // See screenshot_support.dart.
 
+import 'package:setding/data/auto_backup.dart';
 import 'package:setding/ui/bands/band_screen.dart';
 import 'package:setding/ui/bands/organization_screen.dart';
 import 'package:setding/ui/settings_screen.dart';
@@ -144,6 +145,46 @@ void main() {
         'password-123',
       );
       await shot(tester, '${lang}_36_delete_account');
+      await app.dispose(tester);
+    });
+  }
+
+  // The automatic backup of the local library (ADR-0054) in *Storage &
+  // backup*: folder, device name, backups kept, the last backup.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('auto backup $lang', (tester) async {
+      useTabletSize(tester);
+      final lastAt = DateTime(2026, 11, 22, 18, 30).toIso8601String();
+      final app = await TestApp.create(
+        prefs: {
+          'language': lang,
+          'themeMode': dark ? 'dark' : 'light',
+          AutoBackupController.enabledKey: true,
+          AutoBackupController.locationKey: 'content://nextcloud/setDING',
+          AutoBackupController.folderNameKey: 'Nextcloud › setDING',
+          AutoBackupController.deviceKey: lang == 'de'
+              ? 'Tablet Probe'
+              : 'Rehearsal tablet',
+          AutoBackupController.keepKey: 7,
+          AutoBackupController.lastAtKey: lastAt,
+          // The automatic backup counts as the last backup.
+          lastBackupKey: lastAt,
+        },
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: const SettingsScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await openSettingsCategory(tester, SettingsCategory.about);
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('auto-backup-now')),
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await shot(tester, '${lang}_43_settings_auto_backup');
       await app.dispose(tester);
     });
   }

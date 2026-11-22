@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:typed_data' show BytesBuilder;
 
 import 'package:archive/archive.dart';
 import 'package:chordpro/chordpro.dart' show Subdivision;
+import 'package:crypto/crypto.dart' show sha256;
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart' show compute, immutable;
 import 'package:path/path.dart' as p;
@@ -316,6 +318,28 @@ class BackupService {
       now: now,
     ),
   );
+
+  /// A fingerprint of what [export] would write for [libraryId], without
+  /// reading the attachment files (their ID, file and last change stand in
+  /// for them) and without zipping: it changes when the library changes, so
+  /// the automatic backup (ADR-0054) runs only after changes.
+  Future<String> fingerprint(String libraryId) async {
+    final files = await _collect(
+      libraryId,
+      libraryName: '',
+      readFile: (a) async => Uint8List.fromList(
+        utf8.encode('${a.id} ${a.fileName} ${a.updatedAt.toIso8601String()}'),
+      ),
+      now: DateTime.utc(2000),
+    );
+    final all = BytesBuilder(copy: false);
+    for (final name in files.keys.toList()..sort()) {
+      all
+        ..add(utf8.encode('$name\n'))
+        ..add(files[name]!);
+    }
+    return sha256.convert(all.takeBytes()).toString();
+  }
 
   /// The files of the archive of one library (see [export]).
   Future<Map<String, Uint8List>> _collect(

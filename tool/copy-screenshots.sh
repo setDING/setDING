@@ -78,6 +78,7 @@ map=(
   songs_played 42b_songs_played
   no_band 43_no_band
   band_switcher 43b_band_switcher
+  settings_auto_backup 43_settings_auto_backup
 )
 
 copied=0

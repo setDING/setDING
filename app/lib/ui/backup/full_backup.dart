@@ -5,6 +5,7 @@ import 'package:drift/drift.dart' show Variable;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/auto_backup.dart';
 import '../../data/backup.dart';
 import '../../data/band_view.dart';
 import '../../data/database.dart';
@@ -18,14 +19,14 @@ import '../sets/sets_screen.dart' show formatGigDate;
 import '../songs/song_screen.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
+import 'auto_backup_tiles.dart';
 import 'backup_actions.dart';
+
+export '../../data/auto_backup.dart' show lastBackupKey;
 
 // Full backup in the settings (#639, ADR-0043): every library the person may
 // back up, their own adjustments of the other organizations, and their
 // settings, in one archive; restoring it; the reminder for the local library.
-
-/// When this device last saved a backup of the local library (ISO 8601).
-const lastBackupKey = 'lastBackupAt';
 
 /// When the reminder was last shown (ISO 8601), at most every 7 days.
 const backupReminderKey = 'backupReminderAt';
@@ -48,6 +49,14 @@ Future<void> recordBackup(WidgetRef ref) => ref
 /// song alone does not count. Not on the web client (no local library).
 final backupReminderProvider = FutureProvider.autoDispose<int?>((ref) async {
   if (ref.watch(webClientProvider)) return null;
+  // Not while automatic backups succeed (ADR-0054).
+  if (ref.watch(
+    autoBackupProvider.select(
+      (s) => s.active && s.error == null && s.lastAt != null,
+    ),
+  )) {
+    return null;
+  }
   final prefs = ref.watch(sharedPreferencesProvider);
   final last = DateTime.tryParse(prefs.getString(lastBackupKey) ?? '');
   final db = ref.watch(databaseProvider);
@@ -237,6 +246,9 @@ class BackupTiles extends ConsumerWidget {
           subtitle: Text(l10n.backupRestoreHint),
           onTap: () => restoreBackup(context),
         ),
+        // Automatic backup of the local library (ADR-0054).
+        if (!web && ref.watch(backupFolderProvider).supported)
+          const AutoBackupTiles(),
       ],
     );
   }

@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import general from '../../../../../../docs/screenshots/settings_general.png';
+import autoBackup from '../../../../../../docs/screenshots/settings_auto_backup.png';
 
 ## General
 
@@ -45,6 +46,26 @@ width.
   goes. Your personal adjustments come back on the songs that are still here.
   setDING takes over your settings only if you tick it. See also
   [Back up the library](/en/songs/library/#back-up-the-library).
+- **Automatic backup** (not in the web app) saves the library *On this device*
+  into a folder you choose, at most once a day and only after it changed. Choose
+  a folder of your cloud storage, so the library is safe when the device is lost:
+  on Android a folder of any app that offers its storage to the system (e.g.
+  Nextcloud, OneDrive, Dropbox), on iPad and iPhone a folder in the Files app
+  (e.g. iCloud Drive), on Windows and Linux any folder, e.g. one the OneDrive,
+  Dropbox or Nextcloud client syncs. setDING checks at start and when you leave
+  the app, never in live mode.
+  - The files are called `setDING-Backup <device> <date> <time>.zip`. Change the
+    **Device name** if several devices write into the same folder.
+  - **Backups kept** (1 to 10) says how many of this device's automatic backups
+    stay; older ones of this device are deleted, other files never.
+  - **Back up now** writes one at once. Below it you see the last automatic
+    backup, or why the last attempt failed. If the folder cannot be reached or
+    setDING lost the permission, a hint at start offers to choose it again.
+  - While automatic backups succeed, setDING does not remind you of a backup.
+  - Restore such a file with **Restore backup**.
+
+<Image src={autoBackup} alt="The automatic backup in «Storage & info»: switched on, a Nextcloud folder, the device name «Rehearsal tablet», 7 backups kept and the time of the last automatic backup" />
+
 - **Copy diagnostic log** puts the app's recent messages on the clipboard, e.g. why
   a sync failed. Paste them into a message to whoever runs your server, or into an
   [issue on GitHub](https://github.com/tafli/setDING/issues).

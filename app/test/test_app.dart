@@ -29,6 +29,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_backend.dart';
+import 'fake_backup_folder.dart';
 import 'fake_click_output.dart';
 import 'fake_midi_output.dart';
 
@@ -46,6 +47,9 @@ class TestApp {
 
   /// Runs as the web client (ADR-0018).
   final bool web;
+
+  /// The folder of the automatic backup (ADR-0054).
+  final backupFolder = FakeBackupFolder();
 
   final SessionStore sessionStore;
 
@@ -121,6 +125,7 @@ class TestApp {
     attachmentStorageProvider.overrideWithValue(storage),
     sessionStoreProvider.overrideWithValue(sessionStore),
     webClientProvider.overrideWithValue(web),
+    backupFolderProvider.overrideWithValue(backupFolder),
     syncBackendProvider.overrideWithValue(backend),
     incomingLinksProvider.overrideWithValue(links.stream),
     autoSyncProvider.overrideWithValue(false),

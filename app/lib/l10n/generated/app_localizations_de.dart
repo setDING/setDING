@@ -5298,4 +5298,77 @@ class AppLocalizationsDe extends AppLocalizations {
   String adjustmentsCopied(String version) {
     return 'Anpassungen von «$version» übernommen';
   }
+
+  @override
+  String get autoBackup => 'Automatische Sicherung';
+
+  @override
+  String get autoBackupHint =>
+      'Speichert die Bibliothek «Auf diesem Gerät» in einen Ordner deiner Wahl, höchstens einmal täglich nach Änderungen. Wähle einen Ordner in deinem Cloud-Speicher, damit sie auch sicher ist, wenn das Gerät verloren geht.';
+
+  @override
+  String get autoBackupFolder => 'Ordner';
+
+  @override
+  String get autoBackupFolderNone => 'Kein Ordner gewählt';
+
+  @override
+  String get autoBackupChooseFolder => 'Ordner wählen';
+
+  @override
+  String get autoBackupDevice => 'Gerätename';
+
+  @override
+  String get autoBackupDeviceHint =>
+      'Teil der Dateinamen, damit mehrere Geräte denselben Ordner nutzen können.';
+
+  @override
+  String get autoBackupDeviceTitle => 'Gerätename für Sicherungen';
+
+  @override
+  String get autoBackupKeep => 'Aufbewahrte Sicherungen';
+
+  @override
+  String get autoBackupKeepHint =>
+      'Ältere automatische Sicherungen dieses Geräts werden aus dem Ordner gelöscht.';
+
+  @override
+  String get autoBackupNow => 'Jetzt sichern';
+
+  @override
+  String get autoBackupRunning => 'Wird gesichert …';
+
+  @override
+  String get autoBackupNever => 'Noch keine automatische Sicherung.';
+
+  @override
+  String autoBackupLast(String date) {
+    return 'Letzte automatische Sicherung: $date';
+  }
+
+  @override
+  String autoBackupFailed(String date, String reason) {
+    return 'Fehlgeschlagen am $date: $reason';
+  }
+
+  @override
+  String get autoBackupErrorUnavailable => 'Der Ordner ist nicht erreichbar.';
+
+  @override
+  String get autoBackupErrorPermission =>
+      'setDING darf nicht mehr in den Ordner schreiben. Wähle ihn erneut.';
+
+  @override
+  String get autoBackupErrorFailed =>
+      'Die Sicherung konnte nicht geschrieben werden.';
+
+  @override
+  String autoBackupHintFailed(String reason) {
+    return 'Automatische Sicherung fehlgeschlagen: $reason';
+  }
+
+  @override
+  String autoBackupSaved(String file) {
+    return 'Gespeichert als «$file»';
+  }
 }
