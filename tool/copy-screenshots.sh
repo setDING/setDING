@@ -37,6 +37,7 @@ map=(
   set_menu 2b_set_menu
   sets_tools 2c_sets_tools
   new_set_import 2d_new_set_import
+  song_picker 2e_song_picker
   marker_dialog 2c_marker_dialog
   live_marker 4c_live_marker
   live_controls 4b_live_controls

@@ -157,8 +157,14 @@ void main() {
     final container = ProviderScope.containerOf(
       tester.element(find.byType(SetsScreen)),
     );
-    final picker = container.listen(bandSongsProvider(''), (_, _) {});
-    await tester.runAsync(() => container.read(bandSongsProvider('').future));
+    final picker = container.listen(
+      bandSongsProvider((query: '', tags: const {})),
+      (_, _) {},
+    );
+    await tester.runAsync(
+      () =>
+          container.read(bandSongsProvider((query: '', tags: const {})).future),
+    );
     expect(picker.read().value!.map((s) => s.title), ['Org song']);
     picker.close();
     await app.dispose(tester);

@@ -216,44 +216,14 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
     final withoutLanguage = usedLanguages.contains(noSongLanguage);
     final works = ref.watch(workCountsProvider).value ?? const <String, int>{};
     final language = _language;
-    List<SongListEntry> shownSongs(List<SongListEntry> songs) {
-      var list = visible(songs);
-      if (language != null) {
-        list = [
-          for (final s in list)
-            if ((s.language ?? noSongLanguage) == language) s,
-        ];
-      }
-      if (played != null) {
-        final before = staleBefore(
-          DateTime.now(),
-          historyBand!.staleAfterMonths,
-        );
-        list = [
-          for (final s in list)
-            if (switch (played) {
-              PlayedFilter.never => !lastPlayed!.containsKey(s.id),
-              PlayedFilter.stale =>
-                lastPlayed![s.id]?.isBefore(before) ?? false,
-            })
-              s,
-        ];
-      }
-      if (byLastPlayed) {
-        // Stable: songs played on the same day, and those never played,
-        // keep the order by title.
-        final order = {for (final (i, s) in list.indexed) s.id: i};
-        list = [...list]
-          ..sort((a, b) {
-            final x = lastPlayed[a.id], y = lastPlayed[b.id];
-            final c = x == null
-                ? (y == null ? 0 : 1)
-                : (y == null ? -1 : y.compareTo(x));
-            return c != 0 ? c : order[a.id]!.compareTo(order[b.id]!);
-          });
-      }
-      return list;
-    }
+    List<SongListEntry> shownSongs(List<SongListEntry> songs) => filterSongList(
+      visible(songs),
+      language: language,
+      played: played,
+      lastPlayed: lastPlayed,
+      staleAfterMonths: historyBand?.staleAfterMonths ?? 0,
+      byLastPlayed: byLastPlayed,
+    );
 
     final gigs = ref.watch(upcomingGigsProvider(library.id)).value ?? const {};
     final selected = _selected;
@@ -443,7 +413,8 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
               ),
         body: Column(
           children: [
-            _Filters(
+            SongFilters(
+              usedTags: ref.watch(tagsProvider).value ?? const [],
               tags: _tags,
               onTags: (tags) => setState(() => _tags = tags),
               attention: attention,
@@ -525,17 +496,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                           ),
                   );
                   return SyncRefresh(
-                    child: BreakpointBuilder(
-                      select: (constraints) =>
-                          constraints.maxWidth >= songListTwoColumnWidth
-                          ? 2
-                          : 1,
-                      builder: (context, columns) => _songList(
-                        songListRows(sections, columns),
-                        columns,
-                        tile,
-                      ),
-                    ),
+                    child: SongListView(sections: sections, tile: tile),
                   );
                 },
               ),
@@ -583,29 +544,54 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
     List<String?> sections,
   })?
   _sections;
+}
 
-  Widget _songList(
-    List<SongListRow> rows,
-    int columns,
-    Widget Function(int song) tile,
-  ) => ListView.builder(
-    physics: const AlwaysScrollableScrollPhysics(),
-    padding: const EdgeInsets.only(bottom: 88),
-    itemCount: rows.length,
-    itemBuilder: (context, r) {
-      final row = rows[r];
-      if (row.header case final header?) return SongSectionHeader(header);
-      if (columns == 1) return tile(row.songs.single);
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          for (var c = 0; c < columns; c++)
-            Expanded(
-              child: c < row.songs.length
-                  ? tile(row.songs[c])
-                  : const SizedBox.shrink(),
-            ),
-        ],
+/// The songs of a list in their [sections] (see [songSection]), one
+/// column, or two from [songListTwoColumnWidth] (#251): the song list and
+/// the song picker of a set (#884).
+class SongListView extends StatelessWidget {
+  const SongListView({
+    super.key,
+    required this.sections,
+    required this.tile,
+    this.bottomPadding = 88,
+  });
+
+  /// The section of each song, null for none.
+  final List<String?> sections;
+
+  /// The tile of the song at an index.
+  final Widget Function(int song) tile;
+
+  /// Room below the last song, e.g. for a floating action button.
+  final double bottomPadding;
+
+  @override
+  Widget build(BuildContext context) => BreakpointBuilder(
+    select: (constraints) =>
+        constraints.maxWidth >= songListTwoColumnWidth ? 2 : 1,
+    builder: (context, columns) {
+      final rows = songListRows(sections, columns);
+      return ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.only(bottom: bottomPadding),
+        itemCount: rows.length,
+        itemBuilder: (context, r) {
+          final row = rows[r];
+          if (row.header case final header?) return SongSectionHeader(header);
+          if (columns == 1) return tile(row.songs.single);
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var c = 0; c < columns; c++)
+                Expanded(
+                  child: c < row.songs.length
+                      ? tile(row.songs[c])
+                      : const SizedBox.shrink(),
+                ),
+            ],
+          );
+        },
       );
     },
   );
@@ -614,11 +600,63 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
 /// Songs the band never played, or has not played for a while (ADR-0046).
 enum PlayedFilter { never, stale }
 
+/// [songs] of the [language] ([noSongLanguage] for songs without one, null
+/// for all) and the [played] filter by the band's plays [lastPlayed]
+/// (songs not played for [staleAfterMonths] are stale), the most recently
+/// played first with [byLastPlayed] (ADR-0046, ADR-0053). Shared by the
+/// song list and the song picker of a set (#884).
+List<SongListEntry> filterSongList(
+  List<SongListEntry> songs, {
+  String? language,
+  PlayedFilter? played,
+  Map<String, DateTime>? lastPlayed,
+  int staleAfterMonths = 0,
+  bool byLastPlayed = false,
+  DateTime? now,
+}) {
+  var list = songs;
+  if (language != null) {
+    list = [
+      for (final s in list)
+        if ((s.language ?? noSongLanguage) == language) s,
+    ];
+  }
+  if (played != null && lastPlayed != null) {
+    final before = staleBefore(now ?? DateTime.now(), staleAfterMonths);
+    list = [
+      for (final s in list)
+        if (switch (played) {
+          PlayedFilter.never => !lastPlayed.containsKey(s.id),
+          PlayedFilter.stale => lastPlayed[s.id]?.isBefore(before) ?? false,
+        })
+          s,
+    ];
+  }
+  if (byLastPlayed && lastPlayed != null) {
+    // Stable: songs played on the same day, and those never played,
+    // keep the order by title.
+    final order = {for (final (i, s) in list.indexed) s.id: i};
+    list = [...list]
+      ..sort((a, b) {
+        final x = lastPlayed[a.id], y = lastPlayed[b.id];
+        final c = x == null
+            ? (y == null ? 0 : 1)
+            : (y == null ? -1 : y.compareTo(x));
+        return c != 0 ? c : order[a.id]!.compareTo(order[b.id]!);
+      });
+  }
+  return list;
+}
+
 /// Chips above the list: the order (a menu, see [SongSort]) and the
 /// filters, among them the tags used in the library (`{tag}`, a menu with
-/// several choices, #816) and, last, the band's plays (a menu).
-class _Filters extends ConsumerWidget {
-  const _Filters({
+/// several choices, #816) and, last, the band's plays (a menu). The song
+/// list and the song picker of a set (#884).
+class SongFilters extends ConsumerWidget {
+  const SongFilters({
+    super.key,
+    required this.usedTags,
+    this.attentionFilters = true,
     required this.tags,
     required this.onTags,
     required this.attention,
@@ -630,6 +668,13 @@ class _Filters extends ConsumerWidget {
     required this.language,
     required this.onLanguage,
   });
+
+  /// The tags used in the library.
+  final List<String> usedTags;
+
+  /// Offer the filters of the overview's To do card (ADR-0045): not in
+  /// the song picker, which is for choosing songs, not for fixing them.
+  final bool attentionFilters;
 
   /// The selected tags; songs with any of them are shown.
   final Set<String> tags;
@@ -657,9 +702,11 @@ class _Filters extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final used = ref.watch(tagsProvider).value ?? const <String>[];
+    final used = usedTags;
     final sort = ref.watch(songSortProvider);
-    final counts = ref.watch(songAttentionCountsProvider);
+    final counts = attentionFilters
+        ? ref.watch(songAttentionCountsProvider)
+        : null;
     // A selected tag stays visible (and can be deselected) even when no
     // song uses it any more, e.g. after deleting its last song.
     final offered = [
@@ -705,7 +752,8 @@ class _Filters extends ConsumerWidget {
           // The filters of the overview's To do card (ADR-0045), for
           // the kinds with songs the person may edit, and the one chosen.
           for (final kind in SongAttention.values)
-            if (kind == attention || (counts?[kind] ?? 0) > 0)
+            if (attentionFilters &&
+                (kind == attention || (counts?[kind] ?? 0) > 0))
               Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: FilterChip(
