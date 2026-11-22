@@ -5135,6 +5135,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageVersionPickerEmpty => 'No other songs you may link';
 
   @override
+  String languageVersionsOf(String title) {
+    return 'Language versions of $title';
+  }
+
+  @override
   String languageVersionsChosen(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

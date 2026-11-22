@@ -332,7 +332,11 @@ class _LanguageVersionPickerState
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.languageVersions),
+        title: Text(
+          l10n.languageVersionsOf(
+            song.title.isEmpty ? l10n.untitled : song.title,
+          ),
+        ),
         actions: [
           TextButton(
             key: const Key('language-versions-save'),

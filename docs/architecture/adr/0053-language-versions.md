@@ -228,7 +228,8 @@ the API directly as the refused roles (permission matrix test).
   one side and the linked versions on the other (chips above the list on narrow
   screens), where a version the person may edit can be removed again. *Save*
   unlinks the removed songs, then links the added ones (a song with versions of its
-  own brings them along), and offers Undo for every touched song.
+  own brings them along), and offers Undo for every touched song. Its title names
+  the song the versions are chosen for (#857).
 
 ## Open points
 

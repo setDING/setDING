@@ -2811,6 +2811,7 @@
   "linkLanguageVersion": "Language versions …",
   "unlinkLanguageVersion": "Remove from the language versions",
   "languageVersionPickerEmpty": "No other songs you may link",
+  "languageVersionsOf": "Language versions of {title}",
   "languageVersionsChosen": "{count, plural, =0{Linked versions} other{Linked versions ({count})}}",
   "languageVersionsChosenEmpty": "No other versions yet. Choose songs from the library.",
   "languageVersionsSaved": "Language versions saved",

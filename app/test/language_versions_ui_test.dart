@@ -165,6 +165,8 @@ void main() {
     }
 
     await openPicker();
+    // The title names the song the versions are chosen for.
+    expect(find.text('Language versions of River'), findsOneWidget);
     // Nothing changed yet: nothing to save.
     final saveButton = find.byKey(const Key('language-versions-save'));
     expect(tester.widget<TextButton>(saveButton).onPressed, isNull);
