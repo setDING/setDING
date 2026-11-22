@@ -755,11 +755,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get instrumentOther => 'Other …';
 
   @override
-  String get settingsUserName => 'My name or voice';
+  String get settingsUserName => 'Voice or role (optional)';
 
   @override
   String get settingsUserNameHint =>
-      'For conditional parts, e.g. \"alto\" or \"tenor\".';
+      'Your instrument already counts. Only needed when a song has parts for single voices or people, e.g. “alto” or “tenor”.';
+
+  @override
+  String settingsUserNameIsInstrument(String name) {
+    return '“$name” is an instrument. The instrument setting covers it, so you can leave this field empty.';
+  }
 
   @override
   String get settingsDiagrams => 'Chord diagrams';
@@ -5632,10 +5637,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get readinessNoInstrument => 'No instrument chosen';
-
-  @override
-  String get readinessNoName =>
-      'No name set (for parts marked for you, e.g. a voice)';
 
   @override
   String readinessMidiConnected(String device) {

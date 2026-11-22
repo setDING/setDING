@@ -27,14 +27,16 @@ void main() {
       expect(item.category, SettingsCategory.musician);
     });
 
-    test('a missing name or instrument is worth knowing', () {
+    // The voice or role is optional (#939): without it, the musician line is
+    // ok; it only nudged people to type their instrument there.
+    test('no voice or role is ok, a missing instrument worth knowing', () {
       final noName = musicianReadiness(
         l10n,
         const AppSettings(instrument: 'banjo'),
       );
-      expect(noName.level, ReadinessLevel.info);
+      expect(noName.level, ReadinessLevel.ok);
       expect(noName.title, 'Musician: banjo');
-      expect(noName.detail, l10n.readinessNoName);
+      expect(noName.detail, isNull);
 
       final none = musicianReadiness(
         l10n,

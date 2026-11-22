@@ -381,4 +381,34 @@ void main() {
       await app.dispose(tester);
     });
   }
+
+  // An instrument entered as voice or role gets a hint (#939).
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('settings voice hint $lang', (tester) async {
+      tester.view.physicalSize = const Size(420, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final app = await TestApp.create(
+        prefs: {
+          'language': lang,
+          'themeMode': dark ? 'dark' : 'light',
+          'instrument': 'guitar',
+          'userName': 'bass',
+        },
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(key: UniqueKey(), child: app.build()),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('nav-settings')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('settings-category-musician')));
+      await tester.pumpAndSettle();
+      final tile = find.byKey(const Key('settings-voice'));
+      await tester.scrollUntilVisible(tile, 200);
+      await tester.pumpAndSettle();
+      await shot(tester, '${lang}_16a_settings_voice_hint');
+      await app.dispose(tester);
+    });
+  }
 }

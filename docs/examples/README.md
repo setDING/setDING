@@ -30,7 +30,7 @@ that every link and example song on the website has its files.
 
 1. Start the app (`make dev`), open **Songs → Import files** and choose `feature-showcase.zip`.
 2. Open "Feature Showcase" and use the settings to see the conditional and optional parts:
-   - **My instrument** (guitar, ukulele, keyboard, …) and **My name or voice** (e.g. `alto`, `soprano`) change which conditional comments and sections appear.
+   - **My instrument** (guitar, ukulele, keyboard, …) and **Voice or role** (optional, e.g. `alto`, `soprano`) change which conditional comments and sections appear.
    - **Chord diagrams** shows the fingerings for the chosen instrument (the song also asks for them with `{diagrams: bottom}`).
    - **Chord notation** (B/H) and **Show chords as** (chords, Nashville, numerals) change how chords are displayed.
 3. Add the song to a set and start live mode; choose a key in the set list to see chords, grids and the ABC and Lilypond melodies transposed.

@@ -194,6 +194,7 @@ Each phase is a separate branch and merge (ADR-0010).
   CCLI SongSelect files are no longer known metadata; on import `{ccli}` is renamed to
   `{x_ccli}` and `{ccli_license}` is removed (ADR-0011); the editor offers the same
   conversion for songs saved earlier.
+- 2026-11-22: The user name setting is shown as the optional **voice or role** (#939): the instrument already matches selectors, so the field is only for voices or people; the readiness overview no longer reports it as missing, and an instrument entered there gets a hint.
 
 ## Open points
 
