@@ -98,6 +98,7 @@ Notation alternatives:
 - 2026-11-17: Tapping a line number selects the line, dragging over the numbers selects several (#383), so lines can be moved, duplicated or deleted on a tablet without a mouse.
 - 2026-11-18: Sections marked only with a heading comment such as `{comment: Verse 1}` (SongSelect) also get a background in the editor (#463). `sourceSections` now reads the source line by line with the parser's rules (a normal comment heading in an implicit paragraph, before any lyrics and after other comments only (#465), ending with the paragraph, before the next section or recall, or at an end directive); the heading words live in `section_heading.dart`, shared by parser and editor.
 - 2026-11-20: Section labels are written in the attribute form `{start_of_verse: label="Verse 1"}` that the ChordPro specification recommends (#672). Everything setDING writes uses it (editor snippets, demo song, documentation); the parser still reads the short form `{start_of_verse: Verse 1}`. The short form is no problem (no warning, no save dialog); the editor shows a hint with **Convert** and the import offers **Convert labels** (`findLegacySectionLabels` / `convertLegacySectionLabels` in `section_labels.dart`; a legacy grid argument becomes `shape` and `label`).
+- 2026-11-22: Extended by ADR-0055: the Nashville switch becomes a chord view *Chords* / *Nashville* / *Numerals*; Roman numerals are a further display of the scale degrees with the same scopes (device setting, per-song overlay) and the same key rule.
 
 ## Open points
 
