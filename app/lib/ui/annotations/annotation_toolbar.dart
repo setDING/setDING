@@ -4,6 +4,7 @@ import '../../data/annotation.dart';
 import '../../l10n/generated/app_localizations.dart';
 import 'annotation_editor.dart';
 import 'annotation_paint.dart';
+import '../widgets/menu_action.dart';
 
 /// Touch target of the toolbar's buttons: larger than Material's 48 dp, so
 /// they are easy to hit on a tablet on stage.
@@ -161,10 +162,11 @@ class AnnotationToolbar extends StatelessWidget {
                         child: Text(l10n.annotationDrawWithFinger),
                       ),
                       if (onDeleteAll != null)
-                        PopupMenuItem(
+                        MenuAction(
                           key: const Key('annotation-delete-all'),
                           value: 'delete-all',
-                          child: Text(l10n.annotationsDeleteAll),
+                          icon: Icons.delete_sweep_outlined,
+                          label: l10n.annotationsDeleteAll,
                         ),
                     ],
                     onSelected: (value) => switch (value) {

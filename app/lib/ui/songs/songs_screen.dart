@@ -31,6 +31,7 @@ import 'song_editor_screen.dart';
 import 'song_language.dart';
 import 'song_screen.dart';
 import '../widgets/section_header.dart';
+import '../widgets/menu_action.dart';
 
 /// Delay before a changed search text is applied, so that typing does not
 /// start a database query per keystroke.
@@ -394,31 +395,35 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                       _ => setState(() => _selected = {}),
                     },
                     itemBuilder: (_) => [
-                      PopupMenuItem(
+                      MenuAction(
                         value: 'select',
-                        child: Text(l10n.selectMode),
+                        icon: Icons.checklist,
+                        label: l10n.selectMode,
                       ),
                       // ADR-0043: whoever may delete songs may restore them.
                       if (library.canDeleteSongs)
-                        PopupMenuItem(
+                        MenuAction(
                           key: const Key('songs-trash'),
                           value: 'trash',
-                          child: Text(l10n.trash),
+                          icon: Icons.restore_from_trash_outlined,
+                          label: l10n.trash,
                         ),
                       // ADR-0046: songs no band of the organization played,
                       // for those who maintain the library.
                       if (!library.isLocal && library.isLibrarian)
-                        PopupMenuItem(
+                        MenuAction(
                           key: const Key('songs-usage'),
                           value: 'usage',
-                          child: Text(l10n.libraryUsage),
+                          icon: Icons.insights_outlined,
+                          label: l10n.libraryUsage,
                         ),
                       // ADR-0043: the whole library as a backup archive.
                       if (library.canExportLibrary)
-                        PopupMenuItem(
+                        MenuAction(
                           key: const Key('songs-backup'),
                           value: 'backup',
-                          child: Text(l10n.backupExport),
+                          icon: Icons.backup_outlined,
+                          label: l10n.backupExport,
                         ),
                     ],
                   ),

@@ -84,7 +84,11 @@ the others are checked in review.
 - **Create** on a main list screen (sets, songs, bands, a set's items): an extended
   `FloatingActionButton` with icon and label.
 - **App bar actions:** icon buttons for the two or three most frequent actions, the
-  rest in the overflow menu (`PopupMenuButton`). Every `IconButton` has a
+  rest in the overflow menu (`PopupMenuButton`). Every action in a menu is a
+  **`MenuAction`** (`widgets/menu_action.dart`, #835): an icon in front of its
+  label. Menus that choose a value (key, click, MIDI profile) mark the chosen one
+  with a check instead; a disabled item without an icon is a group header.
+  Every `IconButton` has a
   **tooltip** (it is also its accessible name). A deliberate exception (the stage's
   MIDI button, whose long press a tooltip would take) has a `Semantics` label and a
   `// No tooltip:` comment just above it that says why.

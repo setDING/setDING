@@ -19,6 +19,7 @@ import 'set_archive_dialogs.dart';
 import 'set_screen.dart';
 import '../widgets/section_header.dart';
 import 'sync_stale_banner.dart';
+import '../widgets/menu_action.dart';
 
 /// Minimum width for showing the list of sets and the selected set side by
 /// side (#266); the same as for the song list's two columns.
@@ -140,15 +141,17 @@ class _SetsPane extends ConsumerWidget {
                       ),
                     ),
               itemBuilder: (_) => [
-                PopupMenuItem(
+                MenuAction(
                   key: const Key('sets-import'),
                   value: 'import',
-                  child: Text(l10n.setImport),
+                  icon: Icons.file_open_outlined,
+                  label: l10n.setImport,
                 ),
-                PopupMenuItem(
+                MenuAction(
                   key: const Key('sets-trash'),
                   value: 'trash',
-                  child: Text(l10n.trash),
+                  icon: Icons.restore_from_trash_outlined,
+                  label: l10n.trash,
                 ),
               ],
             ),

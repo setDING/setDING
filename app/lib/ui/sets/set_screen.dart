@@ -34,6 +34,7 @@ import 'set_item_label.dart';
 import 'set_list.dart';
 import 'sets_screen.dart';
 import 'song_picker.dart';
+import '../widgets/menu_action.dart';
 
 /// A set with its ordered items.
 class SetScreen extends ConsumerStatefulWidget {
@@ -220,30 +221,38 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                   },
                   itemBuilder: (_) => [
                     if (canEdit) ...[
-                      PopupMenuItem(
+                      MenuAction(
                         value: 'marker',
-                        child: Text(l10n.addMarker),
+                        icon: Icons.flag_outlined,
+                        label: l10n.addMarker,
                       ),
                       const PopupMenuDivider(),
                     ],
                     // Web: no file export, sets are synced (ADR-0018).
                     if (!ref.read(webClientProvider)) ...[
-                      PopupMenuItem(
+                      MenuAction(
                         value: 'exportListPdf',
-                        child: Text(l10n.exportSetListPdf),
+                        icon: Icons.picture_as_pdf_outlined,
+                        label: l10n.exportSetListPdf,
                       ),
-                      PopupMenuItem(
+                      MenuAction(
                         value: 'export',
-                        child: Text(l10n.exportSet),
+                        icon: Icons.file_download_outlined,
+                        label: l10n.exportSet,
                       ),
                     ],
-                    PopupMenuItem(
+                    MenuAction(
                       value: 'copyToBand',
-                      child: Text(l10n.copyToBand),
+                      icon: Icons.copy_all_outlined,
+                      label: l10n.copyToBand,
                     ),
                     if (canEdit) ...[
                       const PopupMenuDivider(),
-                      PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
+                      MenuAction(
+                        value: 'delete',
+                        icon: Icons.delete_outline,
+                        label: l10n.delete,
+                      ),
                     ],
                   ],
                 ),
@@ -419,8 +428,13 @@ class _SetItemTile extends ConsumerWidget {
                   _ItemMenu(
                     itemId: item.id,
                     entries: [
-                      ('edit', l10n.edit, editMarker),
-                      ('remove', l10n.removeFromSet, remove),
+                      ('edit', Icons.edit_outlined, l10n.edit, editMarker),
+                      (
+                        'remove',
+                        Icons.remove_circle_outline,
+                        l10n.removeFromSet,
+                        remove,
+                      ),
                     ],
                   ),
                   handle,
@@ -660,10 +674,25 @@ class _SetItemTile extends ConsumerWidget {
               itemId: item.id,
               entries: [
                 if (song != null && hasChordPro)
-                  ('sequence', l10n.sequenceEdit, changeSequence),
+                  (
+                    'sequence',
+                    Icons.format_list_numbered,
+                    l10n.sequenceEdit,
+                    changeSequence,
+                  ),
                 if (versions.length > 1)
-                  ('version', l10n.switchLanguageVersion, switchVersion),
-                ('remove', l10n.removeFromSet, remove),
+                  (
+                    'version',
+                    Icons.translate,
+                    l10n.switchLanguageVersion,
+                    switchVersion,
+                  ),
+                (
+                  'remove',
+                  Icons.remove_circle_outline,
+                  l10n.removeFromSet,
+                  remove,
+                ),
               ],
             ),
             handle,
@@ -676,24 +705,25 @@ class _SetItemTile extends ConsumerWidget {
 
 /// The ⋮ menu of a set item with the actions that are not needed often.
 ///
-/// Each entry has an id for its key (`set-item-action-<id>`), a label and
-/// its action.
+/// Each entry has an id for its key (`set-item-action-<id>`), an icon, a
+/// label and its action.
 class _ItemMenu extends StatelessWidget {
   const _ItemMenu({required this.itemId, required this.entries});
 
   final String itemId;
-  final List<(String, String, Future<void> Function())> entries;
+  final List<(String, IconData, String, Future<void> Function())> entries;
 
   @override
   Widget build(BuildContext context) => PopupMenuButton<int>(
     key: ValueKey('set-item-menu-$itemId'),
-    onSelected: (i) => entries[i].$3(),
+    onSelected: (i) => entries[i].$4(),
     itemBuilder: (_) => [
-      for (final (i, (id, label, _)) in entries.indexed)
-        PopupMenuItem(
+      for (final (i, (id, icon, label, _)) in entries.indexed)
+        MenuAction(
           key: ValueKey('set-item-action-$id'),
           value: i,
-          child: Text(label),
+          icon: icon,
+          label: label,
         ),
     ],
   );

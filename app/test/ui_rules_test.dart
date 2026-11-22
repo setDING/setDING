@@ -144,6 +144,27 @@ void main() {
     }
     expect(offenders, isEmpty);
   });
+
+  test('menu actions use MenuAction with an icon', () {
+    // A PopupMenuItem with a plain text label is an action without an icon
+    // (#835); a disabled item is a group header and keeps its text.
+    final offenders = <String>[];
+    for (final f in files) {
+      if (f.path.endsWith('menu_action.dart')) continue;
+      final source = f.readAsStringSync();
+      for (final m in RegExp(
+        r'\bPopupMenuItem(<[^>]*>)?\(',
+      ).allMatches(source)) {
+        final call = source.substring(m.start, _callEnd(source, m.end - 1));
+        if (RegExp(r'^\s*child: Text\(', multiLine: true).hasMatch(call) &&
+            !call.contains('enabled: false')) {
+          final line = '\n'.allMatches(source.substring(0, m.start)).length;
+          offenders.add('${f.path}:${line + 1}');
+        }
+      }
+    }
+    expect(offenders, isEmpty);
+  });
 }
 
 /// The index after the parenthesis closing the one at [open] in [source].
