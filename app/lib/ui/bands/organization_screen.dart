@@ -285,6 +285,7 @@ class _PersonTile extends ConsumerWidget {
                     value: 'remove',
                     icon: Icons.person_remove_outlined,
                     label: l10n.orgRemove,
+                    destructive: true,
                   ),
               ],
             ),

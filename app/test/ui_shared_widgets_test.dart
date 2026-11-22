@@ -5,6 +5,7 @@ import 'package:setding/l10n/generated/app_localizations.dart';
 import 'package:setding/ui/theme.dart';
 import 'package:setding/ui/widgets/danger_zone.dart';
 import 'package:setding/ui/widgets/dialogs.dart';
+import 'package:setding/ui/widgets/menu_action.dart';
 import 'package:setding/ui/widgets/section_header.dart';
 
 /// The shared widgets of the UI design rules (docs/development/ui-design.md).
@@ -114,6 +115,36 @@ void main() {
       semantics.dispose();
     });
   }
+
+  testWidgets('a destructive menu action is in the error colour', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      app(
+        PopupMenuButton<String>(
+          itemBuilder: (_) => [
+            MenuAction(value: 'copy', icon: Icons.copy, label: 'Copy'),
+            MenuAction(
+              value: 'delete',
+              icon: Icons.delete_outline,
+              label: 'Delete',
+              destructive: true,
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.tap(find.byType(PopupMenuButton<String>));
+    await tester.pumpAndSettle();
+    final scheme = Theme.of(tester.element(find.text('Delete'))).colorScheme;
+    expect(tester.widget<Text>(find.text('Delete')).style?.color, scheme.error);
+    expect(
+      tester.widget<Icon>(find.byIcon(Icons.delete_outline)).color,
+      scheme.error,
+    );
+    expect(tester.widget<Text>(find.text('Copy')).style?.color, isNull);
+    expect(tester.widget<Icon>(find.byIcon(Icons.copy)).color, isNull);
+  });
 
   testWidgets('a message replaces the one shown, unless queued', (
     tester,

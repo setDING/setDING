@@ -88,6 +88,9 @@ the others are checked in review.
   **`MenuAction`** (`widgets/menu_action.dart`, #835): an icon in front of its
   label. Menus that choose a value (key, click, MIDI profile) mark the chosen one
   with a check instead; a disabled item without an icon is a group header.
+  An action that deletes or removes something (delete, remove from set, remove a
+  member, delete all annotations) is `MenuAction(destructive: true)`: icon and
+  label in the error colour, like the danger zone (#839).
   Every `IconButton` has a
   **tooltip** (it is also its accessible name). A deliberate exception (the stage's
   MIDI button, whose long press a tooltip would take) has a `Semantics` label and a

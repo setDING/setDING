@@ -167,6 +167,7 @@ class AnnotationToolbar extends StatelessWidget {
                           value: 'delete-all',
                           icon: Icons.delete_sweep_outlined,
                           label: l10n.annotationsDeleteAll,
+                          destructive: true,
                         ),
                     ],
                     onSelected: (value) => switch (value) {

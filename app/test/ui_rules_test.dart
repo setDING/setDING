@@ -165,6 +165,26 @@ void main() {
     }
     expect(offenders, isEmpty);
   });
+
+  test('menu actions that delete or remove are destructive', () {
+    // A MenuAction with a delete or remove icon draws in the error colour
+    // (#839).
+    final offenders = <String>[];
+    for (final f in files) {
+      if (f.path.endsWith('menu_action.dart')) continue;
+      final source = f.readAsStringSync();
+      for (final m in RegExp(r'\bMenuAction(<[^>]*>)?\(').allMatches(source)) {
+        final call = source.substring(m.start, _callEnd(source, m.end - 1));
+        if (RegExp(r'icon: Icons\.(delete|person_remove|remove_circle)')
+                .hasMatch(call) &&
+            !call.contains('destructive: true')) {
+          final line = '\n'.allMatches(source.substring(0, m.start)).length;
+          offenders.add('${f.path}:${line + 1}');
+        }
+      }
+    }
+    expect(offenders, isEmpty);
+  });
 }
 
 /// The index after the parenthesis closing the one at [open] in [source].
