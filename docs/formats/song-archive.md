@@ -84,6 +84,8 @@ the preview.
 | `artist` | string | no | Artist; same rules as `title`. |
 | `file` | string | no | Path of the ChordPro file in the ZIP. Without it (or if the file is missing) the song is imported **without text**, for example a song that only has a PDF. |
 | `attachments` | array | no | The song's attachments, see below. |
+| `language` | string | no | Language of the song set by hand (ADR-0053): `de`, `gsw` (Swiss German), `en`, `fr`, `it`, `es`, `pt`, `nl` or `other`. Another value is ignored; without it setDING detects the language from the lyrics. |
+| `workId` | string | no | Group of language versions (ADR-0053): songs of the archive with the same `workId` are translations or adaptations of one work and are linked again on import. Any string that is the same for the versions, for example `"amazing-grace"`. |
 
 ### `songs[].attachments[]`
 
@@ -141,6 +143,12 @@ person picks in the preview.
    `name` the existing song does not have (ignoring case and surrounding spaces) is
    added, if the person may edit the song. Existing attachments are never replaced.
 
+6. **Language versions** (`workId`): the **new** songs with the same `workId` are
+   linked as language versions under a new group of the target library. They are
+   never linked with songs that were already there, also not with an existing song
+   that is used instead of an identical one; a new song alone in its group stays
+   unlinked. `language` is set on new songs only; existing songs keep theirs.
+
 So an exporter can be run again with new PDFs: existing songs keep their text and
 get the new attachments, as long as each attachment has a new `name`.
 
@@ -164,7 +172,7 @@ unchanged: setDING reads its structure (`{comment: …}` section headings, the
 
 The example holds three songs:
 
-- "Amazing Grace" with ChordPro text and **two** PDFs,
+- "Amazing Grace" with ChordPro text, **two** PDFs and its language,
 - "Morning Song" with ChordPro text and an image,
 - "Only a Score" without text, with only a PDF.
 
@@ -184,6 +192,7 @@ It is the file
       "id": "ccli-7012345",
       "title": "Amazing Grace",
       "artist": "John Newton",
+      "language": "en",
       "file": "songs/Amazing Grace (7012345).cho",
       "attachments": [
         {

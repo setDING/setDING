@@ -386,6 +386,7 @@ class BackupService {
         'artist': ?song.artist,
         'file': ?file,
         'attachments': attachments,
+        ...languageJson(song),
       });
     }
 
@@ -580,6 +581,14 @@ class BackupService {
     final file = storage.file(a.fileName);
     return await file.exists() ? file.readAsBytes() : null;
   }
+
+  /// The language version group and the language set by hand of [song]
+  /// in a manifest (ADR-0053): `workId` (the group in the exporting
+  /// library) and `language`, each only when set.
+  static Map<String, dynamic> languageJson(SongEntry song) => {
+    'workId': ?song.workId,
+    'language': ?song.language,
+  };
 
   static Map<String, dynamic> overlayJson(SongOverlay o) => {
     'songId': o.songId,
@@ -922,6 +931,9 @@ class BackupService {
     );
     final existing = await existingSongs(libraryId);
     final result = SongImport();
+    // New songs by the language version group they had in the archive
+    // (ADR-0053).
+    final newByWork = <String, List<String>>{};
     for (final song in contents.songs) {
       final originalId = song['id'] as String;
       final source = contents.sourceOf(song);
@@ -949,6 +961,13 @@ class BackupService {
       );
       result.songIds[originalId] = id;
       result.imported.add(originalId);
+      if (song['language'] case final String language
+          when songLanguages.contains(language)) {
+        await songs.setLanguage(id, language);
+      }
+      if (song['workId'] case final String work when work.isNotEmpty) {
+        (newByWork[work] ??= []).add(id);
+      }
       if (match != null) {
         result.additional.add((
           id: id,
@@ -961,6 +980,17 @@ class BackupService {
         if (added == null) continue;
         result.attachmentIds[a['id'] as String] = added;
         result.files++;
+      }
+    }
+    // The new songs that were language versions of each other in the
+    // archive are linked again under a new group; never with songs that were
+    // already in the library, also not with an identical one that was reused
+    // (ADR-0053).
+    for (final ids in newByWork.values) {
+      if (ids.length < 2) continue;
+      final work = _uuid.v4();
+      for (final id in ids) {
+        await songs.setWorkId(id, work);
       }
     }
     return result;

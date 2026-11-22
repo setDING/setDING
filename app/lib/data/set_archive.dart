@@ -314,6 +314,7 @@ class SetArchiveService {
         'artist': ?song.artist,
         'file': ?file,
         'attachments': attachments,
+        ...BackupService.languageJson(song),
       });
     }
 

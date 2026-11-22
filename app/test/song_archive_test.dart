@@ -384,6 +384,120 @@ void main() {
       'setDING-Songs 2027-03-04.zip',
     );
   });
+  group('language versions (ADR-0053)', () {
+    /// "Grace" and its version "Gnade" linked, "Gnade" in Swiss German by
+    /// hand, and "Alone" without versions.
+    Future<({String grace, String gnade, String alone})> versions() async {
+      final grace = await songs.createSong(source: '{title: Grace}\n[G]Grace');
+      final gnade = await songs.createSong(source: '{title: Gnade}\n[G]Gnade');
+      final alone = await songs.createSong(source: '{title: Alone}\n[G]x');
+      await songs.linkLanguageVersions(grace, gnade);
+      await songs.setLanguage(gnade, 'gsw');
+      return (grace: grace, gnade: gnade, alone: alone);
+    }
+
+    Future<SongArchive> read(Uint8List zip) async =>
+        (await SongArchiveService.read(zip))!;
+
+    test('the manifest holds the group and the language', () async {
+      final ids = await versions();
+      final files = unzip(
+        await service().export([ids.grace, ids.gnade, ids.alone]),
+      );
+      final manifest = jsonDecode(
+        utf8.decode(files[backupManifestName]!),
+      ) as Map<String, dynamic>;
+      final byTitle = {
+        for (final s in manifest['songs'] as List) (s as Map)['title']: s,
+      };
+      final work = (await songs.getSong(ids.grace))!.workId;
+      expect(byTitle['Grace']!['workId'], work);
+      expect(byTitle['Gnade']!['workId'], work);
+      expect(byTitle['Gnade']!['language'], 'gsw');
+      expect(byTitle['Grace']!.containsKey('language'), isFalse);
+      expect(byTitle['Alone']!.containsKey('workId'), isFalse);
+    });
+
+    test('an import links the new versions again under a new group', () async {
+      final ids = await versions();
+      final zip = await service().export([ids.grace, ids.gnade, ids.alone]);
+      final other = AppDatabase(NativeDatabase.memory());
+      addTearDown(other.close);
+      final result = await service(other)
+          .import(await read(zip), libraryId: localBandId, canEditSong: any);
+      final repo = SongRepository(other, storage);
+      final grace = (await repo.getSong(result.songs.songIds[ids.grace]!))!;
+      final gnade = (await repo.getSong(result.songs.songIds[ids.gnade]!))!;
+      final alone = (await repo.getSong(result.songs.songIds[ids.alone]!))!;
+      expect(grace.workId, isNotNull);
+      expect(gnade.workId, grace.workId);
+      // A new group, not the one of the exporting library.
+      expect(grace.workId, isNot((await songs.getSong(ids.grace))!.workId));
+      expect(gnade.language, 'gsw');
+      expect(alone.workId, isNull);
+    });
+
+    test('never with songs already in the library', () async {
+      final ids = await versions();
+      final zip = await service().export([ids.grace, ids.gnade]);
+      // Into the same library: both are identical and reused, their group
+      // and language stay as they are now.
+      await songs.unlinkLanguageVersion(ids.gnade);
+      await songs.setLanguage(ids.gnade, null);
+      final again = await service().import(
+        await read(zip),
+        libraryId: localBandId,
+        canEditSong: any,
+      );
+      expect(again.songs.imported, isEmpty);
+      expect((await songs.getSong(ids.gnade))!.workId, isNull);
+      expect((await songs.getSong(ids.gnade))!.language, isNull);
+
+      // One of them new: it is not linked with the reused one.
+      await songs.deleteSong(ids.gnade);
+      final third = await service().import(
+        await read(zip),
+        libraryId: localBandId,
+        canEditSong: any,
+      );
+      final added = (await songs.getSong(third.songs.songIds[ids.gnade]!))!;
+      expect(third.songs.imported, {ids.gnade});
+      expect(added.workId, isNull);
+      expect(added.language, 'gsw');
+    });
+
+    test('an archive without the fields imports as before', () async {
+      final ids = await versions();
+      final files = unzip(await service().export([ids.grace, ids.gnade]));
+      final manifest = jsonDecode(
+        utf8.decode(files[backupManifestName]!),
+      ) as Map<String, dynamic>;
+      for (final s in manifest['songs'] as List) {
+        (s as Map)
+          ..remove('workId')
+          ..remove('language');
+      }
+      files[backupManifestName] = utf8.encode(jsonEncode(manifest));
+      final archive = Archive();
+      for (final MapEntry(:key, :value) in files.entries) {
+        archive.addFile(ArchiveFile.bytes(key, value));
+      }
+      final other = AppDatabase(NativeDatabase.memory());
+      addTearDown(other.close);
+      final result = await service(other).import(
+        await read(Uint8List.fromList(ZipEncoder().encode(archive))),
+        libraryId: localBandId,
+        canEditSong: any,
+      );
+      expect(result.songs.imported, hasLength(2));
+      final repo = SongRepository(other, storage);
+      for (final id in result.songs.songIds.values) {
+        final s = (await repo.getSong(id))!;
+        expect((s.workId, s.language), (null, null));
+      }
+    });
+  });
+
   test('the documented example archive imports (docs/formats)', () async {
     // The example manifest of docs/formats/song-archive.md, as an external
     // tool would write it: own IDs, several songs, a song with two PDFs, an
@@ -423,6 +537,7 @@ void main() {
 
     final grace = (await songs.getSong(result.songs.songIds['ccli-7012345']!))!;
     expect((grace.title, grace.artist), ('Amazing Grace', 'John Newton'));
+    expect(grace.language, 'en');
     expect(grace.chordproSource, cho);
     expect(
       {for (final a in await songs.getAttachments(grace.id)) a.name: a.pages},

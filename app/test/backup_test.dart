@@ -181,6 +181,29 @@ void main() {
     expect(items.first.item.played, const PlayedValues(key: 'D'));
   });
 
+  test('the language versions come along (ADR-0053)', () async {
+    final grace = await songs.createSong(source: '{title: Grace}\n[G]Grace');
+    final gnade = await songs.createSong(source: '{title: Gnade}\n[G]Gnade');
+    await songs.linkLanguageVersions(grace, gnade);
+    await songs.setLanguage(gnade, 'de');
+    final zip = await service().export(localBandId, libraryName: 'Mine');
+
+    final other = AppDatabase(NativeDatabase.memory());
+    addTearDown(other.close);
+    await service(other).import(
+      await BackupService.read(zip),
+      libraryId: localBandId,
+      bands: {localBandId: localBandId},
+    );
+    final all = {
+      for (final s in await other.select(other.songs).get()) s.title: s,
+    };
+    expect(all['Grace']!.workId, isNotNull);
+    expect(all['Gnade']!.workId, all['Grace']!.workId);
+    expect(all['Grace']!.workId, isNot((await songs.getSong(grace))!.workId));
+    expect(all['Gnade']!.language, 'de');
+  });
+
   test('identical songs are not imported again', () async {
     await fill();
     final zip = await service().export(localBandId, libraryName: 'Mine');
