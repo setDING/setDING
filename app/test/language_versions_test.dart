@@ -167,6 +167,64 @@ void main() {
       expect((await local(mine)).workId, work);
     });
 
+    test('several versions are added and removed at once, with undo', () async {
+      final a = await songs.createSong(source: '{title: A}');
+      final b = await songs.createSong(source: '{title: B}');
+      final c = await songs.createSong(source: '{title: C}');
+      final d = await songs.createSong(source: '{title: D}');
+      final e = await songs.createSong(source: '{title: E}');
+      await songs.linkLanguageVersions(a, b);
+      await songs.linkLanguageVersions(d, e);
+      final work = (await local(a)).workId;
+      final other = (await local(d)).workId;
+
+      final result = await songs.updateLanguageVersions(
+        a,
+        add: [c, d],
+        remove: [b],
+      );
+      expect(result.notLinked, isEmpty);
+      expect((await local(b)).workId, isNull);
+      // Linking d brings its group along.
+      final now = (await local(a)).workId;
+      for (final id in [c, d, e]) {
+        expect((await local(id)).workId, now);
+      }
+
+      // Undo puts every touched song back.
+      for (final MapEntry(:key, :value) in result.before.entries) {
+        await songs.setWorkId(key, value);
+      }
+      expect((await local(a)).workId, work);
+      expect((await local(b)).workId, work);
+      expect((await local(c)).workId, isNull);
+      expect((await local(d)).workId, other);
+      expect((await local(e)).workId, other);
+    });
+
+    test(
+      'songs the person may not edit are neither removed nor moved',
+      () async {
+        final a = await songs.createSong(source: '{title: A}');
+        final b = await songs.createSong(source: '{title: B}');
+        final c = await songs.createSong(source: '{title: C}');
+        final d = await songs.createSong(source: '{title: D}');
+        await songs.linkLanguageVersions(a, b);
+        await songs.linkLanguageVersions(c, d);
+        bool mayEdit(SongEntry s) => s.id != b && s.id != d;
+        final result = await songs.updateLanguageVersions(
+          a,
+          add: [c],
+          remove: [b],
+          mayEdit: mayEdit,
+        );
+        // b stays; a's group holds b and c's group holds d: neither can move.
+        expect(result.notLinked, [c]);
+        expect((await local(b)).workId, (await local(a)).workId);
+        expect((await local(c)).workId, (await local(d)).workId);
+      },
+    );
+
     test('the versions are watched, the song included', () async {
       final a = await songs.createSong(source: '{title: A}');
       final b = await songs.createSong(source: '{title: B}');

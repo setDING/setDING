@@ -76,8 +76,10 @@ devices choose different originals offline, for little benefit (owner).
 - **Song view:** the language tags of all versions of the work in the header; a tap
   opens that version. The tags have a fixed order (the language of the UI first,
   then the others alphabetically by code).
-- **Linking:** *Link language version…* in the song menu opens a song picker of the
-  library; songs with the same artist, key, tempo or sequence are listed first.
+- **Linking:** *Language versions …* in the song menu opens a two-pane picker: the
+  songs of the library with a search and tick boxes (songs with the same artist,
+  key, tempo or sequence first) and the linked versions, which can be removed there
+  again; *Save* applies all changes at once, with Undo.
   *Unlink* removes the song from its group. There is **no suggestion on import**:
   CCLI numbers of translations differ and titles carry no common marker (owner).
 - **Search:** unchanged; every version is found by its own text.
@@ -221,6 +223,12 @@ the API directly as the refused roles (permission matrix test).
   song view stay text codes, because a language is not a country.
 - 2026-11-22: Like the languages, *No language* is offered only when the library
   has songs without a language, or while it is selected (#843).
+- 2026-11-22: The picker chooses several versions at once (#851): *Language
+  versions …* opens a two-pane dialog, the library with a search and tick boxes on
+  one side and the linked versions on the other (chips above the list on narrow
+  screens), where a version the person may edit can be removed again. *Save*
+  unlinks the removed songs, then links the added ones (a song with versions of its
+  own brings them along), and offers Undo for every touched song.
 
 ## Open points
 

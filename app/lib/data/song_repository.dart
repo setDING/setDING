@@ -721,6 +721,49 @@ class SongRepository {
     return false;
   });
 
+  /// Changes the language versions of [id] at once (ADR-0053, #851): takes
+  /// the songs of [remove] out of its group, then links the songs of [add]
+  /// to it as [linkLanguageVersions] does, with [mayEdit].
+  ///
+  /// Returns the songs of [add] that could not be linked and the group ID
+  /// every touched song had before, for [setWorkId] to undo the change.
+  Future<({List<String> notLinked, Map<String, String?> before})>
+  updateLanguageVersions(
+    String id, {
+    Iterable<String> add = const [],
+    Iterable<String> remove = const [],
+    bool Function(SongEntry song)? mayEdit,
+  }) async {
+    final before = <String, String?>{};
+    Future<void> remember(String songId) async {
+      final song = await getSong(songId);
+      if (song == null) return;
+      final group = song.workId == null
+          ? [song]
+          : await _workSongs(song.libraryId, song.workId!);
+      for (final s in group) {
+        before.putIfAbsent(s.id, () => s.workId);
+      }
+    }
+
+    for (final s in [id, ...add, ...remove]) {
+      await remember(s);
+    }
+    for (final s in remove) {
+      if (s == id) continue;
+      final song = await getSong(s);
+      if (song == null || (mayEdit != null && !mayEdit(song))) continue;
+      await unlinkLanguageVersion(s);
+    }
+    final notLinked = <String>[];
+    for (final s in add) {
+      if (!await linkLanguageVersions(id, s, mayEdit: mayEdit)) {
+        notLinked.add(s);
+      }
+    }
+    return (notLinked: notLinked, before: before);
+  }
+
   /// Puts [id] into the group [work] again, e.g. to undo
   /// [unlinkLanguageVersion] (ADR-0053).
   Future<void> setWorkId(String id, String? work) => _write(() async {

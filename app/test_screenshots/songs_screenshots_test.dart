@@ -199,7 +199,7 @@ void main() {
   }
 
   // Language versions (ADR-0053, #806): the versions of a song below its
-  // header, and the picker that links another song.
+  // header, and the two-pane picker of the versions (#851).
   for (final (lang, dark) in [('de', false), ('en', true)]) {
     screenshotTest('language versions $lang', (tester) async {
       useTabletSize(tester);
@@ -260,6 +260,9 @@ void main() {
       await tester.tap(find.byType(PopupMenuButton<String>));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('song-link-version')));
+      await tester.pumpAndSettle();
+      // Two versions linked, a third one ticked (#851).
+      await tester.tap(find.textContaining('Lumière du matin'));
       await tester.pumpAndSettle();
       await shot(tester, '${lang}_40b_language_version_picker');
       await app.dispose(tester);
