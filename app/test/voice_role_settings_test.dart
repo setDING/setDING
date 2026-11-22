@@ -16,7 +16,7 @@ void main() {
     expect(voiceIsInstrument(de, 'Gesang'), isTrue);
     expect(voiceIsInstrument(de, 'drums'), isTrue);
     expect(voiceIsInstrument(en, 'alto'), isFalse);
-    expect(voiceIsInstrument(en, 'Andi'), isFalse);
+    expect(voiceIsInstrument(en, 'Ann'), isFalse);
     expect(voiceIsInstrument(en, ''), isFalse);
   });
 

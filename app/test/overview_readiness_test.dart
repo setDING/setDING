@@ -42,7 +42,7 @@ void main() {
   testWidgets('all ok: one line, the details on request', (tester) async {
     usePhoneSize(tester);
     final app = await TestApp.create(
-      prefs: {'language': 'en', 'userName': 'Andi'},
+      prefs: {'language': 'en', 'userName': 'Ann'},
     );
     await tester.pumpWidget(app.build());
     await tester.pumpAndSettle();
@@ -59,7 +59,7 @@ void main() {
     expect(
       find.descendant(
         of: line('musician'),
-        matching: find.text('Musician: Guitar · Andi'),
+        matching: find.text('Musician: Guitar · Ann'),
       ),
       findsOneWidget,
     );

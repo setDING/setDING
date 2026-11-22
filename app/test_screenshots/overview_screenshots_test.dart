@@ -107,7 +107,7 @@ void main() {
           'language': lang,
           'themeMode': dark ? 'dark' : 'light',
           'instrument': 'keyboard',
-          'userName': 'Andi',
+          'userName': 'Ann',
           'midiEnabled': true,
           'midiOutputName': 'Nord Stage 3 MIDI',
           'midiProfile': 'nordStage3',
@@ -156,7 +156,7 @@ void main() {
         prefs: {
           'language': lang,
           'themeMode': dark ? 'dark' : 'light',
-          'userName': 'Andi',
+          'userName': 'Ann',
         },
       );
       await tester.pumpWidget(
