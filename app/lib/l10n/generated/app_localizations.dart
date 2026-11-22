@@ -8451,6 +8451,36 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Die Sicherheitskopie konnte nicht gespeichert werden, darum wurde nichts ersetzt: {reason}'**
   String backupReplaceSafetyFailed(String reason);
+
+  /// No description provided for @showLocalLibrary.
+  ///
+  /// In de, this message translates to:
+  /// **'Lokale Bibliothek anzeigen'**
+  String get showLocalLibrary;
+
+  /// No description provided for @showLocalLibraryHint.
+  ///
+  /// In de, this message translates to:
+  /// **'«Auf diesem Gerät» in den Listen der Bibliotheken und Bands. Spielst du nur in Organisationen, kannst du sie ausblenden; ihre Songs und Sets bleiben auf diesem Gerät.'**
+  String get showLocalLibraryHint;
+
+  /// No description provided for @showLocalLibrarySignedOut.
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Anmeldung wird die lokale Bibliothek immer angezeigt.'**
+  String get showLocalLibrarySignedOut;
+
+  /// No description provided for @localLibraryHidden.
+  ///
+  /// In de, this message translates to:
+  /// **'Die lokale Bibliothek ist ausgeblendet. Ihre {songs, plural, =1{1 Song} other{{songs} Songs}} und {sets, plural, =1{1 Set} other{{sets} Sets}} bleiben auf diesem Gerät und kommen zurück, wenn du sie wieder anzeigst.'**
+  String localLibraryHidden(int songs, int sets);
+
+  /// No description provided for @localLibraryHiddenAutoBackup.
+  ///
+  /// In de, this message translates to:
+  /// **'Die automatische Sicherung läuft weiter; du kannst sie hier ausschalten.'**
+  String get localLibraryHiddenAutoBackup;
 }
 
 class _AppLocalizationsDelegate

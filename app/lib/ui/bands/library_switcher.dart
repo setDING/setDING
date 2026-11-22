@@ -22,9 +22,9 @@ class LibrarySwitcher extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final libraries =
         ref.watch(librariesProvider).value ??
-        (ref.watch(webClientProvider)
-            ? const <LibraryView>[]
-            : const [LibraryView.local]);
+        (ref.watch(localLibraryShownProvider)
+            ? const [LibraryView.local]
+            : const <LibraryView>[]);
     final current = ref.watch(currentLibraryProvider);
     final signedIn = ref.watch(authProvider) != null;
     if (!signedIn && libraries.length <= 1) return const SizedBox.shrink();

@@ -22,6 +22,7 @@ import '../widgets/file_actions.dart';
 import 'auto_backup_tiles.dart';
 import 'backup_actions.dart';
 import 'replace_local.dart' show confirmLocalReplace;
+import 'local_library_tile.dart';
 
 export '../../data/auto_backup.dart' show lastBackupKey;
 
@@ -50,6 +51,8 @@ Future<void> recordBackup(WidgetRef ref) => ref
 /// song alone does not count. Not on the web client (no local library).
 final backupReminderProvider = FutureProvider.autoDispose<int?>((ref) async {
   if (ref.watch(webClientProvider)) return null;
+  // Not while the local library is hidden (ADR-0054).
+  if (!ref.watch(localLibraryShownProvider)) return null;
   // Not while automatic backups succeed (ADR-0054).
   if (ref.watch(
     autoBackupProvider.select(
@@ -122,8 +125,9 @@ bool takeBackupReminder(WidgetRef ref) {
 Future<void> exportFullBackup(BuildContext context, WidgetRef ref) async {
   final l10n = AppLocalizations.of(context);
   final web = ref.read(webClientProvider);
+  // Also the local library when it is hidden (ADR-0054).
   final libraries =
-      ref.read(librariesProvider).value ??
+      ref.read(allLibrariesProvider).value ??
       (web ? const <LibraryView>[] : const [LibraryView.local]);
   final full = [
     for (final l in libraries)
@@ -247,6 +251,8 @@ class BackupTiles extends ConsumerWidget {
           subtitle: Text(l10n.backupRestoreHint),
           onTap: () => restoreBackup(context),
         ),
+        // Hiding the local library (ADR-0054).
+        if (!web) const ShowLocalLibraryTile(),
         // Automatic backup of the local library (ADR-0054).
         if (!web && ref.watch(backupFolderProvider).supported)
           const AutoBackupTiles(),
@@ -286,9 +292,9 @@ class _FullRestoreDialogState extends ConsumerState<_FullRestoreDialog> {
   List<LibraryView> _libraries() => [
     for (final l
         in ref.watch(librariesProvider).value ??
-            (ref.watch(webClientProvider)
-                ? const <LibraryView>[]
-                : const [LibraryView.local]))
+            (ref.watch(localLibraryShownProvider)
+                ? const [LibraryView.local]
+                : const <LibraryView>[]))
       if (l.canCreateSongs) l,
   ];
 

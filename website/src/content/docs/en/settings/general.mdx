@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import general from '../../../../../../docs/screenshots/settings_general.png';
 import autoBackup from '../../../../../../docs/screenshots/settings_auto_backup.png';
+import hideLocal from '../../../../../../docs/screenshots/hide_local_library.png';
 
 ## General
 
@@ -49,6 +50,17 @@ width.
   first, see [Replace the local library](/en/songs/library/#replace-the-local-library).
   See also
   [Back up the library](/en/songs/library/#back-up-the-library).
+- **Show the local library** (not in the web app): if you play only in
+  organizations, switch it off to hide *On this device* from the lists of
+  libraries and bands, the overview, the song and set lists, imports and copying.
+  New songs then go to the current organization. Its songs and sets stay on this
+  device and come back when you switch it on again; the full and the automatic
+  backup still include it, and setDING no longer reminds you to back it up. You
+  can switch it off only while signed in; signed out, the local library is always
+  shown.
+
+<Image src={hideLocal} alt="«Show the local library» switched off in «Storage & info», with the hint that its 3 songs and 1 set stay on this device and that the automatic backup keeps running" />
+
 - **Automatic backup** (not in the web app) saves the library *On this device*
   into a folder you choose, at most once a day and only after it changed. Choose
   a folder of your cloud storage, so the library is safe when the device is lost:

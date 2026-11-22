@@ -5540,4 +5540,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String backupReplaceSafetyFailed(String reason) {
     return 'The safety backup could not be saved, so nothing was replaced: $reason';
   }
+
+  @override
+  String get showLocalLibrary => 'Show the local library';
+
+  @override
+  String get showLocalLibraryHint =>
+      '“On this device” in the lists of libraries and bands. If you play only in organizations, you can hide it; its songs and sets stay on this device.';
+
+  @override
+  String get showLocalLibrarySignedOut =>
+      'Signed out, the local library is always shown.';
+
+  @override
+  String localLibraryHidden(int songs, int sets) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: '$songs songs',
+      one: '1 song',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      sets,
+      locale: localeName,
+      other: '$sets sets',
+      one: '1 set',
+    );
+    return 'The local library is hidden. Its $_temp0 and $_temp1 stay on this device and come back when you show it again.';
+  }
+
+  @override
+  String get localLibraryHiddenAutoBackup =>
+      'The automatic backup keeps running; you can switch it off here.';
 }

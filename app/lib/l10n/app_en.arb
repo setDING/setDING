@@ -2993,5 +2993,20 @@
         "type": "String"
       }
     }
-  }
+  },
+  "showLocalLibrary": "Show the local library",
+  "showLocalLibraryHint": "“On this device” in the lists of libraries and bands. If you play only in organizations, you can hide it; its songs and sets stay on this device.",
+  "showLocalLibrarySignedOut": "Signed out, the local library is always shown.",
+  "localLibraryHidden": "The local library is hidden. Its {songs, plural, =1{1 song} other{{songs} songs}} and {sets, plural, =1{1 set} other{{sets} sets}} stay on this device and come back when you show it again.",
+  "@localLibraryHidden": {
+    "placeholders": {
+      "songs": {
+        "type": "int"
+      },
+      "sets": {
+        "type": "int"
+      }
+    }
+  },
+  "localLibraryHiddenAutoBackup": "The automatic backup keeps running; you can switch it off here."
 }

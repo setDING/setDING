@@ -21,9 +21,9 @@ class BandSwitcher extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final bands =
         ref.watch(bandsProvider).value ??
-        (ref.watch(webClientProvider)
-            ? const <BandView>[]
-            : const [BandView.local]);
+        (ref.watch(localLibraryShownProvider)
+            ? const [BandView.local]
+            : const <BandView>[]);
     final current = ref.watch(currentBandProvider);
     final signedIn = ref.watch(authProvider) != null;
     if (!signedIn && bands.length <= 1) return const SizedBox.shrink();

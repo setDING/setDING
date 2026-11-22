@@ -5585,4 +5585,36 @@ class AppLocalizationsDe extends AppLocalizations {
   String backupReplaceSafetyFailed(String reason) {
     return 'Die Sicherheitskopie konnte nicht gespeichert werden, darum wurde nichts ersetzt: $reason';
   }
+
+  @override
+  String get showLocalLibrary => 'Lokale Bibliothek anzeigen';
+
+  @override
+  String get showLocalLibraryHint =>
+      '«Auf diesem Gerät» in den Listen der Bibliotheken und Bands. Spielst du nur in Organisationen, kannst du sie ausblenden; ihre Songs und Sets bleiben auf diesem Gerät.';
+
+  @override
+  String get showLocalLibrarySignedOut =>
+      'Ohne Anmeldung wird die lokale Bibliothek immer angezeigt.';
+
+  @override
+  String localLibraryHidden(int songs, int sets) {
+    String _temp0 = intl.Intl.pluralLogic(
+      songs,
+      locale: localeName,
+      other: '$songs Songs',
+      one: '1 Song',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      sets,
+      locale: localeName,
+      other: '$sets Sets',
+      one: '1 Set',
+    );
+    return 'Die lokale Bibliothek ist ausgeblendet. Ihre $_temp0 und $_temp1 bleiben auf diesem Gerät und kommen zurück, wenn du sie wieder anzeigst.';
+  }
+
+  @override
+  String get localLibraryHiddenAutoBackup =>
+      'Die automatische Sicherung läuft weiter; du kannst sie hier ausschalten.';
 }

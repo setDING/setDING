@@ -3494,5 +3494,20 @@
         "type": "String"
       }
     }
-  }
+  },
+  "showLocalLibrary": "Lokale Bibliothek anzeigen",
+  "showLocalLibraryHint": "«Auf diesem Gerät» in den Listen der Bibliotheken und Bands. Spielst du nur in Organisationen, kannst du sie ausblenden; ihre Songs und Sets bleiben auf diesem Gerät.",
+  "showLocalLibrarySignedOut": "Ohne Anmeldung wird die lokale Bibliothek immer angezeigt.",
+  "localLibraryHidden": "Die lokale Bibliothek ist ausgeblendet. Ihre {songs, plural, =1{1 Song} other{{songs} Songs}} und {sets, plural, =1{1 Set} other{{sets} Sets}} bleiben auf diesem Gerät und kommen zurück, wenn du sie wieder anzeigst.",
+  "@localLibraryHidden": {
+    "placeholders": {
+      "songs": {
+        "type": "int"
+      },
+      "sets": {
+        "type": "int"
+      }
+    }
+  },
+  "localLibraryHiddenAutoBackup": "Die automatische Sicherung läuft weiter; du kannst sie hier ausschalten."
 }
