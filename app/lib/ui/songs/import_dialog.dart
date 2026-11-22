@@ -1,3 +1,4 @@
+import 'package:chordpro/chordpro.dart' as cp;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,6 +8,7 @@ import '../../data/set_archive.dart';
 import '../../data/song_archive.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
+import '../../settings/settings.dart';
 import '../backup/full_backup.dart';
 import '../sets/set_archive_dialogs.dart';
 import '../widgets/dialogs.dart';
@@ -42,6 +44,9 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
 
   /// After an import with ChordPro problems (#314): the result to report.
   ImportResult? _result;
+
+  /// Keys picked in the report so far (#925).
+  int _keysSet = 0;
 
   Future<void> _import() async {
     final l10n = AppLocalizations.of(context);
@@ -175,7 +180,7 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
       final count = await action(ref.read(importExportProvider));
       showMessageOn(messenger, done(count));
       if (!mounted) return;
-      if (rest.problems.any((p) => p.fixable) || rest.legacyLabels.isNotEmpty) {
+      if (rest.hasActions) {
         setState(() {
           _busy = false;
           _result = rest;
@@ -190,55 +195,152 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
     }
   }
 
+  /// Writes the picked [key] to the song of [suggestion] (#925, ADR-0056);
+  /// closes the dialog when nothing is left to do.
+  Future<void> _pickKey(
+    ImportResult result,
+    ImportKeySuggestion suggestion,
+    cp.Key key,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _busy = true);
+    try {
+      if (await ref.read(importExportProvider).setKey(suggestion.songId, key)) {
+        _keysSet++;
+      }
+      final rest = result.copyWith(
+        keySuggestions: [
+          for (final s in result.keySuggestions)
+            if (s.songId != suggestion.songId) s,
+        ],
+      );
+      if (!mounted) return;
+      if (rest.hasActions) {
+        setState(() {
+          _busy = false;
+          _result = rest;
+        });
+      } else {
+        Navigator.pop(context);
+        showMessageOn(messenger, l10n.importKeysSet(_keysSet));
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _busy = false);
+      showMessage(context, l10n.errorGeneric('$e'));
+    }
+  }
+
+  /// One imported song without a key and the keys suggested for it.
+  Widget _keySuggestionRow(
+    ImportResult result,
+    ImportKeySuggestion suggestion,
+    cp.ChordNotation notation,
+  ) {
+    final l10n = AppLocalizations.of(context);
+    Widget chip(cp.Key key) {
+      final name = key.format(notation);
+      return ActionChip(
+        key: ValueKey(
+          'import-key-${suggestion.songId}-'
+          '${key.format(cp.ChordNotation.international)}',
+        ),
+        avatar: const Icon(Icons.auto_fix_high, size: 18),
+        label: Text(name),
+        tooltip: l10n.keyGuessUse(name),
+        onPressed: _busy ? null : () => _pickKey(result, suggestion, key),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(suggestion.title, overflow: TextOverflow.ellipsis),
+          ),
+          const SizedBox(width: 8),
+          chip(suggestion.guess.key),
+          if (suggestion.guess.alternative case final alternative?) ...[
+            const SizedBox(width: 8),
+            chip(alternative),
+          ],
+        ],
+      ),
+    );
+  }
+
   /// The import result with the songs whose ChordPro has problems or
-  /// short-form section labels.
+  /// short-form section labels, and the songs without a key.
   Widget _problemsReport(BuildContext context, ImportResult result) {
     final l10n = AppLocalizations.of(context);
     const shown = 8;
     final problems = result.problems;
     final labels = result.legacyLabels;
+    final keys = result.keySuggestions;
     final fixable = problems.any((p) => p.fixable);
+    final notation = ref.watch(settingsProvider).notation;
     return AlertDialog(
       key: const Key('import-problems'),
       icon: Icon(
-        problems.isEmpty ? Icons.label_outline : Icons.warning_amber_rounded,
+        problems.isNotEmpty
+            ? Icons.warning_amber_rounded
+            : labels.isNotEmpty
+            ? Icons.label_outline
+            : Icons.auto_fix_high,
       ),
       title: Text(l10n.importProblemsTitle),
       content: SizedBox(
         width: 440,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              [
-                l10n.importResult(result.imported),
-                if (result.skipped.isNotEmpty)
-                  l10n.importSkipped(result.skipped.join(', ')),
-              ].join('\n'),
-            ),
-            if (problems.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Text(l10n.importProblemsMessage(problems.length)),
-              const SizedBox(height: 8),
-              for (final p in problems.take(shown))
-                Text('• ${l10n.importProblemItem(p.title, p.count)}'),
-              if (problems.length > shown)
-                Text(l10n.moreProblems(problems.length - shown)),
-              const SizedBox(height: 12),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                l10n.importProblemsHint,
-                style: Theme.of(context).textTheme.bodySmall,
+                [
+                  l10n.importResult(result.imported),
+                  if (result.skipped.isNotEmpty)
+                    l10n.importSkipped(result.skipped.join(', ')),
+                ].join('\n'),
               ),
+              if (problems.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(l10n.importProblemsMessage(problems.length)),
+                const SizedBox(height: 8),
+                for (final p in problems.take(shown))
+                  Text('• ${l10n.importProblemItem(p.title, p.count)}'),
+                if (problems.length > shown)
+                  Text(l10n.moreProblems(problems.length - shown)),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.importProblemsHint,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+              if (labels.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(
+                  l10n.importLegacyLabelsMessage(labels.length),
+                  key: const Key('import-legacy-labels'),
+                ),
+              ],
+              if (keys.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(
+                  l10n.importKeySuggestionsMessage(keys.length),
+                  key: const Key('import-key-suggestions'),
+                ),
+                for (final k in keys.take(shown))
+                  _keySuggestionRow(result, k, notation),
+                if (keys.length > shown) ...[
+                  const SizedBox(height: 4),
+                  Text(l10n.importKeySuggestionsMore(keys.length - shown)),
+                ],
+              ],
             ],
-            if (labels.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Text(
-                l10n.importLegacyLabelsMessage(labels.length),
-                key: const Key('import-legacy-labels'),
-              ),
-            ],
-          ],
+          ),
         ),
       ),
       actions: [

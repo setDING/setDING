@@ -5789,4 +5789,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pageTurnerUnnamed => 'Device without a name';
+
+  @override
+  String importKeySuggestionsMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count imported songs have',
+      one: '1 imported song has',
+    );
+    return '$_temp0 no key. Suggested from the chords; a tap sets the key:';
+  }
+
+  @override
+  String importKeySuggestionsMore(int count) {
+    return '… and $count more: To do on the overview, No key.';
+  }
+
+  @override
+  String importKeysSet(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Keys set in $count songs',
+      one: 'Key set in 1 song',
+      zero: 'No key set',
+    );
+    return '$_temp0';
+  }
 }

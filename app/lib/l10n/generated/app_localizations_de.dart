@@ -5835,4 +5835,32 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get pageTurnerUnnamed => 'Gerät ohne Namen';
+
+  @override
+  String importKeySuggestionsMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count importierte Songs haben',
+      one: '1 importierter Song hat',
+    );
+    return '$_temp0 keine Tonart. Aus den Akkorden erraten; ein Tipp setzt die Tonart:';
+  }
+
+  @override
+  String importKeySuggestionsMore(int count) {
+    return '… und $count weitere: Zu tun auf der Übersicht, Ohne Tonart.';
+  }
+
+  @override
+  String importKeysSet(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Tonart in $count Songs gesetzt',
+      one: 'Tonart in 1 Song gesetzt',
+      zero: 'Keine Tonart gesetzt',
+    );
+    return '$_temp0';
+  }
 }

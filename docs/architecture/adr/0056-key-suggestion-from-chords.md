@@ -72,7 +72,14 @@ everyone who uses the song.
 
 - 2026-11-22: Proposed with the implementation (#919).
 - 2026-11-22: Accepted by the owner (#924).
+- 2026-11-22: Owner request (#925), resolving the open point: **the import
+  report suggests keys** too. It lists the imported songs without `{key}` that
+  have a guess (title and chips with the best key and the runner-up); a tap
+  writes that song's key, so each song is still confirmed on its own. No
+  *apply all*. The report opens for key suggestions alone; at most eight songs
+  are listed, the rest is pointed to *To do* → *No key*. setDING archives are
+  not checked.
 
 ## Open points
 
-- Suggest the key also in the import report for imported songs without a key.
+- None.

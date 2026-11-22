@@ -3095,5 +3095,29 @@
   "pairPageTurnerPrompt": "Press the pedal now.",
   "pageTurnerPaired": "Page turner paired: {name}",
   "pageTurnerForgotten": "Page turner forgotten: {name}",
-  "pageTurnerUnnamed": "Device without a name"
+  "pageTurnerUnnamed": "Device without a name",
+  "importKeySuggestionsMessage": "{count, plural, =1{1 imported song has} other{{count} imported songs have}} no key. Suggested from the chords; a tap sets the key:",
+  "@importKeySuggestionsMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importKeySuggestionsMore": "… and {count} more: To do on the overview, No key.",
+  "@importKeySuggestionsMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importKeysSet": "{count, plural, =0{No key set} =1{Key set in 1 song} other{Keys set in {count} songs}}",
+  "@importKeysSet": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

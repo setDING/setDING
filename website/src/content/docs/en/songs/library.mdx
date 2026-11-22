@@ -10,6 +10,7 @@ import replaceChoice from '../../../../../../docs/screenshots/backup_replace_cho
 import replace from '../../../../../../docs/screenshots/backup_replace.png';
 import songs from '../../../../../../docs/screenshots/songs.png';
 import importLabels from '../../../../../../docs/screenshots/import_labels.png';
+import importKeys from '../../../../../../docs/screenshots/import_keys.png';
 import songsSelected from '../../../../../../docs/screenshots/songs_selected.png';
 import songExport from '../../../../../../docs/screenshots/song_export.png';
 import songImport from '../../../../../../docs/screenshots/song_import.png';
@@ -136,6 +137,13 @@ listed there too: **Convert labels** writes them as `label="…"`, as the ChordP
 specification recommends. They look the same either way.
 
 <Image src={importLabels} alt="Check the import: one song with a place to fix, two songs with short-form section labels, and the buttons Convert labels and Fix automatically" />
+
+Imported songs without a key are listed with a key suggested from their chords,
+sometimes with a second one (e.g. **Am** or **C**, which share their chords). A tap on
+a suggestion sets the key of that song; songs you leave out stay without a key and
+can be found later under **To do** → **No key** on the overview.
+
+<Image src={importKeys} alt="Check the import: three songs without a key, each with the suggested key, one of them with Am and C" />
 
 ## Convert songs
 

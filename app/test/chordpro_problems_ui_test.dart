@@ -222,6 +222,94 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('the import report suggests keys from the chords (#925)', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    ImportFile file(String name, String text) =>
+        ImportFile(name, Uint8List.fromList(utf8.encode(text)));
+    final files = [
+      file('g.cho', '{title: In G}\n[G]a [C]b [D]c [G]d'),
+      file('am.cho', '{title: In Am}\n[Am]a [F]b [C]c [G]d [Am]e'),
+      file('keyed.cho', '{title: Keyed}\n{key: A}\n[A]a [D]b [E]c'),
+    ];
+    await tester.pumpWidget(
+      app.build(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () => showImportDialog(
+                context,
+                pick: ({extensions}) async => files,
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    Future<void> waitFor(bool Function() done) async {
+      for (var i = 0; i < 100 && !done(); i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump(const Duration(milliseconds: 20));
+      }
+      expect(done(), isTrue);
+    }
+
+    Future<Map<String, String?>> keys() async => {
+      for (final s in (await tester.runAsync(
+        () => app.db.select(app.db.songs).get(),
+      ))!)
+        s.title: s.songKey,
+    };
+
+    final report = find.byKey(const Key('import-problems'));
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Choose files'));
+    await waitFor(() => report.evaluate().isNotEmpty);
+    await tester.pumpAndSettle();
+
+    // Only key suggestions: the report opens for them alone.
+    expect(find.byKey(const Key('import-key-suggestions')), findsOneWidget);
+    expect(find.textContaining('2 imported songs have no key'), findsOneWidget);
+    expect(find.text('In G'), findsOneWidget);
+    expect(find.text('In Am'), findsOneWidget);
+    expect(find.text('Keyed'), findsNothing);
+    expect(find.text('Fix automatically'), findsNothing);
+    expect(await keys(), {'In G': null, 'In Am': null, 'Keyed': 'A'});
+
+    // Picking the runner-up writes it; the row goes away.
+    final c = find.byWidgetPredicate(
+      (w) =>
+          w.key is ValueKey<String> &&
+          (w.key! as ValueKey<String>).value.startsWith('import-key-') &&
+          (w.key! as ValueKey<String>).value.endsWith('-C'),
+    );
+    expect(c, findsOneWidget);
+    await tester.tap(c);
+    await waitFor(() => find.text('In Am').evaluate().isEmpty);
+    expect(report, findsOneWidget);
+    expect((await keys())['In Am'], 'C');
+
+    // The last one closes the report.
+    final g = find.byWidgetPredicate(
+      (w) =>
+          w.key is ValueKey<String> &&
+          (w.key! as ValueKey<String>).value.endsWith('-G') &&
+          (w.key! as ValueKey<String>).value.startsWith('import-key-'),
+    );
+    await tester.tap(g);
+    await waitFor(() => report.evaluate().isEmpty);
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('Keys set in 2 songs'), findsOneWidget);
+    expect(await keys(), {'In G': 'G', 'In Am': 'C', 'Keyed': 'A'});
+    await app.dispose(tester);
+  });
+
   testWidgets('the editor offers to convert short-form labels (#672)', (
     tester,
   ) async {
