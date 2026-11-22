@@ -160,7 +160,7 @@ void main() {
     expect(f.format(ChordToken('Eb2')), 'F2');
     final german = ChordFormatter.forSong(song, notation: ChordNotation.german);
     expect(german.format(ChordToken('(Bb/D)')), '(B/D)');
-    final nashville = ChordFormatter.forSong(song, nashville: true);
+    final nashville = ChordFormatter.forSong(song, view: ChordView.nashville);
     expect(nashville.format(ChordToken('(Bb/D)')), '(1/3)');
   });
 

@@ -14,6 +14,22 @@ enum ChordNotation {
   german,
 }
 
+/// How chords are shown: as names, Nashville numbers or Roman numerals
+/// (ADR-0055).
+enum ChordView {
+  /// Chord names, e.g. `Am7`.
+  chords,
+
+  /// Nashville numbers relative to the key, e.g. `6m7` (ADR-0003).
+  nashville,
+
+  /// Roman numerals relative to the key, e.g. `vi7` (ADR-0055).
+  numerals;
+
+  /// Whether the chords are shown as scale degrees (needs a key).
+  bool get isDegrees => this != chords;
+}
+
 const _sharpNames = [
   'C',
   'C#',
@@ -220,6 +236,48 @@ class Chord {
         bass == null ? null : _degree(bass!.pitch, key),
         style,
       );
+
+  /// Formats the chord as a Roman numeral relative to [key] (ADR-0055).
+  String toNumeral(Key key) => chordPartsText(toNumeralParts(key));
+
+  /// Roman numeral as parts: upper case for major, dominant and augmented
+  /// chords, lower case for minor, diminished and half-diminished ones,
+  /// in a fixed jazz spelling (`viiø7`, `vii°7`, `IΔ7`, `V7♭9`). Degrees
+  /// count from the tonic with the major scale as reference, also in minor
+  /// keys (`♭III` in A minor). The bass is an arabic degree (`I/3`). A suffix
+  /// that is not understood stays as written behind an upper-case numeral.
+  List<ChordPart> toNumeralParts(Key key) {
+    final parsed = parsedSuffix;
+    final degree = _numerals[(root.pitch - key.tonic.pitch) % 12];
+    final lower =
+        parsed != null &&
+        (parsed.quality == ChordQuality.minor ||
+            parsed.quality == ChordQuality.diminished ||
+            parsed.quality == ChordQuality.halfDiminished);
+    final numeral = lower ? degree.toLowerCase() : degree;
+    return [
+      ChordPart(numeral),
+      if (parsed != null) ...parsed.formatNumeral(),
+      if (parsed == null && suffix.isNotEmpty) ChordPart(suffix),
+      if (bass != null)
+        ChordPart('/${_degree(bass!.pitch, key).replaceFirst('b', '♭')}'),
+    ];
+  }
+
+  static const _numerals = [
+    'I',
+    '♭II',
+    'II',
+    '♭III',
+    'III',
+    'IV',
+    '♭V',
+    'V',
+    '♭VI',
+    'VI',
+    '♭VII',
+    'VII',
+  ];
 
   List<ChordPart> _parts(String rootText, String? bassText, ChordStyle style) {
     final styled = style == ChordStyle.asWritten

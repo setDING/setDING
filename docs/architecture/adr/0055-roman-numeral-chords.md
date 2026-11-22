@@ -57,7 +57,7 @@ conversion needs no new parsing.
    minor, diminished and half-diminished chords are lower case, and the minor marker
    is dropped. Examples in C: `C` → `I`, `Dm7` → `ii7`, `G7` → `V7`, `Am` → `vi`,
    `Cmaj7` → `IΔ7`, `Bm7b5` → `viiø7`, `Bdim` → `vii°`, `Bdim7` → `vii°7`,
-   `Caug` → `I+`, `Csus4` → `Isus4`, `Am(maj7)` → `iΔ7`.
+   `Caug` → `I+`, `Csus4` → `Isus4`, `Am(maj7)` → `viΔ7`.
 4. **Accidentals before the numeral**, from the same degree table as the Nashville
    numbers: `♭II`, `♭III`, `♯IV`/`♭V` as for Nashville, `♭VI`, `♭VII`.
 5. **Minor keys in jazz style.** Degrees are counted from the tonic with the major

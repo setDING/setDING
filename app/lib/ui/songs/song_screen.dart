@@ -248,7 +248,9 @@ class _SongScreenState extends ConsumerState<SongScreen> {
           transpose: overlay.transpose,
           capo: overlay.capoFret,
           notation: settings.notation,
-          nashville: overlay.nashville ?? settings.nashville,
+          view: (overlay.nashville ?? settings.nashville)
+              ? ChordView.nashville
+              : ChordView.chords,
           style: settings.chordStyle,
           superscript: settings.chordSuperscript,
         );
@@ -707,7 +709,7 @@ class _FittedSongBody extends ConsumerWidget {
       formatter.transpose,
       formatter.capo,
       formatter.notation,
-      formatter.nashville,
+      formatter.view,
       lyricsOnly,
       overlay.notes,
       diagrams,

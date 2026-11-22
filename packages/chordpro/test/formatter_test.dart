@@ -65,14 +65,60 @@ void main() {
   });
 
   test('Nashville numbers ignore transposition', () {
-    final f = ChordFormatter.forSong(song, transpose: 5, nashville: true);
+    final f = ChordFormatter.forSong(
+      song,
+      transpose: 5,
+      view: ChordView.nashville,
+    );
     expect(chords(f), ['1', '6m', '4', '57/7', 'N.C.', 'Riff']);
+  });
+
+  test('Roman numerals ignore transposition and the chord style', () {
+    for (final style in ChordStyle.values) {
+      final f = ChordFormatter.forSong(
+        song,
+        transpose: 5,
+        view: ChordView.numerals,
+        style: style,
+        notation: ChordNotation.german,
+      );
+      expect(chords(f), ['I', 'vi', 'IV', 'V7/7', 'N.C.', 'Riff']);
+    }
+  });
+
+  test('Roman numerals raise the extension with superscript', () {
+    final f = ChordFormatter.forSong(
+      parseChordPro('{key: C}\n[Bm7b5]a [G7b9]b'),
+      view: ChordView.numerals,
+      superscript: true,
+    );
+    expect(f.format(ChordToken('Bm7b5')), 'viiø7');
+    expect(f.formatParts(ChordToken('G7b9')), [
+      const ChordPart('V'),
+      const ChordPart('7♭9', raised: true),
+    ]);
+    expect(f.formatParts(ChordToken('Bm7b5')), [
+      const ChordPart('viiø'),
+      const ChordPart('7', raised: true),
+    ]);
+  });
+
+  test('Roman numerals without key fall back to chord names', () {
+    final noKey = parseChordPro('[Am]a');
+    final f = ChordFormatter.forSong(noKey, view: ChordView.numerals);
+    expect(f.showsDegrees, isFalse);
+    expect(
+      f.format(
+        (noKey.sections.first.lines.first as LyricLine).segments.first.chord!,
+      ),
+      'Am',
+    );
   });
 
   test('Nashville without key falls back to chord names', () {
     final noKey = parseChordPro('[C]a');
-    final f = ChordFormatter.forSong(noKey, nashville: true);
-    expect(f.showsNashville, isFalse);
+    final f = ChordFormatter.forSong(noKey, view: ChordView.nashville);
+    expect(f.showsDegrees, isFalse);
     expect(
       f.format(
         (noKey.sections.first.lines.first as LyricLine).segments.first.chord!,
@@ -159,7 +205,7 @@ void main() {
     test('Nashville numbers with style', () {
       final f = ChordFormatter.forSong(
         styledSong,
-        nashville: true,
+        view: ChordView.nashville,
         style: ChordStyle.jazz,
       );
       expect(parts(f).take(3).map(chordPartsText), ['6−7', '1Δ7', '(2ø7)']);
