@@ -479,20 +479,23 @@ class SongRepository {
 
   /// Creates a song. Title and artist from the source take precedence;
   /// [title]/[artist] are used for songs without ChordPro text (PDF only).
+  /// [id]: kept when the local library is restored (ADR-0054); default a
+  /// new one.
   Future<String> createSong({
     String source = '',
     String? title,
     String? artist,
+    String? id,
   }) async {
     final meta = SongMeta.fromSource(source);
-    final id = _uuid.v4();
+    final newId = id ?? _uuid.v4();
     final now = DateTime.now();
     await _write(() async {
       await db
           .into(db.songs)
           .insert(
             SongsCompanion.insert(
-              id: id,
+              id: newId,
               libraryId: libraryId,
               chordproSource: Value(source),
               title: meta.title ?? blankToNull(title) ?? '',
@@ -513,9 +516,9 @@ class SongRepository {
               updatedBy: Value(_editorIn(libraryId)),
             ),
           );
-      await markDirty(db, SyncCollection.songs, id, scope: libraryId);
+      await markDirty(db, SyncCollection.songs, newId, scope: libraryId);
     });
-    return id;
+    return newId;
   }
 
   /// Saves a new ChordPro source and refreshes the extracted metadata.
@@ -1028,20 +1031,22 @@ class SongRepository {
   }
 
   /// Adds a PDF or image attachment ([extension] without dot). Throws
-  /// [AttachmentTooLargeException] above 20 MB.
+  /// [AttachmentTooLargeException] above 20 MB. [id]: kept when the local
+  /// library is restored (ADR-0054); default a new one.
   Future<String> addAttachment(
     String songId, {
     required String name,
     required Uint8List bytes,
     int? pages,
     String extension = 'pdf',
+    String? id,
   }) async {
     if (bytes.length > maxAttachmentBytes) {
       throw AttachmentTooLargeException(bytes.length);
     }
-    final id = _uuid.v4();
+    final newId = id ?? _uuid.v4();
     final ext = extension.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
-    final fileName = '$id.${ext.isEmpty ? 'bin' : ext}';
+    final fileName = '$newId.${ext.isEmpty ? 'bin' : ext}';
     await storage.write(fileName, bytes);
     try {
       await _write(() async {
@@ -1049,7 +1054,7 @@ class SongRepository {
             .into(db.attachments)
             .insert(
               AttachmentsCompanion.insert(
-                id: id,
+                id: newId,
                 songId: songId,
                 name: name,
                 fileName: fileName,
@@ -1058,14 +1063,14 @@ class SongRepository {
                 updatedAt: DateTime.now(),
               ),
             );
-        await _markAttachment(id, songId, fileName);
+        await _markAttachment(newId, songId, fileName);
       });
     } catch (_) {
       // Not stored: the file would be an orphan.
       await storage.delete(fileName);
       rethrow;
     }
-    return id;
+    return newId;
   }
 
   /// Only PDF attachments are synced (ADR-0009); images stay on the device.

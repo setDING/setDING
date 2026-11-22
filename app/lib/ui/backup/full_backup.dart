@@ -21,6 +21,7 @@ import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
 import 'auto_backup_tiles.dart';
 import 'backup_actions.dart';
+import 'replace_local.dart' show confirmLocalReplace;
 
 export '../../data/auto_backup.dart' show lastBackupKey;
 
@@ -272,6 +273,15 @@ class _FullRestoreDialogState extends ConsumerState<_FullRestoreDialog> {
   bool _busy = false;
   _RestoreResult? _result;
 
+  /// Replace the local library by the backup's local library (ADR-0054).
+  bool _replaceLocal = false;
+
+  /// Whether the library [index] of the backup replaces the local library.
+  bool _replaces(int index) =>
+      _replaceLocal &&
+      _targets[index] == localBandId &&
+      BackupService.isLocalArchive(widget.backup.libraries[index]);
+
   /// Libraries the person may import songs into.
   List<LibraryView> _libraries() => [
     for (final l
@@ -316,6 +326,15 @@ class _FullRestoreDialogState extends ConsumerState<_FullRestoreDialog> {
 
   Future<void> _restore() async {
     final l10n = AppLocalizations.of(context);
+    // The preview and the safety backup first (ADR-0054).
+    final replaced = [
+      for (final (index, library) in widget.backup.libraries.indexed)
+        if (_replaces(index)) library,
+    ].firstOrNull;
+    if (replaced != null && !await confirmLocalReplace(context, replaced)) {
+      return;
+    }
+    if (!mounted) return;
     setState(() => _busy = true);
     try {
       final service = ref.read(backupServiceProvider);
@@ -323,6 +342,11 @@ class _FullRestoreDialogState extends ConsumerState<_FullRestoreDialog> {
       for (final (index, library) in widget.backup.libraries.indexed) {
         final target = _targets[index];
         if (target == null) continue;
+        if (_replaces(index)) {
+          results.add(await service.replaceLocal(library));
+          ref.invalidate(backupReminderProvider);
+          continue;
+        }
         results.add(
           await service.import(
             library,
@@ -416,6 +440,19 @@ class _FullRestoreDialogState extends ConsumerState<_FullRestoreDialog> {
                     onChanged: (v) => setState(() => _targets[index] = v),
                   ),
                 ),
+              // The local library of the backup can replace this one's.
+              for (final (index, library) in backup.libraries.indexed)
+                if (_targets[index] == localBandId &&
+                    BackupService.isLocalArchive(library))
+                  CheckboxListTile(
+                    key: const Key('backup-restore-replace-local'),
+                    contentPadding: EdgeInsets.zero,
+                    value: _replaceLocal,
+                    onChanged: (v) =>
+                        setState(() => _replaceLocal = v ?? false),
+                    title: Text(l10n.backupModeReplace),
+                    subtitle: Text(l10n.backupModeReplaceHint),
+                  ),
               const SizedBox(height: 12),
               Text(l10n.backupImportDifferingAll),
               RadioGroup<BackupDuplicates>(

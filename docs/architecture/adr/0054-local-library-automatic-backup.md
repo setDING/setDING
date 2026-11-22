@@ -192,6 +192,20 @@ the server sync (ADR-0004).
   the archive's content without the attachment bytes (their ID, file and
   last change stand in for them), so personal adjustments and set items,
   which have no change time, count too.
+- 2026-11-22: Restoring by replacing implemented (#841). The import dialog of
+  an archive of a local library, opened in the local library, offers *Add as
+  a copy* or *Replace the local library*; a full restore offers it for its
+  local library when that goes into the local library. The preview names the
+  device and date of the backup: the manifest's `source` gets an optional
+  `device` (written by the automatic backup), compatible with format version
+  1. The safety backup is called `setDING-Backup <device> <yyyy-mm-dd HHmm>
+  before restore.zip`, so the keeping of automatic backups never deletes it;
+  if it is not saved (cancelled or failed), nothing is replaced. All records
+  are removed and written in one database transaction; files of removed
+  attachments are deleted afterwards. An ID that is already used outside the
+  local library (e.g. a song of an organization) gets a new one. The local
+  band's play history comes from its past sets (ADR-0046), so it comes back
+  with the sets of the backup.
 
 ## Open points
 

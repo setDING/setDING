@@ -14,6 +14,7 @@ import '../songs/song_screen.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/export_file.dart';
 import 'full_backup.dart' show lastBackupKey;
+import 'replace_local.dart';
 import '../widgets/loading_indicator.dart';
 
 /// Exports [library] as a backup archive (ADR-0043). An organization is
@@ -168,8 +169,9 @@ Future<void> runBackupExport(
   }
 }
 
-/// Imports a backup archive into the current library (ADR-0043), always as
-/// a copy: asks where the sets go and what to do with songs that exist with
+/// Imports a backup archive into the current library (ADR-0043) as a copy,
+/// or replaces the local library by the archive of a local library
+/// (ADR-0054): asks where the sets go and what to do with songs that exist with
 /// a different text, then reports the result.
 Future<void> importBackup(BuildContext context, Uint8List zip) async {
   final BackupContents contents;
@@ -185,10 +187,15 @@ Future<void> importBackup(BuildContext context, Uint8List zip) async {
     return;
   }
   if (!context.mounted) return;
-  await showDialog<void>(
+  final replace = await showDialog<bool>(
     context: context,
     builder: (_) => _BackupImportDialog(contents: contents),
   );
+  // Replacing the local library (ADR-0054): the preview and the safety
+  // backup are asked outside the import dialog.
+  if (replace == true && context.mounted) {
+    await replaceLocalLibrary(context, contents);
+  }
 }
 
 class _BackupImportDialog extends ConsumerStatefulWidget {
@@ -205,6 +212,9 @@ class _BackupImportDialogState extends ConsumerState<_BackupImportDialog> {
   BackupPreview? _preview;
   BackupImportResult? _result;
   BackupDuplicates _duplicates = BackupDuplicates.keepExisting;
+
+  /// Replace the local library instead of adding copies (ADR-0054).
+  bool _replace = false;
 
   /// Archive band -> target band (null: skip).
   Map<String, String?>? _bands;
@@ -295,6 +305,10 @@ class _BackupImportDialogState extends ConsumerState<_BackupImportDialog> {
       for (final b in widget.contents.bands)
         if ((setsPerBand[b['id']] ?? 0) > 0) b,
     ];
+    final canReplace =
+        ref.watch(currentLibraryProvider).isLocal &&
+        BackupService.isLocalArchive(widget.contents);
+    final replace = canReplace && _replace;
     return AlertDialog(
       key: const Key('backup-import'),
       title: Text(l10n.backupImportTitle),
@@ -314,16 +328,41 @@ class _BackupImportDialogState extends ConsumerState<_BackupImportDialog> {
                         widget.contents.sets.length,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      l10n.backupImportCopyHint,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    if (preview.identical > 0) ...[
+                    if (canReplace)
+                      RadioGroup<bool>(
+                        groupValue: _replace,
+                        onChanged: (v) => setState(() => _replace = v!),
+                        child: Column(
+                          children: [
+                            RadioListTile(
+                              key: const Key('backup-mode-copy'),
+                              contentPadding: EdgeInsets.zero,
+                              value: false,
+                              title: Text(l10n.backupModeCopy),
+                              subtitle: Text(l10n.backupModeCopyHint),
+                            ),
+                            RadioListTile(
+                              key: const Key('backup-mode-replace'),
+                              contentPadding: EdgeInsets.zero,
+                              value: true,
+                              title: Text(l10n.backupModeReplace),
+                              subtitle: Text(l10n.backupModeReplaceHint),
+                            ),
+                          ],
+                        ),
+                      )
+                    else ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.backupImportCopyHint,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                    if (!replace && preview.identical > 0) ...[
                       const SizedBox(height: 12),
                       Text(l10n.backupImportIdentical(preview.identical)),
                     ],
-                    if (preview.differing > 0) ...[
+                    if (!replace && preview.differing > 0) ...[
                       const SizedBox(height: 12),
                       Text(l10n.backupImportDiffering(preview.differing)),
                       RadioGroup<BackupDuplicates>(
@@ -347,7 +386,7 @@ class _BackupImportDialogState extends ConsumerState<_BackupImportDialog> {
                         ),
                       ),
                     ],
-                    if (archiveBands.isNotEmpty) ...[
+                    if (!replace && archiveBands.isNotEmpty) ...[
                       const SizedBox(height: 12),
                       Text(l10n.backupImportSetsTo),
                       for (final b in archiveBands)
@@ -391,13 +430,17 @@ class _BackupImportDialogState extends ConsumerState<_BackupImportDialog> {
         ),
         FilledButton(
           key: const Key('backup-import-start'),
-          onPressed: _busy || preview == null ? null : _import,
+          onPressed: _busy || preview == null
+              ? null
+              : replace
+              ? () => Navigator.pop(context, true)
+              : _import,
           child: _busy
               ? const SizedBox.square(
                   dimension: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : Text(l10n.backupImportStart),
+              : Text(replace ? l10n.backupModeReplace : l10n.backupImportStart),
         ),
       ],
     );

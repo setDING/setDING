@@ -322,6 +322,9 @@ Deleted songs and sets can be **restored for 30 days**.
   preselects the format exported last while the app runs. The menu labels
   named a format or one option ("Export with attachments" was wrong once
   attachments were unticked). The archives keep the `.zip` extension.
+- 2026-11-22: The manifest's `source` may carry an optional `device`, the
+  device that wrote the archive (the automatic backup of ADR-0054, #841);
+  readers ignore it, the format version stays 1.
 
 - 2026-11-22: Owner decisions (#866): the trash can **delete permanently**
   (single entries, a selection, or the whole trash, each confirmed), allowed

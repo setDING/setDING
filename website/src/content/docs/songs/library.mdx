@@ -6,6 +6,8 @@ sidebar:
 ---
 
 import { Image } from 'astro:assets';
+import replaceChoice from '../../../../../docs/screenshots/backup_replace_choice_de.png';
+import replace from '../../../../../docs/screenshots/backup_replace_de.png';
 import songs from '../../../../../docs/screenshots/songs_de.png';
 import importLabels from '../../../../../docs/screenshots/import_labels_de.png';
 import songsSelected from '../../../../../docs/screenshots/songs_selected_de.png';
@@ -270,6 +272,27 @@ nicht doppelt angelegt. Gibt es einen Song mit anderem Text, wählst du, ob du d
 bestehenden behältst oder die Sicherung zusätzlich importierst; zusätzliche Songs
 listet setDING danach auf, damit du vergleichen und aufräumen kannst. Für jede Band
 der Sicherung wählst du, in welche Band ihre Sets kommen.
+
+### Lokale Bibliothek ersetzen
+
+Eine Sicherung der Bibliothek *Auf diesem Gerät* kann sie auch **ersetzen**, z. B. auf
+einem neuen Gerät oder um zu einem früheren Stand zurückzukehren. Importiere sie, während
+*Auf diesem Gerät* die aktuelle Bibliothek ist, und wähle **Lokale Bibliothek
+ersetzen**. Songs, Sets, Anhänge, Anpassungen und Notizen kommen genau wie in der
+Sicherung zurück, mit denselben IDs; was jetzt da ist, wird entfernt, auch aus dem
+Papierkorb. Der Spielverlauf kommt mit den Sets der Sicherung zurück; Einstellungen und
+Organisationen werden nicht verändert. Die lokale Bibliothek einer vollständigen
+Sicherung (**Sicherung wiederherstellen** in den Einstellungen) kann sie genauso ersetzen.
+
+<Image src={replaceChoice} alt="Import einer Sicherung von «Auf diesem Gerät»: «Als Kopie hinzufügen» oder «Lokale Bibliothek ersetzen»" />
+
+Bevor etwas entfernt wird, zeigt setDING, was die Sicherung enthält (welches Gerät,
+wann) und was jetzt da ist, und speichert eine **Sicherheitskopie** der jetzigen
+Bibliothek: in den Ordner der [automatischen Sicherung](/settings/general/#speicher--info),
+wenn du sie nutzt, sonst dorthin, wo du wählst. Nur wenn du das Häkchen entfernst,
+gibt es keine.
+
+<Image src={replace} alt="Lokale Bibliothek ersetzen? Die Sicherung von «Tablet Probe» mit 3 Songs und 1 Set, jetzt 4 Songs und 1 Set auf diesem Gerät, und die Sicherheitskopie in den Nextcloud-Ordner" />
 
 Die Bibliothek *Auf diesem Gerät* kann auch **automatisch** in einen Ordner deines
 Cloud-Speichers gesichert werden, einmal täglich nach Änderungen: siehe

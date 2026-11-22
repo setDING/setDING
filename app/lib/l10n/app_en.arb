@@ -2085,7 +2085,7 @@
     }
   },
   "backupRestore": "Restore backup",
-  "backupRestoreHint": "Imports a backup file as a copy. Nothing existing is changed.",
+  "backupRestoreHint": "Imports a backup file as a copy, or replaces the library “On this device” by its backup.",
   "backupRestoreTitle": "Restore backup",
   "backupLibraryTo": "\"{library}\" ({songs, plural, =1{1 song} other{{songs} songs}}, {sets, plural, =1{1 set} other{{sets} sets}}) into",
   "@backupLibraryTo": {
@@ -2910,6 +2910,86 @@
   "@autoBackupSaved": {
     "placeholders": {
       "file": {
+        "type": "String"
+      }
+    }
+  },
+  "backupModeCopy": "Add as a copy",
+  "backupModeCopyHint": "Songs and sets are added with new IDs; nothing existing is changed.",
+  "backupModeReplace": "Replace the local library",
+  "backupModeReplaceHint": "The library “On this device” becomes exactly as in the backup, e.g. on a new device or to go back to an earlier state.",
+  "backupReplaceTitle": "Replace the local library?",
+  "backupReplaceFromDevice": "Backup of “{device}” from {date}: {songs, plural, =1{1 song} other{{songs} songs}}, {sets, plural, =1{1 set} other{{sets} sets}}.",
+  "@backupReplaceFromDevice": {
+    "placeholders": {
+      "device": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      },
+      "songs": {
+        "type": "int"
+      },
+      "sets": {
+        "type": "int"
+      }
+    }
+  },
+  "backupReplaceFrom": "Backup from {date}: {songs, plural, =1{1 song} other{{songs} songs}}, {sets, plural, =1{1 set} other{{sets} sets}}.",
+  "@backupReplaceFrom": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "songs": {
+        "type": "int"
+      },
+      "sets": {
+        "type": "int"
+      }
+    }
+  },
+  "backupReplaceNow": "Now on this device: {songs, plural, =1{1 song} other{{songs} songs}}, {sets, plural, =1{1 set} other{{sets} sets}}. They are removed, also those in the trash.",
+  "@backupReplaceNow": {
+    "placeholders": {
+      "songs": {
+        "type": "int"
+      },
+      "sets": {
+        "type": "int"
+      }
+    }
+  },
+  "backupReplaceKeeps": "The play history comes back with the sets of the backup. Settings and organizations are not changed.",
+  "backupReplaceSafety": "Save a safety backup first",
+  "backupReplaceSafetyFolder": "Into the folder of the automatic backup ({folder}).",
+  "@backupReplaceSafetyFolder": {
+    "placeholders": {
+      "folder": {
+        "type": "String"
+      }
+    }
+  },
+  "backupReplaceSafetyChoose": "You choose where to save it.",
+  "backupReplaceSafetySkip": "Without a safety backup, the current library cannot be restored.",
+  "backupReplaceAction": "Replace",
+  "backupReplaceRunning": "Replacing the local library …",
+  "backupReplaceDone": "Local library replaced: {songs, plural, =1{1 song} other{{songs} songs}}, {sets, plural, =1{1 set} other{{sets} sets}}.",
+  "@backupReplaceDone": {
+    "placeholders": {
+      "songs": {
+        "type": "int"
+      },
+      "sets": {
+        "type": "int"
+      }
+    }
+  },
+  "backupReplaceSafetyFailed": "The safety backup could not be saved, so nothing was replaced: {reason}",
+  "@backupReplaceSafetyFailed": {
+    "placeholders": {
+      "reason": {
         "type": "String"
       }
     }

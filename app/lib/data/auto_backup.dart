@@ -303,6 +303,7 @@ class AutoBackupController {
         localBandId,
         libraryName: libraryName,
         now: time,
+        device: _state.device,
       );
       final device = _state.device;
       final name = autoBackupFileName(device, time);
