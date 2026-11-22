@@ -74,14 +74,15 @@ server details (OS, Docker, domain/HTTPS) and the backup concept. They are now k
 - 2026-11-15: Proposed after the owner chose Proxmox LXC + Cloudflare and asked for
   provisioning from the repository via `make`.
 - 2026-11-15: Accepted by the owner.
-- 2026-11-15: Production instance installed: Proxmox CT 600, public hostname `api.realchord.app`.
+- 2026-11-15: Production instance installed on an LXC container, public hostname `api.realchord.app`.
 - 2026-11-15: The web client (ADR-0018, accepted) is served by the same PocketBase from `pb_public`, deployed with the server targets and published as a second tunnel hostname `app.realchord.app` (tunnel and DNS entry by the owner).
 - 2026-11-15: The container time zone is set to `Europe/Zurich` by `install.sh` (it was `Etc/UTC`, so logs, backup names and the backup timer were an hour off). The clock comes from the Proxmox host; PocketBase keeps storing UTC.
 - 2026-11-16: Web client hosting implemented (#27): `make server-install` builds it from the same commit and installs it to `/opt/pocketbase/pb_public` (`--publicDir`); `REALCHORD_WEB_URL` goes into `pocketbase.env` once the hostname exists (docs/operations/server.md step 6).
 - 2026-11-17: **ADR-0024** (accepted): `pocketbase.env` gains `REALCHORD_REGISTRATION` (`invite_only` default / `open`) and `REALCHORD_EMAIL_VERIFICATION` (`off` default / `required`, needs SMTP); a `make` target creates founder invitations; rate limits for sign-up and invitation routes.
-- 2026-11-17: App renamed to **setDING** (#318): public hostnames `api.setding.app` and `app.setding.app`, settings in `/etc/setding/pocketbase.env` with `SETDING_*` variables, backup units `setding-backup.*`. The RealChord installation on CT 600 is replaced by a fresh one (#320).
+- 2026-11-17: App renamed to **setDING** (#318): public hostnames `api.setding.app` and `app.setding.app`, settings in `/etc/setding/pocketbase.env` with `SETDING_*` variables, backup units `setding-backup.*`. The RealChord installation on the production container is replaced by a fresh one (#320).
 - 2026-11-17: Production is updated with `make server-release` after a release (#345): it waits for the tag's green release build and the GitHub Release, deploys from a clean checkout of the tag and stamps the version (`pb_hooks/setding-version.txt`, reported as `serverVersion` by `/api/setding/config`). `make server-install` deploys the working tree, stamped `X.Y.Z-dev+<commit>`, for the first install, test instances and emergencies.
 - 2026-11-19: `make server-install` generates `SETDING_INVITE_KEY` in `pocketbase.env` once if it is missing (#579, ADR-0005); it encrypts the stored invitation tokens and is not part of the `pb_data` backups. The rest of the file stays the owner's.
+- 2026-11-22: Host-specific details of the owner's installation (LAN address, container number and size) removed from the repository (#947). `SERVER` has no default any more; each machine sets it in the git-ignored `local.mk`.
 
 ## Open points
 

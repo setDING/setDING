@@ -20,7 +20,7 @@
 #   make sbom       build the Linux release with its CycloneDX SBOM and validate it
 #   make changelog  draft the CHANGELOG.md section of the next release from the commits
 #   make site       build the website and user documentation (website/, ADR-0030)
-#   make server-*   install and operate the PocketBase server (SERVER=root@host)
+#   make server-*   install and operate the PocketBase server (SERVER=root@host or local.mk)
 
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
@@ -74,11 +74,12 @@ BUILD_NUMBER  ?=
 # Android release key (make android-keystore, ADR-0021); never inside the repository.
 ANDROID_KEYSTORE ?= $(HOME)/.local/share/setding/android-release.jks
 
-# PocketBase server (ADR-0014, docs/operations/server.md). SERVER is the SSH target;
-# it defaults to the production instance (api.setding.app, Proxmox CT 600).
-# Override it for another instance, e.g. `make server-install SERVER=root@<ip>`.
+# PocketBase server (ADR-0014, docs/operations/server.md). SERVER is the SSH target
+# and has no default: set it in the git-ignored local.mk (`SERVER = root@<host>`),
+# in the environment or on the command line, e.g. `make server-install SERVER=root@<host>`.
 # PB_VERSION is the pinned PocketBase version; updates are deliberate (ADR-0004).
-SERVER          ?= root@192.168.1.40
+-include $(ROOT)/local.mk
+SERVER          ?=
 PB_VERSION      ?= 0.42.3
 SSH             ?= ssh
 SERVER_BACKUPS  := /var/lib/pocketbase/backups
@@ -271,7 +272,7 @@ ci-image: ## Build the Flutter base image of the release build (tool/ci/Dockerfi
 	$(DOCKER) build --build-arg FLUTTER_VERSION=$(FLUTTER_VERSION) -t $(CI_IMAGE) $(ROOT)/tool/ci
 
 server-target:
-	@test -n "$(SERVER)" || { echo "Set SERVER to the SSH target, e.g. make $(MAKECMDGOALS) SERVER=root@<ip>"; exit 1; }
+	@test -n "$(SERVER)" || { echo "Set SERVER to the SSH target, e.g. make $(MAKECMDGOALS) SERVER=root@<host>, or in local.mk"; exit 1; }
 
 server-install: server-target ## Install or update the server from the working tree (PocketBase, hooks, migrations, web client; test instances)
 	@SERVER=$(SERVER) SSH="$(SSH)" PB_VERSION=$(PB_VERSION) $(ROOT)/tool/server/deploy.sh

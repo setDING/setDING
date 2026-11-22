@@ -35,6 +35,8 @@ windows/flutter/ephemeral/
 pb_data/
 
 # Secrets / local env
+# Machine-local make settings, e.g. SERVER (docs/operations/server.md)
+/local.mk
 .env
 .env.*
 !.env.example

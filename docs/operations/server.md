@@ -12,18 +12,18 @@ Browsers ─HTTPS──▶  (setding.app)             └───────�
                                           └──────── Debian LXC on Proxmox ────────┘
 ```
 
-## Production instance
+## Server targets
 
-| | |
-|---|---|
-| Public URL | `https://api.setding.app` (Cloudflare Tunnel) |
-| Container | Proxmox CT 600, Debian 13, 2 vCPU, 2 GB RAM, 16 GB disk |
-| LAN address | `192.168.1.40` (SSH as root with key) |
-| Installed | 2026-11-15, PocketBase 0.40.6 |
+The public instance is reached at `https://api.setding.app` (Cloudflare Tunnel).
+The `make server-*` targets use `SERVER` as the SSH target (root with a key). It has
+no default; put the instance you operate into the git-ignored `local.mk` in the
+project folder:
 
-The `make server-*` targets use `SERVER` as the SSH target; it defaults to the
-production instance (`root@192.168.1.40`). Override it for another instance, e.g.
-`make server-install SERVER=root@<staging-ip>`.
+```make
+SERVER = root@<host>
+```
+
+or pass it per call, e.g. `make server-install SERVER=root@<staging-host>`.
 
 | Target | What it does |
 |---|---|
@@ -45,12 +45,12 @@ production instance (`root@192.168.1.40`). Override it for another instance, e.g
 - **SSH public key:** paste the public key of the development machine
   (`~/.ssh/id_ed25519.pub`) so agents can log in as root with a key.
 
-Check the login from the development machine: `ssh root@<ip> true`.
+Check the login from the development machine: `ssh root@<host> true`.
 
 ## 2. Install (agent or owner)
 
 ```bash
-make server-install SERVER=root@<ip>
+make server-install SERVER=root@<host>
 ```
 
 The script ([`tool/server/install.sh`](../../tool/server/install.sh)) installs the
@@ -81,7 +81,7 @@ Tokens and account settings stay with the owner (ADR-0014).
 1. Create the superuser on the server:
    `runuser -u pocketbase -- /opt/pocketbase/pocketbase superuser upsert <email> <password> --dir=/var/lib/pocketbase/pb_data`
    (or open the installer link from `journalctl -u pocketbase` through an SSH tunnel:
-   `ssh -L 8090:127.0.0.1:8090 root@<ip>`).
+   `ssh -L 8090:127.0.0.1:8090 root@<host>`).
 2. Log in at `https://api.setding.app/_/` and enable MFA for superusers.
 3. **Settings → Application:** set the application URL to `https://api.setding.app`.
    Invitation links are built from it, never from the request's `Host` header;
