@@ -233,6 +233,10 @@ the API directly as the refused roles (permission matrix test).
 - 2026-11-22: On wide screens the library side of the picker has no tick boxes and
   leaves out the chosen songs, which are listed on the other side; a tap moves a
   song there (#860). Narrow screens keep the tick boxes.
+- 2026-11-22: Copying songs or a set into another library links the copies that
+  were versions of one work among the copied songs under a new group, as an
+  archive import does; never with songs already in the target, and a single
+  copied version stays unlinked (#878).
 
 ## Open points
 

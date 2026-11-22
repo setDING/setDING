@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:drift/drift.dart' show driftRuntimeOptions;
+import 'package:drift/drift.dart' show OrderingTerm, Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:setding/data/attachment_storage_io.dart';
@@ -254,6 +254,71 @@ void main() {
       final copy = (await copies.copySongs([a], 'o1')).single;
       expect((await local(copy)).workId, isNull);
       expect((await local(copy)).language, 'en');
+    });
+
+    test('versions copied together are linked again in the target '
+        '(#878)', () async {
+      final a = await songs.createSong(source: '{title: A}');
+      final b = await songs.createSong(source: '{title: B}');
+      final c = await songs.createSong(source: '{title: C}');
+      await songs.linkLanguageVersions(a, b);
+      await songs.linkLanguageVersions(a, c);
+      final work = (await local(a)).workId;
+      final [ca, cb] = await copies.copySongs([a, b], 'o2');
+      final copyWork = (await local(ca)).workId;
+      expect(copyWork, isNotNull);
+      expect(copyWork, isNot(work));
+      expect((await local(cb)).workId, copyWork);
+      // The originals keep their group.
+      expect((await local(a)).workId, work);
+      expect((await local(c)).workId, work);
+    });
+
+    test('versions in a copied set are linked again in the target '
+        '(#878)', () async {
+      final a = await songs.createSong(source: '{title: A}');
+      final b = await songs.createSong(source: '{title: B}');
+      final d = await songs.createSong(source: '{title: D}');
+      await songs.linkLanguageVersions(a, b);
+      const setId = 'set1';
+      await db
+          .into(db.setlists)
+          .insert(
+            SetlistsCompanion.insert(
+              id: setId,
+              bandId: 'b1',
+              name: 'S',
+              updatedAt: DateTime.now(),
+            ),
+          );
+      for (final (i, id) in [a, b, d].indexed) {
+        await db
+            .into(db.setItems)
+            .insert(
+              SetItemsCompanion.insert(
+                id: 'i$i',
+                setId: setId,
+                position: i,
+                type: SetItemType.song,
+                songId: Value(id),
+              ),
+            );
+      }
+      final newSet = await copies.copySet(
+        setId,
+        targetBandId: 'b1',
+        targetLibraryId: 'o2',
+      );
+      final items =
+          await (db.select(db.setItems)
+                ..where((i) => i.setId.equals(newSet))
+                ..orderBy([(i) => OrderingTerm.asc(i.position)]))
+              .get();
+      final [ca, cb, cd] = [for (final i in items) await local(i.songId!)];
+      expect(ca.workId, isNotNull);
+      expect(cb.workId, ca.workId);
+      expect(ca.workId, isNot((await local(a)).workId));
+      expect(cd.workId, isNull);
     });
 
     test('the local library is never queued for the sync', () async {
