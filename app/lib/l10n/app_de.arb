@@ -3729,5 +3729,15 @@
         "type": "String"
       }
     }
+  },
+  "settingsPageTurnerUse": "Ich verwende einen Seitenwender",
+  "settingsPageTurnerUseHint": "Ein Fusspedal, das die Seiten wendet. Zeigt ihn auf der Übersicht und bietet an, einen erkannten zuzuordnen.",
+  "pageTurnerDetected": "Seitenwender erkannt: {name}",
+  "@pageTurnerDetected": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

@@ -103,11 +103,26 @@ no API to list input devices. What the platforms offer differs:
   "Page turner responds" from the quick test. Without a pairing on Android
   and Windows the line now asks to pair the page turner; the quick test and
   the last use stay where pairing is not possible (iPad, web, Linux).
+- 2026-11-22: Owner request (#930), resolving an open point:
+  - **"I use a page turner"**, a device setting (`pageTurnerUsed`) in
+    *Settings › Screen & live mode*. Until it is set, a page turner counts
+    as used once one is paired or was used on the device; pairing one
+    switches it on. Off hides the page turner line of *Ready to play*, the
+    pairing tile and the offer below.
+  - **Offer to pair** on the overview (Android, Windows): a page-turn key
+    on the overview together with a key event from an external device that
+    is not the paired one (within a second: Flutter's key and the
+    platform's device event arrive on different channels) shows a message
+    *"Page turner detected: <name>"* with *Pair*, which pairs that device
+    directly. At most once per device (`pageTurnerOffered`, by IDs or name);
+    a message with an action goes away by itself (ADR-0051), so not
+    answering is "not now", and "never" is switching the setting off.
+    Switching it on again forgets the devices offered before, so they are
+    offered again (owner test). A keyboard that only connects is not
+    offered.
 
 ## Open points
 
-- Whether a person uses a page turner at all (a setting), and an offer on
-  the overview to pair a page turner that is detected but not paired.
 - Windows: the runner code (`windows/runner/input_devices.cpp`) was not
   compiled when accepted; build it and repeat the manual test with a page
   turner.

@@ -5889,4 +5889,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String readinessPageTurnerPairDetail(String mode) {
     return 'Zuordnen, damit die Übersicht zeigt, ob er verbunden ist · Blättern: $mode';
   }
+
+  @override
+  String get settingsPageTurnerUse => 'Ich verwende einen Seitenwender';
+
+  @override
+  String get settingsPageTurnerUseHint =>
+      'Ein Fusspedal, das die Seiten wendet. Zeigt ihn auf der Übersicht und bietet an, einen erkannten zuzuordnen.';
+
+  @override
+  String pageTurnerDetected(String name) {
+    return 'Seitenwender erkannt: $name';
+  }
 }

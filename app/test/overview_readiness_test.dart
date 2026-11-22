@@ -63,9 +63,9 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(line('pageTurner'), findsOneWidget);
-    // Not signed in, no MIDI, no next set, no automatic backup.
-    for (final check in ['midi', 'offline', 'sync', 'backup']) {
+    // Not signed in, no MIDI, no next set, no automatic backup, and no
+    // page turner used on this device (#930).
+    for (final check in ['midi', 'offline', 'sync', 'backup', 'pageTurner']) {
       expect(line(check), findsNothing, reason: check);
     }
 
@@ -133,19 +133,14 @@ void main() {
     await tester.pumpWidget(app.build());
     await tester.pumpAndSettle();
     await showDetails(tester);
-    expect(
-      find.descendant(
-        of: line('pageTurner'),
-        matching: find.text(l10n.readinessPageTurnerNever),
-      ),
-      findsOneWidget,
-    );
+    // No page turner used here yet (#930): no line until one is pressed.
+    expect(line('pageTurner'), findsNothing);
 
     // On another tab the key is not a test.
     await openTab(tester, HomeTab.sets);
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
     await openTab(tester, HomeTab.overview);
-    expect(find.text(l10n.readinessPageTurnerNever), findsOneWidget);
+    expect(line('pageTurner'), findsNothing);
     expect(app.prefs.getString(PageTurnerNotifier.lastUsedKey), isNull);
 
     // Page Down, which has no page scroll on the overview to fail.

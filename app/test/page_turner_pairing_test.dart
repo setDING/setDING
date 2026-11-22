@@ -7,6 +7,7 @@ import 'package:setding/settings/settings.dart';
 import 'package:setding/ui/home_tab.dart';
 import 'package:setding/ui/live/page_turner.dart';
 import 'package:setding/ui/overview/readiness.dart';
+import 'package:setding/ui/widgets/dialogs.dart' show messageActionDuration;
 
 import 'test_app.dart';
 
@@ -151,11 +152,21 @@ void main() {
     });
   });
 
+  /// The live settings with the page turner tile, switching on *I use a
+  /// page turner* (#930) when it is off.
   Future<void> openLiveSettings(WidgetTester tester) async {
     await openTab(tester, HomeTab.settings);
     await tester.tap(find.byKey(const Key('settings-category-live')));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(const Key('settings-page-turner')));
+    final tile = find.byKey(const Key('settings-page-turner'));
+    if (tile.evaluate().isEmpty) {
+      final use = find.byKey(const Key('settings-page-turner-use'));
+      await tester.ensureVisible(use);
+      await tester.pumpAndSettle();
+      await tester.tap(use);
+      await tester.pumpAndSettle();
+    }
+    await tester.ensureVisible(tile);
     await tester.pumpAndSettle();
   }
 
@@ -343,5 +354,145 @@ void main() {
       findsOneWidget,
     );
     await app.dispose(tester);
+  });
+
+  group('page turner in use (#930)', () {
+    Future<void> pumpOverview(WidgetTester tester, TestApp app) async {
+      await tester.pumpWidget(app.build());
+      await tester.pumpAndSettle();
+    }
+
+    final offer = find.byKey(const Key('page-turner-offer'));
+
+    /// One pedal press: the platform's device event and Flutter's key.
+    Future<void> pressPedal(
+      WidgetTester tester,
+      TestApp app, {
+      LogicalKeyboardKey key = LogicalKeyboardKey.pageDown,
+    }) async {
+      app.inputDevices.press(pedal);
+      await tester.sendKeyEvent(key);
+      await tester.pump();
+    }
+
+    testWidgets('a pedal pressed on the overview is offered for pairing', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      await pumpOverview(tester, app);
+
+      await pressPedal(tester, app);
+      expect(offer, findsOneWidget);
+      expect(find.text('Page turner detected: AirTurn DUO'), findsOneWidget);
+      // The message slides in before its action can be tapped.
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('page-turner-offer-pair')));
+      await tester.pumpAndSettle();
+      expect(find.text('Page turner paired: AirTurn DUO'), findsOneWidget);
+      expect(
+        app.prefs.getString(PairedPageTurnerNotifier.nameKey),
+        'AirTurn DUO',
+      );
+      expect(app.prefs.getBool(PageTurnerUseNotifier.key), isTrue);
+
+      // The paired one is not offered again.
+      await tester.pump(const Duration(seconds: 10));
+      await pressPedal(tester, app);
+      expect(offer, findsNothing);
+      await app.dispose(tester);
+    });
+
+    testWidgets('offered once per device; not answering is "not now"', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      await pumpOverview(tester, app);
+      await pressPedal(tester, app);
+      expect(offer, findsOneWidget);
+      // The message goes away by itself (ADR-0051); its time starts once
+      // it has slid in.
+      await tester.pumpAndSettle();
+      await tester.pump(messageActionDuration);
+      await tester.pumpAndSettle();
+      expect(offer, findsNothing);
+
+      await pressPedal(tester, app);
+      expect(offer, findsNothing);
+      expect(app.prefs.getString(PairedPageTurnerNotifier.nameKey), isNull);
+
+      // Switching "I use a page turner" off and on again asks again (owner
+      // test of #930).
+      await openLiveSettings(tester);
+      final use = find.byKey(const Key('settings-page-turner-use'));
+      await tester.ensureVisible(use);
+      await tester.tap(use);
+      await tester.pumpAndSettle();
+      await tester.tap(use);
+      await tester.pumpAndSettle();
+      await openTab(tester, HomeTab.overview);
+      await pressPedal(tester, app);
+      expect(offer, findsOneWidget);
+      await app.dispose(tester);
+    });
+
+    testWidgets('no offer without a page-turn key, on another tab or '
+        'when no page turner is used', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': 'en', PageTurnerUseNotifier.key: false},
+      );
+      await pumpOverview(tester, app);
+      await pressPedal(tester, app);
+      expect(offer, findsNothing);
+
+      await app.prefs.setBool(PageTurnerUseNotifier.key, true);
+      await tester.pumpWidget(const SizedBox());
+      await pumpOverview(tester, app);
+      // A device key alone, e.g. a letter on a Bluetooth keyboard.
+      app.inputDevices.press(pedal);
+      await tester.pump();
+      expect(offer, findsNothing);
+      // On another tab (Arrow Right: Page Down has no page scroll to fail
+      // only on the overview).
+      await openTab(tester, HomeTab.sets);
+      await pressPedal(tester, app, key: LogicalKeyboardKey.arrowRight);
+      expect(offer, findsNothing);
+      await app.dispose(tester);
+    });
+
+    testWidgets('switched off: no page turner line and no pairing tile', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {
+          'language': 'en',
+          PairedPageTurnerNotifier.nameKey: pedal.name,
+          PairedPageTurnerNotifier.vendorKey: pedal.vendorId,
+          PairedPageTurnerNotifier.productKey: pedal.productId,
+        },
+      );
+      await pumpOverview(tester, app);
+      final line = find.byKey(const Key('overview-readiness-pageTurner'));
+      // Paired, not connected: a warning.
+      expect(line, findsOneWidget);
+
+      await openLiveSettings(tester);
+      final use = find.byKey(const Key('settings-page-turner-use'));
+      await tester.tap(use);
+      await tester.pumpAndSettle();
+      expect(app.prefs.getBool(PageTurnerUseNotifier.key), isFalse);
+      expect(find.byKey(const Key('settings-page-turner')), findsNothing);
+
+      await openTab(tester, HomeTab.overview);
+      expect(line, findsNothing);
+      expect(
+        find.byKey(const Key('overview-readiness-all-set')),
+        findsOneWidget,
+      );
+      await app.dispose(tester);
+    });
   });
 }

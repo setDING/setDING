@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import live from '../../../../../docs/screenshots/live_de.png';
 import pageTurner from '../../../../../docs/screenshots/settings_page_turner_de.png';
+import pageTurnerOffer from '../../../../../docs/screenshots/page_turner_offer_de.png';
 import controls from '../../../../../docs/screenshots/live_controls_de.png';
 import liveMarker from '../../../../../docs/screenshots/live_marker_de.png';
 
@@ -50,15 +51,25 @@ Koppele das Pedal in den Bluetooth-Einstellungen deines Geräts; setDING versteh
 die Tasten oben ohne weitere Einstellung. Ein Druck blättert genau einmal, auch wenn
 du das Pedal länger hältst.
 
-Unter **Einstellungen › Bildschirm & Live-Modus › Seitenwender** kannst du dein
-Pedal **zuordnen**: Tippe auf **Zuordnen** und tritt aufs Pedal. setDING merkt
+Schalte unter **Einstellungen › Bildschirm & Live-Modus** **Ich verwende einen
+Seitenwender** ein; dann kannst du unter **Seitenwender** dein Pedal
+**zuordnen**: Tippe auf **Zuordnen** und tritt aufs Pedal. setDING merkt
 sich das Gerät, und der [Bühnencheck](/start/overview/#bühnencheck) auf der
 Übersicht zeigt dann vor dem Auftritt, ob dein Pedal verbunden ist. Über **⋮**
 ordnest du es neu zu oder vergisst es.
 
 <Image src={pageTurner} alt="Die Einstellung Seitenwender mit dem zugeordneten Pedal AirTurn DUO, verbunden" />
 
-Das geht unter Android und Windows. Ein iPad meldet nur, ob eine Tastatur
+Noch einfacher: Tritt auf der **Übersicht** aufs Pedal. setDING erkennt ein
+noch nicht zugeordnetes Pedal und fragt einmal nach; tippe auf **Zuordnen**.
+
+<Image src={pageTurnerOffer} alt="Die Meldung Seitenwender erkannt: DUO500 mit der Schaltfläche Zuordnen auf der Übersicht" />
+
+Verwendest du keinen Seitenwender, schalte die Einstellung aus: Dann fragt
+setDING nicht mehr, und der Bühnencheck zeigt keine Zeile dafür. Schaltest du
+sie wieder ein, fragt setDING erneut nach.
+
+Das Zuordnen geht unter Android und Windows. Ein iPad meldet nur, ob eine Tastatur
 verbunden ist, nicht welche; im Web und unter Linux geht es nicht. Dort zeigt
 der Bühnencheck, wann der Seitenwender zuletzt benutzt wurde.
 
