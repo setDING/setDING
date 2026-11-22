@@ -742,6 +742,7 @@ class FakeSyncBackend implements SyncBackend {
       workId: existing == null ? song.workId : existing.workId,
       language: existing == null ? song.language : existing.language,
       contentRevision: revision,
+      created: existing?.created ?? song.created ?? DateTime.now(),
     );
     songs[song.id] = stored;
     return stored;
@@ -766,6 +767,7 @@ class FakeSyncBackend implements SyncBackend {
       workId: field == SongLinkField.workId ? value : s.workId,
       language: field == SongLinkField.language ? value : s.language,
       contentRevision: s.effectiveContentRevision,
+      created: s.created,
     );
     songs[songId] = stored;
     return stored;

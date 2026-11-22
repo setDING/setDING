@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../data/band_view.dart';
 import '../../data/change_log.dart' show RecentChange;
+import '../../data/play_history.dart' show SongPlayStats;
 import '../../data/database.dart';
 import '../../data/set_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
@@ -12,8 +14,10 @@ import '../bands/band_switcher.dart';
 import '../bands/no_band_hint.dart';
 import '../home_tab.dart';
 import '../live/live_screen.dart';
+import '../sets/repertoire_screen.dart';
 import '../sets/sets_screen.dart' show daysBetween, formatGigDate, openSet;
 import '../songs/song_attention.dart';
+import '../songs/song_screen.dart';
 import '../widgets/app_info.dart';
 import 'recent_changes.dart';
 
@@ -35,8 +39,22 @@ import 'recent_changes.dart';
   return (summary: recent, upcoming: false);
 }
 
-/// The start screen (ADR-0045): cards with the next set, what needs to be
-/// done, the recent changes by other people and the version. A card with
+/// The most upcoming sets the overview lists after the next one (#868).
+const moreSetsOnCard = 3;
+
+/// The most songs the overview lists as newest songs and as songs not
+/// played for a while (#868).
+const songsOnCard = 5;
+
+/// The upcoming sets of the band after the next one, at most
+/// [moreSetsOnCard] (*More sets*, #868).
+List<SetSummary> moreSets(List<SetSummary> sets, DateTime today) =>
+    groupSets(sets, today).upcoming.skip(1).take(moreSetsOnCard).toList();
+
+/// The start screen (ADR-0045): cards with the next set and the ones after
+/// it, what needs to be done, the recent changes by other people, the
+/// newest songs, the songs not played for a while (#868) and the version.
+/// A card with
 /// nothing to show is left out. One column on phones, two from
 /// [navigationRailWidth]. Everything comes from the local database and
 /// updates live during a sync.
@@ -88,8 +106,24 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
     final counts = ref.watch(songAttentionCountsProvider);
     final changes =
         ref.watch(recentChangesProvider(false)).value ?? const <RecentChange>[];
+    final more = moreSets(sets, today);
+    final newest = ref.watch(newestSongsProvider).value ?? const <SongEntry>[];
+    final band = ref.watch(currentBandProvider);
+    final hasBand = ref.watch(hasCurrentBandProvider);
+    final stale = hasBand
+        ? ref
+                  .watch(
+                    repertoireProvider((
+                      band: band.id,
+                      library: band.libraryId,
+                    )),
+                  )
+                  .value
+                  ?.notPlayedFor(band.staleAfterMonths) ??
+              const <SongPlayStats>[]
+        : const <SongPlayStats>[];
     final cards = <Widget>[
-      if (!ref.watch(hasCurrentBandProvider)) const NoBandHint(),
+      if (!hasBand) const NoBandHint(),
       if (shown != null)
         _SetCard(
           key: ValueKey('overview-set-${shown.summary.set.id}'),
@@ -97,9 +131,12 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
           upcoming: shown.upcoming,
           today: today,
         ),
+      if (more.isNotEmpty) _MoreSetsCard(sets: more, today: today),
       if (counts != null && counts.values.any((c) => c > 0))
         _TodoCard(counts: counts),
       if (changes.isNotEmpty) _RecentChangesCard(changes: changes),
+      if (newest.isNotEmpty) _NewestSongsCard(songs: newest),
+      if (stale.isNotEmpty) _NotPlayedCard(songs: stale, band: band),
     ];
     final twoColumns = MediaQuery.sizeOf(context).width >= navigationRailWidth;
     return Scaffold(
@@ -333,21 +370,155 @@ class _RecentChangesCard extends StatelessWidget {
       children: [
         for (final change in changes.take(recentChangesOnCard))
           RecentChangeTile(change),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Align(
-            alignment: AlignmentDirectional.centerEnd,
-            child: TextButton(
-              key: const Key('overview-recent-changes-all'),
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (_) => const RecentChangesScreen(),
-                ),
-              ),
-              child: Text(l10n.overviewShowAll),
+        _ShowAll(
+          buttonKey: const Key('overview-recent-changes-all'),
+          builder: (_) => const RecentChangesScreen(),
+        ),
+      ],
+    );
+  }
+}
+
+/// *Show all* at the end of a card, opening the page of [builder].
+class _ShowAll extends StatelessWidget {
+  const _ShowAll({required this.buttonKey, required this.builder});
+
+  final Key buttonKey;
+  final WidgetBuilder builder;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 8),
+    child: Align(
+      alignment: AlignmentDirectional.centerEnd,
+      child: TextButton(
+        key: buttonKey,
+        onPressed: () =>
+            Navigator.push(context, MaterialPageRoute<void>(builder: builder)),
+        child: Text(AppLocalizations.of(context).overviewShowAll),
+      ),
+    ),
+  );
+}
+
+void _openSong(BuildContext context, String songId) => Navigator.push(
+  context,
+  MaterialPageRoute<void>(builder: (_) => SongScreen(songId: songId)),
+);
+
+/// The upcoming sets after the next one (#868); a tap opens the set.
+class _MoreSetsCard extends ConsumerWidget {
+  const _MoreSetsCard({required this.sets, required this.today});
+
+  final List<SetSummary> sets;
+  final DateTime today;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    return _OverviewCard(
+      key: const Key('overview-more-sets'),
+      title: l10n.overviewMoreSets,
+      children: [
+        for (final summary in sets)
+          ListTile(
+            key: ValueKey('overview-more-set-${summary.set.id}'),
+            leading: const Icon(Icons.event),
+            title: Text(
+              summary.set.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
+            subtitle: Text(
+              [
+                formatGigDate(context, summary.set.gigDate!),
+                l10n.gigInDays(daysBetween(today, summary.set.gigDate!)),
+                ?summary.set.venue,
+              ].join(' · '),
+            ),
+            onTap: () => openSet(context, ref, summary.set.id, wide: false),
           ),
+      ],
+    );
+  }
+}
+
+/// The songs of the band's library created last (#868), with artist, key
+/// and the day they were added; a tap opens the song.
+class _NewestSongsCard extends StatelessWidget {
+  const _NewestSongsCard({required this.songs});
+
+  final List<SongEntry> songs;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final dates = MaterialLocalizations.of(context);
+    String subtitle(SongEntry song) =>
+        [?song.artist, ?song.songKey].join(' · ');
+    return _OverviewCard(
+      key: const Key('overview-newest-songs'),
+      title: l10n.overviewNewestSongs,
+      children: [
+        for (final song in songs)
+          ListTile(
+            key: ValueKey('overview-newest-${song.id}'),
+            leading: const Icon(Icons.library_music_outlined),
+            title: Text(
+              song.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: subtitle(song).isEmpty ? null : Text(subtitle(song)),
+            // The day it was added, with the year when it is not this one.
+            trailing: Text(
+              song.createdAt!.year == DateTime.now().year
+                  ? dates.formatShortMonthDay(song.createdAt!)
+                  : dates.formatShortDate(song.createdAt!),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            onTap: () => _openSong(context, song.id),
+          ),
+      ],
+    );
+  }
+}
+
+/// The songs the band has not played for longer than its threshold
+/// (ADR-0046, #868), longest ago first; *Show all* opens the repertoire.
+class _NotPlayedCard extends StatelessWidget {
+  const _NotPlayedCard({required this.songs, required this.band});
+
+  final List<SongPlayStats> songs;
+  final BandView band;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return _OverviewCard(
+      key: const Key('overview-not-played'),
+      title: l10n.repertoireStale,
+      children: [
+        for (final song in songs.take(songsOnCard))
+          ListTile(
+            key: ValueKey('overview-not-played-${song.songId}'),
+            leading: const Icon(Icons.history),
+            title: Text(
+              song.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: Text(
+              l10n.songLastPlayed(formatGigDate(context, song.last!)),
+            ),
+            onTap: () => _openSong(context, song.songId),
+          ),
+        _ShowAll(
+          buttonKey: const Key('overview-not-played-all'),
+          builder: (_) => RepertoireScreen(band: band),
         ),
       ],
     );

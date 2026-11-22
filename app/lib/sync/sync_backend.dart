@@ -264,6 +264,7 @@ class RemoteSong {
     this.workId,
     this.language,
     this.contentRevision = 0,
+    this.created,
   });
 
   final String id;
@@ -284,6 +285,10 @@ class RemoteSong {
   /// Creator and last editor (ADR-0023); set by the server, never sent.
   final String? createdBy;
   final String? updatedBy;
+
+  /// When the song was created on the server (`created`, #868); set by
+  /// the server, never sent. Null where unknown.
+  final DateTime? created;
 
   /// Language version group and language set by hand (ADR-0053): last
   /// writer wins per field, sent on create and by [SyncBackend.pushSongLink],

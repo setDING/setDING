@@ -28,6 +28,16 @@ import 'package:setding/sync/sync_engine.dart';
 
 import 'fake_backend.dart';
 
+/// The same moment as [expected], to the second: the database stores
+/// seconds in local time.
+Matcher isSameMoment(DateTime expected) => predicate<DateTime?>(
+  (actual) =>
+      actual != null &&
+      actual.millisecondsSinceEpoch ~/ 1000 ==
+          expected.millisecondsSinceEpoch ~/ 1000,
+  'the same moment as $expected',
+);
+
 const _ann = AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann');
 
 void main() {
@@ -111,6 +121,43 @@ void main() {
       expect(
         (await songs.watchSongs(query: 'moonlight').first).single.id,
         's1',
+      );
+    });
+
+    test('pulled songs keep the creation date of the server (#868)', () async {
+      final created = DateTime.utc(2026, 3, 1);
+      server.putSong(
+        RemoteSong(
+          id: 's1',
+          organizationId: 'o1',
+          title: 'Old',
+          chordpro: '{title: Old}',
+          created: created,
+        ),
+      );
+      await engine.sync();
+      expect((await songs.getSong('s1'))!.createdAt, isSameMoment(created));
+
+      // As after the upgrade to schema 33: no date yet, the songs are
+      // pulled again from the start and fill it without another change.
+      await db
+          .update(db.songs)
+          .write(const SongsCompanion(createdAt: Value(null)));
+      await db.delete(db.syncCursors).go();
+      final revision = (await songs.getSong('s1'))!.revision;
+      await engine.sync();
+      final song = (await songs.getSong('s1'))!;
+      expect(song.createdAt, isSameMoment(created));
+      expect(song.revision, revision);
+    });
+
+    test('a pushed song keeps its creation date (#868)', () async {
+      final id = await songs.createSong(source: '{title: New}');
+      expect((await songs.getSong(id))!.createdAt, isNotNull);
+      await engine.sync();
+      expect(
+        (await songs.getSong(id))!.createdAt,
+        isSameMoment(server.songs[id]!.created!),
       );
     });
 

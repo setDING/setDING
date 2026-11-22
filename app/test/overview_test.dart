@@ -13,7 +13,9 @@ import 'package:setding/ui/home_tab.dart';
 import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/ui/overview/overview_screen.dart';
 import 'package:setding/ui/overview/recent_changes.dart';
+import 'package:setding/ui/sets/repertoire_screen.dart';
 import 'package:setding/ui/sets/set_screen.dart';
+import 'package:setding/ui/songs/song_screen.dart';
 
 import 'test_app.dart';
 
@@ -633,6 +635,192 @@ void main() {
         'Neues Set',
       );
       expect(change(ChangeKind.setAdded).kind.isSet, isTrue);
+    });
+  });
+
+  group('more cards (#868)', () {
+    testWidgets('more sets lists the upcoming sets after the next one', (
+      tester,
+    ) async {
+      usePhoneSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      await tester.runAsync(() async {
+        for (final days in [1, 3, 5, 7, 9]) {
+          await app.sets.createSet(
+            name: 'Gig $days',
+            gigDate: today.add(Duration(days: days)),
+            venue: days == 3 ? 'Hall' : null,
+          );
+        }
+        await app.sets.createSet(name: 'Undated');
+      });
+      await tester.pumpWidget(app.build());
+      await tester.pumpAndSettle();
+
+      final card = find.byKey(const Key('overview-more-sets'));
+      expect(
+        find.descendant(of: card, matching: find.text('More sets')),
+        findsOneWidget,
+      );
+      // The next set has its own card; at most three after it.
+      for (final (name, shown) in [
+        ('Gig 1', false),
+        ('Gig 3', true),
+        ('Gig 5', true),
+        ('Gig 7', true),
+        ('Gig 9', false),
+        ('Undated', false),
+      ]) {
+        expect(
+          find.descendant(of: card, matching: find.text(name)),
+          shown ? findsOneWidget : findsNothing,
+          reason: name,
+        );
+      }
+      expect(
+        find.descendant(of: card, matching: find.textContaining('· Hall')),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.descendant(of: card, matching: find.text('Gig 5')));
+      await tester.pumpAndSettle();
+      expect(find.byType(SetScreen), findsOneWidget);
+      expect(find.text('Gig 5'), findsWidgets);
+      await app.dispose(tester);
+    });
+
+    testWidgets('newest songs lists the songs created last', (tester) async {
+      usePhoneSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      await tester.runAsync(() async {
+        for (var i = 1; i <= 7; i++) {
+          final id = await app.songs.createSong(
+            source: '{title: Song $i}\n{artist: Band $i}\n{key: G}',
+          );
+          await (app.db.update(
+            app.db.songs,
+          )..where((s) => s.id.equals(id))).write(
+            SongsCompanion(
+              createdAt: Value(now.subtract(Duration(days: 10 - i))),
+            ),
+          );
+          // The newest one is in the trash.
+          if (i == 7) await app.songs.deleteSong(id);
+        }
+      });
+      await tester.pumpWidget(app.build());
+      await tester.pumpAndSettle();
+
+      final card = find.byKey(const Key('overview-newest-songs'));
+      await tester.scrollUntilVisible(card, 200);
+      expect(
+        find.descendant(of: card, matching: find.text('Newest songs')),
+        findsOneWidget,
+      );
+      final titles = [
+        for (final t in tester.widgetList<ListTile>(
+          find.descendant(of: card, matching: find.byType(ListTile)),
+        ))
+          (t.title! as Text).data,
+      ];
+      expect(titles, ['Song 6', 'Song 5', 'Song 4', 'Song 3', 'Song 2']);
+      expect(
+        find.descendant(of: card, matching: find.text('Band 6 · G')),
+        findsOneWidget,
+      );
+
+      await tester.tap(
+        find.descendant(of: card, matching: find.text('Song 4')),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<SongScreen>(find.byType(SongScreen)).songId,
+        isNotEmpty,
+      );
+      await app.dispose(tester);
+    });
+
+    testWidgets('songs not played for a while, with the repertoire', (
+      tester,
+    ) async {
+      usePhoneSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      await tester.runAsync(() async {
+        final old = await app.songs.createSong(source: '{title: Dusty}');
+        final recent = await app.songs.createSong(source: '{title: Fresh}');
+        final longAgo = await app.sets.createSet(
+          name: 'Long ago',
+          gigDate: DateTime(today.year - 1, today.month, today.day),
+        );
+        await app.sets.addSongs(longAgo, [old, recent]);
+        final lastWeek = await app.sets.createSet(
+          name: 'Last week',
+          gigDate: today.subtract(const Duration(days: 7)),
+        );
+        await app.sets.addSongs(lastWeek, [recent]);
+      });
+      await tester.pumpWidget(app.build());
+      await tester.pumpAndSettle();
+
+      final card = find.byKey(const Key('overview-not-played'));
+      await tester.scrollUntilVisible(card, 200);
+      expect(
+        find.descendant(
+          of: card,
+          matching: find.text('Not played for a while'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: card, matching: find.text('Dusty')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: card, matching: find.text('Fresh')),
+        findsNothing,
+      );
+      expect(
+        find.descendant(
+          of: card,
+          matching: find.textContaining('Last played on'),
+        ),
+        findsOneWidget,
+      );
+
+      await tester.ensureVisible(
+        find.byKey(const Key('overview-not-played-all')),
+      );
+      await tester.tap(find.byKey(const Key('overview-not-played-all')));
+      await tester.pumpAndSettle();
+      expect(find.byType(RepertoireScreen), findsOneWidget);
+      await app.dispose(tester);
+    });
+
+    test('moreSets: upcoming sets after the next one, at most three', () {
+      SetSummary summary(String id, DateTime? gig) => SetSummary(
+        SetlistEntry(
+          id: id,
+          bandId: 'b',
+          name: id,
+          gigDate: gig,
+          revision: 0,
+          updatedAt: today,
+          deleted: false,
+          purged: false,
+        ),
+        0,
+      );
+      final sets = [
+        summary('past', today.subtract(const Duration(days: 1))),
+        summary('undated', null),
+        for (final d in [4, 0, 3, 1, 2])
+          summary('in $d', today.add(Duration(days: d))),
+      ];
+      expect(
+        [for (final s in moreSets(sets, today)) s.set.id],
+        ['in 1', 'in 2', 'in 3'],
+      );
+      expect(moreSets([summary('only', today)], today), isEmpty);
     });
   });
 }

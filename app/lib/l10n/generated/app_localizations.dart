@@ -6997,6 +6997,18 @@ abstract class AppLocalizations {
   /// **'Alle anzeigen'**
   String get overviewShowAll;
 
+  /// No description provided for @overviewMoreSets.
+  ///
+  /// In de, this message translates to:
+  /// **'Weitere Sets'**
+  String get overviewMoreSets;
+
+  /// No description provided for @overviewNewestSongs.
+  ///
+  /// In de, this message translates to:
+  /// **'Neueste Songs'**
+  String get overviewNewestSongs;
+
   /// No description provided for @recentChangesEmpty.
   ///
   /// In de, this message translates to:

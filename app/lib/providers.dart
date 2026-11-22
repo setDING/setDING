@@ -442,6 +442,12 @@ final bandSongsProvider = StreamProvider.autoDispose
           ref.watch(bandSongRepositoryProvider).watchSongList(query: query),
     );
 
+/// The songs of the current band's library created last, for the
+/// overview (ADR-0045, #868).
+final newestSongsProvider = StreamProvider.autoDispose<List<SongEntry>>(
+  (ref) => ref.watch(bandSongRepositoryProvider).watchNewestSongs(),
+);
+
 /// All tags used in the library.
 /// Where a search matched the songs of the library (by song); empty
 /// without a search.

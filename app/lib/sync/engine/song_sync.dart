@@ -96,6 +96,13 @@ class SongSync {
     Set<String> pendingLinks = const {},
     bool log = false,
   }) async {
+    final created = remote.created;
+    if (local != null && local.createdAt == null && created != null) {
+      // Pulled again after schema 33 for the creation date (#868).
+      await (db.update(db.songs)..where((s) => s.id.equals(remote.id))).write(
+        SongsCompanion(createdAt: Value(created)),
+      );
+    }
     if (local != null && remote.revision <= local.revision) return false;
     if (local != null &&
         dirty &&
@@ -180,6 +187,9 @@ class SongSync {
             purged: Value(remote.purged),
             createdBy: Value(remote.createdBy),
             updatedBy: Value(remote.updatedBy),
+            // Kept when the server's date is unknown, e.g. taking the
+            // server version of a conflict.
+            createdAt: Value.absentIfNull(remote.created),
           ),
         );
     if (remote.deleted) {
@@ -228,6 +238,7 @@ class SongSync {
             revision: Value(stored.revision),
             createdBy: Value(stored.createdBy),
             updatedBy: Value(stored.updatedBy),
+            createdAt: Value.absentIfNull(stored.created),
           ),
         );
         await store.done(entry);

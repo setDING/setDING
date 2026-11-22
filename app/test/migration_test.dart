@@ -39,9 +39,16 @@ void downgradeToSchema19(Database raw) {
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN midi_programs');
 }
 
+/// Turns a current database back into schema 32: songs without their
+/// creation date (#868).
+void downgradeToSchema32(Database raw) {
+  raw.execute('ALTER TABLE songs DROP COLUMN created_at');
+}
+
 /// Turns a current database back into schema 31: songs without a detected
 /// language (#805).
 void downgradeToSchema31(Database raw) {
+  downgradeToSchema32(raw);
   raw.execute('ALTER TABLE songs DROP COLUMN detected_language');
 }
 
@@ -1154,4 +1161,45 @@ void main() {
       await upgraded.close();
     },
   );
+
+  test('upgrades a schema 32 database: local songs get a creation date, '
+      'synced songs are pulled again for theirs', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final storage = FileAttachmentStorage(dir);
+    final local = await SongRepository(
+      current,
+      storage,
+    ).createSong(source: '{title: Local}');
+    final synced = await SongRepository(
+      current,
+      storage,
+      libraryId: 'org1',
+    ).createSong(source: '{title: Synced}');
+    for (final collection in ['songs', 'setlists']) {
+      await current
+          .into(current.syncCursors)
+          .insert(
+            SyncCursorsCompanion.insert(
+              scope: 'org1',
+              collection: collection,
+              revision: const Value(42),
+            ),
+          );
+    }
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema32(raw);
+    raw.execute('PRAGMA user_version = 32');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final repo = SongRepository(upgraded, storage);
+    final localSong = await repo.getSong(local);
+    expect(localSong!.createdAt, localSong.updatedAt);
+    expect((await repo.getSong(synced))!.createdAt, isNull);
+    final cursors = await upgraded.select(upgraded.syncCursors).get();
+    expect([for (final c in cursors) c.collection], ['setlists']);
+    await upgraded.close();
+  });
 }
