@@ -9,7 +9,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../songs/song_language.dart';
-import '../songs/songs_screen.dart';
+import '../songs/song_list.dart';
 import 'sets_screen.dart' show formatGigDate;
 import '../widgets/dialogs.dart';
 
@@ -56,38 +56,22 @@ class _SongPicker extends ConsumerStatefulWidget {
 
 class _SongPickerState extends ConsumerState<_SongPicker> {
   final _selected = <String>[];
-  final _search = TextEditingController();
   String _query = '';
-  Timer? _searchDebounce;
 
-  /// Selected tags (see [SongFilters]); replaced, never changed in place.
-  Set<String> _tags = const {};
-  PlayedFilter? _played;
-  String? _language;
+  /// The chosen filters, as on the song list (#886).
+  SongListFilter _filter = const SongListFilter();
 
   /// The songs last shown, kept while a changed search loads (as on the
   /// song list, #297).
   ({List<SongListEntry> songs, Map<String, SearchHit> hits, SongSort sort})?
   _shown;
 
-  void _onSearchChanged(String value) {
-    _searchDebounce?.cancel();
-    _searchDebounce = Timer(songSearchDelay, () {
-      if (mounted) setState(() => _query = value);
-    });
-  }
-
-  @override
-  void dispose() {
-    _searchDebounce?.cancel();
-    _search.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final songs = ref.watch(bandSongsProvider((query: _query, tags: _tags)));
+    final songs = ref.watch(
+      bandSongsProvider((query: _query, tags: _filter.tags)),
+    );
     final hits = ref.watch(bandSearchHitsProvider(_query));
     final sort = ref.watch(songSortProvider);
     if (songs.hasValue && !songs.isLoading && !hits.isLoading) {
@@ -119,11 +103,10 @@ class _SongPickerState extends ConsumerState<_SongPicker> {
         : ref.watch(lastPlayedProvider(widget.bandId!)).value ??
               const <String, DateTime>{};
     final byLastPlayed = sort == SongSort.lastPlayed && lastPlayed != null;
-    final played = lastPlayed == null ? null : _played;
+    final filter = lastPlayed == null ? _filter.withPlayed(null) : _filter;
     final usedLanguages =
         ref.watch(bandSongLanguagesProvider).value ?? const <String>{};
     final languages = usedLanguages.difference(const {noSongLanguage});
-    final language = _language;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title ?? l10n.selectSongs),
@@ -147,24 +130,8 @@ class _SongPickerState extends ConsumerState<_SongPicker> {
           preferredSize: const Size.fromHeight(64),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            child: SearchBar(
-              controller: _search,
-              hintText: l10n.searchSongs,
-              leading: const Icon(Icons.search),
-              autoFocus: false,
-              trailing: [
-                if (_search.text.isNotEmpty)
-                  IconButton(
-                    tooltip: l10n.searchClear,
-                    icon: const Icon(Icons.clear),
-                    onPressed: () {
-                      _searchDebounce?.cancel();
-                      _search.clear();
-                      setState(() => _query = '');
-                    },
-                  ),
-              ],
-              onChanged: _onSearchChanged,
+            child: SongSearchBar(
+              onQuery: (query) => setState(() => _query = query),
             ),
           ),
         ),
@@ -172,28 +139,20 @@ class _SongPickerState extends ConsumerState<_SongPicker> {
       body: Column(
         children: [
           SongFilters(
+            filter: filter,
+            onChanged: (filter) => setState(() => _filter = filter),
             usedTags: ref.watch(bandTagsProvider).value ?? const [],
             attentionFilters: false,
-            tags: _tags,
-            onTags: (tags) => setState(() => _tags = tags),
-            attention: null,
             showPlayed: lastPlayed != null,
-            played: played,
-            onPlayed: (filter) => setState(() => _played = filter),
-            languages: languages,
-            withoutLanguage: usedLanguages.contains(noSongLanguage),
-            language: language,
-            onLanguage: (l) => setState(() => _language = l),
+            usedLanguages: usedLanguages,
           ),
           Expanded(
             child: AsyncBody(
               value: results,
               data: (results) {
                 final (songs: all, :hits, :sort) = results;
-                final list = filterSongList(
+                final list = filter.apply(
                   all,
-                  language: language,
-                  played: played,
                   lastPlayed: lastPlayed,
                   staleAfterMonths: currentBand.id == widget.bandId
                       ? currentBand.staleAfterMonths
@@ -203,7 +162,7 @@ class _SongPickerState extends ConsumerState<_SongPicker> {
                 if (list.isEmpty) {
                   return EmptyState(
                     icon: Icons.library_music_outlined,
-                    message: (played == null && language == null) || all.isEmpty
+                    message: !filter.narrows || all.isEmpty
                         ? l10n.songsEmpty
                         : l10n.songsFilterEmpty,
                   );

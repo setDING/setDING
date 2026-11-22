@@ -8,7 +8,7 @@ import 'package:setding/providers.dart';
 import 'package:setding/settings/settings.dart';
 import 'package:setding/sync/auth_providers.dart';
 import 'package:setding/sync/sync_backend.dart';
-import 'package:setding/ui/songs/songs_screen.dart';
+import 'package:setding/ui/songs/song_list.dart';
 
 import 'test_app.dart';
 

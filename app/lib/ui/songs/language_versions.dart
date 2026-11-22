@@ -11,7 +11,7 @@ import '../widgets/page_width.dart';
 import '../widgets/section_header.dart';
 import 'song_language.dart';
 import 'song_screen.dart';
-import 'songs_screen.dart';
+import 'song_list.dart';
 
 /// The language versions of the work of a song, the song included and not
 /// in the trash (ADR-0053); empty while it has no group.
