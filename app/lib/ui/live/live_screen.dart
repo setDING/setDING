@@ -35,6 +35,7 @@ import '../render/song_view.dart';
 import '../sets/set_item_label.dart';
 import '../songs/midi_program_field.dart' show midiPatchShortLabel;
 import '../theme.dart';
+import '../widgets/chord_view_picker.dart' show chordViewLabel;
 import '../widgets/dialogs.dart';
 import '../widgets/key_picker.dart';
 import '../widgets/verse_chords_picker.dart';
@@ -1263,7 +1264,7 @@ const _wideSongMap = 900.0;
 /// the beat and the set, no song map (ADR-0026, #421).
 const _compactDrums = 600.0;
 
-/// Minimum width for the Nashville toggle in the same row as the controls.
+/// Minimum width for the chord view toggle in the same row as the controls.
 const _wideControlBar = 720.0;
 
 class _ControlBar extends ConsumerWidget {
@@ -1328,17 +1329,14 @@ class _ControlBar extends ConsumerWidget {
           );
     final toggle = adjust == null || parsed == null
         ? null
-        : _NashvilleToggle(
-            selected: (overlay?.chordView ?? deviceView).isDegrees,
+        : _ChordViewToggle(
+            selected: overlay?.chordView ?? deviceView,
             hasKey: parsed.key != null,
-            onChanged: (selected) {
-              final view = selected ? ChordView.nashville : ChordView.chords;
-              adjust(
-                (o) => o.copyWith(
-                  chordView: Value(view == deviceView ? null : view),
-                ),
-              );
-            },
+            onChanged: (view) => adjust(
+              (o) => o.copyWith(
+                chordView: Value(view == deviceView ? null : view),
+              ),
+            ),
           );
     final leading = <Widget>[
       IconButton(
@@ -1515,35 +1513,46 @@ class _ControlBar extends ConsumerWidget {
   }
 }
 
-/// Switches the current song between chord names and Nashville numbers;
-/// stored as the personal Nashville overlay of the song (ADR-0006).
-class _NashvilleToggle extends StatelessWidget {
-  const _NashvilleToggle({
+/// Switches the current song between chord names, Nashville numbers and
+/// Roman numerals (ADR-0055); stored as the personal chord view of the song
+/// (ADR-0006).
+class _ChordViewToggle extends StatelessWidget {
+  const _ChordViewToggle({
     required this.selected,
     required this.hasKey,
     required this.onChanged,
   });
 
-  final bool selected;
+  final ChordView selected;
 
-  /// Nashville numbers need a key in the song.
+  /// Numbers and numerals need a key in the song.
   final bool hasKey;
-  final ValueChanged<bool> onChanged;
+  final ValueChanged<ChordView> onChanged;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Tooltip(
       message: hasKey ? '' : l10n.noKeyForDegrees,
-      child: SegmentedButton<bool>(
-        key: const Key('live-nashville'),
+      child: SegmentedButton<ChordView>(
+        key: const Key('live-chord-view'),
         showSelectedIcon: false,
         style: const ButtonStyle(visualDensity: VisualDensity.compact),
         segments: [
-          ButtonSegment(value: false, label: Text(l10n.liveChordNames)),
-          ButtonSegment(value: true, label: Text(l10n.liveNashville)),
+          for (final view in ChordView.values)
+            ButtonSegment(
+              value: view,
+              // Short symbols fit the control bar also on phones; the
+              // tooltip names the view.
+              tooltip: chordViewLabel(l10n, view),
+              label: Text(switch (view) {
+                ChordView.chords => l10n.liveChordViewChords,
+                ChordView.nashville => l10n.liveChordViewNashville,
+                ChordView.numerals => l10n.liveChordViewNumerals,
+              }, key: Key('live-chord-view-${view.name}')),
+            ),
         ],
-        selected: {hasKey && selected},
+        selected: {hasKey ? selected : ChordView.chords},
         onSelectionChanged: hasKey ? (s) => onChanged(s.single) : null,
       ),
     );

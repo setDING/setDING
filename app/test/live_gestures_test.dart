@@ -334,10 +334,12 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('the control bar switches between chords and Nashville', (
-    tester,
-  ) async {
+  testWidgets('the control bar switches between chords, Nashville and '
+      'numerals (ADR-0055)', (tester) async {
     useTabletSize(tester);
+    // Chords in the song, not the labels of the toggle.
+    Finder song(String text) =>
+        find.descendant(of: find.byType(PageView), matching: find.text(text));
     final app = await TestApp.create(prefs: {'language': 'en'});
     final items = await createSongs(tester, app, [
       '{title: X}\n{key: G}\n[G]One [C]two',
@@ -345,18 +347,16 @@ void main() {
     ]);
     await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
     await tester.pumpAndSettle();
-    expect(find.text('C'), findsOneWidget);
+    expect(song('C'), findsOneWidget);
 
     await tester.tapAt(tester.getCenter(find.byType(PageView)));
     await tester.pumpAndSettle();
-    final toggle = find.byKey(const Key('live-nashville'));
+    final toggle = find.byKey(const Key('live-chord-view'));
     expect(toggle, findsOneWidget);
-    await tester.tap(
-      find.descendant(of: toggle, matching: find.text('Nashville')),
-    );
+    await tester.tap(find.byKey(const Key('live-chord-view-nashville')));
     await tester.pumpAndSettle();
-    expect(find.text('4'), findsOneWidget);
-    expect(find.text('C'), findsNothing);
+    expect(song('4'), findsOneWidget);
+    expect(song('C'), findsNothing);
     // Stored as the personal overlay of the song.
     final id = items.first.song!.id;
     expect(
@@ -364,24 +364,31 @@ void main() {
       ChordView.nashville,
     );
 
-    await tester.tap(
-      find.descendant(of: toggle, matching: find.text('Chords')),
-    );
+    await tester.tap(find.byKey(const Key('live-chord-view-numerals')));
     await tester.pumpAndSettle();
-    expect(find.text('C'), findsOneWidget);
-    expect(find.text('4'), findsNothing);
+    expect(song('IV'), findsOneWidget);
+    expect(song('4'), findsNothing);
+    expect(
+      (await tester.runAsync(() => app.songs.getOverlay(id)))!.chordView,
+      ChordView.numerals,
+    );
+
+    await tester.tap(find.byKey(const Key('live-chord-view-chords')));
+    await tester.pumpAndSettle();
+    expect(song('C'), findsOneWidget);
+    expect(song('4'), findsNothing);
     // Back to the device setting.
     expect(
       (await tester.runAsync(() => app.songs.getOverlay(id)))!.chordView,
       isNull,
     );
 
-    // Without a key, Nashville numbers are not available.
+    // Without a key, numbers and numerals are not available.
     await tester.tapAt(
       tester.getTopRight(find.byType(PageView)) + const Offset(-20, 200),
     );
     await tester.pumpAndSettle();
-    final button = tester.widget<SegmentedButton<bool>>(toggle);
+    final button = tester.widget<SegmentedButton<ChordView>>(toggle);
     expect(button.onSelectionChanged, isNull);
     await app.dispose(tester);
   });
@@ -437,7 +444,7 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('on a phone the Nashville toggle gets a row of its own', (
+  testWidgets('on a phone the chord view toggle gets a row of its own', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(1080, 2340);
@@ -453,16 +460,41 @@ void main() {
     await tester.pumpAndSettle();
     // No overflow, and the toggle is above the other controls.
     expect(tester.takeException(), isNull);
-    final toggle = tester.getRect(find.byKey(const Key('live-nashville')));
+    final toggle = tester.getRect(find.byKey(const Key('live-chord-view')));
     expect(
       toggle.bottom,
       lessThanOrEqualTo(tester.getRect(find.byIcon(Icons.close)).top),
     );
-    await tester.tap(find.text('Nashville'));
+    expect(find.byTooltip('Stufen'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('live-chord-view-numerals')));
     await tester.pumpAndSettle();
-    expect(find.text('4'), findsOneWidget);
+    expect(find.text('IV'), findsOneWidget);
     await app.dispose(tester);
   });
+
+  for (final width in [760.0, 800.0, 1280.0]) {
+    testWidgets('the chord view toggle fits the control bar at $width px', (
+      tester,
+    ) async {
+      tester.view.physicalSize = Size(width, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      final app = await TestApp.create(prefs: {'language': 'de'});
+      final items = await createSongs(tester, app, [
+        '{title: X}\n{key: G}\n{sov}\n[G]One\n{eov}\n{sov}\n[C]two\n{eov}',
+      ]);
+      await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+      await tester.pumpAndSettle();
+      await tester.tapAt(tester.getCenter(find.byType(PageView)));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      // In the same row as the other controls.
+      final toggle = tester.getRect(find.byKey(const Key('live-chord-view')));
+      final close = tester.getRect(find.byIcon(Icons.close));
+      expect(toggle.center.dy, closeTo(close.center.dy, 1));
+      await app.dispose(tester);
+    });
+  }
 
   Future<void> settlePdf(WidgetTester tester) async {
     for (var i = 0; i < 10; i++) {
