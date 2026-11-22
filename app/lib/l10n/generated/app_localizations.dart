@@ -3665,7 +3665,7 @@ abstract class AppLocalizations {
   /// No description provided for @inviteCreateHint.
   ///
   /// In de, this message translates to:
-  /// **'Erstellt einen Link, der 7 Tage gilt. Wer ihn öffnet, wird Mitglied der Organisation.'**
+  /// **'Erstellt einen Link, der 7 Tage gilt. Wer ihn öffnet, kommt als Mitglied in die Organisation, aber noch in keine Band. Füge die Person danach einer Band hinzu; unter Personen kannst du ihre Rolle ändern.'**
   String get inviteCreateHint;
 
   /// No description provided for @inviteLinkTitle.

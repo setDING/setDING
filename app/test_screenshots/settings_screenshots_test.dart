@@ -64,6 +64,8 @@ void main() {
         300,
         scrollable: find.byType(Scrollable).first,
       );
+      // Its hint says the person joins no band yet (issue #893).
+      await shot(tester, '${lang}_13a_invite_hint');
       await tester.tap(find.byKey(const Key('invite-create')));
       await tester.pumpAndSettle();
       await shot(tester, '${lang}_13_invite');

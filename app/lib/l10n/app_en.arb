@@ -860,7 +860,7 @@
   "orgSongsShared": "All bands of the organization share the same songs.",
   "copyToLibraryTitle": "Copy to which song library?",
   "inviteCreate": "Invite people",
-  "inviteCreateHint": "Creates a link that is valid for 7 days. Whoever opens it becomes a member of the organization.",
+  "inviteCreateHint": "Creates a link that is valid for 7 days. Whoever opens it joins the organization as a member, but no band yet. Then add them to a band; under People you can change their role.",
   "inviteLinkTitle": "Invitation link",
   "inviteLinkHint": "Share the link, e.g. in a group chat, or let people scan the QR code. Valid until {date}. You can show it again from the list of links.",
   "@inviteLinkHint": {

@@ -2098,7 +2098,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inviteCreateHint =>
-      'Creates a link that is valid for 7 days. Whoever opens it becomes a member of the organization.';
+      'Creates a link that is valid for 7 days. Whoever opens it joins the organization as a member, but no band yet. Then add them to a band; under People you can change their role.';
 
   @override
   String get inviteLinkTitle => 'Invitation link';

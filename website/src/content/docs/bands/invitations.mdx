@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import invite from '../../../../../docs/screenshots/invite_de.png';
+import inviteHint from '../../../../../docs/screenshots/invite_hint_de.png';
 
 Neue Leute kommen mit einem Einladungslink in die Organisation – per Gruppenchat,
 Mail oder QR-Code.
@@ -16,11 +17,15 @@ Mail oder QR-Code.
 Es gibt zwei Arten von Einladungen:
 
 - **In die Organisation:** Admins der Organisation öffnen die Organisation und
-  tippen auf **Personen einladen**. Wer den Link öffnet, wird Mitglied der
-  Organisation; ein Admin kann die Person danach in eine Band aufnehmen.
+  tippen auf **Personen einladen**. Wer den Link öffnet, kommt mit der Rolle
+  **Mitglied** in die Organisation, aber noch in keine Band: Ein Admin nimmt die
+  Person danach in eine Band auf (**Mitglied hinzufügen**) und kann unter **Personen**
+  ihre [Rolle](/bands/roles/) ändern, z. B. zu **Bibliothek** oder **Admin**.
 - **Direkt in eine Band:** Die **Leitung** der Band und die Admins öffnen die Band
   und tippen dort auf **Personen einladen**. Wer den Link öffnet, wird Mitglied der
   Organisation und dieser Band.
+
+<Image src={inviteHint} alt="«Personen einladen» in der Organisation mit dem Hinweis, dass die Person als Mitglied, aber noch in keine Band kommt" />
 
 setDING zeigt den **Einladungslink** und einen QR-Code. Teile den Link mit **Link
 kopieren** oder lass den QR-Code scannen. Der Link gilt **7 Tage**; mehrere Leute
