@@ -77,6 +77,13 @@ void main() {
         ),
       );
       await shot(tester, '${lang}_14_band');
+      // The band's invitation hint says the role it gives (issue #901).
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('invite-create')),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await shot(tester, '${lang}_14a_invite_band_hint');
 
       await tester.pumpWidget(
         RepaintBoundary(

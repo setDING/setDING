@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import invite from '../../../../../../docs/screenshots/invite.png';
 import inviteHint from '../../../../../../docs/screenshots/invite_hint.png';
+import inviteBandHint from '../../../../../../docs/screenshots/invite_band_hint.png';
 
 New people join the organization with an invitation link – by group chat, email or
 QR code.
@@ -23,7 +24,10 @@ There are two kinds of invitations:
   example to **Librarian** or **Admin**.
 - **Straight into a band:** the band's **Leader** and the admins open the band and
   tap **Invite people** there. Whoever opens the link joins the organization and
-  this band.
+  this band with the role **Member**. Under **Members** the leader can then change
+  their role in the band, for example to **Set planner** or **Leader**.
+
+<Image src={inviteBandHint} alt="“Invite people” in the band with the hint that the person joins the organization and the band as a member" />
 
 <Image src={inviteHint} alt="“Invite people” in the organization with the hint that the person joins as a member, but no band yet" />
 

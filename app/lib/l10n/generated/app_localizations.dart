@@ -3389,7 +3389,7 @@ abstract class AppLocalizations {
   /// No description provided for @inviteBandHint.
   ///
   /// In de, this message translates to:
-  /// **'Erstellt einen Link, der 7 Tage gilt. Wer ihn öffnet, wird Mitglied der Organisation und dieser Band.'**
+  /// **'Erstellt einen Link, der 7 Tage gilt. Wer ihn öffnet, kommt als Mitglied in die Organisation und in diese Band. Unter Mitglieder kannst du die Rolle in der Band danach ändern.'**
   String get inviteBandHint;
 
   /// No description provided for @joinQuestionBand.

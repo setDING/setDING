@@ -717,7 +717,7 @@
   "orgMakeLibrarian": "Make librarian",
   "orgLibrarianHint": "Librarians create, edit and delete the organization's songs.",
   "bandPlannerHint": "Set planners put the band's sets together.",
-  "inviteBandHint": "Creates a link that is valid for 7 days. Whoever opens it joins the organization and this band.",
+  "inviteBandHint": "Creates a link that is valid for 7 days. Whoever opens it joins the organization and this band as a member. Under Members you can then change their role in the band.",
   "joinQuestionBand": "Join {band} ({org})?",
   "@joinQuestionBand": {
     "placeholders": {
