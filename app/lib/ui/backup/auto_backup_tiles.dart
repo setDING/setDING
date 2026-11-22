@@ -7,6 +7,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../settings/settings_layout.dart';
 import '../widgets/dialogs.dart';
+import 'folder_path_text.dart';
 import 'full_backup.dart' show backupReminderProvider;
 
 // The automatic backup of the local library in *Storage & backup*
@@ -103,7 +104,19 @@ class AutoBackupTiles extends ConsumerWidget {
             key: const Key('auto-backup-folder'),
             leading: const Icon(Icons.folder_outlined),
             title: Text(l10n.autoBackupFolder),
-            subtitle: Text(s.folderName ?? l10n.autoBackupFolderNone),
+            // The storage or app, then the path (#889).
+            subtitle: switch (s.folderName) {
+              null => Text(l10n.autoBackupFolderNone),
+              final path => Column(
+                key: const Key('auto-backup-folder-path'),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (s.folderPlace case final place?) Text(place),
+                  FolderPathText(path),
+                ],
+              ),
+            },
             trailing: TextButton(
               key: const Key('auto-backup-choose'),
               onPressed: () => chooseAutoBackupFolder(context, ref),

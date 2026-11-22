@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import android.os.storage.StorageManager
 import android.provider.DocumentsContract
 import android.provider.Settings
 import io.flutter.plugin.common.BinaryMessenger
@@ -39,6 +40,9 @@ class BackupFolderChannel(
         when (call.method) {
             "pick" -> pick(result)
             "deviceName" -> result.success(deviceName())
+            "describe" -> background(result) {
+                describe(Uri.parse(call.argument<String>("location")!!))
+            }
             "list" -> background(result) { list(tree(call)).keys.toList() }
             "write" -> background(result) {
                 write(
@@ -96,7 +100,7 @@ class BackupFolderChannel(
                 Intent.FLAG_GRANT_READ_URI_PERMISSION or
                     Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
             )
-            result.success(mapOf("location" to uri.toString(), "name" to name(uri)))
+            result.success(mapOf("location" to uri.toString()) + describe(uri))
         } catch (e: Exception) {
             result.error("permission", e.message, null)
         }
@@ -147,6 +151,45 @@ class BackupFolderChannel(
             null,
         )?.use { if (it.moveToFirst()) return it.getString(0) ?: "" }
         return tree.lastPathSegment ?: ""
+    }
+
+    /**
+     * How the person sees the folder (#889): `place` the storage volume or
+     * the app it is in, `name` its path on a storage volume or else its name
+     * (the document providers of other apps do not tell the parent folders).
+     */
+    private fun describe(tree: Uri): Map<String, String?> {
+        val id = DocumentsContract.getTreeDocumentId(tree)
+        if (tree.authority == EXTERNAL_STORAGE) {
+            // "primary:Documents/Backups", or "<volume uuid>:…" on an SD card.
+            val path = id.substringAfter(':', "")
+            return mapOf(
+                "place" to volumeName(id.substringBefore(':')),
+                "name" to path.ifEmpty { "/" },
+            )
+        }
+        return mapOf("place" to providerName(tree.authority), "name" to name(tree))
+    }
+
+    /** The name of the storage volume [id] ("primary" or its UUID). */
+    private fun volumeName(id: String): String? = try {
+        val storage = activity.getSystemService(StorageManager::class.java)
+        val volume = if (id == "primary") {
+            storage?.primaryStorageVolume
+        } else {
+            storage?.storageVolumes?.firstOrNull { it.uuid.equals(id, ignoreCase = true) }
+        }
+        volume?.getDescription(activity)
+    } catch (e: Exception) {
+        null
+    }
+
+    /** The name of the app behind the document provider [authority]. */
+    private fun providerName(authority: String?): String? = try {
+        val pm = activity.packageManager
+        authority?.let { pm.resolveContentProvider(it, 0) }?.loadLabel(pm)?.toString()
+    } catch (e: Exception) {
+        null
     }
 
     /** The files directly in the folder: name to document URI. */
@@ -217,5 +260,6 @@ class BackupFolderChannel(
 
     companion object {
         private const val REQUEST_CODE = 5404
+        private const val EXTERNAL_STORAGE = "com.android.externalstorage.documents"
     }
 }

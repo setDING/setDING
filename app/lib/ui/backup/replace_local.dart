@@ -189,7 +189,7 @@ class _ReplaceDialogState extends ConsumerState<_ReplaceDialog> {
                   _safety
                       ? auto.active
                             ? l10n.backupReplaceSafetyFolder(
-                                auto.folderName ?? '',
+                                auto.folderLabel ?? '',
                               )
                             : l10n.backupReplaceSafetyChoose
                       : l10n.backupReplaceSafetySkip,

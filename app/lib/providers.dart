@@ -402,6 +402,7 @@ class AutoBackupNotifier extends Notifier<AutoBackupState> {
     );
     if (controller.folder.supported) {
       unawaited(controller.loadSystemDeviceName());
+      unawaited(controller.describeFolder());
     }
     return controller.state;
   }

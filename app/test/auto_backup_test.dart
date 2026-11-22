@@ -16,6 +16,28 @@ import 'fake_backup_folder.dart';
 
 /// Automatic backup of the local library (ADR-0054 section 1).
 void main() {
+  group('desktop folder path (#889)', () {
+    test('the home folder becomes "~"', () {
+      expect(
+        desktopFolderPath('/home/me/Nextcloud/Band', home: '/home/me'),
+        '~/Nextcloud/Band',
+      );
+      expect(desktopFolderPath('/home/me', home: '/home/me/'), '~');
+    });
+
+    test('other paths stay', () {
+      expect(
+        desktopFolderPath('/mnt/usb/Band', home: '/home/me'),
+        '/mnt/usb/Band',
+      );
+      expect(
+        desktopFolderPath('/home/meyer/Band', home: '/home/me'),
+        '/home/meyer/Band',
+      );
+      expect(desktopFolderPath('/home/me/Band', home: null), '/home/me/Band');
+    });
+  }, skip: Platform.isWindows);
+
   group('file names', () {
     test('device and minute in the name', () {
       expect(
@@ -90,7 +112,7 @@ void main() {
       prefs = await SharedPreferences.getInstance();
       folder = FakeBackupFolder(
         device: 'Tab',
-        choice: (location: '/cloud/Backups', name: 'Backups'),
+        choice: (location: '/cloud/Backups', name: 'Backups', place: null),
       );
       now = DateTime(2026, 5, 2, 8, 30);
     });
@@ -117,6 +139,44 @@ void main() {
       await c.setEnabled(true);
       return c;
     }
+
+    test('keeps the storage of the chosen folder (#889)', () async {
+      folder.choice = (
+        location: 'content://tree/1',
+        name: 'Documents/Backups',
+        place: 'Internal storage',
+      );
+      final c = await controller();
+      expect(await c.chooseFolder(), isTrue);
+      expect(c.state.folderName, 'Documents/Backups');
+      expect(c.state.folderPlace, 'Internal storage');
+      expect(c.state.folderLabel, 'Internal storage: Documents/Backups');
+      expect(
+        prefs.getString(AutoBackupController.folderPlaceKey),
+        'Internal storage',
+      );
+    });
+
+    test('a folder chosen before #889 gets its path and storage', () async {
+      SharedPreferences.setMockInitialValues({
+        AutoBackupController.locationKey: 'content://tree/1',
+        AutoBackupController.folderNameKey: 'Backups',
+      });
+      prefs = await SharedPreferences.getInstance();
+      final c = await controller();
+      expect(c.state.folderLabel, 'Backups');
+      // The platform cannot say: the name stays.
+      await c.describeFolder();
+      expect(c.state.folderName, 'Backups');
+      folder.described = (
+        location: 'content://tree/1',
+        name: 'Backups',
+        place: 'Nextcloud',
+      );
+      await c.describeFolder();
+      expect(c.state.folderLabel, 'Nextcloud: Backups');
+      expect(prefs.getString(AutoBackupController.folderPlaceKey), 'Nextcloud');
+    });
 
     test('off by default; nothing is written without a folder', () async {
       final c = await controller();
@@ -335,6 +395,20 @@ void main() {
       await folder.delete(dir.path, 'missing.zip');
       expect(await folder.list(dir.path), isEmpty);
       expect(await folder.deviceName(), 'host');
+    });
+
+    test('shows the path, the home folder as "~" (#889)', () async {
+      final home = DirectoryBackupFolder(
+        pickDirectory: () async => dir.path,
+        home: dir.parent.path,
+      );
+      final choice = await home.pick();
+      expect(
+        choice!.name,
+        '~${Platform.pathSeparator}${dir.path.split(Platform.pathSeparator).last}',
+      );
+      expect(choice.place, isNull);
+      expect((await folder.pick())!.name, dir.path);
     });
 
     test('a folder that is gone is unavailable', () async {

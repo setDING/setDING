@@ -10,8 +10,11 @@ export 'backup_folder_io.dart'
 
 /// A folder chosen with the operating system's folder picker: [location]
 /// is what the platform needs to reach it again (a path, a tree URI or a
-/// bookmark), [name] what the person sees.
-typedef BackupFolderChoice = ({String location, String name});
+/// bookmark), [name] what the person sees: the folder's path where the
+/// platform knows it (#889), otherwise its name; [place] the storage or the
+/// app the folder is in (e.g. "Internal storage", "Nextcloud"), null when
+/// the path says it.
+typedef BackupFolderChoice = ({String location, String name, String? place});
 
 /// Why a folder could not be used.
 enum BackupFolderError {
@@ -43,6 +46,10 @@ abstract class BackupFolder {
 
   /// Lets the person choose a folder; null when cancelled.
   Future<BackupFolderChoice?> pick();
+
+  /// How the person sees the folder at [location] now, to show a folder
+  /// chosen before #889 with its path; null when the platform cannot say.
+  Future<BackupFolderChoice?> describe(String location);
 
   /// The names of the files directly in the folder.
   Future<List<String>> list(String location);
