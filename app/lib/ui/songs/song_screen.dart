@@ -585,6 +585,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                         value: 'delete',
                         icon: Icons.delete_outline,
                         label: l10n.delete,
+                        destructive: true,
                       ),
                   ],
                 ),
@@ -1381,6 +1382,7 @@ class _AttachmentsCard extends ConsumerWidget {
             value: 'delete',
             icon: Icons.delete_outline,
             label: l10n.delete,
+            destructive: true,
           ),
       ],
     );

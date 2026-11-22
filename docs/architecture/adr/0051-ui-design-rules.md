@@ -104,6 +104,9 @@ above span all of them.
   new shared `MenuAction` (#835); menus that choose a value keep the check. The
   checkable rule "no `PopupMenuItem` with a plain text label" is in
   `ui_rules_test.dart`.
+- 2026-11-22: Menu actions that delete or remove something are drawn in the error
+  colour (`MenuAction(destructive: true)`, #839); `ui_rules_test.dart` checks it for
+  actions with a delete or remove icon.
 
 ## Open points
 

@@ -252,6 +252,7 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                         value: 'delete',
                         icon: Icons.delete_outline,
                         label: l10n.delete,
+                        destructive: true,
                       ),
                     ],
                   ],
@@ -706,7 +707,7 @@ class _SetItemTile extends ConsumerWidget {
 /// The ⋮ menu of a set item with the actions that are not needed often.
 ///
 /// Each entry has an id for its key (`set-item-action-<id>`), an icon, a
-/// label and its action.
+/// label and its action. The `remove` entry is destructive.
 class _ItemMenu extends StatelessWidget {
   const _ItemMenu({required this.itemId, required this.entries});
 
@@ -724,6 +725,7 @@ class _ItemMenu extends StatelessWidget {
           value: i,
           icon: icon,
           label: label,
+          destructive: id == 'remove',
         ),
     ],
   );

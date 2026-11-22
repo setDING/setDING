@@ -282,6 +282,7 @@ class _MemberTile extends ConsumerWidget {
                     value: 'remove',
                     icon: Icons.person_remove_outlined,
                     label: l10n.bandRemoveMember,
+                    destructive: true,
                   ),
               ],
             ),
