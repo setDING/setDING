@@ -114,6 +114,87 @@ class TrashRepository {
     await markDirty(db, SyncCollection.setlists, id, scope: set.bandId);
   });
 
+  /// Deletes deleted songs permanently (#866), with their attachments; the
+  /// right is the right to delete them (ADR-0023), which the server checks.
+  /// In the local library they are removed with their files; in a synced
+  /// library they become tombstones (`purged`, without text) and the purge
+  /// is synced like an edit, the server then purges the attachments too.
+  Future<void> purgeSongs(Iterable<String> ids) async {
+    final files = <String>[];
+    await db.transaction(() async {
+      final songs =
+          await (db.select(db.songs)..where(
+                (s) =>
+                    s.id.isIn(ids) &
+                    s.deleted.equals(true) &
+                    s.purged.equals(false),
+              ))
+              .get();
+      final local = [
+        for (final s in songs)
+          if (s.libraryId == localBandId) s.id,
+      ];
+      files.addAll(await _removeSongs(local));
+      for (final song in songs.where((s) => s.libraryId != localBandId)) {
+        await (db.update(db.songs)..where((s) => s.id.equals(song.id))).write(
+          SongsCompanion(
+            purged: const Value(true),
+            chordproSource: const Value(''),
+            updatedAt: Value(_clock()),
+          ),
+        );
+        await markDirty(
+          db,
+          SyncCollection.songs,
+          song.id,
+          scope: song.libraryId,
+        );
+        final attachments = await (db.select(
+          db.attachments,
+        )..where((a) => a.songId.equals(song.id))).get();
+        files.addAll([for (final a in attachments) a.fileName]);
+        await (db.update(
+          db.attachments,
+        )..where((a) => a.songId.equals(song.id))).write(
+          AttachmentsCompanion(
+            deleted: const Value(true),
+            deletedAt: Value(song.deletedAt),
+            purged: const Value(true),
+          ),
+        );
+      }
+    });
+    await _deleteFiles(files);
+  }
+
+  /// Deletes deleted sets permanently (#866), with their items: removed in
+  /// the local library, tombstones (`purged`) synced like an edit
+  /// otherwise.
+  Future<void> purgeSets(Iterable<String> ids) => db.transaction(() async {
+    final sets =
+        await (db.select(db.setlists)..where(
+              (s) =>
+                  s.id.isIn(ids) &
+                  s.deleted.equals(true) &
+                  s.purged.equals(false),
+            ))
+            .get();
+    await _removeSets([
+      for (final s in sets)
+        if (s.bandId == localBandId) s.id,
+    ]);
+    for (final set in sets.where((s) => s.bandId != localBandId)) {
+      await (db.delete(db.setItems)..where((i) => i.setId.equals(set.id))).go();
+      await (db.update(db.setlists)..where((s) => s.id.equals(set.id))).write(
+        SetlistsCompanion(
+          purged: const Value(true),
+          updatedAt: Value(_clock()),
+        ),
+      );
+      await markDirty(db, SyncCollection.setlists, set.id, scope: set.bandId);
+    }
+  });
+
   /// Removes songs, sets and attachments of the local library deleted more
   /// than [trashRetention] ago, with their files; run at start. Synced
   /// records are purged by the server. Returns the number of records.
@@ -131,7 +212,8 @@ class TrashRepository {
               ))
               .get();
       final songIds = [for (final s in songs) s.id];
-      final attachments =
+      // Attachments deleted on their own long enough ago, too.
+      final old =
           await (db.select(db.attachments).join([
                 innerJoin(
                   db.songs,
@@ -139,31 +221,14 @@ class TrashRepository {
                 ),
               ])..where(
                 db.songs.libraryId.equals(localBandId) &
-                    (db.attachments.songId.isIn(songIds) |
-                        (db.attachments.deleted.equals(true) &
-                            db.attachments.deletedAt.isSmallerThanValue(
-                              cutoff,
-                            ))),
+                    db.attachments.deleted.equals(true) &
+                    db.attachments.deletedAt.isSmallerThanValue(cutoff) &
+                    db.attachments.songId.isNotIn(songIds),
               ))
               .map((r) => r.readTable(db.attachments))
               .get();
-      final attachmentIds = [for (final a in attachments) a.id];
-      files.addAll([for (final a in attachments) a.fileName]);
-      await (db.delete(db.annotations)..where(
-            (a) => a.songId.isIn(songIds) | a.target.isIn(attachmentIds),
-          ))
-          .go();
-      await (db.delete(
-        db.personalOverlays,
-      )..where((o) => o.songId.isIn(songIds))).go();
-      await (db.delete(
-        db.bandArrangements,
-      )..where((a) => a.songId.isIn(songIds))).go();
-      await (db.delete(db.setItems)..where((i) => i.songId.isIn(songIds))).go();
-      await (db.delete(
-        db.attachments,
-      )..where((a) => a.id.isIn(attachmentIds))).go();
-      await (db.delete(db.songs)..where((s) => s.id.isIn(songIds))).go();
+      files.addAll(await _removeSongs(songIds));
+      files.addAll(await _removeAttachments(old));
       final sets =
           await (db.select(db.setlists)..where(
                 (s) =>
@@ -173,14 +238,57 @@ class TrashRepository {
               ))
               .get();
       final setIds = [for (final s in sets) s.id];
-      await (db.delete(db.setItems)..where((i) => i.setId.isIn(setIds))).go();
-      await (db.delete(db.setlists)..where((s) => s.id.isIn(setIds))).go();
-      count = songIds.length + attachmentIds.length + setIds.length;
+      await _removeSets(setIds);
+      count = songIds.length + files.length + setIds.length;
     });
-    // After the transaction: a failed transaction leaves the files.
+    await _deleteFiles(files);
+    return count;
+  }
+
+  /// Removes songs of the local library with everything that belongs to
+  /// them; returns the files of their attachments.
+  Future<List<String>> _removeSongs(List<String> songIds) async {
+    if (songIds.isEmpty) return const [];
+    final attachments = await (db.select(
+      db.attachments,
+    )..where((a) => a.songId.isIn(songIds))).get();
+    final files = await _removeAttachments(attachments);
+    await (db.delete(
+      db.annotations,
+    )..where((a) => a.songId.isIn(songIds))).go();
+    await (db.delete(
+      db.personalOverlays,
+    )..where((o) => o.songId.isIn(songIds))).go();
+    await (db.delete(
+      db.bandArrangements,
+    )..where((a) => a.songId.isIn(songIds))).go();
+    await (db.delete(db.setItems)..where((i) => i.songId.isIn(songIds))).go();
+    await (db.delete(db.songs)..where((s) => s.id.isIn(songIds))).go();
+    return files;
+  }
+
+  /// Removes attachments with their annotations; returns their files.
+  Future<List<String>> _removeAttachments(
+    List<AttachmentEntry> attachments,
+  ) async {
+    if (attachments.isEmpty) return const [];
+    final ids = [for (final a in attachments) a.id];
+    await (db.delete(db.annotations)..where((a) => a.target.isIn(ids))).go();
+    await (db.delete(db.attachments)..where((a) => a.id.isIn(ids))).go();
+    return [for (final a in attachments) a.fileName];
+  }
+
+  /// Removes sets of the local library with their items.
+  Future<void> _removeSets(List<String> setIds) async {
+    if (setIds.isEmpty) return;
+    await (db.delete(db.setItems)..where((i) => i.setId.isIn(setIds))).go();
+    await (db.delete(db.setlists)..where((s) => s.id.isIn(setIds))).go();
+  }
+
+  /// Deletes files after the transaction: a failed transaction leaves them.
+  Future<void> _deleteFiles(List<String> files) async {
     for (final file in files) {
       if (await storage.exists(file)) await storage.delete(file);
     }
-    return count;
   }
 }

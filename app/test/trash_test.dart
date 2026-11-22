@@ -156,6 +156,32 @@ void main() {
       expect(await trash().watchSongs(localBandId).first, isEmpty);
     });
 
+    test('deleting permanently removes songs and sets with their files '
+        '(#866)', () async {
+      final id = await songs.createSong(source: '{title: Gone}');
+      await songs.addAttachment(id, name: 'Score', bytes: pdf);
+      final file = (await songs.getAttachments(id)).single.fileName;
+      final kept = await songs.createSong(source: '{title: Kept}');
+      final setId = await sets.createSet(name: 'Old gig');
+      await sets.addSongs(setId, [kept]);
+      await songs.deleteSong(id);
+      await sets.deleteSet(setId);
+
+      await trash().purgeSongs([id, kept]);
+      await trash().purgeSets([setId]);
+      expect(await songs.getSong(id), isNull);
+      expect(await storage.exists(file), isFalse);
+      expect(await db.select(db.attachments).get(), isEmpty);
+      expect(await db.select(db.setlists).get(), isEmpty);
+      expect(await db.select(db.setItems).get(), isEmpty);
+      expect(
+        (await songs.getSong(kept))!.deleted,
+        isFalse,
+        reason: 'only deleted songs are purged',
+      );
+      expect(await trash().watchSongs(localBandId).first, isEmpty);
+    });
+
     test('records deleted more than 30 days ago are not shown', () async {
       final id = await songs.createSong(source: '{title: Gone}');
       await songs.deleteSong(id);
@@ -249,6 +275,39 @@ void main() {
       expect(server.songs[id]!.deletedAt, isNull);
       expect((await songs.getAttachments(id)).single.id, a.id);
       expect(await storage.exists(a.fileName), isTrue);
+    });
+
+    test(
+      'a song deleted permanently is pushed as a tombstone (#866)',
+      () async {
+        final id = await songs.createSong(source: '{title: Song}');
+        await songs.addAttachment(id, name: 'Score', bytes: pdf);
+        await engine.sync();
+        final file = (await songs.getAttachments(id)).single.fileName;
+        await songs.deleteSong(id);
+        await engine.sync();
+
+        await trash().purgeSongs([id]);
+        expect(await trash().watchSongs('o1').first, isEmpty);
+        expect(await storage.exists(file), isFalse);
+        await engine.sync();
+        expect(server.songs[id]!.purged, isTrue);
+        expect(server.songs[id]!.deleted, isTrue);
+      },
+    );
+
+    test('a set deleted permanently is pushed as a tombstone (#866)', () async {
+      final setId = await sets.createSet(name: 'Gig');
+      await sets.addMarker(setId, MarkerIcons.breakIcon, 'Break');
+      await engine.sync();
+      await sets.deleteSet(setId);
+      await engine.sync();
+
+      await trash().purgeSets([setId]);
+      expect(await trash().watchSets('b1').first, isEmpty);
+      await engine.sync();
+      expect(server.sets[setId]!.purged, isTrue);
+      expect(server.sets[setId]!.items, isEmpty);
     });
 
     test('purged records leave the trash', () async {

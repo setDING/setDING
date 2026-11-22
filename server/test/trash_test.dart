@@ -80,6 +80,134 @@ void main() {
     expect(r.json['purged'], isFalse);
   });
 
+  group('deleting permanently (#866)', () {
+    test('a librarian purges a deleted song with its attachments', () async {
+      final f = await BandFixture.create(pb, memberIsLibrarian: true);
+      final song = await f.createSong(f.admin);
+      final upload = await f.admin.postMultipart(
+        'attachments',
+        {
+          'id': uuid(),
+          'organization': f.orgId,
+          'song': song['id'],
+          'name': 'Score',
+          'pages': '1',
+          'size_bytes': '${_pdf.length}',
+        },
+        fileField: 'file',
+        bytes: _pdf,
+        filename: 'score.pdf',
+        contentType: 'application/pdf',
+      );
+      upload.expectStatus(200);
+      final deleted = await f.member.patch('songs', song['id'], {
+        'deleted': true,
+        'revision': song['revision'],
+      });
+      deleted.expectStatus(200);
+      final at = deleted.json['deleted_at'];
+      final purged = await f.member.patch('songs', song['id'], {
+        'deleted': true,
+        'purged': true,
+        'revision': deleted.json['revision'],
+      });
+      purged.expectStatus(200);
+      final stored = await pb.superuser.view('songs', song['id']);
+      expect(stored.json['purged'], isTrue);
+      expect(stored.json['deleted'], isTrue);
+      expect(stored.json['chordpro'], '');
+      expect(stored.json['deleted_at'], at);
+      final file = await pb.superuser.view('attachments', upload.json['id']);
+      expect(file.json['purged'], isTrue);
+      expect(file.json['deleted'], isTrue);
+      expect(file.json['file'], '');
+    });
+
+    test(
+      'a song deleted and purged offline is purged in one request',
+      () async {
+        final f = await BandFixture.create(pb);
+        final song = await f.createSong(f.admin);
+        final r = await f.admin.patch('songs', song['id'], {
+          'deleted': true,
+          'purged': true,
+          'revision': song['revision'],
+        });
+        r.expectStatus(200);
+        expect(r.json['purged'], isTrue);
+        expect(r.json['chordpro'], '');
+      },
+    );
+
+    test('a set manager purges a deleted set', () async {
+      final f = await BandFixture.create(pb);
+      final planner = await f.addPlanner();
+      final set = await f.admin.post('setlists', {
+        'id': uuid(),
+        'band': f.id,
+        'name': 'Gig',
+        'items': [
+          {'id': uuid(), 'type': 'pause', 'note': 'Break'},
+        ],
+      });
+      set.expectStatus(200);
+      (await planner.patch('setlists', set.json['id'], {
+        'deleted': true,
+      })).expectStatus(200);
+      final r = await planner.patch('setlists', set.json['id'], {
+        'deleted': true,
+        'purged': true,
+      });
+      r.expectStatus(200);
+      final stored = await pb.superuser.view('setlists', set.json['id']);
+      expect(stored.json['purged'], isTrue);
+      expect(stored.json['items'], isEmpty);
+    });
+
+    test('purged is ignored on a set that is not deleted', () async {
+      final f = await BandFixture.create(pb);
+      final set = await f.admin.post('setlists', {
+        'id': uuid(),
+        'band': f.id,
+        'name': 'Gig',
+      });
+      final r = await f.admin.patch('setlists', set.json['id'], {
+        'purged': true,
+      });
+      r.expectStatus(200);
+      expect(r.json['purged'], isFalse);
+      expect(r.json['deleted'], isFalse);
+    });
+
+    test('an attachment cannot be purged on its own', () async {
+      final f = await BandFixture.create(pb);
+      final song = await f.createSong(f.admin);
+      final upload = await f.admin.postMultipart(
+        'attachments',
+        {
+          'id': uuid(),
+          'organization': f.orgId,
+          'song': song['id'],
+          'name': 'Score',
+          'pages': '1',
+          'size_bytes': '${_pdf.length}',
+        },
+        fileField: 'file',
+        bytes: _pdf,
+        filename: 'score.pdf',
+        contentType: 'application/pdf',
+      );
+      upload.expectStatus(200);
+      final r = await f.admin.patch('attachments', upload.json['id'], {
+        'deleted': true,
+        'purged': true,
+      });
+      r.expectStatus(200);
+      expect(r.json['purged'], isFalse);
+      expect(r.json['file'], isNotEmpty);
+    });
+  });
+
   test('a deleted set keeps its items for a restore', () async {
     final f = await BandFixture.create(pb);
     final items = [

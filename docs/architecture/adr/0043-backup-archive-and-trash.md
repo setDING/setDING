@@ -212,8 +212,25 @@ Deleted songs and sets can be **restored for 30 days**.
   offline for a long time still learn about the deletion. Purged records
   cannot be restored.
 - The client shows a **trash** per library (songs, for people who may delete
-  songs) and per band (sets, for people who may manage sets) with the deletion
-  date and the days left; restoring is a normal change synced like an edit.
+  songs) and per band (sets, for people who may manage sets), grouped by
+  deletion time (today, this week, older), with the deletion date and the
+  days left as a badge (in the warning colour on the last three days);
+  restoring is a normal change synced like an edit.
+- **Deleting permanently** (#866): each entry's menu has *Delete
+  permanently…*, a long press selects several entries (restore or delete
+  them permanently), and *Empty trash* deletes all; each after a destructive
+  confirmation. The right is the right to delete the record (songs:
+  organization admins and librarians; sets: set managers, ADR-0023). It is a
+  normal synced change, so it works offline: the client sends `purged: true`
+  with a deleted song or set (deleted before or in the same request); the
+  server clears its content like the daily purge (song text and, with a
+  song, its attachments and their files; set items) and keeps the tombstone.
+  The update rule of songs refuses a change of `purged` to band leaders as
+  it refuses `deleted`; `purged` on a record that is not deleted, or on an
+  attachment, is ignored. A purge of a song is a content change, so a song
+  restored and changed elsewhere in the meantime gives a conflict instead of
+  being purged; sets are last writer wins. In the local library the records
+  and their files are removed at once.
 - The local library has the same trash; its deleted records and files are
   removed on the device after 30 days.
 
@@ -305,6 +322,14 @@ Deleted songs and sets can be **restored for 30 days**.
   preselects the format exported last while the app runs. The menu labels
   named a format or one option ("Export with attachments" was wrong once
   attachments were unticked). The archives keep the `.zip` extension.
+
+- 2026-11-22: Owner decisions (#866): the trash can **delete permanently**
+  (single entries, a selection, or the whole trash, each confirmed), allowed
+  to whoever may delete the record; the trash screen is grouped by deletion
+  time with the days left as a badge and a menu per entry, and a selection
+  mode like the song list. Implemented in #866: the client sends `purged`
+  with a deleted song or set; server migration
+  `1796900000_trash_purge_rights.js`.
 
 ## Open points
 

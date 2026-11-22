@@ -278,8 +278,9 @@ class RemoteSong {
   /// (it may have happened offline), set by the server otherwise.
   final DateTime? deletedAt;
 
-  /// Content purged by the server 30 days after the deletion (ADR-0043);
-  /// never sent.
+  /// Content purged by the server 30 days after the deletion (ADR-0043),
+  /// or deleted permanently from the trash (#866): sent with a deleted
+  /// record, the server then clears its content.
   final bool purged;
 
   /// Creator and last editor (ADR-0023); set by the server, never sent.
@@ -369,8 +370,9 @@ class RemoteSet {
   /// (it may have happened offline), set by the server otherwise.
   final DateTime? deletedAt;
 
-  /// Content purged by the server 30 days after the deletion (ADR-0043);
-  /// never sent.
+  /// Content purged by the server 30 days after the deletion (ADR-0043),
+  /// or deleted permanently from the trash (#866): sent with a deleted
+  /// record, the server then clears its content.
   final bool purged;
 
   /// Last editor (ADR-0045); set by the server, never sent.

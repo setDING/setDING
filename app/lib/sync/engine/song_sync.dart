@@ -226,6 +226,7 @@ class SongSync {
       revision: song.revision,
       deleted: song.deleted,
       deletedAt: song.deletedAt,
+      purged: song.purged,
       // Sent on create only (ADR-0053).
       workId: song.workId,
       language: song.language,
@@ -344,6 +345,7 @@ class SongSync {
           revision: existing.revision,
           deleted: song.deleted,
           deletedAt: song.deletedAt,
+          purged: song.purged,
         ),
         create: false,
       );

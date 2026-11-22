@@ -31,6 +31,8 @@ void main() {
   late User closedLeader;
   late String closedSong;
   late String setId;
+  late String deletedLeaderSong; // the leader's own song, deleted
+  late String deletedSet; // a set of `f`, deleted
   late String inviteId;
   late String memberMembership;
   late String memberOrgMembership;
@@ -78,6 +80,22 @@ void main() {
     });
     set.expectStatus(200);
     setId = set.json['id'] as String;
+    deletedLeaderSong =
+        (await f.createSong(leader, title: 'Deleted'))['id'] as String;
+    (await pb.superuser.patch('songs', deletedLeaderSong, {
+      'deleted': true,
+    })).expectStatus(200);
+    final gone = await leader.post('setlists', {
+      'id': uuid(),
+      'band': f.id,
+      'name': 'Gone',
+      'items': <dynamic>[],
+    });
+    gone.expectStatus(200);
+    deletedSet = gone.json['id'] as String;
+    (await leader.patch('setlists', deletedSet, {
+      'deleted': true,
+    })).expectStatus(200);
     final invite = await leader.send(
       'POST',
       '/api/setding/invites',
@@ -272,6 +290,28 @@ void main() {
         body: {'organization': closed.orgId},
       ),
     );
+    refused(
+      'leader purges their own deleted song (#866)',
+      () async => leader.patch('songs', deletedLeaderSong, {
+        'deleted': true,
+        'purged': true,
+        'revision': await field('songs', deletedLeaderSong, 'revision'),
+      }),
+      unchanged: ('songs', () => deletedLeaderSong, 'purged'),
+    );
+    for (final (who, user) in [
+      ('member', () => member),
+      ('librarian', () => librarian),
+    ]) {
+      refused(
+        '$who purges a deleted set (#866)',
+        () => user().patch('setlists', deletedSet, {
+          'deleted': true,
+          'purged': true,
+        }),
+        unchanged: ('setlists', () => deletedSet, 'purged'),
+      );
+    }
     refused(
       'organization admin sets the trash fields of a band',
       () => orgAdmin.patch('bands', deletedBand, {
