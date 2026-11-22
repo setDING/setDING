@@ -52,9 +52,16 @@ class LibrarySwitcher extends ConsumerWidget {
             value: l.id,
             child: ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: Icon(l.id == current.id ? Icons.check : icon(l)),
+              // The icon stays; a check at the end marks the chosen
+              // library, as in the band switcher (#864).
+              selected: l.id == current.id,
+              leading: Icon(icon(l)),
               title: Text(label(l)),
               subtitle: l.isLocal ? Text(l10n.bandLocalHint) : null,
+              trailing: SizedBox(
+                width: 24,
+                child: l.id == current.id ? const Icon(Icons.check) : null,
+              ),
             ),
           ),
         const PopupMenuDivider(),
