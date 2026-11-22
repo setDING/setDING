@@ -2820,5 +2820,15 @@
   "switchedLanguageVersionKey": "Switched to: {version}, in {newKey} instead of {oldKey} in this set",
   "switchedLanguageVersionSequence": "The set’s own sequence does not fit the new version and was removed.",
   "languageVersionInSet": "{title} · in {key} in this set",
-  "switchLanguageVersionTitle": "Switch language version"
+  "switchLanguageVersionTitle": "Switch language version",
+  "adjustmentOfferOne": "Your adjustments in “{version}”: {what}. Use them for this version too?",
+  "adjustmentOfferMany": "Other language versions have your adjustments. Use them for this version too?",
+  "adjustmentKindTranspose": "key",
+  "adjustmentKindCapo": "capo",
+  "adjustmentKindMidi": "keyboard program",
+  "adjustmentKindClick": "click",
+  "adjustmentOfferCopy": "Use them",
+  "adjustmentOfferDismiss": "No thanks",
+  "adjustmentOfferPick": "Use the adjustments of",
+  "adjustmentsCopied": "Adjustments of “{version}” used"
 }

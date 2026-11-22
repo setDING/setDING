@@ -5183,4 +5183,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get switchLanguageVersionTitle => 'Switch language version';
+
+  @override
+  String adjustmentOfferOne(String version, String what) {
+    return 'Your adjustments in “$version”: $what. Use them for this version too?';
+  }
+
+  @override
+  String get adjustmentOfferMany =>
+      'Other language versions have your adjustments. Use them for this version too?';
+
+  @override
+  String get adjustmentKindTranspose => 'key';
+
+  @override
+  String get adjustmentKindCapo => 'capo';
+
+  @override
+  String get adjustmentKindMidi => 'keyboard program';
+
+  @override
+  String get adjustmentKindClick => 'click';
+
+  @override
+  String get adjustmentOfferCopy => 'Use them';
+
+  @override
+  String get adjustmentOfferDismiss => 'No thanks';
+
+  @override
+  String get adjustmentOfferPick => 'Use the adjustments of';
+
+  @override
+  String adjustmentsCopied(String version) {
+    return 'Adjustments of “$version” used';
+  }
 }

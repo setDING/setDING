@@ -195,6 +195,13 @@ the API directly as the refused roles (permission matrix test).
   they would have in the set; after the switch the new version's band arrangement
   applies, the set item's transposition stays, and a different resulting key is
   named in the message.
+- 2026-11-22: Offer to copy adjustments implemented (#808): a card below the
+  version chips when the person's adjustments of the song are not musical while
+  another version's are (transposition, capo, keyboard programs, click grouping and
+  subdivisions); *Use them* copies only those (with Undo; a choice of the version
+  when several have some), notes, font size, display and annotations stay. *No
+  thanks* hides the offer for that song on this device (device setting
+  `adjustmentOfferDismissed`, never synced).
 
 ## Open points
 
