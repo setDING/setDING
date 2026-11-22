@@ -37,6 +37,7 @@ class AutoBackupState {
     this.enabled = false,
     this.location,
     this.folderName,
+    this.folderPlace,
     this.deviceName,
     this.systemDeviceName = '',
     this.keep = autoBackupMaxKeep,
@@ -52,8 +53,20 @@ class AutoBackupState {
   /// What the platform needs to reach the folder; null when none is chosen.
   final String? location;
 
-  /// The name of the folder as the person sees it.
+  /// The folder as the person sees it: its path, or its name where the
+  /// platform does not know the path (#889).
   final String? folderName;
+
+  /// The storage or the app the folder is in (e.g. "Nextcloud"); null when
+  /// [folderName] says it.
+  final String? folderPlace;
+
+  /// The folder in one line, with the storage or app in front.
+  String? get folderLabel => switch ((folderPlace, folderName)) {
+    (_, null) => null,
+    (null, final name) => name,
+    (final place, final name) => '$place: $name',
+  };
 
   /// The device name the person entered; null: [systemDeviceName].
   final String? deviceName;
@@ -88,6 +101,7 @@ class AutoBackupState {
     bool? enabled,
     String? Function()? location,
     String? Function()? folderName,
+    String? Function()? folderPlace,
     String? Function()? deviceName,
     String? systemDeviceName,
     int? keep,
@@ -100,6 +114,7 @@ class AutoBackupState {
     enabled: enabled ?? this.enabled,
     location: location == null ? this.location : location(),
     folderName: folderName == null ? this.folderName : folderName(),
+    folderPlace: folderPlace == null ? this.folderPlace : folderPlace(),
     deviceName: deviceName == null ? this.deviceName : deviceName(),
     systemDeviceName: systemDeviceName ?? this.systemDeviceName,
     keep: keep ?? this.keep,
@@ -184,6 +199,7 @@ class AutoBackupController {
   static const enabledKey = 'autoBackupEnabled',
       locationKey = 'autoBackupLocation',
       folderNameKey = 'autoBackupFolderName',
+      folderPlaceKey = 'autoBackupFolderPlace',
       deviceKey = 'autoBackupDevice',
       keepKey = 'autoBackupKeep',
       lastAtKey = 'autoBackupAt',
@@ -200,6 +216,7 @@ class AutoBackupController {
       enabled: prefs.getBool(enabledKey) ?? false,
       location: prefs.getString(locationKey),
       folderName: prefs.getString(folderNameKey),
+      folderPlace: prefs.getString(folderPlaceKey),
       deviceName: prefs.getString(deviceKey),
       keep: (prefs.getInt(keepKey) ?? autoBackupMaxKeep).clamp(
         autoBackupMinKeep,
@@ -232,6 +249,28 @@ class AutoBackupController {
     _set(_state.copyWith(systemDeviceName: name));
   }
 
+  /// Shows the chosen folder as the platform sees it now: with its path and
+  /// storage for a folder chosen before #889, or after it was renamed.
+  Future<void> describeFolder() async {
+    final location = _state.location;
+    if (location == null) return;
+    final choice = await folder.describe(location);
+    if (choice == null || _state.location != location) return;
+    if (choice.name.isEmpty) return;
+    if (choice.name == _state.folderName &&
+        choice.place == _state.folderPlace) {
+      return;
+    }
+    await _put(folderNameKey, choice.name);
+    await _put(folderPlaceKey, choice.place);
+    _set(
+      _state.copyWith(
+        folderName: () => choice.name,
+        folderPlace: () => choice.place,
+      ),
+    );
+  }
+
   /// Lets the person choose the folder; true when one was chosen. The error
   /// of the last attempt goes away with it.
   Future<bool> chooseFolder() async {
@@ -239,6 +278,7 @@ class AutoBackupController {
     if (choice == null) return false;
     await _put(locationKey, choice.location);
     await _put(folderNameKey, choice.name);
+    await _put(folderPlaceKey, choice.place);
     await _put(errorKey, null);
     await _put(errorAtKey, null);
     // A new folder gets a backup, also when nothing changed.
@@ -247,6 +287,7 @@ class AutoBackupController {
       _state.copyWith(
         location: () => choice.location,
         folderName: () => choice.name,
+        folderPlace: () => choice.place,
         error: () => null,
         errorAt: () => null,
       ),

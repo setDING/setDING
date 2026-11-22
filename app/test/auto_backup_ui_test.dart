@@ -35,7 +35,11 @@ void main() {
   ) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'en'});
-    app.backupFolder.choice = (location: '/cloud/Band', name: 'Band');
+    app.backupFolder.choice = (
+      location: '/cloud/Band',
+      name: 'Band',
+      place: null,
+    );
     await tester.runAsync(() => app.songs.createSong(source: '{title: A}'));
     await tester.pumpWidget(app.build());
     await tester.pumpAndSettle();
@@ -111,7 +115,7 @@ void main() {
     // Choosing the folder again writes the backup.
     app.backupFolder
       ..error = null
-      ..choice = (location: '/cloud/Band2', name: 'Band2');
+      ..choice = (location: '/cloud/Band2', name: 'Band2', place: null);
     await tester.tap(find.byKey(const Key('auto-backup-failed-action')));
     await tester.pump();
     await waitFor(tester, () => app.backupFolder.files.isNotEmpty);
@@ -120,6 +124,40 @@ void main() {
       '/cloud/Band2',
     );
     expect(app.prefs.getString(AutoBackupController.errorKey), isNull);
+    await app.dispose(tester);
+  });
+
+  testWidgets('the folder shows its storage and path (#889)', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(
+      prefs: {
+        'language': 'en',
+        AutoBackupController.enabledKey: true,
+        AutoBackupController.locationKey: 'content://tree/1',
+        AutoBackupController.folderNameKey: 'Backups',
+        // Backed up today: no backup at the start.
+        AutoBackupController.lastAtKey: DateTime.now().toIso8601String(),
+      },
+    );
+    // A folder chosen before #889 is described at the start.
+    app.backupFolder.described = (
+      location: 'content://tree/1',
+      name: 'Documents/Band/Backups',
+      place: 'Internal shared storage',
+    );
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+    await openStorage(tester);
+    final tile = find.byKey(const Key('auto-backup-folder'));
+    await tester.ensureVisible(tile);
+    expect(
+      find.descendant(of: tile, matching: find.text('Internal shared storage')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: tile, matching: find.text('Documents/Band/Backups')),
+      findsOneWidget,
+    );
     await app.dispose(tester);
   });
 

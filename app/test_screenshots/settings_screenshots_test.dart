@@ -164,7 +164,11 @@ void main() {
           'themeMode': dark ? 'dark' : 'light',
           AutoBackupController.enabledKey: true,
           AutoBackupController.locationKey: 'content://nextcloud/setDING',
-          AutoBackupController.folderNameKey: 'Nextcloud › setDING',
+          // The storage and the path of the folder (#889).
+          AutoBackupController.folderNameKey: 'Documents/Band/setDING-Backup',
+          AutoBackupController.folderPlaceKey: lang == 'de'
+              ? 'Interner gemeinsamer Speicher'
+              : 'Internal shared storage',
           AutoBackupController.deviceKey: lang == 'de'
               ? 'Tablet Probe'
               : 'Rehearsal tablet',

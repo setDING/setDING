@@ -15,6 +15,9 @@ class _NoBackupFolder implements BackupFolder {
   Future<BackupFolderChoice?> pick() async => null;
 
   @override
+  Future<BackupFolderChoice?> describe(String location) async => null;
+
+  @override
   Future<List<String>> list(String location) =>
       throw const BackupFolderException(BackupFolderError.unavailable);
 

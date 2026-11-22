@@ -230,6 +230,14 @@ the server sync (ADR-0004).
   creation date and replacing keeps it; from an archive without it the date
   stays unknown, and such songs are left out of *Newest songs*. Importing
   as a copy still makes new songs.
+- 2026-11-22: The folder shows where it is (#889), not only its name: on
+  Android the storage volume (`StorageManager`) or the app of the document
+  provider and, on the external storage provider, the path from the
+  document ID (other providers do not tell the parent folders, so their
+  folder name stays); on the desktop the whole path with the home folder as
+  `~`; iOS keeps the folder name. A channel method `describe` lets folders
+  chosen before #889 get the new display at the start. Long paths are
+  shortened in the middle, so the start and the folder itself stay visible.
 
 ## Open points
 

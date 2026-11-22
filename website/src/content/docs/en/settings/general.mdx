@@ -69,6 +69,10 @@ width.
   (e.g. iCloud Drive), on Windows and Linux any folder, e.g. one the OneDrive,
   Dropbox or Nextcloud client syncs. setDING checks at start and when you leave
   the app, never in live mode.
+  - **Folder** shows where the backups go: the storage or the app (e.g.
+    «Internal shared storage», «Nextcloud») and the path, on Windows and Linux
+    the whole path. If it is too long, setDING shortens the folders in the
+    middle with «…».
   - The files are called `Backup <device> <date> <time>.setDING.zip`. Change the
     **Device name** if several devices write into the same folder.
   - **Backups kept** (1 to 10) says how many of this device's automatic backups
@@ -80,7 +84,7 @@ width.
   - Restore such a file with **Restore backup**, as a copy or by
     [replacing the local library](/en/songs/library/#replace-the-local-library).
 
-<Image src={autoBackup} alt="The automatic backup in «Storage & info»: switched on, a Nextcloud folder, the device name «Rehearsal tablet», 7 backups kept and the time of the last automatic backup" />
+<Image src={autoBackup} alt="The automatic backup in «Storage & info»: switched on, the folder «Documents/Band/setDING-Backup» in the internal shared storage, the device name «Rehearsal tablet», 7 backups kept and the time of the last automatic backup" />
 
 - **Copy diagnostic log** puts the app's recent messages on the clipboard, e.g. why
   a sync failed. Paste them into a message to whoever runs your server, or into an

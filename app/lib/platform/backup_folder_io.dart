@@ -13,14 +13,33 @@ BackupFolder createBackupFolder() => Platform.isAndroid || Platform.isIOS
     : DirectoryBackupFolder(
         pickDirectory: () async =>
             (await FilePicker.pickDirectory())?.toFilePath(),
+        // On Windows a path starts with the drive, never with "~".
+        home: Platform.isWindows ? null : Platform.environment['HOME'],
       );
+
+/// [path] as the person sees it (#889): in the home folder [home] with
+/// "~" in front instead of the home folder, otherwise unchanged.
+String desktopFolderPath(String path, {String? home}) {
+  if (home == null || home.isEmpty) return path;
+  final base = p.normalize(home);
+  if (p.equals(base, path)) return '~';
+  if (!p.isWithin(base, path)) return path;
+  return p.join('~', p.relative(path, from: base));
+}
 
 /// A folder on a desktop: a path, e.g. one that the OneDrive, Dropbox or
 /// Nextcloud client syncs.
 class DirectoryBackupFolder implements BackupFolder {
-  DirectoryBackupFolder({required this.pickDirectory, this.hostName});
+  DirectoryBackupFolder({
+    required this.pickDirectory,
+    this.hostName,
+    this.home,
+  });
 
   final Future<String?> Function() pickDirectory;
+
+  /// The home folder, shown as "~" in the path of the folder.
+  final String? home;
 
   /// The device name; default: the host name.
   final String? hostName;
@@ -32,8 +51,15 @@ class DirectoryBackupFolder implements BackupFolder {
   Future<BackupFolderChoice?> pick() async {
     final path = await pickDirectory();
     if (path == null) return null;
-    return (location: path, name: p.basename(path));
+    return describe(path);
   }
+
+  @override
+  Future<BackupFolderChoice> describe(String location) async => (
+    location: location,
+    name: desktopFolderPath(location, home: home),
+    place: null,
+  );
 
   Directory _dir(String location) {
     final dir = Directory(location);
@@ -116,10 +142,34 @@ class ChannelBackupFolder implements BackupFolder {
   Future<BackupFolderChoice?> pick() async {
     final result = await _call<Map<Object?, Object?>>('pick');
     if (result == null) return null;
-    return (
-      location: result['location'] as String,
-      name: result['name'] as String? ?? '',
-    );
+    return _choice(result['location'] as String, result);
+  }
+
+  static BackupFolderChoice _choice(
+    String location,
+    Map<Object?, Object?> result,
+  ) => (
+    location: location,
+    name: result['name'] as String? ?? '',
+    place: switch (result['place']) {
+      final String place when place.trim().isNotEmpty => place.trim(),
+      _ => null,
+    },
+  );
+
+  @override
+  Future<BackupFolderChoice?> describe(String location) async {
+    try {
+      final result = await _call<Map<Object?, Object?>>('describe', {
+        'location': location,
+      });
+      return result == null ? null : _choice(location, result);
+    } on BackupFolderException {
+      return null;
+    } on MissingPluginException {
+      // iOS does not describe its folders.
+      return null;
+    }
   }
 
   @override

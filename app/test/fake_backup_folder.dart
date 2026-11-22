@@ -21,6 +21,12 @@ class FakeBackupFolder implements BackupFolder {
   @override
   Future<BackupFolderChoice?> pick() async => choice;
 
+  /// What [describe] returns for every location.
+  BackupFolderChoice? described;
+
+  @override
+  Future<BackupFolderChoice?> describe(String location) async => described;
+
   void _check() {
     if (error case final error?) throw BackupFolderException(error);
   }
