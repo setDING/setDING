@@ -1,5 +1,5 @@
-/// Display formatting of chords: transposition, capo, notation, Nashville,
-/// chord style.
+/// Display formatting of chords: transposition, capo, notation, chord view
+/// (names, Nashville numbers, Roman numerals), chord style.
 library;
 
 import 'chord.dart';
@@ -9,8 +9,8 @@ import 'song.dart';
 /// Options that turn a written chord into the displayed chord.
 ///
 /// Combines the layers of ADR-0006 (set item transposition, personal
-/// transposition and capo, device settings for notation and Nashville
-/// numbers) with the song's own `{transpose}`, `{key}` and `{capo}`
+/// transposition and capo, device settings for notation and the chord
+/// view) with the song's own `{transpose}`, `{key}` and `{capo}`
 /// directives (ADR-0012).
 class ChordFormatter {
   const ChordFormatter({
@@ -18,7 +18,7 @@ class ChordFormatter {
     this.capo,
     this.songCapo = 0,
     this.notation = ChordNotation.international,
-    this.nashville = false,
+    this.view = ChordView.chords,
     this.style = ChordStyle.asWritten,
     this.superscript = false,
     this.key,
@@ -32,7 +32,7 @@ class ChordFormatter {
     int transpose = 0,
     int? capo,
     ChordNotation notation = ChordNotation.international,
-    bool nashville = false,
+    ChordView view = ChordView.chords,
     ChordStyle style = ChordStyle.asWritten,
     bool superscript = false,
   }) => ChordFormatter(
@@ -40,7 +40,7 @@ class ChordFormatter {
     capo: capo,
     songCapo: song.capoFret,
     notation: notation,
-    nashville: nashville,
+    view: view,
     style: style,
     superscript: superscript,
     key: song.key,
@@ -58,8 +58,9 @@ class ChordFormatter {
 
   final ChordNotation notation;
 
-  /// Show Nashville numbers instead of chord names (requires a key).
-  final bool nashville;
+  /// Chord names, Nashville numbers or Roman numerals; the numbers need a
+  /// key (ADR-0055).
+  final ChordView view;
 
   /// Spelling of the chord suffix (ADR-0022).
   final ChordStyle style;
@@ -80,7 +81,7 @@ class ChordFormatter {
     capo: capo,
     songCapo: songCapo,
     notation: notation,
-    nashville: nashville,
+    view: view,
     key: key,
     leadingTranspose: leadingTranspose,
   );
@@ -98,8 +99,9 @@ class ChordFormatter {
   /// Key of the chord shapes at the start of the song.
   Key? get shapeKey => key?.transpose(leadingTranspose + shift);
 
-  /// Whether Nashville numbers can actually be shown.
-  bool get showsNashville => nashville && key != null;
+  /// Whether scale degrees (Nashville numbers or Roman numerals) can
+  /// actually be shown.
+  bool get showsDegrees => view.isDegrees && key != null;
 
   /// Formats a chord token for display.
   String format(ChordToken token) => chordPartsText(formatParts(token));
@@ -114,9 +116,11 @@ class ChordFormatter {
     if (chord == null) return [ChordPart(stripMarkup(token.raw))];
     final tokenKey = token.key ?? key;
     List<ChordPart> parts;
-    if (nashville && tokenKey != null) {
+    if (view.isDegrees && tokenKey != null) {
       // Degrees relative to the key in effect (both as written).
-      parts = chord.toNashvilleParts(tokenKey, style: style);
+      parts = view == ChordView.numerals
+          ? chord.toNumeralParts(tokenKey)
+          : chord.toNashvilleParts(tokenKey, style: style);
     } else {
       final total = shift + token.transpose;
       if (total == 0 &&

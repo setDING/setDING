@@ -129,7 +129,7 @@ flowchart LR
 
 | Module | Responsibility |
 |---|---|
-| `chordpro` | Parser (ChordPro → AST), chord model (incl. structured suffix, ADR-0022), transposition, Nashville conversion, metadata extraction. Pure Dart package without UI dependencies, easy to test. |
+| `chordpro` | Parser (ChordPro → AST), chord model (incl. structured suffix, ADR-0022), transposition, Nashville and Roman numeral conversion (ADR-0055), metadata extraction. Pure Dart package without UI dependencies, easy to test. |
 | `render` | Rendering the AST: chords above lyrics, sections (verse/chorus), one or more columns, auto-fit with song pages in live mode, notation B/H, Nashville numbers, chord style with raised extensions (ADR-0022), song display styles per section type (ADR-0033) |
 | `pdf` | Displaying PDF attachments (fit to width/page, two-page view) |
 | `data` | Local DB (SQLite, e.g. via `drift`), repositories, domain model |

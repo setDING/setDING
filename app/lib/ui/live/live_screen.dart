@@ -1832,7 +1832,9 @@ class _ChordProPage extends ConsumerWidget {
       transpose: setTranspose + overlay.transpose,
       capo: overlay.capoFret,
       notation: settings.notation,
-      nashville: overlay.nashville ?? settings.nashville,
+      view: (overlay.nashville ?? settings.nashville)
+          ? ChordView.nashville
+          : ChordView.chords,
       style: settings.chordStyle,
       superscript: settings.chordSuperscript,
     );
@@ -1954,7 +1956,7 @@ class _ChordProPage extends ConsumerWidget {
                       formatter.transpose,
                       formatter.capo,
                       formatter.notation,
-                      formatter.nashville,
+                      formatter.view,
                       formatter.style,
                       formatter.superscript,
                       lyricsOnly,
@@ -2018,7 +2020,7 @@ class _ChordProPage extends ConsumerWidget {
                     formatter.transpose,
                     formatter.capo,
                     formatter.notation,
-                    formatter.nashville,
+                    formatter.view,
                     formatter.style,
                     formatter.superscript,
                     lyricsOnly,

@@ -142,6 +142,17 @@ class ChordSuffix {
     return parts;
   }
 
+  /// The suffix behind a Roman numeral (ADR-0055): the jazz spelling
+  /// without the minor sign, since the lower-case numeral shows it
+  /// (`ii7`, `iΔ7`, `viiø7`, `vii°7`, `I+`).
+  List<ChordPart> formatNumeral() {
+    final parts = format(ChordStyle.jazz);
+    if (quality == ChordQuality.minor && parts.isNotEmpty) {
+      return parts.sublist(1);
+    }
+    return parts;
+  }
+
   static String _jazzAccidentals(String mod) {
     if (mod.length < 2) return mod;
     return switch (mod[0]) {

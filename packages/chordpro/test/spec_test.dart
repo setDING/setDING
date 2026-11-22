@@ -153,7 +153,7 @@ void main() {
   group('key and capo', () {
     test('Nashville numbers follow key changes (modulation)', () {
       final song = parseChordPro('{key: C}\n[C]a [G]b\n{key: D}\n[D]c [A]d');
-      final f = ChordFormatter.forSong(song, nashville: true);
+      final f = ChordFormatter.forSong(song, view: ChordView.nashville);
       expect(chordsOf(song, f), ['1', '5', '1', '5']);
       expect(song.meta['key'], ['C', 'D']);
     });

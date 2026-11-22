@@ -240,7 +240,7 @@ void main() {
       final modulation = song.sections.firstWhere(
         (s) => s.label == 'Modulation to A',
       );
-      final nashville = ChordFormatter.forSong(song, nashville: true);
+      final nashville = ChordFormatter.forSong(song, view: ChordView.nashville);
       expect(
         [
           for (final s in (modulation.lines.first as LyricLine).segments)
