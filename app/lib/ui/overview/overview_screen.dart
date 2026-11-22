@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../data/band_view.dart';
@@ -19,6 +20,14 @@ import '../sets/sets_screen.dart' show daysBetween, formatGigDate, openSet;
 import '../songs/song_attention.dart';
 import '../songs/song_screen.dart';
 import '../widgets/app_info.dart';
+import '../../midi/midi_connection.dart';
+import '../../settings/settings.dart';
+import '../../sync/auth_providers.dart';
+import '../../sync/sync_controller.dart';
+import '../live/page_turner.dart';
+import '../settings_screen.dart' show settingsJumpProvider;
+import '../theme.dart' show StatusColors;
+import 'readiness.dart';
 import 'recent_changes.dart';
 
 /// The set the overview shows (ADR-0045): the next set of the current band
@@ -51,8 +60,9 @@ const songsOnCard = 5;
 List<SetSummary> moreSets(List<SetSummary> sets, DateTime today) =>
     groupSets(sets, today).upcoming.skip(1).take(moreSetsOnCard).toList();
 
-/// The start screen (ADR-0045): cards with the next set and the ones after
-/// it, what needs to be done, the recent changes by other people, the
+/// The start screen (ADR-0045): cards with the next set, whether this
+/// device is ready to play it (#911), the sets after it, what needs to be
+/// done, the recent changes by other people, the
 /// newest songs, the songs not played for a while (#868) and the version.
 /// A card with
 /// nothing to show is left out. One column on phones, two from
@@ -131,6 +141,9 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
           upcoming: shown.upcoming,
           today: today,
         ),
+      _ReadinessCard(
+        nextSet: shown != null && shown.upcoming ? shown.summary.set : null,
+      ),
       if (more.isNotEmpty) _MoreSetsCard(sets: more, today: today),
       if (counts != null && counts.values.any((c) => c > 0))
         _TodoCard(counts: counts),
@@ -331,6 +344,173 @@ class _SetCard extends ConsumerWidget {
     );
   }
 }
+
+/// Whether this device is ready to play (#911): one line per check of
+/// `readiness.dart`, each leading to the setting that fixes it (or to the
+/// next set). Lines that are ok are folded into one summary line until
+/// *Show details*; warnings are always shown.
+///
+/// While the overview is shown, a page-turn key marks the page turner as
+/// responding: the quick test before a gig, without opening a set.
+class _ReadinessCard extends ConsumerStatefulWidget {
+  const _ReadinessCard({required this.nextSet});
+
+  /// The next set with a gig date, for the summary and the offline check.
+  final SetlistEntry? nextSet;
+
+  @override
+  ConsumerState<_ReadinessCard> createState() => _ReadinessCardState();
+}
+
+class _ReadinessCardState extends ConsumerState<_ReadinessCard> {
+  var _expanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    FocusManager.instance.addEarlyKeyEventHandler(_onKey);
+  }
+
+  @override
+  void dispose() {
+    FocusManager.instance.removeEarlyKeyEventHandler(_onKey);
+    super.dispose();
+  }
+
+  /// Page Up / Page Down are taken: their default page scroll finds the
+  /// scroll views of every tab and fails. Arrows and Space keep their
+  /// focus and activate actions.
+  KeyEventResult _onKey(KeyEvent event) {
+    final key = event.logicalKey;
+    if (!isPageTurnKey(key) ||
+        !mounted ||
+        ref.read(homeTabProvider) != HomeTab.overview ||
+        !(ModalRoute.of(context)?.isCurrent ?? true)) {
+      return KeyEventResult.ignored;
+    }
+    if (event is KeyDownEvent) {
+      ref.read(pageTurnerProvider.notifier).tested();
+    }
+    return key == LogicalKeyboardKey.pageDown ||
+            key == LogicalKeyboardKey.pageUp
+        ? KeyEventResult.handled
+        : KeyEventResult.ignored;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final localizations = MaterialLocalizations.of(context);
+    String time(DateTime t) =>
+        '${localizations.formatShortDate(t)} '
+        '${localizations.formatTimeOfDay(TimeOfDay.fromDateTime(t))}';
+    final settings = ref.watch(settingsProvider);
+    final web = ref.watch(webClientProvider);
+    final next = widget.nextSet;
+    final backupSupported = !web && ref.watch(backupFolderProvider).supported;
+    final items = [
+      musicianReadiness(l10n, settings),
+      ?midiReadiness(l10n, settings, ref.watch(midiConnectionProvider)),
+      ?offlineReadiness(
+        l10n,
+        nextSetId: next?.id,
+        missing: next == null
+            ? null
+            : ref.watch(offlineMissingProvider(next.id)).value,
+      ),
+      ?syncReadiness(
+        l10n,
+        time,
+        synced: !web && ref.watch(authProvider) != null,
+        mode: settings.syncMode,
+        lastSync: ref.watch(syncControllerProvider.select((s) => s.lastSync)),
+        staleness: ref.watch(syncStalenessProvider),
+      ),
+      pageTurnerReadiness(
+        l10n,
+        time,
+        mode: settings.pageTurn,
+        state: ref.watch(pageTurnerProvider),
+      ),
+      ?backupReadiness(
+        l10n,
+        time,
+        backupSupported ? ref.watch(autoBackupProvider) : null,
+      ),
+    ];
+    final shown = _expanded
+        ? items
+        : items.where((i) => i.level == ReadinessLevel.warning).toList();
+    final status = StatusColors.of(context);
+    Color levelColor(ReadinessLevel level) => switch (level) {
+      ReadinessLevel.ok => status.success,
+      ReadinessLevel.info => theme.colorScheme.onSurfaceVariant,
+      ReadinessLevel.warning => status.warning,
+    };
+    void open(ReadinessItem item) {
+      if (item.setId case final id?) {
+        openSet(context, ref, id, wide: false);
+      } else if (item.category case final category?) {
+        ref.read(settingsJumpProvider.notifier).open(category);
+        ref.read(homeTabProvider.notifier).select(HomeTab.settings);
+      }
+    }
+
+    return _OverviewCard(
+      key: const Key('overview-readiness'),
+      title: l10n.overviewReadiness,
+      children: [
+        if (shown.isEmpty)
+          ListTile(
+            key: const Key('overview-readiness-all-set'),
+            leading: Icon(Icons.check_circle_outline, color: status.success),
+            title: Text(
+              next == null
+                  ? l10n.readinessAllSetNoSet
+                  : l10n.readinessAllSet(next.name),
+            ),
+          ),
+        for (final item in shown)
+          ListTile(
+            key: ValueKey('overview-readiness-${item.check.name}'),
+            leading: Icon(
+              _readinessIcon(item.check),
+              color: levelColor(item.level),
+            ),
+            title: Text(item.title),
+            subtitle: item.detail == null ? null : Text(item.detail!),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => open(item),
+          ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: TextButton(
+              key: const Key('overview-readiness-details'),
+              onPressed: () => setState(() => _expanded = !_expanded),
+              child: Text(
+                _expanded
+                    ? l10n.readinessHideDetails
+                    : l10n.readinessShowDetails,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+IconData _readinessIcon(ReadinessCheck check) => switch (check) {
+  ReadinessCheck.musician => Icons.music_note_outlined,
+  ReadinessCheck.midi => Icons.piano_outlined,
+  ReadinessCheck.offline => Icons.offline_pin_outlined,
+  ReadinessCheck.sync => Icons.sync,
+  ReadinessCheck.pageTurner => Icons.keyboard_outlined,
+  ReadinessCheck.backup => Icons.backup_outlined,
+};
 
 /// What needs attention by the person, only songs they may edit
 /// (ADR-0023); each line opens the song list filtered to its songs.

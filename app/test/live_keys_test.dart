@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:setding/ui/live/live_screen.dart';
+import 'package:setding/ui/live/page_turner.dart';
 import 'package:setding/ui/live/pdf_spread_view.dart';
 
 import 'test_app.dart';
@@ -408,5 +409,25 @@ void main() {
     expect(find.text('1 / 2'), findsOneWidget);
     await app.dispose(tester);
     await settlePdf(tester);
+  });
+
+  testWidgets('a page-turn key in live mode is remembered (#911)', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final items = await createSongs(tester, app, [
+      '{title: One}\n[C]La',
+      '{title: Two}\n[D]La',
+    ]);
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pumpAndSettle();
+    expect(app.prefs.getString(PageTurnerNotifier.lastUsedKey), isNull);
+
+    await press(tester, LogicalKeyboardKey.pageDown);
+    expect(find.text('2 / 2'), findsOneWidget);
+    final stored = app.prefs.getString(PageTurnerNotifier.lastUsedKey);
+    expect(DateTime.tryParse(stored ?? ''), isNotNull);
+    await app.dispose(tester);
   });
 }

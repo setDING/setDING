@@ -3526,5 +3526,85 @@
   "liveChordViewChords": "C",
   "liveChordViewNashville": "1",
   "liveChordViewNumerals": "I",
-  "chordViewDocs": "So liest du Nashville-Zahlen und Stufen"
+  "chordViewDocs": "So liest du Nashville-Zahlen und Stufen",
+  "overviewReadiness": "Bühnencheck",
+  "readinessAllSet": "Alles bereit für «{set}»",
+  "@readinessAllSet": {
+    "placeholders": {
+      "set": {
+        "type": "String"
+      }
+    }
+  },
+  "readinessAllSetNoSet": "Alles bereit",
+  "readinessShowDetails": "Details anzeigen",
+  "readinessHideDetails": "Details ausblenden",
+  "readinessMusician": "Musiker: {who}",
+  "@readinessMusician": {
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "readinessNoInstrument": "Kein Instrument gewählt",
+  "readinessNoName": "Kein Name festgelegt (für Stellen, die für dich markiert sind, z. B. eine Stimme)",
+  "readinessMidiConnected": "MIDI: {device} verbunden",
+  "@readinessMidiConnected": {
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "readinessMidiNotConnected": "MIDI: Keyboard nicht verbunden",
+  "readinessMidiNoOutput": "MIDI: kein Keyboard gewählt",
+  "readinessMidiProfile": "Profil: {profile}",
+  "@readinessMidiProfile": {
+    "placeholders": {
+      "profile": {
+        "type": "String"
+      }
+    }
+  },
+  "readinessOfflineReady": "Nächstes Set offline verfügbar",
+  "readinessOfflineMissing": "{count, plural, =1{1 Song des nächsten Sets ist} other{{count} Songs des nächsten Sets sind}} nicht offline verfügbar",
+  "@readinessOfflineMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "readinessSynced": "Synchronisiert: {time}",
+  "@readinessSynced": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "readinessSyncNever": "Auf diesem Gerät noch nicht synchronisiert",
+  "readinessSyncStale": "Daten evtl. nicht aktuell",
+  "readinessSyncManual": "Synchronisation ist manuell: vor dem Auftritt synchronisieren.",
+  "readinessPageTurnerResponds": "Seitenwender reagiert",
+  "readinessPageTurnerLastUsed": "Seitenwender: zuletzt benutzt {time}",
+  "@readinessPageTurnerLastUsed": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "readinessPageTurnerNever": "Seitenwender: auf diesem Gerät noch nicht benutzt",
+  "readinessPageTurnerDetail": "Blättern: {mode} · zum Testen hier aufs Pedal treten",
+  "@readinessPageTurnerDetail": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "readinessBackupNoFolder": "Automatische Sicherung: kein Ordner gewählt",
+  "readinessBackupFailed": "Automatische Sicherung fehlgeschlagen"
 }

@@ -92,4 +92,55 @@ void main() {
       await app.dispose(tester);
     });
   }
+
+  // The readiness tile (#911) with its details: a keyboard that is not
+  // connected (a warning), the next set offline, the page turner.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('overview readiness $lang', (tester) async {
+      tester.view.physicalSize = const Size(420, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final app = await TestApp.create(
+        prefs: {
+          'language': lang,
+          'themeMode': dark ? 'dark' : 'light',
+          'instrument': 'keyboard',
+          'userName': 'Andi',
+          'midiEnabled': true,
+          'midiOutputName': 'Nord Stage 3 MIDI',
+          'midiProfile': 'nordStage3',
+        },
+      );
+      final now = DateTime.now();
+      await tester.runAsync(() async {
+        final ids = [
+          for (final title in ['Amazing Grace', 'Danny Boy', 'Swing Low'])
+            await app.songs.createSong(source: '{title: $title}\n[G]La'),
+        ];
+        final id = await app.sets.createSet(
+          name: 'Sommerfest',
+          venue: 'Bern',
+          gigDate: DateTime(now.year, now.month, now.day + 3),
+        );
+        await app.sets.addSongs(id, ids);
+      });
+      await tester.pumpWidget(
+        RepaintBoundary(key: UniqueKey(), child: app.build()),
+      );
+      await tester.pumpAndSettle();
+      final details = find.byKey(const Key('overview-readiness-details'));
+      await tester.ensureVisible(details);
+      await tester.tap(details);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.byKey(const Key('overview-readiness-midi')),
+      );
+      expect(
+        find.byKey(const Key('overview-readiness-offline')),
+        findsOneWidget,
+      );
+      await shot(tester, '${lang}_44c_overview_readiness');
+      await app.dispose(tester);
+    });
+  }
 }

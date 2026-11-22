@@ -8535,6 +8535,150 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'So liest du Nashville-Zahlen und Stufen'**
   String get chordViewDocs;
+
+  /// No description provided for @overviewReadiness.
+  ///
+  /// In de, this message translates to:
+  /// **'Bühnencheck'**
+  String get overviewReadiness;
+
+  /// No description provided for @readinessAllSet.
+  ///
+  /// In de, this message translates to:
+  /// **'Alles bereit für «{set}»'**
+  String readinessAllSet(String set);
+
+  /// No description provided for @readinessAllSetNoSet.
+  ///
+  /// In de, this message translates to:
+  /// **'Alles bereit'**
+  String get readinessAllSetNoSet;
+
+  /// No description provided for @readinessShowDetails.
+  ///
+  /// In de, this message translates to:
+  /// **'Details anzeigen'**
+  String get readinessShowDetails;
+
+  /// No description provided for @readinessHideDetails.
+  ///
+  /// In de, this message translates to:
+  /// **'Details ausblenden'**
+  String get readinessHideDetails;
+
+  /// No description provided for @readinessMusician.
+  ///
+  /// In de, this message translates to:
+  /// **'Musiker: {who}'**
+  String readinessMusician(String who);
+
+  /// No description provided for @readinessNoInstrument.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Instrument gewählt'**
+  String get readinessNoInstrument;
+
+  /// No description provided for @readinessNoName.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Name festgelegt (für Stellen, die für dich markiert sind, z. B. eine Stimme)'**
+  String get readinessNoName;
+
+  /// No description provided for @readinessMidiConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'MIDI: {device} verbunden'**
+  String readinessMidiConnected(String device);
+
+  /// No description provided for @readinessMidiNotConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'MIDI: Keyboard nicht verbunden'**
+  String get readinessMidiNotConnected;
+
+  /// No description provided for @readinessMidiNoOutput.
+  ///
+  /// In de, this message translates to:
+  /// **'MIDI: kein Keyboard gewählt'**
+  String get readinessMidiNoOutput;
+
+  /// No description provided for @readinessMidiProfile.
+  ///
+  /// In de, this message translates to:
+  /// **'Profil: {profile}'**
+  String readinessMidiProfile(String profile);
+
+  /// No description provided for @readinessOfflineReady.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächstes Set offline verfügbar'**
+  String get readinessOfflineReady;
+
+  /// No description provided for @readinessOfflineMissing.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song des nächsten Sets ist} other{{count} Songs des nächsten Sets sind}} nicht offline verfügbar'**
+  String readinessOfflineMissing(int count);
+
+  /// No description provided for @readinessSynced.
+  ///
+  /// In de, this message translates to:
+  /// **'Synchronisiert: {time}'**
+  String readinessSynced(String time);
+
+  /// No description provided for @readinessSyncNever.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf diesem Gerät noch nicht synchronisiert'**
+  String get readinessSyncNever;
+
+  /// No description provided for @readinessSyncStale.
+  ///
+  /// In de, this message translates to:
+  /// **'Daten evtl. nicht aktuell'**
+  String get readinessSyncStale;
+
+  /// No description provided for @readinessSyncManual.
+  ///
+  /// In de, this message translates to:
+  /// **'Synchronisation ist manuell: vor dem Auftritt synchronisieren.'**
+  String get readinessSyncManual;
+
+  /// No description provided for @readinessPageTurnerResponds.
+  ///
+  /// In de, this message translates to:
+  /// **'Seitenwender reagiert'**
+  String get readinessPageTurnerResponds;
+
+  /// No description provided for @readinessPageTurnerLastUsed.
+  ///
+  /// In de, this message translates to:
+  /// **'Seitenwender: zuletzt benutzt {time}'**
+  String readinessPageTurnerLastUsed(String time);
+
+  /// No description provided for @readinessPageTurnerNever.
+  ///
+  /// In de, this message translates to:
+  /// **'Seitenwender: auf diesem Gerät noch nicht benutzt'**
+  String get readinessPageTurnerNever;
+
+  /// No description provided for @readinessPageTurnerDetail.
+  ///
+  /// In de, this message translates to:
+  /// **'Blättern: {mode} · zum Testen hier aufs Pedal treten'**
+  String readinessPageTurnerDetail(String mode);
+
+  /// No description provided for @readinessBackupNoFolder.
+  ///
+  /// In de, this message translates to:
+  /// **'Automatische Sicherung: kein Ordner gewählt'**
+  String get readinessBackupNoFolder;
+
+  /// No description provided for @readinessBackupFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Automatische Sicherung fehlgeschlagen'**
+  String get readinessBackupFailed;
 }
 
 class _AppLocalizationsDelegate

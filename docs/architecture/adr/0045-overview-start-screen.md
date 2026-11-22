@@ -228,6 +228,39 @@ Further rules:
     threshold, longest ago first, at most five, with *Show all* opening
     the repertoire.
 
+- 2026-11-22: Owner request (#911): a card **Ready to play** (de-CH
+  *Bühnencheck*) right after *Next set*, always shown: whether this device
+  is ready for the next gig. One line per check, each with a level (ok,
+  worth knowing, warning) and a tap that leads to the settings category
+  that fixes it, or to the next set:
+  - **Musician**: instrument and name (none: worth knowing).
+  - **MIDI**, only while MIDI program changes are on (ADR-0039): the
+    keyboard connected or not (warning) and the device profile.
+  - **Next set offline**, only with a next set and not on the web client:
+    songs of it not available offline (the count of the sets list,
+    ADR-0001) are a warning.
+  - **Sync**, only when signed in and not on the web client: stale data or
+    unsent changes (the warning above the sets, #744) are a warning, a
+    manual sync mode is worth knowing.
+  - **Page turner**: a page turner is a keyboard without a setting of its
+    own, so the card shows when a page-turn key was last received (a
+    device setting `pageTurnerLastUsed`, written at most once a minute by
+    live mode and the overview, not synced) and the page turn mode. While
+    the overview is shown, a page-turn key marks it as responding: the
+    quick test before a gig. The overview takes Page Up / Page Down for
+    it, whose default page scroll fails with the scroll views of every
+    tab. Whether a paired page turner is connected follows in #913.
+  - **Automatic backup** (ADR-0054), only when it is on: no folder or a
+    failed backup is a warning, the last backup otherwise. Its age is no
+    warning, because it is written only after changes.
+
+  Only the warnings are shown at first; without any, one line *All set
+  for "<next set>"*. *Show details* shows every line. The settings screen
+  opens a category another screen asks for (`settingsJumpProvider`): the
+  category selected next to the list on wide screens, its own page on
+  narrow ones. Not signed in is no warning: the local library works
+  without an account. Nothing new on the server.
+
 ## Open points
 
 - Further cards later, e.g. pending invitations or the reminder for a full

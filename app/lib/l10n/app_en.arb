@@ -3034,5 +3034,29 @@
   "@liveChordViewNumerals": {
     "description": "Short label of the Roman numerals segment in the live control bar."
   },
-  "chordViewDocs": "How to read Nashville numbers and numerals"
+  "chordViewDocs": "How to read Nashville numbers and numerals",
+  "overviewReadiness": "Ready to play",
+  "readinessAllSet": "All set for “{set}”",
+  "readinessAllSetNoSet": "All set",
+  "readinessShowDetails": "Show details",
+  "readinessHideDetails": "Hide details",
+  "readinessMusician": "Musician: {who}",
+  "readinessNoInstrument": "No instrument chosen",
+  "readinessNoName": "No name set (for parts marked for you, e.g. a voice)",
+  "readinessMidiConnected": "MIDI: {device} connected",
+  "readinessMidiNotConnected": "MIDI: keyboard not connected",
+  "readinessMidiNoOutput": "MIDI: no keyboard chosen",
+  "readinessMidiProfile": "Profile: {profile}",
+  "readinessOfflineReady": "Next set available offline",
+  "readinessOfflineMissing": "{count, plural, =1{1 song of the next set is} other{{count} songs of the next set are}} not available offline",
+  "readinessSynced": "Synced: {time}",
+  "readinessSyncNever": "Not synced on this device yet",
+  "readinessSyncStale": "Data may not be up to date",
+  "readinessSyncManual": "Sync is manual: sync before the gig.",
+  "readinessPageTurnerResponds": "Page turner responds",
+  "readinessPageTurnerLastUsed": "Page turner: last used {time}",
+  "readinessPageTurnerNever": "Page turner: not used on this device yet",
+  "readinessPageTurnerDetail": "Turns: {mode} · press the pedal here to test it",
+  "readinessBackupNoFolder": "Automatic backup: no folder chosen",
+  "readinessBackupFailed": "Automatic backup failed"
 }

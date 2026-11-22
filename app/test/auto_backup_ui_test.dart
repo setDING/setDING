@@ -187,7 +187,18 @@ void main() {
       () => find.byKey(const Key('auto-backup-failed')).evaluate().isNotEmpty,
     );
     expect(
-      find.textContaining('may no longer write into the folder'),
+      find.descendant(
+        of: find.byKey(const Key('auto-backup-failed')),
+        matching: find.textContaining('may no longer write into the folder'),
+      ),
+      findsOneWidget,
+    );
+    // The overview's readiness tile shows it as a warning too (#911).
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('overview-readiness-backup')),
+        matching: find.textContaining('may no longer write into the folder'),
+      ),
       findsOneWidget,
     );
 
