@@ -2610,6 +2610,7 @@
   "songExportHintChordPro": "The ChordPro file holds the lyrics and chords of the song and opens in any app that knows ChordPro.",
   "setExportHintPdf": "The set list shows every song with its key and sequence, for printing for the stage.",
   "setImport": "Import set",
+  "setImportFromFile": "Import from file …",
   "setImportTitle": "Import set",
   "setImportBand": "Band",
   "setImportNoBand": "There is no band in this library whose sets you may manage.",

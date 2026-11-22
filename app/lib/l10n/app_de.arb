@@ -3001,6 +3001,7 @@
   "songExportHintChordPro": "Die ChordPro-Datei enthält Text und Akkorde des Songs und lässt sich in jeder App öffnen, die ChordPro kennt.",
   "setExportHintPdf": "Die Set-Liste zeigt jeden Song mit Tonart und Ablauf, zum Ausdrucken für die Bühne.",
   "setImport": "Set importieren",
+  "setImportFromFile": "Aus Datei importieren …",
   "setImportTitle": "Set importieren",
   "setImportBand": "Band",
   "setImportNoBand": "In dieser Bibliothek gibt es keine Band, deren Sets du verwalten darfst.",

@@ -74,12 +74,9 @@ void main() {
     return app;
   }
 
-  /// Repertoire is at the top of the sets tab's ⋮ menu (#853).
+  /// Repertoire is an icon button in the sets tab's app bar (#882).
   Future<void> openRepertoire(WidgetTester tester) async {
-    expect(find.byTooltip('Repertoire'), findsNothing);
-    await tester.tap(find.byKey(const Key('sets-menu')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('sets-repertoire')));
+    await tester.tap(find.byTooltip('Repertoire'));
   }
 
   testWidgets('the sets tab opens the repertoire of the band', (tester) async {
@@ -129,8 +126,9 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('members find Repertoire in the menu, without import and '
-      'trash', (tester) async {
+  testWidgets('members find Repertoire, without import and trash', (
+    tester,
+  ) async {
     useTabletSize(tester);
     final app = await TestApp.create(
       prefs: {'language': 'en', 'currentBandId': 'b1'},
@@ -154,12 +152,10 @@ void main() {
     });
     await tester.pumpWidget(app.build(home: const SetsScreen()));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('sets-menu')));
-    await tester.pumpAndSettle();
     expect(find.byKey(const Key('sets-repertoire')), findsOneWidget);
-    expect(find.byKey(const Key('sets-import')), findsNothing);
     expect(find.byKey(const Key('sets-trash')), findsNothing);
-    expect(find.byType(PopupMenuDivider), findsNothing);
+    // Members create no sets, so there is no "New set" dialog to import in.
+    expect(find.byType(FloatingActionButton), findsNothing);
     await tester.tap(find.byKey(const Key('sets-repertoire')));
     await tester.pumpAndSettle();
     expect(find.text('Repertoire of Rock'), findsOneWidget);

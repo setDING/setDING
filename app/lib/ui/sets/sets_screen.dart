@@ -20,7 +20,6 @@ import 'set_archive_dialogs.dart';
 import 'set_screen.dart';
 import '../widgets/section_header.dart';
 import 'sync_stale_banner.dart';
-import '../widgets/menu_action.dart';
 
 /// Minimum width for showing the list of sets and the selected set side by
 /// side (#266); the same as for the song list's two columns.
@@ -124,48 +123,21 @@ class _SetsPane extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.navSets),
         actions: [
-          const BandSwitcher(),
-          PopupMenuButton<String>(
-            key: const Key('sets-menu'),
-            onSelected: (value) => switch (value) {
-              'import' => pickSetArchive(context, bandId: band.id),
-              _ => Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (_) => value == 'trash'
-                      ? TrashScreen.sets(bandId: band.id)
-                      : RepertoireScreen(band: band),
-                ),
+          // The band's repertoire from its past sets (ADR-0046). An icon
+          // button rather than a ⋮ menu: next to the open set's own ⋮ on
+          // wide screens, a second one was mistaken for it (#882).
+          IconButton(
+            key: const Key('sets-repertoire'),
+            tooltip: l10n.repertoire,
+            icon: const Icon(Icons.leaderboard_outlined),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (_) => RepertoireScreen(band: band),
               ),
-            },
-            itemBuilder: (_) => [
-              // The band's repertoire from its past sets (ADR-0046); rarely
-              // needed, so in the menu rather than the app bar (#853).
-              MenuAction(
-                key: const Key('sets-repertoire'),
-                value: 'repertoire',
-                icon: Icons.leaderboard_outlined,
-                label: l10n.repertoire,
-              ),
-              // ADR-0043: whoever may delete sets may restore them, and
-              // import an exported set (§1b).
-              if (band.canManageSets) ...[
-                const PopupMenuDivider(),
-                MenuAction(
-                  key: const Key('sets-import'),
-                  value: 'import',
-                  icon: Icons.file_open_outlined,
-                  label: l10n.setImport,
-                ),
-                MenuAction(
-                  key: const Key('sets-trash'),
-                  value: 'trash',
-                  icon: Icons.restore_from_trash_outlined,
-                  label: l10n.trash,
-                ),
-              ],
-            ],
+            ),
           ),
+          const BandSwitcher(),
         ],
       ),
       floatingActionButton: !band.canManageSets
@@ -173,7 +145,12 @@ class _SetsPane extends ConsumerWidget {
           : FloatingActionButton.extended(
               heroTag: null,
               onPressed: () async {
-                final id = await showSetDialog(context, ref);
+                // ADR-0043 §1b: whoever may create sets may import one.
+                final id = await showSetDialog(
+                  context,
+                  ref,
+                  onImport: () => pickSetArchive(context, bandId: band.id),
+                );
                 if (id != null && context.mounted) {
                   await openSet(context, ref, id, wide: wide);
                 }
@@ -184,12 +161,29 @@ class _SetsPane extends ConsumerWidget {
       body: AsyncBody(
         value: sets,
         data: (list) {
+          // ADR-0043: whoever may delete sets may restore them. The trash
+          // is at the end of the list (#882); without sets, under the empty
+          // state, so deleted sets can still be brought back.
+          void openTrash() => Navigator.push(
+            context,
+            MaterialPageRoute<void>(
+              builder: (_) => TrashScreen.sets(bandId: band.id),
+            ),
+          );
           if (list.isEmpty) {
             return SyncRefresh(
               scrollable: false,
               child: EmptyState(
                 icon: Icons.queue_music,
                 message: l10n.setsEmpty,
+                action: !band.canManageSets
+                    ? null
+                    : TextButton.icon(
+                        key: const Key('sets-trash'),
+                        icon: const Icon(Icons.delete_outline),
+                        label: Text(l10n.trash),
+                        onPressed: openTrash,
+                      ),
               ),
             );
           }
@@ -223,6 +217,10 @@ class _SetsPane extends ConsumerWidget {
               if (!pastCollapsed)
                 for (final s in groups.past) card(s),
             ],
+            if (band.canManageSets) ...[
+              const Divider(height: 24),
+              _TrashTile(onTap: openTrash),
+            ],
           ];
           return SyncRefresh(
             child: ListView.builder(
@@ -236,6 +234,23 @@ class _SetsPane extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// The entry at the end of the sets list that opens the deleted sets.
+class _TrashTile extends StatelessWidget {
+  const _TrashTile({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => ListTile(
+    key: const Key('sets-trash'),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+    leading: const Icon(Icons.delete_outline),
+    title: Text(AppLocalizations.of(context).trash),
+    trailing: const Icon(Icons.chevron_right),
+    onTap: onTap,
+  );
 }
 
 /// Selects the set [setId]; on narrow screens (not [wide]) it also opens as
@@ -442,19 +457,24 @@ String formatGigDate(BuildContext context, DateTime date) =>
         .format(date);
 
 /// Creates or edits a set. Returns the set ID, or null if cancelled.
+///
+/// A new set offers [onImport] as a secondary action ("Import from file"):
+/// the dialog closes and [onImport] runs instead.
 Future<String?> showSetDialog(
   BuildContext context,
   WidgetRef ref, {
   SetlistEntry? existing,
+  VoidCallback? onImport,
 }) => showDialog<String>(
   context: context,
-  builder: (_) => _SetDialog(existing: existing),
+  builder: (_) => _SetDialog(existing: existing, onImport: onImport),
 );
 
 class _SetDialog extends ConsumerStatefulWidget {
-  const _SetDialog({this.existing});
+  const _SetDialog({this.existing, this.onImport});
 
   final SetlistEntry? existing;
+  final VoidCallback? onImport;
 
   @override
   ConsumerState<_SetDialog> createState() => _SetDialogState();
@@ -542,6 +562,19 @@ class _SetDialogState extends ConsumerState<_SetDialog> {
                 if (picked != null) setState(() => _date = picked);
               },
             ),
+            if (widget.existing == null && widget.onImport != null)
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: TextButton.icon(
+                  key: const Key('set-dialog-import'),
+                  icon: const Icon(Icons.file_open_outlined),
+                  label: Text(l10n.setImportFromFile),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    widget.onImport!();
+                  },
+                ),
+              ),
           ],
         ),
       ),
