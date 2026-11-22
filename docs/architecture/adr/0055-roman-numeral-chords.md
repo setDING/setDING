@@ -1,6 +1,6 @@
 # ADR-0055: Chords as Roman numerals
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-22
 
 ## Context
@@ -138,6 +138,9 @@ conversion needs no new parsing.
   in the user documentation.
 - 2026-11-22: The Nashville view keeps its name *Nashville* in both languages
   instead of *Numbers* / *Zahlen*, because musicians know the term (owner).
+- 2026-11-22: Accepted by the owner (#899). Implementation: `chordpro`
+  conversion #906, chord view setting and adjustment #907, live toggle #908,
+  website page with screenshots #909.
 
 ## Open points
 

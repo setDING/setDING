@@ -113,6 +113,10 @@ while the ChordPro source stays unchanged. The chord style fits the same pattern
   number (`7+` is `7#5`), `m#7`, `sus9`, `add3`/`no3`, `0` (diminished) and
   `h7`/`h9` (half-diminished). The chord tones for diagrams follow.
 
+- 2026-11-22: Roman numerals (ADR-0055) use a fixed jazz spelling and do not
+  follow the chord style; the superscript switch applies to them, the B/H
+  notation does not.
+
 ## Open points
 
 - None.
