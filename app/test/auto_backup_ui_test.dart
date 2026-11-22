@@ -5,6 +5,8 @@ import 'package:setding/data/auto_backup.dart';
 import 'package:setding/data/backup.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/platform/backup_folder.dart';
+import 'package:setding/sync/sync_backend.dart';
+import 'package:setding/ui/settings/settings_layout.dart';
 import 'package:setding/ui/settings_screen.dart';
 
 import 'test_app.dart';
@@ -28,6 +30,83 @@ void main() {
     await tester.tap(find.text('Settings').last);
     await tester.pumpAndSettle();
     await openSettingsCategory(tester, SettingsCategory.about);
+  }
+
+  // #891: Storage & info in three sections, the automatic backup its own
+  // (ADR-0050 rule 5), the local library apart from the backups.
+  testWidgets('the storage tiles sit in their sections', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(
+      prefs: {'language': 'en', AutoBackupController.enabledKey: true},
+    );
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+    await openStorage(tester);
+
+    Finder inSection(String title, String key) => find.ancestor(
+      of: find.byKey(Key(key)),
+      matching: find.byWidgetPredicate(
+        (w) => w is SettingsSection && w.title == title,
+      ),
+    );
+    for (final key in ['backup-all', 'backup-restore']) {
+      expect(inSection('Backup', key), findsOneWidget, reason: key);
+    }
+    for (final key in [
+      'auto-backup',
+      'auto-backup-folder',
+      'auto-backup-now',
+      'auto-backup-keep',
+      'auto-backup-device',
+    ]) {
+      expect(inSection('Automatic backup', key), findsOneWidget, reason: key);
+    }
+    expect(
+      inSection('This device', 'settings-show-local-library'),
+      findsOneWidget,
+    );
+    // Back up everything and the automatic backup's button differ.
+    expect(find.text('Back up to the folder now'), findsOneWidget);
+    Icon iconOf(String key) => tester.widget<Icon>(
+      find
+          .descendant(of: find.byKey(Key(key)), matching: find.byType(Icon))
+          .first,
+    );
+    expect(iconOf('auto-backup-now').icon, isNot(iconOf('backup-all').icon));
+    await app.dispose(tester);
+  });
+
+  // #891: the automatic backup only backs up the local library, so it is
+  // hidden with it; while it is still on, it stays to be switched off.
+  for (final enabled in [false, true]) {
+    testWidgets('with the local library hidden, the section is '
+        '${enabled ? 'shown while it is on' : 'hidden'}', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {
+          'language': 'en',
+          'showLocalLibrary': false,
+          AutoBackupController.enabledKey: enabled,
+        },
+        user: const AuthUser(
+          id: 'u-ann@example.test',
+          email: 'ann@example.test',
+          name: 'Ann',
+        ),
+      );
+      await tester.pumpWidget(app.build());
+      await tester.pumpAndSettle();
+      await openStorage(tester);
+      expect(
+        find.byKey(const Key('settings-show-local-library')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('auto-backup')),
+        enabled ? findsOneWidget : findsNothing,
+      );
+      await app.dispose(tester);
+    });
   }
 
   testWidgets('switching it on chooses the folder and writes a backup', (

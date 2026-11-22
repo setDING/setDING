@@ -154,8 +154,9 @@ void main() {
     });
   }
 
-  // The automatic backup of the local library (ADR-0054) in *Storage &
-  // backup*: folder, device name, backups kept, the last backup.
+  // The automatic backup of the local library (ADR-0054), its own
+  // section of *Storage & info*: folder, the last backup, backups kept,
+  // device name.
   for (final (lang, dark) in [('de', false), ('en', true)]) {
     screenshotTest('auto backup $lang', (tester) async {
       useTabletSize(tester);
@@ -189,10 +190,15 @@ void main() {
       await tester.pumpAndSettle();
       await openSettingsCategory(tester, SettingsCategory.about);
       await tester.scrollUntilVisible(
-        find.byKey(const Key('auto-backup-now')),
+        find.byKey(const Key('auto-backup-device')),
         200,
         scrollable: find.byType(Scrollable).last,
       );
+      // The section from its heading on.
+      await tester.ensureVisible(
+        find.text(lang == 'de' ? 'Automatische Sicherung' : 'Automatic backup'),
+      );
+      await tester.pumpAndSettle();
       await shot(tester, '${lang}_43_settings_auto_backup');
       await app.dispose(tester);
     });

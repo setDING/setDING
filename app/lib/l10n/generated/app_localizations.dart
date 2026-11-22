@@ -7885,11 +7885,17 @@ abstract class AppLocalizations {
   /// **'Klick auf diesem Gerät'**
   String get settingsHeadingClick;
 
-  /// No description provided for @settingsHeadingStorage.
+  /// No description provided for @settingsHeadingBackup.
   ///
   /// In de, this message translates to:
-  /// **'Speicher & Sicherung'**
-  String get settingsHeadingStorage;
+  /// **'Sicherung'**
+  String get settingsHeadingBackup;
+
+  /// No description provided for @settingsHeadingThisDevice.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Gerät'**
+  String get settingsHeadingThisDevice;
 
   /// No description provided for @settingsHeadingHelp.
   ///
@@ -8237,6 +8243,12 @@ abstract class AppLocalizations {
   /// **'Automatische Sicherung'**
   String get autoBackup;
 
+  /// No description provided for @autoBackupSwitch.
+  ///
+  /// In de, this message translates to:
+  /// **'Automatisch sichern'**
+  String get autoBackupSwitch;
+
   /// No description provided for @autoBackupHint.
   ///
   /// In de, this message translates to:
@@ -8294,7 +8306,7 @@ abstract class AppLocalizations {
   /// No description provided for @autoBackupNow.
   ///
   /// In de, this message translates to:
-  /// **'Jetzt sichern'**
+  /// **'Jetzt in den Ordner sichern'**
   String get autoBackupNow;
 
   /// No description provided for @autoBackupRunning.

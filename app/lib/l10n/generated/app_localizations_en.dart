@@ -5066,7 +5066,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsHeadingClick => 'Click on this device';
 
   @override
-  String get settingsHeadingStorage => 'Storage & backup';
+  String get settingsHeadingBackup => 'Backup';
+
+  @override
+  String get settingsHeadingThisDevice => 'This device';
 
   @override
   String get settingsHeadingHelp => 'Help & info';
@@ -5356,6 +5359,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoBackup => 'Automatic backup';
 
   @override
+  String get autoBackupSwitch => 'Back up automatically';
+
+  @override
   String get autoBackupHint =>
       'Saves the library “On this device” into a folder you choose, at most once a day after changes. Use a folder of your cloud storage to keep it safe when the device is lost.';
 
@@ -5386,7 +5392,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Older automatic backups of this device are deleted from the folder.';
 
   @override
-  String get autoBackupNow => 'Back up now';
+  String get autoBackupNow => 'Back up to the folder now';
 
   @override
   String get autoBackupRunning => 'Backing up …';

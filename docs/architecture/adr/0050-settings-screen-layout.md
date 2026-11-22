@@ -54,7 +54,7 @@ without thinking about it.
    | Musician | Instrument & voice · Beat and click |
    | Screen & live mode | Screen · Controls · Click on this device |
    | Keyboard (MIDI) | Connection · Keyboard |
-   | Storage & info | Storage & backup · Help & info |
+   | Storage & info | Backup · This device · Automatic backup · Help & info |
    | Test features | Prototypes |
 
 7. **A test enforces the rules:** `app/test/settings_layout_test.dart` opens every
@@ -98,6 +98,7 @@ without thinking about it.
 - 2026-11-21: Accepted by the owner (#768).
 - 2026-11-21: The section heading is the app-wide `SectionHeader` of ADR-0051 (#743): bold like the other sections of the app; the layout rules here are unchanged.
 - 2026-11-21: The owner decided that the settings use the width of their pane (#774): two columns of sections from 1040, full width below; the song display stays in one column for its preview (point 9).
+- 2026-11-22: The owner chose to split *Storage & backup* (#891): *Backup* (back up everything, restore), *This device* (storage used, show the local library) and below it *Automatic backup* as its own section (point 5): it exists only where a folder can be chosen and, as it backs up only the local library, only while the local library is shown or the automatic backup is still on; *Back up to the folder now* gets its own icon (point 3).
 
 ## Open points
 

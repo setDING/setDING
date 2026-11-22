@@ -11,7 +11,9 @@ import '../sync/update_check.dart';
 import '../util/app_version.dart';
 import '../util/log.dart';
 import 'account/account_section.dart';
+import 'backup/auto_backup_tiles.dart';
 import 'backup/full_backup.dart';
+import 'backup/local_library_tile.dart';
 import 'bands/bands_settings.dart';
 import 'settings/latency_calibration.dart';
 import 'settings/midi_settings.dart';
@@ -964,7 +966,8 @@ Widget _clickDeviceSection(
   ],
 );
 
-/// Storage and backup; update, diagnostic log and version.
+/// Backup, automatic backup and this device; update, diagnostic log and
+/// version.
 class _AboutSections extends ConsumerWidget {
   const _AboutSections();
 
@@ -974,18 +977,37 @@ class _AboutSections extends ConsumerWidget {
     final usage = ref.watch(storageUsageProvider).value;
     final version = ref.watch(appVersionProvider).value;
     final whatsNew = ref.watch(recentNotesProvider);
+    final web = ref.watch(webClientProvider);
     return SettingsSections([
+      // Full backup and restore (#639, ADR-0043).
       SettingsSection(
-        title: l10n.settingsHeadingStorage,
+        title: l10n.settingsHeadingBackup,
+        children: const [BackupTiles()],
+      ),
+      SettingsSection(
+        title: l10n.settingsHeadingThisDevice,
         children: [
           ListTile(
             leading: const Icon(Icons.sd_storage_outlined),
             title: Text(l10n.settingsStorageUsed(formatBytes(usage ?? 0))),
           ),
-          // Full backup and restore (#639, ADR-0043).
-          const BackupTiles(),
+          // Hiding the local library (ADR-0054).
+          if (!web) const ShowLocalLibraryTile(),
         ],
       ),
+      // Automatic backup of the local library (ADR-0054), where a folder
+      // can be chosen: its own section below the switch of the local
+      // library (ADR-0050 rule 5, #891). Hidden with the local library,
+      // unless it is still on and must be switched off here.
+      if (!web &&
+          ref.watch(backupFolderProvider).supported &&
+          (ref.watch(localLibraryShownProvider) ||
+              ref.watch(autoBackupProvider.select((s) => s.enabled))))
+        SettingsSection(
+          title: l10n.autoBackup,
+          hint: l10n.autoBackupHint,
+          children: const [AutoBackupTiles()],
+        ),
       SettingsSection(
         title: l10n.settingsHeadingHelp,
         children: [

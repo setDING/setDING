@@ -123,7 +123,11 @@ play only in organizations hide it:
 - The data is not changed; the full backup and the automatic backup still
   include it. The backup reminder of ADR-0043 is not shown while it is hidden.
 
-Both settings are in *Storage & info → Storage & backup* (ADR-0050).
+Both settings are in *Storage & info* (ADR-0050): the automatic backup in its
+own section *Automatic backup*, the switch in *This device* (#891).
+The section *Automatic backup* follows *This device* and is hidden with the
+local library, unless the automatic backup is still on, so it can be switched
+off there.
 
 ### Not done: sync through the user's own storage
 

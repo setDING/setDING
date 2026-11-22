@@ -19,10 +19,8 @@ import '../sets/sets_screen.dart' show formatGigDate;
 import '../songs/song_screen.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
-import 'auto_backup_tiles.dart';
 import 'backup_actions.dart';
 import 'replace_local.dart' show confirmLocalReplace;
-import 'local_library_tile.dart';
 
 export '../../data/auto_backup.dart' show lastBackupKey;
 
@@ -212,7 +210,8 @@ Future<void> openBackup(BuildContext context, Uint8List zip) async {
   );
 }
 
-/// The backup tiles of *Storage & info*.
+/// The tiles of the *Backup* section of *Storage & info*: back up
+/// everything and restore (#891).
 class BackupTiles extends ConsumerWidget {
   const BackupTiles({super.key});
 
@@ -251,11 +250,6 @@ class BackupTiles extends ConsumerWidget {
           subtitle: Text(l10n.backupRestoreHint),
           onTap: () => restoreBackup(context),
         ),
-        // Hiding the local library (ADR-0054).
-        if (!web) const ShowLocalLibraryTile(),
-        // Automatic backup of the local library (ADR-0054).
-        if (!web && ref.watch(backupFolderProvider).supported)
-          const AutoBackupTiles(),
       ],
     );
   }

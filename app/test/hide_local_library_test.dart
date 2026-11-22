@@ -68,6 +68,7 @@ void main() {
     await openStorage(tester);
     final tile = find.byKey(const Key('settings-show-local-library'));
     await tester.ensureVisible(tile);
+    await tester.pumpAndSettle();
     await tester.tap(tile);
     await tester.pump();
     for (var i = 0; i < 20; i++) {

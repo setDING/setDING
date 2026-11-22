@@ -35,8 +35,8 @@ width.
 
 ## Storage & info
 
-- **PDF attachments use …** shows how much space the PDF sheet music takes on this
-  device.
+### Backup
+
 - **Back up everything** saves one file with every library you may back up (*On
   this device* and the organizations where you are a librarian or admin) with
   songs, sets and attachments, plus your personal adjustments and notes from all
@@ -50,6 +50,10 @@ width.
   first, see [Replace the local library](/en/songs/library/#replace-the-local-library).
   See also
   [Back up the library](/en/songs/library/#back-up-the-library).
+### This device
+
+- **PDF attachments use …** shows how much space the PDF sheet music takes on this
+  device.
 - **Show the local library** (not in the web app): if you play only in
   organizations, switch it off to hide *On this device* from the lists of
   libraries and bands, the overview, the song and set lists, imports and copying.
@@ -59,16 +63,20 @@ width.
   can switch it off only while signed in; signed out, the local library is always
   shown.
 
-<Image src={hideLocal} alt="«Show the local library» switched off in «Storage & info», with the hint that its 3 songs and 1 set stay on this device and that the automatic backup keeps running" />
+<Image src={hideLocal} alt="«Show the local library» switched off in the section «This device», with the hint that its 3 songs and 1 set stay on this device and that the automatic backup keeps running" />
 
-- **Automatic backup** (not in the web app) saves the library *On this device*
+### Automatic backup
+
+- **Back up automatically** (not in the web app) saves the library *On this device*
   into a folder you choose, at most once a day and only after it changed. Choose
   a folder of your cloud storage, so the library is safe when the device is lost:
   on Android a folder of any app that offers its storage to the system (e.g.
   Nextcloud, OneDrive, Dropbox), on iPad and iPhone a folder in the Files app
   (e.g. iCloud Drive), on Windows and Linux any folder, e.g. one the OneDrive,
   Dropbox or Nextcloud client syncs. setDING checks at start and when you leave
-  the app, never in live mode.
+  the app, never in live mode. While the local library is hidden, you see this
+  section only as long as the automatic backup is still on, so you can switch it
+  off.
   - **Folder** shows where the backups go: the storage or the app (e.g.
     «Internal shared storage», «Nextcloud») and the path, on Windows and Linux
     the whole path. If it is too long, setDING shortens the folders in the
@@ -77,14 +85,16 @@ width.
     **Device name** if several devices write into the same folder.
   - **Backups kept** (1 to 10) says how many of this device's automatic backups
     stay; older ones of this device are deleted, other files never.
-  - **Back up now** writes one at once. Below it you see the last automatic
+  - **Back up to the folder now** writes one at once. Below it you see the last automatic
     backup, or why the last attempt failed. If the folder cannot be reached or
     setDING lost the permission, a hint at start offers to choose it again.
   - While automatic backups succeed, setDING does not remind you of a backup.
   - Restore such a file with **Restore backup**, as a copy or by
     [replacing the local library](/en/songs/library/#replace-the-local-library).
 
-<Image src={autoBackup} alt="The automatic backup in «Storage & info»: switched on, the folder «Documents/Band/setDING-Backup» in the internal shared storage, the device name «Rehearsal tablet», 7 backups kept and the time of the last automatic backup" />
+<Image src={autoBackup} alt="The section «Automatic backup» in «Storage & info»: switched on, the folder «Documents/Band/setDING-Backup» in the internal shared storage, «Back up to the folder now» with the time of the last automatic backup, 7 backups kept and the device name «Rehearsal tablet»" />
+
+### Help & info
 
 - **Copy diagnostic log** puts the app's recent messages on the clipboard, e.g. why
   a sync failed. Paste them into a message to whoever runs your server, or into an
