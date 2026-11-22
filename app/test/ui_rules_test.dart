@@ -185,6 +185,30 @@ void main() {
     }
     expect(offenders, isEmpty);
   });
+
+  test('checkboxes lead their row', () {
+    // A checkbox stands in front of its label, in lists and in dialogs; a
+    // switch stays at the end (#881). CheckboxListTile puts it at the end
+    // by default.
+    final offenders = <String>[];
+    for (final f in files) {
+      final source = f.readAsStringSync();
+      for (final m in RegExp(r'\bCheckboxListTile\(').allMatches(source)) {
+        final call = source.substring(m.start, _callEnd(source, m.end - 1));
+        if (!call.contains(
+          'controlAffinity: ListTileControlAffinity.leading',
+        )) {
+          final line = '\n'.allMatches(source.substring(0, m.start)).length;
+          offenders.add('${f.path}:${line + 1}');
+        }
+      }
+      for (final m in RegExp(r'trailing:\s*Checkbox\(').allMatches(source)) {
+        final line = '\n'.allMatches(source.substring(0, m.start)).length;
+        offenders.add('${f.path}:${line + 1}');
+      }
+    }
+    expect(offenders, isEmpty);
+  });
 }
 
 /// The index after the parenthesis closing the one at [open] in [source].

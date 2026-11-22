@@ -181,6 +181,7 @@ class _ReplaceDialogState extends ConsumerState<_ReplaceDialog> {
               CheckboxListTile(
                 key: const Key('backup-replace-safety'),
                 contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
                 value: _safety,
                 onChanged: (v) => setState(() => _safety = v ?? false),
                 title: Text(l10n.backupReplaceSafety),

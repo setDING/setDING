@@ -281,6 +281,7 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
             const SizedBox(height: 12),
             CheckboxListTile(
               contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
               value: _german,
               onChanged: _busy
                   ? null
