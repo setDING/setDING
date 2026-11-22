@@ -15,6 +15,7 @@ import editorCcliFooter from '../../../../../../docs/screenshots/editor_ccli_foo
 import editorAutoClose from '../../../../../../docs/screenshots/editor_auto_close.png';
 import editorChorusLabels from '../../../../../../docs/screenshots/editor_chorus_labels.png';
 import songDetailsKey from '../../../../../../docs/screenshots/song_details_key.png';
+import editorInvalidKey from '../../../../../../docs/screenshots/editor_invalid_key.png';
 
 Songs are written in [ChordPro](https://www.chordpro.org/), the open format for
 chord sheets: chords go in square brackets right inside the lyrics, details such as
@@ -178,6 +179,12 @@ If setDING finds places while saving that will probably not
 be shown as intended – e.g. a bracket that is never closed – it asks **Check the
 ChordPro?** and names the lines. You can **Fix automatically**, **Keep editing** or
 **Save anyway**.
+
+A `{key}` without a key, such as `{key}` alone or `{key: Xyz}`, is such a place too:
+the song then has no key for transposing and the chord views. A song without
+`{key}` is fine; **Song details** suggests a key for it.
+
+<Image src={editorInvalidKey} alt="Check the ChordPro? with line 2: the key directive names no key" />
 
 **Esc** closes the editor like the arrow at the top left. If you changed something,
 setDING first asks whether to discard the changes. With the search or a list of

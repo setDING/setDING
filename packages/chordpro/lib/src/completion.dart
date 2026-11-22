@@ -172,9 +172,8 @@ CompletionResult? completeChordPro(
     final rest = source.substring(cursor, lineEnd);
     // The rest of the value is replaced too, up to the closing quote and
     // brace, which are added when missing; the cursor ends after them.
-    final m = RegExp(
-      quoted ? r'^[^"}]*"?\s*\}?' : r'^[^}]*\}?',
-    ).firstMatch(rest)!;
+    final m = RegExp(quoted ? r'^[^"}]*"?\s*\}?' : r'^[^}]*\}?')
+        .firstMatch(rest)!;
     final close = quoted ? '"}' : '}';
     final items = [
       // Not the label being typed on this line.
@@ -312,9 +311,8 @@ List<String> commonChords(Key? key) {
       : ([0, 2, 4, 5, 7, 9, 7], ['', 'm', 'm', '', '', 'm', '7']);
   return [
     for (var i = 0; i < degrees.length; i++)
-      Note(
-            (k.tonic.pitch + degrees[i]) % 12,
-          ).spell(ChordNotation.international, useFlats: k.usesFlats) +
+      Note((k.tonic.pitch + degrees[i]) % 12)
+              .spell(ChordNotation.international, useFlats: k.usesFlats) +
           qualities[i],
   ];
 }

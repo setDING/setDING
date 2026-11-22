@@ -15,6 +15,7 @@ import editorCcliFooter from '../../../../../docs/screenshots/editor_ccli_footer
 import editorAutoClose from '../../../../../docs/screenshots/editor_auto_close_de.png';
 import editorChorusLabels from '../../../../../docs/screenshots/editor_chorus_labels_de.png';
 import songDetailsKey from '../../../../../docs/screenshots/song_details_key_de.png';
+import editorInvalidKey from '../../../../../docs/screenshots/editor_invalid_key_de.png';
 
 Songs sind in [ChordPro](https://www.chordpro.org/) geschrieben, dem offenen Format
 für Akkordblätter: Akkorde stehen in eckigen Klammern direkt im Text, Angaben wie
@@ -188,6 +189,13 @@ Findet setDING beim Speichern Stellen, die
 wahrscheinlich nicht wie gewollt angezeigt werden – z. B. eine Klammer, die nicht
 geschlossen wird –, fragt es **ChordPro prüfen?** und nennt die Zeilen. Du kannst
 **Automatisch korrigieren**, **Weiter bearbeiten** oder **Trotzdem speichern**.
+
+Auch ein `{key}` ohne Tonart, etwa `{key}` allein oder `{key: Xyz}`, ist eine solche
+Stelle: Der Song hat dann keine Tonart zum Transponieren und für die
+Akkord-Ansichten. Ein Song ganz ohne `{key}` ist in Ordnung; die **Songdetails**
+schlagen ihm eine Tonart vor.
+
+<Image src={editorInvalidKey} alt="ChordPro prüfen? mit Zeile 2: Die Direktive key nennt keine Tonart" />
 
 **Esc** schliesst den Editor wie der Pfeil oben links. Hast du etwas geändert, fragt
 setDING zuerst, ob die Änderungen verworfen werden sollen. Ist die Suche oder eine

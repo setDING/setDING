@@ -2405,6 +2405,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String problemInvalidKey(int line) {
+    return 'Line $line: the key directive names no key; the song has no key for transposing and the chord views.';
+  }
+
+  @override
   String chordProProblemsTooltip(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

@@ -1252,6 +1252,14 @@
       }
     }
   },
+  "problemInvalidKey": "Zeile {line}: Die Direktive key nennt keine Tonart; der Song hat keine Tonart zum Transponieren und für die Akkord-Ansichten.",
+  "@problemInvalidKey": {
+    "placeholders": {
+      "line": {
+        "type": "int"
+      }
+    }
+  },
   "chordProProblemsTooltip": "{count, plural, =1{1 Stelle im ChordPro wird wahrscheinlich nicht wie gewünscht angezeigt} other{{count} Stellen im ChordPro werden wahrscheinlich nicht wie gewünscht angezeigt}}",
   "@chordProProblemsTooltip": {
     "placeholders": {

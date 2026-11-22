@@ -1060,6 +1060,14 @@
       }
     }
   },
+  "problemInvalidKey": "Line {line}: the key directive names no key; the song has no key for transposing and the chord views.",
+  "@problemInvalidKey": {
+    "placeholders": {
+      "line": {
+        "type": "int"
+      }
+    }
+  },
   "chordProProblemsTooltip": "{count, plural, =1{1 place in the ChordPro will probably not be shown as intended} other{{count} places in the ChordPro will probably not be shown as intended}}",
   "@chordProProblemsTooltip": {
     "placeholders": {

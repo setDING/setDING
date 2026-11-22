@@ -1,6 +1,7 @@
 /// Checks of the ChordPro source before saving (#109).
 library;
 
+import 'chord.dart';
 import 'directive.dart';
 import 'directive_names.dart';
 import 'highlight.dart';
@@ -21,6 +22,12 @@ enum ChordProProblemKind {
   /// `{comment: Chorus} (a cappella)`: the whole line is shown as lyrics
   /// (#309). The range is the trailing text. [fixChordProProblem] fixes it.
   textAfterDirective,
+
+  /// `{key}` without a value or with one that is no key, such as
+  /// `{key: Xyz}` (#933): the parser ignores it, so the song has no key for
+  /// transposing, the chord views and the capo labels. The range is the
+  /// directive. A song without `{key}` is valid (the key is optional).
+  invalidKey,
 }
 
 /// A problem that changes how the source is parsed.
@@ -116,7 +123,18 @@ List<ChordProProblem> validateChordPro(
     } else if (d.name == 'new_song' || d.name == 'ns') {
       unclosed();
     } else if (open != null) {
+      // Inside a delegated environment nothing is a directive.
       if (d.name == 'end_of_$open') open = null;
+    } else if (d.name == 'key' && Key.tryParse(d.argument) == null) {
+      final start = lineStart + raw.indexOf('{');
+      problems.add(
+        ChordProProblem(
+          ChordProProblemKind.invalidKey,
+          start: start,
+          end: lineStart + raw.trimRight().length,
+          line: lineOf(start),
+        ),
+      );
     } else if (d.name.startsWith('start_of_') &&
         delegateSectionNames.containsKey(d.name.substring(9))) {
       open = d.name.substring(9);

@@ -39,9 +39,16 @@ void downgradeToSchema19(Database raw) {
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN midi_programs');
 }
 
+/// Turns a current database back into schema 34: the same tables, but
+/// the problem counts of before #933 (an invalid {key} not counted).
+void downgradeToSchema34(Database raw) {
+  raw.execute('UPDATE songs SET chordpro_problems = 0');
+}
+
 /// Turns a current database back into schema 33: overlays with the
 /// Nashville flag instead of the chord view (ADR-0055).
 void downgradeToSchema33(Database raw) {
+  downgradeToSchema34(raw);
   raw.execute(
     'ALTER TABLE personal_overlays ADD COLUMN nashville INTEGER NULL',
   );
@@ -1253,6 +1260,28 @@ void main() {
     final kept = await songs.getOverlay(unset);
     expect(kept.chordView, isNull);
     expect(kept.transpose, 1);
+    await upgraded.close();
+  });
+
+  test('upgrades a schema 34 database: an invalid {key} is counted as a '
+      'problem (#933)', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final storage = FileAttachmentStorage(dir);
+    await SongRepository(
+      current,
+      storage,
+    ).createSong(source: '{title: Old}\n{key}\n[G]La');
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema34(raw);
+    raw.execute('PRAGMA user_version = 34');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final repo = SongRepository(upgraded, storage);
+    upgraded.afterUpgrade = (db) => repo.refreshAllMetadata();
+    expect((await repo.watchSongList().first).single.problems, 1);
     await upgraded.close();
   });
 }

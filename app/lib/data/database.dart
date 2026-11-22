@@ -660,7 +660,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 34;
+  int get schemaVersion => 35;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -973,6 +973,9 @@ class AppDatabase extends _$AppDatabase {
           'ALTER TABLE personal_overlays DROP COLUMN nashville',
         );
       }
+      // Schema 35: an empty or invalid {key} is a ChordPro problem (#933).
+      // No new column: afterUpgrade (refreshAllMetadata) counts the
+      // problems of every song again.
     },
     beforeOpen: (details) async {
       if (details.hadUpgrade) await afterUpgrade?.call(this);
