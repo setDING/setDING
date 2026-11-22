@@ -10,9 +10,10 @@ import '../widgets/dialogs.dart';
 import 'folder_path_text.dart';
 import 'full_backup.dart' show backupReminderProvider;
 
-// The automatic backup of the local library in *Storage & backup*
-// (ADR-0054): on or off, the folder, the device name in the file names, how
-// many backups stay, the last backup or error, and *Back up now*.
+// The automatic backup of the local library, its own section of *Storage &
+// info* (ADR-0054, #891): on or off, the folder, *Back up to the folder now*
+// with the last backup or error, how many backups stay, and the device name
+// in the file names.
 
 /// [time] as date and time in the app's language.
 String formatBackupTime(BuildContext context, DateTime time) =>
@@ -86,8 +87,7 @@ class AutoBackupTiles extends ConsumerWidget {
         SettingsSwitch(
           tileKey: const Key('auto-backup'),
           icon: Icons.cloud_sync_outlined,
-          title: l10n.autoBackup,
-          hint: l10n.autoBackupHint,
+          title: l10n.autoBackupSwitch,
           value: s.enabled,
           onChanged: (on) async {
             if (on && s.location == null) {
@@ -124,20 +124,28 @@ class AutoBackupTiles extends ConsumerWidget {
             ),
           ),
           ListTile(
-            key: const Key('auto-backup-device'),
-            leading: const Icon(Icons.tablet_android_outlined),
-            title: Text(l10n.autoBackupDevice),
-            subtitle: Text('${s.device}\n${l10n.autoBackupDeviceHint}'),
-            onTap: () async {
-              final name = await askText(
-                context,
-                title: l10n.autoBackupDeviceTitle,
-                initial: s.device,
-                label: l10n.autoBackupDevice,
-                allowEmpty: true,
-              );
-              if (name != null) await controller.setDeviceName(name);
-            },
+            key: const Key('auto-backup-now'),
+            leading: s.running
+                ? const SizedBox.square(
+                    dimension: 24,
+                    child: Padding(
+                      padding: EdgeInsets.all(2),
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                : Icon(
+                    s.error == null
+                        ? Icons.drive_folder_upload_outlined
+                        : Icons.warning_amber_rounded,
+                    color: s.error == null ? null : theme.colorScheme.error,
+                  ),
+            title: Text(
+              s.running ? l10n.autoBackupRunning : l10n.autoBackupNow,
+            ),
+            subtitle: Text(status.join('\n')),
+            enabled: s.active && !s.running,
+            onTap: () =>
+                runAutoBackupNow(context, ref, libraryName: l10n.bandLocal),
           ),
           ListTile(
             key: const Key('auto-backup-keep'),
@@ -158,28 +166,20 @@ class AutoBackupTiles extends ConsumerWidget {
             ),
           ),
           ListTile(
-            key: const Key('auto-backup-now'),
-            leading: s.running
-                ? const SizedBox.square(
-                    dimension: 24,
-                    child: Padding(
-                      padding: EdgeInsets.all(2),
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  )
-                : Icon(
-                    s.error == null
-                        ? Icons.backup_outlined
-                        : Icons.warning_amber_rounded,
-                    color: s.error == null ? null : theme.colorScheme.error,
-                  ),
-            title: Text(
-              s.running ? l10n.autoBackupRunning : l10n.autoBackupNow,
-            ),
-            subtitle: Text(status.join('\n')),
-            enabled: s.active && !s.running,
-            onTap: () =>
-                runAutoBackupNow(context, ref, libraryName: l10n.bandLocal),
+            key: const Key('auto-backup-device'),
+            leading: const Icon(Icons.tablet_android_outlined),
+            title: Text(l10n.autoBackupDevice),
+            subtitle: Text('${s.device}\n${l10n.autoBackupDeviceHint}'),
+            onTap: () async {
+              final name = await askText(
+                context,
+                title: l10n.autoBackupDeviceTitle,
+                initial: s.device,
+                label: l10n.autoBackupDevice,
+                allowEmpty: true,
+              );
+              if (name != null) await controller.setDeviceName(name);
+            },
           ),
         ],
       ],

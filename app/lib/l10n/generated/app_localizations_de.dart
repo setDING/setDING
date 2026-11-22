@@ -5109,7 +5109,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsHeadingClick => 'Klick auf diesem Gerät';
 
   @override
-  String get settingsHeadingStorage => 'Speicher & Sicherung';
+  String get settingsHeadingBackup => 'Sicherung';
+
+  @override
+  String get settingsHeadingThisDevice => 'Dieses Gerät';
 
   @override
   String get settingsHeadingHelp => 'Hilfe & Info';
@@ -5400,6 +5403,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get autoBackup => 'Automatische Sicherung';
 
   @override
+  String get autoBackupSwitch => 'Automatisch sichern';
+
+  @override
   String get autoBackupHint =>
       'Speichert die Bibliothek «Auf diesem Gerät» in einen Ordner deiner Wahl, höchstens einmal täglich nach Änderungen. Wähle einen Ordner in deinem Cloud-Speicher, damit sie auch sicher ist, wenn das Gerät verloren geht.';
 
@@ -5430,7 +5436,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Ältere automatische Sicherungen dieses Geräts werden aus dem Ordner gelöscht.';
 
   @override
-  String get autoBackupNow => 'Jetzt sichern';
+  String get autoBackupNow => 'Jetzt in den Ordner sichern';
 
   @override
   String get autoBackupRunning => 'Wird gesichert …';

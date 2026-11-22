@@ -362,6 +362,8 @@ void main() {
       // Installing replaces the how-to text.
       expect(find.textContaining('Obtainium'), findsNothing);
 
+      await tester.ensureVisible(install);
+      await tester.pumpAndSettle();
       await tester.tap(install);
       await tester.pumpAndSettle();
       expect(find.text('Install setDING 0.9.0?'), findsOneWidget);
