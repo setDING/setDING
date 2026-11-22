@@ -5179,6 +5179,11 @@ class AppLocalizationsDe extends AppLocalizations {
       'Keine weiteren Songs, die du verknüpfen darfst';
 
   @override
+  String languageVersionsOf(String title) {
+    return 'Sprachversionen für $title';
+  }
+
+  @override
   String languageVersionsChosen(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

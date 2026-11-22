@@ -3195,6 +3195,14 @@
   "linkLanguageVersion": "Sprachversionen …",
   "unlinkLanguageVersion": "Aus den Sprachversionen lösen",
   "languageVersionPickerEmpty": "Keine weiteren Songs, die du verknüpfen darfst",
+  "languageVersionsOf": "Sprachversionen für {title}",
+  "@languageVersionsOf": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "languageVersionsChosen": "{count, plural, =0{Verknüpfte Versionen} other{Verknüpfte Versionen ({count})}}",
   "@languageVersionsChosen": {
     "placeholders": {

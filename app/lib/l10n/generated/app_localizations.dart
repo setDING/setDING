@@ -7951,6 +7951,12 @@ abstract class AppLocalizations {
   /// **'Keine weiteren Songs, die du verknüpfen darfst'**
   String get languageVersionPickerEmpty;
 
+  /// No description provided for @languageVersionsOf.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprachversionen für {title}'**
+  String languageVersionsOf(String title);
+
   /// No description provided for @languageVersionsChosen.
   ///
   /// In de, this message translates to:
