@@ -2842,5 +2842,56 @@
   "adjustmentOfferCopy": "Use them",
   "adjustmentOfferDismiss": "No thanks",
   "adjustmentOfferPick": "Use the adjustments of",
-  "adjustmentsCopied": "Adjustments of “{version}” used"
+  "adjustmentsCopied": "Adjustments of “{version}” used",
+  "autoBackup": "Automatic backup",
+  "autoBackupHint": "Saves the library “On this device” into a folder you choose, at most once a day after changes. Use a folder of your cloud storage to keep it safe when the device is lost.",
+  "autoBackupFolder": "Folder",
+  "autoBackupFolderNone": "No folder chosen",
+  "autoBackupChooseFolder": "Choose folder",
+  "autoBackupDevice": "Device name",
+  "autoBackupDeviceHint": "Part of the file names, so several devices can use the same folder.",
+  "autoBackupDeviceTitle": "Device name for backups",
+  "autoBackupKeep": "Backups kept",
+  "autoBackupKeepHint": "Older automatic backups of this device are deleted from the folder.",
+  "autoBackupNow": "Back up now",
+  "autoBackupRunning": "Backing up …",
+  "autoBackupNever": "No automatic backup yet.",
+  "autoBackupLast": "Last automatic backup: {date}",
+  "@autoBackupLast": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "autoBackupFailed": "Failed on {date}: {reason}",
+  "@autoBackupFailed": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "autoBackupErrorUnavailable": "The folder is not reachable.",
+  "autoBackupErrorPermission": "setDING may no longer write into the folder. Choose it again.",
+  "autoBackupErrorFailed": "The backup could not be written.",
+  "autoBackupHintFailed": "Automatic backup failed: {reason}",
+  "@autoBackupHintFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "autoBackupSaved": "Saved as “{file}”",
+  "@autoBackupSaved": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  }
 }

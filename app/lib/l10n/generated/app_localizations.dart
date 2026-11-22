@@ -8104,6 +8104,126 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Anpassungen von «{version}» übernommen'**
   String adjustmentsCopied(String version);
+
+  /// No description provided for @autoBackup.
+  ///
+  /// In de, this message translates to:
+  /// **'Automatische Sicherung'**
+  String get autoBackup;
+
+  /// No description provided for @autoBackupHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Speichert die Bibliothek «Auf diesem Gerät» in einen Ordner deiner Wahl, höchstens einmal täglich nach Änderungen. Wähle einen Ordner in deinem Cloud-Speicher, damit sie auch sicher ist, wenn das Gerät verloren geht.'**
+  String get autoBackupHint;
+
+  /// No description provided for @autoBackupFolder.
+  ///
+  /// In de, this message translates to:
+  /// **'Ordner'**
+  String get autoBackupFolder;
+
+  /// No description provided for @autoBackupFolderNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Ordner gewählt'**
+  String get autoBackupFolderNone;
+
+  /// No description provided for @autoBackupChooseFolder.
+  ///
+  /// In de, this message translates to:
+  /// **'Ordner wählen'**
+  String get autoBackupChooseFolder;
+
+  /// No description provided for @autoBackupDevice.
+  ///
+  /// In de, this message translates to:
+  /// **'Gerätename'**
+  String get autoBackupDevice;
+
+  /// No description provided for @autoBackupDeviceHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Teil der Dateinamen, damit mehrere Geräte denselben Ordner nutzen können.'**
+  String get autoBackupDeviceHint;
+
+  /// No description provided for @autoBackupDeviceTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Gerätename für Sicherungen'**
+  String get autoBackupDeviceTitle;
+
+  /// No description provided for @autoBackupKeep.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufbewahrte Sicherungen'**
+  String get autoBackupKeep;
+
+  /// No description provided for @autoBackupKeepHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Ältere automatische Sicherungen dieses Geräts werden aus dem Ordner gelöscht.'**
+  String get autoBackupKeepHint;
+
+  /// No description provided for @autoBackupNow.
+  ///
+  /// In de, this message translates to:
+  /// **'Jetzt sichern'**
+  String get autoBackupNow;
+
+  /// No description provided for @autoBackupRunning.
+  ///
+  /// In de, this message translates to:
+  /// **'Wird gesichert …'**
+  String get autoBackupRunning;
+
+  /// No description provided for @autoBackupNever.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine automatische Sicherung.'**
+  String get autoBackupNever;
+
+  /// No description provided for @autoBackupLast.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzte automatische Sicherung: {date}'**
+  String autoBackupLast(String date);
+
+  /// No description provided for @autoBackupFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehlgeschlagen am {date}: {reason}'**
+  String autoBackupFailed(String date, String reason);
+
+  /// No description provided for @autoBackupErrorUnavailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Ordner ist nicht erreichbar.'**
+  String get autoBackupErrorUnavailable;
+
+  /// No description provided for @autoBackupErrorPermission.
+  ///
+  /// In de, this message translates to:
+  /// **'setDING darf nicht mehr in den Ordner schreiben. Wähle ihn erneut.'**
+  String get autoBackupErrorPermission;
+
+  /// No description provided for @autoBackupErrorFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Sicherung konnte nicht geschrieben werden.'**
+  String get autoBackupErrorFailed;
+
+  /// No description provided for @autoBackupHintFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Automatische Sicherung fehlgeschlagen: {reason}'**
+  String autoBackupHintFailed(String reason);
+
+  /// No description provided for @autoBackupSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Gespeichert als «{file}»'**
+  String autoBackupSaved(String file);
 }
 
 class _AppLocalizationsDelegate

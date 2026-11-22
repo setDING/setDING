@@ -11,7 +11,9 @@ import '../sync/sync_controller.dart';
 import '../sync/update_check.dart';
 import '../update/update_providers.dart';
 import '../update/whats_new.dart';
+import 'backup/auto_backup_tiles.dart';
 import 'backup/full_backup.dart';
+import '../providers.dart' show autoBackupProvider, webClientProvider;
 import 'home_tab.dart';
 import 'overview/overview_screen.dart';
 import 'sets/sets_screen.dart';
@@ -51,9 +53,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   /// How long the hint about the notes of a new version stays (ADR-0041).
   static const _whatsNewHintDuration = Duration(seconds: 8);
 
+  /// Checks the automatic backup when the app goes to the background.
+  late final AppLifecycleListener _lifecycle;
+
   @override
   void initState() {
     super.initState();
+    // The automatic backup of the local library (ADR-0054): at the start
+    // and when the app goes to the background, then a hint if it failed.
+    _lifecycle = AppLifecycleListener(onHide: _autoBackup);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _autoBackup();
+      _autoBackupHint();
+    });
     // A newer release (ADR-0036): one short hint per version. Also for an
     // update already known from an earlier start.
     ref.listenManual(updateCheckProvider, (_, version) {
@@ -98,6 +110,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         key: const Key('whats-new-show'),
         label: l10n.whatsNewShow,
         onPressed: () => showWhatsNew(context, notes),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  /// Writes an automatic backup when one is due; only while the main
+  /// navigation is on top, so never in live mode or during an import or
+  /// export (their dialogs are on top).
+  Future<void> _autoBackup() async {
+    if (!mounted || ref.read(webClientProvider)) return;
+    if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
+    final l10n = AppLocalizations.of(context);
+    final written = await ref
+        .read(autoBackupProvider.notifier)
+        .controller
+        .runIfDue(libraryName: l10n.bandLocal);
+    if (written) ref.invalidate(backupReminderProvider);
+  }
+
+  /// The hint about a failed automatic backup, at most once a day, with an
+  /// action to choose the folder again.
+  void _autoBackupHint() {
+    if (!mounted || !(ModalRoute.of(context)?.isCurrent ?? true)) return;
+    final controller = ref.read(autoBackupProvider.notifier).controller;
+    final error = controller.state.error;
+    if (error == null || !controller.takeErrorHint()) return;
+    final l10n = AppLocalizations.of(context);
+    showMessageOn(
+      ScaffoldMessenger.of(context),
+      l10n.autoBackupHintFailed(autoBackupErrorText(l10n, error)),
+      key: const Key('auto-backup-failed'),
+      duration: _whatsNewHintDuration,
+      queue: true,
+      action: (
+        key: const Key('auto-backup-failed-action'),
+        label: l10n.autoBackupChooseFolder,
+        onPressed: () => chooseAutoBackupFolder(context, ref),
       ),
     );
   }

@@ -5254,4 +5254,76 @@ class AppLocalizationsEn extends AppLocalizations {
   String adjustmentsCopied(String version) {
     return 'Adjustments of “$version” used';
   }
+
+  @override
+  String get autoBackup => 'Automatic backup';
+
+  @override
+  String get autoBackupHint =>
+      'Saves the library “On this device” into a folder you choose, at most once a day after changes. Use a folder of your cloud storage to keep it safe when the device is lost.';
+
+  @override
+  String get autoBackupFolder => 'Folder';
+
+  @override
+  String get autoBackupFolderNone => 'No folder chosen';
+
+  @override
+  String get autoBackupChooseFolder => 'Choose folder';
+
+  @override
+  String get autoBackupDevice => 'Device name';
+
+  @override
+  String get autoBackupDeviceHint =>
+      'Part of the file names, so several devices can use the same folder.';
+
+  @override
+  String get autoBackupDeviceTitle => 'Device name for backups';
+
+  @override
+  String get autoBackupKeep => 'Backups kept';
+
+  @override
+  String get autoBackupKeepHint =>
+      'Older automatic backups of this device are deleted from the folder.';
+
+  @override
+  String get autoBackupNow => 'Back up now';
+
+  @override
+  String get autoBackupRunning => 'Backing up …';
+
+  @override
+  String get autoBackupNever => 'No automatic backup yet.';
+
+  @override
+  String autoBackupLast(String date) {
+    return 'Last automatic backup: $date';
+  }
+
+  @override
+  String autoBackupFailed(String date, String reason) {
+    return 'Failed on $date: $reason';
+  }
+
+  @override
+  String get autoBackupErrorUnavailable => 'The folder is not reachable.';
+
+  @override
+  String get autoBackupErrorPermission =>
+      'setDING may no longer write into the folder. Choose it again.';
+
+  @override
+  String get autoBackupErrorFailed => 'The backup could not be written.';
+
+  @override
+  String autoBackupHintFailed(String reason) {
+    return 'Automatic backup failed: $reason';
+  }
+
+  @override
+  String autoBackupSaved(String file) {
+    return 'Saved as “$file”';
+  }
 }

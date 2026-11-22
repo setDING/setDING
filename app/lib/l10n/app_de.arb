@@ -3301,5 +3301,56 @@
         "type": "String"
       }
     }
+  },
+  "autoBackup": "Automatische Sicherung",
+  "autoBackupHint": "Speichert die Bibliothek «Auf diesem Gerät» in einen Ordner deiner Wahl, höchstens einmal täglich nach Änderungen. Wähle einen Ordner in deinem Cloud-Speicher, damit sie auch sicher ist, wenn das Gerät verloren geht.",
+  "autoBackupFolder": "Ordner",
+  "autoBackupFolderNone": "Kein Ordner gewählt",
+  "autoBackupChooseFolder": "Ordner wählen",
+  "autoBackupDevice": "Gerätename",
+  "autoBackupDeviceHint": "Teil der Dateinamen, damit mehrere Geräte denselben Ordner nutzen können.",
+  "autoBackupDeviceTitle": "Gerätename für Sicherungen",
+  "autoBackupKeep": "Aufbewahrte Sicherungen",
+  "autoBackupKeepHint": "Ältere automatische Sicherungen dieses Geräts werden aus dem Ordner gelöscht.",
+  "autoBackupNow": "Jetzt sichern",
+  "autoBackupRunning": "Wird gesichert …",
+  "autoBackupNever": "Noch keine automatische Sicherung.",
+  "autoBackupLast": "Letzte automatische Sicherung: {date}",
+  "@autoBackupLast": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "autoBackupFailed": "Fehlgeschlagen am {date}: {reason}",
+  "@autoBackupFailed": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "autoBackupErrorUnavailable": "Der Ordner ist nicht erreichbar.",
+  "autoBackupErrorPermission": "setDING darf nicht mehr in den Ordner schreiben. Wähle ihn erneut.",
+  "autoBackupErrorFailed": "Die Sicherung konnte nicht geschrieben werden.",
+  "autoBackupHintFailed": "Automatische Sicherung fehlgeschlagen: {reason}",
+  "@autoBackupHintFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "autoBackupSaved": "Gespeichert als «{file}»",
+  "@autoBackupSaved": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
   }
 }

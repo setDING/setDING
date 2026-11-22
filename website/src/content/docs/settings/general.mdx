@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import general from '../../../../../docs/screenshots/settings_general_de.png';
+import autoBackup from '../../../../../docs/screenshots/settings_auto_backup_de.png';
 
 ## Allgemein
 
@@ -47,6 +48,30 @@ damit ihre Vorschau die ganze Breite hat.
   zurück auf die Songs, die es hier noch gibt. Deine Einstellungen übernimmt
   setDING nur, wenn du das ankreuzst. Mehr dazu unter
   [Bibliothek sichern](/songs/library/#bibliothek-sichern).
+- **Automatische Sicherung** (nicht in der Web-App) speichert die Bibliothek
+  *Auf diesem Gerät* in einen Ordner deiner Wahl, höchstens einmal täglich und nur,
+  wenn sie sich geändert hat. Wähle einen Ordner in deinem Cloud-Speicher, damit
+  die Bibliothek auch sicher ist, wenn das Gerät verloren geht: unter Android einen
+  Ordner jeder App, die ihren Speicher dem System anbietet (z. B. Nextcloud,
+  OneDrive, Dropbox), auf iPad und iPhone einen Ordner in der App «Dateien»
+  (z. B. iCloud Drive), unter Windows und Linux einen beliebigen Ordner, z. B. einen,
+  den der OneDrive-, Dropbox- oder Nextcloud-Client synchronisiert. setDING prüft
+  beim Start und wenn du die App verlässt, nie im Live-Modus.
+  - Die Dateien heissen `setDING-Backup <Gerät> <Datum> <Zeit>.zip`. Ändere den
+    **Gerätenamen**, wenn mehrere Geräte in denselben Ordner schreiben.
+  - **Aufbewahrte Sicherungen** (1 bis 10) legt fest, wie viele automatische
+    Sicherungen dieses Geräts bleiben; ältere dieses Geräts werden gelöscht, andere
+    Dateien nie.
+  - **Jetzt sichern** schreibt sofort eine. Darunter steht die letzte automatische
+    Sicherung oder warum der letzte Versuch fehlschlug. Ist der Ordner nicht
+    erreichbar oder hat setDING die Berechtigung verloren, bietet ein Hinweis beim
+    Start an, ihn neu zu wählen.
+  - Solange automatische Sicherungen gelingen, erinnert setDING nicht an eine
+    Sicherung.
+  - Eine solche Datei stellst du mit **Sicherung wiederherstellen** wieder her.
+
+<Image src={autoBackup} alt="Die automatische Sicherung in «Speicher & Info»: eingeschaltet, ein Nextcloud-Ordner, der Gerätename «Tablet Probe», 7 aufbewahrte Sicherungen und die Zeit der letzten automatischen Sicherung" />
+
 - **Diagnoseprotokoll kopieren** legt die letzten Meldungen der App in die
   Zwischenablage, z. B. warum eine Synchronisation fehlschlug. Füge sie in eine
   Nachricht an die Person ein, die den Server betreut, oder in ein
