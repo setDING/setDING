@@ -41,7 +41,7 @@ Constraints:
    - The font shrinks, down to a minimum of about 12 pt, so that a typical set fits
      on one page.
    - Longer sets continue on further pages.
-5. **Output:** "Export set list (PDF)" in the set menu saves the file with the existing
+5. **Output:** "Export …" in the set menu, format "Set list as PDF", saves the file with the existing
    save dialog (`file_picker`). Printing and sharing then happen with the platform's
    PDF viewer; the file is a normal PDF.
 
@@ -82,6 +82,8 @@ Constraints:
   passed on as a set archive (ADR-0043).
 - 2026-11-21: After the export, the message offers **Open**, which opens the PDF in
   the default app (ADR-0048, #721).
+- 2026-11-22: The PDF is one format of the set's "Export …" dialog, next to the
+  set archive (ADR-0043, #870).
 
 ## Open points
 

@@ -652,7 +652,9 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('song-export-archive')));
+      await tester.tap(find.byKey(const Key('song-export-menu')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('export-format-archive')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('song-export')), findsOneWidget);
       await shot(tester, '${lang}_37_song_export');

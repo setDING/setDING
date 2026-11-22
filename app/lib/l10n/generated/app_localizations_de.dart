@@ -588,9 +588,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get exportSet => 'Als ZIP exportieren';
-
-  @override
   String get removeFromSet => 'Aus dem Set entfernen';
 
   @override
@@ -1612,9 +1609,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get sequenceAsText => 'Als Text bearbeiten';
-
-  @override
-  String get exportSetListPdf => 'Set-Liste exportieren (PDF zum Drucken)';
 
   @override
   String get settingsSectionAccount => 'Konto & Synchronisation';
@@ -4746,6 +4740,40 @@ class AppLocalizationsDe extends AppLocalizations {
   String get setExportStart => 'Exportieren';
 
   @override
+  String get exportMenu => 'Exportieren …';
+
+  @override
+  String get exportFormat => 'Format';
+
+  @override
+  String get exportFormatChordPro => 'ChordPro-Datei';
+
+  @override
+  String get exportFormatChordProHint =>
+      'Für andere Apps, ohne Anhänge und Arrangements';
+
+  @override
+  String get exportFormatSetListPdf => 'Set-Liste als PDF';
+
+  @override
+  String get exportFormatSetListPdfHint => 'Zum Ausdrucken';
+
+  @override
+  String get exportFormatArchive => 'setDING-Archiv (ZIP)';
+
+  @override
+  String get exportFormatArchiveHint =>
+      'Zum Importieren in setDING, wahlweise mit Anhängen und Arrangements';
+
+  @override
+  String get songExportHintChordPro =>
+      'Die ChordPro-Datei enthält Text und Akkorde des Songs und lässt sich in jeder App öffnen, die ChordPro kennt.';
+
+  @override
+  String get setExportHintPdf =>
+      'Die Set-Liste zeigt jeden Song mit Tonart und Ablauf, zum Ausdrucken für die Bühne.';
+
+  @override
   String get setImport => 'Set importieren';
 
   @override
@@ -5021,15 +5049,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsHeadingPrototypes => 'Prototypen';
 
   @override
-  String get exportSongChordPro => 'ChordPro-Datei exportieren';
-
-  @override
-  String get exportSongArchive => 'Mit Anhängen exportieren';
-
-  @override
-  String get songsExportSelected => 'Mit Anhängen exportieren';
-
-  @override
   String songExportTitle(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -5042,7 +5061,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get songExportHint =>
-      'Das ZIP enthält die ChordPro-Dateien, die Anhänge und eine Beschreibung, mit der setDING die Songs samt Anhängen wieder importiert.';
+      'Das ZIP enthält die ChordPro-Dateien und eine Beschreibung, mit der setDING die Songs wieder importiert, dazu, was du unten auswählst.';
 
   @override
   String songExportArrangements(String band) {

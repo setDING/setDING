@@ -584,9 +584,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get exportSet => 'Export as ZIP';
-
-  @override
   String get removeFromSet => 'Remove from set';
 
   @override
@@ -1605,9 +1602,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sequenceAsText => 'Edit as text';
-
-  @override
-  String get exportSetListPdf => 'Export set list (PDF for printing)';
 
   @override
   String get settingsSectionAccount => 'Account & sync';
@@ -4722,6 +4716,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get setExportStart => 'Export';
 
   @override
+  String get exportMenu => 'Export …';
+
+  @override
+  String get exportFormat => 'Format';
+
+  @override
+  String get exportFormatChordPro => 'ChordPro file';
+
+  @override
+  String get exportFormatChordProHint =>
+      'For other apps, without attachments and arrangements';
+
+  @override
+  String get exportFormatSetListPdf => 'Set list as PDF';
+
+  @override
+  String get exportFormatSetListPdfHint => 'For printing';
+
+  @override
+  String get exportFormatArchive => 'setDING archive (ZIP)';
+
+  @override
+  String get exportFormatArchiveHint =>
+      'For importing into setDING, with attachments and arrangements if you like';
+
+  @override
+  String get songExportHintChordPro =>
+      'The ChordPro file holds the lyrics and chords of the song and opens in any app that knows ChordPro.';
+
+  @override
+  String get setExportHintPdf =>
+      'The set list shows every song with its key and sequence, for printing for the stage.';
+
+  @override
   String get setImport => 'Import set';
 
   @override
@@ -4978,15 +5006,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsHeadingPrototypes => 'Prototypes';
 
   @override
-  String get exportSongChordPro => 'Export ChordPro file';
-
-  @override
-  String get exportSongArchive => 'Export with attachments';
-
-  @override
-  String get songsExportSelected => 'Export with attachments';
-
-  @override
   String songExportTitle(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -4999,7 +5018,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get songExportHint =>
-      'The ZIP holds the ChordPro files, the attachments and a description from which setDING imports the songs again, with their attachments.';
+      'The ZIP holds the ChordPro files and a description from which setDING imports the songs again, plus what you choose below.';
 
   @override
   String songExportArrangements(String band) {

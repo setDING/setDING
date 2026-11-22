@@ -1,6 +1,6 @@
 # Song archive format (`setding-songs`)
 
-Reference for the ZIP file that setDING writes with **Export with attachments**
+Reference for the ZIP file that setDING writes with **Export …** → **setDING archive (ZIP)**
 and reads with the normal song import (ADR-0043 §1c). Use it to write song archives
 from other tools, for example an exporter from another song database, that
 setDING imports with its preview.

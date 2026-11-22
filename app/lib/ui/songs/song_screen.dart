@@ -27,7 +27,6 @@ import '../render/song_view.dart';
 import '../widgets/app_bar_actions.dart';
 import '../widgets/app_shortcuts.dart';
 import '../widgets/dialogs.dart';
-import '../widgets/export_file.dart';
 import 'song_archive_dialogs.dart';
 import '../widgets/file_actions.dart';
 import '../widgets/key_picker.dart';
@@ -183,17 +182,6 @@ class _SongScreenState extends ConsumerState<SongScreen> {
       allowEmpty: true,
     );
     await _repo.updateTitleArtist(song.id, title, artist ?? song.artist);
-  }
-
-  Future<void> _export(SongEntry song) async {
-    final service = ref.read(importExportProvider);
-    await exportFile(
-      context,
-      ref,
-      fileName: service.songFileName(song),
-      mimeType: 'text/plain',
-      build: () async => service.exportSong(song),
-    );
   }
 
   Future<void> _delete(SongEntry song) async {
@@ -535,10 +523,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                       ref,
                       song,
                     ),
-                    'export' => _export(song),
-                    'exportArchive' => exportSongArchive(context, ref, [
-                      song.id,
-                    ]),
+                    'export' => exportSongs(context, ref, [song.id]),
                     'copyToBand' => copySongsToBand(context, ref, [
                       song.id,
                     ], fromLibraryId: song.libraryId),
@@ -573,19 +558,12 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                         icon: Icons.link_off,
                         label: l10n.unlinkLanguageVersion,
                       ),
-                    if (song.chordproSource.trim().isNotEmpty &&
-                        !ref.read(webClientProvider))
-                      MenuAction(
-                        value: 'export',
-                        icon: Icons.file_download_outlined,
-                        label: l10n.exportSongChordPro,
-                      ),
-                    // Also on web: the files are loaded for the export.
+                    // Also on web: the archive loads the files (ADR-0018).
                     MenuAction(
-                      key: const Key('song-export-archive'),
-                      value: 'exportArchive',
-                      icon: Icons.archive_outlined,
-                      label: l10n.exportSongArchive,
+                      key: const Key('song-export-menu'),
+                      value: 'export',
+                      icon: Icons.file_download_outlined,
+                      label: l10n.exportMenu,
                     ),
                     MenuAction(
                       value: 'copyToBand',

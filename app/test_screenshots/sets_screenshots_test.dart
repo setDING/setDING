@@ -248,13 +248,9 @@ void main() {
 
       // After the PDF export, the message offers "Open" (#721).
       await openSetMenu();
-      await tester.tap(
-        find.text(
-          lang == 'de'
-              ? 'Set-Liste exportieren (PDF zum Drucken)'
-              : 'Export set list (PDF for printing)',
-        ),
-      );
+      await tester.tap(find.byKey(const Key('set-export-menu')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('set-export-start')));
       // The PDF is built outside the fake clock (fonts, isolates).
       for (var i = 0; i < 200 && !pdfSaved; i++) {
         await tester.runAsync(
@@ -269,9 +265,9 @@ void main() {
       await tester.pumpAndSettle();
 
       await openSetMenu();
-      await tester.tap(
-        find.text(lang == 'de' ? 'Als ZIP exportieren' : 'Export as ZIP'),
-      );
+      await tester.tap(find.byKey(const Key('set-export-menu')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('export-format-archive')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('set-export')), findsOneWidget);
       await shot(tester, '${lang}_27_set_export');

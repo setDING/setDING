@@ -62,7 +62,9 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byType(PopupMenuButton<String>).last);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Export set list (PDF for printing)'));
+    await tester.tap(find.text('Export …'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('set-export-start')));
     await waitFor(tester, () => saved.isNotEmpty);
     await tester.pump(const Duration(milliseconds: 500));
     expect(saved.single.$1, 'Gig.pdf');

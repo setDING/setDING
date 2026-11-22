@@ -1088,12 +1088,6 @@ abstract class AppLocalizations {
   /// **'«{name}» wird gelöscht. Die Songs bleiben erhalten.'**
   String deleteSetMessage(String name);
 
-  /// No description provided for @exportSet.
-  ///
-  /// In de, this message translates to:
-  /// **'Als ZIP exportieren'**
-  String get exportSet;
-
   /// No description provided for @removeFromSet.
   ///
   /// In de, this message translates to:
@@ -2863,12 +2857,6 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Als Text bearbeiten'**
   String get sequenceAsText;
-
-  /// No description provided for @exportSetListPdf.
-  ///
-  /// In de, this message translates to:
-  /// **'Set-Liste exportieren (PDF zum Drucken)'**
-  String get exportSetListPdf;
 
   /// No description provided for @settingsSectionAccount.
   ///
@@ -7369,6 +7357,66 @@ abstract class AppLocalizations {
   /// **'Exportieren'**
   String get setExportStart;
 
+  /// No description provided for @exportMenu.
+  ///
+  /// In de, this message translates to:
+  /// **'Exportieren …'**
+  String get exportMenu;
+
+  /// No description provided for @exportFormat.
+  ///
+  /// In de, this message translates to:
+  /// **'Format'**
+  String get exportFormat;
+
+  /// No description provided for @exportFormatChordPro.
+  ///
+  /// In de, this message translates to:
+  /// **'ChordPro-Datei'**
+  String get exportFormatChordPro;
+
+  /// No description provided for @exportFormatChordProHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Für andere Apps, ohne Anhänge und Arrangements'**
+  String get exportFormatChordProHint;
+
+  /// No description provided for @exportFormatSetListPdf.
+  ///
+  /// In de, this message translates to:
+  /// **'Set-Liste als PDF'**
+  String get exportFormatSetListPdf;
+
+  /// No description provided for @exportFormatSetListPdfHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Ausdrucken'**
+  String get exportFormatSetListPdfHint;
+
+  /// No description provided for @exportFormatArchive.
+  ///
+  /// In de, this message translates to:
+  /// **'setDING-Archiv (ZIP)'**
+  String get exportFormatArchive;
+
+  /// No description provided for @exportFormatArchiveHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Importieren in setDING, wahlweise mit Anhängen und Arrangements'**
+  String get exportFormatArchiveHint;
+
+  /// No description provided for @songExportHintChordPro.
+  ///
+  /// In de, this message translates to:
+  /// **'Die ChordPro-Datei enthält Text und Akkorde des Songs und lässt sich in jeder App öffnen, die ChordPro kennt.'**
+  String get songExportHintChordPro;
+
+  /// No description provided for @setExportHintPdf.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Set-Liste zeigt jeden Song mit Tonart und Ablauf, zum Ausdrucken für die Bühne.'**
+  String get setExportHintPdf;
+
   /// No description provided for @setImport.
   ///
   /// In de, this message translates to:
@@ -7777,24 +7825,6 @@ abstract class AppLocalizations {
   /// **'Prototypen'**
   String get settingsHeadingPrototypes;
 
-  /// No description provided for @exportSongChordPro.
-  ///
-  /// In de, this message translates to:
-  /// **'ChordPro-Datei exportieren'**
-  String get exportSongChordPro;
-
-  /// No description provided for @exportSongArchive.
-  ///
-  /// In de, this message translates to:
-  /// **'Mit Anhängen exportieren'**
-  String get exportSongArchive;
-
-  /// No description provided for @songsExportSelected.
-  ///
-  /// In de, this message translates to:
-  /// **'Mit Anhängen exportieren'**
-  String get songsExportSelected;
-
   /// No description provided for @songExportTitle.
   ///
   /// In de, this message translates to:
@@ -7804,7 +7834,7 @@ abstract class AppLocalizations {
   /// No description provided for @songExportHint.
   ///
   /// In de, this message translates to:
-  /// **'Das ZIP enthält die ChordPro-Dateien, die Anhänge und eine Beschreibung, mit der setDING die Songs samt Anhängen wieder importiert.'**
+  /// **'Das ZIP enthält die ChordPro-Dateien und eine Beschreibung, mit der setDING die Songs wieder importiert, dazu, was du unten auswählst.'**
   String get songExportHint;
 
   /// No description provided for @songExportArrangements.
