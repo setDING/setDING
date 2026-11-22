@@ -7936,7 +7936,7 @@ abstract class AppLocalizations {
   /// No description provided for @linkLanguageVersion.
   ///
   /// In de, this message translates to:
-  /// **'Sprachversion verknüpfen …'**
+  /// **'Sprachversionen …'**
   String get linkLanguageVersion;
 
   /// No description provided for @unlinkLanguageVersion.
@@ -7945,29 +7945,35 @@ abstract class AppLocalizations {
   /// **'Aus den Sprachversionen lösen'**
   String get unlinkLanguageVersion;
 
-  /// No description provided for @languageVersionPickerTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Sprachversion wählen'**
-  String get languageVersionPickerTitle;
-
   /// No description provided for @languageVersionPickerEmpty.
   ///
   /// In de, this message translates to:
   /// **'Keine weiteren Songs, die du verknüpfen darfst'**
   String get languageVersionPickerEmpty;
 
-  /// No description provided for @languageVersionLinked.
+  /// No description provided for @languageVersionsChosen.
   ///
   /// In de, this message translates to:
-  /// **'Als Sprachversion verknüpft'**
-  String get languageVersionLinked;
+  /// **'{count, plural, =0{Verknüpfte Versionen} other{Verknüpfte Versionen ({count})}}'**
+  String languageVersionsChosen(int count);
 
-  /// No description provided for @languageVersionNotAllowed.
+  /// No description provided for @languageVersionsChosenEmpty.
   ///
   /// In de, this message translates to:
-  /// **'Nicht verknüpft: Du darfst die andere Version nicht ändern.'**
-  String get languageVersionNotAllowed;
+  /// **'Noch keine anderen Versionen. Wähle Songs aus der Bibliothek.'**
+  String get languageVersionsChosenEmpty;
+
+  /// No description provided for @languageVersionsSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprachversionen gespeichert'**
+  String get languageVersionsSaved;
+
+  /// No description provided for @languageVersionsNotAllowed.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Ein Song wurde nicht verknüpft: Du darfst seine anderen Versionen nicht ändern.} other{{count} Songs wurden nicht verknüpft: Du darfst ihre anderen Versionen nicht ändern.}}'**
+  String languageVersionsNotAllowed(int count);
 
   /// No description provided for @languageVersionUnlinked.
   ///

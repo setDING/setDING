@@ -70,12 +70,15 @@ void main() {
       tester.widget(candidates.first).key,
       ValueKey('language-version-candidate-$de'),
     );
+    await tester.tap(candidates.first);
+    await tester.pumpAndSettle();
+    expect(find.byKey(ValueKey('language-version-chosen-$de')), findsOneWidget);
     await tester.runAsync(() async {
-      await tester.tap(candidates.first);
+      await tester.tap(find.byKey(const Key('language-versions-save')));
       await Future<void>.delayed(const Duration(milliseconds: 100));
     });
     await tester.pumpAndSettle();
-    expect(find.text('Linked as a language version'), findsOneWidget);
+    expect(find.text('Language versions saved'), findsOneWidget);
     final song = (await tester.runAsync<SongEntry?>(
       () => app.songs.getSong(de),
     ))!;
@@ -128,6 +131,118 @@ void main() {
     );
     expect(find.byKey(const Key('language-versions')), findsOneWidget);
     expect(en, isNotEmpty);
+    await app.dispose(tester);
+  });
+
+  testWidgets('several versions are chosen at once and removed again', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final (de, other) = (await tester.runAsync(() async {
+      await app.songs.createSong(source: english);
+      final de = await app.songs.createSong(source: german);
+      final other = await app.songs.createSong(source: '{title: Other}');
+      return (de, other);
+    }))!;
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+    await openSong(tester, 'River');
+
+    Future<void> openPicker() async {
+      await tester.tap(find.byType(PopupMenuButton<String>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('song-link-version')));
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> save() async {
+      await tester.runAsync(() async {
+        await tester.tap(find.byKey(const Key('language-versions-save')));
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      });
+      await tester.pumpAndSettle();
+    }
+
+    await openPicker();
+    // Nothing changed yet: nothing to save.
+    final saveButton = find.byKey(const Key('language-versions-save'));
+    expect(tester.widget<TextButton>(saveButton).onPressed, isNull);
+    await tester.tap(find.byKey(ValueKey('language-version-candidate-$de')));
+    await tester.tap(find.byKey(ValueKey('language-version-candidate-$other')));
+    await tester.pumpAndSettle();
+    expect(find.text('Linked versions (2)'), findsOneWidget);
+    await save();
+    expect(find.text('Language versions saved'), findsOneWidget);
+    final chips = find.descendant(
+      of: find.byKey(const Key('language-versions')),
+      matching: find.byType(ChoiceChip),
+    );
+    expect(chips, findsNWidgets(3));
+    await tester.pump(const Duration(seconds: 7));
+    await tester.pumpAndSettle();
+
+    // The chosen versions are listed; one is removed there again.
+    await openPicker();
+    expect(
+      find.byKey(ValueKey('language-version-chosen-$other')),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(ValueKey('language-version-remove-$other')));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(ValueKey('language-version-chosen-$other')),
+      findsNothing,
+    );
+    expect(find.text('Linked versions (1)'), findsOneWidget);
+    await save();
+    expect(chips, findsNWidgets(2));
+    expect(
+      (await tester.runAsync<SongEntry?>(() => app.songs.getSong(other)))!
+          .workId,
+      isNull,
+    );
+
+    // Undo links it again.
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
+    await tester.pumpAndSettle();
+    expect(chips, findsNWidgets(3));
+    await app.dispose(tester);
+  });
+
+  testWidgets('on a phone, the chosen versions are chips above the list', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final de = (await tester.runAsync(() async {
+      final en = await app.songs.createSong(source: english);
+      final de = await app.songs.createSong(source: german);
+      await app.songs.linkLanguageVersions(en, de);
+      return de;
+    }))!;
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+    await openSong(tester, 'River');
+    await tester.tap(find.byType(PopupMenuButton<String>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('song-link-version')));
+    await tester.pumpAndSettle();
+    final chip = find.byKey(ValueKey('language-version-chosen-$de'));
+    expect(tester.widget(chip), isA<InputChip>());
+    await tester.tap(find.byTooltip('Remove').first);
+    await tester.pumpAndSettle();
+    expect(chip, findsNothing);
+    expect(
+      find.text('No other versions yet. Choose songs from the library.'),
+      findsOneWidget,
+    );
     await app.dispose(tester);
   });
 

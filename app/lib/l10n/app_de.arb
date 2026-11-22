@@ -3192,12 +3192,27 @@
     }
   },
   "languageVersions": "Sprachversionen",
-  "linkLanguageVersion": "Sprachversion verknüpfen …",
+  "linkLanguageVersion": "Sprachversionen …",
   "unlinkLanguageVersion": "Aus den Sprachversionen lösen",
-  "languageVersionPickerTitle": "Sprachversion wählen",
   "languageVersionPickerEmpty": "Keine weiteren Songs, die du verknüpfen darfst",
-  "languageVersionLinked": "Als Sprachversion verknüpft",
-  "languageVersionNotAllowed": "Nicht verknüpft: Du darfst die andere Version nicht ändern.",
+  "languageVersionsChosen": "{count, plural, =0{Verknüpfte Versionen} other{Verknüpfte Versionen ({count})}}",
+  "@languageVersionsChosen": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "languageVersionsChosenEmpty": "Noch keine anderen Versionen. Wähle Songs aus der Bibliothek.",
+  "languageVersionsSaved": "Sprachversionen gespeichert",
+  "languageVersionsNotAllowed": "{count, plural, =1{Ein Song wurde nicht verknüpft: Du darfst seine anderen Versionen nicht ändern.} other{{count} Songs wurden nicht verknüpft: Du darfst ihre anderen Versionen nicht ändern.}}",
+  "@languageVersionsNotAllowed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "languageVersionUnlinked": "Aus den Sprachversionen gelöst",
   "otherLanguageVersionsTooltip": "{count, plural, =1{Eine weitere Sprachversion} other{{count} weitere Sprachversionen}}",
   "@otherLanguageVersionsTooltip": {

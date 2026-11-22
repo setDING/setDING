@@ -5169,24 +5169,44 @@ class AppLocalizationsDe extends AppLocalizations {
   String get languageVersions => 'Sprachversionen';
 
   @override
-  String get linkLanguageVersion => 'Sprachversion verknüpfen …';
+  String get linkLanguageVersion => 'Sprachversionen …';
 
   @override
   String get unlinkLanguageVersion => 'Aus den Sprachversionen lösen';
-
-  @override
-  String get languageVersionPickerTitle => 'Sprachversion wählen';
 
   @override
   String get languageVersionPickerEmpty =>
       'Keine weiteren Songs, die du verknüpfen darfst';
 
   @override
-  String get languageVersionLinked => 'Als Sprachversion verknüpft';
+  String languageVersionsChosen(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Verknüpfte Versionen ($count)',
+      zero: 'Verknüpfte Versionen',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get languageVersionNotAllowed =>
-      'Nicht verknüpft: Du darfst die andere Version nicht ändern.';
+  String get languageVersionsChosenEmpty =>
+      'Noch keine anderen Versionen. Wähle Songs aus der Bibliothek.';
+
+  @override
+  String get languageVersionsSaved => 'Sprachversionen gespeichert';
+
+  @override
+  String languageVersionsNotAllowed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count Songs wurden nicht verknüpft: Du darfst ihre anderen Versionen nicht ändern.',
+      one: 'Ein Song wurde nicht verknüpft: Du darfst seine anderen Versionen nicht ändern.',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get languageVersionUnlinked => 'Aus den Sprachversionen gelöst';
