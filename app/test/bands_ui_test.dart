@@ -10,7 +10,6 @@ import 'package:setding/ui/live/live_play_button.dart';
 import 'package:setding/ui/sets/set_screen.dart';
 import 'package:setding/ui/sets/sets_screen.dart';
 import 'package:setding/ui/songs/song_screen.dart';
-import 'package:setding/ui/songs/songs_screen.dart';
 
 import 'sync_ui_test.dart' show syncNow;
 import 'test_app.dart';
