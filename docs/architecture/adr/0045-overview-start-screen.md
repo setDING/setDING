@@ -83,7 +83,7 @@ Further rules:
   hidden by the same client check as the warning icons, which is presentation
   only (the server still enforces every write, ADR-0023).
 - **Layout**: one column on phones; from 720 px (where the navigation rail
-  starts) two columns. No charts.
+  starts, with *Settings* pinned to its bottom) two columns. No charts.
 - All texts in `app_de.arb` and `app_en.arb` (ADR-0008).
 - Live mode is unaffected; leaving live mode returns to the tab it was started
   from.
@@ -264,6 +264,10 @@ Further rules:
   with chords but without a key** (de-CH *Ohne Tonart*, en *No key*), with
   the same filter chip of the song list; the song details suggest a key
   from the chords.
+- 2026-11-22: Owner request (#937): on tablets and desktops the navigation
+  rail keeps *Overview · Sets · Songs* at the top and pins ***Settings* to the
+  bottom**, apart from the content tabs, without divider lines; the bottom
+  bar on phones is unchanged.
 
 ## Open points
 

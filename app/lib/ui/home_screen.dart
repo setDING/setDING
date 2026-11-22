@@ -278,13 +278,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         : pages;
 
     if (MediaQuery.sizeOf(context).width >= navigationRailWidth) {
+      NavigationRailDestination railDestination(int i) {
+        final (outlined, selected, label, dot) = destinations[i];
+        return NavigationRailDestination(
+          icon: icon(outlined, dot),
+          selectedIcon: icon(selected, dot),
+          label: Text(label, key: _navKey(i)),
+        );
+      }
+
+      // Settings are pinned to the bottom of the rail, apart from the
+      // content tabs (#937). A second rail with the one destination keeps
+      // the look, indicator and animation of the others; its intrinsic
+      // height lets it sit in the rail's trailing slot.
+      final settings = HomeTab.settings.index;
       return Scaffold(
         body: Row(
           children: [
             NavigationRail(
-              selectedIndex: tab,
+              key: const Key('nav-rail'),
+              selectedIndex: tab < settings ? tab : null,
               onDestinationSelected: select,
               labelType: NavigationRailLabelType.all,
+              scrollable: true,
               leading: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Semantics(
@@ -294,14 +310,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
               destinations: [
-                for (final (i, (outlined, selected, label, dot))
-                    in destinations.indexed)
-                  NavigationRailDestination(
-                    icon: icon(outlined, dot),
-                    selectedIcon: icon(selected, dot),
-                    label: Text(label, key: _navKey(i)),
-                  ),
+                for (var i = 0; i < settings; i++) railDestination(i),
               ],
+              trailingAtBottom: true,
+              trailing: IntrinsicHeight(
+                child: NavigationRail(
+                  key: const Key('nav-rail-bottom'),
+                  selectedIndex: tab == settings ? 0 : null,
+                  onDestinationSelected: (_) => select(settings),
+                  labelType: NavigationRailLabelType.all,
+                  destinations: [railDestination(settings)],
+                ),
+              ),
             ),
             const VerticalDivider(width: 1),
             Expanded(child: body),
