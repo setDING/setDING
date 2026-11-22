@@ -8,6 +8,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 with the setDING-specific bump rules of
 [ADR-0028](docs/architecture/adr/0028-versioning-scheme.md).
 
+## [0.19.0] - 2026-11-22
+
+### Added
+
+- Chord views (ADR-0055): chords can be shown as chord names, Nashville numbers or Roman numerals, as a setting and as a personal adjustment per song, and switched in the live control bar ([#910](https://github.com/tafli/setDING/pull/910), [#912](https://github.com/tafli/setDING/pull/912), [#914](https://github.com/tafli/setDING/pull/914)); a new website page explains the views ([#918](https://github.com/tafli/setDING/pull/918), [#922](https://github.com/tafli/setDING/pull/922))
+- Key suggestions (ADR-0056): setDING suggests a key from the chords for songs without `{key}`, also in the import report, and reports an empty or invalid `{key}` as a ChordPro problem ([#924](https://github.com/tafli/setDING/pull/924), [#929](https://github.com/tafli/setDING/pull/929), [#936](https://github.com/tafli/setDING/pull/936))
+- Page turner (ADR-0057): pair it in the settings and see whether it is connected; the app asks whether you use one and offers to pair a detected one ([#921](https://github.com/tafli/setDING/pull/921), [#945](https://github.com/tafli/setDING/pull/945))
+- Automatic backup of the local library (ADR-0054) into a chosen folder, which the settings show with its full path, and restoring a backup by replacing the local library ([#852](https://github.com/tafli/setDING/pull/852), [#894](https://github.com/tafli/setDING/pull/894), [#858](https://github.com/tafli/setDING/pull/858))
+- Overview: a readiness tile with setup hints that jump to the settings, the newest songs, more sets and songs not played for a while ([#917](https://github.com/tafli/setDING/pull/917), [#873](https://github.com/tafli/setDING/pull/873))
+- Language versions: choose several at once in a two-pane dialog that names the song and lists only songs not yet chosen; flags in the language dialog and *No language* in the language filter ([#855](https://github.com/tafli/setDING/pull/855), [#859](https://github.com/tafli/setDING/pull/859), [#863](https://github.com/tafli/setDING/pull/863), [#848](https://github.com/tafli/setDING/pull/848), [#836](https://github.com/tafli/setDING/pull/836))
+- Trash: delete permanently, a more readable list, and in the sets only shown as a small link when there are deleted sets ([#871](https://github.com/tafli/setDING/pull/871), [#905](https://github.com/tafli/setDING/pull/905))
+- Export: one export entry with a format choice for songs and sets; archives are named `*.setDING.zip` ([#872](https://github.com/tafli/setDING/pull/872), [#875](https://github.com/tafli/setDING/pull/875))
+- Chord diagrams for 4- or 5-string bass ([#944](https://github.com/tafli/setDING/pull/944))
+- A setting to hide the local library ([#869](https://github.com/tafli/setDING/pull/869)); the voice or role setting is optional and can be cleared ([#941](https://github.com/tafli/setDING/pull/941))
+- The band switcher groups bands by organization, and the band and song library selection stay in sync ([#867](https://github.com/tafli/setDING/pull/867), [#862](https://github.com/tafli/setDING/pull/862))
+
+### Changed
+
+- The song picker of a set looks and works like the song list ([#885](https://github.com/tafli/setDING/pull/885), [#887](https://github.com/tafli/setDING/pull/887))
+- Menus: an icon in front of every action, destructive actions in the error colour, app bar actions in the overflow menu on narrow screens, and *Repertoire* in the set list's overflow menu ([#837](https://github.com/tafli/setDING/pull/837), [#844](https://github.com/tafli/setDING/pull/844), [#850](https://github.com/tafli/setDING/pull/850), [#854](https://github.com/tafli/setDING/pull/854))
+- Settings are pinned to the bottom of the navigation rail; storage and backup settings are tidied up; danger zones are a red-tinted tile set apart with a divider ([#943](https://github.com/tafli/setDING/pull/943), [#897](https://github.com/tafli/setDING/pull/897), [#830](https://github.com/tafli/setDING/pull/830), [#892](https://github.com/tafli/setDING/pull/892))
+- Personal adjustments use a single-person icon; checkboxes stand in front of their label everywhere ([#849](https://github.com/tafli/setDING/pull/849), [#880](https://github.com/tafli/setDING/pull/880), [#881](https://github.com/tafli/setDING/pull/881))
+
+### Fixed
+
+- Flat and sharp signs in chords are drawn correctly ([#916](https://github.com/tafli/setDING/pull/916))
+- New attachment downloads stop as soon as the connection breaks ([#942](https://github.com/tafli/setDING/pull/942))
+- Replacing the local library keeps the creation date of songs; copying songs to another library keeps their language version links ([#877](https://github.com/tafli/setDING/pull/877), [#879](https://github.com/tafli/setDING/pull/879))
+- Invitations say which role a band invite gives, and that an organization invite joins as member without a band yet ([#904](https://github.com/tafli/setDING/pull/904), [#895](https://github.com/tafli/setDING/pull/895))
+- An unknown registration mode is no longer treated as an open server ([#831](https://github.com/tafli/setDING/pull/831))
+- *No language* is offered only when songs without a language exist ([#846](https://github.com/tafli/setDING/pull/846))
+- The sets page keeps a single ⋮ menu ([#883](https://github.com/tafli/setDING/pull/883)); the overview keeps the version line at the bottom and shows the page turner line without a pairing on Android and Windows ([#898](https://github.com/tafli/setDING/pull/898), [#931](https://github.com/tafli/setDING/pull/931))
+
 ## [0.18.0] - 2026-11-22
 
 ### Added
@@ -378,6 +411,7 @@ with the setDING-specific bump rules of
 
 - First release, built on GitHub Actions for Linux, Android and Windows ([#138](https://github.com/tafli/setDING/pull/138))
 
+[0.19.0]: https://github.com/tafli/setDING/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/tafli/setDING/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/tafli/setDING/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/tafli/setDING/compare/v0.15.0...v0.16.0

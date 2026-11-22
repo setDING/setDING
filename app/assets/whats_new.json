@@ -1,4 +1,20 @@
 {
+  "0.19.0": {
+    "de": [
+      "Akkorde lassen sich als Akkordnamen, Nashville-Zahlen oder römische Ziffern anzeigen; im Live-Modus wechselst du mit einem Tipp.",
+      "Fehlt einem Song die Tonart, schlägt setDING eine aus den Akkorden vor, auch beim Import.",
+      "Den Seitenwender koppelst du in den Einstellungen, und die App zeigt, ob er verbunden ist.",
+      "Die lokale Bibliothek sichert sich auf Wunsch automatisch in einen Ordner deiner Wahl.",
+      "Die Übersicht zeigt, was noch einzurichten ist, die neusten Songs und Songs, die ihr länger nicht gespielt habt."
+    ],
+    "en": [
+      "Chords can be shown as chord names, Nashville numbers or Roman numerals; in live mode one tap switches between them.",
+      "When a song has no key, setDING suggests one from its chords, also when importing.",
+      "Pair your page turner in the settings, and the app shows whether it is connected.",
+      "The local library can back itself up automatically into a folder of your choice.",
+      "The overview shows what is left to set up, the newest songs and songs you haven't played for a while."
+    ]
+  },
   "0.18.0": {
     "de": [
       "Songs in mehreren Sprachen lassen sich als Sprachversionen verknüpfen; im Set wechselst du mit einem Tipp zu einer anderen Sprache.",
