@@ -46,7 +46,7 @@ void main() {
     expect(keptSession, isNull);
 
     // The synced song in the library and on the song screen.
-    await tester.tap(find.byIcon(Icons.library_music_outlined));
+    await tester.tap(find.byKey(const Key('nav-songs')));
     await pumpUntil(tester, find.text(itestSong));
     await tester.tap(find.text(itestSong).first);
     await pumpUntil(tester, find.byType(SongScreen));
