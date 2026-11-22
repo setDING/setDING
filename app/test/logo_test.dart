@@ -89,7 +89,7 @@ void main() {
 
     final logo = find.byKey(const Key('nav-logo'));
     expect(
-      find.descendant(of: find.byType(NavigationRail), matching: logo),
+      find.descendant(of: find.byKey(const Key('nav-rail')), matching: logo),
       findsOneWidget,
     );
     // Above the first destination, in the top left corner.
@@ -100,7 +100,7 @@ void main() {
         tester
             .getTopLeft(
               find.descendant(
-                of: find.byType(NavigationRail),
+                of: find.byKey(const Key('nav-rail')),
                 matching: find.text('Sets'),
               ),
             )

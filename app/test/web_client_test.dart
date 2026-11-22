@@ -89,7 +89,7 @@ void main() {
     app.backend.accounts[_ann.email] = 'secret-pw';
 
     expect(find.byKey(const Key('web-sign-in')), findsOneWidget);
-    expect(find.byType(NavigationRail), findsNothing);
+    expect(find.byKey(const Key('nav-rail')), findsNothing);
     expect(find.byKey(const Key('account-open-join')), findsOneWidget);
 
     await tester.enterText(find.byKey(const Key('account-email')), _ann.email);
@@ -103,7 +103,7 @@ void main() {
 
     expect(store.keepSignedIn, isTrue);
     expect(find.byKey(const Key('web-sign-in')), findsNothing);
-    expect(find.byType(NavigationRail), findsOneWidget);
+    expect(find.byKey(const Key('nav-rail')), findsOneWidget);
     await app.dispose(tester);
   });
 
@@ -117,7 +117,7 @@ void main() {
 
   testWidgets('hides the local library', (tester) async {
     final app = await start(tester, user: _ann);
-    expect(find.byType(NavigationRail), findsOneWidget);
+    expect(find.byKey(const Key('nav-rail')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('band-switcher')).last);
     await tester.pumpAndSettle();
@@ -232,7 +232,7 @@ void main() {
     await app.songs.createSong(source: '{title: Mine}');
     await tester.pumpWidget(app.build());
     await tester.pumpAndSettle();
-    expect(find.byType(NavigationRail), findsOneWidget);
+    expect(find.byKey(const Key('nav-rail')), findsOneWidget);
     expect(await songCount(app), 1);
     await app.dispose(tester);
   });
