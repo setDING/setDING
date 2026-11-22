@@ -8871,6 +8871,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Zuordnen, damit die Übersicht zeigt, ob er verbunden ist · Blättern: {mode}'**
   String readinessPageTurnerPairDetail(String mode);
+
+  /// No description provided for @settingsPageTurnerUse.
+  ///
+  /// In de, this message translates to:
+  /// **'Ich verwende einen Seitenwender'**
+  String get settingsPageTurnerUse;
+
+  /// No description provided for @settingsPageTurnerUseHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein Fusspedal, das die Seiten wendet. Zeigt ihn auf der Übersicht und bietet an, einen erkannten zuzuordnen.'**
+  String get settingsPageTurnerUseHint;
+
+  /// No description provided for @pageTurnerDetected.
+  ///
+  /// In de, this message translates to:
+  /// **'Seitenwender erkannt: {name}'**
+  String pageTurnerDetected(String name);
 }
 
 class _AppLocalizationsDelegate

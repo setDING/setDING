@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import live from '../../../../../../docs/screenshots/live.png';
 import pageTurner from '../../../../../../docs/screenshots/settings_page_turner.png';
+import pageTurnerOffer from '../../../../../../docs/screenshots/page_turner_offer.png';
 import controls from '../../../../../../docs/screenshots/live_controls.png';
 import liveMarker from '../../../../../../docs/screenshots/live_marker.png';
 
@@ -46,15 +47,23 @@ Bluetooth page turners (foot pedals) connect to the device as a keyboard. Pair t
 pedal in your device's Bluetooth settings; setDING understands the keys above without
 further setup. One press turns exactly once, even if you hold the pedal down.
 
-Under **Settings › Screen & live mode › Page turner** you can **pair** your
-pedal: tap **Pair** and press the pedal. setDING remembers the device, and
+Switch on **I use a page turner** under **Settings › Screen & live mode**;
+then you can **pair** your pedal under **Page turner**: tap **Pair** and press the pedal. setDING remembers the device, and
 [Ready to play](/en/start/overview/#ready-to-play) on the overview then shows
 before the gig whether your pedal is connected. Use **⋮** to pair it again or
 forget it.
 
 <Image src={pageTurner} alt="The Page turner setting with the paired pedal AirTurn DUO, connected" />
 
-This works on Android and Windows. An iPad only tells whether a keyboard is
+Even simpler: press the pedal on the **Overview**. setDING detects a pedal
+that is not paired yet and asks once; tap **Pair**.
+
+<Image src={pageTurnerOffer} alt="The message Page turner detected: DUO500 with the Pair button on the overview" />
+
+If you don't use a page turner, switch the setting off: setDING then stops
+asking, and Ready to play shows no line for it.
+
+Pairing works on Android and Windows. An iPad only tells whether a keyboard is
 connected, not which one; on the web and on Linux it is not possible. There,
 Ready to play shows when the page turner was last used.
 

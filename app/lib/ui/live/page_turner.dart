@@ -124,6 +124,8 @@ class PairedPageTurnerNotifier extends Notifier<InputDeviceInfo?> {
     await prefs.setInt(vendorKey, device.vendorId);
     await prefs.setInt(productKey, device.productId);
     state = device;
+    // Pairing one says that a page turner is used (#930).
+    await ref.read(pageTurnerUseProvider.notifier).set(true);
   }
 
   Future<void> forget() async {
@@ -212,3 +214,60 @@ final pageTurnerConnectionProvider = Provider<PageTurnerConnection>(
     connected: ref.watch(connectedKeyboardsProvider).value,
   ),
 );
+
+/// Whether the person uses a page turner on this device (#930): a device
+/// setting, null until they decide (the setting, or pairing one).
+class PageTurnerUseNotifier extends Notifier<bool?> {
+  static const key = 'pageTurnerUsed';
+
+  @override
+  bool? build() => ref.read(sharedPreferencesProvider).getBool(key);
+
+  Future<void> set(bool used) async {
+    await ref.read(sharedPreferencesProvider).setBool(key, used);
+    state = used;
+  }
+}
+
+final pageTurnerUseProvider = NotifierProvider<PageTurnerUseNotifier, bool?>(
+  PageTurnerUseNotifier.new,
+);
+
+/// Whether the page turner shows up on this device (#930): the setting, or
+/// before it was set, whether one is paired or was used here.
+final pageTurnerInUseProvider = Provider<bool>(
+  (ref) =>
+      ref.watch(pageTurnerUseProvider) ??
+      (ref.watch(pairedPageTurnerProvider) != null ||
+          ref.watch(pageTurnerProvider).lastUsed != null),
+);
+
+/// The devices the overview offered to pair (#930), each at most once; a
+/// device setting.
+class PageTurnerOffersNotifier extends Notifier<Set<String>> {
+  static const key = 'pageTurnerOffered';
+
+  /// One device: by its IDs, or by its name without them (ADR-0057).
+  static String idOf(InputDeviceInfo device) => device.hasIds
+      ? 'id:${device.vendorId}:${device.productId}'
+      : 'name:${device.name}';
+
+  @override
+  Set<String> build() =>
+      (ref.read(sharedPreferencesProvider).getStringList(key) ?? const [])
+          .toSet();
+
+  bool offered(InputDeviceInfo device) => state.contains(idOf(device));
+
+  Future<void> markOffered(InputDeviceInfo device) async {
+    state = {...state, idOf(device)};
+    await ref
+        .read(sharedPreferencesProvider)
+        .setStringList(key, state.toList());
+  }
+}
+
+final pageTurnerOffersProvider =
+    NotifierProvider<PageTurnerOffersNotifier, Set<String>>(
+      PageTurnerOffersNotifier.new,
+    );

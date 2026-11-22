@@ -3139,5 +3139,8 @@
     }
   },
   "readinessPageTurnerNotPaired": "Page turner not paired",
-  "readinessPageTurnerPairDetail": "Pair it so the overview shows whether it is connected · Turns: {mode}"
+  "readinessPageTurnerPairDetail": "Pair it so the overview shows whether it is connected · Turns: {mode}",
+  "settingsPageTurnerUse": "I use a page turner",
+  "settingsPageTurnerUseHint": "A foot pedal that turns the pages. Shows it on the overview and offers to pair one that is detected.",
+  "pageTurnerDetected": "Page turner detected: {name}"
 }

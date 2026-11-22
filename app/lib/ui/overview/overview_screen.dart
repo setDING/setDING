@@ -1,5 +1,7 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:async';
+
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../data/band_view.dart';
@@ -24,7 +26,10 @@ import '../../midi/midi_connection.dart';
 import '../../settings/settings.dart';
 import '../../sync/auth_providers.dart';
 import '../../sync/sync_controller.dart';
+import '../../platform/input_devices.dart';
 import '../live/page_turner.dart';
+import '../settings/page_turner_settings.dart' show pageTurnerName;
+import '../widgets/dialogs.dart';
 import '../settings_screen.dart' show settingsJumpProvider;
 import '../theme.dart' show StatusColors;
 import 'readiness.dart';
@@ -365,16 +370,75 @@ class _ReadinessCard extends ConsumerStatefulWidget {
 class _ReadinessCardState extends ConsumerState<_ReadinessCard> {
   var _expanded = false;
 
+  /// A page-turn key and a key from a device that arrive this close
+  /// together are the same press (#930): Flutter's key event and the
+  /// platform's device event come on different channels.
+  static const _samePress = Duration(seconds: 1);
+
+  StreamSubscription<InputDeviceInfo>? _deviceKeys;
+  DateTime? _pageTurnKeyAt;
+  ({InputDeviceInfo device, DateTime at})? _deviceKey;
+
   @override
   void initState() {
     super.initState();
     FocusManager.instance.addEarlyKeyEventHandler(_onKey);
+    _deviceKeys = ref.read(inputDevicesProvider).keys.listen((device) {
+      _deviceKey = (device: device, at: DateTime.now());
+      _offerPairing();
+    });
   }
 
   @override
   void dispose() {
+    _deviceKeys?.cancel();
     FocusManager.instance.removeEarlyKeyEventHandler(_onKey);
     super.dispose();
+  }
+
+  bool get _overviewShown =>
+      mounted &&
+      ref.read(homeTabProvider) == HomeTab.overview &&
+      (ModalRoute.of(context)?.isCurrent ?? true);
+
+  /// Offers to pair the device a page-turn key on the overview came from
+  /// (#930), once per device: only where devices can be told apart, not
+  /// when the person said they use no page turner, and not for the page
+  /// turner already paired. A message with an action goes away by itself
+  /// (ADR-0051): not answering is "not now".
+  void _offerPairing() {
+    final key = _pageTurnKeyAt, pressed = _deviceKey;
+    if (key == null || pressed == null) return;
+    if (key.difference(pressed.at).abs() > _samePress) return;
+    _pageTurnKeyAt = null;
+    _deviceKey = null;
+    final device = pressed.device;
+    if (!_overviewShown) return;
+    if (ref.read(inputDevicesProvider).support != InputDeviceSupport.devices) {
+      return;
+    }
+    if (ref.read(pageTurnerUseProvider) == false) return;
+    final paired = ref.read(pairedPageTurnerProvider);
+    if (paired != null && device.matches(paired)) return;
+    final offers = ref.read(pageTurnerOffersProvider.notifier);
+    if (offers.offered(device)) return;
+    unawaited(offers.markOffered(device));
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final name = pageTurnerName(l10n, device);
+    showMessageOn(
+      messenger,
+      l10n.pageTurnerDetected(name),
+      key: const Key('page-turner-offer'),
+      action: (
+        key: const Key('page-turner-offer-pair'),
+        label: l10n.settingsPageTurnerPair,
+        onPressed: () async {
+          await ref.read(pairedPageTurnerProvider.notifier).pair(device);
+          showMessageOn(messenger, l10n.pageTurnerPaired(name));
+        },
+      ),
+    );
   }
 
   /// Page Up / Page Down are taken: their default page scroll finds the
@@ -382,14 +446,13 @@ class _ReadinessCardState extends ConsumerState<_ReadinessCard> {
   /// focus and activate actions.
   KeyEventResult _onKey(KeyEvent event) {
     final key = event.logicalKey;
-    if (!isPageTurnKey(key) ||
-        !mounted ||
-        ref.read(homeTabProvider) != HomeTab.overview ||
-        !(ModalRoute.of(context)?.isCurrent ?? true)) {
+    if (!isPageTurnKey(key) || !_overviewShown) {
       return KeyEventResult.ignored;
     }
     if (event is KeyDownEvent) {
       ref.read(pageTurnerProvider.notifier).tested();
+      _pageTurnKeyAt = DateTime.now();
+      _offerPairing();
     }
     return key == LogicalKeyboardKey.pageDown ||
             key == LogicalKeyboardKey.pageUp
@@ -427,14 +490,16 @@ class _ReadinessCardState extends ConsumerState<_ReadinessCard> {
         lastSync: ref.watch(syncControllerProvider.select((s) => s.lastSync)),
         staleness: ref.watch(syncStalenessProvider),
       ),
-      pageTurnerReadiness(
-        l10n,
-        time,
-        mode: settings.pageTurn,
-        state: ref.watch(pageTurnerProvider),
-        paired: ref.watch(pairedPageTurnerProvider),
-        connection: ref.watch(pageTurnerConnectionProvider),
-      ),
+      // Only when a page turner is used on this device (#930).
+      if (ref.watch(pageTurnerInUseProvider))
+        pageTurnerReadiness(
+          l10n,
+          time,
+          mode: settings.pageTurn,
+          state: ref.watch(pageTurnerProvider),
+          paired: ref.watch(pairedPageTurnerProvider),
+          connection: ref.watch(pageTurnerConnectionProvider),
+        ),
       ?backupReadiness(
         l10n,
         time,

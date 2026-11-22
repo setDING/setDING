@@ -9,10 +9,31 @@ import '../live/page_turner.dart';
 import '../theme.dart' show StatusColors;
 import '../widgets/dialogs.dart';
 import '../widgets/menu_action.dart';
+import 'settings_layout.dart';
 
 /// The name of [device] for people; a device without a name says so.
 String pageTurnerName(AppLocalizations l10n, InputDeviceInfo device) =>
     device.name.isEmpty ? l10n.pageTurnerUnnamed : device.name;
+
+/// *I use a page turner* (#930): a device setting. Off hides the page
+/// turner on the overview and its pairing offer; pairing one switches it
+/// on.
+class PageTurnerUseSwitch extends ConsumerWidget {
+  const PageTurnerUseSwitch({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    return SettingsSwitch(
+      tileKey: const Key('settings-page-turner-use'),
+      icon: Icons.keyboard_alt_outlined,
+      title: l10n.settingsPageTurnerUse,
+      hint: l10n.settingsPageTurnerUseHint,
+      value: ref.watch(pageTurnerInUseProvider),
+      onChanged: (v) => ref.read(pageTurnerUseProvider.notifier).set(v),
+    );
+  }
+}
 
 /// *Settings › Live › Page turner* (ADR-0057): the page turner paired on
 /// this device and whether it is connected, *Pair* / *Pair again* and

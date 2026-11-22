@@ -5843,4 +5843,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String readinessPageTurnerPairDetail(String mode) {
     return 'Pair it so the overview shows whether it is connected · Turns: $mode';
   }
+
+  @override
+  String get settingsPageTurnerUse => 'I use a page turner';
+
+  @override
+  String get settingsPageTurnerUseHint =>
+      'A foot pedal that turns the pages. Shows it on the overview and offers to pair one that is detected.';
+
+  @override
+  String pageTurnerDetected(String name) {
+    return 'Page turner detected: $name';
+  }
 }

@@ -2,9 +2,11 @@
 // See screenshot_support.dart.
 
 import 'package:drift/drift.dart' show Value;
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/data/database.dart';
+import 'package:setding/platform/input_devices.dart';
 import 'package:setding/ui/widgets/app_info.dart';
 import 'package:setding/update/whats_new.dart';
 import 'package:setding/util/app_version.dart';
@@ -140,6 +142,38 @@ void main() {
         findsOneWidget,
       );
       await shot(tester, '${lang}_44c_overview_readiness');
+      await app.dispose(tester);
+    });
+  }
+
+  // A page turner pressed on the overview, offered for pairing (#930).
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('overview page turner offer $lang', (tester) async {
+      tester.view.physicalSize = const Size(420, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final app = await TestApp.create(
+        prefs: {
+          'language': lang,
+          'themeMode': dark ? 'dark' : 'light',
+          'userName': 'Andi',
+        },
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(key: UniqueKey(), child: app.build()),
+      );
+      await tester.pumpAndSettle();
+      app.inputDevices.press(
+        const InputDeviceInfo(
+          name: 'DUO500 v3.0.13 6887',
+          vendorId: 0x0122,
+          productId: 0x000d,
+        ),
+      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('page-turner-offer')), findsOneWidget);
+      await shot(tester, '${lang}_44d_page_turner_offer');
       await app.dispose(tester);
     });
   }
