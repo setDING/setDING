@@ -2800,6 +2800,7 @@
   "songLanguage": "Language",
   "songLanguageMenu": "Language …",
   "allLanguages": "All languages",
+  "noLanguage": "No language",
   "filterByLanguage": "Filter by language",
   "songLanguageAutomatic": "Automatic: {language}",
   "songLanguageNotDetected": "Automatic (not detected)",

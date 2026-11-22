@@ -7,6 +7,10 @@ import '../../l10n/generated/app_localizations.dart';
 String songLanguageName(AppLocalizations l10n, String code) =>
     l10n.songLanguageName(code);
 
+/// The language filter's value for songs without a language (ADR-0053):
+/// neither set by hand nor detected. No language code is empty.
+const noSongLanguage = '';
+
 /// The languages of [codes] in the order of [songLanguages], *other* last.
 List<String> orderedSongLanguages(Iterable<String> codes) => [
   for (final l in songLanguages)

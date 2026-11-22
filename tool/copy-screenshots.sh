@@ -70,6 +70,7 @@ map=(
   language_versions 40_language_versions
   language_version_picker 40b_language_version_picker
   songs_languages 39_songs_languages
+  songs_language_filter 39a_songs_language_filter
   song_language 39b_song_language
   songs_tags 42_songs_tags
   songs_played 42b_songs_played

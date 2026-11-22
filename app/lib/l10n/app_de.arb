@@ -3163,6 +3163,7 @@
   "songLanguage": "Sprache",
   "songLanguageMenu": "Sprache …",
   "allLanguages": "Alle Sprachen",
+  "noLanguage": "Keine Sprache",
   "filterByLanguage": "Nach Sprache filtern",
   "songLanguageAutomatic": "Automatisch: {language}",
   "@songLanguageAutomatic": {

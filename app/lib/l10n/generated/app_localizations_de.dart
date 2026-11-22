@@ -5138,6 +5138,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get allLanguages => 'Alle Sprachen';
 
   @override
+  String get noLanguage => 'Keine Sprache';
+
+  @override
   String get filterByLanguage => 'Nach Sprache filtern';
 
   @override
