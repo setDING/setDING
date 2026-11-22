@@ -421,6 +421,19 @@ void main() {
       await pressPedal(tester, app);
       expect(offer, findsNothing);
       expect(app.prefs.getString(PairedPageTurnerNotifier.nameKey), isNull);
+
+      // Switching "I use a page turner" off and on again asks again (owner
+      // test of #930).
+      await openLiveSettings(tester);
+      final use = find.byKey(const Key('settings-page-turner-use'));
+      await tester.ensureVisible(use);
+      await tester.tap(use);
+      await tester.pumpAndSettle();
+      await tester.tap(use);
+      await tester.pumpAndSettle();
+      await openTab(tester, HomeTab.overview);
+      await pressPedal(tester, app);
+      expect(offer, findsOneWidget);
       await app.dispose(tester);
     });
 

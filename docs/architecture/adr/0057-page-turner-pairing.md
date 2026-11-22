@@ -116,8 +116,10 @@ no API to list input devices. What the platforms offer differs:
     *"Page turner detected: <name>"* with *Pair*, which pairs that device
     directly. At most once per device (`pageTurnerOffered`, by IDs or name);
     a message with an action goes away by itself (ADR-0051), so not
-    answering is "not now", and "never" is switching the setting off. A
-    keyboard that only connects is not offered.
+    answering is "not now", and "never" is switching the setting off.
+    Switching it on again forgets the devices offered before, so they are
+    offered again (owner test). A keyboard that only connects is not
+    offered.
 
 ## Open points
 

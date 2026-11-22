@@ -223,9 +223,15 @@ class PageTurnerUseNotifier extends Notifier<bool?> {
   @override
   bool? build() => ref.read(sharedPreferencesProvider).getBool(key);
 
+  /// Switching it on again after it was off asks about detected page
+  /// turners again (#930): the devices offered before are forgotten.
   Future<void> set(bool used) async {
+    final before = state;
     await ref.read(sharedPreferencesProvider).setBool(key, used);
     state = used;
+    if (used && before == false) {
+      await ref.read(pageTurnerOffersProvider.notifier).reset();
+    }
   }
 }
 
@@ -258,6 +264,11 @@ class PageTurnerOffersNotifier extends Notifier<Set<String>> {
           .toSet();
 
   bool offered(InputDeviceInfo device) => state.contains(idOf(device));
+
+  Future<void> reset() async {
+    state = const {};
+    await ref.read(sharedPreferencesProvider).remove(key);
+  }
 
   Future<void> markOffered(InputDeviceInfo device) async {
     state = {...state, idOf(device)};
