@@ -18,6 +18,8 @@ import songsLanguageFilter from '../../../../../../docs/screenshots/songs_langua
 import songLanguage from '../../../../../../docs/screenshots/song_language.png';
 import languageVersions from '../../../../../../docs/screenshots/language_versions.png';
 import languageVersionPicker from '../../../../../../docs/screenshots/language_version_picker.png';
+import songsTrash from '../../../../../../docs/screenshots/songs_trash.png';
+import songsTrashMenu from '../../../../../../docs/screenshots/songs_trash_menu.png';
 
 All songs belong to the organization; all its bands share the same song library.
 **Songs** shows them.
@@ -208,11 +210,25 @@ name stay as they are. This also applies when you import a set.
 
 ## Trash
 
-Deleted songs can be restored for **30 days**: the song list's ⋮ menu → **Trash**
-→ **Restore**. The song comes back with the attachments deleted with it, its
-personal adjustments and band arrangements. It is no longer in sets; add it there
-again. Whoever may delete songs sees the trash. After 30 days a deleted song is
-removed for good.
+Deleted songs can be restored for **30 days**: the song list's ⋮ menu →
+**Trash**. The songs are grouped by when they were deleted (**Today**, **This
+week**, **Older**); on the right you see how many days are left – in orange on
+the last three days.
+
+<Image src={songsTrash} alt="The trash with deleted songs grouped by Today, This week and Older, the days left on the right" />
+
+A song's ⋮ menu offers **Restore** and **Delete permanently**. Restored, the song
+comes back with the attachments deleted with it, its personal adjustments and
+band arrangements. It is no longer in sets; add it there again. **Delete
+permanently** removes the song and its attachments at once after a confirmation –
+this cannot be undone.
+
+<Image src={songsTrashMenu} alt="The menu of a song in the trash with Restore and Delete permanently in red" />
+
+Several songs at once: long-press a song (or ⋮ menu → **Select**), tap more and
+choose **Restore** or **Delete permanently** at the top. ⋮ menu → **Empty trash**
+deletes every song in the trash permanently. Whoever may delete songs sees the
+trash. After 30 days a deleted song is removed for good anyway.
 
 ## Conflicts
 

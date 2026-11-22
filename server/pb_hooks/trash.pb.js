@@ -1,7 +1,8 @@
 /// <reference path="../pb_data/types.d.ts" />
 
 // Trash (ADR-0043): `deleted_at` and `purged` of songs, sets and
-// attachments, and the daily purge after 30 days. The purge runs at night
+// attachments, deleting permanently from the trash (#866) and the daily
+// purge after 30 days. The purge runs at night
 // and can be started by a superuser (operators, tests).
 
 onRecordCreateRequest((e) => {
@@ -9,9 +10,15 @@ onRecordCreateRequest((e) => {
   e.next();
 }, "songs", "setlists", "attachments");
 
+// A song purged by a user (#866) takes its attachments with it, as the
+// daily purge does.
 onRecordUpdateRequest((e) => {
-  require(`${__hooks}/lib/trash.js`).handleTrashRequest(e);
+  const trash = require(`${__hooks}/lib/trash.js`);
+  const purging = trash.handleTrashRequest(e);
   e.next();
+  if (purging && e.record.collection().name === "songs") {
+    trash.purgeAttachmentsOf(e.app, e.record);
+  }
 }, "songs", "setlists", "attachments");
 
 cronAdd("setding_trash_purge", "17 3 * * *", () => {

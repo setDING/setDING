@@ -80,6 +80,8 @@ map=(
   band_switcher 43b_band_switcher
   settings_auto_backup 43_settings_auto_backup
   overview 44_overview
+  songs_trash 45_songs_trash
+  songs_trash_menu 45b_songs_trash_menu
 )
 
 copied=0

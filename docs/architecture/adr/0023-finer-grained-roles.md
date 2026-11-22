@@ -103,10 +103,12 @@ for creating an account, like every invitation.
 | See the organization's people and library | ✓ | ✓ | ✓ | ✓ | ✓ |
 | See a band's sets, live mode, personal overlays | ✓ all bands | own bands | ✓ | ✓ | ✓ |
 | Create, edit, reorder, delete sets | ✓ all bands | – | ✓ | ✓ | – |
+| Restore sets from the trash or delete them permanently (ADR-0043, #866) | ✓ all bands | – | ✓ | ✓ | – |
 | Band arrangement (follow-up ADR) | ✓ all bands | – | ✓ | ✓ | – |
 | Create and import new songs | ✓ | ✓ | ✓ | – | – |
 | Edit existing songs and attachments | ✓ | ✓ | own songs² | – | – |
 | Delete songs and attachments | ✓ | ✓ | – | – | – |
+| Restore songs from the trash or delete them permanently (ADR-0043, #866) | ✓ | ✓ | – | – | – |
 | Link language versions, set a song's language (ADR-0053) | ✓ | ✓ | own songs²³ | – | – |
 | Band settings, band members, band roles | ✓ all bands | – | ✓ | – | – |
 | When songs count as not played for a while (ADR-0046) | ✓ all bands | – | ✓ | ✓ | – |
@@ -218,6 +220,7 @@ sets of that band like any member; librarian rights concern the library only.
   who maintain the library.
 - 2026-11-21: Row *Delete the own account* (ADR-0052, #780): every person, for their own account only, with the password; refused while they are the only admin of an organization that is not closed.
 - 2026-11-21: Language versions (ADR-0053, #804): linking songs and setting their language follow the right to edit the song; a link-only change keeps `updated_by`, so a librarian linking a leader's own song does not take it from them. Server tests in `language_versions_test.dart` and the permission matrix.
+- 2026-11-22: **ADR-0043** (#866): deleting songs and sets permanently from the trash follows the right to delete them (songs: organization admins and librarians; sets: set managers); the update rule of songs refuses a change of `purged` to band leaders.
 
 ## Open points
 

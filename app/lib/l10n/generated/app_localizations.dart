@@ -6295,6 +6295,84 @@ abstract class AppLocalizations {
   /// **'«{title}» wiederhergestellt'**
   String trashRestored(String title);
 
+  /// No description provided for @trashGroupToday.
+  ///
+  /// In de, this message translates to:
+  /// **'Heute'**
+  String get trashGroupToday;
+
+  /// No description provided for @trashGroupWeek.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Woche'**
+  String get trashGroupWeek;
+
+  /// No description provided for @trashGroupOlder.
+  ///
+  /// In de, this message translates to:
+  /// **'Älter'**
+  String get trashGroupOlder;
+
+  /// No description provided for @trashMenu.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktionen für «{title}»'**
+  String trashMenu(String title);
+
+  /// No description provided for @trashPurge.
+  ///
+  /// In de, this message translates to:
+  /// **'Endgültig löschen'**
+  String get trashPurge;
+
+  /// No description provided for @trashPurgeTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Endgültig löschen?'**
+  String get trashPurgeTitle;
+
+  /// No description provided for @trashPurgeOne.
+  ///
+  /// In de, this message translates to:
+  /// **'«{title}» wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.'**
+  String trashPurgeOne(String title);
+
+  /// No description provided for @trashPurgeMany.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Eintrag wird} other{{count} Einträge werden}} endgültig gelöscht. Das lässt sich nicht rückgängig machen.'**
+  String trashPurgeMany(int count);
+
+  /// No description provided for @trashEmptyAction.
+  ///
+  /// In de, this message translates to:
+  /// **'Papierkorb leeren'**
+  String get trashEmptyAction;
+
+  /// No description provided for @trashEmptyTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Papierkorb leeren?'**
+  String get trashEmptyTitle;
+
+  /// No description provided for @trashPurged.
+  ///
+  /// In de, this message translates to:
+  /// **'«{title}» endgültig gelöscht'**
+  String trashPurged(String title);
+
+  /// No description provided for @trashPurgedMany.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Eintrag} other{{count} Einträge}} endgültig gelöscht'**
+  String trashPurgedMany(int count);
+
+  /// No description provided for @trashRestoredMany.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Eintrag} other{{count} Einträge}} wiederhergestellt'**
+  String trashRestoredMany(int count);
+
   /// No description provided for @backupExport.
   ///
   /// In de, this message translates to:

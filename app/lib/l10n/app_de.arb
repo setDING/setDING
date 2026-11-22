@@ -2132,6 +2132,61 @@
       }
     }
   },
+  "trashGroupToday": "Heute",
+  "trashGroupWeek": "Diese Woche",
+  "trashGroupOlder": "Älter",
+  "trashMenu": "Aktionen für «{title}»",
+  "@trashMenu": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "trashPurge": "Endgültig löschen",
+  "trashPurgeTitle": "Endgültig löschen?",
+  "trashPurgeOne": "«{title}» wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.",
+  "@trashPurgeOne": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "trashPurgeMany": "{count, plural, =1{1 Eintrag wird} other{{count} Einträge werden}} endgültig gelöscht. Das lässt sich nicht rückgängig machen.",
+  "@trashPurgeMany": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashEmptyAction": "Papierkorb leeren",
+  "trashEmptyTitle": "Papierkorb leeren?",
+  "trashPurged": "«{title}» endgültig gelöscht",
+  "@trashPurged": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "trashPurgedMany": "{count, plural, =1{1 Eintrag} other{{count} Einträge}} endgültig gelöscht",
+  "@trashPurgedMany": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashRestoredMany": "{count, plural, =1{1 Eintrag} other{{count} Einträge}} wiederhergestellt",
+  "@trashRestoredMany": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "backupExport": "Bibliothek sichern",
   "backupSyncing": "Mit dem Server synchronisieren …",
   "backupCollecting": "Sicherung wird erstellt …",

@@ -699,6 +699,59 @@ void main() {
       await app.dispose(tester);
     });
   }
+  // The trash (ADR-0043, #866): grouped by deletion time with the days
+  // left, and the menu of an entry with Delete permanently.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('songs trash $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      final now = DateTime.now();
+      await tester.runAsync(() async {
+        for (final (title, artist, days) in [
+          ('Morning Light', 'Ann Trainor', 0),
+          ('Train to Nowhere', 'House Band', 3),
+          ('Amazing Grace', 'John Newton', 12),
+          ('Old Rugged Cross', 'George Bennard', 28),
+        ]) {
+          final id = await app.songs.createSong(
+            source: '{title: $title}\n{artist: $artist}\n[G]Hello',
+          );
+          await app.songs.deleteSong(id);
+          await (app.db.update(
+            app.db.songs,
+          )..where((s) => s.id.equals(id))).write(
+            SongsCompanion(
+              deletedAt: Value(now.subtract(Duration(days: days))),
+            ),
+          );
+        }
+        await app.songs.createSong(source: demoSongSource);
+      });
+      await tester.pumpWidget(
+        RepaintBoundary(key: UniqueKey(), child: app.build()),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Songs').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('songs-menu')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('songs-trash')));
+      await tester.pumpAndSettle();
+      await shot(tester, '${lang}_45_songs_trash');
+      await tester.tap(
+        find.byTooltip(
+          lang == 'de'
+              ? 'Aktionen für «Old Rugged Cross»'
+              : 'Actions for "Old Rugged Cross"',
+        ),
+      );
+      await tester.pumpAndSettle();
+      await shot(tester, '${lang}_45b_songs_trash_menu');
+      await app.dispose(tester);
+    });
+  }
 }
 
 /// A Lilypond lead sheet for the notation screenshot (#725).

@@ -774,6 +774,9 @@ class PocketBaseBackend implements SyncBackend {
       'chordpro': song.chordpro,
       'deleted': song.deleted,
       'deleted_at': _dateValue(song.deletedAt),
+      // Deleting permanently from the trash (#866); never sent as false,
+      // which the server ignores anyway.
+      if (song.purged) 'purged': true,
     };
     return _signedIn(
       () async => _song(
@@ -827,6 +830,7 @@ class PocketBaseBackend implements SyncBackend {
         'items': [for (final i in set.items) i.toJson()],
         'deleted': set.deleted,
         'deleted_at': _dateValue(set.deletedAt),
+        if (set.purged) 'purged': true, // deleted permanently (#866)
       };
       final r = create
           ? await _pb

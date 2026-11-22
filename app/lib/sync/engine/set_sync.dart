@@ -159,6 +159,7 @@ class SetSync {
       revision: set.revision,
       deleted: set.deleted,
       deletedAt: set.deletedAt,
+      purged: set.purged,
     );
     try {
       RemoteSet stored;

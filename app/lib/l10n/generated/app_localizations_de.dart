@@ -3779,6 +3779,75 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get trashGroupToday => 'Heute';
+
+  @override
+  String get trashGroupWeek => 'Diese Woche';
+
+  @override
+  String get trashGroupOlder => 'Älter';
+
+  @override
+  String trashMenu(String title) {
+    return 'Aktionen für «$title»';
+  }
+
+  @override
+  String get trashPurge => 'Endgültig löschen';
+
+  @override
+  String get trashPurgeTitle => 'Endgültig löschen?';
+
+  @override
+  String trashPurgeOne(String title) {
+    return '«$title» wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.';
+  }
+
+  @override
+  String trashPurgeMany(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Einträge werden',
+      one: '1 Eintrag wird',
+    );
+    return '$_temp0 endgültig gelöscht. Das lässt sich nicht rückgängig machen.';
+  }
+
+  @override
+  String get trashEmptyAction => 'Papierkorb leeren';
+
+  @override
+  String get trashEmptyTitle => 'Papierkorb leeren?';
+
+  @override
+  String trashPurged(String title) {
+    return '«$title» endgültig gelöscht';
+  }
+
+  @override
+  String trashPurgedMany(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Einträge',
+      one: '1 Eintrag',
+    );
+    return '$_temp0 endgültig gelöscht';
+  }
+
+  @override
+  String trashRestoredMany(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Einträge',
+      one: '1 Eintrag',
+    );
+    return '$_temp0 wiederhergestellt';
+  }
+
+  @override
   String get backupExport => 'Bibliothek sichern';
 
   @override

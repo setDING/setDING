@@ -4,25 +4,38 @@
 /// Days a deleted song, set or attachment can be restored.
 const RETENTION_DAYS = 30;
 
+/// Collections whose deleted records a user may purge at once by setting
+/// `purged` (#866). Attachments are purged with their song.
+const PURGEABLE = ["songs", "setlists"];
+
 /// Keeps `deleted_at` and `purged` consistent for a write request of a user:
 /// `deleted_at` is taken from the client when the record is deleted (it may
 /// have been deleted offline; not in the future, now if missing), cleared on
-/// restore and otherwise kept; `purged` is never set by clients, and a purged
-/// record cannot be restored. Superusers (operators, tests) are not changed.
+/// restore and otherwise kept. `purged` sent on a deleted song or set
+/// (deleted before or with this request) deletes it permanently (#866): its
+/// content is cleared like by the daily purge; the update rules allow it to
+/// those who may delete the record. Otherwise clients cannot set `purged`,
+/// and a purged record cannot be restored. Superusers (operators, tests) are
+/// not changed. Returns true if the request purges the record.
 function handleTrashRequest(e) {
-  if (!(e.auth && e.auth.collection().name === "users")) return;
+  if (!(e.auth && e.auth.collection().name === "users")) return false;
   const original = e.record.original();
   const isNew = e.record.isNew();
   const wasDeleted = !isNew && original.getBool("deleted");
+  const wasPurged = !isNew && original.getBool("purged");
   const deleted = e.record.getBool("deleted");
-  if (!isNew && original.getBool("purged")) {
-    if (!deleted) {
-      throw new BadRequestError("The record was purged from the trash.", {
-        deleted: new ValidationError("purged", "The record was purged from the trash and cannot be restored."),
-      });
-    }
+  if (wasPurged && !deleted) {
+    throw new BadRequestError("The record was purged from the trash.", {
+      deleted: new ValidationError("purged", "The record was purged from the trash and cannot be restored."),
+    });
   }
-  e.record.set("purged", isNew ? false : original.getBool("purged"));
+  const purging =
+    !isNew &&
+    !wasPurged &&
+    deleted &&
+    e.record.getBool("purged") &&
+    PURGEABLE.includes(e.record.collection().name);
+  e.record.set("purged", wasPurged || purging);
   if (!deleted) {
     e.record.set("deleted_at", "");
   } else if (wasDeleted) {
@@ -32,6 +45,17 @@ function handleTrashRequest(e) {
     const sent = e.record.getDateTime("deleted_at");
     if (sent.isZero() || sent.after(now)) e.record.set("deleted_at", now);
   }
+  if (purging) clearContent(e.record);
+  return purging;
+}
+
+/// Clears what a purged record no longer keeps: the song text, the set
+/// items, the attachment file.
+function clearContent(record) {
+  const name = record.collection().name;
+  if (name === "songs") record.set("chordpro", "");
+  if (name === "setlists") record.set("items", []);
+  if (name === "attachments") record.set("file", "");
 }
 
 /// Purges records deleted more than [RETENTION_DAYS] ago: song text, set
@@ -80,9 +104,7 @@ function purgeTrash(app) {
     );
     for (const record of records) {
       record.set("purged", true);
-      if (name === "songs") record.set("chordpro", "");
-      if (name === "setlists") record.set("items", []);
-      if (name === "attachments") record.set("file", "");
+      clearContent(record);
       app.runInTransaction((txApp) => txApp.save(record));
       purged++;
       if (name === "songs") purged += purgeAttachmentsOf(app, record);
@@ -167,4 +189,4 @@ function purgeOrganizationNow(app, id) {
   return 1;
 }
 
-module.exports = { RETENTION_DAYS, handleTrashRequest, purgeTrash, purgeNow };
+module.exports = { RETENTION_DAYS, handleTrashRequest, purgeTrash, purgeNow, purgeAttachmentsOf };
