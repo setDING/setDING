@@ -5646,4 +5646,102 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get chordViewDocs => 'So liest du Nashville-Zahlen und Stufen';
+
+  @override
+  String get overviewReadiness => 'Bühnencheck';
+
+  @override
+  String readinessAllSet(String set) {
+    return 'Alles bereit für «$set»';
+  }
+
+  @override
+  String get readinessAllSetNoSet => 'Alles bereit';
+
+  @override
+  String get readinessShowDetails => 'Details anzeigen';
+
+  @override
+  String get readinessHideDetails => 'Details ausblenden';
+
+  @override
+  String readinessMusician(String who) {
+    return 'Musiker: $who';
+  }
+
+  @override
+  String get readinessNoInstrument => 'Kein Instrument gewählt';
+
+  @override
+  String get readinessNoName =>
+      'Kein Name festgelegt (für Stellen, die für dich markiert sind, z. B. eine Stimme)';
+
+  @override
+  String readinessMidiConnected(String device) {
+    return 'MIDI: $device verbunden';
+  }
+
+  @override
+  String get readinessMidiNotConnected => 'MIDI: Keyboard nicht verbunden';
+
+  @override
+  String get readinessMidiNoOutput => 'MIDI: kein Keyboard gewählt';
+
+  @override
+  String readinessMidiProfile(String profile) {
+    return 'Profil: $profile';
+  }
+
+  @override
+  String get readinessOfflineReady => 'Nächstes Set offline verfügbar';
+
+  @override
+  String readinessOfflineMissing(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs des nächsten Sets sind',
+      one: '1 Song des nächsten Sets ist',
+    );
+    return '$_temp0 nicht offline verfügbar';
+  }
+
+  @override
+  String readinessSynced(String time) {
+    return 'Synchronisiert: $time';
+  }
+
+  @override
+  String get readinessSyncNever => 'Auf diesem Gerät noch nicht synchronisiert';
+
+  @override
+  String get readinessSyncStale => 'Daten evtl. nicht aktuell';
+
+  @override
+  String get readinessSyncManual =>
+      'Synchronisation ist manuell: vor dem Auftritt synchronisieren.';
+
+  @override
+  String get readinessPageTurnerResponds => 'Seitenwender reagiert';
+
+  @override
+  String readinessPageTurnerLastUsed(String time) {
+    return 'Seitenwender: zuletzt benutzt $time';
+  }
+
+  @override
+  String get readinessPageTurnerNever =>
+      'Seitenwender: auf diesem Gerät noch nicht benutzt';
+
+  @override
+  String readinessPageTurnerDetail(String mode) {
+    return 'Blättern: $mode · zum Testen hier aufs Pedal treten';
+  }
+
+  @override
+  String get readinessBackupNoFolder =>
+      'Automatische Sicherung: kein Ordner gewählt';
+
+  @override
+  String get readinessBackupFailed => 'Automatische Sicherung fehlgeschlagen';
 }

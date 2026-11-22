@@ -5602,4 +5602,100 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chordViewDocs => 'How to read Nashville numbers and numerals';
+
+  @override
+  String get overviewReadiness => 'Ready to play';
+
+  @override
+  String readinessAllSet(String set) {
+    return 'All set for “$set”';
+  }
+
+  @override
+  String get readinessAllSetNoSet => 'All set';
+
+  @override
+  String get readinessShowDetails => 'Show details';
+
+  @override
+  String get readinessHideDetails => 'Hide details';
+
+  @override
+  String readinessMusician(String who) {
+    return 'Musician: $who';
+  }
+
+  @override
+  String get readinessNoInstrument => 'No instrument chosen';
+
+  @override
+  String get readinessNoName =>
+      'No name set (for parts marked for you, e.g. a voice)';
+
+  @override
+  String readinessMidiConnected(String device) {
+    return 'MIDI: $device connected';
+  }
+
+  @override
+  String get readinessMidiNotConnected => 'MIDI: keyboard not connected';
+
+  @override
+  String get readinessMidiNoOutput => 'MIDI: no keyboard chosen';
+
+  @override
+  String readinessMidiProfile(String profile) {
+    return 'Profile: $profile';
+  }
+
+  @override
+  String get readinessOfflineReady => 'Next set available offline';
+
+  @override
+  String readinessOfflineMissing(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs of the next set are',
+      one: '1 song of the next set is',
+    );
+    return '$_temp0 not available offline';
+  }
+
+  @override
+  String readinessSynced(String time) {
+    return 'Synced: $time';
+  }
+
+  @override
+  String get readinessSyncNever => 'Not synced on this device yet';
+
+  @override
+  String get readinessSyncStale => 'Data may not be up to date';
+
+  @override
+  String get readinessSyncManual => 'Sync is manual: sync before the gig.';
+
+  @override
+  String get readinessPageTurnerResponds => 'Page turner responds';
+
+  @override
+  String readinessPageTurnerLastUsed(String time) {
+    return 'Page turner: last used $time';
+  }
+
+  @override
+  String get readinessPageTurnerNever =>
+      'Page turner: not used on this device yet';
+
+  @override
+  String readinessPageTurnerDetail(String mode) {
+    return 'Turns: $mode · press the pedal here to test it';
+  }
+
+  @override
+  String get readinessBackupNoFolder => 'Automatic backup: no folder chosen';
+
+  @override
+  String get readinessBackupFailed => 'Automatic backup failed';
 }

@@ -314,9 +314,12 @@ void main() {
     useTabletSize(tester);
     await tester.pumpAndSettle();
     expect(columns, findsOneWidget);
-    expect(tester.getTopLeft(todo).dy, tester.getTopLeft(nextSet).dy);
+    // The second card, whether this device is ready to play (#911), sits
+    // next to the first.
+    final readiness = find.byKey(const Key('overview-readiness'));
+    expect(tester.getTopLeft(readiness).dy, tester.getTopLeft(nextSet).dy);
     expect(
-      tester.getTopLeft(todo).dx,
+      tester.getTopLeft(readiness).dx,
       greaterThan(tester.getTopRight(nextSet).dx),
     );
     await app.dispose(tester);
@@ -517,6 +520,10 @@ void main() {
       expect(subtitleOf(tester, 'new'), 'New song · by Bob');
 
       // Show all: also the changes seen before, with their date.
+      await tester.ensureVisible(
+        find.byKey(const Key('overview-recent-changes-all')),
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('overview-recent-changes-all')));
       await tester.pumpAndSettle();
       expect(find.byType(RecentChangesScreen), findsOneWidget);

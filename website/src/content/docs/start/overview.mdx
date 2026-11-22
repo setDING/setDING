@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import shortcuts from '../../../../../docs/screenshots/shortcuts_de.png';
 import overview from '../../../../../docs/screenshots/overview_de.png';
+import readiness from '../../../../../docs/screenshots/overview_readiness_de.png';
 
 ## Die Begriffe
 
@@ -45,9 +46,10 @@ Einladungslinks gelten 7 Tage. Ist ein Link abgelaufen, bitte um einen neuen.
 
 Beim Start zeigt setDING die **Übersicht** deiner Band:
 
-<Image src={overview} alt="Die Übersicht mit dem nächsten Set, weiteren Sets, den neuesten Songs und den Songs, die länger nicht gespielt wurden" />
+<Image src={overview} alt="Die Übersicht mit dem nächsten Set, dem Bühnencheck, weiteren Sets, den neuesten Songs und den Songs, die länger nicht gespielt wurden" />
 
 - **Nächstes Set:** der nächste Auftritt mit **Live starten** und **Set öffnen**.
+- **Bühnencheck:** ob dieses Gerät bereit ist zum Spielen (siehe unten).
 - **Weitere Sets:** die nächsten drei Auftritte danach.
 - **Zu erledigen** und **Letzte Änderungen**, wenn es etwas zu tun gibt oder
   andere etwas geändert haben.
@@ -62,6 +64,32 @@ blendet setDING aus.
 
 Ganz unten am Bildschirm stehen die Version, **Was ist neu** und, wenn es eine
 neue Version gibt, der Hinweis zum Update.
+
+### Bühnencheck
+
+Der **Bühnencheck** zeigt, ob dieses Gerät bereit ist für den nächsten Auftritt.
+Ist alles in Ordnung, steht dort nur **Alles bereit**. Was du vor dem Auftritt
+beheben solltest, steht immer da, orange markiert. **Details anzeigen** zeigt
+alle Punkte:
+
+<Image src={readiness} alt="Der Bühnencheck mit Details: Musiker, MIDI-Keyboard nicht verbunden, nächstes Set offline verfügbar und der Seitenwender" />
+
+- **Musiker:** dein Instrument und dein Name.
+- **MIDI:** nur für Keyboarder mit eingeschalteten MIDI-Programmwechseln: ob dein
+  Keyboard verbunden ist und welches Profil gilt.
+- **Nächstes Set offline:** ob alle Songs und PDFs des nächsten Auftritts auf
+  diesem Gerät sind.
+- **Synchronisation:** wann dieses Gerät zuletzt synchronisiert hat und ob
+  Änderungen noch nicht auf dem Server sind (nur angemeldet).
+- **Seitenwender:** wann er zuletzt benutzt wurde und ob er ganze oder halbe
+  Seiten blättert. Tritt auf der Übersicht aufs Pedal: Reagiert er, steht dort
+  **Seitenwender reagiert**. So testest du ihn vor dem Auftritt, ohne ein Set zu
+  öffnen.
+- **Automatische Sicherung:** wann die letzte gemacht wurde oder warum sie
+  fehlgeschlagen ist (nur wenn eingeschaltet).
+
+Tippe auf einen Punkt, um direkt zur passenden Einstellung zu kommen, beim
+nächsten Set zum Set.
 
 ## Mit der Tastatur
 

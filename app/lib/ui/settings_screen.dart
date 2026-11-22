@@ -45,6 +45,23 @@ enum SettingsCategory {
   development,
 }
 
+/// A category another screen asked the settings to show (#911), e.g. a line
+/// of the overview's readiness tile: [SettingsScreen] opens it and clears
+/// the request. The caller switches to the settings tab.
+class SettingsJumpNotifier extends Notifier<SettingsCategory?> {
+  @override
+  SettingsCategory? build() => null;
+
+  void open(SettingsCategory category) => state = category;
+
+  void clear() => state = null;
+}
+
+final settingsJumpProvider =
+    NotifierProvider<SettingsJumpNotifier, SettingsCategory?>(
+      SettingsJumpNotifier.new,
+    );
+
 /// The groups of the category list, in order: the personal settings (synced
 /// with the account), the settings of this device (ADR-0027) and the account
 /// with the organizations and bands, and in developer mode the test
@@ -72,6 +89,35 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   SettingsCategory _selected = SettingsCategory.values.first;
 
+  /// The layout of the last build: categories and content side by side.
+  bool _wide = false;
+
+  @override
+  void initState() {
+    super.initState();
+    ref.listenManual(settingsJumpProvider, (_, category) {
+      if (category == null) return;
+      // After the frame, when the tab is shown and the layout is known.
+      WidgetsBinding.instance.addPostFrameCallback((_) => _jump(category));
+    }, fireImmediately: true);
+  }
+
+  /// Shows [category]: selected next to the list on wide screens, as its
+  /// own page on narrow ones.
+  void _jump(SettingsCategory category) {
+    if (!mounted || ref.read(settingsJumpProvider) != category) return;
+    ref.read(settingsJumpProvider.notifier).clear();
+    if (_wide) {
+      setState(() => _selected = category);
+    } else {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => _CategoryPage(category: category),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -94,6 +140,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         select: (constraints) =>
             constraints.maxWidth >= SettingsScreen.wideLayoutWidth,
         builder: (context, wide) {
+          _wide = wide;
           if (!wide) {
             return _CategoryList(
               onSelected: (c) => Navigator.of(context).push(
@@ -1164,6 +1211,20 @@ class _AccentSwatch extends StatelessWidget {
   );
 }
 
+/// The instruments to choose from, by their stored name (ADR-0012).
+Map<String, String> instrumentNames(AppLocalizations l10n) => {
+  'guitar': l10n.instrumentGuitar,
+  'ukulele': l10n.instrumentUkulele,
+  'bass': l10n.instrumentBass,
+  'keyboard': l10n.instrumentKeyboard,
+  'vocals': l10n.instrumentVocals,
+  'drums': l10n.instrumentDrums,
+};
+
+/// The instrument [instrument] in the current language, or as entered.
+String instrumentLabel(AppLocalizations l10n, String instrument) =>
+    instrumentNames(l10n)[instrument.trim().toLowerCase()] ?? instrument.trim();
+
 class _InstrumentTile extends StatelessWidget {
   const _InstrumentTile({required this.settings, required this.notifier});
 
@@ -1173,14 +1234,7 @@ class _InstrumentTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final names = {
-      'guitar': l10n.instrumentGuitar,
-      'ukulele': l10n.instrumentUkulele,
-      'bass': l10n.instrumentBass,
-      'keyboard': l10n.instrumentKeyboard,
-      'vocals': l10n.instrumentVocals,
-      'drums': l10n.instrumentDrums,
-    };
+    final names = instrumentNames(l10n);
     final current = settings.instrument.trim().toLowerCase();
     final isPreset = names.containsKey(current);
     return ListTile(

@@ -43,6 +43,7 @@ import 'live_midi_sheet.dart';
 import 'live_preparation.dart';
 import '../../audio/metronome.dart';
 import 'live_beat.dart';
+import 'page_turner.dart';
 import 'song_map_view.dart';
 import 'live_theme.dart';
 import 'set_progress_bar.dart';
@@ -116,20 +117,10 @@ class LiveItem {
 }
 
 /// Keys that turn forward / back, exactly like the right / left tap zones
-/// (ADR-0007). Bluetooth page turners register as keyboards and send these;
-/// some can be switched to send Arrow Down / Arrow Up instead. Like the tap
-/// zones, the arrows up/down scroll a song that does not fit before turning.
-final _nextKeys = {
-  LogicalKeyboardKey.arrowRight,
-  LogicalKeyboardKey.arrowDown,
-  LogicalKeyboardKey.pageDown,
-  LogicalKeyboardKey.space,
-};
-final _previousKeys = {
-  LogicalKeyboardKey.arrowLeft,
-  LogicalKeyboardKey.arrowUp,
-  LogicalKeyboardKey.pageUp,
-};
+/// (ADR-0007); see [pageTurnNextKeys]. Like the tap zones, the arrows
+/// up/down scroll a song that does not fit before turning.
+final _nextKeys = pageTurnNextKeys;
+final _previousKeys = pageTurnPreviousKeys;
 
 /// Keys that start and stop the beat (ADR-0026).
 final _beatKeys = {LogicalKeyboardKey.enter, LogicalKeyboardKey.numpadEnter};
@@ -569,6 +560,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     }
     final key = event.logicalKey;
     final next = _nextKeys.contains(key);
+    // For the readiness tile of the overview (#911).
+    if (event is KeyDownEvent && isPageTurnKey(key)) {
+      ref.read(pageTurnerProvider.notifier).used();
+    }
     if (next && _beat.canBeat(_index)) {
       // With a beat, a forward key held for [beatLongPress] starts or stops
       // it and does not turn (ADR-0026); a shorter press turns when it is

@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import shortcuts from '../../../../../../docs/screenshots/shortcuts.png';
 import overview from '../../../../../../docs/screenshots/overview.png';
+import readiness from '../../../../../../docs/screenshots/overview_readiness.png';
 
 ## The terms
 
@@ -41,9 +42,10 @@ Invitation links are valid for 7 days. If a link has expired, ask for a new one.
 
 When it starts, setDING shows your band's **Overview**:
 
-<Image src={overview} alt="The overview with the next set, more sets, the newest songs and the songs not played for a while" />
+<Image src={overview} alt="The overview with the next set, Ready to play, more sets, the newest songs and the songs not played for a while" />
 
 - **Next set:** the next gig, with **Start live** and **Open set**.
+- **Ready to play:** whether this device is ready to play (see below).
 - **More sets:** the next three gigs after it.
 - **To do** and **Recent changes**, when there is something to fix or others
   changed something.
@@ -57,6 +59,29 @@ show.
 
 At the very bottom of the screen are the version, **What's new** and, when there
 is a newer version, the hint to update.
+
+### Ready to play
+
+**Ready to play** shows whether this device is ready for the next gig. When
+everything is fine, it only says **All set**. Whatever you should fix before the
+gig is always shown, marked in orange. **Show details** shows every point:
+
+<Image src={readiness} alt="Ready to play with details: musician, MIDI keyboard not connected, next set available offline and the page turner" />
+
+- **Musician:** your instrument and your name.
+- **MIDI:** only for keyboard players with MIDI program changes on: whether your
+  keyboard is connected and which profile applies.
+- **Next set offline:** whether all songs and PDFs of the next gig are on this
+  device.
+- **Sync:** when this device last synced and whether changes have not reached
+  the server yet (only when signed in).
+- **Page turner:** when it was last used and whether it turns full or half
+  pages. Press the pedal on the overview: if it works, it says **Page turner
+  responds**. That way you test it before the gig without opening a set.
+- **Automatic backup:** when the last one was made or why it failed (only when
+  switched on).
+
+Tap a point to go straight to its setting, or to the set for the next set.
 
 ## With a keyboard
 
