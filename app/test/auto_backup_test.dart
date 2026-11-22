@@ -41,8 +41,8 @@ void main() {
   group('file names', () {
     test('device and minute in the name', () {
       expect(
-        autoBackupFileName('Andi\'s iPad', DateTime(2026, 3, 4, 7, 5)),
-        "Backup Andi's iPad 2026-03-04 0705.setDING.zip",
+        autoBackupFileName('Ann\'s iPad', DateTime(2026, 3, 4, 7, 5)),
+        "Backup Ann's iPad 2026-03-04 0705.setDING.zip",
       );
       // Characters a file name cannot hold are left out.
       expect(

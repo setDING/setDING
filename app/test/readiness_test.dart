@@ -19,10 +19,10 @@ void main() {
     test('instrument and name are ok', () {
       final item = musicianReadiness(
         l10n,
-        const AppSettings(instrument: 'keyboard', userName: 'Andi'),
+        const AppSettings(instrument: 'keyboard', userName: 'Ann'),
       );
       expect(item.level, ReadinessLevel.ok);
-      expect(item.title, 'Musician: Keyboard · Andi');
+      expect(item.title, 'Musician: Keyboard · Ann');
       expect(item.detail, isNull);
       expect(item.category, SettingsCategory.musician);
     });
@@ -40,10 +40,10 @@ void main() {
 
       final none = musicianReadiness(
         l10n,
-        const AppSettings(instrument: ' ', userName: 'Andi'),
+        const AppSettings(instrument: ' ', userName: 'Ann'),
       );
       expect(none.level, ReadinessLevel.info);
-      expect(none.title, 'Musician: No instrument chosen · Andi');
+      expect(none.title, 'Musician: No instrument chosen · Ann');
     });
   });
 
