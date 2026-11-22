@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../data/outbox.dart' show songLanguages;
 import '../../l10n/generated/app_localizations.dart';
+import 'language_flags.dart';
 
 /// The name of a song language code (ADR-0053), e.g. "German".
 String songLanguageName(AppLocalizations l10n, String code) =>
@@ -78,37 +79,41 @@ Future<SongLanguageChoice?> chooseSongLanguage(
   required String? detected,
 }) {
   final l10n = AppLocalizations.of(context);
-  Widget option(String? language, String label, {String? hint}) =>
-      SimpleDialogOption(
-        key: ValueKey('song-language-${language ?? 'auto'}'),
-        onPressed: () => Navigator.pop(context, (language: language)),
-        child: Row(
-          children: [
-            SizedBox.square(
-              dimension: 24,
-              child: language == current
-                  ? const Icon(Icons.check, size: 20)
-                  : null,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label),
-                  if (hint != null)
-                    Text(
-                      hint,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
+  Widget option(
+    String? language,
+    String label, {
+    required String flag,
+    String? hint,
+  }) => SimpleDialogOption(
+    key: ValueKey('song-language-${language ?? 'auto'}'),
+    onPressed: () => Navigator.pop(context, (language: language)),
+    child: Row(
+      children: [
+        SizedBox.square(
+          dimension: 24,
+          child: language == current ? const Icon(Icons.check, size: 20) : null,
         ),
-      );
+        const SizedBox(width: 8),
+        SongLanguageFlag(language: flag),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label),
+              if (hint != null)
+                Text(
+                  hint,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
   return showDialog<SongLanguageChoice>(
     context: context,
     builder: (context) => SimpleDialog(
@@ -119,10 +124,12 @@ Future<SongLanguageChoice?> chooseSongLanguage(
           detected == null
               ? l10n.songLanguageNotDetected
               : l10n.songLanguageAutomatic(songLanguageName(l10n, detected)),
+          flag: detected ?? 'other',
           hint: l10n.songLanguageAutomaticHint,
         ),
         const Divider(),
-        for (final l in songLanguages) option(l, songLanguageName(l10n, l)),
+        for (final l in songLanguages)
+          option(l, songLanguageName(l10n, l), flag: l),
       ],
     ),
   );

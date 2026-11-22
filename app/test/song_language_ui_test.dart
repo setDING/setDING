@@ -145,6 +145,31 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Automatic: German'), findsOneWidget);
     expect(find.text('Swiss German'), findsOneWidget);
+    // A flag in front of every language (#845); *automatic* shows the
+    // detected language's flag, *other* a language icon.
+    for (final l in ['de', 'gsw', 'en', 'fr', 'it', 'es', 'pt', 'nl']) {
+      expect(
+        find.descendant(
+          of: find.byKey(ValueKey('song-language-$l')),
+          matching: find.byKey(ValueKey('song-language-flag-$l')),
+        ),
+        findsOneWidget,
+      );
+    }
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('song-language-auto')),
+        matching: find.byKey(const ValueKey('song-language-flag-de')),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('song-language-other')),
+        matching: find.byIcon(Icons.language),
+      ),
+      findsOneWidget,
+    );
     await tester.tapAt(Offset.zero); // closes the dialog
     await tester.pumpAndSettle();
 
