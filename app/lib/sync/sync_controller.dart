@@ -10,7 +10,7 @@ import '../settings/settings.dart';
 import '../data/attachment_storage.dart';
 import 'attachment_fetcher.dart';
 import 'auth_providers.dart';
-import 'sync_backend.dart' show BackendErrorKind;
+import 'sync_backend.dart' show BackendErrorKind, RegistrationMode;
 import 'sync_engine.dart';
 
 /// Whether syncs start automatically; widget tests turn it off and sync
@@ -207,6 +207,13 @@ class SyncController extends Notifier<SyncStatus> {
       // config tells the UI which version is needed.
       _stopAutomatic();
       _debounce?.cancel();
+      ref.invalidate(serverConfigProvider);
+    }
+    if (report.error == null &&
+        ref.read(serverConfigProvider).value?.registration ==
+            RegistrationMode.unknown) {
+      // The server is reachable again: read the registration mode that could
+      // not be read before (issue #829).
       ref.invalidate(serverConfigProvider);
     }
     final lastSync = report.error == null ? DateTime.now() : state.lastSync;

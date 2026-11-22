@@ -169,6 +169,12 @@ SETDING_EMAIL_VERIFICATION=off   # or: required
   development. The test harness starts servers with `open` unless a test asks
   otherwise and turns the rate limits off.
 - 2026-11-17: App renamed to **setDING** (#318): the settings are `SETDING_REGISTRATION` and `SETDING_EMAIL_VERIFICATION`, the public route is `GET /api/setding/config`.
+- 2026-11-22: An **unknown registration mode** (the config route could not be
+  read: offline at start, network error, unrecognised answer) no longer counts as
+  open (#829). The app then offers no sign-up without an invitation and no new
+  organization, shows no invite-only hint, and reads the mode again after the next
+  successful sync. Before, a native app started offline offered "New organization"
+  on an invite-only server and the server rejected it.
 
 ## Open points
 

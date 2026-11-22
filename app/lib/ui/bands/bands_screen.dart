@@ -66,20 +66,21 @@ class _RefreshOnOpenState extends ConsumerState<RefreshOnOpen> {
   );
 }
 
-/// Whether the signed-in user may create a band: on invite-only servers new
-/// organizations come from founder invitations (ADR-0024), so bands only
-/// inside organizations the user administers.
+/// Whether the signed-in user may create a band: new organizations only on
+/// open servers; on invite-only servers they come from founder invitations
+/// (ADR-0024), so bands only inside organizations the user administers. An
+/// unknown mode counts as not open (issue #829).
 bool canCreateBand(WidgetRef ref) {
   final user = ref.watch(authProvider);
   final orgs = ref.watch(organizationsProvider).value ?? const [];
-  final inviteOnly = ref.watch(serverConfigProvider).value?.inviteOnly ?? false;
-  return user != null && (!inviteOnly || orgs.any((o) => o.isAdmin));
+  final open = ref.watch(serverConfigProvider).value?.openRegistration ?? false;
+  return user != null && (open || orgs.any((o) => o.isAdmin));
 }
 
 /// Asks for a new band and creates it, then selects it.
 Future<void> createBand(BuildContext context, WidgetRef ref) async {
   final orgs = ref.read(organizationsProvider).value ?? const [];
-  final inviteOnly = ref.read(serverConfigProvider).value?.inviteOnly ?? false;
+  final open = ref.read(serverConfigProvider).value?.openRegistration ?? false;
   final adminOrgs = [
     for (final o in orgs)
       if (o.isAdmin) o,
@@ -87,7 +88,7 @@ Future<void> createBand(BuildContext context, WidgetRef ref) async {
   final result = await showDialog<({String name, String? orgId})>(
     context: context,
     builder: (_) =>
-        _NewBandDialog(organizations: adminOrgs, newOrganization: !inviteOnly),
+        _NewBandDialog(organizations: adminOrgs, newOrganization: open),
   );
   if (result == null || !context.mounted) return;
   late String id;
@@ -247,7 +248,7 @@ class _NewBandDialog extends StatefulWidget {
   /// Organizations in which the user may create bands (admins).
   final List<OrganizationView> organizations;
 
-  /// Whether "new organization" can be chosen (not on invite-only servers,
+  /// Whether "new organization" can be chosen (only on open servers,
   /// ADR-0024).
   final bool newOrganization;
 

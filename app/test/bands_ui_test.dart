@@ -332,6 +332,31 @@ void main() {
     await admin.dispose(tester);
   });
 
+  testWidgets('unknown registration mode: no new organization (#829)', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'}, user: _ann);
+    app.backend.config = ServerConfig.unknown;
+    await tester.pumpWidget(app.build(home: const BandsScreen()));
+    await tester.pumpAndSettle();
+    // Not known to be open: no organization to administer, no new band.
+    expect(find.byKey(const Key('band-new')), findsNothing);
+    await app.dispose(tester);
+
+    final admin = await TestApp.create(prefs: {'language': 'en'}, user: _ann);
+    admin.backend.config = ServerConfig.unknown;
+    admin.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+    await tester.pumpWidget(admin.build(home: const BandsScreen()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('band-new')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('band-new-org')));
+    await tester.pumpAndSettle();
+    expect(find.text('New organization'), findsNothing);
+    await admin.dispose(tester);
+  });
+
   testWidgets('band admins add people of the organization to the band', (
     tester,
   ) async {

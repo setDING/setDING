@@ -7,6 +7,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:setding/data/database.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:setding/sync/sync_controller.dart';
+import 'package:setding/ui/bands/bands_screen.dart';
 import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/ui/settings_screen.dart';
 import 'package:setding/ui/songs/song_screen.dart';
@@ -201,6 +202,23 @@ void main() {
     await tester.pumpAndSettle();
     // The PDF is chosen although the personal live view is ChordPro.
     expect(find.byKey(const Key('pdf-missing')), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('an unknown registration mode is read again after a sync '
+      '(#829)', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'}, user: _ann);
+    app.backend.config = ServerConfig.unknown;
+    await tester.pumpWidget(app.build(home: const BandsScreen()));
+    await tester.pumpAndSettle();
+    // Not known to be open: no band (and organization) of one's own.
+    expect(find.byKey(const Key('band-new')), findsNothing);
+
+    // The server answers again and turns out to be open.
+    app.backend.config = const ServerConfig();
+    await syncNow(tester);
+    expect(find.byKey(const Key('band-new')), findsOneWidget);
     await app.dispose(tester);
   });
 }
