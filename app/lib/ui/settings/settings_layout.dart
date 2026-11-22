@@ -302,6 +302,7 @@ class SettingsChoice<T> extends StatelessWidget {
     required this.options,
     required this.onChanged,
     this.hint,
+    this.link,
   });
 
   final Key? tileKey;
@@ -311,6 +312,9 @@ class SettingsChoice<T> extends StatelessWidget {
   final Map<T, String> options;
   final void Function(T) onChanged;
   final String? hint;
+
+  /// Shown below the choices, e.g. a [DocsLink] to the documentation.
+  final Widget? link;
 
   @override
   Widget build(BuildContext context) => ListTile(
@@ -334,6 +338,7 @@ class SettingsChoice<T> extends StatelessWidget {
             onSelectionChanged: (v) => onChanged(v.first),
           ),
         ),
+        ?link,
       ],
     ),
   );

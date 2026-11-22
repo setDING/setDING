@@ -5643,4 +5643,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get liveChordViewNumerals => 'I';
+
+  @override
+  String get chordViewDocs => 'So liest du Nashville-Zahlen und Stufen';
 }

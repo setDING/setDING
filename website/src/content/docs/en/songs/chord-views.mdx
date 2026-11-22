@@ -1,0 +1,134 @@
+---
+title: Chords, Nashville and numerals
+description: Show chords as names, Nashville numbers or Roman numerals, and how the numerals are written.
+sidebar:
+  order: 6
+---
+
+import { Image } from 'astro:assets';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import chords from '../../../../../../docs/screenshots/chord_view_chords.png';
+import nashville from '../../../../../../docs/screenshots/chord_view_nashville.png';
+import numerals from '../../../../../../docs/screenshots/chord_view_numerals.png';
+import menu from '../../../../../../docs/screenshots/chord_view_menu.png';
+
+setDING shows the chords of a song in three ways:
+
+- **Chords** – as names, the way they are written in the song, e.g. `Am7`.
+- **Nashville** – as Nashville numbers, e.g. `6m7`.
+- **Numerals** – as Roman numerals, as in harmonic analysis, e.g. `vi7`.
+
+Numbers and numerals show **where a chord sits in the key**, not which note it is.
+When the key changes, they stay the same: if you think `ii – V – I`, you can play
+the song in any key. The view only changes what you see; the song itself stays as
+it is, also for the rest of the band.
+
+## Where to choose the view
+
+- In the [settings](/en/settings/display/) under **Show chords as**, for all songs.
+- In the [personal adjustments](/en/songs/personal/) of a song under **Chord view**,
+  for this song only.
+- In [live mode](/en/live/play/) in the control bar with **C** (chords), **1**
+  (Nashville) and **I** (numerals), also for this song only.
+
+<Image src={menu} alt="The personal adjustments of a song with the chord view menu open: Chords, Nashville and Numerals" />
+
+Numbers and numerals need a **key in the song** (`{key: C}`). Without one, setDING
+shows the chord names and tells you why.
+
+## One example in three views
+
+The same song in C, with chord names, as Nashville numbers and as numerals:
+
+<Tabs>
+  <TabItem label="Chords">
+    <Image src={chords} alt="A song in C with chord names: Cmaj7, Am7, Dm7, G7" />
+  </TabItem>
+  <TabItem label="Nashville">
+    <Image src={nashville} alt="The same song with Nashville numbers: 1maj7, 6m7, 2m7, 57" />
+  </TabItem>
+  <TabItem label="Numerals">
+    <Image src={numerals} alt="The same song with Roman numerals: IΔ7, vi7, ii7, V7" />
+  </TabItem>
+</Tabs>
+
+| Chord in C | Nashville | Numeral |
+|---|---|---|
+| `Cmaj7` | `1maj7` | `IΔ7` |
+| `Am7` | `6m7` | `vi7` |
+| `Dm7` | `2m7` | `ii7` |
+| `G7` | `57` | `V7` |
+| `Bb7` | `b77` | `♭VII7` |
+| `C/E` | `1/3` | `I/3` |
+
+## How to read numerals
+
+### The number is the scale degree
+
+Every note of the major scale has a degree from **I** to **VII**. In C:
+
+| Note | C | D | E | F | G | A | B |
+|---|---|---|---|---|---|---|---|
+| Degree | I | II | III | IV | V | VI | VII |
+
+A chord gets the degree of its root. In G, `D` is `V`; in F, it is `VI`.
+
+### Upper or lower case shows the quality
+
+- **Upper case** are major chords, including dominant sevenths like `G7` and
+  augmented chords: `I`, `IV`, `V7`, `I+`.
+- **Lower case** are minor chords and diminished and half-diminished ones: `ii`,
+  `vi7`, `vii°`, `viiø7`.
+
+So there is no `m` for minor: `Am7` in C is `vi7`, not `vim7`.
+
+### Symbols and extensions
+
+| Chord in C | Numeral | Meaning |
+|---|---|---|
+| `C` | `I` | major |
+| `Dm` | `ii` | minor |
+| `G7` | `V7` | dominant seventh |
+| `Cmaj7` | `IΔ7` | major with a major seventh (`Δ`) |
+| `Am(maj7)` | `viΔ7` | minor with a major seventh |
+| `Bdim` / `Bdim7` | `vii°` / `vii°7` | diminished (`°`) |
+| `Bm7b5` | `viiø7` | half-diminished (`ø`) |
+| `Caug` | `I+` | augmented (`+`) |
+| `Csus4` | `Isus4` | fourth instead of the third |
+| `G7b9` | `V7♭9` | extensions and alterations as in the chord |
+
+setDING always writes numerals this way, whatever the
+[chord style](/en/settings/display/). With **Raise extensions**, extensions and
+alterations are smaller and raised, as with chords.
+
+### Accidentals before the number
+
+When a chord is not on a degree of the major scale, a `♭` or `♯` stands **before**
+the number: in C, `Bb` is `♭VII`, `Eb` is `♭III`, `Ab` is `♭VI` and `Db` is `♭II`.
+
+### Bass notes
+
+For a chord with a bass note, the bass is an **arabic number** after the slash, as
+with Nashville: `C/E` is `I/3`, `G/B` is `V/7`, `C/Bb` is `I/♭7`.
+
+## Minor keys
+
+In minor, setDING counts the degrees as in jazz, **from the major scale**, with
+accidentals for the lowered degrees. In A minor:
+
+| Chord in Am | `Am` | `Bm7b5` | `C` | `Dm7` | `E7` | `F` | `G` |
+|---|---|---|---|---|---|---|---|
+| Numeral | `i` | `iiø7` | `♭III` | `iv7` | `V7` | `♭VI` | `♭VII` |
+
+Classical harmony often counts from the minor scale and writes `III`, `VI` and
+`VII` without accidentals. setDING keeps the jazz way, so numerals and Nashville
+numbers agree (`b3`, `b6`, `b7`).
+
+## What setDING does not analyse
+
+- **Each chord on its own:** setDING writes the degree of every chord without
+  interpreting the harmony. `D7` in C is `II7`, not `V/V` (secondary dominant).
+- **No inversion figures:** inversions are written with the bass note (`I/3`), not
+  as figured bass like `I⁶`.
+- **Unknown chords** get an upper-case numeral and their ending as written in the
+  song, so no chord is shown wrongly or left out.

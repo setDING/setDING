@@ -5599,4 +5599,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get liveChordViewNumerals => 'I';
+
+  @override
+  String get chordViewDocs => 'How to read Nashville numbers and numerals';
 }

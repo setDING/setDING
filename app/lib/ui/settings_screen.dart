@@ -26,6 +26,7 @@ import 'widgets/breakpoint_builder.dart';
 import 'widgets/chord_view_picker.dart' show chordViewLabel;
 import 'widgets/click_pickers.dart' show subdivisionLabel;
 import 'widgets/dialogs.dart';
+import 'widgets/docs_link.dart';
 import 'widgets/section_header.dart';
 
 /// The categories of the settings screen, in order.
@@ -455,6 +456,11 @@ class _CategoryContent extends ConsumerWidget {
                 icon: Icons.numbers,
                 title: l10n.settingsChordView,
                 hint: l10n.settingsChordViewHint,
+                link: DocsLink(
+                  key: const Key('chord-view-docs'),
+                  path: 'songs/chord-views',
+                  label: l10n.chordViewDocs,
+                ),
                 value: s.chordView,
                 options: {
                   for (final view in ChordView.values)

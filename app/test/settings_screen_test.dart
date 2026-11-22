@@ -5,10 +5,22 @@ import 'package:setding/settings/settings.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:setding/ui/settings_screen.dart';
 import 'package:setding/ui/theme.dart';
+import 'package:setding/ui/widgets/docs_link.dart';
 
 import 'test_app.dart';
 
 void main() {
+  test('documentation pages in the language of the app', () {
+    expect(
+      docsPageUrl('songs/chord-views', const Locale('de')).toString(),
+      'https://setding.app/songs/chord-views/',
+    );
+    expect(
+      docsPageUrl('songs/chord-views', const Locale('en')).toString(),
+      'https://setding.app/en/songs/chord-views/',
+    );
+  });
+
   Future<TestApp> pumpSettings(WidgetTester tester) async {
     final app = await TestApp.create(prefs: {'language': 'en'});
     await tester.pumpWidget(app.build(home: const SettingsScreen()));
@@ -67,6 +79,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Chord notation'), findsOneWidget);
     expect(find.text('Language'), findsNothing);
+    // The chord view links to its documentation page (ADR-0055).
+    expect(find.byKey(const Key('chord-view-docs')), findsOneWidget);
 
     await reveal(tester, find.byKey(const Key('settings-category-live')));
     await tester.tap(find.byKey(const Key('settings-category-live')));

@@ -8529,6 +8529,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'I'**
   String get liveChordViewNumerals;
+
+  /// No description provided for @chordViewDocs.
+  ///
+  /// In de, this message translates to:
+  /// **'So liest du Nashville-Zahlen und Stufen'**
+  String get chordViewDocs;
 }
 
 class _AppLocalizationsDelegate

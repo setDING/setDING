@@ -3033,5 +3033,6 @@
   },
   "@liveChordViewNumerals": {
     "description": "Short label of the Roman numerals segment in the live control bar."
-  }
+  },
+  "chordViewDocs": "How to read Nashville numbers and numerals"
 }
