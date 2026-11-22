@@ -875,6 +875,15 @@
   "bandLocalHint": "Nur auf diesem Gerät, wird nicht synchronisiert.",
   "bandSwitch": "Band wechseln",
   "bandManage": "Bands verwalten",
+  "bandNone": "Keine Band",
+  "noBandInLibrary": "Du bist in keiner Band von {organization}. Sets gehören zu einer Band: Erstelle eine oder lass dich hinzufügen.",
+  "@noBandInLibrary": {
+    "placeholders": {
+      "organization": {
+        "type": "String"
+      }
+    }
+  },
   "librarySwitch": "Songbibliothek wechseln",
   "bandsTitle": "Bands",
   "bandsEmpty": "Du bist noch in keiner Band. Erstelle eine Band für deine Songs und Sets.",

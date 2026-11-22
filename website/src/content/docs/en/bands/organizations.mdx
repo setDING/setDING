@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import organization from '../../../../../../docs/screenshots/organization.png';
 import band from '../../../../../../docs/screenshots/band.png';
+import noBand from '../../../../../../docs/screenshots/no_band.png';
 
 An **organization** is, for example, a music school, a church or simply your band.
 It owns the songs and the people. A **band** is a group of people from the
@@ -106,5 +107,12 @@ available. To keep a copy outside setDING, back up the library first.
 If you are in several bands, choose the band you work with on **Sets** at the top
 with **Switch band**: you then see its sets, and songs show its band arrangement. On
 **Songs**, **Switch song library** changes the organization.
+
+The band and the song library belong together: when you choose a band, **Songs**
+shows the songs of its organization. When you choose another song library, the sets
+switch to a band of that organization, the one you chose there last. If you are in
+no band of the organization, the sets show a hint instead of another band's sets.
+
+<Image src={noBand} alt="The sets with “No band” and the hint that you are in no band of the organization, with “Manage bands”" />
 
 **Copy to band** takes a set or songs into another band or organization.

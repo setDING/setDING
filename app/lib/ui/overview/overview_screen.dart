@@ -9,6 +9,7 @@ import '../../providers.dart';
 import '../../util/app_version.dart';
 import '../account/sync_refresh.dart';
 import '../bands/band_switcher.dart';
+import '../bands/no_band_hint.dart';
 import '../home_tab.dart';
 import '../live/live_screen.dart';
 import '../sets/sets_screen.dart' show daysBetween, formatGigDate, openSet;
@@ -88,6 +89,7 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
     final changes =
         ref.watch(recentChangesProvider(false)).value ?? const <RecentChange>[];
     final cards = <Widget>[
+      if (!ref.watch(hasCurrentBandProvider)) const NoBandHint(),
       if (shown != null)
         _SetCard(
           key: ValueKey('overview-set-${shown.summary.set.id}'),

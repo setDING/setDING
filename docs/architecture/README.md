@@ -298,8 +298,10 @@ song/set sync, PDF sync).
   organization screens (settings, roles, add members, leave), UI actions gated by
   role, copying songs and sets from the local library into a band. Songs and sets of
   bands stay on the device until sync (#17). Since #167 the songs tab has its own
-  **library switcher** (local library and organizations, independent of the band);
-  the band switcher stays on the sets tab.
+  **library switcher** (local library and organizations); the band switcher stays on
+  the sets tab. Since #856 both are one selection: choosing a band chooses its
+  library and vice versa; an organization without a band of the user shows a hint
+  on the sets tab.
 - **Invitations (#16):** organization admins create links (7 days, reusable,
   revocable) shown with a QR code; people join via deep link or by pasting the link
   (Bands → Join). Landing page and verification files on the server; verified App

@@ -93,7 +93,9 @@ class BandSwitcher extends ConsumerWidget {
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 200),
                 child: Text(
-                  bandLabel(l10n, current),
+                  current.id == noBandId
+                      ? l10n.bandNone
+                      : bandLabel(l10n, current),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),

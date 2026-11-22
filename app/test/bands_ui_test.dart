@@ -8,8 +8,8 @@ import 'package:setding/ui/bands/bands_screen.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/ui/live/live_play_button.dart';
 import 'package:setding/ui/sets/set_screen.dart';
+import 'package:setding/ui/sets/sets_screen.dart';
 import 'package:setding/ui/songs/song_screen.dart';
-import 'package:setding/ui/songs/songs_screen.dart';
 
 import 'sync_ui_test.dart' show syncNow;
 import 'test_app.dart';
@@ -60,7 +60,14 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('the songs tab switches libraries, not bands', (tester) async {
+  Future<void> openSets(WidgetTester tester) async {
+    await tester.tap(find.text('Sets').first);
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('the songs tab switches libraries, and the band follows (#856)', (
+    tester,
+  ) async {
     final app = await start(
       tester,
       user: _ann,
@@ -85,48 +92,70 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Local song'), findsNothing);
     expect(app.prefs.getString('currentLibraryId'), 'o1');
-    // The band stays as it was.
-    expect(app.prefs.getString('currentBandId'), isNull);
+    // The sets tab shows the first band of that organization.
+    expect(app.prefs.getString('currentBandId'), 'b2');
+    await openSets(tester);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('band-switcher')),
+        matching: find.text('Jazz'),
+      ),
+      findsOneWidget,
+    );
 
+    await openSongs(tester);
     await switchLibrary(tester, 'On this device');
     expect(find.text('Local song'), findsOneWidget);
+    expect(app.prefs.getString('currentBandId'), localBandId);
     await app.dispose(tester);
   });
 
-  testWidgets('the band and the song library are chosen independently', (
+  testWidgets('the band and the song library are chosen together (#856)', (
     tester,
   ) async {
     final app = await start(
       tester,
       user: _ann,
-      server: (app) =>
-          app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1'),
+      server: (app) {
+        app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+        app.backend.addBand('b2', 'Jazz', admin: _ann, organizationId: 'o1');
+      },
     );
     await app.songs.createSong(source: '{title: Local song}');
     await TestApp.songsIn(app, 'o1').createSong(source: '{title: Org song}');
 
-    // Without a choice, the songs tab follows the band.
+    // Choosing a band shows its organization's songs.
     await switchTo(tester, 'Rock');
     await openSongs(tester);
     expect(find.text('Org song'), findsOneWidget);
+    expect(app.prefs.getString('currentLibraryId'), 'o1');
 
+    // Choosing the local library chooses the local band ...
     await switchLibrary(tester, 'On this device');
     expect(find.text('Local song'), findsOneWidget);
     expect(find.text('Org song'), findsNothing);
+    expect(app.prefs.getString('currentBandId'), localBandId);
+
+    // ... and the organization again its band last chosen there.
+    await tester.tap(find.byKey(const Key('library-switcher')).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.domain).last);
+    await tester.pumpAndSettle();
+    expect(find.text('Org song'), findsOneWidget);
     expect(app.prefs.getString('currentBandId'), 'b1');
 
-    // Switching the band keeps the chosen library.
-    await tester.tap(find.text('Sets').first);
-    await tester.pumpAndSettle();
+    // Choosing the local band on the sets tab shows the local songs.
+    await openSets(tester);
     await switchTo(tester, 'On this device');
-    await switchTo(tester, 'Rock');
     await openSongs(tester);
     expect(find.text('Local song'), findsOneWidget);
     expect(app.prefs.getString('currentLibraryId'), localBandId);
 
     // Sets pick their songs from the band's library.
+    await openSets(tester);
+    await switchTo(tester, 'Jazz');
     final container = ProviderScope.containerOf(
-      tester.element(find.byType(SongsScreen)),
+      tester.element(find.byType(SetsScreen)),
     );
     final picker = container.listen(bandSongsProvider(''), (_, _) {});
     await tester.runAsync(() => container.read(bandSongsProvider('').future));
@@ -146,12 +175,34 @@ void main() {
         app.backend.addOrgMember('o2', _ann, OrgRole.member);
       },
     );
+    await app.sets.createSet(name: 'Local set');
     await TestApp.songsIn(app, 'o2').createSong(source: '{title: Hymn}');
     await openSongs(tester);
     await switchLibrary(tester, 'Choir');
     expect(find.text('Hymn'), findsOneWidget);
     // Plain organization members may not edit songs.
     expect(find.text('New song'), findsNothing);
+
+    // The sets tab has no band of that organization, so it shows a hint
+    // instead of the sets of the band chosen before (#856).
+    await openSets(tester);
+    expect(find.byKey(const Key('no-band-hint')), findsOneWidget);
+    expect(find.text('Local set'), findsNothing);
+    expect(find.text('New set'), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('band-switcher')),
+        matching: find.text('No band'),
+      ),
+      findsOneWidget,
+    );
+
+    // Choosing a band leaves the hint and its library follows.
+    await switchTo(tester, 'On this device');
+    expect(find.byKey(const Key('no-band-hint')), findsNothing);
+    expect(find.text('Local set'), findsWidgets);
+    await openSongs(tester);
+    expect(find.text('Hymn'), findsNothing);
     await app.dispose(tester);
   });
 

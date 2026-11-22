@@ -89,8 +89,9 @@ by band.
   copy) and of ADR-0015 (collections and rules); both get decision log entries.
 - The app (issue #15) groups the band switcher by organization; invitations (#16)
   target organizations. The songs tab chooses a **song library** (the local library or
-  an organization) independently of the band (#167); sets, their song picker and Live
-  mode use the library of the band's organization.
+  an organization); since #856 band and library are one selection across the app
+  (see the decision log); sets, their song picker and Live mode use the library of the
+  band's organization.
 - The migration requires empty `bands`, `songs`, `attachments` and `invites`
   collections (true on 2026-11-15) and is not reversible; a restore needs a backup.
 
@@ -107,6 +108,14 @@ by band.
   device and independent of the band chosen on the sets tab; without a choice it
   follows the band. Song permissions and personal overlays (ADR-0020) follow the
   library of the song shown.
+- 2026-11-22: Owner decision (#856), replaces "independent of the band" of 2026-11-16:
+  the band (sets tab, overview) and the song library (songs tab) are **one selection**
+  across the app, since two separate choices confused users and led to mistakes.
+  Choosing a band chooses its organization's library (the local band the local
+  library). Choosing a library keeps the band if it belongs to it, else chooses the
+  band last chosen in that library, else its first band. An organization without a
+  band of the user stays a song library: the sets tab and the overview then show a
+  hint with *Manage bands* instead of the sets of another band.
 - 2026-11-17: **ADR-0024** (accepted): on `invite_only` servers organizations are founded only by redeeming an operator founder invitation; creating a band without an organization is then rejected. On `open` servers the behaviour above stays.
 - 2026-11-17: **ADR-0023** (accepted): organization roles admin > librarian > member instead of an organization-wide editing switch; existing songs are edited by organization admins and librarians, band leaders create songs and edit only their own; organization admins keep all rights.
 - 2026-11-20: **ADR-0044** (accepted): an organization can be closed by any of its admins, with 30 days to restore it before everything is purged; bands can be deleted by organization admins.

@@ -1833,6 +1833,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bandManage => 'Manage bands';
 
   @override
+  String get bandNone => 'No band';
+
+  @override
+  String noBandInLibrary(String organization) {
+    return 'You are not in a band of $organization. Sets belong to a band: create one or ask to be added.';
+  }
+
+  @override
   String get librarySwitch => 'Switch song library';
 
   @override

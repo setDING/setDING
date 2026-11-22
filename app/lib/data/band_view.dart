@@ -119,7 +119,7 @@ class BandView {
 
 /// A song library as the UI shows it: the local library or an
 /// organization's library, with the signed-in user's song permissions
-/// (ADR-0017, ADR-0023). Chosen on the songs tab independently of the band.
+/// (ADR-0017, ADR-0023). Chosen together with the band (#856).
 @immutable
 class LibraryView {
   const LibraryView({
