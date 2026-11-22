@@ -149,6 +149,8 @@ conversion needs no new parsing.
   switched by an older version wins). The song's personal panel has a chord
   view chip with a menu; the live toggle offers chords and Nashville until
   #908.
+- 2026-11-22: The live toggle has three segments `C` / `1` / `I` with the
+  full names as tooltips (#908); words did not fit the control bar on phones.
 
 ## Open points
 

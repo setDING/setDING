@@ -210,8 +210,6 @@
   "liveEnd": "End of set",
   "liveSetOverview": "Set overview",
   "liveExit": "Exit live mode",
-  "liveChordNames": "Chords",
-  "liveNashville": "Nashville",
   "liveSongPage": "Page {page}/{count}",
   "livePosition": "{current} / {total}",
   "settingsSectionGeneral": "General",
@@ -3023,5 +3021,17 @@
   "localLibraryHiddenAutoBackup": "The automatic backup keeps running; you can switch it off here.",
   "chordViewChords": "Chords",
   "chordViewNashville": "Nashville",
-  "chordViewNumerals": "Numerals"
+  "chordViewNumerals": "Numerals",
+  "liveChordViewChords": "C",
+  "liveChordViewNashville": "1",
+  "liveChordViewNumerals": "I",
+  "@liveChordViewChords": {
+    "description": "Short label of the chord names segment in the live control bar; the full name is its tooltip."
+  },
+  "@liveChordViewNashville": {
+    "description": "Short label of the Nashville numbers segment in the live control bar."
+  },
+  "@liveChordViewNumerals": {
+    "description": "Short label of the Roman numerals segment in the live control bar."
+  }
 }

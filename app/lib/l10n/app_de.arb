@@ -361,8 +361,6 @@
   "liveEnd": "Ende des Sets",
   "liveSetOverview": "Set-Übersicht",
   "liveExit": "Live-Modus beenden",
-  "liveChordNames": "Akkorde",
-  "liveNashville": "Nashville",
   "liveSongPage": "Seite {page}/{count}",
   "@liveSongPage": {
     "placeholders": {
@@ -3524,5 +3522,8 @@
   "localLibraryHiddenAutoBackup": "Die automatische Sicherung läuft weiter; du kannst sie hier ausschalten.",
   "chordViewChords": "Akkorde",
   "chordViewNashville": "Nashville",
-  "chordViewNumerals": "Stufen"
+  "chordViewNumerals": "Stufen",
+  "liveChordViewChords": "C",
+  "liveChordViewNashville": "1",
+  "liveChordViewNumerals": "I"
 }

@@ -1238,18 +1238,6 @@ abstract class AppLocalizations {
   /// **'Live-Modus beenden'**
   String get liveExit;
 
-  /// No description provided for @liveChordNames.
-  ///
-  /// In de, this message translates to:
-  /// **'Akkorde'**
-  String get liveChordNames;
-
-  /// No description provided for @liveNashville.
-  ///
-  /// In de, this message translates to:
-  /// **'Nashville'**
-  String get liveNashville;
-
   /// No description provided for @liveSongPage.
   ///
   /// In de, this message translates to:
@@ -8523,6 +8511,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Stufen'**
   String get chordViewNumerals;
+
+  /// No description provided for @liveChordViewChords.
+  ///
+  /// In de, this message translates to:
+  /// **'C'**
+  String get liveChordViewChords;
+
+  /// No description provided for @liveChordViewNashville.
+  ///
+  /// In de, this message translates to:
+  /// **'1'**
+  String get liveChordViewNashville;
+
+  /// No description provided for @liveChordViewNumerals.
+  ///
+  /// In de, this message translates to:
+  /// **'I'**
+  String get liveChordViewNumerals;
 }
 
 class _AppLocalizationsDelegate
