@@ -420,6 +420,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0051](adr/0051-ui-design-rules.md) | UI design rules | Accepted |
 | [0052](adr/0052-delete-own-account.md) | Deleting the own account | Accepted |
 | [0053](adr/0053-language-versions.md) | Language versions of a song | Accepted |
-| [0054](adr/0054-local-library-automatic-backup.md) | Automatic backup of the local library | Proposed |
+| [0054](adr/0054-local-library-automatic-backup.md) | Automatic backup of the local library | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.

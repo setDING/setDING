@@ -1,6 +1,6 @@
 # ADR-0054: Automatic backup of the local library
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-22
 
 ## Context
@@ -172,6 +172,7 @@ the server sync (ADR-0004).
   name in the file name, safety backup that can be skipped, trash emptied
   and play history kept when replacing, hiding as a device setting, both
   settings in *Storage & backup*, no sync).
+- 2026-11-22: Accepted by the owner (#833).
 
 ## Open points
 
