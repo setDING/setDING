@@ -1,6 +1,6 @@
 # ADR-0056: Key suggested from the chords
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-22
 
 ## Context
@@ -71,6 +71,7 @@ everyone who uses the song.
 ## Decision log
 
 - 2026-11-22: Proposed with the implementation (#919).
+- 2026-11-22: Accepted by the owner (#924).
 
 ## Open points
 
