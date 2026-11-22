@@ -108,7 +108,12 @@ Co-Authored-By: Claude <model> <noreply@anthropic.com>
 
 An agent runs all of the following and only continues when everything passes:
 
-1. Rebase on the latest main: `git fetch origin && git rebase origin/main`
+1. **Bring the branch up to date with `main` first**, then run the gate:
+   `git fetch origin` and, if `origin/main` moved past the branch's base
+   (`git merge-base --is-ancestor origin/main HEAD` fails), `git rebase origin/main`.
+   Only then `make check`, so one run covers the branch as it will be merged;
+   a run on a branch that is behind `main` is wasted, since it has to be repeated
+   after the rebase.
 2. Format, static analysis, tests – via the project check script (`make check`,
    `tool/check.sh`). After the dependency check it runs its independent jobs in
    parallel (Dart packages, server, app analysis, app and screenshot tests, web
@@ -126,7 +131,9 @@ An agent runs all of the following and only continues when everything passes:
    run `make check-full`, which always runs every job. The dependency check only
    warns unless the change touches a `pubspec`/`package.json` or the run is full.
    While working, run the tests of the area directly (`flutter test
-   test/foo_test.dart`, `dart test`) and the gate once before the PR and the merge.
+   test/foo_test.dart`, `dart test`) and the gate **once**, at the end, on the
+   branch brought up to date in step 1; that run is the test gate of the merge
+   (section 6) as long as `main` does not move on in between.
 3. **Docs up to date:** ADRs and the architecture README updated in the same branch if
    the change touches an architectural decision ([AGENTS.md](../../AGENTS.md)).
 4. **Tests for the change:** new or changed behaviour comes with tests. **A bug fix
@@ -163,8 +170,11 @@ An agent runs all of the following and only continues when everything passes:
 merge, by agents and humans alike:
 
 - The full test suite runs on the **final state of the branch, rebased on the latest
-  `main`** – not on an earlier state. If `main` moves on before the merge, rebase and
-  run the tests again.
+  `main`** – not on an earlier state. So **check `main` before running the gate**:
+  `git fetch origin`, rebase if `origin/main` moved, then `make check` (section 5,
+  step 1). Right before the merge, `git fetch origin` once more: if `main` has not
+  moved, that run is the gate and is not repeated; if it moved, rebase and run the
+  gate again.
 - **Currently (early development): local test gate.** The agent runs the test gate
   locally (`make check`, the jobs the branch affects; `make check-full` for larger
   changes, section 5) immediately before the merge and reports the result in the
@@ -354,13 +364,15 @@ git fetch origin
 git worktree add -b feat/12-chordpro-parser .worktrees/feat-12-chordpro-parser origin/main
 cd .worktrees/feat-12-chordpro-parser
 # … work, commit in Conventional Commit format …
-git fetch origin && git rebase origin/main
-make check
+git fetch origin
+git merge-base --is-ancestor origin/main HEAD || git rebase origin/main   # only if main moved
+make check   # once, on the up-to-date branch: also the merge gate
 git push -u origin feat/12-chordpro-parser
 gh pr create --draft --base main --body-file pr.md --title "feat(chordpro): …"
 # … checks pass, self-review done …
 gh pr ready <number>
 gh pr checks <number>
+git fetch origin && git merge-base --is-ancestor origin/main HEAD   # main moved? then rebase, make check again
 gh pr merge --squash --delete-branch --author-email andi@theboss.ch --body-file merge.md <number>   # only if section 6 "Who merges" allows it; merge.md ends with the Co-Authored-By trailer
 cd ../..   # back to the main checkout
 git worktree remove .worktrees/feat-12-chordpro-parser
