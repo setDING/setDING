@@ -3,6 +3,7 @@
 
 import 'dart:typed_data';
 
+import 'package:chordpro/chordpro.dart' show ChordView;
 import 'package:drift/drift.dart' show Value;
 import 'package:setding/ui/render/abc_view.dart';
 import 'package:setding/data/arrangement_repository.dart';
@@ -344,6 +345,64 @@ void main() {
       await shot(tester, '${lang}_42_adjustment_offer');
       await app.dispose(tester);
     });
+  }
+
+  // One song in the three chord views and the menu of the per-song chord
+  // view (ADR-0055).
+  const chordViewSong =
+      '{title: Evening Streets}\n{artist: setDING}\n{key: C}\n'
+      '{start_of_verse: label="Verse"}\n'
+      '[Cmaj7]Evening falls on [Am7]quiet streets\n'
+      '[Dm7]Lights come on a[G7]long the way\n'
+      '[Em7]Someone hums a [A7]song I know\n'
+      '[Dm7]Stay a little [G7]longer, [C/E]stay\n'
+      '{end_of_verse}\n'
+      '{start_of_bridge}\n'
+      '[Fmaj7]Rain on the [Bb7]window\n'
+      '[Bm7b5]Minor de[E7]tour to[Am]night\n'
+      '[D7]Back a[G7sus4]gain, back [G7]home\n'
+      '{end_of_bridge}\n';
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    for (final view in ChordView.values) {
+      screenshotTest('chord view ${view.name} $lang', (tester) async {
+        useTabletSize(tester);
+        final app = await TestApp.create(
+          prefs: {
+            'language': lang,
+            'themeMode': dark ? 'dark' : 'light',
+            'chordView': view.name,
+          },
+        );
+        final song = await tester.runAsync(
+          () => app.songs.createSong(source: chordViewSong),
+        );
+        await tester.pumpWidget(
+          RepaintBoundary(
+            key: UniqueKey(),
+            child: app.build(home: SongScreen(songId: song!)),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(
+          find.text(switch (view) {
+            ChordView.chords => 'Cmaj7',
+            ChordView.nashville => '1maj7',
+            ChordView.numerals => 'IΔ7',
+          }),
+          findsOneWidget,
+        );
+        await shot(tester, '${lang}_46_chord_view_${view.name}');
+        if (view != ChordView.numerals) return app.dispose(tester);
+        // The menu of the per-song chord view in the personal panel.
+        await tester.tap(find.byKey(const Key('open-personal-adjustments')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('chord-view-button')));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('chord-view-nashville')), findsOneWidget);
+        await shot(tester, '${lang}_46b_chord_view_menu');
+        await app.dispose(tester);
+      });
+    }
   }
 
   screenshotTest('song list search hits', (tester) async {

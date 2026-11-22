@@ -1,0 +1,140 @@
+---
+title: Akkorde, Nashville und Stufen
+description: Akkorde als Namen, als Nashville-Zahlen oder als Stufen in römischen Zahlen anzeigen, und wie die Stufen geschrieben werden.
+sidebar:
+  order: 6
+---
+
+import { Image } from 'astro:assets';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import chords from '../../../../../docs/screenshots/chord_view_chords_de.png';
+import nashville from '../../../../../docs/screenshots/chord_view_nashville_de.png';
+import numerals from '../../../../../docs/screenshots/chord_view_numerals_de.png';
+import menu from '../../../../../docs/screenshots/chord_view_menu_de.png';
+
+setDING zeigt die Akkorde eines Songs auf drei Arten:
+
+- **Akkorde** – als Namen, wie sie im Song stehen, z. B. `Am7`.
+- **Nashville** – als Nashville-Zahlen, z. B. `6m7`.
+- **Stufen** – als Stufen in römischen Zahlen, wie in der Stufenanalyse, z. B. `vi7`.
+
+Zahlen und Stufen zeigen, **wo ein Akkord in der Tonart steht**, nicht welcher Ton
+es ist. Wechselt die Tonart, bleiben sie gleich: Wer `ii – V – I` im Kopf hat,
+spielt den Song in jeder Tonart. Die Ansicht ändert nur, was du siehst; der Song
+selbst bleibt, wie er ist, auch für den Rest der Band.
+
+## Wo du die Ansicht wählst
+
+- In den [Einstellungen](/settings/display/) unter **Akkorde anzeigen als** für alle
+  Songs.
+- In den [persönlichen Anpassungen](/songs/personal/) eines Songs unter
+  **Akkord-Ansicht** nur für diesen Song.
+- Im [Live-Modus](/live/play/) in der Steuerleiste mit **C** (Akkorde), **1**
+  (Nashville) und **I** (Stufen), ebenfalls nur für diesen Song.
+
+<Image src={menu} alt="Die persönlichen Anpassungen eines Songs mit dem offenen Menü der Akkord-Ansicht: Akkorde, Nashville und Stufen" />
+
+Zahlen und Stufen brauchen eine **Tonart im Song** (`{key: C}`). Hat ein Song keine,
+zeigt setDING die Akkordnamen und sagt dir, warum.
+
+## Ein Beispiel in drei Ansichten
+
+Derselbe Song in C, einmal mit Akkordnamen, einmal als Nashville-Zahlen und einmal
+als Stufen:
+
+<Tabs>
+  <TabItem label="Akkorde">
+    <Image src={chords} alt="Ein Song in C mit Akkordnamen: Cmaj7, Am7, Dm7, G7" />
+  </TabItem>
+  <TabItem label="Nashville">
+    <Image src={nashville} alt="Derselbe Song mit Nashville-Zahlen: 1maj7, 6m7, 2m7, 57" />
+  </TabItem>
+  <TabItem label="Stufen">
+    <Image src={numerals} alt="Derselbe Song mit Stufen in römischen Zahlen: IΔ7, vi7, ii7, V7" />
+  </TabItem>
+</Tabs>
+
+| Akkord in C | Nashville | Stufe |
+|---|---|---|
+| `Cmaj7` | `1maj7` | `IΔ7` |
+| `Am7` | `6m7` | `vi7` |
+| `Dm7` | `2m7` | `ii7` |
+| `G7` | `57` | `V7` |
+| `Bb7` | `b77` | `♭VII7` |
+| `C/E` | `1/3` | `I/3` |
+
+## So liest du Stufen
+
+### Die Zahl ist die Stufe der Tonart
+
+Jeder Ton der Dur-Tonleiter hat eine Stufe von **I** bis **VII**. In C:
+
+| Ton | C | D | E | F | G | A | B |
+|---|---|---|---|---|---|---|---|
+| Stufe | I | II | III | IV | V | VI | VII |
+
+Ein Akkord bekommt die Stufe seines Grundtons. In G ist `D` also `V`, in F ist es
+`VI`.
+
+### Gross oder klein zeigt das Tongeschlecht
+
+- **Gross** geschrieben sind Dur-Akkorde, also auch Septakkorde wie `G7` und
+  übermässige Akkorde: `I`, `IV`, `V7`, `I+`.
+- **Klein** geschrieben sind Moll-Akkorde sowie verminderte und halbverminderte
+  Akkorde: `ii`, `vi7`, `vii°`, `viiø7`.
+
+Ein `m` für Moll gibt es deshalb nicht: `Am7` in C ist `vi7`, nicht `vim7`.
+
+### Zeichen und Erweiterungen
+
+| Akkord in C | Stufe | Bedeutung |
+|---|---|---|
+| `C` | `I` | Dur |
+| `Dm` | `ii` | Moll |
+| `G7` | `V7` | Dominantseptakkord |
+| `Cmaj7` | `IΔ7` | Dur mit grosser Septime (`Δ`) |
+| `Am(maj7)` | `viΔ7` | Moll mit grosser Septime |
+| `Bdim` / `Bdim7` | `vii°` / `vii°7` | vermindert (`°`) |
+| `Bm7b5` | `viiø7` | halbvermindert (`ø`) |
+| `Caug` | `I+` | übermässig (`+`) |
+| `Csus4` | `Isus4` | Quarte statt Terz |
+| `G7b9` | `V7♭9` | Erweiterungen und Alterationen wie beim Akkord |
+
+Stufen schreibt setDING immer so, unabhängig von der
+[Akkordschreibweise](/settings/display/). Mit **Erweiterungen hochstellen** stehen Erweiterungen
+und Alterationen klein und erhöht, wie bei den Akkorden.
+
+### Vorzeichen vor der Zahl
+
+Liegt ein Akkord nicht auf einer Stufe der Dur-Tonleiter, steht ein `♭` oder `♯`
+**vor** der Zahl: In C ist `Bb` die Stufe `♭VII`, `Eb` ist `♭III`, `Ab` ist `♭VI`
+und `Db` ist `♭II`.
+
+### Bassnoten
+
+Bei einem Akkord mit Bassnote steht der Bass als **arabische Zahl** hinter dem
+Schrägstrich, wie bei Nashville: `C/E` ist `I/3`, `G/B` ist `V/7`, `C/Bb` ist
+`I/♭7`.
+
+## Moll-Tonarten
+
+In Moll zählt setDING die Stufen wie im Jazz **von der Dur-Tonleiter aus**, mit
+Vorzeichen für die tiefen Stufen. In A-Moll:
+
+| Akkord in Am | `Am` | `Bm7b5` | `C` | `Dm7` | `E7` | `F` | `G` |
+|---|---|---|---|---|---|---|---|
+| Stufe | `i` | `iiø7` | `♭III` | `iv7` | `V7` | `♭VI` | `♭VII` |
+
+In der klassischen Harmonielehre zählt man oft von der Moll-Tonleiter aus und
+schreibt `III`, `VI` und `VII` ohne Vorzeichen. setDING bleibt bei der
+Jazz-Schreibweise, so passen Stufen und Nashville-Zahlen zusammen (`b3`, `b6`,
+`b7`).
+
+## Was setDING nicht analysiert
+
+- **Jeder Akkord für sich:** setDING schreibt die Stufe jedes Akkords, ohne die
+  Harmonie zu deuten. `D7` in C ist `II7`, nicht `V/V` (Zwischendominante).
+- **Keine Umkehrungsziffern:** Umkehrungen stehen als Bassnote (`I/3`), nicht als
+  Generalbass-Ziffern wie `I⁶`.
+- **Unbekannte Akkorde** zeigt setDING mit grosser Stufe und der Endung, wie sie im
+  Song steht, damit kein Akkord falsch oder gar nicht erscheint.

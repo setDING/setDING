@@ -89,6 +89,10 @@ map=(
   backup_replace_choice 44_backup_replace_choice
   backup_replace 44b_backup_replace
   hide_local_library 45_hide_local_library
+  chord_view_chords 46_chord_view_chords
+  chord_view_nashville 46_chord_view_nashville
+  chord_view_numerals 46_chord_view_numerals
+  chord_view_menu 46b_chord_view_menu
 )
 
 copied=0

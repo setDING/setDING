@@ -151,6 +151,11 @@ conversion needs no new parsing.
   #908.
 - 2026-11-22: The live toggle has three segments `C` / `1` / `I` with the
   full names as tooltips (#908); words did not fit the control bar on phones.
+- 2026-11-22: Website page *Akkorde, Nashville und Stufen* / *Chords, Nashville
+  and numerals* (`songs/chord-views`) with screenshots of the three views and
+  the chord view menu, linked from the related pages and from the setting in
+  the app (`DocsLink`, #909). Chords fall back to fonts with `♭` and `♯`
+  (#915), which Roboto lacks.
 
 ## Open points
 
