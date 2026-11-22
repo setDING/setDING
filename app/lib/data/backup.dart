@@ -421,6 +421,8 @@ class BackupService {
         'file': ?file,
         'attachments': attachments,
         ...languageJson(song),
+        // Kept when the local library is replaced (ADR-0054, #876).
+        'createdAt': ?song.createdAt?.toUtc().toIso8601String(),
       });
     }
 
@@ -1053,6 +1055,15 @@ class BackupService {
           title: song['title'] as String?,
           artist: song['artist'] as String?,
           id: id,
+        );
+        // The song keeps when it was created, so the restored songs do not
+        // show as *Newest songs*; unknown in archives without it (#876).
+        await (db.update(db.songs)..where((s) => s.id.equals(id))).write(
+          SongsCompanion(
+            createdAt: Value(
+              DateTime.tryParse(song['createdAt'] as String? ?? '')?.toLocal(),
+            ),
+          ),
         );
         songMap[original] = id;
         songCount++;
