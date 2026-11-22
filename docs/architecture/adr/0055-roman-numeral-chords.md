@@ -41,10 +41,10 @@ conversion needs no new parsing.
 1. **Three chord views instead of the Nashville switch.** The on/off setting
    `nashville` becomes a choice with three values:
    - *Chords* (default): chord names, as today.
-   - *Numbers*: Nashville numbers, as today (ADR-0003).
+   - *Nashville*: Nashville numbers, as today (ADR-0003).
    - *Numerals*: Roman numerals (this ADR).
 
-   UI names: *Akkorde / Zahlen / Stufen* (de-CH) and *Chords / Numbers / Numerals*
+   UI names: *Akkorde / Nashville / Stufen* (de-CH) and *Chords / Nashville / Numerals*
    (en). The choice applies in the same three places as the Nashville switch today:
    device setting (synced with the person, ADR-0027), personal per-song adjustment
    (overlay, ADR-0006/ADR-0020) and the toggle in the live control bar, which gets
@@ -75,17 +75,17 @@ conversion needs no new parsing.
    names). A suffix the parser does not understand is shown as written behind an
    upper-case numeral, so no chord is displayed wrongly or dropped.
 9. **Compatible storage.** The device setting and the overlay field store the view by
-   name (`chords`, `numbers`, `numerals`); a stored `nashville = true` reads as
-   *Numbers*. For app versions that only know the switch, the overlay and the synced
-   settings keep writing the old `nashville` flag (true for *Numbers* and
+   name (`chords`, `nashville`, `numerals`); a stored `nashville = true` reads as
+   *Nashville*. For app versions that only know the switch, the overlay and the synced
+   settings keep writing the old `nashville` flag (true for *Nashville* and
    *Numerals*), so an older device shows Nashville numbers instead of numerals.
 10. **Explained in the user documentation.** Many musicians know chord names but
-    neither number system, so the website gets its own page *Chords, numbers and
+    neither number system, so the website gets its own page *Chords, Nashville and
     numerals* in both languages (ADR-0030), linked from the display settings, the
     personal adjustments and live mode. It explains:
     - what the three views are for and that they never change the song;
     - the scale degrees of a key with one worked example (a progression in C as
-      chords, numbers and numerals side by side, with a screenshot of each view);
+      chords, Nashville numbers and numerals side by side, with a screenshot of each view);
     - for numerals: upper and lower case for the quality, the symbols `°`, `ø`, `+`
       and `Δ`, accidentals before the numeral, extensions and alterations, slash
       chords with the bass as a number, all as a reference table from chord to
@@ -123,7 +123,7 @@ conversion needs no new parsing.
   move out of the control row like the Nashville toggle already does below its
   minimum width.
 - New UI texts in `app_de.arb` and `app_en.arb` (ADR-0008).
-- A new website page *Chords, numbers and numerals* (decision 10) in both
+- A new website page *Chords, Nashville and numerals* (decision 10) in both
   languages with screenshots of the three views (`app/test_screenshots/`, de and
   en); the pages about the display settings, personal adjustments and live mode
   replace their Nashville paragraphs with the three views and link to it.
@@ -136,6 +136,8 @@ conversion needs no new parsing.
   Planning Center (chord, number and numeral chart), minor keys in jazz style
   (counted from the parallel major), and the numeral spelling well explained
   in the user documentation.
+- 2026-11-22: The Nashville view keeps its name *Nashville* in both languages
+  instead of *Numbers* / *Zahlen*, because musicians know the term (owner).
 
 ## Open points
 
