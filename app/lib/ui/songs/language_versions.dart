@@ -276,47 +276,61 @@ class _LanguageVersionPickerState
     }
     final chosen = [for (final id in _selected) ?byId[id]];
 
-    final libraryPane = Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-          child: SearchBar(
-            key: const Key('language-version-search'),
-            hintText: l10n.searchSongs,
-            leading: const Icon(Icons.search),
-            onChanged: (value) => setState(() => _query = value),
+    // Wide, the chosen songs are listed on the right only: a tap on the
+    // left adds a song (#860). Narrow, tick boxes show what is chosen.
+    Widget libraryPane({required bool wide}) {
+      final shown = wide
+          ? [
+              for (final s in candidates)
+                if (!_selected.contains(s.id)) s,
+            ]
+          : candidates;
+      return Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: SearchBar(
+              key: const Key('language-version-search'),
+              hintText: l10n.searchSongs,
+              leading: const Icon(Icons.search),
+              onChanged: (value) => setState(() => _query = value),
+            ),
           ),
-        ),
-        Expanded(
-          child: AsyncBody(
-            value: found,
-            data: (_) => candidates.isEmpty
-                ? EmptyState(
-                    icon: Icons.translate,
-                    message: l10n.languageVersionPickerEmpty,
-                  )
-                : ListView.builder(
-                    itemCount: candidates.length,
-                    itemBuilder: (context, i) {
-                      final s = candidates[i];
-                      final fixed = locked(s);
-                      return SongTile(
-                        key: ValueKey('language-version-candidate-${s.id}'),
-                        song: s,
-                        showLanguage: true,
-                        otherVersions: otherVersions(s),
-                        leading: Checkbox(
-                          value: _selected.contains(s.id),
-                          onChanged: fixed ? null : (_) => _toggle(s.id),
-                        ),
-                        onTap: fixed ? null : () => _toggle(s.id),
-                      );
-                    },
-                  ),
+          Expanded(
+            child: AsyncBody(
+              value: found,
+              data: (_) => shown.isEmpty
+                  ? EmptyState(
+                      icon: Icons.translate,
+                      message: l10n.languageVersionPickerEmpty,
+                    )
+                  : ListView.builder(
+                      itemCount: shown.length,
+                      itemBuilder: (context, i) {
+                        final s = shown[i];
+                        final fixed = locked(s);
+                        return SongTile(
+                          key: ValueKey('language-version-candidate-${s.id}'),
+                          song: s,
+                          showLanguage: true,
+                          otherVersions: otherVersions(s),
+                          leading: wide
+                              ? null
+                              : Checkbox(
+                                  value: _selected.contains(s.id),
+                                  onChanged: fixed
+                                      ? null
+                                      : (_) => _toggle(s.id),
+                                ),
+                          onTap: fixed ? null : () => _toggle(s.id),
+                        );
+                      },
+                    ),
+            ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
+    }
 
     Widget removeButton(SongListEntry s) => IconButton(
       key: ValueKey('language-version-remove-${s.id}'),
@@ -356,7 +370,7 @@ class _LanguageVersionPickerState
             ? Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(child: libraryPane),
+                  Expanded(child: libraryPane(wide: true)),
                   const VerticalDivider(width: 1),
                   SizedBox(
                     width: 360,
@@ -423,7 +437,7 @@ class _LanguageVersionPickerState
                             ),
                     ),
                     const Divider(height: 24),
-                    Expanded(child: libraryPane),
+                    Expanded(child: libraryPane(wide: false)),
                   ],
                 ),
               ),

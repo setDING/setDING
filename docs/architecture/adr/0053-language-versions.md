@@ -77,7 +77,7 @@ devices choose different originals offline, for little benefit (owner).
   opens that version. The tags have a fixed order (the language of the UI first,
   then the others alphabetically by code).
 - **Linking:** *Language versions …* in the song menu opens a two-pane picker: the
-  songs of the library with a search and tick boxes (songs with the same artist,
+  songs of the library with a search (on narrow screens with tick boxes) (songs with the same artist,
   key, tempo or sequence first) and the linked versions, which can be removed there
   again; *Save* applies all changes at once, with Undo.
   *Unlink* removes the song from its group. There is **no suggestion on import**:
@@ -230,6 +230,9 @@ the API directly as the refused roles (permission matrix test).
   unlinks the removed songs, then links the added ones (a song with versions of its
   own brings them along), and offers Undo for every touched song. Its title names
   the song the versions are chosen for (#857).
+- 2026-11-22: On wide screens the library side of the picker has no tick boxes and
+  leaves out the chosen songs, which are listed on the other side; a tap moves a
+  song there (#860). Narrow screens keep the tick boxes.
 
 ## Open points
 
