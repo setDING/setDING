@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../platform/backup_folder.dart';
 import 'backup.dart';
 import 'database.dart' show localBandId;
-import 'import_export.dart' show safeFileName;
+import 'import_export.dart' show archiveExtension, safeFileName;
 
 // Automatic backup of the local library (ADR-0054 section 1): the backup
 // archive of the local library (ADR-0043, format version 1) into a folder
@@ -112,26 +112,37 @@ class AutoBackupState {
 }
 
 /// The file name of an automatic backup of [device] at [time]:
-/// `setDING-Backup <device> <yyyy-mm-dd HHmm>.zip`.
+/// `Backup <device> <yyyy-mm-dd HHmm>.setDING.zip` (#874).
 String autoBackupFileName(String device, DateTime time) {
   String two(int n) => n.toString().padLeft(2, '0');
   final stamp =
       '${time.year}-${two(time.month)}-${two(time.day)} '
       '${two(time.hour)}${two(time.minute)}';
-  return '${safeFileName('setDING-Backup $device')} $stamp.zip';
+  return '${safeFileName('Backup $device')} $stamp$archiveExtension';
 }
 
 /// The automatic backups of [device] among [names], newest first. Files of
-/// other devices and other files are not in it.
+/// other devices and other files are not in it. Backups named before #874
+/// (`setDING-Backup <device> <stamp>.zip`) count too, so the rotation
+/// removes them as they age.
 List<String> autoBackupsOf(String device, Iterable<String> names) {
-  final pattern = RegExp(
-    '^${RegExp.escape(safeFileName('setDING-Backup $device'))} '
-    r'\d{4}-\d{2}-\d{2} \d{4}\.zip$',
-  );
-  return [
+  const stamp = r'(\d{4}-\d{2}-\d{2} \d{4})';
+  final patterns = [
+    RegExp(
+      '^${RegExp.escape(safeFileName('Backup $device'))} $stamp'
+      '${RegExp.escape(archiveExtension)}\$',
+    ),
+    RegExp(
+      '^${RegExp.escape(safeFileName('setDING-Backup $device'))} $stamp'
+      r'\.zip$',
+    ),
+  ];
+  final stamps = <String, String>{
     for (final n in names)
-      if (pattern.hasMatch(n)) n,
-  ]..sort((a, b) => b.compareTo(a));
+      for (final p in patterns)
+        if (p.firstMatch(n) case final m?) n: m.group(1)!,
+  };
+  return stamps.keys.toList()..sort((a, b) => stamps[b]!.compareTo(stamps[a]!));
 }
 
 /// Whether an automatic backup is due: never one before, or the last one on

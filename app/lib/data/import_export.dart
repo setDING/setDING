@@ -273,6 +273,11 @@ List<(String, Uint8List)> _unzip(Uint8List zip) => [
       (p.basename(entry.name), Uint8List.fromList(entry.content)),
 ];
 
+/// The extension of the archives setDING writes (songs, sets, backups):
+/// still a ZIP for every other tool, but recognisable as setDING's (#874).
+/// Imports recognise an archive by its manifest, not by this name.
+const archiveExtension = '.setDING.zip';
+
 /// Removes characters that are not allowed in file names.
 String safeFileName(String name) {
   final cleaned = name.replaceAll(RegExp(r'[\\/:*?"<>|\x00-\x1F]'), '').trim();

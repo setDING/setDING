@@ -17,7 +17,7 @@ One archive holds **one or several songs**, and every song **any number of
 attachments** (none, one or several). The example archive holds three songs:
 
 ```text
-setDING-Songs 2026-11-21.zip
+Songs 2026-11-21.setDING.zip
 ├── manifest.json
 ├── songs/
 │   ├── Amazing Grace (7012345).cho
@@ -40,8 +40,9 @@ setDING-Songs 2026-11-21.zip
 - **Compression:** stored or deflated (standard ZIP).
 - **Encoding:** `manifest.json` and `.cho` files are UTF-8, without BOM.
 - **File name** of the ZIP: free, but it must end in `.zip` to be recognised by the
-  import. setDING uses the song title for one song and `setDING-Songs <yyyy-mm-dd>.zip`
-  for several.
+  import. setDING writes `<title>.setDING.zip` for one song and
+  `Songs <yyyy-mm-dd>.setDING.zip` for several; `.setDING.zip` is only a naming
+  convention.
 
 ## `manifest.json`
 

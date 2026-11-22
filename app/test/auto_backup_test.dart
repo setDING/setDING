@@ -20,30 +20,47 @@ void main() {
     test('device and minute in the name', () {
       expect(
         autoBackupFileName('Andi\'s iPad', DateTime(2026, 3, 4, 7, 5)),
-        "setDING-Backup Andi's iPad 2026-03-04 0705.zip",
+        "Backup Andi's iPad 2026-03-04 0705.setDING.zip",
       );
       // Characters a file name cannot hold are left out.
       expect(
         autoBackupFileName('Band/Tab:1', DateTime(2026, 11, 22, 18, 30)),
-        'setDING-Backup BandTab1 2026-11-22 1830.zip',
+        'Backup BandTab1 2026-11-22 1830.setDING.zip',
       );
     });
 
     test('only the backups of this device, newest first', () {
       final names = [
-        'setDING-Backup iPad 2026-01-02 0800.zip',
-        'setDING-Backup iPad Pro 2026-01-03 0800.zip',
-        'setDING-Backup iPad 2026-01-03 0900.zip',
-        'setDING-Backup iPad 2026-01-01 0800.zip.part',
-        'setDING-Backup iPad 2026-01-01.zip',
+        'Backup iPad 2026-01-02 0800.setDING.zip',
+        'Backup iPad Pro 2026-01-03 0800.setDING.zip',
+        'Backup iPad 2026-01-03 0900.setDING.zip',
+        'Backup iPad 2026-01-01 0800.setDING.zip.part',
+        'Backup iPad 2026-01-01.setDING.zip',
         'notes.txt',
       ];
       expect(autoBackupsOf('iPad', names), [
-        'setDING-Backup iPad 2026-01-03 0900.zip',
-        'setDING-Backup iPad 2026-01-02 0800.zip',
+        'Backup iPad 2026-01-03 0900.setDING.zip',
+        'Backup iPad 2026-01-02 0800.setDING.zip',
       ]);
       expect(autoBackupsOf('iPad Pro', names), [
-        'setDING-Backup iPad Pro 2026-01-03 0800.zip',
+        'Backup iPad Pro 2026-01-03 0800.setDING.zip',
+      ]);
+    });
+
+    test('backups named before #874 count, sorted by time, not by name', () {
+      final names = [
+        'setDING-Backup iPad 2026-01-03 0900.zip',
+        'Backup iPad 2026-01-02 0800.setDING.zip',
+        'Backup iPad 2026-01-04 0800.setDING.zip',
+        'setDING-Backup iPad 2026-01-01 0800.zip',
+        'Backup iPad 2026-01-05 0800.zip',
+        'Backup iPad Pro 2026-01-06 0800.setDING.zip',
+      ];
+      expect(autoBackupsOf('iPad', names), [
+        'Backup iPad 2026-01-04 0800.setDING.zip',
+        'setDING-Backup iPad 2026-01-03 0900.zip',
+        'Backup iPad 2026-01-02 0800.setDING.zip',
+        'setDING-Backup iPad 2026-01-01 0800.zip',
       ]);
     });
 
@@ -115,7 +132,7 @@ void main() {
       await songs.createSong(source: '{title: Hello}\n[C]Hello');
       final c = await active();
       expect(await c.runIfDue(libraryName: 'Local'), isTrue);
-      const name = 'setDING-Backup Tab 2026-05-02 0830.zip';
+      const name = 'Backup Tab 2026-05-02 0830.setDING.zip';
       expect(folder.files.keys, [name]);
       expect(folder.log, ['write $name.part', 'rename $name']);
       final contents = await BackupService.read(folder.files[name]!);
@@ -155,24 +172,43 @@ void main() {
     });
 
     test(
-      'keeps the newest backups of this device, never other files',
+      'the rotation removes backups named before #874 by their age',
       () async {
         folder.files.addAll({
           'setDING-Backup Tab 2026-04-01 0800.zip': Uint8List(0),
-          'setDING-Backup Tab 2026-04-02 0800.zip': Uint8List(0),
-          'setDING-Backup Tab 2026-04-03 0800.zip.part': Uint8List(0),
-          'setDING-Backup Phone 2026-04-01 0800.zip': Uint8List(0),
-          'setDING-Backup Alles 2026-04-01.zip': Uint8List(0),
+          'setDING-Backup Tab 2026-04-03 0800.zip': Uint8List(0),
+          'Backup Tab 2026-04-02 0800.setDING.zip': Uint8List(0),
+          'setDING-Backup Tab 2026-04-04 0800.zip.part': Uint8List(0),
+        });
+        final c = await active();
+        await c.setKeep(2);
+        expect(await c.runIfDue(libraryName: 'Local'), isTrue);
+        expect(folder.files.keys.toSet(), {
+          'Backup Tab 2026-05-02 0830.setDING.zip',
+          'setDING-Backup Tab 2026-04-03 0800.zip',
+        });
+      },
+    );
+
+    test(
+      'keeps the newest backups of this device, never other files',
+      () async {
+        folder.files.addAll({
+          'Backup Tab 2026-04-01 0800.setDING.zip': Uint8List(0),
+          'Backup Tab 2026-04-02 0800.setDING.zip': Uint8List(0),
+          'Backup Tab 2026-04-03 0800.setDING.zip.part': Uint8List(0),
+          'Backup Phone 2026-04-01 0800.setDING.zip': Uint8List(0),
+          'Backup Alles 2026-04-01.setDING.zip': Uint8List(0),
           'notes.txt': Uint8List(0),
         });
         final c = await active();
         await c.setKeep(2);
         expect(await c.runIfDue(libraryName: 'Local'), isTrue);
         expect(folder.files.keys.toSet(), {
-          'setDING-Backup Tab 2026-05-02 0830.zip',
-          'setDING-Backup Tab 2026-04-02 0800.zip',
-          'setDING-Backup Phone 2026-04-01 0800.zip',
-          'setDING-Backup Alles 2026-04-01.zip',
+          'Backup Tab 2026-05-02 0830.setDING.zip',
+          'Backup Tab 2026-04-02 0800.setDING.zip',
+          'Backup Phone 2026-04-01 0800.setDING.zip',
+          'Backup Alles 2026-04-01.setDING.zip',
           'notes.txt',
         });
       },
@@ -194,7 +230,7 @@ void main() {
       expect(await c.runNow(libraryName: 'Local'), isTrue);
       expect(
         folder.files.keys.single,
-        'setDING-Backup Stage left 2026-05-02 0830.zip',
+        'Backup Stage left 2026-05-02 0830.setDING.zip',
       );
       await c.setDeviceName('');
       expect(c.state.deviceName, isNull);

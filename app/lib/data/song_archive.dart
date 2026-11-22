@@ -7,7 +7,7 @@ import 'package:path/path.dart' as p;
 import 'arrangement_repository.dart';
 import 'backup.dart';
 import 'database.dart';
-import 'import_export.dart' show safeFileName, sourceWithMeta;
+import 'import_export.dart' show archiveExtension, safeFileName, sourceWithMeta;
 
 /// `format` of a song archive's manifest (ADR-0043 §1c).
 const songArchiveFormat = 'setding-songs';
@@ -161,12 +161,14 @@ class SongArchiveService {
   // Export --------------------------------------------------------------------
 
   /// A file name for the archive of [songs]: the title of a single song,
-  /// else `setDING-Songs yyyy-mm-dd`.
+  /// else `Songs yyyy-mm-dd`, with [archiveExtension].
   static String fileName(List<SongEntry> songs, {DateTime? now}) {
-    if (songs.length == 1) return '${safeFileName(songs.single.title)}.zip';
+    if (songs.length == 1) {
+      return '${safeFileName(songs.single.title)}$archiveExtension';
+    }
     final d = now ?? DateTime.now();
     String two(int n) => n.toString().padLeft(2, '0');
-    return 'setDING-Songs ${d.year}-${two(d.month)}-${two(d.day)}.zip';
+    return 'Songs ${d.year}-${two(d.month)}-${two(d.day)}$archiveExtension';
   }
 
   /// Exports [songIds] (in this order) with what [options] include. The

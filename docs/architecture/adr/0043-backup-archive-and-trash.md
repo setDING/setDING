@@ -34,7 +34,7 @@ learn about it through delta sync (ADR-0004).
 
 A whole **library** can be exported as one ZIP file and imported again.
 
-**Format** (`setDING-Backup <library> <yyyy-mm-dd>.zip`):
+**Format** (`Backup <library> <yyyy-mm-dd>.setDING.zip`):
 
 - `manifest.json` with `format: "setding-backup"`, `formatVersion: 1`, the app
   version, the creation time, the source (local library or organization, ID
@@ -325,6 +325,14 @@ Deleted songs and sets can be **restored for 30 days**.
 - 2026-11-22: The manifest's `source` may carry an optional `device`, the
   device that wrote the archive (the automatic backup of ADR-0054, #841);
   readers ignore it, the format version stays 1.
+- 2026-11-22: Archive file names end in **`.setDING.zip`** (#874): song,
+  set and backup archives stay plain ZIP files for pickers, mail and unzip
+  tools but show that they belong to setDING. The redundant prefix goes:
+  `Songs <date>.setDING.zip`, `Backup <library> <date>.setDING.zip`. Imports
+  still recognise archives by the manifest, so older `.zip` files import as
+  before. A real own extension (`.setding`) with file associations was
+  considered and left out: it needs a registered type on every platform, and
+  without one the file pickers may hide the files.
 
 - 2026-11-22: Owner decisions (#866): the trash can **delete permanently**
   (single entries, a selection, or the whole trash, each confirmed), allowed

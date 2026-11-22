@@ -97,7 +97,7 @@ void main() {
     await tester.tap(find.byKey(const Key('set-export-start')));
     await waitFor(tester, () => saved.isNotEmpty);
 
-    expect(saved.single.$1, 'Gig.zip');
+    expect(saved.single.$1, 'Gig.setDING.zip');
     final archive = (await tester.runAsync(
       () => SetArchiveService.read(saved.single.$2),
     ))!;
@@ -132,7 +132,9 @@ void main() {
             builder: (context) => TextButton(
               onPressed: () => showImportDialog(
                 context,
-                pick: ({extensions}) async => [ImportFile('Gig.zip', zip)],
+                pick: ({extensions}) async => [
+                  ImportFile('Gig.setDING.zip', zip),
+                ],
               ),
               child: const Text('open'),
             ),
