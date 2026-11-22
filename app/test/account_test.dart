@@ -278,6 +278,13 @@ void main() {
 
     Future<void> openDialog(WidgetTester tester) async {
       await tester.ensureVisible(find.byKey(const Key('account-delete')));
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('danger-zone')),
+          matching: find.byKey(const Key('account-delete')),
+        ),
+        findsOneWidget,
+      );
       await tester.tap(find.byKey(const Key('account-delete')));
       await tester.pumpAndSettle();
     }

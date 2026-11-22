@@ -1752,7 +1752,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get accountDeleted => 'Dein Konto wurde gelöscht.';
 
   @override
-  String get settingsDangerZone => 'Gefahrenzone';
+  String get dangerZone => 'Gefahrenzone';
 
   @override
   String get accountErrorNetwork =>

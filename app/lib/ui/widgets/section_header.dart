@@ -11,6 +11,7 @@ class SectionHeader extends StatelessWidget {
     this.icon,
     this.trailing,
     this.padding = listPadding,
+    this.color,
   });
 
   /// Padding in a full-width list: aligned with the text of a [ListTile].
@@ -29,6 +30,10 @@ class SectionHeader extends StatelessWidget {
 
   final EdgeInsetsGeometry padding;
 
+  /// The colour instead of the primary colour, only for a section that
+  /// carries a meaning of its own: the error colour of the danger zone.
+  final Color? color;
+
   /// The text style of a section header, for headers that need their own
   /// layout (e.g. a collapsible one).
   static TextStyle? style(BuildContext context) {
@@ -41,7 +46,9 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = SectionHeader.style(context);
+    final style = color == null
+        ? SectionHeader.style(context)
+        : SectionHeader.style(context)?.copyWith(color: color);
     final icon = this.icon;
     final trailing = this.trailing;
     return Semantics(

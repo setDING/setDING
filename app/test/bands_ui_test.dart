@@ -411,6 +411,13 @@ void main() {
         scrollable: find.byType(Scrollable).first,
       );
       await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('danger-zone')),
+          matching: find.byKey(const Key('org-close')),
+        ),
+        findsOneWidget,
+      );
       await tester.tap(find.byKey(const Key('org-close')));
       await tester.pumpAndSettle();
 
@@ -519,6 +526,13 @@ void main() {
     ) async {
       final app = await openBand(tester, _ann);
       await tester.ensureVisible(find.byKey(const Key('band-delete')));
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('danger-zone')),
+          matching: find.byKey(const Key('band-delete')),
+        ),
+        findsOneWidget,
+      );
       await tester.tap(find.byKey(const Key('band-delete')));
       await tester.pumpAndSettle();
 

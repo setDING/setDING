@@ -13,6 +13,7 @@ import 'close_organization.dart';
 import 'delete_band.dart';
 import 'bands_screen.dart';
 import 'invites_section.dart';
+import '../widgets/danger_zone.dart';
 import '../widgets/section_header.dart';
 import '../widgets/page_width.dart';
 
@@ -174,23 +175,27 @@ class OrganizationScreen extends ConsumerWidget {
                 ),
               // Its admins close the organization (ADR-0044).
               if (org.canClose)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                  child: OutlinedButton.icon(
-                    key: const Key('org-close'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: theme.colorScheme.error,
+                DangerZone(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                      child: OutlinedButton.icon(
+                        key: const Key('org-close'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: theme.colorScheme.error,
+                        ),
+                        icon: const Icon(Icons.domain_disabled),
+                        label: Text(l10n.orgClose),
+                        onPressed: () => closeOrganization(
+                          context,
+                          ref,
+                          org,
+                          people: people.length,
+                          bands: bands.length,
+                        ),
+                      ),
                     ),
-                    icon: const Icon(Icons.domain_disabled),
-                    label: Text(l10n.orgClose),
-                    onPressed: () => closeOrganization(
-                      context,
-                      ref,
-                      org,
-                      people: people.length,
-                      bands: bands.length,
-                    ),
-                  ),
+                  ],
                 ),
             ],
           ),

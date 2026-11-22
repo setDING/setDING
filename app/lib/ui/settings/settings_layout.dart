@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'package:flutter/rendering.dart';
 
+import '../widgets/danger_zone.dart';
 import '../widgets/section_header.dart';
 
 // The building blocks of the settings categories (ADR-0050): a category is
@@ -202,9 +203,14 @@ class SettingsSection extends StatelessWidget {
     required this.title,
     this.hint,
     required this.children,
+    this.danger = false,
   });
 
   final String title;
+
+  /// Shows the section as the [DangerZone] tile, for actions that cannot be
+  /// undone (ADR-0052).
+  final bool danger;
 
   /// Explains the whole section, below the title.
   final String? hint;
@@ -214,6 +220,19 @@ class SettingsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    if (danger) {
+      return DangerZone(
+        title: title,
+        children: [
+          if (hint case final hint?)
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 4),
+              child: Text(hint, style: theme.textTheme.bodyMedium),
+            ),
+          ...children,
+        ],
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

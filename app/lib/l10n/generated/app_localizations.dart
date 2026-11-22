@@ -3116,11 +3116,11 @@ abstract class AppLocalizations {
   /// **'Dein Konto wurde gelöscht.'**
   String get accountDeleted;
 
-  /// No description provided for @settingsDangerZone.
+  /// No description provided for @dangerZone.
   ///
   /// In de, this message translates to:
   /// **'Gefahrenzone'**
-  String get settingsDangerZone;
+  String get dangerZone;
 
   /// No description provided for @accountErrorNetwork.
   ///

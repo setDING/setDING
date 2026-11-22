@@ -634,7 +634,7 @@
   "accountDeleteMessage": "Your account, your personal adjustments, annotations and settings are deleted for good, and you are signed out on all devices. Songs and sets stay with your organizations. The server's backups keep a copy for up to 14 days. Enter your password to confirm.",
   "accountDeleteSoleAdmin": "You are the only admin of these organizations. First make someone else admin or close the organization:",
   "accountDeleted": "Your account was deleted.",
-  "settingsDangerZone": "Danger zone",
+  "dangerZone": "Danger zone",
   "accountErrorNetwork": "No connection to the server. Check your internet connection.",
   "accountErrorInvalidCredentials": "Wrong email or password.",
   "accountErrorEmailTaken": "An account with this email address already exists.",
