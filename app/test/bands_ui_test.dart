@@ -860,6 +860,11 @@ void main() {
       expect(ann.role, BandRole.planner);
       expect(find.text('Set planner'), findsOneWidget);
 
+      // The hint says the role a band link gives (issue #901).
+      expect(
+        find.textContaining('joins the organization and this band as a member'),
+        findsOneWidget,
+      );
       await tester.tap(find.byKey(const Key('invite-create')));
       await tester.pumpAndSettle();
       expect(app.backend.invites.single.bandId, 'b1');

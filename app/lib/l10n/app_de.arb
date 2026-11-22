@@ -909,7 +909,7 @@
   "orgMakeLibrarian": "Für die Bibliothek einsetzen",
   "orgLibrarianHint": "Die Bibliothek erstellt, bearbeitet und löscht die Songs der Organisation.",
   "bandPlannerHint": "Die Setplanung stellt die Sets der Band zusammen.",
-  "inviteBandHint": "Erstellt einen Link, der 7 Tage gilt. Wer ihn öffnet, wird Mitglied der Organisation und dieser Band.",
+  "inviteBandHint": "Erstellt einen Link, der 7 Tage gilt. Wer ihn öffnet, kommt als Mitglied in die Organisation und in diese Band. Unter Mitglieder kannst du die Rolle in der Band danach ändern.",
   "joinQuestionBand": "{band} ({org}) beitreten?",
   "@joinQuestionBand": {
     "placeholders": {
