@@ -774,6 +774,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'Shows the fingerings of all chords of the song for your instrument. A song can set this itself with the diagrams directive.';
 
   @override
+  String get settingsBassStrings => 'Bass strings';
+
+  @override
+  String get settingsBassStringsHint =>
+      'The chord diagrams show a 4-string bass (E-A-D-G) or a 5-string bass with a low B string.';
+
+  @override
+  String bassStringCount(int count) {
+    return '$count strings';
+  }
+
+  @override
   String get diagramsOff => 'Off';
 
   @override

@@ -24,6 +24,7 @@ import 'settings/song_display_settings.dart';
 import 'theme.dart';
 import 'widgets/app_info.dart';
 import 'widgets/breakpoint_builder.dart';
+import 'render/chord_diagram.dart' show DiagramInstrument, diagramInstrumentFor;
 import 'widgets/chord_view_picker.dart' show chordViewLabel;
 import 'widgets/click_pickers.dart' show subdivisionLabel;
 import 'widgets/dialogs.dart';
@@ -457,6 +458,20 @@ class _CategoryContent extends ConsumerWidget {
                     notifier.update((s) => s.copyWith(diagrams: v)),
                 hint: l10n.settingsDiagramsHint,
               ),
+              if (diagramInstrumentFor(s.instrument) == DiagramInstrument.bass)
+                SettingsChoice(
+                  tileKey: const Key('bassStrings'),
+                  icon: Icons.linear_scale,
+                  title: l10n.settingsBassStrings,
+                  value: s.bassStrings,
+                  options: {
+                    for (final n in AppSettings.bassStringCounts)
+                      n: l10n.bassStringCount(n),
+                  },
+                  onChanged: (v) =>
+                      notifier.update((s) => s.copyWith(bassStrings: v)),
+                  hint: l10n.settingsBassStringsHint,
+                ),
             ],
           ),
           _beatSection(l10n, s, notifier),

@@ -780,6 +780,18 @@ class AppLocalizationsDe extends AppLocalizations {
       'Zeigt die Griffe aller Akkorde des Songs für dein Instrument. Ein Song kann das mit der Direktive diagrams selbst festlegen.';
 
   @override
+  String get settingsBassStrings => 'Saiten des Basses';
+
+  @override
+  String get settingsBassStringsHint =>
+      'Die Griffdiagramme zeigen einen 4-Saiter (E-A-D-G) oder einen 5-Saiter mit tiefer H-Saite.';
+
+  @override
+  String bassStringCount(int count) {
+    return '$count Saiten';
+  }
+
+  @override
   String get diagramsOff => 'Aus';
 
   @override

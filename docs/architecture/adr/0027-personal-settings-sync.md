@@ -44,7 +44,7 @@ not.
 
    | Setting (`AppSettings`) | Scope | Reason |
    |---|---|---|
-   | `instrument`, `userName` | personal | Instrument and voice of the person (ADR-0012) |
+   | `instrument`, `bassStrings`, `userName` | personal | Instrument (with the strings of a bass) and voice of the person (ADR-0012) |
    | `notation`, `nashville` | personal | How the person reads chords (ADR-0003) |
    | `chordStyle`, `chordSuperscript` | personal | Chord spelling (ADR-0022) |
    | `displayMode` | personal | Lyrics and chords vs. lyrics only |
@@ -182,6 +182,7 @@ not.
 - 2026-11-19: Settings screen reordered (#548), replacing "the account category stays on top": the account and the organizations and bands are set up once and rarely opened afterwards, so they moved to the bottom under their own heading *Account & organization*. Order: *Personal* (display, song display, musician, general), *This device* (screen & live mode, storage & info), *Account & organization* (account & sync, organization & bands). The wide layout preselects the first category (display) instead of the account.
 - 2026-11-19: *General* moved to the top of the personal group (#554), where it is expected: General, Display, Song display, Musician. The wide layout still preselects the first category, now General.
 - 2026-11-19: Developer mode (#559): test and diagnostic tools such as the MIDI test (ADR-0039) moved out of *Screen & live mode* into their own category *Test features* under a last heading *Development*, listed only while the personal setting *Developer mode* in *General* is on (default off), so they do not irritate normal users. The category has no scope of its own and starts with a note that its features are experimental, may change or disappear and are not meant for performances. Switching developer mode off while the category is open shows the first category again.
+- 2026-11-22: `bassStrings` (4 or 5 strings of a bass, #940) is personal, like the instrument.
 
 ## Open points
 

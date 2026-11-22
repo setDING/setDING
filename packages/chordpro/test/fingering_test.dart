@@ -125,6 +125,33 @@ void main() {
       ];
       expect(notes.reduce((a, b) => a < b ? a : b) % 12, 11);
     });
+
+    // Regression test for #940: the bass used the guitar rule "mute only
+    // low strings" and moved up the neck (C at the 10th fret).
+    test('bass plays root and fifth on low strings, mutes the others', () {
+      const bass = StringInstrument.bass;
+      expect(frets('C', bass), 'x 3 5 x');
+      expect(frets('G', bass), '3 5 x x');
+      expect(frets('F', bass), '1 3 x x');
+      expect(frets('E', bass), '0 2 x x');
+      expect(frets('Am', bass), 'x 0 2 x');
+      expect(frets('D', bass), 'x x 0 2');
+      expect(frets('G/B', bass), 'x 2 0 x');
+      expect(frets('C/E', bass), 'x x 2 0');
+    });
+
+    test('bass finds chords without a perfect fifth', () {
+      expect(frets('Bdim', StringInstrument.bass), 'x 2 3 x');
+      expect(frets('Caug', StringInstrument.bass), 'x 3 6 x');
+    });
+
+    test('five-string bass has a low B string', () {
+      const bass5 = StringInstrument.bass5;
+      expect(bass5.strings, 5);
+      expect(frets('B', bass5), '0 2 x x x');
+      expect(frets('E', bass5), 'x 0 2 x x');
+      expect(frets('C', bass5), '1 3 x x x');
+    });
   });
 
   test('keyboard voicing', () {

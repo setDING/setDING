@@ -21,15 +21,21 @@ DiagramsPosition diagramsPosition(
 };
 
 /// Instrument family for chord diagrams (from the instrument setting).
-enum DiagramInstrument { guitar, ukulele, bass, keyboard, none }
+enum DiagramInstrument { guitar, ukulele, bass, bass5, keyboard, none }
 
-/// Maps the free-text instrument setting to a diagram instrument.
-DiagramInstrument diagramInstrumentFor(String instrument) {
+/// Maps the free-text instrument setting to a diagram instrument; a bass
+/// has [bassStrings] strings (#940).
+DiagramInstrument diagramInstrumentFor(
+  String instrument, {
+  int bassStrings = 4,
+}) {
   final i = instrument.trim().toLowerCase();
   if (i.contains('uke') || i.contains('ukulele')) {
     return DiagramInstrument.ukulele;
   }
-  if (i.contains('bass')) return DiagramInstrument.bass;
+  if (i.contains('bass')) {
+    return bassStrings == 5 ? DiagramInstrument.bass5 : DiagramInstrument.bass;
+  }
   if (const [
     'keyboard',
     'piano',
@@ -52,6 +58,7 @@ StringInstrument? _stringInstrument(DiagramInstrument instrument) =>
       DiagramInstrument.guitar => StringInstrument.guitar,
       DiagramInstrument.ukulele => StringInstrument.ukulele,
       DiagramInstrument.bass => StringInstrument.bass,
+      DiagramInstrument.bass5 => StringInstrument.bass5,
       _ => null,
     };
 
@@ -283,7 +290,14 @@ class ChordDiagramView extends StatelessWidget {
             child: CustomPaint(
               size: Size.infinite,
               painter: data.shape != null
-                  ? _StringPainter(data.shape!, fontSize, color, accent)
+                  ? _StringPainter(
+                      data.shape!,
+                      fontSize,
+                      color,
+                      accent,
+                      // The base fret in the app's font, not the engine's.
+                      DefaultTextStyle.of(context).style.fontFamily,
+                    )
                   : _KeyboardPainter(data.keys!, color, accent),
             ),
           ),
@@ -294,7 +308,13 @@ class ChordDiagramView extends StatelessWidget {
 }
 
 class _StringPainter extends CustomPainter {
-  _StringPainter(this.shape, this.fontSize, this.color, this.accent);
+  _StringPainter(
+    this.shape,
+    this.fontSize,
+    this.color,
+    this.accent,
+    this.fontFamily,
+  );
 
   final ChordDefinition shape;
   final double fontSize;
@@ -363,6 +383,8 @@ class _StringPainter extends CustomPainter {
     }
   }
 
+  final String? fontFamily;
+
   void _text(
     Canvas canvas,
     String text,
@@ -374,7 +396,7 @@ class _StringPainter extends CustomPainter {
     final painter = TextPainter(
       text: TextSpan(
         text: text,
-        style: TextStyle(fontSize: size, color: color),
+        style: TextStyle(fontFamily: fontFamily, fontSize: size, color: color),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
@@ -390,7 +412,10 @@ class _StringPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_StringPainter old) =>
-      old.shape != shape || old.fontSize != fontSize || old.color != color;
+      old.shape != shape ||
+      old.fontSize != fontSize ||
+      old.color != color ||
+      old.fontFamily != fontFamily;
 }
 
 class _KeyboardPainter extends CustomPainter {

@@ -237,6 +237,16 @@
   "settingsUserNameIsInstrument": "“{name}” is an instrument. The instrument setting covers it, so you can leave this field empty.",
   "settingsDiagrams": "Chord diagrams",
   "settingsDiagramsHint": "Shows the fingerings of all chords of the song for your instrument. A song can set this itself with the diagrams directive.",
+  "settingsBassStrings": "Bass strings",
+  "settingsBassStringsHint": "The chord diagrams show a 4-string bass (E-A-D-G) or a 5-string bass with a low B string.",
+  "bassStringCount": "{count} strings",
+  "@bassStringCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "diagramsOff": "Off",
   "diagramsTop": "Top",
   "diagramsBottom": "Bottom",
