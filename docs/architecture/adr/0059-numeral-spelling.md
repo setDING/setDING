@@ -109,6 +109,10 @@ decision 4).
 - 2026-11-23: App setting (#976): `numeralSpelling` (synced *personal*),
   a choice *Numeral spelling* in the display settings below the chord view,
   passed to the song view and live mode.
+- 2026-11-23: Website (#978): section *Zwei Schreibweisen* / *Two
+  spellings* on the chord views page and the setting on the display
+  settings page, with screenshots of the setting and of the example song
+  with chord symbols.
 
 ## Open points
 

@@ -404,6 +404,33 @@ void main() {
         await app.dispose(tester);
       });
     }
+    // Numerals spelled with the chord symbol (ADR-0059).
+    screenshotTest('chord view numerals chord symbol $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {
+          'language': lang,
+          'themeMode': dark ? 'dark' : 'light',
+          'chordView': 'numerals',
+          'numeralSpelling': 'chordSymbol',
+          'chordStyle': 'standard',
+        },
+      );
+      final song = await tester.runAsync(
+        () => app.songs.createSong(source: chordViewSong),
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: SongScreen(songId: song!)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Imaj7'), findsOneWidget);
+      expect(find.text('VIm7'), findsOneWidget);
+      await shot(tester, '${lang}_46c_chord_view_numerals_symbol');
+      await app.dispose(tester);
+    });
   }
 
   screenshotTest('song list search hits', (tester) async {

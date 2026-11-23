@@ -12,6 +12,8 @@ import chords from '../../../../../../docs/screenshots/chord_view_chords.png';
 import nashville from '../../../../../../docs/screenshots/chord_view_nashville.png';
 import numerals from '../../../../../../docs/screenshots/chord_view_numerals.png';
 import menu from '../../../../../../docs/screenshots/chord_view_menu.png';
+import symbol from '../../../../../../docs/screenshots/chord_view_numerals_symbol.png';
+import spelling from '../../../../../../docs/screenshots/settings_numeral_spelling.png';
 
 setDING shows the chords of a song in three ways:
 
@@ -91,7 +93,8 @@ A chord gets the degree of its root. In G, `D` is `V`; in F, it is `VI`.
 - **Lower case** are minor chords and diminished and half-diminished ones: `ii`,
   `vi7`, `vii°`, `viiø7`.
 
-So there is no `m` for minor: `Am7` in C is `vi7`, not `vim7`.
+So there is no `m` for minor: `Am7` in C is `vi7`, not `vim7`. If you would
+rather read `VIm7`, choose the other [spelling](#two-spellings).
 
 ### Symbols and extensions
 
@@ -108,7 +111,7 @@ So there is no `m` for minor: `Am7` in C is `vi7`, not `vim7`.
 | `Csus4` | `Isus4` | fourth instead of the third |
 | `G7b9` | `V7♭9` | extensions and alterations as in the chord |
 
-setDING always writes numerals this way, whatever the
+In the spelling **Case**, setDING always writes numerals this way, whatever the
 [chord style](/en/settings/display/). With **Raise extensions**, extensions and
 alterations are smaller and raised, as with chords.
 
@@ -121,6 +124,32 @@ the number: in C, `Bb` is `♭VII`, `Eb` is `♭III`, `Ab` is `♭VI` and `Db` i
 
 For a chord with a bass note, the bass is an **arabic number** after the slash, as
 with Nashville: `C/E` is `I/3`, `G/B` is `V/7`, `C/Bb` is `I/♭7`.
+
+## Two spellings
+
+Roman numerals are written in two common ways. Both are correct; which one you
+read more easily depends on where you learned them:
+
+| Spelling | Minor chord | ii–V–I in C | Common in |
+|---|---|---|---|
+| **Case** | `vi` | `ii7 – V7 – IΔ7` | classical harmony, much of pop and jazz teaching |
+| **Chord symbol** | `VIm` | `IIm7 – V7 – Imaj7` | jazz charts and Berklee-style analysis |
+
+With **Case** (the default), upper and lower case show the quality, as explained
+above. With **Chord symbol**, the numeral is always upper case and the chord's
+ending follows it, spelled in your [chord style](/en/settings/display/), just like
+the Nashville numbers: `IIm7` with **Standard**, `II−7` with **Jazz**, and as
+written in the song with **As written**. `Bm7b5` in C is then `VIIm7b5` or `VIIø7`.
+
+Choose the spelling in the [settings](/en/settings/display/) under **Numeral
+spelling**, right below **Show chords as**. It applies to all songs.
+
+<Image src={spelling} alt="The display settings with Show chords as: Numerals and Numeral spelling: Chord symbol" />
+
+<Image src={symbol} alt="The example song as numerals with chord symbols: Imaj7, VIm7, IIm7, V7" />
+
+Everything else on this page applies to both spellings: accidentals, bass notes
+and minor keys (`Im – ♭III – ♭VII` with chord symbols).
 
 ## Minor keys
 

@@ -35,6 +35,7 @@ map=(
   settings_musician 16_settings_musician
   settings_voice_hint 16a_settings_voice_hint
   settings_chorus_once 17b_settings_chorus_once
+  settings_numeral_spelling 17c_settings_numeral_spelling
   settings_bass 49_settings_bass
   bass_diagrams 50_bass_diagrams
   settings_general 18_settings_general
@@ -108,6 +109,7 @@ map=(
   chord_view_nashville 46_chord_view_nashville
   chord_view_numerals 46_chord_view_numerals
   chord_view_menu 46b_chord_view_menu
+  chord_view_numerals_symbol 46c_chord_view_numerals_symbol
 )
 
 copied=0
