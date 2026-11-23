@@ -266,7 +266,7 @@ Notes:
 | **Key suggestion** | ADR-0056 accepted (#919, #924), implemented with it: a key guessed from the chords in the song details, a *To do* line and filter *No key*; suggestions in the import report (#925) |
 | **Page turner pairing** | ADR-0057 accepted (#913, done in #921): pairing in the live settings, connection on the overview; manual test on Android passed (AirTurn DUO500), open: the Windows build and test, the iPad check |
 | **Written-out chorus once** | ADR-0058 accepted (#955), implemented with it (#962): a personal switch leaves out choruses written out again |
-| **Numeral spelling** | ADR-0059 accepted (#971); implementation: chordpro conversion #975, setting #976, website page #978: a device setting *Case* (`ii7`) / *Chord symbol* (`IIm7`), the chord symbol spelled in the chord style |
+| **Numeral spelling** | ADR-0059 accepted (#971); implementation: chordpro conversion #975 (done), setting #976, website page #978: a device setting *Case* (`ii7`) / *Chord symbol* (`IIm7`), the chord symbol spelled in the chord style |
 | **Later** | Configurable page turner key mapping, band annotations shared with the band (follow-up of ADR-0032), MIDI program change per song in live mode (ADR-0039, accepted: prototype #512, data #561, settings and connection #562, sending in live mode #564; the song's program field #563, manual test with the Nord on Android passed #558; the manual test with a Nord on Windows, Linux and Chrome open), keyboard programs per device profile with a Yamaha Motif XF profile (ADR-0042, accepted: Motif XF profile #591, storage per profile #593; the manual test on a Motif XF8 open), MIDI page turning |
 
 ### MVP status (2026-11-14)

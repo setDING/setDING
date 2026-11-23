@@ -19,6 +19,7 @@ class ChordFormatter {
     this.songCapo = 0,
     this.notation = ChordNotation.international,
     this.view = ChordView.chords,
+    this.numeralSpelling = NumeralSpelling.casing,
     this.style = ChordStyle.asWritten,
     this.superscript = false,
     this.key,
@@ -33,6 +34,7 @@ class ChordFormatter {
     int? capo,
     ChordNotation notation = ChordNotation.international,
     ChordView view = ChordView.chords,
+    NumeralSpelling numeralSpelling = NumeralSpelling.casing,
     ChordStyle style = ChordStyle.asWritten,
     bool superscript = false,
   }) => ChordFormatter(
@@ -41,6 +43,7 @@ class ChordFormatter {
     songCapo: song.capoFret,
     notation: notation,
     view: view,
+    numeralSpelling: numeralSpelling,
     style: style,
     superscript: superscript,
     key: song.key,
@@ -62,6 +65,9 @@ class ChordFormatter {
   /// key (ADR-0055).
   final ChordView view;
 
+  /// How Roman numerals show the quality (ADR-0059).
+  final NumeralSpelling numeralSpelling;
+
   /// Spelling of the chord suffix (ADR-0022).
   final ChordStyle style;
 
@@ -82,6 +88,9 @@ class ChordFormatter {
     songCapo: songCapo,
     notation: notation,
     view: view,
+    numeralSpelling: numeralSpelling,
+    style: style,
+    superscript: superscript,
     key: key,
     leadingTranspose: leadingTranspose,
   );
@@ -119,7 +128,11 @@ class ChordFormatter {
     if (view.isDegrees && tokenKey != null) {
       // Degrees relative to the key in effect (both as written).
       parts = view == ChordView.numerals
-          ? chord.toNumeralParts(tokenKey)
+          ? chord.toNumeralParts(
+              tokenKey,
+              spelling: numeralSpelling,
+              style: style,
+            )
           : chord.toNashvilleParts(tokenKey, style: style);
     } else {
       final total = shift + token.transpose;
