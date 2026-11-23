@@ -274,6 +274,8 @@ class _SongScreenState extends ConsumerState<SongScreen> {
 
         // Sources (`{x_link}`): recordings to listen to.
         final links = parsed.links;
+        // The SongSelect page of the CCLI number (`{x_ccli}`).
+        final songSelect = parsed.songSelect;
         // Shown when there is something to see, change or choose (#556).
         final showBand =
             band != null &&
@@ -408,6 +410,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
               ),
               _Panel.links => SongLinksPanel(
                 links: links,
+                songSelect: songSelect,
                 onAdd: canEdit
                     ? (url, label) => _repo.updateSource(
                         song.id,
@@ -533,12 +536,12 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                         count: reports.where((r) => r.isOpen).length,
                         onPressed: () => _open(_Panel.reports),
                       ),
-                    if (links.isNotEmpty || canEdit)
+                    if (links.isNotEmpty || songSelect != null || canEdit)
                       AppBarAction(
                         id: 'open-song-links',
                         label: l10n.songLinks,
                         icon: Icons.headphones_outlined,
-                        count: links.length,
+                        count: links.length + (songSelect == null ? 0 : 1),
                         onPressed: () => _open(_Panel.links),
                       ),
                   ],

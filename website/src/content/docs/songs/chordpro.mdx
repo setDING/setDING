@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import drums from '../../../../../docs/screenshots/drums_de.png';
+import songSources from '../../../../../docs/screenshots/song_sources_de.png';
 
 Songs sind in [ChordPro](https://www.chordpro.org/chordpro/) geschrieben, einem
 offenen Textformat für Akkordblätter. Eine ChordPro-Datei ist reiner Text: du kannst
@@ -169,6 +170,12 @@ Direktive darf mehrfach vorkommen:
 In der Song-Ansicht öffnet das Kopfhörer-Symbol die Quellen; ein Tipp öffnet den Link
 in der App des Dienstes oder im Browser. Wer den Song bearbeiten darf, fügt dort auch
 Links hinzu und ändert oder entfernt sie mit dem Stift-Symbol. Im Live-Modus erscheinen die Quellen nicht.
+
+Hat der Song eine CCLI-Nummer (`{x_ccli: 7114209}`), steht zuoberst in den Quellen
+**CCLI SongSelect**: Ein Tipp öffnet die Seite des Songs auf SongSelect. Diesen Eintrag
+änderst du über die CCLI-Nummer im Editor, nicht in den Quellen.
+
+<Image src={songSources} alt="Die Quellen eines Songs: zuoberst CCLI SongSelect mit der CCLI-Nummer, darunter ein YouTube- und ein Spotify-Link mit Stift-Symbol und der Knopf Link hinzufügen" />
 
 ## Songs für Schlagzeug
 

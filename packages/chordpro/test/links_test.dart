@@ -163,4 +163,29 @@ void main() {
       expect(replaceSourceLink(twoSongs, 0, null), twoSongs);
     });
   });
+
+  group('songSelectUri', () {
+    test('links a CCLI song number to its SongSelect page', () {
+      expect(
+        songSelectUri(' 7114209 '),
+        Uri.parse('https://songselect.ccli.com/songs/7114209'),
+      );
+    });
+
+    test('is null without a plain number', () {
+      expect(songSelectUri(null), isNull);
+      expect(songSelectUri(''), isNull);
+      expect(songSelectUri('abc'), isNull);
+      expect(songSelectUri('12/../34'), isNull);
+      expect(songSelectUri('12 34'), isNull);
+    });
+
+    test('comes from {x_ccli} of a song', () {
+      expect(
+        parseChordPro('{title: T}\n{x_ccli: 7114209}\n\nLa').songSelect,
+        Uri.parse('https://songselect.ccli.com/songs/7114209'),
+      );
+      expect(parseChordPro('{title: T}\n\nLa').songSelect, isNull);
+    });
+  });
 }

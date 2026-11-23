@@ -63,6 +63,7 @@
   "songLinkLabelHint": "Live 2009",
   "songLinkInvalid": "Inserisci un link web che inizi con https:// (senza |).",
   "songLinkFailed": "Impossibile aprire il link.",
+  "songSelectNumber": "Numero CCLI {number}",
   "attachmentName": "Nome dell'allegato",
   "pagesCount": "{count, plural, =1{1 pagina} other{{count} pagine}}",
   "liveView": "Mostra in modalità live",

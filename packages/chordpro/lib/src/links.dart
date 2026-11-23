@@ -89,6 +89,15 @@ SongLink? parseSongLink(String value) {
   return SongLink(uri: uri, label: label);
 }
 
+/// The SongSelect page of a song with the CCLI song number [ccli] from
+/// `{x_ccli}`, e.g. `https://songselect.ccli.com/songs/7114209`; null when
+/// [ccli] is missing or not a plain number.
+Uri? songSelectUri(String? ccli) {
+  final number = ccli?.trim() ?? '';
+  if (!RegExp(r'^[0-9]+$').hasMatch(number)) return null;
+  return Uri.https('songselect.ccli.com', '/songs/$number');
+}
+
 /// The `{x_link}` directive for [url] and an optional [label], for
 /// inserting into a source.
 String songLinkDirective(String url, {String? label}) {

@@ -484,6 +484,12 @@ abstract class AppLocalizations {
   /// **'Der Link konnte nicht geöffnet werden.'**
   String get songLinkFailed;
 
+  /// No description provided for @songSelectNumber.
+  ///
+  /// In de, this message translates to:
+  /// **'CCLI-Nummer {number}'**
+  String songSelectNumber(String number);
+
   /// No description provided for @attachmentName.
   ///
   /// In de, this message translates to:

@@ -234,6 +234,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get songLinkFailed => 'No se pudo abrir el enlace.';
 
   @override
+  String songSelectNumber(String number) {
+    return 'Número CCLI $number';
+  }
+
+  @override
   String get attachmentName => 'Nombre del adjunto';
 
   @override
