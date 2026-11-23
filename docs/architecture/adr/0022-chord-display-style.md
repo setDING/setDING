@@ -117,7 +117,7 @@ while the ChordPro source stays unchanged. The chord style fits the same pattern
   follow the chord style; the superscript switch applies to them, the B/H
   notation does not.
 
-- 2026-11-23: ADR-0059 (proposed, #971): in the numeral spelling *Chord
+- 2026-11-23: ADR-0059 (accepted, #971): in the numeral spelling *Chord
   symbol* the suffix behind the numeral follows the chord style, as for
   Nashville numbers.
 

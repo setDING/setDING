@@ -1,6 +1,6 @@
 # ADR-0059: Spelling of Roman numerals
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-23
 
 ## Context
@@ -101,6 +101,8 @@ decision 4).
 
 - 2026-11-23: Default is *Case*, so nothing changes for people who already
   use numerals (owner, #971).
+- 2026-11-23: Accepted by the owner (#971). Implementation: `chordpro`
+  conversion #975, app setting #976, website page with screenshot #978.
 
 ## Open points
 
