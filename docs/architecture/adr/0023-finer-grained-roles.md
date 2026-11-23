@@ -105,6 +105,9 @@ for creating an account, like every invitation.
 | Create, edit, reorder, delete sets | ✓ all bands | – | ✓ | ✓ | – |
 | Restore sets from the trash or delete them permanently (ADR-0043, #866) | ✓ all bands | – | ✓ | ✓ | – |
 | Band arrangement (follow-up ADR) | ✓ all bands | – | ✓ | ✓ | – |
+| Choose a set's lineup, add people of the organization to it (ADR-0061) | ✓ all bands | – | ✓ | ✓ | – |
+| Get the mail addresses of a set's lineup to notify it (ADR-0061) | ✓ all bands | – | ✓ | ✓ | – |
+| See a set as a substitute⁴, read-only, with its songs' band arrangements and the lineup's names (ADR-0061) | anyone in the set's lineup who is not a member of its band | | | | |
 | Create and import new songs | ✓ | ✓ | ✓ | – | – |
 | Edit existing songs and attachments | ✓ | ✓ | own songs² | – | – |
 | Delete songs and attachments | ✓ | ✓ | – | – | – |
@@ -129,6 +132,8 @@ for creating an account, like every invitation.
 ³ Linking changes the group of every song it moves; a leader can only move
 their own songs. Linking or setting the language keeps the last editor, so a
 librarian linking a leader's own song leaves it theirs.
+⁴ A person in a set's lineup who is not a member of the set's band (ADR-0061);
+they see only the sets they are in the lineup of, for as long as they are in it.
 
 A person who is a librarian of the organization and a member of a band sees the
 sets of that band like any member; librarian rights concern the library only.
@@ -225,6 +230,7 @@ sets of that band like any member; librarian rights concern the library only.
 - 2026-11-21: Row *Delete the own account* (ADR-0052, #780): every person, for their own account only, with the password; refused while they are the only admin of an organization that is not closed.
 - 2026-11-21: Language versions (ADR-0053, #804): linking songs and setting their language follow the right to edit the song; a link-only change keeps `updated_by`, so a librarian linking a leader's own song does not take it from them. Server tests in `language_versions_test.dart` and the permission matrix.
 - 2026-11-22: **ADR-0043** (#866): deleting songs and sets permanently from the trash follows the right to delete them (songs: organization admins and librarians; sets: set managers); the update rule of songs refuses a change of `purged` to band leaders.
+- 2026-11-23: **ADR-0061** (#1003): a set's lineup is chosen by whoever may edit the set, from the band and the organization; a person in the lineup who is not a member of the band (a substitute) sees that set read-only with the band arrangements of its songs, through a server route, not as a role of the band, so *no guest role* stays; the lineup's mail addresses only for set editors. Server tests with the implementation.
 - 2026-11-23: **ADR-0060** (#985): everyone in the organization reports mistakes in its songs; members see only their own reports, the other roles all; approving a song, setting it to review and resolving reports follow the right to edit the song, and a review-only change keeps `updated_by` (like ADR-0053). Server tests with #987.
 
 ## Open points

@@ -1,6 +1,6 @@
 # ADR-0061: Lineup per set and substitutes from the organization
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-23
 
 ## Context
@@ -160,7 +160,7 @@ of the band's members).
 
 ### 8. Permissions
 
-The permission matrix of ADR-0023 gets these rows when this ADR is accepted
+The permission matrix of ADR-0023 has these rows
 (*Substitute* = a person in a set's lineup who is not a member of its band):
 
 | Action | Org admin | Librarian | Band leader | Set planner | Member | Substitute |
@@ -219,6 +219,10 @@ band but a person in a set's lineup.
   everyone in the lineup; the lineup is a line in the header of the printable
   set list and the text export; *Notify lineup* fills in the lineup's mail
   addresses, which a server route gives only to people who may edit the set.
+- 2026-11-23: Accepted by the owner (#1003); the rows are in ADR-0023's
+  permission matrix. Implementation: server #1007, data and sync #1008, set
+  editor #1009, substitute view #1010, notify and set list #1011, website
+  page #1012.
 
 ## Open points
 

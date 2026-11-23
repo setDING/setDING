@@ -120,6 +120,7 @@ Alternatives for invitations:
 - 2026-11-17: **ADR-0023** (accepted): band roles leader (`admin`) > set planner > member; the band setting `members_can_edit_songs` is replaced by the organization role librarian; band leaders invite into their band; still no guest role.
 - 2026-11-17: App renamed to **setDING** (#318): invitation links `https://api.setding.app/invite/<token>`, URL scheme `setding://`, application / bundle ID `app.setding`, verification files on `api.setding.app`. `realchord.app` expires; nothing is migrated (not live yet).
 - 2026-11-19: Invitation list (#579, owner request): it lists only **valid** links, in the organization with the **band** a link leads into (or "organization only"). An active link can be **shown again** (URL and QR code, route `GET /api/setding/invites/{id}/link`, for the people who may list it): besides the SHA-256 hash, the server stores the token encrypted (AES-GCM, `invites.token_enc`, hidden) with a key derived from `SETDING_INVITE_KEY` in `/etc/setding/pocketbase.env`, which `make server-install` generates once if it is missing. The key is not in `pb_data`, so a database or backup alone does not reveal links. Without the key (or for links created before) tokens are not stored and the link cannot be shown again (HTTP 409); the link itself keeps working. Replaces "the server only stores a hash".
+- 2026-11-23: **ADR-0061** (accepted, #1003): substitutes are no longer added to the band; they are put in the lineup of a set and see that set only. Still no guest role.
 
 ## Open points
 
