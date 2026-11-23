@@ -138,7 +138,13 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
     final newest = ref.watch(newestSongsProvider).value ?? const <SongEntry>[];
     final band = ref.watch(currentBandProvider);
     final hasBand = ref.watch(hasCurrentBandProvider);
-    final stale = hasBand
+    // Gigs as a substitute in other bands (ADR-0061).
+    final substitute = [
+      for (final g
+          in ref.watch(substituteGigsProvider).value ?? const <SubstituteGig>[])
+        if (g.bandId != band.id) g,
+    ];
+    final stale = hasBand && !band.substitute
         ? ref
                   .watch(
                     repertoireProvider((
@@ -163,6 +169,8 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
         nextSet: shown != null && shown.upcoming ? shown.summary.set : null,
       ),
       if (more.isNotEmpty) _MoreSetsCard(sets: more, today: today),
+      if (substitute.isNotEmpty)
+        _SubstituteGigsCard(gigs: substitute, today: today),
       if (counts != null && counts.values.any((c) => c > 0))
         _TodoCard(counts: counts),
       if (changes.isNotEmpty) _RecentChangesCard(changes: changes),
@@ -717,6 +725,51 @@ class _MoreSetsCard extends ConsumerWidget {
               ].join(' · '),
             ),
             onTap: () => openSet(context, ref, summary.set.id, wide: false),
+          ),
+      ],
+    );
+  }
+}
+
+/// The upcoming sets the user plays as a substitute in other bands
+/// (ADR-0061), next gig first; a tap switches to the band and opens the
+/// set.
+class _SubstituteGigsCard extends ConsumerWidget {
+  const _SubstituteGigsCard({required this.gigs, required this.today});
+
+  final List<SubstituteGig> gigs;
+  final DateTime today;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    return _OverviewCard(
+      key: const Key('overview-substitute-gigs'),
+      title: l10n.overviewAsSubstitute,
+      children: [
+        for (final g in gigs)
+          ListTile(
+            key: ValueKey('overview-substitute-${g.set.id}'),
+            leading: const Icon(Icons.badge_outlined),
+            title: Text(
+              g.set.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: Text(
+              [
+                g.bandName,
+                formatGigDate(context, g.set.gigDate!),
+                l10n.gigInDays(daysBetween(today, g.set.gigDate!)),
+                ?g.set.venue,
+              ].join(' · '),
+            ),
+            onTap: () async {
+              await ref.read(selectedBandIdProvider.notifier).select(g.bandId);
+              if (context.mounted) {
+                await openSet(context, ref, g.set.id, wide: false);
+              }
+            },
           ),
       ],
     );

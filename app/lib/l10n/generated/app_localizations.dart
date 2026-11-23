@@ -9569,6 +9569,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Die Besetzung folgt der Band, auch neuen Mitgliedern.'**
   String get lineupWholeBandHint;
+
+  /// No description provided for @bandSubstituteHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Du spielst einzelne Sets dieser Band als Aushilfe und siehst nur diese Sets.'**
+  String get bandSubstituteHint;
+
+  /// No description provided for @overviewAsSubstitute.
+  ///
+  /// In de, this message translates to:
+  /// **'Als Aushilfe'**
+  String get overviewAsSubstitute;
 }
 
 class _AppLocalizationsDelegate

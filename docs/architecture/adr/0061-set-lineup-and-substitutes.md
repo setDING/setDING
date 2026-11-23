@@ -123,9 +123,10 @@ records API:
 On the substitute's device the band of such a set appears in the **band
 switcher** marked *Substitute*. It shows only the sets they are in the lineup
 of, read-only; band settings, members, invitations and repertoire are not
-shown. The overview's *Next set* (ADR-0045) takes the next set they are in the
-lineup of, across their bands and these bands, so a substitute sees their gig
-on the start screen. The band disappears from the switcher once they are in no
+shown. The overview (ADR-0045) of any other band has a card *As a substitute*
+with the upcoming sets they play in such bands, so a substitute sees their gig
+on the start screen; a tap switches to the band and opens the set. The
+overview's *Next set* stays the current band's. The band disappears from the switcher once they are in no
 lineup of it any more.
 
 ### 6. Telling the lineup (version 1, no server mail)
@@ -249,6 +250,12 @@ band but a person in a set's lineup.
   shows the lineup only when the set has one of its own, and *Not planned
   for you* on both. The *New set* dialog stays as it is: a new set is
   played by the whole band until somebody chooses its lineup.
+- 2026-11-23: Owner decision (#1010): gigs as a substitute get their own
+  overview card *As a substitute* instead of joining *Next set*, which stays
+  the current band's (decision 5 changed). Implemented with the substitute
+  view: the band switcher and band lists show the role *Substitute*, the
+  band screen explains it without members, invitations or leaving, and the
+  sets tab has no repertoire button and no *New set* for them.
 
 ## Open points
 

@@ -3397,5 +3397,7 @@
   "lineupSearchPeople": "Search people",
   "lineupNoMorePeople": "Everyone in the organization is in the lineup already.",
   "lineupNobody": "Nobody planned",
-  "lineupWholeBandHint": "The lineup follows the band, new members included."
+  "lineupWholeBandHint": "The lineup follows the band, new members included.",
+  "bandSubstituteHint": "You play some sets of this band as a substitute and see only those sets.",
+  "overviewAsSubstitute": "As a substitute"
 }

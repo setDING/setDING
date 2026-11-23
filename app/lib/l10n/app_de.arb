@@ -4004,5 +4004,7 @@
   "lineupSearchPeople": "Personen suchen",
   "lineupNoMorePeople": "Alle Personen der Organisation sind schon in der Besetzung.",
   "lineupNobody": "Niemand eingeplant",
-  "lineupWholeBandHint": "Die Besetzung folgt der Band, auch neuen Mitgliedern."
+  "lineupWholeBandHint": "Die Besetzung folgt der Band, auch neuen Mitgliedern.",
+  "bandSubstituteHint": "Du spielst einzelne Sets dieser Band als Aushilfe und siehst nur diese Sets.",
+  "overviewAsSubstitute": "Als Aushilfe"
 }
