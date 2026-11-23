@@ -691,9 +691,10 @@ class DrumPanel extends StatelessWidget {
     final set = _SetList(items: items, current: current, onSelect: onSelect);
     final onView = this.onView;
     final songMap = this.songMap;
-    // On a phone in portrait the beat takes a third of the height, the set
-    // or the song map two thirds (#961, #965); the beat scales down to fit.
-    final listRoom = onView != null && direction == Axis.vertical;
+    // Above each other (phones in portrait, the panel of tablets) the beat
+    // takes a third of the height, the set or the song map two thirds
+    // (#961, #965, #968); the beat scales down to fit.
+    final listRoom = direction == Axis.vertical;
     return Flex(
       key: const Key('drum-panel'),
       direction: direction,

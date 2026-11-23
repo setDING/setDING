@@ -106,6 +106,10 @@ void main() {
     await tester.pump();
     expect(find.byKey(const Key('drum-panel')), findsOneWidget);
     expect(find.byKey(const Key('large-beat')), findsOneWidget);
+    // The beat takes a third of the panel's height, the set two (#968).
+    final panel = tester.getRect(find.byKey(const Key('drum-panel')));
+    final setTop = tester.getRect(find.byKey(const Key('drum-set-list'))).top;
+    expect((setTop - 1 - panel.top) / panel.height, closeTo(1 / 3, 0.01));
     // The dots are in the panel, not beside the title.
     expect(
       find.descendant(
