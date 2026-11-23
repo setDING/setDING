@@ -1092,6 +1092,11 @@ abstract class SyncBackend {
   /// [BackendException].
   Future<RemoteLineup> fetchLineup();
 
+  /// Names and mail addresses of the people in the lineup of [setId] (the
+  /// band's members for a set without one), to notify them (ADR-0061); only
+  /// for people who may edit the set. Throws a [BackendException].
+  Future<List<({String name, String email})>> fetchLineupEmails(String setId);
+
   /// PDF attachments of an organization changed after revision [since].
   Future<List<RemoteAttachment>> pullAttachments(
     String organizationId,

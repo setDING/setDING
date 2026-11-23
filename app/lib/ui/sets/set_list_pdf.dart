@@ -163,6 +163,11 @@ pw.Document _build(SetList list, SetListFonts fonts, double size) {
             padding: pw.EdgeInsets.only(top: size * 0.2),
             child: pw.Text(details, style: muted),
           ),
+        if (list.lineup case final lineup?)
+          pw.Padding(
+            padding: pw.EdgeInsets.only(top: size * 0.2),
+            child: pw.Text(lineup, style: muted),
+          ),
         pw.SizedBox(height: size),
         ...body,
       ],

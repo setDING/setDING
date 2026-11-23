@@ -733,6 +733,44 @@ final pastSetsCollapsedProvider =
       PastSetsCollapsedNotifier.new,
     );
 
+/// The sets whose *You are planned* hint was dismissed on this device
+/// (ADR-0061): each set is announced once.
+class PlannedSeenNotifier extends Notifier<Set<String>> {
+  static const _key = 'lineupPlannedSeen';
+
+  @override
+  Set<String> build() =>
+      (ref.watch(sharedPreferencesProvider).getStringList(_key) ?? const [])
+          .toSet();
+
+  Future<void> markSeen(Iterable<String> setIds) async {
+    state = {...state, ...setIds};
+    await ref
+        .read(sharedPreferencesProvider)
+        .setStringList(_key, state.toList());
+  }
+}
+
+final plannedSeenProvider = NotifierProvider<PlannedSeenNotifier, Set<String>>(
+  PlannedSeenNotifier.new,
+);
+
+/// Upcoming gigs the user was put in the lineup of by name (ADR-0061) and
+/// not told about yet on this device: the overview's *You are planned*.
+final plannedGigsProvider = StreamProvider.autoDispose<List<SubstituteGig>>((
+  ref,
+) {
+  final userId = ref.watch(authProvider.select((u) => u?.id));
+  if (userId == null) return Stream.value(const []);
+  final seen = ref.watch(plannedSeenProvider);
+  return watchPlannedGigs(ref.watch(databaseProvider), userId).map(
+    (gigs) => [
+      for (final g in gigs)
+        if (!seen.contains(g.set.id)) g,
+    ],
+  );
+});
+
 /// The set chosen on the sets tab (#266): shown next to the list on wide
 /// screens. Kept outside the widgets, so it survives a change of layout
 /// (e.g. rotating a tablet); null shows the next gig.

@@ -156,8 +156,11 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
                   ?.notPlayedFor(band.staleAfterMonths) ??
               const <SongPlayStats>[]
         : const <SongPlayStats>[];
+    final plannedGigs =
+        ref.watch(plannedGigsProvider).value ?? const <SubstituteGig>[];
     final cards = <Widget>[
       if (!hasBand) const NoBandHint(),
+      if (plannedGigs.isNotEmpty) _PlannedCard(gigs: plannedGigs, today: today),
       if (shown != null)
         _SetCard(
           key: ValueKey('overview-set-${shown.summary.set.id}'),
@@ -726,6 +729,64 @@ class _MoreSetsCard extends ConsumerWidget {
             ),
             onTap: () => openSet(context, ref, summary.set.id, wide: false),
           ),
+      ],
+    );
+  }
+}
+
+/// *You are planned* (ADR-0061): the upcoming sets the user was put in the
+/// lineup of by name since they last confirmed it on this device; a tap
+/// opens the set in its band, *Got it* hides them.
+class _PlannedCard extends ConsumerWidget {
+  const _PlannedCard({required this.gigs, required this.today});
+
+  final List<SubstituteGig> gigs;
+  final DateTime today;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    return _OverviewCard(
+      key: const Key('overview-planned'),
+      title: l10n.overviewPlanned,
+      highlight: true,
+      children: [
+        for (final g in gigs)
+          ListTile(
+            key: ValueKey('overview-planned-${g.set.id}'),
+            leading: const Icon(Icons.event_available_outlined),
+            title: Text(
+              g.set.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: Text(
+              [
+                g.bandName,
+                formatGigDate(context, g.set.gigDate!),
+                l10n.gigInDays(daysBetween(today, g.set.gigDate!)),
+              ].join(' · '),
+            ),
+            onTap: () async {
+              await ref.read(selectedBandIdProvider.notifier).select(g.bandId);
+              if (context.mounted) {
+                await openSet(context, ref, g.set.id, wide: false);
+              }
+            },
+          ),
+        Align(
+          alignment: AlignmentDirectional.centerEnd,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: TextButton(
+              key: const Key('overview-planned-seen'),
+              onPressed: () => ref.read(plannedSeenProvider.notifier).markSeen([
+                for (final g in gigs) g.set.id,
+              ]),
+              child: Text(l10n.overviewPlannedSeen),
+            ),
+          ),
+        ),
       ],
     );
   }

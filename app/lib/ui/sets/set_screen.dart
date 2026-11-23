@@ -33,6 +33,7 @@ import 'set_archive_dialogs.dart';
 import 'lineup_dialog.dart';
 import 'lineup_view.dart';
 import 'marker_dialog.dart';
+import 'notify_lineup.dart';
 import 'set_item_label.dart';
 import 'set_list.dart';
 import 'sets_screen.dart';
@@ -96,6 +97,10 @@ class _SetScreenState extends ConsumerState<SetScreen> {
       untitled: l10n.untitled,
       songMissing: l10n.songMissing,
       markerName: (icon) => markerIconName(l10n, icon),
+      lineup: switch (ref.read(setLineupProvider(set.id))) {
+        final lineup? => '${l10n.lineup}: ${lineupNames(l10n, lineup)}',
+        null => null,
+      },
     );
   }
 
@@ -228,6 +233,12 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                   onSelected: (value) => switch (value) {
                     'marker' => _addMarker(),
                     'lineup' => showLineupDialog(context, ref, set),
+                    'notify' => showNotifyLineupDialog(
+                      context,
+                      ref,
+                      set,
+                      (date) => formatGigDate(context, date),
+                    ),
                     'export' => _export(set),
                     'copyToBand' => copySetToBand(context, ref, set.id),
                     'delete' => _delete(set),
@@ -246,6 +257,13 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                           value: 'lineup',
                           icon: Icons.groups_outlined,
                           label: l10n.lineupEdit,
+                        ),
+                      if (!ref.read(currentBandProvider).isLocal)
+                        MenuAction(
+                          key: const Key('set-notify-menu'),
+                          value: 'notify',
+                          icon: Icons.send_outlined,
+                          label: l10n.lineupNotify,
                         ),
                       const PopupMenuDivider(),
                     ],

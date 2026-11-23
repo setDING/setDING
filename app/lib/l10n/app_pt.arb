@@ -1576,5 +1576,15 @@
   "lineupNobody": "Ninguém previsto",
   "lineupWholeBandHint": "A formação segue a banda, incluindo novos membros.",
   "bandSubstituteHint": "Tocas alguns sets desta banda como substituto e só vês esses sets.",
-  "overviewAsSubstitute": "Como substituto"
+  "overviewAsSubstitute": "Como substituto",
+  "lineupNotify": "Avisar a formação",
+  "lineupCopy": "Copiar",
+  "lineupCopied": "Texto copiado",
+  "lineupMail": "Por e-mail",
+  "lineupShare": "Partilhar …",
+  "lineupNoAddresses": "Sem ligação ao servidor: escolhe tu os destinatários.",
+  "lineupMessageIntro": "Estão previstos para «{set}».",
+  "lineupMessageFooter": "Encontram as músicas no setDING.",
+  "overviewPlanned": "Estás previsto",
+  "overviewPlannedSeen": "Entendido"
 }

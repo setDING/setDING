@@ -3399,5 +3399,15 @@
   "lineupNobody": "Nobody planned",
   "lineupWholeBandHint": "The lineup follows the band, new members included.",
   "bandSubstituteHint": "You play some sets of this band as a substitute and see only those sets.",
-  "overviewAsSubstitute": "As a substitute"
+  "overviewAsSubstitute": "As a substitute",
+  "lineupNotify": "Notify lineup",
+  "lineupCopy": "Copy",
+  "lineupCopied": "Text copied",
+  "lineupMail": "By mail",
+  "lineupShare": "Share …",
+  "lineupNoAddresses": "No connection to the server: choose the recipients yourself.",
+  "lineupMessageIntro": "You are planned for “{set}”.",
+  "lineupMessageFooter": "You find the songs in setDING.",
+  "overviewPlanned": "You are planned",
+  "overviewPlannedSeen": "Got it"
 }
