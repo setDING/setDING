@@ -93,7 +93,7 @@ BACKEND_REGISTRATION ?= open
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := SETDING_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build web web-serve site site-dev deps upgrade apk android-install android-keystore release release-linux release-check sbom changelog reset data-dir backend check check-full release-gate test codegen l10n coverage android-test web-test e2e perf screenshots branding examples doctor clean ci-image \
+.PHONY: help setup dev start build web web-serve site site-dev deps upgrade upgrade-guard apk android-install android-keystore release release-linux release-check sbom changelog reset data-dir backend check check-full release-gate test codegen l10n coverage android-test web-test e2e perf screenshots branding examples doctor clean ci-image \
 	server-target server-install server-release server-site server-status server-logs server-backup server-fetch-backup server-founder-invite server-ssh
 
 help: ## Show this help
@@ -196,7 +196,10 @@ site-dev: ## Serve the website with live reload on http://localhost:4321 (docs/d
 deps: ## Check that all external libraries are the newest versions
 	$(ROOT)/tool/check-deps.sh
 
-upgrade: ## Upgrade all external libraries within their constraints
+upgrade-guard: ## Stop if another session already changes dependencies (worktrees, open PRs, issues; UPGRADE_FORCE=1 overrides)
+	cd $(ROOT) && python3 tool/upgrade_guard.py
+
+upgrade: upgrade-guard ## Upgrade all external libraries within their constraints (after upgrade-guard)
 	cd $(PACKAGE) && $(DART) pub upgrade
 	cd $(ROOT)/server && $(DART) pub upgrade
 	cd $(ROOT)/tool/sbom && $(DART) pub upgrade

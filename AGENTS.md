@@ -72,6 +72,10 @@ External libraries are always used in their **newest version**
 ([`docs/development/dependencies.md`](docs/development/dependencies.md)); `make check-full`
 fails on outdated ones (`make check` only when a pubspec changes, otherwise it warns), `make upgrade` upgrades them. Only deliberate pins marked
 `# Pinned …` in `pubspec.yaml` are exempt.
+**Before raising a dependency, check that no other session is already doing it**:
+`make upgrade` runs `make upgrade-guard` first (other worktrees, open PRs,
+`agent:in-progress` issues); run it alone before raising one by hand, and
+coordinate instead of upgrading in parallel.
 
 ## User documentation and screenshots (mandatory)
 
