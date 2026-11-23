@@ -3856,5 +3856,115 @@
         "type": "int"
       }
     }
+  },
+  "reportMistake": "Fehler melden",
+  "reportMistakeMenu": "Fehler melden …",
+  "reportCategoryChords": "Akkorde",
+  "reportCategoryLyrics": "Text",
+  "reportCategoryKey": "Tonart",
+  "reportCategorySequence": "Ablauf",
+  "reportCategoryTempo": "Tempo",
+  "reportCategoryFormatting": "Darstellung",
+  "reportCategorySheetMusic": "Noten (PDF)",
+  "reportCategoryOther": "Anderes",
+  "reportComment": "Kommentar",
+  "reportCommentHint": "Was stimmt nicht?",
+  "reportSend": "Senden",
+  "reportSent": "Fehler gemeldet. Danke!",
+  "reportLocation": "Stelle: {place}",
+  "@reportLocation": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "reportLocationPage": "Seite {page}",
+  "@reportLocationPage": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      }
+    }
+  },
+  "reportLocationPdfPage": "PDF-Seite {page}",
+  "@reportLocationPdfPage": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      }
+    }
+  },
+  "reportLocationLine": "Zeile {line}",
+  "@reportLocationLine": {
+    "placeholders": {
+      "line": {
+        "type": "int"
+      }
+    }
+  },
+  "reportsTitle": "Fehlermeldungen",
+  "reportsEmpty": "Keine Fehlermeldungen",
+  "reportsClosed": "Erledigt und zurückgezogen ({count})",
+  "@reportsClosed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reportByYou": "von dir",
+  "reportBy": "von {name}",
+  "@reportBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reportWithdrawn": "zurückgezogen",
+  "reportWithdraw": "Zurückziehen",
+  "reportWithdrawnMessage": "Meldung zurückgezogen",
+  "resolveReport": "Meldung erledigen",
+  "reportAnswerLabel": "Antwort",
+  "reportAnswerHint": "z. B. Korrigiert, danke!",
+  "reportResolvedMessage": "Meldung erledigt",
+  "reportReopen": "Wieder öffnen",
+  "reportReopenedMessage": "Meldung wieder geöffnet",
+  "reportResolvedNoAnswer": "Erledigt",
+  "reportAnswer": "Erledigt: {answer}",
+  "@reportAnswer": {
+    "placeholders": {
+      "answer": {
+        "type": "String"
+      }
+    }
+  },
+  "reportAnswered": "Deine Meldung zu «{song}» wurde erledigt: {answer}",
+  "@reportAnswered": {
+    "placeholders": {
+      "song": {
+        "type": "String"
+      },
+      "answer": {
+        "type": "String"
+      }
+    }
+  },
+  "reportAnsweredNoText": "Deine Meldung zu «{song}» wurde erledigt.",
+  "@reportAnsweredNoText": {
+    "placeholders": {
+      "song": {
+        "type": "String"
+      }
+    }
+  },
+  "reportsAnswered": "{count, plural, =1{1 deiner Meldungen wurde erledigt.} other{{count} deiner Meldungen wurden erledigt.}}",
+  "@reportsAnswered": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

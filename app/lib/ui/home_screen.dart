@@ -19,6 +19,7 @@ import 'overview/overview_screen.dart';
 import 'sets/sets_screen.dart';
 import 'settings_screen.dart';
 import 'sync_hints.dart';
+import 'songs/song_reports.dart' show listenForReportAnswers;
 import 'songs/songs_screen.dart';
 import 'widgets/app_update.dart';
 import 'widgets/dialogs.dart';
@@ -240,6 +241,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
     // What others changed during live mode, summed up once (#691).
     listenForLiveSummary(context, ref);
+    // Answers to the person's mistake reports (ADR-0060).
+    listenForReportAnswers(context, ref);
     // A dot on the settings, where the update is described (ADR-0036).
     final update = ref.watch(updateCheckProvider) != null;
     final destinations = [

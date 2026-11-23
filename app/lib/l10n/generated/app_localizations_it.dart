@@ -6096,4 +6096,141 @@ class AppLocalizationsIt extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get reportMistake => 'Segnala un errore';
+
+  @override
+  String get reportMistakeMenu => 'Segnala un errore …';
+
+  @override
+  String get reportCategoryChords => 'Accordi';
+
+  @override
+  String get reportCategoryLyrics => 'Testo';
+
+  @override
+  String get reportCategoryKey => 'Tonalità';
+
+  @override
+  String get reportCategorySequence => 'Sequenza';
+
+  @override
+  String get reportCategoryTempo => 'Tempo';
+
+  @override
+  String get reportCategoryFormatting => 'Formattazione';
+
+  @override
+  String get reportCategorySheetMusic => 'Spartito (PDF)';
+
+  @override
+  String get reportCategoryOther => 'Altro';
+
+  @override
+  String get reportComment => 'Commento';
+
+  @override
+  String get reportCommentHint => 'Cosa non va?';
+
+  @override
+  String get reportSend => 'Invia';
+
+  @override
+  String get reportSent => 'Errore segnalato. Grazie!';
+
+  @override
+  String reportLocation(String place) {
+    return 'Punto: $place';
+  }
+
+  @override
+  String reportLocationPage(int page) {
+    return 'Pagina $page';
+  }
+
+  @override
+  String reportLocationPdfPage(int page) {
+    return 'Pagina PDF $page';
+  }
+
+  @override
+  String reportLocationLine(int line) {
+    return 'Riga $line';
+  }
+
+  @override
+  String get reportsTitle => 'Segnalazioni';
+
+  @override
+  String get reportsEmpty => 'Nessuna segnalazione';
+
+  @override
+  String reportsClosed(int count) {
+    return 'Chiuse e ritirate ($count)';
+  }
+
+  @override
+  String get reportByYou => 'da te';
+
+  @override
+  String reportBy(String name) {
+    return 'da $name';
+  }
+
+  @override
+  String get reportWithdrawn => 'ritirata';
+
+  @override
+  String get reportWithdraw => 'Ritira';
+
+  @override
+  String get reportWithdrawnMessage => 'Segnalazione ritirata';
+
+  @override
+  String get resolveReport => 'Chiudi la segnalazione';
+
+  @override
+  String get reportAnswerLabel => 'Risposta';
+
+  @override
+  String get reportAnswerHint => 'es. Corretto, grazie!';
+
+  @override
+  String get reportResolvedMessage => 'Segnalazione chiusa';
+
+  @override
+  String get reportReopen => 'Riapri';
+
+  @override
+  String get reportReopenedMessage => 'Segnalazione riaperta';
+
+  @override
+  String get reportResolvedNoAnswer => 'Chiusa';
+
+  @override
+  String reportAnswer(String answer) {
+    return 'Chiusa: $answer';
+  }
+
+  @override
+  String reportAnswered(String song, String answer) {
+    return 'La tua segnalazione su «$song» è stata chiusa: $answer';
+  }
+
+  @override
+  String reportAnsweredNoText(String song) {
+    return 'La tua segnalazione su «$song» è stata chiusa.';
+  }
+
+  @override
+  String reportsAnswered(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count delle tue segnalazioni sono state chiuse.',
+      one: '1 delle tue segnalazioni è stata chiusa.',
+    );
+    return '$_temp0';
+  }
 }

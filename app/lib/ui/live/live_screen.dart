@@ -23,6 +23,9 @@ import '../../midi/midi_connection.dart';
 import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../annotations/annotated_page.dart';
+import '../../data/song_review.dart' show SongReportLocation;
+import '../songs/song_attention.dart' show songReportedIcon;
+import '../songs/song_reports.dart' show reportMistake;
 import '../annotations/annotation_editor.dart';
 import '../annotations/annotation_toolbar.dart';
 import '../platform/stored_file_view.dart';
@@ -1069,6 +1072,19 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                               onDraw: items[_index].song == null || showSongMap
                                   ? null
                                   : () => _annotations.active = true,
+                              // Everyone may report a mistake (ADR-0060);
+                              // stored now, synced after the set.
+                              onReport: switch (items[_index].song) {
+                                null => null,
+                                final song => () => reportMistake(
+                                  context,
+                                  ref,
+                                  songId: song.id,
+                                  location: SongReportLocation(
+                                    page: _songPageFor(_index).page + 1,
+                                  ),
+                                ),
+                              },
                               // Only while MIDI program changes are on
                               // (ADR-0039).
                               onSendProgram:
@@ -1327,6 +1343,7 @@ class _ControlBar extends ConsumerWidget {
     required this.onFit,
     required this.onSetKey,
     this.onDraw,
+    this.onReport,
     this.onSendProgram,
     this.onEditProgram,
   });
@@ -1345,6 +1362,9 @@ class _ControlBar extends ConsumerWidget {
 
   /// Starts drawing mode (ADR-0032); null when the item cannot be drawn on.
   final VoidCallback? onDraw;
+
+  /// Reports a mistake in the song (ADR-0060); null without a song.
+  final VoidCallback? onReport;
 
   /// Sends the song's keyboard program again (ADR-0039), on a long press
   /// of the keyboard symbol.
@@ -1459,6 +1479,13 @@ class _ControlBar extends ConsumerWidget {
           tooltip: l10n.annotationsDraw,
           icon: const Icon(Icons.draw),
           onPressed: draw,
+        ),
+      if (onReport case final report?)
+        IconButton(
+          key: const Key('live-report'),
+          tooltip: l10n.reportMistake,
+          icon: const Icon(songReportedIcon),
+          onPressed: report,
         ),
     ];
     final trailing = <Widget>[

@@ -6117,4 +6117,141 @@ class AppLocalizationsDe extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get reportMistake => 'Fehler melden';
+
+  @override
+  String get reportMistakeMenu => 'Fehler melden …';
+
+  @override
+  String get reportCategoryChords => 'Akkorde';
+
+  @override
+  String get reportCategoryLyrics => 'Text';
+
+  @override
+  String get reportCategoryKey => 'Tonart';
+
+  @override
+  String get reportCategorySequence => 'Ablauf';
+
+  @override
+  String get reportCategoryTempo => 'Tempo';
+
+  @override
+  String get reportCategoryFormatting => 'Darstellung';
+
+  @override
+  String get reportCategorySheetMusic => 'Noten (PDF)';
+
+  @override
+  String get reportCategoryOther => 'Anderes';
+
+  @override
+  String get reportComment => 'Kommentar';
+
+  @override
+  String get reportCommentHint => 'Was stimmt nicht?';
+
+  @override
+  String get reportSend => 'Senden';
+
+  @override
+  String get reportSent => 'Fehler gemeldet. Danke!';
+
+  @override
+  String reportLocation(String place) {
+    return 'Stelle: $place';
+  }
+
+  @override
+  String reportLocationPage(int page) {
+    return 'Seite $page';
+  }
+
+  @override
+  String reportLocationPdfPage(int page) {
+    return 'PDF-Seite $page';
+  }
+
+  @override
+  String reportLocationLine(int line) {
+    return 'Zeile $line';
+  }
+
+  @override
+  String get reportsTitle => 'Fehlermeldungen';
+
+  @override
+  String get reportsEmpty => 'Keine Fehlermeldungen';
+
+  @override
+  String reportsClosed(int count) {
+    return 'Erledigt und zurückgezogen ($count)';
+  }
+
+  @override
+  String get reportByYou => 'von dir';
+
+  @override
+  String reportBy(String name) {
+    return 'von $name';
+  }
+
+  @override
+  String get reportWithdrawn => 'zurückgezogen';
+
+  @override
+  String get reportWithdraw => 'Zurückziehen';
+
+  @override
+  String get reportWithdrawnMessage => 'Meldung zurückgezogen';
+
+  @override
+  String get resolveReport => 'Meldung erledigen';
+
+  @override
+  String get reportAnswerLabel => 'Antwort';
+
+  @override
+  String get reportAnswerHint => 'z. B. Korrigiert, danke!';
+
+  @override
+  String get reportResolvedMessage => 'Meldung erledigt';
+
+  @override
+  String get reportReopen => 'Wieder öffnen';
+
+  @override
+  String get reportReopenedMessage => 'Meldung wieder geöffnet';
+
+  @override
+  String get reportResolvedNoAnswer => 'Erledigt';
+
+  @override
+  String reportAnswer(String answer) {
+    return 'Erledigt: $answer';
+  }
+
+  @override
+  String reportAnswered(String song, String answer) {
+    return 'Deine Meldung zu «$song» wurde erledigt: $answer';
+  }
+
+  @override
+  String reportAnsweredNoText(String song) {
+    return 'Deine Meldung zu «$song» wurde erledigt.';
+  }
+
+  @override
+  String reportsAnswered(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count deiner Meldungen wurden erledigt.',
+      one: '1 deiner Meldungen wurde erledigt.',
+    );
+    return '$_temp0';
+  }
 }

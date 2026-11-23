@@ -13,6 +13,7 @@ import '../../data/attachment_lookup.dart';
 import '../../data/attachment_storage.dart';
 import '../../data/database.dart';
 import '../../data/song_repository.dart';
+import '../../data/song_review.dart' show SongReportRowX;
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../settings/settings.dart';
@@ -40,7 +41,8 @@ import '../../sync/sync_controller.dart';
 import 'chordpro_problems_badge.dart';
 import 'conflict_banner.dart';
 import 'review_banner.dart';
-import 'song_attention.dart' show songToReviewIcon;
+import 'song_reports.dart';
+import 'song_attention.dart' show songReportedIcon, songToReviewIcon;
 import 'image_attachment_view.dart';
 import 'midi_program_field.dart';
 import 'band_arrangement_panel.dart';
@@ -77,7 +79,7 @@ class SongScreen extends ConsumerStatefulWidget {
 }
 
 /// The side panels of the song screen.
-enum _Panel { band, played, personal, attachments, links }
+enum _Panel { band, played, personal, attachments, links, reports }
 
 class _SongScreenState extends ConsumerState<SongScreen> {
   final _scaffold = GlobalKey<ScaffoldState>();
@@ -259,6 +261,9 @@ class _SongScreenState extends ConsumerState<SongScreen> {
         final hasSourceTitle = parsed.title != null;
         // Band leaders edit only their own songs (ADR-0023).
         final canEdit = library.canEditSong(song);
+        final reports =
+            ref.watch(songReportsProvider(song.id)).value ??
+            const <SongReportRow>[];
         final hasVersions =
             (ref.watch(languageVersionsProvider(song.id)).value?.length ?? 0) >
             1;
@@ -416,6 +421,10 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                       )
                     : null,
               ),
+              _Panel.reports => SongReportsPanel(
+                song: song,
+                canResolve: canEdit,
+              ),
               _Panel.attachments => SidePanel(
                 key: const Key('song-attachments'),
                 icon: Icons.attach_file,
@@ -509,6 +518,15 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                         count: attachments.length,
                         onPressed: () => _open(_Panel.attachments),
                       ),
+                    // Mistake reports (ADR-0060), when there are any.
+                    if (reports.isNotEmpty)
+                      AppBarAction(
+                        id: 'open-song-reports',
+                        label: l10n.reportsTitle,
+                        icon: songReportedIcon,
+                        count: reports.where((r) => r.isOpen).length,
+                        onPressed: () => _open(_Panel.reports),
+                      ),
                     if (links.isNotEmpty || canEdit)
                       AppBarAction(
                         id: 'open-song-links',
@@ -522,6 +540,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                     'title' => _editTitle(song),
                     'toReview' => setSongToReview(context, ref, song.id),
                     'approve' => approveSong(context, ref, song.id),
+                    'report' => reportMistake(context, ref, songId: song.id),
                     'language' => _chooseLanguage(song),
                     'linkVersion' => linkLanguageVersion(context, ref, song),
                     'unlinkVersion' => unlinkLanguageVersion(
@@ -543,6 +562,13 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                         icon: Icons.title,
                         label: l10n.editTitle,
                       ),
+                    // Everyone may report a mistake (ADR-0060).
+                    MenuAction(
+                      key: const Key('song-report'),
+                      value: 'report',
+                      icon: songReportedIcon,
+                      label: l10n.reportMistakeMenu,
+                    ),
                     // Review status (ADR-0060), for whoever may edit.
                     if (canEdit && song.reviewState == null)
                       MenuAction(
@@ -614,7 +640,11 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   if (ref.watch(songConflictProvider(song.id)).value
                       case final conflict?)
                     ConflictBanner(conflict: conflict),
-                  ReviewBanner(song: song, canApprove: canEdit),
+                  ReviewBanner(
+                    song: song,
+                    canApprove: canEdit,
+                    onShowReports: () => _open(_Panel.reports),
+                  ),
                   // The app bar shows the title (#268).
                   SongHeader(
                     title: song.title.isEmpty ? l10n.untitled : song.title,

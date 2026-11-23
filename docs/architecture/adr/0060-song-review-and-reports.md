@@ -287,6 +287,18 @@ Older clients that import songs do not set *to review*.
   hint for everyone else, *Mark for review …* and *Approve* in the song menu;
   the set list and the set show how many songs of an upcoming set need a check.
   The reported icon is `report_outlined`, since set markers use the flag.
+- 2026-11-23: Reporting and resolving implemented (#990): *Report a mistake …*
+  in the song menu (everyone), a button in the live control bar and *Report a
+  mistake* in the reports panel open a sheet with the category chips, the
+  comment and the place (the live page; section, line or PDF page when given);
+  in the sheet a page turner sends the report once a category is chosen and
+  cancels otherwise, not while the comment is typed. The song view gets a
+  reports button with the number of open reports and a `SidePanel` (open ones
+  first, resolved and withdrawn ones folded away; *Withdraw* for the author,
+  *Resolve* with an answer and *Reopen* for whoever may edit the song). After a
+  sync outside live mode the reporter is told once that a report was resolved
+  by someone else, with the answer; the seen answers are kept per device, and
+  on the first run answers already there count as seen.
 
 ## Open points
 
