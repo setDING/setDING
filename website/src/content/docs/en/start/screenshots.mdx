@@ -1,6 +1,6 @@
 ---
 title: Screenshots
-description: "What setDING looks like: live mode, sets, lineup and songs."
+description: "What setDING looks like: live mode, sets, lineup, songs and the editor."
 sidebar:
   order: 3
 ---
@@ -18,6 +18,12 @@ import chordViewNashville from '../../../../../../docs/screenshots/chord_view_na
 import editor from '../../../../../../docs/screenshots/editor.png';
 import lilypond from '../../../../../../docs/screenshots/lilypond.png';
 import songReports from '../../../../../../docs/screenshots/song_reports.png';
+import editorChorusLabels from '../../../../../../docs/screenshots/editor_chorus_labels.png';
+import songDetailsKey from '../../../../../../docs/screenshots/song_details_key.png';
+import editorAutoClose from '../../../../../../docs/screenshots/editor_auto_close.png';
+import editorCcli from '../../../../../../docs/screenshots/editor_ccli.png';
+import editorEnglishLabels from '../../../../../../docs/screenshots/editor_english_labels.png';
+import editorInvalidKey from '../../../../../../docs/screenshots/editor_invalid_key.png';
 
 This is what setDING looks like. Each heading leads to the page that explains the feature in detail.
 
@@ -63,10 +69,6 @@ This is what setDING looks like. Each heading leads to the page that explains th
 
 <Image src={chordViewNashville} alt="The same song with Nashville numbers: 1maj7, 6m7, 2m7, 57" />
 
-### [ChordPro editor](/en/songs/editor/)
-
-<Image src={editor} alt="The ChordPro editor with insert menus, syntax highlighting and a live preview" />
-
 ### [Sheet music](/en/songs/notation/)
 
 <Image src={lilypond} alt="A song with a Lilypond melody: notes in G major and 3/4 with an upbeat, chord names above, lyrics below, a repeat with first and second ending" />
@@ -74,3 +76,35 @@ This is what setDING looks like. Each heading leads to the page that explains th
 ### [Report a mistake](/en/songs/review/)
 
 <Image src={songReports} alt="The mistake reports of a song, one open and one resolved" />
+
+## Editor
+
+The built-in editor writes ChordPro for you: insert menus, suggestions, a preview and hints where a song is not right yet.
+
+### [Text and preview](/en/songs/editor/#text-and-preview)
+
+<Image src={editor} alt="The ChordPro editor with insert menus, syntax highlighting and a live preview" />
+
+### [Suggestions while typing](/en/songs/editor/#insert-instead-of-typing)
+
+<Image src={editorChorusLabels} alt="The editor with the suggestions Chorus and Final chorus below a line {chorus: }" />
+
+### [Key from the chords](/en/songs/editor/#insert-instead-of-typing)
+
+<Image src={songDetailsKey} alt="The song details without a key and the suggestion G from the chords below the key field" />
+
+### [Closing brackets and sections](/en/songs/editor/#closing-brackets-and-sections)
+
+<Image src={editorAutoClose} alt="The editor with a chorus section whose end was added automatically; on the empty line between them, a pair of chord brackets with the cursor" />
+
+### [Bar lines as chord grids](/en/songs/editor/#bar-lines-as-chord-grids)
+
+<Image src={editorCcli} alt="The editor with two blocks of CCLI bar lines marked with a dotted line and the hint with the Convert button" />
+
+### [Labels in English](/en/songs/editor/#labels-in-english)
+
+<Image src={editorEnglishLabels} alt="The editor with German section labels and the open Lines menu with the command Translate section labels to English" />
+
+### [Checking the ChordPro on save](/en/songs/editor/#save)
+
+<Image src={editorInvalidKey} alt="Check the ChordPro? with line 2: the key directive names no key" />

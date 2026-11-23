@@ -1,6 +1,6 @@
 ---
 title: Screenshots
-description: "So sieht setDING aus: Live-Modus, Sets, Besetzung und Songs."
+description: "So sieht setDING aus: Live-Modus, Sets, Besetzung, Songs und Editor."
 sidebar:
   order: 3
 ---
@@ -18,6 +18,12 @@ import chordViewNashville from '../../../../../docs/screenshots/chord_view_nashv
 import editor from '../../../../../docs/screenshots/editor_de.png';
 import lilypond from '../../../../../docs/screenshots/lilypond_de.png';
 import songReports from '../../../../../docs/screenshots/song_reports_de.png';
+import editorChorusLabels from '../../../../../docs/screenshots/editor_chorus_labels_de.png';
+import songDetailsKey from '../../../../../docs/screenshots/song_details_key_de.png';
+import editorAutoClose from '../../../../../docs/screenshots/editor_auto_close_de.png';
+import editorCcli from '../../../../../docs/screenshots/editor_ccli_de.png';
+import editorEnglishLabels from '../../../../../docs/screenshots/editor_english_labels_de.png';
+import editorInvalidKey from '../../../../../docs/screenshots/editor_invalid_key_de.png';
 
 So sieht setDING aus. Jede Überschrift führt zur Seite, die die Funktion genauer erklärt.
 
@@ -63,10 +69,6 @@ So sieht setDING aus. Jede Überschrift führt zur Seite, die die Funktion genau
 
 <Image src={chordViewNashville} alt="Derselbe Song mit Nashville-Zahlen: 1maj7, 6m7, 2m7, 57" />
 
-### [ChordPro-Editor](/songs/editor/)
-
-<Image src={editor} alt="Der ChordPro-Editor mit Einfügemenüs, Syntaxhervorhebung und Live-Vorschau" />
-
 ### [Noten](/songs/notation/)
 
 <Image src={lilypond} alt="Ein Song mit einer Lilypond-Melodie: Noten in G-Dur und 3/4 mit Auftakt, Akkordnamen darüber, Liedtext darunter, eine Wiederholung mit erstem und zweitem Schluss" />
@@ -74,3 +76,35 @@ So sieht setDING aus. Jede Überschrift führt zur Seite, die die Funktion genau
 ### [Fehler melden](/songs/review/)
 
 <Image src={songReports} alt="Die Fehlermeldungen eines Songs mit einer offenen und einer erledigten Meldung" />
+
+## Editor
+
+Der eingebaute Editor schreibt ChordPro für dich: Einfügemenüs, Vorschläge, Vorschau und Hinweise, wo ein Song noch nicht stimmt.
+
+### [Text und Vorschau](/songs/editor/#text-und-vorschau)
+
+<Image src={editor} alt="Der ChordPro-Editor mit Einfügemenüs, Syntaxhervorhebung und Live-Vorschau" />
+
+### [Vorschläge beim Tippen](/songs/editor/#einfügen-statt-tippen)
+
+<Image src={editorChorusLabels} alt="Der Editor mit den Vorschlägen Refrain und Schlussrefrain unter einer Zeile {chorus: }" />
+
+### [Tonart aus den Akkorden](/songs/editor/#einfügen-statt-tippen)
+
+<Image src={songDetailsKey} alt="Die Songdetails ohne Tonart und der Vorschlag G aus den Akkorden unter dem Feld Tonart" />
+
+### [Klammern und Abschnitte schliessen](/songs/editor/#klammern-und-abschnitte-schliessen)
+
+<Image src={editorAutoClose} alt="Der Editor mit einem Chorus-Abschnitt, dessen Ende automatisch eingefügt wurde; auf der leeren Zeile dazwischen steht ein Akkord-Klammerpaar mit dem Cursor" />
+
+### [Taktzeilen als Chord-Grid](/songs/editor/#taktzeilen-als-chord-grid)
+
+<Image src={editorCcli} alt="Der Editor mit zwei gepunktet markierten Blöcken CCLI-Taktzeilen und dem Hinweis mit dem Knopf Umwandeln" />
+
+### [Beschriftungen auf Englisch](/songs/editor/#beschriftungen-auf-englisch)
+
+<Image src={editorEnglishLabels} alt="Der Editor mit deutschen Abschnitts-Beschriftungen und dem geöffneten Menü Zeilen mit dem Befehl Abschnitts-Beschriftungen ins Englische übersetzen" />
+
+### [ChordPro prüfen beim Speichern](/songs/editor/#speichern)
+
+<Image src={editorInvalidKey} alt="ChordPro prüfen? mit Zeile 2: Die Direktive key nennt keine Tonart" />
