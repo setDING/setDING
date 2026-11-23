@@ -59,6 +59,7 @@ function purge(app, org) {
     const steps = [
       ["overlays", "song.organization = {:org}"],
       ["annotations", "song.organization = {:org}"],
+      ["song_reports", "organization = {:org}"],
       ["arrangements", "band.organization = {:org} || song.organization = {:org}"],
       ["attachments", "organization = {:org}"],
       ["setlists", "band.organization = {:org}"],

@@ -256,6 +256,15 @@ Older clients that import songs do not set *to review*.
   permission matrix of ADR-0023. Implementation split into #987 (server), #988
   (data and sync), #989 (review after import and approving), #990 (reporting and
   resolving), #991 (screenshot with markings) and #992 (website page).
+- 2026-11-23: Server implemented (#987): migration `1797000000_song_review.js`,
+  hooks `song_reports.pb.js`, `lib/songs.js`, `lib/trash.js`. Details settled
+  there: an approved song has no reason; a screenshot may be added after the
+  create (a report written offline uploads it later) but never replaced, and
+  the author's other fields are open to changes only while the report is open;
+  an approver may reopen a resolved report; reports cannot be created on a
+  deleted song; a purged song leaves its reports as tombstones without text,
+  location and screenshot; a deleted account leaves its reports without an
+  author (ADR-0052).
 
 ## Open points
 

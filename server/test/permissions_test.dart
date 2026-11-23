@@ -516,6 +516,207 @@ void main() {
     });
   });
 
+  // Song review status and mistake reports (ADR-0060, #987).
+  group('song review and reports', () {
+    late String memberReport; // open, by the member
+    late String adminReport; // open, by the organization admin
+    late String resolvedReport; // by the member, resolved
+    late String otherSong; // a song of the other organization
+
+    Map<String, dynamic> newReport(String org, String song) => {
+      'id': uuid(),
+      'song': song,
+      'organization': org,
+      'category': 'chords',
+      'comment': 'c',
+    };
+
+    setUpAll(() async {
+      otherSong = (await g.createSong(g.admin))['id'] as String;
+      final a = await member.post(
+        'song_reports',
+        newReport(f.orgId, song['id'] as String),
+      );
+      a.expectStatus(200);
+      memberReport = a.json['id'] as String;
+      final b = await orgAdmin.post(
+        'song_reports',
+        newReport(f.orgId, song['id'] as String),
+      );
+      b.expectStatus(200);
+      adminReport = b.json['id'] as String;
+      final c = await member.post(
+        'song_reports',
+        newReport(f.orgId, song['id'] as String),
+      );
+      c.expectStatus(200);
+      resolvedReport = c.json['id'] as String;
+      (await librarian.patch('song_reports', resolvedReport, {
+        'status': 'resolved',
+      })).expectStatus(200);
+    });
+
+    refused(
+      'member sets a song to review',
+      () => member.patch('songs', song['id'] as String, {
+        'review_state': 'to_review',
+      }),
+      unchanged: ('songs', () => song['id'] as String, 'review_state'),
+    );
+    refused(
+      'set planner approves a song',
+      () => planner.patch('songs', song['id'] as String, {
+        'review_state': 'to_review',
+        'review_reason': 'p',
+      }),
+      unchanged: ('songs', () => song['id'] as String, 'review_reason'),
+    );
+    refused(
+      'leader sets a song somebody else created to review',
+      () => leader.patch('songs', song['id'] as String, {
+        'review_state': 'to_review',
+      }),
+      unchanged: ('songs', () => song['id'] as String, 'review_state'),
+    );
+    refused(
+      'admin of another organization sets a song to review',
+      () => g.admin.patch('songs', song['id'] as String, {
+        'review_state': 'to_review',
+      }),
+      unchanged: ('songs', () => song['id'] as String, 'review_state'),
+    );
+    refused(
+      'outsider reports a mistake',
+      () => outsider.post(
+        'song_reports',
+        newReport(f.orgId, song['id'] as String),
+      ),
+    );
+    refused(
+      'admin of another organization reports a mistake',
+      () => g.admin.post(
+        'song_reports',
+        newReport(f.orgId, song['id'] as String),
+      ),
+    );
+    refused(
+      'member reports a song of another organization',
+      () => member.post('song_reports', newReport(f.orgId, otherSong)),
+    );
+    refused(
+      'member reports in the name of somebody else',
+      () => member.post('song_reports', {
+        ...newReport(f.orgId, song['id'] as String),
+        'author': orgAdmin.id,
+      }),
+    );
+    refused(
+      'member creates a report that is already resolved',
+      () => member.post('song_reports', {
+        ...newReport(f.orgId, song['id'] as String),
+        'status': 'resolved',
+        'resolution': 'r',
+      }),
+    );
+    refused(
+      'leader reports a mistake in a deleted song',
+      () => leader.post('song_reports', newReport(f.orgId, deletedLeaderSong)),
+    );
+    refused(
+      'leader of a closed organization reports a mistake',
+      () => closedLeader.post(
+        'song_reports',
+        newReport(closed.orgId, closedSong),
+      ),
+    );
+    refused(
+      'member reads the report of somebody else',
+      () => member.view('song_reports', adminReport),
+    );
+    refused(
+      'member changes the report of somebody else',
+      () => member.patch('song_reports', adminReport, {'comment': 'm'}),
+      unchanged: ('song_reports', () => adminReport, 'comment'),
+    );
+    refused(
+      'member resolves their own report',
+      () => member.patch('song_reports', memberReport, {'status': 'resolved'}),
+      unchanged: ('song_reports', () => memberReport, 'status'),
+    );
+    refused(
+      'member answers their own report',
+      () => member.patch('song_reports', memberReport, {'resolution': 'r'}),
+      unchanged: ('song_reports', () => memberReport, 'resolution'),
+    );
+    refused(
+      'member changes their report after it was resolved',
+      () => member.patch('song_reports', resolvedReport, {'comment': 'm'}),
+      unchanged: ('song_reports', () => resolvedReport, 'comment'),
+    );
+    refused(
+      'set planner resolves a report',
+      () => planner.patch('song_reports', memberReport, {'status': 'resolved'}),
+      unchanged: ('song_reports', () => memberReport, 'status'),
+    );
+    refused(
+      'leader resolves a report on a song somebody else created',
+      () => leader.patch('song_reports', memberReport, {'status': 'resolved'}),
+      unchanged: ('song_reports', () => memberReport, 'status'),
+    );
+    refused(
+      'librarian withdraws the report of somebody else',
+      () => librarian.patch('song_reports', memberReport, {
+        'status': 'withdrawn',
+      }),
+      unchanged: ('song_reports', () => memberReport, 'status'),
+    );
+    refused(
+      'librarian rewrites the comment of a report',
+      () => librarian.patch('song_reports', memberReport, {'comment': 'l'}),
+      unchanged: ('song_reports', () => memberReport, 'comment'),
+    );
+    refused(
+      'admin of another organization resolves a report',
+      () => g.admin.patch('song_reports', memberReport, {'status': 'resolved'}),
+      unchanged: ('song_reports', () => memberReport, 'status'),
+    );
+    refused(
+      'member moves their report to another song',
+      () => member.patch('song_reports', memberReport, {
+        'song': leaderSong['id'],
+      }),
+      unchanged: ('song_reports', () => memberReport, 'song'),
+    );
+    refused(
+      'member hands their report to somebody else',
+      () => member.patch('song_reports', memberReport, {'author': orgAdmin.id}),
+      unchanged: ('song_reports', () => memberReport, 'author'),
+    );
+    refused(
+      'librarian forges who resolved a report',
+      () => librarian.patch('song_reports', memberReport, {
+        'status': 'resolved',
+        'resolved_by': orgAdmin.id,
+      }),
+      unchanged: ('song_reports', () => memberReport, 'resolved_by'),
+    );
+    refused(
+      'member deletes their report',
+      () => member.patch('song_reports', memberReport, {'deleted': true}),
+      unchanged: ('song_reports', () => memberReport, 'deleted'),
+    );
+    refused(
+      'librarian purges a report',
+      () => librarian.patch('song_reports', memberReport, {'purged': true}),
+      unchanged: ('song_reports', () => memberReport, 'purged'),
+    );
+    refused(
+      'member hard-deletes their report',
+      () => member.delete('song_reports', memberReport),
+      unchanged: ('song_reports', () => memberReport, 'deleted'),
+    );
+  });
+
   group('memberships and roles', () {
     refused(
       'member promotes themselves in the band',
@@ -790,6 +991,26 @@ void main() {
         '/api/setding/invites',
         body: {'organization': h.orgId, 'band': h.id},
       )).expectStatus(200);
+    });
+
+    test('members report mistakes, librarians resolve them', () async {
+      final librarian = await pb.signUp('Librarian');
+      await BandFixture.addOrgMember(pb, h.orgId, librarian, role: 'librarian');
+      final song = await h.createSong(h.admin);
+      final r = await h.member.post('song_reports', {
+        'id': uuid(),
+        'song': song['id'],
+        'organization': h.orgId,
+        'category': 'lyrics',
+      });
+      r.expectStatus(200);
+      (await librarian.patch('song_reports', r.json['id'] as String, {
+        'status': 'resolved',
+        'resolution': 'Fixed',
+      })).expectStatus(200);
+      (await librarian.patch('songs', song['id'] as String, {
+        'review_state': 'to_review',
+      })).expectStatus(200);
     });
 
     test('organization admins change organization roles', () async {
