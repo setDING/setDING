@@ -159,6 +159,9 @@ conversion needs no new parsing.
 - 2026-11-22: The page embeds an example song to copy or download
   (`docs/examples/chord-views-de.cho`, `chord-views-en.cho`, #920); a package
   test checks the numerals and Nashville numbers the page lists.
+- 2026-11-23: ADR-0059 (proposed, #971) adds a second spelling, upper case
+  with the chord symbol in the chord style (`IIm7`), next to the case
+  spelling of decisions 3 and 8, after tester feedback.
 
 ## Open points
 
