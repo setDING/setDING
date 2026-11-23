@@ -180,7 +180,13 @@ void main() {
     () async {
       final song = await songs.createSong(source: '{title: S}\n{key: A}');
       final past = await gig('Past', daysAgo(60), [song]);
-      final upcoming = await gig('Upcoming', daysAgo(-3), [song]);
+      // Upcoming by the real clock, which refreshItems() compares with
+      // (#954: three days after the fixed [today] was the real today).
+      final upcoming = await gig(
+        'Upcoming',
+        DateTime.now().add(const Duration(days: 3)),
+        [song],
+      );
       final pastItem = (await sets.getItems(past)).single.item;
       final upcomingItem = (await sets.getItems(upcoming)).single.item;
 
