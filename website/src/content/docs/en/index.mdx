@@ -23,6 +23,7 @@ import set from '../../../../../docs/screenshots/set.png';
 import song from '../../../../../docs/screenshots/song.png';
 import editor from '../../../../../docs/screenshots/editor.png';
 import drums from '../../../../../docs/screenshots/drums.png';
+import lineup from '../../../../../docs/screenshots/set_lineup.png';
 
 <Image src={live} alt="Live mode: a song in three columns with chords, a personal note and chord diagrams" />
 
@@ -32,12 +33,18 @@ import drums from '../../../../../docs/screenshots/drums.png';
   <Card title="Made for the stage" icon="rocket">
     Live mode in full screen; the screen stays on for the whole gig. Turn pages with
     a tap, a swipe or a Bluetooth foot pedal – your hands stay on your instrument.
-    Works completely offline.
+    Your keyboard switches to the right sound for every song over MIDI. Works
+    completely offline.
   </Card>
   <Card title="Sets the whole band shares" icon="list-format">
     Drag and drop songs into a set, add breaks and notes, set the key and the
     sequence per song. Every member gets the set on their device, and setDING shows
     when something is still missing for a gig without a network.
+  </Card>
+  <Card title="The band plays together" icon="puzzle">
+    Every band has its own arrangement of a song, and setDING knows how the band
+    played it last time. Choose who plays a set, substitutes from other bands included.
+    Spot a mistake in rehearsal? Report it right on the song.
   </Card>
   <Card title="Made for drummers too" icon="seti:audio">
     Tempo, time signature and song sequence instead of chords, a count-in and a
@@ -45,13 +52,15 @@ import drums from '../../../../../docs/screenshots/drums.png';
   </Card>
   <Card title="Every musician sees it their way" icon="setting">
     Transpose with one tap, set a capo, change the font size, use B or H notation or
-    Nashville numbers and Roman numerals. Personal notes never change the song for the
-    rest of the band.
+    Nashville numbers and Roman numerals. Cues just for your instrument or your voice,
+    freehand notes right on the sheet – and none of it changes the song for the rest
+    of the band.
   </Card>
   <Card title="Your songs, your format" icon="document">
     Songs are [ChordPro](https://www.chordpro.org/), the open standard for chord
-    sheets. Import them one by one or as a ZIP, attach PDF sheet music, edit them in
-    the built-in editor with a live preview.
+    sheets. Import them one by one or as a ZIP, attach PDF sheet music, write
+    melodies in ABC or Lilypond, keep language versions of a song, edit them in the
+    built-in editor with a live preview.
   </Card>
   <Card title="For bands, schools and churches" icon="star">
     Several bands of an organization share one song library. Invite members with a
@@ -82,6 +91,29 @@ one tap away.
 
 More: [Beat, click and drums](/en/live/beat/) and
 [ChordPro syntax](/en/songs/chordpro/#songs-for-drums).
+
+## Made for bands, not just for one player
+
+Many chord apps are a personal songbook you can share. setDING thinks of the whole
+band: everyone who rehearses, plays the gig, fills in and looks after the songs.
+
+- **A lineup per set** – who plays this gig, with substitutes from other bands of
+  the organization, and a message to everyone in the lineup.
+- **The band's arrangement** – key, sequence and tempo per band, without changing
+  the song for the other bands.
+- **Last played** – the key, tempo and sequence of every gig are
+  kept, along with the repertoire: most played, not played for a while, never
+  played.
+- **Report a mistake** – everyone in the organization reports a wrong chord right on
+  the song; whoever looks after the library sees and resolves the reports.
+- **Review songs** – imported songs stay marked until someone has checked and
+  approved them.
+
+<Image src={lineup} alt="A set with the line Lineup: Anna, Beat, Carla (Substitute)" />
+
+More: [Lineup and substitutes](/en/sets/lineup/),
+[Key and sequence](/en/sets/key-and-sequence/) and
+[Checking songs and reporting mistakes](/en/songs/review/).
 
 ## Take a look
 
