@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:setding/data/database.dart' show SetItemType;
 import 'package:setding/sync/sync_backend.dart';
@@ -743,6 +744,17 @@ class FakeSyncBackend implements SyncBackend {
       language: existing == null ? song.language : existing.language,
       contentRevision: revision,
       created: existing?.created ?? song.created ?? DateTime.now(),
+      // The review status (ADR-0060) like the link fields.
+      reviewState: existing == null ? song.reviewState : existing.reviewState,
+      reviewReason: existing == null
+          ? song.reviewReason
+          : existing.reviewReason,
+      reviewedBy: existing == null
+          ? (song.reviewState == null ? null : song.reviewedBy ?? editor)
+          : existing.reviewedBy,
+      reviewedAt: existing == null
+          ? (song.reviewState == null ? null : DateTime.now())
+          : existing.reviewedAt,
     );
     songs[song.id] = stored;
     return stored;
@@ -768,9 +780,179 @@ class FakeSyncBackend implements SyncBackend {
       language: field == SongLinkField.language ? value : s.language,
       contentRevision: s.effectiveContentRevision,
       created: s.created,
+      reviewState: s.reviewState,
+      reviewReason: s.reviewReason,
+      reviewedBy: s.reviewedBy,
+      reviewedAt: s.reviewedAt,
     );
     songs[songId] = stored;
     return stored;
+  }
+
+  /// Sets the review status of a song (ADR-0060), as the server does for
+  /// [pushSongReview] or a change by [by]: last writer wins, the content
+  /// revision and the last editor stay; an approved song has no reason.
+  RemoteSong putSongReview(
+    String songId,
+    String? state,
+    String? reason, {
+    String? by,
+  }) {
+    final s = songs[songId]!;
+    final stored = RemoteSong(
+      id: s.id,
+      organizationId: s.organizationId,
+      title: s.title,
+      chordpro: s.chordpro,
+      revision: ++_serverRevision,
+      deleted: s.deleted,
+      deletedAt: s.deletedAt,
+      purged: s.purged,
+      createdBy: s.createdBy,
+      updatedBy: s.updatedBy,
+      workId: s.workId,
+      language: s.language,
+      contentRevision: s.effectiveContentRevision,
+      created: s.created,
+      reviewState: state,
+      reviewReason: state == null ? null : reason,
+      reviewedBy: by ?? user?.id,
+      reviewedAt: DateTime.now(),
+    );
+    songs[songId] = stored;
+    return stored;
+  }
+
+  /// Review states pushed with [pushSongReview], in order.
+  final songReviewPushes = <(String, String?, String?)>[];
+
+  @override
+  Future<RemoteSong> pushSongReview(
+    String songId,
+    String? state,
+    String? reason,
+  ) async {
+    _requireUser();
+    pushCount++;
+    if (!songs.containsKey(songId) || refuseReview) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    songReviewPushes.add((songId, state, reason));
+    return putSongReview(songId, state, reason);
+  }
+
+  /// Refuses every review change, as for a person who may not approve.
+  bool refuseReview = false;
+
+  /// Server state: mistake reports by ID (ADR-0060) and screenshot files.
+  final reports = <String, RemoteSongReport>{};
+  final screenshots = <String, List<int>>{};
+
+  /// Refuses every update of a report, as for a person who may not.
+  bool refuseReportUpdates = false;
+
+  /// Simulates a change of a report (by someone else, or the server's
+  /// answer to a push).
+  RemoteSongReport putReport(RemoteSongReport r, {List<int>? screenshot}) {
+    final existing = reports[r.id];
+    final file =
+        existing?.screenshot ??
+        r.screenshot ??
+        (screenshot == null ? null : '${r.id}_shot.webp');
+    if (screenshot != null && file != null) screenshots[file] = screenshot;
+    final stored = RemoteSongReport(
+      id: r.id,
+      songId: r.songId,
+      organizationId: r.organizationId,
+      authorId: existing?.authorId ?? r.authorId ?? user?.id,
+      category: r.category,
+      comment: r.comment,
+      location: r.location,
+      screenshot: file,
+      status: r.status,
+      resolution: r.resolution,
+      resolvedBy: r.status == 'resolved'
+          ? (r.resolvedBy ?? existing?.resolvedBy ?? user?.id)
+          : null,
+      resolvedAt: r.status == 'resolved'
+          ? (r.resolvedAt ?? existing?.resolvedAt ?? DateTime.now())
+          : null,
+      created: existing?.created ?? r.created ?? DateTime.now(),
+      revision: ++_serverRevision,
+      deleted: r.deleted,
+      purged: r.purged,
+    );
+    reports[r.id] = stored;
+    return stored;
+  }
+
+  /// Reports pushed with [pushSongReport]: (report, create, asAuthor,
+  /// asApprover, screenshot uploaded).
+  final reportPushes = <(RemoteSongReport, bool, bool, bool, bool)>[];
+
+  @override
+  Future<List<RemoteSongReport>> pullSongReports(
+    String organizationId,
+    int since,
+  ) async {
+    _requireUser();
+    return reports.values
+        .where((r) => r.organizationId == organizationId && r.revision > since)
+        .toList()
+      ..sort((a, b) => a.revision.compareTo(b.revision));
+  }
+
+  @override
+  Future<RemoteSongReport> pushSongReport(
+    RemoteSongReport report, {
+    required bool create,
+    bool asAuthor = true,
+    bool asApprover = false,
+    List<int>? screenshot,
+    String? screenshotName,
+  }) async {
+    _requireUser();
+    pushCount++;
+    reportPushes.add((
+      report,
+      create,
+      asAuthor,
+      asApprover,
+      screenshot != null,
+    ));
+    if (!songs.containsKey(report.songId)) {
+      throw const BackendException(BackendErrorKind.server);
+    }
+    final existing = reports[report.id];
+    if (create) return putReport(report, screenshot: screenshot);
+    if (existing == null || refuseReportUpdates) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    return putReport(
+      RemoteSongReport(
+        id: report.id,
+        songId: existing.songId,
+        organizationId: existing.organizationId,
+        authorId: existing.authorId,
+        category: asAuthor ? report.category : existing.category,
+        comment: asAuthor ? report.comment : existing.comment,
+        location: asAuthor ? report.location : existing.location,
+        status: report.status,
+        resolution: asApprover ? report.resolution : existing.resolution,
+        resolvedBy: report.status == 'resolved' ? user?.id : null,
+      ),
+      screenshot: existing.screenshot == null ? screenshot : null,
+    );
+  }
+
+  @override
+  Future<Uint8List> fetchReportScreenshot(String reportId, String file) async {
+    _requireUser();
+    final bytes = screenshots[file];
+    if (bytes == null) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    return Uint8List.fromList(bytes);
   }
 
   /// Link fields pushed with [pushSongLink], in order.

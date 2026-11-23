@@ -6,7 +6,7 @@ import 'outbox.dart';
 
 /// Removes everything of the organization [orgId] from this device after it
 /// was closed (ADR-0044): its songs with their attachments, personal
-/// adjustments, annotations and conflicts, its bands with their sets,
+/// adjustments, annotations, mistake reports and conflicts, its bands with their sets,
 /// arrangements and memberships, its people, pending changes and sync
 /// cursors, and the downloaded attachment files. Restoring the organization
 /// brings everything back from the server with the next sync.
@@ -47,6 +47,12 @@ Future<void> removeOrganizationData(
       '(SELECT id FROM songs WHERE library_id = ?)',
       [orgId],
     );
+    final reports = await db
+        .customSelect(
+          'SELECT id, screenshot_file FROM song_reports WHERE library_id = ?',
+          variables: [Variable(orgId)],
+        )
+        .get();
 
     // Pending changes of all of it: they cannot reach the server anymore.
     final records = {
@@ -54,6 +60,7 @@ Future<void> removeOrganizationData(
       ...sets,
       ...annotations,
       for (final a in attachments) a.read<String>('id'),
+      for (final r in reports) r.read<String>('id'),
     };
     final outbox = await db.select(db.syncOutbox).get();
     final gone = [
@@ -90,6 +97,7 @@ Future<void> removeOrganizationData(
     await run('DELETE FROM band_arrangements WHERE song_id IN ($songsOf)');
     await run('DELETE FROM personal_overlays WHERE song_id IN ($songsOf)');
     await run('DELETE FROM annotations WHERE song_id IN ($songsOf)');
+    await run('DELETE FROM song_reports WHERE library_id = ?');
     await run('DELETE FROM attachments WHERE song_id IN ($songsOf)');
     await run('DELETE FROM song_conflicts WHERE song_id IN ($songsOf)');
     await run('DELETE FROM org_plays WHERE organization_id = ?');
@@ -103,7 +111,10 @@ Future<void> removeOrganizationData(
     await run('DELETE FROM bands WHERE organization_id = ?');
     await run('DELETE FROM org_memberships WHERE organization_id = ?');
     await run('DELETE FROM organizations WHERE id = ?');
-    return [for (final a in attachments) a.read<String>('file_name')];
+    return [
+      for (final a in attachments) a.read<String>('file_name'),
+      for (final r in reports) ?r.readNullable<String>('screenshot_file'),
+    ];
   });
   if (storage == null) return;
   for (final file in files) {

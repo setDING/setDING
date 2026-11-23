@@ -17,6 +17,7 @@ import 'import_export.dart' show archiveExtension, safeFileName, sourceWithMeta;
 import 'outbox.dart';
 import 'set_repository.dart';
 import 'song_repository.dart';
+import 'song_review.dart' show SongReviewRepository, songToReview;
 
 const _uuid = Uuid();
 
@@ -420,7 +421,7 @@ class BackupService {
         'artist': ?song.artist,
         'file': ?file,
         'attachments': attachments,
-        ...languageJson(song),
+        ...songFieldsJson(song),
         // Kept when the local library is replaced (ADR-0054, #876).
         'createdAt': ?song.createdAt?.toUtc().toIso8601String(),
       });
@@ -622,11 +623,29 @@ class BackupService {
 
   /// The language version group and the language set by hand of [song]
   /// in a manifest (ADR-0053): `workId` (the group in the exporting
-  /// library) and `language`, each only when set.
-  static Map<String, dynamic> languageJson(SongEntry song) => {
+  /// library) and `language`; and its review status (ADR-0060):
+  /// `reviewState` and `reviewReason`; each only when set.
+  static Map<String, dynamic> songFieldsJson(SongEntry song) => {
     'workId': ?song.workId,
     'language': ?song.language,
+    'reviewState': ?song.reviewState,
+    'reviewReason': ?song.reviewReason,
   };
+
+  /// Sets the review status a song had in an archive (ADR-0060): an
+  /// archive import carries it, it never sets a song to review itself.
+  static Future<void> restoreReview(
+    SongRepository songs,
+    String id,
+    Map<String, dynamic> song,
+  ) async {
+    if (song['reviewState'] != songToReview) return;
+    await SongReviewRepository(
+      songs.db,
+      songs.storage,
+      userId: songs.userId,
+    ).setToReview(id, reason: song['reviewReason'] as String?);
+  }
 
   static Map<String, dynamic> overlayJson(SongOverlay o) => {
     'songId': o.songId,
@@ -1079,6 +1098,7 @@ class BackupService {
         if (song['workId'] case final String work when work.isNotEmpty) {
           await songs.setWorkId(id, work);
         }
+        await restoreReview(songs, id, song);
         for (final a in attachmentsOf(song)) {
           final bytes = contents.files[a['file'] as String? ?? ''];
           if (bytes == null || bytes.length > maxAttachmentBytes) continue;
@@ -1265,6 +1285,7 @@ class BackupService {
       if (song['workId'] case final String work when work.isNotEmpty) {
         (newByWork[work] ??= []).add(id);
       }
+      await BackupService.restoreReview(songs, id, song);
       if (match != null) {
         result.additional.add((
           id: id,

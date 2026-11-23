@@ -17,6 +17,7 @@ import 'engine/change_recorder.dart';
 import 'engine/attachment_sync.dart';
 import 'engine/annotation_sync.dart';
 import 'engine/overlay_sync.dart';
+import 'engine/report_sync.dart';
 import 'engine/set_sync.dart';
 import 'engine/settings_sync.dart';
 import 'engine/song_sync.dart';
@@ -102,6 +103,7 @@ class SyncEngine {
     );
     _overlays = OverlaySync(db, backend, store);
     _annotations = AnnotationSync(db, backend, store);
+    _reports = ReportSync(db, backend, store, this.storage);
     _arrangements = ArrangementSync(db, backend, store, changes: _changes);
     if (settings case final settings?) {
       _settings = SettingsSync(db, backend, store, settings);
@@ -135,6 +137,7 @@ class SyncEngine {
   late final AttachmentSync _attachments;
   late final OverlaySync _overlays;
   late final AnnotationSync _annotations;
+  late final ReportSync _reports;
   late final ArrangementSync _arrangements;
 
   Future<SyncReport>? _running;
@@ -183,6 +186,8 @@ class SyncEngine {
         pulled += r.$1;
         conflicts += r.$2;
         pulled += await _attachments.pull(org, logChangesFor: log);
+        // After the songs: a report belongs to its song (ADR-0060).
+        pulled += await _reports.pull(org);
       }
       for (final band in visible) {
         final log = await logFor(band.id, const [
@@ -329,6 +334,15 @@ class SyncEngine {
         'AND s.library_id IN (${placeholders(libs.length)})',
         [userId, ...libs],
       );
+      // Mistake reports of this user not on the server (ADR-0060).
+      await enqueue(
+        SyncCollection.songReports,
+        'SELECT r.id FROM song_reports r JOIN songs s ON s.id = r.song_id '
+        'WHERE r.revision = 0 AND r.deleted = 0 AND r.author_id = ? '
+        'AND s.deleted = 0 '
+        'AND r.library_id IN (${placeholders(libs.length)})',
+        [userId, ...libs],
+      );
       // Freehand annotations of this user not on the server (ADR-0032).
       await enqueue(
         SyncCollection.annotations,
@@ -355,6 +369,8 @@ class SyncEngine {
       SyncCollection.songs,
       // After its song, which may have to be created first (ADR-0053).
       SyncCollection.songLinks,
+      SyncCollection.songReview,
+      SyncCollection.songReports,
       SyncCollection.setlists,
       SyncCollection.attachments,
       SyncCollection.overlays,
@@ -375,6 +391,12 @@ class SyncEngine {
           if (r == PushResult.conflict) conflicts++;
         case SyncCollection.songLinks:
           if (await _songs.pushLink(entry) == PushResult.done) pushed++;
+        case SyncCollection.songReview:
+          if (await _songs.pushReview(entry) == PushResult.done) pushed++;
+        case SyncCollection.songReports:
+          if (await _reports.push(entry, userId) == PushResult.done) {
+            pushed++;
+          }
         case SyncCollection.setlists:
           if (await _sets.push(entry) == PushResult.done) pushed++;
         case SyncCollection.attachments:

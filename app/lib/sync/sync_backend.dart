@@ -265,12 +265,26 @@ class RemoteSong {
     this.language,
     this.contentRevision = 0,
     this.created,
+    this.reviewState,
+    this.reviewReason,
+    this.reviewedBy,
+    this.reviewedAt,
   });
 
   final String id;
   final String organizationId;
   final String title;
   final String chordpro;
+
+  /// Review status (ADR-0060): `to_review` or null (approved), with its
+  /// reason; last writer wins, sent on create and by
+  /// [SyncBackend.pushSongReview], never with an update of the content.
+  final String? reviewState;
+  final String? reviewReason;
+
+  /// Who set the review status and when; set by the server, never sent.
+  final String? reviewedBy;
+  final DateTime? reviewedAt;
   final int revision;
   final bool deleted;
 
@@ -305,6 +319,55 @@ class RemoteSong {
   /// The revision the content of the song last changed at.
   int get effectiveContentRevision =>
       contentRevision > 0 ? contentRevision : revision;
+}
+
+/// A mistake report of a song as stored on the server (ADR-0060).
+@immutable
+class RemoteSongReport {
+  const RemoteSongReport({
+    required this.id,
+    required this.songId,
+    required this.organizationId,
+    required this.category,
+    this.authorId,
+    this.comment = '',
+    this.location,
+    this.screenshot,
+    this.status = 'open',
+    this.resolution,
+    this.resolvedBy,
+    this.resolvedAt,
+    this.created,
+    this.revision = 0,
+    this.deleted = false,
+    this.purged = false,
+  });
+
+  final String id;
+  final String songId;
+  final String organizationId;
+
+  /// Set by the server: the person who reported it; null once they deleted
+  /// their account.
+  final String? authorId;
+  final String category;
+  final String comment;
+
+  /// Where in the song (JSON object), or null.
+  final Map<String, dynamic>? location;
+
+  /// Name of the screenshot file on the server, or null.
+  final String? screenshot;
+  final String status;
+  final String? resolution;
+
+  /// Set by the server when the report is resolved.
+  final String? resolvedBy;
+  final DateTime? resolvedAt;
+  final DateTime? created;
+  final int revision;
+  final bool deleted;
+  final bool purged;
 }
 
 /// A band arrangement as stored on the server (ADR-0025).
@@ -957,6 +1020,41 @@ abstract class SyncBackend {
     SongLinkField field,
     String? value,
   );
+
+  /// Sets the review status of an existing song ([state] `to_review` or
+  /// null for approved, with [reason]), last writer wins without a base
+  /// revision (ADR-0060), and returns the server state.
+  Future<RemoteSong> pushSongReview(
+    String songId,
+    String? state,
+    String? reason,
+  );
+
+  /// Mistake reports of an organization changed after revision [since]
+  /// that the signed-in user may read (ADR-0060), in revision order.
+  Future<List<RemoteSongReport>> pullSongReports(
+    String organizationId,
+    int since,
+  );
+
+  /// Creates ([create]) or updates a mistake report and returns the server
+  /// state. An update sends the fields of the author ([asAuthor]: category,
+  /// comment, location) and of the person who resolves it ([asApprover]:
+  /// resolution); the status always. [screenshot] (with its file name,
+  /// e.g. `x.webp`) is uploaded with the create or added to a report
+  /// without one; screenshots are never replaced.
+  Future<RemoteSongReport> pushSongReport(
+    RemoteSongReport report, {
+    required bool create,
+    bool asAuthor = true,
+    bool asApprover = false,
+    List<int>? screenshot,
+    String? screenshotName,
+  });
+
+  /// The screenshot [file] of the report [reportId] (protected, needs read
+  /// access). Throws a [BackendException].
+  Future<Uint8List> fetchReportScreenshot(String reportId, String file);
 
   /// Creates or updates a set (last writer wins) and returns the server
   /// state.

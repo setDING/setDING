@@ -8,6 +8,7 @@ import 'package:setding/data/change_log.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/data/song_repository.dart';
+import 'package:setding/data/song_review.dart';
 import 'package:drift/drift.dart' show OrderingTerm, Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -42,7 +43,22 @@ void downgradeToSchema19(Database raw) {
 /// Turns a current database back into schema 35: overlays without
 /// stacked choruses (#953).
 void downgradeToSchema35(Database raw) {
+  downgradeToSchema36(raw);
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN stacked_choruses');
+}
+
+/// Turns a current database back into schema 36: songs without a review
+/// status, no mistake reports (ADR-0060).
+void downgradeToSchema36(Database raw) {
+  raw.execute('DROP TABLE song_reports');
+  for (final column in [
+    'review_state',
+    'review_reason',
+    'reviewed_by',
+    'reviewed_at',
+  ]) {
+    raw.execute('ALTER TABLE songs DROP COLUMN $column');
+  }
 }
 
 /// Turns a current database back into schema 34: the same tables, but
@@ -1315,6 +1331,36 @@ void main() {
       (overlay.transpose, overlay.verseChords, overlay.stackedChoruses),
       (2, VerseChords.stacked, false),
     );
+    await upgraded.close();
+  });
+
+  test('upgrades a schema 36 database: songs are approved and have no '
+      'reports (ADR-0060)', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final storage = FileAttachmentStorage(dir);
+    final song = await SongRepository(
+      current,
+      storage,
+    ).createSong(source: '{title: Old}');
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema36(raw);
+    raw.execute('PRAGMA user_version = 36');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final row = await (upgraded.select(
+      upgraded.songs,
+    )..where((s) => s.id.equals(song))).getSingle();
+    expect(row.reviewState, isNull);
+    final review = SongReviewRepository(upgraded, storage);
+    await review.setToReview(song, reason: 'Check');
+    await review.report(song, category: SongReportCategory.chords);
+    expect(await review.watchCounts(localBandId).first, (
+      toReview: 1,
+      reported: 1,
+    ));
     await upgraded.close();
   });
 }

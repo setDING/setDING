@@ -10,6 +10,14 @@ abstract final class SyncCollection {
   /// per field; the outbox record ID is [songLinkRecordId]. Never a server
   /// collection of its own.
   static const songLinks = 'song_links';
+
+  /// The review status of a song (ADR-0060), pushed on its own, last writer
+  /// wins; the outbox record ID is the song ID. Never a server collection
+  /// of its own.
+  static const songReview = 'song_review';
+
+  /// Mistake reports (ADR-0060); the outbox record ID is the report ID.
+  static const songReports = 'song_reports';
   static const setlists = 'setlists';
   static const attachments = 'attachments';
 
