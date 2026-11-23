@@ -1,6 +1,6 @@
 # ADR-0062: First name, last name and nickname of people
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-23
 
 ## Context
@@ -102,6 +102,7 @@ The decisions (owner, 2026-11-23):
 - 2026-11-23: Proposed (#1039): separate first and last name (required) and an
   optional nickname; display format as a personal setting with four variants;
   migration of existing names and a prompt for missing parts.
+- 2026-11-23: Accepted by the owner (#1043), implemented with it.
 
 ## Open points
 
