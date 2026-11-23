@@ -1,4 +1,5 @@
-import 'package:chordpro/chordpro.dart' show ChordNotation, ChordView;
+import 'package:chordpro/chordpro.dart'
+    show ChordNotation, ChordView, NumeralSpelling;
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -104,6 +105,23 @@ void main() {
         read({'chordView': 'chords', 'nashville': true}).chordView,
         ChordView.nashville,
       );
+    });
+
+    test('numeral spelling: case by default, synced with the person '
+        '(ADR-0059)', () {
+      expect(const AppSettings().numeralSpelling, NumeralSpelling.casing);
+      expect(AppSettings.fromJson({}).numeralSpelling, NumeralSpelling.casing);
+      expect(
+        AppSettings.fromJson({'numeralSpelling': 'klingon'}).numeralSpelling,
+        NumeralSpelling.casing,
+      );
+      const on = AppSettings(numeralSpelling: NumeralSpelling.chordSymbol);
+      expect(on.toJson()['numeralSpelling'], 'chordSymbol');
+      expect(
+        AppSettings.fromJson(on.toJson()).numeralSpelling,
+        NumeralSpelling.chordSymbol,
+      );
+      expect(AppSettings.scopes['numeralSpelling'], SettingSyncScope.personal);
     });
 
     test('a repeated chorus is shown again unless switched on', () {

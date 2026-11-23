@@ -865,6 +865,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Chords (Am7), Nashville numbers (6m7) or Roman numerals (vi7). Numbers and numerals need a key in the song.';
 
   @override
+  String get settingsNumeralSpelling => 'Numeral spelling';
+
+  @override
+  String get settingsNumeralSpellingHint =>
+      'How Roman numerals show the chord: by case, ii7 – V7 – IΔ7, or upper case with the chord symbol, IIm7 – V7 – Imaj7. The chord symbol follows the chord style.';
+
+  @override
+  String get numeralSpellingCasing => 'Case';
+
+  @override
+  String get numeralSpellingChordSymbol => 'Chord symbol';
+
+  @override
   String get settingsChordStyle => 'Chord style';
 
   @override

@@ -114,6 +114,7 @@ class AppSettings {
     this.language = LanguageMode.system,
     this.notation = ChordNotation.international,
     this.chordView = ChordView.chords,
+    this.numeralSpelling = NumeralSpelling.casing,
     this.chordStyle = ChordStyle.asWritten,
     this.chordSuperscript = false,
     this.displayMode = DisplayMode.lyricsAndChords,
@@ -168,6 +169,9 @@ class AppSettings {
 
   /// Chord names, Nashville numbers or Roman numerals (ADR-0055).
   final ChordView chordView;
+
+  /// How Roman numerals show the quality: `ii7` or `IIm7` (ADR-0059).
+  final NumeralSpelling numeralSpelling;
 
   /// Spelling of chord suffixes (ADR-0022).
   final ChordStyle chordStyle;
@@ -387,6 +391,7 @@ class AppSettings {
     LanguageMode? language,
     ChordNotation? notation,
     ChordView? chordView,
+    NumeralSpelling? numeralSpelling,
     ChordStyle? chordStyle,
     bool? chordSuperscript,
     DisplayMode? displayMode,
@@ -438,6 +443,7 @@ class AppSettings {
     language: language ?? this.language,
     notation: notation ?? this.notation,
     chordView: chordView ?? this.chordView,
+    numeralSpelling: numeralSpelling ?? this.numeralSpelling,
     chordStyle: chordStyle ?? this.chordStyle,
     chordSuperscript: chordSuperscript ?? this.chordSuperscript,
     displayMode: displayMode ?? this.displayMode,
@@ -496,6 +502,7 @@ class AppSettings {
     'chordView': SettingSyncScope.personal,
     // Written for older app versions, which only know Nashville numbers.
     'nashville': SettingSyncScope.personal,
+    'numeralSpelling': SettingSyncScope.personal,
     'chordStyle': SettingSyncScope.personal,
     'chordSuperscript': SettingSyncScope.personal,
     'displayMode': SettingSyncScope.personal,
@@ -568,6 +575,7 @@ class AppSettings {
     'notation': notation.name,
     'chordView': chordView.name,
     'nashville': chordView.isDegrees,
+    'numeralSpelling': numeralSpelling.name,
     'chordStyle': chordStyle.name,
     'chordSuperscript': chordSuperscript,
     'displayMode': displayMode.name,
@@ -656,6 +664,11 @@ class AppSettings {
       notation: pick(ChordNotation.values, 'notation', d.notation),
       chordView:
           chordViewOf(json['chordView'], json['nashville']) ?? d.chordView,
+      numeralSpelling: pick(
+        NumeralSpelling.values,
+        'numeralSpelling',
+        d.numeralSpelling,
+      ),
       chordStyle: pick(ChordStyle.values, 'chordStyle', d.chordStyle),
       chordSuperscript: flag('chordSuperscript', d.chordSuperscript),
       displayMode: pick(DisplayMode.values, 'displayMode', d.displayMode),

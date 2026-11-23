@@ -250,6 +250,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
           capo: overlay.capoFret,
           notation: settings.notation,
           view: overlay.chordView ?? settings.chordView,
+          numeralSpelling: settings.numeralSpelling,
           style: settings.chordStyle,
           superscript: settings.chordSuperscript,
         );
@@ -717,6 +718,7 @@ class _FittedSongBody extends ConsumerWidget {
       formatter.capo,
       formatter.notation,
       formatter.view,
+      formatter.numeralSpelling,
       lyricsOnly,
       overlay.notes,
       diagrams,

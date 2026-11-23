@@ -1910,6 +1910,7 @@ class _ChordProPage extends ConsumerWidget {
       capo: overlay.capoFret,
       notation: settings.notation,
       view: overlay.chordView ?? settings.chordView,
+      numeralSpelling: settings.numeralSpelling,
       style: settings.chordStyle,
       superscript: settings.chordSuperscript,
     );
@@ -2035,6 +2036,7 @@ class _ChordProPage extends ConsumerWidget {
                       formatter.capo,
                       formatter.notation,
                       formatter.view,
+                      formatter.numeralSpelling,
                       formatter.style,
                       formatter.superscript,
                       lyricsOnly,
@@ -2099,6 +2101,7 @@ class _ChordProPage extends ConsumerWidget {
                     formatter.capo,
                     formatter.notation,
                     formatter.view,
+                    formatter.numeralSpelling,
                     formatter.style,
                     formatter.superscript,
                     lyricsOnly,
