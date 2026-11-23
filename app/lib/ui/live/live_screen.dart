@@ -634,8 +634,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   /// Width of the whole stage, for the tap zones.
   double _stageWidth = 0;
 
-  /// Whether the stage shows only the beat and the set (small screens in
-  /// drummer mode, ADR-0026).
+  /// Whether a turn goes to the next song, never scrolls (drummer mode,
+  /// ADR-0026): on phones, and in the drum panel while it shows the set
+  /// (#974).
   bool _compact = false;
 
   /// The tap zones are thirds of the whole stage (ADR-0007), also beside the
@@ -821,25 +822,31 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
             Expanded(
               child: LayoutBuilder(
                 builder: (context, outer) {
-                  // Small screens (phones, ADR-0026): only the beat and the
-                  // set, no song map; the set list turns.
-                  final compact =
+                  // Phones (ADR-0026): every turn is a song.
+                  final phone =
                       showSongMap &&
                       math.min(outer.maxWidth, outer.maxHeight) < _compactDrums;
                   // Wide song map (ADR-0026): the beat large and the set on
                   // the left, the song on the right.
                   final wide =
-                      showSongMap && !compact && outer.maxWidth >= _wideSongMap;
+                      showSongMap && !phone && outer.maxWidth >= _wideSongMap;
+                  // Below the wide song map (phones, tablets in portrait):
+                  // the drum panel fills the stage, the beat with the set
+                  // or the song map (#421, #952, #974).
+                  final compact = showSongMap && !wide;
                   final panelWidth = (outer.maxWidth * 0.36).clamp(
                     300.0,
                     480.0,
                   );
                   _stageWidth = outer.maxWidth;
-                  _compact = compact;
-                  // Small screens show the song map of the current song
+                  // The drum panel shows the song map of the current song
                   // instead of the set on demand (#952); the beat stays.
                   final compactMap =
                       compact && drumView == DrumPanelView.songMap;
+                  // On tablets the pedal scrolls the song map and turns at
+                  // its end (#974); on phones and beside the set it turns
+                  // songs.
+                  _compact = phone || (compact && !compactMap);
                   final compactLandscapeStage =
                       outer.maxWidth > outer.maxHeight;
                   // The divider after the panel is one pixel wide; on a
@@ -1028,8 +1035,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                             onExit: () => Navigator.pop(context),
                             onOverview: () => _showOverview(context),
                             // Key, font and Nashville change the song,
-                            // which small screens do not show (ADR-0026).
-                            onAdjust: items[_index].song == null || compact
+                            // which phones and the set do not show
+                            // (ADR-0026, #974).
+                            onAdjust:
+                                items[_index].song == null ||
+                                    phone ||
+                                    (compact && !compactMap)
                                 ? null
                                 : _adjust,
                             // The click also on small screens (#698).
