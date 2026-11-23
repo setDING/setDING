@@ -103,6 +103,9 @@ decision 4).
   use numerals (owner, #971).
 - 2026-11-23: Accepted by the owner (#971). Implementation: `chordpro`
   conversion #975, app setting #976, website page with screenshot #978.
+- 2026-11-23: Implemented in the `chordpro` package (#975):
+  `NumeralSpelling`, `Chord.toNumeralParts(spelling:, style:)`,
+  `ChordFormatter.numeralSpelling`.
 
 ## Open points
 

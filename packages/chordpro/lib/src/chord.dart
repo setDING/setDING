@@ -30,6 +30,17 @@ enum ChordView {
   bool get isDegrees => this != chords;
 }
 
+/// How Roman numerals show the chord quality (ADR-0059).
+enum NumeralSpelling {
+  /// The case carries the quality and the minor sign is dropped:
+  /// `ii7 – V7 – IΔ7` (ADR-0055).
+  casing,
+
+  /// The numeral is always upper case and the chord suffix follows it in
+  /// the chord style, like a Nashville number: `IIm7 – V7 – Imaj7`.
+  chordSymbol,
+}
+
 const _sharpNames = [
   'C',
   'C#',
@@ -237,8 +248,13 @@ class Chord {
         style,
       );
 
-  /// Formats the chord as a Roman numeral relative to [key] (ADR-0055).
-  String toNumeral(Key key) => chordPartsText(toNumeralParts(key));
+  /// Formats the chord as a Roman numeral relative to [key] (ADR-0055),
+  /// in the given [spelling] (ADR-0059).
+  String toNumeral(
+    Key key, {
+    NumeralSpelling spelling = NumeralSpelling.casing,
+    ChordStyle style = ChordStyle.asWritten,
+  }) => chordPartsText(toNumeralParts(key, spelling: spelling, style: style));
 
   /// Roman numeral as parts: upper case for major, dominant and augmented
   /// chords, lower case for minor, diminished and half-diminished ones,
@@ -246,9 +262,20 @@ class Chord {
   /// count from the tonic with the major scale as reference, also in minor
   /// keys (`♭III` in A minor). The bass is an arabic degree (`I/3`). A suffix
   /// that is not understood stays as written behind an upper-case numeral.
-  List<ChordPart> toNumeralParts(Key key) {
-    final parsed = parsedSuffix;
+  ///
+  /// With [NumeralSpelling.chordSymbol] the numeral is always upper case
+  /// and the suffix is spelled in [style] like a Nashville number
+  /// (`IIm7`, `II−7`; ADR-0059); [style] has no effect otherwise.
+  List<ChordPart> toNumeralParts(
+    Key key, {
+    NumeralSpelling spelling = NumeralSpelling.casing,
+    ChordStyle style = ChordStyle.asWritten,
+  }) {
     final degree = _numerals[(root.pitch - key.tonic.pitch) % 12];
+    if (spelling == NumeralSpelling.chordSymbol) {
+      return _parts(degree, bass == null ? null : _bassNumeral(key), style);
+    }
+    final parsed = parsedSuffix;
     final lower =
         parsed != null &&
         (parsed.quality == ChordQuality.minor ||
@@ -259,10 +286,13 @@ class Chord {
       ChordPart(numeral),
       if (parsed != null) ...parsed.formatNumeral(),
       if (parsed == null && suffix.isNotEmpty) ChordPart(suffix),
-      if (bass != null)
-        ChordPart('/${_degree(bass!.pitch, key).replaceFirst('b', '♭')}'),
+      if (bass != null) ChordPart('/${_bassNumeral(key)}'),
     ];
   }
+
+  /// The bass of a numeral as an arabic degree with a real flat (`♭7`).
+  String _bassNumeral(Key key) =>
+      _degree(bass!.pitch, key).replaceFirst('b', '♭');
 
   static const _numerals = [
     'I',

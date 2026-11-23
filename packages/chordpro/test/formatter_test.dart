@@ -103,6 +103,19 @@ void main() {
     ]);
   });
 
+  test('Roman numerals with chord symbol follow the chord style', () {
+    final f = ChordFormatter.forSong(
+      song,
+      transpose: 5,
+      view: ChordView.numerals,
+      numeralSpelling: NumeralSpelling.chordSymbol,
+      style: ChordStyle.jazz,
+    );
+    expect(chords(f), ['I', 'VI−', 'IV', 'V7/7', 'N.C.', 'Riff']);
+    expect(f.withCapo(2).numeralSpelling, NumeralSpelling.chordSymbol);
+    expect(f.withCapo(2).style, ChordStyle.jazz);
+  });
+
   test('Roman numerals without key fall back to chord names', () {
     final noKey = parseChordPro('[Am]a');
     final f = ChordFormatter.forSong(noKey, view: ChordView.numerals);
