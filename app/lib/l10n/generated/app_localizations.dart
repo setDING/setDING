@@ -8676,6 +8676,30 @@ abstract class AppLocalizations {
   /// **'So liest du Nashville-Zahlen und Stufen'**
   String get chordViewDocs;
 
+  /// No description provided for @docsHelp.
+  ///
+  /// In de, this message translates to:
+  /// **'Hilfe: {topic}'**
+  String docsHelp(String topic);
+
+  /// No description provided for @editorDocsTopic.
+  ///
+  /// In de, this message translates to:
+  /// **'ChordPro-Editor'**
+  String get editorDocsTopic;
+
+  /// No description provided for @settingsDocs.
+  ///
+  /// In de, this message translates to:
+  /// **'Anleitung'**
+  String get settingsDocs;
+
+  /// No description provided for @settingsDocsHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Dokumentation von setDING auf setding.app öffnen. Das Buch-Symbol oben öffnet die Seite zum gerade offenen Bereich.'**
+  String get settingsDocsHint;
+
   /// No description provided for @overviewReadiness.
   ///
   /// In de, this message translates to:

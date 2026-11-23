@@ -5734,6 +5734,21 @@ class AppLocalizationsDe extends AppLocalizations {
   String get chordViewDocs => 'So liest du Nashville-Zahlen und Stufen';
 
   @override
+  String docsHelp(String topic) {
+    return 'Hilfe: $topic';
+  }
+
+  @override
+  String get editorDocsTopic => 'ChordPro-Editor';
+
+  @override
+  String get settingsDocs => 'Anleitung';
+
+  @override
+  String get settingsDocsHint =>
+      'Die Dokumentation von setDING auf setding.app öffnen. Das Buch-Symbol oben öffnet die Seite zum gerade offenen Bereich.';
+
+  @override
   String get overviewReadiness => 'Bühnencheck';
 
   @override

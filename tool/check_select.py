@@ -68,6 +68,8 @@ RULES = [
     ('app/assets/', APP + ['website']),
     # The version in the pubspec needs its CHANGELOG.md section.
     ('app/pubspec.yaml', APP + ['changelog']),
+    # The website tests that the app's help links have their pages (#993).
+    ('app/lib/ui/widgets/docs_link.dart', APP + ['website']),
     ('app/lib/', APP),
     ('app/web/', APP),
     ('app/pubspec.lock', APP),

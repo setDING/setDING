@@ -3577,6 +3577,17 @@
   "liveChordViewNashville": "1",
   "liveChordViewNumerals": "I",
   "chordViewDocs": "So liest du Nashville-Zahlen und Stufen",
+  "docsHelp": "Hilfe: {topic}",
+  "@docsHelp": {
+    "placeholders": {
+      "topic": {
+        "type": "String"
+      }
+    }
+  },
+  "editorDocsTopic": "ChordPro-Editor",
+  "settingsDocs": "Anleitung",
+  "settingsDocsHint": "Die Dokumentation von setDING auf setding.app öffnen. Das Buch-Symbol oben öffnet die Seite zum gerade offenen Bereich.",
   "overviewReadiness": "Bühnencheck",
   "readinessAllSet": "Alles bereit für «{set}»",
   "@readinessAllSet": {

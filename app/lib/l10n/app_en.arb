@@ -3078,6 +3078,17 @@
     "description": "Short label of the Roman numerals segment in the live control bar."
   },
   "chordViewDocs": "How to read Nashville numbers and numerals",
+  "docsHelp": "Help: {topic}",
+  "@docsHelp": {
+    "placeholders": {
+      "topic": {
+        "type": "String"
+      }
+    }
+  },
+  "editorDocsTopic": "ChordPro editor",
+  "settingsDocs": "User guide",
+  "settingsDocsHint": "Open the setDING documentation on setding.app. The book icon at the top opens the page about the open section.",
   "overviewReadiness": "Ready to play",
   "readinessAllSet": "All set for “{set}”",
   "readinessAllSetNoSet": "All set",

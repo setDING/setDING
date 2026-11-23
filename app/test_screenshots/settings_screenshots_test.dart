@@ -213,6 +213,31 @@ void main() {
     });
   }
 
+  // In-app help (#993): the book icon next to the title of a category and
+  // the user guide entry under Help & info.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('settings help $lang', (tester) async {
+      // Upright, so the title with its help button and the entry at the
+      // end of the category fit together.
+      useTabletSize(tester, landscape: false);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: const SettingsScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await openSettingsCategory(tester, SettingsCategory.about);
+      expect(find.byKey(const Key('settings-category-docs')), findsOneWidget);
+      expect(find.byKey(const Key('settings-docs')), findsOneWidget);
+      await shot(tester, '${lang}_51_settings_help');
+      await app.dispose(tester);
+    });
+  }
+
   // Restoring by replacing the local library (ADR-0054): the choice in the
   // import of a backup of the local library and the preview with the
   // safety backup.

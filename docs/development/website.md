@@ -50,6 +50,11 @@ do not compile and on broken internal links.
   its page, rendered with `make screenshots ONLY="<test name>"`; see
   [`docs/screenshots/README.md`](../screenshots/README.md). Pages that only explain
   concepts or installation (`start/`, `bands/roles`) need none.
+- **The app links to pages here** (#993): its help buttons open the pages of
+  `DocsPage` in `app/lib/ui/widgets/docs_link.dart`, never heading anchors.
+  Renaming or moving such a page changes the enum in the same PR;
+  `src/app-docs-links.test.ts` fails otherwise. A new language of the site is
+  one entry in `docsSiteLanguages` there.
 
 ## News page and version
 
