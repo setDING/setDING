@@ -1,4 +1,18 @@
 {
+  "0.21.0": {
+    "de": [
+      "Jedes Konto hat jetzt Vor- und Nachname, dazu optional einen Spitznamen; wie Namen angezeigt werden, wählst du in den Einstellungen.",
+      "Der Editor übersetzt deutsche Abschnitts-Beschriftungen wie «Strophe» oder «Refrain» ins Englische.",
+      "In den Anzeige-Einstellungen wählst du einen Abschnittstyp, indem du ihn in der Vorschau antippst.",
+      "Anhänge kannst du als Datei speichern, und ein einzeln importierter Song öffnet sich gleich nach dem Import."
+    ],
+    "en": [
+      "Every account now has a first and last name, plus an optional nickname; choose in the settings how names are shown.",
+      "The editor translates German section labels such as “Strophe” or “Refrain” into English.",
+      "In the display settings, pick a section type by tapping it in the preview.",
+      "Save attachments as files, and a single imported song opens right after the import."
+    ]
+  },
   "0.20.0": {
     "de": [
       "Pro Set legst du fest, wer spielt, und benachrichtigst die Besetzung; Aushilfen sehen nur ihre Sets.",

@@ -8,6 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 with the setDING-specific bump rules of
 [ADR-0028](docs/architecture/adr/0028-versioning-scheme.md).
 
+## [0.21.0] - 2026-11-23
+
+### Added
+
+- First and last name for every account, plus an optional nickname (ADR-0062): sign-up and *Change name* ask for them, accounts without a full name are asked once after sign-in, and the setting *Show names as* chooses how other people's names appear in member lists, lineups and recent changes; existing names are split automatically ([#1043](https://github.com/tafli/setDING/pull/1043))
+- The editor can translate German section labels such as *Strophe* or *Refrain* into English, for the selected lines or the whole song ([#1038](https://github.com/tafli/setDING/pull/1038))
+- In the song display settings, tapping a section in the preview selects its type, and the preview uses the whole page ([#1041](https://github.com/tafli/setDING/pull/1041))
+- The CCLI number in the sources panel links to the song on SongSelect ([#1037](https://github.com/tafli/setDING/pull/1037))
+- An attachment can be saved as a file ([#1029](https://github.com/tafli/setDING/pull/1029))
+- Importing a single song opens it right after the import ([#1030](https://github.com/tafli/setDING/pull/1030))
+
+### Changed
+
+- Sequence chips start dragging after 250 ms instead of 500 ms ([#1028](https://github.com/tafli/setDING/pull/1028))
+- Destructive menu actions such as *Delete* come last in every menu, after a divider ([#1032](https://github.com/tafli/setDING/pull/1032))
+
+### Fixed
+
+- Swiss German lyrics are detected as Swiss German instead of German ([#1034](https://github.com/tafli/setDING/pull/1034))
+
 ## [0.20.0] - 2026-11-23
 
 ### Added
@@ -431,6 +451,7 @@ with the setDING-specific bump rules of
 
 - First release, built on GitHub Actions for Linux, Android and Windows ([#138](https://github.com/tafli/setDING/pull/138))
 
+[0.21.0]: https://github.com/tafli/setDING/compare/v0.20.0...v0.21.0
 [0.20.0]: https://github.com/tafli/setDING/compare/v0.19.0...v0.20.0
 [0.19.0]: https://github.com/tafli/setDING/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/tafli/setDING/compare/v0.17.0...v0.18.0
