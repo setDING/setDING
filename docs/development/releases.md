@@ -351,3 +351,8 @@ The AppImage updates itself: it learns about a newer release from the update che
 the release of the tag `vX.Y.Z`, checks it against `SHA256SUMS`, replaces its own file
 and restarts. Every release must therefore contain the AppImage under this name. The
 unpacked tar.gz never updates itself.
+
+The AppImage has no desktop entry outside its file. *Settings → Storage & info →
+Add to application menu* writes one with the icon to `~/.local/share`, like
+`install-desktop-entry.sh` of the tar.gz (#1006); if the AppImage is moved, the app
+points the entry at its new place when it starts.

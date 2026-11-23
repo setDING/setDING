@@ -1231,6 +1231,34 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get appMenuEntryAdd => 'Add to application menu';
+
+  @override
+  String get appMenuEntryAddHint =>
+      'setDING with its icon in your desktop\'s start menu';
+
+  @override
+  String get appMenuEntryInstalled => 'In the application menu';
+
+  @override
+  String get appMenuEntryInstalledHint =>
+      'The start menu starts this AppImage file';
+
+  @override
+  String get appMenuEntryRemove => 'Remove';
+
+  @override
+  String get appMenuEntryAdded => 'setDING is now in the application menu';
+
+  @override
+  String get appMenuEntryRemoved => 'setDING removed from the application menu';
+
+  @override
+  String appMenuEntryFailed(String error) {
+    return 'Application menu not changed: $error';
+  }
+
+  @override
   String get settingsLogCopy => 'Copy diagnostic log';
 
   @override

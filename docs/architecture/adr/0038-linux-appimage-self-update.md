@@ -42,6 +42,20 @@ work the same way.
     is not single-instance; the delay keeps the two from sharing the database).
   - If the folder of the AppImage is not writable, the update fails with the usual
     message; the person can download the new AppImage by hand.
+- **Application menu entry (AppImage only, #1006):** under *Storage & info → This
+  device*, **Add to application menu** writes the desktop entry
+  `app.setding.desktop` (from the template in the bundle, `Exec` = the AppImage
+  file, marked `X-setDING-AppImage=true`) and the icon (PNG 256 px and SVG, from
+  the bundle's `data/`) to `$XDG_DATA_HOME` (`~/.local/share`), like
+  `install-desktop-entry.sh` of the tar.gz, then refreshes the menu
+  (`update-desktop-database`, `kbuildsycoca6/5`, each optional). **Remove** deletes
+  them again. Never without a tap. Under Wayland the entry also gives the window
+  its icon (ADR-0019).
+  - The in-app update keeps the file's name and place, so the entry keeps
+    working. If an entry made by an AppImage starts a file that is gone (the
+    AppImage was moved or renamed), the app points it at itself when it starts;
+    an entry of the tar.gz or of another AppImage that still exists is left
+    alone (*Add* replaces it).
 - The **tar.gz stays** for people who prefer it (and for `install-desktop-entry.sh`).
 
 ## Alternatives considered
@@ -53,7 +67,7 @@ work the same way.
 | AppImage with zsync update information and AppImageUpdate | Standard tooling, delta updates | Needs an extra tool; does not fit the app's own update flow (ADR-0035/0036) |
 | Flatpak on Flathub | Updates by the system, desktop integration, sandbox | Flathub review, build from source in their builder (awkward for Flutter), every release waits for Flathub |
 | .deb with an own APT repository | Native updates on Debian/Ubuntu | Only Debian-like distributions; a signed repository to host |
-| **AppImage with in-app update (chosen)** | One file, atomic replacement, same flow as Windows, no account or review | Needs FUSE on the system; no desktop entry without tools like Gear Lever or AppImageLauncher; not signed |
+| **AppImage with in-app update (chosen)** | One file, atomic replacement, same flow as Windows, no account or review | Needs FUSE on the system; the desktop entry is added from inside the app (#1006); not signed |
 
 ## Consequences
 
@@ -79,9 +93,12 @@ work the same way.
   started on the desktop; the in-app update is tested with the next release.
 - 2026-11-18: Renumbered from ADR-0037 to ADR-0038: the SBOM ADR (#506) took
   number 0037 while this one was in review.
+- 2026-11-23: Open point "desktop integration without extra tools" resolved
+  (#1006): the AppImage adds its own application menu entry and icon on
+  request (*Storage & info*), and the entry follows a moved AppImage. The owner
+  chose this over shipping the icon as a separate release asset.
 
 ## Open points
 
-- Desktop integration (a desktop entry for the AppImage) without extra tools.
 - Signing the AppImage (embedded GPG signature) together with the Windows signing
   question of ADR-0035.

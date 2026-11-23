@@ -5,6 +5,9 @@ sidebar:
   order: 2
 ---
 
+import { Image } from 'astro:assets';
+import menuEntry from '../../../../../../docs/screenshots/settings_app_menu_entry.png';
+
 All versions are in the
 [releases on GitHub](https://github.com/tafli/setDING/releases/latest).
 
@@ -46,8 +49,23 @@ again; your data stays. The file must be in a folder you can write to (e.g. your
 home folder). If the AppImage does not start, FUSE is missing; install your
 distribution's `fuse3` package.
 
+### In the application menu
+
+To have setDING with its icon in your desktop's start menu, click **Add to
+application menu** under **Settings → Storage & info → This device** in the
+AppImage. **Remove** takes the entry out again. If you move the AppImage, setDING
+updates the entry the next time it starts. Under Wayland the window only shows the
+setDING icon with this entry.
+
+<Image src={menuEntry} alt="Settings, Storage & info: in the This device section the entry Add to application menu with the hint setDING with its icon in your desktop's start menu" />
+
+### Without the AppImage
+
 Prefer no AppImage? `setding-<version>-linux-x64.tar.gz` contains the same app:
-unpack it and start `setding`. This copy does not update itself.
+unpack it and start `setding`. This copy does not update itself. For the
+application menu entry with the icon, run `./install-desktop-entry.sh` once in the
+unpacked folder (again after moving the folder; `--uninstall` removes it). The
+icon is in the `data/` folder (`app_icon.png`, `app_icon.svg`).
 
 ## Updates
 

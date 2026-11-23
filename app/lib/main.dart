@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +14,7 @@ import 'data/demo_song.dart';
 import 'data/play_history.dart';
 import 'data/song_repository.dart';
 import 'data/trash.dart';
+import 'platform/app_menu_entry.dart';
 import 'providers.dart';
 import 'settings/settings.dart';
 import 'sync/auth_providers.dart';
@@ -47,6 +50,14 @@ Future<void> main() async {
   // A new installation has nothing new to tell (ADR-0041); before anything
   // else is stored on the device.
   await recordFirstStart(prefs, version);
+  // The application menu entry follows a moved AppImage (#1006); in the
+  // background, the app does not wait for it.
+  unawaited(
+    createAppMenuEntry()?.repairIfMoved().catchError((Object e) {
+      _log.warning('Application menu entry not updated', e);
+      return false;
+    }),
+  );
   // Files of attachments deleted while an undo was offered (#267); before
   // the UI, so that no new deletion is waiting for its undo.
   try {

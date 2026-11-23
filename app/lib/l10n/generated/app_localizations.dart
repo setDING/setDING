@@ -2242,6 +2242,54 @@ abstract class AppLocalizations {
   /// **'PDF-Anhänge belegen {size}'**
   String settingsStorageUsed(String size);
 
+  /// Settings (Linux AppImage only): adds setDING with its icon to the desktop's application menu (#1006).
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Anwendungsmenü hinzufügen'**
+  String get appMenuEntryAdd;
+
+  /// No description provided for @appMenuEntryAddHint.
+  ///
+  /// In de, this message translates to:
+  /// **'setDING mit seinem Icon im Startmenü deines Desktops'**
+  String get appMenuEntryAddHint;
+
+  /// No description provided for @appMenuEntryInstalled.
+  ///
+  /// In de, this message translates to:
+  /// **'Im Anwendungsmenü'**
+  String get appMenuEntryInstalled;
+
+  /// No description provided for @appMenuEntryInstalledHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Startmenü startet diese AppImage-Datei'**
+  String get appMenuEntryInstalledHint;
+
+  /// No description provided for @appMenuEntryRemove.
+  ///
+  /// In de, this message translates to:
+  /// **'Entfernen'**
+  String get appMenuEntryRemove;
+
+  /// No description provided for @appMenuEntryAdded.
+  ///
+  /// In de, this message translates to:
+  /// **'setDING ist jetzt im Anwendungsmenü'**
+  String get appMenuEntryAdded;
+
+  /// No description provided for @appMenuEntryRemoved.
+  ///
+  /// In de, this message translates to:
+  /// **'setDING aus dem Anwendungsmenü entfernt'**
+  String get appMenuEntryRemoved;
+
+  /// No description provided for @appMenuEntryFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Anwendungsmenü nicht geändert: {error}'**
+  String appMenuEntryFailed(String error);
+
   /// No description provided for @settingsLogCopy.
   ///
   /// In de, this message translates to:

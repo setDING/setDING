@@ -8,6 +8,7 @@ import '../providers.dart';
 import '../settings/settings.dart';
 import '../sync/auth_providers.dart';
 import '../sync/update_check.dart';
+import '../update/app_menu_entry.dart';
 import '../util/app_version.dart';
 import '../util/log.dart';
 import 'account/account_section.dart';
@@ -15,6 +16,7 @@ import 'backup/auto_backup_tiles.dart';
 import 'backup/full_backup.dart';
 import 'backup/local_library_tile.dart';
 import 'bands/bands_settings.dart';
+import 'settings/app_menu_entry_tile.dart';
 import 'settings/latency_calibration.dart';
 import 'settings/midi_settings.dart';
 import 'settings/midi_test_screen.dart';
@@ -1127,6 +1129,8 @@ class _AboutSections extends ConsumerWidget {
           ),
           // Hiding the local library (ADR-0054).
           if (!web) const ShowLocalLibraryTile(),
+          // The Linux AppImage in the application menu (#1006).
+          if (ref.watch(appMenuEntryProvider) != null) const AppMenuEntryTile(),
         ],
       ),
       // Automatic backup of the local library (ADR-0054), where a folder
