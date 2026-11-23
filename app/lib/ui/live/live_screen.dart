@@ -790,6 +790,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     final showSongMap = ref.watch(
       settingsProvider.select((s) => s.showSongMap),
     );
+    // Set or song map beside the beat on small screens (#952).
+    final drumView = ref.watch(settingsProvider.select((s) => s.drumPanelView));
     final web = ref.watch(webClientProvider);
     final midi = ref.watch(midiConnectionProvider);
     // Small screens in landscape (ADR-0026): the set list shows what comes
@@ -828,8 +830,19 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                   );
                   _stageWidth = outer.maxWidth;
                   _compact = compact;
-                  // The divider after the panel is one pixel wide.
-                  _pageLeft = wide ? panelWidth + 1 : 0;
+                  // Small screens show the song map of the current song
+                  // instead of the set on demand (#952); the beat stays.
+                  final compactMap =
+                      compact && drumView == DrumPanelView.songMap;
+                  final compactLandscapeStage =
+                      outer.maxWidth > outer.maxHeight;
+                  // The divider after the panel is one pixel wide; on a
+                  // small screen in landscape the beat takes half of it.
+                  _pageLeft = wide
+                      ? panelWidth + 1
+                      : compactMap && compactLandscapeStage
+                      ? (outer.maxWidth + 1) / 2
+                      : 0;
                   final largeBeat = wide || compact;
                   if (_beat.largeBeat != largeBeat) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -875,6 +888,14 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                 // A song turned to from the front starts at
                                 // its first page.
                                 if (i > _index) _songPageFor(i).first();
+                                // Small screens turn songs only: the song
+                                // map of each starts at the top (#952).
+                                if (_compact) {
+                                  final sc = _scroll[i];
+                                  if (sc != null && sc.hasClients) {
+                                    sc.jumpTo(0);
+                                  }
+                                }
                                 _index = i;
                                 _preparation.focus(i);
                                 // Only another set item sends its
@@ -917,8 +938,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                 fit: StackFit.expand,
                                 children: [
                                   // The pages stay built for the page
-                                  // controller and the preparation, unseen.
-                                  Offstage(child: page),
+                                  // controller and the preparation, unseen
+                                  // unless they show the song map.
+                                  if (!compactMap) Offstage(child: page),
                                   // Empty areas of the panel are the tap
                                   // zones; the set list and the buttons keep
                                   // their taps.
@@ -930,10 +952,17 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                       items: items,
                                       current: _index,
                                       onSelect: _jumpTo,
-                                      direction:
-                                          outer.maxWidth > outer.maxHeight
+                                      direction: compactLandscapeStage
                                           ? Axis.horizontal
                                           : Axis.vertical,
+                                      view: drumView,
+                                      onView: (view) => ref
+                                          .read(settingsProvider.notifier)
+                                          .update(
+                                            (s) =>
+                                                s.copyWith(drumPanelView: view),
+                                          ),
+                                      songMap: compactMap ? page : null,
                                     ),
                                   ),
                                 ],

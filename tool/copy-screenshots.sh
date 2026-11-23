@@ -24,6 +24,7 @@ map=(
   sequence 10_set_sequence
   editor 9_editor
   drums 11_live_drums
+  drums_phone 11b_live_drums_phone
   live_click 25_live_click
   organization 12_organization
   invite_hint 13a_invite_hint

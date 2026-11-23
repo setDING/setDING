@@ -2132,6 +2132,18 @@ abstract class AppLocalizations {
   /// **'Kein Tempo für diesen Song'**
   String get songMapNoTempo;
 
+  /// No description provided for @drumPanelSet.
+  ///
+  /// In de, this message translates to:
+  /// **'Set'**
+  String get drumPanelSet;
+
+  /// No description provided for @drumPanelSongMap.
+  ///
+  /// In de, this message translates to:
+  /// **'Song-Landkarte'**
+  String get drumPanelSongMap;
+
   /// No description provided for @settingsLiveAppearance.
   ///
   /// In de, this message translates to:
