@@ -1778,10 +1778,46 @@ class AppLocalizationsFr extends AppLocalizations {
       'Seulement sur ton propre appareil. Sinon tu es déconnecté à la fermeture du navigateur.';
 
   @override
-  String get accountName => 'Nom';
+  String get accountNameHint =>
+      'P. ex. « Andi ». Les membres de ton groupe le voient dans les listes à la place de ton nom complet.';
 
   @override
-  String get accountNameHint => 'Comment les membres de ton groupe te voient.';
+  String get accountFirstName => 'Prénom';
+
+  @override
+  String get accountLastName => 'Nom';
+
+  @override
+  String get accountNickname => 'Nom affiché (facultatif)';
+
+  @override
+  String get accountCompleteName => 'Compléter ton nom';
+
+  @override
+  String get accountCompleteNameMessage =>
+      'Indique ton prénom et ton nom, pour que les membres de ton groupe te trouvent plus facilement.';
+
+  @override
+  String get settingsHeadingPeople => 'Personnes';
+
+  @override
+  String get settingsNameFormat => 'Afficher les noms';
+
+  @override
+  String get settingsNameFormatHint =>
+      'Comment les autres personnes apparaissent dans les listes de membres, les line-ups et les modifications.';
+
+  @override
+  String get nameFormatNickname => 'Nom affiché (sinon nom complet)';
+
+  @override
+  String get nameFormatFirstLast => 'Prénom Nom';
+
+  @override
+  String get nameFormatLastFirst => 'Nom Prénom';
+
+  @override
+  String get nameFormatFullWithNickname => 'Prénom Nom (nom affiché)';
 
   @override
   String get accountToSignUp => 'Pas encore de compte ? Crée-en un';

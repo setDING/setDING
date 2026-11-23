@@ -7,9 +7,9 @@ import '../../settings/settings.dart';
 import '../../sync/auth_providers.dart';
 import '../widgets/dialogs.dart';
 import '../bands/join_screen.dart';
-import '../../sync/sync_backend.dart';
 import 'change_password_dialog.dart';
 import 'delete_account_dialog.dart';
+import 'person_name_form.dart';
 import 'sign_in_screen.dart';
 import 'sync_tile.dart';
 
@@ -65,9 +65,19 @@ class AccountSection extends ConsumerWidget {
             key: const Key('account-change-name'),
             leading: const Icon(Icons.badge_outlined),
             title: Text(l10n.accountChangeName),
-            subtitle: Text(l10n.accountNameHint),
+            // The full name when the account shows only the nickname.
+            subtitle: switch (user.person.format(NameFormat.fullWithNickname)) {
+              final full when full.isNotEmpty && full != user.displayName =>
+                Text(full),
+              _ => null,
+            },
             trailing: const Icon(Icons.edit_outlined),
-            onTap: () => _changeName(context, ref, user.name),
+            onTap: () async {
+              final messenger = ScaffoldMessenger.of(context);
+              if (await showChangeNameDialog(context)) {
+                showMessageOn(messenger, l10n.accountNameChanged);
+              }
+            },
           ),
           ListTile(
             key: const Key('account-change-password'),
@@ -94,29 +104,6 @@ class AccountSection extends ConsumerWidget {
         ),
       ],
     );
-  }
-
-  Future<void> _changeName(
-    BuildContext context,
-    WidgetRef ref,
-    String current,
-  ) async {
-    final l10n = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
-    final name = await askText(
-      context,
-      title: l10n.accountChangeName,
-      initial: current,
-      label: l10n.accountName,
-      hint: l10n.accountNameHint,
-    );
-    if (name == null || name == current.trim()) return;
-    try {
-      await ref.read(syncBackendProvider).changeName(name);
-      showMessageOn(messenger, l10n.accountNameChanged);
-    } on BackendException catch (e) {
-      showMessageOn(messenger, backendErrorText(l10n, e.kind));
-    }
   }
 
   Future<void> _editServer(

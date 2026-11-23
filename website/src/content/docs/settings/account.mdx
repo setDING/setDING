@@ -11,6 +11,8 @@ import syncHint from '../../../../../docs/screenshots/sync_hint_de.png';
 import account from '../../../../../docs/screenshots/account_de.png';
 import changePassword from '../../../../../docs/screenshots/change_password_de.png';
 import deleteAccount from '../../../../../docs/screenshots/delete_account_de.png';
+import signUp from '../../../../../docs/screenshots/sign_up_de.png';
+import changeName from '../../../../../docs/screenshots/change_name_de.png';
 
 setDING funktioniert auch ohne Konto, aber nur auf deinem Gerät. Mit einem Konto
 teilst du Songs und Sets mit deiner Band, und deine persönlichen Anpassungen und
@@ -20,10 +22,15 @@ Einstellungen sind auf allen deinen Geräten.
 
 1. Tippe unter **Einstellungen** → **Konto & Synchronisation** auf **Anmelden**.
 2. Melde dich mit **E-Mail** und **Passwort** an, oder tippe auf **Noch kein Konto?
-   Konto erstellen**. Dein **Name** ist der Name, unter dem dich deine
-   Bandmitglieder sehen.
+   Konto erstellen**. **Vorname** und **Nachname** sind Pflicht, damit dich deine
+   Bandmitglieder leicht finden. Den **Anzeigenamen** (zum Beispiel «Andi») kannst
+   du weglassen; hast du einen, sehen ihn die anderen in Listen statt des vollen
+   Namens, sofern sie das so eingestellt haben (siehe
+   [Namen anzeigen](/bands/organizations/#namen-anzeigen)).
 3. Verlangt der Server eine Bestätigung, bekommst du eine Mail. Bestätige deine
    Adresse mit dem Link darin und melde dich dann an.
+
+<Image src={signUp} alt="«Konto erstellen» mit Vorname, Nachname und Anzeigename, E-Mail und Passwort" />
 
 Hast du eine Einladung bekommen, öffne zuerst den Einladungslink oder tippe auf
 **Mit Einladung beitreten** (siehe [Einladungen](/bands/invitations/)). Viele Server
@@ -78,7 +85,8 @@ aktualisierst, steht unter [Installation](/start/install/).
 
 Bist du angemeldet, findest du unter **Einstellungen** → **Konto & Synchronisation**:
 
-- **Name ändern** – so sehen dich deine Bandmitglieder. Sie sehen den neuen Namen
+- **Name ändern** – **Vorname**, **Nachname** und **Anzeigename**. Vor- und
+  Nachname kannst du nicht leer lassen. Deine Bandmitglieder sehen den neuen Namen
   nach ihrer nächsten Synchronisation.
 - **Passwort ändern** – gib dein **Aktuelles Passwort** und zweimal das **Neue
   Passwort** ein (mindestens 8 Zeichen). Auf diesem Gerät bleibst du angemeldet;
@@ -89,7 +97,14 @@ Beides braucht eine Verbindung zum Server.
 
 <Image src={account} alt="Die Einstellungen «Konto & Synchronisation» mit «Name ändern», «Passwort ändern» und der Gefahrenzone" />
 
+<Image src={changeName} alt="Der Dialog «Name ändern» mit Vorname, Nachname und Anzeigename" />
+
 <Image src={changePassword} alt="Der Dialog «Passwort ändern» mit aktuellem und neuem Passwort" />
+
+Fehlt deinem Konto noch der Vor- oder Nachname (Konten von vor dieser Änderung),
+fragt setDING nach dem Anmelden mit **Vollen Namen ergänzen** danach. Dein bisheriger
+Name steht dann im Anzeigenamen; aus einem Namen mit zwei oder mehr Wörtern hat der
+Server Vor- und Nachname schon übernommen.
 
 ## Abmelden
 

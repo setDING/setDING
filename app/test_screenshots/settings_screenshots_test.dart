@@ -5,6 +5,7 @@ import 'package:chordpro/chordpro.dart' show SectionRole;
 import 'package:setding/data/auto_backup.dart';
 import 'package:setding/data/backup.dart';
 import 'package:setding/data/database.dart' show localBandId;
+import 'package:setding/ui/account/sign_in_screen.dart';
 import 'package:setding/ui/backup/backup_actions.dart';
 import 'package:setding/ui/bands/band_screen.dart';
 import 'package:setding/ui/bands/organization_screen.dart';
@@ -164,6 +165,75 @@ void main() {
         'password-123',
       );
       await shot(tester, '${lang}_36_delete_account');
+      await app.dispose(tester);
+    });
+  }
+
+  // First name, last name and nickname (ADR-0062, #1039): signing up,
+  // changing the name and how other people's names are shown.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('person names $lang', (tester) async {
+      useTabletSize(tester);
+      const ann = AuthUser(
+        id: 'ann',
+        email: 'ann@example.test',
+        name: 'Annie',
+        firstName: 'Ann',
+        lastName: 'Keller',
+        nickname: 'Annie',
+      );
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: const SignInScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text(
+          lang == 'de'
+              ? 'Noch kein Konto? Konto erstellen'
+              : 'No account yet? Create one',
+        ),
+      );
+      await tester.pumpAndSettle();
+      for (final (key, value) in [
+        ('account-first-name', 'Ann'),
+        ('account-last-name', 'Keller'),
+        ('account-nickname', 'Annie'),
+        ('account-email', 'ann@example.test'),
+      ]) {
+        await tester.enterText(find.byKey(Key(key)), value);
+      }
+      await shot(tester, '${lang}_35d_sign_up');
+
+      app.backend.user = ann;
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: const SettingsScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await openSettingsCategory(tester, SettingsCategory.account);
+      await tester.tap(find.byKey(const Key('account-change-name')));
+      await shot(tester, '${lang}_35c_change_name');
+      await tester.tap(find.text(lang == 'de' ? 'Abbrechen' : 'Cancel'));
+      await tester.pumpAndSettle();
+
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: const SettingsScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await openSettingsCategory(tester, SettingsCategory.bands);
+      await tester.tap(find.byKey(const Key('settings-name-format')));
+      await shot(tester, '${lang}_35e_name_format');
       await app.dispose(tester);
     });
   }

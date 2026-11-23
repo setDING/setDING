@@ -35,6 +35,8 @@ void main() {
       'email': 'twice@setding.test',
       'password': 'password-123',
       'passwordConfirm': 'password-123',
+      'first_name': 'Twice',
+      'last_name': 'Test',
     };
     (await pb.guest.post('users', body)).expectStatus(200);
     final again = await pb.guest.post('users', body);

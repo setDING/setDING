@@ -122,7 +122,7 @@ void main() {
     await tester.tap(find.text('No account yet? Create one'));
     await tester.pumpAndSettle();
 
-    await enter(tester, 'account-name', 'Ann');
+    await enter(tester, 'account-first-name', 'Ann');
     await enter(tester, 'account-email', 'ann@example.test');
     await enter(tester, 'account-password', 'short');
     await enter(tester, 'account-password-confirm', 'other');
@@ -130,15 +130,19 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('At least 8 characters.'), findsOneWidget);
     expect(find.text('The passwords do not match.'), findsOneWidget);
+    // The last name is required, the nickname is not (ADR-0062).
+    expect(find.text('Required.'), findsOneWidget);
     expect(app.backend.user, isNull);
 
+    await enter(tester, 'account-last-name', 'Muster');
     await enter(tester, 'account-password', 'long-enough');
     await enter(tester, 'account-password-confirm', 'long-enough');
     await tester.tap(find.byKey(const Key('account-submit')));
     await tester.pumpAndSettle();
 
     expect(app.backend.accounts['ann@example.test'], 'long-enough');
-    expect(find.text('Ann'), findsOneWidget);
+    expect(app.backend.user!.person.complete, isTrue);
+    expect(find.text('Ann Muster'), findsOneWidget);
     expect(find.text('ann@example.test'), findsOneWidget);
     await app.dispose(tester);
   });
@@ -150,7 +154,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('No account yet? Create one'));
     await tester.pumpAndSettle();
-    await enter(tester, 'account-name', 'Ann');
+    await enter(tester, 'account-first-name', 'Ann');
+    await enter(tester, 'account-last-name', 'Muster');
     await enter(tester, 'account-email', 'ann@example.test');
     await enter(tester, 'account-password', 'long-enough');
     await enter(tester, 'account-password-confirm', 'long-enough');
@@ -181,18 +186,27 @@ void main() {
     final app = await pumpSettings(tester, user: _ann);
     await tester.tap(find.byKey(const Key('account-change-name')));
     await tester.pumpAndSettle();
-    await tester.enterText(
-      find.descendant(
-        of: find.byType(AlertDialog),
-        matching: find.byType(TextField),
-      ),
-      '  Ann Muster ',
-    );
-    await tester.tap(find.text('Save'));
+    await enter(tester, 'account-first-name', '  Ann ');
+    await enter(tester, 'account-last-name', '');
+    await tester.tap(find.byKey(const Key('account-name-save')));
+    await tester.pumpAndSettle();
+    // First and last name are required (ADR-0062).
+    expect(find.text('Required.'), findsOneWidget);
+    expect(app.backend.user!.lastName, isNull);
+
+    await enter(tester, 'account-last-name', 'Muster ');
+    await enter(tester, 'account-nickname', 'Annie');
+    await tester.tap(find.byKey(const Key('account-name-save')));
     await tester.pumpAndSettle();
 
-    expect(app.backend.user!.name, 'Ann Muster');
-    expect(find.text('Ann Muster'), findsOneWidget);
+    expect(app.backend.user!.name, 'Annie');
+    expect(
+      [app.backend.user!.firstName, app.backend.user!.lastName],
+      ['Ann', 'Muster'],
+    );
+    expect(find.text('Annie'), findsOneWidget);
+    // The full name under the change-name tile.
+    expect(find.text('Ann Muster (Annie)'), findsOneWidget);
     expect(find.text('Name changed.'), findsOneWidget);
     await app.dispose(tester);
   });

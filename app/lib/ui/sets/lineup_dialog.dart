@@ -2,8 +2,10 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database.dart';
+import '../../data/person_name.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
+import '../../settings/settings.dart' show nameFormatProvider;
 import '../widgets/section_header.dart';
 
 /// Chooses the people who play a set (ADR-0061): the band's members,
@@ -23,7 +25,12 @@ Future<void> showLineupDialog(
   if (!context.mounted) return;
   final people = await showDialog<List<String>?>(
     context: context,
-    builder: (_) => _LineupDialog(set: set, members: members, org: org),
+    builder: (_) => _LineupDialog(
+      set: set,
+      members: members,
+      org: org,
+      format: ref.read(nameFormatProvider),
+    ),
   );
   if (people == null) return; // cancelled
   final whole =
@@ -39,11 +46,15 @@ class _LineupDialog extends StatefulWidget {
     required this.set,
     required this.members,
     required this.org,
+    required this.format,
   });
 
   final SetlistEntry set;
   final List<MembershipEntry> members;
   final List<OrgMembershipEntry> org;
+
+  /// How names are shown (ADR-0062).
+  final NameFormat format;
 
   @override
   State<_LineupDialog> createState() => _LineupDialogState();
@@ -51,9 +62,13 @@ class _LineupDialog extends StatefulWidget {
 
 class _LineupDialogState extends State<_LineupDialog> {
   late final Set<String> _band = {for (final m in widget.members) m.userId};
+  late final Map<String, PersonName> _people = {
+    for (final m in widget.org) m.userId: m.person,
+    for (final m in widget.members) m.userId: m.person,
+  };
   late final Map<String, String> _names = {
-    for (final m in widget.org) m.userId: m.userName,
-    for (final m in widget.members) m.userId: m.userName,
+    for (final MapEntry(:key, :value) in _people.entries)
+      key: personLabel(value, widget.format),
   };
 
   /// Checked people: the band by default, or the set's own lineup.
@@ -70,8 +85,9 @@ class _LineupDialogState extends State<_LineupDialog> {
       if (!_band.contains(id)) id,
   ];
 
-  int _byName(String a, String b) =>
-      _names[a]!.toLowerCase().compareTo(_names[b]!.toLowerCase());
+  int _byName(String a, String b) => _people[a]!
+      .sortKey(widget.format)
+      .compareTo(_people[b]!.sortKey(widget.format));
 
   Future<void> _addPeople() async {
     final candidates = [
@@ -81,7 +97,8 @@ class _LineupDialogState extends State<_LineupDialog> {
     ]..sort(_byName);
     final picked = await showDialog<String>(
       context: context,
-      builder: (_) => _PeoplePicker(ids: candidates, names: _names),
+      builder: (_) =>
+          _PeoplePicker(ids: candidates, names: _names, people: _people),
     );
     if (picked == null) return;
     setState(() {
@@ -166,12 +183,20 @@ class _LineupDialogState extends State<_LineupDialog> {
   }
 }
 
-/// Picks one person of the organization by name.
+/// Picks one person of the organization by first name, last name or
+/// nickname (ADR-0062).
 class _PeoplePicker extends StatefulWidget {
-  const _PeoplePicker({required this.ids, required this.names});
+  const _PeoplePicker({
+    required this.ids,
+    required this.names,
+    required this.people,
+  });
 
   final List<String> ids;
+
+  /// The shown names and the name parts searched by user ID.
   final Map<String, String> names;
+  final Map<String, PersonName> people;
 
   @override
   State<_PeoplePicker> createState() => _PeoplePickerState();
@@ -183,10 +208,9 @@ class _PeoplePickerState extends State<_PeoplePicker> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final query = _query.trim().toLowerCase();
     final shown = [
       for (final id in widget.ids)
-        if (widget.names[id]!.toLowerCase().contains(query)) id,
+        if (widget.people[id]!.matches(_query)) id,
     ];
     return AlertDialog(
       title: Text(l10n.lineupAddPeople),

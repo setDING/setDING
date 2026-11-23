@@ -76,6 +76,9 @@ map=(
   offline_status 34_offline_status
   account 35_account
   change_password 35b_change_password
+  change_name 35c_change_name
+  sign_up 35d_sign_up
+  name_format 35e_name_format
   delete_account 36_delete_account
   song_export 37_song_export
   song_import 37b_song_import

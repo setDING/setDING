@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/band_view.dart';
 import '../../data/database.dart';
+import '../../data/person_name.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
+import '../../settings/settings.dart' show nameFormatProvider;
 import '../../sync/auth_providers.dart';
 import '../widgets/dialogs.dart';
 import 'band_labels.dart';
@@ -232,9 +234,10 @@ class _PersonTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final service = ref.read(bandServiceProvider);
-    final name = person.userName.isEmpty
-        ? (person.userEmail ?? '?')
-        : person.userName;
+    final format = ref.watch(nameFormatProvider);
+    final name = personLabel(person.person, format, email: person.userEmail);
+    // The full name under the shown one when it says more (ADR-0062).
+    final full = person.person.fullName;
     final admin = person.role == OrgRole.admin;
     Future<void> setRole(OrgRole role) =>
         runBandAction(context, () => service.setOrgRole(person.id, role));
@@ -242,7 +245,12 @@ class _PersonTile extends ConsumerWidget {
     return ListTile(
       leading: Icon(admin ? Icons.shield_outlined : Icons.person_outline),
       title: Text(isMe ? l10n.bandYou(name) : name),
-      subtitle: Text(orgRoleLabel(l10n, person.role)),
+      subtitle: Text(
+        [
+          if (full.isNotEmpty && !name.contains(full)) full,
+          orgRoleLabel(l10n, person.role),
+        ].join(' · '),
+      ),
       trailing: !isAdmin
           ? null
           : PopupMenuButton<String>(

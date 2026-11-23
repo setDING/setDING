@@ -101,10 +101,16 @@ class PocketBaseBackend implements SyncBackend {
   AuthUser? get currentUser {
     final record = _pb.authStore.record;
     if (_pb.authStore.token.isEmpty || record == null) return null;
+    String? known(String field) =>
+        record.data.containsKey(field) ? record.getStringValue(field) : null;
     return AuthUser(
       id: record.id,
       email: record.getStringValue('email'),
       name: record.getStringValue('name'),
+      // Older servers have no such fields (ADR-0062).
+      firstName: known('first_name'),
+      lastName: known('last_name'),
+      nickname: record.getStringValue('nickname'),
     );
   }
 
@@ -128,7 +134,7 @@ class PocketBaseBackend implements SyncBackend {
   Future<AuthUser> signUp({
     required String email,
     required String password,
-    required String name,
+    required PersonName name,
     String? invite,
   }) async {
     try {
@@ -139,7 +145,7 @@ class PocketBaseBackend implements SyncBackend {
               'email': email.trim(),
               'password': password,
               'passwordConfirm': password,
-              'name': name.trim(),
+              ..._names(name),
               'invite': ?invite,
             },
           );
@@ -148,6 +154,13 @@ class PocketBaseBackend implements SyncBackend {
     }
     return signIn(email: email, password: password);
   }
+
+  /// The name fields of the `users` collection (ADR-0062).
+  static Map<String, String> _names(PersonName name) => {
+    'first_name': name.firstName.trim(),
+    'last_name': name.lastName.trim(),
+    'nickname': name.nickname.trim(),
+  };
 
   @override
   Future<void> requestPasswordReset(String email) async {
@@ -208,13 +221,13 @@ class PocketBaseBackend implements SyncBackend {
   Future<void> signOut() async => _pb.authStore.clear();
 
   @override
-  Future<AuthUser> changeName(String name) async {
+  Future<AuthUser> changeName(PersonName name) async {
     final user = currentUser;
     if (user == null) throw const BackendException(BackendErrorKind.signedOut);
     // The SDK updates the stored session with the returned record, which
     // emits the new name through [userChanges].
     await _call(
-      () => _pb.collection(_users).update(user.id, body: {'name': name.trim()}),
+      () => _pb.collection(_users).update(user.id, body: _names(name)),
     );
     return currentUser!;
   }
@@ -344,6 +357,9 @@ class PocketBaseBackend implements SyncBackend {
       membershipId: m.id,
       userId: userId,
       name: userId == me.id && name.isEmpty ? me.displayName : name,
+      firstName: user?.getStringValue('first_name') ?? '',
+      lastName: user?.getStringValue('last_name') ?? '',
+      nickname: user?.getStringValue('nickname') ?? '',
       email: userId == me.id ? me.email : (email.isEmpty ? null : email),
       role: roles.where((r) => r.name == role).firstOrNull ?? fallback,
       revision: m.getIntValue('revision'),

@@ -12,6 +12,7 @@ import '../../util/semver.dart';
 import '../widgets/logo.dart';
 import '../widgets/update_required_banner.dart';
 import '../widgets/page_width.dart';
+import 'person_name_form.dart';
 
 const _log = Log('account');
 
@@ -76,7 +77,7 @@ class SignInScreen extends ConsumerStatefulWidget {
 
 class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _form = GlobalKey<FormState>();
-  final _name = TextEditingController();
+  final _names = PersonNameControllers();
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
@@ -93,7 +94,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
   @override
   void dispose() {
-    _name.dispose();
+    _names.dispose();
     _email.dispose();
     _password.dispose();
     _confirm.dispose();
@@ -116,7 +117,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         await backend.signUp(
           email: _email.text,
           password: _password.text,
-          name: _name.text,
+          name: _names.value,
           invite: widget.invite,
         );
       } else {
@@ -233,17 +234,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   const SizedBox(height: 24),
                 ],
                 if (_signUp) ...[
-                  TextFormField(
-                    key: const Key('account-name'),
-                    controller: _name,
-                    decoration: InputDecoration(
-                      labelText: l10n.accountName,
-                      helperText: l10n.accountNameHint,
-                    ),
-                    textInputAction: TextInputAction.next,
-                    autofillHints: const [AutofillHints.name],
-                    validator: required,
-                  ),
+                  PersonNameFields(controllers: _names),
                   const SizedBox(height: 16),
                 ],
                 TextFormField(

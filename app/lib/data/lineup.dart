@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import 'database.dart';
+import 'person_name.dart';
 import 'set_repository.dart' show plannedFor;
 
 /// A person in a set's lineup (ADR-0061).
@@ -55,17 +56,25 @@ class SetLineup {
 }
 
 /// Resolves the lineup of [set] with the names of the band's [members] and
-/// the organization's [orgMembers]; [userId] is the signed-in user.
+/// the organization's [orgMembers], shown in [format] (ADR-0062); [userId]
+/// is the signed-in user.
 SetLineup resolveLineup(
   SetlistEntry set, {
   required List<MembershipEntry> members,
   required List<OrgMembershipEntry> orgMembers,
   required String? userId,
+  NameFormat format = NameFormat.nickname,
 }) {
-  final band = {for (final m in members) m.userId: m.userName};
-  final org = {for (final m in orgMembers) m.userId: m.userName};
+  final keys = <String, String>{};
+  String named(String id, PersonName person) {
+    keys[id] = person.sortKey(format);
+    return person.format(format);
+  }
+
+  final band = {for (final m in members) m.userId: named(m.userId, m.person)};
+  final org = {for (final m in orgMembers) m.userId: named(m.userId, m.person)};
   int byName(LineupPerson a, LineupPerson b) =>
-      a.name.toLowerCase().compareTo(b.name.toLowerCase());
+      keys[a.userId]!.compareTo(keys[b.userId]!);
   final people = <LineupPerson>[];
   if (set.lineupCustom) {
     for (final id in set.lineup) {

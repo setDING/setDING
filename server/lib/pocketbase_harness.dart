@@ -227,6 +227,8 @@ class PocketBase {
   int _users = 0;
 
   /// Signs up a new user and returns a client signed in as that user.
+  /// [name] becomes the nickname, so it is the user's display name
+  /// (ADR-0062); without one the user is "User <n>".
   Future<User> signUp([String? name]) async {
     final n = ++_users;
     final email =
@@ -237,7 +239,9 @@ class PocketBase {
       'email': email,
       'password': password,
       'passwordConfirm': password,
-      'name': name ?? 'User $n',
+      'first_name': name ?? 'User',
+      'last_name': name == null ? '$n' : 'Test',
+      'nickname': ?name,
     });
     created.expectStatus(200);
     final auth = await guest.send(

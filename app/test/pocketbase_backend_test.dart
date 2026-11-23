@@ -314,7 +314,15 @@ void main() {
         }),
       );
       return kindOf(
-        () => b.signUp(email: 'a@b.test', password: 'password', name: 'A'),
+        () => b.signUp(
+          email: 'a@b.test',
+          password: 'password',
+          name: const PersonName(
+            firstName: 'A',
+            lastName: 'Test',
+            nickname: 'A',
+          ),
+        ),
       );
     }
 
@@ -353,7 +361,7 @@ void main() {
     });
   });
 
-  test('signs up with name and signs in', () async {
+  test('signs up with first and last name and signs in', () async {
     final b = backend(MemorySessionStore(), (r) async {
       if (r.url.path.endsWith('/records')) return _json(200, _record());
       return _json(200, {'token': _token(), 'record': _record()});
@@ -361,11 +369,15 @@ void main() {
     final user = await b.signUp(
       email: 'ann@example.test',
       password: 'password',
-      name: ' Ann ',
+      name: const PersonName(firstName: ' Ann ', lastName: ' Muster '),
     );
     expect(user.name, 'Ann');
     final body = jsonDecode(requests.first.body) as Map<String, dynamic>;
-    expect(body['name'], 'Ann');
+    // The server derives `name` (ADR-0062).
+    expect(body.containsKey('name'), isFalse);
+    expect(body['first_name'], 'Ann');
+    expect(body['last_name'], 'Muster');
+    expect(body['nickname'], '');
     expect(body['passwordConfirm'], 'password');
     expect(requests.last.url.path, '/api/collections/users/auth-with-password');
   });

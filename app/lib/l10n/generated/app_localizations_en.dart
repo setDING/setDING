@@ -1764,10 +1764,46 @@ class AppLocalizationsEn extends AppLocalizations {
       'Only on your own device. Otherwise you are signed out when you close the browser.';
 
   @override
-  String get accountName => 'Name';
+  String get accountNameHint =>
+      'E.g. “Andy”. Your bandmates see it in lists instead of your full name.';
 
   @override
-  String get accountNameHint => 'How your bandmates see you.';
+  String get accountFirstName => 'First name';
+
+  @override
+  String get accountLastName => 'Last name';
+
+  @override
+  String get accountNickname => 'Display name (optional)';
+
+  @override
+  String get accountCompleteName => 'Add your full name';
+
+  @override
+  String get accountCompleteNameMessage =>
+      'Please enter your first and last name, so your bandmates can find you more easily.';
+
+  @override
+  String get settingsHeadingPeople => 'People';
+
+  @override
+  String get settingsNameFormat => 'Show names as';
+
+  @override
+  String get settingsNameFormatHint =>
+      'How other people appear in member lists, in lineups and in recent changes.';
+
+  @override
+  String get nameFormatNickname => 'Display name (otherwise full name)';
+
+  @override
+  String get nameFormatFirstLast => 'First Last';
+
+  @override
+  String get nameFormatLastFirst => 'Last First';
+
+  @override
+  String get nameFormatFullWithNickname => 'First Last (display name)';
 
   @override
   String get accountToSignUp => 'No account yet? Create one';

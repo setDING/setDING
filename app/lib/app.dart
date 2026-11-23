@@ -9,6 +9,7 @@ import 'l10n/generated/app_localizations.dart';
 import 'midi/midi_connection.dart';
 import 'settings/settings.dart';
 import 'sync/sync_controller.dart';
+import 'ui/account/person_name_form.dart';
 import 'ui/deep_links.dart';
 import 'ui/start_screen.dart';
 import 'ui/theme.dart';
@@ -16,7 +17,8 @@ import 'ui/widgets/app_shortcuts.dart';
 import 'ui/widgets/escape_goes_back.dart';
 
 /// Root widget: theme, localization (ADR-0008), navigation, invitation
-/// links (ADR-0005) and the sign-in gate of the web client (ADR-0018).
+/// links (ADR-0005), the sign-in gate of the web client (ADR-0018) and the
+/// prompt for a missing full name (ADR-0062).
 class SetdingApp extends ConsumerStatefulWidget {
   const SetdingApp({super.key, this.home});
 
@@ -67,9 +69,11 @@ class _SetdingAppState extends ConsumerState<SetdingApp> {
           ],
           localeListResolutionCallback: (locales, supported) =>
               resolveLocale(null, locales ?? const []),
-          home: DeepLinkListener(
-            navigatorKey: _navigatorKey,
-            child: widget.home ?? const StartScreen(),
+          home: CompleteNamePrompt(
+            child: DeepLinkListener(
+              navigatorKey: _navigatorKey,
+              child: widget.home ?? const StartScreen(),
+            ),
           ),
         ),
       ),

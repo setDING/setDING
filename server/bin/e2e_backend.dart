@@ -139,7 +139,9 @@ Future<({String key, String email, User user})> _person(
     'email': email,
     'password': _password,
     'passwordConfirm': _password,
-    'name': name,
+    'first_name': name,
+    'last_name': 'E2E',
+    'nickname': name,
     'verified': true,
   })).expectStatus(200);
   final auth = await pb.guest.send(

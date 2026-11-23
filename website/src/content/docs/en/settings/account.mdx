@@ -11,6 +11,8 @@ import syncHint from '../../../../../../docs/screenshots/sync_hint.png';
 import account from '../../../../../../docs/screenshots/account.png';
 import changePassword from '../../../../../../docs/screenshots/change_password.png';
 import deleteAccount from '../../../../../../docs/screenshots/delete_account.png';
+import signUp from '../../../../../../docs/screenshots/sign_up.png';
+import changeName from '../../../../../../docs/screenshots/change_name.png';
 
 setDING works without an account too, but only on your device. With an account you
 share songs and sets with your band, and your personal adjustments and settings are
@@ -20,9 +22,14 @@ on all your devices.
 
 1. In **Settings** → **Account & sync**, tap **Sign in**.
 2. Sign in with your **Email** and **Password**, or tap **No account yet? Create
-   one**. Your **Name** is how your bandmates see you.
+   one**. **First name** and **Last name** are required, so your bandmates find you
+   easily. The **Display name** (for example “Andy”) is optional; if you have one,
+   the others see it in lists instead of your full name, if they chose so (see
+   [Show names](/en/bands/organizations/#show-names)).
 3. If the server asks for a confirmation, you get an email. Confirm your address with
    the link in it, then sign in.
+
+<Image src={signUp} alt="“Create account” with first name, last name and display name, email and password" />
 
 If you received an invitation, open the invitation link first or tap **Join with
 invitation** (see [Invitations](/en/bands/invitations/)). Many servers only accept
@@ -73,8 +80,9 @@ in [Installation](/en/start/install/).
 
 When you are signed in, **Settings** → **Account & sync** offers:
 
-- **Change name** – how your bandmates see you. They see the new name after their
-  next sync.
+- **Change name** – **First name**, **Last name** and **Display name**. First and
+  last name cannot be empty. Your bandmates see the new name after their next
+  sync.
 - **Change password** – enter your **Current password** and the **New password**
   twice (at least 8 characters). You stay signed in on this device; your other
   devices sign out, and you sign in there with the new password.
@@ -83,7 +91,14 @@ Both need a connection to the server.
 
 <Image src={account} alt="The “Account & sync” settings with “Change name”, “Change password” and the danger zone" />
 
+<Image src={changeName} alt="The “Change name” dialog with first name, last name and display name" />
+
 <Image src={changePassword} alt="The “Change password” dialog with the current and the new password" />
+
+If your account still lacks a first or last name (accounts from before this
+change), setDING asks for it with **Add your full name** after you sign in. Your
+previous name is then your display name; from a name with two or more words the
+server has taken first and last name already.
 
 ## Sign out
 

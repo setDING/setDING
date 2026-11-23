@@ -3136,17 +3136,83 @@ abstract class AppLocalizations {
   /// **'Nur auf deinem eigenen Gerät. Sonst endet die Anmeldung, wenn du den Browser schliesst.'**
   String get accountKeepSignedInHint;
 
-  /// No description provided for @accountName.
-  ///
-  /// In de, this message translates to:
-  /// **'Name'**
-  String get accountName;
-
   /// No description provided for @accountNameHint.
   ///
   /// In de, this message translates to:
-  /// **'So sehen dich deine Bandmitglieder.'**
+  /// **'Z. B. «Andi». Deine Bandmitglieder sehen ihn in Listen statt des vollen Namens.'**
   String get accountNameHint;
+
+  /// No description provided for @accountFirstName.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorname'**
+  String get accountFirstName;
+
+  /// No description provided for @accountLastName.
+  ///
+  /// In de, this message translates to:
+  /// **'Nachname'**
+  String get accountLastName;
+
+  /// No description provided for @accountNickname.
+  ///
+  /// In de, this message translates to:
+  /// **'Anzeigename (optional)'**
+  String get accountNickname;
+
+  /// No description provided for @accountCompleteName.
+  ///
+  /// In de, this message translates to:
+  /// **'Vollen Namen ergänzen'**
+  String get accountCompleteName;
+
+  /// No description provided for @accountCompleteNameMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte gib deinen Vor- und Nachnamen ein. So finden dich deine Bandmitglieder leichter.'**
+  String get accountCompleteNameMessage;
+
+  /// No description provided for @settingsHeadingPeople.
+  ///
+  /// In de, this message translates to:
+  /// **'Personen'**
+  String get settingsHeadingPeople;
+
+  /// No description provided for @settingsNameFormat.
+  ///
+  /// In de, this message translates to:
+  /// **'Namen anzeigen als'**
+  String get settingsNameFormat;
+
+  /// No description provided for @settingsNameFormatHint.
+  ///
+  /// In de, this message translates to:
+  /// **'So erscheinen andere Personen in Mitgliederlisten, im Lineup und bei Änderungen.'**
+  String get settingsNameFormatHint;
+
+  /// No description provided for @nameFormatNickname.
+  ///
+  /// In de, this message translates to:
+  /// **'Anzeigename (sonst voller Name)'**
+  String get nameFormatNickname;
+
+  /// No description provided for @nameFormatFirstLast.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorname Nachname'**
+  String get nameFormatFirstLast;
+
+  /// No description provided for @nameFormatLastFirst.
+  ///
+  /// In de, this message translates to:
+  /// **'Nachname Vorname'**
+  String get nameFormatLastFirst;
+
+  /// No description provided for @nameFormatFullWithNickname.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorname Nachname (Anzeigename)'**
+  String get nameFormatFullWithNickname;
 
   /// No description provided for @accountToSignUp.
   ///

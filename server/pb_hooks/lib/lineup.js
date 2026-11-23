@@ -113,7 +113,13 @@ function songsOf(set) {
 }
 
 function person(user) {
-  return { id: user.id, name: user.getString("name") };
+  return {
+    id: user.id,
+    name: user.getString("name"),
+    first_name: user.getString("first_name"),
+    last_name: user.getString("last_name"),
+    nickname: user.getString("nickname"),
+  };
 }
 
 /// GET /api/setding/lineup: the sets the signed-in user plays as a
@@ -226,7 +232,7 @@ function lineupEmails(e) {
   const result = [];
   if (ids.length > 0) {
     for (const user of e.app.findRecordsByIds("users", ids)) {
-      result.push({ id: user.id, name: user.getString("name"), email: user.email() });
+      result.push(Object.assign(person(user), { email: user.email() }));
     }
   }
   return e.json(200, { people: result });

@@ -162,6 +162,9 @@ void main() {
       bandId: 'b1',
       userId: id,
       userName: name,
+      userFirstName: '',
+      userLastName: '',
+      userNickname: '',
       role: BandRole.member,
       revision: 0,
     );
@@ -170,6 +173,9 @@ void main() {
       organizationId: 'o1',
       userId: id,
       userName: name,
+      userFirstName: '',
+      userLastName: '',
+      userNickname: '',
       role: OrgRole.member,
       revision: 0,
     );

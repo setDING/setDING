@@ -3,9 +3,11 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../data/change_log.dart';
 import '../../data/database.dart';
+import '../../data/person_name.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
-import '../../settings/settings.dart' show sharedPreferencesProvider;
+import '../../settings/settings.dart'
+    show nameFormatProvider, sharedPreferencesProvider;
 import '../sets/sets_screen.dart' show openSet;
 import '../songs/song_screen.dart';
 
@@ -59,19 +61,23 @@ final recentChangesProvider = StreamProvider.autoDispose
 /// shown by their e-mail address.
 final personNamesProvider = Provider.autoDispose<Map<String, String>>((ref) {
   final band = ref.watch(currentBandProvider);
-  String name(String userName, String? email) =>
-      userName.isNotEmpty ? userName : (email ?? '');
+  final format = ref.watch(nameFormatProvider);
+  String name(PersonName person, String? email) {
+    final shown = person.format(format);
+    return shown.isNotEmpty ? shown : (email ?? '');
+  }
+
   final org = band.organizationId;
   return {
     if (org != null)
       for (final m
           in ref.watch(orgMembersProvider(org)).value ??
               const <OrgMembershipEntry>[])
-        m.userId: name(m.userName, m.userEmail),
+        m.userId: name(m.person, m.userEmail),
     for (final m
         in ref.watch(bandMembersProvider(band.id)).value ??
             const <MembershipEntry>[])
-      m.userId: name(m.userName, m.userEmail),
+      m.userId: name(m.person, m.userEmail),
   }..removeWhere((_, n) => n.isEmpty);
 });
 

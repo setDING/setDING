@@ -7,11 +7,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../sync/auth_providers.dart' show authProvider;
 import '../sync/sync_backend.dart' show defaultServerUrl;
 import '../data/database.dart' show chordViewOf, localOwnerId;
+import '../data/person_name.dart' show NameFormat;
 import '../midi/midi_profile.dart';
 import 'display_options.dart';
 import 'song_display.dart';
 import 'user_settings_store.dart';
 
+export '../data/person_name.dart' show NameFormat;
 export '../midi/midi_profile.dart' show MidiProfileKind;
 export 'display_options.dart';
 export 'song_display.dart';
@@ -115,6 +117,7 @@ class AppSettings {
     this.notation = ChordNotation.international,
     this.chordView = ChordView.chords,
     this.numeralSpelling = NumeralSpelling.casing,
+    this.nameFormat = NameFormat.nickname,
     this.chordStyle = ChordStyle.asWritten,
     this.chordSuperscript = false,
     this.displayMode = DisplayMode.lyricsAndChords,
@@ -173,6 +176,9 @@ class AppSettings {
 
   /// How Roman numerals show the quality: `ii7` or `IIm7` (ADR-0059).
   final NumeralSpelling numeralSpelling;
+
+  /// How the names of other people are shown in lists (ADR-0062).
+  final NameFormat nameFormat;
 
   /// Spelling of chord suffixes (ADR-0022).
   final ChordStyle chordStyle;
@@ -422,6 +428,7 @@ class AppSettings {
     ChordNotation? notation,
     ChordView? chordView,
     NumeralSpelling? numeralSpelling,
+    NameFormat? nameFormat,
     ChordStyle? chordStyle,
     bool? chordSuperscript,
     DisplayMode? displayMode,
@@ -475,6 +482,7 @@ class AppSettings {
     notation: notation ?? this.notation,
     chordView: chordView ?? this.chordView,
     numeralSpelling: numeralSpelling ?? this.numeralSpelling,
+    nameFormat: nameFormat ?? this.nameFormat,
     chordStyle: chordStyle ?? this.chordStyle,
     chordSuperscript: chordSuperscript ?? this.chordSuperscript,
     displayMode: displayMode ?? this.displayMode,
@@ -535,6 +543,7 @@ class AppSettings {
     // Written for older app versions, which only know Nashville numbers.
     'nashville': SettingSyncScope.personal,
     'numeralSpelling': SettingSyncScope.personal,
+    'nameFormat': SettingSyncScope.personal,
     'chordStyle': SettingSyncScope.personal,
     'chordSuperscript': SettingSyncScope.personal,
     'displayMode': SettingSyncScope.personal,
@@ -610,6 +619,7 @@ class AppSettings {
     'chordView': chordView.name,
     'nashville': chordView.isDegrees,
     'numeralSpelling': numeralSpelling.name,
+    'nameFormat': nameFormat.name,
     'chordStyle': chordStyle.name,
     'chordSuperscript': chordSuperscript,
     'displayMode': displayMode.name,
@@ -704,6 +714,7 @@ class AppSettings {
         'numeralSpelling',
         d.numeralSpelling,
       ),
+      nameFormat: pick(NameFormat.values, 'nameFormat', d.nameFormat),
       chordStyle: pick(ChordStyle.values, 'chordStyle', d.chordStyle),
       chordSuperscript: flag('chordSuperscript', d.chordSuperscript),
       displayMode: pick(DisplayMode.values, 'displayMode', d.displayMode),
@@ -965,3 +976,8 @@ String initialServerUrl({
   }
   return defaultServerUrl;
 }
+
+/// How the names of other people are shown (ADR-0062).
+final nameFormatProvider = Provider<NameFormat>(
+  (ref) => ref.watch(settingsProvider.select((s) => s.nameFormat)),
+);

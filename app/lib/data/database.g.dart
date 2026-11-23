@@ -2265,6 +2265,42 @@ class $OrgMembershipsTable extends OrgMemberships
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _userFirstNameMeta = const VerificationMeta(
+    'userFirstName',
+  );
+  @override
+  late final GeneratedColumn<String> userFirstName = GeneratedColumn<String>(
+    'user_first_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _userLastNameMeta = const VerificationMeta(
+    'userLastName',
+  );
+  @override
+  late final GeneratedColumn<String> userLastName = GeneratedColumn<String>(
+    'user_last_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _userNicknameMeta = const VerificationMeta(
+    'userNickname',
+  );
+  @override
+  late final GeneratedColumn<String> userNickname = GeneratedColumn<String>(
+    'user_nickname',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   @override
   late final GeneratedColumnWithTypeConverter<OrgRole, String> role =
       GeneratedColumn<String>(
@@ -2293,6 +2329,9 @@ class $OrgMembershipsTable extends OrgMemberships
     userId,
     userName,
     userEmail,
+    userFirstName,
+    userLastName,
+    userNickname,
     role,
     revision,
   ];
@@ -2344,6 +2383,33 @@ class $OrgMembershipsTable extends OrgMemberships
         userEmail.isAcceptableOrUnknown(data['user_email']!, _userEmailMeta),
       );
     }
+    if (data.containsKey('user_first_name')) {
+      context.handle(
+        _userFirstNameMeta,
+        userFirstName.isAcceptableOrUnknown(
+          data['user_first_name']!,
+          _userFirstNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('user_last_name')) {
+      context.handle(
+        _userLastNameMeta,
+        userLastName.isAcceptableOrUnknown(
+          data['user_last_name']!,
+          _userLastNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('user_nickname')) {
+      context.handle(
+        _userNicknameMeta,
+        userNickname.isAcceptableOrUnknown(
+          data['user_nickname']!,
+          _userNicknameMeta,
+        ),
+      );
+    }
     if (data.containsKey('revision')) {
       context.handle(
         _revisionMeta,
@@ -2379,6 +2445,18 @@ class $OrgMembershipsTable extends OrgMemberships
         DriftSqlType.string,
         data['${effectivePrefix}user_email'],
       ),
+      userFirstName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_first_name'],
+      )!,
+      userLastName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_last_name'],
+      )!,
+      userNickname: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_nickname'],
+      )!,
       role: $OrgMembershipsTable.$converterrole.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.string,
@@ -2409,6 +2487,12 @@ class OrgMembershipEntry extends DataClass
   final String userName;
   final String? userEmail;
 
+  /// First name, last name and nickname of the user (ADR-0062, schema 40);
+  /// [userName] stays the single name of older servers.
+  final String userFirstName;
+  final String userLastName;
+  final String userNickname;
+
   /// Stored by name, so schema 11 kept the values of [BandRole] it had
   /// before (`admin`, `member`) and added `librarian` (ADR-0023).
   final OrgRole role;
@@ -2419,6 +2503,9 @@ class OrgMembershipEntry extends DataClass
     required this.userId,
     required this.userName,
     this.userEmail,
+    required this.userFirstName,
+    required this.userLastName,
+    required this.userNickname,
     required this.role,
     required this.revision,
   });
@@ -2432,6 +2519,9 @@ class OrgMembershipEntry extends DataClass
     if (!nullToAbsent || userEmail != null) {
       map['user_email'] = Variable<String>(userEmail);
     }
+    map['user_first_name'] = Variable<String>(userFirstName);
+    map['user_last_name'] = Variable<String>(userLastName);
+    map['user_nickname'] = Variable<String>(userNickname);
     {
       map['role'] = Variable<String>(
         $OrgMembershipsTable.$converterrole.toSql(role),
@@ -2450,6 +2540,9 @@ class OrgMembershipEntry extends DataClass
       userEmail: userEmail == null && nullToAbsent
           ? const Value.absent()
           : Value(userEmail),
+      userFirstName: Value(userFirstName),
+      userLastName: Value(userLastName),
+      userNickname: Value(userNickname),
       role: Value(role),
       revision: Value(revision),
     );
@@ -2466,6 +2559,9 @@ class OrgMembershipEntry extends DataClass
       userId: serializer.fromJson<String>(json['userId']),
       userName: serializer.fromJson<String>(json['userName']),
       userEmail: serializer.fromJson<String?>(json['userEmail']),
+      userFirstName: serializer.fromJson<String>(json['userFirstName']),
+      userLastName: serializer.fromJson<String>(json['userLastName']),
+      userNickname: serializer.fromJson<String>(json['userNickname']),
       role: $OrgMembershipsTable.$converterrole.fromJson(
         serializer.fromJson<String>(json['role']),
       ),
@@ -2481,6 +2577,9 @@ class OrgMembershipEntry extends DataClass
       'userId': serializer.toJson<String>(userId),
       'userName': serializer.toJson<String>(userName),
       'userEmail': serializer.toJson<String?>(userEmail),
+      'userFirstName': serializer.toJson<String>(userFirstName),
+      'userLastName': serializer.toJson<String>(userLastName),
+      'userNickname': serializer.toJson<String>(userNickname),
       'role': serializer.toJson<String>(
         $OrgMembershipsTable.$converterrole.toJson(role),
       ),
@@ -2494,6 +2593,9 @@ class OrgMembershipEntry extends DataClass
     String? userId,
     String? userName,
     Value<String?> userEmail = const Value.absent(),
+    String? userFirstName,
+    String? userLastName,
+    String? userNickname,
     OrgRole? role,
     int? revision,
   }) => OrgMembershipEntry(
@@ -2502,6 +2604,9 @@ class OrgMembershipEntry extends DataClass
     userId: userId ?? this.userId,
     userName: userName ?? this.userName,
     userEmail: userEmail.present ? userEmail.value : this.userEmail,
+    userFirstName: userFirstName ?? this.userFirstName,
+    userLastName: userLastName ?? this.userLastName,
+    userNickname: userNickname ?? this.userNickname,
     role: role ?? this.role,
     revision: revision ?? this.revision,
   );
@@ -2514,6 +2619,15 @@ class OrgMembershipEntry extends DataClass
       userId: data.userId.present ? data.userId.value : this.userId,
       userName: data.userName.present ? data.userName.value : this.userName,
       userEmail: data.userEmail.present ? data.userEmail.value : this.userEmail,
+      userFirstName: data.userFirstName.present
+          ? data.userFirstName.value
+          : this.userFirstName,
+      userLastName: data.userLastName.present
+          ? data.userLastName.value
+          : this.userLastName,
+      userNickname: data.userNickname.present
+          ? data.userNickname.value
+          : this.userNickname,
       role: data.role.present ? data.role.value : this.role,
       revision: data.revision.present ? data.revision.value : this.revision,
     );
@@ -2527,6 +2641,9 @@ class OrgMembershipEntry extends DataClass
           ..write('userId: $userId, ')
           ..write('userName: $userName, ')
           ..write('userEmail: $userEmail, ')
+          ..write('userFirstName: $userFirstName, ')
+          ..write('userLastName: $userLastName, ')
+          ..write('userNickname: $userNickname, ')
           ..write('role: $role, ')
           ..write('revision: $revision')
           ..write(')'))
@@ -2540,6 +2657,9 @@ class OrgMembershipEntry extends DataClass
     userId,
     userName,
     userEmail,
+    userFirstName,
+    userLastName,
+    userNickname,
     role,
     revision,
   );
@@ -2552,6 +2672,9 @@ class OrgMembershipEntry extends DataClass
           other.userId == this.userId &&
           other.userName == this.userName &&
           other.userEmail == this.userEmail &&
+          other.userFirstName == this.userFirstName &&
+          other.userLastName == this.userLastName &&
+          other.userNickname == this.userNickname &&
           other.role == this.role &&
           other.revision == this.revision);
 }
@@ -2562,6 +2685,9 @@ class OrgMembershipsCompanion extends UpdateCompanion<OrgMembershipEntry> {
   final Value<String> userId;
   final Value<String> userName;
   final Value<String?> userEmail;
+  final Value<String> userFirstName;
+  final Value<String> userLastName;
+  final Value<String> userNickname;
   final Value<OrgRole> role;
   final Value<int> revision;
   final Value<int> rowid;
@@ -2571,6 +2697,9 @@ class OrgMembershipsCompanion extends UpdateCompanion<OrgMembershipEntry> {
     this.userId = const Value.absent(),
     this.userName = const Value.absent(),
     this.userEmail = const Value.absent(),
+    this.userFirstName = const Value.absent(),
+    this.userLastName = const Value.absent(),
+    this.userNickname = const Value.absent(),
     this.role = const Value.absent(),
     this.revision = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2581,6 +2710,9 @@ class OrgMembershipsCompanion extends UpdateCompanion<OrgMembershipEntry> {
     required String userId,
     this.userName = const Value.absent(),
     this.userEmail = const Value.absent(),
+    this.userFirstName = const Value.absent(),
+    this.userLastName = const Value.absent(),
+    this.userNickname = const Value.absent(),
     required OrgRole role,
     this.revision = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2594,6 +2726,9 @@ class OrgMembershipsCompanion extends UpdateCompanion<OrgMembershipEntry> {
     Expression<String>? userId,
     Expression<String>? userName,
     Expression<String>? userEmail,
+    Expression<String>? userFirstName,
+    Expression<String>? userLastName,
+    Expression<String>? userNickname,
     Expression<String>? role,
     Expression<int>? revision,
     Expression<int>? rowid,
@@ -2604,6 +2739,9 @@ class OrgMembershipsCompanion extends UpdateCompanion<OrgMembershipEntry> {
       if (userId != null) 'user_id': userId,
       if (userName != null) 'user_name': userName,
       if (userEmail != null) 'user_email': userEmail,
+      if (userFirstName != null) 'user_first_name': userFirstName,
+      if (userLastName != null) 'user_last_name': userLastName,
+      if (userNickname != null) 'user_nickname': userNickname,
       if (role != null) 'role': role,
       if (revision != null) 'revision': revision,
       if (rowid != null) 'rowid': rowid,
@@ -2616,6 +2754,9 @@ class OrgMembershipsCompanion extends UpdateCompanion<OrgMembershipEntry> {
     Value<String>? userId,
     Value<String>? userName,
     Value<String?>? userEmail,
+    Value<String>? userFirstName,
+    Value<String>? userLastName,
+    Value<String>? userNickname,
     Value<OrgRole>? role,
     Value<int>? revision,
     Value<int>? rowid,
@@ -2626,6 +2767,9 @@ class OrgMembershipsCompanion extends UpdateCompanion<OrgMembershipEntry> {
       userId: userId ?? this.userId,
       userName: userName ?? this.userName,
       userEmail: userEmail ?? this.userEmail,
+      userFirstName: userFirstName ?? this.userFirstName,
+      userLastName: userLastName ?? this.userLastName,
+      userNickname: userNickname ?? this.userNickname,
       role: role ?? this.role,
       revision: revision ?? this.revision,
       rowid: rowid ?? this.rowid,
@@ -2650,6 +2794,15 @@ class OrgMembershipsCompanion extends UpdateCompanion<OrgMembershipEntry> {
     if (userEmail.present) {
       map['user_email'] = Variable<String>(userEmail.value);
     }
+    if (userFirstName.present) {
+      map['user_first_name'] = Variable<String>(userFirstName.value);
+    }
+    if (userLastName.present) {
+      map['user_last_name'] = Variable<String>(userLastName.value);
+    }
+    if (userNickname.present) {
+      map['user_nickname'] = Variable<String>(userNickname.value);
+    }
     if (role.present) {
       map['role'] = Variable<String>(
         $OrgMembershipsTable.$converterrole.toSql(role.value),
@@ -2672,6 +2825,9 @@ class OrgMembershipsCompanion extends UpdateCompanion<OrgMembershipEntry> {
           ..write('userId: $userId, ')
           ..write('userName: $userName, ')
           ..write('userEmail: $userEmail, ')
+          ..write('userFirstName: $userFirstName, ')
+          ..write('userLastName: $userLastName, ')
+          ..write('userNickname: $userNickname, ')
           ..write('role: $role, ')
           ..write('revision: $revision, ')
           ..write('rowid: $rowid')
@@ -3230,6 +3386,42 @@ class $MembershipsTable extends Memberships
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _userFirstNameMeta = const VerificationMeta(
+    'userFirstName',
+  );
+  @override
+  late final GeneratedColumn<String> userFirstName = GeneratedColumn<String>(
+    'user_first_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _userLastNameMeta = const VerificationMeta(
+    'userLastName',
+  );
+  @override
+  late final GeneratedColumn<String> userLastName = GeneratedColumn<String>(
+    'user_last_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _userNicknameMeta = const VerificationMeta(
+    'userNickname',
+  );
+  @override
+  late final GeneratedColumn<String> userNickname = GeneratedColumn<String>(
+    'user_nickname',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   @override
   late final GeneratedColumnWithTypeConverter<BandRole, String> role =
       GeneratedColumn<String>(
@@ -3258,6 +3450,9 @@ class $MembershipsTable extends Memberships
     userId,
     userName,
     userEmail,
+    userFirstName,
+    userLastName,
+    userNickname,
     role,
     revision,
   ];
@@ -3306,6 +3501,33 @@ class $MembershipsTable extends Memberships
         userEmail.isAcceptableOrUnknown(data['user_email']!, _userEmailMeta),
       );
     }
+    if (data.containsKey('user_first_name')) {
+      context.handle(
+        _userFirstNameMeta,
+        userFirstName.isAcceptableOrUnknown(
+          data['user_first_name']!,
+          _userFirstNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('user_last_name')) {
+      context.handle(
+        _userLastNameMeta,
+        userLastName.isAcceptableOrUnknown(
+          data['user_last_name']!,
+          _userLastNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('user_nickname')) {
+      context.handle(
+        _userNicknameMeta,
+        userNickname.isAcceptableOrUnknown(
+          data['user_nickname']!,
+          _userNicknameMeta,
+        ),
+      );
+    }
     if (data.containsKey('revision')) {
       context.handle(
         _revisionMeta,
@@ -3341,6 +3563,18 @@ class $MembershipsTable extends Memberships
         DriftSqlType.string,
         data['${effectivePrefix}user_email'],
       ),
+      userFirstName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_first_name'],
+      )!,
+      userLastName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_last_name'],
+      )!,
+      userNickname: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_nickname'],
+      )!,
       role: $MembershipsTable.$converterrole.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.string,
@@ -3371,6 +3605,12 @@ class MembershipEntry extends DataClass implements Insertable<MembershipEntry> {
   /// Name of the user at the time of the last refresh.
   final String userName;
   final String? userEmail;
+
+  /// First name, last name and nickname of the user (ADR-0062, schema 40);
+  /// [userName] stays the single name of older servers.
+  final String userFirstName;
+  final String userLastName;
+  final String userNickname;
   final BandRole role;
   final int revision;
   const MembershipEntry({
@@ -3379,6 +3619,9 @@ class MembershipEntry extends DataClass implements Insertable<MembershipEntry> {
     required this.userId,
     required this.userName,
     this.userEmail,
+    required this.userFirstName,
+    required this.userLastName,
+    required this.userNickname,
     required this.role,
     required this.revision,
   });
@@ -3392,6 +3635,9 @@ class MembershipEntry extends DataClass implements Insertable<MembershipEntry> {
     if (!nullToAbsent || userEmail != null) {
       map['user_email'] = Variable<String>(userEmail);
     }
+    map['user_first_name'] = Variable<String>(userFirstName);
+    map['user_last_name'] = Variable<String>(userLastName);
+    map['user_nickname'] = Variable<String>(userNickname);
     {
       map['role'] = Variable<String>(
         $MembershipsTable.$converterrole.toSql(role),
@@ -3410,6 +3656,9 @@ class MembershipEntry extends DataClass implements Insertable<MembershipEntry> {
       userEmail: userEmail == null && nullToAbsent
           ? const Value.absent()
           : Value(userEmail),
+      userFirstName: Value(userFirstName),
+      userLastName: Value(userLastName),
+      userNickname: Value(userNickname),
       role: Value(role),
       revision: Value(revision),
     );
@@ -3426,6 +3675,9 @@ class MembershipEntry extends DataClass implements Insertable<MembershipEntry> {
       userId: serializer.fromJson<String>(json['userId']),
       userName: serializer.fromJson<String>(json['userName']),
       userEmail: serializer.fromJson<String?>(json['userEmail']),
+      userFirstName: serializer.fromJson<String>(json['userFirstName']),
+      userLastName: serializer.fromJson<String>(json['userLastName']),
+      userNickname: serializer.fromJson<String>(json['userNickname']),
       role: $MembershipsTable.$converterrole.fromJson(
         serializer.fromJson<String>(json['role']),
       ),
@@ -3441,6 +3693,9 @@ class MembershipEntry extends DataClass implements Insertable<MembershipEntry> {
       'userId': serializer.toJson<String>(userId),
       'userName': serializer.toJson<String>(userName),
       'userEmail': serializer.toJson<String?>(userEmail),
+      'userFirstName': serializer.toJson<String>(userFirstName),
+      'userLastName': serializer.toJson<String>(userLastName),
+      'userNickname': serializer.toJson<String>(userNickname),
       'role': serializer.toJson<String>(
         $MembershipsTable.$converterrole.toJson(role),
       ),
@@ -3454,6 +3709,9 @@ class MembershipEntry extends DataClass implements Insertable<MembershipEntry> {
     String? userId,
     String? userName,
     Value<String?> userEmail = const Value.absent(),
+    String? userFirstName,
+    String? userLastName,
+    String? userNickname,
     BandRole? role,
     int? revision,
   }) => MembershipEntry(
@@ -3462,6 +3720,9 @@ class MembershipEntry extends DataClass implements Insertable<MembershipEntry> {
     userId: userId ?? this.userId,
     userName: userName ?? this.userName,
     userEmail: userEmail.present ? userEmail.value : this.userEmail,
+    userFirstName: userFirstName ?? this.userFirstName,
+    userLastName: userLastName ?? this.userLastName,
+    userNickname: userNickname ?? this.userNickname,
     role: role ?? this.role,
     revision: revision ?? this.revision,
   );
@@ -3472,6 +3733,15 @@ class MembershipEntry extends DataClass implements Insertable<MembershipEntry> {
       userId: data.userId.present ? data.userId.value : this.userId,
       userName: data.userName.present ? data.userName.value : this.userName,
       userEmail: data.userEmail.present ? data.userEmail.value : this.userEmail,
+      userFirstName: data.userFirstName.present
+          ? data.userFirstName.value
+          : this.userFirstName,
+      userLastName: data.userLastName.present
+          ? data.userLastName.value
+          : this.userLastName,
+      userNickname: data.userNickname.present
+          ? data.userNickname.value
+          : this.userNickname,
       role: data.role.present ? data.role.value : this.role,
       revision: data.revision.present ? data.revision.value : this.revision,
     );
@@ -3485,6 +3755,9 @@ class MembershipEntry extends DataClass implements Insertable<MembershipEntry> {
           ..write('userId: $userId, ')
           ..write('userName: $userName, ')
           ..write('userEmail: $userEmail, ')
+          ..write('userFirstName: $userFirstName, ')
+          ..write('userLastName: $userLastName, ')
+          ..write('userNickname: $userNickname, ')
           ..write('role: $role, ')
           ..write('revision: $revision')
           ..write(')'))
@@ -3492,8 +3765,18 @@ class MembershipEntry extends DataClass implements Insertable<MembershipEntry> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, bandId, userId, userName, userEmail, role, revision);
+  int get hashCode => Object.hash(
+    id,
+    bandId,
+    userId,
+    userName,
+    userEmail,
+    userFirstName,
+    userLastName,
+    userNickname,
+    role,
+    revision,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3503,6 +3786,9 @@ class MembershipEntry extends DataClass implements Insertable<MembershipEntry> {
           other.userId == this.userId &&
           other.userName == this.userName &&
           other.userEmail == this.userEmail &&
+          other.userFirstName == this.userFirstName &&
+          other.userLastName == this.userLastName &&
+          other.userNickname == this.userNickname &&
           other.role == this.role &&
           other.revision == this.revision);
 }
@@ -3513,6 +3799,9 @@ class MembershipsCompanion extends UpdateCompanion<MembershipEntry> {
   final Value<String> userId;
   final Value<String> userName;
   final Value<String?> userEmail;
+  final Value<String> userFirstName;
+  final Value<String> userLastName;
+  final Value<String> userNickname;
   final Value<BandRole> role;
   final Value<int> revision;
   final Value<int> rowid;
@@ -3522,6 +3811,9 @@ class MembershipsCompanion extends UpdateCompanion<MembershipEntry> {
     this.userId = const Value.absent(),
     this.userName = const Value.absent(),
     this.userEmail = const Value.absent(),
+    this.userFirstName = const Value.absent(),
+    this.userLastName = const Value.absent(),
+    this.userNickname = const Value.absent(),
     this.role = const Value.absent(),
     this.revision = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -3532,6 +3824,9 @@ class MembershipsCompanion extends UpdateCompanion<MembershipEntry> {
     required String userId,
     this.userName = const Value.absent(),
     this.userEmail = const Value.absent(),
+    this.userFirstName = const Value.absent(),
+    this.userLastName = const Value.absent(),
+    this.userNickname = const Value.absent(),
     required BandRole role,
     this.revision = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -3545,6 +3840,9 @@ class MembershipsCompanion extends UpdateCompanion<MembershipEntry> {
     Expression<String>? userId,
     Expression<String>? userName,
     Expression<String>? userEmail,
+    Expression<String>? userFirstName,
+    Expression<String>? userLastName,
+    Expression<String>? userNickname,
     Expression<String>? role,
     Expression<int>? revision,
     Expression<int>? rowid,
@@ -3555,6 +3853,9 @@ class MembershipsCompanion extends UpdateCompanion<MembershipEntry> {
       if (userId != null) 'user_id': userId,
       if (userName != null) 'user_name': userName,
       if (userEmail != null) 'user_email': userEmail,
+      if (userFirstName != null) 'user_first_name': userFirstName,
+      if (userLastName != null) 'user_last_name': userLastName,
+      if (userNickname != null) 'user_nickname': userNickname,
       if (role != null) 'role': role,
       if (revision != null) 'revision': revision,
       if (rowid != null) 'rowid': rowid,
@@ -3567,6 +3868,9 @@ class MembershipsCompanion extends UpdateCompanion<MembershipEntry> {
     Value<String>? userId,
     Value<String>? userName,
     Value<String?>? userEmail,
+    Value<String>? userFirstName,
+    Value<String>? userLastName,
+    Value<String>? userNickname,
     Value<BandRole>? role,
     Value<int>? revision,
     Value<int>? rowid,
@@ -3577,6 +3881,9 @@ class MembershipsCompanion extends UpdateCompanion<MembershipEntry> {
       userId: userId ?? this.userId,
       userName: userName ?? this.userName,
       userEmail: userEmail ?? this.userEmail,
+      userFirstName: userFirstName ?? this.userFirstName,
+      userLastName: userLastName ?? this.userLastName,
+      userNickname: userNickname ?? this.userNickname,
       role: role ?? this.role,
       revision: revision ?? this.revision,
       rowid: rowid ?? this.rowid,
@@ -3601,6 +3908,15 @@ class MembershipsCompanion extends UpdateCompanion<MembershipEntry> {
     if (userEmail.present) {
       map['user_email'] = Variable<String>(userEmail.value);
     }
+    if (userFirstName.present) {
+      map['user_first_name'] = Variable<String>(userFirstName.value);
+    }
+    if (userLastName.present) {
+      map['user_last_name'] = Variable<String>(userLastName.value);
+    }
+    if (userNickname.present) {
+      map['user_nickname'] = Variable<String>(userNickname.value);
+    }
     if (role.present) {
       map['role'] = Variable<String>(
         $MembershipsTable.$converterrole.toSql(role.value),
@@ -3623,6 +3939,9 @@ class MembershipsCompanion extends UpdateCompanion<MembershipEntry> {
           ..write('userId: $userId, ')
           ..write('userName: $userName, ')
           ..write('userEmail: $userEmail, ')
+          ..write('userFirstName: $userFirstName, ')
+          ..write('userLastName: $userLastName, ')
+          ..write('userNickname: $userNickname, ')
           ..write('role: $role, ')
           ..write('revision: $revision, ')
           ..write('rowid: $rowid')
@@ -13008,6 +13327,9 @@ typedef $$OrgMembershipsTableCreateCompanionBuilder =
       required String userId,
       Value<String> userName,
       Value<String?> userEmail,
+      Value<String> userFirstName,
+      Value<String> userLastName,
+      Value<String> userNickname,
       required OrgRole role,
       Value<int> revision,
       Value<int> rowid,
@@ -13019,6 +13341,9 @@ typedef $$OrgMembershipsTableUpdateCompanionBuilder =
       Value<String> userId,
       Value<String> userName,
       Value<String?> userEmail,
+      Value<String> userFirstName,
+      Value<String> userLastName,
+      Value<String> userNickname,
       Value<OrgRole> role,
       Value<int> revision,
       Value<int> rowid,
@@ -13082,6 +13407,21 @@ class $$OrgMembershipsTableFilterComposer
 
   ColumnFilters<String> get userEmail => $composableBuilder(
     column: $table.userEmail,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userFirstName => $composableBuilder(
+    column: $table.userFirstName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userLastName => $composableBuilder(
+    column: $table.userLastName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userNickname => $composableBuilder(
+    column: $table.userNickname,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -13149,6 +13489,21 @@ class $$OrgMembershipsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get userFirstName => $composableBuilder(
+    column: $table.userFirstName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userLastName => $composableBuilder(
+    column: $table.userLastName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userNickname => $composableBuilder(
+    column: $table.userNickname,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get role => $composableBuilder(
     column: $table.role,
     builder: (column) => ColumnOrderings(column),
@@ -13203,6 +13558,21 @@ class $$OrgMembershipsTableAnnotationComposer
 
   GeneratedColumn<String> get userEmail =>
       $composableBuilder(column: $table.userEmail, builder: (column) => column);
+
+  GeneratedColumn<String> get userFirstName => $composableBuilder(
+    column: $table.userFirstName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get userLastName => $composableBuilder(
+    column: $table.userLastName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get userNickname => $composableBuilder(
+    column: $table.userNickname,
+    builder: (column) => column,
+  );
 
   GeneratedColumnWithTypeConverter<OrgRole, String> get role =>
       $composableBuilder(column: $table.role, builder: (column) => column);
@@ -13269,6 +13639,9 @@ class $$OrgMembershipsTableTableManager
                 Value<String> userId = const Value.absent(),
                 Value<String> userName = const Value.absent(),
                 Value<String?> userEmail = const Value.absent(),
+                Value<String> userFirstName = const Value.absent(),
+                Value<String> userLastName = const Value.absent(),
+                Value<String> userNickname = const Value.absent(),
                 Value<OrgRole> role = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -13278,6 +13651,9 @@ class $$OrgMembershipsTableTableManager
                 userId: userId,
                 userName: userName,
                 userEmail: userEmail,
+                userFirstName: userFirstName,
+                userLastName: userLastName,
+                userNickname: userNickname,
                 role: role,
                 revision: revision,
                 rowid: rowid,
@@ -13289,6 +13665,9 @@ class $$OrgMembershipsTableTableManager
                 required String userId,
                 Value<String> userName = const Value.absent(),
                 Value<String?> userEmail = const Value.absent(),
+                Value<String> userFirstName = const Value.absent(),
+                Value<String> userLastName = const Value.absent(),
+                Value<String> userNickname = const Value.absent(),
                 required OrgRole role,
                 Value<int> revision = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -13298,6 +13677,9 @@ class $$OrgMembershipsTableTableManager
                 userId: userId,
                 userName: userName,
                 userEmail: userEmail,
+                userFirstName: userFirstName,
+                userLastName: userLastName,
+                userNickname: userNickname,
                 role: role,
                 revision: revision,
                 rowid: rowid,
@@ -13921,6 +14303,9 @@ typedef $$MembershipsTableCreateCompanionBuilder =
       required String userId,
       Value<String> userName,
       Value<String?> userEmail,
+      Value<String> userFirstName,
+      Value<String> userLastName,
+      Value<String> userNickname,
       required BandRole role,
       Value<int> revision,
       Value<int> rowid,
@@ -13932,6 +14317,9 @@ typedef $$MembershipsTableUpdateCompanionBuilder =
       Value<String> userId,
       Value<String> userName,
       Value<String?> userEmail,
+      Value<String> userFirstName,
+      Value<String> userLastName,
+      Value<String> userNickname,
       Value<BandRole> role,
       Value<int> revision,
       Value<int> rowid,
@@ -13985,6 +14373,21 @@ class $$MembershipsTableFilterComposer
 
   ColumnFilters<String> get userEmail => $composableBuilder(
     column: $table.userEmail,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userFirstName => $composableBuilder(
+    column: $table.userFirstName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userLastName => $composableBuilder(
+    column: $table.userLastName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userNickname => $composableBuilder(
+    column: $table.userNickname,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -14052,6 +14455,21 @@ class $$MembershipsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get userFirstName => $composableBuilder(
+    column: $table.userFirstName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userLastName => $composableBuilder(
+    column: $table.userLastName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userNickname => $composableBuilder(
+    column: $table.userNickname,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get role => $composableBuilder(
     column: $table.role,
     builder: (column) => ColumnOrderings(column),
@@ -14106,6 +14524,21 @@ class $$MembershipsTableAnnotationComposer
 
   GeneratedColumn<String> get userEmail =>
       $composableBuilder(column: $table.userEmail, builder: (column) => column);
+
+  GeneratedColumn<String> get userFirstName => $composableBuilder(
+    column: $table.userFirstName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get userLastName => $composableBuilder(
+    column: $table.userLastName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get userNickname => $composableBuilder(
+    column: $table.userNickname,
+    builder: (column) => column,
+  );
 
   GeneratedColumnWithTypeConverter<BandRole, String> get role =>
       $composableBuilder(column: $table.role, builder: (column) => column);
@@ -14170,6 +14603,9 @@ class $$MembershipsTableTableManager
                 Value<String> userId = const Value.absent(),
                 Value<String> userName = const Value.absent(),
                 Value<String?> userEmail = const Value.absent(),
+                Value<String> userFirstName = const Value.absent(),
+                Value<String> userLastName = const Value.absent(),
+                Value<String> userNickname = const Value.absent(),
                 Value<BandRole> role = const Value.absent(),
                 Value<int> revision = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -14179,6 +14615,9 @@ class $$MembershipsTableTableManager
                 userId: userId,
                 userName: userName,
                 userEmail: userEmail,
+                userFirstName: userFirstName,
+                userLastName: userLastName,
+                userNickname: userNickname,
                 role: role,
                 revision: revision,
                 rowid: rowid,
@@ -14190,6 +14629,9 @@ class $$MembershipsTableTableManager
                 required String userId,
                 Value<String> userName = const Value.absent(),
                 Value<String?> userEmail = const Value.absent(),
+                Value<String> userFirstName = const Value.absent(),
+                Value<String> userLastName = const Value.absent(),
+                Value<String> userNickname = const Value.absent(),
                 required BandRole role,
                 Value<int> revision = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -14199,6 +14641,9 @@ class $$MembershipsTableTableManager
                 userId: userId,
                 userName: userName,
                 userEmail: userEmail,
+                userFirstName: userFirstName,
+                userLastName: userLastName,
+                userNickname: userNickname,
                 role: role,
                 revision: revision,
                 rowid: rowid,
