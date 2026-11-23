@@ -1294,6 +1294,65 @@ void main() {
       await app.dispose(tester);
     });
 
+    testWidgets('stacked choruses show the chords once over the changed '
+        'words (#953)', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final id = await tester.runAsync(
+        () => app.songs.createSong(
+          source:
+              '{title: X}\n{sov}\n[A]Verse one\n{eov}\n'
+              '{soc}\n[G]Sing it [D]loud\n{eoc}\n'
+              '{sov}\n[A]Verse two\n{eov}\n'
+              '{soc}\n[G]Sing it [D]soft\n{eoc}',
+        ),
+      );
+      await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+      await tester.pumpAndSettle();
+      expect(find.text('G'), findsNWidgets(2));
+
+      await tester.tap(find.byTooltip('Personal adjustments'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('verse-chords-button')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(CheckboxMenuButton));
+      await tester.pumpAndSettle();
+      // The chorus chords once, the verses as written.
+      expect(find.text('G'), findsOneWidget);
+      expect(find.text('A'), findsNWidgets(2));
+      expect(find.text('Choruses stacked'), findsOneWidget);
+      expect(badge(tester, 'open-personal-adjustments'), isTrue);
+      final overlay = await tester.runAsync(() => app.songs.getOverlay(id));
+      expect(overlay!.stackedChoruses, isTrue);
+      expect(overlay.verseChords, VerseChords.all);
+      await app.dispose(tester);
+    });
+
+    testWidgets('choruses that only repeat cannot be stacked (#953)', (
+      tester,
+    ) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final id = await tester.runAsync(
+        () => app.songs.createSong(
+          source:
+              '{title: X}\n{sov}\n[A]One\n{eov}\n{sov}\n[A]Two\n{eov}\n'
+              '{soc}\n[G]Same\n{eoc}\n{chorus}',
+        ),
+      );
+      await tester.pumpWidget(app.build(home: SongScreen(songId: id!)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Personal adjustments'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('verse-chords-button')));
+      await tester.pumpAndSettle();
+      final item = tester.widget<CheckboxMenuButton>(
+        find.byType(CheckboxMenuButton),
+      );
+      expect(item.onChanged, isNull);
+      await app.dispose(tester);
+    });
+
     testWidgets('stacked verses join the syllables of a split word', (
       tester,
     ) async {

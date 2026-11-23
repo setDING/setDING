@@ -359,6 +359,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get verseChordsStacked => 'Verses stacked';
 
   @override
+  String get chorusesStacked => 'Choruses stacked';
+
+  @override
   String get editorTitleNew => 'New song';
 
   @override

@@ -59,6 +59,7 @@ SequenceSelection filterBySequenceCached(
 
 final _firstVerse = LruCache<Song, Song>(32);
 final _stacked = LruCache<Song, Song>(32);
+final _stackedChoruses = LruCache<Song, Song>(32);
 
 /// [firstVerseChordsOnly] with a cache keyed by the [song] instance (see
 /// [parseChordProCached]), so the result is the same instance, too.
@@ -69,9 +70,21 @@ Song firstVerseChordsOnlyCached(Song song) =>
 Song stackVersesCached(Song song) =>
     _stacked.get(song, () => stackVerses(song));
 
-/// [song] as a person's adjustments show its verses' chords (#518, #521).
-Song songWithVerseChords(Song song, VerseChords mode) => switch (mode) {
-  VerseChords.all => song,
-  VerseChords.first => firstVerseChordsOnlyCached(song),
-  VerseChords.stacked => stackVersesCached(song),
-};
+/// [stackChoruses] with a cache keyed by the [song] instance.
+Song stackChorusesCached(Song song) =>
+    _stackedChoruses.get(song, () => stackChoruses(song));
+
+/// [song] as a person's adjustments show its verses' chords (#518, #521)
+/// and its choruses ([stackedChoruses], #953).
+Song songWithVerseChords(
+  Song song,
+  VerseChords mode, {
+  bool stackedChoruses = false,
+}) {
+  final base = stackedChoruses ? stackChorusesCached(song) : song;
+  return switch (mode) {
+    VerseChords.all => base,
+    VerseChords.first => firstVerseChordsOnlyCached(base),
+    VerseChords.stacked => stackVersesCached(base),
+  };
+}

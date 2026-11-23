@@ -12,29 +12,46 @@ import 'song.dart';
 /// line; a verse without any chords joins when its lines match the lyric
 /// lines of the first one. Other sections in between stay where they are.
 /// The group is shown in place of its first verse as one section of
-/// [StackedLine]s; the later verses of the group are left out. Lines of
-/// chords only stay single lines. Verses with other content (comments,
+/// [StackedLine]s; the later verses of the group are left out. A verse with
+/// the same text as an earlier one of its group adds no row (#953). Lines
+/// of chords only stay single lines. Verses with other content (comments,
 /// tabs, images …) are never stacked.
 ///
 /// The rows keep their verses' lines with their source lines, so freehand
 /// annotations stay anchored to them (ADR-0032). Returns [song] itself when no verses can be stacked.
-Song stackVerses(Song song) {
+Song stackVerses(Song song) => stackSections(song, SectionRole.verse);
+
+/// [song] with its choruses stacked like the verses of [stackVerses]
+/// (#953): choruses whose lyrics change, e.g. a last chorus with other
+/// words. Repeats with the same text (and `{chorus}` recalls) add no row,
+/// so a song whose choruses are all the same stays as it is.
+Song stackChoruses(Song song) => stackSections(song, SectionRole.chorus);
+
+/// [song] with the sections of [role] stacked as [stackVerses] describes
+/// for verses.
+Song stackSections(Song song, SectionRole role) {
   final verses = <Section>[];
   for (final s in song.sections) {
-    if (s.role == SectionRole.verse && !verses.any((v) => identical(v, s))) {
+    if (s.role == role && !verses.any((v) => identical(v, s))) {
       verses.add(s);
     }
   }
   if (verses.length < 2) return song;
 
-  // Groups of consecutive verses, keyed by their first verse.
+  // Groups of consecutive sections, keyed by their first one.
   final groups = <List<(int, Section)>>[];
+  final repeats = <Section, List<(int, Section)>>{};
   List<(int, Section)>? current;
   _Shape? shape;
   for (final (i, verse) in verses.indexed) {
     final number = _verseNumber(verse) ?? i + 1;
     if (current != null && shape!.matches(verse)) {
-      current.add((number, verse));
+      // The same text as an earlier section of the group adds no row.
+      if (current.any((e) => _sameText(e.$2, verse))) {
+        repeats[verse] = current;
+      } else {
+        current.add((number, verse));
+      }
       continue;
     }
     current = null;
@@ -53,6 +70,10 @@ Song stackVerses(Song song) {
     stacked[group.first.$2] = _stack(group);
     dropped.addAll(group.skip(1).map((e) => e.$2));
   }
+  // Repeats of a stacked group are left out with it.
+  for (final MapEntry(key: repeat, value: group) in repeats.entries) {
+    if (groups.any((g) => identical(g, group))) dropped.add(repeat);
+  }
   final elements = <SongElement>[
     for (final e in song.elements)
       if (e is Section && stacked.containsKey(e))
@@ -68,6 +89,23 @@ Song stackVerses(Song song) {
     diagrams: song.diagrams,
     leadingTranspose: song.leadingTranspose,
   );
+}
+
+/// Whether [a] and [b] have the same lyrics line by line.
+bool _sameText(Section a, Section b) {
+  final la = [
+    for (final l in a.lines)
+      if (l is LyricLine) l.plainText.trim(),
+  ];
+  final lb = [
+    for (final l in b.lines)
+      if (l is LyricLine) l.plainText.trim(),
+  ];
+  if (la.length != lb.length) return false;
+  for (var i = 0; i < la.length; i++) {
+    if (la[i] != lb[i]) return false;
+  }
+  return true;
 }
 
 /// The lines of a verse that can lead a group: lyrics and empty lines only,

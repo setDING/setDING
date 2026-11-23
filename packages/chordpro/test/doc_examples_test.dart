@@ -102,6 +102,10 @@ void main() {
         expect(identical(firstVerseChordsOnly(song), song), isFalse);
         expect(identical(stackVerses(song), song), isFalse);
       });
+
+      test('the last chorus changes its words and can be stacked', () {
+        expect(identical(stackChoruses(song), song), isFalse);
+      });
     });
   }
 }

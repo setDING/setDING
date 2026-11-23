@@ -360,6 +360,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get verseChordsStacked => 'Verses untereinander';
 
   @override
+  String get chorusesStacked => 'Choruses untereinander';
+
+  @override
   String get editorTitleNew => 'Neuer Song';
 
   @override

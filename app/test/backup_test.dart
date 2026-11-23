@@ -62,6 +62,7 @@ void main() {
         clickGrouping: const Value('3+2+2'),
         chordView: const Value(ChordView.numerals),
         clickSubdivision: const Value(Subdivision.sixteenths),
+        stackedChoruses: true,
       ),
     );
     await db
@@ -168,6 +169,7 @@ void main() {
     expect(overlay.clickGrouping, '3+2+2');
     expect(overlay.clickSubdivision, Subdivision.sixteenths);
     expect(overlay.chordView, ChordView.numerals);
+    expect(overlay.stackedChoruses, isTrue);
     final strokes = await other.select(other.annotations).get();
     expect(strokes.single.songId, hello.id);
     expect(strokes.single.target, score.id);

@@ -36,7 +36,9 @@ one layout measurement used to fit songs to pages (ADR-0007).
    line by line (chord positions may differ). A verse without any chords
    joins when its lines match the lyric lines of the first one. Verses with
    other content (comments, tabs, images, format directives) are never
-   stacked. Other sections between the verses stay where they are.
+   stacked. Other sections between the verses stay where they are. A verse
+   with the same lyrics as an earlier one of its group adds no row and is
+   left out with the group (#953).
 4. **Placement.** A group is shown in place of its first verse as one
    section, labelled `Verse 1–3` when the first and last label end in a
    number, otherwise with the first verse's label. The later verses of the
@@ -57,6 +59,17 @@ one layout measurement used to fit songs to pages (ADR-0007).
    the layout fingerprint records the choice, so strokes drawn on another
    layout fall back to their line anchor (ADR-0032).
 
+8. **Stacked choruses (#953).** A second, independent layer 3 setting
+   *choruses stacked* (a boolean next to *chords in verses*, a tick in the
+   same menu) applies the same transformation to the sections with the
+   chorus role (`stackChoruses`; `stackVerses` and `stackChoruses` share
+   `stackSections`). It is applied before the verse choice, so verses,
+   choruses or both can be stacked. Choruses that only repeat the words of
+   an earlier one add no row, so a song whose choruses are all the same is
+   not changed and the tick is disabled; `{chorus}` recalls stay where they
+   are. It is synced in the overlay data (`stacked_choruses`), kept in
+   backups and recorded in the layout fingerprint (`choruses`).
+
 ## Alternatives considered
 
 | Option | Pros | Cons |
@@ -66,6 +79,7 @@ one layout measurement used to fit songs to pages (ADR-0007).
 | Estimate chord positions for verses without chords (by syllables) | Every verse aligned | Unreliable; wrong positions are worse than none |
 | Repeat the block at every verse position | Song order unchanged | Longer than the plain song; the point is to save room |
 | Separate boolean next to #518 | Smaller change | Two options that exclude each other |
+| Choruses as a fourth value of *chords in verses*, or one multi-select of verses and choruses (#953) | One control | Stacked choruses combine with every verse choice, *first verse only* and *stacked verses* exclude each other |
 
 ## Consequences
 
@@ -88,6 +102,11 @@ one layout measurement used to fit songs to pages (ADR-0007).
   syllables, centred in the rest of the column as in hymnals (`A - mazing`),
   directly after the syllable when the column is just as wide; its width
   counts towards the column width in the layout measurement.
+- 2026-11-23: Proposed with #953 after the owner chose an independent tick
+  for choruses next to the verse choice: choruses whose words change are
+  stacked like verses (decision 8), and a section with the same lyrics as an
+  earlier one of its group adds no row (also for verses, decision 3).
+- 2026-11-23: Extension for choruses (#953) accepted by the owner.
 
 ## Open points
 

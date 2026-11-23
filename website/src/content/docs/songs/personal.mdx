@@ -10,6 +10,7 @@ import ExampleSong from '../../../components/ExampleSong.astro';
 import song from '../../../../../docs/screenshots/song_de.png';
 import adjustmentOffer from '../../../../../docs/screenshots/adjustment_offer_de.png';
 import phoneMenu from '../../../../../docs/screenshots/song_phone_menu_de.png';
+import stackedChoruses from '../../../../../docs/screenshots/live_stacked_choruses_de.png';
 
 Öffnest du einen Song, findest du oben drei Symbole:
 
@@ -52,6 +53,13 @@ gehören zu deinem Konto und gelten auf allen deinen Geräten, in jedem Set:
     war; ein Refrain dazwischen bleibt an seinem Platz. Strophen ohne eigene Akkorde
     kommen mit ihrem Text am Stück darunter. Strophen mit anderen Akkorden oder mit
     Kommentaren, Tabs oder Bildern bleiben für sich.
+  - **Choruses untereinander**: ein Häkchen unter den drei Möglichkeiten, allein
+    oder zusammen mit den Verses untereinander. Choruses, deren Text sich ändert,
+    z. B. ein letzter Chorus mit anderen Zeilen, werden genauso gestapelt; ein
+    Chorus, der nur den Text eines früheren wiederholt, gibt keine eigene Zeile.
+    Das Häkchen gibt es nur, wenn der Song solche Choruses hat.
+
+  <Image src={stackedChoruses} alt="Der Live-Modus mit Verse 1–3 und den Choruses untereinander, und das Menü mit Akkorde in allen Verses, Akkorde nur in Verse 1, Verses untereinander und dem angehakten Choruses untereinander" />
 - **Meine Notizen**: eine Notiz, die nur du siehst, z. B. «Einsatz nach 4 Takten».
   Sie erscheint beim Song, auch im Live-Modus.
 - **Freihand-Notizen**: wie viele Zeichnungen du auf dem Song hast, ein Schalter, um
@@ -82,9 +90,10 @@ auf diesem Gerät aus.
 ### Zum Ausprobieren
 
 Dieser Song steht in A und wird mit Kapodaster im 2. Bund gespielt, die Akkorde sind
-also in G gegriffen. Seine drei Verses haben dieselben Akkorde. Probiere unter
-**Akkorde in Verses**, nur die erste Strophe mit Akkorden zu zeigen oder die
-Verses untereinander zu stapeln, und setze einen anderen Kapodaster oder **Ohne
+also in G gegriffen. Seine drei Verses haben dieselben Akkorde, und der letzte
+Chorus hat einen anderen Text. Probiere unter **Akkorde in Verses**, nur die erste
+Strophe mit Akkorden zu zeigen oder die Verses und Choruses untereinander zu
+stapeln, und setze einen anderen Kapodaster oder **Ohne
 Kapo**: Die Akkorde passen sich an, die Tonart des Songs bleibt.
 
 <ExampleSong name="personal-de" />
