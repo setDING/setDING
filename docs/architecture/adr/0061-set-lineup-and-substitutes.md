@@ -256,9 +256,21 @@ band but a person in a set's lineup.
   view: the band switcher and band lists show the role *Substitute*, the
   band screen explains it without members, invitations or leaving, and the
   sets tab has no repertoire button and no *New set* for them.
+- 2026-11-23: Notifying and the set list implemented (#1011). Owner
+  decision: *Notify lineup* uses the platform's share menu through the
+  library `share_plus` (BSD-3-Clause), next to *Copy* and *By mail* (the
+  lineup's addresses from the server route, none offline); the message has
+  no link to the set, since the app has no links to sets yet (open point).
+  The lineup is a line in the header of the printable set list (PDF); the
+  app has no text export of the set list, so there is none to extend. *You
+  are planned* is an overview card with the upcoming sets the user was put
+  in the lineup of by name (band members and substitutes), until *Got it*
+  on this device.
 
 ## Open points
 
+- A link in the message that opens the set in the app (needs links to sets,
+  like the invitation links of ADR-0005).
 - Roles per person in the lineup (vocals, piano, …), with an instrument per
   band membership as the default.
 - Requests by server mail with *accept* / *decline* and a status per person,

@@ -6352,4 +6352,37 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get overviewAsSubstitute => 'Als Aushilfe';
+
+  @override
+  String get lineupNotify => 'Besetzung benachrichtigen';
+
+  @override
+  String get lineupCopy => 'Kopieren';
+
+  @override
+  String get lineupCopied => 'Text kopiert';
+
+  @override
+  String get lineupMail => 'Per Mail';
+
+  @override
+  String get lineupShare => 'Teilen …';
+
+  @override
+  String get lineupNoAddresses =>
+      'Ohne Verbindung zum Server: Empfänger selbst wählen.';
+
+  @override
+  String lineupMessageIntro(String set) {
+    return 'Ihr seid für «$set» eingeplant.';
+  }
+
+  @override
+  String get lineupMessageFooter => 'Die Songs findet ihr in setDING.';
+
+  @override
+  String get overviewPlanned => 'Du bist eingeplant';
+
+  @override
+  String get overviewPlannedSeen => 'Verstanden';
 }

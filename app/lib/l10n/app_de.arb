@@ -4006,5 +4006,22 @@
   "lineupNobody": "Niemand eingeplant",
   "lineupWholeBandHint": "Die Besetzung folgt der Band, auch neuen Mitgliedern.",
   "bandSubstituteHint": "Du spielst einzelne Sets dieser Band als Aushilfe und siehst nur diese Sets.",
-  "overviewAsSubstitute": "Als Aushilfe"
+  "overviewAsSubstitute": "Als Aushilfe",
+  "lineupNotify": "Besetzung benachrichtigen",
+  "lineupCopy": "Kopieren",
+  "lineupCopied": "Text kopiert",
+  "lineupMail": "Per Mail",
+  "lineupShare": "Teilen …",
+  "lineupNoAddresses": "Ohne Verbindung zum Server: Empfänger selbst wählen.",
+  "lineupMessageIntro": "Ihr seid für «{set}» eingeplant.",
+  "lineupMessageFooter": "Die Songs findet ihr in setDING.",
+  "overviewPlanned": "Du bist eingeplant",
+  "overviewPlannedSeen": "Verstanden",
+  "@lineupMessageIntro": {
+    "placeholders": {
+      "set": {
+        "type": "String"
+      }
+    }
+  }
 }

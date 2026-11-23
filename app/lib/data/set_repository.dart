@@ -68,6 +68,38 @@ Stream<List<SubstituteGig>> watchSubstituteGigs(
   );
 }
 
+/// The sets with a gig date from [today] on and a lineup of their own that
+/// has [userId] (ADR-0061), in every band of this device, next gig first:
+/// the gigs the user was planned for by name.
+Stream<List<SubstituteGig>> watchPlannedGigs(
+  AppDatabase db,
+  String userId, {
+  DateTime? today,
+}) {
+  final now = today ?? DateTime.now();
+  final start = DateTime(now.year, now.month, now.day);
+  final l = db.setlists, b = db.bands;
+  final q = db.select(l).join([innerJoin(b, b.id.equalsExp(l.bandId))])
+    ..where(
+      b.deleted.equals(false) &
+          l.deleted.equals(false) &
+          l.lineupCustom.equals(true) &
+          l.gigDate.isBiggerOrEqualValue(start),
+    )
+    ..orderBy([OrderingTerm.asc(l.gigDate), OrderingTerm.asc(l.name)]);
+  return q.watch().map(
+    (rows) => [
+      for (final row in rows)
+        if (row.readTable(l).lineup.contains(userId))
+          (
+            set: row.readTable(l),
+            bandId: row.readTable(b).id,
+            bandName: row.readTable(b).name,
+          ),
+    ],
+  );
+}
+
 /// Summary of a set for list views.
 class SetSummary {
   const SetSummary(this.set, this.itemCount);

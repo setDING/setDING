@@ -774,6 +774,20 @@ class PocketBaseBackend implements SyncBackend {
     );
   });
 
+  @override
+  Future<List<({String name, String email})>> fetchLineupEmails(String setId) =>
+      _signedIn(() async {
+        final result = await _pb.send<dynamic>(
+          '/api/setding/lineup/${Uri.encodeComponent(setId)}/emails',
+        );
+        return [
+          for (final p in (result as Map)['people'] as List? ?? const [])
+            if ((p as Map)['email'] case final String email
+                when email.isNotEmpty)
+              (name: p['name'] as String? ?? '', email: email),
+        ];
+      });
+
   Future<List<RecordModel>> _since(
     String collection,
     String scopeField,

@@ -1190,6 +1190,38 @@ class FakeSyncBackend implements SyncBackend {
     return stored;
   }
 
+  /// Like the server (ADR-0061): the lineup's addresses for who may edit
+  /// the set; [lineupEmailsFail] answers like a server that is not reached.
+  bool lineupEmailsFail = false;
+
+  @override
+  Future<List<({String name, String email})>> fetchLineupEmails(
+    String setId,
+  ) async {
+    _requireUser();
+    if (lineupEmailsFail) {
+      throw const BackendException(BackendErrorKind.network);
+    }
+    final set = sets[setId];
+    if (set == null || set.deleted || !_canManageBand(set.bandId)) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    final ids = set.lineupCustom
+        ? set.lineup
+        : [
+            for (final m in members)
+              if (m.scopeId == set.bandId) m.user.id,
+          ];
+    final people = {
+      for (final m in orgMembers) m.user.id: m.user,
+      for (final m in members) m.user.id: m.user,
+    };
+    return [
+      for (final id in ids)
+        if (people[id] case final user?) (name: user.name, email: user.email),
+    ];
+  }
+
   /// Number of [fetchLineup] calls; set [lineupFail] to answer them like a
   /// server without the route.
   int fetchLineupCalls = 0;

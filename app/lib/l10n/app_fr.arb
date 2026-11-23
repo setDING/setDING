@@ -1576,5 +1576,15 @@
   "lineupNobody": "Personne de prévu",
   "lineupWholeBandHint": "La formation suit le groupe, nouveaux membres compris.",
   "bandSubstituteHint": "Tu joues certains sets de ce groupe comme remplaçant·e et ne vois que ces sets.",
-  "overviewAsSubstitute": "Comme remplaçant·e"
+  "overviewAsSubstitute": "Comme remplaçant·e",
+  "lineupNotify": "Prévenir la formation",
+  "lineupCopy": "Copier",
+  "lineupCopied": "Texte copié",
+  "lineupMail": "Par e-mail",
+  "lineupShare": "Partager …",
+  "lineupNoAddresses": "Pas de connexion au serveur : choisis toi-même les destinataires.",
+  "lineupMessageIntro": "Vous êtes prévu·es pour « {set} ».",
+  "lineupMessageFooter": "Vous trouvez les morceaux dans setDING.",
+  "overviewPlanned": "Tu es prévu·e",
+  "overviewPlannedSeen": "Compris"
 }

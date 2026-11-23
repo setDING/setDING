@@ -34,12 +34,16 @@ class SetListMarker extends SetListRow {
 
 /// The header and rows of a set list.
 class SetList {
-  const SetList(this.name, this.details, this.rows);
+  const SetList(this.name, this.details, this.rows, {this.lineup});
 
   final String name;
 
   /// Date and venue, e.g. `21 Jun 2027 · Bern`; null if neither is set.
   final String? details;
+
+  /// Who plays the set, e.g. `Lineup: Ann, Bob` (ADR-0061); null in the
+  /// local library.
+  final String? lineup;
   final List<SetListRow> rows;
 }
 
@@ -58,6 +62,7 @@ SetList buildSetList(
   required String untitled,
   required String songMissing,
   required String Function(String? icon) markerName,
+  String? lineup,
 }) {
   final details = [
     if (set.gigDate case final date?) formatDate(date),
@@ -102,5 +107,10 @@ SetList buildSetList(
       ),
     );
   }
-  return SetList(set.name, details.isEmpty ? null : details.join(' · '), rows);
+  return SetList(
+    set.name,
+    details.isEmpty ? null : details.join(' · '),
+    rows,
+    lineup: lineup,
+  );
 }

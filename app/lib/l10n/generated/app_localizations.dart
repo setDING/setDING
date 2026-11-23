@@ -9581,6 +9581,66 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Als Aushilfe'**
   String get overviewAsSubstitute;
+
+  /// No description provided for @lineupNotify.
+  ///
+  /// In de, this message translates to:
+  /// **'Besetzung benachrichtigen'**
+  String get lineupNotify;
+
+  /// No description provided for @lineupCopy.
+  ///
+  /// In de, this message translates to:
+  /// **'Kopieren'**
+  String get lineupCopy;
+
+  /// No description provided for @lineupCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Text kopiert'**
+  String get lineupCopied;
+
+  /// No description provided for @lineupMail.
+  ///
+  /// In de, this message translates to:
+  /// **'Per Mail'**
+  String get lineupMail;
+
+  /// No description provided for @lineupShare.
+  ///
+  /// In de, this message translates to:
+  /// **'Teilen …'**
+  String get lineupShare;
+
+  /// No description provided for @lineupNoAddresses.
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Verbindung zum Server: Empfänger selbst wählen.'**
+  String get lineupNoAddresses;
+
+  /// No description provided for @lineupMessageIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Ihr seid für «{set}» eingeplant.'**
+  String lineupMessageIntro(String set);
+
+  /// No description provided for @lineupMessageFooter.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Songs findet ihr in setDING.'**
+  String get lineupMessageFooter;
+
+  /// No description provided for @overviewPlanned.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist eingeplant'**
+  String get overviewPlanned;
+
+  /// No description provided for @overviewPlannedSeen.
+  ///
+  /// In de, this message translates to:
+  /// **'Verstanden'**
+  String get overviewPlannedSeen;
 }
 
 class _AppLocalizationsDelegate

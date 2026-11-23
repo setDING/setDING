@@ -6325,4 +6325,37 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get overviewAsSubstitute => 'Como substituto';
+
+  @override
+  String get lineupNotify => 'Avisar a formação';
+
+  @override
+  String get lineupCopy => 'Copiar';
+
+  @override
+  String get lineupCopied => 'Texto copiado';
+
+  @override
+  String get lineupMail => 'Por e-mail';
+
+  @override
+  String get lineupShare => 'Partilhar …';
+
+  @override
+  String get lineupNoAddresses =>
+      'Sem ligação ao servidor: escolhe tu os destinatários.';
+
+  @override
+  String lineupMessageIntro(String set) {
+    return 'Estão previstos para «$set».';
+  }
+
+  @override
+  String get lineupMessageFooter => 'Encontram as músicas no setDING.';
+
+  @override
+  String get overviewPlanned => 'Estás previsto';
+
+  @override
+  String get overviewPlannedSeen => 'Entendido';
 }
