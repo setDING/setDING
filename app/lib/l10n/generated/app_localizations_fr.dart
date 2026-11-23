@@ -6273,4 +6273,29 @@ class AppLocalizationsFr extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get screenshotAdd => 'Joindre une capture';
+
+  @override
+  String get screenshotRemove => 'Retirer';
+
+  @override
+  String get screenshotMarkTitle => 'Marquer l’endroit';
+
+  @override
+  String get screenshotMarkHint =>
+      'Dessine sur la capture où se trouve l’erreur.';
+
+  @override
+  String get screenshotAttach => 'Joindre';
+
+  @override
+  String get screenshotShow => 'Afficher la capture en grand';
+
+  @override
+  String get screenshotLoading => 'Chargement de la capture …';
+
+  @override
+  String get screenshotUnavailable => 'Capture indisponible (hors ligne ?)';
 }

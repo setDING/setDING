@@ -9449,6 +9449,54 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count, plural, =1{1 deiner Meldungen wurde erledigt.} other{{count} deiner Meldungen wurden erledigt.}}'**
   String reportsAnswered(int count);
+
+  /// No description provided for @screenshotAdd.
+  ///
+  /// In de, this message translates to:
+  /// **'Screenshot anhängen'**
+  String get screenshotAdd;
+
+  /// No description provided for @screenshotRemove.
+  ///
+  /// In de, this message translates to:
+  /// **'Entfernen'**
+  String get screenshotRemove;
+
+  /// No description provided for @screenshotMarkTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Stelle markieren'**
+  String get screenshotMarkTitle;
+
+  /// No description provided for @screenshotMarkHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeichne auf den Screenshot, wo der Fehler ist.'**
+  String get screenshotMarkHint;
+
+  /// No description provided for @screenshotAttach.
+  ///
+  /// In de, this message translates to:
+  /// **'Anhängen'**
+  String get screenshotAttach;
+
+  /// No description provided for @screenshotShow.
+  ///
+  /// In de, this message translates to:
+  /// **'Screenshot gross anzeigen'**
+  String get screenshotShow;
+
+  /// No description provided for @screenshotLoading.
+  ///
+  /// In de, this message translates to:
+  /// **'Screenshot wird geladen …'**
+  String get screenshotLoading;
+
+  /// No description provided for @screenshotUnavailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Screenshot nicht verfügbar (offline?)'**
+  String get screenshotUnavailable;
 }
 
 class _AppLocalizationsDelegate

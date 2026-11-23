@@ -3377,5 +3377,13 @@
         "type": "int"
       }
     }
-  }
+  },
+  "screenshotAdd": "Attach a screenshot",
+  "screenshotRemove": "Remove",
+  "screenshotMarkTitle": "Mark the place",
+  "screenshotMarkHint": "Draw on the screenshot where the mistake is.",
+  "screenshotAttach": "Attach",
+  "screenshotShow": "Show the screenshot full size",
+  "screenshotLoading": "Loading the screenshot …",
+  "screenshotUnavailable": "Screenshot not available (offline?)"
 }

@@ -238,6 +238,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   final _spread = <int, PdfSpreadController>{};
   final _fit = <int, _FitController>{};
   final _songPages = <int, SongPageController>{};
+
+  /// What the person sees, for the screenshot of a report (ADR-0060).
+  final _view = GlobalKey();
   bool _controls = false;
 
   /// Builds the neighbours of the page on stage in idle time (issue #296).
@@ -901,58 +904,61 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                 if (showProgress) _scheduleProgress();
                                 return false;
                               },
-                              child: PageView.builder(
-                                controller: _pages,
-                                physics: const NeverScrollableScrollPhysics(),
-                                // The direct neighbours are built ahead (one
-                                // page of cache on each side): the next song is
-                                // fitted and its PDF opened (landscape: its
-                                // pages rendered) before the turn, in idle
-                                // time after the previous turn (issue #296).
-                                // Items further away are not kept, so memory
-                                // stays bounded in long sets.
-                                allowImplicitScrolling: true,
-                                itemCount: items.length,
-                                onPageChanged: (i) => setState(() {
-                                  // A song turned to from the front starts at
-                                  // its first page.
-                                  if (i > _index) _songPageFor(i).first();
-                                  // Small screens turn songs only: the song
-                                  // map of each starts at the top (#952).
-                                  if (_compact) {
-                                    final sc = _scroll[i];
-                                    if (sc != null && sc.hasClients) {
-                                      sc.jumpTo(0);
+                              child: RepaintBoundary(
+                                key: _view,
+                                child: PageView.builder(
+                                  controller: _pages,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  // The direct neighbours are built ahead (one
+                                  // page of cache on each side): the next song is
+                                  // fitted and its PDF opened (landscape: its
+                                  // pages rendered) before the turn, in idle
+                                  // time after the previous turn (issue #296).
+                                  // Items further away are not kept, so memory
+                                  // stays bounded in long sets.
+                                  allowImplicitScrolling: true,
+                                  itemCount: items.length,
+                                  onPageChanged: (i) => setState(() {
+                                    // A song turned to from the front starts at
+                                    // its first page.
+                                    if (i > _index) _songPageFor(i).first();
+                                    // Small screens turn songs only: the song
+                                    // map of each starts at the top (#952).
+                                    if (_compact) {
+                                      final sc = _scroll[i];
+                                      if (sc != null && sc.hasClients) {
+                                        sc.jumpTo(0);
+                                      }
                                     }
-                                  }
-                                  _index = i;
-                                  _preparation.focus(i);
-                                  // Only another set item sends its
-                                  // keyboard program, never a page within a
-                                  // song or a prepared neighbour (ADR-0039).
-                                  _midi.show(i, items[i].song?.id);
-                                  // Another item stops the beat (ADR-0026).
-                                  _beat.onItemShown(i);
-                                }),
-                                itemBuilder: (context, i) =>
-                                    _pageWidgets.putIfAbsent(
-                                      i,
-                                      () => PreparedPage(
-                                        preparation: _preparation[i],
-                                        child: _LiveItemPage(
-                                          item: items[i],
-                                          index: i,
-                                          scrollController: _scrollFor(i),
-                                          pdfController: _pdfFor(i),
-                                          spreadController: _spreadFor(i),
-                                          fitController: _fitFor(i),
-                                          songPageController: _songPageFor(i),
+                                    _index = i;
+                                    _preparation.focus(i);
+                                    // Only another set item sends its
+                                    // keyboard program, never a page within a
+                                    // song or a prepared neighbour (ADR-0039).
+                                    _midi.show(i, items[i].song?.id);
+                                    // Another item stops the beat (ADR-0026).
+                                    _beat.onItemShown(i);
+                                  }),
+                                  itemBuilder: (context, i) =>
+                                      _pageWidgets.putIfAbsent(
+                                        i,
+                                        () => PreparedPage(
                                           preparation: _preparation[i],
-                                          onTap: _onTap,
-                                          annotations: _annotations,
+                                          child: _LiveItemPage(
+                                            item: items[i],
+                                            index: i,
+                                            scrollController: _scrollFor(i),
+                                            pdfController: _pdfFor(i),
+                                            spreadController: _spreadFor(i),
+                                            fitController: _fitFor(i),
+                                            songPageController: _songPageFor(i),
+                                            preparation: _preparation[i],
+                                            onTap: _onTap,
+                                            annotations: _annotations,
+                                          ),
                                         ),
                                       ),
-                                    ),
+                                ),
                               ),
                             ),
                           );
@@ -1083,6 +1089,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                   location: SongReportLocation(
                                     page: _songPageFor(_index).page + 1,
                                   ),
+                                  captureKey: _view,
                                 ),
                               },
                               // Only while MIDI program changes are on

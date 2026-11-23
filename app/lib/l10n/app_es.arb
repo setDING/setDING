@@ -1554,5 +1554,13 @@
   "reportAnswer": "Resuelto: {answer}",
   "reportAnswered": "Tu reporte sobre «{song}» se ha resuelto: {answer}",
   "reportAnsweredNoText": "Tu reporte sobre «{song}» se ha resuelto.",
-  "reportsAnswered": "{count, plural, =1{1 de tus reportes se ha resuelto.} other{{count} de tus reportes se han resuelto.}}"
+  "reportsAnswered": "{count, plural, =1{1 de tus reportes se ha resuelto.} other{{count} de tus reportes se han resuelto.}}",
+  "screenshotAdd": "Adjuntar captura",
+  "screenshotRemove": "Quitar",
+  "screenshotMarkTitle": "Marcar el lugar",
+  "screenshotMarkHint": "Dibuja en la captura dónde está el error.",
+  "screenshotAttach": "Adjuntar",
+  "screenshotShow": "Ver la captura a tamaño completo",
+  "screenshotLoading": "Cargando la captura …",
+  "screenshotUnavailable": "Captura no disponible (¿sin conexión?)"
 }

@@ -1554,5 +1554,13 @@
   "reportAnswer": "Resolvido: {answer}",
   "reportAnswered": "O teu relato sobre «{song}» foi resolvido: {answer}",
   "reportAnsweredNoText": "O teu relato sobre «{song}» foi resolvido.",
-  "reportsAnswered": "{count, plural, =1{1 dos teus relatos foi resolvido.} other{{count} dos teus relatos foram resolvidos.}}"
+  "reportsAnswered": "{count, plural, =1{1 dos teus relatos foi resolvido.} other{{count} dos teus relatos foram resolvidos.}}",
+  "screenshotAdd": "Anexar captura",
+  "screenshotRemove": "Remover",
+  "screenshotMarkTitle": "Marcar o local",
+  "screenshotMarkHint": "Desenha na captura onde está o erro.",
+  "screenshotAttach": "Anexar",
+  "screenshotShow": "Ver a captura em tamanho real",
+  "screenshotLoading": "A carregar a captura …",
+  "screenshotUnavailable": "Captura indisponível (offline?)"
 }

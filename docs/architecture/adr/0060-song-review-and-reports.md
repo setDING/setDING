@@ -124,9 +124,11 @@ markings on it (owner decision):
   platform including web). The person marks the place with the pen and
   highlighter of the freehand annotations (ADR-0032), reused as a widget; the
   markings are **burnt into the image**, not stored as strokes.
-- The image is scaled to at most 1600 px on the long side and stored as WebP
-  (JPEG where WebP encoding is not available), at most 1 MB (server limit on the
-  file field).
+- The image is scaled to at most 1600 px on the long side and stored as PNG
+  (Flutter encodes it without a further dependency; screenshots of chords and
+  lyrics have few colours and keep sharp text), scaled down further until it
+  fits 1 MB (server limit on the file field). See the decision log of
+  2026-11-23 (#991).
 - A real image is chosen over strokes anchored in the song because it shows
   exactly what the reporter saw, with their font size, transposition, capo and
   personal settings; this also shows when the mistake is in a personal overlay
@@ -299,6 +301,14 @@ Older clients that import songs do not set *to review*.
   sync outside live mode the reporter is told once that a report was resolved
   by someone else, with the answer; the seen answers are kept per device, and
   on the first run answers already there count as seen.
+- 2026-11-23: Screenshot implemented (#991). Owner decision: **PNG instead of
+  WebP/JPEG**, since Flutter writes PNG without a dependency and no pure Dart
+  package writes WebP. The view is taken from a `RepaintBoundary` around the
+  song view and the live pages before the report sheet opens, and attached only
+  on *Attach a screenshot*; a marking screen draws with pen or highlighter using
+  the stroke painting of the annotations (`paintStrokes`), with undo, and burns
+  the strokes into the image. The reports panel shows a thumbnail, loaded (and
+  downloaded once) when shown, full size on a tap.
 
 ## Open points
 
