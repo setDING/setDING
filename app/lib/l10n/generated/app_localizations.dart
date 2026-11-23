@@ -256,6 +256,18 @@ abstract class AppLocalizations {
   /// **'Akkorde werden beim Import in internationale Notation umgewandelt.'**
   String get importGermanNotationHint;
 
+  /// Checkbox in the import dialog: open a single imported song right after the import (#1027).
+  ///
+  /// In de, this message translates to:
+  /// **'Nach dem Import öffnen'**
+  String get importOpenAfter;
+
+  /// No description provided for @importOpenAfterHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Wird genau ein Song importiert, öffnet er sich gleich.'**
+  String get importOpenAfterHint;
+
   /// No description provided for @chooseFiles.
   ///
   /// In de, this message translates to:

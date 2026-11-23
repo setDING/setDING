@@ -25,6 +25,8 @@
   "importDescription": "Supportati: .cho, .chordpro, .chopro, .crd, .pro, .txt, archivi ZIP con tali file e backup di setDING.",
   "importGermanNotation": "I file usano la notazione tedesca (H/B)",
   "importGermanNotationHint": "Gli accordi vengono convertiti nella notazione internazionale durante l'importazione.",
+  "importOpenAfter": "Apri dopo l'importazione",
+  "importOpenAfterHint": "Se viene importato un solo brano, si apre subito.",
   "chooseFiles": "Scegli file",
   "importResult": "{count, plural, =0{Nessun brano importato} =1{1 brano importato} other{{count} brani importati}}",
   "importSkipped": "Saltati: {files}",

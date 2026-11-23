@@ -81,6 +81,7 @@ map=(
   songs_conversions 38_songs_conversions
   song_details_key 47_song_details_key
   editor_invalid_key 48_editor_invalid_key
+  import_dialog 47a_import_dialog
   import_keys 47b_import_keys
   adjustment_offer 42_adjustment_offer
   live_stacked_choruses 4f_live_stacked_choruses

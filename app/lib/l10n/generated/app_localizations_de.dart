@@ -91,6 +91,13 @@ class AppLocalizationsDe extends AppLocalizations {
       'Akkorde werden beim Import in internationale Notation umgewandelt.';
 
   @override
+  String get importOpenAfter => 'Nach dem Import öffnen';
+
+  @override
+  String get importOpenAfterHint =>
+      'Wird genau ein Song importiert, öffnet er sich gleich.';
+
+  @override
   String get chooseFiles => 'Dateien auswählen';
 
   @override

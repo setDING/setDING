@@ -32,6 +32,11 @@
   "importDescription": "Unterstützt werden .cho, .chordpro, .chopro, .crd, .pro, .txt, ZIP-Archive mit solchen Dateien und setDING-Sicherungen.",
   "importGermanNotation": "Dateien verwenden deutsche Notation (H/B)",
   "importGermanNotationHint": "Akkorde werden beim Import in internationale Notation umgewandelt.",
+  "importOpenAfter": "Nach dem Import öffnen",
+  "importOpenAfterHint": "Wird genau ein Song importiert, öffnet er sich gleich.",
+  "@importOpenAfter": {
+    "description": "Checkbox in the import dialog: open a single imported song right after the import (#1027)."
+  },
   "chooseFiles": "Dateien auswählen",
   "importResult": "{count, plural, =0{Keine Songs importiert} =1{1 Song importiert} other{{count} Songs importiert}}",
   "@importResult": {

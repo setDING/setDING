@@ -51,6 +51,7 @@ class ImportResult {
     this.problems = const [],
     this.legacyLabels = const [],
     this.keySuggestions = const [],
+    this.songIds = const [],
   ]);
 
   final int imported;
@@ -66,6 +67,12 @@ class ImportResult {
   /// Imported songs without `{key}` with a key suggested from their
   /// chords, in import order.
   final List<ImportKeySuggestion> keySuggestions;
+
+  /// Ids of all imported songs, in import order (#1027).
+  final List<String> songIds;
+
+  /// The id of the only imported song; null for none or several.
+  String? get singleSongId => songIds.length == 1 ? songIds.single : null;
 
   /// Whether the import has something to report beyond the counts.
   bool get needsReview =>
@@ -90,6 +97,7 @@ class ImportResult {
     problems ?? this.problems,
     legacyLabels ?? this.legacyLabels,
     keySuggestions ?? this.keySuggestions,
+    songIds,
   );
 }
 
@@ -143,6 +151,7 @@ class ImportExportService {
     final problems = <ImportProblem>[];
     final legacyLabels = <String>[];
     final keySuggestions = <ImportKeySuggestion>[];
+    final songIds = <String>[];
 
     Future<void> importOne(
       String name,
@@ -165,6 +174,7 @@ class ImportExportService {
         final title = parts.length == 1 ? base : '$base (${i + 1})';
         final id = await songs.createSong(source: parts[i], title: title);
         imported++;
+        songIds.add(id);
         await review?.setToReview(id, reason: reviewReason);
         final song = cp.parseChordPro(parts[i]);
         final found = cp.validateChordPro(parts[i]);
@@ -214,6 +224,7 @@ class ImportExportService {
       problems,
       legacyLabels,
       keySuggestions,
+      songIds,
     );
   }
 

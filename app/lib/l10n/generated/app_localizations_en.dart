@@ -90,6 +90,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Chords are converted to international notation on import.';
 
   @override
+  String get importOpenAfter => 'Open after import';
+
+  @override
+  String get importOpenAfterHint =>
+      'If exactly one song is imported, it opens right away.';
+
+  @override
   String get chooseFiles => 'Choose files';
 
   @override

@@ -91,6 +91,13 @@ class AppLocalizationsEs extends AppLocalizations {
       'Los acordes se convierten a la notación internacional al importar.';
 
   @override
+  String get importOpenAfter => 'Abrir después de importar';
+
+  @override
+  String get importOpenAfterHint =>
+      'Si se importa una sola canción, se abre enseguida.';
+
+  @override
   String get chooseFiles => 'Elegir archivos';
 
   @override

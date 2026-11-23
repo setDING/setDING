@@ -322,6 +322,41 @@ void main() {
     });
   }
 
+  // The import dialog with "Open after import" (#1027).
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('import dialog $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => Center(
+                  child: TextButton(
+                    onPressed: () => showImportDialog(
+                      context,
+                      pick: ({extensions}) async => const [],
+                    ),
+                    child: const Text('import'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('import'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('import-open-after')), findsOneWidget);
+      await shot(tester, '${lang}_47a_import_dialog');
+      await app.dispose(tester);
+    });
+  }
+
   // Keys suggested from the chords in the import report (#925).
   for (final (lang, dark) in [('de', false), ('en', true)]) {
     screenshotTest('import key suggestions $lang', (tester) async {

@@ -157,6 +157,7 @@ class AppSettings {
     this.developerMode = false,
     this.midiEnabled = false,
     this.showLocalLibrary = true,
+    this.openAfterImport = true,
     this.midiOutputName = '',
     this.midiProfile = MidiProfileKind.nordStage3,
     this.midiChannel = 1,
@@ -306,6 +307,10 @@ class AppSettings {
   /// The local library "On this device" is shown (ADR-0054); only switched
   /// off when signed in, signed out it is always shown.
   final bool showLocalLibrary;
+
+  /// A single song imported from files opens right after the import
+  /// (#1027); remembered from the checkbox of the import dialog.
+  final bool openAfterImport;
 
   /// The MIDI output, remembered by its name (device ids change when it is
   /// plugged in again); empty for none.
@@ -459,6 +464,7 @@ class AppSettings {
     bool? developerMode,
     bool? midiEnabled,
     bool? showLocalLibrary,
+    bool? openAfterImport,
     String? midiOutputName,
     MidiProfileKind? midiProfile,
     int? midiChannel,
@@ -511,6 +517,7 @@ class AppSettings {
     developerMode: developerMode ?? this.developerMode,
     midiEnabled: midiEnabled ?? this.midiEnabled,
     showLocalLibrary: showLocalLibrary ?? this.showLocalLibrary,
+    openAfterImport: openAfterImport ?? this.openAfterImport,
     midiOutputName: midiOutputName ?? this.midiOutputName,
     midiProfile: midiProfile ?? this.midiProfile,
     midiChannel: midiChannel ?? this.midiChannel,
@@ -583,6 +590,8 @@ class AppSettings {
     'midiEnabled': SettingSyncScope.device,
     // The local library is on this device only (ADR-0054).
     'showLocalLibrary': SettingSyncScope.device,
+    // Opening a song after the import (#1027): a habit of the person.
+    'openAfterImport': SettingSyncScope.personal,
     'midiOutputName': SettingSyncScope.device,
     'midiProfile': SettingSyncScope.device,
     'midiChannel': SettingSyncScope.device,
@@ -644,6 +653,7 @@ class AppSettings {
     'developerMode': developerMode,
     'midiEnabled': midiEnabled,
     'showLocalLibrary': showLocalLibrary,
+    'openAfterImport': openAfterImport,
     'midiOutputName': midiOutputName,
     'midiProfile': midiProfile.name,
     'midiChannel': midiChannel,
@@ -769,6 +779,7 @@ class AppSettings {
       developerMode: flag('developerMode', d.developerMode),
       midiEnabled: flag('midiEnabled', d.midiEnabled),
       showLocalLibrary: flag('showLocalLibrary', d.showLocalLibrary),
+      openAfterImport: flag('openAfterImport', d.openAfterImport),
       midiOutputName: text('midiOutputName', d.midiOutputName),
       midiProfile: pick(MidiProfileKind.values, 'midiProfile', d.midiProfile),
       midiChannel: (number('midiChannel')?.toInt() ?? d.midiChannel).clamp(

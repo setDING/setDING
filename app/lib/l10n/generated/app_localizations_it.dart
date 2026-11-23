@@ -90,6 +90,13 @@ class AppLocalizationsIt extends AppLocalizations {
       'Gli accordi vengono convertiti nella notazione internazionale durante l\'importazione.';
 
   @override
+  String get importOpenAfter => 'Apri dopo l\'importazione';
+
+  @override
+  String get importOpenAfterHint =>
+      'Se viene importato un solo brano, si apre subito.';
+
+  @override
   String get chooseFiles => 'Scegli file';
 
   @override

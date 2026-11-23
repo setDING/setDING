@@ -14,17 +14,28 @@ import '../sets/set_archive_dialogs.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
 import 'song_archive_dialogs.dart';
+import 'song_screen.dart';
 
 /// Shows the import dialog and imports the chosen files. [pick] chooses
 /// them (the platform's file dialog by default; tests pass their files).
+///
+/// A single imported song opens once the dialog is closed, unless the
+/// person unticked "Open after import" (#1027).
 Future<void> showImportDialog(
   BuildContext context, {
   Future<List<ImportFile>> Function({List<String>? extensions}) pick =
       pickFiles,
-}) => showDialog<void>(
-  context: context,
-  builder: (_) => _ImportDialog(pick: pick, parent: context),
-);
+}) async {
+  final songId = await showDialog<String>(
+    context: context,
+    builder: (_) => _ImportDialog(pick: pick, parent: context),
+  );
+  if (songId == null || !context.mounted) return;
+  await Navigator.push(
+    context,
+    MaterialPageRoute<void>(builder: (_) => SongScreen(songId: songId)),
+  );
+}
 
 class _ImportDialog extends ConsumerStatefulWidget {
   const _ImportDialog({required this.pick, required this.parent});
@@ -47,6 +58,12 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
 
   /// Keys picked in the report so far (#925).
   int _keysSet = 0;
+
+  /// The song to open when the dialog closes (#1027); null for none.
+  String? _openId;
+
+  /// Closes the dialog; the song of [_openId] opens after it.
+  void _close() => Navigator.pop(context, _openId);
 
   Future<void> _import() async {
     final l10n = AppLocalizations.of(context);
@@ -131,6 +148,9 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
             // Imported songs wait for a check (ADR-0060).
             reviewReason: l10n.reviewReasonAfterImport,
           );
+      if (ref.read(settingsProvider).openAfterImport) {
+        _openId = result.singleSongId;
+      }
       final message = [
         l10n.importResult(result.imported),
         if (result.skipped.isNotEmpty)
@@ -145,7 +165,7 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
         }
         return;
       }
-      if (mounted) Navigator.pop(context);
+      if (mounted) _close();
       showMessageOn(messenger, message);
     } catch (e) {
       if (!mounted) return;
@@ -191,7 +211,7 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
           _result = rest;
         });
       } else {
-        Navigator.pop(context);
+        _close();
       }
     } catch (e) {
       if (!mounted) return;
@@ -227,7 +247,7 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
           _result = rest;
         });
       } else {
-        Navigator.pop(context);
+        _close();
         showMessageOn(messenger, l10n.importKeysSet(_keysSet));
       }
     } catch (e) {
@@ -349,10 +369,7 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: _busy ? null : () => Navigator.pop(context),
-          child: Text(l10n.close),
-        ),
+        TextButton(onPressed: _busy ? null : _close, child: Text(l10n.close)),
         if (labels.isNotEmpty)
           fixable
               ? TextButton(
@@ -395,6 +412,21 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
                   : (v) => setState(() => _german = v ?? false),
               title: Text(l10n.importGermanNotation),
               subtitle: Text(l10n.importGermanNotationHint),
+            ),
+            CheckboxListTile(
+              key: const Key('import-open-after'),
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              value: ref.watch(
+                settingsProvider.select((s) => s.openAfterImport),
+              ),
+              onChanged: _busy
+                  ? null
+                  : (v) => ref
+                        .read(settingsProvider.notifier)
+                        .update((s) => s.copyWith(openAfterImport: v ?? true)),
+              title: Text(l10n.importOpenAfter),
+              subtitle: Text(l10n.importOpenAfterHint),
             ),
           ],
         ),
