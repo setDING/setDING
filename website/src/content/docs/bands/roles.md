@@ -44,3 +44,7 @@ einsetzen** oder **Zum Mitglied machen** wählen.
 Was eine Rolle nicht darf, zeigt setDING gar nicht erst an: Mitglieder sehen z. B.
 weder **Neues Set** noch **ChordPro bearbeiten**. Für sich selbst anpassen kann jede
 und jeder alles (siehe [Persönliche Anpassungen](/songs/personal/)).
+
+Wer nur für einzelne Auftritte aushilft, wird nicht Mitglied der Band, sondern kommt
+als **Aushilfe** in die Besetzung dieser Sets und sieht nur sie (siehe
+[Besetzung und Aushilfen](/sets/lineup/)).

@@ -43,3 +43,7 @@ person's ⋮ menu.
 setDING does not even show what a role may not do: members see neither **New set**
 nor **Edit ChordPro**, for example. Everybody can adjust everything for themselves
 (see [Personal adjustments](/en/songs/personal/)).
+
+Someone who only helps out at some gigs does not join the band: they are added to
+the lineup of those sets as a **Substitute** and see only them (see
+[Lineup and substitutes](/en/sets/lineup/)).
