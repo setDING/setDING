@@ -94,7 +94,10 @@ They get:
 - the songs and attachments, which they see already as members of the
   organization (ADR-0017);
 - the band's **name**, to show where the set belongs, but not its members,
-  settings, other sets or repertoire (ADR-0046).
+  settings, other sets or repertoire (ADR-0046);
+- the **names of everyone in the lineup** (owner decision), so they know who
+  they play with; they know these people as members of the organization
+  anyway, and see no mail addresses.
 
 They cannot edit the set, its lineup or the arrangements, and they never freeze
 how a song was played (ADR-0046: only clients with set rights do that). Personal
@@ -131,8 +134,15 @@ lineup of it any more.
   platform's share sheet (on the web and desktop: copy to the clipboard, and a
   `mailto:` link) with a prepared text in the sender's language: set name, gig
   date, venue, the names of the lineup and a link that opens the set in the app.
-  The person sending chooses the recipients and the channel (mail, messenger,
-  band chat). The app does not send anything itself.
+  The person sending chooses the channel (mail, messenger, band chat); the app
+  does not send anything itself.
+- **Mail addresses of the lineup** (owner decision): for the mail link, the
+  app fills in the recipients. Users' addresses stay hidden from other users
+  (PocketBase `emailVisibility`); a server route
+  `GET /api/setding/lineup/{set}/emails` returns the addresses of the people in
+  that set's lineup, only to whoever may edit the set (band leaders, set
+  planners, organization admins), and is tested through the API as the refused
+  roles. It needs a network; offline the text is shared without recipients.
 - **Hint in the app**: when a sync brings a set the person has newly been put
   in the lineup of (as band member taken back in or as a substitute), the
   overview shows a hint *You are planned for <set> on <date>* like the other
@@ -141,7 +151,14 @@ lineup of it any more.
 Requests by server mail with *accept* / *decline* (as in Planning Center) are
 not part of this decision (open points).
 
-### 7. Permissions
+### 7. The lineup on the printable set list
+
+The printable set list and the text export (ADR-0013) get a line
+*Lineup: Anna, Beat, Carla …* in their header below name, date and venue
+(owner decision), also when the lineup is the whole band (then with the names
+of the band's members).
+
+### 8. Permissions
 
 The permission matrix of ADR-0023 gets these rows when this ADR is accepted
 (*Substitute* = a person in a set's lineup who is not a member of its band):
@@ -150,7 +167,8 @@ The permission matrix of ADR-0023 gets these rows when this ADR is accepted
 |---|:-:|:-:|:-:|:-:|:-:|:-:|
 | Choose a set's lineup, add people of the organization | ✓ all bands | – | ✓ | ✓ | – | – |
 | See a set they are in the lineup of, with its songs' band arrangements, read-only | ✓ | – | ✓ | ✓ | ✓ | ✓ |
-| Notify the lineup from the device | ✓ all bands | – | ✓ | ✓ | – | – |
+| See the names of a set's lineup | ✓ | – | ✓ | ✓ | ✓ | ✓ |
+| Notify the lineup from the device, with the lineup's mail addresses | ✓ all bands | – | ✓ | ✓ | – | – |
 
 ADR-0005 and ADR-0023 keep *no guest role*: a substitute is not a role of the
 band but a person in a set's lineup.
@@ -174,7 +192,7 @@ band but a person in a set's lineup.
   changing its members.
 - A substitute gets exactly the sets they play, offline, with the band's keys
   and sequences for those songs, and keeps them read-only for looking back.
-- The server gets a new route and a hook that checks the lineup against the
+- The server gets two new routes and a hook that checks the lineup against the
   organization's members; both are tested through the API, and the permission
   matrix test covers the new rows.
 - The client stores substitute sets and arrangements next to the synced ones and
@@ -185,8 +203,8 @@ band but a person in a set's lineup.
   (AGENTS.md).
 - Set archives (ADR-0043) do not carry the lineup: people belong to an
   organization, and an imported set is a copy for another band.
-- Follow-up decisions: roles per person, requests with accept / decline, the
-  lineup on the printable set list (ADR-0013).
+- The printable set list and the text export show the lineup (ADR-0013).
+- Follow-up decisions: roles per person, requests with accept / decline.
 
 ## Decision log
 
@@ -197,6 +215,10 @@ band but a person in a set's lineup.
   after the gig; a substitute sees only the band arrangements of the songs in
   the set; notification by sharing from the device and a hint in the app, no
   server mail in version 1.
+- 2026-11-23: Open points decided by the owner: a substitute sees the names of
+  everyone in the lineup; the lineup is a line in the header of the printable
+  set list and the text export; *Notify lineup* fills in the lineup's mail
+  addresses, which a server route gives only to people who may edit the set.
 
 ## Open points
 
@@ -204,7 +226,3 @@ band but a person in a set's lineup.
   band membership as the default.
 - Requests by server mail with *accept* / *decline* and a status per person,
   when the server has SMTP.
-- Whether the share text may contain the lineup's mail addresses: today the
-  server does not show other users' addresses (PocketBase `emailVisibility`).
-- The lineup on the printable set list and in the text export (ADR-0013).
-- Whether a substitute may see the lineup's names, or only their own entry.
