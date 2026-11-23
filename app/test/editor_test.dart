@@ -2,8 +2,8 @@ import 'package:setding/ui/render/song_header.dart';
 import 'package:setding/l10n/generated/app_localizations.dart';
 import 'package:setding/ui/songs/editor_toolbar.dart';
 import 'package:setding/ui/songs/song_editor_screen.dart';
+import 'package:setding/ui/widgets/sequence_dialog.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -277,7 +277,7 @@ void main() {
     // Long-presses [from] and drops it on [to].
     Future<void> drag(Finder from, Finder to) async {
       final gesture = await tester.startGesture(tester.getCenter(from));
-      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
+      await tester.pump(sequenceDragDelay + const Duration(milliseconds: 50));
       await gesture.moveBy(const Offset(5, 5));
       await tester.pump();
       await gesture.moveTo(tester.getCenter(to));
@@ -305,6 +305,32 @@ void main() {
     await app.dispose(tester);
   });
 
+  // #1026: chips start dragging after 250 ms instead of the default 500 ms.
+  testWidgets('sequence chips start dragging after 250 ms', (tester) async {
+    const source = '{title: T}\n{x_sequence: V}\n{sov}\na\n{eov}';
+    final (app, _) = await pumpEditor(tester, source, cursor: 0);
+    await choose(tester, 'Song info', 'Song sequence');
+    expect(sequenceDragDelay, const Duration(milliseconds: 250));
+    // The raised chip that follows the pointer while dragging.
+    final feedback = find.byWidgetPredicate(
+      (widget) => widget is Chip && widget.elevation == 4,
+    );
+    for (final chip in [
+      find.byKey(const ValueKey('sequence-part-V')),
+      find.byKey(const ValueKey('sequence-entry')),
+    ]) {
+      final gesture = await tester.startGesture(tester.getCenter(chip));
+      await tester.pump(const Duration(milliseconds: 200));
+      // Not yet dragging: no chip follows the pointer.
+      expect(feedback, findsNothing);
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(feedback, findsOneWidget);
+      await gesture.up();
+      await tester.pumpAndSettle();
+    }
+    await app.dispose(tester);
+  });
+
   testWidgets('parts dropped on the free space of the sequence are appended', (
     tester,
   ) async {
@@ -316,7 +342,7 @@ void main() {
       final gesture = await tester.startGesture(
         tester.getCenter(find.byKey(ValueKey('sequence-part-$code'))),
       );
-      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
+      await tester.pump(sequenceDragDelay + const Duration(milliseconds: 50));
       await gesture.moveTo(tester.getBottomRight(area) - const Offset(8, 8));
       await tester.pump();
       await gesture.up();
