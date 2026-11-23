@@ -319,6 +319,12 @@ void main() {
     final map = tester.getRect(find.byKey(const Key('song-map')));
     expect(beat.bottom, lessThanOrEqualTo(map.top));
     expect(find.byKey(const Key('beat-dots')), findsOneWidget);
+    // The beat takes a third of the height, the song map two (#961).
+    final panel = tester.getRect(find.byKey(const Key('drum-panel')));
+    final switchTop = tester
+        .getRect(find.byKey(const Key('drum-panel-view')))
+        .top;
+    expect((switchTop - 8 - panel.top) / panel.height, closeTo(1 / 3, 0.01));
     // Remembered on the device.
     expect(app.prefs.getString('drumPanelView'), 'songMap');
 
@@ -334,6 +340,35 @@ void main() {
     await tester.tapAt(Offset(screen.center.dx, map.center.dy));
     await tester.pump();
     expect(find.byIcon(Icons.close), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('a small phone: the beat fits in its third (#961)', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 640);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final app = await TestApp.create(
+      prefs: {
+        'language': 'en',
+        'instrument': 'drums',
+        'clickStart': 'manual',
+        'drumPanelView': 'songMap',
+      },
+    );
+    final items = (await tester.runAsync(() async {
+      final id = await app.songs.createSong(source: first);
+      return [LiveItem.song((await app.songs.getSong(id))!)];
+    }))!;
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pump();
+    await tester.pump();
+    // No overflow (the test fails on one); the beat stays above the map.
+    expect(find.byKey(const Key('large-beat-toggle')), findsOneWidget);
+    final toggle = tester.getRect(find.byKey(const Key('large-beat-toggle')));
+    final view = tester.getRect(find.byKey(const Key('drum-panel-view')));
+    expect(toggle.bottom, lessThanOrEqualTo(view.top));
     await app.dispose(tester);
   });
 
