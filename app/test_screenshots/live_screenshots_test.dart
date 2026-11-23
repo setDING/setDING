@@ -312,6 +312,58 @@ void main() {
       await app.dispose(tester);
     });
   }
+
+  // Holding on the progress bar of the set and dragging along it: the bar
+  // grows and names the song under the finger (#979).
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('set progress scrub $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      final items = await tester.runAsync(() async {
+        final items = <LiveItem>[];
+        for (final source in [
+          demoSongSource,
+          for (final (title, key) in [
+            ('Highway Lights', 'E'),
+            ('Paper Moon Waltz', 'G'),
+            ('Slow Rain', 'Am'),
+            ('Last Call', 'D'),
+          ])
+            '{title: $title}\n{key: $key}\n[$key]La la la',
+        ]) {
+          final id = await app.songs.createSong(source: source);
+          items.add(LiveItem.song((await app.songs.getSong(id))!));
+        }
+        return items;
+      });
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: LiveScreen(items: items!)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final bar = find.byKey(const Key('live-set-progress'));
+      Offset item(int i) => tester
+          .getRect(
+            find.descendant(
+              of: bar,
+              matching: find.byKey(ValueKey('progress-item-$i')),
+            ),
+          )
+          .center;
+      final gesture = await tester.startGesture(item(1));
+      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
+      await gesture.moveTo(item(2));
+      await tester.pump();
+      expect(find.byKey(const Key('live-set-progress-label')), findsOneWidget);
+      await shot(tester, '${lang}_4g_live_set_scrub');
+      await gesture.cancel();
+      await app.dispose(tester);
+    });
+  }
 }
 
 /// Where the freehand notes screenshot draws, relative to the live page.

@@ -63,8 +63,15 @@ song, all tablets follow automatically. We evaluated whether this is needed.
   never filled; the current one is dashed in the accent colour. The current segment is wider, so its pages stay
   apart in long sets. The pages of the other songs are not shown: they are known only once a song is fitted or its
   PDF opened, and fitting every song up front would slow down opening live mode. The bar sits below the page, so it
-  never covers text, and takes no taps (the set overview jumps). On by default, can be switched off in the live
-  settings ("Progress bar of the set").
+  never covers text. On by default, can be switched off in the live settings ("Progress bar of the set").
+- **Jumping on the progress bar (hold and drag):** a tap on the bar does nothing: it is thin, right below the page-turn
+  zones, and a jump by mistake on stage is worse than none. A **long press** on the bar (the touch zone reaches 24 px
+  up into the page, where it takes only the long press, so taps and swipes still turn the page) starts scrubbing: the
+  bar grows over the bottom of the page, the item under the finger is outlined and a label above it names the item
+  (title and key, as in the footer preview), with a light haptic tick on each new item. Dragging changes the item,
+  releasing jumps to it like the set overview. Releasing on the current item or far above the bar cancels. Not while
+  the control bar or the drawing tools cover the bottom of the page, and not when the bar is switched off (the set
+  overview stays the way to jump there); pedals and keys are unchanged (#979).
 - **Chords or Nashville on stage:** a toggle in the middle of the control bar switches the current song between chord
   names and Nashville numbers (personal per-song Nashville overlay, ADR-0006); it is disabled when the song has no key.
   On narrow screens it gets a row of its own above the other controls.
@@ -172,6 +179,7 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-20: Android: the Flutter view keeps the focus in touch mode and the system focus highlight is off, so the first page turner press after a touch turns instead of only showing a green frame around the screen (issue #663).
 - 2026-11-20: Owner request (#691, decided with the end-to-end tests of #692): the "discreet notice" of incoming changes is not shown during live mode. Nothing is known about them while the sync is paused, and nothing on stage should change. The sync that catches up after live mode ends with **one** SnackBar that sums up what others changed during the performance ("1 song deleted, 2 songs changed"), with *Show* opening *Recent changes* (ADR-0045).
 - 2026-11-23: Space can leave the fixed mapping (#969, ADR-0026): with the device setting *Space starts the beat* on, Space starts and stops the beat like Enter instead of turning forward.
+- 2026-11-23: The progress bar of the set takes a long press: holding and dragging along it names the item under the finger, releasing jumps there; a tap still does nothing (owner request, #979).
 
 ## Open points
 

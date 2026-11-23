@@ -819,177 +819,158 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
           children: [
             // The control bar overlays the page, so showing it does not
             // change the page size (and does not fit the song again).
+            // Below the page the progress bar of the set: where the set
+            // stands, seen at a glance, and held to jump (#979); below the
+            // page, so it never covers text.
             Expanded(
-              child: LayoutBuilder(
-                builder: (context, outer) {
-                  // Phones (ADR-0026): every turn is a song.
-                  final phone =
-                      showSongMap &&
-                      math.min(outer.maxWidth, outer.maxHeight) < _compactDrums;
-                  // Wide song map (ADR-0026): the beat large and the set on
-                  // the left, the song on the right.
-                  final wide =
-                      showSongMap && !phone && outer.maxWidth >= _wideSongMap;
-                  // Below the wide song map (phones, tablets in portrait):
-                  // the drum panel fills the stage, the beat with the set
-                  // or the song map (#421, #952, #974).
-                  final compact = showSongMap && !wide;
-                  final panelWidth = (outer.maxWidth * 0.36).clamp(
-                    300.0,
-                    480.0,
-                  );
-                  _stageWidth = outer.maxWidth;
-                  // The drum panel shows the song map of the current song
-                  // instead of the set on demand (#952); the beat stays.
-                  final compactMap =
-                      compact && drumView == DrumPanelView.songMap;
-                  // On tablets the pedal scrolls the song map and turns at
-                  // its end (#974); on phones and beside the set it turns
-                  // songs.
-                  _compact = phone || (compact && !compactMap);
-                  final compactLandscapeStage =
-                      outer.maxWidth > outer.maxHeight;
-                  // The divider after the panel is one pixel wide; on a
-                  // small screen in landscape the beat takes half of it.
-                  _pageLeft = wide
-                      ? panelWidth + 1
-                      : compactMap && compactLandscapeStage
-                      ? (outer.maxWidth + 1) / 2
-                      : 0;
-                  final largeBeat = wide || compact;
-                  if (_beat.largeBeat != largeBeat) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) _beat.largeBeat = largeBeat;
-                    });
-                  }
-                  // Keeps the pages (and their state) when the panel comes
-                  // or goes, e.g. when the tablet is turned.
-                  final page = KeyedSubtree(
-                    key: _pageAreaKey,
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        _width = constraints.maxWidth;
-                        return GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          onTapUp: (d) => _onTap(d.localPosition),
-                          // Swipes turn pages like taps: the pages of a
-                          // song first, then the next/previous song.
-                          onHorizontalDragStart: (_) => _swipe = 0,
-                          onHorizontalDragUpdate: (d) =>
-                              _swipe += d.primaryDelta ?? 0,
-                          onHorizontalDragEnd: _onSwipeEnd,
-                          // A song laid out anew (e.g. larger text) may
-                          // scroll further or no longer scroll at all.
-                          child: NotificationListener<ScrollMetricsNotification>(
-                            onNotification: (_) {
-                              if (showProgress) _scheduleProgress();
-                              return false;
-                            },
-                            child: PageView.builder(
-                              controller: _pages,
-                              physics: const NeverScrollableScrollPhysics(),
-                              // The direct neighbours are built ahead (one
-                              // page of cache on each side): the next song is
-                              // fitted and its PDF opened (landscape: its
-                              // pages rendered) before the turn, in idle
-                              // time after the previous turn (issue #296).
-                              // Items further away are not kept, so memory
-                              // stays bounded in long sets.
-                              allowImplicitScrolling: true,
-                              itemCount: items.length,
-                              onPageChanged: (i) => setState(() {
-                                // A song turned to from the front starts at
-                                // its first page.
-                                if (i > _index) _songPageFor(i).first();
-                                // Small screens turn songs only: the song
-                                // map of each starts at the top (#952).
-                                if (_compact) {
-                                  final sc = _scroll[i];
-                                  if (sc != null && sc.hasClients) {
-                                    sc.jumpTo(0);
+              child: SetProgressScrubber(
+                showBar: showProgress,
+                // The control bar and the drawing tools cover the bottom of
+                // the page and have their own long presses.
+                enabled: !_controls && !_drawing,
+                markers: [for (final item in items) item.song == null],
+                progress: _progress,
+                labelOf: (i) => _nextLabel(i, l10n),
+                onJump: _jumpTo,
+                child: LayoutBuilder(
+                  builder: (context, outer) {
+                    // Phones (ADR-0026): every turn is a song.
+                    final phone =
+                        showSongMap &&
+                        math.min(outer.maxWidth, outer.maxHeight) <
+                            _compactDrums;
+                    // Wide song map (ADR-0026): the beat large and the set on
+                    // the left, the song on the right.
+                    final wide =
+                        showSongMap && !phone && outer.maxWidth >= _wideSongMap;
+                    // Below the wide song map (phones, tablets in portrait):
+                    // the drum panel fills the stage, the beat with the set
+                    // or the song map (#421, #952, #974).
+                    final compact = showSongMap && !wide;
+                    final panelWidth = (outer.maxWidth * 0.36).clamp(
+                      300.0,
+                      480.0,
+                    );
+                    _stageWidth = outer.maxWidth;
+                    // The drum panel shows the song map of the current song
+                    // instead of the set on demand (#952); the beat stays.
+                    final compactMap =
+                        compact && drumView == DrumPanelView.songMap;
+                    // On tablets the pedal scrolls the song map and turns at
+                    // its end (#974); on phones and beside the set it turns
+                    // songs.
+                    _compact = phone || (compact && !compactMap);
+                    final compactLandscapeStage =
+                        outer.maxWidth > outer.maxHeight;
+                    // The divider after the panel is one pixel wide; on a
+                    // small screen in landscape the beat takes half of it.
+                    _pageLeft = wide
+                        ? panelWidth + 1
+                        : compactMap && compactLandscapeStage
+                        ? (outer.maxWidth + 1) / 2
+                        : 0;
+                    final largeBeat = wide || compact;
+                    if (_beat.largeBeat != largeBeat) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) _beat.largeBeat = largeBeat;
+                      });
+                    }
+                    // Keeps the pages (and their state) when the panel comes
+                    // or goes, e.g. when the tablet is turned.
+                    final page = KeyedSubtree(
+                      key: _pageAreaKey,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          _width = constraints.maxWidth;
+                          return GestureDetector(
+                            behavior: HitTestBehavior.translucent,
+                            onTapUp: (d) => _onTap(d.localPosition),
+                            // Swipes turn pages like taps: the pages of a
+                            // song first, then the next/previous song.
+                            onHorizontalDragStart: (_) => _swipe = 0,
+                            onHorizontalDragUpdate: (d) =>
+                                _swipe += d.primaryDelta ?? 0,
+                            onHorizontalDragEnd: _onSwipeEnd,
+                            // A song laid out anew (e.g. larger text) may
+                            // scroll further or no longer scroll at all.
+                            child: NotificationListener<ScrollMetricsNotification>(
+                              onNotification: (_) {
+                                if (showProgress) _scheduleProgress();
+                                return false;
+                              },
+                              child: PageView.builder(
+                                controller: _pages,
+                                physics: const NeverScrollableScrollPhysics(),
+                                // The direct neighbours are built ahead (one
+                                // page of cache on each side): the next song is
+                                // fitted and its PDF opened (landscape: its
+                                // pages rendered) before the turn, in idle
+                                // time after the previous turn (issue #296).
+                                // Items further away are not kept, so memory
+                                // stays bounded in long sets.
+                                allowImplicitScrolling: true,
+                                itemCount: items.length,
+                                onPageChanged: (i) => setState(() {
+                                  // A song turned to from the front starts at
+                                  // its first page.
+                                  if (i > _index) _songPageFor(i).first();
+                                  // Small screens turn songs only: the song
+                                  // map of each starts at the top (#952).
+                                  if (_compact) {
+                                    final sc = _scroll[i];
+                                    if (sc != null && sc.hasClients) {
+                                      sc.jumpTo(0);
+                                    }
                                   }
-                                }
-                                _index = i;
-                                _preparation.focus(i);
-                                // Only another set item sends its
-                                // keyboard program, never a page within a
-                                // song or a prepared neighbour (ADR-0039).
-                                _midi.show(i, items[i].song?.id);
-                                // Another item stops the beat (ADR-0026).
-                                _beat.onItemShown(i);
-                              }),
-                              itemBuilder: (context, i) =>
-                                  _pageWidgets.putIfAbsent(
-                                    i,
-                                    () => PreparedPage(
-                                      preparation: _preparation[i],
-                                      child: _LiveItemPage(
-                                        item: items[i],
-                                        index: i,
-                                        scrollController: _scrollFor(i),
-                                        pdfController: _pdfFor(i),
-                                        spreadController: _spreadFor(i),
-                                        fitController: _fitFor(i),
-                                        songPageController: _songPageFor(i),
+                                  _index = i;
+                                  _preparation.focus(i);
+                                  // Only another set item sends its
+                                  // keyboard program, never a page within a
+                                  // song or a prepared neighbour (ADR-0039).
+                                  _midi.show(i, items[i].song?.id);
+                                  // Another item stops the beat (ADR-0026).
+                                  _beat.onItemShown(i);
+                                }),
+                                itemBuilder: (context, i) =>
+                                    _pageWidgets.putIfAbsent(
+                                      i,
+                                      () => PreparedPage(
                                         preparation: _preparation[i],
-                                        onTap: _onTap,
-                                        annotations: _annotations,
+                                        child: _LiveItemPage(
+                                          item: items[i],
+                                          index: i,
+                                          scrollController: _scrollFor(i),
+                                          pdfController: _pdfFor(i),
+                                          spreadController: _spreadFor(i),
+                                          fitController: _fitFor(i),
+                                          songPageController: _songPageFor(i),
+                                          preparation: _preparation[i],
+                                          onTap: _onTap,
+                                          annotations: _annotations,
+                                        ),
                                       ),
                                     ),
-                                  ),
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                  return Stack(
-                    children: [
-                      Positioned.fill(
-                        child: compact
-                            ? Stack(
-                                fit: StackFit.expand,
-                                children: [
-                                  // The pages stay built for the page
-                                  // controller and the preparation, unseen
-                                  // unless they show the song map.
-                                  if (!compactMap) Offstage(child: page),
-                                  // Empty areas of the panel are the tap
-                                  // zones; the set list and the buttons keep
-                                  // their taps.
-                                  GestureDetector(
-                                    behavior: HitTestBehavior.opaque,
-                                    onTapUp: (d) =>
-                                        _onStageTap(d.localPosition.dx),
-                                    child: DrumPanel(
-                                      items: items,
-                                      current: _index,
-                                      onSelect: _jumpTo,
-                                      direction: compactLandscapeStage
-                                          ? Axis.horizontal
-                                          : Axis.vertical,
-                                      view: drumView,
-                                      onView: (view) => ref
-                                          .read(settingsProvider.notifier)
-                                          .update(
-                                            (s) =>
-                                                s.copyWith(drumPanelView: view),
-                                          ),
-                                      songMap: compactMap ? page : null,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : !wide
-                            ? page
-                            : Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  SizedBox(
-                                    width: panelWidth,
-                                    // Empty areas of the panel are part of the tap zones;
-                                    // the set list and the buttons keep their taps.
-                                    child: GestureDetector(
+                          );
+                        },
+                      ),
+                    );
+                    return Stack(
+                      children: [
+                        Positioned.fill(
+                          child: compact
+                              ? Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    // The pages stay built for the page
+                                    // controller and the preparation, unseen
+                                    // unless they show the song map.
+                                    if (!compactMap) Offstage(child: page),
+                                    // Empty areas of the panel are the tap
+                                    // zones; the set list and the buttons keep
+                                    // their taps.
+                                    GestureDetector(
                                       behavior: HitTestBehavior.opaque,
                                       onTapUp: (d) =>
                                           _onStageTap(d.localPosition.dx),
@@ -997,88 +978,115 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                         items: items,
                                         current: _index,
                                         onSelect: _jumpTo,
+                                        direction: compactLandscapeStage
+                                            ? Axis.horizontal
+                                            : Axis.vertical,
+                                        view: drumView,
+                                        onView: (view) => ref
+                                            .read(settingsProvider.notifier)
+                                            .update(
+                                              (s) => s.copyWith(
+                                                drumPanelView: view,
+                                              ),
+                                            ),
+                                        songMap: compactMap ? page : null,
                                       ),
                                     ),
-                                  ),
-                                  const VerticalDivider(width: 1),
-                                  Expanded(child: page),
-                                ],
-                              ),
-                      ),
-                      // Beat of the drummer mode (ADR-0026); take no taps.
-                      const Positioned.fill(child: EdgeFlash()),
-                      const Positioned.fill(child: CountInOverlay()),
-                      // Drawing mode (ADR-0032): the tools instead of the
-                      // controls, until "Done".
-                      if (_drawing)
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          child: AnnotationToolbar(
-                            editor: _annotations,
-                            onDone: () => _annotations.active = false,
-                            onDeleteAll: switch (items[_index].song) {
-                              final song? => () => _deleteAnnotations(song.id),
-                              null => null,
-                            },
-                          ),
-                        )
-                      else if (_controls)
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          child: _ControlBar(
-                            item: items[_index],
-                            index: _index,
-                            onExit: () => Navigator.pop(context),
-                            onOverview: () => _showOverview(context),
-                            // Key, font and Nashville change the song,
-                            // which phones and the set do not show
-                            // (ADR-0026, #974).
-                            onAdjust:
-                                items[_index].song == null ||
-                                    phone ||
-                                    (compact && !compactMap)
-                                ? null
-                                : _adjust,
-                            // The click also on small screens (#698).
-                            onAdjustClick: items[_index].song == null
-                                ? null
-                                : _adjust,
-                            onFit: _fitToPage,
-                            onSetKey: _setKey,
-                            onDraw: items[_index].song == null || showSongMap
-                                ? null
-                                : () => _annotations.active = true,
-                            // Only while MIDI program changes are on
-                            // (ADR-0039).
-                            onSendProgram:
-                                midi.enabled && items[_index].song != null
-                                ? _midi.sendAgain
-                                : null,
-                            onEditProgram:
-                                midi.enabled && items[_index].song != null
-                                ? () => _editProgram(context)
-                                : null,
-                          ),
+                                  ],
+                                )
+                              : !wide
+                              ? page
+                              : Row(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    SizedBox(
+                                      width: panelWidth,
+                                      // Empty areas of the panel are part of the tap zones;
+                                      // the set list and the buttons keep their taps.
+                                      child: GestureDetector(
+                                        behavior: HitTestBehavior.opaque,
+                                        onTapUp: (d) =>
+                                            _onStageTap(d.localPosition.dx),
+                                        child: DrumPanel(
+                                          items: items,
+                                          current: _index,
+                                          onSelect: _jumpTo,
+                                        ),
+                                      ),
+                                    ),
+                                    const VerticalDivider(width: 1),
+                                    Expanded(child: page),
+                                  ],
+                                ),
                         ),
-                    ],
-                  );
-                },
-              ),
-            ),
-            // Where the set stands and whether more of the song follows,
-            // seen at a glance; below the page, so it never covers text.
-            if (showProgress)
-              ValueListenableBuilder(
-                valueListenable: _progress,
-                builder: (context, progress, _) => SetProgressBar(
-                  markers: [for (final item in items) item.song == null],
-                  progress: progress,
+                        // Beat of the drummer mode (ADR-0026); take no taps.
+                        const Positioned.fill(child: EdgeFlash()),
+                        const Positioned.fill(child: CountInOverlay()),
+                        // Drawing mode (ADR-0032): the tools instead of the
+                        // controls, until "Done".
+                        if (_drawing)
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            child: AnnotationToolbar(
+                              editor: _annotations,
+                              onDone: () => _annotations.active = false,
+                              onDeleteAll: switch (items[_index].song) {
+                                final song? => () => _deleteAnnotations(
+                                  song.id,
+                                ),
+                                null => null,
+                              },
+                            ),
+                          )
+                        else if (_controls)
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            child: _ControlBar(
+                              item: items[_index],
+                              index: _index,
+                              onExit: () => Navigator.pop(context),
+                              onOverview: () => _showOverview(context),
+                              // Key, font and Nashville change the song,
+                              // which phones and the set do not show
+                              // (ADR-0026, #974).
+                              onAdjust:
+                                  items[_index].song == null ||
+                                      phone ||
+                                      (compact && !compactMap)
+                                  ? null
+                                  : _adjust,
+                              // The click also on small screens (#698).
+                              onAdjustClick: items[_index].song == null
+                                  ? null
+                                  : _adjust,
+                              onFit: _fitToPage,
+                              onSetKey: _setKey,
+                              onDraw: items[_index].song == null || showSongMap
+                                  ? null
+                                  : () => _annotations.active = true,
+                              // Only while MIDI program changes are on
+                              // (ADR-0039).
+                              onSendProgram:
+                                  midi.enabled && items[_index].song != null
+                                  ? _midi.sendAgain
+                                  : null,
+                              onEditProgram:
+                                  midi.enabled && items[_index].song != null
+                                  ? () => _editProgram(context)
+                                  : null,
+                            ),
+                          ),
+                      ],
+                    );
+                  },
                 ),
               ),
+            ),
             ValueListenableBuilder<bool>(
               valueListenable: _beat.metronome.clickUnavailable,
               builder: (context, clickUnavailable, bar) =>
