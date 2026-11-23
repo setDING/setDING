@@ -411,4 +411,34 @@ void main() {
       await app.dispose(tester);
     });
   }
+
+  // A chorus written out again shown only once (#955): the switch in the
+  // display settings.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('settings chorus once $lang', (tester) async {
+      tester.view.physicalSize = const Size(420, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final app = await TestApp.create(
+        prefs: {
+          'language': lang,
+          'themeMode': dark ? 'dark' : 'light',
+          'repeatedChorusOnce': true,
+        },
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(key: UniqueKey(), child: app.build()),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('nav-settings')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('settings-category-display')));
+      await tester.pumpAndSettle();
+      final tile = find.byKey(const Key('settings-repeated-chorus-once'));
+      await tester.scrollUntilVisible(tile, 200);
+      await tester.pumpAndSettle();
+      await shot(tester, '${lang}_17b_settings_chorus_once');
+      await app.dispose(tester);
+    });
+  }
 }

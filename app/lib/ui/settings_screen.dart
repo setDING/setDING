@@ -566,6 +566,15 @@ class _CategoryContent extends ConsumerWidget {
                 hint: l10n.settingsChorusRepeatHint,
               ),
               SettingsSwitch(
+                tileKey: const Key('settings-repeated-chorus-once'),
+                icon: Icons.filter_1_outlined,
+                title: l10n.settingsRepeatedChorusOnce,
+                hint: l10n.settingsRepeatedChorusOnceHint,
+                value: s.repeatedChorusOnce,
+                onChanged: (v) =>
+                    notifier.update((s) => s.copyWith(repeatedChorusOnce: v)),
+              ),
+              SettingsSwitch(
                 tileKey: const Key('settings-show-outside-sequence'),
                 icon: Icons.visibility_outlined,
                 title: l10n.settingsShowOutsideSequence,

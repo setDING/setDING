@@ -613,10 +613,11 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                     _FittedSongBody(
                       songId: song.id,
                       source: song.chordproSource,
-                      song: songWithVerseChords(
+                      song: songForDisplay(
                         parsed,
                         overlay.verseChords,
                         stackedChoruses: overlay.stackedChoruses,
+                        repeatedChorusOnce: settings.repeatedChorusOnce,
                       ),
                       overlay: overlay,
                       formatter: formatter,

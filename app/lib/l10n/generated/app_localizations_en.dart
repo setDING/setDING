@@ -2806,6 +2806,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your own drawings on songs and sheet music';
 
   @override
+  String get settingsRepeatedChorusOnce =>
+      'Show a written-out chorus only once';
+
+  @override
+  String get settingsRepeatedChorusOnceHint =>
+      'A chorus written out again word for word later is left out';
+
+  @override
   String get settingsShowOutsideSequence => 'Show parts outside the sequence';
 
   @override

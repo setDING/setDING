@@ -88,3 +88,23 @@ Song songWithVerseChords(
     VerseChords.stacked => stackVersesCached(base),
   };
 }
+
+final _chorusOnce = LruCache<Song, Song>(32);
+
+/// [withoutRepeatedChoruses] with a cache keyed by the [song] instance.
+Song withoutRepeatedChorusesCached(Song song) =>
+    _chorusOnce.get(song, () => withoutRepeatedChoruses(song));
+
+/// [song] as a person shows it: without choruses written out again when
+/// [repeatedChorusOnce] (#955), then with its choruses and verses as
+/// [songWithVerseChords] shows them.
+Song songForDisplay(
+  Song song,
+  VerseChords mode, {
+  bool stackedChoruses = false,
+  required bool repeatedChorusOnce,
+}) => songWithVerseChords(
+  repeatedChorusOnce ? withoutRepeatedChorusesCached(song) : song,
+  mode,
+  stackedChoruses: stackedChoruses,
+);

@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import musician from '../../../../../../docs/screenshots/settings_musician.png';
 import voiceHint from '../../../../../../docs/screenshots/settings_voice_hint.png';
+import chorusOnce from '../../../../../../docs/screenshots/settings_chorus_once.png';
 import screen from '../../../../../../docs/screenshots/settings_live.png';
 import bass from '../../../../../../docs/screenshots/settings_bass.png';
 import bassDiagrams from '../../../../../../docs/screenshots/bass_diagrams.png';
@@ -52,6 +53,13 @@ and **Set & notes** under **Display**, and each setting has an icon on the left.
 - **Repeated chorus** – a chorus that is repeated: **Show in full**, **Label only**,
   or **Automatic**: as a short label only if the song would otherwise not fit well on
   the screen.
+- **Show a written-out chorus only once** – many songs, e.g. from SongSelect,
+  write the chorus out again every time it is sung. Switched on, a chorus whose
+  lyrics and chords are exactly the same as an earlier one is left out in the
+  song view and live mode, wherever it is in the song. A chorus that differs,
+  even by one chord, stays. Off by default.
+
+  <Image src={chorusOnce} alt="The switch “Show a written-out chorus only once” in the display settings" />
 - **Show parts outside the sequence** – in live mode, the parts that are not
   in the song sequence appear dimmed at their place in the song (default).
   Switched off, they are hidden, see [Key and sequence](/en/sets/key-and-sequence/).

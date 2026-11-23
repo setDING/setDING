@@ -2822,6 +2822,14 @@ class AppLocalizationsDe extends AppLocalizations {
       'Deine eigenen Zeichnungen auf Songs und Noten';
 
   @override
+  String get settingsRepeatedChorusOnce =>
+      'Ausgeschriebenen Chorus nur einmal zeigen';
+
+  @override
+  String get settingsRepeatedChorusOnceHint =>
+      'Ein Chorus, der später gleich nochmals ausgeschrieben ist, wird weggelassen';
+
+  @override
   String get settingsShowOutsideSequence =>
       'Teile ausserhalb des Ablaufs anzeigen';
 

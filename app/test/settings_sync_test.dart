@@ -106,6 +106,17 @@ void main() {
       );
     });
 
+    test('a repeated chorus is shown again unless switched on', () {
+      expect(const AppSettings().repeatedChorusOnce, isFalse);
+      expect(AppSettings.fromJson({}).repeatedChorusOnce, isFalse);
+      const on = AppSettings(repeatedChorusOnce: true);
+      expect(AppSettings.fromJson(on.toJson()).repeatedChorusOnce, isTrue);
+      expect(
+        AppSettings.scopes['repeatedChorusOnce'],
+        SettingSyncScope.personal,
+      );
+    });
+
     test('parts outside the sequence are shown unless switched off', () {
       expect(const AppSettings().showOutsideSequence, isTrue);
       expect(AppSettings.fromJson({}).showOutsideSequence, isTrue);
