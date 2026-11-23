@@ -1396,4 +1396,28 @@ void main() {
     expect([for (final b in bands) b.substitute], everyElement(isFalse));
     await upgraded.close();
   });
+
+  test('upgrades a schema 38 database: Swiss German songs detected as German '
+      'become Swiss German (#1033)', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final storage = FileAttachmentStorage(dir);
+    await SongRepository(current, storage).createSong(
+      source:
+          '{title: Old}\nDu bisch guet, Herr, und du bisch treu, ich cha nüt '
+          'mache ohni di. Wenn ich mich verlore fühl, bisch du bi mir, mis '
+          'Läbe ghört dir, ich sing es Lied für dich.',
+    );
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    raw.execute("UPDATE songs SET detected_language = 'de'");
+    raw.execute('PRAGMA user_version = 38');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final repo = SongRepository(upgraded, storage);
+    upgraded.afterUpgrade = (db) => repo.refreshAllMetadata();
+    expect((await repo.watchSongList().first).single.language, 'gsw');
+    await upgraded.close();
+  });
 }

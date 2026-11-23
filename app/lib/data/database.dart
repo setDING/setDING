@@ -770,7 +770,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 38;
+  int get schemaVersion => 39;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -1120,6 +1120,9 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(setlists, setlists.lineup);
         await m.addColumn(setlists, setlists.lineupCustom);
       }
+      // Schema 39: Swiss German is detected (ADR-0053, #1033). No new
+      // column: afterUpgrade (refreshAllMetadata) detects the language of
+      // every song again.
     },
     beforeOpen: (details) async {
       if (details.hadUpgrade) await afterUpgrade?.call(this);

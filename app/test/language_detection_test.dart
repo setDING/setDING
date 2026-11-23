@@ -8,6 +8,11 @@ Ich gehe durch die Nacht und du bist immer bei mir,
 wenn der Wind über das Land zieht, singe ich mit dir.
 Du bist mein Licht, auch wenn die Sterne nicht mehr scheinen,
 wir sind nicht allein, denn alle Wege führen heim.''',
+  'gsw': '''
+Mir sind hüt alli da und mir singed zäme es Lied,
+das chunnt vo ganzem Härze, wo mer nöd vergässed.
+Du bisch mis Liecht, au wenn d Stärne nümme schined,
+mir sind nöd elei, will alli Wäg hei füehred.''',
   'en': '''
 I walk along the river and you are always there with me,
 when the wind is in the willows and the night is calling me.
@@ -73,13 +78,40 @@ void main() {
     },
   );
 
-  test('Swiss German is German or nothing, never another language', () {
+  // #1033: Swiss German lyrics full of Standard German words (`und`, `du`,
+  // `mir`, `ich`) were detected as German.
+  test('Swiss German with many Standard German words is Swiss German', () {
+    const praise = '''
+Du bisch guet, Herr, und du bisch treu,
+ich cha nüt mache ohni di, du machsch alles neu.
+Wenn ich mich verlore fühl, bisch du bi mir,
+mis Läbe ghört dir, ich sing es Lied für dich.''';
+    const lion = '''
+De Leu und s'Lamm, sie stönd uf em Thron,
+d'Wält ghört em König, em Vater und em Sohn.
+Er isch würdig, er isch mächtig, er isch da,
+und mir singed, will er's Verspräche nid bricht.''';
+    expect(detectLanguage(praise), 'gsw');
+    expect(detectLanguage(lion), 'gsw');
+  });
+
+  test('Standard German stays German', () {
     const text = '''
-Mir sind hüt alli da und mir singed zäme es Lied,
-das chunnt vo ganzem Härze, wo mer nöd vergässed.
-Du bisch mis Liecht, au wenn d Stärne nümme schined,
-mir sind nöd elei, will alli Wäg hei füehred.''';
-    expect(detectLanguage(text), anyOf(isNull, 'de'));
+Engel singen in der Nacht, der Himmel ist so weit,
+wir loben dich, du bist uns nah, seit aller Zeit.
+Heilig, hei - lig ist der Herr, die ganze Welt ist sein,
+und wer ihm glaubt, der ist nicht mehr allein.''';
+    expect(detectLanguage(text), 'de');
+  });
+
+  test('a few Swiss German words do not make German lyrics Swiss', () {
+    final text = '${_lyrics['de']}\n${_lyrics['de']}\nGsund und guet, isch das';
+    expect(detectLanguage(text), 'de');
+  });
+
+  test('French with "au" stays French', () {
+    final text = '${_lyrics['fr']}\nAu bord de la mer, au fond de mon cœur.';
+    expect(detectLanguage(text), 'fr');
   });
 
   test('numbers and chords-like tokens do not count as words', () {
