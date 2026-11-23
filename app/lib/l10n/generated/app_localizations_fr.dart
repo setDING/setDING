@@ -6298,4 +6298,42 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get screenshotUnavailable => 'Capture indisponible (hors ligne ?)';
+
+  @override
+  String get lineup => 'Formation';
+
+  @override
+  String get lineupWholeBand => 'Tout le groupe';
+
+  @override
+  String get lineupSubstitute => 'Remplaçant·e';
+
+  @override
+  String get lineupBandMembers => 'Membres du groupe';
+
+  @override
+  String get lineupSubstitutes => 'Remplaçant·es';
+
+  @override
+  String get lineupNotPlanned => 'Tu n\'es pas prévu·e';
+
+  @override
+  String get lineupEdit => 'Choisir la formation';
+
+  @override
+  String get lineupAddPeople => 'Ajouter des personnes';
+
+  @override
+  String get lineupSearchPeople => 'Rechercher des personnes';
+
+  @override
+  String get lineupNoMorePeople =>
+      'Toutes les personnes de l\'organisation sont déjà dans la formation.';
+
+  @override
+  String get lineupNobody => 'Personne de prévu';
+
+  @override
+  String get lineupWholeBandHint =>
+      'La formation suit le groupe, nouveaux membres compris.';
 }

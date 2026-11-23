@@ -6307,4 +6307,42 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get screenshotUnavailable => 'Screenshot nicht verfügbar (offline?)';
+
+  @override
+  String get lineup => 'Besetzung';
+
+  @override
+  String get lineupWholeBand => 'Ganze Band';
+
+  @override
+  String get lineupSubstitute => 'Aushilfe';
+
+  @override
+  String get lineupBandMembers => 'Bandmitglieder';
+
+  @override
+  String get lineupSubstitutes => 'Aushilfen';
+
+  @override
+  String get lineupNotPlanned => 'Nicht für dich eingeplant';
+
+  @override
+  String get lineupEdit => 'Besetzung wählen';
+
+  @override
+  String get lineupAddPeople => 'Personen hinzufügen';
+
+  @override
+  String get lineupSearchPeople => 'Personen suchen';
+
+  @override
+  String get lineupNoMorePeople =>
+      'Alle Personen der Organisation sind schon in der Besetzung.';
+
+  @override
+  String get lineupNobody => 'Niemand eingeplant';
+
+  @override
+  String get lineupWholeBandHint =>
+      'Die Besetzung folgt der Band, auch neuen Mitgliedern.';
 }

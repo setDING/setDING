@@ -30,6 +30,8 @@ import '../widgets/sequence_dialog.dart';
 import 'set_list_pdf.dart';
 import '../widgets/app_shortcuts.dart';
 import 'set_archive_dialogs.dart';
+import 'lineup_dialog.dart';
+import 'lineup_view.dart';
 import 'marker_dialog.dart';
 import 'set_item_label.dart';
 import 'set_list.dart';
@@ -225,6 +227,7 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                 PopupMenuButton<String>(
                   onSelected: (value) => switch (value) {
                     'marker' => _addMarker(),
+                    'lineup' => showLineupDialog(context, ref, set),
                     'export' => _export(set),
                     'copyToBand' => copySetToBand(context, ref, set.id),
                     'delete' => _delete(set),
@@ -237,6 +240,13 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                         icon: Icons.flag_outlined,
                         label: l10n.addMarker,
                       ),
+                      if (!ref.read(currentBandProvider).isLocal)
+                        MenuAction(
+                          key: const Key('set-lineup-menu'),
+                          value: 'lineup',
+                          icon: Icons.groups_outlined,
+                          label: l10n.lineupEdit,
+                        ),
                       const PopupMenuDivider(),
                     ],
                     // Web: no file export, sets are synced (ADR-0018).
@@ -298,6 +308,7 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                       ],
                     ),
                   ),
+                SetLineupRow(set: set, canEdit: canEdit),
                 if (reviewSongs > 0)
                   Padding(
                     key: const Key('set-review-hint'),

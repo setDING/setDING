@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../data/database.dart';
 import '../../data/set_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
+import 'lineup_view.dart';
 import '../../providers.dart';
 import '../account/sync_refresh.dart';
 import '../bands/band_switcher.dart';
@@ -359,6 +360,8 @@ class _SetCard extends ConsumerWidget {
         : 0;
     final next = nextGigFrom;
     final date = set.gigDate;
+    // A lineup of its own and whether the user plays the set (ADR-0061).
+    final lineup = ref.watch(setLineupProvider(set.id));
 
     return Card(
       key: next == null ? null : const ValueKey('next-gig'),
@@ -394,7 +397,25 @@ class _SetCard extends ConsumerWidget {
                   Text(set.name),
                 ],
               ),
-        subtitle: Text(details),
+        subtitle: lineup == null || (!lineup.custom && lineup.plannedForMe)
+            ? Text(details)
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(details),
+                  if (lineup.custom)
+                    Text(
+                      '${l10n.lineup}: ${lineupNames(l10n, lineup)}',
+                      key: const ValueKey('set-card-lineup'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  if (!lineup.plannedForMe)
+                    const NotPlannedLabel(
+                      key: ValueKey('set-card-not-planned'),
+                    ),
+                ],
+              ),
         trailing: missing == 0 && problems == 0 && reviewSongs == 0
             ? null
             : Row(

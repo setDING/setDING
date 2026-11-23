@@ -9497,6 +9497,78 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Screenshot nicht verfügbar (offline?)'**
   String get screenshotUnavailable;
+
+  /// No description provided for @lineup.
+  ///
+  /// In de, this message translates to:
+  /// **'Besetzung'**
+  String get lineup;
+
+  /// No description provided for @lineupWholeBand.
+  ///
+  /// In de, this message translates to:
+  /// **'Ganze Band'**
+  String get lineupWholeBand;
+
+  /// No description provided for @lineupSubstitute.
+  ///
+  /// In de, this message translates to:
+  /// **'Aushilfe'**
+  String get lineupSubstitute;
+
+  /// No description provided for @lineupBandMembers.
+  ///
+  /// In de, this message translates to:
+  /// **'Bandmitglieder'**
+  String get lineupBandMembers;
+
+  /// No description provided for @lineupSubstitutes.
+  ///
+  /// In de, this message translates to:
+  /// **'Aushilfen'**
+  String get lineupSubstitutes;
+
+  /// No description provided for @lineupNotPlanned.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht für dich eingeplant'**
+  String get lineupNotPlanned;
+
+  /// No description provided for @lineupEdit.
+  ///
+  /// In de, this message translates to:
+  /// **'Besetzung wählen'**
+  String get lineupEdit;
+
+  /// No description provided for @lineupAddPeople.
+  ///
+  /// In de, this message translates to:
+  /// **'Personen hinzufügen'**
+  String get lineupAddPeople;
+
+  /// No description provided for @lineupSearchPeople.
+  ///
+  /// In de, this message translates to:
+  /// **'Personen suchen'**
+  String get lineupSearchPeople;
+
+  /// No description provided for @lineupNoMorePeople.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Personen der Organisation sind schon in der Besetzung.'**
+  String get lineupNoMorePeople;
+
+  /// No description provided for @lineupNobody.
+  ///
+  /// In de, this message translates to:
+  /// **'Niemand eingeplant'**
+  String get lineupNobody;
+
+  /// No description provided for @lineupWholeBandHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Besetzung folgt der Band, auch neuen Mitgliedern.'**
+  String get lineupWholeBandHint;
 }
 
 class _AppLocalizationsDelegate

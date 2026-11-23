@@ -11,6 +11,7 @@ import 'data/backup.dart';
 import 'data/band_copy.dart';
 import 'data/band_view.dart';
 import 'data/database.dart';
+import 'data/lineup.dart';
 import 'data/import_export.dart';
 import 'data/play_history.dart';
 import 'data/set_archive.dart';
@@ -753,6 +754,27 @@ final setsProvider = StreamProvider<List<SetSummary>>(
 final setProvider = StreamProvider.autoDispose.family<SetlistEntry?, String>(
   (ref, id) => ref.watch(setRepositoryProvider).watchSet(id),
 );
+
+/// The lineup of a set of the current band with the people's names
+/// (ADR-0061); null for an unknown set and in the local library, which has
+/// no lineups.
+final setLineupProvider = Provider.autoDispose.family<SetLineup?, String>((
+  ref,
+  setId,
+) {
+  final set = ref.watch(setProvider(setId)).value;
+  final band = ref.watch(currentBandProvider);
+  if (set == null || band.isLocal) return null;
+  final orgId = band.organizationId;
+  return resolveLineup(
+    set,
+    members: ref.watch(bandMembersProvider(set.bandId)).value ?? const [],
+    orgMembers: orgId == null
+        ? const []
+        : ref.watch(orgMembersProvider(orgId)).value ?? const [],
+    userId: ref.watch(authProvider.select((u) => u?.id)),
+  );
+});
 
 final trashRepositoryProvider = Provider<TrashRepository>(
   (ref) => TrashRepository(

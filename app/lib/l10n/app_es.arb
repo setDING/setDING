@@ -1562,5 +1562,17 @@
   "screenshotAttach": "Adjuntar",
   "screenshotShow": "Ver la captura a tamaño completo",
   "screenshotLoading": "Cargando la captura …",
-  "screenshotUnavailable": "Captura no disponible (¿sin conexión?)"
+  "screenshotUnavailable": "Captura no disponible (¿sin conexión?)",
+  "lineup": "Formación",
+  "lineupWholeBand": "Toda la banda",
+  "lineupSubstitute": "Sustituto",
+  "lineupBandMembers": "Miembros de la banda",
+  "lineupSubstitutes": "Sustitutos",
+  "lineupNotPlanned": "No estás previsto",
+  "lineupEdit": "Elegir la formación",
+  "lineupAddPeople": "Añadir personas",
+  "lineupSearchPeople": "Buscar personas",
+  "lineupNoMorePeople": "Todas las personas de la organización ya están en la formación.",
+  "lineupNobody": "Nadie previsto",
+  "lineupWholeBandHint": "La formación sigue a la banda, incluidos los nuevos miembros."
 }

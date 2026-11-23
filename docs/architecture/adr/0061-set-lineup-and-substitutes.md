@@ -239,6 +239,16 @@ band but a person in a set's lineup.
   device. A set copied into another band is played by the whole target
   band. *More sets* on the overview lists the upcoming sets other than the
   one shown as *Next set*.
+- 2026-11-23: Choosing the lineup implemented (#1009): the lineup is a line
+  under the set's details in the set view (*Lineup · Whole band* or the
+  names, substitutes marked) that set editors tap to choose it, also from
+  the set's menu (*Choose lineup*); the dialog has the band members with
+  check boxes, the substitutes and *Add people* with a search over the
+  organization's other people. Saving every band member without
+  substitutes, or *Whole band*, goes back to the whole band. The set card
+  shows the lineup only when the set has one of its own, and *Not planned
+  for you* on both. The *New set* dialog stays as it is: a new set is
+  played by the whole band until somebody chooses its lineup.
 
 ## Open points
 
