@@ -37,6 +37,11 @@ Future<SequenceChoice?> editSequence(
   ),
 );
 
+/// How long a chip of the sequence editor is pressed before it can be
+/// dragged; shorter than the default long-press timeout (500 ms) so moving
+/// parts feels quick, but long enough to keep scrolling and tapping (#1026).
+const sequenceDragDelay = Duration(milliseconds: 250);
+
 /// Parts offered when a song has no sections yet.
 final _commonParts = parseSequence('I, V, PC, C, B, Solo, O');
 
@@ -182,6 +187,7 @@ class _SequenceDialogState extends State<_SequenceDialog> {
     Widget part(SequenceItem item) => Tooltip(
       message: SongSequenceView.partName(l10n, item),
       child: LongPressDraggable<_Drag>(
+        delay: sequenceDragDelay,
         data: (from: null, entry: (code: item.code, repeat: 1)),
         feedback: feedback(item),
         child: ActionChip(
@@ -227,6 +233,7 @@ class _SequenceDialogState extends State<_SequenceDialog> {
               Tooltip(
                 message: SongSequenceView.partName(l10n, item),
                 child: LongPressDraggable<_Drag>(
+                  delay: sequenceDragDelay,
                   data: (from: index, entry: entries[index]),
                   feedback: feedback(item),
                   childWhenDragging: Opacity(opacity: 0.3, child: chip),
