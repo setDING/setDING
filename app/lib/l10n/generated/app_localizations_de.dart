@@ -1182,6 +1182,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get songMapNoTempo => 'Kein Tempo für diesen Song';
 
   @override
+  String get drumPanelSet => 'Set';
+
+  @override
+  String get drumPanelSongMap => 'Song-Landkarte';
+
+  @override
   String get settingsLiveAppearance => 'Aussehen auf der Bühne';
 
   @override

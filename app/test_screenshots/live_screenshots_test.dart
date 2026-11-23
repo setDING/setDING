@@ -57,6 +57,41 @@ void main() {
     });
   }
 
+  // Drummer mode on a phone (#952): the beat above, the song map of the
+  // current song below, switched from the set with the segmented button.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('drummer phone song map $lang', (tester) async {
+      tester.view.physicalSize = const Size(420, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final app = await TestApp.create(
+        prefs: {
+          'language': lang,
+          'themeMode': dark ? 'dark' : 'light',
+          'instrument': 'drums',
+          'clickStart': 'manual',
+          'drumPanelView': 'songMap',
+        },
+      );
+      final items = await tester.runAsync(() async {
+        final items = <LiveItem>[];
+        for (final source in [lang == 'de' ? _drumsDe : _drums, _drumsNext]) {
+          final id = await app.songs.createSong(source: source);
+          items.add(LiveItem.song((await app.songs.getSong(id))!));
+        }
+        return items;
+      });
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: LiveScreen(items: items!)),
+        ),
+      );
+      await shot(tester, '${lang}_11b_live_drums_phone');
+      await app.dispose(tester);
+    });
+  }
+
   // The grouping and subdivisions of the click per song (#698): in the tempo
   // row of the control bar, with the grouping menu open.
   for (final (lang, dark) in [('de', false), ('en', true)]) {

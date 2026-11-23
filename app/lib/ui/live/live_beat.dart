@@ -654,7 +654,9 @@ class StageTempoControls extends StatelessWidget {
 /// current song large; below, the set with tempo and time signature of each
 /// song. A tap on an item of the set turns to it. On small screens it is the
 /// whole stage: in landscape ([Axis.horizontal]) the beat on the left and
-/// the set on the right.
+/// the set on the right. With a [songMap] and [onView] (small screens,
+/// #952), a segmented button switches the set for the song map of the
+/// current song; the beat stays.
 class DrumPanel extends StatelessWidget {
   const DrumPanel({
     super.key,
@@ -662,6 +664,9 @@ class DrumPanel extends StatelessWidget {
     required this.current,
     required this.onSelect,
     this.direction = Axis.vertical,
+    this.view = DrumPanelView.set,
+    this.onView,
+    this.songMap,
   });
 
   final List<LiveItem> items;
@@ -671,22 +676,79 @@ class DrumPanel extends StatelessWidget {
   /// Beat and set one above the other or side by side.
   final Axis direction;
 
+  /// Whether the set or the [songMap] is shown beside the beat.
+  final DrumPanelView view;
+
+  /// Switches between the set and the song map; without it, only the set.
+  final ValueChanged<DrumPanelView>? onView;
+
+  /// The song map of the current song, shown for [DrumPanelView.songMap].
+  final Widget? songMap;
+
   @override
-  Widget build(BuildContext context) => Flex(
-    key: const Key('drum-panel'),
-    direction: direction,
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Expanded(child: _LargeBeat(index: current)),
-      if (direction == Axis.vertical)
-        const Divider(height: 1)
-      else
-        const VerticalDivider(width: 1),
-      Expanded(
-        child: _SetList(items: items, current: current, onSelect: onSelect),
-      ),
-    ],
-  );
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final set = _SetList(items: items, current: current, onSelect: onSelect);
+    final onView = this.onView;
+    final songMap = this.songMap;
+    // The song map needs more room than the set; the beat keeps enough
+    // for its dots and button.
+    final mapRoom =
+        onView != null &&
+        view == DrumPanelView.songMap &&
+        direction == Axis.vertical;
+    return Flex(
+      key: const Key('drum-panel'),
+      direction: direction,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          flex: mapRoom ? 2 : 1,
+          child: _LargeBeat(index: current),
+        ),
+        if (direction == Axis.vertical)
+          const Divider(height: 1)
+        else
+          const VerticalDivider(width: 1),
+        Expanded(
+          flex: mapRoom ? 3 : 1,
+          child: onView == null
+              ? set
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                      child: SegmentedButton<DrumPanelView>(
+                        key: const Key('drum-panel-view'),
+                        showSelectedIcon: false,
+                        segments: [
+                          ButtonSegment(
+                            value: DrumPanelView.set,
+                            icon: const Icon(Icons.queue_music),
+                            label: Text(l10n.drumPanelSet),
+                          ),
+                          ButtonSegment(
+                            value: DrumPanelView.songMap,
+                            icon: const Icon(Icons.view_agenda_outlined),
+                            label: Text(l10n.drumPanelSongMap),
+                          ),
+                        ],
+                        selected: {view},
+                        onSelectionChanged: (s) => onView(s.single),
+                      ),
+                    ),
+                    Expanded(
+                      child: view == DrumPanelView.set
+                          ? set
+                          : songMap ?? const SizedBox.shrink(),
+                    ),
+                  ],
+                ),
+        ),
+      ],
+    );
+  }
 }
 
 class _LargeBeat extends StatelessWidget {

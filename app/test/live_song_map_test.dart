@@ -293,4 +293,88 @@ void main() {
     );
     await app.dispose(tester);
   });
+  testWidgets('phone portrait: the segmented button switches the set for the '
+      'song map, the beat stays (#952)', (tester) async {
+    final app = await open(
+      tester,
+      {'instrument': 'drums', 'clickStart': 'manual'},
+      landscape: false,
+      phone: true,
+    );
+    await tester.pump();
+    // The set by default.
+    expect(find.byKey(const Key('drum-panel-view')), findsOneWidget);
+    expect(find.byKey(const Key('drum-set-list')), findsOneWidget);
+    expect(find.byKey(const Key('song-map')), findsNothing);
+
+    await tester.tap(find.text('Song map'));
+    await tester.pump();
+    await tester.pump();
+    expect(find.byKey(const Key('drum-set-list')), findsNothing);
+    expect(find.byKey(const Key('song-map')), findsOneWidget);
+    expect(find.text('„Amazing grace“'), findsOneWidget);
+    expect(find.text('Toms, four bars'), findsOneWidget);
+    // The beat stays above, its dots only there.
+    final beat = tester.getRect(find.byKey(const Key('large-beat')));
+    final map = tester.getRect(find.byKey(const Key('song-map')));
+    expect(beat.bottom, lessThanOrEqualTo(map.top));
+    expect(find.byKey(const Key('beat-dots')), findsOneWidget);
+    // Remembered on the device.
+    expect(app.prefs.getString('drumPanelView'), 'songMap');
+
+    // The page turner still turns songs: the next song's map.
+    await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('2 / 2'), findsOneWidget);
+    expect(find.text('„Amazing grace“'), findsNothing);
+
+    // A tap in the middle of the song map shows the control bar.
+    final screen = tester.getRect(find.byType(LiveScreen));
+    await tester.tapAt(Offset(screen.center.dx, map.center.dy));
+    await tester.pump();
+    expect(find.byIcon(Icons.close), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('phone landscape: the song map right of the beat, its tap zones '
+      'are thirds of the stage (#952)', (tester) async {
+    final app = await open(tester, {
+      'instrument': 'drums',
+      'clickStart': 'manual',
+      'drumPanelView': 'songMap',
+    }, phone: true);
+    await tester.pump();
+    final beat = tester.getRect(find.byKey(const Key('large-beat')));
+    final map = tester.getRect(find.byKey(const Key('song-map')));
+    expect(beat.right, lessThanOrEqualTo(map.left));
+    expect(find.byKey(const Key('drum-set-list')), findsNothing);
+    // The right third of the stage turns forward, also on the song map.
+    final screen = tester.getRect(find.byType(LiveScreen));
+    await tester.tapAt(Offset(screen.width * 0.9, map.center.dy));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('„Amazing grace“'), findsNothing);
+    // The left part of the song map is in the middle third: the controls.
+    await tester.tapAt(Offset(map.left + 20, map.center.dy));
+    await tester.pump();
+    expect(find.byIcon(Icons.close), findsOneWidget);
+    // Back to the set.
+    await tester.tap(find.text('Set'));
+    await tester.pump();
+    expect(find.byKey(const Key('drum-set-list')), findsOneWidget);
+    expect(find.byKey(const Key('song-map')), findsNothing);
+    await app.dispose(tester);
+  });
+
+  testWidgets('wide screens keep the song map beside the panel, without the '
+      'switch (#952)', (tester) async {
+    final app = await open(tester, {
+      'instrument': 'drums',
+      'clickStart': 'manual',
+    });
+    expect(find.byKey(const Key('song-map')), findsOneWidget);
+    expect(find.byKey(const Key('drum-panel-view')), findsNothing);
+    await app.dispose(tester);
+  });
 }

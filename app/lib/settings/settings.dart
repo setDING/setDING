@@ -74,6 +74,16 @@ enum ClickInBackground {
 /// Sound of the click (ADR-0026), synthesised by the click engine.
 enum ClickSound { click, woodblock, beep }
 
+/// What the drum panel shows below or beside the beat on small screens
+/// (ADR-0026, #952).
+enum DrumPanelView {
+  /// The songs of the set with tempo and time signature.
+  set,
+
+  /// The song map of the current song.
+  songMap,
+}
+
 /// When syncs start (ADR-0004); "Sync now" is always available.
 enum SyncMode {
   /// At start, after local changes, on server changes and periodically.
@@ -138,6 +148,7 @@ class AppSettings {
     this.showAnnotations = true,
     this.showOutsideSequence = true,
     this.annotationFinger = false,
+    this.drumPanelView = DrumPanelView.set,
     this.songDisplay = SongDisplay.classic,
     this.editorTypingAids = true,
     this.developerMode = false,
@@ -255,6 +266,10 @@ class AppSettings {
   /// Fingers draw annotations too, not only a stylus or a mouse; for
   /// devices without a stylus (ADR-0032).
   final bool annotationFinger;
+
+  /// Set or song map beside the beat on small screens in drummer mode
+  /// (ADR-0026, #952); it depends on the screen, so it stays on the device.
+  final DrumPanelView drumPanelView;
 
   /// The editor closes brackets, quotes and section blocks and renames a
   /// section's start and end together (#747, #754, #755); off for people
@@ -395,6 +410,7 @@ class AppSettings {
     bool? showAnnotations,
     bool? showOutsideSequence,
     bool? annotationFinger,
+    DrumPanelView? drumPanelView,
     SongDisplay? songDisplay,
     bool? editorTypingAids,
     bool? developerMode,
@@ -443,6 +459,7 @@ class AppSettings {
     showAnnotations: showAnnotations ?? this.showAnnotations,
     showOutsideSequence: showOutsideSequence ?? this.showOutsideSequence,
     annotationFinger: annotationFinger ?? this.annotationFinger,
+    drumPanelView: drumPanelView ?? this.drumPanelView,
     songDisplay: songDisplay ?? this.songDisplay,
     editorTypingAids: editorTypingAids ?? this.editorTypingAids,
     developerMode: developerMode ?? this.developerMode,
@@ -501,6 +518,8 @@ class AppSettings {
     // person; drawing with a finger depends on the device having a stylus.
     'showAnnotations': SettingSyncScope.personal,
     'annotationFinger': SettingSyncScope.device,
+    // Set or song map on a phone in drummer mode (#952).
+    'drumPanelView': SettingSyncScope.device,
     // Parts outside the sequence (ADR-0007): a reading habit of the person.
     'showOutsideSequence': SettingSyncScope.personal,
     // Song display styles (ADR-0033): a reading habit of the person.
@@ -565,6 +584,7 @@ class AppSettings {
     'showAnnotations': showAnnotations,
     'showOutsideSequence': showOutsideSequence,
     'annotationFinger': annotationFinger,
+    'drumPanelView': drumPanelView.name,
     'songDisplay': songDisplay.toJsonString(),
     'editorTypingAids': editorTypingAids,
     'developerMode': developerMode,
@@ -679,6 +699,11 @@ class AppSettings {
       showAnnotations: flag('showAnnotations', d.showAnnotations),
       showOutsideSequence: flag('showOutsideSequence', d.showOutsideSequence),
       annotationFinger: flag('annotationFinger', d.annotationFinger),
+      drumPanelView: pick(
+        DrumPanelView.values,
+        'drumPanelView',
+        d.drumPanelView,
+      ),
       editorTypingAids: flag('editorTypingAids', d.editorTypingAids),
       developerMode: flag('developerMode', d.developerMode),
       midiEnabled: flag('midiEnabled', d.midiEnabled),

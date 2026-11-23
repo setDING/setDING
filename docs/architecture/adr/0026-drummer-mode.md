@@ -144,8 +144,9 @@ with the idle-time preparation of the next song (#296).
   signature. No bar counts for now. On wide screens a panel left of the map
   shows the beat large and the set (tempo and time signature per song; a tap
   turns to it). On phones (shortest side below 600 px) this panel is the
-  whole stage, without the song map: beat above the set in portrait, beside it
-  in landscape.
+  whole stage: beat above the set in portrait, beside it in landscape; a
+  segmented button switches the set for the song map of the current song
+  (#952).
 - All colours follow the stage appearance (ADR-0007) with the contrast required there.
 - The beat display and the count-in never block page turns; the preparation of the
   neighbours (#296) runs as before.
@@ -206,6 +207,7 @@ with the idle-time preparation of the next song (#296).
 - 2026-11-20: Proposed (#698, owner request): per-song click preferences of the drummer, grouping and subdivisions (off, eighths, sixteenths, triplets), as personal overlay fields, editable in live mode and on the song screen without library rights; the meter stays in the song; a grouping per band arrangement left for later.
 - 2026-11-20: Accepted by the owner (#698). A grouping per band arrangement stays open until a band needs it.
 - 2026-11-20: Per-song click preferences implemented (#698). The `chordpro` package has `Subdivision` (off, eighths, sixteenths, triplets) with `Meter.stepsPerBeat`, `Meter.subdivisionChoices` (choices that sound different in the meter; e.g. no eighths in 7/8, no triplets in 6/8), `Meter.withGrouping` and `Meter.groupingChoices` (the groupings into twos and threes, at most 24); the numerator alone (`7`) means no groups. Local overlay columns `click_grouping` and `click_subdivision` (schema 27), on the server `click_grouping` and `click_subdivision` in the overlay's `data`. The personal setting `clickSubdivision` keeps its key and becomes the choice's name; the boolean of older versions reads as eighths (on) or off. The click renders `stepsPerBeat` clicks per beat; `Metronome.changeBar` swaps the grouping or the subdivisions of a running beat at the next bar line (the bar keeps its length). Live mode: a grouping button (odd meters) and a subdivision button (with the click on, or while set) in the tempo row, also on phones; `LiveBeat` loads the current song's overlay before a start and follows its changes. Song screen: two chips in the personal panel, for people who use the beat (grouping) or the click (subdivisions), and while set; they count as an adjustment (dot, reset).
+- 2026-11-23: Owner request (#952): on phones the drum panel has a segmented button *Set | Song map* above the set. *Song map* shows the song map of the current song (with its header) in place of the set; the beat stays, in portrait with less room (2 : 3), as the map needs more. The choice is a device setting (`drumPanelView`, the screen decides what fits), not in the settings screen. The page turner and the tap zones still turn from song to song (no scrolling by pedal); the song map of a song turned to starts at the top and scrolls by dragging. The tap zones stay thirds of the stage, also on the song map beside the beat in landscape. This amends the decision of #421 (no song map on phones).
 
 ## Open points
 
