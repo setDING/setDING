@@ -147,6 +147,7 @@ class AppSettings {
     this.songMap,
     this.showAnnotations = true,
     this.showOutsideSequence = true,
+    this.repeatedChorusOnce = false,
     this.annotationFinger = false,
     this.drumPanelView = DrumPanelView.set,
     this.songDisplay = SongDisplay.classic,
@@ -262,6 +263,10 @@ class AppSettings {
   /// In live mode, the parts outside the song sequence are
   /// shown dimmed instead of hidden (ADR-0007).
   final bool showOutsideSequence;
+
+  /// A chorus written out again word for word is shown only the first time
+  /// (#955): later copies are left out in the song view and live mode.
+  final bool repeatedChorusOnce;
 
   /// Fingers draw annotations too, not only a stylus or a mouse; for
   /// devices without a stylus (ADR-0032).
@@ -409,6 +414,7 @@ class AppSettings {
     bool? songMap,
     bool? showAnnotations,
     bool? showOutsideSequence,
+    bool? repeatedChorusOnce,
     bool? annotationFinger,
     DrumPanelView? drumPanelView,
     SongDisplay? songDisplay,
@@ -458,6 +464,7 @@ class AppSettings {
     songMap: songMap ?? this.songMap,
     showAnnotations: showAnnotations ?? this.showAnnotations,
     showOutsideSequence: showOutsideSequence ?? this.showOutsideSequence,
+    repeatedChorusOnce: repeatedChorusOnce ?? this.repeatedChorusOnce,
     annotationFinger: annotationFinger ?? this.annotationFinger,
     drumPanelView: drumPanelView ?? this.drumPanelView,
     songDisplay: songDisplay ?? this.songDisplay,
@@ -522,6 +529,8 @@ class AppSettings {
     'drumPanelView': SettingSyncScope.device,
     // Parts outside the sequence (ADR-0007): a reading habit of the person.
     'showOutsideSequence': SettingSyncScope.personal,
+    // Written-out repeated choruses (#955): a reading habit of the person.
+    'repeatedChorusOnce': SettingSyncScope.personal,
     // Song display styles (ADR-0033): a reading habit of the person.
     'songDisplay': SettingSyncScope.personal,
     'editorTypingAids': SettingSyncScope.personal,
@@ -583,6 +592,7 @@ class AppSettings {
     'songMap': ?songMap,
     'showAnnotations': showAnnotations,
     'showOutsideSequence': showOutsideSequence,
+    'repeatedChorusOnce': repeatedChorusOnce,
     'annotationFinger': annotationFinger,
     'drumPanelView': drumPanelView.name,
     'songDisplay': songDisplay.toJsonString(),
@@ -698,6 +708,7 @@ class AppSettings {
       songMap: maybe('songMap'),
       showAnnotations: flag('showAnnotations', d.showAnnotations),
       showOutsideSequence: flag('showOutsideSequence', d.showOutsideSequence),
+      repeatedChorusOnce: flag('repeatedChorusOnce', d.repeatedChorusOnce),
       annotationFinger: flag('annotationFinger', d.annotationFinger),
       drumPanelView: pick(
         DrumPanelView.values,

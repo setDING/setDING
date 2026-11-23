@@ -393,6 +393,30 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('a chorus written out again shows once when switched on', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    const source =
+        '{title: X}\n{c: Chorus}\n[G]Hallelujah\n\n'
+        '{c: Verse 1}\n[C]Sunrise\n\n'
+        '{c: Chorus}\n[G]Hallelujah\n';
+    Future<void> show(bool once) async {
+      final app = await TestApp.create(
+        prefs: {'language': 'en', 'repeatedChorusOnce': once},
+      );
+      final items = await createSongs(tester, app, [source]);
+      await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Hallelujah'), findsNWidgets(once ? 1 : 2));
+      expect(find.textContaining('Sunrise'), findsOneWidget);
+      await app.dispose(tester);
+    }
+
+    await show(false);
+    await show(true);
+  });
+
   testWidgets('the control bar chooses how verses show their chords', (
     tester,
   ) async {

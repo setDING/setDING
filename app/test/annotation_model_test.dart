@@ -187,6 +187,23 @@ void main() {
       expect(layout.toJson().containsKey('choruses'), isFalse);
     });
 
+    test('a chorus shown once is another layout and round-trips', () {
+      final once = LayoutFingerprint(
+        mode: 'page',
+        pages: 2,
+        width: 1000,
+        height: 700,
+        font: 24,
+        columns: 2,
+        chorusOnce: true,
+        content: 42,
+        sequence: 'V1 C',
+      );
+      expect(once.matches(layout), isFalse);
+      expect(LayoutFingerprint.fromJson(once.toJson()), once);
+      expect(layout.toJson().containsKey('chorus1'), isFalse);
+    });
+
     test('another orientation, font, text or sequence does not match', () {
       LayoutFingerprint with_({
         double width = 1000,

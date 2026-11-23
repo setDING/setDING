@@ -4688,6 +4688,18 @@ abstract class AppLocalizations {
   /// **'Deine eigenen Zeichnungen auf Songs und Noten'**
   String get settingsShowAnnotationsHint;
 
+  /// No description provided for @settingsRepeatedChorusOnce.
+  ///
+  /// In de, this message translates to:
+  /// **'Ausgeschriebenen Chorus nur einmal zeigen'**
+  String get settingsRepeatedChorusOnce;
+
+  /// No description provided for @settingsRepeatedChorusOnceHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein Chorus, der später gleich nochmals ausgeschrieben ist, wird weggelassen'**
+  String get settingsRepeatedChorusOnceHint;
+
   /// No description provided for @settingsShowOutsideSequence.
   ///
   /// In de, this message translates to:

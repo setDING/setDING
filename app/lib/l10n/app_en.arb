@@ -1236,6 +1236,8 @@
   "annotationsCount": "{count, plural, =0{None yet: draw them in live mode} =1{1 annotation} other{{count} annotations}}",
   "settingsShowAnnotations": "Show freehand annotations",
   "settingsShowAnnotationsHint": "Your own drawings on songs and sheet music",
+  "settingsRepeatedChorusOnce": "Show a written-out chorus only once",
+  "settingsRepeatedChorusOnceHint": "A chorus written out again word for word later is left out",
   "settingsShowOutsideSequence": "Show parts outside the sequence",
   "settingsShowOutsideSequenceHint": "Dimmed in live mode instead of hidden",
   "settingsAnnotationFinger": "Draw annotations with a finger",

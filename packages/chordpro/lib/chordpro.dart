@@ -32,6 +32,7 @@ export 'src/parser.dart' hide copySourceLine;
 export 'src/section_labels.dart';
 export 'src/section_heading.dart'
     show SectionRole, sectionRoleOf, sectionRoleOfName;
+export 'src/repeated_chorus.dart';
 export 'src/sequence.dart';
 export 'src/song.dart';
 export 'src/songselect.dart';

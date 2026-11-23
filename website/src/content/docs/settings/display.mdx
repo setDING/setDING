@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import musician from '../../../../../docs/screenshots/settings_musician_de.png';
 import voiceHint from '../../../../../docs/screenshots/settings_voice_hint_de.png';
+import chorusOnce from '../../../../../docs/screenshots/settings_chorus_once_de.png';
 import screen from '../../../../../docs/screenshots/settings_live_de.png';
 import bass from '../../../../../docs/screenshots/settings_bass_de.png';
 import bassDiagrams from '../../../../../docs/screenshots/bass_diagrams_de.png';
@@ -54,6 +55,14 @@ links ein Icon.
 - **Wiederholter Chorus** – ein Chorus, der wiederholt wird, **Ganz anzeigen**,
   als **Nur Hinweis** oder **Automatisch**: nur dann als kurzer Hinweis, wenn der
   Song sonst nicht gut auf den Bildschirm passt.
+- **Ausgeschriebenen Chorus nur einmal zeigen** – viele Songs, z. B. aus
+  SongSelect, schreiben den Chorus bei jedem Mal wieder aus. Eingeschaltet wird
+  ein Chorus, dessen Text und Akkorde genau gleich sind wie bei einem früheren,
+  in der Song-Ansicht und im Live-Modus weggelassen, egal wo er im Song steht.
+  Ein Chorus, der sich unterscheidet, auch nur in einem Akkord, bleibt.
+  Standardmässig aus.
+
+  <Image src={chorusOnce} alt="Der Schalter «Ausgeschriebenen Chorus nur einmal zeigen» in den Darstellungs-Einstellungen" />
 - **Teile ausserhalb des Ablaufs anzeigen** – im Live-Modus erscheinen
   die Teile, die nicht im Songablauf stehen, abgeschwächt an ihrer Stelle im Song
   (Standard). Ausgeschaltet werden sie ausgeblendet, siehe

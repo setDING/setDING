@@ -34,6 +34,7 @@ map=(
   settings 15_settings
   settings_musician 16_settings_musician
   settings_voice_hint 16a_settings_voice_hint
+  settings_chorus_once 17b_settings_chorus_once
   settings_bass 49_settings_bass
   bass_diagrams 50_bass_diagrams
   settings_general 18_settings_general

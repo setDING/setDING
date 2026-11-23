@@ -145,6 +145,7 @@ class LayoutFingerprint {
     this.lyricsOnly = false,
     this.verseChords = 'all',
     this.stackedChoruses = false,
+    this.chorusOnce = false,
     required this.content,
     this.sequence = '',
   });
@@ -170,6 +171,9 @@ class LayoutFingerprint {
   /// Choruses stacked (#953) change the layout, too.
   final bool stackedChoruses;
 
+  /// Whether choruses written out again are left out (#955).
+  final bool chorusOnce;
+
   /// [textHash] of the ChordPro text.
   final int content;
 
@@ -191,6 +195,7 @@ class LayoutFingerprint {
         lyricsOnly == other.lyricsOnly &&
         verseChords == other.verseChords &&
         stackedChoruses == other.stackedChoruses &&
+        chorusOnce == other.chorusOnce &&
         content == other.content &&
         sequence == other.sequence &&
         near(width, other.width) &&
@@ -211,6 +216,7 @@ class LayoutFingerprint {
     if (lyricsOnly) 'lyrics': true,
     if (verseChords != 'all') 'verses': verseChords,
     if (stackedChoruses) 'choruses': true,
+    if (chorusOnce) 'chorus1': true,
     'content': content,
     if (sequence.isNotEmpty) 'seq': sequence,
   };
@@ -234,6 +240,7 @@ class LayoutFingerprint {
           json['verses'] as String? ??
           (json['verse1'] == true ? 'first' : 'all'),
       stackedChoruses: json['choruses'] == true,
+      chorusOnce: json['chorus1'] == true,
       content: content.toInt(),
       sequence: json['seq'] as String? ?? '',
     );
@@ -251,6 +258,7 @@ class LayoutFingerprint {
       other.lyricsOnly == lyricsOnly &&
       other.verseChords == verseChords &&
       other.stackedChoruses == stackedChoruses &&
+      other.chorusOnce == chorusOnce &&
       other.content == content &&
       other.sequence == sequence;
 
@@ -265,6 +273,7 @@ class LayoutFingerprint {
     lyricsOnly,
     verseChords,
     stackedChoruses,
+    chorusOnce,
     content,
     sequence,
   );

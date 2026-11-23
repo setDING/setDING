@@ -1761,6 +1761,9 @@ class _LiveItemPage extends ConsumerWidget {
         ? SequenceSelection(parsed, const [])
         : filterBySequenceCached(parsed, sequence, keepOutside: keepOutside);
     // Drummer mode (ADR-0026): the parts as played instead of the chords.
+    final chorusOnce = ref.watch(
+      settingsProvider.select((s) => s.repeatedChorusOnce),
+    );
     final map = ref.watch(settingsProvider.select((s) => s.showSongMap))
         ? songMap(
             parsed,
@@ -1775,13 +1778,16 @@ class _LiveItemPage extends ConsumerWidget {
       shownSequence: keepOutside ? '' : sequence ?? '',
       songMap: map,
       song: song,
-      // Chords in the first shown verse only (#518) or the shown verses
-      // stacked (#521), and stacked choruses (#953).
-      parsed: songWithVerseChords(
+      // Choruses written out again left out (#955); chords in the first
+      // shown verse only (#518) or the shown verses stacked (#521), and
+      // stacked choruses (#953).
+      parsed: songForDisplay(
         selection.song,
         overlay.verseChords,
         stackedChoruses: overlay.stackedChoruses,
+        repeatedChorusOnce: chorusOnce,
       ),
+      chorusOnce: chorusOnce,
       hiddenParts: selection.hidden,
       dimSection: selection.outside.isEmpty ? null : selection.isOutside,
       overlay: overlay,
@@ -1810,6 +1816,7 @@ class _ChordProPage extends ConsumerWidget {
     required this.songMap,
     required this.song,
     required this.parsed,
+    required this.chorusOnce,
     required this.hiddenParts,
     required this.dimSection,
     required this.overlay,
@@ -1839,6 +1846,10 @@ class _ChordProPage extends ConsumerWidget {
   final List<SongMapEntry>? songMap;
   final SongEntry song;
   final Song parsed;
+
+  /// Whether [parsed] leaves out choruses written out again (#955): part
+  /// of the layout annotations are drawn on.
+  final bool chorusOnce;
 
   /// Parts hidden because they are not in the set's sequence.
   final List<String> hiddenParts;
@@ -2181,6 +2192,7 @@ class _ChordProPage extends ConsumerWidget {
                           lyricsOnly: lyricsOnly,
                           verseChords: overlay.verseChords.name,
                           stackedChoruses: overlay.stackedChoruses,
+                          chorusOnce: chorusOnce,
                           content: content,
                           sequence: shownSequence,
                         ),
@@ -2319,6 +2331,7 @@ class _ChordProPage extends ConsumerWidget {
             lyricsOnly: options.lyricsOnly,
             verseChords: overlay.verseChords.name,
             stackedChoruses: overlay.stackedChoruses,
+            chorusOnce: chorusOnce,
             content: textHash(song.chordproSource),
             sequence: shownSequence,
           ),
