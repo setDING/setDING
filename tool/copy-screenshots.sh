@@ -113,6 +113,11 @@ map=(
   chord_view_numerals 46_chord_view_numerals
   chord_view_menu 46b_chord_view_menu
   chord_view_numerals_symbol 46c_chord_view_numerals_symbol
+  songs_review 53_songs_review
+  song_review_banner 53b_song_review_banner
+  song_report_sheet 53c_song_report_sheet
+  song_report_marking 53d_song_report_marking
+  song_reports 53e_song_reports
 )
 
 copied=0
