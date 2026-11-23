@@ -2402,6 +2402,18 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Ein Block mit Taktzeilen kann} other{{count} Blöcke mit Taktzeilen können}} als Chord-Grid dargestellt werden.'**
   String ccliGridsHint(int count);
 
+  /// No description provided for @convertCommentHeadings.
+  ///
+  /// In de, this message translates to:
+  /// **'Kommentar-Überschriften in Abschnitte umwandeln'**
+  String get convertCommentHeadings;
+
+  /// No description provided for @commentHeadingsHint.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Ein Abschnitt ist} other{{count} Abschnitte sind}} mit einem Kommentar wie «Vers 1» markiert. Umwandeln macht ChordPro-Abschnitte daraus; der Song sieht gleich aus.'**
+  String commentHeadingsHint(int count);
+
   /// No description provided for @remove.
   ///
   /// In de, this message translates to:

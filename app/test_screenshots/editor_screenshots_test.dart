@@ -139,6 +139,31 @@ void main() {
     });
   }
 
+  // Sections marked with comment headings (#963): the hint that turns
+  // them into section environments.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('comment headings $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            home: SongEditorScreen(
+              initialSource: lang == 'de' ? _headingsDe : _headings,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(CommentHeadingHint), findsOneWidget);
+      await shot(tester, '${lang}_24d_editor_headings');
+      await app.dispose(tester);
+    });
+  }
+
   // Section labels in the short form (#672): the editor hint and the import
   // report that offer to convert them to label="…"; the CCLI bar line hint
   // (#481).
@@ -410,6 +435,32 @@ CCLI-Liednummer 1234567
 © Public Domain
 Nur zur Verwendung gemäss den SongSelect® Nutzungsbedingungen. Alle Rechte vorbehalten. www.ccli.com
 CCLI-Lizenznummer 7654321
+''';
+
+const _headings = '''{title: Amazing Grace}
+{artist: John Newton}
+{key: G}
+
+{comment: Verse 1}
+A[G]mazing grace, how [C]sweet the [G]sound
+That saved a wretch like [D]me
+
+{comment: Chorus}
+I [G]once was [G7]lost, but [C]now am [G]found
+Was [Em]blind, but [D]now I [G]see
+''';
+
+const _headingsDe = '''{title: Amazing Grace}
+{artist: John Newton}
+{key: G}
+
+{comment: Strophe 1}
+A[G]mazing grace, how [C]sweet the [G]sound
+That saved a wretch like [D]me
+
+{comment: Refrain}
+I [G]once was [G7]lost, but [C]now am [G]found
+Was [Em]blind, but [D]now I [G]see
 ''';
 
 const _ccliBars = '''{title: Amazing Grace}

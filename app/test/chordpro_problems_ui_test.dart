@@ -354,6 +354,54 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('the editor offers to convert comment headings (#963)', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    const source =
+        '{title: T}\n\n{comment: Verse 1}\n[C]a\n\n{c: Intro}\n[G]\n\n'
+        '{comment: play softly}\nb';
+    await tester.pumpWidget(
+      app.build(home: const SongEditorScreen(initialSource: source)),
+    );
+    await tester.pumpAndSettle();
+    final controller = tester
+        .widget<TextField>(find.byType(TextField))
+        .controller!;
+    expect(find.byType(CommentHeadingHint), findsOneWidget);
+    expect(
+      find.textContaining('2 sections are marked with a comment'),
+      findsOneWidget,
+    );
+    await tester.tap(
+      find.descendant(
+        of: find.byType(CommentHeadingHint),
+        matching: find.widgetWithText(TextButton, 'Convert'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      controller.text,
+      '{title: T}\n\n{start_of_verse: label="Verse 1"}\n[C]a\n{end_of_verse}\n'
+      '\n{start_of_intro: label="Intro"}\n[G]\n{end_of_intro}\n\n'
+      '{comment: play softly}\nb',
+    );
+    expect(find.byType(CommentHeadingHint), findsNothing);
+    controller.text = source;
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byType(CommentHeadingHint),
+        matching: find.byTooltip('Hide hint'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(CommentHeadingHint), findsNothing);
+    expect(controller.text, source);
+    await app.dispose(tester);
+  });
+
   testWidgets('the editor offers to convert SongSelect directives (#777)', (
     tester,
   ) async {

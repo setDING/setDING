@@ -12,6 +12,7 @@ import editorSave from '../../../../../../docs/screenshots/editor_save.png';
 import editorCcli from '../../../../../../docs/screenshots/editor_ccli.png';
 import editorSongSelect from '../../../../../../docs/screenshots/editor_songselect.png';
 import editorCcliFooter from '../../../../../../docs/screenshots/editor_ccli_footer.png';
+import editorHeadings from '../../../../../../docs/screenshots/editor_headings.png';
 import editorAutoClose from '../../../../../../docs/screenshots/editor_auto_close.png';
 import editorChorusLabels from '../../../../../../docs/screenshots/editor_chorus_labels.png';
 import songDetailsKey from '../../../../../../docs/screenshots/song_details_key.png';
@@ -156,6 +157,21 @@ For songs that still contain it, the editor shows a hint above the text:
 details (`{x_ccli}`, `{copyright}`), unless the song already has them. The hint can be hidden with ✕.
 
 <Image src={editorCcliFooter} alt="The editor with the CCLI footer at the end of the song and the hint with the Remove button" />
+
+## Comment headings
+
+Songs from CCLI SongSelect and other sources mark their sections with a comment,
+e.g. `{comment: Verse 1}` or `{comment: Chorus}`. setDING already shows them as
+sections, but the editor shows a hint above the text: **Convert** turns them into
+ChordPro sections such as `{start_of_verse: label="Verse 1"}` … `{end_of_verse}`.
+Verses, choruses and bridges get their own environment, other parts one named after
+them (`{start_of_intro}`, `{start_of_pre_chorus}`, …), so the song looks the same
+afterwards. Ordinary comments stay comments, and a comment above CCLI bar lines is
+left to the chord grid conversion. For single sections: select them and choose
+**Convert comment headings to sections** in the Lines menu. The hint can be hidden
+with ✕.
+
+<Image src={editorHeadings} alt="The editor with two sections marked by comment headings and the hint with the Convert button" />
 
 ## Section labels
 

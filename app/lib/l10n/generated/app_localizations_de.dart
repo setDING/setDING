@@ -1342,6 +1342,21 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get convertCommentHeadings =>
+      'Kommentar-Überschriften in Abschnitte umwandeln';
+
+  @override
+  String commentHeadingsHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Abschnitte sind',
+      one: 'Ein Abschnitt ist',
+    );
+    return '$_temp0 mit einem Kommentar wie «Vers 1» markiert. Umwandeln macht ChordPro-Abschnitte daraus; der Song sieht gleich aus.';
+  }
+
+  @override
   String get remove => 'Entfernen';
 
   @override

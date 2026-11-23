@@ -75,6 +75,19 @@ class ChordProEditingController extends TextEditingController {
     return _legacyLabels;
   }
 
+  String? _headingsChecked;
+  List<CommentHeading> _commentHeadings = const [];
+
+  /// Sections marked with a comment heading such as `{comment: Verse 1}`
+  /// that can become section environments (#963).
+  List<CommentHeading> get commentHeadings {
+    if (_headingsChecked != text) {
+      _headingsChecked = text;
+      _commentHeadings = findCommentHeadings(text);
+    }
+    return _commentHeadings;
+  }
+
   String? _songSelectChecked;
   int _songSelectDirectives = 0;
 
