@@ -143,7 +143,7 @@ An agent runs all of the following and only continues when everything passes:
    integration or e2e test only when nothing lower can) and name the issue in the
    test (`// Regression test for #123`). If a test is truly impossible (e.g. a
    platform-only rendering glitch), say why in the PR under "How it was tested".
-5. **Localization complete:** every new UI text exists in `app_de.arb` and `app_en.arb`.
+5. **Localization complete:** every new UI text exists in every ARB file (`app_*.arb`).
 6. **Permissions enforced on the server:** every permission the change adds or
    touches is enforced by server rules, hooks or routes and tested with direct API
    calls as the refused roles, including the permission matrix test

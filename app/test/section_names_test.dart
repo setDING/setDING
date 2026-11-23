@@ -39,8 +39,15 @@ void main() {
     l.songDisplayTypeOutro,
   ];
 
-  test('section names are the same in German and English', () {
+  test('section names are the same in every UI language', () {
     expect(names(de), names(en));
+    for (final locale in AppLocalizations.supportedLocales) {
+      expect(
+        names(lookupAppLocalizations(locale)),
+        names(en),
+        reason: '$locale',
+      );
+    }
   });
 
   test('the sequence legend uses the English section names', () {

@@ -83,10 +83,12 @@ job_app_static() {
   python3 - <<'PY'
 import json, sys
 keys = lambda f: {k for k in json.load(open(f)) if not k.startswith('@')}
-de, en = keys('lib/l10n/app_de.arb'), keys('lib/l10n/app_en.arb')
-if de != en:
-    print('l10n: keys differ between app_de.arb and app_en.arb:', sorted(de ^ en))
-    sys.exit(1)
+import glob
+de = keys('lib/l10n/app_de.arb')
+for f in sorted(glob.glob('lib/l10n/app_*.arb')):
+    if keys(f) != de:
+        print('l10n: keys differ between app_de.arb and', f, sorted(de ^ keys(f)))
+        sys.exit(1)
 if 'ß' in open('lib/l10n/app_de.arb', encoding='utf-8').read():
     print('l10n: app_de.arb must use Swiss spelling (no ß)')
     sys.exit(1)

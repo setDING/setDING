@@ -111,7 +111,7 @@ without this prefix that the specification does not define.
 ## Language
 
 - **Project language is English**: code, identifiers, comments, documentation, ADRs, commit messages, pull requests, issues and file names.
-- **Exception: user-facing UI texts**, in **Swiss Standard German (`de-CH`, no "ß")** and **English** (ADR-0008). UI texts are never hard-coded; every new text goes into both ARB files (`app_de.arb`, `app_en.arb`).
+- **Exception: user-facing UI texts**, in **Swiss Standard German (`de-CH`, no "ß")**, **English**, **French**, **Italian**, **Spanish** and **Portuguese** (ADR-0008). UI texts are never hard-coded; every new text goes into all ARB files (`app/lib/l10n/app_*.arb`); German is the reference.
 - Conversation with the user may be in German; this does not change the project language.
 
 ## Local commands

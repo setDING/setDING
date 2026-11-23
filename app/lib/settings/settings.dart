@@ -18,7 +18,7 @@ export 'song_display.dart';
 export 'user_settings_store.dart';
 
 /// UI language setting (ADR-0008).
-enum LanguageMode { system, de, en }
+enum LanguageMode { system, de, en, it, fr, es, pt }
 
 /// What is shown of a song.
 enum DisplayMode { lyricsAndChords, lyricsOnly }
@@ -385,6 +385,10 @@ class AppSettings {
     LanguageMode.system => null,
     LanguageMode.de => const Locale('de', 'CH'),
     LanguageMode.en => const Locale('en'),
+    LanguageMode.it => const Locale('it'),
+    LanguageMode.fr => const Locale('fr'),
+    LanguageMode.es => const Locale('es'),
+    LanguageMode.pt => const Locale('pt'),
   };
 
   AppSettings copyWith({
@@ -791,13 +795,29 @@ class AppSettings {
   }
 }
 
-/// Resolves the UI locale: German or English, falling back to English
-/// for other system languages (ADR-0008).
+/// The UI languages besides German (ADR-0008).
+const otherUiLanguages = ['en', 'it', 'fr', 'es', 'pt'];
+
+/// The locales the app supports; German is always Swiss German (`de-CH`).
+const supportedUiLocales = [
+  Locale('de', 'CH'),
+  Locale('de'),
+  Locale('en'),
+  Locale('it'),
+  Locale('fr'),
+  Locale('es'),
+  Locale('pt'),
+];
+
+/// Resolves the UI locale: the first system language the app has,
+/// falling back to English for other system languages (ADR-0008).
 Locale resolveLocale(Locale? setting, List<Locale> systemLocales) {
   if (setting != null) return setting;
   for (final l in systemLocales) {
     if (l.languageCode == 'de') return const Locale('de', 'CH');
-    if (l.languageCode == 'en') return const Locale('en');
+    if (otherUiLanguages.contains(l.languageCode)) {
+      return Locale(l.languageCode);
+    }
   }
   return const Locale('en');
 }

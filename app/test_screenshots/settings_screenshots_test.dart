@@ -375,6 +375,30 @@ void main() {
     });
   }
 
+  // The language drop-down of the general settings, open (#983).
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('settings language $lang', (tester) async {
+      tester.view.physicalSize = const Size(420, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(key: UniqueKey(), child: app.build()),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('nav-settings')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('settings-category-general')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('settings-language')));
+      await tester.pumpAndSettle();
+      await shot(tester, '${lang}_18b_settings_language');
+      await app.dispose(tester);
+    });
+  }
+
   // The paired page turner in the live settings (ADR-0057, #913), connected.
   for (final (lang, dark) in [('de', false), ('en', true)]) {
     screenshotTest('settings page turner $lang', (tester) async {

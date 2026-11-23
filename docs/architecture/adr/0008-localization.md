@@ -1,4 +1,4 @@
-# ADR-0008: Localization (German/English)
+# ADR-0008: Localization (German, English, French, Italian, Spanish, Portuguese)
 
 - **Status:** Accepted
 - **Date:** 2026-11-14
@@ -12,20 +12,22 @@ musician).
 
 ## Decision
 
-- The UI is available in **German (`de`) and English (`en`)**. All UI texts are
+- The UI is available in **German (`de`), English (`en`), French (`fr`), Italian
+  (`it`), Spanish (`es`) and Portuguese (`pt`)** (the last four since #983). All UI texts are
   localized from the start of the MVP; no hard-coded strings in widgets.
 - Implementation uses Flutter's standard approach: **`flutter_localizations` + `intl`
   with ARB files** (`app_de.arb`, `app_en.arb`) and generated, type-safe accessors
-  (`gen-l10n`).
-- **Language setting** in the app settings with three options:
-  - *System default* (initial value) – uses the device language if it is German or
-    English, otherwise **English** as fallback
-  - *Deutsch*
-  - *English*
+  (`gen-l10n`), one ARB file per language.
+- **Language setting** in the app settings, a drop-down with:
+  - *System default* (initial value) – uses the first device language the app
+    has, otherwise **English** as fallback
+  - one entry per language, each named in its own language (*Deutsch*,
+    *English*, *Français*, *Italiano*, *Español*, *Português*)
 - The setting is stored **locally per device** (layer 4 in ADR-0006) and applied
   immediately without restarting the app.
 - **German is the reference language** for UI texts; new texts are written in German
-  and English at the same time. A missing translation fails the build/CI check.
+  and English at the same time, and in the other languages in the same change.
+  A missing key in any ARB file fails the build/CI check.
 - **Not localized:** song content (ChordPro text, titles, comments written by the
   band). Only generated labels are localized, e.g. default section labels
   ("Verse"/"Strophe", "Chorus"/"Refrain") when the ChordPro file has no explicit label.
@@ -47,7 +49,8 @@ musician).
 ## Consequences
 
 - From the first screen on, every UI text goes through the localization layer.
-- Further languages (e.g. French, Italian for Switzerland) can be added later by adding an ARB file.
+- Further languages are added with an ARB file, an entry in `LanguageMode`
+  and `supportedUiLocales` (`app/lib/settings/settings.dart`).
 - Chord notation (H vs. B) is **not** coupled to the UI language; it is a separate display setting (see open point in ADR-0003).
 
 ## Decision log
@@ -57,6 +60,7 @@ musician).
 - 2026-11-17: Shared data never stores a localized UI label, because band members may use different languages (#289). A break left with its default name is stored without a note and shows the type label of each member's language; for older data, a note that equals the type label in any supported language counts as no note (`ui/sets/set_item_label.dart`). This applies to the set screen, live mode and the set list exports.
 - 2026-11-17: Resolved open point (ADR-0027, accepted, #328): the language is a **personal setting** synced with the account, no longer stored per device. Signed out, the device's own (`local`) value applies. `USER.locale` as a default for new devices is not needed.
 - 2026-11-19: Song section names (Verse, Chorus, Pre-chorus, Bridge, Interlude, Ending, Grid, …) are musician terminology and stay **English in every UI language** (#533): in the song view, live mode, the sequence chips and their tooltips in arrangements, the song display settings and the editor. The editor writes them into the shared ChordPro text as labels, so localizing them would also break the rule above. The ARB files keep the keys, the German values equal the English ones (`test/section_names_test.dart`).
+- 2026-11-23: French, Italian, Spanish and Portuguese added as UI languages (#983), all in their standard variants (no `fr-CH`/`it-CH`; Portuguese in European spelling). The language setting becomes a drop-down, since seven options no longer fit a segmented button. The system default picks the first device language the app has. Song section names stay English in every language. The user documentation (website) stays German and English.
 
 ## Open points
 

@@ -378,7 +378,8 @@ class _CategoryContent extends ConsumerWidget {
           SettingsSection(
             title: l10n.settingsHeadingLanguageTheme,
             children: [
-              SettingsChoice(
+              SettingsDropdown(
+                dropdownKey: const Key('settings-language'),
                 icon: Icons.language,
                 title: l10n.settingsLanguage,
                 value: s.language,
@@ -386,6 +387,10 @@ class _CategoryContent extends ConsumerWidget {
                   LanguageMode.system: l10n.languageSystem,
                   LanguageMode.de: l10n.languageDe,
                   LanguageMode.en: l10n.languageEn,
+                  LanguageMode.fr: l10n.languageFr,
+                  LanguageMode.it: l10n.languageIt,
+                  LanguageMode.es: l10n.languageEs,
+                  LanguageMode.pt: l10n.languagePt,
                 },
                 onChanged: (v) =>
                     notifier.update((s) => s.copyWith(language: v)),
