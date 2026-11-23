@@ -63,7 +63,18 @@ function prepareDeletion(app, userId) {
       if (field.type() !== "relation" || field.collectionId !== users.id) continue;
       if (field.cascadeDelete) continue;
       if (field.maxSelect > 1) {
-        throw new Error(`${collection.name}.${field.name}: multiple users are not supported`);
+        // Several people (a set's lineup, ADR-0061): the person is taken out
+        // of the JSON array, without a new revision either.
+        app
+          .db()
+          .newQuery(
+            `UPDATE {{${collection.name}}} SET [[${field.name}]] = (` +
+              `SELECT COALESCE(json_group_array(value), '[]') FROM json_each([[${field.name}]]) WHERE value != {:user})` +
+              ` WHERE EXISTS (SELECT 1 FROM json_each([[${field.name}]]) WHERE value = {:user})`,
+          )
+          .bind({ user: userId })
+          .execute();
+        continue;
       }
       app
         .db()

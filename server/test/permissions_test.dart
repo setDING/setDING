@@ -22,6 +22,8 @@ void main() {
   late User member;
   late User librarian; // librarian, in no band
   late User outsider; // signed in, in no organization of `f`
+  late User
+  substitute; // in the organization and the lineup of `setId`, in no band (ADR-0061)
   late Map<String, dynamic> song; // created by the organization admin
   late Map<String, dynamic> leaderSong;
   late String secondBand; // another band of `f`, without the leader
@@ -80,6 +82,12 @@ void main() {
     });
     set.expectStatus(200);
     setId = set.json['id'] as String;
+    substitute = await pb.signUp('Substitute');
+    await BandFixture.addOrgMember(pb, f.orgId, substitute);
+    (await leader.patch('setlists', setId, {
+      'lineup': [member.id, substitute.id],
+      'lineup_custom': true,
+    })).expectStatus(200);
     deletedLeaderSong =
         (await f.createSong(leader, title: 'Deleted'))['id'] as String;
     (await pb.superuser.patch('songs', deletedLeaderSong, {
@@ -389,6 +397,52 @@ void main() {
       'leader hard-deletes a set',
       () => leader.delete('setlists', setId),
       unchanged: ('setlists', () => setId, 'deleted'),
+    );
+    // Lineup per set and substitutes (ADR-0061).
+    for (final (who, user) in [
+      ('member', () => member),
+      ('librarian', () => librarian),
+      ('substitute', () => substitute),
+      ('admin of another organization', () => g.admin),
+    ]) {
+      refused(
+        '$who changes the lineup of a set',
+        () => user().patch('setlists', setId, {
+          'lineup': [user().id],
+          'lineup_custom': true,
+        }),
+        unchanged: ('setlists', () => setId, 'lineup'),
+      );
+      refused(
+        '$who gets the mail addresses of a set\'s lineup',
+        () => user().send('GET', '/api/setding/lineup/$setId/emails'),
+      );
+    }
+    refused(
+      'leader puts somebody outside the organization in a lineup',
+      () => leader.patch('setlists', setId, {
+        'lineup': [member.id, substitute.id, outsider.id],
+        'lineup_custom': true,
+      }),
+      unchanged: ('setlists', () => setId, 'lineup'),
+    );
+    refused(
+      'substitute edits the set they are in the lineup of',
+      () => substitute.patch('setlists', setId, {'name': 's'}),
+      unchanged: ('setlists', () => setId, 'name'),
+    );
+    refused(
+      'substitute reads the set through the records API',
+      () => substitute.view('setlists', setId),
+    );
+    refused(
+      'substitute creates a band arrangement',
+      () => substitute.post('arrangements', {
+        'id': uuid(),
+        'band': f.id,
+        'song': song['id'],
+        'transpose': 1,
+      }),
     );
     refused(
       'member creates a band arrangement',
@@ -975,6 +1029,29 @@ void main() {
     test('set planners create sets', () async {
       final planner = await h.addPlanner();
       (await planner.post('setlists', newSet(h.id))).expectStatus(200);
+    });
+
+    test('set planners choose a lineup with a substitute, who gets the set '
+        'and the planner the mail addresses (ADR-0061)', () async {
+      final planner = await h.addPlanner();
+      final substitute = await pb.signUp('Substitute');
+      await BandFixture.addOrgMember(pb, h.orgId, substitute);
+      final set = await planner.post('setlists', {
+        ...newSet(h.id),
+        'lineup': [substitute.id],
+        'lineup_custom': true,
+      });
+      set.expectStatus(200);
+      final sets = await substitute.send('GET', '/api/setding/lineup');
+      sets.expectStatus(200);
+      expect(
+        [for (final s in sets.json['sets'] as List) (s as Map)['id']],
+        [set.json['id']],
+      );
+      (await planner.send(
+        'GET',
+        '/api/setding/lineup/${set.json['id']}/emails',
+      )).expectStatus(200);
     });
 
     test('librarians create songs', () async {

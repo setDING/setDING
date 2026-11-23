@@ -223,6 +223,13 @@ band but a person in a set's lineup.
   permission matrix. Implementation: server #1007, data and sync #1008, set
   editor #1009, substitute view #1010, notify and set list #1011, website
   page #1012.
+- 2026-11-23: Server implemented (#1007): `lineup` is a relation to `users`
+  (several), the lineup's people are checked on create and update only when
+  they are added, so a set stays editable after somebody left the
+  organization; an organization admin in a lineup is no substitute, since
+  they see every set of the organization through the records API; a deleted
+  account is taken out of every lineup without a new revision (like other
+  references, ADR-0052), a purged set clears its lineup (ADR-0043).
 
 ## Open points
 
