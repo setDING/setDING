@@ -94,6 +94,9 @@ class _SongPickerState extends ConsumerState<_SongPicker> {
     };
     final notation = ref.watch(settingsProvider.select((s) => s.notation));
     final currentBand = ref.watch(currentBandProvider);
+    final reported =
+        ref.watch(reportedSongIdsProvider(currentBand.libraryId)).value ??
+        const <String>{};
     final band = ref.watch(arrangementBandProvider(currentBand.libraryId));
     final arrangements = band == null
         ? const <String, BandArrangement>{}
@@ -181,6 +184,7 @@ class _SongPickerState extends ConsumerState<_SongPicker> {
                   final index = _selected.indexOf(song.id);
                   return SongTile(
                     song: song,
+                    reported: reported.contains(song.id),
                     arrangement: arrangements[song.id],
                     bandName: band?.name ?? '',
                     showLanguage: languages.length > 1,

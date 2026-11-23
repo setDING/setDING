@@ -613,6 +613,8 @@ class _TodoCard extends ConsumerWidget {
                 count,
               ),
               SongAttention.noKey => l10n.overviewTodoNoKey(count),
+              SongAttention.toReview => l10n.overviewTodoToReview(count),
+              SongAttention.reported => l10n.overviewTodoReported(count),
             }),
       ],
     );

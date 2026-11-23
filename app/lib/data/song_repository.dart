@@ -191,6 +191,7 @@ class SongListEntry {
     this.language,
     this.languageByHand = false,
     this.workId,
+    this.reviewState,
   });
 
   final String id;
@@ -235,6 +236,13 @@ class SongListEntry {
   /// Group of the song's language versions (ADR-0053), or null.
   final String? workId;
 
+  /// Review status (ADR-0060): `to_review` while the song waits for a
+  /// check, null when approved.
+  final String? reviewState;
+
+  /// The song waits for a check (ADR-0060).
+  bool get toReview => reviewState != null;
+
   List<String> get tagList => _tags(tags);
 
   @override
@@ -256,7 +264,8 @@ class SongListEntry {
       other.updatedBy == updatedBy &&
       other.language == language &&
       other.languageByHand == languageByHand &&
-      other.workId == workId;
+      other.workId == workId &&
+      other.reviewState == reviewState;
 
   @override
   int get hashCode => Object.hash(
@@ -277,6 +286,7 @@ class SongListEntry {
     language,
     languageByHand,
     workId,
+    reviewState,
   );
 }
 
@@ -364,6 +374,7 @@ class SongRepository {
         s.language,
         s.detectedLanguage,
         s.workId,
+        s.reviewState,
       ])
       ..where(_filter(query, tags))
       // Title, artist and key are sorted in Dart (sortedFor).
@@ -392,6 +403,7 @@ class SongRepository {
             language: r.read(s.language) ?? r.read(s.detectedLanguage),
             languageByHand: r.read(s.language) != null,
             workId: r.read(s.workId),
+            reviewState: r.read(s.reviewState),
           ),
       ].sortedFor(sort),
     );

@@ -17,6 +17,7 @@ import 'data/set_archive.dart';
 import 'data/song_archive.dart';
 import 'data/set_repository.dart';
 import 'data/song_repository.dart';
+import 'data/song_review.dart';
 import 'data/trash.dart';
 import 'platform/backup_folder.dart';
 import 'settings/settings.dart';
@@ -339,6 +340,31 @@ final songRepositoryProvider = Provider<SongRepository>(
     librarySongRepositoryProvider(ref.watch(_currentLibraryIdProvider)),
   ),
 );
+
+/// Review status and mistake reports of songs (ADR-0060).
+final songReviewRepositoryProvider = Provider<SongReviewRepository>(
+  (ref) => SongReviewRepository(
+    ref.watch(databaseProvider),
+    ref.watch(attachmentStorageProvider),
+    userId: ref.watch(authProvider.select((u) => u?.id)),
+    backend: ref.watch(syncBackendProvider),
+  ),
+);
+
+/// The songs of [libraryId] with open mistake reports (ADR-0060).
+final reportedSongIdsProvider = StreamProvider.autoDispose
+    .family<Set<String>, String>(
+      (ref, libraryId) =>
+          ref.watch(songReviewRepositoryProvider).watchReportedSongs(libraryId),
+    );
+
+/// The mistake reports of a song that are not deleted, newest first
+/// (ADR-0060).
+final songReportsProvider = StreamProvider.autoDispose
+    .family<List<SongReportRow>, String>(
+      (ref, songId) =>
+          ref.watch(songReviewRepositoryProvider).watchReports(songId),
+    );
 
 /// Songs of the current band's library, for its sets.
 final bandSongRepositoryProvider = Provider<SongRepository>(
@@ -771,6 +797,12 @@ final offlineMissingProvider = FutureProvider.autoDispose.family<int?, String>((
 /// (#314).
 final problemSongCountsProvider = StreamProvider.autoDispose<Map<String, int>>(
   (ref) => ref.watch(setRepositoryProvider).watchProblemSongCounts(),
+);
+
+/// Number of songs per set of the current band that wait for a check or
+/// have open mistake reports (ADR-0060).
+final reviewSongCountsProvider = StreamProvider.autoDispose<Map<String, int>>(
+  (ref) => ref.watch(setRepositoryProvider).watchReviewSongCounts(),
 );
 
 final storageUsageProvider = FutureProvider<int>((ref) async {

@@ -3774,5 +3774,87 @@
         "type": "String"
       }
     }
+  },
+  "attentionToReview": "Zu prüfen",
+  "attentionReported": "Gemeldet",
+  "overviewTodoToReview": "{count, plural, =1{1 Song zu prüfen} other{{count} Songs zu prüfen}}",
+  "@overviewTodoToReview": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "overviewTodoReported": "{count, plural, =1{1 Song mit gemeldetem Fehler} other{{count} Songs mit gemeldeten Fehlern}}",
+  "@overviewTodoReported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songToReviewTooltip": "Noch nicht geprüft",
+  "songReportedTooltip": "Fehler gemeldet",
+  "songToReviewHint": "Dieser Song ist noch nicht geprüft.",
+  "songReportedHint": "In diesem Song wurde ein Fehler gemeldet.",
+  "reviewBannerToReview": "Zu prüfen: {reason}",
+  "@reviewBannerToReview": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewBannerReports": "{count, plural, =1{1 offene Fehlermeldung} other{{count} offene Fehlermeldungen}}",
+  "@reviewBannerReports": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "showReports": "Anzeigen",
+  "approveSong": "Freigeben",
+  "songApproved": "Song freigegeben",
+  "approveAllSongs": "Alle freigeben",
+  "approveAllSongsTitle": "Alle Songs freigeben?",
+  "approveAllSongsMessage": "{count, plural, =1{1 Song gilt danach als geprüft.} other{{count} Songs gelten danach als geprüft.}}",
+  "@approveAllSongsMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songsApproved": "{count, plural, =1{1 Song freigegeben} other{{count} Songs freigegeben}}",
+  "@songsApproved": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "resolveReportsTitle": "Fehlermeldungen erledigen?",
+  "resolveReportsMessage": "{count, plural, =1{Der Song hat 1 offene Fehlermeldung. Auch als erledigt markieren?} other{Der Song hat {count} offene Fehlermeldungen. Auch als erledigt markieren?}}",
+  "@resolveReportsMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "resolveReports": "Erledigen",
+  "setToReviewMenu": "Zur Prüfung markieren …",
+  "setToReviewTitle": "Zur Prüfung markieren",
+  "reviewReasonLabel": "Grund",
+  "reviewReasonHint": "z. B. Bridge stimmt nicht",
+  "reviewReasonAfterImport": "Nach Import",
+  "setReviewHint": "{count, plural, =1{1 Song ist noch nicht geprüft oder hat einen gemeldeten Fehler} other{{count} Songs sind noch nicht geprüft oder haben gemeldete Fehler}}",
+  "@setReviewHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

@@ -10,6 +10,7 @@ import '../account/sync_refresh.dart';
 import '../bands/band_switcher.dart';
 import '../bands/no_band_hint.dart';
 import '../songs/chordpro_problems_badge.dart';
+import '../songs/song_attention.dart' show songToReviewIcon;
 import '../songs/song_list.dart' show songListTwoColumnWidth;
 import '../theme.dart';
 import '../trash/trash_screen.dart';
@@ -352,6 +353,10 @@ class _SetCard extends ConsumerWidget {
       if (set.venue != null) set.venue!,
       l10n.itemCount(summary.itemCount),
     ].join(' · ');
+    // Songs of an upcoming gig not checked yet or reported (ADR-0060).
+    final reviewSongs = set.gigDate != null && !set.gigDate!.isBefore(_today())
+        ? (ref.watch(reviewSongCountsProvider).value?[set.id] ?? 0)
+        : 0;
     final next = nextGigFrom;
     final date = set.gigDate;
 
@@ -390,12 +395,21 @@ class _SetCard extends ConsumerWidget {
                 ],
               ),
         subtitle: Text(details),
-        trailing: missing == 0 && problems == 0
+        trailing: missing == 0 && problems == 0 && reviewSongs == 0
             ? null
             : Row(
                 mainAxisSize: MainAxisSize.min,
                 spacing: 8,
                 children: [
+                  if (reviewSongs > 0)
+                    Tooltip(
+                      key: const ValueKey('set-review'),
+                      message: l10n.setReviewHint(reviewSongs),
+                      child: Icon(
+                        songToReviewIcon,
+                        semanticLabel: l10n.setReviewHint(reviewSongs),
+                      ),
+                    ),
                   if (problems > 0)
                     ChordProProblemsBadge(
                       key: const ValueKey('set-problems'),

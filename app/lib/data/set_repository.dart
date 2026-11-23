@@ -430,6 +430,28 @@ class SetRepository {
         },
       );
 
+  /// Number of songs per set of the band that wait for a check or have
+  /// open mistake reports (ADR-0060); sets without such songs are missing.
+  Stream<Map<String, int>> watchReviewSongCounts() => db
+      .customSelect(
+        'SELECT i.set_id AS set_id, COUNT(DISTINCT s.id) AS songs '
+        'FROM set_items i '
+        'JOIN setlists l ON l.id = i.set_id '
+        'JOIN songs s ON s.id = i.song_id '
+        "WHERE i.type = 'song' AND l.band_id = ? AND l.deleted = 0 "
+        'AND s.deleted = 0 AND (s.review_state IS NOT NULL OR EXISTS ('
+        'SELECT 1 FROM song_reports r WHERE r.song_id = s.id '
+        "AND r.deleted = 0 AND r.status = 'open')) GROUP BY i.set_id",
+        variables: [Variable.withString(bandId)],
+        readsFrom: {db.setItems, db.setlists, db.songs, db.songReports},
+      )
+      .watch()
+      .map(
+        (rows) => {
+          for (final r in rows) r.read<String>('set_id'): r.read<int>('songs'),
+        },
+      );
+
   /// One row per song item and attachment: the item's set, its song (null
   /// if missing) and an attachment file (null if none).
   Selectable<QueryRow> _offlineQuery({String? setId}) => db.customSelect(

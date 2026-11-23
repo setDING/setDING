@@ -276,6 +276,17 @@ Older clients that import songs do not set *to review*.
   in the attachment storage as `report-<id>.<ext>`, downloaded when a report is
   opened; archives carry `reviewState` and `reviewReason` and set them again on
   import.
+- 2026-11-23: Review in the app implemented (#989): the file import sets the
+  imported songs to review with "After import" in the importer's language
+  (`ImportExportService.importFiles(reviewReason:)`); the song list (library and
+  set picker) shows an icon to everyone, the reported one before the one to
+  review; *To do* lines and chips *To review* and *Reported* (`SongAttention`)
+  for whoever may edit the song, *Approve all* with Undo in the list filtered to
+  *To review*; in the song view a banner for approvers (reason, open reports,
+  *Approve*, which asks whether to resolve the open reports too) and a short
+  hint for everyone else, *Mark for review …* and *Approve* in the song menu;
+  the set list and the set show how many songs of an upcoming set need a check.
+  The reported icon is `report_outlined`, since set markers use the flag.
 
 ## Open points
 

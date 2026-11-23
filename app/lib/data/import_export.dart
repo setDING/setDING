@@ -10,6 +10,7 @@ import 'attachment_storage.dart';
 import 'database.dart';
 import 'set_repository.dart';
 import 'song_repository.dart';
+import 'song_review.dart' show SongReviewRepository;
 
 /// File extensions recognised as ChordPro files.
 const chordProExtensions = ['cho', 'chordpro', 'chopro', 'crd', 'pro', 'txt'];
@@ -126,10 +127,17 @@ class ImportExportService {
   ///
   /// With [germanNotation], chords are converted from H/B to international
   /// notation before saving (ADR-0003).
+  ///
+  /// With [reviewReason] (e.g. "After import" in the person's language),
+  /// every imported song waits for a check (ADR-0060).
   Future<ImportResult> importFiles(
     List<ImportFile> files, {
     bool germanNotation = false,
+    String? reviewReason,
   }) async {
+    final review = reviewReason == null
+        ? null
+        : SongReviewRepository(songs.db, songs.storage, userId: songs.userId);
     var imported = 0;
     final skipped = <String>[];
     final problems = <ImportProblem>[];
@@ -157,6 +165,7 @@ class ImportExportService {
         final title = parts.length == 1 ? base : '$base (${i + 1})';
         final id = await songs.createSong(source: parts[i], title: title);
         imported++;
+        await review?.setToReview(id, reason: reviewReason);
         final song = cp.parseChordPro(parts[i]);
         final found = cp.validateChordPro(parts[i]);
         if (found.isNotEmpty) {
