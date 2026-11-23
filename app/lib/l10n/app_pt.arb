@@ -1574,5 +1574,7 @@
   "lineupSearchPeople": "Procurar pessoas",
   "lineupNoMorePeople": "Todas as pessoas da organização já estão na formação.",
   "lineupNobody": "Ninguém previsto",
-  "lineupWholeBandHint": "A formação segue a banda, incluindo novos membros."
+  "lineupWholeBandHint": "A formação segue a banda, incluindo novos membros.",
+  "bandSubstituteHint": "Tocas alguns sets desta banda como substituto e só vês esses sets.",
+  "overviewAsSubstitute": "Como substituto"
 }

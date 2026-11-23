@@ -132,17 +132,19 @@ class _SetsPane extends ConsumerWidget {
           // The band's repertoire from its past sets (ADR-0046). An icon
           // button rather than a ⋮ menu: next to the open set's own ⋮ on
           // wide screens, a second one was mistaken for it (#882).
-          IconButton(
-            key: const Key('sets-repertoire'),
-            tooltip: l10n.repertoire,
-            icon: const Icon(Icons.leaderboard_outlined),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute<void>(
-                builder: (_) => RepertoireScreen(band: band),
+          // Not for a substitute, who sees only some sets (ADR-0061).
+          if (!band.substitute)
+            IconButton(
+              key: const Key('sets-repertoire'),
+              tooltip: l10n.repertoire,
+              icon: const Icon(Icons.leaderboard_outlined),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (_) => RepertoireScreen(band: band),
+                ),
               ),
             ),
-          ),
           const BandSwitcher(),
         ],
       ),

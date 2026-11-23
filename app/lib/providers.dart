@@ -751,6 +751,12 @@ final setsProvider = StreamProvider<List<SetSummary>>(
   (ref) => ref.watch(setRepositoryProvider).watchSets(),
 );
 
+/// The upcoming sets the user plays as a substitute in other bands
+/// (ADR-0061), for the overview.
+final substituteGigsProvider = StreamProvider.autoDispose<List<SubstituteGig>>(
+  (ref) => watchSubstituteGigs(ref.watch(databaseProvider)),
+);
+
 final setProvider = StreamProvider.autoDispose.family<SetlistEntry?, String>(
   (ref, id) => ref.watch(setRepositoryProvider).watchSet(id),
 );

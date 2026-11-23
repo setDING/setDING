@@ -21,9 +21,13 @@ String orgRoleLabel(AppLocalizations l10n, OrgRole role) => switch (role) {
 };
 
 /// The user's role in a band; organization admins outside the band are
-/// shown as such.
-String bandRoleLabel(AppLocalizations l10n, BandView band) =>
-    band.role == null ? l10n.bandRoleOrgAdmin : roleLabel(l10n, band.role!);
+/// shown as such, and a band seen through set lineups as *Substitute*
+/// (ADR-0061).
+String bandRoleLabel(AppLocalizations l10n, BandView band) => band.substitute
+    ? l10n.lineupSubstitute
+    : band.role == null
+    ? l10n.bandRoleOrgAdmin
+    : roleLabel(l10n, band.role!);
 
 /// Second line for a band in lists: organization and role, or the hint for
 /// the local library.

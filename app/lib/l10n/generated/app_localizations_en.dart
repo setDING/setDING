@@ -6297,4 +6297,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get lineupWholeBandHint =>
       'The lineup follows the band, new members included.';
+
+  @override
+  String get bandSubstituteHint =>
+      'You play some sets of this band as a substitute and see only those sets.';
+
+  @override
+  String get overviewAsSubstitute => 'As a substitute';
 }

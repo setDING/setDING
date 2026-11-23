@@ -128,7 +128,15 @@ class BandScreen extends ConsumerWidget {
                     );
                   },
                 ),
-              ] else
+              ] else if (band.substitute)
+                // Only some sets of the band, read-only (ADR-0061).
+                ListTile(
+                  key: const Key('band-substitute-hint'),
+                  leading: const Icon(Icons.badge_outlined),
+                  title: Text(bandRoleLabel(l10n, band)),
+                  subtitle: Text(l10n.bandSubstituteHint),
+                )
+              else
                 ListTile(
                   leading: const Icon(Icons.badge_outlined),
                   title: Text(bandRoleLabel(l10n, band)),
@@ -136,15 +144,16 @@ class BandScreen extends ConsumerWidget {
                       ? Text(l10n.bandPlannerHint)
                       : null,
                 ),
-              // What the roles may do (#993).
-              SectionHeader(
-                l10n.bandMembers,
-                trailing: DocsHelpButton(
-                  key: const Key('roles-docs'),
-                  page: DocsPage.roles,
-                  topic: l10n.bandMembers,
+              // What the roles may do (#993); a substitute sees no members.
+              if (!band.substitute)
+                SectionHeader(
+                  l10n.bandMembers,
+                  trailing: DocsHelpButton(
+                    key: const Key('roles-docs'),
+                    page: DocsPage.roles,
+                    topic: l10n.bandMembers,
+                  ),
                 ),
-              ),
               for (final m in members)
                 _MemberTile(member: m, band: band, isMe: m.userId == me.id),
               if (band.canManageBand) ...[

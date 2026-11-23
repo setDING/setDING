@@ -34,6 +34,40 @@ bool plannedFor(
   return set.lineupCustom ? set.lineup.contains(userId) : bandMember;
 }
 
+/// An upcoming set the user plays as a substitute (ADR-0061), with its
+/// band.
+typedef SubstituteGig = ({SetlistEntry set, String bandId, String bandName});
+
+/// The sets with a gig date from [today] on in the bands the user sees only
+/// as a substitute (ADR-0061), next gig first: on this device these are
+/// exactly the sets whose lineup has the user.
+Stream<List<SubstituteGig>> watchSubstituteGigs(
+  AppDatabase db, {
+  DateTime? today,
+}) {
+  final now = today ?? DateTime.now();
+  final start = DateTime(now.year, now.month, now.day);
+  final l = db.setlists, b = db.bands;
+  final q = db.select(l).join([innerJoin(b, b.id.equalsExp(l.bandId))])
+    ..where(
+      b.substitute.equals(true) &
+          b.deleted.equals(false) &
+          l.deleted.equals(false) &
+          l.gigDate.isBiggerOrEqualValue(start),
+    )
+    ..orderBy([OrderingTerm.asc(l.gigDate), OrderingTerm.asc(l.name)]);
+  return q.watch().map(
+    (rows) => [
+      for (final row in rows)
+        (
+          set: row.readTable(l),
+          bandId: row.readTable(b).id,
+          bandName: row.readTable(b).name,
+        ),
+    ],
+  );
+}
+
 /// Summary of a set for list views.
 class SetSummary {
   const SetSummary(this.set, this.itemCount);
