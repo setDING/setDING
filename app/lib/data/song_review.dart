@@ -407,6 +407,30 @@ class SongReviewRepository {
             ..orderBy([(r) => OrderingTerm.desc(r.createdAt)]))
           .watch();
 
+  /// Reports of [userId] that someone else resolved, with the title of
+  /// their song, for the answer to the reporter (ADR-0060).
+  Future<List<({SongReportRow report, String title})>> answeredReports(
+    String userId,
+  ) async {
+    final rows =
+        await (db.select(db.songReports).join([
+              innerJoin(db.songs, db.songs.id.equalsExp(db.songReports.songId)),
+            ])..where(
+              db.songReports.authorId.equals(userId) &
+                  db.songReports.deleted.equals(false) &
+                  db.songReports.status.equals(SongReportStatus.resolved.name) &
+                  db.songReports.resolvedBy.isNotValue(userId),
+            ))
+            .get();
+    return [
+      for (final r in rows)
+        (
+          report: r.readTable(db.songReports),
+          title: r.readTable(db.songs).title,
+        ),
+    ];
+  }
+
   /// Open reports of [songId].
   Future<List<SongReportRow>> openReports(String songId) =>
       (db.select(db.songReports)..where(

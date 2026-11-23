@@ -3259,5 +3259,115 @@
         "type": "int"
       }
     }
+  },
+  "reportMistake": "Report a mistake",
+  "reportMistakeMenu": "Report a mistake …",
+  "reportCategoryChords": "Chords",
+  "reportCategoryLyrics": "Lyrics",
+  "reportCategoryKey": "Key",
+  "reportCategorySequence": "Sequence",
+  "reportCategoryTempo": "Tempo",
+  "reportCategoryFormatting": "Formatting",
+  "reportCategorySheetMusic": "Sheet music (PDF)",
+  "reportCategoryOther": "Other",
+  "reportComment": "Comment",
+  "reportCommentHint": "What's wrong?",
+  "reportSend": "Send",
+  "reportSent": "Mistake reported. Thank you!",
+  "reportLocation": "Where: {place}",
+  "@reportLocation": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "reportLocationPage": "Page {page}",
+  "@reportLocationPage": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      }
+    }
+  },
+  "reportLocationPdfPage": "PDF page {page}",
+  "@reportLocationPdfPage": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      }
+    }
+  },
+  "reportLocationLine": "Line {line}",
+  "@reportLocationLine": {
+    "placeholders": {
+      "line": {
+        "type": "int"
+      }
+    }
+  },
+  "reportsTitle": "Mistake reports",
+  "reportsEmpty": "No reports",
+  "reportsClosed": "Resolved and withdrawn ({count})",
+  "@reportsClosed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reportByYou": "by you",
+  "reportBy": "by {name}",
+  "@reportBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reportWithdrawn": "withdrawn",
+  "reportWithdraw": "Withdraw",
+  "reportWithdrawnMessage": "Report withdrawn",
+  "resolveReport": "Resolve the report",
+  "reportAnswerLabel": "Answer",
+  "reportAnswerHint": "e.g. Fixed, thanks!",
+  "reportResolvedMessage": "Report resolved",
+  "reportReopen": "Reopen",
+  "reportReopenedMessage": "Report reopened",
+  "reportResolvedNoAnswer": "Resolved",
+  "reportAnswer": "Resolved: {answer}",
+  "@reportAnswer": {
+    "placeholders": {
+      "answer": {
+        "type": "String"
+      }
+    }
+  },
+  "reportAnswered": "Your report on “{song}” was resolved: {answer}",
+  "@reportAnswered": {
+    "placeholders": {
+      "song": {
+        "type": "String"
+      },
+      "answer": {
+        "type": "String"
+      }
+    }
+  },
+  "reportAnsweredNoText": "Your report on “{song}” was resolved.",
+  "@reportAnsweredNoText": {
+    "placeholders": {
+      "song": {
+        "type": "String"
+      }
+    }
+  },
+  "reportsAnswered": "{count, plural, =1{1 of your reports was resolved.} other{{count} of your reports were resolved.}}",
+  "@reportsAnswered": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

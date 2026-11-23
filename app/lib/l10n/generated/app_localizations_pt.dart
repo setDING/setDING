@@ -6091,4 +6091,141 @@ class AppLocalizationsPt extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get reportMistake => 'Reportar um erro';
+
+  @override
+  String get reportMistakeMenu => 'Reportar um erro …';
+
+  @override
+  String get reportCategoryChords => 'Acordes';
+
+  @override
+  String get reportCategoryLyrics => 'Letra';
+
+  @override
+  String get reportCategoryKey => 'Tom';
+
+  @override
+  String get reportCategorySequence => 'Sequência';
+
+  @override
+  String get reportCategoryTempo => 'Andamento';
+
+  @override
+  String get reportCategoryFormatting => 'Formatação';
+
+  @override
+  String get reportCategorySheetMusic => 'Partitura (PDF)';
+
+  @override
+  String get reportCategoryOther => 'Outro';
+
+  @override
+  String get reportComment => 'Comentário';
+
+  @override
+  String get reportCommentHint => 'O que está errado?';
+
+  @override
+  String get reportSend => 'Enviar';
+
+  @override
+  String get reportSent => 'Erro reportado. Obrigado!';
+
+  @override
+  String reportLocation(String place) {
+    return 'Local: $place';
+  }
+
+  @override
+  String reportLocationPage(int page) {
+    return 'Página $page';
+  }
+
+  @override
+  String reportLocationPdfPage(int page) {
+    return 'Página PDF $page';
+  }
+
+  @override
+  String reportLocationLine(int line) {
+    return 'Linha $line';
+  }
+
+  @override
+  String get reportsTitle => 'Relatos de erros';
+
+  @override
+  String get reportsEmpty => 'Sem relatos';
+
+  @override
+  String reportsClosed(int count) {
+    return 'Resolvidos e retirados ($count)';
+  }
+
+  @override
+  String get reportByYou => 'por ti';
+
+  @override
+  String reportBy(String name) {
+    return 'por $name';
+  }
+
+  @override
+  String get reportWithdrawn => 'retirado';
+
+  @override
+  String get reportWithdraw => 'Retirar';
+
+  @override
+  String get reportWithdrawnMessage => 'Relato retirado';
+
+  @override
+  String get resolveReport => 'Resolver o relato';
+
+  @override
+  String get reportAnswerLabel => 'Resposta';
+
+  @override
+  String get reportAnswerHint => 'p. ex. Corrigido, obrigado!';
+
+  @override
+  String get reportResolvedMessage => 'Relato resolvido';
+
+  @override
+  String get reportReopen => 'Reabrir';
+
+  @override
+  String get reportReopenedMessage => 'Relato reaberto';
+
+  @override
+  String get reportResolvedNoAnswer => 'Resolvido';
+
+  @override
+  String reportAnswer(String answer) {
+    return 'Resolvido: $answer';
+  }
+
+  @override
+  String reportAnswered(String song, String answer) {
+    return 'O teu relato sobre «$song» foi resolvido: $answer';
+  }
+
+  @override
+  String reportAnsweredNoText(String song) {
+    return 'O teu relato sobre «$song» foi resolvido.';
+  }
+
+  @override
+  String reportsAnswered(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dos teus relatos foram resolvidos.',
+      one: '1 dos teus relatos foi resolvido.',
+    );
+    return '$_temp0';
+  }
 }

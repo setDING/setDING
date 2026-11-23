@@ -9179,6 +9179,228 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count, plural, =1{1 Song ist noch nicht geprüft oder hat einen gemeldeten Fehler} other{{count} Songs sind noch nicht geprüft oder haben gemeldete Fehler}}'**
   String setReviewHint(int count);
+
+  /// No description provided for @reportMistake.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler melden'**
+  String get reportMistake;
+
+  /// No description provided for @reportMistakeMenu.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler melden …'**
+  String get reportMistakeMenu;
+
+  /// No description provided for @reportCategoryChords.
+  ///
+  /// In de, this message translates to:
+  /// **'Akkorde'**
+  String get reportCategoryChords;
+
+  /// No description provided for @reportCategoryLyrics.
+  ///
+  /// In de, this message translates to:
+  /// **'Text'**
+  String get reportCategoryLyrics;
+
+  /// No description provided for @reportCategoryKey.
+  ///
+  /// In de, this message translates to:
+  /// **'Tonart'**
+  String get reportCategoryKey;
+
+  /// No description provided for @reportCategorySequence.
+  ///
+  /// In de, this message translates to:
+  /// **'Ablauf'**
+  String get reportCategorySequence;
+
+  /// No description provided for @reportCategoryTempo.
+  ///
+  /// In de, this message translates to:
+  /// **'Tempo'**
+  String get reportCategoryTempo;
+
+  /// No description provided for @reportCategoryFormatting.
+  ///
+  /// In de, this message translates to:
+  /// **'Darstellung'**
+  String get reportCategoryFormatting;
+
+  /// No description provided for @reportCategorySheetMusic.
+  ///
+  /// In de, this message translates to:
+  /// **'Noten (PDF)'**
+  String get reportCategorySheetMusic;
+
+  /// No description provided for @reportCategoryOther.
+  ///
+  /// In de, this message translates to:
+  /// **'Anderes'**
+  String get reportCategoryOther;
+
+  /// No description provided for @reportComment.
+  ///
+  /// In de, this message translates to:
+  /// **'Kommentar'**
+  String get reportComment;
+
+  /// No description provided for @reportCommentHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Was stimmt nicht?'**
+  String get reportCommentHint;
+
+  /// No description provided for @reportSend.
+  ///
+  /// In de, this message translates to:
+  /// **'Senden'**
+  String get reportSend;
+
+  /// No description provided for @reportSent.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler gemeldet. Danke!'**
+  String get reportSent;
+
+  /// No description provided for @reportLocation.
+  ///
+  /// In de, this message translates to:
+  /// **'Stelle: {place}'**
+  String reportLocation(String place);
+
+  /// No description provided for @reportLocationPage.
+  ///
+  /// In de, this message translates to:
+  /// **'Seite {page}'**
+  String reportLocationPage(int page);
+
+  /// No description provided for @reportLocationPdfPage.
+  ///
+  /// In de, this message translates to:
+  /// **'PDF-Seite {page}'**
+  String reportLocationPdfPage(int page);
+
+  /// No description provided for @reportLocationLine.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeile {line}'**
+  String reportLocationLine(int line);
+
+  /// No description provided for @reportsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehlermeldungen'**
+  String get reportsTitle;
+
+  /// No description provided for @reportsEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Fehlermeldungen'**
+  String get reportsEmpty;
+
+  /// No description provided for @reportsClosed.
+  ///
+  /// In de, this message translates to:
+  /// **'Erledigt und zurückgezogen ({count})'**
+  String reportsClosed(int count);
+
+  /// No description provided for @reportByYou.
+  ///
+  /// In de, this message translates to:
+  /// **'von dir'**
+  String get reportByYou;
+
+  /// No description provided for @reportBy.
+  ///
+  /// In de, this message translates to:
+  /// **'von {name}'**
+  String reportBy(String name);
+
+  /// No description provided for @reportWithdrawn.
+  ///
+  /// In de, this message translates to:
+  /// **'zurückgezogen'**
+  String get reportWithdrawn;
+
+  /// No description provided for @reportWithdraw.
+  ///
+  /// In de, this message translates to:
+  /// **'Zurückziehen'**
+  String get reportWithdraw;
+
+  /// No description provided for @reportWithdrawnMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Meldung zurückgezogen'**
+  String get reportWithdrawnMessage;
+
+  /// No description provided for @resolveReport.
+  ///
+  /// In de, this message translates to:
+  /// **'Meldung erledigen'**
+  String get resolveReport;
+
+  /// No description provided for @reportAnswerLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Antwort'**
+  String get reportAnswerLabel;
+
+  /// No description provided for @reportAnswerHint.
+  ///
+  /// In de, this message translates to:
+  /// **'z. B. Korrigiert, danke!'**
+  String get reportAnswerHint;
+
+  /// No description provided for @reportResolvedMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Meldung erledigt'**
+  String get reportResolvedMessage;
+
+  /// No description provided for @reportReopen.
+  ///
+  /// In de, this message translates to:
+  /// **'Wieder öffnen'**
+  String get reportReopen;
+
+  /// No description provided for @reportReopenedMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Meldung wieder geöffnet'**
+  String get reportReopenedMessage;
+
+  /// No description provided for @reportResolvedNoAnswer.
+  ///
+  /// In de, this message translates to:
+  /// **'Erledigt'**
+  String get reportResolvedNoAnswer;
+
+  /// No description provided for @reportAnswer.
+  ///
+  /// In de, this message translates to:
+  /// **'Erledigt: {answer}'**
+  String reportAnswer(String answer);
+
+  /// No description provided for @reportAnswered.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Meldung zu «{song}» wurde erledigt: {answer}'**
+  String reportAnswered(String song, String answer);
+
+  /// No description provided for @reportAnsweredNoText.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Meldung zu «{song}» wurde erledigt.'**
+  String reportAnsweredNoText(String song);
+
+  /// No description provided for @reportsAnswered.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 deiner Meldungen wurde erledigt.} other{{count} deiner Meldungen wurden erledigt.}}'**
+  String reportsAnswered(int count);
 }
 
 class _AppLocalizationsDelegate

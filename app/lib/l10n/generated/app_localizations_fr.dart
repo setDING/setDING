@@ -6107,4 +6107,141 @@ class AppLocalizationsFr extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get reportMistake => 'Signaler une erreur';
+
+  @override
+  String get reportMistakeMenu => 'Signaler une erreur …';
+
+  @override
+  String get reportCategoryChords => 'Accords';
+
+  @override
+  String get reportCategoryLyrics => 'Paroles';
+
+  @override
+  String get reportCategoryKey => 'Tonalité';
+
+  @override
+  String get reportCategorySequence => 'Déroulement';
+
+  @override
+  String get reportCategoryTempo => 'Tempo';
+
+  @override
+  String get reportCategoryFormatting => 'Mise en forme';
+
+  @override
+  String get reportCategorySheetMusic => 'Partition (PDF)';
+
+  @override
+  String get reportCategoryOther => 'Autre';
+
+  @override
+  String get reportComment => 'Commentaire';
+
+  @override
+  String get reportCommentHint => 'Qu\'est-ce qui ne va pas ?';
+
+  @override
+  String get reportSend => 'Envoyer';
+
+  @override
+  String get reportSent => 'Erreur signalée. Merci !';
+
+  @override
+  String reportLocation(String place) {
+    return 'Endroit : $place';
+  }
+
+  @override
+  String reportLocationPage(int page) {
+    return 'Page $page';
+  }
+
+  @override
+  String reportLocationPdfPage(int page) {
+    return 'Page PDF $page';
+  }
+
+  @override
+  String reportLocationLine(int line) {
+    return 'Ligne $line';
+  }
+
+  @override
+  String get reportsTitle => 'Signalements';
+
+  @override
+  String get reportsEmpty => 'Aucun signalement';
+
+  @override
+  String reportsClosed(int count) {
+    return 'Clos et retirés ($count)';
+  }
+
+  @override
+  String get reportByYou => 'par toi';
+
+  @override
+  String reportBy(String name) {
+    return 'par $name';
+  }
+
+  @override
+  String get reportWithdrawn => 'retiré';
+
+  @override
+  String get reportWithdraw => 'Retirer';
+
+  @override
+  String get reportWithdrawnMessage => 'Signalement retiré';
+
+  @override
+  String get resolveReport => 'Clore le signalement';
+
+  @override
+  String get reportAnswerLabel => 'Réponse';
+
+  @override
+  String get reportAnswerHint => 'p. ex. Corrigé, merci !';
+
+  @override
+  String get reportResolvedMessage => 'Signalement clos';
+
+  @override
+  String get reportReopen => 'Rouvrir';
+
+  @override
+  String get reportReopenedMessage => 'Signalement rouvert';
+
+  @override
+  String get reportResolvedNoAnswer => 'Clos';
+
+  @override
+  String reportAnswer(String answer) {
+    return 'Clos : $answer';
+  }
+
+  @override
+  String reportAnswered(String song, String answer) {
+    return 'Ton signalement sur « $song » a été clos : $answer';
+  }
+
+  @override
+  String reportAnsweredNoText(String song) {
+    return 'Ton signalement sur « $song » a été clos.';
+  }
+
+  @override
+  String reportsAnswered(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count de tes signalements ont été clos.',
+      one: '1 de tes signalements a été clos.',
+    );
+    return '$_temp0';
+  }
 }
