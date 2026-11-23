@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import ExampleSong from '../../../../components/ExampleSong.astro';
 import song from '../../../../../../docs/screenshots/song.png';
+import attachmentMenu from '../../../../../../docs/screenshots/song_attachment_menu.png';
 import adjustmentOffer from '../../../../../../docs/screenshots/adjustment_offer.png';
 import phoneMenu from '../../../../../../docs/screenshots/song_phone_menu.png';
 import stackedChoruses from '../../../../../../docs/screenshots/live_stacked_choruses.png';
@@ -102,7 +103,11 @@ synced with the song and available offline on every device.
 2. Tap **Attach file** and choose a PDF or an image. A file may be at most 20 MB.
 3. In the attachment's menu you can **Rename** or **Delete** it.
 
-Everybody who may edit the song may attach and delete files.
+Everybody who may edit the song may attach and delete files. Everybody who sees the
+song can **Save** an attachment from its menu as a file, e.g. to print it or send it
+on; in the browser it is downloaded.
+
+<Image src={attachmentMenu} alt="The Attachments panel with two PDFs; the menu of the Horns PDF shows Save, Rename and Delete" />
 
 ### PDF in live mode
 

@@ -151,6 +151,7 @@
   "liveViewChordPro": "ChordPro-Text",
   "exportSong": "Exportieren",
   "exported": "Exportiert",
+  "fileSaved": "Gespeichert",
   "exportedOpen": "Öffnen",
   "openFileFailed": "Keine App konnte die Datei öffnen.",
   "playLive": "Live spielen",

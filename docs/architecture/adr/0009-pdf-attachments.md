@@ -71,6 +71,7 @@ synced and displayed.
 - 2026-11-16: On-demand loading implemented (#27): the web sync skips file downloads; the live view downloads a PDF when it is opened (one shared download per file, kept in memory until signing out) and explains a failed download.
 - 2026-11-16: Two pages side by side in landscape implemented (#150): live mode shows spreads fitted to the screen and turns a spread at a time; portrait keeps the scrollable viewer with one page per turn.
 - 2026-11-18: Attachments can be opened from the song screen without changing the live view choice (#507): a PDF opens in live mode for that song only, an image in a full-screen, zoomable view.
+- 2026-11-23: Attachments can be saved as a file from their menu (#1025), by everyone who sees the song: the platform's save dialog, a download on web (the file is fetched on demand first, ADR-0018).
 
 ## Open points
 

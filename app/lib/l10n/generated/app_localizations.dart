@@ -508,6 +508,12 @@ abstract class AppLocalizations {
   /// **'Exportiert'**
   String get exported;
 
+  /// No description provided for @fileSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Gespeichert'**
+  String get fileSaved;
+
   /// No description provided for @exportedOpen.
   ///
   /// In de, this message translates to:

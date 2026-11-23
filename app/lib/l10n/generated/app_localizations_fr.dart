@@ -253,6 +253,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get exported => 'Exporté';
 
   @override
+  String get fileSaved => 'Enregistré';
+
+  @override
   String get exportedOpen => 'Ouvrir';
 
   @override

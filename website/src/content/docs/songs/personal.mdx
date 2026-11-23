@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import ExampleSong from '../../../components/ExampleSong.astro';
 import song from '../../../../../docs/screenshots/song_de.png';
+import attachmentMenu from '../../../../../docs/screenshots/song_attachment_menu_de.png';
 import adjustmentOffer from '../../../../../docs/screenshots/adjustment_offer_de.png';
 import phoneMenu from '../../../../../docs/screenshots/song_phone_menu_de.png';
 import stackedChoruses from '../../../../../docs/screenshots/live_stacked_choruses_de.png';
@@ -108,7 +109,11 @@ werden mit dem Song synchronisiert und sind auf jedem Gerät offline verfügbar.
    höchstens 20 MB gross sein.
 3. Im Menü des Anhangs kannst du ihn **Umbenennen** oder **Löschen**.
 
-Anhängen und löschen dürfen alle, die den Song bearbeiten dürfen.
+Anhängen und löschen dürfen alle, die den Song bearbeiten dürfen. Alle, die den Song
+sehen, können einen Anhang über sein Menü als Datei **Speichern**, z. B. um ihn zu
+drucken oder weiterzugeben; im Browser wird er heruntergeladen.
+
+<Image src={attachmentMenu} alt="Das Panel «Anhänge» mit zwei PDFs; das Menü des PDFs «Bläser» zeigt Speichern, Umbenennen und Löschen" />
 
 ### PDF im Live-Modus
 
