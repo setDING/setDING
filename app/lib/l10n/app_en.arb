@@ -463,6 +463,15 @@
       }
     }
   },
+  "convertCommentHeadings": "Convert comment headings to sections",
+  "commentHeadingsHint": "{count, plural, =1{A section is} other{{count} sections are}} marked with a comment such as \"Verse 1\". Converting makes ChordPro sections out of them; the song looks the same.",
+  "@commentHeadingsHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "remove": "Remove",
   "ccliFooterHint": "The song ends with the CCLI footer from SongSelect. Removing it keeps song number and copyright in the song details.",
   "legacyLabelsHint": "{count, plural, =1{A section label is} other{{count} section labels are}} in the short form. The ChordPro specification recommends label=\"…\".",

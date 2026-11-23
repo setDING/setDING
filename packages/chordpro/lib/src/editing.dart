@@ -6,6 +6,7 @@ library;
 
 import 'ccli_grid.dart';
 import 'chords_over_lyrics.dart';
+import 'comment_headings.dart';
 import 'highlight.dart';
 
 /// Text and selection after an editing command. [base] and [extent] are
@@ -283,6 +284,28 @@ SourceEdit? convertCcliGridsIn(String text, int base, int extent) {
   if (base == extent) return SourceEdit(converted, first, first);
   final last = grids.last;
   final end = last.end + converted.length - text.length;
+  return SourceEdit(converted, first, end);
+}
+
+/// Converts sections marked with a comment heading such as
+/// `{comment: Verse 1}` to section environments (#963): the sections
+/// touched by the selection, which then covers the converted sections, or
+/// all of them when nothing is selected; the cursor then moves to the
+/// first section.
+SourceEdit? convertCommentHeadingsIn(String text, int base, int extent) {
+  var headings = findCommentHeadings(text);
+  if (base != extent) {
+    final (start, end) = _lineBlock(text, base, extent);
+    headings = [
+      for (final h in headings)
+        if (h.start <= end && h.end >= start) h,
+    ];
+  }
+  if (headings.isEmpty) return null;
+  final converted = convertCommentHeadings(text, headings);
+  final first = headings.first.start;
+  if (base == extent) return SourceEdit(converted, first, first);
+  final end = headings.last.end + converted.length - text.length;
   return SourceEdit(converted, first, end);
 }
 

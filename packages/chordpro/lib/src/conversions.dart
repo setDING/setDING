@@ -11,10 +11,13 @@
 /// - the plain-text CCLI footer of SongSelect files (`removeCcliFooters`,
 ///   #785);
 /// - CCLI bar lines that become grid sections (`convertCcliGrids`, #481);
-/// - section labels in the short form (`convertLegacySectionLabels`, #672).
+/// - section labels in the short form (`convertLegacySectionLabels`, #672);
+/// - section headings written as comments, such as `{comment: Verse 1}`,
+///   that become section environments (`convertCommentHeadings`, #963).
 library;
 
 import 'ccli_footer.dart';
+import 'comment_headings.dart';
 import 'ccli_grid.dart';
 import 'section_labels.dart';
 import 'songselect.dart';
@@ -25,13 +28,17 @@ int countChordProConversions(String source) =>
     countSongSelectDirectives(source) +
     findCcliFooters(source).length +
     findCcliGrids(source).length +
-    findLegacySectionLabels(source).length;
+    findLegacySectionLabels(source).length +
+    findCommentHeadings(source).length;
 
 /// [source] with every conversion applied. The SongSelect directives come
-/// first, so the footer sees `{x_ccli}` and does not add a second one.
+/// first, so the footer sees `{x_ccli}` and does not add a second one; the
+/// grids come before the comment headings, so a heading over bar lines
+/// becomes the grid label.
 String applyChordProConversions(String source) {
   var text = normalizeSongSelectDirectives(source);
   text = removeCcliFooters(text);
   text = convertCcliGrids(text);
-  return convertLegacySectionLabels(text);
+  text = convertLegacySectionLabels(text);
+  return convertCommentHeadings(text);
 }

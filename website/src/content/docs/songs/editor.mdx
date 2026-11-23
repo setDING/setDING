@@ -12,6 +12,7 @@ import editorSave from '../../../../../docs/screenshots/editor_save_de.png';
 import editorCcli from '../../../../../docs/screenshots/editor_ccli_de.png';
 import editorSongSelect from '../../../../../docs/screenshots/editor_songselect_de.png';
 import editorCcliFooter from '../../../../../docs/screenshots/editor_ccli_footer_de.png';
+import editorHeadings from '../../../../../docs/screenshots/editor_headings_de.png';
 import editorAutoClose from '../../../../../docs/screenshots/editor_auto_close_de.png';
 import editorChorusLabels from '../../../../../docs/screenshots/editor_chorus_labels_de.png';
 import songDetailsKey from '../../../../../docs/screenshots/song_details_key_de.png';
@@ -165,6 +166,22 @@ Bei Songs, die ihn noch enthalten, zeigt der Editor über dem Text einen Hinweis
 Songdetails (`{x_ccli}`, `{copyright}`), sofern der Song sie noch nicht hat. Mit ✕ blendest du den Hinweis aus.
 
 <Image src={editorCcliFooter} alt="Der Editor mit dem CCLI-Footer am Ende des Songs und dem Hinweis mit dem Knopf Entfernen" />
+
+## Kommentar-Überschriften
+
+Songs aus CCLI SongSelect und anderen Quellen markieren ihre Abschnitte mit einem
+Kommentar, z. B. `{comment: Vers 1}` oder `{comment: Refrain}`. setDING zeigt sie
+schon als Abschnitte an, der Editor zeigt aber einen Hinweis über dem Text:
+**Umwandeln** macht daraus ChordPro-Abschnitte wie
+`{start_of_verse: label="Vers 1"}` … `{end_of_verse}`. Strophen, Refrains und
+Bridges bekommen ihre eigene Umgebung, andere Teile eine mit ihrem Namen
+(`{start_of_intro}`, `{start_of_pre_chorus}`, …), damit der Song danach gleich
+aussieht. Gewöhnliche Kommentare bleiben Kommentare, und ein Kommentar über
+CCLI-Taktzeilen bleibt der Umwandlung in ein Chord-Grid überlassen. Für einzelne
+Abschnitte: markieren und im Menü Zeilen **Kommentar-Überschriften in Abschnitte
+umwandeln** wählen. Mit ✕ blendest du den Hinweis aus.
+
+<Image src={editorHeadings} alt="Der Editor mit zwei Abschnitten, die mit Kommentar-Überschriften markiert sind, und dem Hinweis mit dem Knopf Umwandeln" />
 
 ## Beschriftungen der Abschnitte
 

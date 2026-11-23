@@ -32,6 +32,26 @@ SectionKind? headingSectionKind(String text) {
   };
 }
 
+/// The environment a comment heading [text] becomes (#963): `verse`,
+/// `chorus` or `bridge`, or the heading's own name for the others
+/// (`Pre-Chorus 2` → `pre_chorus`), so the section keeps its kind
+/// ([SectionKind.custom]) and its role. Null if [text] is no heading.
+String? headingEnvironment(String text) {
+  final kind = headingSectionKind(text);
+  if (kind == null) return null;
+  return switch (kind) {
+    SectionKind.verse => 'verse',
+    SectionKind.chorus => 'chorus',
+    SectionKind.bridge => 'bridge',
+    _ =>
+      _heading
+          .firstMatch(text.trim())!
+          .group(1)!
+          .toLowerCase()
+          .replaceAll(RegExp(r'[\s_-]+'), '_'),
+  };
+}
+
 /// Musical role of a section, used to style it (ADR-0033). Unlike
 /// [SectionKind], which follows the ChordPro environments, the role is
 /// derived from the section name, so `{start_of_intro}` and a comment

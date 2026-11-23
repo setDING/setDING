@@ -1336,6 +1336,20 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get convertCommentHeadings => 'Convert comment headings to sections';
+
+  @override
+  String commentHeadingsHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sections are',
+      one: 'A section is',
+    );
+    return '$_temp0 marked with a comment such as \"Verse 1\". Converting makes ChordPro sections out of them; the song looks the same.';
+  }
+
+  @override
   String get remove => 'Remove';
 
   @override

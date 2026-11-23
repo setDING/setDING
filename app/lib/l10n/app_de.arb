@@ -662,6 +662,15 @@
       }
     }
   },
+  "convertCommentHeadings": "Kommentar-Überschriften in Abschnitte umwandeln",
+  "commentHeadingsHint": "{count, plural, =1{Ein Abschnitt ist} other{{count} Abschnitte sind}} mit einem Kommentar wie «Vers 1» markiert. Umwandeln macht ChordPro-Abschnitte daraus; der Song sieht gleich aus.",
+  "@commentHeadingsHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "remove": "Entfernen",
   "ccliFooterHint": "Am Ende steht der CCLI-Footer von SongSelect. Entfernen übernimmt Songnummer und Copyright in die Songdetails.",
   "legacyLabelsHint": "{count, plural, =1{Eine Abschnitts-Beschriftung steht} other{{count} Abschnitts-Beschriftungen stehen}} in der Kurzform. Die ChordPro-Spezifikation empfiehlt label=\"…\".",

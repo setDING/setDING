@@ -468,6 +468,11 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
         extent,
       ),
       EditorCommand.convertCcliGrids => convertCcliGridsIn(text, base, extent),
+      EditorCommand.convertCommentHeadings => convertCommentHeadingsIn(
+        text,
+        base,
+        extent,
+      ),
     };
     if (edit != null) {
       _controller.value = TextEditingValue(
@@ -488,6 +493,21 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
   void _convertCcliGrids() {
     final text = _controller.text;
     final edit = convertCcliGridsIn(text, 0, 0);
+    if (edit == null) return;
+    _controller.value = TextEditingValue(
+      text: edit.text,
+      selection: TextSelection.collapsed(offset: edit.base),
+    );
+    _focus.requestFocus();
+  }
+
+  /// Hint on comment headings hidden by the author for this editor (#963).
+  bool _headingHintHidden = false;
+
+  /// Converts all comment headings to section environments (#963); the
+  /// cursor moves to the first converted section.
+  void _convertCommentHeadings() {
+    final edit = convertCommentHeadingsIn(_controller.text, 0, 0);
     if (edit == null) return;
     _controller.value = TextEditingValue(
       text: edit.text,
@@ -683,6 +703,19 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
               return CcliFooterHint(
                 onRemove: _removeCcliFooters,
                 onHide: () => setState(() => _footerHintHidden = true),
+              );
+            },
+          ),
+        if (!_headingHintHidden)
+          ListenableBuilder(
+            listenable: _controller,
+            builder: (context, _) {
+              final count = _controller.commentHeadings.length;
+              if (count == 0) return const SizedBox.shrink();
+              return CommentHeadingHint(
+                count: count,
+                onConvert: _convertCommentHeadings,
+                onHide: () => setState(() => _headingHintHidden = true),
               );
             },
           ),
@@ -956,6 +989,30 @@ class LegacyLabelHint extends StatelessWidget {
   Widget build(BuildContext context) => _ConvertHint(
     icon: Icons.label_outline,
     message: AppLocalizations.of(context).legacyLabelsHint(count),
+    onConvert: onConvert,
+    onHide: onHide,
+  );
+}
+
+/// Hint above the editor that sections are marked with comment headings
+/// such as `{comment: Verse 1}` (SongSelect) and can become section
+/// environments (#963).
+class CommentHeadingHint extends StatelessWidget {
+  const CommentHeadingHint({
+    super.key,
+    required this.count,
+    required this.onConvert,
+    required this.onHide,
+  });
+
+  final int count;
+  final VoidCallback onConvert;
+  final VoidCallback onHide;
+
+  @override
+  Widget build(BuildContext context) => _ConvertHint(
+    icon: Icons.view_agenda_outlined,
+    message: AppLocalizations.of(context).commentHeadingsHint(count),
     onConvert: onConvert,
     onHide: onHide,
   );

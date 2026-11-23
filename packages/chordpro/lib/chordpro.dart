@@ -11,6 +11,7 @@ export 'src/ccli_grid.dart';
 export 'src/chord.dart';
 export 'src/chord_tones.dart';
 export 'src/chords_over_lyrics.dart';
+export 'src/comment_headings.dart';
 export 'src/conversions.dart';
 export 'src/completion.dart';
 export 'src/diagrams.dart';
