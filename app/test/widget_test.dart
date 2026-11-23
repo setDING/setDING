@@ -65,11 +65,22 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('settings-category-general')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('English'));
+    await tester.tap(find.byKey(const Key('settings-language')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('English').last);
     await tester.pumpAndSettle();
 
     expect(find.text('Settings'), findsWidgets);
     expect(app.personal()['language'], 'en');
+
+    // The drop-down offers the other languages too (#983).
+    await tester.tap(find.byKey(const Key('settings-language')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Italiano').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Impostazioni'), findsWidgets);
+    expect(app.personal()['language'], 'it');
     await app.dispose(tester);
   });
 

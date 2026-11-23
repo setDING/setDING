@@ -58,11 +58,7 @@ class _SetdingAppState extends ConsumerState<SetdingApp> {
           darkTheme: SetdingApp.theme(Brightness.dark, accent),
           themeMode: themeMode,
           locale: locale,
-          supportedLocales: const [
-            Locale('de', 'CH'),
-            Locale('de'),
-            Locale('en'),
-          ],
+          supportedLocales: supportedUiLocales,
           localizationsDelegates: const [
             AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,

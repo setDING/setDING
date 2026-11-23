@@ -188,7 +188,7 @@ the others are checked in review.
 
 ## 10. Texts, icons and accessibility
 
-- Every text is in both ARB files (de-CH without "ß", en, ADR-0008); sentence case
+- Every text is in all ARB files (de-CH without "ß", en, fr, it, es, pt, ADR-0008); sentence case
   for titles, buttons and menu items.
 - Prefer the **outlined** variant of a Material icon; filled for a selected state.
 - Interactive elements are at least 48×48 (the Material defaults); custom tappable
@@ -202,7 +202,7 @@ the others are checked in review.
       `AsyncBody`, `EmptyState` where they apply.
 - [ ] Colours only from the scheme or `StatusColors`.
 - [ ] Width limited with `PageWidth` on large screens, spacing in steps of 4.
-- [ ] Tooltips on icon buttons, texts in both ARB files.
+- [ ] Tooltips on icon buttons, texts in all ARB files.
 - [ ] Shortcuts and Esc behave (ADR-0049).
 - [ ] A screenshot on the website page (AGENTS.md, "User documentation and screenshots").
 - [ ] A list of songs uses the parts of `ui/songs/song_list.dart`, and a change to

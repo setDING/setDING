@@ -8,7 +8,8 @@ import '../widgets/section_header.dart';
 // The building blocks of the settings categories (ADR-0050): a category is
 // a SettingsSections list of titled SettingsSection groups, separated by
 // dividers, and every option in them has a leading icon, so all texts start
-// at one column. SettingsSwitch and SettingsChoice require the icon.
+// at one column. SettingsSwitch, SettingsChoice and
+// SettingsDropdown require the icon.
 
 /// From this width on, the sections of a category flow into two columns
 /// (#774); below it they fill the width in one column.
@@ -339,6 +340,53 @@ class SettingsChoice<T> extends StatelessWidget {
           ),
         ),
         ?link,
+      ],
+    ),
+  );
+}
+
+/// A choice between many options (too many for a [SettingsChoice]'s
+/// segmented button), as a drop-down below the title.
+class SettingsDropdown<T> extends StatelessWidget {
+  const SettingsDropdown({
+    super.key,
+    this.dropdownKey,
+    required this.icon,
+    required this.title,
+    required this.value,
+    required this.options,
+    required this.onChanged,
+    this.hint,
+  });
+
+  final Key? dropdownKey;
+  final IconData icon;
+  final String title;
+  final T value;
+  final Map<T, String> options;
+  final void Function(T) onChanged;
+  final String? hint;
+
+  @override
+  Widget build(BuildContext context) => ListTile(
+    leading: Icon(icon),
+    title: Text(title),
+    subtitle: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (hint != null)
+          Padding(padding: const EdgeInsets.only(top: 4), child: Text(hint!)),
+        DropdownButton<T>(
+          key: dropdownKey,
+          value: value,
+          items: [
+            for (final e in options.entries)
+              DropdownMenuItem(value: e.key, child: Text(e.value)),
+          ],
+          onChanged: (v) {
+            if (v != null) onChanged(v);
+          },
+        ),
       ],
     ),
   );

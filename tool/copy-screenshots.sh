@@ -39,6 +39,7 @@ map=(
   settings_bass 49_settings_bass
   bass_diagrams 50_bass_diagrams
   settings_general 18_settings_general
+  settings_language 18b_settings_language
   settings_live 19_settings_live
   settings_song_display 20_settings_song_display
   song_display_editor 21_song_display_editor

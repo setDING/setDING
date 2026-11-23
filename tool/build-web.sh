@@ -22,7 +22,7 @@ if ! command -v flutter >/dev/null 2>&1 && [ -x "$HOME/development/flutter/bin/f
 fi
 
 # Version pinned for web/sqlite3.wasm, and its SHA-256.
-SQLITE3_VERSION="3.9.1"
+SQLITE3_VERSION="3.9.2"
 SQLITE3_WASM_SHA256="e7451780e78c56ff864fe9317a0fbcd6aeb2e8de3beba7f5efd963202f7ec3d9"
 
 fail() { echo "web: $*" >&2; exit 1; }
