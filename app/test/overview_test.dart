@@ -197,6 +197,8 @@ void main() {
             updatedAt: DateTime(2026, 1, edited),
             deleted: false,
             purged: false,
+            lineup: const [],
+            lineupCustom: false,
           ),
           0,
         );
@@ -859,6 +861,8 @@ void main() {
           updatedAt: today,
           deleted: false,
           purged: false,
+          lineup: const [],
+          lineupCustom: false,
         ),
         0,
       );

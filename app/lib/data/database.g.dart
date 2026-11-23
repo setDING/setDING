@@ -2756,6 +2756,21 @@ class $BandsTable extends Bands with TableInfo<$BandsTable, BandEntry> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _substituteMeta = const VerificationMeta(
+    'substitute',
+  );
+  @override
+  late final GeneratedColumn<bool> substitute = GeneratedColumn<bool>(
+    'substitute',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("substitute" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2764,6 +2779,7 @@ class $BandsTable extends Bands with TableInfo<$BandsTable, BandEntry> {
     revision,
     deleted,
     staleAfterMonths,
+    substitute,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2820,6 +2836,12 @@ class $BandsTable extends Bands with TableInfo<$BandsTable, BandEntry> {
         ),
       );
     }
+    if (data.containsKey('substitute')) {
+      context.handle(
+        _substituteMeta,
+        substitute.isAcceptableOrUnknown(data['substitute']!, _substituteMeta),
+      );
+    }
     return context;
   }
 
@@ -2853,6 +2875,10 @@ class $BandsTable extends Bands with TableInfo<$BandsTable, BandEntry> {
         DriftSqlType.int,
         data['${effectivePrefix}stale_after_months'],
       )!,
+      substitute: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}substitute'],
+      )!,
     );
   }
 
@@ -2878,6 +2904,12 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
   /// Months after which a song counts as not played for a while
   /// (ADR-0046); 0 = the default (schema 25).
   final int staleAfterMonths;
+
+  /// The signed-in user sees this band only as a substitute, through the
+  /// lineups of some of its sets (ADR-0061, schema 38): the sets and
+  /// arrangements come from the lineup route and are replaced at every
+  /// sync; the band is no member list or set permission of theirs.
+  final bool substitute;
   const BandEntry({
     required this.id,
     required this.name,
@@ -2885,6 +2917,7 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
     required this.revision,
     required this.deleted,
     required this.staleAfterMonths,
+    required this.substitute,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2897,6 +2930,7 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
     map['revision'] = Variable<int>(revision);
     map['deleted'] = Variable<bool>(deleted);
     map['stale_after_months'] = Variable<int>(staleAfterMonths);
+    map['substitute'] = Variable<bool>(substitute);
     return map;
   }
 
@@ -2910,6 +2944,7 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
       revision: Value(revision),
       deleted: Value(deleted),
       staleAfterMonths: Value(staleAfterMonths),
+      substitute: Value(substitute),
     );
   }
 
@@ -2925,6 +2960,7 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
       revision: serializer.fromJson<int>(json['revision']),
       deleted: serializer.fromJson<bool>(json['deleted']),
       staleAfterMonths: serializer.fromJson<int>(json['staleAfterMonths']),
+      substitute: serializer.fromJson<bool>(json['substitute']),
     );
   }
   @override
@@ -2937,6 +2973,7 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
       'revision': serializer.toJson<int>(revision),
       'deleted': serializer.toJson<bool>(deleted),
       'staleAfterMonths': serializer.toJson<int>(staleAfterMonths),
+      'substitute': serializer.toJson<bool>(substitute),
     };
   }
 
@@ -2947,6 +2984,7 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
     int? revision,
     bool? deleted,
     int? staleAfterMonths,
+    bool? substitute,
   }) => BandEntry(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -2956,6 +2994,7 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
     revision: revision ?? this.revision,
     deleted: deleted ?? this.deleted,
     staleAfterMonths: staleAfterMonths ?? this.staleAfterMonths,
+    substitute: substitute ?? this.substitute,
   );
   BandEntry copyWithCompanion(BandsCompanion data) {
     return BandEntry(
@@ -2969,6 +3008,9 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
       staleAfterMonths: data.staleAfterMonths.present
           ? data.staleAfterMonths.value
           : this.staleAfterMonths,
+      substitute: data.substitute.present
+          ? data.substitute.value
+          : this.substitute,
     );
   }
 
@@ -2980,7 +3022,8 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
           ..write('organizationId: $organizationId, ')
           ..write('revision: $revision, ')
           ..write('deleted: $deleted, ')
-          ..write('staleAfterMonths: $staleAfterMonths')
+          ..write('staleAfterMonths: $staleAfterMonths, ')
+          ..write('substitute: $substitute')
           ..write(')'))
         .toString();
   }
@@ -2993,6 +3036,7 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
     revision,
     deleted,
     staleAfterMonths,
+    substitute,
   );
   @override
   bool operator ==(Object other) =>
@@ -3003,7 +3047,8 @@ class BandEntry extends DataClass implements Insertable<BandEntry> {
           other.organizationId == this.organizationId &&
           other.revision == this.revision &&
           other.deleted == this.deleted &&
-          other.staleAfterMonths == this.staleAfterMonths);
+          other.staleAfterMonths == this.staleAfterMonths &&
+          other.substitute == this.substitute);
 }
 
 class BandsCompanion extends UpdateCompanion<BandEntry> {
@@ -3013,6 +3058,7 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
   final Value<int> revision;
   final Value<bool> deleted;
   final Value<int> staleAfterMonths;
+  final Value<bool> substitute;
   final Value<int> rowid;
   const BandsCompanion({
     this.id = const Value.absent(),
@@ -3021,6 +3067,7 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
     this.revision = const Value.absent(),
     this.deleted = const Value.absent(),
     this.staleAfterMonths = const Value.absent(),
+    this.substitute = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   BandsCompanion.insert({
@@ -3030,6 +3077,7 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
     this.revision = const Value.absent(),
     this.deleted = const Value.absent(),
     this.staleAfterMonths = const Value.absent(),
+    this.substitute = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name);
@@ -3040,6 +3088,7 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
     Expression<int>? revision,
     Expression<bool>? deleted,
     Expression<int>? staleAfterMonths,
+    Expression<bool>? substitute,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3049,6 +3098,7 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
       if (revision != null) 'revision': revision,
       if (deleted != null) 'deleted': deleted,
       if (staleAfterMonths != null) 'stale_after_months': staleAfterMonths,
+      if (substitute != null) 'substitute': substitute,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3060,6 +3110,7 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
     Value<int>? revision,
     Value<bool>? deleted,
     Value<int>? staleAfterMonths,
+    Value<bool>? substitute,
     Value<int>? rowid,
   }) {
     return BandsCompanion(
@@ -3069,6 +3120,7 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
       revision: revision ?? this.revision,
       deleted: deleted ?? this.deleted,
       staleAfterMonths: staleAfterMonths ?? this.staleAfterMonths,
+      substitute: substitute ?? this.substitute,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3094,6 +3146,9 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
     if (staleAfterMonths.present) {
       map['stale_after_months'] = Variable<int>(staleAfterMonths.value);
     }
+    if (substitute.present) {
+      map['substitute'] = Variable<bool>(substitute.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3109,6 +3164,7 @@ class BandsCompanion extends UpdateCompanion<BandEntry> {
           ..write('revision: $revision, ')
           ..write('deleted: $deleted, ')
           ..write('staleAfterMonths: $staleAfterMonths, ')
+          ..write('substitute: $substitute, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -4428,6 +4484,31 @@ class $SetlistsTable extends Setlists
     defaultValue: const Constant(false),
   );
   @override
+  late final GeneratedColumnWithTypeConverter<List<String>, String> lineup =
+      GeneratedColumn<String>(
+        'lineup',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('[]'),
+      ).withConverter<List<String>>($SetlistsTable.$converterlineup);
+  static const VerificationMeta _lineupCustomMeta = const VerificationMeta(
+    'lineupCustom',
+  );
+  @override
+  late final GeneratedColumn<bool> lineupCustom = GeneratedColumn<bool>(
+    'lineup_custom',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("lineup_custom" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
   List<GeneratedColumn> get $columns => [
     id,
     bandId,
@@ -4441,6 +4522,8 @@ class $SetlistsTable extends Setlists
     deleted,
     deletedAt,
     purged,
+    lineup,
+    lineupCustom,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4531,6 +4614,15 @@ class $SetlistsTable extends Setlists
         purged.isAcceptableOrUnknown(data['purged']!, _purgedMeta),
       );
     }
+    if (data.containsKey('lineup_custom')) {
+      context.handle(
+        _lineupCustomMeta,
+        lineupCustom.isAcceptableOrUnknown(
+          data['lineup_custom']!,
+          _lineupCustomMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -4588,6 +4680,16 @@ class $SetlistsTable extends Setlists
         DriftSqlType.bool,
         data['${effectivePrefix}purged'],
       )!,
+      lineup: $SetlistsTable.$converterlineup.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}lineup'],
+        )!,
+      ),
+      lineupCustom: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}lineup_custom'],
+      )!,
     );
   }
 
@@ -4595,6 +4697,9 @@ class $SetlistsTable extends Setlists
   $SetlistsTable createAlias(String alias) {
     return $SetlistsTable(attachedDatabase, alias);
   }
+
+  static TypeConverter<List<String>, String> $converterlineup =
+      const UserIdsConverter();
 }
 
 class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
@@ -4623,6 +4728,15 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
   /// The server purged the deleted record's content after 30 days
   /// (ADR-0043, schema 21): it is no longer in the trash.
   final bool purged;
+
+  /// The people who play the set when [lineupCustom] is set (ADR-0061,
+  /// schema 38): user IDs; otherwise the lineup is the whole band and this
+  /// is empty.
+  final List<String> lineup;
+
+  /// The set has a lineup of its own instead of the whole band (ADR-0061,
+  /// schema 38).
+  final bool lineupCustom;
   const SetlistEntry({
     required this.id,
     required this.bandId,
@@ -4636,6 +4750,8 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     required this.deleted,
     this.deletedAt,
     required this.purged,
+    required this.lineup,
+    required this.lineupCustom,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4662,6 +4778,12 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
     }
     map['purged'] = Variable<bool>(purged);
+    {
+      map['lineup'] = Variable<String>(
+        $SetlistsTable.$converterlineup.toSql(lineup),
+      );
+    }
+    map['lineup_custom'] = Variable<bool>(lineupCustom);
     return map;
   }
 
@@ -4689,6 +4811,8 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
           ? const Value.absent()
           : Value(deletedAt),
       purged: Value(purged),
+      lineup: Value(lineup),
+      lineupCustom: Value(lineupCustom),
     );
   }
 
@@ -4710,6 +4834,8 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
       deleted: serializer.fromJson<bool>(json['deleted']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
       purged: serializer.fromJson<bool>(json['purged']),
+      lineup: serializer.fromJson<List<String>>(json['lineup']),
+      lineupCustom: serializer.fromJson<bool>(json['lineupCustom']),
     );
   }
   @override
@@ -4728,6 +4854,8 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
       'deleted': serializer.toJson<bool>(deleted),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
       'purged': serializer.toJson<bool>(purged),
+      'lineup': serializer.toJson<List<String>>(lineup),
+      'lineupCustom': serializer.toJson<bool>(lineupCustom),
     };
   }
 
@@ -4744,6 +4872,8 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     bool? deleted,
     Value<DateTime?> deletedAt = const Value.absent(),
     bool? purged,
+    List<String>? lineup,
+    bool? lineupCustom,
   }) => SetlistEntry(
     id: id ?? this.id,
     bandId: bandId ?? this.bandId,
@@ -4757,6 +4887,8 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     deleted: deleted ?? this.deleted,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
     purged: purged ?? this.purged,
+    lineup: lineup ?? this.lineup,
+    lineupCustom: lineupCustom ?? this.lineupCustom,
   );
   SetlistEntry copyWithCompanion(SetlistsCompanion data) {
     return SetlistEntry(
@@ -4772,6 +4904,10 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
       deleted: data.deleted.present ? data.deleted.value : this.deleted,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
       purged: data.purged.present ? data.purged.value : this.purged,
+      lineup: data.lineup.present ? data.lineup.value : this.lineup,
+      lineupCustom: data.lineupCustom.present
+          ? data.lineupCustom.value
+          : this.lineupCustom,
     );
   }
 
@@ -4789,7 +4925,9 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
           ..write('updatedAt: $updatedAt, ')
           ..write('deleted: $deleted, ')
           ..write('deletedAt: $deletedAt, ')
-          ..write('purged: $purged')
+          ..write('purged: $purged, ')
+          ..write('lineup: $lineup, ')
+          ..write('lineupCustom: $lineupCustom')
           ..write(')'))
         .toString();
   }
@@ -4808,6 +4946,8 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     deleted,
     deletedAt,
     purged,
+    lineup,
+    lineupCustom,
   );
   @override
   bool operator ==(Object other) =>
@@ -4824,7 +4964,9 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
           other.updatedAt == this.updatedAt &&
           other.deleted == this.deleted &&
           other.deletedAt == this.deletedAt &&
-          other.purged == this.purged);
+          other.purged == this.purged &&
+          other.lineup == this.lineup &&
+          other.lineupCustom == this.lineupCustom);
 }
 
 class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
@@ -4840,6 +4982,8 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
   final Value<bool> deleted;
   final Value<DateTime?> deletedAt;
   final Value<bool> purged;
+  final Value<List<String>> lineup;
+  final Value<bool> lineupCustom;
   final Value<int> rowid;
   const SetlistsCompanion({
     this.id = const Value.absent(),
@@ -4854,6 +4998,8 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     this.deleted = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.purged = const Value.absent(),
+    this.lineup = const Value.absent(),
+    this.lineupCustom = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SetlistsCompanion.insert({
@@ -4869,6 +5015,8 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     this.deleted = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.purged = const Value.absent(),
+    this.lineup = const Value.absent(),
+    this.lineupCustom = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        bandId = Value(bandId),
@@ -4887,6 +5035,8 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     Expression<bool>? deleted,
     Expression<DateTime>? deletedAt,
     Expression<bool>? purged,
+    Expression<String>? lineup,
+    Expression<bool>? lineupCustom,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -4902,6 +5052,8 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
       if (deleted != null) 'deleted': deleted,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (purged != null) 'purged': purged,
+      if (lineup != null) 'lineup': lineup,
+      if (lineupCustom != null) 'lineup_custom': lineupCustom,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -4919,6 +5071,8 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     Value<bool>? deleted,
     Value<DateTime?>? deletedAt,
     Value<bool>? purged,
+    Value<List<String>>? lineup,
+    Value<bool>? lineupCustom,
     Value<int>? rowid,
   }) {
     return SetlistsCompanion(
@@ -4934,6 +5088,8 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
       deleted: deleted ?? this.deleted,
       deletedAt: deletedAt ?? this.deletedAt,
       purged: purged ?? this.purged,
+      lineup: lineup ?? this.lineup,
+      lineupCustom: lineupCustom ?? this.lineupCustom,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4977,6 +5133,14 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     if (purged.present) {
       map['purged'] = Variable<bool>(purged.value);
     }
+    if (lineup.present) {
+      map['lineup'] = Variable<String>(
+        $SetlistsTable.$converterlineup.toSql(lineup.value),
+      );
+    }
+    if (lineupCustom.present) {
+      map['lineup_custom'] = Variable<bool>(lineupCustom.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -4998,6 +5162,8 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
           ..write('deleted: $deleted, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('purged: $purged, ')
+          ..write('lineup: $lineup, ')
+          ..write('lineupCustom: $lineupCustom, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -13208,6 +13374,7 @@ typedef $$BandsTableCreateCompanionBuilder = BandsCompanion Function({
   Value<int> revision,
   Value<bool> deleted,
   Value<int> staleAfterMonths,
+  Value<bool> substitute,
   Value<int> rowid,
 });
 typedef $$BandsTableUpdateCompanionBuilder = BandsCompanion Function({
@@ -13217,6 +13384,7 @@ typedef $$BandsTableUpdateCompanionBuilder = BandsCompanion Function({
   Value<int> revision,
   Value<bool> deleted,
   Value<int> staleAfterMonths,
+  Value<bool> substitute,
   Value<int> rowid,
 });
 
@@ -13308,6 +13476,11 @@ class $$BandsTableFilterComposer extends Composer<_$AppDatabase, $BandsTable> {
 
   ColumnFilters<int> get staleAfterMonths => $composableBuilder(
     column: $table.staleAfterMonths,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get substitute => $composableBuilder(
+    column: $table.substitute,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -13419,6 +13592,11 @@ class $$BandsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get substitute => $composableBuilder(
+    column: $table.substitute,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$OrganizationsTableOrderingComposer get organizationId {
     final $$OrganizationsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -13466,6 +13644,11 @@ class $$BandsTableAnnotationComposer
 
   GeneratedColumn<int> get staleAfterMonths => $composableBuilder(
     column: $table.staleAfterMonths,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get substitute => $composableBuilder(
+    column: $table.substitute,
     builder: (column) => column,
   );
 
@@ -13581,6 +13764,7 @@ class $$BandsTableTableManager
                 Value<int> revision = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
                 Value<int> staleAfterMonths = const Value.absent(),
+                Value<bool> substitute = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => BandsCompanion(
                 id: id,
@@ -13589,6 +13773,7 @@ class $$BandsTableTableManager
                 revision: revision,
                 deleted: deleted,
                 staleAfterMonths: staleAfterMonths,
+                substitute: substitute,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -13599,6 +13784,7 @@ class $$BandsTableTableManager
                 Value<int> revision = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
                 Value<int> staleAfterMonths = const Value.absent(),
+                Value<bool> substitute = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => BandsCompanion.insert(
                 id: id,
@@ -13607,6 +13793,7 @@ class $$BandsTableTableManager
                 revision: revision,
                 deleted: deleted,
                 staleAfterMonths: staleAfterMonths,
+                substitute: substitute,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -14544,6 +14731,8 @@ typedef $$SetlistsTableCreateCompanionBuilder = SetlistsCompanion Function({
   Value<bool> deleted,
   Value<DateTime?> deletedAt,
   Value<bool> purged,
+  Value<List<String>> lineup,
+  Value<bool> lineupCustom,
   Value<int> rowid,
 });
 typedef $$SetlistsTableUpdateCompanionBuilder = SetlistsCompanion Function({
@@ -14559,6 +14748,8 @@ typedef $$SetlistsTableUpdateCompanionBuilder = SetlistsCompanion Function({
   Value<bool> deleted,
   Value<DateTime?> deletedAt,
   Value<bool> purged,
+  Value<List<String>> lineup,
+  Value<bool> lineupCustom,
   Value<int> rowid,
 });
 
@@ -14663,6 +14854,17 @@ class $$SetlistsTableFilterComposer
 
   ColumnFilters<bool> get purged => $composableBuilder(
     column: $table.purged,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<List<String>, List<String>, String>
+  get lineup => $composableBuilder(
+    column: $table.lineup,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<bool> get lineupCustom => $composableBuilder(
+    column: $table.lineupCustom,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -14779,6 +14981,16 @@ class $$SetlistsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get lineup => $composableBuilder(
+    column: $table.lineup,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get lineupCustom => $composableBuilder(
+    column: $table.lineupCustom,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$BandsTableOrderingComposer get bandId {
     final $$BandsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -14844,6 +15056,14 @@ class $$SetlistsTableAnnotationComposer
 
   GeneratedColumn<bool> get purged =>
       $composableBuilder(column: $table.purged, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<List<String>, String> get lineup =>
+      $composableBuilder(column: $table.lineup, builder: (column) => column);
+
+  GeneratedColumn<bool> get lineupCustom => $composableBuilder(
+    column: $table.lineupCustom,
+    builder: (column) => column,
+  );
 
   $$BandsTableAnnotationComposer get bandId {
     final $$BandsTableAnnotationComposer composer = $composerBuilder(
@@ -14934,6 +15154,8 @@ class $$SetlistsTableTableManager
                 Value<bool> deleted = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<bool> purged = const Value.absent(),
+                Value<List<String>> lineup = const Value.absent(),
+                Value<bool> lineupCustom = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SetlistsCompanion(
                 id: id,
@@ -14948,6 +15170,8 @@ class $$SetlistsTableTableManager
                 deleted: deleted,
                 deletedAt: deletedAt,
                 purged: purged,
+                lineup: lineup,
+                lineupCustom: lineupCustom,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -14964,6 +15188,8 @@ class $$SetlistsTableTableManager
                 Value<bool> deleted = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<bool> purged = const Value.absent(),
+                Value<List<String>> lineup = const Value.absent(),
+                Value<bool> lineupCustom = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SetlistsCompanion.insert(
                 id: id,
@@ -14978,6 +15204,8 @@ class $$SetlistsTableTableManager
                 deleted: deleted,
                 deletedAt: deletedAt,
                 purged: purged,
+                lineup: lineup,
+                lineupCustom: lineupCustom,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

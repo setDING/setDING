@@ -65,6 +65,9 @@ class BandCopyService {
               bandId: targetBandId,
               revision: 0,
               updatedAt: DateTime.now(),
+              // The copy is played by the whole target band (ADR-0061).
+              lineup: const [],
+              lineupCustom: false,
             ),
           );
       final items =

@@ -745,8 +745,34 @@ class PocketBaseBackend implements SyncBackend {
       deletedAt: _date(r.getStringValue('deleted_at')),
       purged: r.getBoolValue('purged'),
       updatedBy: _nonEmpty(r.getStringValue('updated_by')),
+      lineup: r.getListValue<String>('lineup'),
+      lineupCustom: r.getBoolValue('lineup_custom'),
     );
   }
+
+  @override
+  Future<RemoteLineup> fetchLineup() => _signedIn(() async {
+    final result = await _pb.send<dynamic>('/api/setding/lineup');
+    List<Map<String, dynamic>> list(String key) => [
+      for (final x in (result as Map)[key] as List? ?? const [])
+        (x as Map).cast<String, dynamic>(),
+    ];
+    return RemoteLineup(
+      sets: [for (final s in list('sets')) _set(RecordModel.fromJson(s))],
+      bands: [
+        for (final b in list('bands'))
+          (
+            id: b['id'] as String,
+            name: b['name'] as String? ?? '',
+            organizationId: b['organization'] as String? ?? '',
+          ),
+      ],
+      arrangements: [
+        for (final a in list('arrangements'))
+          _arrangement(RecordModel.fromJson(a)),
+      ],
+    );
+  });
 
   Future<List<RecordModel>> _since(
     String collection,
@@ -980,6 +1006,8 @@ class PocketBaseBackend implements SyncBackend {
         'deleted': set.deleted,
         'deleted_at': _dateValue(set.deletedAt),
         if (set.purged) 'purged': true, // deleted permanently (#866)
+        'lineup': set.lineup,
+        'lineup_custom': set.lineupCustom,
       };
       final r = create
           ? await _pb

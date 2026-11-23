@@ -77,6 +77,12 @@ class Bands extends Table {
   /// (ADR-0046); 0 = the default (schema 25).
   IntColumn get staleAfterMonths => integer().withDefault(const Constant(0))();
 
+  /// The signed-in user sees this band only as a substitute, through the
+  /// lineups of some of its sets (ADR-0061, schema 38): the sets and
+  /// arrangements come from the lineup route and are replaced at every
+  /// sync; the band is no member list or set permission of theirs.
+  BoolColumn get substitute => boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -310,6 +316,16 @@ class Setlists extends Table {
   /// (ADR-0043, schema 21): it is no longer in the trash.
   BoolColumn get purged => boolean().withDefault(const Constant(false))();
 
+  /// The people who play the set when [lineupCustom] is set (ADR-0061,
+  /// schema 38): user IDs; otherwise the lineup is the whole band and this
+  /// is empty.
+  TextColumn get lineup =>
+      text().map(const UserIdsConverter()).withDefault(const Constant('[]'))();
+
+  /// The set has a lineup of its own instead of the whole band (ADR-0061,
+  /// schema 38).
+  BoolColumn get lineupCustom => boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -356,6 +372,30 @@ class MidiProgramConverter extends TypeConverter<MidiProgram?, String?> {
   @override
   String? toSql(MidiProgram? value) =>
       value == null ? null : jsonEncode(value.toJson());
+}
+
+/// Stores a list of user IDs as a JSON array (a set's lineup, ADR-0061); a
+/// value that cannot be read is nobody.
+class UserIdsConverter extends TypeConverter<List<String>, String> {
+  const UserIdsConverter();
+
+  @override
+  List<String> fromSql(String fromDb) {
+    try {
+      final json = jsonDecode(fromDb);
+      return json is List
+          ? [
+              for (final id in json)
+                if (id is String) id,
+            ]
+          : [];
+    } on FormatException {
+      return const [];
+    }
+  }
+
+  @override
+  String toSql(List<String> value) => jsonEncode(value);
 }
 
 /// Stores [PlayedValues] as their JSON (ADR-0046); a value that cannot be
@@ -730,7 +770,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 37;
+  int get schemaVersion => 38;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -880,7 +920,10 @@ class AppDatabase extends _$AppDatabase {
         }
         // The threshold of schema 25 is not in the old table yet.
         await m.alterTable(
-          TableMigration(bands, newColumns: [bands.staleAfterMonths]),
+          TableMigration(
+            bands,
+            newColumns: [bands.staleAfterMonths, bands.substitute],
+          ),
         );
       }
       if (from < 12) {
@@ -1069,6 +1112,13 @@ class AppDatabase extends _$AppDatabase {
         }
         await m.createTable(songReports);
         await m.createIndex(songReportsSong);
+      }
+      if (from < 38) {
+        // Lineup per set and substitutes (ADR-0061); before schema 11 the
+        // rebuilt band table has the column already.
+        if (from >= 11) await m.addColumn(bands, bands.substitute);
+        await m.addColumn(setlists, setlists.lineup);
+        await m.addColumn(setlists, setlists.lineupCustom);
       }
     },
     beforeOpen: (details) async {

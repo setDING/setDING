@@ -21,6 +21,7 @@ import 'engine/report_sync.dart';
 import 'engine/set_sync.dart';
 import 'engine/settings_sync.dart';
 import 'engine/song_sync.dart';
+import 'engine/substitute_sync.dart';
 import 'engine/sync_store.dart';
 import 'sync_backend.dart';
 import '../settings/user_settings_store.dart';
@@ -105,6 +106,7 @@ class SyncEngine {
     _annotations = AnnotationSync(db, backend, store);
     _reports = ReportSync(db, backend, store, this.storage);
     _arrangements = ArrangementSync(db, backend, store, changes: _changes);
+    _substitutes = SubstituteSync(db, backend, store, _sets);
     if (settings case final settings?) {
       _settings = SettingsSync(db, backend, store, settings);
     }
@@ -139,6 +141,7 @@ class SyncEngine {
   late final AnnotationSync _annotations;
   late final ReportSync _reports;
   late final ArrangementSync _arrangements;
+  late final SubstituteSync _substitutes;
 
   Future<SyncReport>? _running;
 
@@ -189,7 +192,8 @@ class SyncEngine {
         // After the songs: a report belongs to its song (ADR-0060).
         pulled += await _reports.pull(org);
       }
-      for (final band in visible) {
+      // Sets of substitute bands come from the lineup route (ADR-0061).
+      for (final band in visible.where((b) => !b.substitute)) {
         final log = await logFor(band.id, const [
           SyncCollection.setlists,
           SyncCollection.arrangements,
@@ -204,6 +208,10 @@ class SyncEngine {
           await PlayHistoryRepository(db).freeze(band.id);
         }
       }
+      // After the songs: the sets the user plays as a substitute
+      // (ADR-0061), replaced as a whole; with the bands refreshed only, so
+      // a band the user joined is no substitute band any more.
+      if (refreshBands) pulled += await _substitutes.pull();
       // After the songs: an overlay needs its song on this device.
       pulled += await _overlays.pull(user.id);
       pulled += await _annotations.pull(user.id);

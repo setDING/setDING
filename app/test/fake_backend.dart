@@ -1183,9 +1183,66 @@ class FakeSyncBackend implements SyncBackend {
       deletedAt: set.deleted ? set.deletedAt ?? DateTime.now() : null,
       purged: set.purged,
       updatedBy: by ?? set.updatedBy,
+      lineup: set.lineupCustom ? set.lineup : const [],
+      lineupCustom: set.lineupCustom,
     );
     sets[set.id] = stored;
     return stored;
+  }
+
+  /// Number of [fetchLineup] calls; set [lineupFail] to answer them like a
+  /// server without the route.
+  int fetchLineupCalls = 0;
+  bool lineupFail = false;
+
+  /// Like the server (ADR-0061): the sets with a lineup of their own that
+  /// contains the user, in bands they are no member of and whose
+  /// organization they do not administrate, while they are in it.
+  @override
+  Future<RemoteLineup> fetchLineup() async {
+    _requireUser();
+    fetchLineupCalls++;
+    if (lineupFail) throw const BackendException(BackendErrorKind.server);
+    final me = user!.id;
+    final result = <RemoteSet>[];
+    final bandIds = <String>{};
+    for (final s in sets.values) {
+      final band = bands[s.bandId];
+      if (s.deleted || band == null || band.deletedAt != null) continue;
+      if (closedOrganizations.containsKey(band.organizationId)) continue;
+      if (!s.lineupCustom || !s.lineup.contains(me)) continue;
+      if (members.any((m) => m.scopeId == s.bandId && m.user.id == me)) {
+        continue;
+      }
+      final inOrg = orgMembers.where(
+        (m) => m.scopeId == band.organizationId && m.user.id == me,
+      );
+      if (inOrg.isEmpty || inOrg.any((m) => m.role == OrgRole.admin)) continue;
+      result.add(s);
+      bandIds.add(s.bandId);
+    }
+    final songs = {
+      for (final s in result)
+        for (final i in s.items) ?i.songId,
+    };
+    return RemoteLineup(
+      sets: result,
+      bands: [
+        for (final id in bandIds)
+          (
+            id: id,
+            name: bands[id]!.name,
+            organizationId: bands[id]!.organizationId,
+          ),
+      ],
+      arrangements: [
+        for (final a in arrangements.values)
+          if (bandIds.contains(a.bandId) &&
+              !a.deleted &&
+              songs.contains(a.songId))
+            a,
+      ],
+    );
   }
 
   @override
