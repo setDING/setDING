@@ -58,7 +58,9 @@ Damit setDING mit seinem Icon im Startmenü deines Desktops erscheint, klicke be
 AppImage unter **Einstellungen → Speicher & Info → Dieses Gerät** auf **Zum
 Anwendungsmenü hinzufügen**. **Entfernen** nimmt den Eintrag wieder heraus.
 Verschiebst du das AppImage, passt setDING den Eintrag beim nächsten Start an.
-Unter Wayland zeigt das Fenster das setDING-Icon erst mit diesem Eintrag.
+Unter Wayland zeigt das Fenster das setDING-Icon erst mit diesem Eintrag. Mit dem
+Eintrag öffnet **In setDING öffnen** auf einer Einladungsseite die App; läuft
+setDING schon, kommt es mit der Einladung in den Vordergrund.
 
 <Image src={menuEntry} alt="Einstellungen, Speicher & Info: im Abschnitt «Dieses Gerät» der Eintrag «Zum Anwendungsmenü hinzufügen» mit dem Hinweis «setDING mit seinem Icon im Startmenü deines Desktops»" />
 
@@ -68,7 +70,7 @@ Lieber ohne AppImage? `setding-<Version>-linux-x64.tar.gz` enthält dieselbe App
 entpacken und `setding` starten. Diese Kopie aktualisiert sich nicht selbst. Für
 den Eintrag im Anwendungsmenü mit Icon startest du im entpackten Ordner einmal
 `./install-desktop-entry.sh` (nach dem Verschieben des Ordners erneut;
-`--uninstall` entfernt ihn). Das Icon liegt im Ordner `data/` (`app_icon.png`,
+`--uninstall` entfernt ihn). Damit öffnen auch Einladungslinks die App. Das Icon liegt im Ordner `data/` (`app_icon.png`,
 `app_icon.svg`).
 
 ## Updates
