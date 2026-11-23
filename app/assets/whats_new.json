@@ -1,4 +1,20 @@
 {
+  "0.20.0": {
+    "de": [
+      "Pro Set legst du fest, wer spielt, und benachrichtigst die Besetzung; Aushilfen sehen nur ihre Sets.",
+      "Fehler in einem Song meldest du direkt im Song oder im Live-Modus, auf Wunsch mit markiertem Bildschirmfoto; wer den Song bearbeiten darf, beantwortet die Meldung.",
+      "Importierte Songs sind als «Zu prüfen» markiert, bis jemand sie freigibt.",
+      "setDING gibt es jetzt auch auf Italienisch, Französisch, Spanisch und Portugiesisch.",
+      "Im Schlagzeug-Modus auf dem Handy wechselst du zwischen Set und Songablauf."
+    ],
+    "en": [
+      "Choose who plays each set and notify the lineup; substitutes see only their sets.",
+      "Report a mistake right in the song or in live mode, with a marked-up screenshot if you like; whoever may edit the song answers the report.",
+      "Imported songs are marked to review until someone approves them.",
+      "setDING now also speaks Italian, French, Spanish and Portuguese.",
+      "In drummer mode on a phone, switch between the set and the song map."
+    ]
+  },
   "0.19.0": {
     "de": [
       "Akkorde lassen sich als Akkordnamen, Nashville-Zahlen oder römische Ziffern anzeigen; im Live-Modus wechselst du mit einem Tipp.",

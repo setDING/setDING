@@ -8,6 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 with the setDING-specific bump rules of
 [ADR-0028](docs/architecture/adr/0028-versioning-scheme.md).
 
+## [0.20.0] - 2026-11-23
+
+### Added
+
+- Lineup per set and substitutes (ADR-0061): choose who plays a set in the set editor, notify the lineup by share menu, copy or mail, and see the lineup on the printable set list; substitutes see only the sets they are planned for, read-only, and the overview shows upcoming substitute gigs and the sets you are planned for ([#1016](https://github.com/tafli/setDING/pull/1016), [#1019](https://github.com/tafli/setDING/pull/1019), [#1020](https://github.com/tafli/setDING/pull/1020), [#1021](https://github.com/tafli/setDING/pull/1021), [#1022](https://github.com/tafli/setDING/pull/1022)); a new website page explains it ([#1023](https://github.com/tafli/setDING/pull/1023))
+- Song review and mistake reports (ADR-0060): imported songs are marked *To review* and can be approved one by one or all at once; everyone can report a mistake in a song, also on stage from the live control bar, with a category, a comment and a screenshot with markings; whoever may edit the song resolves the report with an answer, which the reporter is told after the next sync ([#994](https://github.com/tafli/setDING/pull/994), [#999](https://github.com/tafli/setDING/pull/999), [#1000](https://github.com/tafli/setDING/pull/1000), [#1005](https://github.com/tafli/setDING/pull/1005), [#1014](https://github.com/tafli/setDING/pull/1014)); a new website page explains it ([#1017](https://github.com/tafli/setDING/pull/1017))
+- The app in Italian, French, Spanish and Portuguese ([#996](https://github.com/tafli/setDING/pull/996))
+- In-app help links to the matching page of the documentation ([#998](https://github.com/tafli/setDING/pull/998))
+- Roman numerals can be spelled like a chord symbol (`IIm7`) instead of by case (`ii7`), as a setting ([#980](https://github.com/tafli/setDING/pull/980), [#982](https://github.com/tafli/setDING/pull/982)); the website explains both spellings ([#984](https://github.com/tafli/setDING/pull/984))
+- Drummer mode on phones and narrow tablets: switch the drum panel between the set and the song map of the current song, with the beat in one third of the screen ([#958](https://github.com/tafli/setDING/pull/958), [#964](https://github.com/tafli/setDING/pull/964), [#967](https://github.com/tafli/setDING/pull/967), [#970](https://github.com/tafli/setDING/pull/970), [#977](https://github.com/tafli/setDING/pull/977))
+- In live mode, the Space key starts and stops the beat ([#973](https://github.com/tafli/setDING/pull/973)), and holding and dragging on the set progress bar jumps to a song ([#981](https://github.com/tafli/setDING/pull/981))
+- *Show a written-out chorus only once*: a display setting that leaves out a chorus repeated word for word, e.g. in songs from SongSelect ([#962](https://github.com/tafli/setDING/pull/962))
+- The editor offers to convert comment headings such as `{comment: Chorus}` into ChordPro sections ([#966](https://github.com/tafli/setDING/pull/966))
+- Linux: the AppImage can add itself to the application menu, and `setding://` invitation links open the Linux app ([#1013](https://github.com/tafli/setDING/pull/1013), [#1018](https://github.com/tafli/setDING/pull/1018))
+
+### Changed
+
+- Choruses whose words change are stacked like verses ([#960](https://github.com/tafli/setDING/pull/960))
+- Choosing the instrument *Vocals* turns on *Lyrics only*; switching to another instrument brings the chords back ([#1002](https://github.com/tafli/setDING/pull/1002))
+
 ## [0.19.0] - 2026-11-22
 
 ### Added
@@ -411,6 +431,7 @@ with the setDING-specific bump rules of
 
 - First release, built on GitHub Actions for Linux, Android and Windows ([#138](https://github.com/tafli/setDING/pull/138))
 
+[0.20.0]: https://github.com/tafli/setDING/compare/v0.19.0...v0.20.0
 [0.19.0]: https://github.com/tafli/setDING/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/tafli/setDING/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/tafli/setDING/compare/v0.16.0...v0.17.0
