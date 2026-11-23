@@ -3992,5 +3992,17 @@
   "screenshotAttach": "Anhängen",
   "screenshotShow": "Screenshot gross anzeigen",
   "screenshotLoading": "Screenshot wird geladen …",
-  "screenshotUnavailable": "Screenshot nicht verfügbar (offline?)"
+  "screenshotUnavailable": "Screenshot nicht verfügbar (offline?)",
+  "lineup": "Besetzung",
+  "lineupWholeBand": "Ganze Band",
+  "lineupSubstitute": "Aushilfe",
+  "lineupBandMembers": "Bandmitglieder",
+  "lineupSubstitutes": "Aushilfen",
+  "lineupNotPlanned": "Nicht für dich eingeplant",
+  "lineupEdit": "Besetzung wählen",
+  "lineupAddPeople": "Personen hinzufügen",
+  "lineupSearchPeople": "Personen suchen",
+  "lineupNoMorePeople": "Alle Personen der Organisation sind schon in der Besetzung.",
+  "lineupNobody": "Niemand eingeplant",
+  "lineupWholeBandHint": "Die Besetzung folgt der Band, auch neuen Mitgliedern."
 }

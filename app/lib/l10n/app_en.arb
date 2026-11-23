@@ -3385,5 +3385,17 @@
   "screenshotAttach": "Attach",
   "screenshotShow": "Show the screenshot full size",
   "screenshotLoading": "Loading the screenshot …",
-  "screenshotUnavailable": "Screenshot not available (offline?)"
+  "screenshotUnavailable": "Screenshot not available (offline?)",
+  "lineup": "Lineup",
+  "lineupWholeBand": "Whole band",
+  "lineupSubstitute": "Substitute",
+  "lineupBandMembers": "Band members",
+  "lineupSubstitutes": "Substitutes",
+  "lineupNotPlanned": "Not planned for you",
+  "lineupEdit": "Choose lineup",
+  "lineupAddPeople": "Add people",
+  "lineupSearchPeople": "Search people",
+  "lineupNoMorePeople": "Everyone in the organization is in the lineup already.",
+  "lineupNobody": "Nobody planned",
+  "lineupWholeBandHint": "The lineup follows the band, new members included."
 }
