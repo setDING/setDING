@@ -125,7 +125,12 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
       }
       final result = await ref
           .read(importExportProvider)
-          .importFiles(files, germanNotation: _german);
+          .importFiles(
+            files,
+            germanNotation: _german,
+            // Imported songs wait for a check (ADR-0060).
+            reviewReason: l10n.reviewReasonAfterImport,
+          );
       final message = [
         l10n.importResult(result.imported),
         if (result.skipped.isNotEmpty)

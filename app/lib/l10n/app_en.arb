@@ -3177,5 +3177,87 @@
   "readinessPageTurnerPairDetail": "Pair it so the overview shows whether it is connected · Turns: {mode}",
   "settingsPageTurnerUse": "I use a page turner",
   "settingsPageTurnerUseHint": "A foot pedal that turns the pages. Shows it on the overview and offers to pair one that is detected.",
-  "pageTurnerDetected": "Page turner detected: {name}"
+  "pageTurnerDetected": "Page turner detected: {name}",
+  "attentionToReview": "To review",
+  "attentionReported": "Reported",
+  "overviewTodoToReview": "{count, plural, =1{1 song to review} other{{count} songs to review}}",
+  "@overviewTodoToReview": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "overviewTodoReported": "{count, plural, =1{1 song with a reported mistake} other{{count} songs with reported mistakes}}",
+  "@overviewTodoReported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songToReviewTooltip": "Not checked yet",
+  "songReportedTooltip": "Mistake reported",
+  "songToReviewHint": "This song has not been checked yet.",
+  "songReportedHint": "A mistake was reported in this song.",
+  "reviewBannerToReview": "To review: {reason}",
+  "@reviewBannerToReview": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewBannerReports": "{count, plural, =1{1 open report} other{{count} open reports}}",
+  "@reviewBannerReports": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "showReports": "Show",
+  "approveSong": "Approve",
+  "songApproved": "Song approved",
+  "approveAllSongs": "Approve all",
+  "approveAllSongsTitle": "Approve all songs?",
+  "approveAllSongsMessage": "{count, plural, =1{1 song will count as checked.} other{{count} songs will count as checked.}}",
+  "@approveAllSongsMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songsApproved": "{count, plural, =1{1 song approved} other{{count} songs approved}}",
+  "@songsApproved": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "resolveReportsTitle": "Resolve the reports?",
+  "resolveReportsMessage": "{count, plural, =1{The song has 1 open report. Mark it as resolved too?} other{The song has {count} open reports. Mark them as resolved too?}}",
+  "@resolveReportsMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "resolveReports": "Resolve",
+  "setToReviewMenu": "Mark for review …",
+  "setToReviewTitle": "Mark for review",
+  "reviewReasonLabel": "Reason",
+  "reviewReasonHint": "e.g. the bridge is wrong",
+  "reviewReasonAfterImport": "After import",
+  "setReviewHint": "{count, plural, =1{1 song is not checked yet or has a reported mistake} other{{count} songs are not checked yet or have reported mistakes}}",
+  "@setReviewHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

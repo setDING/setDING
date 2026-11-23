@@ -18,6 +18,7 @@ import '../live/live_screen.dart';
 import '../render/render_cache.dart';
 import '../render/song_header.dart';
 import '../songs/chordpro_problems_badge.dart';
+import '../songs/song_attention.dart' show songToReviewIcon;
 import '../songs/language_versions.dart';
 import '../songs/play_history_panel.dart' show keyHistoryHint;
 import '../songs/song_screen.dart';
@@ -170,6 +171,15 @@ class _SetScreenState extends ConsumerState<SetScreen> {
           if (set.gigDate != null) formatGigDate(context, set.gigDate!),
           if (set.venue != null) set.venue!,
         ].join(' · ');
+        // Songs of an upcoming gig that are not checked yet or reported
+        // (ADR-0060), so they are fixed before the gig.
+        final now = DateTime.now();
+        final upcoming =
+            set.gigDate != null &&
+            !set.gigDate!.isBefore(DateTime(now.year, now.month, now.day));
+        final reviewSongs = upcoming
+            ? (ref.watch(reviewSongCountsProvider).value?[set.id] ?? 0)
+            : 0;
         // The set's songs in order, for ← and → in the song screen (#729).
         final songs = [
           for (final v in items)
@@ -285,6 +295,22 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                           ),
                         ),
                         if (missing > 0) OfflineMissingBadge(missing: missing),
+                      ],
+                    ),
+                  ),
+                if (reviewSongs > 0)
+                  Padding(
+                    key: const Key('set-review-hint'),
+                    padding: const EdgeInsets.fromLTRB(16, 0, 32, 8),
+                    child: Row(
+                      children: [
+                        Icon(
+                          songToReviewIcon,
+                          size: 18,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text(l10n.setReviewHint(reviewSongs))),
                       ],
                     ),
                   ),

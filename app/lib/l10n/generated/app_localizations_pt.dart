@@ -5954,4 +5954,141 @@ class AppLocalizationsPt extends AppLocalizations {
   String pageTurnerDetected(String name) {
     return 'Virador de páginas detetado: $name';
   }
+
+  @override
+  String get attentionToReview => 'Por rever';
+
+  @override
+  String get attentionReported => 'Reportado';
+
+  @override
+  String overviewTodoToReview(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count músicas por rever',
+      one: '1 música por rever',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String overviewTodoReported(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count músicas com erros reportados',
+      one: '1 música com um erro reportado',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get songToReviewTooltip => 'Ainda não revista';
+
+  @override
+  String get songReportedTooltip => 'Erro reportado';
+
+  @override
+  String get songToReviewHint => 'Esta música ainda não foi revista.';
+
+  @override
+  String get songReportedHint => 'Foi reportado um erro nesta música.';
+
+  @override
+  String reviewBannerToReview(String reason) {
+    return 'Por rever: $reason';
+  }
+
+  @override
+  String reviewBannerReports(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count relatos em aberto',
+      one: '1 relato em aberto',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get showReports => 'Mostrar';
+
+  @override
+  String get approveSong => 'Aprovar';
+
+  @override
+  String get songApproved => 'Música aprovada';
+
+  @override
+  String get approveAllSongs => 'Aprovar todas';
+
+  @override
+  String get approveAllSongsTitle => 'Aprovar todas as músicas?';
+
+  @override
+  String approveAllSongsMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count músicas passarão a contar como revistas.',
+      one: '1 música passará a contar como revista.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String songsApproved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count músicas aprovadas',
+      one: '1 música aprovada',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get resolveReportsTitle => 'Resolver os relatos?';
+
+  @override
+  String resolveReportsMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'A música tem $count relatos em aberto. Marcá-los também como resolvidos?',
+      one: 'A música tem 1 relato em aberto. Marcá-lo também como resolvido?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get resolveReports => 'Resolver';
+
+  @override
+  String get setToReviewMenu => 'Marcar para rever …';
+
+  @override
+  String get setToReviewTitle => 'Marcar para rever';
+
+  @override
+  String get reviewReasonLabel => 'Motivo';
+
+  @override
+  String get reviewReasonHint => 'p. ex. a ponte está errada';
+
+  @override
+  String get reviewReasonAfterImport => 'Após a importação';
+
+  @override
+  String setReviewHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count músicas ainda não foram revistas ou têm erros reportados',
+      one: '1 música ainda não foi revista ou tem um erro reportado',
+    );
+    return '$_temp0';
+  }
 }

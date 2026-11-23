@@ -5980,4 +5980,141 @@ class AppLocalizationsDe extends AppLocalizations {
   String pageTurnerDetected(String name) {
     return 'Seitenwender erkannt: $name';
   }
+
+  @override
+  String get attentionToReview => 'Zu prüfen';
+
+  @override
+  String get attentionReported => 'Gemeldet';
+
+  @override
+  String overviewTodoToReview(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs zu prüfen',
+      one: '1 Song zu prüfen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String overviewTodoReported(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs mit gemeldeten Fehlern',
+      one: '1 Song mit gemeldetem Fehler',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get songToReviewTooltip => 'Noch nicht geprüft';
+
+  @override
+  String get songReportedTooltip => 'Fehler gemeldet';
+
+  @override
+  String get songToReviewHint => 'Dieser Song ist noch nicht geprüft.';
+
+  @override
+  String get songReportedHint => 'In diesem Song wurde ein Fehler gemeldet.';
+
+  @override
+  String reviewBannerToReview(String reason) {
+    return 'Zu prüfen: $reason';
+  }
+
+  @override
+  String reviewBannerReports(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count offene Fehlermeldungen',
+      one: '1 offene Fehlermeldung',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get showReports => 'Anzeigen';
+
+  @override
+  String get approveSong => 'Freigeben';
+
+  @override
+  String get songApproved => 'Song freigegeben';
+
+  @override
+  String get approveAllSongs => 'Alle freigeben';
+
+  @override
+  String get approveAllSongsTitle => 'Alle Songs freigeben?';
+
+  @override
+  String approveAllSongsMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs gelten danach als geprüft.',
+      one: '1 Song gilt danach als geprüft.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String songsApproved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs freigegeben',
+      one: '1 Song freigegeben',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get resolveReportsTitle => 'Fehlermeldungen erledigen?';
+
+  @override
+  String resolveReportsMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Der Song hat $count offene Fehlermeldungen. Auch als erledigt markieren?',
+      one: 'Der Song hat 1 offene Fehlermeldung. Auch als erledigt markieren?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get resolveReports => 'Erledigen';
+
+  @override
+  String get setToReviewMenu => 'Zur Prüfung markieren …';
+
+  @override
+  String get setToReviewTitle => 'Zur Prüfung markieren';
+
+  @override
+  String get reviewReasonLabel => 'Grund';
+
+  @override
+  String get reviewReasonHint => 'z. B. Bridge stimmt nicht';
+
+  @override
+  String get reviewReasonAfterImport => 'Nach Import';
+
+  @override
+  String setReviewHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Songs sind noch nicht geprüft oder haben gemeldete Fehler',
+      one: '1 Song ist noch nicht geprüft oder hat einen gemeldeten Fehler',
+    );
+    return '$_temp0';
+  }
 }

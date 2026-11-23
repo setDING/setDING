@@ -31,7 +31,19 @@ enum SongAttention {
   /// Chords but no `{key}`: no transposing by key, no Nashville numbers or
   /// numerals. The song details suggest one from the chords (#919).
   noKey,
+
+  /// Waits for a check, e.g. after an import (ADR-0060).
+  toReview,
+
+  /// Has open mistake reports (ADR-0060).
+  reported,
 }
+
+/// Icon of a song that waits for a check (ADR-0060).
+const songToReviewIcon = Icons.fact_check_outlined;
+
+/// Icon of a song with open mistake reports (ADR-0060).
+const songReportedIcon = Icons.report_outlined;
 
 /// Short name of [kind], e.g. for the filter chip of the song list.
 String songAttentionLabel(AppLocalizations l10n, SongAttention kind) =>
@@ -41,6 +53,8 @@ String songAttentionLabel(AppLocalizations l10n, SongAttention kind) =>
       SongAttention.conflicts => l10n.attentionConflicts,
       SongAttention.sheetMusicOnly => l10n.attentionSheetMusicOnly,
       SongAttention.noKey => l10n.attentionNoKey,
+      SongAttention.toReview => l10n.attentionToReview,
+      SongAttention.reported => l10n.attentionReported,
     };
 
 /// Icon of [kind], the same on the overview and in the song list.
@@ -62,6 +76,12 @@ Widget songAttentionIcon(
   ),
   SongAttention.sheetMusicOnly => Icon(Icons.picture_as_pdf, size: size),
   SongAttention.noKey => Icon(Icons.music_off_outlined, size: size),
+  SongAttention.toReview => Icon(songToReviewIcon, size: size),
+  SongAttention.reported => Icon(
+    songReportedIcon,
+    size: size,
+    color: Theme.of(context).colorScheme.error,
+  ),
 };
 
 /// Whether [song] of [library] needs [kind] of attention by the signed-in
@@ -73,6 +93,7 @@ bool needsAttention(
   SongListEntry song, {
   required LibraryView library,
   required Set<String> conflicts,
+  Set<String> reported = const {},
 }) =>
     library.canEditSongBy(
       createdBy: song.createdBy,
@@ -85,6 +106,8 @@ bool needsAttention(
       SongAttention.sheetMusicOnly => !song.hasChords,
       SongAttention.noKey =>
         song.hasChords && (song.songKey ?? '').trim().isEmpty,
+      SongAttention.toReview => song.toReview,
+      SongAttention.reported => reported.contains(song.id),
     };
 
 /// The songs with an open sync conflict.
@@ -105,6 +128,9 @@ final songAttentionCountsProvider =
       if (songs == null) return null;
       final library = ref.watch(currentLibraryProvider);
       final conflicts = ref.watch(conflictSongIdsProvider);
+      final reported =
+          ref.watch(reportedSongIdsProvider(library.id)).value ??
+          const <String>{};
       return {
         for (final kind in SongAttention.values)
           kind: songs
@@ -114,6 +140,7 @@ final songAttentionCountsProvider =
                   s,
                   library: library,
                   conflicts: conflicts,
+                  reported: reported,
                 ),
               )
               .length,

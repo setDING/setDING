@@ -152,6 +152,9 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
         ? const <String, BandArrangement>{}
         : ref.watch(bandArrangementsProvider(band.id)).value ?? const {};
     final conflicts = ref.watch(conflictSongIdsProvider);
+    final reported =
+        ref.watch(reportedSongIdsProvider(library.id)).value ??
+        const <String>{};
     // Only the songs of a line of the overview's To do card (ADR-0045).
     final attention = ref.watch(songAttentionFilterProvider);
     List<SongListEntry> visible(List<SongListEntry> songs) => attention == null
@@ -163,6 +166,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                 s,
                 library: library,
                 conflicts: conflicts,
+                reported: reported,
               ))
                 s,
           ];
@@ -403,6 +407,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                     hasAttachments: (counts[list[i].id] ?? 0) > 0,
                     arrangement: arrangements[list[i].id],
                     hasConflict: conflicts.contains(list[i].id),
+                    reported: reported.contains(list[i].id),
                     showLanguage: mixedLanguages,
                     otherVersions: switch (list[i].workId) {
                       final w? => (works[w] ?? 1) - 1,

@@ -9023,6 +9023,162 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Seitenwender erkannt: {name}'**
   String pageTurnerDetected(String name);
+
+  /// No description provided for @attentionToReview.
+  ///
+  /// In de, this message translates to:
+  /// **'Zu prüfen'**
+  String get attentionToReview;
+
+  /// No description provided for @attentionReported.
+  ///
+  /// In de, this message translates to:
+  /// **'Gemeldet'**
+  String get attentionReported;
+
+  /// No description provided for @overviewTodoToReview.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song zu prüfen} other{{count} Songs zu prüfen}}'**
+  String overviewTodoToReview(int count);
+
+  /// No description provided for @overviewTodoReported.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song mit gemeldetem Fehler} other{{count} Songs mit gemeldeten Fehlern}}'**
+  String overviewTodoReported(int count);
+
+  /// No description provided for @songToReviewTooltip.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch nicht geprüft'**
+  String get songToReviewTooltip;
+
+  /// No description provided for @songReportedTooltip.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler gemeldet'**
+  String get songReportedTooltip;
+
+  /// No description provided for @songToReviewHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieser Song ist noch nicht geprüft.'**
+  String get songToReviewHint;
+
+  /// No description provided for @songReportedHint.
+  ///
+  /// In de, this message translates to:
+  /// **'In diesem Song wurde ein Fehler gemeldet.'**
+  String get songReportedHint;
+
+  /// No description provided for @reviewBannerToReview.
+  ///
+  /// In de, this message translates to:
+  /// **'Zu prüfen: {reason}'**
+  String reviewBannerToReview(String reason);
+
+  /// No description provided for @reviewBannerReports.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 offene Fehlermeldung} other{{count} offene Fehlermeldungen}}'**
+  String reviewBannerReports(int count);
+
+  /// No description provided for @showReports.
+  ///
+  /// In de, this message translates to:
+  /// **'Anzeigen'**
+  String get showReports;
+
+  /// No description provided for @approveSong.
+  ///
+  /// In de, this message translates to:
+  /// **'Freigeben'**
+  String get approveSong;
+
+  /// No description provided for @songApproved.
+  ///
+  /// In de, this message translates to:
+  /// **'Song freigegeben'**
+  String get songApproved;
+
+  /// No description provided for @approveAllSongs.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle freigeben'**
+  String get approveAllSongs;
+
+  /// No description provided for @approveAllSongsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Songs freigeben?'**
+  String get approveAllSongsTitle;
+
+  /// No description provided for @approveAllSongsMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song gilt danach als geprüft.} other{{count} Songs gelten danach als geprüft.}}'**
+  String approveAllSongsMessage(int count);
+
+  /// No description provided for @songsApproved.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song freigegeben} other{{count} Songs freigegeben}}'**
+  String songsApproved(int count);
+
+  /// No description provided for @resolveReportsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehlermeldungen erledigen?'**
+  String get resolveReportsTitle;
+
+  /// No description provided for @resolveReportsMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Der Song hat 1 offene Fehlermeldung. Auch als erledigt markieren?} other{Der Song hat {count} offene Fehlermeldungen. Auch als erledigt markieren?}}'**
+  String resolveReportsMessage(int count);
+
+  /// No description provided for @resolveReports.
+  ///
+  /// In de, this message translates to:
+  /// **'Erledigen'**
+  String get resolveReports;
+
+  /// No description provided for @setToReviewMenu.
+  ///
+  /// In de, this message translates to:
+  /// **'Zur Prüfung markieren …'**
+  String get setToReviewMenu;
+
+  /// No description provided for @setToReviewTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Zur Prüfung markieren'**
+  String get setToReviewTitle;
+
+  /// No description provided for @reviewReasonLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Grund'**
+  String get reviewReasonLabel;
+
+  /// No description provided for @reviewReasonHint.
+  ///
+  /// In de, this message translates to:
+  /// **'z. B. Bridge stimmt nicht'**
+  String get reviewReasonHint;
+
+  /// No description provided for @reviewReasonAfterImport.
+  ///
+  /// In de, this message translates to:
+  /// **'Nach Import'**
+  String get reviewReasonAfterImport;
+
+  /// No description provided for @setReviewHint.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Song ist noch nicht geprüft oder hat einen gemeldeten Fehler} other{{count} Songs sind noch nicht geprüft oder haben gemeldete Fehler}}'**
+  String setReviewHint(int count);
 }
 
 class _AppLocalizationsDelegate

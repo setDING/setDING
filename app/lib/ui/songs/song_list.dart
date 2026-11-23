@@ -365,6 +365,16 @@ class SongFilters extends ConsumerWidget {
                 onPressed: () => _convertAll(context, ref),
               ),
             ),
+          if (attention == SongAttention.toReview)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: ActionChip(
+                key: const Key('songs-approve-all'),
+                avatar: const Icon(Icons.done_all, size: 18),
+                label: Text(l10n.approveAllSongs),
+                onPressed: () => _approveAll(context, ref),
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: MenuAnchor(
@@ -574,6 +584,44 @@ Future<void> _convertAll(BuildContext context, WidgetRef ref) async {
   showMessageOn(messenger, l10n.songsConverted(count));
 }
 
+/// Approves every song of the library the person may approve that waits
+/// for a check (ADR-0060), after asking, with Undo.
+Future<void> _approveAll(BuildContext context, WidgetRef ref) async {
+  final l10n = AppLocalizations.of(context);
+  final songs = await ref.read(songRepositoryProvider).watchSongList().first;
+  if (!context.mounted) return;
+  final library = ref.read(currentLibraryProvider);
+  final ids = [
+    for (final s in songs)
+      if (needsAttention(
+        SongAttention.toReview,
+        s,
+        library: library,
+        conflicts: const {},
+      ))
+        s.id,
+  ];
+  if (ids.isEmpty) return;
+  final messenger = ScaffoldMessenger.of(context);
+  if (!await confirm(
+    context,
+    title: l10n.approveAllSongsTitle,
+    message: l10n.approveAllSongsMessage(ids.length),
+    action: l10n.approveSong,
+    destructive: false,
+  )) {
+    return;
+  }
+  final review = ref.read(songReviewRepositoryProvider);
+  final before = await review.approveAll(ids);
+  showUndo(
+    messenger,
+    l10n.songsApproved(before.length),
+    undoLabel: l10n.undo,
+    onUndo: () => review.restoreReview(before),
+  );
+}
+
 /// [marked] (see [SearchHit]) as text spans, the hits in [hitStyle].
 List<TextSpan> highlightedSpans(String marked, TextStyle hitStyle) {
   final spans = <TextSpan>[];
@@ -738,6 +786,7 @@ class SongTile extends ConsumerWidget {
     this.arrangement,
     this.bandName = '',
     this.hasConflict = false,
+    this.reported = false,
     this.showLanguage = false,
     this.otherVersions = 0,
     this.showProblems = false,
@@ -752,6 +801,10 @@ class SongTile extends ConsumerWidget {
 
   /// The song waits for a decision on a sync conflict (ADR-0004).
   final bool hasConflict;
+
+  /// The song has open mistake reports (ADR-0060); shown to everyone, like
+  /// a song that waits for a check.
+  final bool reported;
 
   /// Show the song's language after the title (ADR-0053): in a library
   /// with songs in more than one language.
@@ -937,6 +990,21 @@ class SongTile extends ConsumerWidget {
           l10n.songConflictTooltip,
           Icons.sync_problem,
           scheme.error,
+        ),
+      // Shown to everyone (ADR-0060): not checked yet, or maybe wrong.
+      if (reported)
+        icon(
+          const ValueKey('song-status-reported'),
+          l10n.songReportedTooltip,
+          songReportedIcon,
+          scheme.error,
+        )
+      else if (song.toReview)
+        icon(
+          const ValueKey('song-status-to-review'),
+          l10n.songToReviewTooltip,
+          songToReviewIcon,
+          scheme.onSurfaceVariant,
         ),
       if (showProblems && song.problems > 0)
         ChordProProblemsBadge(

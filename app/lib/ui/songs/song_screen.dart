@@ -39,6 +39,8 @@ import '../bands/copy_to_band.dart';
 import '../../sync/sync_controller.dart';
 import 'chordpro_problems_badge.dart';
 import 'conflict_banner.dart';
+import 'review_banner.dart';
+import 'song_attention.dart' show songToReviewIcon;
 import 'image_attachment_view.dart';
 import 'midi_program_field.dart';
 import 'band_arrangement_panel.dart';
@@ -518,6 +520,8 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   ],
                   onSelected: (value) => switch (value) {
                     'title' => _editTitle(song),
+                    'toReview' => setSongToReview(context, ref, song.id),
+                    'approve' => approveSong(context, ref, song.id),
                     'language' => _chooseLanguage(song),
                     'linkVersion' => linkLanguageVersion(context, ref, song),
                     'unlinkVersion' => unlinkLanguageVersion(
@@ -538,6 +542,21 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                         value: 'title',
                         icon: Icons.title,
                         label: l10n.editTitle,
+                      ),
+                    // Review status (ADR-0060), for whoever may edit.
+                    if (canEdit && song.reviewState == null)
+                      MenuAction(
+                        key: const Key('song-set-to-review'),
+                        value: 'toReview',
+                        icon: songToReviewIcon,
+                        label: l10n.setToReviewMenu,
+                      ),
+                    if (canEdit && song.reviewState != null)
+                      MenuAction(
+                        key: const Key('song-approve'),
+                        value: 'approve',
+                        icon: Icons.done,
+                        label: l10n.approveSong,
                       ),
                     if (canEdit)
                       MenuAction(
@@ -595,6 +614,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                   if (ref.watch(songConflictProvider(song.id)).value
                       case final conflict?)
                     ConflictBanner(conflict: conflict),
+                  ReviewBanner(song: song, canApprove: canEdit),
                   // The app bar shows the title (#268).
                   SongHeader(
                     title: song.title.isEmpty ? l10n.untitled : song.title,
