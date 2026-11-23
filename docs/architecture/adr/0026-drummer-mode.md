@@ -146,10 +146,10 @@ with the idle-time preparation of the next song (#296).
   tempo and meter large at the top; the footer shows the next song with tempo and time
   signature. No bar counts for now. On wide screens a panel left of the map
   shows the beat large and the set (tempo and time signature per song; a tap
-  turns to it). On phones (shortest side below 600 px) this panel is the
-  whole stage: beat above the set in portrait, beside it in landscape; a
-  segmented button switches the set for the song map of the current song
-  (#952).
+  turns to it). Below that width (phones, tablets in portrait) this panel
+  is the whole stage: beat above the set in portrait, beside it in
+  landscape; a segmented button switches the set for the song map of the
+  current song (#952, #974).
 - All colours follow the stage appearance (ADR-0007) with the contrast required there.
 - The beat display and the count-in never block page turns; the preparation of the
   neighbours (#296) runs as before.
@@ -215,6 +215,7 @@ with the idle-time preparation of the next song (#296).
 - 2026-11-23: Owner request (#965): on a phone in portrait the beat takes a third of the height also beside the set (was half and half), the set two thirds, like the song map (#961).
 - 2026-11-23: Owner request (#968): in the panel beside the song map on wide screens the beat also takes a third of the height and the set two thirds (was half and half), like on phones (#961, #965). The panel keeps its width (36 % of the screen, 300–480 px).
 - 2026-11-23: Owner request (#969): a device setting *Space starts the beat* (`spaceStartsBeat`, off by default, in *Screen & live mode* → *Controls*, offered while the beat is on). When on, Space starts and stops the beat like Enter and no longer turns forward or counts as a page-turn key; the other forward keys and the long press are unchanged. Off by default because page turners send Space for turning.
+- 2026-11-23: Owner request (#974): screens between phones and the wide song map (shortest side from 600 px, width below 900 px, e.g. tablets in portrait) showed only the song map with the dots beside the title, without the large beat and the set. They now get the drum panel of the phones (beat a third, set or song map two thirds, the switch). Owner choice for the pedal there: it scrolls the song map and turns to the next song at its end, as on tablets before; beside the set it turns from song to song. Phones keep turning songs only. Key, font and Nashville stay in the control bar while the song map is shown on these screens. This replaces "Tablets in portrait keep the song map" of #421.
 
 ## Open points
 

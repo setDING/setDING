@@ -161,23 +161,94 @@ void main() {
     await app.dispose(tester);
   });
 
-  testWidgets('narrow: no panel, the dots stay beside the title', (
-    tester,
-  ) async {
+  testWidgets('tablet in portrait: the drum panel with the switch, the dots '
+      'only in the large beat (#974)', (tester) async {
     final app = await open(tester, {
       'instrument': 'drums',
       'clickStart': 'manual',
     }, landscape: false);
     await tester.pump();
-    expect(find.byKey(const Key('drum-panel')), findsNothing);
-    expect(find.byKey(const Key('song-map')), findsOneWidget);
-    expect(
-      find.descendant(
-        of: find.byKey(const Key('stage-info')),
-        matching: find.byKey(const Key('beat-dots')),
-      ),
-      findsOneWidget,
+    expect(find.byKey(const Key('drum-panel')), findsOneWidget);
+    expect(find.byKey(const Key('drum-panel-view')), findsOneWidget);
+    expect(find.byKey(const Key('drum-set-list')), findsOneWidget);
+    expect(find.byKey(const Key('beat-dots')), findsOneWidget);
+    // The beat a third of the height, the set two.
+    final panel = tester.getRect(find.byKey(const Key('drum-panel')));
+    final switchTop = tester
+        .getRect(find.byKey(const Key('drum-panel-view')))
+        .top;
+    expect((switchTop - 8 - panel.top) / panel.height, closeTo(1 / 3, 0.01));
+    // Beside the set the pedal turns songs.
+    await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('2 / 2'), findsOneWidget);
+
+    // The second song has no parts: the song map says so.
+    await tester.tap(find.text('Song map'));
+    await tester.pump();
+    await tester.pump();
+    expect(find.byKey(const Key('song-map-empty')), findsOneWidget);
+    expect(find.byKey(const Key('drum-set-list')), findsNothing);
+    await app.dispose(tester);
+  });
+
+  testWidgets('tablet in portrait: the pedal scrolls a long song map, then '
+      'turns (#974)', (tester) async {
+    useTabletSize(tester, landscape: false);
+    final app = await TestApp.create(
+      prefs: {
+        'language': 'en',
+        'instrument': 'drums',
+        'clickStart': 'manual',
+        'drumPanelView': 'songMap',
+      },
     );
+    const long = """{title: Long}
+{tempo: 100}
+{x_sequence: V, C, V, C, V, C, V, C, V, C, V, C, V, C}
+{start_of_verse}
+{comment-drums: Hi-hat}
+[G]Verse line
+{end_of_verse}
+{start_of_chorus}
+{comment-drums: Ride}
+[C]Chorus line
+{end_of_chorus}
+""";
+    final items = (await tester.runAsync(() async {
+      final items = <LiveItem>[];
+      for (final source in [long, second]) {
+        final id = await app.songs.createSong(source: source);
+        items.add(LiveItem.song((await app.songs.getSong(id))!));
+      }
+      return items;
+    }))!;
+    await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+    await tester.pump();
+    await tester.pump();
+    final map = find.byKey(const Key('song-map'));
+    expect(map, findsOneWidget);
+    final scrollable = find.descendant(
+      of: map,
+      matching: find.byType(Scrollable),
+    );
+    double offset() =>
+        tester.state<ScrollableState>(scrollable.first).position.pixels;
+    expect(offset(), 0);
+
+    // The first press scrolls the song map, the song stays.
+    await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
+    await tester.pumpAndSettle();
+    expect(offset(), greaterThan(0));
+    expect(find.text('1 / 2'), findsOneWidget);
+
+    // At its end the pedal turns to the next song.
+    for (var i = 0; i < 20 && find.text('1 / 2').evaluate().isNotEmpty; i++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('2 / 2'), findsOneWidget);
     await app.dispose(tester);
   });
 
