@@ -29,8 +29,9 @@ abstract class AppMenuEntry {
   Future<void> remove();
 
   /// Points an entry added by an AppImage at this AppImage again when the
-  /// file it starts is gone (the AppImage was moved or renamed). Returns
-  /// whether it changed the entry.
+  /// file it starts is gone (the AppImage was moved or renamed), and
+  /// updates an entry that does not open `setding://` links yet (#1015).
+  /// Returns whether it changed the entry.
   Future<bool> repairIfMoved();
 }
 

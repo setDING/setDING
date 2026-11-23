@@ -22,6 +22,15 @@ static void first_frame_cb(MyApplication* self, FlView* view) {
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
+
+  // Single instance (#1015): a second start, or a setding:// link opened
+  // while setDING runs, brings the running window to the front.
+  GList* windows = gtk_application_get_windows(GTK_APPLICATION(application));
+  if (windows != nullptr) {
+    gtk_window_present(GTK_WINDOW(windows->data));
+    return;
+  }
+
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
 
@@ -105,7 +114,9 @@ static gboolean my_application_local_command_line(GApplication* application,
   g_application_activate(application);
   *exit_status = 0;
 
-  return TRUE;
+  // FALSE lets GLib emit "command-line" (in the running instance, if there is
+  // one), where app_links reads a setding:// link (ADR-0005, #1015).
+  return FALSE;
 }
 
 // Implements GApplication::startup.
@@ -144,6 +155,20 @@ static void my_application_class_init(MyApplicationClass* klass) {
 
 static void my_application_init(MyApplication* self) {}
 
+// Single instance, so that a setding:// link reaches the running app
+// (ADR-0005, #1015). Isolated instances with their own data directory
+// (`SETDING_DATA_DIR`: make dev, make start, make e2e) stay independent, so
+// they run next to setDING and next to each other.
+static GApplicationFlags my_application_flags() {
+  const gchar* data_dir = g_getenv("SETDING_DATA_DIR");
+  if (data_dir != nullptr && data_dir[0] != '\0') {
+    return static_cast<GApplicationFlags>(G_APPLICATION_NON_UNIQUE |
+                                          G_APPLICATION_HANDLES_COMMAND_LINE);
+  }
+  return static_cast<GApplicationFlags>(G_APPLICATION_HANDLES_COMMAND_LINE |
+                                        G_APPLICATION_HANDLES_OPEN);
+}
+
 MyApplication* my_application_new() {
   // Set the program name to the application ID, which helps various systems
   // like GTK and desktop environments map this running application to its
@@ -153,5 +178,5 @@ MyApplication* my_application_new() {
 
   return MY_APPLICATION(g_object_new(my_application_get_type(),
                                      "application-id", APPLICATION_ID, "flags",
-                                     G_APPLICATION_NON_UNIQUE, nullptr));
+                                     my_application_flags(), nullptr));
 }

@@ -55,7 +55,9 @@ To have setDING with its icon in your desktop's start menu, click **Add to
 application menu** under **Settings → Storage & info → This device** in the
 AppImage. **Remove** takes the entry out again. If you move the AppImage, setDING
 updates the entry the next time it starts. Under Wayland the window only shows the
-setDING icon with this entry.
+setDING icon with this entry. With the entry, **Open in setDING** on an invitation
+page opens the app; if setDING is already running, it comes to the front with the
+invitation.
 
 <Image src={menuEntry} alt="Settings, Storage & info: in the This device section the entry Add to application menu with the hint setDING with its icon in your desktop's start menu" />
 
@@ -64,7 +66,8 @@ setDING icon with this entry.
 Prefer no AppImage? `setding-<version>-linux-x64.tar.gz` contains the same app:
 unpack it and start `setding`. This copy does not update itself. For the
 application menu entry with the icon, run `./install-desktop-entry.sh` once in the
-unpacked folder (again after moving the folder; `--uninstall` removes it). The
+unpacked folder (again after moving the folder; `--uninstall` removes it). It
+also lets invitation links open the app. The
 icon is in the `data/` folder (`app_icon.png`, `app_icon.svg`).
 
 ## Updates

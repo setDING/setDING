@@ -2,11 +2,13 @@
 # Adds setDING to the application menu of the desktop (for the current user)
 # and installs its icon. Under Wayland the window only shows the setDING
 # icon with this entry: the compositor looks the icon up through the .desktop
-# file named after the app ID (app.setding).
+# file named after the app ID (app.setding). The entry also opens setding://
+# invitation links (ADR-0005).
 #
 # Usage: ./install-desktop-entry.sh [--hidden] [--if-missing] [--uninstall]
 #   --hidden      only for the icon lookup, not listed in the menu (test builds)
-#   --if-missing  do nothing if an entry is already installed
+#   --if-missing  do nothing if an entry that opens setding:// links is
+#                 already installed
 #   --uninstall   remove the entry and the icon
 set -eu
 
@@ -47,7 +49,8 @@ if $uninstall; then
   exit 0
 fi
 
-if $if_missing && [ -f "$entry" ]; then
+# Entries from before #1015 do not open setding:// links yet: replaced.
+if $if_missing && [ -f "$entry" ] && grep -q '^MimeType=.*x-scheme-handler/setding;' "$entry"; then
   exit 0
 fi
 
@@ -60,4 +63,7 @@ if $hidden; then
 fi
 mv "$entry.tmp" "$entry"
 refresh
+# setding:// links open this entry (optional tool).
+command -v xdg-mime >/dev/null 2>&1 &&
+  xdg-mime default "$id.desktop" x-scheme-handler/setding 2>/dev/null || true
 echo "setDING installed: $entry"

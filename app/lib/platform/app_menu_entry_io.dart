@@ -23,21 +23,27 @@ AppMenuEntry? createAppMenuEntry() {
 /// folder (`$XDG_DATA_HOME`, else `~/.local/share`), like
 /// `install-desktop-entry.sh` of the tar.gz (ADR-0019), but starting the
 /// AppImage file [appImage]. Under Wayland the window only shows the setDING
-/// icon with this entry: the compositor looks it up by the app ID.
+/// icon with this entry: the compositor looks it up by the app ID. The entry
+/// also opens `setding://` invitation links (ADR-0005, #1015).
 class DesktopFileMenuEntry implements AppMenuEntry {
   DesktopFileMenuEntry({
     required this.appImage,
     required this.bundleDir,
     String? dataHome,
     Future<void> Function(String applications)? refresh,
+    Future<void> Function()? registerLinks,
   }) : dataHome = dataHome ?? _defaultDataHome(),
-       _refresh = refresh ?? _refreshDesktop;
+       _refresh = refresh ?? _refreshDesktop,
+       _registerLinks = registerLinks ?? _registerLinkHandler;
 
   static const id = 'app.setding';
 
   /// Marks an entry written by an AppImage, so that only those follow the
   /// AppImage when it moves ([repairIfMoved]).
   static const marker = 'X-setDING-AppImage=true';
+
+  /// The MIME type of `setding://` links, which the entry handles.
+  static const linkScheme = 'x-scheme-handler/setding';
 
   /// The AppImage file the entry starts.
   final String appImage;
@@ -50,6 +56,7 @@ class DesktopFileMenuEntry implements AppMenuEntry {
   final String dataHome;
 
   final Future<void> Function(String applications) _refresh;
+  final Future<void> Function() _registerLinks;
 
   String get _applications => p.join(dataHome, 'applications');
   File get _entry => File(p.join(_applications, '$id.desktop'));
@@ -72,7 +79,7 @@ class DesktopFileMenuEntry implements AppMenuEntry {
         .readAsString();
     final content = template.replaceAll(
       RegExp(r'^Exec=.*$', multiLine: true),
-      'Exec=${execValue(appImage)}',
+      'Exec=${execValue(appImage)} %u',
     );
     await _png.parent.create(recursive: true);
     await _svg.parent.create(recursive: true);
@@ -87,6 +94,7 @@ class DesktopFileMenuEntry implements AppMenuEntry {
     await tmp.rename(_entry.path);
     _log.info('Desktop entry installed for $appImage');
     await _refresh(_applications);
+    await _registerLinks();
   }
 
   @override
@@ -104,12 +112,26 @@ class DesktopFileMenuEntry implements AppMenuEntry {
     final content = await _entry.readAsString();
     if (!content.split('\n').contains(marker)) return false;
     final exec = execPath(content);
-    if (exec == appImage) return false;
+    if (exec == appImage) {
+      // Entries from before #1015 do not open setding:// links yet.
+      if (handlesLinks(content)) return false;
+      await install();
+      return true;
+    }
     // Another AppImage that is still there keeps its entry.
     if (exec != null && await File(exec).exists()) return false;
     await install();
     return true;
   }
+
+  /// Whether [desktopFile] opens `setding://` links.
+  static bool handlesLinks(String desktopFile) => desktopFile
+      .split('\n')
+      .any(
+        (l) =>
+            l.startsWith('MimeType=') &&
+            l.substring('MimeType='.length).split(';').contains(linkScheme),
+      );
 
   /// The value of `Exec=` that starts [path]: quoted and escaped as the
   /// Desktop Entry Specification asks (quoting, then `%` and the string
@@ -156,6 +178,15 @@ class DesktopFileMenuEntry implements AppMenuEntry {
     final xdg = env['XDG_DATA_HOME'];
     if (xdg != null && xdg.isNotEmpty) return xdg;
     return p.join(env['HOME'] ?? '', '.local', 'share');
+  }
+
+  /// Makes the entry the handler of `setding://` links (optional tool).
+  static Future<void> _registerLinkHandler() async {
+    try {
+      await Process.run('xdg-mime', ['default', '$id.desktop', linkScheme]);
+    } on ProcessException {
+      // Not installed; update-desktop-database still lists the entry.
+    }
   }
 
   /// Lets the desktop pick up the change; each tool is optional.

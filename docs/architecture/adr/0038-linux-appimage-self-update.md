@@ -39,7 +39,9 @@ work the same way.
     AppImage. The file keeps its name and place (desktop entries and launchers keep
     working).
   - Then the app ends and the new version starts two seconds later (the Linux app
-    is not single-instance; the delay keeps the two from sharing the database).
+    is single-instance since #1015: the delay lets the old instance leave before
+    the new one starts, so it does not just hand over to it, and keeps the two
+    from sharing the database).
   - If the folder of the AppImage is not writable, the update fails with the usual
     message; the person can download the new AppImage by hand.
 - **Application menu entry (AppImage only, #1006):** under *Storage & info → This
@@ -50,7 +52,7 @@ work the same way.
   `install-desktop-entry.sh` of the tar.gz, then refreshes the menu
   (`update-desktop-database`, `kbuildsycoca6/5`, each optional). **Remove** deletes
   them again. Never without a tap. Under Wayland the entry also gives the window
-  its icon (ADR-0019).
+  its icon (ADR-0019), and it opens `setding://` invitation links (#1015).
   - The in-app update keeps the file's name and place, so the entry keeps
     working. If an entry made by an AppImage starts a file that is gone (the
     AppImage was moved or renamed), the app points it at itself when it starts;
@@ -97,6 +99,10 @@ work the same way.
   (#1006): the AppImage adds its own application menu entry and icon on
   request (*Storage & info*), and the entry follows a moved AppImage. The owner
   chose this over shipping the icon as a separate release asset.
+- 2026-11-23: The menu entry also opens `setding://` invitation links (#1015,
+  ADR-0005): `MimeType=x-scheme-handler/setding;`, `%u` in `Exec`, registered
+  with `xdg-mime default`; an entry from before is updated at start. The Linux
+  app is single-instance (except isolated `SETDING_DATA_DIR` instances).
 
 ## Open points
 

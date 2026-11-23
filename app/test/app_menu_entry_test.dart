@@ -18,6 +18,7 @@ void main() {
     late String data;
     late String appImage;
     var refreshed = 0;
+    var registered = 0;
 
     setUp(() {
       root = Directory.systemTemp.createTempSync('setding-menu-');
@@ -34,6 +35,7 @@ void main() {
         ..createSync(recursive: true)
         ..writeAsStringSync('appimage');
       refreshed = 0;
+      registered = 0;
     });
     tearDown(() => root.deleteSync(recursive: true));
 
@@ -42,6 +44,7 @@ void main() {
       bundleDir: bundle,
       dataHome: data,
       refresh: (_) async => refreshed++,
+      registerLinks: () async => registered++,
     );
     File desktopFile() =>
         File(p.join(data, 'applications', 'app.setding.desktop'));
@@ -52,7 +55,11 @@ void main() {
       await e.install();
       expect(await e.state(), AppMenuEntryState.installed);
       final content = desktopFile().readAsStringSync();
-      expect(content, contains('Exec="$appImage"\n'));
+      // Opens setding:// invitation links (#1015).
+      expect(content, contains('Exec="$appImage" %u\n'));
+      expect(content, contains('MimeType=x-scheme-handler/setding;\n'));
+      expect(DesktopFileMenuEntry.handlesLinks(content), isTrue);
+      expect(registered, 1);
       expect(content, contains('Icon=app.setding\n'));
       expect(content, contains('Name=setDING\n'));
       expect(content, endsWith('${DesktopFileMenuEntry.marker}\n'));
@@ -109,6 +116,39 @@ void main() {
       expect(desktopFile().existsSync(), isFalse);
     });
 
+    test('updates an entry that does not open setding:// links', () async {
+      // Written before #1015: no MimeType, no %u.
+      final old = File('linux/packaging/app.setding.desktop.in')
+          .readAsStringSync()
+          .replaceAll(RegExp(r'^MimeType=.*\n', multiLine: true), '')
+          .replaceAll(
+            RegExp(r'^Exec=.*$', multiLine: true),
+            'Exec=${DesktopFileMenuEntry.execValue(appImage)}',
+          );
+      desktopFile()
+        ..createSync(recursive: true)
+        ..writeAsStringSync('$old${DesktopFileMenuEntry.marker}\n');
+      expect(DesktopFileMenuEntry.handlesLinks(old), isFalse);
+      expect(await entry().repairIfMoved(), isTrue);
+      expect(
+        DesktopFileMenuEntry.handlesLinks(desktopFile().readAsStringSync()),
+        isTrue,
+      );
+      expect(registered, 1);
+      expect(await entry().repairIfMoved(), isFalse);
+    });
+
+    test('the desktop template opens setding:// links', () {
+      final template = File('linux/packaging/app.setding.desktop.in')
+          .readAsStringSync();
+      expect(DesktopFileMenuEntry.handlesLinks(template), isTrue);
+      expect(template, contains('Exec="@EXEC@" %u\n'));
+      expect(
+        DesktopFileMenuEntry.handlesLinks('MimeType=text/plain;\n'),
+        isFalse,
+      );
+    });
+
     test('quotes and escapes the path of Exec', () {
       for (final path in [
         '/home/a/setding.AppImage',
@@ -128,6 +168,66 @@ void main() {
         '/usr/bin/setding',
       );
       expect(DesktopFileMenuEntry.execPath('Name=x'), isNull);
+    });
+  });
+
+  // The script of the tar.gz and of make dev / make start (ADR-0019).
+  group('install-desktop-entry.sh', () {
+    late Directory root;
+    late String bundle;
+    late String data;
+    late String log;
+    late Map<String, String> env;
+
+    setUp(() {
+      root = Directory.systemTemp.createTempSync('setding-script-');
+      bundle = p.join(root.path, 'bundle');
+      data = p.join(root.path, 'share');
+      log = p.join(root.path, 'xdg-mime.log');
+      Directory(p.join(bundle, 'data')).createSync(recursive: true);
+      for (final name in [
+        'app.setding.desktop.in',
+        'install-desktop-entry.sh',
+      ]) {
+        File(p.join('linux', 'packaging', name)).copySync(p.join(bundle, name));
+      }
+      File(p.join(bundle, 'data', 'app_icon.png')).writeAsStringSync('png');
+      File(p.join(bundle, 'data', 'app_icon.svg')).writeAsStringSync('svg');
+      // A fake xdg-mime that records its arguments.
+      final bin = Directory(p.join(root.path, 'bin'))..createSync();
+      final fake = File(p.join(bin.path, 'xdg-mime'))
+        ..writeAsStringSync('#!/bin/sh\necho "\$@" >> "$log"\n');
+      Process.runSync('chmod', ['+x', fake.path]);
+      env = {'XDG_DATA_HOME': data, 'PATH': '${bin.path}:/usr/bin:/bin'};
+    });
+    tearDown(() => root.deleteSync(recursive: true));
+
+    ProcessResult run(List<String> args) => Process.runSync('sh', [
+      p.join(bundle, 'install-desktop-entry.sh'),
+      ...args,
+    ], environment: env);
+    File desktopFile() =>
+        File(p.join(data, 'applications', 'app.setding.desktop'));
+
+    test('registers setding:// links and replaces older entries', () {
+      // An entry from before #1015 is replaced by --if-missing.
+      desktopFile()
+        ..createSync(recursive: true)
+        ..writeAsStringSync('[Desktop Entry]\nExec="/old/setding"\n');
+      expect(run(['--hidden', '--if-missing']).exitCode, 0);
+      final content = desktopFile().readAsStringSync();
+      expect(content, contains('Exec="$bundle/setding" %u\n'));
+      expect(DesktopFileMenuEntry.handlesLinks(content), isTrue);
+      expect(content, endsWith('NoDisplay=true\n'));
+      expect(
+        File(log).readAsStringSync(),
+        'default app.setding.desktop x-scheme-handler/setding\n',
+      );
+
+      // A current entry is kept.
+      desktopFile().writeAsStringSync('$content# kept\n');
+      expect(run(['--if-missing']).exitCode, 0);
+      expect(desktopFile().readAsStringSync(), endsWith('# kept\n'));
     });
   });
 
