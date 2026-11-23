@@ -309,6 +309,9 @@ Older clients that import songs do not set *to review*.
   the stroke painting of the annotations (`paintStrokes`), with undo, and burns
   the strokes into the image. The reports panel shows a thumbnail, loaded (and
   downloaded once) when shown, full size on a tap.
+- 2026-11-23: Website page *Songs prüfen und Fehler melden* / *Checking songs
+  and reporting mistakes* (`songs/review.mdx`, both languages) with five
+  screenshots (#992). All implementation issues of this ADR are done.
 
 ## Open points
 

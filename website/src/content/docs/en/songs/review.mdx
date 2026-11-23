@@ -1,0 +1,94 @@
+---
+title: Checking songs and reporting mistakes
+description: Check and approve imported songs, report mistakes in songs and resolve the reports.
+sidebar:
+  order: 7
+---
+
+import { Image } from 'astro:assets';
+import list from '../../../../../../docs/screenshots/songs_review.png';
+import banner from '../../../../../../docs/screenshots/song_review_banner.png';
+import sheet from '../../../../../../docs/screenshots/song_report_sheet.png';
+import marking from '../../../../../../docs/screenshots/song_report_marking.png';
+import reports from '../../../../../../docs/screenshots/song_reports.png';
+
+An imported song looks finished, but often is not: a wrong chord, a missing
+verse, a different key than the one your band plays. setDING therefore keeps
+track of the songs **to review**, and everyone in the organization can
+**report a mistake** when they notice one in rehearsal or on stage.
+
+Who may do what:
+
+- **Report a mistake**: everyone in the organization, members too.
+- **Approve** songs, **mark them for review** and **resolve** reports: whoever
+  may edit the song, i.e. the **librarians** and admins of the organization,
+  and **band leaders** for their own songs.
+- **See** reports: members see their own, leaders, set planners, librarians
+  and admins all of them.
+
+## Checking after an import
+
+Every song you import from a file (also from SongSelect) is **To review** at
+first, with the reason **After import**. Archives (backups, set and song
+archives) bring the status the songs had in the archive; songs written by hand
+are not to review.
+
+In the song list a small icon shows everyone that a song is not checked yet or
+has a reported mistake. Whoever may edit songs finds the lines **songs to
+review** and **songs with reported mistakes** under **To do** on the overview;
+they open the filtered song list. The list **To review** offers **Approve
+all**, with **Undo**.
+
+<Image src={list} alt="The song list filtered to the songs to review, with Approve all" />
+
+In the song, a banner shows why it is to review and how many reports are open.
+**Approve** approves it; with open reports, setDING asks whether to resolve
+them too. Saving alone never approves a song. In the menu (⋮), **Mark for
+review …** with a reason (e.g. "the bridge is wrong") puts a song back on the
+list.
+
+<Image src={banner} alt="A song with the banner To review: After import and one open report" />
+
+Everyone else sees a short hint in the song that it is not checked yet or that
+a mistake was reported. You can still play it: nothing blocks a song in sets or
+live mode. A set with an upcoming gig shows how many of its songs are to review
+or have a reported mistake.
+
+## Reporting a mistake
+
+**Report a mistake …** in the menu (⋮) of a song, or the icon in the control
+bar of live mode, opens the form: choose what it is about (**Chords**,
+**Lyrics**, **Key**, **Sequence**, **Tempo**, **Formatting**, **Sheet music
+(PDF)**, **Other**), add a **Comment** if you like and tap **Send**. In live
+mode the page you are on is added. On stage one press of the pedal is enough:
+with a category chosen it sends the report, without one it cancels.
+
+<Image src={sheet} alt="The Report a mistake form with the categories and a comment" />
+
+The report is stored on your device and sent with the next sync, also when you
+are offline.
+
+### With a screenshot
+
+**Attach a screenshot** shows exactly what you saw: setDING takes the current
+view, and you mark the place with the **Pen** or the **Highlighter**.
+**Attach** adds the image to the report. Since the screenshot shows your view
+(font size, transposition, capo), the librarians also see whether the mistake
+is perhaps in your personal adjustments.
+
+<Image src={marking} alt="A screenshot with a red circle around the chord" />
+
+## Resolving reports
+
+The icon with the number in the title bar of a song (or **Show** in the banner)
+opens the **Mistake reports**: open ones first, resolved and withdrawn ones
+below as history. A tap on a screenshot shows it full size.
+
+- Whoever reported can **withdraw** an open report.
+- Whoever may edit the song **resolves** it with an **Answer** (e.g. "Fixed,
+  thanks!") or **reopens** it.
+
+After the next sync, the reporter is told once that the report was resolved,
+with the answer.
+
+<Image src={reports} alt="The mistake reports of a song, one open and one resolved" />

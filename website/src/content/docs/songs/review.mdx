@@ -1,0 +1,99 @@
+---
+title: Songs prüfen und Fehler melden
+description: Importierte Songs prüfen und freigeben, Fehler in Songs melden und Meldungen erledigen.
+sidebar:
+  order: 7
+---
+
+import { Image } from 'astro:assets';
+import list from '../../../../../docs/screenshots/songs_review_de.png';
+import banner from '../../../../../docs/screenshots/song_review_banner_de.png';
+import sheet from '../../../../../docs/screenshots/song_report_sheet_de.png';
+import marking from '../../../../../docs/screenshots/song_report_marking_de.png';
+import reports from '../../../../../docs/screenshots/song_reports_de.png';
+
+Ein importierter Song sieht fertig aus, ist es aber oft nicht: ein falscher
+Akkord, eine fehlende Strophe, eine andere Tonart als bei euch. setDING merkt
+sich deshalb, welche Songs noch **zu prüfen** sind, und alle in der
+Organisation können **Fehler melden**, wenn ihnen in der Probe oder auf der
+Bühne etwas auffällt.
+
+Wer was darf:
+
+- **Fehler melden**: alle in der Organisation, auch Mitglieder.
+- Songs **freigeben**, **zur Prüfung markieren** und Meldungen **erledigen**:
+  wer den Song bearbeiten darf, also die **Bibliothek** und die Admins der
+  Organisation, die **Leitung** bei ihren eigenen Songs.
+- Meldungen **sehen**: Mitglieder sehen ihre eigenen, Leitung, Setplanung,
+  Bibliothek und Admins alle.
+
+## Nach dem Import prüfen
+
+Jeder Song, den du aus einer Datei importierst (auch von SongSelect), ist
+zuerst **Zu prüfen** mit dem Grund **Nach Import**. Archive (Backup, Set- und
+Song-Archive) bringen den Status mit, den die Songs im Archiv hatten; von Hand
+erfasste Songs sind nicht zu prüfen.
+
+In der Songliste zeigt ein kleines Symbol allen, dass ein Song noch nicht
+geprüft ist oder einen gemeldeten Fehler hat. Wer Songs bearbeiten darf,
+findet unter **Zu erledigen** auf der Übersicht die Zeilen **Songs zu prüfen** und
+**Songs mit gemeldeten Fehlern**; sie öffnen die gefilterte Songliste. In der
+Liste **Zu prüfen** gibt es **Alle freigeben**, mit **Rückgängig**.
+
+<Image src={list} alt="Die Songliste gefiltert auf die Songs zu prüfen, mit «Alle freigeben»" />
+
+Im Song zeigt ein Hinweis, warum er zu prüfen ist und wie viele Meldungen offen
+sind. **Freigeben** gibt ihn frei; hat er offene Meldungen, fragt setDING, ob
+sie gleich mit erledigt werden sollen. Speichern allein gibt einen Song nie
+frei. Über das Menü (⋮) kannst du einen Song mit **Zur Prüfung markieren …**
+und einem Grund (z. B. «Bridge stimmt nicht») wieder auf die Liste setzen.
+
+<Image src={banner} alt="Ein Song mit dem Hinweis «Zu prüfen: Nach Import» und einer offenen Fehlermeldung" />
+
+Alle anderen sehen im Song nur einen kurzen Hinweis, dass er noch nicht geprüft
+ist oder ein Fehler gemeldet wurde. Spielen kannst du ihn trotzdem: nichts
+sperrt einen Song in Sets oder im Live-Modus. Ein Set mit einem kommenden
+Auftritt zeigt aber, wie viele seiner Songs noch zu prüfen sind oder einen
+gemeldeten Fehler haben.
+
+## Einen Fehler melden
+
+**Fehler melden …** im Menü (⋮) eines Songs oder das Symbol in der
+Steuerleiste des Live-Modus öffnet das Formular: wähle, worum es geht
+(**Akkorde**, **Text**, **Tonart**, **Ablauf**, **Tempo**, **Darstellung**,
+**Noten (PDF)**, **Anderes**), schreib bei Bedarf einen **Kommentar** und
+tippe auf **Senden**. Im Live-Modus kommt die Seite, auf der du gerade bist,
+automatisch dazu. Auf der Bühne genügt ein Druck auf das Pedal: mit einer
+gewählten Kategorie sendet es die Meldung, ohne bricht es ab.
+
+<Image src={sheet} alt="Das Formular «Fehler melden» mit den Kategorien und einem Kommentar" />
+
+Die Meldung wird auf deinem Gerät gespeichert und beim nächsten Sync
+übertragen, auch wenn du gerade offline bist.
+
+### Mit Screenshot
+
+Mit **Screenshot anhängen** zeigst du genau, was du gesehen hast: setDING
+nimmt die aktuelle Ansicht auf, und du markierst die Stelle mit **Stift** oder
+**Leuchtstift**. **Anhängen** fügt das Bild der Meldung bei. Weil der
+Screenshot deine Ansicht zeigt (Schriftgrösse, Transponierung, Capo), sieht
+die Bibliothek auch, ob der Fehler vielleicht in deinen persönlichen
+Anpassungen liegt.
+
+<Image src={marking} alt="Ein Screenshot mit einem roten Kreis um den Akkord" />
+
+## Meldungen erledigen
+
+Das Symbol mit der Zahl in der Titelleiste eines Songs (oder **Anzeigen** im
+Hinweis) öffnet die **Fehlermeldungen**: offene zuerst, erledigte und
+zurückgezogene darunter als Verlauf. Ein Tipp auf einen Screenshot zeigt ihn
+gross.
+
+- Wer gemeldet hat, kann eine offene Meldung **zurückziehen**.
+- Wer den Song bearbeiten darf, **erledigt** sie mit einer **Antwort**
+  (z. B. «Korrigiert, danke!») oder öffnet sie **wieder**.
+
+Wer gemeldet hat, sieht nach dem nächsten Sync einmal den Hinweis, dass die
+Meldung erledigt wurde, mit der Antwort.
+
+<Image src={reports} alt="Die Fehlermeldungen eines Songs mit einer offenen und einer erledigten Meldung" />
