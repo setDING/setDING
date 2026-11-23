@@ -340,7 +340,8 @@ void main() {
           'email': 'band-${DateTime.now().microsecondsSinceEpoch}@setding.test',
           'password': 'password-123',
           'passwordConfirm': 'password-123',
-          'name': 'Drummer',
+          'first_name': 'Drummer',
+          'last_name': 'Test',
           'invite': r.json['token'],
         });
         created.expectStatus(200);

@@ -3,7 +3,7 @@
 // First name, last name and nickname of accounts (ADR-0062, issue #1039).
 // The fields are not `required` in the schema, so accounts from before keep
 // working until their owner completes the name (the app asks after sign-in);
-// the hook in pb_hooks/names.pb.js requires them on sign-up and refuses
+// the hooks (registration.pb.js, names.pb.js) require them on sign-up and refuse
 // clearing them. Existing names are split: two or more words become first
 // name(s) and last name, a single word becomes the nickname.
 migrate(

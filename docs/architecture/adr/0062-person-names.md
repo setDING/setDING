@@ -27,7 +27,8 @@ The decisions (owner, 2026-11-23):
 - Three text fields on `users`: **`first_name`**, **`last_name`** and
   **`nickname`** (at most 100 characters each). They are not `required` in the
   schema, so accounts from before keep working until they are completed.
-- A hook (`pb_hooks/names.pb.js`, `lib/names.js`) on create and update requests:
+- Hooks on create (`pb_hooks/registration.pb.js`, after the invitation check)
+  and update requests (`pb_hooks/names.pb.js`), logic in `lib/names.js`:
   - **sign-up** needs a non-empty first and last name, also for superusers;
   - an update that sends `first_name` or `last_name` cannot clear it;
   - whitespace is trimmed and collapsed;

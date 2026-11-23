@@ -11,7 +11,8 @@ void main() {
     'email': email,
     'password': 'password-123',
     'passwordConfirm': 'password-123',
-    'name': 'New',
+    'first_name': 'New',
+    'last_name': 'Test',
     'invite': ?invite,
   };
 
@@ -309,7 +310,8 @@ extension on PocketBase {
       'email': address,
       'password': 'password-123',
       'passwordConfirm': 'password-123',
-      'name': 'Late',
+      'first_name': 'Late',
+      'last_name': 'Test',
     })).expectStatus(200);
     final auth = await guest.send(
       'POST',

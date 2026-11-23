@@ -31,9 +31,11 @@ routerAdd("GET", "/api/setding/config", (e) => {
   });
 });
 
-// Sign-up only with a valid invitation on an invite-only server.
+// Sign-up only with a valid invitation on an invite-only server, and only
+// with first and last name (ADR-0062).
 onRecordCreateRequest((e) => {
   require(`${__hooks}/lib/registration.js`).requireSignupInvitation(e);
+  require(`${__hooks}/lib/names.js`).check(e, true);
   e.next();
 }, "users");
 

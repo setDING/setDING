@@ -228,7 +228,7 @@ class PocketBase {
 
   /// Signs up a new user and returns a client signed in as that user.
   /// [name] becomes the nickname, so it is the user's display name
-  /// (ADR-0062); without one the user is "User <n>".
+  /// (ADR-0062); without one the user is "User `n`".
   Future<User> signUp([String? name]) async {
     final n = ++_users;
     final email =
