@@ -378,7 +378,7 @@ See "Open points" in the individual ADRs. The most important:
 50. Can the app tell the key of a song without `{key}`? → ADR-0056 (accepted, #919): it suggests one from the chords in the song details, with the runner-up when close; a person confirms it per song, it is never written by itself or used as an implicit key; the import report suggests keys too (#925)
 51. Can the app tell whether the musician's page turner is connected? → ADR-0057 (accepted, #913): pairing by a key press, matched by vendor and product ID (the name only without IDs); Android and Windows tell the device of every key and the connected keyboards, iOS only whether a keyboard is connected; web and Linux not
 52. Can a chorus that a song writes out again be hidden? → ADR-0058 (accepted, #955): a personal switch, off by default, leaves out every chorus with the same lines as an earlier one, anywhere in the song, in the song view and live mode (`withoutRepeatedChoruses`); `{chorus}` recalls keep their own setting
-53. Can Roman numerals be written with upper case and `m` (`IIm7 – V7 – Imaj7`), as in jazz? → ADR-0059 (proposed, #971): a device setting *Numeral spelling* with *Case* (ADR-0055, default) and *Chord symbol*, where the suffix follows the chord style like the Nashville numbers. Open: the default
+53. Can Roman numerals be written with upper case and `m` (`IIm7 – V7 – Imaj7`), as in jazz? → ADR-0059 (proposed, #971): a device setting *Numeral spelling* with *Case* (ADR-0055, default) and *Chord symbol*, where the suffix follows the chord style like the Nashville numbers; default *Case*
 
 ## 10. ADR index
 

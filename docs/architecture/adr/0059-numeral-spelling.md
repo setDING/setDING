@@ -99,7 +99,9 @@ decision 4).
   correct, but the upper-case spelling with `m` is missing. The owner finds upper
   case better personally.
 
+- 2026-11-23: Default is *Case*, so nothing changes for people who already
+  use numerals (owner, #971).
+
 ## Open points
 
-- Default spelling: *Case* (no change for current users) or *Chord symbol* (the
-  owner's preference)?
+- None.
