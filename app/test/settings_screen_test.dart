@@ -284,6 +284,53 @@ void main() {
     await app.dispose(tester);
   });
 
+  test(
+    'vocals turns on lyrics only, leaving it brings chords back (#1001)',
+    () {
+      const guitar = AppSettings();
+      final vocals = guitar.withInstrument('vocals');
+      expect(vocals.displayMode, DisplayMode.lyricsOnly);
+      expect(vocals.instrument, 'vocals');
+      // Chords shown by hand stay shown while the instrument stays vocals.
+      final byHand = vocals.copyWith(displayMode: DisplayMode.lyricsAndChords);
+      expect(
+        byHand.withInstrument('vocals').displayMode,
+        DisplayMode.lyricsAndChords,
+      );
+      expect(
+        vocals.withInstrument('bass').displayMode,
+        DisplayMode.lyricsAndChords,
+      );
+      // Lyrics only chosen by hand on another instrument stays.
+      final lyricsGuitar = guitar.copyWith(displayMode: DisplayMode.lyricsOnly);
+      expect(
+        lyricsGuitar.withInstrument('bass').displayMode,
+        DisplayMode.lyricsOnly,
+      );
+    },
+  );
+
+  testWidgets('picking vocals hides the chords (#1001)', (tester) async {
+    useTabletSize(tester);
+    final app = await pumpSettings(tester);
+    await tester.tap(find.byKey(const Key('settings-category-musician')));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.widgetWithText(ChoiceChip, 'Vocals'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Vocals'));
+    await tester.pumpAndSettle();
+    expect(app.personal()['instrument'], 'vocals');
+    expect(app.personal()['displayMode'], 'lyricsOnly');
+
+    await tester.ensureVisible(find.widgetWithText(ChoiceChip, 'Guitar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Guitar'));
+    await tester.pumpAndSettle();
+    expect(app.personal()['displayMode'], 'lyricsAndChords');
+    await app.dispose(tester);
+  });
+
   testWidgets('chord style and raised extensions', (tester) async {
     useTabletSize(tester);
     final app = await pumpSettings(tester);
