@@ -1,6 +1,6 @@
 # setDING – Architecture
 
-> Status: **Draft for discussion** (most core decisions accepted) · Last updated: 2026-11-21
+> Status: **Draft for discussion** (most core decisions accepted) · Last updated: 2026-11-23
 >
 > This document describes the overall architecture. Individual decisions are recorded
 > as Architecture Decision Records (ADRs) in [`adr/`](adr/).
@@ -81,6 +81,7 @@ A user can be a member of several organizations and bands; roles are defined per
 | Registration | Server operator sets `SETDING_REGISTRATION` = `invite_only` (default: sign-up only with an invitation, new organizations only via operator **founder invitations**) or `open`, and `SETDING_EMAIL_VERIFICATION` = `off` (default) or `required` (needs SMTP); no in-app super-admin; rate limits on sign-up and invitations | [ADR-0024](adr/0024-registration-mode.md) |
 | Organizations | Bands belong to an **organization** that owns the shared song library; organization admins manage people and bands; created automatically for a single band | [ADR-0017](adr/0017-organizations.md) |
 | Finer-grained roles | Ordered fixed roles: organization admin > **librarian** > member, band leader > **set planner** > member; organization admins may do everything; librarians edit the library (replaces `members_can_edit_songs`), band leaders create new songs and edit only their own; leaders may invite into their band | [ADR-0023](adr/0023-finer-grained-roles.md) |
+| Song review & reports | A **review status** per song (*to review* with a reason / approved), set by file imports ("After import") and approved explicitly by whoever may edit the song; **mistake reports** by anyone in the organization in their own collection (category, comment, location, optional **screenshot with own markings**), resolved with an answer and kept as history; review fields last writer wins without a base revision; a discreet icon for everyone, *To do* only for approvers | [ADR-0060](adr/0060-song-review-and-reports.md) (Proposed) |
 | Server data model | PocketBase collections as migrations, server-wide revision counter, set items as JSON, access rules per role, tested against a real PocketBase | [ADR-0015](adr/0015-server-data-model.md) |
 | Printable set list | PDF generated in the client with the `pdf` package, embedded font, saved via the save dialog; no print plugin yet | [ADR-0013](adr/0013-printable-set-list.md) |
 | Opening exported PDFs | The message after a PDF export offers **Open**: a copy in the app's cache is opened in the system's default app with `open_filex` (FileProvider on Android, its media permissions removed); PDF exports only | [ADR-0048](adr/0048-open-exported-pdf.md) |
@@ -167,6 +168,8 @@ erDiagram
     BAND ||--o{ BAND_ARRANGEMENT : has
     SONG ||--o{ BAND_ARRANGEMENT : "arranged by"
     SONG ||--o{ ATTACHMENT : has
+    SONG ||--o{ SONG_REPORT : "reported in"
+    USER ||--o{ SONG_REPORT : writes
     ORGANIZATION ||--o{ INVITATION : has
     USER ||--o| USER_SETTINGS : has
 
@@ -175,13 +178,14 @@ erDiagram
     BAND { uuid id uuid organization_id string name int stale_after_months bool deleted timestamp deleted_at bool purged }
     USER { uuid id string name string email string locale }
     MEMBERSHIP { uuid band_id uuid user_id enum role "admin (leader)|planner|member" }
-    SONG { uuid id string chordpro_source string title string artist string key int tempo uuid work_id string language int revision timestamp updated_at bool deleted timestamp deleted_at bool purged uuid created_by uuid updated_by }
+    SONG { uuid id string chordpro_source string title string artist string key int tempo uuid work_id string language int revision timestamp updated_at bool deleted timestamp deleted_at bool purged uuid created_by uuid updated_by string review_state "|to_review" string review_reason uuid reviewed_by timestamp reviewed_at }
     SETLIST { uuid id string name date gig_date string venue int revision bool deleted timestamp deleted_at bool purged uuid updated_by }
     SET_ITEM { uuid id uuid set_id uuid song_id int position int transpose string sequence string note string type "song|marker" string icon json played }
     PERSONAL_OVERLAY { uuid user_id uuid song_id int transpose int capo float font_scale string notes bool nashville string live_view "chordpro|attachment_id" bool hide_annotations string verse_chords "all|first|stacked" bool stacked_choruses json midi string click_grouping string click_subdivision "off|eighths|sixteenths|triplets" }
     ANNOTATION { uuid id uuid user_id uuid song_id string target json stroke int updated_at int pending }
     BAND_ARRANGEMENT { uuid band_id uuid song_id int transpose string sequence int tempo int revision bool deleted uuid updated_by }
     ATTACHMENT { uuid id uuid song_id string name file pdf int pages int size_bytes int revision bool deleted timestamp deleted_at bool purged }
+    SONG_REPORT { uuid id uuid song_id uuid organization_id uuid author string category string comment json location file screenshot string status "open|resolved|withdrawn" string resolution uuid resolved_by timestamp resolved_at int revision bool deleted bool purged }
     USER_SETTINGS { uuid user_id json data int revision }
     INVITATION { uuid id uuid organization_id uuid band_id string founder_name string token_hash string token_enc uuid created_by timestamp expires_at bool revoked uuid used_by }
     CHANGE_LOG { int id timestamp at enum kind "songAdded|songChanged|setChanged" uuid scope_id uuid record_id string title uuid user_id json details }
@@ -267,6 +271,7 @@ Notes:
 | **Page turner pairing** | ADR-0057 accepted (#913, done in #921): pairing in the live settings, connection on the overview; manual test on Android passed (AirTurn DUO500), open: the Windows build and test, the iPad check |
 | **Written-out chorus once** | ADR-0058 accepted (#955), implemented with it (#962): a personal switch leaves out choruses written out again |
 | **Numeral spelling** | ADR-0059 accepted (#971); implementation: chordpro conversion #975 (done), setting #976 (done), website page #978 (done): a device setting *Case* (`ii7`) / *Chord symbol* (`IIm7`), the chord symbol spelled in the chord style |
+| **Song review & reports** | ADR-0060 proposed (#985): review status *to review* / approved set by file imports, mistake reports by everyone with an optional marked screenshot, *To do* filters and a hint in sets; implementation issues follow once accepted |
 | **Later** | Configurable page turner key mapping, band annotations shared with the band (follow-up of ADR-0032), MIDI program change per song in live mode (ADR-0039, accepted: prototype #512, data #561, settings and connection #562, sending in live mode #564; the song's program field #563, manual test with the Nord on Android passed #558; the manual test with a Nord on Windows, Linux and Chrome open), keyboard programs per device profile with a Yamaha Motif XF profile (ADR-0042, accepted: Motif XF profile #591, storage per profile #593; the manual test on a Motif XF8 open), MIDI page turning |
 
 ### MVP status (2026-11-14)
@@ -379,6 +384,7 @@ See "Open points" in the individual ADRs. The most important:
 51. Can the app tell whether the musician's page turner is connected? → ADR-0057 (accepted, #913): pairing by a key press, matched by vendor and product ID (the name only without IDs); Android and Windows tell the device of every key and the connected keyboards, iOS only whether a keyboard is connected; web and Linux not
 52. Can a chorus that a song writes out again be hidden? → ADR-0058 (accepted, #955): a personal switch, off by default, leaves out every chorus with the same lines as an earlier one, anywhere in the song, in the song view and live mode (`withoutRepeatedChoruses`); `{chorus}` recalls keep their own setting
 53. Can Roman numerals be written with upper case and `m` (`IIm7 – V7 – Imaj7`), as in jazz? → ADR-0059 (accepted, #971; implementation #975, #976, #978): a device setting *Numeral spelling* with *Case* (ADR-0055, default) and *Chord symbol*, where the suffix follows the chord style like the Nashville numbers; default *Case*
+54. How do imported songs get checked, and how do members report mistakes? → ADR-0060 (proposed, #985): a review status per song set by file imports and approved by whoever may edit the song, and mistake reports in their own collection (category, comment, location, optional screenshot with own markings) that anyone in the organization may write and approvers resolve with an answer. Open: reports in archives, limits against abuse, change proposals later
 
 ## 10. ADR index
 
@@ -442,5 +448,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0057](adr/0057-page-turner-pairing.md) | Pairing the page turner and detecting its connection | Accepted |
 | [0058](adr/0058-written-out-chorus-once.md) | Showing a written-out repeated chorus only once | Accepted |
 | [0059](adr/0059-numeral-spelling.md) | Spelling of Roman numerals | Accepted |
+| [0060](adr/0060-song-review-and-reports.md) | Song review status and mistake reports | Proposed |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.
