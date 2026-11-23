@@ -1502,6 +1502,8 @@
   "settingsShowOutsideSequenceHint": "Im Live-Modus abgeschwächt statt ausgeblendet",
   "settingsAnnotationFinger": "Notizen mit dem Finger zeichnen",
   "settingsAnnotationFingerHint": "Für Geräte ohne Stift; sonst blättern die Finger weiter",
+  "settingsSpaceStartsBeat": "Leertaste startet den Takt",
+  "settingsSpaceStartsBeatHint": "Die Leertaste startet und stoppt Takt und Klick wie Enter, statt vorwärts zu blättern",
   "stampFermata": "Fermate",
   "stampBreath": "Atemzeichen",
   "stampCrescendo": "Crescendo",

@@ -1251,6 +1251,8 @@
   "settingsShowOutsideSequenceHint": "Dimmed in live mode instead of hidden",
   "settingsAnnotationFinger": "Draw annotations with a finger",
   "settingsAnnotationFingerHint": "For devices without a stylus; otherwise fingers keep turning pages",
+  "settingsSpaceStartsBeat": "Space starts the beat",
+  "settingsSpaceStartsBeatHint": "Space starts and stops the beat and click like Enter, instead of turning forward",
   "stampFermata": "Fermata",
   "stampBreath": "Breath mark",
   "stampCrescendo": "Crescendo",

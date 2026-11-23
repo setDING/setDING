@@ -172,6 +172,35 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('Space for the beat: offered with a beat, kept on the device '
+      '(#969)', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'instrument': 'guitar'},
+    );
+    await tester.pumpWidget(app.build(home: const SettingsScreen()));
+    await tester.pumpAndSettle();
+    await tapSettingsCategory(tester, 'live');
+    expect(find.byKey(const Key('settings-space-starts-beat')), findsNothing);
+
+    await tapSettingsCategory(tester, 'musician');
+    await tester.tap(find.text('Drums'));
+    await tester.pumpAndSettle();
+    await tapSettingsCategory(tester, 'live');
+    final tile = find.byKey(const Key('settings-space-starts-beat'));
+    await tester.scrollUntilVisible(
+      tile,
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+    expect(app.prefs.getBool('spaceStartsBeat'), isTrue);
+    expect(app.personal().containsKey('spaceStartsBeat'), isFalse);
+    await app.dispose(tester);
+  });
+
   testWidgets('the audio delay is measured by tapping along (#332)', (
     tester,
   ) async {

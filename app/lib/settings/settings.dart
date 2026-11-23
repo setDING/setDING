@@ -149,6 +149,7 @@ class AppSettings {
     this.showOutsideSequence = true,
     this.repeatedChorusOnce = false,
     this.annotationFinger = false,
+    this.spaceStartsBeat = false,
     this.drumPanelView = DrumPanelView.set,
     this.songDisplay = SongDisplay.classic,
     this.editorTypingAids = true,
@@ -271,6 +272,11 @@ class AppSettings {
   /// Fingers draw annotations too, not only a stylus or a mouse; for
   /// devices without a stylus (ADR-0032).
   final bool annotationFinger;
+
+  /// Space starts and stops the beat in live mode instead of turning
+  /// forward (#969), like Enter; it depends on the keyboard or page turner
+  /// of the device.
+  final bool spaceStartsBeat;
 
   /// Set or song map beside the beat on small screens in drummer mode
   /// (ADR-0026, #952); it depends on the screen, so it stays on the device.
@@ -416,6 +422,7 @@ class AppSettings {
     bool? showOutsideSequence,
     bool? repeatedChorusOnce,
     bool? annotationFinger,
+    bool? spaceStartsBeat,
     DrumPanelView? drumPanelView,
     SongDisplay? songDisplay,
     bool? editorTypingAids,
@@ -466,6 +473,7 @@ class AppSettings {
     showOutsideSequence: showOutsideSequence ?? this.showOutsideSequence,
     repeatedChorusOnce: repeatedChorusOnce ?? this.repeatedChorusOnce,
     annotationFinger: annotationFinger ?? this.annotationFinger,
+    spaceStartsBeat: spaceStartsBeat ?? this.spaceStartsBeat,
     drumPanelView: drumPanelView ?? this.drumPanelView,
     songDisplay: songDisplay ?? this.songDisplay,
     editorTypingAids: editorTypingAids ?? this.editorTypingAids,
@@ -525,6 +533,8 @@ class AppSettings {
     // person; drawing with a finger depends on the device having a stylus.
     'showAnnotations': SettingSyncScope.personal,
     'annotationFinger': SettingSyncScope.device,
+    // Space for the beat (#969): depends on the keyboard of the device.
+    'spaceStartsBeat': SettingSyncScope.device,
     // Set or song map on a phone in drummer mode (#952).
     'drumPanelView': SettingSyncScope.device,
     // Parts outside the sequence (ADR-0007): a reading habit of the person.
@@ -594,6 +604,7 @@ class AppSettings {
     'showOutsideSequence': showOutsideSequence,
     'repeatedChorusOnce': repeatedChorusOnce,
     'annotationFinger': annotationFinger,
+    'spaceStartsBeat': spaceStartsBeat,
     'drumPanelView': drumPanelView.name,
     'songDisplay': songDisplay.toJsonString(),
     'editorTypingAids': editorTypingAids,
@@ -710,6 +721,7 @@ class AppSettings {
       showOutsideSequence: flag('showOutsideSequence', d.showOutsideSequence),
       repeatedChorusOnce: flag('repeatedChorusOnce', d.repeatedChorusOnce),
       annotationFinger: flag('annotationFinger', d.annotationFinger),
+      spaceStartsBeat: flag('spaceStartsBeat', d.spaceStartsBeat),
       drumPanelView: pick(
         DrumPanelView.values,
         'drumPanelView',

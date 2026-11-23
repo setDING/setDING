@@ -84,7 +84,8 @@ with the idle-time preparation of the next song (#296).
 
 - **Start:** a drummer setting, *automatic* (a count-in starts when a song is shown in
   live mode) or *manual* (default for other instruments). Manually it is started by a
-  tap on the tempo chip, by a **long press of the forward pedal** or by **Enter**.
+  tap on the tempo chip, by a **long press of the forward pedal**, by **Enter** or, when
+  chosen on the device, by **Space** (#969).
 - **Duration:** a setting *whole song* (default) or *count-in only*. The count-in is one
   or two bars (setting, default two).
 - **Stop:** turning to the next or previous **set item** stops the click (turning the
@@ -94,6 +95,8 @@ with the idle-time preparation of the next song (#296).
 - **Pedal:** a press of the forward key held for **at least 0.6 s** starts or stops the
   click **and does not turn**; a shorter press turns as before. The rule "one press
   turns once" (ADR-0007) stays. Enter is added to the fixed mapping as start/stop.
+  A device setting *Space starts the beat* (off by default, #969) makes Space start and
+  stop the beat like Enter instead of turning forward.
 
 ### Per-song click preferences (#698)
 
@@ -211,6 +214,7 @@ with the idle-time preparation of the next song (#296).
 - 2026-11-23: Owner request (#961): with the song map on a phone in portrait the beat takes a third of the height and the song map two thirds (was 2 : 3); the large beat scales down where that third is too short for it (small phones).
 - 2026-11-23: Owner request (#965): on a phone in portrait the beat takes a third of the height also beside the set (was half and half), the set two thirds, like the song map (#961).
 - 2026-11-23: Owner request (#968): in the panel beside the song map on wide screens the beat also takes a third of the height and the set two thirds (was half and half), like on phones (#961, #965). The panel keeps its width (36 % of the screen, 300–480 px).
+- 2026-11-23: Owner request (#969): a device setting *Space starts the beat* (`spaceStartsBeat`, off by default, in *Screen & live mode* → *Controls*, offered while the beat is on). When on, Space starts and stops the beat like Enter and no longer turns forward or counts as a page-turn key; the other forward keys and the long press are unchanged. Off by default because page turners send Space for turning.
 
 ## Open points
 

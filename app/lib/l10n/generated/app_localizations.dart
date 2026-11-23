@@ -4736,6 +4736,18 @@ abstract class AppLocalizations {
   /// **'Für Geräte ohne Stift; sonst blättern die Finger weiter'**
   String get settingsAnnotationFingerHint;
 
+  /// No description provided for @settingsSpaceStartsBeat.
+  ///
+  /// In de, this message translates to:
+  /// **'Leertaste startet den Takt'**
+  String get settingsSpaceStartsBeat;
+
+  /// No description provided for @settingsSpaceStartsBeatHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Leertaste startet und stoppt Takt und Klick wie Enter, statt vorwärts zu blättern'**
+  String get settingsSpaceStartsBeatHint;
+
   /// No description provided for @stampFermata.
   ///
   /// In de, this message translates to:

@@ -2860,6 +2860,13 @@ class AppLocalizationsDe extends AppLocalizations {
       'Für Geräte ohne Stift; sonst blättern die Finger weiter';
 
   @override
+  String get settingsSpaceStartsBeat => 'Leertaste startet den Takt';
+
+  @override
+  String get settingsSpaceStartsBeatHint =>
+      'Die Leertaste startet und stoppt Takt und Klick wie Enter, statt vorwärts zu blättern';
+
+  @override
   String get stampFermata => 'Fermate';
 
   @override

@@ -122,7 +122,8 @@ class LiveItem {
 final _nextKeys = pageTurnNextKeys;
 final _previousKeys = pageTurnPreviousKeys;
 
-/// Keys that start and stop the beat (ADR-0026).
+/// Keys that start and stop the beat (ADR-0026); Space too when
+/// [AppSettings.spaceStartsBeat] is on (#969).
 final _beatKeys = {LogicalKeyboardKey.enter, LogicalKeyboardKey.numpadEnter};
 
 /// A forward key held this long starts or stops the beat instead of
@@ -559,9 +560,14 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       return KeyEventResult.ignored;
     }
     final key = event.logicalKey;
-    final next = _nextKeys.contains(key);
+    // Space starts and stops the beat instead of turning, when chosen
+    // (#969).
+    final spaceBeat =
+        key == LogicalKeyboardKey.space &&
+        ref.read(settingsProvider).spaceStartsBeat;
+    final next = !spaceBeat && _nextKeys.contains(key);
     // For the readiness tile of the overview (#911).
-    if (event is KeyDownEvent && isPageTurnKey(key)) {
+    if (event is KeyDownEvent && !spaceBeat && isPageTurnKey(key)) {
       ref.read(pageTurnerProvider.notifier).used();
     }
     if (next && _beat.canBeat(_index)) {
@@ -590,7 +596,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       if (event is KeyDownEvent) next ? _next() : _previous();
       return KeyEventResult.handled;
     }
-    if (_beatKeys.contains(key)) {
+    if (spaceBeat || _beatKeys.contains(key)) {
       if (event is KeyDownEvent && _beat.canBeat(_index)) {
         _beat.toggle(_index);
       }

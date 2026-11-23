@@ -5,7 +5,7 @@ import 'package:setding/ui/live/live_screen.dart';
 import 'test_app.dart';
 
 /// The beat is started and stopped with a long press of the forward pedal
-/// or with Enter (ADR-0026, #335).
+/// or with Enter (ADR-0026, #335), and with Space when chosen (#969).
 void main() {
   Future<TestApp> open(
     WidgetTester tester, {
@@ -82,6 +82,50 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
     expect(out.stops, hasLength(1));
     expect(find.text('1 / 2'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('Space turns forward unless it is chosen for the beat', (
+    tester,
+  ) async {
+    final app = await open(tester);
+    await hold(
+      tester,
+      LogicalKeyboardKey.space,
+      const Duration(milliseconds: 100),
+    );
+    expect(find.text('2 / 2'), findsOneWidget);
+    expect(app.clickOutput.plays, isEmpty);
+    await app.dispose(tester);
+  });
+
+  testWidgets('Space starts and stops the beat when chosen (#969)', (
+    tester,
+  ) async {
+    final app = await open(
+      tester,
+      prefs: const {
+        'instrument': 'drums',
+        'clickStart': 'manual',
+        'spaceStartsBeat': true,
+      },
+    );
+    final out = app.clickOutput;
+    await tester.sendKeyEvent(LogicalKeyboardKey.space);
+    await tester.pump();
+    await tester.pump();
+    expect(out.plays, hasLength(1));
+    await tester.sendKeyEvent(LogicalKeyboardKey.space);
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(out.stops, hasLength(1));
+    expect(find.text('1 / 2'), findsOneWidget, reason: 'it does not turn');
+    // The other forward keys still turn.
+    await hold(
+      tester,
+      LogicalKeyboardKey.pageDown,
+      const Duration(milliseconds: 100),
+    );
+    expect(find.text('2 / 2'), findsOneWidget);
     await app.dispose(tester);
   });
 

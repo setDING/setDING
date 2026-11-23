@@ -696,6 +696,17 @@ class _CategoryContent extends ConsumerWidget {
                 onChanged: (v) =>
                     notifier.update((s) => s.copyWith(annotationFinger: v)),
               ),
+              // Space for the beat instead of turning (#969, ADR-0026).
+              if (s.beatEnabled)
+                SettingsSwitch(
+                  tileKey: const Key('settings-space-starts-beat'),
+                  icon: Icons.space_bar,
+                  title: l10n.settingsSpaceStartsBeat,
+                  hint: l10n.settingsSpaceStartsBeatHint,
+                  value: s.spaceStartsBeat,
+                  onChanged: (v) =>
+                      notifier.update((s) => s.copyWith(spaceStartsBeat: v)),
+                ),
             ],
           ),
           if (s.playClick) _clickDeviceSection(l10n, s, notifier),

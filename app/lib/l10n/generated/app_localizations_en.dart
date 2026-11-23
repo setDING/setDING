@@ -2842,6 +2842,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'For devices without a stylus; otherwise fingers keep turning pages';
 
   @override
+  String get settingsSpaceStartsBeat => 'Space starts the beat';
+
+  @override
+  String get settingsSpaceStartsBeatHint =>
+      'Space starts and stops the beat and click like Enter, instead of turning forward';
+
+  @override
   String get stampFermata => 'Fermata';
 
   @override
