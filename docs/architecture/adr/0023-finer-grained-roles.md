@@ -110,6 +110,9 @@ for creating an account, like every invitation.
 | Delete songs and attachments | ✓ | ✓ | – | – | – |
 | Restore songs from the trash or delete them permanently (ADR-0043, #866) | ✓ | ✓ | – | – | – |
 | Link language versions, set a song's language (ADR-0053) | ✓ | ✓ | own songs²³ | – | – |
+| Report a mistake in a song of the organization (ADR-0060) | ✓ | ✓ | ✓ | ✓ | ✓ |
+| See the mistake reports of a song (ADR-0060) | ✓ | ✓ | ✓ | ✓ | own reports |
+| Approve a song, set it to review, resolve its reports (ADR-0060) | ✓ | ✓ | own songs² | – | – |
 | Band settings, band members, band roles | ✓ all bands | – | ✓ | – | – |
 | When songs count as not played for a while (ADR-0046) | ✓ all bands | – | ✓ | ✓ | – |
 | See how the other bands of the organization played a song (ADR-0046) | ✓ | ✓ | ✓ | ✓ | ✓ |
@@ -120,6 +123,7 @@ for creating an account, like every invitation.
 | Close the organization, restore it from the trash (ADR-0044) | ✓ | – | – | – | – |
 | Leave a band or organization | the person themselves | | | | |
 | Delete the own account (ADR-0052; not while the only admin of an organization) | the person themselves | | | | |
+| Withdraw or edit an own open mistake report (ADR-0060) | the author | | | | |
 
 ² Songs the leader created or imported and nobody else has changed since.
 ³ Linking changes the group of every song it moves; a leader can only move
@@ -221,6 +225,7 @@ sets of that band like any member; librarian rights concern the library only.
 - 2026-11-21: Row *Delete the own account* (ADR-0052, #780): every person, for their own account only, with the password; refused while they are the only admin of an organization that is not closed.
 - 2026-11-21: Language versions (ADR-0053, #804): linking songs and setting their language follow the right to edit the song; a link-only change keeps `updated_by`, so a librarian linking a leader's own song does not take it from them. Server tests in `language_versions_test.dart` and the permission matrix.
 - 2026-11-22: **ADR-0043** (#866): deleting songs and sets permanently from the trash follows the right to delete them (songs: organization admins and librarians; sets: set managers); the update rule of songs refuses a change of `purged` to band leaders.
+- 2026-11-23: **ADR-0060** (#985): everyone in the organization reports mistakes in its songs; members see only their own reports, the other roles all; approving a song, setting it to review and resolving reports follow the right to edit the song, and a review-only change keeps `updated_by` (like ADR-0053). Server tests with #987.
 
 ## Open points
 

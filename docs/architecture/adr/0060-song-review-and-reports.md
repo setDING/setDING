@@ -1,6 +1,6 @@
 # ADR-0060: Song review status and mistake reports
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-23
 
 ## Context
@@ -252,6 +252,10 @@ Older clients that import songs do not set *to review*.
   icon, *To do* only for approvers; report with comment, category and location
   plus an optional screenshot with own markings; reporting from the song view and
   live mode; resolved reports kept as history; no repertoire status per band.
+- 2026-11-23: Accepted by the owner (#985); the rows of decision 5 added to the
+  permission matrix of ADR-0023. Implementation split into #987 (server), #988
+  (data and sync), #989 (review after import and approving), #990 (reporting and
+  resolving), #991 (screenshot with markings) and #992 (website page).
 
 ## Open points
 
