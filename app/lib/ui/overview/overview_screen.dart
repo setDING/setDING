@@ -36,14 +36,17 @@ import 'readiness.dart';
 import 'recent_changes.dart';
 
 /// The set the overview shows (ADR-0045): the next set of the current band
-/// with a gig date from [today] on, the one the song list's status icon
-/// uses ([upcoming]); otherwise the most recently edited set. Null without
-/// sets.
+/// with a gig date from [today] on that the user plays ([planned],
+/// ADR-0061), the one the song list's status icon uses ([upcoming]);
+/// otherwise the most recently edited set. Null without sets.
 ({SetSummary summary, bool upcoming})? overviewSet(
   List<SetSummary> sets,
-  DateTime today,
-) {
-  if (groupSets(sets, today).upcoming.firstOrNull case final next?) {
+  DateTime today, {
+  bool Function(SetlistEntry set)? planned,
+}) {
+  final upcoming = groupSets(sets, today).upcoming;
+  if (upcoming.where((s) => planned?.call(s.set) ?? true).firstOrNull
+      case final next?) {
     return (summary: next, upcoming: true);
   }
   if (sets.isEmpty) return null;
@@ -60,10 +63,19 @@ const moreSetsOnCard = 3;
 /// played for a while (#868).
 const songsOnCard = 5;
 
-/// The upcoming sets of the band after the next one, at most
-/// [moreSetsOnCard] (*More sets*, #868).
-List<SetSummary> moreSets(List<SetSummary> sets, DateTime today) =>
-    groupSets(sets, today).upcoming.skip(1).take(moreSetsOnCard).toList();
+/// The upcoming sets of the band after the next one ([overviewSet] with
+/// [planned]), at most [moreSetsOnCard] (*More sets*, #868).
+List<SetSummary> moreSets(
+  List<SetSummary> sets,
+  DateTime today, {
+  bool Function(SetlistEntry set)? planned,
+}) {
+  final next = overviewSet(sets, today, planned: planned);
+  return [
+    for (final s in groupSets(sets, today).upcoming)
+      if (!(next?.upcoming ?? false) || s.set.id != next!.summary.set.id) s,
+  ].take(moreSetsOnCard).toList();
+}
 
 /// The start screen (ADR-0045): cards with the next set, whether this
 /// device is ready to play it (#911), the sets after it, what needs to be
@@ -117,11 +129,12 @@ class _OverviewScreenState extends ConsumerState<OverviewScreen> {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final sets = ref.watch(setsProvider).value ?? const <SetSummary>[];
-    final shown = overviewSet(sets, today);
+    final planned = ref.watch(setRepositoryProvider).isPlanned;
+    final shown = overviewSet(sets, today, planned: planned);
     final counts = ref.watch(songAttentionCountsProvider);
     final changes =
         ref.watch(recentChangesProvider(false)).value ?? const <RecentChange>[];
-    final more = moreSets(sets, today);
+    final more = moreSets(sets, today, planned: planned);
     final newest = ref.watch(newestSongsProvider).value ?? const <SongEntry>[];
     final band = ref.watch(currentBandProvider);
     final hasBand = ref.watch(hasCurrentBandProvider);

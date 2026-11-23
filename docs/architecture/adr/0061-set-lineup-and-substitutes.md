@@ -230,6 +230,15 @@ band but a person in a set's lineup.
   they see every set of the organization through the records API; a deleted
   account is taken out of every lineup without a new revision (like other
   references, ADR-0052), a purged set clears its lineup (ADR-0043).
+- 2026-11-23: Data and sync implemented (#1008): schema 38 stores the lineup
+  with the set and marks the bands of substitute sets (`bands.substitute`,
+  device only); a full sync replaces their sets and arrangements with the
+  lineup route's result after the songs, a band the user joins becomes an
+  ordinary band, and a band without substitute sets any more is hidden. The
+  names of a lineup come from the organization's people already on the
+  device. A set copied into another band is played by the whole target
+  band. *More sets* on the overview lists the upcoming sets other than the
+  one shown as *Next set*.
 
 ## Open points
 

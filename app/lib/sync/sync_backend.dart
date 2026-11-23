@@ -415,6 +415,8 @@ class RemoteSet {
     this.deletedAt,
     this.purged = false,
     this.updatedBy,
+    this.lineup = const [],
+    this.lineupCustom = false,
   });
 
   final String id;
@@ -422,6 +424,11 @@ class RemoteSet {
   final String name;
   final DateTime? gigDate;
   final String? venue;
+
+  /// The people who play the set (user IDs) when [lineupCustom] is set;
+  /// otherwise the whole band (ADR-0061).
+  final List<String> lineup;
+  final bool lineupCustom;
 
   /// The set this one was imported from (ADR-0043 §1b).
   final String? origin;
@@ -440,6 +447,26 @@ class RemoteSet {
 
   /// Last editor (ADR-0045); set by the server, never sent.
   final String? updatedBy;
+}
+
+/// The sets the signed-in user plays as a substitute (ADR-0061), from
+/// `GET /api/setding/lineup`: always the complete state, which replaces
+/// what the device has.
+@immutable
+class RemoteLineup {
+  const RemoteLineup({
+    this.sets = const [],
+    this.bands = const [],
+    this.arrangements = const [],
+  });
+
+  final List<RemoteSet> sets;
+
+  /// The bands of [sets]: only their names, never their members.
+  final List<({String id, String name, String organizationId})> bands;
+
+  /// The band arrangements of the songs in [sets].
+  final List<RemoteArrangement> arrangements;
 }
 
 /// An item of a set as stored on the server: one entry of the JSON array
@@ -1059,6 +1086,11 @@ abstract class SyncBackend {
   /// Creates or updates a set (last writer wins) and returns the server
   /// state.
   Future<RemoteSet> pushSet(RemoteSet set, {required bool create});
+
+  /// The sets the signed-in user plays as a substitute, with their bands'
+  /// names and the arrangements of their songs (ADR-0061). Throws a
+  /// [BackendException].
+  Future<RemoteLineup> fetchLineup();
 
   /// PDF attachments of an organization changed after revision [since].
   Future<List<RemoteAttachment>> pullAttachments(

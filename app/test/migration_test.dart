@@ -50,6 +50,7 @@ void downgradeToSchema35(Database raw) {
 /// Turns a current database back into schema 36: songs without a review
 /// status, no mistake reports (ADR-0060).
 void downgradeToSchema36(Database raw) {
+  downgradeToSchema37(raw);
   raw.execute('DROP TABLE song_reports');
   for (final column in [
     'review_state',
@@ -59,6 +60,14 @@ void downgradeToSchema36(Database raw) {
   ]) {
     raw.execute('ALTER TABLE songs DROP COLUMN $column');
   }
+}
+
+/// Turns a current database back into schema 37: sets without a lineup,
+/// no substitute bands (ADR-0061).
+void downgradeToSchema37(Database raw) {
+  raw.execute('ALTER TABLE bands DROP COLUMN substitute');
+  raw.execute('ALTER TABLE setlists DROP COLUMN lineup');
+  raw.execute('ALTER TABLE setlists DROP COLUMN lineup_custom');
 }
 
 /// Turns a current database back into schema 34: the same tables, but
@@ -1361,6 +1370,30 @@ void main() {
       toReview: 1,
       reported: 1,
     ));
+    await upgraded.close();
+  });
+
+  test('upgrades a schema 37 database: sets are played by the whole band, '
+      'no band is a substitute band (ADR-0061)', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    await SetRepository(
+      current,
+      FileAttachmentStorage(dir),
+    ).createSet(name: 'Gig', venue: 'Bern');
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema37(raw);
+    raw.execute('PRAGMA user_version = 37');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final set = await upgraded.select(upgraded.setlists).getSingle();
+    expect(set.name, 'Gig');
+    expect(set.lineup, isEmpty);
+    expect(set.lineupCustom, isFalse);
+    final bands = await upgraded.select(upgraded.bands).get();
+    expect([for (final b in bands) b.substitute], everyElement(isFalse));
     await upgraded.close();
   });
 }

@@ -64,6 +64,14 @@ class SetSync {
     return remote.length;
   }
 
+  /// Stores [remote] as the server state, e.g. a set the user plays as a
+  /// substitute (ADR-0061), which is never changed on this device.
+  Future<void> apply(
+    RemoteSet remote, {
+    required SetlistEntry? local,
+    required bool Function(String songId) songExists,
+  }) => _applySet(remote, local: local, dirty: false, songExists: songExists);
+
   Future<void> _applySet(
     RemoteSet remote, {
     required SetlistEntry? local,
@@ -98,6 +106,8 @@ class SetSync {
             deletedAt: Value(remote.deletedAt),
             purged: Value(remote.purged),
             updatedBy: Value(remote.updatedBy),
+            lineup: Value(remote.lineupCustom ? remote.lineup : const []),
+            lineupCustom: Value(remote.lineupCustom),
           ),
         );
     await (db.delete(
@@ -160,6 +170,8 @@ class SetSync {
       deleted: set.deleted,
       deletedAt: set.deletedAt,
       purged: set.purged,
+      lineup: set.lineupCustom ? set.lineup : const [],
+      lineupCustom: set.lineupCustom,
     );
     try {
       RemoteSet stored;

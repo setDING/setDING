@@ -17,6 +17,7 @@ class BandView {
     this.orgRole,
     this.orgLibrary,
     this.staleAfterSetting = 0,
+    this.substitute = false,
   });
 
   /// Months after which a song counts as not played for a while when the
@@ -52,6 +53,11 @@ class BandView {
   /// The band's own threshold for songs not played for a while, in months;
   /// 0 = [defaultStaleAfterMonths] (ADR-0046).
   final int staleAfterSetting;
+
+  /// The user sees the band only as a substitute, through the lineups of
+  /// some of its sets (ADR-0061): those sets, read-only; no role in the
+  /// band, so [canManageSets] and [canManageBand] are false.
+  final bool substitute;
 
   /// Months after which a song counts as not played for a while.
   int get staleAfterMonths =>
@@ -102,7 +108,8 @@ class BandView {
       other.role == role &&
       other.orgRole == orgRole &&
       other.orgLibrary == orgLibrary &&
-      other.staleAfterSetting == staleAfterSetting;
+      other.staleAfterSetting == staleAfterSetting &&
+      other.substitute == substitute;
 
   @override
   int get hashCode => Object.hash(
@@ -114,6 +121,7 @@ class BandView {
     orgRole,
     orgLibrary,
     staleAfterSetting,
+    substitute,
   );
 }
 

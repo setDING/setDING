@@ -22,6 +22,18 @@ class SetItemView {
 /// The next set a song is played in (see [SetRepository.watchUpcomingGigs]).
 typedef UpcomingGig = ({String setName, DateTime date});
 
+/// Whether [userId] plays [set] (ADR-0061): with a lineup of its own, when
+/// they are in it; otherwise the whole band plays it, so when they are a
+/// [bandMember]. Without a signed-in user (the local library) every set.
+bool plannedFor(
+  SetlistEntry set, {
+  required String? userId,
+  bool bandMember = true,
+}) {
+  if (userId == null) return true;
+  return set.lineupCustom ? set.lineup.contains(userId) : bandMember;
+}
+
 /// Summary of a set for list views.
 class SetSummary {
   const SetSummary(this.set, this.itemCount);
@@ -76,6 +88,7 @@ class SetRepository {
     this.storage, {
     this.bandId = localBandId,
     this.userId,
+    this.bandMember = true,
   });
 
   final AppDatabase db;
@@ -87,13 +100,22 @@ class SetRepository {
   /// The signed-in user, or null.
   final String? userId;
 
+  /// The signed-in user is a member of the band; false for an organization
+  /// admin outside it and for a substitute (ADR-0061).
+  final bool bandMember;
+
+  /// Whether the signed-in user plays [set] (ADR-0061, [plannedFor]).
+  bool isPlanned(SetlistEntry set) =>
+      plannedFor(set, userId: userId, bandMember: bandMember);
+
   /// Last editor of a change of a set of [band] (ADR-0045): the signed-in
   /// user for a band's sets, as the server will record it; nobody for the
   /// local band.
   String? _editorIn(String band) => band == localBandId ? null : userId;
 
   /// For each song in a set of the band with a gig date on [today] or
-  /// later: the first of these sets (by date).
+  /// later that the user plays ([isPlanned], ADR-0061): the first of these
+  /// sets (by date).
   Stream<Map<String, UpcomingGig>> watchUpcomingGigs({DateTime? today}) {
     final now = today ?? DateTime.now();
     final start = DateTime(now.year, now.month, now.day);
@@ -110,6 +132,7 @@ class SetRepository {
       final gigs = <String, UpcomingGig>{};
       for (final row in rows) {
         final set = row.readTable(l);
+        if (!isPlanned(set)) continue;
         gigs.putIfAbsent(
           row.readTable(i).songId!,
           () => (setName: set.name, date: set.gigDate!),
@@ -206,6 +229,21 @@ class SetRepository {
     );
     await _touch(id);
   });
+
+  /// Sets the people who play the set (ADR-0061): user IDs of the band and
+  /// its organization, or null for the whole band. Synced like an edit;
+  /// the server refuses people outside the organization.
+  Future<void> setLineup(String id, List<String>? people) =>
+      db.transaction(() async {
+        await (db.update(db.setlists)..where((s) => s.id.equals(id))).write(
+          SetlistsCompanion(
+            lineup: Value(people == null ? const [] : people.toSet().toList()),
+            lineupCustom: Value(people != null),
+            updatedAt: Value(DateTime.now()),
+          ),
+        );
+        await _touch(id);
+      });
 
   /// Soft-deletes a set; [restoreSet] undoes it. The set keeps its items,
   /// so it is complete when it is restored from the trash (ADR-0043).

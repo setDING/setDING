@@ -168,7 +168,9 @@ class BandService {
     final (:orgs, :bands, :own, :library) = await _rights(userId);
     final views = [
       for (final b in bands)
-        if (own.containsKey(b.id) || orgs[b.organizationId]!.isAdmin)
+        if (own.containsKey(b.id) ||
+            orgs[b.organizationId]!.isAdmin ||
+            b.substitute)
           BandView(
             id: b.id,
             name: b.name,
@@ -178,6 +180,7 @@ class BandService {
             orgRole: orgs[b.organizationId]!.role,
             orgLibrary: library(b.organizationId!),
             staleAfterSetting: b.staleAfterMonths,
+            substitute: b.substitute && !own.containsKey(b.id),
           ),
     ];
     int byName(String a, String b) =>
@@ -266,9 +269,14 @@ class BandService {
         m.organizationId,
     };
     final previousBands = {
-      for (final b in await (db.select(
-        db.bands,
-      )..where((b) => b.organizationId.isIn(previousOrgs))).get())
+      // Substitute bands come from the lineups, not from here (ADR-0061).
+      for (final b
+          in await (db.select(db.bands)..where(
+                (b) =>
+                    b.organizationId.isIn(previousOrgs) &
+                    b.substitute.equals(false),
+              ))
+              .get())
         b.id,
     };
 
@@ -340,6 +348,8 @@ class BandService {
             revision: b.revision,
             deleted: false,
             staleAfterMonths: b.staleAfterMonths,
+            // A band from the organizations is no substitute band (any more).
+            substitute: false,
           ),
         );
         await _replace(

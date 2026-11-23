@@ -379,6 +379,9 @@ final setRepositoryProvider = Provider<SetRepository>(
     ref.watch(attachmentStorageProvider),
     bandId: ref.watch(_currentBandIdProvider),
     userId: ref.watch(authProvider.select((u) => u?.id)),
+    bandMember: ref.watch(
+      currentBandProvider.select((b) => b.isLocal || b.role != null),
+    ),
   ),
 );
 
