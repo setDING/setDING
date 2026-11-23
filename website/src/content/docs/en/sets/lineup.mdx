@@ -1,0 +1,78 @@
+---
+title: Lineup and substitutes
+description: Choose who plays a set, add substitutes from the organization and notify the lineup.
+sidebar:
+  order: 4
+---
+
+import { Image } from 'astro:assets';
+import setLineup from '../../../../../../docs/screenshots/set_lineup.png';
+import lineupDialog from '../../../../../../docs/screenshots/lineup_dialog.png';
+import lineupNotify from '../../../../../../docs/screenshots/lineup_notify.png';
+import overviewSubstitute from '../../../../../../docs/screenshots/overview_substitute.png';
+
+Not every gig is played by the whole band: someone is ill, someone is on holiday,
+and a person from another band helps out. That is why every set has a
+**lineup**: the people who play it.
+
+## Who plays a set
+
+A new set is played by the **whole band**. The lineup is shown in the set below
+its date and venue: **Lineup · Whole band** with the names of the band members, or
+the people chosen for this set. Substitutes are marked **(Substitute)**.
+
+<Image src={setLineup} alt="A set with the line Lineup: Anna, Beat, Carla (Substitute)" />
+
+If you are not planned, the set says **Not planned for you**. You still see the
+set, for example to rehearse or to step in; but it does not count as your next
+gig, and the song list does not mark its songs.
+
+## Choosing the lineup
+
+Whoever may edit sets (band leaders, set planners, organization admins) taps the
+lineup line or chooses **Choose lineup** in the set's ⋮ menu:
+
+- Under **Band members** every member is checked. Uncheck everyone who does not
+  play this time.
+- **Add people** searches the people of the organization. Whoever is not in the
+  band is added as a **Substitute**.
+- **Whole band** resets the lineup. When every band member is checked again and
+  there are no substitutes, the whole band plays it as well: the lineup follows
+  the band again, new members included.
+
+<Image src={lineupDialog} alt="The Lineup dialog with Anna and Beat checked, Dario unchecked and Carla as a substitute" />
+
+The lineup is also printed in the header of the set list
+([Print the set list](/en/sets/share/)).
+
+## Notifying the lineup
+
+When the set is ready, **Notify lineup** in the set's ⋮ menu opens a prepared
+message with the set, date, venue and lineup:
+
+- **Share …** opens your device's share menu, for example for the band's chat.
+- **Copy** puts the text on the clipboard.
+- **By mail** opens your mail program with the lineup's addresses as recipients.
+  Without a connection to the server there are no recipients; then you choose
+  them yourself.
+
+setDING sends nothing itself: you decide how the message goes out.
+
+<Image src={lineupNotify} alt="The Notify lineup dialog with the message and the buttons Copy, By mail and Share" />
+
+## As a substitute
+
+When you are in the lineup of a set of another band, that set comes to your
+device with its songs and the band's key and sequence, offline as well. You see
+only the sets you are planned for and cannot change them.
+
+- The band appears in the band switcher with the role **Substitute**.
+- On your own band's overview, the card **As a substitute** shows your upcoming
+  gigs in other bands; a tap switches to the band and opens the set.
+- When you are put in a lineup by name, the overview tells you once with
+  **You are planned**; **Got it** hides the card.
+
+<Image src={overviewSubstitute} alt="The overview with the cards You are planned and As a substitute for the set Summer party of the band Abendrot" />
+
+When the band takes you out of the lineup, the set disappears from your device at
+the next sync. After the gig it stays as long as you are in the lineup.

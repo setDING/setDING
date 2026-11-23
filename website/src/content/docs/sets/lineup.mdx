@@ -1,0 +1,82 @@
+---
+title: Besetzung und Aushilfen
+description: Festlegen, wer ein Set spielt, Aushilfen aus der Organisation dazunehmen und die Besetzung benachrichtigen.
+sidebar:
+  order: 4
+---
+
+import { Image } from 'astro:assets';
+import setLineup from '../../../../../docs/screenshots/set_lineup_de.png';
+import lineupDialog from '../../../../../docs/screenshots/lineup_dialog_de.png';
+import lineupNotify from '../../../../../docs/screenshots/lineup_notify_de.png';
+import overviewSubstitute from '../../../../../docs/screenshots/overview_substitute_de.png';
+
+Nicht jeder Auftritt wird von der ganzen Band gespielt: Jemand ist krank, jemand
+in den Ferien, und eine Person aus einer anderen Band hilft aus. Darum hat jedes
+Set eine **Besetzung**: die Personen, die es spielen.
+
+## Wer ein Set spielt
+
+Ein neues Set spielt die **ganze Band**. Die Besetzung steht im Set unter Datum und
+Ort: **Besetzung · Ganze Band** mit den Namen der Bandmitglieder, oder die Personen,
+die für dieses Set gewählt sind. Aushilfen sind mit **(Aushilfe)** markiert.
+
+<Image src={setLineup} alt="Ein Set mit der Zeile Besetzung: Anna, Beat, Carla (Aushilfe)" />
+
+Bist du nicht eingeplant, steht beim Set **Nicht für dich eingeplant**. Du siehst
+das Set trotzdem, zum Beispiel zum Üben oder wenn du einspringst; es zählt aber
+nicht als dein nächster Auftritt, und die Songliste markiert seine Songs nicht.
+
+## Besetzung wählen
+
+Wer Sets bearbeiten darf (Bandleitung, Setplanung, Admins der Organisation), tippt
+auf die Zeile der Besetzung oder wählt im Menü ⋮ des Sets **Besetzung wählen**:
+
+- Unter **Bandmitglieder** sind alle Mitglieder angehakt. Nimm das Häkchen weg bei
+  allen, die dieses Mal nicht spielen.
+- **Personen hinzufügen** sucht in den Personen der Organisation. Wer nicht in der
+  Band ist, kommt als **Aushilfe** dazu.
+- **Ganze Band** stellt die Besetzung zurück. Sind wieder alle Bandmitglieder
+  angehakt und keine Aushilfen dabei, spielt ebenfalls die ganze Band: Die
+  Besetzung folgt dann wieder der Band, auch neuen Mitgliedern.
+
+<Image src={lineupDialog} alt="Der Dialog Besetzung mit Anna und Beat angehakt, Dario nicht angehakt und Carla als Aushilfe" />
+
+Die Besetzung steht auch im Kopf der gedruckten Set-Liste
+([Set-Liste drucken](/sets/share/)).
+
+## Besetzung benachrichtigen
+
+Ist das Set fertig, öffnet **Besetzung benachrichtigen** im Menü ⋮ des Sets eine
+vorbereitete Nachricht mit Set, Datum, Ort und Besetzung:
+
+- **Teilen …** öffnet das Teilen-Menü deines Geräts, zum Beispiel für den Chat der
+  Band.
+- **Kopieren** legt den Text in die Zwischenablage.
+- **Per Mail** öffnet dein Mailprogramm mit den Adressen der Besetzung als
+  Empfänger. Ohne Verbindung zum Server fehlen die Empfänger; dann wählst du sie
+  selbst.
+
+setDING verschickt nichts selbst: Du entscheidest, auf welchem Weg die Nachricht
+geht.
+
+<Image src={lineupNotify} alt="Der Dialog Besetzung benachrichtigen mit der Nachricht und den Knöpfen Kopieren, Per Mail und Teilen" />
+
+## Als Aushilfe
+
+Bist du in der Besetzung eines Sets einer anderen Band, bekommst du dieses Set auf
+dein Gerät, mit den Songs und der Tonart und dem Ablauf der Band, auch offline. Du
+siehst nur die Sets, in denen du eingeplant bist, und kannst sie nicht ändern.
+
+- Die Band erscheint in der Bandauswahl mit der Rolle **Aushilfe**.
+- Auf der Übersicht deiner eigenen Band zeigt die Karte **Als Aushilfe** deine
+  anstehenden Auftritte in anderen Bands; ein Tipp wechselt zur Band und öffnet
+  das Set.
+- Wirst du namentlich in eine Besetzung aufgenommen, meldet die Übersicht das
+  einmal mit **Du bist eingeplant**; **Verstanden** blendet die Karte aus.
+
+<Image src={overviewSubstitute} alt="Die Übersicht mit den Karten Du bist eingeplant und Als Aushilfe für das Set Sommerfest der Band Abendrot" />
+
+Nimmt dich die Band aus der Besetzung, verschwindet das Set beim nächsten Abgleich
+von deinem Gerät. Nach dem Auftritt bleibt es dir, solange du in der Besetzung
+stehst.

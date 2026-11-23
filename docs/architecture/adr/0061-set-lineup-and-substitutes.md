@@ -266,6 +266,8 @@ band but a person in a set's lineup.
   are planned* is an overview card with the upcoming sets the user was put
   in the lineup of by name (band members and substitutes), until *Got it*
   on this device.
+- 2026-11-23: Website page *Besetzung und Aushilfen* / *Lineup and
+  substitutes* with four screenshots (#1012); the roles page links to it.
 
 ## Open points
 

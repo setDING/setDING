@@ -118,6 +118,10 @@ map=(
   song_report_sheet 53c_song_report_sheet
   song_report_marking 53d_song_report_marking
   song_reports 53e_song_reports
+  set_lineup 54_set_lineup
+  lineup_dialog 54b_lineup_dialog
+  lineup_notify 54c_lineup_notify
+  overview_substitute 54d_overview_substitute
 )
 
 copied=0
