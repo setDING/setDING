@@ -1414,6 +1414,10 @@ class AppLocalizationsPt extends AppLocalizations {
       'Converter títulos em comentário em secções';
 
   @override
+  String get translateSectionLabels =>
+      'Traduzir os nomes das secções para inglês';
+
+  @override
   String commentHeadingsHint(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

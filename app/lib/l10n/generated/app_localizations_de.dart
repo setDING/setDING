@@ -1414,6 +1414,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Kommentar-Überschriften in Abschnitte umwandeln';
 
   @override
+  String get translateSectionLabels =>
+      'Abschnitts-Beschriftungen ins Englische übersetzen';
+
+  @override
   String commentHeadingsHint(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

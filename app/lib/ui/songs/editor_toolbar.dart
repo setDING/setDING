@@ -73,7 +73,8 @@ enum EditorCommand {
   toggleComment(Icons.tag),
   convertChordsOverLyrics(Icons.auto_fix_high),
   convertCcliGrids(Icons.grid_on),
-  convertCommentHeadings(Icons.view_agenda_outlined);
+  convertCommentHeadings(Icons.view_agenda_outlined),
+  translateSectionLabels(Icons.translate);
 
   const EditorCommand(this.icon);
 
@@ -90,6 +91,7 @@ enum EditorCommand {
     convertChordsOverLyrics => l10n.convertChordsOverLyrics,
     convertCcliGrids => l10n.convertCcliGrids,
     convertCommentHeadings => l10n.convertCommentHeadings,
+    translateSectionLabels => l10n.translateSectionLabels,
   };
 
   /// The shortcut shown in menus and tooltips. Alt+↑/↓ as in common code
@@ -116,7 +118,8 @@ enum EditorCommand {
     toggleComment => _key(LogicalKeyboardKey.slash),
     convertChordsOverLyrics ||
     convertCcliGrids ||
-    convertCommentHeadings => null,
+    convertCommentHeadings ||
+    translateSectionLabels => null,
   };
 
   /// The key combinations of the command: [shortcut] or, for the comment

@@ -62,6 +62,7 @@ map=(
   editor_songselect 24b_editor_songselect
   editor_ccli_footer 24c_editor_ccli_footer
   editor_headings 24d_editor_headings
+  editor_english_labels 24e_editor_english_labels
   sync_hint 26_sync_hint
   set_export 27_set_export
   set_import 27b_set_import

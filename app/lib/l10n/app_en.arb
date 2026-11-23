@@ -487,6 +487,7 @@
     }
   },
   "convertCommentHeadings": "Convert comment headings to sections",
+  "translateSectionLabels": "Translate section labels to English",
   "commentHeadingsHint": "{count, plural, =1{A section is} other{{count} sections are}} marked with a comment such as \"Verse 1\". Converting makes ChordPro sections out of them; the song looks the same.",
   "@commentHeadingsHint": {
     "placeholders": {

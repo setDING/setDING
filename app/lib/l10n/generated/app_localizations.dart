@@ -2536,6 +2536,12 @@ abstract class AppLocalizations {
   /// **'Kommentar-Überschriften in Abschnitte umwandeln'**
   String get convertCommentHeadings;
 
+  /// No description provided for @translateSectionLabels.
+  ///
+  /// In de, this message translates to:
+  /// **'Abschnitts-Beschriftungen ins Englische übersetzen'**
+  String get translateSectionLabels;
+
   /// No description provided for @commentHeadingsHint.
   ///
   /// In de, this message translates to:

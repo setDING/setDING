@@ -405,6 +405,7 @@
   "convertCcliGrids": "Converter barras de compasso em grelhas de acordes",
   "ccliGridsHint": "{count, plural, =1{Um bloco de barras de compasso pode} other{{count} blocos de barras de compasso podem}} ser mostrados como grelha de acordes.",
   "convertCommentHeadings": "Converter títulos em comentário em secções",
+  "translateSectionLabels": "Traduzir os nomes das secções para inglês",
   "commentHeadingsHint": "{count, plural, =1{Uma secção está marcada} other{{count} secções estão marcadas}} com um comentário como \"Verse 1\". A conversão transforma-as em secções ChordPro; a música fica com o mesmo aspeto.",
   "remove": "Remover",
   "ccliFooterHint": "A música termina com o rodapé CCLI do SongSelect. Ao removê-lo, o número da música e o copyright ficam nos detalhes da música.",

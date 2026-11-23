@@ -16,6 +16,7 @@ export 'src/conversions.dart';
 export 'src/completion.dart';
 export 'src/diagrams.dart';
 export 'src/editing.dart';
+export 'src/english_labels.dart';
 export 'src/fingering.dart';
 export 'src/directive.dart' show SelectorContext;
 export 'src/format.dart';

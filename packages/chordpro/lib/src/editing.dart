@@ -7,6 +7,7 @@ library;
 import 'ccli_grid.dart';
 import 'chords_over_lyrics.dart';
 import 'comment_headings.dart';
+import 'english_labels.dart';
 import 'highlight.dart';
 
 /// Text and selection after an editing command. [base] and [extent] are
@@ -307,6 +308,27 @@ SourceEdit? convertCommentHeadingsIn(String text, int base, int extent) {
   if (base == extent) return SourceEdit(converted, first, first);
   final end = headings.last.end + converted.length - text.length;
   return SourceEdit(converted, first, end);
+}
+
+/// Translates German section labels such as `Vers 1` to English (#1036):
+/// the labels on the lines touched by the selection, which then covers
+/// those lines, or all of them when nothing is selected; the cursor then
+/// moves to the first label.
+SourceEdit? translateSectionLabelsIn(String text, int base, int extent) {
+  var labels = findGermanSectionLabels(text);
+  if (base != extent) {
+    final (start, end) = _lineBlock(text, base, extent);
+    labels = [
+      for (final l in labels)
+        if (l.start <= end && l.end >= start) l,
+    ];
+  }
+  if (labels.isEmpty) return null;
+  final translated = translateSectionLabels(text, labels);
+  final first = labels.first.start;
+  if (base == extent) return SourceEdit(translated, first, first);
+  final (start, end) = _lineBlock(text, base, extent);
+  return SourceEdit(translated, start, end + translated.length - text.length);
 }
 
 /// [text] with every range of [matches] (sorted, without overlaps, e.g.
