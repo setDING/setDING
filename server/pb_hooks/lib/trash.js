@@ -49,11 +49,15 @@ function handleTrashRequest(e) {
 }
 
 /// Clears what a purged record no longer keeps: the song text, the set
-/// items, the attachment file.
+/// items and lineup (ADR-0061), the attachment file.
 function clearContent(record) {
   const name = record.collection().name;
   if (name === "songs") record.set("chordpro", "");
-  if (name === "setlists") record.set("items", []);
+  if (name === "setlists") {
+    record.set("items", []);
+    record.set("lineup", []);
+    record.set("lineup_custom", false);
+  }
   if (name === "attachments") record.set("file", "");
 }
 
