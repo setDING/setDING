@@ -5707,6 +5707,21 @@ class AppLocalizationsPt extends AppLocalizations {
       'Como ler os números Nashville e os numerais romanos';
 
   @override
+  String docsHelp(String topic) {
+    return 'Ajuda: $topic';
+  }
+
+  @override
+  String get editorDocsTopic => 'Editor ChordPro';
+
+  @override
+  String get settingsDocs => 'Guia do utilizador';
+
+  @override
+  String get settingsDocsHint =>
+      'Abrir a documentação do setDING em setding.app (em inglês). O ícone do livro no topo abre a página da secção aberta.';
+
+  @override
   String get overviewReadiness => 'Prontos para tocar';
 
   @override

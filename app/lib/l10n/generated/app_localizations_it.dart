@@ -5713,6 +5713,21 @@ class AppLocalizationsIt extends AppLocalizations {
       'Come leggere i numeri Nashville e i numeri romani';
 
   @override
+  String docsHelp(String topic) {
+    return 'Aiuto: $topic';
+  }
+
+  @override
+  String get editorDocsTopic => 'Editor ChordPro';
+
+  @override
+  String get settingsDocs => 'Guida';
+
+  @override
+  String get settingsDocsHint =>
+      'Apri la documentazione di setDING su setding.app (in inglese). L\'icona del libro in alto apre la pagina della sezione aperta.';
+
+  @override
   String get overviewReadiness => 'Pronti a suonare';
 
   @override
