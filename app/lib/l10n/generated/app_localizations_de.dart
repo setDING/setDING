@@ -1237,6 +1237,34 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get appMenuEntryAdd => 'Zum Anwendungsmenü hinzufügen';
+
+  @override
+  String get appMenuEntryAddHint =>
+      'setDING mit seinem Icon im Startmenü deines Desktops';
+
+  @override
+  String get appMenuEntryInstalled => 'Im Anwendungsmenü';
+
+  @override
+  String get appMenuEntryInstalledHint =>
+      'Das Startmenü startet diese AppImage-Datei';
+
+  @override
+  String get appMenuEntryRemove => 'Entfernen';
+
+  @override
+  String get appMenuEntryAdded => 'setDING ist jetzt im Anwendungsmenü';
+
+  @override
+  String get appMenuEntryRemoved => 'setDING aus dem Anwendungsmenü entfernt';
+
+  @override
+  String appMenuEntryFailed(String error) {
+    return 'Anwendungsmenü nicht geändert: $error';
+  }
+
+  @override
   String get settingsLogCopy => 'Diagnoseprotokoll kopieren';
 
   @override

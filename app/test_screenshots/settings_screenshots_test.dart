@@ -11,6 +11,7 @@ import 'package:setding/platform/input_devices.dart';
 import 'package:setding/ui/live/page_turner.dart';
 import 'package:setding/ui/settings_screen.dart';
 import 'package:setding/sync/sync_backend.dart';
+import 'package:setding/update/app_menu_entry.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -234,6 +235,32 @@ void main() {
       expect(find.byKey(const Key('settings-category-docs')), findsOneWidget);
       expect(find.byKey(const Key('settings-docs')), findsOneWidget);
       await shot(tester, '${lang}_51_settings_help');
+      await app.dispose(tester);
+    });
+  }
+
+  // The application menu entry of the Linux AppImage (#1006) under
+  // *Storage & info → This device*.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('settings app menu entry $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            home: const SettingsScreen(),
+            extra: [appMenuEntryProvider.overrideWithValue(_MenuEntry())],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await openSettingsCategory(tester, SettingsCategory.about);
+      await tester.ensureVisible(find.byKey(const Key('app-menu-entry')));
+      await tester.pumpAndSettle();
+      await shot(tester, '${lang}_52_settings_app_menu_entry');
       await app.dispose(tester);
     });
   }
@@ -559,4 +586,19 @@ void main() {
       await app.dispose(tester);
     });
   }
+}
+
+/// An AppImage not yet in the application menu (#1006).
+class _MenuEntry implements AppMenuEntry {
+  @override
+  Future<AppMenuEntryState> state() async => AppMenuEntryState.missing;
+
+  @override
+  Future<void> install() async {}
+
+  @override
+  Future<void> remove() async {}
+
+  @override
+  Future<bool> repairIfMoved() async => false;
 }

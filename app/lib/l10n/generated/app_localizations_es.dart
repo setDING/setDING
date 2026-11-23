@@ -1236,6 +1236,34 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get appMenuEntryAdd => 'Añadir al menú de aplicaciones';
+
+  @override
+  String get appMenuEntryAddHint =>
+      'setDING con su icono en el menú de inicio de tu escritorio';
+
+  @override
+  String get appMenuEntryInstalled => 'En el menú de aplicaciones';
+
+  @override
+  String get appMenuEntryInstalledHint =>
+      'El menú de inicio abre este archivo AppImage';
+
+  @override
+  String get appMenuEntryRemove => 'Quitar';
+
+  @override
+  String get appMenuEntryAdded => 'setDING ya está en el menú de aplicaciones';
+
+  @override
+  String get appMenuEntryRemoved => 'setDING quitado del menú de aplicaciones';
+
+  @override
+  String appMenuEntryFailed(String error) {
+    return 'Menú de aplicaciones sin cambios: $error';
+  }
+
+  @override
   String get settingsLogCopy => 'Copiar registro de diagnóstico';
 
   @override

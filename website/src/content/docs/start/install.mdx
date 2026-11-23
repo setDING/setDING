@@ -5,6 +5,9 @@ sidebar:
   order: 2
 ---
 
+import { Image } from 'astro:assets';
+import menuEntry from '../../../../../docs/screenshots/settings_app_menu_entry_de.png';
+
 Alle Versionen findest du bei den
 [Releases auf GitHub](https://github.com/tafli/setDING/releases/latest).
 
@@ -49,8 +52,24 @@ in einem Ordner liegen, in den du schreiben darfst (z. B. in deinem Home-Ordner)
 Startet das AppImage nicht, fehlt FUSE; installiere das Paket `fuse3` deiner
 Distribution.
 
+### Im Anwendungsmenü
+
+Damit setDING mit seinem Icon im Startmenü deines Desktops erscheint, klicke beim
+AppImage unter **Einstellungen → Speicher & Info → Dieses Gerät** auf **Zum
+Anwendungsmenü hinzufügen**. **Entfernen** nimmt den Eintrag wieder heraus.
+Verschiebst du das AppImage, passt setDING den Eintrag beim nächsten Start an.
+Unter Wayland zeigt das Fenster das setDING-Icon erst mit diesem Eintrag.
+
+<Image src={menuEntry} alt="Einstellungen, Speicher & Info: im Abschnitt «Dieses Gerät» der Eintrag «Zum Anwendungsmenü hinzufügen» mit dem Hinweis «setDING mit seinem Icon im Startmenü deines Desktops»" />
+
+### Ohne AppImage
+
 Lieber ohne AppImage? `setding-<Version>-linux-x64.tar.gz` enthält dieselbe App:
-entpacken und `setding` starten. Diese Kopie aktualisiert sich nicht selbst.
+entpacken und `setding` starten. Diese Kopie aktualisiert sich nicht selbst. Für
+den Eintrag im Anwendungsmenü mit Icon startest du im entpackten Ordner einmal
+`./install-desktop-entry.sh` (nach dem Verschieben des Ordners erneut;
+`--uninstall` entfernt ihn). Das Icon liegt im Ordner `data/` (`app_icon.png`,
+`app_icon.svg`).
 
 ## Updates
 

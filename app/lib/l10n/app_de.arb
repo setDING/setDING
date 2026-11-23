@@ -613,6 +613,24 @@
       }
     }
   },
+  "appMenuEntryAdd": "Zum Anwendungsmenü hinzufügen",
+  "@appMenuEntryAdd": {
+    "description": "Settings (Linux AppImage only): adds setDING with its icon to the desktop's application menu (#1006)."
+  },
+  "appMenuEntryAddHint": "setDING mit seinem Icon im Startmenü deines Desktops",
+  "appMenuEntryInstalled": "Im Anwendungsmenü",
+  "appMenuEntryInstalledHint": "Das Startmenü startet diese AppImage-Datei",
+  "appMenuEntryRemove": "Entfernen",
+  "appMenuEntryAdded": "setDING ist jetzt im Anwendungsmenü",
+  "appMenuEntryRemoved": "setDING aus dem Anwendungsmenü entfernt",
+  "appMenuEntryFailed": "Anwendungsmenü nicht geändert: {error}",
+  "@appMenuEntryFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "settingsLogCopy": "Diagnoseprotokoll kopieren",
   "settingsLogCopyHint": "Die letzten Meldungen der App, z. B. warum eine Synchronisation fehlschlug – zum Einfügen in eine Nachricht an den Support.",
   "settingsLogCopied": "Diagnoseprotokoll kopiert",
