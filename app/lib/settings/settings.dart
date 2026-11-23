@@ -343,6 +343,27 @@ class AppSettings {
   /// Whether the instrument is drums (ADR-0026).
   bool get isDrums => instrument.trim().toLowerCase() == 'drums';
 
+  /// Whether the instrument is vocals.
+  bool get isVocals => isVocalsInstrument(instrument);
+
+  /// Whether [instrument] is vocals.
+  static bool isVocalsInstrument(String instrument) =>
+      instrument.trim().toLowerCase() == 'vocals';
+
+  /// These settings with [instrument] chosen (#1001): picking vocals turns
+  /// on [DisplayMode.lyricsOnly], leaving vocals with lyrics only brings the
+  /// chords back. The content can still be changed by hand afterwards.
+  AppSettings withInstrument(String instrument) {
+    final toVocals = isVocalsInstrument(instrument);
+    final mode = switch ((isVocals, toVocals)) {
+      (false, true) => DisplayMode.lyricsOnly,
+      (true, false) when displayMode == DisplayMode.lyricsOnly =>
+        DisplayMode.lyricsAndChords,
+      _ => displayMode,
+    };
+    return copyWith(instrument: instrument, displayMode: mode);
+  }
+
   bool get showBeat => beatDisplay ?? isDrums;
   bool get showEdgeFlash => isDrums && (edgeFlash ?? true);
   bool get playClick => click ?? isDrums;

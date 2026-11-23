@@ -1401,7 +1401,7 @@ class _InstrumentTile extends StatelessWidget {
                   label: Text(e.value),
                   selected: current == e.key,
                   onSelected: (_) =>
-                      notifier.update((s) => s.copyWith(instrument: e.key)),
+                      notifier.update((s) => s.withInstrument(e.key)),
                 ),
               ChoiceChip(
                 label: Text(
@@ -1418,7 +1418,7 @@ class _InstrumentTile extends StatelessWidget {
                   );
                   if (value != null && value.isNotEmpty) {
                     await notifier.update(
-                      (s) => s.copyWith(instrument: value.toLowerCase()),
+                      (s) => s.withInstrument(value.toLowerCase()),
                     );
                   }
                 },
