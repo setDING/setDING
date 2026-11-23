@@ -217,6 +217,21 @@ extension on SettingsCategory {
     SettingsCategory.development => Icons.science_outlined,
   };
 
+  /// The page of the user documentation about the category (#993); null
+  /// for the test features, which have none.
+  DocsPage? get docs => switch (this) {
+    SettingsCategory.account => DocsPage.account,
+    SettingsCategory.bands => DocsPage.organizations,
+    SettingsCategory.general ||
+    SettingsCategory.about => DocsPage.settingsGeneral,
+    SettingsCategory.musician ||
+    SettingsCategory.display ||
+    SettingsCategory.live => DocsPage.settingsDisplay,
+    SettingsCategory.songDisplay => DocsPage.songDisplay,
+    SettingsCategory.midi => DocsPage.keyboard,
+    SettingsCategory.development => null,
+  };
+
   String title(AppLocalizations l10n) => switch (this) {
     SettingsCategory.account => l10n.settingsSectionAccount,
     SettingsCategory.bands => l10n.settingsSectionBands,
@@ -321,7 +336,17 @@ class _CategoryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(category.title(l10n))),
+      appBar: AppBar(
+        title: Text(category.title(l10n)),
+        actions: [
+          if (category.docs case final docs?)
+            DocsHelpButton(
+              key: const Key('settings-category-docs'),
+              page: docs,
+              topic: category.title(l10n),
+            ),
+        ],
+      ),
       body: _CategoryContent(category: category),
     );
   }
@@ -506,7 +531,7 @@ class _CategoryContent extends ConsumerWidget {
                 hint: l10n.settingsChordViewHint,
                 link: DocsLink(
                   key: const Key('chord-view-docs'),
-                  path: 'songs/chord-views',
+                  page: DocsPage.chordViews,
                   label: l10n.chordViewDocs,
                 ),
                 value: s.chordView,
@@ -763,10 +788,22 @@ class _CategoryContent extends ConsumerWidget {
       children: [
         if (showTitle)
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text(
-              category.title(l10n),
-              style: Theme.of(context).textTheme.titleLarge,
+            padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    category.title(l10n),
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                if (category.docs case final docs?)
+                  DocsHelpButton(
+                    key: const Key('settings-category-docs'),
+                    page: docs,
+                    topic: category.title(l10n),
+                  ),
+              ],
             ),
           ),
         if (category.scope case final scope?) _ScopeNote(scope),
@@ -1111,6 +1148,15 @@ class _AboutSections extends ConsumerWidget {
           // A newer release (ADR-0036).
           if (ref.watch(updateCheckProvider) != null)
             const UpdateAvailableTile(key: Key('update-available')),
+          // The user documentation (ADR-0030, #993).
+          ListTile(
+            key: const Key('settings-docs'),
+            leading: const Icon(Icons.menu_book_outlined),
+            title: Text(l10n.settingsDocs),
+            subtitle: Text(l10n.settingsDocsHint),
+            trailing: const Icon(Icons.open_in_new),
+            onTap: () => openDocsPage(context, DocsPage.overview),
+          ),
           ListTile(
             key: const Key('copy-log'),
             leading: const Icon(Icons.bug_report_outlined),

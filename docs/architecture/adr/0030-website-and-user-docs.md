@@ -93,6 +93,16 @@ Constraints:
   instead of links to GitHub (#923). Pages embed the song to copy with the
   `ExampleSong` component.
 
+- 2026-11-23: Resolved the open point of a help entry in the app (#993): a
+  *User guide* entry under *Storage & info → Help & info* and a help button
+  (book icon) where a concept needs more than a hint: every settings category,
+  the roles, the ChordPro editor and a band's arrangement (ui-design.md,
+  section 10). The app links to pages of one enum `DocsPage`, never to heading
+  anchors, which differ per language; UI languages the site does not have
+  (e.g. those of #983) get the English pages. A website test
+  (`src/app-docs-links.test.ts`) fails when a linked page is missing in a
+  language of the site.
+
 ## Open points
 
 - Remaining documentation chapters (sets, live mode, songs and the editor, bands and
@@ -100,4 +110,3 @@ Constraints:
 - Privacy policy and legal notice (needed for the app stores).
 - Whether feature PRs must update the user documentation (a rule in the git
   workflow, which only the owner may change).
-- A "Help" entry in the app that links to the documentation.

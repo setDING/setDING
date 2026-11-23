@@ -5689,6 +5689,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chordViewDocs => 'How to read Nashville numbers and numerals';
 
   @override
+  String docsHelp(String topic) {
+    return 'Help: $topic';
+  }
+
+  @override
+  String get editorDocsTopic => 'ChordPro editor';
+
+  @override
+  String get settingsDocs => 'User guide';
+
+  @override
+  String get settingsDocsHint =>
+      'Open the setDING documentation on setding.app. The book icon at the top opens the page about the open section.';
+
+  @override
   String get overviewReadiness => 'Ready to play';
 
   @override

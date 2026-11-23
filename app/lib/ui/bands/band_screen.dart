@@ -12,6 +12,7 @@ import 'bands_screen.dart';
 import 'delete_band.dart';
 import 'invites_section.dart';
 import '../widgets/danger_zone.dart';
+import '../widgets/docs_link.dart';
 import '../widgets/section_header.dart';
 import '../widgets/page_width.dart';
 import '../widgets/menu_action.dart';
@@ -135,7 +136,15 @@ class BandScreen extends ConsumerWidget {
                       ? Text(l10n.bandPlannerHint)
                       : null,
                 ),
-              SectionHeader(l10n.bandMembers),
+              // What the roles may do (#993).
+              SectionHeader(
+                l10n.bandMembers,
+                trailing: DocsHelpButton(
+                  key: const Key('roles-docs'),
+                  page: DocsPage.roles,
+                  topic: l10n.bandMembers,
+                ),
+              ),
               for (final m in members)
                 _MemberTile(member: m, band: band, isMe: m.userId == me.id),
               if (band.canManageBand) ...[

@@ -96,6 +96,7 @@ map=(
   no_band 43_no_band
   band_switcher 43b_band_switcher
   settings_auto_backup 43_settings_auto_backup
+  settings_help 51_settings_help
   overview 44_overview
   overview_readiness 44c_overview_readiness
   page_turner_offer 44d_page_turner_offer

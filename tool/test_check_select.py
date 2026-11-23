@@ -39,6 +39,11 @@ class SelectTest(unittest.TestCase):
     def test_upgrade_guard_runs_its_tests(self):
         self.assertEqual(jobs('tool/upgrade_guard.py'), ['tools'])
 
+    def test_help_links_reach_the_website(self):
+        # The website tests that the app's help pages exist (#993).
+        self.assertEqual(jobs('app/lib/ui/widgets/docs_link.dart'),
+                         ['website', 'app-static', 'app-tests', 'app-web'])
+
     def test_version_bump_checks_the_changelog(self):
         self.assertIn('changelog', jobs('app/pubspec.yaml'))
 

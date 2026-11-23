@@ -14,6 +14,7 @@ import 'delete_band.dart';
 import 'bands_screen.dart';
 import 'invites_section.dart';
 import '../widgets/danger_zone.dart';
+import '../widgets/docs_link.dart';
 import '../widgets/section_header.dart';
 import '../widgets/page_width.dart';
 import '../widgets/menu_action.dart';
@@ -137,7 +138,15 @@ class OrganizationScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-              SectionHeader(l10n.orgPeople),
+              // What the roles may do (#993).
+              SectionHeader(
+                l10n.orgPeople,
+                trailing: DocsHelpButton(
+                  key: const Key('roles-docs'),
+                  page: DocsPage.roles,
+                  topic: l10n.orgPeople,
+                ),
+              ),
               for (final p in people)
                 _PersonTile(
                   person: p,

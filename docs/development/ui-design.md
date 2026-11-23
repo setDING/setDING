@@ -195,6 +195,19 @@ the others are checked in review.
   widgets carry a `Semantics` label.
 - Hints that explain a whole screen sit at its top as `bodyMedium`, inset like the
   tiles (`EdgeInsets.fromLTRB(16, 16, 16, 8)`).
+- **Help from the documentation** (#993): where a concept needs more than a hint
+  (every settings category, the roles at the members of a band and the people of
+  an organization, the ChordPro editor, a band's arrangement), a
+  **`DocsHelpButton`** (`widgets/docs_link.dart`, the book icon, tooltip
+  *Help: <topic>*) opens the page of the user documentation: next to the title of
+  the screen or panel (`SidePanel(docs: …)`), or as `trailing` of its
+  `SectionHeader`. Not on every option: a hint below the option explains it
+  in place, a `DocsLink` under it leads on where a hint is not enough (the chord
+  view). The small (?) of `ScopeInfo` stays reserved for whom a setting applies
+  to. Every linked page is a `DocsPage`; the app links to **pages, never to
+  headings**, whose anchors differ per language, and UI languages without their
+  own documentation get the English pages. `website/src/app-docs-links.test.ts`
+  fails when a `DocsPage` has no page in a language of the site.
 
 ## 11. Adding a screen – checklist
 
@@ -203,6 +216,7 @@ the others are checked in review.
 - [ ] Colours only from the scheme or `StatusColors`.
 - [ ] Width limited with `PageWidth` on large screens, spacing in steps of 4.
 - [ ] Tooltips on icon buttons, texts in all ARB files.
+- [ ] A concept that needs more than a hint has a `DocsHelpButton` (section 10).
 - [ ] Shortcuts and Esc behave (ADR-0049).
 - [ ] A screenshot on the website page (AGENTS.md, "User documentation and screenshots").
 - [ ] A list of songs uses the parts of `ui/songs/song_list.dart`, and a change to

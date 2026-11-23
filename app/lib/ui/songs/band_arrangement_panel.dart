@@ -9,6 +9,7 @@ import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../render/song_header.dart';
 import '../widgets/dialogs.dart';
+import '../widgets/docs_link.dart';
 import '../widgets/key_picker.dart';
 import '../widgets/scope_info.dart';
 import '../widgets/side_panel.dart';
@@ -114,6 +115,7 @@ class BandArrangementPanel extends ConsumerWidget {
       icon: Icons.groups_outlined,
       title: l10n.arrangementOf(band.name),
       scope: SettingScope.band,
+      docs: DocsPage.keyAndSequence,
       children: [
         ArrangementBandChoice(band: band, song: song),
         if (details.isNotEmpty)

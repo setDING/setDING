@@ -10,6 +10,7 @@ import '../../settings/settings.dart';
 import '../render/song_header.dart';
 import '../render/song_view.dart';
 import '../widgets/dialogs.dart';
+import '../widgets/docs_link.dart';
 import '../widgets/sequence_dialog.dart';
 import 'auto_close_formatter.dart';
 import 'chordpro_editing_controller.dart';
@@ -827,6 +828,12 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
                     : l10n.editorTitleEdit,
               ),
               actions: [
+                // The ChordPro syntax and the editor's aids (#993).
+                DocsHelpButton(
+                  key: const ValueKey('editor-docs'),
+                  page: DocsPage.editor,
+                  topic: l10n.editorDocsTopic,
+                ),
                 _SaveButton(unsaved: _unsaved, wide: wide, onPressed: _save),
               ],
               bottom: wide

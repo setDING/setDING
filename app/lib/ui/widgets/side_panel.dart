@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
 
+import 'docs_link.dart';
 import 'scope_info.dart';
 
 /// A panel that slides in from the right (end drawer) with a heading, the
@@ -13,6 +14,7 @@ class SidePanel extends StatelessWidget {
     required this.icon,
     required this.title,
     this.scope,
+    this.docs,
     required this.children,
   });
 
@@ -21,6 +23,10 @@ class SidePanel extends StatelessWidget {
 
   /// Whom the settings in the panel apply to; null shows no (?) icon.
   final SettingScope? scope;
+
+  /// The page of the user documentation about the panel, opened by a help
+  /// button in its header (#993).
+  final DocsPage? docs;
   final List<Widget> children;
 
   @override
@@ -46,6 +52,12 @@ class SidePanel extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (docs case final docs?)
+                  DocsHelpButton(
+                    key: const Key('side-panel-docs'),
+                    page: docs,
+                    topic: title,
+                  ),
                 IconButton(
                   tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
                   icon: const Icon(Icons.close),
