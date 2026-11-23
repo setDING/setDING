@@ -640,6 +640,7 @@ class BackupService {
     'liveView': ?o.liveView,
     'hideAnnotations': o.hideAnnotations,
     'verseChords': o.verseChords.name,
+    'stackedChoruses': o.stackedChoruses,
     'midi': ?o.midi?.toJson(),
     'midiPrograms': ?o.midiPrograms?.toJson(),
     'clickGrouping': ?o.clickGrouping,
@@ -814,6 +815,7 @@ class BackupService {
     hideAnnotations: (o['hideAnnotations'] as bool?) ?? false,
     verseChords:
         VerseChords.values.asNameMap()[o['verseChords']] ?? VerseChords.all,
+    stackedChoruses: o['stackedChoruses'] == true,
     midi: Value(MidiProgram.fromJson(o['midi'])),
     midiPrograms: Value(MidiPrograms.fromJson(o['midiPrograms'])),
     clickGrouping: Value(o['clickGrouping'] as String?),

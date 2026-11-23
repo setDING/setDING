@@ -698,6 +698,12 @@ abstract class AppLocalizations {
   /// **'Verses untereinander'**
   String get verseChordsStacked;
 
+  /// No description provided for @chorusesStacked.
+  ///
+  /// In de, this message translates to:
+  /// **'Choruses untereinander'**
+  String get chorusesStacked;
+
   /// No description provided for @editorTitleNew.
   ///
   /// In de, this message translates to:

@@ -170,6 +170,23 @@ void main() {
       expect(LayoutFingerprint.fromJson(old), verse1);
     });
 
+    test('stacked choruses are another layout and round-trip (#953)', () {
+      final choruses = LayoutFingerprint(
+        mode: 'page',
+        pages: 2,
+        width: 1000,
+        height: 700,
+        font: 24,
+        columns: 2,
+        stackedChoruses: true,
+        content: 42,
+        sequence: 'V1 C',
+      );
+      expect(choruses.matches(layout), isFalse);
+      expect(LayoutFingerprint.fromJson(choruses.toJson()), choruses);
+      expect(layout.toJson().containsKey('choruses'), isFalse);
+    });
+
     test('another orientation, font, text or sequence does not match', () {
       LayoutFingerprint with_({
         double width = 1000,

@@ -1,6 +1,7 @@
 // Screenshots of the song list and the song screen.
 // See screenshot_support.dart.
 
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:chordpro/chordpro.dart' show ChordView;
@@ -472,6 +473,45 @@ void main() {
     await shot(tester, 'de_4e_live_stacked_verses');
     await app.dispose(tester);
   });
+
+  // Stacked choruses next to stacked verses (#953), in live mode with the
+  // menu that turns them on.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('stacked choruses $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      final source = File('../docs/examples/personal-$lang.cho')
+          .readAsStringSync();
+      final song = await tester.runAsync(() async {
+        final id = await app.songs.createSong(source: source);
+        final overlay = await app.songs.getOverlay(id);
+        await app.songs.saveOverlay(
+          overlay.copyWith(
+            verseChords: VerseChords.stacked,
+            stackedChoruses: true,
+          ),
+        );
+        return (await app.songs.getSong(id))!;
+      });
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: LiveScreen(items: [LiveItem.song(song!)])),
+        ),
+      );
+      await tester.pumpAndSettle();
+      // The control bar, then the menu.
+      await tester.tapAt(tester.getCenter(find.byType(PageView)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('verse-chords-button')));
+      await tester.pumpAndSettle();
+      expect(find.byType(CheckboxMenuButton), findsOneWidget);
+      await shot(tester, '${lang}_4f_live_stacked_choruses');
+      await app.dispose(tester);
+    });
+  }
 
   // Light and dark: the conflict icon (error colour) next to the gig icon
   // (primary colour) must stay apart with every palette (#269).

@@ -78,6 +78,7 @@ map=(
   editor_invalid_key 48_editor_invalid_key
   import_keys 47b_import_keys
   adjustment_offer 42_adjustment_offer
+  live_stacked_choruses 4f_live_stacked_choruses
   song_phone_menu 42c_song_phone_menu
   set_language_version 41_set_language_version
   language_versions 40_language_versions

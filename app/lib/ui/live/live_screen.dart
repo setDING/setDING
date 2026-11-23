@@ -1401,16 +1401,19 @@ class _ControlBar extends ConsumerWidget {
     // The verse chords are offered for songs where a choice changes
     // something, and always to turn it off again.
     final verseChords = overlay?.verseChords ?? VerseChords.all;
+    final stackedChoruses = overlay?.stackedChoruses ?? false;
     final extraButtons = <Widget>[
       if (adjust != null &&
           parsed != null &&
-          (verseChords != VerseChords.all ||
-              verseChordsChoices(parsed).length > 1))
+          verseChordsOffered(parsed, verseChords, stackedChoruses))
         VerseChordsPicker(
           song: parsed,
           mode: verseChords,
+          stackedChoruses: stackedChoruses,
           compact: true,
           onChanged: (mode) => adjust((o) => o.copyWith(verseChords: mode)),
+          onStackedChorusesChanged: (on) =>
+              adjust((o) => o.copyWith(stackedChoruses: on)),
         ),
       if (annotated)
         IconButton(
@@ -1773,8 +1776,12 @@ class _LiveItemPage extends ConsumerWidget {
       songMap: map,
       song: song,
       // Chords in the first shown verse only (#518) or the shown verses
-      // stacked (#521).
-      parsed: songWithVerseChords(selection.song, overlay.verseChords),
+      // stacked (#521), and stacked choruses (#953).
+      parsed: songWithVerseChords(
+        selection.song,
+        overlay.verseChords,
+        stackedChoruses: overlay.stackedChoruses,
+      ),
       hiddenParts: selection.hidden,
       dimSection: selection.outside.isEmpty ? null : selection.isOutside,
       overlay: overlay,
@@ -2173,6 +2180,7 @@ class _ChordProPage extends ConsumerWidget {
                           columns: pages.columns,
                           lyricsOnly: lyricsOnly,
                           verseChords: overlay.verseChords.name,
+                          stackedChoruses: overlay.stackedChoruses,
                           content: content,
                           sequence: shownSequence,
                         ),
@@ -2310,6 +2318,7 @@ class _ChordProPage extends ConsumerWidget {
             columns: options.columns,
             lyricsOnly: options.lyricsOnly,
             verseChords: overlay.verseChords.name,
+            stackedChoruses: overlay.stackedChoruses,
             content: textHash(song.chordproSource),
             sequence: shownSequence,
           ),

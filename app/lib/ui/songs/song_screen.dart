@@ -613,7 +613,11 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                     _FittedSongBody(
                       songId: song.id,
                       source: song.chordproSource,
-                      song: songWithVerseChords(parsed, overlay.verseChords),
+                      song: songWithVerseChords(
+                        parsed,
+                        overlay.verseChords,
+                        stackedChoruses: overlay.stackedChoruses,
+                      ),
                       overlay: overlay,
                       formatter: formatter,
                       // The visible area without the list's padding.
@@ -851,6 +855,7 @@ class _FittedSongBody extends ConsumerWidget {
           columns: columns,
           lyricsOnly: lyricsOnly,
           verseChords: overlay.verseChords.name,
+          stackedChoruses: overlay.stackedChoruses,
           content: textHash(source),
         ),
         font: font,
@@ -1061,11 +1066,15 @@ class _AdjustmentsBar extends StatelessWidget {
             ),
           ),
         ),
-        // Chords in the first verse only (#518) or stacked verses (#521).
+        // Chords in the first verse only (#518), stacked verses (#521) and
+        // stacked choruses (#953).
         VerseChordsPicker(
           song: song,
           mode: overlay.verseChords,
+          stackedChoruses: overlay.stackedChoruses,
           onChanged: (mode) => onChanged((o) => o.copyWith(verseChords: mode)),
+          onStackedChorusesChanged: (on) =>
+              onChanged((o) => o.copyWith(stackedChoruses: on)),
         ),
         // Grouping and subdivisions of the click (#698): for people who use
         // the beat or the click, and always to reset a choice.
@@ -1116,6 +1125,7 @@ class _AdjustmentsBar extends StatelessWidget {
                 fontScale: 1.0,
                 chordView: const Value(null),
                 verseChords: VerseChords.all,
+                stackedChoruses: false,
                 clickGrouping: const Value(null),
                 clickSubdivision: const Value(null),
               ),
@@ -1386,6 +1396,7 @@ extension on SongOverlay {
       fontScale != 1.0 ||
       chordView != null ||
       verseChords != VerseChords.all ||
+      stackedChoruses ||
       clickGrouping != null ||
       clickSubdivision != null;
 }

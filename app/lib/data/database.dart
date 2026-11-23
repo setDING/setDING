@@ -407,6 +407,11 @@ class PersonalOverlays extends Table {
   TextColumn get verseChords =>
       textEnum<VerseChords>().withDefault(Constant(VerseChords.all.name))();
 
+  /// Choruses whose words change stacked line by line like verses (#953,
+  /// schema 36).
+  BoolColumn get stackedChoruses =>
+      boolean().withDefault(const Constant(false))();
+
   /// Keyboard program sent in live mode (ADR-0039, schema 19); null =
   /// none, the keyboard keeps its program.
   TextColumn get midi => text().nullable().map(const MidiProgramConverter())();
@@ -660,7 +665,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 35;
+  int get schemaVersion => 36;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -769,6 +774,7 @@ class AppDatabase extends _$AppDatabase {
               personalOverlays.revision,
               personalOverlays.hideAnnotations,
               personalOverlays.verseChords,
+              personalOverlays.stackedChoruses,
               personalOverlays.midi,
               personalOverlays.midiPrograms,
               personalOverlays.clickGrouping,
@@ -976,6 +982,11 @@ class AppDatabase extends _$AppDatabase {
       // Schema 35: an empty or invalid {key} is a ChordPro problem (#933).
       // No new column: afterUpgrade (refreshAllMetadata) counts the
       // problems of every song again.
+      if (from < 36 && from >= 8) {
+        // Stacked choruses (#953); before schema 8 the rebuilt overlay
+        // table adds the column.
+        await m.addColumn(personalOverlays, personalOverlays.stackedChoruses);
+      }
     },
     beforeOpen: (details) async {
       if (details.hadUpgrade) await afterUpgrade?.call(this);

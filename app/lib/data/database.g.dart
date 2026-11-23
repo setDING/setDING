@@ -5586,6 +5586,21 @@ class $PersonalOverlaysTable extends PersonalOverlays
       ).withConverter<VerseChords>(
         $PersonalOverlaysTable.$converterverseChords,
       );
+  static const VerificationMeta _stackedChorusesMeta = const VerificationMeta(
+    'stackedChoruses',
+  );
+  @override
+  late final GeneratedColumn<bool> stackedChoruses = GeneratedColumn<bool>(
+    'stacked_choruses',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("stacked_choruses" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   late final GeneratedColumnWithTypeConverter<MidiProgram?, String> midi =
       GeneratedColumn<String>(
@@ -5652,6 +5667,7 @@ class $PersonalOverlaysTable extends PersonalOverlays
     liveView,
     hideAnnotations,
     verseChords,
+    stackedChoruses,
     midi,
     midiPrograms,
     clickGrouping,
@@ -5729,6 +5745,15 @@ class $PersonalOverlaysTable extends PersonalOverlays
         ),
       );
     }
+    if (data.containsKey('stacked_choruses')) {
+      context.handle(
+        _stackedChorusesMeta,
+        stackedChoruses.isAcceptableOrUnknown(
+          data['stacked_choruses']!,
+          _stackedChorusesMeta,
+        ),
+      );
+    }
     if (data.containsKey('click_grouping')) {
       context.handle(
         _clickGroupingMeta,
@@ -5801,6 +5826,10 @@ class $PersonalOverlaysTable extends PersonalOverlays
           data['${effectivePrefix}verse_chords'],
         )!,
       ),
+      stackedChoruses: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}stacked_choruses'],
+      )!,
       midi: $PersonalOverlaysTable.$convertermidi.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.string,
@@ -5886,6 +5915,10 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
   /// stacked line by line (#521) (schema 18; a boolean in schema 17).
   final VerseChords verseChords;
 
+  /// Choruses whose words change stacked line by line like verses (#953,
+  /// schema 36).
+  final bool stackedChoruses;
+
   /// Keyboard program sent in live mode (ADR-0039, schema 19); null =
   /// none, the keyboard keeps its program.
   final MidiProgram? midi;
@@ -5918,6 +5951,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     this.liveView,
     required this.hideAnnotations,
     required this.verseChords,
+    required this.stackedChoruses,
     this.midi,
     this.midiPrograms,
     this.clickGrouping,
@@ -5952,6 +5986,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
         $PersonalOverlaysTable.$converterverseChords.toSql(verseChords),
       );
     }
+    map['stacked_choruses'] = Variable<bool>(stackedChoruses);
     if (!nullToAbsent || midi != null) {
       map['midi'] = Variable<String>(
         $PersonalOverlaysTable.$convertermidi.toSql(midi),
@@ -5997,6 +6032,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
           : Value(liveView),
       hideAnnotations: Value(hideAnnotations),
       verseChords: Value(verseChords),
+      stackedChoruses: Value(stackedChoruses),
       midi: midi == null && nullToAbsent ? const Value.absent() : Value(midi),
       midiPrograms: midiPrograms == null && nullToAbsent
           ? const Value.absent()
@@ -6032,6 +6068,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       verseChords: $PersonalOverlaysTable.$converterverseChords.fromJson(
         serializer.fromJson<String>(json['verseChords']),
       ),
+      stackedChoruses: serializer.fromJson<bool>(json['stackedChoruses']),
       midi: serializer.fromJson<MidiProgram?>(json['midi']),
       midiPrograms: serializer.fromJson<MidiPrograms?>(json['midiPrograms']),
       clickGrouping: serializer.fromJson<String?>(json['clickGrouping']),
@@ -6059,6 +6096,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       'verseChords': serializer.toJson<String>(
         $PersonalOverlaysTable.$converterverseChords.toJson(verseChords),
       ),
+      'stackedChoruses': serializer.toJson<bool>(stackedChoruses),
       'midi': serializer.toJson<MidiProgram?>(midi),
       'midiPrograms': serializer.toJson<MidiPrograms?>(midiPrograms),
       'clickGrouping': serializer.toJson<String?>(clickGrouping),
@@ -6083,6 +6121,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     Value<String?> liveView = const Value.absent(),
     bool? hideAnnotations,
     VerseChords? verseChords,
+    bool? stackedChoruses,
     Value<MidiProgram?> midi = const Value.absent(),
     Value<MidiPrograms?> midiPrograms = const Value.absent(),
     Value<String?> clickGrouping = const Value.absent(),
@@ -6100,6 +6139,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     liveView: liveView.present ? liveView.value : this.liveView,
     hideAnnotations: hideAnnotations ?? this.hideAnnotations,
     verseChords: verseChords ?? this.verseChords,
+    stackedChoruses: stackedChoruses ?? this.stackedChoruses,
     midi: midi.present ? midi.value : this.midi,
     midiPrograms: midiPrograms.present ? midiPrograms.value : this.midiPrograms,
     clickGrouping: clickGrouping.present
@@ -6127,6 +6167,9 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
       verseChords: data.verseChords.present
           ? data.verseChords.value
           : this.verseChords,
+      stackedChoruses: data.stackedChoruses.present
+          ? data.stackedChoruses.value
+          : this.stackedChoruses,
       midi: data.midi.present ? data.midi.value : this.midi,
       midiPrograms: data.midiPrograms.present
           ? data.midiPrograms.value
@@ -6155,6 +6198,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
           ..write('liveView: $liveView, ')
           ..write('hideAnnotations: $hideAnnotations, ')
           ..write('verseChords: $verseChords, ')
+          ..write('stackedChoruses: $stackedChoruses, ')
           ..write('midi: $midi, ')
           ..write('midiPrograms: $midiPrograms, ')
           ..write('clickGrouping: $clickGrouping, ')
@@ -6177,6 +6221,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
     liveView,
     hideAnnotations,
     verseChords,
+    stackedChoruses,
     midi,
     midiPrograms,
     clickGrouping,
@@ -6198,6 +6243,7 @@ class SongOverlay extends DataClass implements Insertable<SongOverlay> {
           other.liveView == this.liveView &&
           other.hideAnnotations == this.hideAnnotations &&
           other.verseChords == this.verseChords &&
+          other.stackedChoruses == this.stackedChoruses &&
           other.midi == this.midi &&
           other.midiPrograms == this.midiPrograms &&
           other.clickGrouping == this.clickGrouping &&
@@ -6217,6 +6263,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
   final Value<String?> liveView;
   final Value<bool> hideAnnotations;
   final Value<VerseChords> verseChords;
+  final Value<bool> stackedChoruses;
   final Value<MidiProgram?> midi;
   final Value<MidiPrograms?> midiPrograms;
   final Value<String?> clickGrouping;
@@ -6235,6 +6282,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     this.liveView = const Value.absent(),
     this.hideAnnotations = const Value.absent(),
     this.verseChords = const Value.absent(),
+    this.stackedChoruses = const Value.absent(),
     this.midi = const Value.absent(),
     this.midiPrograms = const Value.absent(),
     this.clickGrouping = const Value.absent(),
@@ -6254,6 +6302,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     this.liveView = const Value.absent(),
     this.hideAnnotations = const Value.absent(),
     this.verseChords = const Value.absent(),
+    this.stackedChoruses = const Value.absent(),
     this.midi = const Value.absent(),
     this.midiPrograms = const Value.absent(),
     this.clickGrouping = const Value.absent(),
@@ -6273,6 +6322,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     Expression<String>? liveView,
     Expression<bool>? hideAnnotations,
     Expression<String>? verseChords,
+    Expression<bool>? stackedChoruses,
     Expression<String>? midi,
     Expression<String>? midiPrograms,
     Expression<String>? clickGrouping,
@@ -6292,6 +6342,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
       if (liveView != null) 'live_view': liveView,
       if (hideAnnotations != null) 'hide_annotations': hideAnnotations,
       if (verseChords != null) 'verse_chords': verseChords,
+      if (stackedChoruses != null) 'stacked_choruses': stackedChoruses,
       if (midi != null) 'midi': midi,
       if (midiPrograms != null) 'midi_programs': midiPrograms,
       if (clickGrouping != null) 'click_grouping': clickGrouping,
@@ -6313,6 +6364,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
     Value<String?>? liveView,
     Value<bool>? hideAnnotations,
     Value<VerseChords>? verseChords,
+    Value<bool>? stackedChoruses,
     Value<MidiProgram?>? midi,
     Value<MidiPrograms?>? midiPrograms,
     Value<String?>? clickGrouping,
@@ -6332,6 +6384,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
       liveView: liveView ?? this.liveView,
       hideAnnotations: hideAnnotations ?? this.hideAnnotations,
       verseChords: verseChords ?? this.verseChords,
+      stackedChoruses: stackedChoruses ?? this.stackedChoruses,
       midi: midi ?? this.midi,
       midiPrograms: midiPrograms ?? this.midiPrograms,
       clickGrouping: clickGrouping ?? this.clickGrouping,
@@ -6381,6 +6434,9 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
         $PersonalOverlaysTable.$converterverseChords.toSql(verseChords.value),
       );
     }
+    if (stackedChoruses.present) {
+      map['stacked_choruses'] = Variable<bool>(stackedChoruses.value);
+    }
     if (midi.present) {
       map['midi'] = Variable<String>(
         $PersonalOverlaysTable.$convertermidi.toSql(midi.value),
@@ -6424,6 +6480,7 @@ class PersonalOverlaysCompanion extends UpdateCompanion<SongOverlay> {
           ..write('liveView: $liveView, ')
           ..write('hideAnnotations: $hideAnnotations, ')
           ..write('verseChords: $verseChords, ')
+          ..write('stackedChoruses: $stackedChoruses, ')
           ..write('midi: $midi, ')
           ..write('midiPrograms: $midiPrograms, ')
           ..write('clickGrouping: $clickGrouping, ')
@@ -14241,6 +14298,7 @@ typedef $$PersonalOverlaysTableCreateCompanionBuilder =
       Value<String?> liveView,
       Value<bool> hideAnnotations,
       Value<VerseChords> verseChords,
+      Value<bool> stackedChoruses,
       Value<MidiProgram?> midi,
       Value<MidiPrograms?> midiPrograms,
       Value<String?> clickGrouping,
@@ -14261,6 +14319,7 @@ typedef $$PersonalOverlaysTableUpdateCompanionBuilder =
       Value<String?> liveView,
       Value<bool> hideAnnotations,
       Value<VerseChords> verseChords,
+      Value<bool> stackedChoruses,
       Value<MidiProgram?> midi,
       Value<MidiPrograms?> midiPrograms,
       Value<String?> clickGrouping,
@@ -14354,6 +14413,11 @@ class $$PersonalOverlaysTableFilterComposer
   get verseChords => $composableBuilder(
     column: $table.verseChords,
     builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<bool> get stackedChoruses => $composableBuilder(
+    column: $table.stackedChoruses,
+    builder: (column) => ColumnFilters(column),
   );
 
   ColumnWithTypeConverterFilters<MidiProgram?, MidiProgram, String> get midi =>
@@ -14467,6 +14531,11 @@ class $$PersonalOverlaysTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get stackedChoruses => $composableBuilder(
+    column: $table.stackedChoruses,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get midi => $composableBuilder(
     column: $table.midi,
     builder: (column) => ColumnOrderings(column),
@@ -14560,6 +14629,11 @@ class $$PersonalOverlaysTableAnnotationComposer
         builder: (column) => column,
       );
 
+  GeneratedColumn<bool> get stackedChoruses => $composableBuilder(
+    column: $table.stackedChoruses,
+    builder: (column) => column,
+  );
+
   GeneratedColumnWithTypeConverter<MidiProgram?, String> get midi =>
       $composableBuilder(column: $table.midi, builder: (column) => column);
 
@@ -14648,6 +14722,7 @@ class $$PersonalOverlaysTableTableManager
                 Value<String?> liveView = const Value.absent(),
                 Value<bool> hideAnnotations = const Value.absent(),
                 Value<VerseChords> verseChords = const Value.absent(),
+                Value<bool> stackedChoruses = const Value.absent(),
                 Value<MidiProgram?> midi = const Value.absent(),
                 Value<MidiPrograms?> midiPrograms = const Value.absent(),
                 Value<String?> clickGrouping = const Value.absent(),
@@ -14666,6 +14741,7 @@ class $$PersonalOverlaysTableTableManager
                 liveView: liveView,
                 hideAnnotations: hideAnnotations,
                 verseChords: verseChords,
+                stackedChoruses: stackedChoruses,
                 midi: midi,
                 midiPrograms: midiPrograms,
                 clickGrouping: clickGrouping,
@@ -14686,6 +14762,7 @@ class $$PersonalOverlaysTableTableManager
                 Value<String?> liveView = const Value.absent(),
                 Value<bool> hideAnnotations = const Value.absent(),
                 Value<VerseChords> verseChords = const Value.absent(),
+                Value<bool> stackedChoruses = const Value.absent(),
                 Value<MidiProgram?> midi = const Value.absent(),
                 Value<MidiPrograms?> midiPrograms = const Value.absent(),
                 Value<String?> clickGrouping = const Value.absent(),
@@ -14704,6 +14781,7 @@ class $$PersonalOverlaysTableTableManager
                 liveView: liveView,
                 hideAnnotations: hideAnnotations,
                 verseChords: verseChords,
+                stackedChoruses: stackedChoruses,
                 midi: midi,
                 midiPrograms: midiPrograms,
                 clickGrouping: clickGrouping,

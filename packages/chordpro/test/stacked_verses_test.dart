@@ -153,4 +153,83 @@ Three b
     // Markup does not count as text.
     expect(rows[2].splitsWord(0), isTrue);
   });
+
+  group('choruses (#953)', () {
+    const choruses = '''
+{start_of_verse: Verse 1}
+[A]One
+{end_of_verse}
+{start_of_chorus}
+[G]Sing it [C]loud
+{end_of_chorus}
+{start_of_verse: Verse 2}
+[A]Two
+{end_of_verse}
+{start_of_chorus}
+[G]Sing it [C]loud
+{end_of_chorus}
+{start_of_verse: Verse 3}
+[A]Three
+{end_of_verse}
+{start_of_chorus}
+[G]Sing it [C]soft
+{end_of_chorus}
+{chorus}
+''';
+
+    test('stacks choruses whose words change, without repeats', () {
+      final parsed = parseChordPro(choruses);
+      final song = stackChoruses(parsed);
+      final sections = song.sections.toList();
+      // Verses stay; the choruses become one block after verse 1.
+      expect(
+        [for (final s in sections) s.kind],
+        [
+          SectionKind.verse,
+          SectionKind.chorus,
+          SectionKind.verse,
+          SectionKind.verse,
+        ],
+      );
+      final rows = stackedLines(sections[1]).single.rows;
+      // The second chorus repeats the first and adds no row.
+      expect([for (final r in rows) r.verse], [1, 3]);
+      expect(
+        [for (final r in rows) r.line.text],
+        ['Sing it loud', 'Sing it soft'],
+      );
+      // The recall stays.
+      expect(song.elements.last, isA<ChorusRecall>());
+      expect(stackedLines(sections[0]), isEmpty);
+    });
+
+    test('choruses that are all the same stay as they are', () {
+      final repeated = parseChordPro(
+        '{soc}\n[G]Same\n{eoc}\n{sov}\n[A]V\n{eov}\n{soc}\n[G]Same\n{eoc}',
+      );
+      expect(stackChoruses(repeated), same(repeated));
+      final recalled = parseChordPro('{soc}\n[G]Same\n{eoc}\n{chorus}');
+      expect(stackChoruses(recalled), same(recalled));
+    });
+
+    test('verses and choruses can both be stacked', () {
+      final song = stackVerses(stackChoruses(parseChordPro(choruses)));
+      expect(
+        [for (final s in song.sections) s.kind],
+        [SectionKind.verse, SectionKind.chorus],
+      );
+      expect(song.sections.first.label, 'Verse 1–3');
+    });
+  });
+
+  test('a verse with the same text as an earlier one adds no row', () {
+    final song = stackVerses(
+      parseChordPro(
+        '{sov}\n[G]A\n{eov}\n{sov}\n[G]B\n{eov}\n{sov}\n[G]A\n{eov}',
+      ),
+    );
+    expect(song.sections, hasLength(1));
+    final rows = stackedLines(song.sections.single).single.rows;
+    expect([for (final r in rows) r.verse], [1, 2]);
+  });
 }

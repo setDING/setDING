@@ -39,9 +39,16 @@ void downgradeToSchema19(Database raw) {
   raw.execute('ALTER TABLE personal_overlays DROP COLUMN midi_programs');
 }
 
+/// Turns a current database back into schema 35: overlays without
+/// stacked choruses (#953).
+void downgradeToSchema35(Database raw) {
+  raw.execute('ALTER TABLE personal_overlays DROP COLUMN stacked_choruses');
+}
+
 /// Turns a current database back into schema 34: the same tables, but
 /// the problem counts of before #933 (an invalid {key} not counted).
 void downgradeToSchema34(Database raw) {
+  downgradeToSchema35(raw);
   raw.execute('UPDATE songs SET chordpro_problems = 0');
 }
 
@@ -1282,6 +1289,32 @@ void main() {
     final repo = SongRepository(upgraded, storage);
     upgraded.afterUpgrade = (db) => repo.refreshAllMetadata();
     expect((await repo.watchSongList().first).single.problems, 1);
+    await upgraded.close();
+  });
+
+  test('upgrades a schema 35 database: overlays get stacked choruses off '
+      '(#953)', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final storage = FileAttachmentStorage(dir);
+    final repo = SongRepository(current, storage);
+    final song = await repo.createSong(source: '{title: Old}');
+    await repo.saveOverlay(
+      (await repo.getOverlay(song))
+          .copyWith(transpose: 2, verseChords: VerseChords.stacked),
+    );
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema35(raw);
+    raw.execute('PRAGMA user_version = 35');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final overlay = await SongRepository(upgraded, storage).getOverlay(song);
+    expect(
+      (overlay.transpose, overlay.verseChords, overlay.stackedChoruses),
+      (2, VerseChords.stacked, false),
+    );
     await upgraded.close();
   });
 }

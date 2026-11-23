@@ -37,6 +37,7 @@ class OverlaySync {
     'live_view': o.liveView,
     'hide_annotations': o.hideAnnotations,
     'verse_chords': o.verseChords.name,
+    'stacked_choruses': o.stackedChoruses,
     'click_grouping': o.clickGrouping,
     'click_subdivision': o.clickSubdivision?.name,
   };
@@ -99,6 +100,7 @@ class OverlaySync {
                 liveView: Value(d['live_view'] as String?),
                 hideAnnotations: Value(d['hide_annotations'] == true),
                 verseChords: Value(verseChordsOf(d)),
+                stackedChoruses: Value(d['stacked_choruses'] == true),
                 midi: Value(o.midi),
                 midiPrograms: Value(o.midiPrograms),
                 clickGrouping: Value(d['click_grouping'] as String?),
