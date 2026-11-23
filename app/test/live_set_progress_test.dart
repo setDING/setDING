@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:pdfrx/pdfrx.dart';
@@ -74,7 +75,7 @@ void main() {
   }
 
   StageProgress progress(WidgetTester tester) =>
-      tester.widget<SetProgressBar>(find.byType(SetProgressBar)).progress;
+      tester.widget<SetProgressBar>(_bar).progress;
 
   Color colorOf(WidgetTester tester, String key) =>
       tester.widget<ColoredBox>(find.byKey(ValueKey(key))).color;
@@ -246,6 +247,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Page 1/2'), findsOneWidget);
     expect(_bar, findsNothing);
+    // Without the bar no scrubbing either (#979).
+    expect(find.byKey(const Key('live-set-progress-touch')), findsNothing);
     await app.dispose(tester);
   });
 
@@ -269,5 +272,145 @@ void main() {
     // A personal setting (ADR-0027).
     expect(app.personal()['setProgress'], isFalse);
     await app.dispose(tester);
+  });
+
+  group('hold and drag on the bar jumps (#979)', () {
+    final four = [
+      for (final (i, key) in ['C', 'D', 'E', 'G'].indexed)
+        '{title: Song ${i + 1}}\n{key: $key}\n[$key]La la',
+    ];
+    final label = find.byKey(const Key('live-set-progress-label'));
+    final scrub = find.byKey(const Key('live-set-progress-scrub'));
+
+    /// The centre of item [i] of the bar below the page.
+    Offset itemCenter(WidgetTester tester, int i) => tester
+        .getRect(
+          find.descendant(
+            of: _bar,
+            matching: find.byKey(ValueKey('progress-item-$i')),
+          ),
+        )
+        .center;
+
+    Future<TestApp> openLive(WidgetTester tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final items = await createSongs(tester, app, four);
+      await tester.pumpWidget(app.build(home: LiveScreen(items: items)));
+      await tester.pumpAndSettle();
+      return app;
+    }
+
+    Future<TestGesture> hold(WidgetTester tester, Offset at) async {
+      final gesture = await tester.startGesture(at);
+      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
+      return gesture;
+    }
+
+    testWidgets('a tap on the bar does nothing, the page still turns', (
+      tester,
+    ) async {
+      final app = await openLive(tester);
+      await tester.tapAt(itemCenter(tester, 2));
+      await tester.pumpAndSettle();
+      expect(progress(tester).index, 0);
+      expect(scrub, findsNothing);
+
+      // The touch zone reaches into the page, but taps go through to it.
+      final page = tester.getRect(find.byType(PageView));
+      await tester.tapAt(Offset(page.right - 20, page.bottom - 12));
+      await tester.pumpAndSettle();
+      expect(progress(tester).index, 1);
+      await app.dispose(tester);
+    });
+
+    testWidgets('holding shows the item under the finger, release jumps', (
+      tester,
+    ) async {
+      final app = await openLive(tester);
+      final bar = tester.getRect(_bar);
+      // The mapping matches the bar as laid out.
+      for (var i = 0; i < 4; i++) {
+        expect(
+          SetProgressBar.itemAt(
+            itemCenter(tester, i).dx - bar.left,
+            bar.width,
+            4,
+            progress(tester),
+          ),
+          i,
+        );
+        expect(
+          SetProgressBar.centerOf(i, bar.width, 4, progress(tester)),
+          moreOrLessEquals(itemCenter(tester, i).dx - bar.left),
+        );
+      }
+
+      // Held a little above the bar, inside the touch zone.
+      final gesture = await hold(
+        tester,
+        itemCenter(tester, 1).translate(0, -16),
+      );
+      expect(scrub, findsOneWidget);
+      expect(tester.getSize(scrub).height, greaterThan(bar.height * 4));
+      expect(
+        find.descendant(of: label, matching: find.text('Song 2 (D)')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('progress-selected')), findsOneWidget);
+      // Still the first song until released.
+      expect(progress(tester).index, 0);
+
+      await gesture.moveTo(itemCenter(tester, 3));
+      await tester.pump();
+      expect(
+        find.descendant(of: label, matching: find.text('Song 4 (G)')),
+        findsOneWidget,
+      );
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect(scrub, findsNothing);
+      expect(progress(tester).index, 3);
+      expect(find.text('Song 4'), findsWidgets);
+      await app.dispose(tester);
+    });
+
+    testWidgets('released on the current item or far above, nothing happens', (
+      tester,
+    ) async {
+      final app = await openLive(tester);
+      var gesture = await hold(tester, itemCenter(tester, 2));
+      await gesture.moveTo(itemCenter(tester, 0));
+      await tester.pump();
+      expect(
+        find.descendant(of: label, matching: find.text('Song 1 (C)')),
+        findsOneWidget,
+      );
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect(progress(tester).index, 0);
+
+      gesture = await hold(tester, itemCenter(tester, 2));
+      await gesture.moveTo(itemCenter(tester, 2).translate(0, -150));
+      await tester.pump();
+      expect(label, findsNothing);
+      expect(scrub, findsOneWidget);
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect(scrub, findsNothing);
+      expect(progress(tester).index, 0);
+      await app.dispose(tester);
+    });
+
+    testWidgets('no scrubbing while the control bar is shown', (tester) async {
+      final app = await openLive(tester);
+      final touch = find.byKey(const Key('live-set-progress-touch'));
+      expect(touch, findsOneWidget);
+      final page = tester.getRect(find.byType(PageView));
+      await tester.tapAt(page.center);
+      await tester.pumpAndSettle();
+      expect(touch, findsNothing);
+      await app.dispose(tester);
+    });
   });
 }

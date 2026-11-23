@@ -48,6 +48,7 @@ map=(
   marker_dialog 2c_marker_dialog
   live_marker 4c_live_marker
   live_controls 4b_live_controls
+  live_set_scrub 4g_live_set_scrub
   annotations 17_annotations
   annotations_live 17b_annotations_live
   settings_midi 22_settings_midi
