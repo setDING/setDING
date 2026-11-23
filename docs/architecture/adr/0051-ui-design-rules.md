@@ -112,6 +112,8 @@ above span all of them.
   `AppBarActions` moves the icon buttons that do not fit next to the title to the
   top of the overflow menu, above a divider, as `MenuAction`s that keep their
   badge (`MenuAction` takes `active` and `count`); the song screen uses it.
+- 2026-11-23: A destructive menu action is the last entry of its menu, set apart by a
+  `PopupMenuDivider` (#1031); all menus follow it and `ui_rules_test.dart` checks it.
 
 ## Open points
 

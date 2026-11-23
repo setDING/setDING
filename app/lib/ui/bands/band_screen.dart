@@ -295,13 +295,15 @@ class _MemberTile extends ConsumerWidget {
                     icon: Icons.person_outline,
                     label: l10n.bandMakeMember,
                   ),
-                if (!isMe)
+                if (!isMe) ...[
+                  const PopupMenuDivider(),
                   MenuAction(
                     value: 'remove',
                     icon: Icons.person_remove_outlined,
                     label: l10n.bandRemoveMember,
                     destructive: true,
                   ),
+                ],
               ],
             ),
     );

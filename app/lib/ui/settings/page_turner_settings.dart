@@ -116,6 +116,7 @@ class PageTurnerTile extends ConsumerWidget {
                   label: l10n.settingsPageTurnerPairAgain,
                   onTap: () => pairPageTurner(context, ref),
                 ),
+                const PopupMenuDivider(),
                 MenuAction(
                   key: const Key('settings-page-turner-forget'),
                   icon: Icons.link_off,

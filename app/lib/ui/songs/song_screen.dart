@@ -628,13 +628,15 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                       icon: Icons.copy_all_outlined,
                       label: l10n.copyToBand,
                     ),
-                    if (library.canDeleteSongs)
+                    if (library.canDeleteSongs) ...[
+                      const PopupMenuDivider(),
                       MenuAction(
                         value: 'delete',
                         icon: Icons.delete_outline,
                         label: l10n.delete,
                         destructive: true,
                       ),
+                    ],
                   ],
                 ),
                 LivePlayButton(
@@ -1442,24 +1444,26 @@ class _AttachmentsCard extends ConsumerWidget {
         }
       },
       itemBuilder: (_) => [
-        MenuAction(
-          value: 'save',
-          icon: Icons.download_outlined,
-          label: l10n.save,
-        ),
         if (canRename)
           MenuAction(
             value: 'rename',
             icon: Icons.edit_outlined,
             label: l10n.rename,
           ),
-        if (canDelete)
+        MenuAction(
+          value: 'save',
+          icon: Icons.download_outlined,
+          label: l10n.save,
+        ),
+        if (canDelete) ...[
+          const PopupMenuDivider(),
           MenuAction(
             value: 'delete',
             icon: Icons.delete_outline,
             label: l10n.delete,
             destructive: true,
           ),
+        ],
       ],
     );
   }

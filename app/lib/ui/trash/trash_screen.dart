@@ -204,6 +204,7 @@ class _TrashScreenState extends ConsumerState<TrashScreen> {
                           icon: Icons.checklist,
                           label: l10n.selectMode,
                         ),
+                        const PopupMenuDivider(),
                         MenuAction(
                           key: const Key('trash-empty'),
                           value: 'empty',
@@ -354,6 +355,7 @@ class _TrashTile extends StatelessWidget {
                   icon: Icons.restore_from_trash_outlined,
                   label: l10n.trashRestore,
                 ),
+                const PopupMenuDivider(),
                 MenuAction(
                   key: ValueKey('trash-purge-${entry.id}'),
                   value: 'purge',

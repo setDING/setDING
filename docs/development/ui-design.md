@@ -105,7 +105,9 @@ the others are checked in review.
   groups (the organization), with the entries indented below it.
   An action that deletes or removes something (delete, remove from set, remove a
   member, delete all annotations) is `MenuAction(destructive: true)`: icon and
-  label in the error colour, like the danger zone (#839).
+  label in the error colour, like the danger zone (#839). It is the **last entry**
+  of its menu, set apart from the actions above by a **`PopupMenuDivider`**
+  (#1031), so it is not hit by mistake: e.g. *Rename*, *Save*, divider, *Delete*.
   **On narrow screens** the icon buttons that do not fit move to the top of the
   overflow menu, above a divider: **`AppBarActions`** (`widgets/app_bar_actions.dart`,
   #838) takes them in order of importance, shows as many as the screen width leaves
