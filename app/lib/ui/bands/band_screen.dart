@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/band_view.dart';
 import '../../data/database.dart';
+import '../../data/person_name.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
+import '../../settings/settings.dart' show nameFormatProvider;
 import '../../sync/auth_providers.dart';
 import '../widgets/dialogs.dart';
 import 'band_labels.dart';
@@ -36,6 +38,7 @@ class BandScreen extends ConsumerWidget {
     final people =
         ref.read(orgMembersProvider(band.organizationId!)).value ??
         const <OrgMembershipEntry>[];
+    final format = ref.read(nameFormatProvider);
     final candidates = [
       for (final p in people)
         if (!members.any((m) => m.userId == p.userId)) p,
@@ -54,9 +57,7 @@ class BandScreen extends ConsumerWidget {
               onPressed: () => Navigator.pop(context, p),
               child: ListTile(
                 leading: const Icon(Icons.person_outline),
-                title: Text(
-                  p.userName.isEmpty ? (p.userEmail ?? '?') : p.userName,
-                ),
+                title: Text(personLabel(p.person, format, email: p.userEmail)),
               ),
             ),
         ],
@@ -238,9 +239,10 @@ class _MemberTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final service = ref.read(bandServiceProvider);
-    final name = member.userName.isEmpty
-        ? (member.userEmail ?? '?')
-        : member.userName;
+    final format = ref.watch(nameFormatProvider);
+    final name = personLabel(member.person, format, email: member.userEmail);
+    // The full name under the shown one when it says more (ADR-0062).
+    final full = member.person.fullName;
     final isAdmin = member.role == BandRole.admin;
     Future<void> setRole(BandRole role) =>
         runBandAction(context, () => service.setRole(member.id, role));
@@ -248,7 +250,12 @@ class _MemberTile extends ConsumerWidget {
     return ListTile(
       leading: Icon(isAdmin ? Icons.shield_outlined : Icons.person_outline),
       title: Text(isMe ? l10n.bandYou(name) : name),
-      subtitle: Text(roleLabel(l10n, member.role)),
+      subtitle: Text(
+        [
+          if (full.isNotEmpty && !name.contains(full)) full,
+          roleLabel(l10n, member.role),
+        ].join(' · '),
+      ),
       trailing: !band.canManageBand
           ? null
           : PopupMenuButton<String>(

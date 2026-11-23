@@ -7,10 +7,12 @@ import '../data/band_role.dart';
 import '../data/database.dart' show PlayedValues, SetItemEntry, SetItemType;
 import '../data/marker_icons.dart';
 import '../data/outbox.dart' show SongLinkField;
+import '../data/person_name.dart';
 import '../midi/midi_message.dart';
 
 export '../data/band_role.dart';
 export '../data/outbox.dart' show SongLinkField;
+export '../data/person_name.dart' show NameFormat, PersonName;
 
 /// Default setDING server (ADR-0014).
 const defaultServerUrl = 'https://api.setding.app';
@@ -18,11 +20,41 @@ const defaultServerUrl = 'https://api.setding.app';
 /// The signed-in user.
 @immutable
 class AuthUser {
-  const AuthUser({required this.id, required this.email, required this.name});
+  const AuthUser({
+    required this.id,
+    required this.email,
+    required this.name,
+    this.firstName,
+    this.lastName,
+    this.nickname = '',
+  });
 
   final String id;
   final String email;
+
+  /// The display name the server keeps (nickname or full name, ADR-0062).
   final String name;
+
+  /// First and last name (ADR-0062); null when the server does not know
+  /// them (older servers), empty when the account still lacks them.
+  final String? firstName;
+  final String? lastName;
+  final String nickname;
+
+  /// The name parts, with [name] as the fallback.
+  PersonName get person => PersonName(
+    firstName: firstName ?? '',
+    lastName: lastName ?? '',
+    nickname: nickname,
+    fallback: name,
+  );
+
+  /// The server knows first and last names, but the account lacks one of
+  /// them (an account from before ADR-0062): the app asks for it.
+  bool get needsFullName =>
+      firstName != null &&
+      lastName != null &&
+      (firstName!.trim().isEmpty || lastName!.trim().isEmpty);
 
   /// Name to show in the UI; falls back to the email address.
   String get displayName => name.trim().isEmpty ? email : name.trim();
@@ -32,10 +64,14 @@ class AuthUser {
       other is AuthUser &&
       other.id == id &&
       other.email == email &&
-      other.name == name;
+      other.name == name &&
+      other.firstName == firstName &&
+      other.lastName == lastName &&
+      other.nickname == nickname;
 
   @override
-  int get hashCode => Object.hash(id, email, name);
+  int get hashCode =>
+      Object.hash(id, email, name, firstName, lastName, nickname);
 }
 
 /// Why a backend call failed; the UI shows a message per kind.
@@ -130,6 +166,9 @@ class RemoteMember<R extends Enum> {
     required this.membershipId,
     required this.userId,
     required this.name,
+    this.firstName = '',
+    this.lastName = '',
+    this.nickname = '',
     this.email,
     required this.role,
     this.revision = 0,
@@ -137,7 +176,14 @@ class RemoteMember<R extends Enum> {
 
   final String membershipId;
   final String userId;
+
+  /// The display name the server keeps; the fallback of older servers.
   final String name;
+
+  /// First name, last name and nickname (ADR-0062); empty on older servers.
+  final String firstName;
+  final String lastName;
+  final String nickname;
 
   /// Only known for the signed-in user (other addresses are not public).
   final String? email;
@@ -874,10 +920,11 @@ abstract class SyncBackend {
   /// [invite] token is required (ADR-0024); it is not redeemed here. If the
   /// server requires email verification, signing in fails with
   /// [BackendErrorKind.emailNotVerified] after the account was created.
+  /// [name] needs first and last name (ADR-0062).
   Future<AuthUser> signUp({
     required String email,
     required String password,
-    required String name,
+    required PersonName name,
     String? invite,
   });
 
@@ -898,9 +945,9 @@ abstract class SyncBackend {
   /// Signs out on this device. Local songs and sets are kept.
   Future<void> signOut();
 
-  /// Changes the display name of the signed-in user (issue #779); bandmates
-  /// see it after their next sync.
-  Future<AuthUser> changeName(String name);
+  /// Changes first name, last name and nickname of the signed-in user
+  /// (issue #779, ADR-0062); bandmates see them after their next sync.
+  Future<AuthUser> changeName(PersonName name);
 
   /// Changes the password of the signed-in user (issue #779). Fails with
   /// [BackendErrorKind.invalidCredentials] if [oldPassword] is wrong. The

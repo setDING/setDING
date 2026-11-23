@@ -6,6 +6,7 @@ import 'package:setding/data/arrangement_repository.dart';
 import 'package:setding/data/attachment_storage_io.dart';
 import 'package:setding/data/change_log.dart';
 import 'package:setding/data/database.dart';
+import 'package:setding/data/person_name.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/data/song_repository.dart';
 import 'package:setding/data/song_review.dart';
@@ -62,9 +63,24 @@ void downgradeToSchema36(Database raw) {
   }
 }
 
+/// Turns a current database back into schema 39: people without first
+/// name, last name and nickname (ADR-0062).
+void downgradeToSchema39(Database raw) {
+  for (final table in ['org_memberships', 'memberships']) {
+    for (final column in [
+      'user_first_name',
+      'user_last_name',
+      'user_nickname',
+    ]) {
+      raw.execute('ALTER TABLE $table DROP COLUMN $column');
+    }
+  }
+}
+
 /// Turns a current database back into schema 37: sets without a lineup,
 /// no substitute bands (ADR-0061).
 void downgradeToSchema37(Database raw) {
+  downgradeToSchema39(raw);
   raw.execute('ALTER TABLE bands DROP COLUMN substitute');
   raw.execute('ALTER TABLE setlists DROP COLUMN lineup');
   raw.execute('ALTER TABLE setlists DROP COLUMN lineup_custom');
@@ -1411,6 +1427,7 @@ void main() {
 
     final raw = sqlite3.open(file.path);
     raw.execute("UPDATE songs SET detected_language = 'de'");
+    downgradeToSchema39(raw);
     raw.execute('PRAGMA user_version = 38');
     raw.close();
 
@@ -1418,6 +1435,38 @@ void main() {
     final repo = SongRepository(upgraded, storage);
     upgraded.afterUpgrade = (db) => repo.refreshAllMetadata();
     expect((await repo.watchSongList().first).single.language, 'gsw');
+    await upgraded.close();
+  });
+
+  test('upgrades a schema 39 database: people keep their single name and '
+      'get empty first and last names (ADR-0062)', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    await current
+        .into(current.organizations)
+        .insert(OrganizationsCompanion.insert(id: 'o1', name: 'Org'));
+    await current
+        .into(current.orgMemberships)
+        .insert(
+          OrgMembershipsCompanion.insert(
+            id: 'm1',
+            organizationId: 'o1',
+            userId: 'u1',
+            userName: const Value('Ann'),
+            role: OrgRole.member,
+          ),
+        );
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema39(raw);
+    raw.execute('PRAGMA user_version = 39');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final m = await upgraded.select(upgraded.orgMemberships).getSingle();
+    expect(m.userName, 'Ann');
+    expect([m.userFirstName, m.userLastName, m.userNickname], ['', '', '']);
+    expect(m.person.format(NameFormat.nickname), 'Ann');
     await upgraded.close();
   });
 }

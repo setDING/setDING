@@ -1773,10 +1773,46 @@ class AppLocalizationsDe extends AppLocalizations {
       'Nur auf deinem eigenen Gerät. Sonst endet die Anmeldung, wenn du den Browser schliesst.';
 
   @override
-  String get accountName => 'Name';
+  String get accountNameHint =>
+      'Z. B. «Andi». Deine Bandmitglieder sehen ihn in Listen statt des vollen Namens.';
 
   @override
-  String get accountNameHint => 'So sehen dich deine Bandmitglieder.';
+  String get accountFirstName => 'Vorname';
+
+  @override
+  String get accountLastName => 'Nachname';
+
+  @override
+  String get accountNickname => 'Anzeigename (optional)';
+
+  @override
+  String get accountCompleteName => 'Vollen Namen ergänzen';
+
+  @override
+  String get accountCompleteNameMessage =>
+      'Bitte gib deinen Vor- und Nachnamen ein. So finden dich deine Bandmitglieder leichter.';
+
+  @override
+  String get settingsHeadingPeople => 'Personen';
+
+  @override
+  String get settingsNameFormat => 'Namen anzeigen als';
+
+  @override
+  String get settingsNameFormatHint =>
+      'So erscheinen andere Personen in Mitgliederlisten, im Lineup und bei Änderungen.';
+
+  @override
+  String get nameFormatNickname => 'Anzeigename (sonst voller Name)';
+
+  @override
+  String get nameFormatFirstLast => 'Vorname Nachname';
+
+  @override
+  String get nameFormatLastFirst => 'Nachname Vorname';
+
+  @override
+  String get nameFormatFullWithNickname => 'Vorname Nachname (Anzeigename)';
 
   @override
   String get accountToSignUp => 'Noch kein Konto? Konto erstellen';

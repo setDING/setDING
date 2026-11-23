@@ -91,7 +91,8 @@ void main() {
         'email': email,
         'password': password,
         'passwordConfirm': password,
-        'name': 'Compat',
+        'first_name': 'Compat',
+        'last_name': 'Test',
       })).expectStatus(200);
     });
     tearDownAll(() => pb.stop());

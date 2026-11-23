@@ -12,6 +12,7 @@ import 'data/band_copy.dart';
 import 'data/band_view.dart';
 import 'data/database.dart';
 import 'data/lineup.dart';
+import 'data/person_name.dart';
 import 'data/import_export.dart';
 import 'data/play_history.dart';
 import 'data/set_archive.dart';
@@ -310,17 +311,41 @@ final organizationsProvider = StreamProvider<List<OrganizationView>>(
       .watchOrganizations(ref.watch(authProvider.select((u) => u?.id))),
 );
 
-/// People of an organization, admins first.
+/// People of an organization, admins first, then by name as the user
+/// shows names (ADR-0062).
 final orgMembersProvider = StreamProvider.autoDispose
-    .family<List<OrgMembershipEntry>, String>(
-      (ref, orgId) => ref.watch(bandServiceProvider).watchOrgMembers(orgId),
-    );
+    .family<List<OrgMembershipEntry>, String>((ref, orgId) {
+      final format = ref.watch(nameFormatProvider);
+      return ref
+          .watch(bandServiceProvider)
+          .watchOrgMembers(orgId)
+          .map(
+            (people) => sortedPeople(
+              people,
+              format,
+              role: (m) => m.role.name,
+              person: (m) => m.person,
+            ),
+          );
+    });
 
-/// Members of a band, admins first.
+/// Members of a band, admins first, then by name as the user shows names
+/// (ADR-0062).
 final bandMembersProvider = StreamProvider.autoDispose
-    .family<List<MembershipEntry>, String>(
-      (ref, bandId) => ref.watch(bandServiceProvider).watchMembers(bandId),
-    );
+    .family<List<MembershipEntry>, String>((ref, bandId) {
+      final format = ref.watch(nameFormatProvider);
+      return ref
+          .watch(bandServiceProvider)
+          .watchMembers(bandId)
+          .map(
+            (people) => sortedPeople(
+              people,
+              format,
+              role: (m) => m.role.name,
+              person: (m) => m.person,
+            ),
+          );
+    });
 
 // Songs of the current library, sets of the current band ----------------------
 
@@ -817,6 +842,7 @@ final setLineupProvider = Provider.autoDispose.family<SetLineup?, String>((
         ? const []
         : ref.watch(orgMembersProvider(orgId)).value ?? const [],
     userId: ref.watch(authProvider.select((u) => u?.id)),
+    format: ref.watch(nameFormatProvider),
   );
 });
 

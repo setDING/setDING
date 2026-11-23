@@ -48,6 +48,12 @@ class OrgMemberships extends Table {
   TextColumn get userName => text().withDefault(const Constant(''))();
   TextColumn get userEmail => text().nullable()();
 
+  /// First name, last name and nickname of the user (ADR-0062, schema 40);
+  /// [userName] stays the single name of older servers.
+  TextColumn get userFirstName => text().withDefault(const Constant(''))();
+  TextColumn get userLastName => text().withDefault(const Constant(''))();
+  TextColumn get userNickname => text().withDefault(const Constant(''))();
+
   /// Stored by name, so schema 11 kept the values of [BandRole] it had
   /// before (`admin`, `member`) and added `librarian` (ADR-0023).
   TextColumn get role => textEnum<OrgRole>()();
@@ -100,6 +106,12 @@ class Memberships extends Table {
   /// Name of the user at the time of the last refresh.
   TextColumn get userName => text().withDefault(const Constant(''))();
   TextColumn get userEmail => text().nullable()();
+
+  /// First name, last name and nickname of the user (ADR-0062, schema 40);
+  /// [userName] stays the single name of older servers.
+  TextColumn get userFirstName => text().withDefault(const Constant(''))();
+  TextColumn get userLastName => text().withDefault(const Constant(''))();
+  TextColumn get userNickname => text().withDefault(const Constant(''))();
   TextColumn get role => textEnum<BandRole>()();
   IntColumn get revision => integer().withDefault(const Constant(0))();
 
@@ -770,7 +782,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 39;
+  int get schemaVersion => 40;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -1123,6 +1135,17 @@ class AppDatabase extends _$AppDatabase {
       // Schema 39: Swiss German is detected (ADR-0053, #1033). No new
       // column: afterUpgrade (refreshAllMetadata) detects the language of
       // every song again.
+      if (from < 40 && from >= 4) {
+        // First name, last name and nickname of people (ADR-0062); before
+        // schema 4 the new tables have the columns already. The next
+        // refresh of the bands fills them.
+        await m.addColumn(orgMemberships, orgMemberships.userFirstName);
+        await m.addColumn(orgMemberships, orgMemberships.userLastName);
+        await m.addColumn(orgMemberships, orgMemberships.userNickname);
+        await m.addColumn(memberships, memberships.userFirstName);
+        await m.addColumn(memberships, memberships.userLastName);
+        await m.addColumn(memberships, memberships.userNickname);
+      }
     },
     beforeOpen: (details) async {
       if (details.hadUpgrade) await afterUpgrade?.call(this);

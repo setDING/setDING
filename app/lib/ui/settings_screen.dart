@@ -14,6 +14,7 @@ import '../update/app_menu_entry.dart';
 import '../util/app_version.dart';
 import '../util/log.dart';
 import 'account/account_section.dart';
+import 'account/person_name_form.dart' show nameFormatLabel;
 import 'backup/auto_backup_tiles.dart';
 import 'backup/full_backup.dart';
 import 'backup/local_library_tile.dart';
@@ -401,7 +402,26 @@ class _CategoryContent extends ConsumerWidget {
             children: const [DeleteAccountTile()],
           ),
       ],
-      SettingsCategory.bands => [const BandsSettings()],
+      SettingsCategory.bands => [
+        SettingsSection(
+          title: l10n.settingsHeadingPeople,
+          children: [
+            SettingsDropdown(
+              dropdownKey: const Key('settings-name-format'),
+              icon: Icons.badge_outlined,
+              title: l10n.settingsNameFormat,
+              hint: l10n.settingsNameFormatHint,
+              value: s.nameFormat,
+              options: {
+                for (final f in NameFormat.values) f: nameFormatLabel(l10n, f),
+              },
+              onChanged: (v) =>
+                  notifier.update((s) => s.copyWith(nameFormat: v)),
+            ),
+          ],
+        ),
+        const BandsSettings(),
+      ],
       SettingsCategory.general => [
         SettingsSections([
           SettingsSection(

@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import organization from '../../../../../docs/screenshots/organization_de.png';
 import band from '../../../../../docs/screenshots/band_de.png';
+import nameFormat from '../../../../../docs/screenshots/name_format_de.png';
 import noBand from '../../../../../docs/screenshots/no_band_de.png';
 import bandSwitcher from '../../../../../docs/screenshots/band_switcher_de.png';
 
@@ -106,6 +107,25 @@ Band für sie nicht mehr verfügbar ist. Für eine Kopie ausserhalb von setDING 
 du vorher die Bibliothek.
 
 <Image src={band} alt="Eine Band mit ihren Mitgliedern, ihren Rollen und «Personen einladen»" />
+
+## Namen anzeigen
+
+Jedes Konto hat einen Vor- und Nachnamen und, wenn gewünscht, einen Anzeigenamen.
+Wie du die Namen der anderen siehst, wählst du unter **Einstellungen** →
+**Organisation & Bands** → **Namen anzeigen als**:
+
+- **Anzeigename (sonst voller Name)** – zum Beispiel «Andi»; ohne Anzeigenamen
+  «Andreas Boss».
+- **Vorname Nachname** – «Andreas Boss».
+- **Nachname Vorname** – «Boss Andreas»; die Listen sind nach dem Nachnamen sortiert.
+- **Vorname Nachname (Anzeigename)** – «Andreas Boss (Andi)».
+
+Das gilt für die Mitglieder der Organisation und der Band, das Lineup eines Sets und
+die letzten Änderungen. Zeigt eine Mitgliederliste den Anzeigenamen, steht der volle
+Name darunter. Beim Hinzufügen von Personen zum Lineup findest du jemanden über den
+Vornamen, den Nachnamen oder den Anzeigenamen.
+
+<Image src={nameFormat} alt="Die Einstellung «Namen anzeigen als» mit den vier Varianten" />
 
 ## Zwischen Bands wechseln
 

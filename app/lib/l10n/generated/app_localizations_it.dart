@@ -1772,10 +1772,47 @@ class AppLocalizationsIt extends AppLocalizations {
       'Solo sul tuo dispositivo. Altrimenti vieni disconnesso quando chiudi il browser.';
 
   @override
-  String get accountName => 'Nome';
+  String get accountNameHint =>
+      'Ad es. «Andi». I tuoi compagni di band lo vedono negli elenchi al posto del nome completo.';
 
   @override
-  String get accountNameHint => 'Come ti vedono i tuoi compagni di band.';
+  String get accountFirstName => 'Nome';
+
+  @override
+  String get accountLastName => 'Cognome';
+
+  @override
+  String get accountNickname => 'Nome visualizzato (facoltativo)';
+
+  @override
+  String get accountCompleteName => 'Completa il tuo nome';
+
+  @override
+  String get accountCompleteNameMessage =>
+      'Inserisci nome e cognome, così i tuoi compagni di band ti trovano più facilmente.';
+
+  @override
+  String get settingsHeadingPeople => 'Persone';
+
+  @override
+  String get settingsNameFormat => 'Mostra i nomi come';
+
+  @override
+  String get settingsNameFormatHint =>
+      'Come appaiono le altre persone negli elenchi dei membri, nelle formazioni e nelle modifiche.';
+
+  @override
+  String get nameFormatNickname =>
+      'Nome visualizzato (altrimenti nome completo)';
+
+  @override
+  String get nameFormatFirstLast => 'Nome Cognome';
+
+  @override
+  String get nameFormatLastFirst => 'Cognome Nome';
+
+  @override
+  String get nameFormatFullWithNickname => 'Nome Cognome (nome visualizzato)';
 
   @override
   String get accountToSignUp => 'Non hai ancora un account? Creane uno';

@@ -239,7 +239,9 @@ void main() {
     await tester.tap(find.byKey(const Key('join-sign-up')));
     await tester.pumpAndSettle();
     for (final (key, value) in [
-      ('account-name', 'Bob'),
+      ('account-first-name', 'Bob'),
+      ('account-last-name', 'Test'),
+      ('account-nickname', 'Bob'),
       ('account-email', 'bob@example.test'),
       ('account-password', 'long-enough'),
       ('account-password-confirm', 'long-enough'),
@@ -322,7 +324,9 @@ void main() {
       await tester.tap(find.byKey(const Key('join-sign-up')));
       await tester.pumpAndSettle();
       for (final (key, value) in [
-        ('account-name', 'Bob'),
+        ('account-first-name', 'Bob'),
+        ('account-last-name', 'Test'),
+        ('account-nickname', 'Bob'),
         ('account-email', 'bob@example.test'),
         ('account-password', 'long-enough'),
         ('account-password-confirm', 'long-enough'),
@@ -382,7 +386,9 @@ void main() {
       await tester.tap(find.byKey(const Key('account-toggle')));
       await tester.pumpAndSettle();
       for (final (key, value) in [
-        ('account-name', 'Bob'),
+        ('account-first-name', 'Bob'),
+        ('account-last-name', 'Test'),
+        ('account-nickname', 'Bob'),
         ('account-email', 'bob@example.test'),
         ('account-password', 'long-enough'),
         ('account-password-confirm', 'long-enough'),

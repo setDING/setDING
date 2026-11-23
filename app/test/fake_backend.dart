@@ -43,6 +43,16 @@ class FakeSyncBackend implements SyncBackend {
     _changes.add(u);
   }
 
+  /// [u] with the names of [name], as the server keeps them (ADR-0062).
+  static AuthUser _withName(AuthUser u, PersonName name) => AuthUser(
+    id: u.id,
+    email: u.email,
+    name: name.format(NameFormat.nickname),
+    firstName: name.firstName.trim(),
+    lastName: name.lastName.trim(),
+    nickname: name.nickname.trim(),
+  );
+
   @override
   AuthUser? get currentUser => user;
 
@@ -70,7 +80,7 @@ class FakeSyncBackend implements SyncBackend {
   Future<AuthUser> signUp({
     required String email,
     required String password,
-    required String name,
+    required PersonName name,
     String? invite,
   }) async {
     _check();
@@ -86,17 +96,20 @@ class FakeSyncBackend implements SyncBackend {
       unverified.add(email.trim());
       throw const BackendException(BackendErrorKind.emailNotVerified);
     }
-    final u = AuthUser(id: 'u-$email', email: email.trim(), name: name.trim());
+    final u = _withName(
+      AuthUser(id: 'u-$email', email: email.trim(), name: ''),
+      name,
+    );
     _set(u);
     return u;
   }
 
   @override
-  Future<AuthUser> changeName(String name) async {
+  Future<AuthUser> changeName(PersonName name) async {
     _check();
     final u = user;
     if (u == null) throw const BackendException(BackendErrorKind.signedOut);
-    final changed = AuthUser(id: u.id, email: u.email, name: name.trim());
+    final changed = _withName(u, name);
     _set(changed);
     return changed;
   }
@@ -236,6 +249,9 @@ class FakeSyncBackend implements SyncBackend {
     membershipId: m.id,
     userId: m.user.id,
     name: m.user.displayName,
+    firstName: m.user.firstName ?? '',
+    lastName: m.user.lastName ?? '',
+    nickname: m.user.nickname,
     email: m.user.id == user!.id ? m.user.email : null,
     role: m.role,
   );

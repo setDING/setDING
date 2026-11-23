@@ -42,7 +42,11 @@ void main() {
       final user = await first.signUp(
         email: address,
         password: 'password-123',
-        name: 'Ann',
+        name: const PersonName(
+          firstName: 'Ann',
+          lastName: 'Test',
+          nickname: 'Ann',
+        ),
       );
       expect(user.email, address);
       expect(user.name, 'Ann');
@@ -65,7 +69,11 @@ void main() {
   test('reports wrong credentials, taken email and weak password', () async {
     final b = PocketBaseBackend(serverUrl: url, store: MemorySessionStore());
     final address = email();
-    await b.signUp(email: address, password: 'password-123', name: 'C');
+    await b.signUp(
+      email: address,
+      password: 'password-123',
+      name: const PersonName(firstName: 'C', lastName: 'Test', nickname: 'C'),
+    );
     await b.signOut();
 
     expect(
@@ -74,7 +82,15 @@ void main() {
     );
     expect(
       await kindOf(
-        () => b.signUp(email: address, password: 'password-123', name: 'C'),
+        () => b.signUp(
+          email: address,
+          password: 'password-123',
+          name: const PersonName(
+            firstName: 'C',
+            lastName: 'Test',
+            nickname: 'C',
+          ),
+        ),
       ),
       BackendErrorKind.emailTaken,
     );
@@ -83,14 +99,26 @@ void main() {
         () => b.signUp(
           email: 'not-an-email',
           password: 'password-123',
-          name: 'D',
+          name: const PersonName(
+            firstName: 'D',
+            lastName: 'Test',
+            nickname: 'D',
+          ),
         ),
       ),
       BackendErrorKind.invalidEmail,
     );
     expect(
       await kindOf(
-        () => b.signUp(email: email(), password: 'short', name: 'E'),
+        () => b.signUp(
+          email: email(),
+          password: 'short',
+          name: const PersonName(
+            firstName: 'E',
+            lastName: 'Test',
+            nickname: 'E',
+          ),
+        ),
       ),
       BackendErrorKind.weakPassword,
     );
@@ -101,12 +129,27 @@ void main() {
     final store = MemorySessionStore();
     final b = PocketBaseBackend(serverUrl: url, store: store);
     final address = email();
-    await b.signUp(email: address, password: 'password-123', name: 'Ann');
+    await b.signUp(
+      email: address,
+      password: 'password-123',
+      name: const PersonName(
+        firstName: 'Ann',
+        lastName: 'Test',
+        nickname: 'Ann',
+      ),
+    );
     final names = <String?>[];
     final sub = b.userChanges.listen((u) => names.add(u?.name));
 
-    final renamed = await b.changeName('  Ann Muster ');
+    final renamed = await b.changeName(
+      const PersonName(firstName: '  Ann ', lastName: 'Muster '),
+    );
     expect(renamed.name, 'Ann Muster');
+    expect(
+      [renamed.firstName, renamed.lastName, renamed.nickname],
+      ['Ann', 'Muster', ''],
+    );
+    expect(renamed.needsFullName, isFalse);
     expect(b.currentUser!.name, 'Ann Muster');
 
     expect(
@@ -163,7 +206,15 @@ void main() {
   test('deletes the own account (ADR-0052)', () async {
     final b = PocketBaseBackend(serverUrl: url, store: MemorySessionStore());
     final address = email();
-    await b.signUp(email: address, password: 'password-123', name: 'Ann');
+    await b.signUp(
+      email: address,
+      password: 'password-123',
+      name: const PersonName(
+        firstName: 'Ann',
+        lastName: 'Test',
+        nickname: 'Ann',
+      ),
+    );
     // Ann founds an organization and is its only admin.
     await b.createBand(id: const Uuid().v4(), name: 'Ann\'s band');
 
@@ -213,7 +264,7 @@ void main() {
       final user = await b.signUp(
         email: email(),
         password: 'password-123',
-        name: name,
+        name: PersonName(firstName: name, lastName: 'Test', nickname: name),
       );
       return (b, user);
     }
@@ -415,7 +466,7 @@ void main() {
       final user = await b.signUp(
         email: email(),
         password: 'password-123',
-        name: name,
+        name: PersonName(firstName: name, lastName: 'Test', nickname: name),
       );
       return (b, user);
     }
@@ -492,7 +543,15 @@ void main() {
         serverUrl: url,
         store: MemorySessionStore(),
       );
-      await ann.signUp(email: email(), password: 'password-123', name: 'Ann');
+      await ann.signUp(
+        email: email(),
+        password: 'password-123',
+        name: const PersonName(
+          firstName: 'Ann',
+          lastName: 'Test',
+          nickname: 'Ann',
+        ),
+      );
       final bandId = const Uuid().v4();
       await ann.createBand(id: bandId, name: 'Rock');
       final orgId = (await ann.fetchOrganizations()).single.id;
@@ -505,7 +564,11 @@ void main() {
       final bobUser = await bob.signUp(
         email: email(),
         password: 'password-123',
-        name: 'Bob',
+        name: const PersonName(
+          firstName: 'Bob',
+          lastName: 'Test',
+          nickname: 'Bob',
+        ),
       );
       final orgLink = await ann.createInvite(orgId);
       await bob.redeemInvite(inviteTokenFrom(orgLink.url)!);
@@ -518,7 +581,11 @@ void main() {
         serverUrl: url,
         store: MemorySessionStore(),
       );
-      await carol.signUp(email: email(), password: 'password-123', name: 'C');
+      await carol.signUp(
+        email: email(),
+        password: 'password-123',
+        name: const PersonName(firstName: 'C', lastName: 'Test', nickname: 'C'),
+      );
       expect((await carol.previewInvite(token)).bandName, 'Rock');
       await carol.redeemInvite(token);
       final carolsBand = (await carol.fetchOrganizations()).single.bands.single;
@@ -649,7 +716,11 @@ void main() {
           () => guest.signUp(
             email: email(),
             password: 'password-123',
-            name: 'Eve',
+            name: const PersonName(
+              firstName: 'Eve',
+              lastName: 'Test',
+              nickname: 'Eve',
+            ),
           ),
         ),
         BackendErrorKind.invitationRequired,
@@ -680,7 +751,11 @@ void main() {
       await guest.signUp(
         email: email(),
         password: 'password-123',
-        name: 'Bob',
+        name: const PersonName(
+          firstName: 'Bob',
+          lastName: 'Test',
+          nickname: 'Bob',
+        ),
         invite: token,
       );
       expect(await guest.redeemInvite(token), org.json['id']);

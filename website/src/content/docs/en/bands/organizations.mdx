@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import organization from '../../../../../../docs/screenshots/organization.png';
 import band from '../../../../../../docs/screenshots/band.png';
+import nameFormat from '../../../../../../docs/screenshots/name_format.png';
 import noBand from '../../../../../../docs/screenshots/no_band.png';
 import bandSwitcher from '../../../../../../docs/screenshots/band_switcher.png';
 
@@ -102,6 +103,25 @@ they are removed for good. Members see a message that the band is no longer
 available. To keep a copy outside setDING, back up the library first.
 
 <Image src={band} alt="A band with its members, their roles and “Invite people”" />
+
+## Show names
+
+Every account has a first and a last name and, if wanted, a display name. How you
+see the names of the others, you choose in **Settings** → **Organization & bands**
+→ **Show names as**:
+
+- **Display name (otherwise full name)** – for example “Andy”; without a display
+  name “Andrew Boss”.
+- **First Last** – “Andrew Boss”.
+- **Last First** – “Boss Andrew”; lists are sorted by last name.
+- **First Last (display name)** – “Andrew Boss (Andy)”.
+
+This applies to the members of the organization and the band, a set's lineup and
+the recent changes. When a member list shows the display name, the full name is
+below it. When you add people to a lineup, you find someone by first name, last
+name or display name.
+
+<Image src={nameFormat} alt="The “Show names as” setting with its four options" />
 
 ## Switch between bands
 

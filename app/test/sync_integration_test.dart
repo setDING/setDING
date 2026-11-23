@@ -12,6 +12,7 @@ import 'package:setding/data/arrangement_repository.dart';
 import 'package:setding/data/attachment_storage_io.dart';
 import 'package:setding/data/band_copy.dart';
 import 'package:setding/data/database.dart';
+import 'package:setding/data/person_name.dart';
 import 'package:setding/data/marker_icons.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/data/song_repository.dart';
@@ -92,12 +93,20 @@ void main() {
     await ann.backend.signUp(
       email: email(),
       password: 'password-123',
-      name: 'Ann',
+      name: const PersonName(
+        firstName: 'Ann',
+        lastName: 'Test',
+        nickname: 'Ann',
+      ),
     );
     final bobUser = await bob.backend.signUp(
       email: email(),
       password: 'password-123',
-      name: 'Bob',
+      name: const PersonName(
+        firstName: 'Bob',
+        lastName: 'Test',
+        nickname: 'Bob',
+      ),
     );
     final band = const Uuid().v4();
     await ann.backend.createBand(id: band, name: 'Rock');
@@ -439,7 +448,11 @@ void main() {
       await ann.backend.signUp(
         email: email(),
         password: 'password-123',
-        name: 'Ann',
+        name: const PersonName(
+          firstName: 'Ann',
+          lastName: 'Test',
+          nickname: 'Ann',
+        ),
       );
       await ann.backend.createBand(id: const Uuid().v4(), name: 'Rock');
       final org = (await ann.backend.fetchOrganizations()).single.id;
