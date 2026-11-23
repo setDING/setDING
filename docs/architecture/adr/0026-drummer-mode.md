@@ -210,6 +210,7 @@ with the idle-time preparation of the next song (#296).
 - 2026-11-23: Owner request (#952): on phones the drum panel has a segmented button *Set | Song map* above the set. *Song map* shows the song map of the current song (with its header) in place of the set; the beat stays, in portrait with less room (2 : 3), as the map needs more. The choice is a device setting (`drumPanelView`, the screen decides what fits), not in the settings screen. The page turner and the tap zones still turn from song to song (no scrolling by pedal); the song map of a song turned to starts at the top and scrolls by dragging. The tap zones stay thirds of the stage, also on the song map beside the beat in landscape. This amends the decision of #421 (no song map on phones).
 - 2026-11-23: Owner request (#961): with the song map on a phone in portrait the beat takes a third of the height and the song map two thirds (was 2 : 3); the large beat scales down where that third is too short for it (small phones).
 - 2026-11-23: Owner request (#965): on a phone in portrait the beat takes a third of the height also beside the set (was half and half), the set two thirds, like the song map (#961).
+- 2026-11-23: Owner request (#968): in the panel beside the song map on wide screens the beat also takes a third of the height and the set two thirds (was half and half), like on phones (#961, #965). The panel keeps its width (36 % of the screen, 300–480 px).
 
 ## Open points
 
