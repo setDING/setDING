@@ -691,8 +691,8 @@ class DrumPanel extends StatelessWidget {
     final set = _SetList(items: items, current: current, onSelect: onSelect);
     final onView = this.onView;
     final songMap = this.songMap;
-    // The song map needs more room than the set; the beat keeps enough
-    // for its dots and button.
+    // The song map needs more room than the set: in portrait the beat
+    // takes a third of the height (#961) and scales down to fit it.
     final mapRoom =
         onView != null &&
         view == DrumPanelView.songMap &&
@@ -702,16 +702,13 @@ class DrumPanel extends StatelessWidget {
       direction: direction,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
-          flex: mapRoom ? 2 : 1,
-          child: _LargeBeat(index: current),
-        ),
+        Expanded(flex: 1, child: _LargeBeat(index: current)),
         if (direction == Axis.vertical)
           const Divider(height: 1)
         else
           const VerticalDivider(width: 1),
         Expanded(
-          flex: mapRoom ? 3 : 1,
+          flex: mapRoom ? 2 : 1,
           child: onView == null
               ? set
               : Column(
@@ -774,37 +771,44 @@ class _LargeBeat extends StatelessWidget {
         // As large as the width allows for the beats of the bar.
         final count = meter.beatsPerBar + meter.groups.length;
         final size = (constraints.maxWidth / (count * 1.8)).clamp(16.0, 72.0);
-        return Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            key: const Key('large-beat'),
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                beat.tempoChanged(index)
-                    ? '${l10n.bpm(tempo)} *'
-                    : l10n.bpm(tempo),
-                style: theme.textTheme.displaySmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
+        // Scaled down where the height is short, e.g. a third of a small
+        // phone beside the song map (#961).
+        return Center(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                key: const Key('large-beat'),
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    beat.tempoChanged(index)
+                        ? '${l10n.bpm(tempo)} *'
+                        : l10n.bpm(tempo),
+                    style: theme.textTheme.displaySmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  Text(
+                    [meter.toString(), ?meter.groupingLabel].join('  ·  '),
+                    style: theme.textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 16),
+                  FittedBox(
+                    child: BeatDots(index: index, size: size, panel: true),
+                  ),
+                  const SizedBox(height: 16),
+                  if (beat.canBeat(index))
+                    FilledButton.tonalIcon(
+                      key: const Key('large-beat-toggle'),
+                      onPressed: () => beat.toggle(index),
+                      icon: Icon(running ? Icons.stop : Icons.play_arrow),
+                      label: Text(running ? l10n.beatStop : l10n.beatStart),
+                    ),
+                ],
               ),
-              Text(
-                [meter.toString(), ?meter.groupingLabel].join('  ·  '),
-                style: theme.textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 16),
-              FittedBox(
-                child: BeatDots(index: index, size: size, panel: true),
-              ),
-              const SizedBox(height: 16),
-              if (beat.canBeat(index))
-                FilledButton.tonalIcon(
-                  key: const Key('large-beat-toggle'),
-                  onPressed: () => beat.toggle(index),
-                  icon: Icon(running ? Icons.stop : Icons.play_arrow),
-                  label: Text(running ? l10n.beatStop : l10n.beatStart),
-                ),
-            ],
+            ),
           ),
         );
       },
