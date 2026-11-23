@@ -37,12 +37,14 @@ parallel="${CHECK_PARALLEL:-1}"
 
 # Python tools: the coverage summary of make coverage (it does not run here:
 # measuring coverage slows the tests down).
-# And the job selection of this script (tool/check_select.py).
+# And the job selection of this script (tool/check_select.py) and the
+# parallel-upgrade check of make upgrade (tool/upgrade_guard.py).
 job_tools() {
   cd "$ROOT/tool/coverage"
   python3 -m unittest -q test_summary
   cd "$ROOT/tool"
   python3 -m unittest -q test_check_select
+  python3 -m unittest -q test_upgrade_guard
 }
 
 # A pure Dart package: format, analysis, tests.

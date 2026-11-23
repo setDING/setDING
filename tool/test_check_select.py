@@ -36,6 +36,9 @@ class SelectTest(unittest.TestCase):
     def test_whats_new_reaches_the_website(self):
         self.assertIn('website', jobs('app/assets/whats_new.json'))
 
+    def test_upgrade_guard_runs_its_tests(self):
+        self.assertEqual(jobs('tool/upgrade_guard.py'), ['tools'])
+
     def test_version_bump_checks_the_changelog(self):
         self.assertIn('changelog', jobs('app/pubspec.yaml'))
 

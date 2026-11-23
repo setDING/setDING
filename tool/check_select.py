@@ -58,6 +58,8 @@ RULES = [
     ('tool/build-web.sh', ['app-web']),
     ('tool/build-site.sh', ['website']),
     ('tool/check-ops.sh', ['ops']),
+    ('tool/upgrade_guard.py', ['tools']),
+    ('tool/test_upgrade_guard.py', ['tools']),
     ('tool/', []),  # other tools (perf, branding, integration test runners)
     ('website/', ['website']),
     ('docs/screenshots/', ['website']),
