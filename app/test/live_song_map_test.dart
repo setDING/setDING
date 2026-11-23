@@ -235,6 +235,12 @@ void main() {
     final beat = tester.getRect(find.byKey(const Key('large-beat')));
     final set = tester.getRect(find.byKey(const Key('drum-set-list')));
     expect(beat.bottom, lessThanOrEqualTo(set.top));
+    // The beat takes a third of the height, the set two (#965).
+    final panel = tester.getRect(find.byKey(const Key('drum-panel')));
+    final switchTop = tester
+        .getRect(find.byKey(const Key('drum-panel-view')))
+        .top;
+    expect((switchTop - 8 - panel.top) / panel.height, closeTo(1 / 3, 0.01));
     // The panel is the whole stage.
     final screen = tester.getRect(find.byType(LiveScreen));
     expect(
