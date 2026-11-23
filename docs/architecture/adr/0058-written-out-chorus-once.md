@@ -1,6 +1,6 @@
 # ADR-0058: Showing a written-out repeated chorus only once
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-23
 
 ## Context
@@ -67,6 +67,7 @@ is shown in full or as a label by the device setting *Repeated chorus*.
 - 2026-11-23: Proposed with #955 after the owner chose: written-out
   duplicates anywhere in the song, left out entirely, a personal switch off by
   default, in the song view and live mode.
+- 2026-11-23: Accepted by the owner (#955, #962).
 
 ## Open points
 
