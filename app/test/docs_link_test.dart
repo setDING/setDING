@@ -86,9 +86,7 @@ void main() {
     expect(launched, ['https://setding.app/bands/roles/']);
   });
 
-  testWidgets('a side panel shows the help button of its page', (
-    tester,
-  ) async {
+  testWidgets('a side panel shows the help button of its page', (tester) async {
     await tester.pumpWidget(
       localized(
         const SidePanel(
