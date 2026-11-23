@@ -1,6 +1,6 @@
 # ADR-0040: Stacked verses as a display transformation
 
-- **Status:** Accepted; extension for choruses (#953, decision 8) Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-19
 
 ## Context
@@ -106,6 +106,7 @@ one layout measurement used to fit songs to pages (ADR-0007).
   for choruses next to the verse choice: choruses whose words change are
   stacked like verses (decision 8), and a section with the same lyrics as an
   earlier one of its group adds no row (also for verses, decision 3).
+- 2026-11-23: Extension for choruses (#953) accepted by the owner.
 
 ## Open points
 
