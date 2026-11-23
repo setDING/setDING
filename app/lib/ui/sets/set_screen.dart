@@ -759,7 +759,7 @@ class _SetItemTile extends ConsumerWidget {
 /// The ⋮ menu of a set item with the actions that are not needed often.
 ///
 /// Each entry has an id for its key (`set-item-action-<id>`), an icon, a
-/// label and its action. The `remove` entry is destructive.
+/// label and its action. The `remove` entry is destructive and comes last.
 class _ItemMenu extends StatelessWidget {
   const _ItemMenu({required this.itemId, required this.entries});
 
@@ -771,7 +771,9 @@ class _ItemMenu extends StatelessWidget {
     key: ValueKey('set-item-menu-$itemId'),
     onSelected: (i) => entries[i].$4(),
     itemBuilder: (_) => [
-      for (final (i, (id, icon, label, _)) in entries.indexed)
+      for (final (i, (id, icon, label, _)) in entries.indexed) ...[
+        // The destructive entry is last, set apart by a divider.
+        if (id == 'remove' && i > 0) const PopupMenuDivider(),
         MenuAction(
           key: ValueKey('set-item-action-$id'),
           value: i,
@@ -779,6 +781,7 @@ class _ItemMenu extends StatelessWidget {
           label: label,
           destructive: id == 'remove',
         ),
+      ],
     ],
   );
 }

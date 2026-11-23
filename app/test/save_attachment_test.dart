@@ -107,6 +107,25 @@ void main() {
       await app.dispose(tester);
     });
 
+    testWidgets('the menu reads Rename, Save, divider, Delete', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(prefs: {'language': 'en'});
+      final (id, pdfId) = await addSong(app, tester);
+      await tester.pumpWidget(build(app, id));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('open-attachments')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(ValueKey('attachment-menu-$pdfId')));
+      await tester.pumpAndSettle();
+      double y(Finder f) => tester.getTopLeft(f).dy;
+      final rename = y(find.text('Rename'));
+      final save = y(find.text('Save'));
+      final divider = y(find.byType(PopupMenuDivider));
+      final delete = y(find.text('Delete'));
+      expect(rename < save && save < divider && divider < delete, isTrue);
+      await app.dispose(tester);
+    });
+
     testWidgets('a member who cannot edit can save, too', (tester) async {
       useTabletSize(tester);
       final app = await TestApp.create(

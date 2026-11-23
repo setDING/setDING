@@ -186,6 +186,30 @@ void main() {
     expect(offenders, isEmpty);
   });
 
+  test('destructive menu actions come last, after a divider', () {
+    // A destructive MenuAction is the last entry of its menu, set apart
+    // from the others by a PopupMenuDivider (#1031).
+    final offenders = <String>[];
+    for (final f in files) {
+      if (f.path.endsWith('menu_action.dart')) continue;
+      final source = f.readAsStringSync();
+      for (final m in RegExp(r'\bMenuAction(<[^>]*>)?\(').allMatches(source)) {
+        final end = _callEnd(source, m.end - 1);
+        final call = source.substring(m.start, end);
+        if (!call.contains('destructive: true')) continue;
+        final before = source.substring(0, m.start).trimRight();
+        final after = source
+            .substring(end)
+            .replaceFirst(RegExp(r'^\s*,?\s*'), '');
+        if (!before.endsWith('PopupMenuDivider(),') || !after.startsWith(']')) {
+          final line = '\n'.allMatches(source.substring(0, m.start)).length;
+          offenders.add('${f.path}:${line + 1}');
+        }
+      }
+    }
+    expect(offenders, isEmpty);
+  });
+
   test('checkboxes lead their row', () {
     // A checkbox stands in front of its label, in lists and in dialogs; a
     // switch stays at the end (#881). CheckboxListTile puts it at the end

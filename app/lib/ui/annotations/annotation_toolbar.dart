@@ -161,7 +161,8 @@ class AnnotationToolbar extends StatelessWidget {
                         checked: editor.fingerDraws,
                         child: Text(l10n.annotationDrawWithFinger),
                       ),
-                      if (onDeleteAll != null)
+                      if (onDeleteAll != null) ...[
+                        const PopupMenuDivider(),
                         MenuAction(
                           key: const Key('annotation-delete-all'),
                           value: 'delete-all',
@@ -169,6 +170,7 @@ class AnnotationToolbar extends StatelessWidget {
                           label: l10n.annotationsDeleteAll,
                           destructive: true,
                         ),
+                      ],
                     ],
                     onSelected: (value) => switch (value) {
                       'finger' => editor.fingerDraws = !editor.fingerDraws,
