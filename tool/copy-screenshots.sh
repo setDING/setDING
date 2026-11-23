@@ -97,6 +97,7 @@ map=(
   overview_readiness 44c_overview_readiness
   page_turner_offer 44d_page_turner_offer
   settings_page_turner 19b_settings_page_turner
+  settings_space_beat 19c_settings_space_beat
   songs_trash 45_songs_trash
   songs_trash_menu 45b_songs_trash_menu
   backup_replace_choice 44_backup_replace_choice

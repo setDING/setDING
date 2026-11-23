@@ -42,7 +42,8 @@ song, all tablets follow automatically. We evaluated whether this is needed.
     the first press of a page turner would not turn (issue #663).
   - **Beat (ADR-0026):** while the current song can have a beat, a forward key held for at least 0.6 s starts or
     stops it and does not turn; a shorter press turns when the key is released (otherwise forward keys turn on
-    key down as before). Enter (also on the number pad) starts and stops the beat.
+    key down as before). Enter (also on the number pad) starts and stops the beat; Space as well instead of
+    turning when the device setting *Space starts the beat* is on (#969).
 - **Page turn modes:** full page, half page (top half already shows the next page), optional auto-scroll based on tempo/duration.
 - **Layout – fit to screen (default, configurable in the settings):** the whole song fits on the screen without scrolling.
   Sections are kept whole and arranged automatically in reading order into 1–4 columns; the arrangement with the largest
@@ -170,6 +171,7 @@ between devices – neither over the local network nor via the backend.
 - 2026-11-19: Owner request (#552): a single song played live (from the song screen) applies its sequence too: the arrangement of the band chosen on the sets tab, otherwise the song's own `{x_sequence}`; parts outside are dimmed or hidden and the header names hidden parts and the source of the sequence, as in a set.
 - 2026-11-20: Android: the Flutter view keeps the focus in touch mode and the system focus highlight is off, so the first page turner press after a touch turns instead of only showing a green frame around the screen (issue #663).
 - 2026-11-20: Owner request (#691, decided with the end-to-end tests of #692): the "discreet notice" of incoming changes is not shown during live mode. Nothing is known about them while the sync is paused, and nothing on stage should change. The sync that catches up after live mode ends with **one** SnackBar that sums up what others changed during the performance ("1 song deleted, 2 songs changed"), with *Show* opening *Recent changes* (ADR-0045).
+- 2026-11-23: Space can leave the fixed mapping (#969, ADR-0026): with the device setting *Space starts the beat* on, Space starts and stops the beat like Enter instead of turning forward.
 
 ## Open points
 

@@ -344,6 +344,37 @@ void main() {
     });
   }
 
+  // Space starts the beat instead of turning (#969), switched on, in the
+  // controls of the live settings of a drummer.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('settings space beat $lang', (tester) async {
+      tester.view.physicalSize = const Size(420, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final app = await TestApp.create(
+        prefs: {
+          'language': lang,
+          'themeMode': dark ? 'dark' : 'light',
+          'instrument': 'drums',
+          'spaceStartsBeat': true,
+        },
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(key: UniqueKey(), child: app.build()),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('nav-settings')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('settings-category-live')));
+      await tester.pumpAndSettle();
+      final tile = find.byKey(const Key('settings-space-starts-beat'));
+      await tester.scrollUntilVisible(tile, 200);
+      await tester.pumpAndSettle();
+      await shot(tester, '${lang}_19c_settings_space_beat');
+      await app.dispose(tester);
+    });
+  }
+
   // The paired page turner in the live settings (ADR-0057, #913), connected.
   for (final (lang, dark) in [('de', false), ('en', true)]) {
     screenshotTest('settings page turner $lang', (tester) async {
