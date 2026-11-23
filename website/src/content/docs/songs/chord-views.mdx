@@ -12,6 +12,8 @@ import chords from '../../../../../docs/screenshots/chord_view_chords_de.png';
 import nashville from '../../../../../docs/screenshots/chord_view_nashville_de.png';
 import numerals from '../../../../../docs/screenshots/chord_view_numerals_de.png';
 import menu from '../../../../../docs/screenshots/chord_view_menu_de.png';
+import symbol from '../../../../../docs/screenshots/chord_view_numerals_symbol_de.png';
+import spelling from '../../../../../docs/screenshots/settings_numeral_spelling_de.png';
 
 setDING zeigt die Akkorde eines Songs auf drei Arten:
 
@@ -94,7 +96,8 @@ Ein Akkord bekommt die Stufe seines Grundtons. In G ist `D` also `V`, in F ist e
 - **Klein** geschrieben sind Moll-Akkorde sowie verminderte und halbverminderte
   Akkorde: `ii`, `vi7`, `vii°`, `viiø7`.
 
-Ein `m` für Moll gibt es deshalb nicht: `Am7` in C ist `vi7`, nicht `vim7`.
+Ein `m` für Moll gibt es deshalb nicht: `Am7` in C ist `vi7`, nicht `vim7`. Liest
+du lieber `VIm7`, wähle die andere [Schreibweise](#zwei-schreibweisen).
 
 ### Zeichen und Erweiterungen
 
@@ -111,8 +114,8 @@ Ein `m` für Moll gibt es deshalb nicht: `Am7` in C ist `vi7`, nicht `vim7`.
 | `Csus4` | `Isus4` | Quarte statt Terz |
 | `G7b9` | `V7♭9` | Erweiterungen und Alterationen wie beim Akkord |
 
-Stufen schreibt setDING immer so, unabhängig von der
-[Akkordschreibweise](/settings/display/). Mit **Erweiterungen hochstellen** stehen Erweiterungen
+In der Schreibweise **Gross-/Kleinschreibung** schreibt setDING Stufen immer so,
+unabhängig von der [Akkordschreibweise](/settings/display/). Mit **Erweiterungen hochstellen** stehen Erweiterungen
 und Alterationen klein und erhöht, wie bei den Akkorden.
 
 ### Vorzeichen vor der Zahl
@@ -126,6 +129,34 @@ und `Db` ist `♭II`.
 Bei einem Akkord mit Bassnote steht der Bass als **arabische Zahl** hinter dem
 Schrägstrich, wie bei Nashville: `C/E` ist `I/3`, `G/B` ist `V/7`, `C/Bb` ist
 `I/♭7`.
+
+## Zwei Schreibweisen
+
+Stufen werden auf zwei verbreitete Arten geschrieben. Beide sind richtig; welche du
+leichter liest, hängt davon ab, wo du sie gelernt hast:
+
+| Schreibweise | Moll-Akkord | ii–V–I in C | Verbreitet in |
+|---|---|---|---|
+| **Gross-/Kleinschreibung** | `vi` | `ii7 – V7 – IΔ7` | klassischer Harmonielehre, oft auch im Pop- und Jazzunterricht |
+| **Akkordsymbol** | `VIm` | `IIm7 – V7 – Imaj7` | Jazz-Charts und Stufenanalyse nach Berklee |
+
+Bei **Gross-/Kleinschreibung** (Standard) zeigen grosse und kleine Buchstaben das
+Tongeschlecht, wie oben beschrieben. Bei **Akkordsymbol** steht die Stufe immer
+gross, und die Endung des Akkords folgt ihr in deiner
+[Akkordschreibweise](/settings/display/), genau wie bei den Nashville-Zahlen:
+`IIm7` mit **Standard**, `II−7` mit **Jazz** und wie im Song geschrieben mit
+**Wie geschrieben**. `Bm7b5` in C ist dann `VIIm7b5` oder `VIIø7`.
+
+Die Schreibweise wählst du in den [Einstellungen](/settings/display/) unter
+**Schreibweise der Stufen**, direkt unter **Akkorde anzeigen als**. Sie gilt für
+alle Songs.
+
+<Image src={spelling} alt="Die Darstellungs-Einstellungen mit Akkorde anzeigen als: Stufen und Schreibweise der Stufen: Akkordsymbol" />
+
+<Image src={symbol} alt="Der Beispielsong als Stufen mit Akkordsymbol: Imaj7, VIm7, IIm7, V7" />
+
+Alles andere auf dieser Seite gilt für beide Schreibweisen: Vorzeichen, Bassnoten
+und Moll-Tonarten (`Im – ♭III – ♭VII` mit Akkordsymbol).
 
 ## Moll-Tonarten
 

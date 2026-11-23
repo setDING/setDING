@@ -472,4 +472,42 @@ void main() {
       await app.dispose(tester);
     });
   }
+
+  // The spelling of Roman numerals (ADR-0059) in the display settings.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('settings numeral spelling $lang', (tester) async {
+      tester.view.physicalSize = const Size(420, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final app = await TestApp.create(
+        prefs: {
+          'language': lang,
+          'themeMode': dark ? 'dark' : 'light',
+          'chordView': 'numerals',
+          'numeralSpelling': 'chordSymbol',
+          'chordStyle': 'standard',
+        },
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(key: UniqueKey(), child: app.build()),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('nav-settings')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('settings-category-display')));
+      await tester.pumpAndSettle();
+      // The chord view above the spelling, so both are in the picture.
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('settings-chord-view')),
+        200,
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('settings-numeral-spelling')).hitTestable(),
+        findsOneWidget,
+      );
+      await shot(tester, '${lang}_17c_settings_numeral_spelling');
+      await app.dispose(tester);
+    });
+  }
 }
