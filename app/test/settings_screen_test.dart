@@ -270,6 +270,20 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('numeral spelling (ADR-0059)', (tester) async {
+    useTabletSize(tester);
+    final app = await pumpSettings(tester);
+    await tester.tap(find.byKey(const Key('settings-category-display')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Numeral spelling'), findsOneWidget);
+    expect(app.personal()['numeralSpelling'], isNot('chordSymbol'));
+    await tester.tap(find.text('Chord symbol'));
+    await tester.pumpAndSettle();
+    expect(app.personal()['numeralSpelling'], 'chordSymbol');
+    await app.dispose(tester);
+  });
+
   testWidgets('chord style and raised extensions', (tester) async {
     useTabletSize(tester);
     final app = await pumpSettings(tester);
@@ -288,6 +302,8 @@ void main() {
     expect(app.personal()['chordStyle'], 'jazz');
     expect(superscript().onChanged, isNotNull);
 
+    await tester.ensureVisible(find.text('Raise extensions'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Raise extensions'));
     await tester.pumpAndSettle();
     expect(app.personal()['chordSuperscript'], isTrue);

@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:chordpro/chordpro.dart' show ChordStyle;
+import 'package:chordpro/chordpro.dart' show ChordStyle, NumeralSpelling;
 import 'package:setding/settings/settings.dart';
 import 'package:setding/data/demo_song.dart';
 import 'package:setding/ui/live/live_screen.dart';
@@ -119,6 +119,46 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Am7'), findsOneWidget);
     expect(debugMeasureBlocksCalls, greaterThan(before));
+    await app.dispose(tester);
+  });
+
+  testWidgets('switching the numeral spelling lays the song out again '
+      '(ADR-0059)', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(
+      prefs: {
+        'language': 'en',
+        'chordView': 'numerals',
+        'chordStyle': 'standard',
+      },
+    );
+    final song = await tester.runAsync(() async {
+      final id = await app.songs.createSong(
+        source: '{title: Numerals}\n{key: C}\n[Dm7]la la [G7]la [Cmaj7]la',
+      );
+      return app.songs.getSong(id);
+    });
+    await tester.pumpWidget(
+      app.build(home: LiveScreen(items: [LiveItem.song(song!)])),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('ii7'), findsOneWidget);
+    expect(find.text('IΔ7'), findsOneWidget);
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(LiveScreen)),
+    );
+    await tester.runAsync(
+      () => container
+          .read(settingsProvider.notifier)
+          .update(
+            (s) => s.copyWith(numeralSpelling: NumeralSpelling.chordSymbol),
+          ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('IIm7'), findsOneWidget);
+    expect(find.text('V7'), findsOneWidget);
+    expect(find.text('Imaj7'), findsOneWidget);
     await app.dispose(tester);
   });
 

@@ -513,6 +513,19 @@ class _CategoryContent extends ConsumerWidget {
                     notifier.update((s) => s.copyWith(chordView: v)),
               ),
               SettingsChoice(
+                tileKey: const Key('settings-numeral-spelling'),
+                icon: Icons.text_fields,
+                title: l10n.settingsNumeralSpelling,
+                hint: l10n.settingsNumeralSpellingHint,
+                value: s.numeralSpelling,
+                options: {
+                  NumeralSpelling.casing: l10n.numeralSpellingCasing,
+                  NumeralSpelling.chordSymbol: l10n.numeralSpellingChordSymbol,
+                },
+                onChanged: (v) =>
+                    notifier.update((s) => s.copyWith(numeralSpelling: v)),
+              ),
+              SettingsChoice(
                 icon: Icons.text_format,
                 title: l10n.settingsChordStyle,
                 value: s.chordStyle,

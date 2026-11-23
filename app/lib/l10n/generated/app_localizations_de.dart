@@ -871,6 +871,19 @@ class AppLocalizationsDe extends AppLocalizations {
       'Akkorde (Am7), Nashville-Zahlen (6m7) oder Stufen in römischen Zahlen (vi7). Zahlen und Stufen brauchen eine Tonart im Song.';
 
   @override
+  String get settingsNumeralSpelling => 'Schreibweise der Stufen';
+
+  @override
+  String get settingsNumeralSpellingHint =>
+      'Wie Stufen den Akkord zeigen: mit Gross- und Kleinschreibung, ii7 – V7 – IΔ7, oder immer gross mit dem Akkordsymbol, IIm7 – V7 – Imaj7. Das Akkordsymbol folgt der Akkordschreibweise.';
+
+  @override
+  String get numeralSpellingCasing => 'Gross-/Kleinschreibung';
+
+  @override
+  String get numeralSpellingChordSymbol => 'Akkordsymbol';
+
+  @override
   String get settingsChordStyle => 'Akkordschreibweise';
 
   @override

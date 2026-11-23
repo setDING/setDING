@@ -106,6 +106,9 @@ decision 4).
 - 2026-11-23: Implemented in the `chordpro` package (#975):
   `NumeralSpelling`, `Chord.toNumeralParts(spelling:, style:)`,
   `ChordFormatter.numeralSpelling`.
+- 2026-11-23: App setting (#976): `numeralSpelling` (synced *personal*),
+  a choice *Numeral spelling* in the display settings below the chord view,
+  passed to the song view and live mode.
 
 ## Open points
 
