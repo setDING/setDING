@@ -281,4 +281,34 @@ void convertTests() {
       await app.dispose(tester);
     });
   });
+
+  testWidgets('the Lines menu translates German section labels', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    await tester.pumpWidget(
+      app.build(
+        home: const SongEditorScreen(
+          initialSource:
+              '{start_of_verse: label="Vers 1"}\nla\n{end_of_verse}\n'
+              '{c: Refrain}\nja\n',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final controller = tester
+        .widget<TextField>(find.byType(TextField))
+        .controller!;
+    await tester.tap(find.text('Lines'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Translate section labels to English'));
+    await tester.pumpAndSettle();
+    expect(
+      controller.text,
+      '{start_of_verse: label="Verse 1"}\nla\n{end_of_verse}\n'
+      '{c: Chorus}\nja\n',
+    );
+    await app.dispose(tester);
+  });
 }

@@ -405,6 +405,7 @@
   "convertCcliGrids": "Converti le stanghette in griglie di accordi",
   "ccliGridsHint": "{count, plural, =1{Un blocco di stanghette può} other{{count} blocchi di stanghette possono}} essere mostrati come griglia di accordi.",
   "convertCommentHeadings": "Converti i titoli dei commenti in sezioni",
+  "translateSectionLabels": "Traduci i nomi delle sezioni in inglese",
   "commentHeadingsHint": "{count, plural, =1{Una sezione è segnata} other{{count} sezioni sono segnate}} con un commento come \"Verse 1\". La conversione ne fa sezioni ChordPro; il brano ha lo stesso aspetto.",
   "remove": "Rimuovi",
   "ccliFooterHint": "Il brano termina con il piè di pagina CCLI di SongSelect. Rimuovendolo, numero del brano e copyright restano nei dettagli del brano.",

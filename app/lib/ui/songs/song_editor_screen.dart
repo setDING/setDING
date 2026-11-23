@@ -474,6 +474,11 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
         base,
         extent,
       ),
+      EditorCommand.translateSectionLabels => translateSectionLabelsIn(
+        text,
+        base,
+        extent,
+      ),
     };
     if (edit != null) {
       _controller.value = TextEditingValue(

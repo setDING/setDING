@@ -13,6 +13,7 @@ import editorCcli from '../../../../../docs/screenshots/editor_ccli_de.png';
 import editorSongSelect from '../../../../../docs/screenshots/editor_songselect_de.png';
 import editorCcliFooter from '../../../../../docs/screenshots/editor_ccli_footer_de.png';
 import editorHeadings from '../../../../../docs/screenshots/editor_headings_de.png';
+import editorEnglishLabels from '../../../../../docs/screenshots/editor_english_labels_de.png';
 import editorAutoClose from '../../../../../docs/screenshots/editor_auto_close_de.png';
 import editorChorusLabels from '../../../../../docs/screenshots/editor_chorus_labels_de.png';
 import songDetailsKey from '../../../../../docs/screenshots/song_details_key_de.png';
@@ -192,6 +193,21 @@ Editor zeigt aber einen Hinweis über dem Text: **Umwandeln** schreibt alle
 Beschriftungen in der empfohlenen Form. Mit ✕ lässt sich der Hinweis ausblenden.
 
 <Image src={editorLabels} alt="Der Editor mit dem Hinweis auf Abschnitts-Beschriftungen in der Kurzform und dem Knopf Umwandeln; die zweite Strophe nutzt bereits das Attribut label" />
+
+## Beschriftungen auf Englisch
+
+Viele Songs aus dem deutschsprachigen Raum beschriften ihre Abschnitte auf Deutsch,
+z. B. `Vers 1`, `Strophe 2` oder `Refrain`. setDING zeigt Beschriftungen so an, wie
+sie im Song stehen. Wer sie lieber einheitlich auf Englisch hat, wählt im Menü
+Zeilen **Abschnitts-Beschriftungen ins Englische übersetzen**: aus `Vers`
+und `Strophe` wird `Verse`, aus `Refrain` `Chorus`, aus `Pre-Refrain`
+`Pre-Chorus`, aus `Zwischenspiel` `Interlude` und aus `Schluss` `Outro`. Nummern und
+Zusätze wie `(leise)` bleiben. Übersetzt werden die Beschriftungen von Abschnitten,
+von `{chorus: …}` und von Kommentar-Überschriften; sind Zeilen markiert, nur die in
+der Markierung. Weil sich die Anzeige ändert, ist das keine Umwandlung, die setDING
+vorschlägt, sondern ein Befehl, den du bewusst wählst.
+
+<Image src={editorEnglishLabels} alt="Der Editor mit deutschen Abschnitts-Beschriftungen und dem geöffneten Menü Zeilen mit dem Befehl Abschnitts-Beschriftungen ins Englische übersetzen" />
 
 ## Speichern
 

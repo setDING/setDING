@@ -703,6 +703,7 @@
     }
   },
   "convertCommentHeadings": "Kommentar-Überschriften in Abschnitte umwandeln",
+  "translateSectionLabels": "Abschnitts-Beschriftungen ins Englische übersetzen",
   "commentHeadingsHint": "{count, plural, =1{Ein Abschnitt ist} other{{count} Abschnitte sind}} mit einem Kommentar wie «Vers 1» markiert. Umwandeln macht ChordPro-Abschnitte daraus; der Song sieht gleich aus.",
   "@commentHeadingsHint": {
     "placeholders": {

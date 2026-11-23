@@ -13,6 +13,7 @@ import editorCcli from '../../../../../../docs/screenshots/editor_ccli.png';
 import editorSongSelect from '../../../../../../docs/screenshots/editor_songselect.png';
 import editorCcliFooter from '../../../../../../docs/screenshots/editor_ccli_footer.png';
 import editorHeadings from '../../../../../../docs/screenshots/editor_headings.png';
+import editorEnglishLabels from '../../../../../../docs/screenshots/editor_english_labels.png';
 import editorAutoClose from '../../../../../../docs/screenshots/editor_auto_close.png';
 import editorChorusLabels from '../../../../../../docs/screenshots/editor_chorus_labels.png';
 import songDetailsKey from '../../../../../../docs/screenshots/song_details_key.png';
@@ -182,6 +183,20 @@ a hint above the text: **Convert** writes all labels in the recommended form. Th
 hint can be hidden with ✕.
 
 <Image src={editorLabels} alt="The editor with the hint about section labels in the short form and the Convert button; the second verse already uses the label attribute" />
+
+## Labels in English
+
+Many songs from German-speaking countries label their sections in German, e.g.
+`Vers 1`, `Strophe 2` or `Refrain`. setDING shows labels as they are written in the
+song. To have them in English throughout, choose **Translate section labels to
+English** in the Lines menu: `Vers` and `Strophe` become `Verse`, `Refrain` becomes
+`Chorus`, `Pre-Refrain` `Pre-Chorus`, `Zwischenspiel` `Interlude` and `Schluss`
+`Outro`. Numbers and notes such as `(leise)` stay. It translates the labels of
+sections, of `{chorus: …}` and of comment headings; with lines selected, only those
+in the selection. Since it changes what is shown, setDING does not suggest it like
+the conversions above; it is a command you choose.
+
+<Image src={editorEnglishLabels} alt="The editor with German section labels and the open Lines menu with the command Translate section labels to English" />
 
 ## Save
 

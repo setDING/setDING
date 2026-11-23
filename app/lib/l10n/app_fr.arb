@@ -405,6 +405,7 @@
   "convertCcliGrids": "Convertir les barres de mesure en grilles d'accords",
   "ccliGridsHint": "{count, plural, =1{Un bloc de barres de mesure peut} other{{count} blocs de barres de mesure peuvent}} être affichés comme grille d'accords.",
   "convertCommentHeadings": "Convertir les titres en commentaire en sections",
+  "translateSectionLabels": "Traduire les noms de section en anglais",
   "commentHeadingsHint": "{count, plural, =1{Une section est marquée} other{{count} sections sont marquées}} par un commentaire comme \"Verse 1\". La conversion en fait des sections ChordPro ; le morceau garde le même aspect.",
   "remove": "Retirer",
   "ccliFooterHint": "Le morceau se termine par le pied de page CCLI de SongSelect. En le retirant, le numéro du morceau et le copyright restent dans les détails du morceau.",

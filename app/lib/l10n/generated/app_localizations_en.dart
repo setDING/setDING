@@ -1407,6 +1407,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get convertCommentHeadings => 'Convert comment headings to sections';
 
   @override
+  String get translateSectionLabels => 'Translate section labels to English';
+
+  @override
   String commentHeadingsHint(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

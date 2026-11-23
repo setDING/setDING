@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:setding/data/import_export.dart';
 import 'package:setding/ui/songs/import_dialog.dart';
 import 'package:setding/data/demo_song.dart';
+import 'package:setding/l10n/generated/app_localizations.dart';
 import 'package:setding/ui/songs/song_editor_screen.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
@@ -160,6 +161,32 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(CommentHeadingHint), findsOneWidget);
       await shot(tester, '${lang}_24d_editor_headings');
+      await app.dispose(tester);
+    });
+  }
+
+  // German section labels (#1036): the Lines menu command that translates
+  // them to English. The song is German in both languages.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('english section labels $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            home: const SongEditorScreen(initialSource: _germanLabels),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final l10n = lookupAppLocalizations(Locale(lang));
+      await tester.tap(find.text(l10n.editorGroupLines));
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.translateSectionLabels), findsOneWidget);
+      await shot(tester, '${lang}_24e_editor_english_labels');
       await app.dispose(tester);
     });
   }
@@ -565,5 +592,21 @@ Was [Em]blind, but [D]now I [G]see
 
 {start_of_verse: label="Strophe 2"}
 'Twas [G]grace that [G7]taught my [C]heart to [G]fear
+{end_of_verse}
+''';
+
+const _germanLabels = '''{title: Grosser Gott, wir loben dich}
+{key: F}
+
+{start_of_verse: label="Strophe 1"}
+[F]Grosser Gott, wir [C]loben [F]dich
+{end_of_verse}
+
+{start_of_chorus: label="Refrain"}
+[Bb]Herr, wir [F]preisen [C]deine [F]Stärke
+{end_of_chorus}
+
+{start_of_verse: label="Strophe 2"}
+[F]Alles, was dich [C]preisen [F]kann
 {end_of_verse}
 ''';
