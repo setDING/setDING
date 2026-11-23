@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
@@ -684,7 +685,33 @@ class PocketBaseBackend implements SyncBackend {
     language: _nonEmpty(r.getStringValue('language')),
     contentRevision: r.getIntValue('content_revision'),
     created: _date(r.getStringValue('created')),
+    reviewState: _nonEmpty(r.getStringValue('review_state')),
+    reviewReason: _nonEmpty(r.getStringValue('review_reason')),
+    reviewedBy: _nonEmpty(r.getStringValue('reviewed_by')),
+    reviewedAt: _date(r.getStringValue('reviewed_at')),
   );
+
+  static RemoteSongReport _report(RecordModel r) {
+    final location = r.get<dynamic>('location');
+    return RemoteSongReport(
+      id: r.id,
+      songId: r.getStringValue('song'),
+      organizationId: r.getStringValue('organization'),
+      authorId: _nonEmpty(r.getStringValue('author')),
+      category: r.getStringValue('category'),
+      comment: r.getStringValue('comment'),
+      location: location is Map ? location.cast<String, dynamic>() : null,
+      screenshot: _nonEmpty(r.getStringValue('screenshot')),
+      status: r.getStringValue('status'),
+      resolution: _nonEmpty(r.getStringValue('resolution')),
+      resolvedBy: _nonEmpty(r.getStringValue('resolved_by')),
+      resolvedAt: _date(r.getStringValue('resolved_at')),
+      created: _date(r.getStringValue('created')),
+      revision: r.getIntValue('revision'),
+      deleted: r.getBoolValue('deleted'),
+      purged: r.getBoolValue('purged'),
+    );
+  }
 
   static String? _nonEmpty(String value) => value.isEmpty ? null : value;
 
@@ -792,6 +819,10 @@ class PocketBaseBackend implements SyncBackend {
                       // (ADR-0053).
                       'work_id': ?song.workId,
                       'language': ?song.language,
+                      // Review status only on create; later by
+                      // pushSongReview (ADR-0060).
+                      'review_state': ?song.reviewState,
+                      'review_reason': ?song.reviewReason,
                     },
                   )
             : await _pb
@@ -816,6 +847,124 @@ class PocketBaseBackend implements SyncBackend {
           .update(songId, body: {field.serverName: value ?? ''}),
     ),
   );
+
+  @override
+  Future<RemoteSong> pushSongReview(
+    String songId,
+    String? state,
+    String? reason,
+  ) => _signedIn(
+    () async => _song(
+      await _pb
+          .collection('songs')
+          .update(
+            songId,
+            body: {'review_state': state ?? '', 'review_reason': reason ?? ''},
+          ),
+    ),
+  );
+
+  @override
+  Future<List<RemoteSongReport>> pullSongReports(
+    String organizationId,
+    int since,
+  ) async => [
+    for (final r in await _since(
+      'song_reports',
+      'organization',
+      organizationId,
+      since,
+    ))
+      _report(r),
+  ];
+
+  @override
+  Future<RemoteSongReport> pushSongReport(
+    RemoteSongReport report, {
+    required bool create,
+    bool asAuthor = true,
+    bool asApprover = false,
+    List<int>? screenshot,
+    String? screenshotName,
+  }) => _signedIn(() async {
+    final files = [
+      if (screenshot != null)
+        http.MultipartFile.fromBytes(
+          'screenshot',
+          screenshot,
+          filename: screenshotName ?? '${report.id}.webp',
+          contentType: _imageType(screenshotName ?? ''),
+        ),
+    ];
+    final RecordModel r;
+    if (create) {
+      r = await _pb
+          .collection('song_reports')
+          .create(
+            body: {
+              'id': report.id,
+              'song': report.songId,
+              'organization': report.organizationId,
+              'category': report.category,
+              'comment': report.comment,
+              'location': ?report.location,
+            },
+            files: files,
+          );
+    } else {
+      r = await _pb
+          .collection('song_reports')
+          .update(
+            report.id,
+            body: {
+              if (asAuthor) ...{
+                'category': report.category,
+                'comment': report.comment,
+                'location': ?report.location,
+              },
+              if (asApprover) 'resolution': report.resolution ?? '',
+              'status': report.status,
+            },
+            files: files,
+          );
+    }
+    return _report(r);
+  });
+
+  static MediaType _imageType(String name) {
+    final lower = name.toLowerCase();
+    if (lower.endsWith('.png')) return MediaType('image', 'png');
+    if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) {
+      return MediaType('image', 'jpeg');
+    }
+    return MediaType('image', 'webp');
+  }
+
+  @override
+  Future<Uint8List> fetchReportScreenshot(String reportId, String file) =>
+      _signedIn(() async {
+        final token = await _pb.files.getToken();
+        final uri = Uri.parse(
+          '$serverUrl/api/files/song_reports/$reportId/$file',
+        ).replace(queryParameters: {'token': token});
+        final client = _httpClientFactory();
+        try {
+          final response = await client.get(uri);
+          if (response.statusCode != 200) {
+            throw BackendException(
+              response.statusCode == 404
+                  ? BackendErrorKind.notAllowed
+                  : BackendErrorKind.server,
+              response.statusCode,
+            );
+          }
+          return response.bodyBytes;
+        } on http.ClientException catch (e) {
+          throw BackendException(BackendErrorKind.network, e);
+        } finally {
+          client.close();
+        }
+      });
 
   @override
   Future<RemoteSet> pushSet(RemoteSet set, {required bool create}) async {
@@ -1132,6 +1281,7 @@ class PocketBaseBackend implements SyncBackend {
       'arrangements',
       'user_settings',
       'annotations',
+      'song_reports',
       // Changes of who sees which band (SyncController.bandCollections).
       'organizations',
       'org_memberships',

@@ -17,7 +17,8 @@ const _log = Log('sync');
 /// The language version group and the language (ADR-0053) are last writer
 /// wins per field: they are pushed on their own ([pushLink]), a pulled value
 /// never replaces one still waiting in the outbox, and a server change of
-/// only them is never a conflict.
+/// only them is never a conflict. The review status (ADR-0060) works the
+/// same way, as one outbox entry per song ([pushReview]).
 class SongSync {
   SongSync(this.db, this.backend, this.store, {this.copies, this.changes});
 
@@ -49,11 +50,15 @@ class SongSync {
         (s) => s.id,
       );
       final dirty = await store.dirty(SyncCollection.songs, ids);
-      final pendingLinks = await store.dirty(SyncCollection.songLinks, [
-        for (final id in ids)
-          for (final f in SongLinkField.values)
-            songLinkRecordId(id, f.serverName),
-      ]);
+      final pendingLinks = {
+        ...await store.dirty(SyncCollection.songLinks, [
+          for (final id in ids)
+            for (final f in SongLinkField.values)
+              songLinkRecordId(id, f.serverName),
+        ]),
+        for (final id in await store.dirty(SyncCollection.songReview, ids))
+          _reviewKey(id),
+      };
       final known = (await SyncStore.byId(
         ids,
         (chunk) => (db.select(
@@ -139,11 +144,16 @@ class SongSync {
     return false;
   }
 
-  /// Stores the link fields of a server song (ADR-0053), except those with a
-  /// local change still in the outbox ([pendingLinks]): that one wins.
+  /// Key of a pending review status in the set of pending link fields.
+  static String _reviewKey(String songId) => '$songId:review';
+
+  /// Stores the link fields (ADR-0053) and the review status (ADR-0060) of
+  /// a server song, except those with a local change still in the outbox
+  /// ([pendingLinks]): that one wins.
   Future<void> _writeLinks(RemoteSong remote, Set<String> pendingLinks) async {
     bool pending(SongLinkField f) =>
         pendingLinks.contains(songLinkRecordId(remote.id, f.serverName));
+    final review = !pendingLinks.contains(_reviewKey(remote.id));
     await (db.update(db.songs)..where((s) => s.id.equals(remote.id))).write(
       SongsCompanion(
         workId: pending(SongLinkField.workId)
@@ -152,6 +162,12 @@ class SongSync {
         language: pending(SongLinkField.language)
             ? const Value.absent()
             : Value(remote.language),
+        reviewState: review ? Value(remote.reviewState) : const Value.absent(),
+        reviewReason: review
+            ? Value(remote.reviewReason)
+            : const Value.absent(),
+        reviewedBy: review ? Value(remote.reviewedBy) : const Value.absent(),
+        reviewedAt: review ? Value(remote.reviewedAt) : const Value.absent(),
       ),
     );
   }
@@ -227,9 +243,11 @@ class SongSync {
       deleted: song.deleted,
       deletedAt: song.deletedAt,
       purged: song.purged,
-      // Sent on create only (ADR-0053).
+      // Sent on create only (ADR-0053, ADR-0060).
       workId: song.workId,
       language: song.language,
+      reviewState: song.reviewState,
+      reviewReason: song.reviewReason,
     );
     try {
       final stored = await _pushSongOrRecover(remote, create: create);
@@ -240,6 +258,13 @@ class SongSync {
             createdBy: Value(stored.createdBy),
             updatedBy: Value(stored.updatedBy),
             createdAt: Value.absentIfNull(stored.created),
+            // Who set the review status, as the server recorded it.
+            reviewedBy: create
+                ? Value(stored.reviewedBy)
+                : const Value.absent(),
+            reviewedAt: create
+                ? Value(stored.reviewedAt)
+                : const Value.absent(),
           ),
         );
         await store.done(entry);
@@ -318,6 +343,59 @@ class SongSync {
       if (e.kind == BackendErrorKind.notAllowed) {
         // No (longer) permission: the change stays local.
         _log.warning('Link of song $songId not pushed: not allowed');
+        await store.done(entry);
+        return PushResult.skipped;
+      }
+      rethrow;
+    }
+  }
+
+  /// Pushes the review status of a song (ADR-0060): last writer wins, no
+  /// base revision. Waits until the song itself is on the server.
+  Future<PushResult> pushReview(OutboxEntry entry) async {
+    final songId = entry.recordId;
+    final song = await (db.select(
+      db.songs,
+    )..where((s) => s.id.equals(songId))).getSingleOrNull();
+    if (song == null || song.libraryId == localBandId) {
+      await store.done(entry);
+      return PushResult.skipped;
+    }
+    if (song.revision == 0) {
+      if (song.deleted) await store.done(entry); // never synced
+      return PushResult.skipped; // sent with the song's create
+    }
+    try {
+      final stored = await backend.pushSongReview(
+        songId,
+        song.reviewState,
+        song.reviewReason,
+      );
+      await db.transaction(() async {
+        final current = await (db.select(
+          db.songs,
+        )..where((s) => s.id.equals(songId))).getSingle();
+        final conflict = await _conflict(songId);
+        await (db.update(db.songs)..where((s) => s.id.equals(songId))).write(
+          SongsCompanion(
+            // As for link fields: the new revision is the base of later
+            // changes while the content is the one this device knows.
+            revision:
+                conflict == null &&
+                    stored.effectiveContentRevision <= current.revision
+                ? Value(stored.revision)
+                : const Value.absent(),
+            reviewedBy: Value(stored.reviewedBy),
+            reviewedAt: Value(stored.reviewedAt),
+          ),
+        );
+        await store.done(entry);
+      });
+      return PushResult.done;
+    } on BackendException catch (e) {
+      if (e.kind == BackendErrorKind.notAllowed) {
+        // No (longer) permission: the change stays local.
+        _log.warning('Review of song $songId not pushed: not allowed');
         await store.done(entry);
         return PushResult.skipped;
       }

@@ -265,6 +265,17 @@ Older clients that import songs do not set *to review*.
   deleted song; a purged song leaves its reports as tombstones without text,
   location and screenshot; a deleted account leaves its reports without an
   author (ADR-0052).
+- 2026-11-23: Client data and sync implemented (#988): schema 37 with the
+  review columns on `songs` and the table `song_reports` (no foreign key on the
+  song, removed where songs are removed for good), `SongReviewRepository`
+  (`lib/data/song_review.dart`), the outbox collections `song_review` (pushed
+  after the songs, last writer wins like the link fields, a pending local value
+  wins over a pulled one) and `song_reports` (`ReportSync`: the reporter sends
+  category, comment and location, the resolver the answer, both the status; a
+  refused change gives way to the server version at the next run), screenshots
+  in the attachment storage as `report-<id>.<ext>`, downloaded when a report is
+  opened; archives carry `reviewState` and `reviewReason` and set them again on
+  import.
 
 ## Open points
 

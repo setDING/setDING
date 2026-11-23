@@ -183,6 +183,70 @@ class Songs extends Table {
   /// songs not pushed yet. Null until the sync has filled it.
   DateTimeColumn get createdAt => dateTime().nullable()();
 
+  /// Review status (ADR-0060, schema 37): `to_review` while the song waits
+  /// for a check, null when approved. Synced on its own, last writer wins
+  /// (outbox collection `song_review`).
+  TextColumn get reviewState => text().nullable()();
+
+  /// Why the song waits for a check, e.g. "After import"; null when
+  /// approved.
+  TextColumn get reviewReason => text().nullable()();
+
+  /// Who set the current review state and when, as the server reports
+  /// them; the person on this device until pushed.
+  TextColumn get reviewedBy => text().nullable()();
+  DateTimeColumn get reviewedAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Mistake reports of songs (ADR-0060, schema 37). Synced per
+/// organization; the local library keeps them on the device. No foreign
+/// key on the song: reports are removed with their song where songs are
+/// removed for good.
+@TableIndex(name: 'song_reports_song', columns: {#songId})
+@DataClassName('SongReportRow')
+class SongReports extends Table {
+  /// UUID created on the device.
+  TextColumn get id => text()();
+  TextColumn get songId => text()();
+
+  /// The song's library: an organization or [localBandId].
+  TextColumn get libraryId => text()();
+
+  /// Server user ID of the reporter, [localOwnerId] in the local library;
+  /// null once the reporter deleted their account (ADR-0052).
+  TextColumn get authorId => text().nullable()();
+
+  /// `chords`, `lyrics`, `key`, `sequence`, `tempo`, `formatting`,
+  /// `sheet_music` or `other` (`SongReportCategory`).
+  TextColumn get category => text()();
+  TextColumn get comment => text().withDefault(const Constant(''))();
+
+  /// Where in the song, as JSON (`SongReportLocation`).
+  TextColumn get location => text().nullable()();
+
+  /// Screenshot file in the attachment storage, null if none or not
+  /// downloaded yet.
+  TextColumn get screenshotFile => text().nullable()();
+
+  /// Name of the screenshot file on the server, null until uploaded or
+  /// without a screenshot.
+  TextColumn get remoteScreenshot => text().nullable()();
+
+  /// `open`, `resolved` or `withdrawn` (`SongReportStatus`).
+  TextColumn get status => text().withDefault(const Constant('open'))();
+  TextColumn get resolution => text().nullable()();
+  TextColumn get resolvedBy => text().nullable()();
+  DateTimeColumn get resolvedAt => dateTime().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  IntColumn get revision => integer().withDefault(const Constant(0))();
+  BoolColumn get deleted => boolean().withDefault(const Constant(false))();
+
+  /// Purged with its song (ADR-0043): no text, location or screenshot.
+  BoolColumn get purged => boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -659,13 +723,14 @@ class ChangeLog extends Table {
     SongConflicts,
     ChangeLog,
     OrgPlays,
+    SongReports,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 36;
+  int get schemaVersion => 37;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -737,6 +802,10 @@ class AppDatabase extends _$AppDatabase {
               songs.language,
               songs.detectedLanguage,
               songs.createdAt,
+              songs.reviewState,
+              songs.reviewReason,
+              songs.reviewedBy,
+              songs.reviewedAt,
             ],
           ),
         );
@@ -755,7 +824,9 @@ class AppDatabase extends _$AppDatabase {
         // created some of them.
         for (final index in localIndexes) {
           // Tables of later schemas do not exist yet.
-          if (index == annotationsOwnerSong || index == changeLogScope) {
+          if (index == annotationsOwnerSong ||
+              index == changeLogScope ||
+              index == songReportsSong) {
             continue;
           }
           await customStatement('DROP INDEX IF EXISTS ${index.entityName}');
@@ -986,6 +1057,18 @@ class AppDatabase extends _$AppDatabase {
         // Stacked choruses (#953); before schema 8 the rebuilt overlay
         // table adds the column.
         await m.addColumn(personalOverlays, personalOverlays.stackedChoruses);
+      }
+      if (from < 37) {
+        // Song review and mistake reports (ADR-0060); before schema 4 the
+        // rebuilt song table has the columns already.
+        if (from >= 4) {
+          await m.addColumn(songs, songs.reviewState);
+          await m.addColumn(songs, songs.reviewReason);
+          await m.addColumn(songs, songs.reviewedBy);
+          await m.addColumn(songs, songs.reviewedAt);
+        }
+        await m.createTable(songReports);
+        await m.createIndex(songReportsSong);
       }
     },
     beforeOpen: (details) async {

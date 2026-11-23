@@ -261,7 +261,7 @@ class SongArchiveService {
         'artist': ?song.artist,
         'file': ?file,
         'attachments': attachments,
-        ...BackupService.languageJson(song),
+        ...BackupService.songFieldsJson(song),
       });
     }
 

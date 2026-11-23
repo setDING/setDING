@@ -550,6 +550,50 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _reviewStateMeta = const VerificationMeta(
+    'reviewState',
+  );
+  @override
+  late final GeneratedColumn<String> reviewState = GeneratedColumn<String>(
+    'review_state',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _reviewReasonMeta = const VerificationMeta(
+    'reviewReason',
+  );
+  @override
+  late final GeneratedColumn<String> reviewReason = GeneratedColumn<String>(
+    'review_reason',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _reviewedByMeta = const VerificationMeta(
+    'reviewedBy',
+  );
+  @override
+  late final GeneratedColumn<String> reviewedBy = GeneratedColumn<String>(
+    'reviewed_by',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _reviewedAtMeta = const VerificationMeta(
+    'reviewedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> reviewedAt = GeneratedColumn<DateTime>(
+    'reviewed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -577,6 +621,10 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
     language,
     detectedLanguage,
     createdAt,
+    reviewState,
+    reviewReason,
+    reviewedBy,
+    reviewedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -757,6 +805,36 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
         createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
       );
     }
+    if (data.containsKey('review_state')) {
+      context.handle(
+        _reviewStateMeta,
+        reviewState.isAcceptableOrUnknown(
+          data['review_state']!,
+          _reviewStateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('review_reason')) {
+      context.handle(
+        _reviewReasonMeta,
+        reviewReason.isAcceptableOrUnknown(
+          data['review_reason']!,
+          _reviewReasonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('reviewed_by')) {
+      context.handle(
+        _reviewedByMeta,
+        reviewedBy.isAcceptableOrUnknown(data['reviewed_by']!, _reviewedByMeta),
+      );
+    }
+    if (data.containsKey('reviewed_at')) {
+      context.handle(
+        _reviewedAtMeta,
+        reviewedAt.isAcceptableOrUnknown(data['reviewed_at']!, _reviewedAtMeta),
+      );
+    }
     return context;
   }
 
@@ -866,6 +944,22 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, SongEntry> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       ),
+      reviewState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}review_state'],
+      ),
+      reviewReason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}review_reason'],
+      ),
+      reviewedBy: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reviewed_by'],
+      ),
+      reviewedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}reviewed_at'],
+      ),
     );
   }
 
@@ -952,6 +1046,20 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
   /// the time of creation on this device for the local library and for
   /// songs not pushed yet. Null until the sync has filled it.
   final DateTime? createdAt;
+
+  /// Review status (ADR-0060, schema 37): `to_review` while the song waits
+  /// for a check, null when approved. Synced on its own, last writer wins
+  /// (outbox collection `song_review`).
+  final String? reviewState;
+
+  /// Why the song waits for a check, e.g. "After import"; null when
+  /// approved.
+  final String? reviewReason;
+
+  /// Who set the current review state and when, as the server reports
+  /// them; the person on this device until pushed.
+  final String? reviewedBy;
+  final DateTime? reviewedAt;
   const SongEntry({
     required this.id,
     required this.libraryId,
@@ -978,6 +1086,10 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     this.language,
     this.detectedLanguage,
     this.createdAt,
+    this.reviewState,
+    this.reviewReason,
+    this.reviewedBy,
+    this.reviewedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1037,6 +1149,18 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     if (!nullToAbsent || createdAt != null) {
       map['created_at'] = Variable<DateTime>(createdAt);
     }
+    if (!nullToAbsent || reviewState != null) {
+      map['review_state'] = Variable<String>(reviewState);
+    }
+    if (!nullToAbsent || reviewReason != null) {
+      map['review_reason'] = Variable<String>(reviewReason);
+    }
+    if (!nullToAbsent || reviewedBy != null) {
+      map['reviewed_by'] = Variable<String>(reviewedBy);
+    }
+    if (!nullToAbsent || reviewedAt != null) {
+      map['reviewed_at'] = Variable<DateTime>(reviewedAt);
+    }
     return map;
   }
 
@@ -1095,6 +1219,18 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       createdAt: createdAt == null && nullToAbsent
           ? const Value.absent()
           : Value(createdAt),
+      reviewState: reviewState == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reviewState),
+      reviewReason: reviewReason == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reviewReason),
+      reviewedBy: reviewedBy == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reviewedBy),
+      reviewedAt: reviewedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reviewedAt),
     );
   }
 
@@ -1131,6 +1267,10 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       language: serializer.fromJson<String?>(json['language']),
       detectedLanguage: serializer.fromJson<String?>(json['detectedLanguage']),
       createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
+      reviewState: serializer.fromJson<String?>(json['reviewState']),
+      reviewReason: serializer.fromJson<String?>(json['reviewReason']),
+      reviewedBy: serializer.fromJson<String?>(json['reviewedBy']),
+      reviewedAt: serializer.fromJson<DateTime?>(json['reviewedAt']),
     );
   }
   @override
@@ -1162,6 +1302,10 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
       'language': serializer.toJson<String?>(language),
       'detectedLanguage': serializer.toJson<String?>(detectedLanguage),
       'createdAt': serializer.toJson<DateTime?>(createdAt),
+      'reviewState': serializer.toJson<String?>(reviewState),
+      'reviewReason': serializer.toJson<String?>(reviewReason),
+      'reviewedBy': serializer.toJson<String?>(reviewedBy),
+      'reviewedAt': serializer.toJson<DateTime?>(reviewedAt),
     };
   }
 
@@ -1191,6 +1335,10 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     Value<String?> language = const Value.absent(),
     Value<String?> detectedLanguage = const Value.absent(),
     Value<DateTime?> createdAt = const Value.absent(),
+    Value<String?> reviewState = const Value.absent(),
+    Value<String?> reviewReason = const Value.absent(),
+    Value<String?> reviewedBy = const Value.absent(),
+    Value<DateTime?> reviewedAt = const Value.absent(),
   }) => SongEntry(
     id: id ?? this.id,
     libraryId: libraryId ?? this.libraryId,
@@ -1219,6 +1367,10 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
         ? detectedLanguage.value
         : this.detectedLanguage,
     createdAt: createdAt.present ? createdAt.value : this.createdAt,
+    reviewState: reviewState.present ? reviewState.value : this.reviewState,
+    reviewReason: reviewReason.present ? reviewReason.value : this.reviewReason,
+    reviewedBy: reviewedBy.present ? reviewedBy.value : this.reviewedBy,
+    reviewedAt: reviewedAt.present ? reviewedAt.value : this.reviewedAt,
   );
   SongEntry copyWithCompanion(SongsCompanion data) {
     return SongEntry(
@@ -1259,6 +1411,18 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
           ? data.detectedLanguage.value
           : this.detectedLanguage,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      reviewState: data.reviewState.present
+          ? data.reviewState.value
+          : this.reviewState,
+      reviewReason: data.reviewReason.present
+          ? data.reviewReason.value
+          : this.reviewReason,
+      reviewedBy: data.reviewedBy.present
+          ? data.reviewedBy.value
+          : this.reviewedBy,
+      reviewedAt: data.reviewedAt.present
+          ? data.reviewedAt.value
+          : this.reviewedAt,
     );
   }
 
@@ -1289,7 +1453,11 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
           ..write('workId: $workId, ')
           ..write('language: $language, ')
           ..write('detectedLanguage: $detectedLanguage, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('reviewState: $reviewState, ')
+          ..write('reviewReason: $reviewReason, ')
+          ..write('reviewedBy: $reviewedBy, ')
+          ..write('reviewedAt: $reviewedAt')
           ..write(')'))
         .toString();
   }
@@ -1321,6 +1489,10 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
     language,
     detectedLanguage,
     createdAt,
+    reviewState,
+    reviewReason,
+    reviewedBy,
+    reviewedAt,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -1350,7 +1522,11 @@ class SongEntry extends DataClass implements Insertable<SongEntry> {
           other.workId == this.workId &&
           other.language == this.language &&
           other.detectedLanguage == this.detectedLanguage &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.reviewState == this.reviewState &&
+          other.reviewReason == this.reviewReason &&
+          other.reviewedBy == this.reviewedBy &&
+          other.reviewedAt == this.reviewedAt);
 }
 
 class SongsCompanion extends UpdateCompanion<SongEntry> {
@@ -1379,6 +1555,10 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
   final Value<String?> language;
   final Value<String?> detectedLanguage;
   final Value<DateTime?> createdAt;
+  final Value<String?> reviewState;
+  final Value<String?> reviewReason;
+  final Value<String?> reviewedBy;
+  final Value<DateTime?> reviewedAt;
   final Value<int> rowid;
   const SongsCompanion({
     this.id = const Value.absent(),
@@ -1406,6 +1586,10 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     this.language = const Value.absent(),
     this.detectedLanguage = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.reviewState = const Value.absent(),
+    this.reviewReason = const Value.absent(),
+    this.reviewedBy = const Value.absent(),
+    this.reviewedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SongsCompanion.insert({
@@ -1434,6 +1618,10 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     this.language = const Value.absent(),
     this.detectedLanguage = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.reviewState = const Value.absent(),
+    this.reviewReason = const Value.absent(),
+    this.reviewedBy = const Value.absent(),
+    this.reviewedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        libraryId = Value(libraryId),
@@ -1465,6 +1653,10 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     Expression<String>? language,
     Expression<String>? detectedLanguage,
     Expression<DateTime>? createdAt,
+    Expression<String>? reviewState,
+    Expression<String>? reviewReason,
+    Expression<String>? reviewedBy,
+    Expression<DateTime>? reviewedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1494,6 +1686,10 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
       if (language != null) 'language': language,
       if (detectedLanguage != null) 'detected_language': detectedLanguage,
       if (createdAt != null) 'created_at': createdAt,
+      if (reviewState != null) 'review_state': reviewState,
+      if (reviewReason != null) 'review_reason': reviewReason,
+      if (reviewedBy != null) 'reviewed_by': reviewedBy,
+      if (reviewedAt != null) 'reviewed_at': reviewedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1524,6 +1720,10 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     Value<String?>? language,
     Value<String?>? detectedLanguage,
     Value<DateTime?>? createdAt,
+    Value<String?>? reviewState,
+    Value<String?>? reviewReason,
+    Value<String?>? reviewedBy,
+    Value<DateTime?>? reviewedAt,
     Value<int>? rowid,
   }) {
     return SongsCompanion(
@@ -1552,6 +1752,10 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
       language: language ?? this.language,
       detectedLanguage: detectedLanguage ?? this.detectedLanguage,
       createdAt: createdAt ?? this.createdAt,
+      reviewState: reviewState ?? this.reviewState,
+      reviewReason: reviewReason ?? this.reviewReason,
+      reviewedBy: reviewedBy ?? this.reviewedBy,
+      reviewedAt: reviewedAt ?? this.reviewedAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1634,6 +1838,18 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (reviewState.present) {
+      map['review_state'] = Variable<String>(reviewState.value);
+    }
+    if (reviewReason.present) {
+      map['review_reason'] = Variable<String>(reviewReason.value);
+    }
+    if (reviewedBy.present) {
+      map['reviewed_by'] = Variable<String>(reviewedBy.value);
+    }
+    if (reviewedAt.present) {
+      map['reviewed_at'] = Variable<DateTime>(reviewedAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1668,6 +1884,10 @@ class SongsCompanion extends UpdateCompanion<SongEntry> {
           ..write('language: $language, ')
           ..write('detectedLanguage: $detectedLanguage, ')
           ..write('createdAt: $createdAt, ')
+          ..write('reviewState: $reviewState, ')
+          ..write('reviewReason: $reviewReason, ')
+          ..write('reviewedBy: $reviewedBy, ')
+          ..write('reviewedAt: $reviewedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -9787,6 +10007,988 @@ class OrgPlaysCompanion extends UpdateCompanion<OrgPlay> {
   }
 }
 
+class $SongReportsTable extends SongReports
+    with TableInfo<$SongReportsTable, SongReportRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SongReportsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _songIdMeta = const VerificationMeta('songId');
+  @override
+  late final GeneratedColumn<String> songId = GeneratedColumn<String>(
+    'song_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _libraryIdMeta = const VerificationMeta(
+    'libraryId',
+  );
+  @override
+  late final GeneratedColumn<String> libraryId = GeneratedColumn<String>(
+    'library_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _authorIdMeta = const VerificationMeta(
+    'authorId',
+  );
+  @override
+  late final GeneratedColumn<String> authorId = GeneratedColumn<String>(
+    'author_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta(
+    'category',
+  );
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _commentMeta = const VerificationMeta(
+    'comment',
+  );
+  @override
+  late final GeneratedColumn<String> comment = GeneratedColumn<String>(
+    'comment',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _locationMeta = const VerificationMeta(
+    'location',
+  );
+  @override
+  late final GeneratedColumn<String> location = GeneratedColumn<String>(
+    'location',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _screenshotFileMeta = const VerificationMeta(
+    'screenshotFile',
+  );
+  @override
+  late final GeneratedColumn<String> screenshotFile = GeneratedColumn<String>(
+    'screenshot_file',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _remoteScreenshotMeta = const VerificationMeta(
+    'remoteScreenshot',
+  );
+  @override
+  late final GeneratedColumn<String> remoteScreenshot = GeneratedColumn<String>(
+    'remote_screenshot',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('open'),
+  );
+  static const VerificationMeta _resolutionMeta = const VerificationMeta(
+    'resolution',
+  );
+  @override
+  late final GeneratedColumn<String> resolution = GeneratedColumn<String>(
+    'resolution',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _resolvedByMeta = const VerificationMeta(
+    'resolvedBy',
+  );
+  @override
+  late final GeneratedColumn<String> resolvedBy = GeneratedColumn<String>(
+    'resolved_by',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _resolvedAtMeta = const VerificationMeta(
+    'resolvedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> resolvedAt = GeneratedColumn<DateTime>(
+    'resolved_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _revisionMeta = const VerificationMeta(
+    'revision',
+  );
+  @override
+  late final GeneratedColumn<int> revision = GeneratedColumn<int>(
+    'revision',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _deletedMeta = const VerificationMeta(
+    'deleted',
+  );
+  @override
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
+    'deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _purgedMeta = const VerificationMeta('purged');
+  @override
+  late final GeneratedColumn<bool> purged = GeneratedColumn<bool>(
+    'purged',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("purged" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    songId,
+    libraryId,
+    authorId,
+    category,
+    comment,
+    location,
+    screenshotFile,
+    remoteScreenshot,
+    status,
+    resolution,
+    resolvedBy,
+    resolvedAt,
+    createdAt,
+    revision,
+    deleted,
+    purged,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'song_reports';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SongReportRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('song_id')) {
+      context.handle(
+        _songIdMeta,
+        songId.isAcceptableOrUnknown(data['song_id']!, _songIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_songIdMeta);
+    }
+    if (data.containsKey('library_id')) {
+      context.handle(
+        _libraryIdMeta,
+        libraryId.isAcceptableOrUnknown(data['library_id']!, _libraryIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_libraryIdMeta);
+    }
+    if (data.containsKey('author_id')) {
+      context.handle(
+        _authorIdMeta,
+        authorId.isAcceptableOrUnknown(data['author_id']!, _authorIdMeta),
+      );
+    }
+    if (data.containsKey('category')) {
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_categoryMeta);
+    }
+    if (data.containsKey('comment')) {
+      context.handle(
+        _commentMeta,
+        comment.isAcceptableOrUnknown(data['comment']!, _commentMeta),
+      );
+    }
+    if (data.containsKey('location')) {
+      context.handle(
+        _locationMeta,
+        location.isAcceptableOrUnknown(data['location']!, _locationMeta),
+      );
+    }
+    if (data.containsKey('screenshot_file')) {
+      context.handle(
+        _screenshotFileMeta,
+        screenshotFile.isAcceptableOrUnknown(
+          data['screenshot_file']!,
+          _screenshotFileMeta,
+        ),
+      );
+    }
+    if (data.containsKey('remote_screenshot')) {
+      context.handle(
+        _remoteScreenshotMeta,
+        remoteScreenshot.isAcceptableOrUnknown(
+          data['remote_screenshot']!,
+          _remoteScreenshotMeta,
+        ),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('resolution')) {
+      context.handle(
+        _resolutionMeta,
+        resolution.isAcceptableOrUnknown(data['resolution']!, _resolutionMeta),
+      );
+    }
+    if (data.containsKey('resolved_by')) {
+      context.handle(
+        _resolvedByMeta,
+        resolvedBy.isAcceptableOrUnknown(data['resolved_by']!, _resolvedByMeta),
+      );
+    }
+    if (data.containsKey('resolved_at')) {
+      context.handle(
+        _resolvedAtMeta,
+        resolvedAt.isAcceptableOrUnknown(data['resolved_at']!, _resolvedAtMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('revision')) {
+      context.handle(
+        _revisionMeta,
+        revision.isAcceptableOrUnknown(data['revision']!, _revisionMeta),
+      );
+    }
+    if (data.containsKey('deleted')) {
+      context.handle(
+        _deletedMeta,
+        deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
+      );
+    }
+    if (data.containsKey('purged')) {
+      context.handle(
+        _purgedMeta,
+        purged.isAcceptableOrUnknown(data['purged']!, _purgedMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SongReportRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SongReportRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      songId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}song_id'],
+      )!,
+      libraryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}library_id'],
+      )!,
+      authorId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}author_id'],
+      ),
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      )!,
+      comment: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}comment'],
+      )!,
+      location: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}location'],
+      ),
+      screenshotFile: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}screenshot_file'],
+      ),
+      remoteScreenshot: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_screenshot'],
+      ),
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      resolution: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}resolution'],
+      ),
+      resolvedBy: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}resolved_by'],
+      ),
+      resolvedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}resolved_at'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      revision: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}revision'],
+      )!,
+      deleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}deleted'],
+      )!,
+      purged: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}purged'],
+      )!,
+    );
+  }
+
+  @override
+  $SongReportsTable createAlias(String alias) {
+    return $SongReportsTable(attachedDatabase, alias);
+  }
+}
+
+class SongReportRow extends DataClass implements Insertable<SongReportRow> {
+  /// UUID created on the device.
+  final String id;
+  final String songId;
+
+  /// The song's library: an organization or [localBandId].
+  final String libraryId;
+
+  /// Server user ID of the reporter, [localOwnerId] in the local library;
+  /// null once the reporter deleted their account (ADR-0052).
+  final String? authorId;
+
+  /// `chords`, `lyrics`, `key`, `sequence`, `tempo`, `formatting`,
+  /// `sheet_music` or `other` (`SongReportCategory`).
+  final String category;
+  final String comment;
+
+  /// Where in the song, as JSON (`SongReportLocation`).
+  final String? location;
+
+  /// Screenshot file in the attachment storage, null if none or not
+  /// downloaded yet.
+  final String? screenshotFile;
+
+  /// Name of the screenshot file on the server, null until uploaded or
+  /// without a screenshot.
+  final String? remoteScreenshot;
+
+  /// `open`, `resolved` or `withdrawn` (`SongReportStatus`).
+  final String status;
+  final String? resolution;
+  final String? resolvedBy;
+  final DateTime? resolvedAt;
+  final DateTime createdAt;
+  final int revision;
+  final bool deleted;
+
+  /// Purged with its song (ADR-0043): no text, location or screenshot.
+  final bool purged;
+  const SongReportRow({
+    required this.id,
+    required this.songId,
+    required this.libraryId,
+    this.authorId,
+    required this.category,
+    required this.comment,
+    this.location,
+    this.screenshotFile,
+    this.remoteScreenshot,
+    required this.status,
+    this.resolution,
+    this.resolvedBy,
+    this.resolvedAt,
+    required this.createdAt,
+    required this.revision,
+    required this.deleted,
+    required this.purged,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['song_id'] = Variable<String>(songId);
+    map['library_id'] = Variable<String>(libraryId);
+    if (!nullToAbsent || authorId != null) {
+      map['author_id'] = Variable<String>(authorId);
+    }
+    map['category'] = Variable<String>(category);
+    map['comment'] = Variable<String>(comment);
+    if (!nullToAbsent || location != null) {
+      map['location'] = Variable<String>(location);
+    }
+    if (!nullToAbsent || screenshotFile != null) {
+      map['screenshot_file'] = Variable<String>(screenshotFile);
+    }
+    if (!nullToAbsent || remoteScreenshot != null) {
+      map['remote_screenshot'] = Variable<String>(remoteScreenshot);
+    }
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || resolution != null) {
+      map['resolution'] = Variable<String>(resolution);
+    }
+    if (!nullToAbsent || resolvedBy != null) {
+      map['resolved_by'] = Variable<String>(resolvedBy);
+    }
+    if (!nullToAbsent || resolvedAt != null) {
+      map['resolved_at'] = Variable<DateTime>(resolvedAt);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['revision'] = Variable<int>(revision);
+    map['deleted'] = Variable<bool>(deleted);
+    map['purged'] = Variable<bool>(purged);
+    return map;
+  }
+
+  SongReportsCompanion toCompanion(bool nullToAbsent) {
+    return SongReportsCompanion(
+      id: Value(id),
+      songId: Value(songId),
+      libraryId: Value(libraryId),
+      authorId: authorId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(authorId),
+      category: Value(category),
+      comment: Value(comment),
+      location: location == null && nullToAbsent
+          ? const Value.absent()
+          : Value(location),
+      screenshotFile: screenshotFile == null && nullToAbsent
+          ? const Value.absent()
+          : Value(screenshotFile),
+      remoteScreenshot: remoteScreenshot == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remoteScreenshot),
+      status: Value(status),
+      resolution: resolution == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resolution),
+      resolvedBy: resolvedBy == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resolvedBy),
+      resolvedAt: resolvedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resolvedAt),
+      createdAt: Value(createdAt),
+      revision: Value(revision),
+      deleted: Value(deleted),
+      purged: Value(purged),
+    );
+  }
+
+  factory SongReportRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SongReportRow(
+      id: serializer.fromJson<String>(json['id']),
+      songId: serializer.fromJson<String>(json['songId']),
+      libraryId: serializer.fromJson<String>(json['libraryId']),
+      authorId: serializer.fromJson<String?>(json['authorId']),
+      category: serializer.fromJson<String>(json['category']),
+      comment: serializer.fromJson<String>(json['comment']),
+      location: serializer.fromJson<String?>(json['location']),
+      screenshotFile: serializer.fromJson<String?>(json['screenshotFile']),
+      remoteScreenshot: serializer.fromJson<String?>(json['remoteScreenshot']),
+      status: serializer.fromJson<String>(json['status']),
+      resolution: serializer.fromJson<String?>(json['resolution']),
+      resolvedBy: serializer.fromJson<String?>(json['resolvedBy']),
+      resolvedAt: serializer.fromJson<DateTime?>(json['resolvedAt']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      revision: serializer.fromJson<int>(json['revision']),
+      deleted: serializer.fromJson<bool>(json['deleted']),
+      purged: serializer.fromJson<bool>(json['purged']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'songId': serializer.toJson<String>(songId),
+      'libraryId': serializer.toJson<String>(libraryId),
+      'authorId': serializer.toJson<String?>(authorId),
+      'category': serializer.toJson<String>(category),
+      'comment': serializer.toJson<String>(comment),
+      'location': serializer.toJson<String?>(location),
+      'screenshotFile': serializer.toJson<String?>(screenshotFile),
+      'remoteScreenshot': serializer.toJson<String?>(remoteScreenshot),
+      'status': serializer.toJson<String>(status),
+      'resolution': serializer.toJson<String?>(resolution),
+      'resolvedBy': serializer.toJson<String?>(resolvedBy),
+      'resolvedAt': serializer.toJson<DateTime?>(resolvedAt),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'revision': serializer.toJson<int>(revision),
+      'deleted': serializer.toJson<bool>(deleted),
+      'purged': serializer.toJson<bool>(purged),
+    };
+  }
+
+  SongReportRow copyWith({
+    String? id,
+    String? songId,
+    String? libraryId,
+    Value<String?> authorId = const Value.absent(),
+    String? category,
+    String? comment,
+    Value<String?> location = const Value.absent(),
+    Value<String?> screenshotFile = const Value.absent(),
+    Value<String?> remoteScreenshot = const Value.absent(),
+    String? status,
+    Value<String?> resolution = const Value.absent(),
+    Value<String?> resolvedBy = const Value.absent(),
+    Value<DateTime?> resolvedAt = const Value.absent(),
+    DateTime? createdAt,
+    int? revision,
+    bool? deleted,
+    bool? purged,
+  }) => SongReportRow(
+    id: id ?? this.id,
+    songId: songId ?? this.songId,
+    libraryId: libraryId ?? this.libraryId,
+    authorId: authorId.present ? authorId.value : this.authorId,
+    category: category ?? this.category,
+    comment: comment ?? this.comment,
+    location: location.present ? location.value : this.location,
+    screenshotFile: screenshotFile.present
+        ? screenshotFile.value
+        : this.screenshotFile,
+    remoteScreenshot: remoteScreenshot.present
+        ? remoteScreenshot.value
+        : this.remoteScreenshot,
+    status: status ?? this.status,
+    resolution: resolution.present ? resolution.value : this.resolution,
+    resolvedBy: resolvedBy.present ? resolvedBy.value : this.resolvedBy,
+    resolvedAt: resolvedAt.present ? resolvedAt.value : this.resolvedAt,
+    createdAt: createdAt ?? this.createdAt,
+    revision: revision ?? this.revision,
+    deleted: deleted ?? this.deleted,
+    purged: purged ?? this.purged,
+  );
+  SongReportRow copyWithCompanion(SongReportsCompanion data) {
+    return SongReportRow(
+      id: data.id.present ? data.id.value : this.id,
+      songId: data.songId.present ? data.songId.value : this.songId,
+      libraryId: data.libraryId.present ? data.libraryId.value : this.libraryId,
+      authorId: data.authorId.present ? data.authorId.value : this.authorId,
+      category: data.category.present ? data.category.value : this.category,
+      comment: data.comment.present ? data.comment.value : this.comment,
+      location: data.location.present ? data.location.value : this.location,
+      screenshotFile: data.screenshotFile.present
+          ? data.screenshotFile.value
+          : this.screenshotFile,
+      remoteScreenshot: data.remoteScreenshot.present
+          ? data.remoteScreenshot.value
+          : this.remoteScreenshot,
+      status: data.status.present ? data.status.value : this.status,
+      resolution: data.resolution.present
+          ? data.resolution.value
+          : this.resolution,
+      resolvedBy: data.resolvedBy.present
+          ? data.resolvedBy.value
+          : this.resolvedBy,
+      resolvedAt: data.resolvedAt.present
+          ? data.resolvedAt.value
+          : this.resolvedAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      revision: data.revision.present ? data.revision.value : this.revision,
+      deleted: data.deleted.present ? data.deleted.value : this.deleted,
+      purged: data.purged.present ? data.purged.value : this.purged,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SongReportRow(')
+          ..write('id: $id, ')
+          ..write('songId: $songId, ')
+          ..write('libraryId: $libraryId, ')
+          ..write('authorId: $authorId, ')
+          ..write('category: $category, ')
+          ..write('comment: $comment, ')
+          ..write('location: $location, ')
+          ..write('screenshotFile: $screenshotFile, ')
+          ..write('remoteScreenshot: $remoteScreenshot, ')
+          ..write('status: $status, ')
+          ..write('resolution: $resolution, ')
+          ..write('resolvedBy: $resolvedBy, ')
+          ..write('resolvedAt: $resolvedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('revision: $revision, ')
+          ..write('deleted: $deleted, ')
+          ..write('purged: $purged')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    songId,
+    libraryId,
+    authorId,
+    category,
+    comment,
+    location,
+    screenshotFile,
+    remoteScreenshot,
+    status,
+    resolution,
+    resolvedBy,
+    resolvedAt,
+    createdAt,
+    revision,
+    deleted,
+    purged,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SongReportRow &&
+          other.id == this.id &&
+          other.songId == this.songId &&
+          other.libraryId == this.libraryId &&
+          other.authorId == this.authorId &&
+          other.category == this.category &&
+          other.comment == this.comment &&
+          other.location == this.location &&
+          other.screenshotFile == this.screenshotFile &&
+          other.remoteScreenshot == this.remoteScreenshot &&
+          other.status == this.status &&
+          other.resolution == this.resolution &&
+          other.resolvedBy == this.resolvedBy &&
+          other.resolvedAt == this.resolvedAt &&
+          other.createdAt == this.createdAt &&
+          other.revision == this.revision &&
+          other.deleted == this.deleted &&
+          other.purged == this.purged);
+}
+
+class SongReportsCompanion extends UpdateCompanion<SongReportRow> {
+  final Value<String> id;
+  final Value<String> songId;
+  final Value<String> libraryId;
+  final Value<String?> authorId;
+  final Value<String> category;
+  final Value<String> comment;
+  final Value<String?> location;
+  final Value<String?> screenshotFile;
+  final Value<String?> remoteScreenshot;
+  final Value<String> status;
+  final Value<String?> resolution;
+  final Value<String?> resolvedBy;
+  final Value<DateTime?> resolvedAt;
+  final Value<DateTime> createdAt;
+  final Value<int> revision;
+  final Value<bool> deleted;
+  final Value<bool> purged;
+  final Value<int> rowid;
+  const SongReportsCompanion({
+    this.id = const Value.absent(),
+    this.songId = const Value.absent(),
+    this.libraryId = const Value.absent(),
+    this.authorId = const Value.absent(),
+    this.category = const Value.absent(),
+    this.comment = const Value.absent(),
+    this.location = const Value.absent(),
+    this.screenshotFile = const Value.absent(),
+    this.remoteScreenshot = const Value.absent(),
+    this.status = const Value.absent(),
+    this.resolution = const Value.absent(),
+    this.resolvedBy = const Value.absent(),
+    this.resolvedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.revision = const Value.absent(),
+    this.deleted = const Value.absent(),
+    this.purged = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SongReportsCompanion.insert({
+    required String id,
+    required String songId,
+    required String libraryId,
+    this.authorId = const Value.absent(),
+    required String category,
+    this.comment = const Value.absent(),
+    this.location = const Value.absent(),
+    this.screenshotFile = const Value.absent(),
+    this.remoteScreenshot = const Value.absent(),
+    this.status = const Value.absent(),
+    this.resolution = const Value.absent(),
+    this.resolvedBy = const Value.absent(),
+    this.resolvedAt = const Value.absent(),
+    required DateTime createdAt,
+    this.revision = const Value.absent(),
+    this.deleted = const Value.absent(),
+    this.purged = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       songId = Value(songId),
+       libraryId = Value(libraryId),
+       category = Value(category),
+       createdAt = Value(createdAt);
+  static Insertable<SongReportRow> custom({
+    Expression<String>? id,
+    Expression<String>? songId,
+    Expression<String>? libraryId,
+    Expression<String>? authorId,
+    Expression<String>? category,
+    Expression<String>? comment,
+    Expression<String>? location,
+    Expression<String>? screenshotFile,
+    Expression<String>? remoteScreenshot,
+    Expression<String>? status,
+    Expression<String>? resolution,
+    Expression<String>? resolvedBy,
+    Expression<DateTime>? resolvedAt,
+    Expression<DateTime>? createdAt,
+    Expression<int>? revision,
+    Expression<bool>? deleted,
+    Expression<bool>? purged,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (songId != null) 'song_id': songId,
+      if (libraryId != null) 'library_id': libraryId,
+      if (authorId != null) 'author_id': authorId,
+      if (category != null) 'category': category,
+      if (comment != null) 'comment': comment,
+      if (location != null) 'location': location,
+      if (screenshotFile != null) 'screenshot_file': screenshotFile,
+      if (remoteScreenshot != null) 'remote_screenshot': remoteScreenshot,
+      if (status != null) 'status': status,
+      if (resolution != null) 'resolution': resolution,
+      if (resolvedBy != null) 'resolved_by': resolvedBy,
+      if (resolvedAt != null) 'resolved_at': resolvedAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (revision != null) 'revision': revision,
+      if (deleted != null) 'deleted': deleted,
+      if (purged != null) 'purged': purged,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SongReportsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? songId,
+    Value<String>? libraryId,
+    Value<String?>? authorId,
+    Value<String>? category,
+    Value<String>? comment,
+    Value<String?>? location,
+    Value<String?>? screenshotFile,
+    Value<String?>? remoteScreenshot,
+    Value<String>? status,
+    Value<String?>? resolution,
+    Value<String?>? resolvedBy,
+    Value<DateTime?>? resolvedAt,
+    Value<DateTime>? createdAt,
+    Value<int>? revision,
+    Value<bool>? deleted,
+    Value<bool>? purged,
+    Value<int>? rowid,
+  }) {
+    return SongReportsCompanion(
+      id: id ?? this.id,
+      songId: songId ?? this.songId,
+      libraryId: libraryId ?? this.libraryId,
+      authorId: authorId ?? this.authorId,
+      category: category ?? this.category,
+      comment: comment ?? this.comment,
+      location: location ?? this.location,
+      screenshotFile: screenshotFile ?? this.screenshotFile,
+      remoteScreenshot: remoteScreenshot ?? this.remoteScreenshot,
+      status: status ?? this.status,
+      resolution: resolution ?? this.resolution,
+      resolvedBy: resolvedBy ?? this.resolvedBy,
+      resolvedAt: resolvedAt ?? this.resolvedAt,
+      createdAt: createdAt ?? this.createdAt,
+      revision: revision ?? this.revision,
+      deleted: deleted ?? this.deleted,
+      purged: purged ?? this.purged,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (songId.present) {
+      map['song_id'] = Variable<String>(songId.value);
+    }
+    if (libraryId.present) {
+      map['library_id'] = Variable<String>(libraryId.value);
+    }
+    if (authorId.present) {
+      map['author_id'] = Variable<String>(authorId.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (comment.present) {
+      map['comment'] = Variable<String>(comment.value);
+    }
+    if (location.present) {
+      map['location'] = Variable<String>(location.value);
+    }
+    if (screenshotFile.present) {
+      map['screenshot_file'] = Variable<String>(screenshotFile.value);
+    }
+    if (remoteScreenshot.present) {
+      map['remote_screenshot'] = Variable<String>(remoteScreenshot.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (resolution.present) {
+      map['resolution'] = Variable<String>(resolution.value);
+    }
+    if (resolvedBy.present) {
+      map['resolved_by'] = Variable<String>(resolvedBy.value);
+    }
+    if (resolvedAt.present) {
+      map['resolved_at'] = Variable<DateTime>(resolvedAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (revision.present) {
+      map['revision'] = Variable<int>(revision.value);
+    }
+    if (deleted.present) {
+      map['deleted'] = Variable<bool>(deleted.value);
+    }
+    if (purged.present) {
+      map['purged'] = Variable<bool>(purged.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SongReportsCompanion(')
+          ..write('id: $id, ')
+          ..write('songId: $songId, ')
+          ..write('libraryId: $libraryId, ')
+          ..write('authorId: $authorId, ')
+          ..write('category: $category, ')
+          ..write('comment: $comment, ')
+          ..write('location: $location, ')
+          ..write('screenshotFile: $screenshotFile, ')
+          ..write('remoteScreenshot: $remoteScreenshot, ')
+          ..write('status: $status, ')
+          ..write('resolution: $resolution, ')
+          ..write('resolvedBy: $resolvedBy, ')
+          ..write('resolvedAt: $resolvedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('revision: $revision, ')
+          ..write('deleted: $deleted, ')
+          ..write('purged: $purged, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -9824,6 +11026,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SongConflictsTable songConflicts = $SongConflictsTable(this);
   late final $ChangeLogTable changeLog = $ChangeLogTable(this);
   late final $OrgPlaysTable orgPlays = $OrgPlaysTable(this);
+  late final $SongReportsTable songReports = $SongReportsTable(this);
   late final Index orgMembershipsUser = Index(
     'org_memberships_user',
     'CREATE INDEX org_memberships_user ON org_memberships (user_id)',
@@ -9839,6 +11042,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final Index songsLibrary = Index(
     'songs_library',
     'CREATE INDEX songs_library ON songs (library_id, deleted)',
+  );
+  late final Index songReportsSong = Index(
+    'song_reports_song',
+    'CREATE INDEX song_reports_song ON song_reports (song_id)',
   );
   late final Index attachmentsSong = Index(
     'attachments_song',
@@ -9890,10 +11097,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     songConflicts,
     changeLog,
     orgPlays,
+    songReports,
     orgMembershipsUser,
     membershipsBand,
     membershipsUser,
     songsLibrary,
+    songReportsSong,
     attachmentsSong,
     setlistsBand,
     setItemsSet,
@@ -10115,6 +11324,10 @@ typedef $$SongsTableCreateCompanionBuilder = SongsCompanion Function({
   Value<String?> language,
   Value<String?> detectedLanguage,
   Value<DateTime?> createdAt,
+  Value<String?> reviewState,
+  Value<String?> reviewReason,
+  Value<String?> reviewedBy,
+  Value<DateTime?> reviewedAt,
   Value<int> rowid,
 });
 typedef $$SongsTableUpdateCompanionBuilder = SongsCompanion Function({
@@ -10143,6 +11356,10 @@ typedef $$SongsTableUpdateCompanionBuilder = SongsCompanion Function({
   Value<String?> language,
   Value<String?> detectedLanguage,
   Value<DateTime?> createdAt,
+  Value<String?> reviewState,
+  Value<String?> reviewReason,
+  Value<String?> reviewedBy,
+  Value<DateTime?> reviewedAt,
   Value<int> rowid,
 });
 
@@ -10375,6 +11592,26 @@ class $$SongsTableFilterComposer extends Composer<_$AppDatabase, $SongsTable> {
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reviewState => $composableBuilder(
+    column: $table.reviewState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reviewReason => $composableBuilder(
+    column: $table.reviewReason,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reviewedBy => $composableBuilder(
+    column: $table.reviewedBy,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get reviewedAt => $composableBuilder(
+    column: $table.reviewedAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -10637,6 +11874,26 @@ class $$SongsTableOrderingComposer
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get reviewState => $composableBuilder(
+    column: $table.reviewState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reviewReason => $composableBuilder(
+    column: $table.reviewReason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reviewedBy => $composableBuilder(
+    column: $table.reviewedBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get reviewedAt => $composableBuilder(
+    column: $table.reviewedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SongsTableAnnotationComposer
@@ -10734,6 +11991,26 @@ class $$SongsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get reviewState => $composableBuilder(
+    column: $table.reviewState,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get reviewReason => $composableBuilder(
+    column: $table.reviewReason,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get reviewedBy => $composableBuilder(
+    column: $table.reviewedBy,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get reviewedAt => $composableBuilder(
+    column: $table.reviewedAt,
+    builder: (column) => column,
+  );
 
   Expression<T> attachmentsRefs<T extends Object>(
     Expression<T> Function($$AttachmentsTableAnnotationComposer a) f,
@@ -10920,6 +12197,10 @@ class $$SongsTableTableManager
                 Value<String?> language = const Value.absent(),
                 Value<String?> detectedLanguage = const Value.absent(),
                 Value<DateTime?> createdAt = const Value.absent(),
+                Value<String?> reviewState = const Value.absent(),
+                Value<String?> reviewReason = const Value.absent(),
+                Value<String?> reviewedBy = const Value.absent(),
+                Value<DateTime?> reviewedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SongsCompanion(
                 id: id,
@@ -10947,6 +12228,10 @@ class $$SongsTableTableManager
                 language: language,
                 detectedLanguage: detectedLanguage,
                 createdAt: createdAt,
+                reviewState: reviewState,
+                reviewReason: reviewReason,
+                reviewedBy: reviewedBy,
+                reviewedAt: reviewedAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -10976,6 +12261,10 @@ class $$SongsTableTableManager
                 Value<String?> language = const Value.absent(),
                 Value<String?> detectedLanguage = const Value.absent(),
                 Value<DateTime?> createdAt = const Value.absent(),
+                Value<String?> reviewState = const Value.absent(),
+                Value<String?> reviewReason = const Value.absent(),
+                Value<String?> reviewedBy = const Value.absent(),
+                Value<DateTime?> reviewedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SongsCompanion.insert(
                 id: id,
@@ -11003,6 +12292,10 @@ class $$SongsTableTableManager
                 language: language,
                 detectedLanguage: detectedLanguage,
                 createdAt: createdAt,
+                reviewState: reviewState,
+                reviewReason: reviewReason,
+                reviewedBy: reviewedBy,
+                reviewedAt: reviewedAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -16873,6 +18166,453 @@ typedef $$OrgPlaysTableProcessedTableManager =
       OrgPlay,
       PrefetchHooks Function()
     >;
+typedef $$SongReportsTableCreateCompanionBuilder =
+    SongReportsCompanion Function({
+      required String id,
+      required String songId,
+      required String libraryId,
+      Value<String?> authorId,
+      required String category,
+      Value<String> comment,
+      Value<String?> location,
+      Value<String?> screenshotFile,
+      Value<String?> remoteScreenshot,
+      Value<String> status,
+      Value<String?> resolution,
+      Value<String?> resolvedBy,
+      Value<DateTime?> resolvedAt,
+      required DateTime createdAt,
+      Value<int> revision,
+      Value<bool> deleted,
+      Value<bool> purged,
+      Value<int> rowid,
+    });
+typedef $$SongReportsTableUpdateCompanionBuilder =
+    SongReportsCompanion Function({
+      Value<String> id,
+      Value<String> songId,
+      Value<String> libraryId,
+      Value<String?> authorId,
+      Value<String> category,
+      Value<String> comment,
+      Value<String?> location,
+      Value<String?> screenshotFile,
+      Value<String?> remoteScreenshot,
+      Value<String> status,
+      Value<String?> resolution,
+      Value<String?> resolvedBy,
+      Value<DateTime?> resolvedAt,
+      Value<DateTime> createdAt,
+      Value<int> revision,
+      Value<bool> deleted,
+      Value<bool> purged,
+      Value<int> rowid,
+    });
+
+class $$SongReportsTableFilterComposer
+    extends Composer<_$AppDatabase, $SongReportsTable> {
+  $$SongReportsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get songId => $composableBuilder(
+    column: $table.songId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get libraryId => $composableBuilder(
+    column: $table.libraryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get authorId => $composableBuilder(
+    column: $table.authorId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get comment => $composableBuilder(
+    column: $table.comment,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get location => $composableBuilder(
+    column: $table.location,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get screenshotFile => $composableBuilder(
+    column: $table.screenshotFile,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get remoteScreenshot => $composableBuilder(
+    column: $table.remoteScreenshot,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get resolution => $composableBuilder(
+    column: $table.resolution,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get resolvedBy => $composableBuilder(
+    column: $table.resolvedBy,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get resolvedAt => $composableBuilder(
+    column: $table.resolvedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get purged => $composableBuilder(
+    column: $table.purged,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SongReportsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SongReportsTable> {
+  $$SongReportsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get songId => $composableBuilder(
+    column: $table.songId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get libraryId => $composableBuilder(
+    column: $table.libraryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get authorId => $composableBuilder(
+    column: $table.authorId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get comment => $composableBuilder(
+    column: $table.comment,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get location => $composableBuilder(
+    column: $table.location,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get screenshotFile => $composableBuilder(
+    column: $table.screenshotFile,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get remoteScreenshot => $composableBuilder(
+    column: $table.remoteScreenshot,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get resolution => $composableBuilder(
+    column: $table.resolution,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get resolvedBy => $composableBuilder(
+    column: $table.resolvedBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get resolvedAt => $composableBuilder(
+    column: $table.resolvedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get purged => $composableBuilder(
+    column: $table.purged,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SongReportsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SongReportsTable> {
+  $$SongReportsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get songId =>
+      $composableBuilder(column: $table.songId, builder: (column) => column);
+
+  GeneratedColumn<String> get libraryId =>
+      $composableBuilder(column: $table.libraryId, builder: (column) => column);
+
+  GeneratedColumn<String> get authorId =>
+      $composableBuilder(column: $table.authorId, builder: (column) => column);
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<String> get comment =>
+      $composableBuilder(column: $table.comment, builder: (column) => column);
+
+  GeneratedColumn<String> get location =>
+      $composableBuilder(column: $table.location, builder: (column) => column);
+
+  GeneratedColumn<String> get screenshotFile => $composableBuilder(
+    column: $table.screenshotFile,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get remoteScreenshot => $composableBuilder(
+    column: $table.remoteScreenshot,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get resolution => $composableBuilder(
+    column: $table.resolution,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get resolvedBy => $composableBuilder(
+    column: $table.resolvedBy,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get resolvedAt => $composableBuilder(
+    column: $table.resolvedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<int> get revision =>
+      $composableBuilder(column: $table.revision, builder: (column) => column);
+
+  GeneratedColumn<bool> get deleted =>
+      $composableBuilder(column: $table.deleted, builder: (column) => column);
+
+  GeneratedColumn<bool> get purged =>
+      $composableBuilder(column: $table.purged, builder: (column) => column);
+}
+
+class $$SongReportsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SongReportsTable,
+          SongReportRow,
+          $$SongReportsTableFilterComposer,
+          $$SongReportsTableOrderingComposer,
+          $$SongReportsTableAnnotationComposer,
+          $$SongReportsTableCreateCompanionBuilder,
+          $$SongReportsTableUpdateCompanionBuilder,
+          (
+            SongReportRow,
+            BaseReferences<_$AppDatabase, $SongReportsTable, SongReportRow>,
+          ),
+          SongReportRow,
+          PrefetchHooks Function()
+        > {
+  $$SongReportsTableTableManager(_$AppDatabase db, $SongReportsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SongReportsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SongReportsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SongReportsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> songId = const Value.absent(),
+                Value<String> libraryId = const Value.absent(),
+                Value<String?> authorId = const Value.absent(),
+                Value<String> category = const Value.absent(),
+                Value<String> comment = const Value.absent(),
+                Value<String?> location = const Value.absent(),
+                Value<String?> screenshotFile = const Value.absent(),
+                Value<String?> remoteScreenshot = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> resolution = const Value.absent(),
+                Value<String?> resolvedBy = const Value.absent(),
+                Value<DateTime?> resolvedAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> revision = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                Value<bool> purged = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SongReportsCompanion(
+                id: id,
+                songId: songId,
+                libraryId: libraryId,
+                authorId: authorId,
+                category: category,
+                comment: comment,
+                location: location,
+                screenshotFile: screenshotFile,
+                remoteScreenshot: remoteScreenshot,
+                status: status,
+                resolution: resolution,
+                resolvedBy: resolvedBy,
+                resolvedAt: resolvedAt,
+                createdAt: createdAt,
+                revision: revision,
+                deleted: deleted,
+                purged: purged,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String songId,
+                required String libraryId,
+                Value<String?> authorId = const Value.absent(),
+                required String category,
+                Value<String> comment = const Value.absent(),
+                Value<String?> location = const Value.absent(),
+                Value<String?> screenshotFile = const Value.absent(),
+                Value<String?> remoteScreenshot = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> resolution = const Value.absent(),
+                Value<String?> resolvedBy = const Value.absent(),
+                Value<DateTime?> resolvedAt = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> revision = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                Value<bool> purged = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SongReportsCompanion.insert(
+                id: id,
+                songId: songId,
+                libraryId: libraryId,
+                authorId: authorId,
+                category: category,
+                comment: comment,
+                location: location,
+                screenshotFile: screenshotFile,
+                remoteScreenshot: remoteScreenshot,
+                status: status,
+                resolution: resolution,
+                resolvedBy: resolvedBy,
+                resolvedAt: resolvedAt,
+                createdAt: createdAt,
+                revision: revision,
+                deleted: deleted,
+                purged: purged,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SongReportsTable, SongReportRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $SongReportsTable,
+                    SongReportRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SongReportsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SongReportsTable,
+      SongReportRow,
+      $$SongReportsTableFilterComposer,
+      $$SongReportsTableOrderingComposer,
+      $$SongReportsTableAnnotationComposer,
+      $$SongReportsTableCreateCompanionBuilder,
+      $$SongReportsTableUpdateCompanionBuilder,
+      (
+        SongReportRow,
+        BaseReferences<_$AppDatabase, $SongReportsTable, SongReportRow>,
+      ),
+      SongReportRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -16913,4 +18653,6 @@ class $AppDatabaseManager {
       $$ChangeLogTableTableManager(_db, _db.changeLog);
   $$OrgPlaysTableTableManager get orgPlays =>
       $$OrgPlaysTableTableManager(_db, _db.orgPlays);
+  $$SongReportsTableTableManager get songReports =>
+      $$SongReportsTableTableManager(_db, _db.songReports);
 }

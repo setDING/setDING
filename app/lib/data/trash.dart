@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import 'attachment_storage.dart';
 import 'database.dart';
 import 'outbox.dart';
+import 'song_review.dart' show isReportScreenshot, removeReportsOf;
 
 /// How long deleted songs and sets can be restored (ADR-0043). The server
 /// purges synced records after this time; the device purges the local
@@ -239,7 +240,9 @@ class TrashRepository {
               .get();
       final setIds = [for (final s in sets) s.id];
       await _removeSets(setIds);
-      count = songIds.length + files.length + setIds.length;
+      // Screenshots of mistake reports are no records of the trash.
+      final attachmentFiles = files.where((f) => !isReportScreenshot(f));
+      count = songIds.length + attachmentFiles.length + setIds.length;
     });
     await _deleteFiles(files);
     return count;
@@ -252,7 +255,10 @@ class TrashRepository {
     final attachments = await (db.select(
       db.attachments,
     )..where((a) => a.songId.isIn(songIds))).get();
-    final files = await _removeAttachments(attachments);
+    final files = [
+      ...await _removeAttachments(attachments),
+      ...await removeReportsOf(db, songIds),
+    ];
     await (db.delete(
       db.annotations,
     )..where((a) => a.songId.isIn(songIds))).go();
