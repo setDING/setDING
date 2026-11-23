@@ -143,6 +143,14 @@
   "songLinkLabelHint": "Live 2009",
   "songLinkInvalid": "Gib einen Weblink ein, der mit https:// beginnt (ohne |).",
   "songLinkFailed": "Der Link konnte nicht geöffnet werden.",
+  "songSelectNumber": "CCLI-Nummer {number}",
+  "@songSelectNumber": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
   "attachmentName": "Name des Anhangs",
   "pagesCount": "{count, plural, =1{1 Seite} other{{count} Seiten}}",
   "@pagesCount": {

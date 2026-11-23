@@ -37,25 +37,31 @@ IconData linkServiceIcon(LinkService service) => switch (service) {
 /// Side panel with the sources of a song (`{x_link}`): recordings on
 /// YouTube, Spotify and the like, opened outside the app. With [onAdd]
 /// and [onChange], people who may edit the song add, edit and remove links.
+/// The SongSelect page of the CCLI number (`{x_ccli}`, [songSelect]) comes
+/// first and is not edited here.
 class SongLinksPanel extends StatelessWidget {
   const SongLinksPanel({
     super.key,
     required this.links,
+    this.songSelect,
     this.onAdd,
     this.onChange,
   });
 
   final List<SongLink> links;
+
+  /// The SongSelect page from `{x_ccli}` (`Song.songSelect`).
+  final Uri? songSelect;
   final Future<void> Function(String url, String? label)? onAdd;
 
   /// Replaces the link at an index of [links]; a null url removes it.
   final Future<void> Function(int index, String? url, String? label)? onChange;
 
-  Future<void> _open(BuildContext context, SongLink link) async {
+  Future<void> _open(BuildContext context, Uri uri) async {
     final l10n = AppLocalizations.of(context);
     var opened = false;
     try {
-      opened = await openSongLink(link.uri);
+      opened = await openSongLink(uri);
     } catch (_) {
       opened = false;
     }
@@ -87,7 +93,22 @@ class SongLinksPanel extends StatelessWidget {
       icon: Icons.headphones_outlined,
       title: l10n.songLinks,
       children: [
-        if (links.isEmpty)
+        if (songSelect case final uri?)
+          ListTile(
+            key: const Key('song-select-link'),
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.lyrics_outlined),
+            // Brand name, the same in every language.
+            title: const Text('CCLI SongSelect'),
+            subtitle: Text(
+              l10n.songSelectNumber(uri.pathSegments.last),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: const Icon(Icons.open_in_new, size: 20),
+            onTap: () => _open(context, uri),
+          ),
+        if (links.isEmpty && songSelect == null)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Text(
@@ -119,7 +140,7 @@ class SongLinksPanel extends StatelessWidget {
                     icon: const Icon(Icons.edit_outlined, size: 20),
                     onPressed: () => _edit(context, index),
                   ),
-            onTap: () => _open(context, link),
+            onTap: () => _open(context, link.uri),
           ),
         if (onAdd != null) ...[
           const SizedBox(height: 8),

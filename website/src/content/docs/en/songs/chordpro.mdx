@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import drums from '../../../../../../docs/screenshots/drums.png';
+import songSources from '../../../../../../docs/screenshots/song_sources.png';
 
 Songs are written in [ChordPro](https://www.chordpro.org/chordpro/), an open text
 format for chord sheets. A ChordPro file is plain text: you can write it in the
@@ -165,6 +166,12 @@ In the song view, the headphones icon opens the sources; a tap opens the link in
 service's app or the browser. People who may edit the song can add links there, too,
 and change or remove them with the pencil icon.
 Sources are not shown in live mode.
+
+If the song has a CCLI number (`{x_ccli: 7114209}`), **CCLI SongSelect** comes first in
+the sources: a tap opens the song's page on SongSelect. You change this entry through
+the CCLI number in the editor, not in the sources.
+
+<Image src={songSources} alt="The sources of a song: CCLI SongSelect with the CCLI number first, below it a YouTube and a Spotify link with a pencil icon and the Add link button" />
 
 ## Songs for drums
 

@@ -272,6 +272,42 @@ void main() {
     });
   }
 
+  // The sources of a song (`{x_link}`) with the SongSelect page of its
+  // CCLI number (`{x_ccli}`, #1035) first.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('song sources $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      await tester.runAsync(
+        () => app.songs.createSong(
+          source:
+              '{title: Morning Light}\n{artist: Ann Trainor}\n{key: D}\n'
+              '{x_ccli: 7114209}\n'
+              '{x_link: https://www.youtube.com/watch?v=abc | Live 2009}\n'
+              '{x_link: https://open.spotify.com/track/1}\n'
+              '{start_of_verse}\n'
+              '[D]I walk along the [G]river and you are [A]always there with me,\n'
+              'when the [D]wind is in the [G]willows and the [A]night is calling me.\n'
+              '{end_of_verse}',
+        ),
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(key: UniqueKey(), child: app.build()),
+      );
+      await tester.pumpAndSettle();
+      await openTab(tester, HomeTab.songs);
+      await tester.tap(find.textContaining('Morning Light'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('open-song-links')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('song-select-link')), findsOneWidget);
+      await shot(tester, '${lang}_56_song_sources');
+      await app.dispose(tester);
+    });
+  }
+
   // On a phone the panel buttons move into the ⋮ menu (#838).
   for (final (lang, dark) in [('de', false), ('en', true)]) {
     screenshotTest('song phone menu $lang', (tester) async {

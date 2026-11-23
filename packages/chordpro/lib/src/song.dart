@@ -78,6 +78,10 @@ class Song {
       ?parseSongLink(value),
   ];
 
+  /// The SongSelect page from the CCLI song number in `{x_ccli}`; null
+  /// without a plain number.
+  Uri? get songSelect => songSelectUri(metaValue('x_ccli'));
+
   /// The meter from `{time}` and `{x_time_grouping}`; 4/4 when `{time}` is
   /// missing or unreadable (ADR-0026).
   Meter get meter =>

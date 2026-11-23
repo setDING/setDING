@@ -124,6 +124,7 @@ map=(
   lineup_notify 54c_lineup_notify
   overview_substitute 54d_overview_substitute
   song_attachment_menu 55_song_attachment_menu
+  song_sources 56_song_sources
 )
 
 copied=0

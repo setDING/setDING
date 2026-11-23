@@ -169,4 +169,70 @@ void main() {
     );
     await app.dispose(tester);
   });
+
+  testWidgets('the CCLI number links to SongSelect in the sources panel', (
+    tester,
+  ) async {
+    final (app, _) = await open(
+      tester,
+      '{title: X}\n{x_ccli: 7114209}\n'
+      '{x_link: https://www.youtube.com/watch?v=abc}\n\n[G]One',
+    );
+    final icon = find.byKey(const Key('open-song-links'));
+    // The SongSelect page counts as a source.
+    expect(find.descendant(of: icon, matching: find.text('2')), findsOneWidget);
+
+    await tester.tap(icon);
+    await tester.pumpAndSettle();
+    final entry = find.byKey(const Key('song-select-link'));
+    expect(
+      find.descendant(of: entry, matching: find.text('CCLI SongSelect')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: entry, matching: find.text('CCLI number 7114209')),
+      findsOneWidget,
+    );
+    // It comes first and is not edited in the panel.
+    expect(
+      tester.getCenter(entry).dy,
+      lessThan(tester.getCenter(find.text('YouTube')).dy),
+    );
+    expect(
+      find.descendant(of: entry, matching: find.byIcon(Icons.edit_outlined)),
+      findsNothing,
+    );
+
+    await tester.tap(entry);
+    await tester.pumpAndSettle();
+    expect(opened, [Uri.parse('https://songselect.ccli.com/songs/7114209')]);
+    await app.dispose(tester);
+  });
+
+  testWidgets('a song with only a CCLI number shows its SongSelect page', (
+    tester,
+  ) async {
+    final (app, _) = await open(
+      tester,
+      '{title: X}\n{x_ccli: 7114209}\n\n[G]One',
+    );
+    final icon = find.byKey(const Key('open-song-links'));
+    expect(find.descendant(of: icon, matching: find.text('1')), findsOneWidget);
+    await tester.tap(icon);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('No sources yet.'), findsNothing);
+    expect(find.byKey(const Key('song-select-link')), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('a CCLI value that is not a number shows no SongSelect link', (
+    tester,
+  ) async {
+    final (app, _) = await open(tester, '{title: X}\n{x_ccli: n/a}\n\n[G]One');
+    await tester.tap(find.byKey(const Key('open-song-links')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('song-select-link')), findsNothing);
+    expect(find.textContaining('No sources yet.'), findsOneWidget);
+    await app.dispose(tester);
+  });
 }
