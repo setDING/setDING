@@ -56,12 +56,15 @@ devices choose different originals offline, for little benefit (owner).
 - **Languages:** German (`de`), Swiss German (`gsw`), English (`en`), French (`fr`),
   Italian (`it`), Spanish (`es`), Portuguese (`pt`), Dutch (`nl`) and *Other*
   (`other`). The list is fixed in the client and easy to extend.
-- **Detection** on the device, without a library: for every language except Swiss
-  German and *Other* a short list of frequent function words ("und, der, ich, nicht",
+- **Detection** on the device, without a library: for every language except
+  *Other* a short list of frequent function words ("und, der, ich, nicht",
   "the, and, you, my", "le, et, je, pas", …) is counted in the lyrics without chords
   (`songs.search_text`). The language with the most hits wins if it is clearly ahead
   of the second; otherwise **no language** is detected rather than a wrong one.
-  Swiss German mostly shows as German and is set by hand.
+  Swiss German lyrics use many Standard German words too, so Swiss German counts as
+  German against the other languages, and German lyrics are Swiss German when
+  enough of their German hits are words or spellings Standard German does not have
+  (`isch`, `nöd`, `guet`, `ziit`, `gsi`, …).
 - The detected language is **derived on the device and not synced** (like
   `songs.chordpro_problems`); it is computed again when the text changes.
 - **By hand:** whoever may edit the song sets the language (`songs.language`, synced);
@@ -237,6 +240,11 @@ the API directly as the refused roles (permission matrix test).
   were versions of one work among the copied songs under a new group, as an
   archive import does; never with songs already in the target, and a single
   copied version stays unlinked (#878).
+- 2026-11-23: Swiss German is detected (#1033): the owner's library had nearly all
+  Swiss German songs detected as German. A list of Swiss German words and spellings
+  (`üe`, doubled `i`, `u` or `ö`, `g` before a consonant at the start) counts as
+  German against the other languages; German lyrics with at least 3 such hits and
+  20 % of their German hits are Swiss German. Schema 39 detects every song again.
 
 ## Open points
 

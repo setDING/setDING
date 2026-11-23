@@ -55,9 +55,36 @@ const _words = <String, Set<String>>{
   },
 };
 
-/// Languages [detectLanguage] can recognise; Swiss German and *other* are
-/// only set by hand.
-final detectableLanguages = _words.keys.toList();
+/// Words of Swiss German (`gsw`) that Standard German does not have. Swiss
+/// German lyrics also use many Standard German words (`und`, `du`, `wenn`,
+/// …), so these words only decide between the two once the lyrics are
+/// German at all. Words that are Standard German too (`weiss`, `seit`,
+/// `hei` of `hei-lig`, …) are left out.
+const _swissWords = {
+  'isch', 'bisch', 'esch', 'hesch', 'häsch', 'gisch', 'chasch', 'weisch', //
+  'machsch', 'liebsch', 'wotsch', 'seisch', 'muesch', 'wirsch', 'chunsch',
+  'bruchsch', 'gsehsch', 'regiersch', 'nöd', 'nid', 'nüt', 'nüme', 'nümme',
+  'öppis', 'öpper', 'niemer', 'meh', 'mee', 'scho', 'eifach', 'elei', 'zäme',
+  'hüt', 'gä', 'gäh', 'chunnt', 'chunt', 'chumm', 'chum', 'cha', 'chan',
+  'chind', 'chraft', 'chli', 'vo', 'uf', 'zue', 'guet', 'muet', 'bluet',
+  'gnueg', 'güeti', 'dini', 'mini', 'sini', 'dinre', 'minre', 'mim', 'dim',
+  'sim', 'eusi', 'üsi', 'üse', 'üses', 'üsem', 'euse', 'eui', 'eues', 'öis',
+  'öise', 'öisi', 'oisi', 'üs', 'eus', 'läbe', 'liebi', 'härz', 'wält',
+  'ändi', 'liecht', 'sunne', 'ohni', 'wäg', 'alli', 'alls', 'ganzi', 'jedi',
+  'ewigi', 'kei', 'keis', 'hend', 'händ', 'hän', 'han', 'git', 'gits', 'gaht',
+  'goht', 'stoh', 'stah', 'staht', 'wott', 'wüsse', 'mues', 'söll', 'wänn',
+  'dänn', 'jetz', 'itz', 'nomal', 'nomol', 'emal', 'ume', 'fescht', 'geischt',
+  'treit', 'bi', 'wil', 'au', 'gäge', 'lut', 'geit', 'wärk',
+  'troue', 'tröie', 'starch', 'starche', 'wei', 'gliich', 'lönd',
+};
+
+/// Spellings of Swiss German that Standard German does not have: `üe`, a
+/// doubled `i`, `u` or `ö` (`guet`, `ziit`, `Huus`, `ghööre`), and a `g`
+/// before another consonant at the start (`gsi`, `gmacht`, `gfunde`).
+final _swissSpelling = RegExp(r'üe|ii|uu|öö|^g[smfwz]');
+
+/// Languages [detectLanguage] can recognise; *other* is only set by hand.
+final detectableLanguages = [..._words.keys, 'gsw'];
 
 /// Hits the most frequent language needs at least.
 const _minHits = 5;
@@ -68,18 +95,33 @@ const _minShare = 0.12;
 /// How far the most frequent language must be ahead of the second.
 const _minLead = 1.5;
 
+/// Swiss German words German lyrics need at least to be Swiss German.
+const _minSwissHits = 3;
+
+/// Share of the German hits (Standard and Swiss German words together) the
+/// Swiss German words must reach.
+const _minSwissShare = 0.2;
+
 final _word = RegExp(r"[\p{L}]+", unicode: true);
 
 /// The language of [text] (lyrics without chords), a code of
 /// [detectableLanguages], or null when it is unclear: too few words, or
 /// no language clearly ahead of the others. Better none than a wrong one.
+///
+/// Swiss German counts as German against the other languages; German
+/// lyrics are Swiss German when enough of their German words are Swiss
+/// German ones.
 String? detectLanguage(String? text) {
   if (text == null || text.isEmpty) return null;
   final counts = {for (final l in _words.keys) l: 0};
-  var total = 0;
+  var total = 0, swiss = 0;
   for (final m in _word.allMatches(text.toLowerCase())) {
     total++;
     final w = m.group(0)!;
+    if (_swissWords.contains(w) || _swissSpelling.hasMatch(w)) {
+      swiss++;
+      counts['de'] = counts['de']! + 1;
+    }
     for (final MapEntry(key: language, value: words) in _words.entries) {
       if (words.contains(w)) counts[language] = counts[language]! + 1;
     }
@@ -90,5 +132,10 @@ String? detectLanguage(String? text) {
   if (best.value < _minHits) return null;
   if (best.value < total * _minShare) return null;
   if (best.value < second.value * _minLead) return null;
+  if (best.key == 'de' &&
+      swiss >= _minSwissHits &&
+      swiss >= best.value * _minSwissShare) {
+    return 'gsw';
+  }
   return best.key;
 }
