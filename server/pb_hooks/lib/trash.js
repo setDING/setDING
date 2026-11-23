@@ -104,7 +104,10 @@ function purgeTrash(app) {
     for (const record of records) {
       // A song's attachments first, so they are counted here; saving the
       // purged song finds none left (trash.pb.js).
-      if (name === "songs") purged += purgeAttachmentsOf(app, record);
+      if (name === "songs") {
+        purged += purgeAttachmentsOf(app, record);
+        purgeReportsOf(app, record);
+      }
       record.set("purged", true);
       clearContent(record);
       app.runInTransaction((txApp) => txApp.save(record));
@@ -133,6 +136,30 @@ function purgeAttachmentsOf(app, song) {
     }
     record.set("purged", true);
     record.set("file", "");
+    app.runInTransaction((txApp) => txApp.save(record));
+  }
+  return records.length;
+}
+
+/// Mistake reports of a purged song (ADR-0060): they stay as tombstones
+/// (`deleted`, `purged`) without their text, location and screenshot, so
+/// devices learn about them.
+function purgeReportsOf(app, song) {
+  const records = app.findRecordsByFilter(
+    "song_reports",
+    "song = {:song} && purged = false",
+    "",
+    0,
+    0,
+    { song: song.id },
+  );
+  for (const record of records) {
+    record.set("deleted", true);
+    record.set("purged", true);
+    record.set("comment", "");
+    record.set("resolution", "");
+    record.set("location", null);
+    record.set("screenshot", "");
     app.runInTransaction((txApp) => txApp.save(record));
   }
   return records.length;
@@ -190,4 +217,4 @@ function purgeOrganizationNow(app, id) {
   return 1;
 }
 
-module.exports = { RETENTION_DAYS, handleTrashRequest, purgeTrash, purgeNow, purgeAttachmentsOf };
+module.exports = { RETENTION_DAYS, handleTrashRequest, purgeTrash, purgeNow, purgeAttachmentsOf, purgeReportsOf };

@@ -15,13 +15,17 @@ onRecordUpdateRequest((e) => {
   e.next();
 }, "songs", "setlists", "attachments");
 
-// A song purged by a user (#866) takes its attachments with it, as the
+// A song purged by a user (#866) takes its attachments and mistake reports
+// (ADR-0060) with it, as the
 // daily purge does, in the same transaction and before the response (code
 // after `e.next()` of a request hook runs once the response is sent).
 onRecordUpdateExecute((e) => {
   const purging = e.record.getBool("purged") && !e.record.original().getBool("purged");
   e.next();
-  if (purging) require(`${__hooks}/lib/trash.js`).purgeAttachmentsOf(e.app, e.record);
+  if (!purging) return;
+  const trash = require(`${__hooks}/lib/trash.js`);
+  trash.purgeAttachmentsOf(e.app, e.record);
+  trash.purgeReportsOf(e.app, e.record);
 }, "songs");
 
 cronAdd("setding_trash_purge", "17 3 * * *", () => {

@@ -22,9 +22,9 @@ function requestUserId(e) {
 
 /// Handles a create or update request of a synced record: records the author
 /// and runs the save in a transaction (see nextRevision).
-/// A change of only the language version group or the language of a song
-/// keeps the last editor (ADR-0053): linking a band leader's own song does
-/// not take it from them (ADR-0023).
+/// A change of only the language version group, the language or the review
+/// status of a song keeps the last editor (ADR-0053, ADR-0060): linking or
+/// approving a band leader's own song does not take it from them (ADR-0023).
 function handleWriteRequest(e) {
   const linkOnly =
     e.record.collection().name === "songs" &&

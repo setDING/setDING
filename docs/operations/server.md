@@ -317,6 +317,7 @@ remove one deleted band at once (abuse, a deletion request), a superuser sends
 Closed organizations (ADR-0044) are in the trash too. After 30 days the purge
 **deletes everything of them for good**: bands, sets, arrangements, songs with their
 attachment files, everybody's personal adjustments and annotations for its songs,
+the mistake reports with their screenshots (ADR-0060),
 invitations and the memberships with names and roles. Only a tombstone of the
 organization without its name stays (`purged`); user accounts stay. A superuser
 closing an organization in the admin UI also only moves it to the trash; to purge one
