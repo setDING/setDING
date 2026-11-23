@@ -1,0 +1,76 @@
+---
+title: Screenshots
+description: "What setDING looks like: live mode, sets, lineup and songs."
+sidebar:
+  order: 3
+---
+
+import { Image } from 'astro:assets';
+import live from '../../../../../../docs/screenshots/live.png';
+import drums from '../../../../../../docs/screenshots/drums.png';
+import annotationsLive from '../../../../../../docs/screenshots/annotations_live.png';
+import liveMidi from '../../../../../../docs/screenshots/live_midi.png';
+import set from '../../../../../../docs/screenshots/set.png';
+import setLineup from '../../../../../../docs/screenshots/set_lineup.png';
+import overviewReadiness from '../../../../../../docs/screenshots/overview_readiness.png';
+import song from '../../../../../../docs/screenshots/song.png';
+import chordViewNashville from '../../../../../../docs/screenshots/chord_view_nashville.png';
+import editor from '../../../../../../docs/screenshots/editor.png';
+import lilypond from '../../../../../../docs/screenshots/lilypond.png';
+import songReports from '../../../../../../docs/screenshots/song_reports.png';
+
+This is what setDING looks like. Each heading leads to the page that explains the feature in detail.
+
+## On stage
+
+### [Live mode](/en/live/play/)
+
+<Image src={live} alt="Live mode: a song in three columns with chords, a personal note and chord diagrams" />
+
+### [Drums](/en/live/beat/)
+
+<Image src={drums} alt="Live mode for drums: on the left the tempo, beat display and the set, on the right the parts of the song with lyric cues and drum notes" />
+
+### [Freehand notes](/en/live/annotations/)
+
+<Image src={annotationsLive} alt="The annotations while playing, with the control bar below: the eye shows or hides them, the pen starts drawing" />
+
+### [Keyboard over MIDI](/en/live/keyboard/)
+
+<Image src={liveMidi} alt="Live mode with the control bar: the keyboard program icon and, at the bottom right, the icon of the connected keyboard" />
+
+## Sets and band
+
+### [A set](/en/sets/create/)
+
+<Image src={set} alt="A set with two songs, their keys, and a break" />
+
+### [Lineup and substitutes](/en/sets/lineup/)
+
+<Image src={setLineup} alt="A set with the line Lineup: Anna, Beat, Carla (Substitute)" />
+
+### [Ready to play](/en/start/overview/)
+
+<Image src={overviewReadiness} alt="Ready to play with details: musician, MIDI keyboard not connected, next set available offline and the page turner" />
+
+## Songs
+
+### [Personal adjustments](/en/songs/personal/)
+
+<Image src={song} alt="A song with controls for key, capo, font size, Nashville numbers and a personal note" />
+
+### [Nashville numbers](/en/songs/chord-views/)
+
+<Image src={chordViewNashville} alt="The same song with Nashville numbers: 1maj7, 6m7, 2m7, 57" />
+
+### [ChordPro editor](/en/songs/editor/)
+
+<Image src={editor} alt="The ChordPro editor with insert menus, syntax highlighting and a live preview" />
+
+### [Sheet music](/en/songs/notation/)
+
+<Image src={lilypond} alt="A song with a Lilypond melody: notes in G major and 3/4 with an upbeat, chord names above, lyrics below, a repeat with first and second ending" />
+
+### [Report a mistake](/en/songs/review/)
+
+<Image src={songReports} alt="The mistake reports of a song, one open and one resolved" />

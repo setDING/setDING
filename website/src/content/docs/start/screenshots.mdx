@@ -1,0 +1,76 @@
+---
+title: Screenshots
+description: "So sieht setDING aus: Live-Modus, Sets, Besetzung und Songs."
+sidebar:
+  order: 3
+---
+
+import { Image } from 'astro:assets';
+import live from '../../../../../docs/screenshots/live_de.png';
+import drums from '../../../../../docs/screenshots/drums_de.png';
+import annotationsLive from '../../../../../docs/screenshots/annotations_live_de.png';
+import liveMidi from '../../../../../docs/screenshots/live_midi_de.png';
+import set from '../../../../../docs/screenshots/set_de.png';
+import setLineup from '../../../../../docs/screenshots/set_lineup_de.png';
+import overviewReadiness from '../../../../../docs/screenshots/overview_readiness_de.png';
+import song from '../../../../../docs/screenshots/song_de.png';
+import chordViewNashville from '../../../../../docs/screenshots/chord_view_nashville_de.png';
+import editor from '../../../../../docs/screenshots/editor_de.png';
+import lilypond from '../../../../../docs/screenshots/lilypond_de.png';
+import songReports from '../../../../../docs/screenshots/song_reports_de.png';
+
+So sieht setDING aus. Jede Überschrift führt zur Seite, die die Funktion genauer erklärt.
+
+## Auf der Bühne
+
+### [Live-Modus](/live/play/)
+
+<Image src={live} alt="Live-Modus: ein Song in drei Spalten mit Akkorden, einer persönlichen Notiz und Griffbildern" />
+
+### [Schlagzeug](/live/beat/)
+
+<Image src={drums} alt="Live-Modus mit Schlagzeug: links Tempo, Taktanzeige und das Set, rechts die Teile des Songs mit Stichworten aus dem Liedtext und Schlagzeug-Notizen" />
+
+### [Freihand-Notizen](/live/annotations/)
+
+<Image src={annotationsLive} alt="Die Notizen beim Spielen, unten die Steuerleiste mit dem Auge zum Ein- und Ausblenden und dem Stift zum Zeichnen" />
+
+### [Keyboard per MIDI](/live/keyboard/)
+
+<Image src={liveMidi} alt="Der Live-Modus mit der Steuerleiste: das Symbol «Keyboard-Programm» und unten rechts das Symbol des verbundenen Keyboards" />
+
+## Sets und Band
+
+### [Ein Set](/sets/create/)
+
+<Image src={set} alt="Ein Set mit zwei Songs, ihren Tonarten, und einer Pause" />
+
+### [Besetzung und Aushilfen](/sets/lineup/)
+
+<Image src={setLineup} alt="Ein Set mit der Zeile Besetzung: Anna, Beat, Carla (Aushilfe)" />
+
+### [Bühnencheck](/start/overview/)
+
+<Image src={overviewReadiness} alt="Der Bühnencheck mit Details: Musiker, MIDI-Keyboard nicht verbunden, nächstes Set offline verfügbar und der Seitenwender" />
+
+## Songs
+
+### [Persönliche Anpassungen](/songs/personal/)
+
+<Image src={song} alt="Ein Song mit Einstellungen für Tonart, Kapodaster, Schriftgrösse, Nashville-Zahlen und einer persönlichen Notiz" />
+
+### [Nashville-Zahlen](/songs/chord-views/)
+
+<Image src={chordViewNashville} alt="Derselbe Song mit Nashville-Zahlen: 1maj7, 6m7, 2m7, 57" />
+
+### [ChordPro-Editor](/songs/editor/)
+
+<Image src={editor} alt="Der ChordPro-Editor mit Einfügemenüs, Syntaxhervorhebung und Live-Vorschau" />
+
+### [Noten](/songs/notation/)
+
+<Image src={lilypond} alt="Ein Song mit einer Lilypond-Melodie: Noten in G-Dur und 3/4 mit Auftakt, Akkordnamen darüber, Liedtext darunter, eine Wiederholung mit erstem und zweitem Schluss" />
+
+### [Fehler melden](/songs/review/)
+
+<Image src={songReports} alt="Die Fehlermeldungen eines Songs mit einer offenen und einer erledigten Meldung" />

@@ -19,10 +19,6 @@ hero:
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import { Image } from 'astro:assets';
 import live from '../../../../docs/screenshots/live_de.png';
-import set from '../../../../docs/screenshots/set_de.png';
-import song from '../../../../docs/screenshots/song_de.png';
-import editor from '../../../../docs/screenshots/editor_de.png';
-import drums from '../../../../docs/screenshots/drums_de.png';
 import lineup from '../../../../docs/screenshots/set_lineup_de.png';
 
 <Image src={live} alt="Live-Modus: ein Song in drei Spalten mit Akkorden, einer persönlichen Notiz und Griffbildern" />
@@ -73,29 +69,6 @@ import lineup from '../../../../docs/screenshots/set_lineup_de.png';
   </Card>
 </CardGrid>
 
-## Endlich auch für das Schlagzeug
-
-Akkord-Apps denken an Gitarre, Keyboard und Gesang. setDING hat einen eigenen
-Live-Modus für das Schlagzeug: Statt des Akkordblatts zeigt die
-**Song-Landkarte** die Teile des Songs im Ablauf der Band, jeweils mit einem
-Stichwort aus dem Liedtext und deinen Schlagzeug-Notizen. Daneben stehen Tempo und
-Taktart gross, die Schläge leuchten mit, und das ganze Set ist einen Tipp entfernt.
-
-- **Einzählen und Klick** – ein oder zwei Takte Einzählen und ein Klick, der vom
-  Audio-Ausgang getaktet wird, nicht von einem Timer. Mit gemessener Verzögerung
-  auch für Bluetooth-In-Ears.
-- **Hände am Set** – Takt starten mit dem Fusspedal (lange drücken) oder
-  automatisch bei jedem Song; der Bildschirmrand blinkt im Takt.
-- **Tempo auf der Bühne** – schneller, langsamer oder antippen, nur für heute
-  Abend.
-- **Ungerade Taktarten** – 6/8 im gefühlten Puls, 7/8 als 2+2+3 betont.
-- **Notizen nur für dich** – `{comment-drums: …}` sieht nur, wer Schlagzeug spielt.
-
-<Image src={drums} alt="Live-Modus mit Schlagzeug: links Tempo, Taktanzeige und das Set, rechts die Teile des Songs mit Stichworten aus dem Liedtext und Schlagzeug-Notizen" />
-
-Mehr dazu: [Takt, Klick und Schlagzeug](/live/beat/) und
-[ChordPro-Syntax](/songs/chordpro/#songs-für-schlagzeug).
-
 ## Gemacht für Bands, nicht für Einzelne
 
 Viele Akkord-Apps sind ein persönliches Liederbuch, das man mit anderen teilt.
@@ -120,15 +93,6 @@ Mehr dazu: [Besetzung und Aushilfen](/sets/lineup/),
 [Tonart und Ablauf](/sets/key-and-sequence/) und
 [Songs prüfen und Fehler melden](/songs/review/).
 
-## So sieht es aus
-
-<CardGrid>
-  <Image src={set} alt="Ein Set mit zwei Songs, ihren Tonarten, und einer Pause" />
-  <Image src={song} alt="Ein Song mit Einstellungen für Tonart, Kapodaster, Schriftgrösse, Nashville-Zahlen und einer persönlichen Notiz" />
-</CardGrid>
-
-<Image src={editor} alt="Der ChordPro-Editor mit Einfügemenüs, Syntaxhervorhebung und Live-Vorschau" />
-
 ## Loslegen
 
 setDING gibt es für Android, Windows und Linux; iOS folgt später.
@@ -136,4 +100,5 @@ setDING gibt es für Android, Windows und Linux; iOS folgt später.
 <CardGrid>
   <LinkCard title="Erste Schritte" href="/start/overview/" description="Organisation, Band, Set und Song – und wie du einer Band beitrittst." />
   <LinkCard title="Installation" href="/start/install/" description="setDING auf Android, Windows und Linux installieren." />
+  <LinkCard title="Screenshots" href="/start/screenshots/" description="So sieht setDING aus: Live-Modus, Sets, Besetzung und Songs." />
 </CardGrid>

@@ -19,10 +19,6 @@ hero:
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import { Image } from 'astro:assets';
 import live from '../../../../../docs/screenshots/live.png';
-import set from '../../../../../docs/screenshots/set.png';
-import song from '../../../../../docs/screenshots/song.png';
-import editor from '../../../../../docs/screenshots/editor.png';
-import drums from '../../../../../docs/screenshots/drums.png';
 import lineup from '../../../../../docs/screenshots/set_lineup.png';
 
 <Image src={live} alt="Live mode: a song in three columns with chords, a personal note and chord diagrams" />
@@ -71,27 +67,6 @@ import lineup from '../../../../../docs/screenshots/set_lineup.png';
   </Card>
 </CardGrid>
 
-## Finally, something for the drummer
-
-Chord apps think of guitar, keys and vocals. setDING has a live mode of its own for
-drums: instead of the chord sheet, the **song map** shows the parts of the song in
-the band's sequence, each with a cue from the lyrics and your drum notes. Beside it,
-the tempo and time signature in large type, the beats lighting up, and the whole set
-one tap away.
-
-- **Count-in and click** – one or two bars of count-in and a click timed by the
-  audio output, not by a timer. With a measured delay, Bluetooth in-ears work too.
-- **Hands on the kit** – start the beat with the foot pedal (long press) or
-  automatically for every song; the edge of the screen flashes on the beat.
-- **Tempo on stage** – faster, slower or tap tempo, just for tonight.
-- **Odd meters** – 6/8 in the felt pulse, 7/8 accented as 2+2+3.
-- **Notes just for you** – only those who play drums see `{comment-drums: …}`.
-
-<Image src={drums} alt="Live mode for drums: on the left the tempo, beat display and the set, on the right the parts of the song with lyric cues and drum notes" />
-
-More: [Beat, click and drums](/en/live/beat/) and
-[ChordPro syntax](/en/songs/chordpro/#songs-for-drums).
-
 ## Made for bands, not just for one player
 
 Many chord apps are a personal songbook you can share. setDING thinks of the whole
@@ -115,15 +90,6 @@ More: [Lineup and substitutes](/en/sets/lineup/),
 [Key and sequence](/en/sets/key-and-sequence/) and
 [Checking songs and reporting mistakes](/en/songs/review/).
 
-## Take a look
-
-<CardGrid>
-  <Image src={set} alt="A set with two songs, their keys, and a break" />
-  <Image src={song} alt="A song with controls for key, capo, font size, Nashville numbers and a personal note" />
-</CardGrid>
-
-<Image src={editor} alt="The ChordPro editor with insert menus, syntax highlighting and a live preview" />
-
 ## Get started
 
 setDING runs on Android, Windows and Linux; iOS follows later.
@@ -131,4 +97,5 @@ setDING runs on Android, Windows and Linux; iOS follows later.
 <CardGrid>
   <LinkCard title="First steps" href="/en/start/overview/" description="Organization, band, set and song – and how to join a band." />
   <LinkCard title="Installation" href="/en/start/install/" description="Install setDING on Android, Windows and Linux." />
+  <LinkCard title="Screenshots" href="/en/start/screenshots/" description="What setDING looks like: live mode, sets, lineup and songs." />
 </CardGrid>
