@@ -252,6 +252,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get exported => 'Exportado';
 
   @override
+  String get fileSaved => 'Guardado';
+
+  @override
   String get exportedOpen => 'Abrir';
 
   @override

@@ -252,6 +252,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get exported => 'Esportato';
 
   @override
+  String get fileSaved => 'Salvato';
+
+  @override
   String get exportedOpen => 'Apri';
 
   @override

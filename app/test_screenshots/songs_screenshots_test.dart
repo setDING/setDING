@@ -305,6 +305,46 @@ void main() {
     });
   }
 
+  // The attachment menu with Save (#1025).
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('song attachment menu $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      final (song, horns) = (await tester.runAsync(() async {
+        final id = await app.songs.createSong(source: demoSongSource);
+        final horns = await app.songs.addAttachment(
+          id,
+          name: lang == 'de' ? 'Bläser' : 'Horns',
+          bytes: Uint8List(184320),
+          pages: 2,
+        );
+        await app.songs.addAttachment(
+          id,
+          name: 'Piano',
+          bytes: Uint8List(262144),
+          pages: 3,
+        );
+        return (id, horns);
+      }))!;
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: SongScreen(songId: song)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('open-attachments')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(ValueKey('attachment-menu-$horns')));
+      await tester.pumpAndSettle();
+      expect(find.text(lang == 'de' ? 'Speichern' : 'Save'), findsOneWidget);
+      await shot(tester, '${lang}_55_song_attachment_menu');
+      await app.dispose(tester);
+    });
+  }
+
   // The offer to copy the adjustments of another language version
   // (ADR-0053, #808).
   for (final (lang, dark) in [('de', false), ('en', true)]) {

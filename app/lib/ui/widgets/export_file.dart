@@ -31,8 +31,9 @@ final openFileProvider = Provider<OpenFile>((ref) => openFileInDefaultApp);
 
 /// Exports a file: builds its content with [build], saves it as [fileName]
 /// through [saveFileProvider] and says "Exported". With [openable], the
-/// message offers "Open" (#721, ADR-0048). A failure is shown as a
-/// message. Returns whether the file was saved.
+/// message offers "Open" (#721, ADR-0048); [doneMessage] replaces
+/// "Exported". A failure is shown as a message. Returns whether the file
+/// was saved.
 Future<bool> exportFile(
   BuildContext context,
   WidgetRef ref, {
@@ -40,8 +41,10 @@ Future<bool> exportFile(
   required String mimeType,
   required Future<Uint8List> Function() build,
   bool openable = false,
+  String? doneMessage,
 }) async {
   final l10n = AppLocalizations.of(context);
+  final done = doneMessage ?? l10n.exported;
   final save = ref.read(saveFileProvider);
   final open = ref.read(openFileProvider);
   try {
@@ -49,14 +52,14 @@ Future<bool> exportFile(
     final saved = await save(fileName, bytes, mimeType: mimeType);
     if (!saved || !context.mounted) return saved;
     if (!openable) {
-      showMessage(context, l10n.exported);
+      showMessage(context, done);
       return true;
     }
     // Taken now: the message may outlive the screen that exported.
     final messenger = ScaffoldMessenger.of(context);
     showMessageWithAction(
       context,
-      l10n.exported,
+      done,
       actionLabel: l10n.exportedOpen,
       onAction: () async {
         final opened = await open(fileName, bytes, mimeType: mimeType);

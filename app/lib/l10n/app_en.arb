@@ -67,6 +67,10 @@
   "liveViewChordPro": "ChordPro text",
   "exportSong": "Export",
   "exported": "Exported",
+  "fileSaved": "Saved",
+  "@fileSaved": {
+    "description": "Message after an attachment was saved as a file."
+  },
   "exportedOpen": "Open",
   "@exportedOpen": {
     "description": "Action in the message after a PDF export: opens the PDF in the default app."

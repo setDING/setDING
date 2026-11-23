@@ -67,6 +67,7 @@
   "liveViewChordPro": "Testo ChordPro",
   "exportSong": "Esporta",
   "exported": "Esportato",
+  "fileSaved": "Salvato",
   "exportedOpen": "Apri",
   "openFileFailed": "Nessuna app ha potuto aprire il file.",
   "playLive": "Suona live",

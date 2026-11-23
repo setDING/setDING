@@ -44,6 +44,7 @@ import 'review_banner.dart';
 import 'song_reports.dart';
 import 'song_attention.dart' show songReportedIcon, songToReviewIcon;
 import 'image_attachment_view.dart';
+import 'save_attachment.dart';
 import 'midi_program_field.dart';
 import 'band_arrangement_panel.dart';
 import 'play_history_panel.dart';
@@ -328,6 +329,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
           onOpen: (a) => isPdfFile(a.fileName)
               ? LiveScreen.openSong(context, song.id, attachmentId: a.id)
               : showImageAttachment(context, a),
+          onSave: (a) => saveAttachment(context, ref, a, songTitle: song.title),
         );
 
         void transpose(int delta) => _updateOverlay(
@@ -1262,6 +1264,7 @@ class _AttachmentsCard extends ConsumerWidget {
     required this.onAdd,
     required this.onLiveView,
     required this.onOpen,
+    required this.onSave,
     this.canRename = true,
     this.canDelete = true,
   });
@@ -1279,6 +1282,9 @@ class _AttachmentsCard extends ConsumerWidget {
 
   /// Shows an attachment without changing the live view choice (#507).
   final void Function(AttachmentEntry attachment) onOpen;
+
+  /// Saves an attachment as a file, for everyone who sees it (#1025).
+  final void Function(AttachmentEntry attachment) onSave;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1402,17 +1408,19 @@ class _AttachmentsCard extends ConsumerWidget {
           icon: const Icon(Icons.visibility_outlined),
           onPressed: () => onOpen(a),
         ),
-        ?menu,
+        menu,
       ],
     );
   }
 
-  Widget? _menu(BuildContext context, SongRepository repo, AttachmentEntry a) {
+  Widget _menu(BuildContext context, SongRepository repo, AttachmentEntry a) {
     final l10n = AppLocalizations.of(context);
-    if (!canRename && !canDelete) return null;
     return PopupMenuButton<String>(
+      key: ValueKey('attachment-menu-${a.id}'),
       onSelected: (value) async {
-        if (value == 'rename') {
+        if (value == 'save') {
+          onSave(a);
+        } else if (value == 'rename') {
           final name = await askText(
             context,
             title: l10n.rename,
@@ -1434,6 +1442,11 @@ class _AttachmentsCard extends ConsumerWidget {
         }
       },
       itemBuilder: (_) => [
+        MenuAction(
+          value: 'save',
+          icon: Icons.download_outlined,
+          label: l10n.save,
+        ),
         if (canRename)
           MenuAction(
             value: 'rename',
