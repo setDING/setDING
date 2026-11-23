@@ -40,7 +40,7 @@ class SettingsSections extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             for (final (i, section) in sections.indexed) ...[
-              if (i > 0) const Divider(height: _dividerHeight),
+              if (i > 0) const Divider(height: settingsDividerHeight),
               section,
             ],
           ],
@@ -65,7 +65,8 @@ class SettingsSections extends StatelessWidget {
   );
 }
 
-const _dividerHeight = 24.0;
+/// Height of the divider between two sections.
+const settingsDividerHeight = 24.0;
 const _columnGap = 16.0;
 
 /// Lays its children out in two columns of equal width, the first ones on
@@ -127,7 +128,7 @@ class _RenderTwoColumns extends RenderBox
             .size
             .height,
     ];
-    final split = twoColumnSplit(heights, _dividerHeight);
+    final split = twoColumnSplit(heights, settingsDividerHeight);
     _dividers.clear();
     var height = 0.0;
     for (final (column, range) in [
@@ -138,8 +139,8 @@ class _RenderTwoColumns extends RenderBox
       var y = 0.0;
       for (var i = range.$1; i < range.$2; i++) {
         if (i > range.$1) {
-          _dividers.add(Offset(x, y + _dividerHeight / 2));
-          y += _dividerHeight;
+          _dividers.add(Offset(x, y + settingsDividerHeight / 2));
+          y += settingsDividerHeight;
         }
         (children[i].parentData! as _TwoColumnsParentData).offset = Offset(
           x,

@@ -215,9 +215,6 @@ class _PresetChips extends ConsumerWidget {
 class SongDisplaySettings extends ConsumerWidget {
   const SongDisplaySettings({super.key});
 
-  /// Height of the preview in the settings.
-  static const previewHeight = 360.0;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
@@ -261,15 +258,34 @@ class SongDisplaySettings extends ConsumerWidget {
           ),
         ],
       ),
-      // The preview has its own heading, in the style of a section.
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: SizedBox(
-          height: previewHeight,
-          child: SongDisplayPreview(display: display),
-        ),
-      ),
     ]);
+  }
+}
+
+/// The preview below the song display settings, filling the rest of the
+/// page and at least [minHeight] high (#1040); it has its own heading, in
+/// the style of a section.
+class SongDisplayPreviewSection extends ConsumerWidget {
+  const SongDisplayPreviewSection({super.key});
+
+  /// Height of the preview including its divider, when the page is short.
+  static const minHeight = 400.0;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final display = ref.watch(settingsProvider.select((s) => s.songDisplay));
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Divider(height: settingsDividerHeight),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SongDisplayPreview(display: display),
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -293,11 +309,43 @@ class SongDisplayEditorScreen extends ConsumerStatefulWidget {
 
 class _SongDisplayEditorState extends ConsumerState<SongDisplayEditorScreen> {
   SectionRole _role = SectionRole.standard;
+  final _controlsScroll = ScrollController();
+  final _sectionChips = GlobalKey();
 
   /// Height of the pinned preview on narrow screens; null = 40 %.
   double? _previewHeight;
 
   void _set(SongDisplay display) => _setDisplay(ref, display);
+
+  @override
+  void dispose() {
+    _controlsScroll.dispose();
+    super.dispose();
+  }
+
+  /// Selects [role] tapped in the preview and brings its chips into view.
+  void _selectFromPreview(SectionRole role) {
+    setState(() => _role = role);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_controlsScroll.hasClients) return;
+      final chips = _sectionChips.currentContext;
+      if (chips != null) {
+        Scrollable.ensureVisible(
+          chips,
+          duration: shortAnimation,
+          curve: Curves.easeOut,
+          alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtStart,
+        );
+      } else {
+        // Scrolled far down: the chips are not built, but near the top.
+        _controlsScroll.animateTo(
+          0,
+          duration: shortAnimation,
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -313,6 +361,7 @@ class _SongDisplayEditorState extends ConsumerState<SongDisplayEditorScreen> {
 
     final controls = ListView(
       key: const Key('song-display-controls'),
+      controller: _controlsScroll,
       padding: const EdgeInsets.only(bottom: 32),
       children: [
         SectionHeader(l10n.songDisplayPreset),
@@ -321,6 +370,7 @@ class _SongDisplayEditorState extends ConsumerState<SongDisplayEditorScreen> {
         _FontChoice(display: display),
         SectionHeader(l10n.songDisplaySection),
         Padding(
+          key: _sectionChips,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Wrap(
             spacing: 8,
@@ -507,7 +557,11 @@ class _SongDisplayEditorState extends ConsumerState<SongDisplayEditorScreen> {
         ],
       ],
     );
-    final preview = SongDisplayPreview(display: display, role: _role);
+    final preview = SongDisplayPreview(
+      display: display,
+      role: _role,
+      onRoleTap: _selectFromPreview,
+    );
     return Scaffold(
       appBar: AppBar(title: Text(l10n.songDisplayEditorTitle)),
       body: LayoutBuilder(
@@ -590,15 +644,23 @@ String _chain(AppLocalizations l10n, SongDisplay display, SectionRole role) {
 
 /// The preview: the demo song or a song from the library (chosen per
 /// device), in the live appearance of this device and in [display]. When
-/// [role] changes, it scrolls to the first section of that type.
+/// [role] changes, it scrolls to the first section of that type and frames
+/// the sections of that type; with [onRoleTap], tapping a section selects
+/// its type (#1040).
 class SongDisplayPreview extends ConsumerStatefulWidget {
-  const SongDisplayPreview({super.key, required this.display, this.role});
+  const SongDisplayPreview({
+    super.key,
+    required this.display,
+    this.role,
+    this.onRoleTap,
+  });
 
   /// From this width on, the preview shows the song in two columns.
   static const twoColumnWidth = 520.0;
 
   final SongDisplay display;
   final SectionRole? role;
+  final ValueChanged<SectionRole>? onRoleTap;
 
   @override
   ConsumerState<SongDisplayPreview> createState() => _SongDisplayPreviewState();
@@ -609,11 +671,22 @@ class _SongDisplayPreviewState extends ConsumerState<SongDisplayPreview> {
   final _body = GlobalKey();
   List<SongBlock> _blocks = const [];
 
+  /// The role just tapped: the tapped section is in view, so selecting it
+  /// does not scroll to the first section of its type.
+  SectionRole? _tapped;
+
+  void _onRoleTap(SectionRole role) {
+    _tapped = role;
+    widget.onRoleTap?.call(role);
+  }
+
   @override
   void didUpdateWidget(SongDisplayPreview old) {
     super.didUpdateWidget(old);
     final role = widget.role;
-    if (role != null && role != old.role) {
+    final tapped = _tapped;
+    _tapped = null;
+    if (role != null && role != old.role && role != tapped) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollTo(role));
     }
   }
@@ -766,6 +839,10 @@ class _SongDisplayPreviewState extends ConsumerState<SongDisplayPreview> {
                               ? 2
                               : 1,
                           display: widget.display,
+                          framedRole: widget.role,
+                          onRoleTap: widget.onRoleTap == null
+                              ? null
+                              : _onRoleTap,
                         ),
                       ),
                     ),
