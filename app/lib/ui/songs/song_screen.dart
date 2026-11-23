@@ -83,6 +83,9 @@ enum _Panel { band, played, personal, attachments, links, reports }
 
 class _SongScreenState extends ConsumerState<SongScreen> {
   final _scaffold = GlobalKey<ScaffoldState>();
+
+  /// What the person sees, for the screenshot of a report (ADR-0060).
+  final _view = GlobalKey();
   _Panel? _panel;
 
   void _open(_Panel panel) {
@@ -424,6 +427,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
               _Panel.reports => SongReportsPanel(
                 song: song,
                 canResolve: canEdit,
+                captureKey: _view,
               ),
               _Panel.attachments => SidePanel(
                 key: const Key('song-attachments'),
@@ -540,7 +544,12 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                     'title' => _editTitle(song),
                     'toReview' => setSongToReview(context, ref, song.id),
                     'approve' => approveSong(context, ref, song.id),
-                    'report' => reportMistake(context, ref, songId: song.id),
+                    'report' => reportMistake(
+                      context,
+                      ref,
+                      songId: song.id,
+                      captureKey: _view,
+                    ),
                     'language' => _chooseLanguage(song),
                     'linkVersion' => linkLanguageVersion(context, ref, song),
                     'unlinkVersion' => unlinkLanguageVersion(
@@ -633,74 +642,77 @@ class _SongScreenState extends ConsumerState<SongScreen> {
             ),
             // The song is fitted to the visible area below the app bar; the
             // header scrolls away above it.
-            body: LayoutBuilder(
-              builder: (context, constraints) => ListView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                children: [
-                  if (ref.watch(songConflictProvider(song.id)).value
-                      case final conflict?)
-                    ConflictBanner(conflict: conflict),
-                  ReviewBanner(
-                    song: song,
-                    canApprove: canEdit,
-                    onShowReports: () => _open(_Panel.reports),
-                  ),
-                  // The app bar shows the title (#268).
-                  SongHeader(
-                    title: song.title.isEmpty ? l10n.untitled : song.title,
-                    showTitle: false,
-                    artist: song.artist,
-                    song: parsed,
-                    formatter: formatter,
-                  ),
-                  LanguageVersionChips(song: song),
-                  AdjustmentOfferBanner(song: song, overlay: overlay),
-                  if (!parsed.hasContent) ...[
-                    const SizedBox(height: 12),
-                    attachmentsCard(inPanel: false),
-                  ],
-                  const SizedBox(height: 16),
-                  if (parsed.hasContent)
-                    _FittedSongBody(
-                      songId: song.id,
-                      source: song.chordproSource,
-                      song: songForDisplay(
-                        parsed,
-                        overlay.verseChords,
-                        stackedChoruses: overlay.stackedChoruses,
-                        repeatedChorusOnce: settings.repeatedChorusOnce,
-                      ),
-                      overlay: overlay,
-                      formatter: formatter,
-                      // The visible area without the list's padding.
-                      page: Size(
-                        constraints.maxWidth - 32,
-                        constraints.maxHeight - 40,
-                      ),
-                      attachments: attachments,
-                      imageLookup: (src) {
-                        final image = imageAttachmentFor(attachments, src);
-                        return image == null
-                            ? null
-                            : ref
-                                  .read(attachmentStorageProvider)
-                                  .file(image.fileName);
-                      },
-                    )
-                  else
-                    Card.outlined(
-                      child: ListTile(
-                        leading: const Icon(Icons.text_snippet_outlined),
-                        title: Text(l10n.noContent),
-                        trailing: !canEdit
-                            ? null
-                            : FilledButton.tonal(
-                                onPressed: () => _editSource(song),
-                                child: Text(l10n.addChordPro),
-                              ),
-                      ),
+            body: RepaintBoundary(
+              key: _view,
+              child: LayoutBuilder(
+                builder: (context, constraints) => ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                  children: [
+                    if (ref.watch(songConflictProvider(song.id)).value
+                        case final conflict?)
+                      ConflictBanner(conflict: conflict),
+                    ReviewBanner(
+                      song: song,
+                      canApprove: canEdit,
+                      onShowReports: () => _open(_Panel.reports),
                     ),
-                ],
+                    // The app bar shows the title (#268).
+                    SongHeader(
+                      title: song.title.isEmpty ? l10n.untitled : song.title,
+                      showTitle: false,
+                      artist: song.artist,
+                      song: parsed,
+                      formatter: formatter,
+                    ),
+                    LanguageVersionChips(song: song),
+                    AdjustmentOfferBanner(song: song, overlay: overlay),
+                    if (!parsed.hasContent) ...[
+                      const SizedBox(height: 12),
+                      attachmentsCard(inPanel: false),
+                    ],
+                    const SizedBox(height: 16),
+                    if (parsed.hasContent)
+                      _FittedSongBody(
+                        songId: song.id,
+                        source: song.chordproSource,
+                        song: songForDisplay(
+                          parsed,
+                          overlay.verseChords,
+                          stackedChoruses: overlay.stackedChoruses,
+                          repeatedChorusOnce: settings.repeatedChorusOnce,
+                        ),
+                        overlay: overlay,
+                        formatter: formatter,
+                        // The visible area without the list's padding.
+                        page: Size(
+                          constraints.maxWidth - 32,
+                          constraints.maxHeight - 40,
+                        ),
+                        attachments: attachments,
+                        imageLookup: (src) {
+                          final image = imageAttachmentFor(attachments, src);
+                          return image == null
+                              ? null
+                              : ref
+                                    .read(attachmentStorageProvider)
+                                    .file(image.fileName);
+                        },
+                      )
+                    else
+                      Card.outlined(
+                        child: ListTile(
+                          leading: const Icon(Icons.text_snippet_outlined),
+                          title: Text(l10n.noContent),
+                          trailing: !canEdit
+                              ? null
+                              : FilledButton.tonal(
+                                  onPressed: () => _editSource(song),
+                                  child: Text(l10n.addChordPro),
+                                ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),

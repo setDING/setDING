@@ -6256,4 +6256,28 @@ class AppLocalizationsPt extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get screenshotAdd => 'Anexar captura';
+
+  @override
+  String get screenshotRemove => 'Remover';
+
+  @override
+  String get screenshotMarkTitle => 'Marcar o local';
+
+  @override
+  String get screenshotMarkHint => 'Desenha na captura onde está o erro.';
+
+  @override
+  String get screenshotAttach => 'Anexar';
+
+  @override
+  String get screenshotShow => 'Ver a captura em tamanho real';
+
+  @override
+  String get screenshotLoading => 'A carregar a captura …';
+
+  @override
+  String get screenshotUnavailable => 'Captura indisponível (offline?)';
 }

@@ -6262,4 +6262,28 @@ class AppLocalizationsIt extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get screenshotAdd => 'Allega uno screenshot';
+
+  @override
+  String get screenshotRemove => 'Rimuovi';
+
+  @override
+  String get screenshotMarkTitle => 'Segna il punto';
+
+  @override
+  String get screenshotMarkHint => 'Disegna sullo screenshot dov’è l’errore.';
+
+  @override
+  String get screenshotAttach => 'Allega';
+
+  @override
+  String get screenshotShow => 'Mostra lo screenshot a grandezza piena';
+
+  @override
+  String get screenshotLoading => 'Caricamento dello screenshot …';
+
+  @override
+  String get screenshotUnavailable => 'Screenshot non disponibile (offline?)';
 }

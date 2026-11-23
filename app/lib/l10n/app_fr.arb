@@ -1554,5 +1554,13 @@
   "reportAnswer": "Clos : {answer}",
   "reportAnswered": "Ton signalement sur « {song} » a été clos : {answer}",
   "reportAnsweredNoText": "Ton signalement sur « {song} » a été clos.",
-  "reportsAnswered": "{count, plural, =1{1 de tes signalements a été clos.} other{{count} de tes signalements ont été clos.}}"
+  "reportsAnswered": "{count, plural, =1{1 de tes signalements a été clos.} other{{count} de tes signalements ont été clos.}}",
+  "screenshotAdd": "Joindre une capture",
+  "screenshotRemove": "Retirer",
+  "screenshotMarkTitle": "Marquer l’endroit",
+  "screenshotMarkHint": "Dessine sur la capture où se trouve l’erreur.",
+  "screenshotAttach": "Joindre",
+  "screenshotShow": "Afficher la capture en grand",
+  "screenshotLoading": "Chargement de la capture …",
+  "screenshotUnavailable": "Capture indisponible (hors ligne ?)"
 }

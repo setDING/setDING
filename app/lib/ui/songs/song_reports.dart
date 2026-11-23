@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/services.dart' show KeyDownEvent, KeyEvent;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,6 +17,7 @@ import '../overview/recent_changes.dart' show personNamesProvider;
 import '../widgets/dialogs.dart';
 import '../live/page_turner.dart' show isPageTurnKey;
 import '../widgets/side_panel.dart';
+import 'report_screenshot.dart';
 import 'song_attention.dart';
 
 /// Name of [category] in the person's language.
@@ -54,21 +57,35 @@ String? reportLocationText(
 /// Asks for a mistake report of [songId] (ADR-0060): category, comment
 /// and where in the song the person was ([location]). Stored on the device
 /// and synced later, so it works offline and does not stop a set in live
-/// mode. Returns whether a report was sent.
+/// mode. With [captureKey] (a [RepaintBoundary] around what the person
+/// sees), the sheet offers to attach a screenshot with own markings.
+/// Returns whether a report was sent.
 Future<bool> reportMistake(
   BuildContext context,
   WidgetRef ref, {
   required String songId,
   SongReportLocation? location,
+  GlobalKey? captureKey,
 }) async {
   final l10n = AppLocalizations.of(context);
   final messenger = ScaffoldMessenger.maybeOf(context);
-  final result = await showModalBottomSheet<_ReportDraft>(
-    context: context,
-    isScrollControlled: true,
-    showDragHandle: true,
-    builder: (context) => _ReportSheet(location: location),
-  );
+  // Taken before the sheet covers the view; attached only on request.
+  final view = captureKey == null ? null : await captureView(captureKey);
+  if (!context.mounted) {
+    view?.dispose();
+    return false;
+  }
+  final _ReportDraft? result;
+  try {
+    result = await showModalBottomSheet<_ReportDraft>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (context) => _ReportSheet(location: location, view: view),
+    );
+  } finally {
+    view?.dispose();
+  }
   if (result == null) return false;
   await ref
       .read(songReviewRepositoryProvider)
@@ -77,6 +94,8 @@ Future<bool> reportMistake(
         category: result.category,
         comment: result.comment,
         location: location,
+        screenshot: result.screenshot,
+        screenshotExtension: 'png',
       );
   showMessageOn(messenger, l10n.reportSent);
   // Outside live mode the report goes out at once (paused in live mode).
@@ -84,12 +103,20 @@ Future<bool> reportMistake(
   return true;
 }
 
-typedef _ReportDraft = ({SongReportCategory category, String comment});
+typedef _ReportDraft = ({
+  SongReportCategory category,
+  String comment,
+  Uint8List? screenshot,
+});
 
 class _ReportSheet extends StatefulWidget {
-  const _ReportSheet({this.location});
+  const _ReportSheet({this.location, this.view});
 
   final SongReportLocation? location;
+
+  /// What the person saw, to attach as a marked screenshot; null offers
+  /// none.
+  final ui.Image? view;
 
   @override
   State<_ReportSheet> createState() => _ReportSheetState();
@@ -97,6 +124,7 @@ class _ReportSheet extends StatefulWidget {
 
 class _ReportSheetState extends State<_ReportSheet> {
   SongReportCategory? _category;
+  Uint8List? _screenshot;
   final _comment = TextEditingController();
   final _commentFocus = FocusNode();
 
@@ -130,6 +158,7 @@ class _ReportSheetState extends State<_ReportSheet> {
     Navigator.pop<_ReportDraft>(context, (
       category: category,
       comment: _comment.text,
+      screenshot: _screenshot,
     ));
   }
 
@@ -190,6 +219,39 @@ class _ReportSheetState extends State<_ReportSheet> {
                 border: const OutlineInputBorder(),
               ),
             ),
+            if (widget.view case final view?) ...[
+              if (_screenshot case final shot?)
+                Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.memory(
+                        shot,
+                        key: const Key('report-screenshot-preview'),
+                        height: 72,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton(
+                      key: const Key('report-screenshot-remove'),
+                      onPressed: () => setState(() => _screenshot = null),
+                      child: Text(l10n.screenshotRemove),
+                    ),
+                  ],
+                )
+              else
+                OutlinedButton.icon(
+                  key: const Key('report-screenshot-add'),
+                  icon: const Icon(Icons.add_a_photo_outlined),
+                  label: Text(l10n.screenshotAdd),
+                  onPressed: () async {
+                    final marked = await markScreenshot(context, view);
+                    if (marked != null && mounted) {
+                      setState(() => _screenshot = marked);
+                    }
+                  },
+                ),
+            ],
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -223,9 +285,13 @@ class SongReportsPanel extends ConsumerWidget {
     super.key,
     required this.song,
     required this.canResolve,
+    this.captureKey,
   });
 
   final SongEntry song;
+
+  /// What the person sees, for a screenshot of a new report.
+  final GlobalKey? captureKey;
 
   /// The person may resolve reports (whoever may edit the song).
   final bool canResolve;
@@ -253,7 +319,12 @@ class SongReportsPanel extends ConsumerWidget {
           key: const Key('reports-add'),
           icon: const Icon(Icons.add),
           label: Text(l10n.reportMistake),
-          onPressed: () => reportMistake(context, ref, songId: song.id),
+          onPressed: () => reportMistake(
+            context,
+            ref,
+            songId: song.id,
+            captureKey: captureKey,
+          ),
         ),
         const SizedBox(height: 12),
         if (reports.isEmpty)
@@ -322,6 +393,11 @@ class _ReportCard extends ConsumerWidget {
             if (report.comment.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(report.comment),
+            ],
+            if (report.screenshotFile != null ||
+                report.remoteScreenshot != null) ...[
+              const SizedBox(height: 8),
+              ReportScreenshotThumbnail(report: report),
             ],
             const SizedBox(height: 4),
             Text(

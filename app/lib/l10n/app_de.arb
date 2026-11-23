@@ -3984,5 +3984,13 @@
         "type": "int"
       }
     }
-  }
+  },
+  "screenshotAdd": "Screenshot anhängen",
+  "screenshotRemove": "Entfernen",
+  "screenshotMarkTitle": "Stelle markieren",
+  "screenshotMarkHint": "Zeichne auf den Screenshot, wo der Fehler ist.",
+  "screenshotAttach": "Anhängen",
+  "screenshotShow": "Screenshot gross anzeigen",
+  "screenshotLoading": "Screenshot wird geladen …",
+  "screenshotUnavailable": "Screenshot nicht verfügbar (offline?)"
 }

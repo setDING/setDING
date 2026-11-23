@@ -1554,5 +1554,13 @@
   "reportAnswer": "Chiusa: {answer}",
   "reportAnswered": "La tua segnalazione su «{song}» è stata chiusa: {answer}",
   "reportAnsweredNoText": "La tua segnalazione su «{song}» è stata chiusa.",
-  "reportsAnswered": "{count, plural, =1{1 delle tue segnalazioni è stata chiusa.} other{{count} delle tue segnalazioni sono state chiuse.}}"
+  "reportsAnswered": "{count, plural, =1{1 delle tue segnalazioni è stata chiusa.} other{{count} delle tue segnalazioni sono state chiuse.}}",
+  "screenshotAdd": "Allega uno screenshot",
+  "screenshotRemove": "Rimuovi",
+  "screenshotMarkTitle": "Segna il punto",
+  "screenshotMarkHint": "Disegna sullo screenshot dov’è l’errore.",
+  "screenshotAttach": "Allega",
+  "screenshotShow": "Mostra lo screenshot a grandezza piena",
+  "screenshotLoading": "Caricamento dello screenshot …",
+  "screenshotUnavailable": "Screenshot non disponibile (offline?)"
 }
