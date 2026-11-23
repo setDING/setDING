@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:chordpro/chordpro.dart' hide Key;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
@@ -785,31 +787,56 @@ class _CategoryContent extends ConsumerWidget {
       ],
     };
 
-    return ListView(
-      padding: const EdgeInsets.only(bottom: 32),
-      children: [
-        if (showTitle)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    category.title(l10n),
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
+    // The song display preview fills the rest of the page (#1040).
+    final fill = category == SettingsCategory.songDisplay
+        ? const SongDisplayPreviewSection()
+        : null;
+    final list = [
+      if (showTitle)
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  category.title(l10n),
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
-                if (category.docs case final docs?)
-                  DocsHelpButton(
-                    key: const Key('settings-category-docs'),
-                    page: docs,
-                    topic: category.title(l10n),
-                  ),
-              ],
+              ),
+              if (category.docs case final docs?)
+                DocsHelpButton(
+                  key: const Key('settings-category-docs'),
+                  page: docs,
+                  topic: category.title(l10n),
+                ),
+            ],
+          ),
+        ),
+      if (category.scope case final scope?) _ScopeNote(scope),
+      ...children,
+    ];
+    const bottom = 32.0;
+    return CustomScrollView(
+      slivers: [
+        SliverList.list(children: list),
+        if (fill == null)
+          const SliverToBoxAdapter(child: SizedBox(height: bottom))
+        else
+          SliverLayoutBuilder(
+            builder: (context, constraints) => SliverToBoxAdapter(
+              child: SizedBox(
+                height: math.max(
+                  SongDisplayPreviewSection.minHeight,
+                  constraints.viewportMainAxisExtent -
+                      constraints.precedingScrollExtent,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: bottom),
+                  child: fill,
+                ),
+              ),
             ),
           ),
-        if (category.scope case final scope?) _ScopeNote(scope),
-        ...children,
       ],
     );
   }

@@ -1,6 +1,7 @@
 // Screenshots of the organization, band and settings screens.
 // See screenshot_support.dart.
 
+import 'package:chordpro/chordpro.dart' show SectionRole;
 import 'package:setding/data/auto_backup.dart';
 import 'package:setding/data/backup.dart';
 import 'package:setding/data/database.dart' show localBandId;
@@ -109,10 +110,13 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('song-display-preset-colorCoded')));
       await shot(tester, '${lang}_20_settings_song_display');
-      // The editor: controls next to the preview (#478).
+      // The editor: controls next to the preview (#478); tapping a section
+      // in the preview selects its type and frames it (#1040).
       await tester.tap(find.byKey(const Key('song-display-customise')));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('song-display-type-chorus')));
+      await tester.tap(
+        find.byKey(const ValueKey(('role-target', SectionRole.chorus))).first,
+      );
       await shot(tester, '${lang}_21_song_display_editor');
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();

@@ -248,6 +248,153 @@ void main() {
     });
   });
 
+  testWidgets('the preview fills the page down to the bottom (#1040)', (
+    tester,
+  ) async {
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    tester.view.physicalSize = const Size(1280, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(app.build(home: const SettingsScreen()));
+    await tester.pumpAndSettle();
+    await tapSettingsCategory(tester, 'songDisplay');
+    final preview = find.byKey(const Key('song-display-preview'));
+    final screen = tester.view.physicalSize / tester.view.devicePixelRatio;
+    // Down to the bottom padding of the page, not a fixed height.
+    expect(tester.getRect(preview).bottom, greaterThan(screen.height - 80));
+    expect(
+      tester.getSize(find.byType(SongDisplayPreviewSection)).height,
+      greaterThan(SongDisplayPreviewSection.minHeight + 200),
+    );
+    await app.dispose(tester);
+  });
+
+  testWidgets('on a short page the preview keeps its height and scrolls '
+      '(#1040)', (tester) async {
+    tester.view.physicalSize = const Size(1200, 500);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    await tester.pumpWidget(app.build(home: const SettingsScreen()));
+    await tester.pumpAndSettle();
+    await tapSettingsCategory(tester, 'songDisplay');
+    final section = find.byType(SongDisplayPreviewSection);
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -2000));
+    await tester.pumpAndSettle();
+    expect(
+      tester.getSize(section).height,
+      SongDisplayPreviewSection.minHeight - 32,
+    );
+    await app.dispose(tester);
+  });
+
+  group('tapping the preview (#1040)', () {
+    final controls = find.byKey(const Key('song-display-controls'));
+    final preview = find.byKey(const Key('song-display-preview'));
+    Finder target(SectionRole role) =>
+        find.byKey(ValueKey(('role-target', role)));
+    final framed = find.byKey(const ValueKey('framed-section'));
+    bool chipSelected(WidgetTester tester, SectionRole role) => tester
+        .widget<ChoiceChip>(find.byKey(Key('song-display-type-${role.name}')))
+        .selected;
+
+    testWidgets('tapping a section selects its type and frames that type', (
+      tester,
+    ) async {
+      final app = await pumpSettings(tester);
+      await openEditor(tester);
+      final bridge = target(SectionRole.bridge);
+      await tester.ensureVisible(bridge.first);
+      await tester.pumpAndSettle();
+      final scrollable = find.descendant(
+        of: preview,
+        matching: find.byType(Scrollable),
+      );
+      final offset = tester
+          .state<ScrollableState>(scrollable.first)
+          .position
+          .pixels;
+      await tester.tap(bridge.first);
+      await tester.pumpAndSettle();
+      expect(chipSelected(tester, SectionRole.bridge), isTrue);
+      expect(chipSelected(tester, SectionRole.standard), isFalse);
+      // Only the bridge is framed, and the preview stays where it is.
+      expect(
+        find.descendant(of: target(SectionRole.bridge), matching: framed),
+        findsOneWidget,
+      );
+      expect(framed, findsOneWidget);
+      expect(
+        tester.state<ScrollableState>(scrollable.first).position.pixels,
+        offset,
+      );
+      // Selecting a chip moves the frame.
+      await tap(tester, 'song-display-type-chorus');
+      expect(
+        find.descendant(of: target(SectionRole.chorus), matching: framed),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: target(SectionRole.bridge), matching: framed),
+        findsNothing,
+      );
+      await app.dispose(tester);
+    });
+
+    testWidgets('the frame does not change the size of a section', (
+      tester,
+    ) async {
+      final app = await pumpSettings(tester);
+      await openEditor(tester);
+      final verse = find
+          .descendant(
+            of: target(SectionRole.verse),
+            matching: find.byKey(const ValueKey('framed-section')),
+          )
+          .evaluate()
+          .isEmpty;
+      expect(verse, isTrue);
+      final before = tester.getSize(target(SectionRole.verse));
+      await tap(tester, 'song-display-type-verse');
+      expect(
+        find.descendant(of: target(SectionRole.verse), matching: framed),
+        findsOneWidget,
+      );
+      expect(tester.getSize(target(SectionRole.verse)), before);
+      await app.dispose(tester);
+    });
+
+    testWidgets('phone: the type chips come into view after a tap', (
+      tester,
+    ) async {
+      final app = await pumpSettings(tester, narrow: true);
+      await openEditor(tester);
+      await tester.drag(controls, const Offset(0, -2000));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('song-display-type-verse')), findsNothing);
+      await tester.tap(target(SectionRole.verse).first);
+      await tester.pumpAndSettle();
+      expect(chipSelected(tester, SectionRole.verse), isTrue);
+      final chip = tester.getRect(
+        find.byKey(const Key('song-display-type-verse')),
+      );
+      final area = tester.getRect(controls);
+      expect(chip.top, greaterThanOrEqualTo(area.top));
+      expect(chip.bottom, lessThanOrEqualTo(area.bottom));
+      await app.dispose(tester);
+    });
+
+    testWidgets('the preview on the settings screen is not tappable', (
+      tester,
+    ) async {
+      final app = await pumpSettings(tester);
+      expect(preview, findsOneWidget);
+      expect(target(SectionRole.verse), findsNothing);
+      expect(framed, findsNothing);
+      await app.dispose(tester);
+    });
+  });
+
   group('preview song (#478)', () {
     testWidgets('a song from the library, remembered on the device', (
       tester,

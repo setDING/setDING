@@ -36,7 +36,19 @@ class SongRenderOptions {
     this.onElementTap,
     this.display,
     this.dimSection,
+    this.onRoleTap,
+    this.framedRole,
   });
+
+  /// Called with the role of a tapped section, e.g. to edit its style in
+  /// the song display editor (#1040); null = sections are not tappable this
+  /// way.
+  final ValueChanged<SectionRole>? onRoleTap;
+
+  /// Sections of this role are framed, e.g. the role edited in the song
+  /// display editor (#1040); null = none. The frame paints only: the layout
+  /// stays.
+  final SectionRole? framedRole;
 
   /// Sections shown dimmed, e.g. the parts outside the sequence of a set
   /// (ADR-0007); null = none. Dimming does not change the layout.
@@ -169,16 +181,17 @@ class SongBody extends StatelessWidget {
         : _SectionBlock(block: b, options: options, style: style);
     final dim = options.dimSection;
     Widget blockWidget(SongBlock b) {
-      final child = contentOf(b);
+      var child = contentOf(b);
       final section = b.shownSection;
       // Opacity paints only: the layout and the measurements stay.
-      return dim != null && section != null && dim(section)
-          ? Opacity(
-              key: const ValueKey('dimmed-section'),
-              opacity: dimmedSectionOpacity,
-              child: child,
-            )
-          : child;
+      if (dim != null && section != null && dim(section)) {
+        child = Opacity(
+          key: const ValueKey('dimmed-section'),
+          opacity: dimmedSectionOpacity,
+          child: child,
+        );
+      }
+      return _roleTarget(b, options, child);
     }
 
     // Lines before each block, for building in steps.
@@ -915,6 +928,83 @@ class _ChordAt {
   final bool hasChord;
 
   Widget wrap(Widget child) => MetaData(metaData: this, child: child);
+}
+
+/// [block], tappable for [SongRenderOptions.onRoleTap] and framed when it
+/// has the [SongRenderOptions.framedRole]. Only sections and the labels of
+/// repeated choruses have a role of their own.
+Widget _roleTarget(SongBlock block, SongRenderOptions options, Widget child) {
+  final onTap = options.onRoleTap;
+  final framed = options.framedRole;
+  final hasRole = block.section != null || block.isRecallLabel;
+  if (!hasRole || (onTap == null && framed == null)) return child;
+  final role = block.role;
+  // Full width, so the frame and the tap target span the column; the block
+  // itself keeps its own width (a tinted section is not stretched).
+  Widget result = SizedBox(
+    width: double.infinity,
+    child: Align(alignment: AlignmentDirectional.topStart, child: child),
+  );
+  if (framed == role) {
+    final content = result;
+    result = Builder(
+      builder: (context) => CustomPaint(
+        key: const ValueKey('framed-section'),
+        foregroundPainter: _FramePainter(
+          color: Theme.of(context).colorScheme.primary,
+          gap: options.fontSize * SongSpacing.blockGap,
+        ),
+        child: content,
+      ),
+    );
+  }
+  if (onTap != null) {
+    result = MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        key: ValueKey(('role-target', role)),
+        behavior: HitTestBehavior.opaque,
+        onTap: () => onTap(role),
+        child: result,
+      ),
+    );
+  }
+  return result;
+}
+
+/// A frame around a block, outside its content and above the gap below it;
+/// it paints only, so the layout stays.
+class _FramePainter extends CustomPainter {
+  const _FramePainter({required this.color, required this.gap});
+
+  final Color color;
+
+  /// Space below the block (its bottom padding), left out of the frame.
+  final double gap;
+
+  static const _outset = 4.0;
+  static const _width = 2.0;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final bottom = math.max(0.0, size.height - gap) + _outset;
+    final rect = Rect.fromLTRB(
+      -_outset,
+      -_outset,
+      size.width + _outset,
+      bottom,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect, const Radius.circular(8)),
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = _width,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_FramePainter old) => old.color != color || old.gap != gap;
 }
 
 /// [child], tappable as [element] when [onTap] is set.
