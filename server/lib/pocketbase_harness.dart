@@ -16,17 +16,25 @@ class PocketBase {
     this._process,
     this._dir,
     this._binaryPath,
-    this._root,
     this._environment,
+    this._flags,
+    this._workingDirectory,
+    this.dataDir,
     this.baseUrl,
     this.superuserToken,
   );
 
   final Process _process;
+
+  /// Deleted by [stop].
   final Directory _dir;
   final String _binaryPath;
-  final String _root;
   final Map<String, String> _environment;
+
+  /// The directory flags of `serve` (`--dir`, `--hooksDir`, …), also used
+  /// for console commands and restarts.
+  final List<String> _flags;
+  final String? _workingDirectory;
   final Uri baseUrl;
 
   /// Token of a superuser; superusers bypass all access rules.
@@ -70,19 +78,66 @@ class PocketBase {
       }
       migrations = older.path;
     }
+    final data = '${dir.path}/pb_data';
+    List<String> flags(String migrations) => [
+      '--dir',
+      data,
+      '--hooksDir',
+      '$root/server/pb_hooks',
+      '--migrationsDir',
+      migrations,
+      if (publicDir != null) ...['--publicDir', publicDir],
+    ];
     return _launch(
       binary: binary,
-      root: root,
       dir: dir,
-      migrations: migrations,
+      dataDir: data,
+      flags: flags(migrations),
+      restartFlags: flags('$root/server/pb_migrations'),
+      workingDirectory: null,
       environment: environment,
-      publicDir: publicDir,
       rateLimits: rateLimits,
     );
   }
 
+  /// Starts an installed server the way its service does: [binary] with the
+  /// directory flags [flags] of its `serve` command (none for a bundle run as
+  /// it is, which keeps everything next to the binary). `--http` is chosen
+  /// here. [cleanup] is deleted by [stop]. The environment is that of
+  /// [start]. Without `--dir`, the bundle's directory is the working
+  /// directory, as in `cd setding-server-x.y.z && ./pocketbase serve`:
+  /// PocketBase keeps its data next to a binary, except below the system's
+  /// temporary directory, where it uses the working directory.
+  static Future<PocketBase> startInstalled({
+    required String binary,
+    required List<String> flags,
+    required Directory cleanup,
+    Map<String, String>? environment,
+  }) {
+    String? dir;
+    for (var i = 0; i < flags.length; i++) {
+      final f = flags[i];
+      if (f.startsWith('--dir=')) dir = f.substring(6);
+      if (f == '--dir' && i + 1 < flags.length) dir = flags[i + 1];
+    }
+    return _launch(
+      binary: binary,
+      dir: cleanup,
+      dataDir: dir ?? '${File(binary).parent.path}/pb_data',
+      flags: flags,
+      restartFlags: flags,
+      workingDirectory: File(binary).parent.path,
+      environment: {
+        'SETDING_REGISTRATION': 'open',
+        'SETDING_INVITE_KEY': 'test-invite-key',
+        ...?environment,
+      },
+      rateLimits: false,
+    );
+  }
+
   /// The server's data directory (`pb_data`: `data.db` and `storage/`).
-  String get dataDir => '${_dir.path}/pb_data';
+  final String dataDir;
 
   /// Restarts the server on the same data with all migrations (see
   /// `migrationsBefore` of [start]); this instance must not be used
@@ -102,54 +157,65 @@ class PocketBase {
     await whileStopped?.call();
     return _launch(
       binary: _binaryPath,
-      root: _root,
       dir: _dir,
-      migrations: '$_root/server/pb_migrations',
+      dataDir: dataDir,
+      flags: _flags,
+      restartFlags: _flags,
+      workingDirectory: _workingDirectory,
       environment: {..._environment, ...?environment},
-      publicDir: null,
       rateLimits: false,
     );
   }
 
+  /// [flags] without the flags named in [drop] (`--x value` and `--x=value`).
+  static List<String> _without(List<String> flags, List<String> drop) {
+    final out = <String>[];
+    for (var i = 0; i < flags.length; i++) {
+      final f = flags[i];
+      if (drop.contains(f)) {
+        i++;
+      } else if (!drop.any((d) => f.startsWith('$d='))) {
+        out.add(f);
+      }
+    }
+    return out;
+  }
+
   static Future<PocketBase> _launch({
     required String binary,
-    required String root,
     required Directory dir,
-    required String migrations,
+    required String dataDir,
+    required List<String> flags,
+    required List<String> restartFlags,
+    required String? workingDirectory,
     required Map<String, String> environment,
-    required String? publicDir,
     required bool rateLimits,
   }) async {
-    final data = '${dir.path}/pb_data';
     final upsert = await Process.run(binary, [
       'superuser',
       'upsert',
       _superuserEmail,
       _superuserPassword,
-      '--dir',
-      data,
-      '--migrationsDir',
-      migrations,
-    ]);
+      ..._without(flags, ['--hooksDir', '--publicDir', '--http']),
+    ], workingDirectory: workingDirectory);
     if (upsert.exitCode != 0) {
       throw StateError('superuser upsert failed: ${upsert.stderr}');
     }
 
     final port = await _freePort();
-    final process = await Process.start(environment: environment, binary, [
-      'serve',
-      '--dev=false',
-      '--hooksWatch=false',
-      '--dir',
-      data,
-      '--hooksDir',
-      '$root/server/pb_hooks',
-      '--migrationsDir',
-      migrations,
-      '--http',
-      '127.0.0.1:$port',
-      if (publicDir != null) ...['--publicDir', publicDir],
-    ]);
+    final process = await Process.start(
+      environment: environment,
+      workingDirectory: workingDirectory,
+      binary,
+      [
+        'serve',
+        '--dev=false',
+        '--hooksWatch=false',
+        ..._without(flags, ['--http', '--dev', '--hooksWatch']),
+        '--http',
+        '127.0.0.1:$port',
+      ],
+    );
     final log = StringBuffer();
     process.stdout.transform(utf8.decoder).listen(log.write);
     process.stderr.transform(utf8.decoder).listen(log.write);
@@ -190,8 +256,10 @@ class PocketBase {
       process,
       dir,
       binary,
-      root,
       environment,
+      restartFlags,
+      workingDirectory,
+      dataDir,
       baseUrl,
       token as String,
     );
@@ -208,20 +276,20 @@ class PocketBase {
     return pb;
   }
 
-  /// Runs a console command of the server's binary on its data, with the
-  /// repository's hooks (e.g. `founder-invite`, ADR-0024).
+  /// Runs a console command of the server's binary on its data, with its
+  /// hooks (e.g. `founder-invite`, ADR-0024).
   Future<ProcessResult> command(
     List<String> args, {
     Map<String, String>? environment,
-  }) => Process.run(_binaryPath, [
-    ...args,
-    '--dir',
-    '${_dir.path}/pb_data',
-    '--hooksDir',
-    '$_root/server/pb_hooks',
-    '--migrationsDir',
-    '$_root/server/pb_migrations',
-  ], environment: environment);
+  }) => Process.run(
+    _binaryPath,
+    [
+      ...args,
+      ..._without(_flags, ['--publicDir', '--http']),
+    ],
+    environment: environment,
+    workingDirectory: _workingDirectory,
+  );
 
   Future<void> stop() async {
     _process.kill();

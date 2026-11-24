@@ -4,7 +4,8 @@
 // public directory. Settings (docs/operations/server.md, "Web client"):
 // - SETDING_WEB_URL: public URL of the web client, e.g.
 //   https://app.setding.app (a tunnel hostname pointing to this server);
-// - SETDING_PUBLIC_DIR: the public directory (--publicDir) with the build.
+// - SETDING_PUBLIC_DIR: the public directory (--publicDir) with the build;
+//   default pb_public next to the hooks, as in the server bundle (ADR-0063).
 
 /// Public URL of the web client without a trailing slash, or "".
 function webUrl() {
@@ -13,8 +14,7 @@ function webUrl() {
 
 /// The web client's index.html, or null if no web build is installed.
 function index() {
-  const dir = ($os.getenv("SETDING_PUBLIC_DIR") || "").trim();
-  if (!dir) return null;
+  const dir = ($os.getenv("SETDING_PUBLIC_DIR") || "").trim() || `${__hooks}/../pb_public`;
   try {
     return toString($os.readFile(dir + "/index.html"));
   } catch (_) {

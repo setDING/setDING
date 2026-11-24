@@ -94,7 +94,7 @@ BACKEND_REGISTRATION ?= open
 TEST_ENV := SETDING_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
 .PHONY: help setup dev start build web web-serve site site-dev deps upgrade upgrade-guard apk android-install android-keystore release release-linux release-check sbom changelog reset data-dir backend check check-full release-gate test codegen l10n coverage android-test web-test e2e perf screenshots branding examples doctor clean ci-image \
-	server-target server-install server-release server-site server-status server-logs server-backup server-fetch-backup server-founder-invite server-ssh
+	server-target server-bundle server-install server-release server-site server-status server-logs server-backup server-fetch-backup server-founder-invite server-ssh
 
 help: ## Show this help
 	@echo "setDING – make targets"
@@ -282,6 +282,9 @@ server-install: server-target ## Install or update the server from the working t
 
 server-release: server-target ## After a release: wait for its green build, then deploy the server from the tag (VERSION=x.y.z, default newest)
 	@SERVER=$(SERVER) SSH="$(SSH)" PB_VERSION=$(PB_VERSION) $(ROOT)/tool/release/deploy-server.sh $(VERSION)
+
+server-bundle: ## Build the server bundle setding-server-<version>-linux-<arch>.tar.gz and SHA256SUMS into build/server-dist (ARCH=amd64|arm64, WEB_DIR=<web build>; ADR-0063)
+	@ARCH=$(ARCH) WEB_DIR=$(WEB_DIR) PB_VERSION=$(PB_VERSION) $(ROOT)/tool/server-dist/build-bundle.sh
 
 server-site: server-target ## Build the website from the working tree and deploy only the website (ADR-0030)
 	@SERVER=$(SERVER) SSH="$(SSH)" $(ROOT)/tool/server/deploy-site.sh
