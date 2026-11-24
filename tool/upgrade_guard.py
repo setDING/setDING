@@ -30,6 +30,7 @@ EXACT = {
     'website/package-lock.json',
     'tool/sbom/gradle/cyclonedx.init.gradle',
     'tool/fetch-tool.sh',
+    'tool/server-dist/Dockerfile',
 }
 
 TITLE = re.compile(r'\b(deps|dependenc|upgrade|bump)', re.IGNORECASE)

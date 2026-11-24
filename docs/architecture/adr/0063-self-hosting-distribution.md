@@ -256,6 +256,15 @@ web client excepted).
   `/opt/setding/current`, data in `/var/lib/setding/pb_data`) until the
   self-hosting docs show it (#1053); `server/test/bundle_test.dart` starts the
   bundle as it is and with that unit's command.
+- 2026-11-24: §2b implemented (#1051): `tool/server-dist/Dockerfile` on
+  `gcr.io/distroless/static-debian13:nonroot` pinned by digest (checked by
+  `tool/check-deps.sh`, including a newer Debian series); single stage, the build
+  context holds the unpacked bundle, the program owned by root and only
+  `/setding/pb_data` writable; `HEALTHCHECK` every 2 s while starting
+  (`--start-interval`), then every 30 s. `make server-image`
+  (`tool/server-dist/build-image.sh`) builds it for the bundle's architecture. The
+  example compose file is `tool/server-dist/docker-compose.yml` until the docs
+  show it (#1053); `server/test/image_test.dart` runs it.
 
 ## Open points
 

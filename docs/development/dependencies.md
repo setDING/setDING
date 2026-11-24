@@ -8,6 +8,10 @@ their newest version.**
 - The CycloneDX Gradle plugin of the SBOM (`tool/sbom/gradle/cyclonedx.init.gradle`,
   ADR-0037) must be the latest release on the Gradle plugin portal; raise its
   version in the init script by hand.
+- The distroless base image of the server image (`tool/server-dist/Dockerfile`,
+  ADR-0063) must be pinned to the current digest of its tag, and no newer Debian
+  series of it may exist; raise the `FROM` line by hand (the digest from the
+  check's message).
 - The check tools pinned in `tool/fetch-tool.sh` (ShellCheck, Caddy; issue
   #644) must be the latest GitHub release; raise them by hand
   ([operations tests](operations-tests.md)).
@@ -42,7 +46,7 @@ make upgrade         # upgrade-guard, pub upgrade in all packages, then the chec
 - other local worktrees (`.worktrees/`) whose branch or uncommitted changes
   touch a dependency file (a `pubspec.yaml` or `pubspec.lock`,
   `website/package.json` or its lock, the SBOM's Gradle plugin,
-  `tool/fetch-tool.sh`),
+  `tool/fetch-tool.sh`, the server image's `Dockerfile`),
 - open pull requests that change such a file,
 - open `agent:in-progress` issues whose title is about dependencies
   (deps, dependency, upgrade, bump).

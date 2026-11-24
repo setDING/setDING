@@ -159,6 +159,8 @@ changed_files() {
 }
 
 if [ "${CHECK_FULL:-0}" = 1 ]; then
+  # The image smoke test (server/test/image_test.dart) must not be skipped.
+  export SETDING_REQUIRE_DOCKER=1
   jobs=("${all_jobs[@]}")
   deps_mode=strict
   echo "full check (CHECK_FULL=1)"

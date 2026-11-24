@@ -28,7 +28,8 @@ class DependencyFileTest(unittest.TestCase):
     def test_dependency_files(self):
         for f in ('app/pubspec.yaml', 'packages/chordpro/pubspec.lock',
                   'website/package-lock.json', 'tool/fetch-tool.sh',
-                  'tool/sbom/gradle/cyclonedx.init.gradle'):
+                  'tool/sbom/gradle/cyclonedx.init.gradle',
+                  'tool/server-dist/Dockerfile'):
             self.assertTrue(is_dependency_file(f), f)
 
     def test_other_files(self):

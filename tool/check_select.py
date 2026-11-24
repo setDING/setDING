@@ -90,7 +90,7 @@ RULES = [
 # Files that pin external libraries (docs/development/dependencies.md).
 DEPS = (
     'pubspec.yaml', 'pubspec.lock', 'package.json', 'package-lock.json',
-    'cyclonedx.init.gradle',
+    'cyclonedx.init.gradle', 'Dockerfile',
 )
 
 DEFAULT_THRESHOLD = 40

@@ -1,0 +1,28 @@
+# Example compose file for the setDING server image (ADR-0063 §2b). Until the
+# self-hosting documentation shows it (#1053), this file is the example the
+# image smoke test (server/test/image_test.dart) runs, with only the image
+# and the host port replaced. It is not part of the release.
+#
+# Put a reverse proxy with HTTPS in front of port 8090 (see the
+# documentation); the port is bound to localhost only.
+services:
+  setding:
+    image: ghcr.io/tafli/setding-server:0.21.0
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8090:8090"
+    environment:
+      # Required: encrypts stored invitation links. Generate one with
+      #   openssl rand -base64 32
+      SETDING_INVITE_KEY: "replace-with-a-long-random-secret"
+      # Optional: invite_only (default) or open.
+      SETDING_REGISTRATION: invite_only
+      # Optional: automatic backups in the volume (daily at 03:00, 14 kept).
+      SETDING_BACKUP_CRON: "0 3 * * *"
+      SETDING_BACKUP_KEEP: "14"
+      TZ: Europe/Zurich
+    volumes:
+      - setding-data:/setding/pb_data
+
+volumes:
+  setding-data:

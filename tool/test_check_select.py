@@ -61,6 +61,9 @@ class SelectTest(unittest.TestCase):
         self.assertEqual(
             jobs('tool/server-dist/setding.service'), ['server', 'ops'])
 
+    def test_server_image_pins_its_base_image(self):
+        self.assertEqual(select(['tool/server-dist/Dockerfile'])[1], True)
+
     def test_prefix_needs_a_separator(self):
         # tool/sbom matches tool/sbom/… and tool/sbom.sh, not tool/sbomx.
         self.assertEqual(jobs('tool/sbom/lib/main.dart'), ['sbom'])
