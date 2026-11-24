@@ -11,11 +11,22 @@ only on the server, so a mistake in them would otherwise show up there first.
   (`# shellcheck disable=SCxxxx # why`).
 - **Caddyfile** (`tool/server/Caddyfile`): `caddy validate` and `caddy fmt`; it
   must be formatted as Caddy writes it (`caddy fmt --overwrite`).
-- **systemd units** of `tool/server/`: `systemd-analyze verify` (unknown keys,
+- **systemd units** of `tool/server/` and the example unit of the server bundle
+  (`tool/server-dist/setding.service`): `systemd-analyze verify` (unknown keys,
   bad values). Skipped on machines without systemd. The binaries the units
   start exist only on the server and are ignored.
 
 ## Behaviour tests (`server/test/`, job `server`)
+
+- **Server bundle** (`bundle_test.dart`, ADR-0063): builds the bundle with
+  `tool/server-dist/build-bundle.sh` (a stub web build, a fixed version) and
+  checks its content, licences and `SHA256SUMS`. Then it unpacks it and starts
+  it as it is (`./pocketbase serve` in the bundle directory) and with the
+  `ExecStart` of the example unit `tool/server-dist/setding.service` (paths
+  moved into a temporary directory, the port replaced): health, `serverVersion`,
+  the web client and the landing page's link to it, sign-up and delta sync,
+  `founder-invite`, `healthcheck`, and a built-in backup restored into the
+  unit's data directory.
 
 - **Backup and restore** (`backup_test.dart`): runs
   `tool/server/setding-backup.sh` against a running PocketBase with a band, a

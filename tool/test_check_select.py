@@ -55,6 +55,12 @@ class SelectTest(unittest.TestCase):
         self.assertEqual(jobs('tool/android-test.sh'), ['ops'])
         self.assertEqual(jobs('tool/server/Caddyfile'), ['server', 'ops'])
 
+    def test_server_bundle_runs_its_tests(self):
+        self.assertEqual(
+            jobs('tool/server-dist/build-bundle.sh'), ['server', 'ops'])
+        self.assertEqual(
+            jobs('tool/server-dist/setding.service'), ['server', 'ops'])
+
     def test_prefix_needs_a_separator(self):
         # tool/sbom matches tool/sbom/… and tool/sbom.sh, not tool/sbomx.
         self.assertEqual(jobs('tool/sbom/lib/main.dart'), ['sbom'])

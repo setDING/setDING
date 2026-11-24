@@ -51,6 +51,9 @@ RULES = [
     ('server/', ['server', 'app-static', 'app-tests']),
     # Website server, backup and deploy files: ops checks, server tests.
     ('tool/server/', ['ops', 'server']),
+    # Server bundle (ADR-0063): build script and example unit, tested by
+    # server/test/bundle_test.dart.
+    ('tool/server-dist/', ['ops', 'server']),
     ('tool/sbom', ['sbom']),
     ('tool/release/', ['changelog']),
     ('CHANGELOG.md', ['changelog']),

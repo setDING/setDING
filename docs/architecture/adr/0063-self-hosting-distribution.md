@@ -248,6 +248,14 @@ web client excepted).
   `off` turns them off) and `SETDING_BACKUP_KEEP` (default 14) at every start, the
   environment winning over the admin UI; invalid values stop the start. A restore
   unpacks the ZIP into an emptied `pb_data` (tested in `server/test/operations_test.dart`).
+- 2026-11-24: §1 implemented (#1050): `make server-bundle` /
+  `tool/server-dist/build-bundle.sh` builds the bundle (reproducible tar, PocketBase
+  for the target architecture from its checksummed release, `SHA256SUMS`). The
+  hooks find the bundled web client without `SETDING_PUBLIC_DIR`. The example
+  systemd unit is `tool/server-dist/setding.service` (bundle in
+  `/opt/setding/current`, data in `/var/lib/setding/pb_data`) until the
+  self-hosting docs show it (#1053); `server/test/bundle_test.dart` starts the
+  bundle as it is and with that unit's command.
 
 ## Open points
 

@@ -5,7 +5,7 @@
 #   sh/bash shebang);
 # - tool/server/Caddyfile: `caddy validate` and `caddy fmt` (formatted as Caddy
 #   writes it);
-# - the systemd units of tool/server/ with `systemd-analyze verify`, if the
+# - the systemd units of tool/server/ and tool/server-dist/ with `systemd-analyze verify`, if the
 #   machine has it (unknown keys, bad values; the installed binaries the units
 #   start are missing on a development machine and are ignored).
 # ShellCheck and Caddy are pinned and fetched by tool/fetch-tool.sh. Their
@@ -48,7 +48,8 @@ fi
 # --- systemd units ----------------------------------------------------------
 if command -v systemd-analyze >/dev/null 2>&1; then
   # The units start binaries that only exist on the server.
-  out="$(systemd-analyze verify --man=no "$ROOT"/tool/server/*.service "$ROOT"/tool/server/*.timer 2>&1 |
+  out="$(systemd-analyze verify --man=no "$ROOT"/tool/server/*.service "$ROOT"/tool/server/*.timer \
+    "$ROOT"/tool/server-dist/*.service 2>&1 |
     grep -v -E 'Command .* is not executable: No such file or directory' || true)"
   if [ -n "$out" ]; then
     echo "$out"

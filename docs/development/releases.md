@@ -294,6 +294,23 @@ the cause or extend the tool deliberately; never drop the check.
 Vulnerabilities and licences are evaluated on GitHub (Dependabot, dependency
 review; ADR-0037).
 
+## Server bundle
+
+The server is released as a bundle per architecture (ADR-0063):
+`setding-server-<version>-linux-<arch>.tar.gz` with the pinned PocketBase, the
+hooks (stamped with the version), the migrations, the web client in `pb_public`,
+`VERSION` and `LICENSES/`, plus a `SHA256SUMS` file. Build it locally with
+
+```bash
+make server-bundle
+```
+
+into `build/server-dist/` (`ARCH=arm64` for the other architecture, `WEB_DIR=<dir>`
+to bundle an existing web build instead of building one). The release workflow
+builds, tests and publishes it (#1052). `server/test/bundle_test.dart` builds a
+bundle and starts it as it is and with the example systemd unit
+`tool/server-dist/setding.service` ([operations tests](operations-tests.md)).
+
 ## Linux (local)
 
 ```bash
