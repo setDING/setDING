@@ -418,25 +418,29 @@ void main() {
       );
     });
 
-    test('without a key, tokens are not stored and links not shown', () async {
-      final keyless = await PocketBase.start(
-        environment: {'SETDING_INVITE_KEY': ''},
-      );
-      addTearDown(keyless.stop);
-      final f = await BandFixture.create(keyless);
+    test('links stored with another key are not shown', () async {
+      // The server does not start without a key (ADR-0063); a changed key
+      // leaves the stored tokens unreadable.
+      var keyed = await PocketBase.start();
+      addTearDown(() => keyed.stop());
+      final f = await BandFixture.create(keyed);
       final created = await create(f.admin, f.orgId);
       created.expectStatus(200);
       final id = created.json['id'] as String;
       expect(
-        (await keyless.superuser.view('invites', id)).json['token_enc'],
-        '',
+        (await keyed.superuser.view('invites', id)).json['token_enc'],
+        isNotEmpty,
       );
-      final r = await link(f.admin, id);
+      keyed = await keyed.restart(
+        environment: {'SETDING_INVITE_KEY': 'another-key'},
+      );
+      final admin = User(keyed, f.admin.id, f.admin.token!);
+      final r = await link(admin, id);
       expect(r.status, 409);
       expect(r.field('data.token.code'), 'not_stored');
       // The link itself still works.
       (await redeem(
-        await keyless.signUp(),
+        await keyed.signUp(),
         created.json['token'] as String,
       )).expectStatus(200);
     });

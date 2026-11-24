@@ -241,6 +241,13 @@ web client excepted).
   the published bundle natively; the image stays supported and is covered by the
   automatic tests.
 - 2026-11-24: Accepted by the owner.
+- 2026-11-24: §2 and §4 implemented (#1049): `serve` refuses to start without
+  `SETDING_INVITE_KEY` (console commands do not need it); `pocketbase healthcheck
+  [url]` (default `http://127.0.0.1:8090` or `SETDING_HEALTH_URL`); the server sets
+  PocketBase's automatic backups from `SETDING_BACKUP_CRON` (default `0 3 * * *`,
+  `off` turns them off) and `SETDING_BACKUP_KEEP` (default 14) at every start, the
+  environment winning over the admin UI; invalid values stop the start. A restore
+  unpacks the ZIP into an emptied `pb_data` (tested in `server/test/operations_test.dart`).
 
 ## Open points
 

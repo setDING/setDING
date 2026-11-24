@@ -118,7 +118,9 @@ pasting and the QR code. Cloudflare must not challenge `/invite/*` and `/.well-k
 invitation tokens with it, so admins can show an active link again (ADR-0005). Keep
 the line when editing the file; the backups (`pb_data`) do not contain it. A new or
 lost key only means that links created before cannot be shown again; they keep
-working.
+working. **The server does not start without it** (ADR-0063): `pocketbase serve`
+stops with `missing environment variable(s) SETDING_INVITE_KEY`; console commands
+such as `founder-invite` still work.
 
 ## 6. Web client (owner, once)
 
@@ -276,6 +278,20 @@ the tunnel creates its own CNAME records.
 - **Daily on the server** (`setding-backup.timer`, 03:30 Swiss time): SQLite online backup of
   `data.db` (integrity checked) plus the `storage/` files (PDF attachments) as
   `/var/lib/pocketbase/backups/setding-<timestamp>.tar.gz`, kept 14 days.
+- **Built into PocketBase** (ADR-0063, the way for self-hosted servers): the server
+  sets PocketBase's automatic backups (Settings → Backups) from its environment at
+  every start, so changes in the admin UI are overwritten:
+
+  ```bash
+  # Cron expression (server time zone), default "0 3 * * *"; "off" turns them off.
+  SETDING_BACKUP_CRON=0 3 * * *
+  # Number of automatic backups kept, default 14.
+  SETDING_BACKUP_KEEP=14
+  ```
+
+  They are ZIP files of `pb_data` (database and files, without the backups
+  themselves) in `pb_data/backups/`. An invalid value stops the start with a
+  message. Until production moves to the server bundle (#1055) both backups run.
 - **Off-host:** include the container in the Proxmox backup job (snapshot mode), and
   fetch copies with `make server-fetch-backup`.
 
@@ -297,6 +313,16 @@ Tested on a Debian 13 container: the restored database starts and answers
 steps against a test PocketBase and checks records, users and attachment
 files (`server/test/backup_test.dart`,
 [operations tests](../development/operations-tests.md)).
+
+A **built-in backup** (ZIP) is restored the same way: stop the server, delete
+everything in `pb_data` except `backups/`, `unzip` the archive into `pb_data`, fix
+the owner, start. `server/test/operations_test.dart` tests exactly these steps.
+
+### Health check
+
+`pocketbase healthcheck [url]` (default `http://127.0.0.1:8090`, or
+`SETDING_HEALTH_URL`) exits with 0 when the server answers `/api/health` and with
+1 otherwise, e.g. for monitoring or the Docker `HEALTHCHECK` (ADR-0063).
 
 ## Trash
 
