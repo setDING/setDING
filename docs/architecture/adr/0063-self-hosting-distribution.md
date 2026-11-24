@@ -1,6 +1,6 @@
 # ADR-0063: Self-hosting distribution of the backend
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-24
 
 ## Context
@@ -240,6 +240,7 @@ web client excepted).
   docs and tested), released with `SHA256SUMS`; production and staging both run
   the published bundle natively; the image stays supported and is covered by the
   automatic tests.
+- 2026-11-24: Accepted by the owner.
 
 ## Open points
 
