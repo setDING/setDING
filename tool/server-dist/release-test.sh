@@ -53,7 +53,9 @@ fi
 export WEB_DIR
 
 (cd "$ROOT/server" && dart pub get >/dev/null)
+# Absolute: the tests run in server/ (#1064).
 mkdir -p "$OUT"
+OUT="$(cd "$OUT" && pwd)"
 rm -f "$OUT"/setding-server-*.tar.gz "$OUT/SHA256SUMS"
 bundles=()
 images=()

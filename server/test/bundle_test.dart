@@ -147,6 +147,33 @@ void main() {
     expect(File('$bundle/pb_data/data.db').existsSync(), isTrue);
   });
 
+  test('the build prints an absolute path also for a relative OUT '
+      '(issue #1064)', () async {
+    // The release workflow passes OUT=dist-server, the tests run in server/.
+    final cwd = await Directory.systemTemp.createTemp('setding-bundle-cwd-');
+    addTearDown(() => cwd.delete(recursive: true));
+    final web = Directory('${cwd.path}/web')..createSync();
+    File('${web.path}/index.html').writeAsStringSync('<html></html>');
+    final build = await Process.run(
+      '$_root/tool/server-dist/build-bundle.sh',
+      [],
+      workingDirectory: cwd.path,
+      environment: {
+        'OUT': 'relative/out',
+        'WEB_DIR': web.path,
+        'SERVER_VERSION': '9.8.7-relative',
+      },
+    );
+    expect(build.exitCode, 0, reason: '${build.stdout}${build.stderr}');
+    final printed = (build.stdout as String).trim().split('\n').last;
+    expect(printed, startsWith('/'));
+    expect(
+      printed,
+      startsWith('${cwd.resolveSymbolicLinksSync()}/relative/out/'),
+    );
+    expect(File(printed).existsSync(), isTrue);
+  });
+
   group('with the example systemd unit', () {
     late List<String> exec;
 
