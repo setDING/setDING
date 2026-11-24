@@ -1,12 +1,15 @@
 # Docker image of the setDING server (ADR-0063 §2b), built from the server
 # bundle by tool/server-dist/build-image.sh (make server-image). The build
-# context holds the unpacked bundle in setding/ and an empty pb_data/.
+# context holds the unpacked bundle of each architecture in setding-<arch>/
+# and an empty pb_data/; a multi-platform build picks the bundle by
+# TARGETARCH.
 #
 # Base: distroless "static" (no shell, no package manager), non-root user
 # 65532, pinned by digest; tool/check-deps.sh reports a newer digest or a
 # newer Debian series.
 FROM gcr.io/distroless/static-debian13:nonroot@sha256:8ce6dd87e9823c5b48dcfb2c8604714ccb351ce59607327bcc4957448da279b5
 
+ARG TARGETARCH
 ARG VERSION=unknown
 LABEL org.opencontainers.image.title="setDING server" \
       org.opencontainers.image.description="PocketBase backend and web client of setDING" \
@@ -16,7 +19,7 @@ LABEL org.opencontainers.image.title="setDING server" \
 
 # The program belongs to root and is read-only for the server; only the data
 # volume is writable (created with its owner, so named volumes inherit it).
-COPY --chown=0:0 setding/ /setding/
+COPY --chown=0:0 setding-${TARGETARCH}/ /setding/
 COPY --chown=65532:65532 pb_data/ /setding/pb_data/
 
 USER 65532:65532

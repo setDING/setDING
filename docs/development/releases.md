@@ -8,8 +8,10 @@ releases are not covered yet.
 
 The full sequence and its rules are in the git workflow (section 10); each step
 only after the previous one succeeded. Before it, run `make release-gate` on
-`main`: every check with the dependency check fatal (`make check-full`), then
-the integration tests `make web-test` in Chrome or Chromium and in Firefox
+`main`: every check with the dependency check fatal (`make check-full`), the
+server release test `tool/server-dist/release-test.sh` (the bundle and image of
+this machine's architecture and the update from the previous release, see
+[Server release test](#server-release-test)), then the integration tests `make web-test` in Chrome or Chromium and in Firefox
 ([web-tests.md](web-tests.md)), the end-to-end tests `make e2e`
 ([e2e-tests.md](e2e-tests.md)) and `make android-test` ([android-tests.md](android-tests.md)). The emulator the
 Android tests start is stopped at the end.
@@ -38,11 +40,17 @@ Android tests start is stopped at the end.
    | `setding-X.Y.Z-linux-x64.AppImage` | The same bundle as an AppImage, which updates itself (ADR-0038) |
    | `setding-X.Y.Z-windows-x64-setup.exe` | Windows installer, from which the installed app updates itself (ADR-0035) |
    | `setding-X.Y.Z-windows-x64.zip` | Windows build with the Visual C++ runtime |
-   | `<file>.cdx.json` | CycloneDX SBOM of each file above ([SBOM](#sbom), ADR-0037) |
+   | `setding-server-X.Y.Z-linux-amd64.tar.gz`, `…-arm64.tar.gz` | Server bundles ([Server bundle](#server-bundle), ADR-0063) |
+   | `<file>.cdx.json` | CycloneDX SBOM of each app file above ([SBOM](#sbom), ADR-0037; the server bundles have none yet, #1062) |
    | `SHA256SUMS` | Checksums of the files above |
 
+   After the GitHub Release, the job `server-image` pushes the server image
+   `ghcr.io/tafli/setding-server:X.Y.Z` for amd64 and arm64 (final releases also
+   as `X.Y` and `latest`), built from the same tested bundles.
+
    **The build must pass.** Watch it with `gh run watch`; if a job fails, no release
-   is published. Fix the cause in a PR and release the next patch version; never
+   is published. The job `server` builds and tests the server bundles and images
+   for both architectures before anything is published (arm64 under QEMU). Fix the cause in a PR and release the next patch version; never
    move or reuse a pushed tag.
 4. Update the server from the tag:
 
@@ -307,7 +315,7 @@ make server-bundle
 
 into `build/server-dist/` (`ARCH=arm64` for the other architecture, `WEB_DIR=<dir>`
 to bundle an existing web build instead of building one). The release workflow
-builds, tests and publishes it (#1052). `server/test/bundle_test.dart` builds a
+builds, tests and publishes it. `server/test/bundle_test.dart` builds a
 bundle and starts it as it is and with the example systemd unit
 `tool/server-dist/setding.service` ([operations tests](operations-tests.md)).
 
@@ -323,9 +331,36 @@ make server-image
 
 builds a bundle for this machine and the image `setding-server:<version>`
 (`BUNDLE=<.tar.gz>` to package an existing bundle, `IMAGE=<name:tag>` for another
-name). The release workflow builds it for amd64 and arm64 and publishes it
-(#1052). `server/test/image_test.dart` starts it with the example compose file
+name). The release workflow builds it for amd64 and arm64 and pushes it to
+ghcr.io. `server/test/image_test.dart` starts it with the example compose file
 `tool/server-dist/docker-compose.yml` ([operations tests](operations-tests.md)).
+
+**Once, after the first release with an image (owner):** the package
+`setding-server` on GitHub is private when it is first pushed. Make it public
+(GitHub → Packages → setding-server → Package settings → Change visibility), so
+self-hosters can pull it without signing in.
+
+## Server release test
+
+`tool/server-dist/release-test.sh` builds the server artifacts of a release and
+tests exactly those, so nothing about them is tested by hand. Per architecture
+(`ARCHS`, default this machine's):
+
+1. the bundle (`build-bundle.sh`) and the image built from it (`build-image.sh`);
+2. the previous release (the newest final tag that does not contain `HEAD`):
+   its bundle from the GitHub Release, or built from the tag's source when that
+   release has none (`previous-bundle.sh`), and its image from ghcr.io, or
+   built from that bundle;
+3. `server/test/bundle_test.dart`, `image_test.dart` and `upgrade_test.dart`
+   against these artifacts (`SETDING_TEST_BUNDLE`, `SETDING_TEST_IMAGE`,
+   `SETDING_TEST_PREVIOUS_BUNDLE`, `SETDING_TEST_PREVIOUS_IMAGE`). The upgrade
+   test writes data with the previous release (a band, a song, a PDF), updates
+   as the docs describe (the bundle link switched, the image tag changed) and
+   checks that the new release serves and changes it.
+
+It needs Docker; another architecture needs QEMU (binfmt) and `docker buildx`.
+`make release-gate` runs it for this machine, the release workflow for amd64
+and arm64.
 
 ## Linux (local)
 

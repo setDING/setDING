@@ -1,17 +1,16 @@
 // The server bundle (ADR-0063 §1, issue #1050), built with
 // tool/server-dist/build-bundle.sh and started the two documented ways: as it
 // is (`./pocketbase serve`) and with the example systemd unit's command
-// (tool/server-dist/setding.service).
+// (tool/server-dist/setding.service). With SETDING_TEST_BUNDLE it tests that
+// release artifact instead (tool/server-dist/release-test.sh).
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:setding_server/pocketbase_harness.dart';
 import 'package:test/test.dart';
 
+import 'support/dist.dart';
 import 'support/fixtures.dart';
-
-const _version = '9.8.7-bundletest';
-const _marker = '<!-- setding web client (bundle test) -->';
 
 final _root = Directory.current.parent.path;
 
@@ -27,62 +26,50 @@ List<String> _execStart(String unit) {
   return line.substring('ExecStart='.length).trim().split(RegExp(r'\s+'));
 }
 
-/// Unpacks [archive] into a new temporary directory and returns it with the
+late TestBundle _bundle;
+
+/// Unpacks the bundle into a new temporary directory and returns it with the
 /// bundle directory inside.
-Future<(Directory, String)> _unpack(String archive) async {
+Future<(Directory, String)> _unpack() async {
   final dir = await Directory.systemTemp.createTemp('setding-bundle-run-');
-  final r = await Process.run('tar', ['-xzf', archive, '-C', dir.path]);
+  final r = await Process.run('tar', ['-xzf', _bundle.archive, '-C', dir.path]);
   expect(r.exitCode, 0, reason: '${r.stderr}');
-  return (dir, '${dir.path}/setding-server-$_version');
+  return (dir, '${dir.path}/${_bundle.name}');
 }
 
 void main() {
   late Directory out;
-  late String archive;
 
   setUpAll(() async {
     out = await Directory.systemTemp.createTemp('setding-bundle-');
-    final web = Directory('${out.path}/web')..createSync();
-    File('${web.path}/index.html').writeAsStringSync(
-      '<!doctype html><html><head><base href="/"></head>'
-      '<body>$_marker</body></html>',
-    );
-    final build = await Process.run(
-      '$_root/tool/server-dist/build-bundle.sh',
-      [],
-      environment: {
-        'OUT': '${out.path}/dist',
-        'WEB_DIR': web.path,
-        'SERVER_VERSION': _version,
-      },
-    );
-    expect(build.exitCode, 0, reason: '${build.stdout}${build.stderr}');
-    archive = (build.stdout as String).trim().split('\n').last;
+    _bundle = await TestBundle.obtain(out, '9.8.7-bundletest');
   });
   tearDownAll(() => out.delete(recursive: true));
 
   test('contains the server, the web client, the version and the licences, '
       'with a matching checksum', () async {
     expect(
-      archive,
+      _bundle.archive,
       matches(
         RegExp(
-          r'/setding-server-9\.8\.7-bundletest-linux-(amd64|arm64)\.tar\.gz$',
+          '/${RegExp.escape(_bundle.name)}-linux-(amd64|arm64)\\.tar\\.gz\$',
         ),
       ),
     );
-    final check = await Process.run('sha256sum', [
-      '-c',
-      'SHA256SUMS',
-    ], workingDirectory: File(archive).parent.path);
-    expect(check.exitCode, 0, reason: '${check.stdout}${check.stderr}');
+    if (_bundle.built) {
+      final check = await Process.run('sha256sum', [
+        '-c',
+        'SHA256SUMS',
+      ], workingDirectory: File(_bundle.archive).parent.path);
+      expect(check.exitCode, 0, reason: '${check.stdout}${check.stderr}');
+    }
 
-    final (dir, bundle) = await _unpack(archive);
+    final (dir, bundle) = await _unpack();
     addTearDown(() => dir.delete(recursive: true));
-    expect(File('$bundle/VERSION').readAsStringSync().trim(), _version);
+    expect(File('$bundle/VERSION').readAsStringSync().trim(), _bundle.version);
     expect(
       File('$bundle/pb_hooks/setding-version.txt').readAsStringSync().trim(),
-      _version,
+      _bundle.version,
     );
     for (final hook in Directory(
       '$_root/server/pb_hooks',
@@ -102,7 +89,7 @@ void main() {
     );
     expect(
       File('$bundle/pb_public/index.html').readAsStringSync(),
-      contains(_marker),
+      contains('<base href="/">'),
     );
     expect(File('$bundle/LICENSES/setDING.txt').existsSync(), isTrue);
     expect(
@@ -115,10 +102,35 @@ void main() {
       '$bundle/pocketbase',
     ])).stdout.toString().trim();
     expect(mode, '755');
+
+    // Readable for the server's user, also from sources that were not (a web
+    // build in a private directory made the image answer 404).
+    final private = await Process.run('find', [
+      bundle,
+      '(',
+      '-type',
+      'd',
+      '!',
+      '-perm',
+      '-0555',
+      ')',
+      '-o',
+      '(',
+      '-type',
+      'f',
+      '!',
+      '-perm',
+      '-0444',
+      ')',
+      '-o',
+      '-perm',
+      '/0022',
+    ]);
+    expect((private.stdout as String).trim(), isEmpty);
   });
 
   test('runs as it is, with everything next to the binary', () async {
-    final (dir, bundle) = await _unpack(archive);
+    final (dir, bundle) = await _unpack();
     final pb = await PocketBase.startInstalled(
       binary: '$bundle/pocketbase',
       flags: const [],
@@ -128,10 +140,10 @@ void main() {
 
     final config = await pb.guest.send('GET', '/api/setding/config');
     config.expectStatus(200);
-    expect(config.json['serverVersion'], _version);
+    expect(config.json['serverVersion'], _bundle.version);
     final page = await pb.guest.send('GET', '/');
     page.expectStatus(200);
-    expect(page.raw.body, contains(_marker));
+    expect(page.raw.body, _bundle.index);
     expect(File('$bundle/pb_data/data.db').existsSync(), isTrue);
   });
 
@@ -170,7 +182,7 @@ void main() {
     });
 
     test('serves the API, the version and the web client', () async {
-      final (dir, bundle) = await _unpack(archive);
+      final (dir, bundle) = await _unpack();
       final pb = await start(
         dir,
         bundle,
@@ -182,10 +194,10 @@ void main() {
 
       final config = await pb.guest.send('GET', '/api/setding/config');
       config.expectStatus(200);
-      expect(config.json['serverVersion'], _version);
+      expect(config.json['serverVersion'], _bundle.version);
       final page = await pb.guest.send('GET', '/');
       page.expectStatus(200);
-      expect(page.raw.body, contains(_marker));
+      expect(page.raw.body, _bundle.index);
 
       // The landing page finds the bundled web client without
       // SETDING_PUBLIC_DIR.
@@ -205,7 +217,7 @@ void main() {
     });
 
     test('sign-up, a change and the delta sync work', () async {
-      final (dir, bundle) = await _unpack(archive);
+      final (dir, bundle) = await _unpack();
       final pb = await start(dir, bundle);
       addTearDown(pb.stop);
       final f = await BandFixture.create(pb);
@@ -220,7 +232,7 @@ void main() {
     test(
       'founder-invite and the health check run on the installed data',
       () async {
-        final (dir, bundle) = await _unpack(archive);
+        final (dir, bundle) = await _unpack();
         final pb = await start(dir, bundle);
         addTearDown(pb.stop);
         final invite = await pb.command(['founder-invite', 'Music', 'school']);
@@ -232,7 +244,7 @@ void main() {
     );
 
     test('a backup restores the data', () async {
-      final (dir, bundle) = await _unpack(archive);
+      final (dir, bundle) = await _unpack();
       var pb = await start(dir, bundle);
       addTearDown(() => pb.stop());
       final f = await BandFixture.create(pb);

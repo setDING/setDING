@@ -3,6 +3,9 @@
 // compose file tool/server-dist/docker-compose.yml (only the image and the
 // host port replaced).
 //
+// With SETDING_TEST_IMAGE (and SETDING_TEST_BUNDLE, the bundle it was built
+// from) it tests that release image instead (tool/server-dist/release-test.sh).
+//
 // Needs Docker with Compose. Without it the tests are skipped, unless
 // SETDING_REQUIRE_DOCKER=1 (make check-full, make release-gate), where they
 // fail instead.
@@ -15,10 +18,8 @@ import 'dart:io';
 import 'package:setding_server/pocketbase_harness.dart';
 import 'package:test/test.dart';
 
+import 'support/dist.dart';
 import 'support/fixtures.dart';
-
-const _version = '9.8.7-imagetest';
-const _marker = '<!-- setding web client (image test) -->';
 
 final _root = Directory.current.parent.path;
 
@@ -54,7 +55,9 @@ Future<int> _freePort() async {
 
 void main() {
   late Directory work;
+  late TestBundle bundle;
   late String image;
+  var builtImage = false;
   late String project;
   late String composeFile;
   late Uri baseUrl;
@@ -90,24 +93,20 @@ void main() {
     if (_skip != false) return;
     expect(_dockerAvailable(), isTrue, reason: 'Docker with Compose needed');
     work = await Directory.systemTemp.createTemp('setding-image-');
-    final web = Directory('${work.path}/web')..createSync();
-    File(
-      '${web.path}/index.html',
-    ).writeAsStringSync('<!doctype html><html><body>$_marker</body></html>');
+    bundle = await TestBundle.obtain(work, '9.8.7-imagetest');
     final id = DateTime.now().microsecondsSinceEpoch;
-    image = 'setding-server-test:$id';
     project = 'setding-image-test-$id';
-    final build = await Process.run(
-      '$_root/tool/server-dist/build-image.sh',
-      [],
-      environment: {
-        'OUT': '${work.path}/dist',
-        'WEB_DIR': web.path,
-        'SERVER_VERSION': _version,
-        'IMAGE': image,
-      },
-    );
-    expect(build.exitCode, 0, reason: '${build.stdout}${build.stderr}');
+    image = Platform.environment['SETDING_TEST_IMAGE'] ?? '';
+    if (image.isEmpty) {
+      image = 'setding-server-test:$id';
+      builtImage = true;
+      final build = await Process.run(
+        '$_root/tool/server-dist/build-image.sh',
+        [],
+        environment: {'BUNDLE': bundle.archive, 'IMAGE': image},
+      );
+      expect(build.exitCode, 0, reason: '${build.stdout}${build.stderr}');
+    }
 
     final port = await _freePort();
     baseUrl = Uri.parse('http://127.0.0.1:$port');
@@ -149,7 +148,7 @@ void main() {
       'down',
       '-v',
     ]);
-    await Process.run('docker', ['image', 'rm', '-f', image]);
+    if (builtImage) await Process.run('docker', ['image', 'rm', '-f', image]);
     await work.delete(recursive: true);
   });
 
@@ -169,7 +168,7 @@ void main() {
     expect(config['User'], '65532:65532');
     expect(
       (config['Labels'] as Map)['org.opencontainers.image.version'],
-      _version,
+      bundle.version,
     );
     expect((config['Healthcheck'] as Map)['Test'], [
       'CMD',
@@ -184,11 +183,11 @@ void main() {
     addTearDown(pb.stop);
     final config = await pb.guest.send('GET', '/api/setding/config');
     config.expectStatus(200);
-    expect(config.json['serverVersion'], _version);
+    expect(config.json['serverVersion'], bundle.version);
     expect(config.json['registration'], 'invite_only');
     final page = await pb.guest.send('GET', '/');
     page.expectStatus(200);
-    expect(page.raw.body, contains(_marker));
+    expect(page.raw.body, bundle.index);
     expect(await health(), 'healthy');
   }, skip: _skip);
 

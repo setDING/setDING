@@ -18,6 +18,9 @@ only on the server, so a mistake in them would otherwise show up there first.
 
 ## Behaviour tests (`server/test/`, job `server`)
 
+- **Update from the previous release** (`upgrade_test.dart`, ADR-0063): runs
+  only in the [server release test](releases.md#server-release-test), which
+  passes the previous release's bundle and image; skipped in `make check`.
 - **Server image** (`image_test.dart`, ADR-0063): builds the image from a bundle
   (stub web build, fixed version) and starts it with the example compose file
   `tool/server-dist/docker-compose.yml` (only the image and the host port

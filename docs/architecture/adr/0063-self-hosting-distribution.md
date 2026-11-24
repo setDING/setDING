@@ -265,10 +265,21 @@ web client excepted).
   (`tool/server-dist/build-image.sh`) builds it for the bundle's architecture. The
   example compose file is `tool/server-dist/docker-compose.yml` until the docs
   show it (#1053); `server/test/image_test.dart` runs it.
+- 2026-11-24: §6 implemented (#1052): `tool/server-dist/release-test.sh` builds
+  the bundle and image per architecture and runs `bundle_test`, `image_test` and
+  `upgrade_test` against them; the previous release's bundle comes from its GitHub
+  Release or is built from its tag, its image from ghcr.io or built from that
+  bundle. The release workflow's job `server` runs it for amd64 and arm64 (arm64
+  **in full under QEMU**, which resolves that open point) before `publish`, which
+  attaches the bundles; the job `server-image` pushes the multi-platform image from
+  the same bundles after the GitHub Release (tags `X.Y.Z`, and `X.Y`, `latest` for
+  final releases). `make release-gate` runs the release test for its own
+  architecture. The bundles are released without an SBOM for now (owner,
+  2026-11-24; #1062). The test found that a web build from a private directory made
+  the bundle unreadable for the image's user; the bundle's permissions are now
+  normalised.
 
 ## Open points
 
 - Signing the image and the bundles (e.g. cosign, SBOM per image, ADR-0037).
-- Whether the image smoke tests run under arm64 emulation in full or only the
-  health and version checks.
 - Off-host backup copies for the owner's production VPS.

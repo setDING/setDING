@@ -20,6 +20,9 @@
 #   WEB_DIR         an existing web build to bundle (default: built with
 #                   tool/build-web.sh into app/build/web)
 #   SERVER_VERSION  version (default: tool/release/version-stamp.sh)
+#   SRC             checkout whose server/, LICENSE and version are bundled
+#                   (default: this repository), e.g. an older release for
+#                   the upgrade test (tool/server-dist/previous-bundle.sh)
 #   PB_VERSION      PocketBase version (default: PB_VERSION in the Makefile)
 #
 # Prints the path of the bundle.
@@ -40,10 +43,11 @@ case "$ARCH" in
   *) fail "ARCH must be amd64 or arm64, not $ARCH" ;;
 esac
 
+SRC="${SRC:-$ROOT}"
 OUT="${OUT:-$ROOT/build/server-dist}"
 PB_VERSION="${PB_VERSION:-$(sed -n 's/^PB_VERSION *?= *//p' "$ROOT/Makefile")}"
 [ -n "$PB_VERSION" ] || fail "no PB_VERSION"
-version="${SERVER_VERSION:-$("$ROOT/tool/release/version-stamp.sh" "$ROOT")}"
+version="${SERVER_VERSION:-$("$ROOT/tool/release/version-stamp.sh" "$SRC")}"
 
 if [ -z "${WEB_DIR:-}" ]; then
   if ! command -v flutter >/dev/null 2>&1 && [ -x "$HOME/development/flutter/bin/flutter" ]; then
@@ -64,19 +68,22 @@ dir="$tmp/$name"
 mkdir -p "$dir/LICENSES"
 
 install -m 755 "$pb" "$dir/pocketbase"
-cp -r "$ROOT/server/pb_hooks" "$ROOT/server/pb_migrations" "$dir/"
+cp -r "$SRC/server/pb_hooks" "$SRC/server/pb_migrations" "$dir/"
 # Local stamps and placeholders are not part of a bundle.
 rm -f "$dir/pb_hooks/setding-version.txt" "$dir/pb_hooks/.gitkeep" "$dir/pb_migrations/.gitkeep"
 echo "$version" >"$dir/pb_hooks/setding-version.txt"
 cp -r "$WEB_DIR" "$dir/pb_public"
 echo "$version" >"$dir/VERSION"
-cp "$ROOT/LICENSE" "$dir/LICENSES/setDING.txt"
+cp "$SRC/LICENSE" "$dir/LICENSES/setDING.txt"
 cp "$(dirname "$pb")/LICENSE.md" "$dir/LICENSES/PocketBase.md"
+# Readable for every user (the image runs the server as another user than
+# the files' owner), writable only for the owner, whatever the sources had.
+chmod -R u+rwX,go+rX,go-w "$dir"
 
 mkdir -p "$OUT"
 archive="$OUT/$name-linux-$ARCH.tar.gz"
 # Reproducible: sorted, no owners, the commit time as file time.
-mtime="$(git -C "$ROOT" log -1 --format=%ct 2>/dev/null || date +%s)"
+mtime="$(git -C "$SRC" log -1 --format=%ct 2>/dev/null || date +%s)"
 tar --sort=name --owner=0 --group=0 --numeric-owner --mtime="@$mtime" \
   -C "$tmp" -cf - "$name" | gzip -n >"$archive.part"
 mv "$archive.part" "$archive"
