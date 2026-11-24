@@ -24,7 +24,8 @@ class PocketBase {
     this.superuserToken,
   );
 
-  final Process _process;
+  /// Null for a [remote] server.
+  final Process? _process;
 
   /// Deleted by [stop].
   final Directory _dir;
@@ -42,6 +43,56 @@ class PocketBase {
 
   static const _superuserEmail = 'root@setding.test';
   static const _superuserPassword = 'superuser-password';
+
+  /// The superuser [start], [startInstalled] and [remote] sign in as.
+  static const superuserEmail = _superuserEmail;
+  static const superuserPassword = _superuserPassword;
+
+  /// A server that runs elsewhere (e.g. in a container) at [baseUrl], with
+  /// the superuser [superuserEmail] already created there. The rate limits
+  /// are turned off. [stop] leaves the server running; [restart] and
+  /// [command] are not available.
+  static Future<PocketBase> remote(Uri baseUrl) async {
+    final pb = PocketBase._(
+      null,
+      await Directory.systemTemp.createTemp('setding-remote-'),
+      '',
+      const {},
+      const [],
+      null,
+      '',
+      baseUrl,
+      await _signIn(baseUrl),
+    );
+    await pb._disableRateLimits();
+    return pb;
+  }
+
+  static Future<String> _signIn(Uri baseUrl) async {
+    final auth = await http.post(
+      baseUrl.resolve('/api/collections/_superusers/auth-with-password'),
+      headers: {'content-type': 'application/json'},
+      body: jsonEncode({
+        'identity': _superuserEmail,
+        'password': _superuserPassword,
+      }),
+    );
+    if (auth.statusCode != 200) {
+      throw StateError('superuser sign-in failed: ${auth.body}');
+    }
+    return (jsonDecode(auth.body) as Map<String, dynamic>)['token'] as String;
+  }
+
+  Future<void> _disableRateLimits() async {
+    final r = await superuser.send(
+      'PATCH',
+      '/api/settings',
+      body: {
+        'rateLimits': {'enabled': false},
+      },
+    );
+    r.expectStatus(200);
+  }
 
   /// [environment] is added to the server's environment (e.g. deep-link
   /// settings read by the hooks). Unless it says otherwise, sign-up is open
@@ -152,8 +203,10 @@ class PocketBase {
     FutureOr<void> Function()? whileStopped,
     Map<String, String>? environment,
   }) async {
-    _process.kill();
-    await _process.exitCode;
+    final process = _process;
+    if (process == null) throw StateError('a remote server cannot restart');
+    process.kill();
+    await process.exitCode;
     await whileStopped?.call();
     return _launch(
       binary: _binaryPath,
@@ -243,15 +296,7 @@ class PocketBase {
       await Future<void>.delayed(const Duration(milliseconds: 100));
     }
 
-    final auth = await http.post(
-      baseUrl.resolve('/api/collections/_superusers/auth-with-password'),
-      headers: {'content-type': 'application/json'},
-      body: jsonEncode({
-        'identity': _superuserEmail,
-        'password': _superuserPassword,
-      }),
-    );
-    final token = (jsonDecode(auth.body) as Map<String, dynamic>)['token'];
+    final token = await _signIn(baseUrl);
     final pb = PocketBase._(
       process,
       dir,
@@ -261,18 +306,9 @@ class PocketBase {
       workingDirectory,
       dataDir,
       baseUrl,
-      token as String,
+      token,
     );
-    if (!rateLimits) {
-      final r = await pb.superuser.send(
-        'PATCH',
-        '/api/settings',
-        body: {
-          'rateLimits': {'enabled': false},
-        },
-      );
-      r.expectStatus(200);
-    }
+    if (!rateLimits) await pb._disableRateLimits();
     return pb;
   }
 
@@ -281,19 +317,24 @@ class PocketBase {
   Future<ProcessResult> command(
     List<String> args, {
     Map<String, String>? environment,
-  }) => Process.run(
-    _binaryPath,
-    [
-      ...args,
-      ..._without(_flags, ['--publicDir', '--http']),
-    ],
-    environment: environment,
-    workingDirectory: _workingDirectory,
-  );
+  }) {
+    if (_process == null) {
+      throw StateError('commands of a remote server run where it runs');
+    }
+    return Process.run(
+      _binaryPath,
+      [
+        ...args,
+        ..._without(_flags, ['--publicDir', '--http']),
+      ],
+      environment: environment,
+      workingDirectory: _workingDirectory,
+    );
+  }
 
   Future<void> stop() async {
-    _process.kill();
-    await _process.exitCode;
+    _process?.kill();
+    await _process?.exitCode;
     await _dir.delete(recursive: true);
   }
 

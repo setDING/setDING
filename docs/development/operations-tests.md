@@ -18,6 +18,15 @@ only on the server, so a mistake in them would otherwise show up there first.
 
 ## Behaviour tests (`server/test/`, job `server`)
 
+- **Server image** (`image_test.dart`, ADR-0063): builds the image from a bundle
+  (stub web build, fixed version) and starts it with the example compose file
+  `tool/server-dist/docker-compose.yml` (only the image and the host port
+  replaced): runs as user 65532, labels and `HEALTHCHECK`, the container becomes
+  healthy, API, `serverVersion` and web client, sign-up and delta sync, data kept
+  over a restart, `founder-invite` and `healthcheck` with `docker compose exec`,
+  backups configured and written into the volume. Needs Docker with Compose:
+  `make check` skips it without, `make check-full` and `make release-gate` fail
+  (`SETDING_REQUIRE_DOCKER=1`).
 - **Server bundle** (`bundle_test.dart`, ADR-0063): builds the bundle with
   `tool/server-dist/build-bundle.sh` (a stub web build, a fixed version) and
   checks its content, licences and `SHA256SUMS`. Then it unpacks it and starts

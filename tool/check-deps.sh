@@ -10,6 +10,9 @@
 #   latest release; `make upgrade` runs `npm update`.
 # - the CycloneDX Gradle plugin of the SBOM (tool/sbom/gradle, ADR-0037) must be
 #   the latest release on the Gradle plugin portal (raised by hand).
+# - the distroless base image of the server image (tool/server-dist/Dockerfile,
+#   ADR-0063) must be pinned to the current digest of its tag, and no newer
+#   Debian series of it may exist (raised by hand).
 # - the check tools pinned in tool/fetch-tool.sh (ShellCheck, Caddy,
 #   geckodriver) must be the latest GitHub release (raised by hand, with the
 #   ShellCheck and geckodriver sums).
@@ -93,6 +96,43 @@ elif [ "$current" != "$latest" ]; then
   status=1
 else
   echo "deps: tool/sbom/gradle: OK"
+fi
+
+# Base image of the server image (ADR-0063): the pinned digest must be the
+# tag's current one, and there must be no newer Debian series.
+dockerfile="$ROOT/tool/server-dist/Dockerfile"
+if [ -f "$dockerfile" ]; then
+  ref="$(sed -n 's/^FROM gcr\.io\/\([^ ]*\).*/\1/p' "$dockerfile")"
+  repo="${ref%%:*}"            # distroless/static-debian13
+  tag="${ref#*:}" tag="${tag%%@*}"
+  pinned="${ref##*@}"
+  # Current digest of a tag (empty if it does not exist).
+  digest() {
+    local token
+    token="$(curl -fsS "https://gcr.io/v2/token?scope=repository:$1:pull" 2>/dev/null |
+      sed -n 's/.*"token": *"\([^"]*\)".*/\1/p')" || return 1
+    [ -n "$token" ] || return 1
+    curl -fsSI -H "Authorization: Bearer $token" \
+      -H 'Accept: application/vnd.oci.image.index.v1+json' \
+      -H 'Accept: application/vnd.docker.distribution.manifest.list.v2+json' \
+      "https://gcr.io/v2/$1/manifests/$2" 2>/dev/null |
+      tr -d '\r' | sed -n 's/^docker-content-digest: *//Ip'
+  }
+  series="${repo##*-debian}"
+  next="${repo%-debian*}-debian$((series + 1))"
+  if ! current="$(digest "$repo" "$tag")" || [ -z "$current" ]; then
+    echo "deps: tool/server-dist/Dockerfile: could not query gcr.io (offline?), skipped" >&2
+  elif [ "$current" != "$pinned" ]; then
+    echo "deps: tool/server-dist/Dockerfile: outdated:"
+    echo "  $repo:$tag $pinned -> $current (raise the digest in $dockerfile)"
+    status=1
+  elif [ -n "$(digest "$next" "$tag" || true)" ]; then
+    echo "deps: tool/server-dist/Dockerfile: outdated:"
+    echo "  $repo -> $next (a newer Debian series; raise it in $dockerfile)"
+    status=1
+  else
+    echo "deps: tool/server-dist/Dockerfile: $repo:$tag OK"
+  fi
 fi
 
 # Check tools of the test gate (tool/fetch-tool.sh, issue #644).

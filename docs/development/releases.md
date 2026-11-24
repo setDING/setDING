@@ -311,6 +311,22 @@ builds, tests and publishes it (#1052). `server/test/bundle_test.dart` builds a
 bundle and starts it as it is and with the example systemd unit
 `tool/server-dist/setding.service` ([operations tests](operations-tests.md)).
 
+## Server image
+
+The Docker image (ADR-0063) is built from a bundle on a distroless base
+(`tool/server-dist/Dockerfile`, non-root user 65532, `pb_data` as a volume,
+`HEALTHCHECK` with `pocketbase healthcheck`):
+
+```bash
+make server-image
+```
+
+builds a bundle for this machine and the image `setding-server:<version>`
+(`BUNDLE=<.tar.gz>` to package an existing bundle, `IMAGE=<name:tag>` for another
+name). The release workflow builds it for amd64 and arm64 and publishes it
+(#1052). `server/test/image_test.dart` starts it with the example compose file
+`tool/server-dist/docker-compose.yml` ([operations tests](operations-tests.md)).
+
 ## Linux (local)
 
 ```bash
