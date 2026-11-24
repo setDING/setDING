@@ -91,8 +91,12 @@ class PocketBase {
 
   /// Stops the server, runs [whileStopped] (e.g. a restore into [dataDir])
   /// and starts it again on the same directory with all migrations; this
-  /// instance must not be used afterwards.
-  Future<PocketBase> restart({FutureOr<void> Function()? whileStopped}) async {
+  /// instance must not be used afterwards. [environment] is added to the
+  /// server's environment from [start].
+  Future<PocketBase> restart({
+    FutureOr<void> Function()? whileStopped,
+    Map<String, String>? environment,
+  }) async {
     _process.kill();
     await _process.exitCode;
     await whileStopped?.call();
@@ -101,7 +105,7 @@ class PocketBase {
       root: _root,
       dir: _dir,
       migrations: '$_root/server/pb_migrations',
-      environment: _environment,
+      environment: {..._environment, ...?environment},
       publicDir: null,
       rateLimits: false,
     );
@@ -149,6 +153,8 @@ class PocketBase {
     final log = StringBuffer();
     process.stdout.transform(utf8.decoder).listen(log.write);
     process.stderr.transform(utf8.decoder).listen(log.write);
+    int? exitCode;
+    unawaited(process.exitCode.then((code) => exitCode = code));
 
     final baseUrl = Uri.parse('http://127.0.0.1:$port');
     final deadline = DateTime.now().add(const Duration(seconds: 20));
@@ -158,6 +164,11 @@ class PocketBase {
         if (r.statusCode == 200) break;
       } on SocketException {
         // not up yet
+      }
+      if (exitCode != null) {
+        // Give the output streams a moment to deliver the last lines.
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+        throw StateError('PocketBase exited with $exitCode:\n$log');
       }
       if (DateTime.now().isAfter(deadline)) {
         process.kill();
@@ -307,6 +318,9 @@ class Client {
 
   final PocketBase pb;
   final String? _token;
+
+  /// The auth token, e.g. to act as the same user after a restart.
+  String? get token => _token;
 
   Future<Response> send(
     String method,
