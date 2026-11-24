@@ -103,6 +103,8 @@ Constraints:
   (`src/app-docs-links.test.ts`) fails when a linked page is missing in a
   language of the site.
 
+- 2026-11-24: **ADR-0063** (accepted, #1048): the website is project infrastructure, not part of self-hosting; it stays on the owner's server with its own deployment (`make server-site`, `SITE_SERVER`) and web server configuration, and installing or updating the backend no longer touches it. A new "Self-hosting" chapter documents the backend for operators.
+
 ## Open points
 
 - Remaining documentation chapters (sets, live mode, songs and the editor, bands and
