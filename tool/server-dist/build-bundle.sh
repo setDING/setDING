@@ -45,6 +45,9 @@ esac
 
 SRC="${SRC:-$ROOT}"
 OUT="${OUT:-$ROOT/build/server-dist}"
+# Absolute, so the printed path works from any directory (#1064).
+mkdir -p "$OUT"
+OUT="$(cd "$OUT" && pwd)"
 PB_VERSION="${PB_VERSION:-$(sed -n 's/^PB_VERSION *?= *//p' "$ROOT/Makefile")}"
 [ -n "$PB_VERSION" ] || fail "no PB_VERSION"
 version="${SERVER_VERSION:-$("$ROOT/tool/release/version-stamp.sh" "$SRC")}"

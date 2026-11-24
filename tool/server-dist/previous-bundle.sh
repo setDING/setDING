@@ -26,6 +26,9 @@ if [ -z "${ARCH:-}" ]; then
   esac
 fi
 OUT="${OUT:-$ROOT/build/server-dist/previous}"
+# Absolute, so the printed path works from any directory (#1064).
+mkdir -p "$OUT"
+OUT="$(cd "$OUT" && pwd)"
 
 tag="${PREVIOUS:-}"
 if [ -z "$tag" ]; then

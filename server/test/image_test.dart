@@ -58,12 +58,12 @@ void main() {
   late TestBundle bundle;
   late String image;
   var builtImage = false;
-  late String project;
-  late String composeFile;
+  String? project;
+  String? composeFile;
   late Uri baseUrl;
 
   Future<ProcessResult> compose(List<String> args) =>
-      _run('docker', ['compose', '-p', project, '-f', composeFile, ...args]);
+      _run('docker', ['compose', '-p', project!, '-f', composeFile!, ...args]);
 
   Future<String> containerId() async =>
       ((await compose(['ps', '-q', 'setding'])).stdout as String).trim();
@@ -91,8 +91,8 @@ void main() {
 
   setUpAll(() async {
     if (_skip != false) return;
-    expect(_dockerAvailable(), isTrue, reason: 'Docker with Compose needed');
     work = await Directory.systemTemp.createTemp('setding-image-');
+    expect(_dockerAvailable(), isTrue, reason: 'Docker with Compose needed');
     bundle = await TestBundle.obtain(work, '9.8.7-imagetest');
     final id = DateTime.now().microsecondsSinceEpoch;
     project = 'setding-image-test-$id';
@@ -118,7 +118,7 @@ void main() {
     expect(example, contains(imageLine));
     expect(example, contains(portLine));
     composeFile = '${work.path}/docker-compose.yml';
-    File(composeFile).writeAsStringSync(
+    File(composeFile!).writeAsStringSync(
       example
           .replaceFirst(imageLine, 'image: $image')
           .replaceFirst(portLine, '"127.0.0.1:$port:8090"'),
@@ -139,15 +139,18 @@ void main() {
 
   tearDownAll(() async {
     if (_skip != false) return;
-    await Process.run('docker', [
-      'compose',
-      '-p',
-      project,
-      '-f',
-      composeFile,
-      'down',
-      '-v',
-    ]);
+    // Only what setUpAll got to start (it may have failed before).
+    if (project != null && composeFile != null) {
+      await Process.run('docker', [
+        'compose',
+        '-p',
+        project!,
+        '-f',
+        composeFile!,
+        'down',
+        '-v',
+      ]);
+    }
     if (builtImage) await Process.run('docker', ['image', 'rm', '-f', image]);
     await work.delete(recursive: true);
   });
