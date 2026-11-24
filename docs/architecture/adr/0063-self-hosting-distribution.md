@@ -46,7 +46,8 @@ Forces:
 ### 1. One server bundle per release
 
 Every release produces a **server bundle** `setding-server-X.Y.Z-linux-<arch>.tar.gz`
-for `amd64` and `arm64`, attached to the GitHub Release:
+for `amd64` and `arm64`, attached to the GitHub Release together with a
+`SHA256SUMS` file:
 
 ```
 setding-server-X.Y.Z/
@@ -63,10 +64,22 @@ The bundle runs as it is: `./pocketbase serve --http=127.0.0.1:8090` creates
 app X.Y.Z" is always true. It is the single source for every way of running the
 server, including the owner's.
 
-### 2. Docker image as the one supported way
+### 2. Two supported ways: the bundle and a Docker image
 
-A **Docker image** `ghcr.io/tafli/setding-server:X.Y.Z` (multi-arch, also tagged
-`X.Y` and `latest` for final releases) is built from the bundle:
+Both release artifacts are **supported and equally tested** (section 6); operators
+pick the one that fits their host.
+
+**a) The bundle, run natively** on a Linux host (any distribution with systemd):
+unpack it, create an own system user, run it as a service. The documentation
+shows an **example systemd unit** (hardened like today's `pocketbase.service`) and
+the update steps (replace the bundle directory, keep `pb_data`, restart). Like
+the compose file, the unit is an example in the docs, not a file in the release.
+Configuration through environment variables (an `EnvironmentFile`), as in the
+image. The owner's production server runs this way (section 7).
+
+**b) The Docker image** `ghcr.io/tafli/setding-server:X.Y.Z`
+(multi-arch, also tagged `X.Y` and `latest` for final releases), built from the
+bundle:
 
 - Base image **`gcr.io/distroless/static-debian*:nonroot`**, pinned by digest; the
   digest is checked for updates like every other dependency (`make upgrade`,
@@ -77,22 +90,19 @@ A **Docker image** `ghcr.io/tafli/setding-server:X.Y.Z` (multi-arch, also tagged
 - Listens on **plain HTTP** on port 8090 inside the container.
 - `HEALTHCHECK` calls the binary itself (`pocketbase healthcheck`, a console
   command in the hooks), because distroless has no shell, `curl` or `wget`.
-- Configuration only through **environment variables** (the existing `SETDING_*`
-  variables, `SETDING_INVITE_KEY` included); the server refuses to start with a
-  clear message when a required one is missing, instead of generating secrets
-  into the data volume.
 
-Docker is the **only supported** installation. Running the bundle without Docker
-is documented as a manual installation (unpack, own user, a systemd unit as an
-example), but it is not a second supported product.
+For both ways, configuration is only through **environment variables** (the
+existing `SETDING_*` variables, `SETDING_INVITE_KEY` included); the server refuses
+to start with a clear message when a required one is missing, instead of
+generating secrets into the data directory.
 
 ### 3. No installer, no reverse proxy, no compose file in the package
 
 - There is **no install script** for self-hosters.
 - The package contains **no reverse proxy and no tunnel**, not even as an option.
   TLS and publication are the operator's choice.
-- There is **no `docker-compose.yml` in the release**; the documentation shows one
-  as an example (and a matching `docker run`).
+- There is **no `docker-compose.yml` and no systemd unit in the release**; the
+  documentation shows both as examples (and a matching `docker run`).
 
 ### 4. Admin tasks and backups inside the server
 
@@ -117,7 +127,9 @@ the owner's operations guide `docs/operations/server.md`:
 
 - What you get, requirements (a Linux host with Docker, a domain, a reverse proxy
   with TLS) and the version rule (update the apps first, then the server; ADR-0029).
-- Quick start with the example `docker-compose.yml` and `docker run`.
+- Two installation pages of equal rank: **native with the bundle** (download,
+  checksum, unpack, system user, example systemd unit, updates) and **Docker**
+  (example `docker-compose.yml` and `docker run`).
 - **Requirements for any reverse proxy:** HTTPS; forward the client IP and
   configure PocketBase's trusted proxy header (otherwise the rate limits of
   ADR-0004 hit all users behind the proxy at once); request bodies of at least
@@ -127,7 +139,7 @@ the owner's operations guide `docs/operations/server.md`:
   Nginx) only named.
 - Configuration (`SETDING_*`), first superuser, founding the first organization,
   connecting the apps (server setting) with a screenshot, updates, backups and
-  restore, the manual installation without Docker.
+  restore for both ways.
 - The landing page names self-hosting as a feature and links the chapter.
 
 ### 6. Both ways are tested automatically on every release
@@ -140,7 +152,9 @@ Nothing about the bundle or the image is tested by hand:
   and check:
   - the **bundle** started natively: health, `serverVersion` equals `VERSION`,
     the web client is served, a sign-up and a sync round trip through the API,
-    `founder-invite`, a backup and its restore;
+    `founder-invite`, a backup and its restore; the **systemd unit taken from the
+    documentation page** is checked with `systemd-analyze verify` and its
+    `ExecStart` is the command the test starts;
   - the **image**, started with the **`docker-compose.yml` taken from the
     documentation page** (de and en must be identical), so the published example
     cannot rot: health and `HEALTHCHECK` status, runs as non-root, data survives a
@@ -154,17 +168,21 @@ Nothing about the bundle or the image is tested by hand:
   `make server-release` (which waits for a green release build) never deploys an
   untested server.
 
-### 7. The owner's servers use the published image
+### 7. The owner's servers use the published bundle
 
-- **Production** (VPS) and **staging** (LXC, Docker with nesting) run the published
-  image with a compose file in the owner's operations tooling.
-- `make server-release` deploys the release's image tag to production after a green
-  release build, as before. A staging target deploys an image built from the working
-  tree or a branch (`SERVER_STAGING` in `local.mk`).
+- **Production** (VPS) and **staging** (LXC) run the **bundle natively** with
+  systemd, set up like the documented example, so staging mirrors production.
+  The Docker image is not run by the owner; the automatic tests of section 6 cover
+  it.
+- `make server-release` deploys the release's **published bundle** to production
+  after a green release build, as before: download from the GitHub Release, verify
+  `SHA256SUMS`, swap the bundle directory, restart, check `serverVersion`. A staging
+  target deploys a bundle built from the working tree or a branch
+  (`SERVER_STAGING` in `local.mk`).
 - The reverse proxy or tunnel in front of each of the owner's servers is part of the
   owner's operations tooling in `tool/server/`, not of the product.
-- `tool/server/install.sh` becomes internal operations tooling (Docker, tunnel,
-  host hardening) and is no longer handed out.
+- `tool/server/install.sh` becomes internal operations tooling (system user,
+  systemd unit, tunnel or proxy, host hardening) and is no longer handed out.
 
 ### 8. The website is independent of the backend
 
@@ -178,9 +196,9 @@ web client excepted).
 
 | Option | Pros | Cons |
 |---|---|---|
-| **Docker image + bundle, no installer** (chosen) | One artifact, one supported way; runs on any VPS, NAS or home server; tested as published | People without Docker install by hand |
-| Install script for Debian/Ubuntu as a second supported way | Familiar for small VPS users; no Docker needed | A second product to test and maintain; assumes distribution, init system and paths; overlaps with what Docker does |
-| Both script and Docker equally supported | Covers every audience | Double effort for every change to the server setup; the script would be the less tested one |
+| **Bundle and Docker image both supported, no installer** (chosen) | One source artifact; runs natively on a small VPS (as the owner's production) or in Docker on any VPS, NAS or home server; both tested as published | Two ways to document and test; native operators set up user and unit themselves (with the documented example) |
+| Docker image as the only supported way | One way to document and test | The owner's own VPS runs without Docker; small hosts without Docker would be left out |
+| Install script for Debian/Ubuntu | Familiar for small VPS users | Assumes distribution, init system and paths; a third thing to test; the bundle with an example unit does the same with less magic |
 | Reverse proxy (Caddy) bundled or as an option | Zero-configuration HTTPS for beginners | Most self-hosters already have a proxy; two proxies conflict; ties the package to one proxy and its certificates |
 | `docker-compose.yml` shipped in the release | Copy and run | One more file to version; operators change it anyway; the tested example in the docs gives the same |
 | Debian or Alpine base image | Shell for debugging, `curl` for health checks | Larger, more packages to patch and more CVE reports for code we do not use |
@@ -190,13 +208,16 @@ web client excepted).
 
 ## Consequences
 
-- Self-hosting becomes a documented product: one image, one example, a clear list
-  of proxy requirements; the owner runs exactly what others run.
+- Self-hosting becomes a documented product: a bundle and an image, tested examples
+  for both, a clear list of proxy requirements; the owner runs the published bundle
+  exactly as others do.
 - The release workflow grows: bundle and image builds, smoke tests and a push to
   the GitHub container registry (`packages: write`).
 - `make check` needs Docker for the image smoke test when server files change;
   machines without Docker skip it with a warning, `make release-gate` and the
   release workflow do not.
+- The release workflow publishes the bundles with `SHA256SUMS`; `make server-release`
+  no longer copies files from a checkout but installs the published bundle.
 - Backups change format (PocketBase backup ZIP instead of the own tar.gz);
   `make server-backup` and `make server-fetch-backup` follow.
 - `SETDING_INVITE_KEY` is no longer generated by an installer; operators set it
@@ -214,6 +235,11 @@ web client excepted).
   installer, no proxy and no compose file in the package, the website independent
   of the backend, production on a VPS and the LXC as staging, both artifacts tested
   automatically on every release. Implementation issues: #1049 (healthcheck, configuration check, backups), #1050 (bundle), #1051 (image), #1052 (release workflow), #1053 (website chapter), #1054 (website deployment), #1055 (owner's servers).
+- 2026-11-24: The owner's production VPS runs without Docker: the **bundle becomes
+  a second supported way** of equal rank (native with systemd, example unit in the
+  docs and tested), released with `SHA256SUMS`; production and staging both run
+  the published bundle natively; the image stays supported and is covered by the
+  automatic tests.
 
 ## Open points
 
