@@ -8,8 +8,13 @@
 # workflow, section 10): releases and test builds share one counter, so the Android
 # versionCode grows with every build and identifies it. pubspec.yaml carries no
 # build number. Test build files are named with it (setding-0.8.0-build42-…).
-# Every asset gets a CycloneDX SBOM next to it (<asset>.cdx.json, ADR-0037),
-# generated and checked in its build job and validated in the sbom job.
+# Every app asset gets a CycloneDX SBOM next to it (<asset>.cdx.json, ADR-0037),
+# generated and checked in its build job and validated in the sbom job; the
+# server bundles do not have one yet (#1062).
+# The server (ADR-0063) is released as a bundle per architecture (an asset of
+# the GitHub Release) and as a multi-platform image on ghcr.io; both are tested
+# (also the update from the previous release) before anything is published,
+# and the image is pushed only after the GitHub Release exists.
 name: Release
 
 on:
@@ -305,6 +310,50 @@ jobs:
             ${{ needs.version.outputs.name }}-windows-x64-setup.exe.cdx.json
           if-no-files-found: error
 
+  # Server bundles for amd64 and arm64 (arm64 runs under QEMU), the image built
+  # from each and the update from the previous release, all tested by
+  # tool/server-dist/release-test.sh (ADR-0063 §6).
+  server:
+    needs: version
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          # The previous release tag, for the update test.
+          fetch-depth: 0
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ needs.version.outputs.flutter }}
+          cache: true
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build and test the server bundles and images
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARCHS: amd64 arm64
+          OUT: dist-server
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          if [ "$GITHUB_REF_TYPE" = tag ]; then export SERVER_VERSION="$VERSION"; fi
+          tool/server-dist/release-test.sh
+
+      - name: Upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: server
+          path: dist-server/setding-server-*-linux-*.tar.gz
+          if-no-files-found: error
+
   # Validates every SBOM against the CycloneDX specification (ADR-0037), also
   # for test builds; their content was checked in the build jobs.
   sbom:
@@ -326,7 +375,7 @@ jobs:
 
   publish:
     if: github.ref_type == 'tag'
-    needs: [version, linux, android, windows, sbom]
+    needs: [version, linux, android, windows, server, sbom]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -356,3 +405,50 @@ jobs:
           gh release create "$GITHUB_REF_NAME" \
             --repo "$GITHUB_REPOSITORY" --title "setDING $VERSION" \
             --notes-file ../release-notes.md --verify-tag "${prerelease[@]}" -- *
+
+  # The server image, built for amd64 and arm64 from the tested bundles of this
+  # release and pushed to ghcr.io once the GitHub Release exists. Final
+  # releases are also tagged X.Y and latest.
+  server-image:
+    if: github.ref_type == 'tag'
+    needs: [version, publish]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Download the server bundles
+        uses: actions/download-artifact@v8
+        with:
+          name: server
+          path: dist-server
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to ghcr.io
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Build and push
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          repo="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/setding-server"
+          images="$repo:$VERSION"
+          if [[ "$VERSION" != *-* ]]; then
+            images="$images $repo:${VERSION%.*} $repo:latest"
+          fi
+          BUNDLES="$(ls dist-server/setding-server-*-linux-*.tar.gz | tr '\n' ' ')" \
+            PLATFORMS=linux/amd64,linux/arm64 PUSH=1 IMAGE="$images" \
+            tool/server-dist/build-image.sh
