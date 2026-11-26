@@ -1573,9 +1573,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get metaCopyright => 'Copyright';
 
   @override
-  String get metaCcli => 'Número CCLI';
-
-  @override
   String get metaTag => 'Etiqueta';
 
   @override

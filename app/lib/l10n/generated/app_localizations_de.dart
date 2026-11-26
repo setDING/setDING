@@ -1573,9 +1573,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get metaCopyright => 'Copyright';
 
   @override
-  String get metaCcli => 'CCLI-Nummer';
-
-  @override
   String get metaTag => 'Tag';
 
   @override
