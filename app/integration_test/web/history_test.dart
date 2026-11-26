@@ -8,6 +8,7 @@
 // 2. reloaded: the reload served the web client at the song's path and
 //    opened the song again, with a back button to the song list.
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/ui/home_screen.dart';
@@ -19,6 +20,8 @@ import '../support.dart';
 import 'web_support.dart';
 
 void main() {
+  // As in the app's main(), before the binding starts.
+  usePathUrlStrategy();
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   String path() => web.window.location.pathname;
@@ -62,6 +65,8 @@ void main() {
           timeout: const Duration(seconds: 60),
         );
         expect(path(), startsWith('/songs/'));
+        // A back button to the song list, once the song is loaded.
+        await pumpUntil(tester, find.byType(BackButton));
         await tester.tap(find.byType(BackButton));
         await pumpUntil(tester, find.byType(SongsScreen));
         expect(path(), '/songs');

@@ -95,6 +95,17 @@ abstract final class AppPaths {
   static const nextParameter = 'next';
 }
 
+/// The location the web client was opened at: the page's own URL. The
+/// engine's default route can be `/` although the page was loaded at a
+/// deeper path (a reload, a link), so the router starts here instead.
+String webStartLocation(Uri page) {
+  final path = page.path.isEmpty ? AppPaths.overview : page.path;
+  return Uri(
+    path: path,
+    query: page.query.isEmpty ? null : page.query,
+  ).toString();
+}
+
 /// The extra of [AppPaths.song]: the set it was opened from (#729) and
 /// whether to pick a PDF right away.
 Map<String, Object?> songExtra({
@@ -158,6 +169,9 @@ GoRouter createAppRouter({
   return GoRouter(
     navigatorKey: root,
     initialLocation: home != null ? _testHome : initialLocation,
+    // The given location wins over the engine's default route, which can
+    // miss the page's path on the web (see [webStartLocation]).
+    overridePlatformDefaultLocation: home != null || initialLocation != '/',
     redirect: redirect,
     routes: home != null
         ? [

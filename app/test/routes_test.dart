@@ -261,4 +261,18 @@ void main() {
     expect(location(tester), AppPaths.recentChanges);
     await app.dispose(tester);
   });
+
+  test('the web client starts at the URL it was opened at', () {
+    // The engine's default route can miss it after a reload (#1113).
+    expect(webStartLocation(Uri.parse('https://app.test/')), '/');
+    expect(webStartLocation(Uri.parse('https://app.test')), '/');
+    expect(
+      webStartLocation(Uri.parse('https://app.test/songs/abc/edit')),
+      '/songs/abc/edit',
+    );
+    expect(
+      webStartLocation(Uri.parse('https://app.test/sets/abc/live?index=2')),
+      '/sets/abc/live?index=2',
+    );
+  });
 }

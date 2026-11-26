@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:material_ui/material_ui.dart';
 import 'package:cupertino_ui/cupertino_ui.dart'
     show GlobalCupertinoLocalizations;
@@ -52,6 +53,7 @@ class _SetdingAppState extends ConsumerState<SetdingApp> {
         child: DeepLinkListener(child: StartScreen(navigation: navigation)),
       ),
       redirect: (_, state) => _redirect(state.uri),
+      initialLocation: kIsWeb ? webStartLocation(Uri.base) : AppPaths.overview,
     );
   }
 
