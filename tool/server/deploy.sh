@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Copies a checkout to the server and runs install.sh there (make server-install,
-# ADR-0014): hooks, migrations, the web client and the website (ADR-0030) built
-# from the same checkout, and the version stamp read by /api/setding/config
+# ADR-0014): hooks, migrations, the web client built from the same checkout,
+# and the version stamp read by /api/setding/config
 # (serverVersion).
 #
 # Environment:
@@ -31,23 +31,13 @@ fi
 # compiles the drift worker before Flutter would fetch them (#348).
 (cd "$SRC/app" && flutter pub get >/dev/null)
 "$SRC/tool/build-web.sh"
-# The website (ADR-0030); tags from before it have none. A failed website
-# build only skips the website, it never stops the server deploy (#397).
-site=()
-if [ -f "$SRC/website/package.json" ]; then
-  if "$SRC/tool/build-site.sh" "$SRC"; then
-    site=(website/dist)
-  else
-    echo "WARNING: the website build failed; deploying the server without it (make server-site later)." >&2
-  fi
-fi
 
 # Ends up in the server's pb_hooks; PocketBase only loads *.pb.js from there.
 stamp="$SRC/app/build/server-stamp"
 mkdir -p "$stamp/server/pb_hooks"
 echo "$version" >"$stamp/server/pb_hooks/setding-version.txt"
 
-tar -czf - --transform 's,^app/build/web,web,' --transform 's,^website/dist,site,' \
-  -C "$SRC" tool/server server/pb_hooks server/pb_migrations app/build/web "${site[@]}" \
+tar -czf - --transform 's,^app/build/web,web,' \
+  -C "$SRC" tool/server server/pb_hooks server/pb_migrations app/build/web \
   -C "$stamp" server/pb_hooks/setding-version.txt |
   $SSH "$SERVER" "d=\$(mktemp -d /tmp/setding-setup.XXXXXX) && tar -C \$d -xzf - && bash \$d/tool/server/install.sh $PB_VERSION"

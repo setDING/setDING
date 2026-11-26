@@ -65,6 +65,12 @@ Android tests start is stopped at the end.
    `"serverVersion":"X.Y.Z"`). From then on the server also reports
    `"latestClientVersion":"X.Y.Z"`, and the installed apps show that a new version
    is available (ADR-0036).
+5. Deploy the website of the release (its documentation and *What's new*), which
+   the server deploy no longer does (ADR-0063 §8):
+
+   ```bash
+   make server-site VERSION=X.Y.Z
+   ```
 
 The tag must equal `v` + the version in `pubspec.yaml`, otherwise the workflow fails.
 Tags with a suffix (`v1.2.0-beta.1`) become pre-releases, which Obtainium skips by

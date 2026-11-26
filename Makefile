@@ -80,6 +80,8 @@ ANDROID_KEYSTORE ?= $(HOME)/.local/share/setding/android-release.jks
 # PB_VERSION is the pinned PocketBase version; updates are deliberate (ADR-0004).
 -include $(ROOT)/local.mk
 SERVER          ?=
+# SSH target of the website server (ADR-0063 §8), e.g. in local.mk.
+SITE_SERVER     ?=
 PB_VERSION      ?= 0.42.3
 SSH             ?= ssh
 SERVER_BACKUPS  := /var/lib/pocketbase/backups
@@ -290,16 +292,17 @@ server-bundle: ## Build the server bundle setding-server-<version>-linux-<arch>.
 server-image: ## Build the Docker image of the server from a bundle (BUNDLE=<.tar.gz>, default built now; IMAGE=<name:tag>; ADR-0063)
 	@BUNDLE=$(BUNDLE) IMAGE=$(IMAGE) ARCH=$(ARCH) WEB_DIR=$(WEB_DIR) PB_VERSION=$(PB_VERSION) $(ROOT)/tool/server-dist/build-image.sh
 
-server-site: server-target ## Build the website from the working tree and deploy only the website (ADR-0030)
-	@SERVER=$(SERVER) SSH="$(SSH)" $(ROOT)/tool/server/deploy-site.sh
+server-site: ## Build and deploy the website to SITE_SERVER, from the working tree or the release tag (VERSION=x.y.z; ADR-0030)
+	@test -n "$(SITE_SERVER)" || { echo "Set SITE_SERVER to the website server's SSH target, e.g. in local.mk"; exit 1; }
+	@SITE_SERVER=$(SITE_SERVER) SSH="$(SSH)" $(ROOT)/tool/site/deploy-site.sh $(VERSION)
 
 server-status: server-target ## Show services, PocketBase version and backups of the server
-	@$(SSH) $(SERVER) 'systemctl --no-pager --lines=0 status pocketbase caddy cloudflared setding-backup.timer; \
+	@$(SSH) $(SERVER) 'systemctl --no-pager --lines=0 status pocketbase cloudflared setding-backup.timer; \
 		echo; /opt/pocketbase/pocketbase --version; curl -fsS http://127.0.0.1:8090/api/health; echo; \
 		echo; echo "Backups:"; ls -lh $(SERVER_BACKUPS) | tail -n 5; echo; df -h /'
 
 server-logs: server-target ## Follow the PocketBase and tunnel logs of the server (Ctrl+C to stop)
-	$(SSH) -t $(SERVER) 'journalctl -u pocketbase -u caddy -u cloudflared -n 100 -f'
+	$(SSH) -t $(SERVER) 'journalctl -u pocketbase -u cloudflared -n 100 -f'
 
 server-backup: server-target ## Run a backup on the server now
 	$(SSH) $(SERVER) 'systemctl start setding-backup.service && journalctl -u setding-backup -n 3 -o cat'

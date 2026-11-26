@@ -278,6 +278,9 @@ web client excepted).
   2026-11-24; #1062). The test found that a web build from a private directory made
   the bundle unreadable for the image's user; the bundle's permissions are now
   normalised.
+- 2026-11-26: §8 implemented (#1054): the website has its own deployment
+  (`make server-site [VERSION=…]` to `SITE_SERVER`, files in `tool/site/`); the server
+  deploys no longer touch it.
 
 ## Open points
 

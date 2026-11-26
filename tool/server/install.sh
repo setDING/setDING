@@ -4,8 +4,8 @@
 # Runs as root ON the server (a Debian LXC container). Idempotent: the same script
 # installs a fresh container and updates an existing one. Normally started from the
 # development machine with `make server-install`, which copies this directory,
-# server/pb_hooks + server/pb_migrations, the web build (as web/) and the website
-# build (as site/) first.
+# server/pb_hooks + server/pb_migrations and the web build (as web/) first. The
+# website is not part of it (make server-site, ADR-0063 §8).
 #
 #   install.sh <pocketbase-version>     e.g. install.sh 0.40.6
 set -euo pipefail
@@ -197,12 +197,4 @@ else
   echo "Cloudflare tunnel: not connected yet (run 'cloudflared service install <TOKEN>', see docs/operations/server.md)"
 fi
 
-# --- Website (ADR-0030) --------------------------------------------------------
-# Last, after PocketBase is upgraded and answers: a failure here (e.g. installing
-# or starting Caddy) must not interrupt the server upgrade, so it is reported
-# as a warning and the deploy still succeeds (#397).
-if ! bash "$HERE/install-site.sh" "$SETUP_DIR"; then
-  echo >&2
-  echo "WARNING: the website step failed; PocketBase is upgraded and running." >&2
-  echo "WARNING: see 'journalctl -u caddy', fix it and run 'make server-site'." >&2
-fi
+# The website is deployed on its own (make server-site, ADR-0063 §8).
