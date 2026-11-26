@@ -23,13 +23,19 @@ project folder:
 SERVER = root@<host>
 ```
 
-or pass it per call, e.g. `make server-install SERVER=root@<staging-host>`.
+or pass it per call, e.g. `make server-install SERVER=root@<staging-host>`. The
+website has its own target, `SITE_SERVER` (section 8), and the server targets never
+touch it (ADR-0063 §8):
+
+```make
+SITE_SERVER = root@<website-host>
+```
 
 | Target | What it does |
 |---|---|
 | `make server-release [VERSION=X.Y.Z]` | **Production updates:** after a release, wait for its green build, then deploy from the tag and stamp the version (default: newest tag) |
 | `make server-install` | Install or update everything from the working tree (idempotent); stamped `X.Y.Z-dev+<commit>` unless it is a clean release tag. First install, test instances, emergencies |
-| `make server-site` | Build the website from the working tree and deploy only the website (documentation fixes between releases) |
+| `make server-site [VERSION=X.Y.Z]` | Build the website and deploy it to `SITE_SERVER`: from the release tag after a release, from the working tree for documentation fixes (section 8) |
 | `make server-status` | Services, PocketBase version, health, latest backups, disk |
 | `make server-logs` | Follow the PocketBase, Caddy and tunnel logs |
 | `make server-backup` | Run a backup now |
@@ -223,15 +229,18 @@ about half a minute per request), so a large import syncs more slowly but comple
 
 ## 8. Website (owner, once)
 
-The website and user documentation (`website/`, ADR-0030) is a static build that
-`make server-install`, `make server-release` and `make server-site` build
-(`make site`) and copy to `/var/www/setding-site`. Caddy from Debian serves it on
-`127.0.0.1:8081` ([`tool/server/Caddyfile`](../../tool/server/Caddyfile), installed by
-[`tool/server/install-site.sh`](../../tool/server/install-site.sh)): files under
+The website and user documentation (`website/`, ADR-0030) is project
+infrastructure, independent of the backend (ADR-0063 §8): it lives on the owner's
+server (`SITE_SERVER`, today the same container), and only `make server-site`
+deploys it. `make server-site VERSION=X.Y.Z` builds it from the release tag (after a
+release), `make server-site` from the working tree (documentation fixes between
+releases); both copy the build to `/var/www/setding-site`. Caddy from Debian serves
+it on `127.0.0.1:8081` ([`tool/site/Caddyfile`](../../tool/site/Caddyfile), installed
+by [`tool/site/install-site.sh`](../../tool/site/install-site.sh)): files under
 `/_astro/` are cached for a year (their names change with their content), all others
-are revalidated, and `www.` redirects to the bare domain. The website comes last
-in a server deploy: if building or installing it fails, the deploy prints a warning
-and still finishes the PocketBase upgrade; fix the cause and run `make server-site`.
+are revalidated, and `www.` redirects to the bare domain. The website needs nothing
+from the backend; it only links to the web client. `make server-install` and
+`make server-release` no longer deploy it.
 
 1. Tunnel → **Public hostname:** `setding.app` (empty subdomain) → service `HTTP` →
    `localhost:8081`.

@@ -304,9 +304,11 @@ Agents may create **proposals** for all of these (an ADR, a draft PR), just not 
   4. **Update the server:** `make server-release` waits for the tag's build, refuses
      unless it passed and the GitHub Release exists, then deploys hooks, migrations and
      the web client from a clean checkout of the tag and stamps the version on the
-     server (`/api/setding/config` → `serverVersion`). Only after this step is the
-     release done.
-  5. Report the release (version, build number, server version) on the release PR.
+     server (`/api/setding/config` → `serverVersion`).
+  5. **Update the website:** `make server-site VERSION=X.Y.Z` builds the website from
+     the tag and deploys it to its own server (ADR-0063 §8). Only after this step is
+     the release done.
+  6. Report the release (version, build number, server version) on the release PR.
 - The production server only runs released versions. `make server-install` deploys the
   working tree and stamps it `X.Y.Z-dev+<commit>`; it is meant for test instances and
   emergencies, never for routine production updates.

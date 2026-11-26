@@ -1,7 +1,7 @@
 # Caddy serves the static website and user documentation (ADR-0030) on
 # 127.0.0.1:8081; the Cloudflare Tunnel publishes it as setding.app and
 # www.setding.app (docs/operations/server.md). TLS is Cloudflare's job.
-# Installed by install.sh to /etc/caddy/Caddyfile.
+# Installed by tool/site/install-site.sh to /etc/caddy/Caddyfile.
 {
 	auto_https off
 }

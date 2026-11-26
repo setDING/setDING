@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # Installs or updates the website and user documentation (ADR-0030) on the
-# server: Caddy from Debian serves the static build on 127.0.0.1:8081, which the
-# Cloudflare Tunnel publishes as setding.app (docs/operations/server.md).
+# website server: Caddy from Debian serves the static build on 127.0.0.1:8081,
+# which the Cloudflare Tunnel publishes as setding.app
+# (docs/operations/server.md). Independent of the backend (ADR-0063 §8).
 #
-# Runs as root ON the server, called by install.sh (make server-install,
-# make server-release) and by deploy-site.sh (make server-site). Idempotent.
+# Runs as root ON the website server, called by deploy-site.sh
+# (make server-site). Idempotent.
 #
 #   install-site.sh <setup-dir>     the website build is expected in <setup-dir>/site
 set -euo pipefail

@@ -9,7 +9,7 @@ only on the server, so a mistake in them would otherwise show up there first.
 - **ShellCheck** on every shell script of the repository: `*.sh` and files with
   a `sh`/`bash` shebang. Turn a check off only for a line and with a reason
   (`# shellcheck disable=SCxxxx # why`).
-- **Caddyfile** (`tool/server/Caddyfile`): `caddy validate` and `caddy fmt`; it
+- **Caddyfile** of the website (`tool/site/Caddyfile`): `caddy validate` and `caddy fmt`; it
   must be formatted as Caddy writes it (`caddy fmt --overwrite`).
 - **systemd units** of `tool/server/` and the example unit of the server bundle
   (`tool/server-dist/setding.service`): `systemd-analyze verify` (unknown keys,

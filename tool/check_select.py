@@ -54,6 +54,8 @@ RULES = [
     # Server bundle (ADR-0063): build script and example unit, tested by
     # server/test/bundle_test.dart.
     ('tool/server-dist/', ['ops', 'server']),
+    # Website server (ADR-0030): Caddyfile check, site_server_test.
+    ('tool/site/', ['ops', 'server']),
     ('tool/sbom', ['sbom']),
     ('tool/release/', ['changelog']),
     ('CHANGELOG.md', ['changelog']),

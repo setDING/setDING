@@ -1,4 +1,4 @@
-// The website server (tool/server/Caddyfile, ADR-0030) with the pinned Caddy
+// The website server (tool/site/Caddyfile, ADR-0030) with the pinned Caddy
 // (tool/fetch-tool.sh, issue #644): the real configuration, only the port and
 // the site directory replaced.
 import 'dart:convert';
@@ -42,7 +42,7 @@ void main() {
     ).writeAsStringSync('console.log("${'x' * 2000}");');
 
     port = await _freePort();
-    final original = File('$_root/tool/server/Caddyfile').readAsStringSync();
+    final original = File('$_root/tool/site/Caddyfile').readAsStringSync();
     expect(original, contains('http://:8081 {'));
     expect(original, contains('root * /var/www/setding-site'));
     final config = original

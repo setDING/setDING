@@ -104,6 +104,13 @@ Constraints:
   language of the site.
 
 - 2026-11-24: **ADR-0063** (accepted, #1048): the website is project infrastructure, not part of self-hosting; it stays on the owner's server with its own deployment (`make server-site`, `SITE_SERVER`) and web server configuration, and installing or updating the backend no longer touches it. A new "Self-hosting" chapter documents the backend for operators.
+- 2026-11-26: Implemented (#1054, ADR-0063 §8): `tool/server/install.sh`,
+  `make server-install` and `make server-release` no longer build or deploy the
+  website; `make server-site` deploys it to its own `SITE_SERVER`, from the working
+  tree or the release tag (`VERSION=X.Y.Z`, a step of the release); its files moved
+  to `tool/site/` (Caddyfile, installer, deploy script). The website needs nothing
+  from the backend. Replaces points 4 and 5 of the decision (website deployed with the
+  server targets).
 
 ## Open points
 

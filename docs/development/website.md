@@ -62,8 +62,8 @@ The page *Neuigkeiten* / *What's new* (`news.mdx`, `en/news.mdx`) and the versio
 the header are generated from the checkout the site is built from (ADR-0041): the
 notes of every version from `app/assets/whats_new.json`, the release dates from
 `CHANGELOG.md` (`website/src/releases.ts`, `website/src/release-data.ts`). They need
-no editing; the release PR writes both files, and `make server-release` builds the
-site from the tag. The build runs the unit tests (`node --test src/*.test.ts`) and
+no editing; the release PR writes both files, and `make server-site VERSION=X.Y.Z`
+builds the site from the tag. The build runs the unit tests (`node --test src/*.test.ts`) and
 fails on a version without a released `CHANGELOG.md` section.
 
 ## Dependencies
@@ -75,8 +75,8 @@ fails on a version without a released `CHANGELOG.md` section.
 
 ## Deployment
 
-The server deploys build the website from the same checkout:
-`make server-release` (production, released versions), `make server-install`
-(test instances) and `make server-site` (only the website, from the working tree, for
-documentation fixes between releases). Hosting:
+The website is deployed on its own, independent of the backend (ADR-0063 §8):
+`make server-site VERSION=X.Y.Z` after a release (built from the tag) and
+`make server-site` from the working tree for documentation fixes between releases,
+both to `SITE_SERVER`. Hosting:
 [server operations, section 8](../operations/server.md#8-website-owner-once).

@@ -3,7 +3,7 @@
 # docs/development/operations-tests.md):
 # - ShellCheck on every shell script of the repository (*.sh and files with a
 #   sh/bash shebang);
-# - tool/server/Caddyfile: `caddy validate` and `caddy fmt` (formatted as Caddy
+# - tool/site/Caddyfile: `caddy validate` and `caddy fmt` (formatted as Caddy
 #   writes it);
 # - the systemd units of tool/server/ and tool/server-dist/ with `systemd-analyze verify`, if the
 #   machine has it (unknown keys, bad values; the installed binaries the units
@@ -33,13 +33,13 @@ fi
 
 # --- Caddyfile --------------------------------------------------------------
 caddy="$("$ROOT/tool/fetch-tool.sh" caddy)"
-caddyfile="$ROOT/tool/server/Caddyfile"
+caddyfile="$ROOT/tool/site/Caddyfile"
 if ! out="$("$caddy" validate --adapter caddyfile --config "$caddyfile" 2>&1)"; then
   echo "$out"
   echo "ops: Caddyfile: invalid"
   status=1
 elif ! "$caddy" fmt "$caddyfile" | diff -u "$caddyfile" -; then
-  echo "ops: Caddyfile: not formatted (caddy fmt --overwrite tool/server/Caddyfile)"
+  echo "ops: Caddyfile: not formatted (caddy fmt --overwrite tool/site/Caddyfile)"
   status=1
 else
   echo "ops: Caddyfile: OK"

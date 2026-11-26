@@ -53,7 +53,7 @@ class SelectTest(unittest.TestCase):
 
     def test_shell_scripts_run_shellcheck(self):
         self.assertEqual(jobs('tool/android-test.sh'), ['ops'])
-        self.assertEqual(jobs('tool/server/Caddyfile'), ['server', 'ops'])
+        self.assertEqual(jobs('tool/site/Caddyfile'), ['server', 'ops'])
 
     def test_server_bundle_runs_its_tests(self):
         self.assertEqual(

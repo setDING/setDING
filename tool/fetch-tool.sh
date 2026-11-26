@@ -3,7 +3,7 @@
 # of its binary (issue #644, docs/development/operations-tests.md):
 #
 #   fetch-tool.sh shellcheck   ShellCheck (GPL-3.0): lints the shell scripts
-#   fetch-tool.sh caddy        Caddy (Apache-2.0): validates and serves tool/server/Caddyfile
+#   fetch-tool.sh caddy        Caddy (Apache-2.0): validates and serves tool/site/Caddyfile
 #   fetch-tool.sh geckodriver  geckodriver (MPL-2.0): runs the web integration tests in Firefox (make web-test BROWSER=firefox)
 #
 # The tools only run on the development machine and in CI; nothing of them is
