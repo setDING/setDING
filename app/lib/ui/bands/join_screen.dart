@@ -2,7 +2,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/generated/app_localizations.dart';
+import '../../data/person_name.dart';
 import '../../providers.dart';
+import '../../settings/settings.dart' show nameFormatProvider;
 import '../../sync/auth_providers.dart';
 import '../../sync/sync_backend.dart';
 import '../account/sign_in_screen.dart';
@@ -111,6 +113,7 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
     final signedIn = ref.watch(authProvider) != null;
     final preview = _preview;
     final theme = Theme.of(context);
+    final format = ref.watch(nameFormatProvider);
 
     // Continue automatically after signing in.
     ref.listen(authProvider, (previous, next) {
@@ -154,7 +157,7 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
               Text(
                 preview.founder
                     ? l10n.joinFoundQuestion(preview.organizationName)
-                    : preview.alreadyMember
+                    : preview.alreadyMember && !preview.personal
                     ? l10n.joinAlreadyMember(preview.organizationName)
                     : preview.bandName != null
                     ? l10n.joinQuestionBand(
@@ -165,6 +168,13 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
                 style: theme.textTheme.headlineSmall,
               ),
               const SizedBox(height: 16),
+              if (preview.contact case final contact?) ...[
+                Text(
+                  l10n.joinPersonal(personLabel(contact.name, format)),
+                  key: const Key('join-personal'),
+                ),
+                const SizedBox(height: 16),
+              ],
               if (preview.status != InviteStatus.valid)
                 Text(switch (preview.status) {
                   InviteStatus.expired => l10n.inviteErrorExpired,
@@ -179,8 +189,12 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
                   onPressed: () => Navigator.push(
                     context,
                     MaterialPageRoute<bool>(
-                      builder: (_) =>
-                          SignInScreen(signUp: true, invite: _token),
+                      builder: (_) => SignInScreen(
+                        signUp: true,
+                        invite: _token,
+                        // A personal invitation prefills it (ADR-0064).
+                        prefill: preview.contact,
+                      ),
                     ),
                   ),
                   child: Text(l10n.accountSignUp),
@@ -196,10 +210,14 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
                   ),
                   child: Text(l10n.joinHaveAccount),
                 ),
-              ] else if (!preview.alreadyMember) ...[
+              ] else if (!preview.alreadyMember || preview.personal) ...[
                 Text(
                   preview.founder
                       ? l10n.joinFoundExplanation
+                      : preview.contact != null && preview.alreadyMember
+                      ? l10n.joinPersonalExplanation(
+                          personLabel(preview.contact!.name, format),
+                        )
                       : preview.bandName != null
                       ? l10n.joinExplanationBand
                       : l10n.joinExplanation,
@@ -209,7 +227,11 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
                   key: const Key('join-button'),
                   onPressed: _busy ? null : _join,
                   child: Text(
-                    preview.founder ? l10n.joinFoundButton : l10n.joinButton,
+                    preview.founder
+                        ? l10n.joinFoundButton
+                        : preview.personal
+                        ? l10n.joinPersonalButton
+                        : l10n.joinButton,
                   ),
                 ),
               ],

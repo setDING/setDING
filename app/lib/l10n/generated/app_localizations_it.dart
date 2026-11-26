@@ -6449,6 +6449,60 @@ class AppLocalizationsIt extends AppLocalizations {
   String get contactNameHint => 'Serve solo il nome.';
 
   @override
+  String get contactsHint =>
+      'Persone che suonano con voi ma non usano setDING. Possono far parte della formazione dei set.';
+
+  @override
+  String get contactEditTitle => 'Modifica persona';
+
+  @override
+  String get contactInvite => 'Invita su setDING';
+
+  @override
+  String get contactInviteChooseBand => 'Invitare in quale band?';
+
+  @override
+  String contactDeleteTitle(String name) {
+    return 'Eliminare $name?';
+  }
+
+  @override
+  String contactDeleteMessage(String name) {
+    return '$name non viene più proposto per le formazioni e l’indirizzo e-mail viene rimosso. I set in cui figura $name mantengono il nome.';
+  }
+
+  @override
+  String contactInviteTitle(String name) {
+    return 'Invito personale per $name';
+  }
+
+  @override
+  String contactInviteHint(String date, String name) {
+    return 'Il link vale una volta, fino al $date. Chi crea un account con esso riprende i set in cui $name è previsto.';
+  }
+
+  @override
+  String get contactInviteSubject => 'Invito su setDING';
+
+  @override
+  String contactInviteBody(String name, String organization, String url) {
+    return 'Ciao $name\n\nSei invitato a unirti a $organization su setDING, dove trovi gli accordi delle nostre canzoni e i set in cui sei previsto. Apri questo link per creare il tuo account:\n$url';
+  }
+
+  @override
+  String joinPersonal(String name) {
+    return 'Questo invito è per $name.';
+  }
+
+  @override
+  String joinPersonalExplanation(String name) {
+    return 'Il tuo account riprende i set in cui $name è previsto.';
+  }
+
+  @override
+  String get joinPersonalButton => 'Accetta l’invito';
+
+  @override
   String get lineupNobody => 'Nessuno in programma';
 
   @override

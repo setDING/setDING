@@ -59,6 +59,7 @@ class SignInScreen extends ConsumerStatefulWidget {
     this.signUp = false,
     this.gate = false,
     this.invite,
+    this.prefill,
   });
 
   /// Start in "create account" mode.
@@ -71,14 +72,20 @@ class SignInScreen extends ConsumerStatefulWidget {
   /// Invitation token sent with a sign-up (ADR-0024); the caller redeems it.
   final String? invite;
 
+  /// Name and mail address a personal invitation prefills the sign-up with
+  /// (ADR-0064); the person may change them.
+  final ({PersonName name, String? email})? prefill;
+
   @override
   ConsumerState<SignInScreen> createState() => _SignInScreenState();
 }
 
 class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _form = GlobalKey<FormState>();
-  final _names = PersonNameControllers();
-  final _email = TextEditingController();
+  late final _names = PersonNameControllers(
+    widget.prefill?.name ?? const PersonName(),
+  );
+  late final _email = TextEditingController(text: widget.prefill?.email);
   final _password = TextEditingController();
   final _confirm = TextEditingController();
   late bool _signUp = widget.signUp;

@@ -907,6 +907,7 @@ class InvitePreview {
     required this.alreadyMember,
     this.founder = false,
     this.bandName,
+    this.contact,
   });
 
   /// Empty for a founder invitation (the organization does not exist yet).
@@ -922,6 +923,16 @@ class InvitePreview {
   /// The band the link also leads into (invitation of a band leader,
   /// ADR-0023).
   final String? bandName;
+
+  /// The person without an account a personal invitation is for (ADR-0064):
+  /// their name and mail address prefill the sign-up, and redeeming it puts
+  /// the account in their place in every lineup. Null for other links and
+  /// once the link is no longer valid.
+  final ({PersonName name, String? email})? contact;
+
+  /// A personal invitation: also redeemed by people already in the
+  /// organization, to link the contact to their account.
+  bool get personal => contact != null;
 }
 
 /// Extracts the token from an invitation link (`https://…/invite/<token>`,
@@ -1070,13 +1081,19 @@ abstract class SyncBackend {
 
   /// Creates an invitation link into an organization (organization admins).
   /// With [bandId], the link also adds people to that band; band leaders
-  /// may only create such links (ADR-0023).
-  Future<CreatedInvite> createInvite(String organizationId, {String? bandId});
+  /// may only create such links (ADR-0023). With [contactId], it is a
+  /// personal invitation for a person without an account, used once
+  /// (ADR-0064).
+  Future<CreatedInvite> createInvite(
+    String organizationId, {
+    String? bandId,
+    String? contactId,
+  });
 
   /// The valid links of an organization, newest first: all of them for
   /// organization admins, those of the leader's bands otherwise; with
-  /// [bandId] only the links into that band. Revoked and expired links are
-  /// left out (issue #579).
+  /// [bandId] only the links into that band. Revoked and expired links and
+  /// personal invitations (ADR-0064) are left out (issue #579).
   Future<List<InviteInfo>> fetchInvites(
     String organizationId, {
     String? bandId,
