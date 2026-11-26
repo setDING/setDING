@@ -9756,6 +9756,42 @@ abstract class AppLocalizations {
   /// **'Alle Personen der Organisation sind schon in der Besetzung.'**
   String get lineupNoMorePeople;
 
+  /// No description provided for @lineupNoAccount.
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Konto'**
+  String get lineupNoAccount;
+
+  /// No description provided for @lineupPeopleWithoutAccount.
+  ///
+  /// In de, this message translates to:
+  /// **'Personen ohne Konto'**
+  String get lineupPeopleWithoutAccount;
+
+  /// No description provided for @lineupNewContact.
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Person ohne Konto'**
+  String get lineupNewContact;
+
+  /// No description provided for @contactEmail.
+  ///
+  /// In de, this message translates to:
+  /// **'Mailadresse (optional)'**
+  String get contactEmail;
+
+  /// No description provided for @contactEmailHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Sehen nur Personen, die Sets planen. «Besetzung benachrichtigen» schreibt an diese Adresse.'**
+  String get contactEmailHint;
+
+  /// No description provided for @contactNameHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur der Vorname ist nötig.'**
+  String get contactNameHint;
+
   /// No description provided for @lineupNobody.
   ///
   /// In de, this message translates to:

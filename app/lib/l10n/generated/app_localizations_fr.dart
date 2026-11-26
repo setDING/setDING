@@ -6442,6 +6442,25 @@ class AppLocalizationsFr extends AppLocalizations {
       'Toutes les personnes de l\'organisation sont déjà dans la formation.';
 
   @override
+  String get lineupNoAccount => 'Sans compte';
+
+  @override
+  String get lineupPeopleWithoutAccount => 'Personnes sans compte';
+
+  @override
+  String get lineupNewContact => 'Nouvelle personne sans compte';
+
+  @override
+  String get contactEmail => 'Adresse e-mail (facultatif)';
+
+  @override
+  String get contactEmailHint =>
+      'Seules les personnes qui planifient des sets la voient. « Prévenir la formation » écrit à cette adresse.';
+
+  @override
+  String get contactNameHint => 'Seul le prénom est nécessaire.';
+
+  @override
   String get lineupNobody => 'Personne de prévu';
 
   @override

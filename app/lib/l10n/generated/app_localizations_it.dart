@@ -6430,6 +6430,25 @@ class AppLocalizationsIt extends AppLocalizations {
       'Tutte le persone dell\'organizzazione sono già nella formazione.';
 
   @override
+  String get lineupNoAccount => 'Senza account';
+
+  @override
+  String get lineupPeopleWithoutAccount => 'Persone senza account';
+
+  @override
+  String get lineupNewContact => 'Nuova persona senza account';
+
+  @override
+  String get contactEmail => 'Indirizzo e-mail (facoltativo)';
+
+  @override
+  String get contactEmailHint =>
+      'La vedono solo le persone che pianificano i set. «Avvisa la formazione» scrive a questo indirizzo.';
+
+  @override
+  String get contactNameHint => 'Serve solo il nome.';
+
+  @override
   String get lineupNobody => 'Nessuno in programma';
 
   @override
