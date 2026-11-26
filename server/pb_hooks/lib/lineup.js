@@ -67,6 +67,7 @@ function validate(e) {
   const record = e.record;
   if (!record.getBool("lineup_custom")) {
     record.set("lineup", []);
+    record.set("lineup_contacts", []);
     return;
   }
   const lineup = record.getStringSlice("lineup");
@@ -93,6 +94,39 @@ function validate(e) {
       });
     }
   }
+  validateContacts(e, record, orgId);
+}
+
+/// Every contact added to a lineup must be a contact of the band's
+/// organization that is not deleted (ADR-0064); contacts already in the
+/// stored lineup stay, so old sets keep a contact deleted later.
+function validateContacts(e, record, orgId) {
+  const before = {};
+  if (!record.isNew()) {
+    for (const id of record.original().getStringSlice("lineup_contacts")) before[id] = true;
+  }
+  for (const id of record.getStringSlice("lineup_contacts")) {
+    if (before[id]) continue;
+    let contact = null;
+    try {
+      contact = e.app.findRecordById("contacts", id);
+    } catch (_) {
+      contact = null;
+    }
+    if (!contact || contact.getBool("deleted") || contact.getString("organization") !== orgId) {
+      throw new BadRequestError("Only contacts of the organization can be in a set's lineup.", {
+        lineup_contacts: new ValidationError(
+          "not_in_organization",
+          "Only contacts of the organization can be in a set's lineup.",
+        ),
+      });
+    }
+  }
+}
+
+/// The contacts with [ids], deleted ones too (old sets keep their names).
+function contactsByIds(app, ids) {
+  return ids.length > 0 ? app.findRecordsByIds("contacts", ids) : [];
 }
 
 function songsOf(set) {
@@ -142,6 +176,7 @@ function substituteSets(e) {
   const sets = [];
   const bands = {};
   const people = {};
+  const contactIds = {};
   const songsByBand = {};
   for (const set of candidates) {
     // `~` matches the JSON text of the relation; the exact check follows.
@@ -157,6 +192,7 @@ function substituteSets(e) {
     }
     sets.push(set);
     for (const id of lineup) people[id] = true;
+    for (const id of set.getStringSlice("lineup_contacts")) contactIds[id] = true;
     const songs = songsByBand[bandId] || {};
     const inSet = songsOf(set);
     for (const song in inSet) songs[song] = true;
@@ -188,13 +224,18 @@ function substituteSets(e) {
       organization: bands[id].getString("organization"),
     })),
     people: users,
+    // People without an account in those lineups, names only (ADR-0064).
+    contacts: contactsByIds(e.app, Object.keys(contactIds)).map((c) =>
+      require(`${__hooks}/lib/contacts.js`).names(c),
+    ),
     arrangements: arrangements,
   });
 }
 
 /// GET /api/setding/lineup/{set}/emails: names and mail addresses of the
 /// people in a set's lineup (the band's active members when the set has no
-/// lineup of its own), to notify them. Only for those who may edit the set;
+/// lineup of its own), to notify them; and the contacts of the lineup with a
+/// mail address (ADR-0064). Only for those who may edit the set;
 /// everyone else gets 404, as if it did not exist.
 function lineupEmails(e) {
   const userId = e.auth.id;
@@ -235,7 +276,15 @@ function lineupEmails(e) {
       result.push(Object.assign(person(user), { email: user.email() }));
     }
   }
-  return e.json(200, { people: result });
+  const contacts = [];
+  if (set.getBool("lineup_custom")) {
+    const names = require(`${__hooks}/lib/contacts.js`).names;
+    for (const contact of contactsByIds(e.app, set.getStringSlice("lineup_contacts"))) {
+      if (contact.getBool("deleted") || !contact.getString("email")) continue;
+      contacts.push(Object.assign(names(contact), { email: contact.getString("email") }));
+    }
+  }
+  return e.json(200, { people: result, contacts: contacts });
 }
 
 module.exports = { validate, substituteSets, lineupEmails };

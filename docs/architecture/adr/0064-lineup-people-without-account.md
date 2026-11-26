@@ -219,6 +219,16 @@ be in the lineup of old sets:
   permission matrix. Implementation: server #1097, data and sync #1098,
   lineup dialog and set list #1099, organization screen and personal
   invitations #1100, website page #1101.
+- 2026-11-26: Server implemented (#1097): collection `contacts` with the
+  rules of decision 6 (an enrich hook hides `email` from everybody but set
+  editors); `setlists.lineup_contacts`, cleared like `lineup` when a set goes
+  back to the whole band or is purged; the lineup route returns the
+  contacts' names as `contacts`, the mail route their addresses as
+  `contacts` next to `people`; personal invitations with `invites.contact`
+  (used once, the preview returns the contact's names and mail address for
+  the sign-up, redeeming links the contact in one transaction); deleting a
+  contact clears its mail address and revokes its open invitations; closing
+  and purging an organization purges its contacts.
 
 ## Open points
 
