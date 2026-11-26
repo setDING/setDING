@@ -1,6 +1,6 @@
 ---
 title: Lineup and substitutes
-description: Choose who plays a set, add substitutes from the organization and notify the lineup.
+description: Choose who plays a set, add substitutes and people without an account, and notify the lineup.
 sidebar:
   order: 4
 ---
@@ -10,6 +10,10 @@ import setLineup from '../../../../../../docs/screenshots/set_lineup.png';
 import lineupDialog from '../../../../../../docs/screenshots/lineup_dialog.png';
 import lineupNotify from '../../../../../../docs/screenshots/lineup_notify.png';
 import overviewSubstitute from '../../../../../../docs/screenshots/overview_substitute.png';
+import lineupContacts from '../../../../../../docs/screenshots/lineup_contacts.png';
+import lineupPickContact from '../../../../../../docs/screenshots/lineup_pick_contact.png';
+import contactNew from '../../../../../../docs/screenshots/contact_new.png';
+import contactInvite from '../../../../../../docs/screenshots/contact_invite.png';
 
 Not every gig is played by the whole band: someone is ill, someone is on holiday,
 and a person from another band helps out. That is why every set has a
@@ -35,7 +39,8 @@ lineup line or chooses **Choose lineup** in the set's ⋮ menu:
 - Under **Band members** every member is checked. Uncheck everyone who does not
   play this time.
 - **Add people** searches the people of the organization. Whoever is not in the
-  band is added as a **Substitute**.
+  band is added as a **Substitute**. You also find the
+  [people without an account](#people-without-an-account) there.
 - **Whole band** resets the lineup. When every band member is checked again and
   there are no substitutes, the whole band plays it as well: the lineup follows
   the band again, new members included.
@@ -45,6 +50,57 @@ lineup line or chooses **Choose lineup** in the set's ⋮ menu:
 The lineup is also printed in the header of the set list
 ([Print the set list](/en/sets/share/)).
 
+## People without an account
+
+Not everyone who plays uses setDING: the sound engineer, a guest musician,
+someone who plays from the printed set list. So that the set still shows who took
+part, add them to the lineup as **people without an account**. They belong to the
+organization and can be chosen in every band.
+
+<Image src={lineupContacts} alt="The Lineup dialog with the section People without an account and Marco Rossi, marked No account" />
+
+- **Add people** shows the people of the organization and the people without an
+  account together; these are marked **No account**. The search finds first name,
+  last name and display name.
+- **New person without an account** creates a person and puts them in the lineup
+  right away, also without a connection. Only the first name is needed; the mail
+  address is optional.
+
+<Image src={lineupPickContact} alt="Add people with Elias of the organization, Lea Brunner without an account and the button New person without an account" />
+
+<Image src={contactNew} alt="The dialog New person without an account with first name, last name, display name and mail address" />
+
+In the set, on the set card and in the message to the lineup they are shown with
+**(No account)**, on the printed set list with their name only. **Notify lineup**
+writes to their mail address too.
+
+### What setDING stores about them
+
+For a person without an account setDING stores only the name and, if you enter
+it, the mail address. Everyone in the organization sees the name; only people
+who plan sets (band leaders, set planners, organization admins) see the mail
+address. The person cannot open setDING and sees nothing.
+
+### Managing and inviting them
+
+Under **Settings** → **Organization & bands** → your organization, the section
+**People without an account** lists all of them (if you plan sets). In a
+person's ⋮ menu:
+
+- **Edit** changes name and mail address (everyone who plans sets).
+- **Invite to setDING** creates a **personal invitation** (organization admins;
+  band leaders invite into their band). Show the link as a QR code, copy or share
+  it, or send it **by mail** to the stored address. It works once, for 7 days.
+- **Delete** (organization admins) takes the person out of the choice and
+  removes their mail address at once. Sets that name them keep the name.
+
+<Image src={contactInvite} alt="The personal invitation for Marco Rossi with QR code, link and the buttons Copy link, By mail and Share" />
+
+When the person opens the link, the sign-up is filled in with their name and mail
+address; they only add a password. With the new account they take over the sets
+they were planned for, as a band member or [substitute](#as-a-substitute). If
+they have an account already, they sign in and choose **Accept invitation**.
+
 ## Notifying the lineup
 
 When the set is ready, **Notify lineup** in the set's ⋮ menu opens a prepared
@@ -52,9 +108,9 @@ message with the set, date, venue and lineup:
 
 - **Share …** opens your device's share menu, for example for the band's chat.
 - **Copy** puts the text on the clipboard.
-- **By mail** opens your mail program with the lineup's addresses as recipients.
-  Without a connection to the server there are no recipients; then you choose
-  them yourself.
+- **By mail** opens your mail program with the lineup's addresses as recipients,
+  those of the people without an account included. Without a connection to the
+  server there are no recipients; then you choose them yourself.
 
 setDING sends nothing itself: you decide how the message goes out.
 

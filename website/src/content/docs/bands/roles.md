@@ -47,4 +47,6 @@ und jeder alles (siehe [Persönliche Anpassungen](/songs/personal/)).
 
 Wer nur für einzelne Auftritte aushilft, wird nicht Mitglied der Band, sondern kommt
 als **Aushilfe** in die Besetzung dieser Sets und sieht nur sie (siehe
-[Besetzung und Aushilfen](/sets/lineup/)).
+[Besetzung und Aushilfen](/sets/lineup/)). Wer setDING gar nicht benutzt, steht als
+**Person ohne Konto** in der Besetzung; anlegen und bearbeiten dürfen das alle, die
+Sets planen, löschen nur Admins der Organisation.

@@ -196,7 +196,7 @@ be in the lineup of old sets:
   lineup dialog, the set view, the set card and the PDF, and a section on the
   organization screen.
 - setDING stores names and optional mail addresses of people who have no
-  account; the privacy notice of the website says so.
+  account; the website page on lineups says what is stored and who sees it.
 - New UI texts in all six languages; the website page *Lineup and substitutes*
   gets a section with screenshots of the picker and the new contact
   (AGENTS.md).
@@ -259,6 +259,11 @@ be in the lineup of old sets:
   with the other links. The join screen names the person the invitation is
   for and prefills the sign-up from it; a member of the organization accepts
   it too (*Accept invitation*), which links the contact to their account.
+- 2026-11-26: Website page *Besetzung und Aushilfen* / *Lineup and
+  substitutes* extended with a section on people without an account and four
+  screenshots (#1101). The website has no privacy notice yet, so the section
+  itself says what setDING stores about them and who sees it (consequences
+  changed accordingly).
 
 ## Open points
 

@@ -46,4 +46,6 @@ nor **Edit ChordPro**, for example. Everybody can adjust everything for themselv
 
 Someone who only helps out at some gigs does not join the band: they are added to
 the lineup of those sets as a **Substitute** and see only them (see
-[Lineup and substitutes](/en/sets/lineup/)).
+[Lineup and substitutes](/en/sets/lineup/)). Someone who does not use setDING at
+all is put in the lineup as a **person without an account**; everyone who plans
+sets creates and edits them, only organization admins delete them.

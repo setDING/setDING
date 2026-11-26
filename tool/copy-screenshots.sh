@@ -129,6 +129,10 @@ map=(
   lineup_dialog 54b_lineup_dialog
   lineup_notify 54c_lineup_notify
   overview_substitute 54d_overview_substitute
+  lineup_contacts 54e_lineup_contacts
+  lineup_pick_contact 54f_lineup_pick_contact
+  contact_new 54g_contact_new
+  contact_invite 54h_contact_invite
   song_attachment_menu 55_song_attachment_menu
   song_sources 56_song_sources
   chord_grid 57_chord_grid

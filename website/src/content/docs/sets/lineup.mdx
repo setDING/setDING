@@ -1,6 +1,6 @@
 ---
 title: Besetzung und Aushilfen
-description: Festlegen, wer ein Set spielt, Aushilfen aus der Organisation dazunehmen und die Besetzung benachrichtigen.
+description: Festlegen, wer ein Set spielt, Aushilfen und Personen ohne Konto dazunehmen und die Besetzung benachrichtigen.
 sidebar:
   order: 4
 ---
@@ -10,6 +10,10 @@ import setLineup from '../../../../../docs/screenshots/set_lineup_de.png';
 import lineupDialog from '../../../../../docs/screenshots/lineup_dialog_de.png';
 import lineupNotify from '../../../../../docs/screenshots/lineup_notify_de.png';
 import overviewSubstitute from '../../../../../docs/screenshots/overview_substitute_de.png';
+import lineupContacts from '../../../../../docs/screenshots/lineup_contacts_de.png';
+import lineupPickContact from '../../../../../docs/screenshots/lineup_pick_contact_de.png';
+import contactNew from '../../../../../docs/screenshots/contact_new_de.png';
+import contactInvite from '../../../../../docs/screenshots/contact_invite_de.png';
 
 Nicht jeder Auftritt wird von der ganzen Band gespielt: Jemand ist krank, jemand
 in den Ferien, und eine Person aus einer anderen Band hilft aus. Darum hat jedes
@@ -35,7 +39,8 @@ auf die Zeile der Besetzung oder wählt im Menü ⋮ des Sets **Besetzung wähle
 - Unter **Bandmitglieder** sind alle Mitglieder angehakt. Nimm das Häkchen weg bei
   allen, die dieses Mal nicht spielen.
 - **Personen hinzufügen** sucht in den Personen der Organisation. Wer nicht in der
-  Band ist, kommt als **Aushilfe** dazu.
+  Band ist, kommt als **Aushilfe** dazu. Dort findest du auch die
+  [Personen ohne Konto](#personen-ohne-konto).
 - **Ganze Band** stellt die Besetzung zurück. Sind wieder alle Bandmitglieder
   angehakt und keine Aushilfen dabei, spielt ebenfalls die ganze Band: Die
   Besetzung folgt dann wieder der Band, auch neuen Mitgliedern.
@@ -44,6 +49,59 @@ auf die Zeile der Besetzung oder wählt im Menü ⋮ des Sets **Besetzung wähle
 
 Die Besetzung steht auch im Kopf der gedruckten Set-Liste
 ([Set-Liste drucken](/sets/share/)).
+
+## Personen ohne Konto
+
+Nicht alle, die mitspielen, benutzen setDING: der Tontechniker, ein Gastmusiker,
+jemand, der mit der gedruckten Set-Liste spielt. Damit das Set trotzdem zeigt, wer
+dabei war, nimmst du sie als **Personen ohne Konto** in die Besetzung auf. Sie
+gehören der Organisation und stehen in jeder Band zur Auswahl.
+
+<Image src={lineupContacts} alt="Der Dialog Besetzung mit dem Abschnitt Personen ohne Konto und Marco Rossi, markiert mit Ohne Konto" />
+
+- **Personen hinzufügen** zeigt die Personen der Organisation und die Personen ohne
+  Konto zusammen; diese sind mit **Ohne Konto** markiert. Die Suche findet Vorname,
+  Nachname und Anzeigename.
+- **Neue Person ohne Konto** legt eine Person an und nimmt sie gleich in die
+  Besetzung auf, auch ohne Verbindung. Nötig ist nur der Vorname; die Mailadresse
+  ist freiwillig.
+
+<Image src={lineupPickContact} alt="Personen hinzufügen mit Elias aus der Organisation, Lea Brunner ohne Konto und dem Knopf Neue Person ohne Konto" />
+
+<Image src={contactNew} alt="Der Dialog Neue Person ohne Konto mit Vorname, Nachname, Anzeigename und Mailadresse" />
+
+Im Set, auf der Set-Karte und in der Nachricht an die Besetzung stehen sie mit
+**(Ohne Konto)**, auf der gedruckten Set-Liste nur mit dem Namen. **Besetzung
+benachrichtigen** schreibt auch an ihre Mailadresse.
+
+### Was setDING über sie speichert
+
+setDING speichert von einer Person ohne Konto nur den Namen und, wenn du sie
+angibst, die Mailadresse. Den Namen sehen alle in der Organisation; die
+Mailadresse sehen nur Personen, die Sets planen (Bandleitung, Setplanung, Admins
+der Organisation). Die Person selbst kann setDING nicht öffnen und sieht nichts.
+
+### Verwalten und einladen
+
+Unter **Einstellungen** → **Organisation & Bands** → deine Organisation siehst du
+im Abschnitt **Personen ohne Konto** alle Personen ohne Konto der Organisation
+(wenn du Sets planst). Im Menü ⋮ einer Person:
+
+- **Bearbeiten** ändert Name und Mailadresse (alle, die Sets planen).
+- **Zu setDING einladen** erstellt eine **persönliche Einladung** (Admins der
+  Organisation; Bandleitungen laden in ihre Band ein). Den Link zeigst du als
+  QR-Code, kopierst oder teilst ihn, oder du schickst ihn **per Mail** an die
+  hinterlegte Adresse. Er gilt einmal und 7 Tage lang.
+- **Löschen** (Admins der Organisation) nimmt die Person aus der Auswahl und
+  entfernt ihre Mailadresse sofort. Sets, in denen sie steht, behalten den Namen.
+
+<Image src={contactInvite} alt="Die persönliche Einladung für Marco Rossi mit QR-Code, Link und den Knöpfen Link kopieren, Per Mail und Teilen" />
+
+Öffnet die Person den Link, ist die Registrierung mit ihrem Namen und ihrer
+Mailadresse ausgefüllt; sie ergänzt nur noch das Passwort. Mit dem neuen Konto
+übernimmt sie die Sets, in denen sie eingeplant war, als Bandmitglied oder
+[Aushilfe](#als-aushilfe). Hat sie schon ein Konto, meldet sie sich an und wählt
+**Einladung annehmen**.
 
 ## Besetzung benachrichtigen
 
@@ -54,8 +112,8 @@ vorbereitete Nachricht mit Set, Datum, Ort und Besetzung:
   Band.
 - **Kopieren** legt den Text in die Zwischenablage.
 - **Per Mail** öffnet dein Mailprogramm mit den Adressen der Besetzung als
-  Empfänger. Ohne Verbindung zum Server fehlen die Empfänger; dann wählst du sie
-  selbst.
+  Empfänger, auch denen der Personen ohne Konto. Ohne Verbindung zum Server
+  fehlen die Empfänger; dann wählst du sie selbst.
 
 setDING verschickt nichts selbst: Du entscheidest, auf welchem Weg die Nachricht
 geht.
