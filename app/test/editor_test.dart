@@ -88,6 +88,15 @@ void main() {
     await app.dispose(tester);
   });
 
+  test('the song info menu offers no CCLI directive', () {
+    // {x_ccli} is no ChordPro directive; it only comes from imports.
+    final menu = EditorSnippets(lookupAppLocalizations(const Locale('en')));
+    final info = menu.groups.singleWhere((g) => g.label == 'Song info');
+    final inserted = info.items.nonNulls.map((s) => s.before);
+    expect(inserted, contains('{title: '));
+    expect(inserted.where((b) => b.contains('ccli')), isEmpty);
+  });
+
   testWidgets('a section wraps the selected lines', (tester) async {
     final (app, field) = await pumpEditor(tester, 'one\ntwo\n');
     field.controller!.selection = const TextSelection(

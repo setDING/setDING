@@ -298,7 +298,6 @@ class EditorSnippets {
         meta('composer', l10n.metaComposer),
         meta('lyricist', l10n.metaLyricist),
         meta('copyright', l10n.metaCopyright),
-        meta('x_ccli', l10n.metaCcli),
         meta('album', l10n.metaAlbum),
         meta('year', l10n.metaYear),
         EditorSnippet(

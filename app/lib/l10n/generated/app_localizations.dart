@@ -2764,12 +2764,6 @@ abstract class AppLocalizations {
   /// **'Copyright'**
   String get metaCopyright;
 
-  /// No description provided for @metaCcli.
-  ///
-  /// In de, this message translates to:
-  /// **'CCLI-Nummer'**
-  String get metaCcli;
-
   /// No description provided for @metaTag.
   ///
   /// In de, this message translates to:
