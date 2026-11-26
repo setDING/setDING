@@ -228,7 +228,7 @@ void main() {
       await shot(tester, '${lang}_24_editor_ccli');
 
       // SongSelect directives outside the specification (#777): the hint
-      // that renames {ccli} and removes {ccli_license}.
+      // that renames {ccli} and {footer} and removes {ccli_license}.
       await tester.pumpWidget(
         RepaintBoundary(
           key: UniqueKey(),
@@ -462,6 +462,7 @@ const _songSelectDirectives = '''{title: Amazing Grace}
 {ccli_license: 1234567}
 {ccli: 7654321}
 {copyright: Public Domain}
+{footer: For use solely with the SongSelect Terms of Use.}
 
 {start_of_verse: label="Verse 1"}
 A[G]mazing grace, how [C]sweet the [G]sound

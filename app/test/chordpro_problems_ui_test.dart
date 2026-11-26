@@ -407,7 +407,8 @@ void main() {
   ) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'en'});
-    const source = '{title: T}\n{ccli: 123}\n{ccli_license: 456}\n[C]a';
+    const source =
+        '{title: T}\n{ccli: 123}\n{ccli_license: 456}\n{footer: Terms}\n[C]a';
     await tester.pumpWidget(
       app.build(home: const SongEditorScreen(initialSource: source)),
     );
@@ -417,7 +418,7 @@ void main() {
         .controller!;
     expect(find.byType(SongSelectDirectiveHint), findsOneWidget);
     expect(
-      find.textContaining('2 CCLI directives do not follow'),
+      find.textContaining('3 CCLI directives do not follow'),
       findsOneWidget,
     );
     await tester.tap(
@@ -427,7 +428,10 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(controller.text, '{title: T}\n{x_ccli: 123}\n[C]a');
+    expect(
+      controller.text,
+      '{title: T}\n{x_ccli: 123}\n{x_ccli_footer: Terms}\n[C]a',
+    );
     expect(find.byType(SongSelectDirectiveHint), findsNothing);
     // Hiding leaves the text as it is.
     controller.text = source;

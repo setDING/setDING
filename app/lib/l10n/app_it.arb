@@ -410,7 +410,7 @@
   "remove": "Rimuovi",
   "ccliFooterHint": "Il brano termina con il piè di pagina CCLI di SongSelect. Rimuovendolo, numero del brano e copyright restano nei dettagli del brano.",
   "legacyLabelsHint": "{count, plural, =1{Un'etichetta di sezione è} other{{count} etichette di sezione sono}} nella forma breve. La specifica ChordPro raccomanda label=\"…\".",
-  "songSelectDirectivesHint": "{count, plural, =1{Una direttiva CCLI non segue} other{{count} direttive CCLI non seguono}} la specifica ChordPro: ccli diventa x_ccli, ccli_license viene rimossa.",
+  "songSelectDirectivesHint": "{count, plural, =1{Una direttiva CCLI non segue} other{{count} direttive CCLI non seguono}} la specifica ChordPro: ccli diventa x_ccli, footer diventa x_ccli_footer, ccli_license viene rimossa.",
   "importLegacyLabelsMessage": "{count, plural, =1{1 brano importato scrive} other{{count} brani importati scrivono}} le etichette di sezione nella forma breve. La conversione le scrive come label=\"…\", come raccomanda la specifica ChordPro; i brani hanno lo stesso aspetto.",
   "convertLabels": "Converti etichette",
   "songsLabelsConverted": "{count, plural, =0{Nessuna etichetta convertita} =1{Etichette convertite in 1 brano} other{Etichette convertite in {count} brani}}",

@@ -150,13 +150,14 @@ Chord-Grid umwandeln** wählen. Mit ✕ blendest du den Hinweis aus.
 
 ## CCLI-Direktiven
 
-Songs aus CCLI SongSelect enthalten `{ccli: …}` und `{ccli_license: …}`, die die
-ChordPro-Spezifikation nicht kennt. Der Import wandelt sie um; bei früher
-gespeicherten Songs zeigt der Editor einen Hinweis über dem Text: **Umwandeln**
-benennt `{ccli}` in `{x_ccli}` um und entfernt `{ccli_license}`, die Lizenznummer
-der Kirche, die den Song heruntergeladen hat. Mit ✕ blendest du den Hinweis aus.
+Songs aus CCLI SongSelect enthalten `{ccli: …}`, `{footer: …}` und
+`{ccli_license: …}`, die die ChordPro-Spezifikation nicht kennt. Der Import wandelt
+sie um; bei früher gespeicherten Songs zeigt der Editor einen Hinweis über dem Text:
+**Umwandeln** benennt `{ccli}` in `{x_ccli}` und `{footer}` (die Nutzungsbedingungen
+von SongSelect) in `{x_ccli_footer}` um und entfernt `{ccli_license}`, die
+Lizenznummer der Kirche, die den Song heruntergeladen hat. Mit ✕ blendest du den Hinweis aus.
 
-<Image src={editorSongSelect} alt="Der Editor mit dem Hinweis auf zwei CCLI-Direktiven, die nicht der ChordPro-Spezifikation entsprechen, und dem Knopf Umwandeln" />
+<Image src={editorSongSelect} alt="Der Editor mit dem Hinweis auf drei CCLI-Direktiven, die nicht der ChordPro-Spezifikation entsprechen, und dem Knopf Umwandeln" />
 
 ## CCLI-Footer
 

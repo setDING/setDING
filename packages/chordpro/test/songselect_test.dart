@@ -46,6 +46,8 @@ void main() {
     test('renames ccli to x_ccli and removes ccli_license', () {
       final source = normalizeSongSelectDirectives(_songSelectStyle);
       expect(source, contains('{tempo: 72}\n{x_ccli: 7654321}\n{copyright:'));
+      expect(source, contains('\n{x_ccli_footer: For use solely'));
+      expect(source, isNot(contains('{footer')));
       expect(source, isNot(contains('ccli_license')));
       expect(source, isNot(contains('{ccli')));
       // The plain-text CCLI paragraph after the song stays as written.
@@ -67,7 +69,7 @@ void main() {
     });
 
     test('counts the directives it changes', () {
-      expect(countSongSelectDirectives(_songSelectStyle), 2);
+      expect(countSongSelectDirectives(_songSelectStyle), 3);
       expect(countSongSelectDirectives('{meta: ccli 1}\n{x_ccli: 2}'), 1);
       expect(
         countSongSelectDirectives(
@@ -79,15 +81,17 @@ void main() {
 
     test('leaves other directives and text alone', () {
       const source =
-          '{x_ccli: 1}\n{ccli_song: 2}\n{c: ccli 3}\n[C]{ccli: 4} in text\n';
+          '{x_ccli: 1}\n{ccli_song: 2}\n{c: ccli 3}\n[C]{ccli: 4} in text\n'
+          '{x_ccli_footer: 5}\n{footerfont: serif}\n{c: footer 6}\n';
       expect(normalizeSongSelectDirectives(source), source);
     });
   });
 
-  test('ccli and ccli_license are not standard metadata', () {
+  test('ccli, ccli_license and footer are not standard metadata', () {
     final raw = parseChordPro(_songSelectStyle);
     expect(raw.metaValue('ccli'), isNull);
     expect(raw.metaValue('ccli_license'), isNull);
+    expect(raw.metaValue('footer'), isNull);
   });
 
   test('reads SongSelect metadata', () {
@@ -98,6 +102,7 @@ void main() {
     expect(song.metaValue('x_ccli'), '7654321');
     expect(song.metaValue('ccli_license'), isNull);
     expect(song.metaValue('copyright'), startsWith('2024'));
+    expect(song.metaValue('x_ccli_footer'), startsWith('For use solely'));
   });
 
   test('comment headings become labelled sections', () {

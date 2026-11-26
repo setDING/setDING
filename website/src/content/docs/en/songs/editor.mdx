@@ -141,13 +141,14 @@ hidden with ✕.
 
 ## CCLI directives
 
-Songs from CCLI SongSelect contain `{ccli: …}` and `{ccli_license: …}`, which the
-ChordPro specification does not know. The import converts them; for songs saved
-earlier, the editor shows a hint above the text: **Convert** renames `{ccli}` to
-`{x_ccli}` and removes `{ccli_license}`, the licence number of the church that
-downloaded the song. The hint can be hidden with ✕.
+Songs from CCLI SongSelect contain `{ccli: …}`, `{footer: …}` and
+`{ccli_license: …}`, which the ChordPro specification does not know. The import
+converts them; for songs saved earlier, the editor shows a hint above the text:
+**Convert** renames `{ccli}` to `{x_ccli}` and `{footer}` (the SongSelect terms of
+use) to `{x_ccli_footer}`, and removes `{ccli_license}`, the licence number of the
+church that downloaded the song. The hint can be hidden with ✕.
 
-<Image src={editorSongSelect} alt="The editor with the hint about two CCLI directives that do not follow the ChordPro specification and the Convert button" />
+<Image src={editorSongSelect} alt="The editor with the hint about three CCLI directives that do not follow the ChordPro specification and the Convert button" />
 
 ## CCLI footer
 

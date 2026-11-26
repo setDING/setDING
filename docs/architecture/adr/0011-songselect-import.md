@@ -91,6 +91,7 @@ Resulting changes in the `chordpro` package and the app:
 - Live-mode fitting lets lines without chords (such as the copyright paragraph) wrap instead
   of shrinking the font, and measures with the same font as the display.
 - 2026-11-26: The editor's Song info menu no longer offers the CCLI number (`{x_ccli}`): it is no ChordPro directive and the menu offers only directives of the specification and `{x_sequence}`. `{x_ccli}` still comes from the import, the footer removal and the conversion, and is still read and shown as the SongSelect link.
+- 2026-11-26: `{footer: …}` of SongSelect files (the terms-of-use line) is no ChordPro directive either: `normalizeSongSelectDirectives` renames it to the custom directive `{x_ccli_footer: …}` (also in the `{meta: footer …}` form), and `countSongSelectDirectives` counts it for the editor hint. It is kept as metadata, not shown.
 
 ## Open points
 

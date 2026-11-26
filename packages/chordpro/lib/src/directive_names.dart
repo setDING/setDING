@@ -25,9 +25,6 @@ const metaDirectiveAliases = {
   'duration': 'duration',
   'capo': 'capo',
   'tag': 'tag',
-  // Used by CCLI SongSelect files (ADR-0011); their {ccli} becomes
-  // {x_ccli} on import (normalizeSongSelectDirectives, #777).
-  'footer': 'footer',
 };
 
 const commentDirectives = {
@@ -106,4 +103,10 @@ const otherDirectives = {
 };
 
 /// setDING's own directives (`x_` prefix, ADR-0012).
-const customDirectives = {'x_sequence', 'x_time_grouping', 'x_link', 'x_ccli'};
+const customDirectives = {
+  'x_sequence',
+  'x_time_grouping',
+  'x_link',
+  'x_ccli',
+  'x_ccli_footer',
+};
