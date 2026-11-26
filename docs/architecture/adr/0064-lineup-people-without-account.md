@@ -248,6 +248,17 @@ be in the lineup of old sets:
   it in the lineup. The set view, the set card and the message of *Notify
   lineup* mark contacts *No account*, the printed set list does not;
   contacts of a lineup this device does not know yet are kept when saving.
+- 2026-11-26: Organization screen and personal invitations implemented
+  (#1100): the section *People without an account* lists the contacts with
+  their mail address for set editors, with *New person without an account*,
+  *Edit*, *Invite to setDING* (organization admins into the organization,
+  band leaders into their band, chosen when they lead several) and *Delete*
+  (organization admins, with a confirmation). The invitation dialog shows
+  the QR code and the link to copy or share, and *By mail* with a prepared
+  message to the contact's address. Personal invitations are not listed
+  with the other links. The join screen names the person the invitation is
+  for and prefills the sign-up from it; a member of the organization accepts
+  it too (*Accept invitation*), which links the contact to their account.
 
 ## Open points
 

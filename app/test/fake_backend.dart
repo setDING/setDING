@@ -577,7 +577,7 @@ class FakeSyncBackend implements SyncBackend {
 
   InviteStatus _inviteStatus(FakeInvite i) => i.revoked
       ? InviteStatus.revoked
-      : (i.founder != null && i.usedBy != null)
+      : ((i.founder != null || i.contactId != null) && i.usedBy != null)
       ? InviteStatus.used
       : (i.expires.isBefore(now) ? InviteStatus.expired : InviteStatus.valid);
 
@@ -596,6 +596,7 @@ class FakeSyncBackend implements SyncBackend {
   Future<CreatedInvite> createInvite(
     String organizationId, {
     String? bandId,
+    String? contactId,
   }) async {
     _requireUser();
     final allowed =
@@ -604,14 +605,23 @@ class FakeSyncBackend implements SyncBackend {
     if (!allowed) {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
+    if (contactId != null) {
+      final c = contacts[contactId];
+      if (c == null || c.deleted || c.organizationId != organizationId) {
+        throw const BackendException(BackendErrorKind.server);
+      }
+    }
     final token = 'Tok${++_ids}'.padRight(32, 'x');
-    final invite = FakeInvite(
-      'inv$_ids',
-      organizationId,
-      token,
-      now,
-      now.add(const Duration(days: 7)),
-    )..bandId = bandId;
+    final invite =
+        FakeInvite(
+            'inv$_ids',
+            organizationId,
+            token,
+            now,
+            now.add(const Duration(days: 7)),
+          )
+          ..bandId = bandId
+          ..contactId = contactId;
     invites.add(invite);
     return CreatedInvite(
       id: invite.id,
@@ -629,6 +639,7 @@ class FakeSyncBackend implements SyncBackend {
     return [
       for (final i in invites.reversed)
         if (i.organizationId == organizationId &&
+            i.contactId == null &&
             (bandId == null || i.bandId == bandId) &&
             _inviteStatus(i) == InviteStatus.valid)
           InviteInfo(
@@ -686,6 +697,19 @@ class FakeSyncBackend implements SyncBackend {
       alreadyMember: orgMembers.any(
         (m) => m.scopeId == invite.organizationId && m.user.id == user?.id,
       ),
+      contact: switch (contacts[invite.contactId]) {
+        final c?
+            when !c.deleted && _inviteStatus(invite) == InviteStatus.valid =>
+          (
+            name: PersonName(
+              firstName: c.firstName,
+              lastName: c.lastName,
+              nickname: c.nickname,
+            ),
+            email: c.email,
+          ),
+        _ => null,
+      },
     );
   }
 
@@ -721,6 +745,43 @@ class FakeSyncBackend implements SyncBackend {
     if (bandId != null &&
         !members.any((m) => m.scopeId == bandId && m.user.id == user!.id)) {
       addMember(bandId, user!, BandRole.member);
+    }
+    // A personal invitation links its contact (ADR-0064): the account takes
+    // its place in every lineup, the contact is deleted.
+    if (contacts[invite.contactId] case final c?) {
+      invite.usedBy = user;
+      for (final set in sets.values.toList()) {
+        if (!set.lineupContacts.contains(c.id)) continue;
+        putSet(
+          RemoteSet(
+            id: set.id,
+            bandId: set.bandId,
+            name: set.name,
+            gigDate: set.gigDate,
+            venue: set.venue,
+            items: set.items,
+            deleted: set.deleted,
+            lineup: {...set.lineup, user!.id}.toList(),
+            lineupContacts: [
+              for (final id in set.lineupContacts)
+                if (id != c.id) id,
+            ],
+            lineupCustom: set.lineupCustom,
+          ),
+          by: user!.id,
+        );
+      }
+      putContact(
+        RemoteContact(
+          id: c.id,
+          organizationId: c.organizationId,
+          firstName: c.firstName,
+          lastName: c.lastName,
+          nickname: c.nickname,
+          linkedUserId: user!.id,
+          deleted: true,
+        ),
+      );
     }
     return orgId;
   }
@@ -1591,6 +1652,9 @@ class FakeInvite {
 
   /// The band the link also leads into (ADR-0023).
   String? bandId;
+
+  /// The person without an account of a personal invitation (ADR-0064).
+  String? contactId;
 
   /// Whether the server kept the token, so the link can be shown again
   /// (issue #579).

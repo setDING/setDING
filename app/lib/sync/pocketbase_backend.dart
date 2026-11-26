@@ -582,11 +582,16 @@ class PocketBaseBackend implements SyncBackend {
   Future<CreatedInvite> createInvite(
     String organizationId, {
     String? bandId,
+    String? contactId,
   }) async {
     final data = await _send(
       '/api/setding/invites',
       method: 'POST',
-      body: {'organization': organizationId, 'band': ?bandId},
+      body: {
+        'organization': organizationId,
+        'band': ?bandId,
+        'contact': ?contactId,
+      },
     );
     return CreatedInvite(
       id: data['id'] as String,
@@ -605,7 +610,8 @@ class PocketBaseBackend implements SyncBackend {
         'org': organizationId,
       });
       final active =
-          '$filter && revoked = false && expires > @now'
+          // Personal invitations belong to their contact (ADR-0064).
+          '$filter && revoked = false && expires > @now && contact = ""'
           '${bandId == null ? '' : ' && ${_pb.filter('band = {:band}', {'band': bandId})}'}';
       final invites = await _pb
           .collection('invites')
@@ -672,6 +678,17 @@ class PocketBaseBackend implements SyncBackend {
       alreadyMember: data['member'] as bool,
       founder: data['founder'] == true,
       bandName: (data['band'] as Map<String, dynamic>?)?['name'] as String?,
+      contact: switch (data['contact']) {
+        final Map<String, dynamic> c => (
+          name: PersonName(
+            firstName: c['first_name'] as String? ?? '',
+            lastName: c['last_name'] as String? ?? '',
+            nickname: c['nickname'] as String? ?? '',
+          ),
+          email: _nonEmpty(c['email'] as String? ?? ''),
+        ),
+        _ => null,
+      },
     );
   }
 

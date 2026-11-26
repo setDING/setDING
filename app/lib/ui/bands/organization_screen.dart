@@ -12,6 +12,7 @@ import '../widgets/dialogs.dart';
 import 'band_labels.dart';
 import 'band_screen.dart';
 import 'close_organization.dart';
+import 'contacts_section.dart';
 import 'delete_band.dart';
 import 'bands_screen.dart';
 import 'invites_section.dart';
@@ -162,6 +163,9 @@ class OrganizationScreen extends ConsumerWidget {
                   leading: const Icon(Icons.person_add_alt),
                   subtitle: Text(l10n.inviteAskAdmin),
                 ),
+              // People without an account (ADR-0064), for set editors.
+              if (canEditContacts(org, bands))
+                ContactsSection(org: org, bands: bands),
               if (own != null)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),

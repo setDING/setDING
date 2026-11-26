@@ -9792,6 +9792,84 @@ abstract class AppLocalizations {
   /// **'Nur der Vorname ist nötig.'**
   String get contactNameHint;
 
+  /// No description provided for @contactsHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Personen, die mitspielen, aber setDING nicht benutzen. Sie können in die Besetzung von Sets aufgenommen werden.'**
+  String get contactsHint;
+
+  /// No description provided for @contactEditTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Person bearbeiten'**
+  String get contactEditTitle;
+
+  /// No description provided for @contactInvite.
+  ///
+  /// In de, this message translates to:
+  /// **'Zu setDING einladen'**
+  String get contactInvite;
+
+  /// No description provided for @contactInviteChooseBand.
+  ///
+  /// In de, this message translates to:
+  /// **'In welche Band einladen?'**
+  String get contactInviteChooseBand;
+
+  /// No description provided for @contactDeleteTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} löschen?'**
+  String contactDeleteTitle(String name);
+
+  /// No description provided for @contactDeleteMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} wird nicht mehr für Besetzungen angeboten und die Mailadresse wird entfernt. Sets, in denen {name} steht, behalten den Namen.'**
+  String contactDeleteMessage(String name);
+
+  /// No description provided for @contactInviteTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Persönliche Einladung für {name}'**
+  String contactInviteTitle(String name);
+
+  /// No description provided for @contactInviteHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Link gilt einmal, bis {date}. Wer damit ein Konto erstellt, übernimmt die Sets, in denen {name} eingeplant ist.'**
+  String contactInviteHint(String date, String name);
+
+  /// No description provided for @contactInviteSubject.
+  ///
+  /// In de, this message translates to:
+  /// **'Einladung zu setDING'**
+  String get contactInviteSubject;
+
+  /// No description provided for @contactInviteBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Hallo {name}\n\nDu bist eingeladen, {organization} auf setDING beizutreten. Dort findest du die Akkorde unserer Songs und die Sets, in denen du eingeplant bist. Öffne diesen Link, um dein Konto zu erstellen:\n{url}'**
+  String contactInviteBody(String name, String organization, String url);
+
+  /// No description provided for @joinPersonal.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Einladung ist für {name}.'**
+  String joinPersonal(String name);
+
+  /// No description provided for @joinPersonalExplanation.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Konto übernimmt die Sets, in denen {name} eingeplant ist.'**
+  String joinPersonalExplanation(String name);
+
+  /// No description provided for @joinPersonalButton.
+  ///
+  /// In de, this message translates to:
+  /// **'Einladung annehmen'**
+  String get joinPersonalButton;
+
   /// No description provided for @lineupNobody.
   ///
   /// In de, this message translates to:

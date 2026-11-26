@@ -515,6 +515,45 @@ void main() {
       carol.dispose();
     });
 
+    test('a personal invitation prefills the sign-up and is used once '
+        '(ADR-0064)', () async {
+      final (ann, _) = await signedIn('Ann');
+      final (bob, bobUser) = await signedIn('Bob');
+      await ann.createBand(id: const Uuid().v4(), name: 'Rock');
+      final orgId = (await ann.fetchOrganizations()).single.id;
+      final contactId = const Uuid().v4();
+      await ann.pushContact(
+        RemoteContact(
+          id: contactId,
+          organizationId: orgId,
+          firstName: 'Guest',
+          lastName: 'Drummer',
+          email: 'guest@setding.test',
+        ),
+        create: true,
+      );
+      final invite = await ann.createInvite(orgId, contactId: contactId);
+      final token = inviteTokenFrom(invite.url)!;
+      // Not in the list of links.
+      expect(await ann.fetchInvites(orgId), isEmpty);
+
+      final preview = await bob.previewInvite(token);
+      expect(preview.personal, isTrue);
+      expect(preview.contact!.name.firstName, 'Guest');
+      expect(preview.contact!.name.lastName, 'Drummer');
+      expect(preview.contact!.email, 'guest@setding.test');
+
+      await bob.redeemInvite(token);
+      final linked = (await ann.pullContacts(orgId, 0)).single;
+      expect(linked.linkedUserId, bobUser.id);
+      expect(linked.deleted, isTrue);
+      final used = await bob.previewInvite(token);
+      expect(used.status, InviteStatus.used);
+      expect(used.contact, isNull);
+      ann.dispose();
+      bob.dispose();
+    });
+
     test('members cannot invite; unknown links are reported', () async {
       final (ann, _) = await signedIn('Ann');
       await ann.createBand(id: const Uuid().v4(), name: 'Rock');
