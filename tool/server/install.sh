@@ -159,8 +159,16 @@ if [ ! -f /etc/apt/sources.list.d/cloudflared.list ]; then
     >/etc/apt/sources.list.d/cloudflared.list
   apt-get update -q
 fi
+# Not covered by unattended-upgrades (Debian's security origin only): it is
+# updated here, and a running tunnel is restarted onto the new version (#1079).
+before="$(cloudflared --version 2>/dev/null || true)"
 apt-get install -y -q cloudflared >/dev/null
-cloudflared --version
+after="$(cloudflared --version)"
+echo "$after"
+if [ -n "$before" ] && [ "$before" != "$after" ] && systemctl is-active --quiet cloudflared; then
+  systemctl restart cloudflared
+  echo "cloudflared restarted (was: $before)"
+fi
 
 # --- Old bundles -----------------------------------------------------------------
 # Keep the newest few next to the current one, for a quick rollback.

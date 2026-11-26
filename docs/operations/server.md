@@ -320,7 +320,11 @@ the tunnel creates its own CNAME records.
   tries the invite-only mode).
 - **Web client:** part of the bundle (`pb_public`), so it always has the server's
   version.
-- **cloudflared:** updated with the Debian packages (apt repository of Cloudflare).
+- **cloudflared:** comes from Cloudflare's apt repository, which unattended-upgrades
+  does not cover. `install.sh` updates it with every `make server-release` or
+  `make server-install` and restarts a running tunnel when the version changed (a
+  second without the tunnel). In between, by hand on the host:
+  `sudo apt-get update && sudo apt-get install --only-upgrade cloudflared && sudo systemctl restart cloudflared`.
 
 ## Backups
 
