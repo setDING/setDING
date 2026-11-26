@@ -179,14 +179,19 @@ class ChannelBackupFolder implements BackupFolder {
     }))?.cast<String>(),
   ];
 
+  /// Writes under the temporary name first. A folder that rejects that
+  /// name (a Nextcloud server forbids ".part" files, #1106) gets the file
+  /// written directly under [name]; a lost permission is not retried.
   @override
-  Future<void> write(String location, String name, Uint8List bytes) =>
-      _call<void>('write', {
-        'location': location,
-        'name': name,
-        'part': '$name$backupPartSuffix',
-        'bytes': bytes,
-      });
+  Future<void> write(String location, String name, Uint8List bytes) async {
+    final args = {'location': location, 'name': name, 'bytes': bytes};
+    try {
+      await _call<void>('write', {...args, 'part': '$name$backupPartSuffix'});
+    } on BackupFolderException catch (e) {
+      if (e.error == BackupFolderError.permission) rethrow;
+      await _call<void>('write', args);
+    }
+  }
 
   @override
   Future<void> delete(String location, String name) =>

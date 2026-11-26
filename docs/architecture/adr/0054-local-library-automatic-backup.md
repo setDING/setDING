@@ -242,6 +242,10 @@ the server sync (ADR-0004).
   `~`; iOS keeps the folder name. A channel method `describe` lets folders
   chosen before #889 get the new display at the start. Long paths are
   shortened in the middle, so the start and the folder itself stay visible.
+- 2026-11-26: A folder that rejects the temporary name gets the archive
+  written directly under its final name (#1106): a Nextcloud server forbids
+  `.part` files, so the backup into a Nextcloud folder on Android failed as
+  "not reachable".
 
 ## Open points
 

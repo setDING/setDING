@@ -72,7 +72,9 @@ class BackupFolderChannel: NSObject, UIDocumentPickerDelegate {
       }
     case "write":
       background(result) {
-        guard let name = args["name"] as? String, let part = args["part"] as? String,
+        // Without "part" (the folder rejected it, #1106) the file is written
+        // directly under its name.
+        guard let name = args["name"] as? String,
           let bytes = args["bytes"] as? FlutterStandardTypedData
         else { throw FolderError(code: "failed", message: "Bad arguments") }
         try self.withFolder(args) { folder in
@@ -81,9 +83,13 @@ class BackupFolderChannel: NSObject, UIDocumentPickerDelegate {
           NSFileCoordinator().coordinate(
             writingItemAt: folder, options: .forMerging, error: &coordinatorError
           ) { dir in
-            let temp = dir.appendingPathComponent(part)
             let target = dir.appendingPathComponent(name)
             do {
+              guard let part = args["part"] as? String else {
+                try bytes.data.write(to: target, options: .atomic)
+                return
+              }
+              let temp = dir.appendingPathComponent(part)
               try bytes.data.write(to: temp)
               if FileManager.default.fileExists(atPath: target.path) {
                 try FileManager.default.removeItem(at: target)
