@@ -16,7 +16,7 @@ else it is not a self-hosting offer, and the website gives no guidance.
 
 At the same time the owner's own operations change:
 
-- **Production** moves to a small rented VPS (Hostpoint, Switzerland) with a public
+- **Production** moves to a small rented VPS (Infomaniak; first planned as Hostpoint, Switzerland) with a public
   IP address.
 - The current **LXC** stays as a **staging** server for testing branches,
   PocketBase updates and migrations (an open point of ADR-0014).

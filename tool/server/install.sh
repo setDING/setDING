@@ -99,7 +99,7 @@ cat >/usr/local/bin/setding.new <<'EOF'
 #!/bin/sh
 # setDING admin commands (pocketbase … on the installed data), as in the
 # self-hosting documentation; installed by tool/server/install.sh.
-exec runuser -u setding -- /opt/setding/current/pocketbase "$@" \
+cd / && exec runuser -u setding -- /opt/setding/current/pocketbase "$@" \
   --dir=/var/lib/setding/pb_data \
   --hooksDir=/opt/setding/current/pb_hooks \
   --migrationsDir=/opt/setding/current/pb_migrations

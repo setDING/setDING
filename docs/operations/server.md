@@ -16,7 +16,7 @@ Browsers ─HTTPS──▶                  └───────────
 
 | Server | Host | Hostnames |
 |---|---|---|
-| Production (`SERVER_PROD`) | VPS (Hostpoint, Debian 13, amd64) | `api.setding.app`, `app.setding.app` |
+| Production (`SERVER_PROD`) | VPS Lite at Infomaniak (Debian 13, amd64) | `api.setding.app`, `app.setding.app` |
 | Website (`SERVER_SITE`) | the same VPS, installed separately | `setding.app`, `www.setding.app` |
 | Test server (`SERVER_STAGING`) | LXC on the owner's Proxmox | `setding.dev` (e.g. `api.setding.dev`) |
 
@@ -59,6 +59,14 @@ All but `server-install` and `server-site` work on production unless
 - No open ports: the Cloudflare Tunnel connects outwards.
 
 Check from the development machine: `ssh <target> sudo -n true` (or `ssh root@<host> true`).
+
+**Infomaniak blocks IP addresses** (banip/ipban) after repeated failed connection
+attempts, e.g. many SSH connections that are reset in a row; port 22 then times out
+from that address for a while (about 5 minutes in #1055). The `make server-*` targets
+therefore reuse one SSH connection per server for 60 s (`ControlMaster`, see `SSH` in
+the `Makefile`). If an address stays blocked, Infomaniak's support lifts it (with the
+public IP address from <https://infomaniak.com/ip>). The VPS's own firewall (Manager →
+Firewall) must allow port 22; the tunnel needs no incoming port.
 
 ## 2. Install (agent)
 

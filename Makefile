@@ -88,7 +88,10 @@ SERVER_PROD     ?=
 SERVER_STAGING  ?=
 SERVER_SITE     ?=
 PB_VERSION      ?= 0.42.3
-SSH             ?= ssh
+# One SSH connection per server, reused for 60 s: deploys and targets open
+# several sessions, and the VPS's provider throttles many new connections in
+# a row (#1055).
+SSH             ?= ssh -o ControlMaster=auto -o ControlPath=$(HOME)/.ssh/setding-%C -o ControlPersist=60
 SERVER_BACKUPS  := /var/lib/setding/pb_data/backups
 BACKUP_DIR      ?= $(ROOT)/.server-backups
 # Overridable for the tests of these targets (tool/test_server_targets.py).
@@ -318,7 +321,7 @@ server-site: ## Build and deploy the website to SERVER_SITE, from the working tr
 server-status: server-target ## Show the services, version, health, latest backups and disk of the server (TARGET=prod|staging)
 	@$(SSH) $(SRV) '$(AS_ROOT) $$s systemctl --no-pager --lines=0 status setding cloudflared || true; \
 		echo; echo "setDING $$(cat /opt/setding/current/VERSION)"; curl -fsS http://127.0.0.1:8090/api/health; echo; \
-		echo; echo "Backups:"; $$s ls -lht $(SERVER_BACKUPS) | head -n 6; echo; df -h /'
+		echo; echo "Backups:"; $$s ls -lht $(SERVER_BACKUPS) 2>/dev/null | head -n 6 | grep . || echo "  none yet"; echo; df -h /'
 
 server-logs: server-target ## Follow the setDING and tunnel logs of the server (Ctrl+C to stop; TARGET=prod|staging)
 	$(SSH) -t $(SRV) '$(AS_ROOT) $$s journalctl -u setding -u cloudflared -n 100 -f'
