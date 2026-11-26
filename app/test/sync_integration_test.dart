@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:setding/data/arrangement_repository.dart';
 import 'package:setding/data/attachment_storage_io.dart';
 import 'package:setding/data/band_copy.dart';
+import 'package:setding/data/contact_repository.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/data/person_name.dart';
 import 'package:setding/data/marker_icons.dart';
@@ -201,6 +202,37 @@ void main() {
       await bob.close();
     },
   );
+
+  test('people without an account reach the other device, their mail '
+      'address only set editors (ADR-0064)', () async {
+    final (ann, bob, org, band) = await twoDevices();
+    final contact = await ContactRepository(ann.db).createContact(
+      org,
+      firstName: 'Guest',
+      lastName: 'Drummer',
+      email: 'guest@setding.test',
+    );
+    final set = await ann.sets(band).createSet(name: 'Gig');
+    await ann.sets(band).setLineup(set, [], contacts: [contact]);
+    expect((await ann.sync()).pushed, 2);
+
+    await bob.sync();
+    final onBob = await (bob.db.select(
+      bob.db.contacts,
+    )..where((c) => c.id.equals(contact))).getSingle();
+    expect(onBob.firstName, 'Guest');
+    expect(onBob.lastName, 'Drummer');
+    // Bob is a librarian and plain band member: no set editor.
+    expect(onBob.email, isNull);
+    final bobSet = (await bob.sets(band).watchSets().first).single.set;
+    expect(bobSet.lineupCustom, isTrue);
+    expect(bobSet.lineupContacts, [contact]);
+
+    final emails = await ann.backend.fetchLineupEmails(set);
+    expect(emails, [(name: 'Guest Drummer', email: 'guest@setding.test')]);
+    await ann.close();
+    await bob.close();
+  });
 
   test('band arrangements reach the other device (ADR-0025)', () async {
     final (ann, bob, org, band) = await twoDevices();

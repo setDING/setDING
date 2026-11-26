@@ -297,19 +297,26 @@ class SetRepository {
   });
 
   /// Sets the people who play the set (ADR-0061): user IDs of the band and
-  /// its organization, or null for the whole band. Synced like an edit;
-  /// the server refuses people outside the organization.
-  Future<void> setLineup(String id, List<String>? people) =>
-      db.transaction(() async {
-        await (db.update(db.setlists)..where((s) => s.id.equals(id))).write(
-          SetlistsCompanion(
-            lineup: Value(people == null ? const [] : people.toSet().toList()),
-            lineupCustom: Value(people != null),
-            updatedAt: Value(DateTime.now()),
-          ),
-        );
-        await _touch(id);
-      });
+  /// its organization and the IDs of [contacts], people without an account
+  /// (ADR-0064), or null for the whole band. Synced like an edit; the
+  /// server refuses people and contacts outside the organization.
+  Future<void> setLineup(
+    String id,
+    List<String>? people, {
+    List<String> contacts = const [],
+  }) => db.transaction(() async {
+    await (db.update(db.setlists)..where((s) => s.id.equals(id))).write(
+      SetlistsCompanion(
+        lineup: Value(people == null ? const [] : people.toSet().toList()),
+        lineupContacts: Value(
+          people == null ? const [] : contacts.toSet().toList(),
+        ),
+        lineupCustom: Value(people != null),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+    await _touch(id);
+  });
 
   /// Soft-deletes a set; [restoreSet] undoes it. The set keeps its items,
   /// so it is complete when it is restored from the trash (ADR-0043).

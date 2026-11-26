@@ -34,6 +34,7 @@ void main() {
     deleted: false,
     purged: false,
     lineup: const ['ann', 'cleo'],
+    lineupContacts: const [],
     lineupCustom: true,
   );
   const lineup = SetLineup(
