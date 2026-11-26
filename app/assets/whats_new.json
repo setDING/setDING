@@ -1,4 +1,12 @@
 {
+  "0.22.0": {
+    "de": [
+      "Den setDING-Server kannst du jetzt selbst betreiben, mit Docker oder ohne; die Website erklärt im neuen Kapitel «Selbst hosten», wie es geht."
+    ],
+    "en": [
+      "You can now run the setDING server yourself, with Docker or without; the new website chapter “Self-hosting” explains how."
+    ]
+  },
   "0.21.0": {
     "de": [
       "Jedes Konto hat jetzt Vor- und Nachname, dazu optional einen Spitznamen; wie Namen angezeigt werden, wählst du in den Einstellungen.",
