@@ -204,6 +204,7 @@ Each phase is a separate branch and merge (ADR-0010).
   only low strings" moved them up the neck. `{define}` shapes are used only when
   their string count matches.
 - 2026-11-26: setDING custom directive `{x_ccli_footer: …}` for the SongSelect terms-of-use line. `{footer}` is not defined by the ChordPro specification (only `footerfont/size/colour`), so it is no longer known metadata or offered by autocompletion; on import and with the editor's SongSelect hint it is renamed to `{x_ccli_footer}` like `{ccli}` (ADR-0011).
+- 2026-11-26: Autocompletion suggests only the specification's spelling `…colour` of the colour directives; the American `…color` (e.g. `textcolor`) is not defined by the ChordPro specification and is no longer suggested. The parser still reads it, so existing songs keep their colours.
 
 ## Open points
 

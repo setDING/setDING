@@ -44,8 +44,12 @@ final List<DirectiveInfo> chordProDirectives = () {
     const DirectiveInfo('meta', argument: true),
     for (final MapEntry(:key, :value) in otherDirectives.entries)
       if (!_shortOther.contains(key)) DirectiveInfo(key, argument: value),
+    // The parser also reads the American spelling (`textcolor`), which
+    // the ChordPro specification does not define; only `…colour` is
+    // suggested.
     for (final name in formatDirectives.keys)
-      if (name.length > 2) DirectiveInfo(name, argument: true),
+      if (name.length > 2 && !name.endsWith('color'))
+        DirectiveInfo(name, argument: true),
     for (final name in customDirectives) DirectiveInfo(name, argument: true),
   ];
   final short = <DirectiveInfo>[
