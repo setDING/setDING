@@ -6,7 +6,7 @@
 # - tool/site/Caddyfile: `caddy validate` and `caddy fmt` (formatted as Caddy
 #   writes it);
 # - the Caddyfile and systemd unit of the self-hosting docs (doc-example.py);
-# - the systemd units of tool/server/ and the docs' example with `systemd-analyze verify`, if the
+# - the systemd unit of the docs' example (also the owner's servers) with `systemd-analyze verify`, if the
 #   machine has it (unknown keys, bad values; the installed binaries the units
 #   start are missing on a development machine and are ignored).
 # ShellCheck and Caddy are pinned and fetched by tool/fetch-tool.sh. Their
@@ -71,8 +71,8 @@ fi
 # --- systemd units ----------------------------------------------------------
 if command -v systemd-analyze >/dev/null 2>&1; then
   # The units start binaries that only exist on the server.
-  out="$(systemd-analyze verify --man=no "$ROOT"/tool/server/*.service "$ROOT"/tool/server/*.timer \
-    "$examples/setding.service" 2>&1 |
+  # The owner's servers use the unit of the self-hosting docs as well.
+  out="$(systemd-analyze verify --man=no "$examples/setding.service" 2>&1 |
     grep -v -E 'Command .* is not executable: No such file or directory' || true)"
   if [ -n "$out" ]; then
     echo "$out"

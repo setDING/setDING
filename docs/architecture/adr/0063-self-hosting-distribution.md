@@ -289,6 +289,7 @@ web client excepted).
   `tool/server-dist/doc-example.py` hands them to the bundle, image and upgrade
   tests and to the ops checks, and fails when the German and English pages differ.
 
+- 2026-11-26: §7 tooling (#1055): the owner's servers install the published bundle with `tool/server/install.sh` in the docs' layout and with the docs' unit; `make server-release` (production) and `make server-install` (test server, `setding.dev`) pick the host with `SERVER_PROD`/`SERVER_STAGING`. The website also lives on the production VPS, installed separately (owner).
 ## Open points
 
 - Signing the image and the bundles (e.g. cosign, SBOM per image, ADR-0037).

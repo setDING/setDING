@@ -45,6 +45,8 @@ job_tools() {
   cd "$ROOT/tool"
   python3 -m unittest -q test_check_select
   python3 -m unittest -q test_upgrade_guard
+  # Which server the make server-* targets work on (#1055).
+  python3 -m unittest -q test_server_targets
   cd "$ROOT/tool/server-dist"
   python3 -m unittest -q test_doc_example
 }

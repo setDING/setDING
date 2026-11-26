@@ -46,15 +46,20 @@ only on the server, so a mistake in them would otherwise show up there first.
   `founder-invite`, `healthcheck`, and a built-in backup restored into the
   unit's data directory.
 
-- **Backup and restore** (`backup_test.dart`): runs
-  `tool/server/setding-backup.sh` against a running PocketBase with a band, a
-  song and a PDF attachment, changes data, restores the archive exactly as
+- **Backup and restore** (`backup_test.dart`): runs `tool/server/backup-now.sh`
+  (`setding-backup-now` on the owner's servers) against a running PocketBase with a
+  band, a song and a PDF attachment, checks that PocketBase lists the ZIP like its
+  own backups, changes data, restores the archive exactly as
   [the server guide](../operations/server.md#restore) describes and checks that
-  the records, the users' passwords and the file are back as they were. Also:
-  backups older than `KEEP_DAYS` are deleted, other files are kept, and a server
-  without a database writes no backup. The script takes `PB_DATA` and
-  `BACKUP_DIR` from the environment for this; on the server they keep their
-  defaults. Needs `sqlite3` and `tar`.
+  the records, the users' passwords and the file are back as they were. Also: the
+  default name of a manual backup, and no backup without a database. The script
+  takes `PB_DATA` and `OWNER` from the environment for this. Needs `sqlite3`, `zip`
+  and `unzip`.
+- **Server targets** (`tool/test_server_targets.py`, job `tools`): which server
+  `make server-*` works on (`TARGET`, `SERVER_PROD`, `SERVER_STAGING`,
+  `SERVER_SITE`), that `server-install` needs `FORCE=1` for production, that remote
+  commands run as root or with `sudo -n`, and that the old `SERVER`/`SITE_SERVER`
+  are refused; the deploy scripts and `ssh` are stubs.
 - **Website server** (`site_server_test.dart`): runs Caddy with the real
   Caddyfile (only the port and site directory replaced) and checks the
   `www` redirect, the 404 page, compression and the cache headers.

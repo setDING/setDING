@@ -78,5 +78,5 @@ fails on a version without a released `CHANGELOG.md` section.
 The website is deployed on its own, independent of the backend (ADR-0063 §8):
 `make server-site VERSION=X.Y.Z` after a release (built from the tag) and
 `make server-site` from the working tree for documentation fixes between releases,
-both to `SITE_SERVER`. Hosting:
+both to `SERVER_SITE`. Hosting:
 [server operations, section 8](../operations/server.md#8-website-owner-once).
