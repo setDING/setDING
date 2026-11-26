@@ -108,6 +108,10 @@ for creating an account, like every invitation.
 | Choose a set's lineup, add people of the organization to it (ADR-0061) | ✓ all bands | – | ✓ | ✓ | – |
 | Get the mail addresses of a set's lineup to notify it (ADR-0061) | ✓ all bands | – | ✓ | ✓ | – |
 | See a set as a substitute⁴, read-only, with its songs' band arrangements and the lineup's names (ADR-0061) | anyone in the set's lineup who is not a member of its band | | | | |
+| See the names of the organization's contacts (people without an account, ADR-0064) | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Create and edit contacts, see their mail addresses, add them to a set's lineup (ADR-0064) | ✓ | – | ✓⁵ | ✓⁵ | – |
+| Invite a contact with a personal invitation that links it to the new account (ADR-0064) | ✓ | – | ✓ (into own band) | – | – |
+| Delete contacts (ADR-0064) | ✓ | – | – | – | – |
 | Create and import new songs | ✓ | ✓ | ✓ | – | – |
 | Edit existing songs and attachments | ✓ | ✓ | own songs² | – | – |
 | Delete songs and attachments | ✓ | ✓ | – | – | – |
@@ -134,6 +138,8 @@ their own songs. Linking or setting the language keeps the last editor, so a
 librarian linking a leader's own song leaves it theirs.
 ⁴ A person in a set's lineup who is not a member of the set's band (ADR-0061);
 they see only the sets they are in the lineup of, for as long as they are in it.
+⁵ In any band of the organization: contacts belong to the organization; they
+are added to the lineups of the sets the person may edit.
 
 A person who is a librarian of the organization and a member of a band sees the
 sets of that band like any member; librarian rights concern the library only.
@@ -232,6 +238,7 @@ sets of that band like any member; librarian rights concern the library only.
 - 2026-11-22: **ADR-0043** (#866): deleting songs and sets permanently from the trash follows the right to delete them (songs: organization admins and librarians; sets: set managers); the update rule of songs refuses a change of `purged` to band leaders.
 - 2026-11-23: **ADR-0061** (#1003): a set's lineup is chosen by whoever may edit the set, from the band and the organization; a person in the lineup who is not a member of the band (a substitute) sees that set read-only with the band arrangements of its songs, through a server route, not as a role of the band, so *no guest role* stays; the lineup's mail addresses only for set editors. Server tests with the implementation.
 - 2026-11-23: **ADR-0060** (#985): everyone in the organization reports mistakes in its songs; members see only their own reports, the other roles all; approving a song, setting it to review and resolving reports follow the right to edit the song, and a review-only change keeps `updated_by` (like ADR-0053). Server tests with #987.
+- 2026-11-26: **ADR-0064** (#1096): contacts (people without an account) are seen by name by everyone in the organization, created and edited by band leaders and set planners of any band and organization admins, who alone see their mail addresses; only organization admins delete them; a personal invitation for a contact follows the right to invite. Server tests with the implementation.
 
 ## Open points
 

@@ -268,7 +268,7 @@ band but a person in a set's lineup.
   on this device.
 - 2026-11-23: Website page *Besetzung und Aushilfen* / *Lineup and
   substitutes* with four screenshots (#1012); the roles page links to it.
-- 2026-11-26: ADR-0064 proposed (#1095): people without an account as
+- 2026-11-26: ADR-0064 accepted (#1095, #1096): people without an account as
   contacts of the organization in the lineup (`lineup_contacts`), next to
   the people of decision 1.
 

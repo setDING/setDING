@@ -1,6 +1,6 @@
 # ADR-0064: People without an account in a set's lineup
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-26
 
 ## Context
@@ -215,6 +215,8 @@ be in the lineup of old sets:
   itself, and the sign-up form is prefilled from the contact, the person
   completing the required fields (decision 5 changed). Inviting follows who
   may invite today: organization admins, band leaders into their band.
+- 2026-11-26: Accepted by the owner (#1096); the rows are in ADR-0023's
+  permission matrix. Implementation in follow-up issues.
 
 ## Open points
 
