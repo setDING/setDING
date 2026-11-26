@@ -197,15 +197,29 @@ Beschriftungen in der empfohlenen Form. Mit ✕ lässt sich der Hinweis ausblend
 ## Beschriftungen auf Englisch
 
 Viele Songs aus dem deutschsprachigen Raum beschriften ihre Abschnitte auf Deutsch,
-z. B. `Vers 1`, `Strophe 2` oder `Refrain`. setDING zeigt Beschriftungen so an, wie
-sie im Song stehen. Wer sie lieber einheitlich auf Englisch hat, wählt im Menü
-Zeilen **Abschnitts-Beschriftungen ins Englische übersetzen**: aus `Vers`
-und `Strophe` wird `Verse`, aus `Refrain` `Chorus`, aus `Pre-Refrain`
-`Pre-Chorus`, aus `Zwischenspiel` `Interlude` und aus `Schluss` `Outro`. Nummern und
-Zusätze wie `(leise)` bleiben. Übersetzt werden die Beschriftungen von Abschnitten,
-von `{chorus: …}` und von Kommentar-Überschriften; sind Zeilen markiert, nur die in
-der Markierung. Weil sich die Anzeige ändert, ist das keine Umwandlung, die setDING
-vorschlägt, sondern ein Befehl, den du bewusst wählst.
+z. B. `Vers 1`, `Strophe 2` oder `Refrain`. Abschnittsnamen sind in setDING
+englisch, darum gehören deutsche Beschriftungen zu den
+[Umwandlungen](/songs/library/#songs-umwandeln): Der Zauberstab und **Alle umwandeln**
+übersetzen sie. Im Editor wählst du dafür im Menü Zeilen
+**Abschnitts-Beschriftungen ins Englische übersetzen**; sind Zeilen markiert, nur die
+in der Markierung.
+
+| Deutsch | Englisch |
+| --- | --- |
+| `Vers`, `Strophe` | `Verse` |
+| `Refrain`, `Ref.`, `Kehrvers` | `Chorus` |
+| `Pre-Refrain`, `Vorrefrain` | `Pre-Chorus` |
+| `Nachrefrain` | `Post-Chorus` |
+| `Brücke`, `Zwischenteil`, `Mittelteil` | `Bridge` |
+| `Zwischenspiel`, `Überleitung` | `Interlude` |
+| `Vorspiel`, `Einleitung` | `Intro` |
+| `Schluss`, `Nachspiel`, `Abschluss`, `Ausklang` | `Outro` |
+| `Ende` | `Ending` |
+
+Nummern und Zusätze wie `(leise)` bleiben. Übersetzt werden die Beschriftungen von
+Abschnitten, von `{chorus: …}` und von Kommentar-Überschriften. Eine
+Kommentar-Überschrift wird beim Umwandeln zudem ein Abschnitt mit englischem Namen:
+aus `{comment: Schluss}` wird `{start_of_outro: label="Outro"}`.
 
 <Image src={editorEnglishLabels} alt="Der Editor mit deutschen Abschnitts-Beschriftungen und dem geöffneten Menü Zeilen mit dem Befehl Abschnitts-Beschriftungen ins Englische übersetzen" />
 

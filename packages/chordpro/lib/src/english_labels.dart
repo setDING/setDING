@@ -1,13 +1,15 @@
 /// German section labels such as `Vers 1` or `Refrain` and their
 /// translation to English (`Verse 1`, `Chorus`) (#1036).
 ///
-/// Labels are shown as written, so unlike the conversions of
-/// `applyChordProConversions` this changes what the band sees. The editor
-/// offers it as a command of its own and does not count it as pending.
+/// Section names are English (ADR-0008). Labels are shown as written, so
+/// unlike the other conversions this changes what the band sees; it is
+/// still one of them (`applyChordProConversions`, #1085), and the editor
+/// also offers it as a command for the selection.
 library;
 
 import 'directive.dart';
 import 'directive_names.dart';
+import 'section_heading.dart';
 
 /// A German section label in the source with its English replacement.
 class GermanSectionLabel {
@@ -32,33 +34,21 @@ class GermanSectionLabel {
   String toString() => 'GermanSectionLabel(line $line: $replacement)';
 }
 
-final _german = RegExp(
-  r'^(pre[\s_-]?refrain|refrain|vers|strophe|zwischenspiel|schluss)'
-  r'((?:\s*\d+[a-z]?)?(?:\s*\(.*\))?\s*:?)$',
-  caseSensitive: false,
-);
-
-const _english = {
-  'refrain': 'Chorus',
-  'vers': 'Verse',
-  'strophe': 'Verse',
-  'zwischenspiel': 'Interlude',
-  'schluss': 'Outro',
-};
-
 /// [label] in English if it is a German section name such as `Strophe 2`
-/// or `Pre-Refrain:`, otherwise null. Number, a note in brackets and a
-/// trailing colon stay; an upper-case label stays upper case.
+/// or `Pre-Refrain:` (`germanSectionNames`), otherwise null. Number, a
+/// note in brackets and a trailing colon stay; an upper-case label stays
+/// upper case.
 String? englishSectionLabel(String label) {
-  final m = _german.firstMatch(label);
-  if (m == null) return null;
-  final word = m.group(1)!;
-  final key = word.toLowerCase();
-  var english = key.startsWith('pre') ? 'Pre-Chorus' : _english[key]!;
+  final parts = sectionHeadingParts(label);
+  if (parts == null) return null;
+  final (word, rest) = parts;
+  var english =
+      germanSectionNames[word.toLowerCase().replaceAll(RegExp(r'[\s_.-]'), '')];
+  if (english == null) return null;
   if (word.length > 1 && word == word.toUpperCase()) {
     english = english.toUpperCase();
   }
-  return '$english${m.group(2)}';
+  return '$english$rest';
 }
 
 final _line = RegExp(

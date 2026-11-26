@@ -15,12 +15,37 @@ void main() {
       expect(englishSectionLabel('REFRAIN'), 'CHORUS');
     });
 
+    test('translates the other German and Swiss names (#1085)', () {
+      expect(englishSectionLabel('Vorspiel'), 'Intro');
+      expect(englishSectionLabel('Einleitung:'), 'Intro:');
+      expect(englishSectionLabel('Ref.'), 'Chorus');
+      expect(englishSectionLabel('Ref. 2'), 'Chorus 2');
+      expect(englishSectionLabel('Kehrvers'), 'Chorus');
+      expect(englishSectionLabel('Vor-Refrain'), 'Pre-Chorus');
+      expect(englishSectionLabel('Nachrefrain'), 'Post-Chorus');
+      expect(englishSectionLabel('Brücke 1'), 'Bridge 1');
+      expect(englishSectionLabel('BRÜCKE'), 'BRIDGE');
+      expect(englishSectionLabel('Zwischenteil'), 'Bridge');
+      expect(englishSectionLabel('Mittelteil'), 'Bridge');
+      expect(englishSectionLabel('Überleitung'), 'Interlude');
+      expect(englishSectionLabel('Nachspiel'), 'Outro');
+      expect(englishSectionLabel('Abschluss'), 'Outro');
+      expect(englishSectionLabel('Schluß'), 'Outro');
+      expect(englishSectionLabel('Ausklang'), 'Outro');
+      expect(englishSectionLabel('Ende'), 'Ending');
+      expect(englishSectionLabel('VERS 2'), 'VERSE 2');
+    });
+
     test('leaves English and other text alone', () {
       expect(englishSectionLabel('Verse 1'), isNull);
       expect(englishSectionLabel('Chorus'), isNull);
       expect(englishSectionLabel('Bridge'), isNull);
       expect(englishSectionLabel('Refrain des Lebens'), isNull);
       expect(englishSectionLabel('Versuch'), isNull);
+      expect(englishSectionLabel('Intro'), isNull);
+      expect(englishSectionLabel('Ending'), isNull);
+      expect(englishSectionLabel('Referenz'), isNull);
+      expect(englishSectionLabel('Ende gut'), isNull);
     });
   });
 

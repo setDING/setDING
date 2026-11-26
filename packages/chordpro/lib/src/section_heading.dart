@@ -4,16 +4,73 @@ library;
 
 import 'song.dart';
 
+/// German (and Swiss) section names and their English names (#1036,
+/// #1085), keyed by the name in lower case without spaces, hyphens,
+/// underscores and dots. Section names are English (ADR-0008); the
+/// conversions translate these.
+const germanSectionNames = {
+  'strophe': 'Verse',
+  'vers': 'Verse',
+  'refrain': 'Chorus',
+  'ref': 'Chorus',
+  'kehrvers': 'Chorus',
+  'prerefrain': 'Pre-Chorus',
+  'vorrefrain': 'Pre-Chorus',
+  'postrefrain': 'Post-Chorus',
+  'nachrefrain': 'Post-Chorus',
+  'brücke': 'Bridge',
+  'zwischenteil': 'Bridge',
+  'mittelteil': 'Bridge',
+  'zwischenspiel': 'Interlude',
+  'überleitung': 'Interlude',
+  'vorspiel': 'Intro',
+  'einleitung': 'Intro',
+  'schluss': 'Outro',
+  'schluß': 'Outro',
+  'nachspiel': 'Outro',
+  'abschluss': 'Outro',
+  'abschluß': 'Outro',
+  'ausklang': 'Outro',
+  'ende': 'Ending',
+};
+
 const _names =
-    r'(pre[\s_-]?chorus|pre[\s_-]?refrain|post[\s_-]?chorus|chorus|refrain|'
-    r'verse|vers|strophe|bridge|intro|outro|tag|interlude|instrumental|'
-    r'zwischenspiel|ending|schluss|coda|solo|vamp|turnaround)';
+    r'(pre[\s_-]?chorus|pre[\s_-]?refrain|vor[\s_-]?refrain|'
+    r'post[\s_-]?chorus|post[\s_-]?refrain|nach[\s_-]?refrain|chorus|'
+    r'refrain|ref\.|ref|kehrvers|verse|vers|strophe|bridge|brücke|'
+    r'zwischenteil|mittelteil|intro|vorspiel|einleitung|outro|tag|interlude|'
+    r'instrumental|zwischenspiel|überleitung|ending|ende|schluss|schluß|'
+    r'nachspiel|abschluss|abschluß|ausklang|coda|solo|vamp|turnaround)';
 
 final _heading = RegExp(
   '^$_names'
   r'(\s*\d+[a-z]?)?(\s*\(.*\))?\s*:?$',
   caseSensitive: false,
+  unicode: true,
 );
+
+/// A section name such as `Pre-Refrain` in lower case without spaces,
+/// hyphens, underscores and dots: `prerefrain`.
+String _key(String name) =>
+    name.toLowerCase().replaceAll(RegExp(r'[\s_.-]'), '');
+
+/// The name of a section heading [text] (`Strophe 2:` → `Strophe`) and
+/// the rest after it (` 2:`), or null if it is not a section heading.
+(String, String)? sectionHeadingParts(String text) {
+  final match = _heading.firstMatch(text);
+  if (match == null) return null;
+  // The name starts the match.
+  final name = match.group(1)!;
+  return (name, text.substring(name.length));
+}
+
+/// The English key of a section name: `strophe` → `verse`,
+/// `Pre-Refrain` → `prechorus`, `Chorus` → `chorus`.
+String _englishKey(String name) {
+  final key = _key(name);
+  final english = germanSectionNames[key];
+  return english == null ? key : _key(english);
+}
 
 /// The section kind of a comment [text] that is a section heading, such
 /// as `Chorus 1` or `Strophe 2:`, or null if it is not one.
@@ -24,9 +81,9 @@ final _heading = RegExp(
 SectionKind? headingSectionKind(String text) {
   final match = _heading.firstMatch(text.trim());
   if (match == null) return null;
-  return switch (match.group(1)!.toLowerCase()) {
-    'chorus' || 'refrain' => SectionKind.chorus,
-    'verse' || 'vers' || 'strophe' => SectionKind.verse,
+  return switch (_englishKey(match.group(1)!)) {
+    'chorus' => SectionKind.chorus,
+    'verse' => SectionKind.verse,
     'bridge' => SectionKind.bridge,
     _ => SectionKind.custom,
   };
@@ -35,7 +92,8 @@ SectionKind? headingSectionKind(String text) {
 /// The environment a comment heading [text] becomes (#963): `verse`,
 /// `chorus` or `bridge`, or the heading's own name for the others
 /// (`Pre-Chorus 2` → `pre_chorus`), so the section keeps its kind
-/// ([SectionKind.custom]) and its role. Null if [text] is no heading.
+/// ([SectionKind.custom]) and its role. A German name becomes the English
+/// environment (`Schluss` → `outro`, #1085). Null if [text] is no heading.
 String? headingEnvironment(String text) {
   final kind = headingSectionKind(text);
   if (kind == null) return null;
@@ -43,12 +101,13 @@ String? headingEnvironment(String text) {
     SectionKind.verse => 'verse',
     SectionKind.chorus => 'chorus',
     SectionKind.bridge => 'bridge',
-    _ =>
-      _heading
-          .firstMatch(text.trim())!
-          .group(1)!
-          .toLowerCase()
-          .replaceAll(RegExp(r'[\s_-]+'), '_'),
+    _ => () {
+      final name = _heading.firstMatch(text.trim())!.group(1)!;
+      return (germanSectionNames[_key(name)] ?? name).toLowerCase().replaceAll(
+        RegExp(r'[\s_-]+'),
+        '_',
+      );
+    }(),
   };
 }
 
@@ -74,20 +133,18 @@ enum SectionRole {
 SectionRole? sectionRoleOfName(String name) {
   final match = _heading.firstMatch(name.trim());
   if (match == null) return null;
-  final word = match.group(1)!.toLowerCase().replaceAll(RegExp(r'[\s_-]'), '');
-  return switch (word) {
+  return switch (_englishKey(match.group(1)!)) {
     'intro' => SectionRole.intro,
-    'verse' || 'vers' || 'strophe' => SectionRole.verse,
-    'prechorus' || 'prerefrain' => SectionRole.preChorus,
-    'chorus' || 'refrain' => SectionRole.chorus,
+    'verse' => SectionRole.verse,
+    'prechorus' => SectionRole.preChorus,
+    'chorus' => SectionRole.chorus,
     'bridge' => SectionRole.bridge,
     'interlude' ||
     'instrumental' ||
-    'zwischenspiel' ||
     'solo' ||
     'vamp' ||
     'turnaround' => SectionRole.interlude,
-    'outro' || 'ending' || 'schluss' || 'coda' || 'tag' => SectionRole.outro,
+    'outro' || 'ending' || 'coda' || 'tag' => SectionRole.outro,
     _ => SectionRole.standard,
   };
 }

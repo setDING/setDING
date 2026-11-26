@@ -782,7 +782,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 40;
+  int get schemaVersion => 41;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -1146,6 +1146,9 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(memberships, memberships.userLastName);
         await m.addColumn(memberships, memberships.userNickname);
       }
+      // Schema 41: German section labels are a conversion (#1085). No new
+      // column: afterUpgrade (refreshAllMetadata) counts the conversions of
+      // every song again.
     },
     beforeOpen: (details) async {
       if (details.hadUpgrade) await afterUpgrade?.call(this);

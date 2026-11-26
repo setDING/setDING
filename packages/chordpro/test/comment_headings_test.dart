@@ -29,6 +29,21 @@ void main() {
     expect(findCommentHeadings(source).map((h) => h.line), [3, 7, 10, 13, 16]);
   });
 
+  // #1085: `{c: Schluss}` became `{start_of_schluss}`.
+  test('German names become English environments', () {
+    expect(
+      convertCommentHeadings(
+        '{comment: Schluss}\n[G]\n\n{comment: Vorspiel}\n[C]\n\n'
+        '{comment: Zwischenspiel 2}\n[D]\n\n{c: Brücke}\nHm\n',
+      ),
+      '{start_of_outro: label="Schluss"}\n[G]\n{end_of_outro}\n\n'
+      '{start_of_intro: label="Vorspiel"}\n[C]\n{end_of_intro}\n\n'
+      '{start_of_interlude: label="Zwischenspiel 2"}\n[D]\n'
+      '{end_of_interlude}\n\n'
+      '{start_of_bridge: label="Brücke"}\nHm\n{end_of_bridge}\n',
+    );
+  });
+
   test('other names become environments of their own name', () {
     expect(
       convertCommentHeadings(

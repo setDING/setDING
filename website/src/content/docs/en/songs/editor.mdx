@@ -187,14 +187,27 @@ hint can be hidden with ✕.
 ## Labels in English
 
 Many songs from German-speaking countries label their sections in German, e.g.
-`Vers 1`, `Strophe 2` or `Refrain`. setDING shows labels as they are written in the
-song. To have them in English throughout, choose **Translate section labels to
-English** in the Lines menu: `Vers` and `Strophe` become `Verse`, `Refrain` becomes
-`Chorus`, `Pre-Refrain` `Pre-Chorus`, `Zwischenspiel` `Interlude` and `Schluss`
-`Outro`. Numbers and notes such as `(leise)` stay. It translates the labels of
-sections, of `{chorus: …}` and of comment headings; with lines selected, only those
-in the selection. Since it changes what is shown, setDING does not suggest it like
-the conversions above; it is a command you choose.
+`Vers 1`, `Strophe 2` or `Refrain`. Section names in setDING are English, so German
+labels are one of the [conversions](/en/songs/library/#convert-songs): the magic wand
+and **Convert all** translate them. In the editor, choose **Translate section labels
+to English** in the Lines menu; with lines selected, only those in the selection.
+
+| German | English |
+| --- | --- |
+| `Vers`, `Strophe` | `Verse` |
+| `Refrain`, `Ref.`, `Kehrvers` | `Chorus` |
+| `Pre-Refrain`, `Vorrefrain` | `Pre-Chorus` |
+| `Nachrefrain` | `Post-Chorus` |
+| `Brücke`, `Zwischenteil`, `Mittelteil` | `Bridge` |
+| `Zwischenspiel`, `Überleitung` | `Interlude` |
+| `Vorspiel`, `Einleitung` | `Intro` |
+| `Schluss`, `Nachspiel`, `Abschluss`, `Ausklang` | `Outro` |
+| `Ende` | `Ending` |
+
+Numbers and notes such as `(leise)` stay. It translates the labels of sections, of
+`{chorus: …}` and of comment headings. Converting also turns a comment heading into a
+section with an English name: `{comment: Schluss}` becomes
+`{start_of_outro: label="Outro"}`.
 
 <Image src={editorEnglishLabels} alt="The editor with German section labels and the open Lines menu with the command Translate section labels to English" />
 
