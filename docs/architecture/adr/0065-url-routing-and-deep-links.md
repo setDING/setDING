@@ -1,6 +1,6 @@
 # ADR-0065: URL routing and deep links
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-26
 
 ## Context
@@ -163,6 +163,9 @@ title.
 
 - 2026-11-26: Proposed (#1111). Owner decisions: links for web and apps,
   `go_router`.
+- 2026-11-26: Accepted by the owner (#1111). Implementation: router and
+  browser back #1113, band context and *Not available* #1114, share links and
+  App Links #1115, website page #1116.
 
 ## Open points
 
