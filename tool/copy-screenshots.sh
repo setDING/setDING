@@ -29,6 +29,7 @@ map=(
   organization 12_organization
   invite_hint 13a_invite_hint
   invite 13_invite
+  join_scan 13b_join_scan
   invite_band_hint 14a_invite_band_hint
   band 14_band
   settings 15_settings

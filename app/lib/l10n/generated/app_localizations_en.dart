@@ -2321,6 +2321,63 @@ class AppLocalizationsEn extends AppLocalizations {
   String get joinInvalidLink => 'This is not a valid invitation link.';
 
   @override
+  String get joinScan => 'Scan QR code';
+
+  @override
+  String get joinScanHint => 'Point the camera at the invitation\'s QR code';
+
+  @override
+  String get scannerClose => 'Close the scanner';
+
+  @override
+  String get scannerTorchOn => 'Turn on the light';
+
+  @override
+  String get scannerTorchOff => 'Turn off the light';
+
+  @override
+  String get scannerSwitchCamera => 'Switch camera';
+
+  @override
+  String get scannerPickImage => 'Read a code from a photo';
+
+  @override
+  String get scannerStarting => 'Starting the camera …';
+
+  @override
+  String get scannerPermissionTitle => 'No access to the camera';
+
+  @override
+  String get scannerPermissionMessage =>
+      'Allow setDING to use the camera in the settings to scan QR codes.';
+
+  @override
+  String get scannerUnavailableTitle => 'The camera is not available';
+
+  @override
+  String get scannerUnavailableMessage =>
+      'Another app may be using it, or this device has none.';
+
+  @override
+  String get scannerInUseMessage =>
+      'Another app is using the camera. Close it and try again.';
+
+  @override
+  String get scannerPhotoFallback => 'You can also read the code from a photo.';
+
+  @override
+  String get scannerOpenSettings => 'Open settings';
+
+  @override
+  String get scannerTryAgain => 'Try again';
+
+  @override
+  String get scannerChoosePhoto => 'Choose a photo';
+
+  @override
+  String get scannerNoCodeInPhoto => 'There is no code in this photo';
+
+  @override
   String joinQuestion(String org) {
     return 'Join $org?';
   }

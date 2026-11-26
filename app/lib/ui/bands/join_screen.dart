@@ -8,9 +8,11 @@ import '../../sync/sync_backend.dart';
 import '../account/sign_in_screen.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/page_width.dart';
+import 'qr_scanner.dart';
 
 /// Joins an organization with an invitation link (ADR-0005, ADR-0017):
-/// opened by a deep link or by pasting the link. The link is checked first,
+/// opened by a deep link, by pasting the link or, on phones and tablets, by
+/// scanning its QR code. The link is checked first,
 /// also without an account; then the person signs in or creates an account
 /// with the link (needed on invite-only servers, ADR-0024) and joins. A
 /// founder invitation founds the organization instead. Joining needs a
@@ -78,6 +80,13 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
     });
   }
 
+  Future<void> _scan() async {
+    final text = await ref.read(qrScannerProvider)(context);
+    if (text == null || !mounted) return;
+    _link.text = text.trim();
+    await _check();
+  }
+
   Future<void> _join() async {
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
@@ -132,6 +141,15 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
                 onPressed: _busy ? null : _check,
                 child: Text(l10n.joinContinue),
               ),
+              if (canScanQrCodes) ...[
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  key: const Key('join-scan'),
+                  onPressed: _busy ? null : _scan,
+                  icon: const Icon(Icons.qr_code_scanner),
+                  label: Text(l10n.joinScan),
+                ),
+              ],
             ] else ...[
               Text(
                 preview.founder

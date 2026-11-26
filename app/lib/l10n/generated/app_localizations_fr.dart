@@ -2342,6 +2342,65 @@ class AppLocalizationsFr extends AppLocalizations {
   String get joinInvalidLink => 'Ce n\'est pas un lien d\'invitation valide.';
 
   @override
+  String get joinScan => 'Scanner le code QR';
+
+  @override
+  String get joinScanHint =>
+      'Pointe la caméra vers le code QR de l\'invitation';
+
+  @override
+  String get scannerClose => 'Fermer le scanner';
+
+  @override
+  String get scannerTorchOn => 'Allumer la lumière';
+
+  @override
+  String get scannerTorchOff => 'Éteindre la lumière';
+
+  @override
+  String get scannerSwitchCamera => 'Changer de caméra';
+
+  @override
+  String get scannerPickImage => 'Lire un code sur une photo';
+
+  @override
+  String get scannerStarting => 'Démarrage de la caméra …';
+
+  @override
+  String get scannerPermissionTitle => 'Pas d\'accès à la caméra';
+
+  @override
+  String get scannerPermissionMessage =>
+      'Autorise setDING à utiliser la caméra dans les réglages pour scanner des codes QR.';
+
+  @override
+  String get scannerUnavailableTitle => 'La caméra n\'est pas disponible';
+
+  @override
+  String get scannerUnavailableMessage =>
+      'Une autre app l\'utilise peut-être, ou cet appareil n\'en a pas.';
+
+  @override
+  String get scannerInUseMessage =>
+      'Une autre app utilise la caméra. Ferme-la et réessaie.';
+
+  @override
+  String get scannerPhotoFallback =>
+      'Tu peux aussi lire le code sur une photo.';
+
+  @override
+  String get scannerOpenSettings => 'Ouvrir les réglages';
+
+  @override
+  String get scannerTryAgain => 'Réessayer';
+
+  @override
+  String get scannerChoosePhoto => 'Choisir une photo';
+
+  @override
+  String get scannerNoCodeInPhoto => 'Il n\'y a pas de code sur cette photo';
+
+  @override
   String joinQuestion(String org) {
     return 'Rejoindre $org ?';
   }

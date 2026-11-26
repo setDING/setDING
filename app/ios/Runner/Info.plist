@@ -38,6 +38,10 @@
 		<string>????</string>
 		<key>CFBundleVersion</key>
 		<string>$(FLUTTER_BUILD_NUMBER)</string>
+		<key>NSCameraUsageDescription</key>
+		<string>setDING uses the camera to scan the QR code of an invitation.</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>setDING reads the QR code of an invitation from a photo you choose.</string>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
 		<key>UIApplicationSceneManifest</key>

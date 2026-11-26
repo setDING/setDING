@@ -8,6 +8,7 @@ import 'package:setding/data/database.dart' show localBandId;
 import 'package:setding/ui/account/sign_in_screen.dart';
 import 'package:setding/ui/backup/backup_actions.dart';
 import 'package:setding/ui/bands/band_screen.dart';
+import 'package:setding/ui/bands/join_screen.dart';
 import 'package:setding/ui/bands/organization_screen.dart';
 import 'package:setding/platform/input_devices.dart';
 import 'package:setding/ui/live/page_turner.dart';
@@ -127,6 +128,31 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(live);
       await shot(tester, '${lang}_19_settings_live');
+      await app.dispose(tester);
+    });
+  }
+
+  // Joining on a phone (#1103): paste the link or scan its QR code.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('join scan $lang', (tester) async {
+      tester.view.physicalSize = const Size(420, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+        user: const AuthUser(
+          id: 'ben',
+          email: 'ben@example.test',
+          name: 'Ben Frei',
+        ),
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: const JoinScreen()),
+        ),
+      );
+      await shot(tester, '${lang}_13b_join_scan');
       await app.dispose(tester);
     });
   }

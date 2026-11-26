@@ -332,7 +332,7 @@ song/set sync, PDF sync).
   library and vice versa; an organization without a band of the user shows a hint
   on the sets tab.
 - **Invitations (#16):** organization admins create links (7 days, reusable,
-  revocable) shown with a QR code; people join via deep link or by pasting the link
+  revocable) shown with a QR code; people join via deep link, by pasting the link or by scanning the QR code in the app (Android, iOS)
   (Bands → Join). Landing page and verification files on the server; verified App
   Links / Universal Links need the signing details (open, see ADR-0005). On Linux
   the desktop entry handles `setding://` (#1015); Windows still pastes.

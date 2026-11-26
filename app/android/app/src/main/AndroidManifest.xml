@@ -18,6 +18,17 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove"/>
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove"/>
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" tools:node="remove"/>
+    <!-- Scanning an invitation QR code (ADR-0005, flutter_zxing with the
+         camera plugin): the camera stays optional so tablets without one
+         can still install setDING, and the scanner records no sound and
+         saves no files, so the plugin's microphone and storage permissions
+         are removed. -->
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="false"
+        tools:replace="android:required"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO" tools:node="remove"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove"/>
     <application
         android:label="${appLabel}"
         android:name="${applicationName}"
