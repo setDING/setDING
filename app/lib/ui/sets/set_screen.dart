@@ -267,15 +267,14 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                         ),
                       const PopupMenuDivider(),
                     ],
-                    // Web: no file export, sets are synced (ADR-0018).
-                    if (!ref.read(webClientProvider)) ...[
-                      MenuAction(
-                        key: const Key('set-export-menu'),
-                        value: 'export',
-                        icon: Icons.file_download_outlined,
-                        label: l10n.exportMenu,
-                      ),
-                    ],
+                    // Also on web: a download; the archive loads the files
+                    // (ADR-0018, #1081).
+                    MenuAction(
+                      key: const Key('set-export-menu'),
+                      value: 'export',
+                      icon: Icons.file_download_outlined,
+                      label: l10n.exportMenu,
+                    ),
                     MenuAction(
                       value: 'copyToBand',
                       icon: Icons.copy_all_outlined,

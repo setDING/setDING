@@ -57,7 +57,7 @@ class _Storage implements KeyValueStorage {
 }
 
 /// The web client (ADR-0018): sign-in required, no local library, file import
-/// but no export, local data only while signed in.
+/// and export, local data only while signed in.
 void main() {
   Future<TestApp> start(
     WidgetTester tester, {
