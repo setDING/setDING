@@ -79,8 +79,8 @@ band.
   2 and 7) show contacts like people of the lineup, marked *No account* in
   the app (not on the printed list).
 - The organization screen gets a section *People without account* that lists
-  the contacts for set editors and organization admins, with *Edit*, *Link to
-  account* and, for organization admins, *Delete*.
+  the contacts for set editors and organization admins, with *Edit*, *Invite
+  to setDING* (decision 5) and, for organization admins, *Delete*.
 
 ### 4. Mail address
 
@@ -95,29 +95,50 @@ band.
 - A substitute (ADR-0061 decision 4) gets the **names** of the lineup's
   contacts from `GET /api/setding/lineup`, never their addresses.
 
-### 5. Linking a contact to an account
+### 5. A personal invitation links the contact to an account
 
-When the person later joins setDING, the contact is **linked to their account
-by hand** (owner decision), never matched automatically by mail address:
+When the person should use setDING, the contact gets a **personal invitation**
+(owner decision 2026-11-26); redeeming it links the contact to the new
+account automatically. There is no linking by hand and no matching by mail
+address.
 
-- *Link to account* chooses a person of the organization. The server route
-  `POST /api/setding/contacts/{id}/link` with the user's ID replaces the
-  contact with that user in the lineup of every set of the organization (each
-  changed set gets a new revision), sets `linked_user` and marks the contact
-  deleted, in one transaction.
-- Allowed for whoever may create contacts (decision 6). The route changes sets
-  of bands the caller cannot edit, but only by swapping the same person for
-  their account; it refuses a user who is not a member of the organization.
-- From then on the person is a substitute or band member in those sets like
-  anybody added by name (ADR-0061), so they see their past gigs as a
-  substitute.
+- *Invite to setDING* on a contact creates an invitation bound to it
+  (`invites.contact`). It works like the invitations of ADR-0005 (a link with
+  a random token, valid for 7 days, revocable, shown again while valid,
+  ADR-0024 lets it create an account on closed servers), but it can be used
+  **once** and names the person it is for.
+- **Sending it**: with a mail address, *Send by mail* opens a prepared mail to
+  that address in the sender's mail app (a `mailto:` link, like *Notify
+  lineup*; the server sends no mail, ADR-0024). Without one, or in person, the
+  link is shared through the share menu or shown as a **QR code**, like every
+  invitation.
+- **Signing up**: the sign-up form is prefilled with the contact's first name,
+  last name, nickname and mail address; the person completes the fields an
+  account needs (first and last name, ADR-0062, a password, and a verified
+  mail address where the server requires it) and may change the prefilled
+  ones. A person who has an account already signs in and redeems it.
+- **Redeeming**: the server makes the person a member of the organization
+  (and of the inviter's band when a band leader invited, as in ADR-0023),
+  replaces the contact with the account in the lineup of every set of the
+  organization (each changed set gets a new revision), sets `linked_user`
+  and marks the contact deleted, in one transaction. Revoking or letting the
+  invitation expire leaves the contact as it was.
+- From then on the person is a band member or a substitute in those sets
+  like anybody added by name (ADR-0061), so a substitute sees their past gigs
+  too.
+- **Who invites**: whoever may invite into the organization today (ADR-0023):
+  organization admins, and band leaders into their band. Set planners create
+  contacts but do not invite, since they cannot invite anybody else either.
+  The redemption changes sets of other bands too, but only by swapping the
+  same person for their account; the inviter chose that person.
 
 ### 6. Permissions
 
 | Action | Org admin | Librarian | Band leader | Set planner | Member | Substitute |
 |---|:-:|:-:|:-:|:-:|:-:|:-:|
 | See the names of the organization's contacts | ✓ | ✓ | ✓ | ✓ | ✓ | lineup's only |
-| Create and edit contacts, see their mail addresses, link them to an account | ✓ | – | ✓ | ✓ | – | – |
+| Create and edit contacts, see their mail addresses | ✓ | – | ✓ | ✓ | – | – |
+| Invite a contact to setDING with a personal invitation that links it | ✓ | – | ✓ (into own band) | – | – | – |
 | Add contacts to a set's lineup | ✓ all bands | – | ✓ | ✓ | – | – |
 | Delete contacts | ✓ | – | – | – | – | – |
 
@@ -149,13 +170,15 @@ be in the lineup of old sets:
 
 | Option | Pros | Cons |
 |---|---|---|
-| **Contacts of the organization** (chosen) | Reused in every set and band; one spelling per person; a place for a mail address; can be linked to an account later | A new collection, its sync, server rules and a link route |
+| **Contacts of the organization** (chosen) | Reused in every set and band; one spelling per person; a place for a mail address; becomes an account through a personal invitation | A new collection, its sync, server rules and personal invitations |
 | Free-text names in the set (JSON next to `lineup`) | Little work, no new collection | No reuse, the same person spelled differently in every set, no mail address, nothing to link when they join |
 | Contacts per band | Narrower list | A guest playing with two bands of the organization exists twice; the organization's people pool is organization-wide already (ADR-0017, ADR-0061) |
 | Invite them as members without them signing in (placeholder accounts) | One kind of person | Accounts nobody can sign in to, invitations and mail addresses that must be unique; mixes people with rights and people without |
 | Contacts created by organization admins only | Tidy list | Too slow when a guest steps in shortly before a gig |
 | Contacts created by every member | Open | Duplicates and data about outsiders from people without any planning role |
+| Link by hand (*Link to account* on a contact, first proposal) | No new invitation kind | One more step after the person joined; easily forgotten, then the person shows twice in the picker |
 | Link automatically by mail address on sign-up | Comfortable | Wrong matches with shared or mistyped addresses; the address is optional anyway |
+| **Personal invitation for the contact** (chosen) | The person gets in with one link or QR code, prefilled; linking happens by itself | A single-use invitation kind bound to a contact |
 | No mail address | Less personal data | *Notify lineup* cannot reach them |
 
 ## Consequences
@@ -165,7 +188,8 @@ be in the lineup of old sets:
 - Set editors keep a reusable list of guests per organization and reach them
   through *Notify lineup*.
 - The server gets the `contacts` collection with rules, an enrich hook hiding
-  mail addresses, the check of `lineup_contacts`, the link route and an
+  mail addresses, the check of `lineup_contacts`, personal single-use
+  invitations that link a contact when redeemed, and an
   extended lineup mail route; all tested through the API, and the permission
   matrix test covers the new rows.
 - The client gets a new synced table (a schema step), the contacts in the
@@ -185,6 +209,12 @@ be in the lineup of old sets:
   only; an optional mail address visible to set editors and used by *Notify
   lineup*; linking to an account by hand when the person joins, no automatic
   matching.
+- 2026-11-26: Owner decision (#1096): no linking by hand. A contact gets a
+  **personal invitation** (sent to its mail address from the device, or as a
+  link or QR code); redeeming it links the contact to the new account by
+  itself, and the sign-up form is prefilled from the contact, the person
+  completing the required fields (decision 5 changed). Inviting follows who
+  may invite today: organization admins, band leaders into their band.
 
 ## Open points
 
