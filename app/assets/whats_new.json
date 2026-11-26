@@ -1,4 +1,8 @@
 {
+  "0.22.1": {
+    "de": [],
+    "en": []
+  },
   "0.22.0": {
     "de": [
       "Den setDING-Server kannst du jetzt selbst betreiben, mit Docker oder ohne; die Website erklärt im neuen Kapitel «Selbst hosten», wie es geht."
