@@ -7,6 +7,7 @@ import 'package:setding/data/database.dart';
 import 'package:setding/sync/band_service.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:setding/sync/sync_engine.dart';
+import 'package:setding/ui/bands/organization_screen.dart';
 import 'package:setding/ui/sets/set_screen.dart';
 
 import '../test/test_app.dart';
@@ -24,6 +25,12 @@ const _carla = AuthUser(
   id: 'carla',
   email: 'carla@example.test',
   name: 'Carla',
+);
+
+const _elias = AuthUser(
+  id: 'elias',
+  email: 'elias@example.test',
+  name: 'Elias',
 );
 
 void main() {
@@ -44,6 +51,7 @@ void main() {
     bool dark, {
     required AuthUser user,
     String band = 'abendrot',
+    bool withContact = false,
   }) async {
     useTabletSize(tester);
     final app = await TestApp.create(
@@ -71,6 +79,26 @@ void main() {
         ),
       );
     }
+    if (withContact) {
+      server.addMember('jazz', _elias, BandRole.member);
+      server.putContact(
+        const RemoteContact(
+          id: 'marco',
+          organizationId: 'o1',
+          firstName: 'Marco',
+          lastName: 'Rossi',
+          email: 'marco@example.test',
+        ),
+      );
+      server.putContact(
+        const RemoteContact(
+          id: 'lea',
+          organizationId: 'o1',
+          firstName: 'Lea',
+          lastName: 'Brunner',
+        ),
+      );
+    }
     final now = DateTime.now();
     server.putSet(
       RemoteSet(
@@ -84,6 +112,8 @@ void main() {
             RemoteSetItem(id: 'i-$id', type: SetItemType.song, songId: id),
         ],
         lineup: const ['anna', 'beat', 'carla'],
+        // Marco mixes the sound and has no account (ADR-0064).
+        lineupContacts: withContact ? const ['marco'] : const [],
         lineupCustom: true,
       ),
       by: 'anna',
@@ -98,8 +128,19 @@ void main() {
     return app;
   }
 
-  Future<TestApp> openSet(WidgetTester tester, String lang, bool dark) async {
-    final app = await setup(tester, lang, dark, user: _anna);
+  Future<TestApp> openSet(
+    WidgetTester tester,
+    String lang,
+    bool dark, {
+    bool withContact = false,
+  }) async {
+    final app = await setup(
+      tester,
+      lang,
+      dark,
+      user: _anna,
+      withContact: withContact,
+    );
     await tester.pumpWidget(
       RepaintBoundary(
         key: UniqueKey(),
@@ -157,6 +198,100 @@ void main() {
       expect(find.byKey(const Key('overview-planned')), findsOneWidget);
       expect(find.byKey(const Key('overview-substitute-gigs')), findsOneWidget);
       await shot(tester, '${lang}_54d_overview_substitute');
+      await app.dispose(tester);
+    });
+  }
+
+  // People without an account (ADR-0064): in the lineup dialog.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('lineup contacts $lang', (tester) async {
+      final app = await openSet(tester, lang, dark, withContact: true);
+      await tester.tap(find.byKey(const Key('set-lineup')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('lineup-contact-marco')),
+        findsOneWidget,
+      );
+      await shot(tester, '${lang}_54e_lineup_contacts');
+      await app.dispose(tester);
+    });
+  }
+
+  // Adding people: the organization's people and its contacts, and a new
+  // person without an account.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('lineup pick contact $lang', (tester) async {
+      final app = await openSet(tester, lang, dark, withContact: true);
+      await tester.tap(find.byKey(const Key('set-lineup')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('lineup-add-people')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('lineup-pick-contact-lea')),
+        findsOneWidget,
+      );
+      await shot(tester, '${lang}_54f_lineup_pick_contact');
+      await app.dispose(tester);
+    });
+  }
+
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('contact new $lang', (tester) async {
+      final app = await openSet(tester, lang, dark, withContact: true);
+      await tester.tap(find.byKey(const Key('set-lineup')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('lineup-add-people')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('lineup-new-contact')));
+      await tester.pumpAndSettle();
+      for (final (key, value) in [
+        ('contact-first-name', 'Sara'),
+        ('contact-last-name', 'Keller'),
+        ('contact-email', 'sara@example.test'),
+      ]) {
+        await tester.enterText(find.byKey(Key(key)), value);
+      }
+      await tester.pumpAndSettle();
+      await shot(tester, '${lang}_54g_contact_new');
+      await app.dispose(tester);
+    });
+  }
+
+  // The personal invitation from the organization screen.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('contact invite $lang', (tester) async {
+      final app = await setup(
+        tester,
+        lang,
+        dark,
+        user: _anna,
+        withContact: true,
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            home: const OrganizationScreen(organizationId: 'o1'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final menu = find.byKey(const ValueKey('contact-menu-marco'));
+      await tester.scrollUntilVisible(
+        menu,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.ensureVisible(menu);
+      await tester.pumpAndSettle();
+      await tester.tap(menu);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text(lang == 'de' ? 'Zu setDING einladen' : 'Invite to setDING'),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('invite-mail')), findsOneWidget);
+      await shot(tester, '${lang}_54h_contact_invite');
       await app.dispose(tester);
     });
   }
