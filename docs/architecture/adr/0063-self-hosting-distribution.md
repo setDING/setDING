@@ -291,6 +291,11 @@ web client excepted).
 
 - 2026-11-26: §7 tooling (#1055): the owner's servers install the published bundle with `tool/server/install.sh` in the docs' layout and with the docs' unit; `make server-release` (production) and `make server-install` (test server, `setding.dev`) pick the host with `SERVER_PROD`/`SERVER_STAGING`. The website also lives on the production VPS, installed separately (owner).
 - 2026-11-26: SBOMs (#1062, ADR-0037): each bundle has a CycloneDX SBOM as a release asset; the image's SBOM is attested to its digest on ghcr.io (signed with GitHub's attestations), which also resolves the open point of an SBOM per image.
+- 2026-11-26: Request logs (#1118): the server also sets how many days PocketBase
+  keeps its request logs (Settings → Logs, with IP addresses) from `SETDING_LOG_DAYS`
+  (default 7, `0` keeps none) at every start, the environment winning over the admin
+  UI; invalid values stop the start. The privacy policy on the website names the
+  default (tested in `server/test/operations_test.dart`).
 ## Open points
 
 - Signing the image and the bundles themselves (e.g. cosign); their SBOMs exist (#1062).

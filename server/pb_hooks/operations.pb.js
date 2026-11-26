@@ -10,7 +10,10 @@ onBootstrap((e) => {
   const ops = require(`${__hooks}/lib/operations.js`);
   if (ops.serving()) ops.checkConfiguration();
   e.next();
-  if (ops.serving()) ops.applyBackupSettings(e.app);
+  if (ops.serving()) {
+    ops.applyBackupSettings(e.app);
+    ops.applyLogSettings(e.app);
+  }
 });
 
 //   pocketbase healthcheck [url]      default http://127.0.0.1:8090

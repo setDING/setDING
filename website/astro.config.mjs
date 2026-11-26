@@ -22,7 +22,10 @@ export default defineConfig({
       },
       favicon: '/favicon.svg',
       customCss: ['./src/styles/brand.css'],
-      components: { Header: './src/components/Header.astro' },
+      components: {
+        Header: './src/components/Header.astro',
+        Footer: './src/components/Footer.astro',
+      },
       defaultLocale: 'root',
       locales: {
         root: { label: 'Deutsch', lang: 'de-CH' },

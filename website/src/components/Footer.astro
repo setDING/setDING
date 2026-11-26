@@ -1,0 +1,36 @@
+---
+// Starlight's footer plus links to the privacy policy and the legal notice on
+// every page (#1118; the app stores need a public privacy policy URL).
+import Default from '@astrojs/starlight/components/Footer.astro';
+
+const { locale } = Astro.locals.starlightRoute;
+const en = locale === 'en';
+const base = locale ? `/${locale}` : '';
+const links = [
+  { label: en ? 'Privacy policy' : 'Datenschutz', href: `${base}/privacy/` },
+  { label: en ? 'Legal notice' : 'Impressum', href: `${base}/legal-notice/` },
+];
+---
+
+<Default><slot /></Default>
+<nav class="legal print:hidden" aria-label={en ? 'Legal' : 'Rechtliches'}>
+  {links.map((link) => <a href={link.href}>{link.label}</a>)}
+</nav>
+
+<style>
+  .legal {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 1.5rem;
+    margin-top: 2rem;
+    font-size: var(--sl-text-xs);
+  }
+  .legal a {
+    color: var(--sl-color-gray-3);
+    text-decoration: none;
+  }
+  .legal a:hover {
+    color: var(--sl-color-text-accent);
+  }
+</style>
