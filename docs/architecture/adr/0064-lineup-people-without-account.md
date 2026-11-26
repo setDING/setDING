@@ -216,7 +216,9 @@ be in the lineup of old sets:
   completing the required fields (decision 5 changed). Inviting follows who
   may invite today: organization admins, band leaders into their band.
 - 2026-11-26: Accepted by the owner (#1096); the rows are in ADR-0023's
-  permission matrix. Implementation in follow-up issues.
+  permission matrix. Implementation: server #1097, data and sync #1098,
+  lineup dialog and set list #1099, organization screen and personal
+  invitations #1100, website page #1101.
 
 ## Open points
 
