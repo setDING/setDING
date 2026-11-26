@@ -121,6 +121,18 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('held beats in a grid show as dots (#1090)', (tester) async {
+    final app = await pumpSong(
+      tester,
+      '{start_of_grid}\n'
+      '| B . B . | E F# B . | E . F# . | G#m . G#m . |\n'
+      '{end_of_grid}',
+    );
+    expect(find.text('.'), findsNWidgets(7));
+    expect(find.text('B'), findsNWidgets(3));
+    await app.dispose(tester);
+  });
+
   test('grid columns are as wide as their content (#484)', () {
     final song = parseChordPro(
       '{start_of_grid}\n'

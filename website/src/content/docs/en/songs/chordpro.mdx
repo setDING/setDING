@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import drums from '../../../../../../docs/screenshots/drums.png';
 import songSources from '../../../../../../docs/screenshots/song_sources.png';
+import chordGrid from '../../../../../../docs/screenshots/chord_grid.png';
 
 Songs are written in [ChordPro](https://www.chordpro.org/chordpro/), an open text
 format for chord sheets. A ChordPro file is plain text: you can write it in the
@@ -81,6 +82,22 @@ The label also tells setDING which **part** of the song a section is: "Verse 2",
 "Chorus", "Pre-Chorus", "Bridge", "Intro" and "Outro" are recognized in English and
 German. Sections without a label count by their kind (verse, chorus, bridge). The
 [song sequence](#song-sequence-x_sequence) builds on these parts.
+
+### Chord grids
+
+A grid shows the chords bar by bar, e.g. for an intro or a solo. Every word between
+the bar lines `|` is a beat. A `.` means the chord keeps sounding on this beat.
+setDING shows it as a subtle dot, so you can count the beats of a bar. `/` plays the
+chord again, `%` repeats the previous bar. Text before the first and after the last
+bar line goes in the margin.
+
+```
+{start_of_grid label="Intro"}
+A || B . B . | E F# B . | E . F# . | G#m . G#m . || x2
+{end_of_grid}
+```
+
+<Image src={chordGrid} alt="A grid with the intro: the chords B, E, F# and G#m between the bar lines, a grey dot on each held beat, A and x2 in the margin" />
 
 ## Only for one instrument or voice
 

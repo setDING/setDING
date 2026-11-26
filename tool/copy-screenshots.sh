@@ -130,6 +130,7 @@ map=(
   overview_substitute 54d_overview_substitute
   song_attachment_menu 55_song_attachment_menu
   song_sources 56_song_sources
+  chord_grid 57_chord_grid
 )
 
 copied=0

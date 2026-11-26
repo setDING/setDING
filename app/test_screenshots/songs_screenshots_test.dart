@@ -440,6 +440,29 @@ void main() {
       '[Bm7b5]Minor de[E7]tour to[Am]night\n'
       '[D7]Back a[G7sus4]gain, back [G7]home\n'
       '{end_of_bridge}\n';
+  // A chord grid whose held beats (`.`) show as dots (#1090).
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('chord grid $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      final song = await tester.runAsync(
+        () => app.songs.createSong(source: _chordGrid),
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: SongScreen(songId: song!)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('.'), findsWidgets);
+      await shot(tester, '${lang}_57_chord_grid');
+      await app.dispose(tester);
+    });
+  }
+
   for (final (lang, dark) in [('de', false), ('en', true)]) {
     for (final view in ChordView.values) {
       screenshotTest('chord view ${view.name} $lang', (tester) async {
@@ -975,4 +998,18 @@ const _lilypond = r'''{title: Morning Light}
   \addlyrics { Morn -- ing light, on the hill a -- gain }
 >>
 {end_of_ly}
+''';
+
+/// A song with a chord grid for the grid screenshot (#1090).
+const _chordGrid = r'''{title: Morning Light}
+{artist: Ann Trainor}
+{key: B}
+
+{start_of_grid shape="1+4x4+1" label="Intro"}
+A || B . B . | E F# B . | E . F# . | G#m . G#m . || x2
+{end_of_grid}
+
+{start_of_verse: label="Verse 1"}
+[B]Morning light on the [E]hill a[F#]gain
+{end_of_verse}
 ''';
