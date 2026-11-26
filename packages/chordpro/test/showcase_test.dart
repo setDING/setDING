@@ -50,6 +50,7 @@ void main() {
       ]);
       expect(song.meta['key'], ['G', 'A']);
       expect(song.metaValue('x_ccli'), '1234567');
+      expect(song.metaValue('x_ccli_footer'), startsWith('For use solely'));
       expect(song.links.map((l) => (l.service, l.label, l.uri.toString())), [
         (
           LinkService.youtube,

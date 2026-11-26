@@ -1454,7 +1454,7 @@ class AppLocalizationsDe extends AppLocalizations {
       other: '$count CCLI-Direktiven entsprechen',
       one: 'Eine CCLI-Direktive entspricht',
     );
-    return '$_temp0 nicht der ChordPro-Spezifikation: ccli wird zu x_ccli, ccli_license wird entfernt.';
+    return '$_temp0 nicht der ChordPro-Spezifikation: ccli wird zu x_ccli, footer zu x_ccli_footer, ccli_license wird entfernt.';
   }
 
   @override

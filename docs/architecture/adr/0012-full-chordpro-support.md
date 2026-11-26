@@ -203,6 +203,7 @@ Each phase is a separate branch and merge (ADR-0010).
   strings and mute the strings below *and* above them; before, the guitar rule "mute
   only low strings" moved them up the neck. `{define}` shapes are used only when
   their string count matches.
+- 2026-11-26: setDING custom directive `{x_ccli_footer: …}` for the SongSelect terms-of-use line. `{footer}` is not defined by the ChordPro specification (only `footerfont/size/colour`), so it is no longer known metadata or offered by autocompletion; on import and with the editor's SongSelect hint it is renamed to `{x_ccli_footer}` like `{ccli}` (ADR-0011).
 
 ## Open points
 

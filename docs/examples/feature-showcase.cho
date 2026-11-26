@@ -35,6 +35,8 @@
 {x_link: open.spotify.com/search/setding}
 # CCLI song number ({ccli} in SongSelect files becomes {x_ccli} on import).
 {x_ccli: 1234567}
+# SongSelect terms-of-use line ({footer} in SongSelect files becomes {x_ccli_footer}).
+{x_ccli_footer: For use solely with the SongSelect Terms of Use.}
 {x_setding_note: custom directives starting with x_ are ignored}
 
 # ---------------------------------------------------------------------------

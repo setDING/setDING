@@ -410,7 +410,7 @@
   "remove": "Retirer",
   "ccliFooterHint": "Le morceau se termine par le pied de page CCLI de SongSelect. En le retirant, le numéro du morceau et le copyright restent dans les détails du morceau.",
   "legacyLabelsHint": "{count, plural, =1{Un libellé de section est} other{{count} libellés de section sont}} sous la forme courte. La spécification ChordPro recommande label=\"…\".",
-  "songSelectDirectivesHint": "{count, plural, =1{Une directive CCLI ne suit pas} other{{count} directives CCLI ne suivent pas}} la spécification ChordPro : ccli devient x_ccli, ccli_license est retirée.",
+  "songSelectDirectivesHint": "{count, plural, =1{Une directive CCLI ne suit pas} other{{count} directives CCLI ne suivent pas}} la spécification ChordPro : ccli devient x_ccli, footer devient x_ccli_footer, ccli_license est retirée.",
   "importLegacyLabelsMessage": "{count, plural, =1{1 morceau importé écrit} other{{count} morceaux importés écrivent}} les libellés de section sous la forme courte. La conversion les écrit comme label=\"…\", comme le recommande la spécification ChordPro ; les morceaux gardent le même aspect.",
   "convertLabels": "Convertir les libellés",
   "songsLabelsConverted": "{count, plural, =0{Aucun libellé converti} =1{Libellés convertis dans 1 morceau} other{Libellés convertis dans {count} morceaux}}",

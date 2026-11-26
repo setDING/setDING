@@ -1446,7 +1446,7 @@ class AppLocalizationsEn extends AppLocalizations {
       other: '$count CCLI directives do',
       one: 'A CCLI directive does',
     );
-    return '$_temp0 not follow the ChordPro specification: ccli becomes x_ccli, ccli_license is removed.';
+    return '$_temp0 not follow the ChordPro specification: ccli becomes x_ccli, footer becomes x_ccli_footer, ccli_license is removed.';
   }
 
   @override

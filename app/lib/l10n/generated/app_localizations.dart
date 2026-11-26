@@ -2569,7 +2569,7 @@ abstract class AppLocalizations {
   /// No description provided for @songSelectDirectivesHint.
   ///
   /// In de, this message translates to:
-  /// **'{count, plural, =1{Eine CCLI-Direktive entspricht} other{{count} CCLI-Direktiven entsprechen}} nicht der ChordPro-Spezifikation: ccli wird zu x_ccli, ccli_license wird entfernt.'**
+  /// **'{count, plural, =1{Eine CCLI-Direktive entspricht} other{{count} CCLI-Direktiven entsprechen}} nicht der ChordPro-Spezifikation: ccli wird zu x_ccli, footer zu x_ccli_footer, ccli_license wird entfernt.'**
   String songSelectDirectivesHint(int count);
 
   /// No description provided for @importLegacyLabelsMessage.

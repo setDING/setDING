@@ -28,7 +28,10 @@ void main() {
         'x_time_grouping',
         'x_link',
         'x_ccli',
+        'x_ccli_footer',
       ]);
+      // {footer} is no ChordPro directive (it is {x_ccli_footer}).
+      expect(labels('{foot|'), isNot(contains('footer')));
       expect(labels('{so|'), containsAll(['sorttitle', 'soc', 'sov']));
       expect(
         labels('{so|').indexOf('sorttitle'),
