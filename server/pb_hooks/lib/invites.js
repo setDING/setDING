@@ -11,6 +11,11 @@
 // redeeming one creates that organization with the person as its admin.
 // The server operator creates them (console command `founder-invite`); they
 // can be used once (`used_by`).
+//
+// Personal invitations (ADR-0064) carry a `contact`, a person of the
+// organization without an account: they can be used once, the sign-up is
+// prefilled from the contact, and redeeming one links the contact to the
+// account and puts the account in its place in every lineup.
 
 const VALID_DAYS = 7;
 const TOKEN_LENGTH = 32;
@@ -69,10 +74,15 @@ function isFounder(invite) {
   return !invite.getString("organization") && !!invite.getString("founder_name");
 }
 
-/// "valid", "expired", "revoked" or "used" (founder invitations).
+function isPersonal(invite) {
+  return !!invite.getString("contact");
+}
+
+/// "valid", "expired", "revoked" or "used" (founder and personal
+/// invitations).
 function status(invite) {
   if (invite.getBool("revoked")) return "revoked";
-  if (isFounder(invite) && invite.getString("used_by")) return "used";
+  if ((isFounder(invite) || isPersonal(invite)) && invite.getString("used_by")) return "used";
   if (invite.getDateTime("expires").unix() < new DateTime().unix()) return "expired";
   return "valid";
 }
@@ -150,6 +160,7 @@ function create(e) {
   const body = e.requestInfo().body || {};
   const orgId = body.organization || "";
   const bandId = body.band || "";
+  const contactId = body.contact || "";
   if (orgId && isClosed(e.app, orgId)) {
     throw new BadRequestError("The organization is closed.", {
       organization: new ValidationError("closed", "The organization is closed."),
@@ -173,11 +184,28 @@ function create(e) {
   if (!allowed) {
     throw new ForbiddenError("Only organization admins and band leaders can invite people.");
   }
+  if (contactId) {
+    let contact = null;
+    try {
+      contact = e.app.findRecordById("contacts", contactId);
+    } catch (_) {
+      contact = null;
+    }
+    if (!contact || contact.getBool("deleted") || contact.getString("organization") !== orgId) {
+      throw new BadRequestError("The contact does not belong to the organization.", {
+        contact: new ValidationError(
+          "invalid_contact",
+          "The contact does not belong to the organization.",
+        ),
+      });
+    }
+  }
   const token = newToken();
   const expires = expiry();
   const invite = new Record(e.app.findCollectionByNameOrId("invites"));
   invite.set("organization", orgId);
   if (bandId) invite.set("band", bandId);
+  if (contactId) invite.set("contact", contactId);
   setToken(invite, token);
   invite.set("expires", expires);
   invite.set("created_by", userId);
@@ -241,7 +269,67 @@ function preview(e) {
     status: status(invite),
     member: member,
     founder: isFounder(invite),
+    // For prefilling the sign-up; only to whoever holds the valid link.
+    contact: status(invite) === "valid" ? contactOf(e.app, invite) : null,
   });
+}
+
+/// Names and mail address of the contact of a personal invitation, or null.
+function contactOf(app, invite) {
+  const contactId = invite.getString("contact");
+  if (!contactId) return null;
+  try {
+    const contact = app.findRecordById("contacts", contactId);
+    if (contact.getBool("deleted")) return null;
+    return Object.assign(require(`${__hooks}/lib/contacts.js`).names(contact), {
+      email: contact.getString("email"),
+    });
+  } catch (_) {
+    return null;
+  }
+}
+
+/// Links the contact of a personal invitation to [userId] (ADR-0064
+/// decision 5): every set of the organization with the contact in its
+/// lineup gets the user in its place (a new revision each), the contact
+/// is linked and deleted, the invitation used. Runs in the redeeming
+/// transaction.
+function linkContact(txApp, invite, userId) {
+  const fresh = txApp.findRecordById("invites", invite.id);
+  if (fresh.getString("used_by") || fresh.getBool("revoked")) {
+    throw new ApiError(410, "The invitation is used.", {
+      token: new ValidationError("used", "The invitation is used."),
+    });
+  }
+  const contact = txApp.findRecordById("contacts", fresh.getString("contact"));
+  if (contact.getBool("deleted")) {
+    throw new ApiError(410, "The invitation is revoked.", {
+      token: new ValidationError("revoked", "The invitation is revoked."),
+    });
+  }
+  const sets = txApp.findRecordsByFilter(
+    "setlists",
+    "band.organization = {:org} && lineup_contacts ~ {:contact}",
+    "",
+    0,
+    0,
+    { org: fresh.getString("organization"), contact: contact.id },
+  );
+  for (const set of sets) {
+    const contacts = set.getStringSlice("lineup_contacts");
+    if (contacts.indexOf(contact.id) < 0) continue;
+    set.set("lineup_contacts", contacts.filter((id) => id !== contact.id));
+    const lineup = set.getStringSlice("lineup");
+    if (lineup.indexOf(userId) < 0) set.set("lineup", lineup.concat([userId]));
+    set.set("updated_by", userId);
+    txApp.save(set);
+  }
+  contact.set("linked_user", userId);
+  contact.set("deleted", true);
+  contact.set("updated_by", userId);
+  txApp.save(contact);
+  fresh.set("used_by", userId);
+  txApp.save(fresh);
 }
 
 /// The band an invitation also leads into, or null.
@@ -349,6 +437,7 @@ function redeem(e) {
     }
     const band = bandOf(txApp, invite);
     if (band && joinBand(txApp, userId, band.id)) alreadyMember = false;
+    if (isPersonal(invite)) linkContact(txApp, invite, userId);
   });
   const org = e.app.findRecordById("organizations", orgId);
   return e.json(200, {

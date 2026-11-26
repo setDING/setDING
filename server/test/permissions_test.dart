@@ -39,6 +39,8 @@ void main() {
   late String memberMembership;
   late String memberOrgMembership;
   late String adminOrgMembership;
+  late String contactId; // a contact of `f` without an account (ADR-0064)
+  late String foreignContact; // a contact of `g`
 
   setUpAll(() async {
     pb = await PocketBase.start();
@@ -118,6 +120,21 @@ void main() {
               filter: 'organization = "${f.orgId}" && user = "${member.id}"',
             )).single['id']
             as String;
+    final contact = await planner.post('contacts', {
+      'id': uuid(),
+      'organization': f.orgId,
+      'first_name': 'Guest',
+      'email': 'guest@setding.test',
+    });
+    contact.expectStatus(200);
+    contactId = contact.json['id'] as String;
+    final foreign = await g.admin.post('contacts', {
+      'id': uuid(),
+      'organization': g.orgId,
+      'first_name': 'Foreign',
+    });
+    foreign.expectStatus(200);
+    foreignContact = foreign.json['id'] as String;
     adminOrgMembership =
         (await pb.superuser.list(
               'org_memberships',
@@ -463,6 +480,108 @@ void main() {
           'song': other['id'],
           'transpose': 2,
         });
+      },
+    );
+  });
+
+  // People without an account (ADR-0064).
+  group('contacts', () {
+    Map<String, dynamic> newContact(String org) => {
+      'id': uuid(),
+      'organization': org,
+      'first_name': 'X',
+    };
+    for (final (who, user) in [
+      ('member', () => member),
+      ('librarian', () => librarian),
+      ('substitute', () => substitute),
+      ('outsider', () => outsider),
+      ('admin of another organization', () => g.admin),
+    ]) {
+      refused(
+        '$who creates a contact',
+        () => user().post('contacts', newContact(f.orgId)),
+      );
+      refused(
+        '$who edits a contact',
+        () => user().patch('contacts', contactId, {'first_name': 'X'}),
+        unchanged: ('contacts', () => contactId, 'first_name'),
+      );
+    }
+    refused(
+      'outsider reads a contact',
+      () => outsider.view('contacts', contactId),
+    );
+    for (final (who, user) in [
+      ('leader', () => leader),
+      ('planner', () => planner),
+    ]) {
+      refused(
+        '$who deletes a contact',
+        () => user().patch('contacts', contactId, {'deleted': true}),
+        unchanged: ('contacts', () => contactId, 'deleted'),
+      );
+    }
+    refused(
+      'organization admin hard-deletes a contact',
+      () => orgAdmin.delete('contacts', contactId),
+      unchanged: ('contacts', () => contactId, 'deleted'),
+    );
+    refused(
+      'leader moves a contact to another organization',
+      () => leader.patch('contacts', contactId, {'organization': g.orgId}),
+      unchanged: ('contacts', () => contactId, 'organization'),
+    );
+    refused(
+      'leader links a contact to an account',
+      () => leader.patch('contacts', contactId, {'linked_user': member.id}),
+      unchanged: ('contacts', () => contactId, 'linked_user'),
+    );
+    refused(
+      'leader puts a contact of another organization in a lineup',
+      () => leader.patch('setlists', setId, {
+        'lineup_contacts': [foreignContact],
+        'lineup_custom': true,
+      }),
+      unchanged: ('setlists', () => setId, 'lineup_contacts'),
+    );
+    refused(
+      'member puts a contact in a lineup',
+      () => member.patch('setlists', setId, {
+        'lineup_contacts': [contactId],
+        'lineup_custom': true,
+      }),
+      unchanged: ('setlists', () => setId, 'lineup_contacts'),
+    );
+    for (final (who, user) in [
+      ('planner', () => planner),
+      ('member', () => member),
+    ]) {
+      refused(
+        '$who invites a contact',
+        () => user().send(
+          'POST',
+          '/api/setding/invites',
+          body: {'organization': f.orgId, 'band': f.id, 'contact': contactId},
+        ),
+      );
+    }
+    refused(
+      'organization admin invites a contact of another organization',
+      () => orgAdmin.send(
+        'POST',
+        '/api/setding/invites',
+        body: {'organization': f.orgId, 'contact': foreignContact},
+      ),
+    );
+    test(
+      'members and librarians do not see a contact\'s mail address',
+      () async {
+        for (final user in [member, librarian, substitute]) {
+          final r = await user.view('contacts', contactId);
+          r.expectStatus(200);
+          expect(r.json.containsKey('email'), isFalse);
+        }
       },
     );
   });
@@ -1051,6 +1170,44 @@ void main() {
       (await planner.send(
         'GET',
         '/api/setding/lineup/${set.json['id']}/emails',
+      )).expectStatus(200);
+    });
+
+    test('set planners create a contact and put it in a lineup; '
+        'organization admins delete it (ADR-0064)', () async {
+      final planner = await h.addPlanner();
+      final contact = await planner.post('contacts', {
+        'id': uuid(),
+        'organization': h.orgId,
+        'first_name': 'Guest',
+      });
+      contact.expectStatus(200);
+      (await planner.post('setlists', {
+        ...newSet(h.id),
+        'lineup_contacts': [contact.json['id']],
+        'lineup_custom': true,
+      })).expectStatus(200);
+      (await h.admin.patch('contacts', contact.json['id'] as String, {
+        'deleted': true,
+      })).expectStatus(200);
+    });
+
+    test('band leaders invite a contact into their band (ADR-0064)', () async {
+      final leader = await h.addLeader();
+      final contact = await leader.post('contacts', {
+        'id': uuid(),
+        'organization': h.orgId,
+        'first_name': 'Guest',
+      });
+      contact.expectStatus(200);
+      (await leader.send(
+        'POST',
+        '/api/setding/invites',
+        body: {
+          'organization': h.orgId,
+          'band': h.id,
+          'contact': contact.json['id'],
+        },
       )).expectStatus(200);
     });
 

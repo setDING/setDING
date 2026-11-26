@@ -65,6 +65,7 @@ function purge(app, org) {
       ["setlists", "band.organization = {:org}"],
       ["memberships", "band.organization = {:org}"],
       ["invites", "organization = {:org}"],
+      ["contacts", "organization = {:org}"],
       ["bands", "organization = {:org}"],
       ["songs", "organization = {:org}"],
       ["org_memberships", "organization = {:org}"],
