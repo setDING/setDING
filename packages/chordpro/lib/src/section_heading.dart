@@ -89,27 +89,16 @@ SectionKind? headingSectionKind(String text) {
   };
 }
 
-/// The environment a comment heading [text] becomes (#963): `verse`,
-/// `chorus` or `bridge`, or the heading's own name for the others
-/// (`Pre-Chorus 2` → `pre_chorus`), so the section keeps its kind
-/// ([SectionKind.custom]) and its role. A German name becomes the English
-/// environment (`Schluss` → `outro`, #1085). Null if [text] is no heading.
-String? headingEnvironment(String text) {
-  final kind = headingSectionKind(text);
-  if (kind == null) return null;
-  return switch (kind) {
-    SectionKind.verse => 'verse',
-    SectionKind.chorus => 'chorus',
-    SectionKind.bridge => 'bridge',
-    _ => () {
-      final name = _heading.firstMatch(text.trim())!.group(1)!;
-      return (germanSectionNames[_key(name)] ?? name).toLowerCase().replaceAll(
-        RegExp(r'[\s_-]+'),
-        '_',
-      );
-    }(),
-  };
-}
+/// The environment a comment heading [text] becomes (#963): `chorus` or
+/// `bridge` for those, `verse` for all others (`Intro`, `Interlude`,
+/// `Solo 2`), like the editor's section menu; the label then gives the
+/// verse its role (#1093). Null if [text] is no heading.
+String? headingEnvironment(String text) => switch (headingSectionKind(text)) {
+  null => null,
+  SectionKind.chorus => 'chorus',
+  SectionKind.bridge => 'bridge',
+  _ => 'verse',
+};
 
 /// Musical role of a section, used to style it (ADR-0033). Unlike
 /// [SectionKind], which follows the ChordPro environments, the role is
@@ -149,12 +138,17 @@ SectionRole? sectionRoleOfName(String name) {
   };
 }
 
-/// Role of [section]: verse, chorus and bridge environments keep their
-/// kind; a custom environment or a comment heading is matched by its
-/// environment name, then by its label. Tabs, grids and unlabelled
-/// sections are [SectionRole.standard].
+/// Role of [section]: chorus and bridge environments keep their kind; a
+/// verse environment takes the role of a recognised label (the editor
+/// inserts Intro, Interlude, Solo … as `{start_of_verse: label="…"}`,
+/// #1093) and is a verse otherwise; a custom environment or a comment
+/// heading is matched by its environment name, then by its label. Tabs,
+/// grids and unlabelled sections are [SectionRole.standard].
 SectionRole sectionRoleOf(Section section) => switch (section.kind) {
-  SectionKind.verse => SectionRole.verse,
+  SectionKind.verse => switch (_roleOf(section.label)) {
+    null || SectionRole.standard => SectionRole.verse,
+    final role => role,
+  },
   SectionKind.chorus => SectionRole.chorus,
   SectionKind.bridge => SectionRole.bridge,
   SectionKind.tab ||

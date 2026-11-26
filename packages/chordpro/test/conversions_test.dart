@@ -56,7 +56,7 @@ void main() {
     expect(
       converted,
       '{title: T}\n{start_of_verse: label="Verse 1"}\n[G]La\n{end_of_verse}\n'
-      '{start_of_outro: label="Outro"}\n[C]Ja\n{end_of_outro}\n',
+      '{start_of_verse: label="Outro"}\n[C]Ja\n{end_of_verse}\n',
     );
     expect(countChordProConversions(converted), 0);
   });

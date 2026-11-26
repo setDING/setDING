@@ -62,10 +62,35 @@ void main() {
       expect(only('{sov}\na\n{eov}').role, SectionRole.verse);
       expect(only('{soc}\na\n{eoc}').role, SectionRole.chorus);
       expect(only('{sob}\na\n{eob}').role, SectionRole.bridge);
-      // A verse labelled "Pre-Chorus" stays a verse: the kind wins.
+      // A labelled chorus or bridge keeps its kind.
+      expect(only('{soc: Solo}\na\n{eoc}').role, SectionRole.chorus);
+      expect(only('{sob: Interlude}\na\n{eob}').role, SectionRole.bridge);
+    });
+
+    test('a verse takes the role of a recognised label (#1093)', () {
+      // The editor menu inserts named blocks as labelled verses.
+      const cases = {
+        'Intro': SectionRole.intro,
+        'Interlude': SectionRole.interlude,
+        'Solo 2': SectionRole.interlude,
+        'Pre-Chorus': SectionRole.preChorus,
+        'Refrain': SectionRole.chorus,
+        'Outro': SectionRole.outro,
+        // Unrecognised or verse labels stay a verse.
+        'Verse 2': SectionRole.verse,
+        'Post-Chorus': SectionRole.verse,
+        'Riff': SectionRole.verse,
+      };
+      for (final MapEntry(:key, :value) in cases.entries) {
+        expect(
+          only('{start_of_verse: label="$key"}\na\n{end_of_verse}').role,
+          value,
+          reason: key,
+        );
+      }
       expect(
         only('{start_of_verse: Pre-Chorus}\na\n{end_of_verse}').role,
-        SectionRole.verse,
+        SectionRole.preChorus,
       );
     });
 
