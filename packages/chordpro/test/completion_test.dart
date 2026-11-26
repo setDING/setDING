@@ -30,6 +30,12 @@ void main() {
         'x_ccli',
         'x_ccli_footer',
       ]);
+      // Only the specification's spelling `…colour` is suggested.
+      expect(labels('{textcol|'), ['textcolour']);
+      expect(
+        chordProDirectives.where((d) => d.name.endsWith('color')),
+        isEmpty,
+      );
       // {footer} is no ChordPro directive (it is {x_ccli_footer}).
       expect(labels('{foot|'), isNot(contains('footer')));
       expect(labels('{so|'), containsAll(['sorttitle', 'soc', 'sov']));
