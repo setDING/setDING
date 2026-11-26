@@ -3464,5 +3464,10 @@
   "lineupMessageIntro": "You are planned for “{set}”.",
   "lineupMessageFooter": "You find the songs in setDING.",
   "overviewPlanned": "You are planned",
-  "overviewPlannedSeen": "Got it"
+  "overviewPlannedSeen": "Got it",
+  "linkSwitchedTo": "Switched to {name}",
+  "linkNotAvailableTitle": "Not available on this device",
+  "linkNotAvailableMessage": "It is not synced to this device yet, or you have no access to it.",
+  "linkNoAccessMessage": "Not available: it was deleted, or you have no access to it.",
+  "linkSignInMessage": "Sign in to see it."
 }

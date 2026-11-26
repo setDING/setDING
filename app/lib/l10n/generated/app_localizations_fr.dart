@@ -6560,4 +6560,23 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get overviewPlannedSeen => 'Compris';
+
+  @override
+  String linkSwitchedTo(String name) {
+    return 'Passé à $name';
+  }
+
+  @override
+  String get linkNotAvailableTitle => 'Non disponible sur cet appareil';
+
+  @override
+  String get linkNotAvailableMessage =>
+      'Il n’est pas encore synchronisé sur cet appareil, ou tu n’y as pas accès.';
+
+  @override
+  String get linkNoAccessMessage =>
+      'Non disponible : il a été supprimé, ou tu n’y as pas accès.';
+
+  @override
+  String get linkSignInMessage => 'Connecte-toi pour le voir.';
 }

@@ -9953,6 +9953,36 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Verstanden'**
   String get overviewPlannedSeen;
+
+  /// No description provided for @linkSwitchedTo.
+  ///
+  /// In de, this message translates to:
+  /// **'Gewechselt zu {name}'**
+  String linkSwitchedTo(String name);
+
+  /// No description provided for @linkNotAvailableTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf diesem Gerät nicht verfügbar'**
+  String get linkNotAvailableTitle;
+
+  /// No description provided for @linkNotAvailableMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Es ist noch nicht auf dieses Gerät synchronisiert, oder du hast keinen Zugriff darauf.'**
+  String get linkNotAvailableMessage;
+
+  /// No description provided for @linkNoAccessMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht verfügbar: Es wurde gelöscht, oder du hast keinen Zugriff darauf.'**
+  String get linkNoAccessMessage;
+
+  /// No description provided for @linkSignInMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Melde dich an, um es zu sehen.'**
+  String get linkSignInMessage;
 }
 
 class _AppLocalizationsDelegate

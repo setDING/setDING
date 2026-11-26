@@ -4086,9 +4086,21 @@
   "lineupMessageFooter": "Die Songs findet ihr in setDING.",
   "overviewPlanned": "Du bist eingeplant",
   "overviewPlannedSeen": "Verstanden",
+  "linkSwitchedTo": "Gewechselt zu {name}",
+  "linkNotAvailableTitle": "Auf diesem Gerät nicht verfügbar",
+  "linkNotAvailableMessage": "Es ist noch nicht auf dieses Gerät synchronisiert, oder du hast keinen Zugriff darauf.",
+  "linkNoAccessMessage": "Nicht verfügbar: Es wurde gelöscht, oder du hast keinen Zugriff darauf.",
+  "linkSignInMessage": "Melde dich an, um es zu sehen.",
   "@lineupMessageIntro": {
     "placeholders": {
       "set": {
+        "type": "String"
+      }
+    }
+  },
+  "@linkSwitchedTo": {
+    "placeholders": {
+      "name": {
         "type": "String"
       }
     }

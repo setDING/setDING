@@ -1638,5 +1638,10 @@
   "lineupMessageIntro": "Estão previstos para «{set}».",
   "lineupMessageFooter": "Encontram as músicas no setDING.",
   "overviewPlanned": "Estás previsto",
-  "overviewPlannedSeen": "Entendido"
+  "overviewPlannedSeen": "Entendido",
+  "linkSwitchedTo": "Mudou para {name}",
+  "linkNotAvailableTitle": "Não disponível neste dispositivo",
+  "linkNotAvailableMessage": "Ainda não está sincronizado neste dispositivo, ou não tens acesso.",
+  "linkNoAccessMessage": "Não disponível: foi eliminado, ou não tens acesso.",
+  "linkSignInMessage": "Inicia sessão para o veres."
 }
